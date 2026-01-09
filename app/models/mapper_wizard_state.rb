@@ -5,6 +5,7 @@
 # Table name: mapper_wizard_states
 #
 #  id                       :bigint           not null, primary key
+#  custom_headers           :text(65535)
 #  docs_mapper              :text(65535)
 #  html_content             :text(16777215)
 #  http_method              :string(10)       default("GET")
@@ -39,13 +40,15 @@ class MapperWizardState < ApplicationRecord
 
   # Store HTML content from a fetched URL
   # query_params is stored separately so it can be changed without affecting the base search_url
-  def store_fetch_result url, html, method: 'GET', body: nil, query_params: nil
+  # custom_headers stores JSON string of headers to send with the request
+  def store_fetch_result url, html, method: 'GET', body: nil, query_params: nil, custom_headers: nil
     update!(
-      search_url:   url,
-      html_content: html,
-      http_method:  method,
-      request_body: body,
-      query_params: query_params
+      search_url:     url,
+      html_content:   html,
+      http_method:    method,
+      request_body:   body,
+      query_params:   query_params,
+      custom_headers: custom_headers
     )
   end
 

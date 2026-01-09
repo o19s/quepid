@@ -7,6 +7,7 @@ export default class extends Controller {
     "httpMethod",
     "requestBody",
     "requestBodyContainer",
+    "customHeaders",
     "apiKey",
     "htmlPreview",
     "htmlPreviewContainer",
@@ -95,6 +96,17 @@ export default class extends Controller {
 
     const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
     const queryParams = this.hasQueryParamsTarget ? this.queryParamsTarget.value.trim() : ''
+    const customHeaders = this.hasCustomHeadersTarget ? this.customHeadersTarget.value.trim() : ''
+
+    // Validate custom headers JSON if provided
+    if (customHeaders) {
+      try {
+        JSON.parse(customHeaders)
+      } catch (e) {
+        this.showStatus("Custom headers must be valid JSON", "error")
+        return
+      }
+    }
 
     // Get request body for POST requests
     this.captureEditors()
@@ -120,7 +132,8 @@ export default class extends Controller {
           search_url: url,
           http_method: httpMethod,
           request_body: requestBody,
-          query_params: queryParams
+          query_params: queryParams,
+          custom_headers: customHeaders
         })
       })
 
@@ -394,6 +407,7 @@ export default class extends Controller {
     this.showStatus("Saving search endpoint...", "info")
 
     const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
+    const customHeaders = this.hasCustomHeadersTarget ? this.customHeadersTarget.value.trim() : ''
 
     try {
       const response = await fetch(this.saveUrlValue, {
@@ -408,7 +422,8 @@ export default class extends Controller {
           docs_mapper: docsMapper,
           endpoint_url: this.searchUrlTarget.value.trim(),
           api_method: httpMethod,
-          proxy_requests: this.proxyRequestsTarget.checked
+          proxy_requests: this.proxyRequestsTarget.checked,
+          custom_headers: customHeaders
         })
       })
 

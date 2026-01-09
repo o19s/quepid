@@ -43,11 +43,15 @@ class MapperWizardsController < ApplicationController
     http_method = params[:http_method] || 'GET'
     request_body = params[:request_body]
     query_params = params[:query_params]
+    custom_headers = params[:custom_headers]
+
+    # Parse custom headers from JSON string to hash
+    headers_hash = parse_custom_headers(custom_headers)
 
     # Build full URL with query params for fetching
     fetch_url = build_fetch_url(params[:search_url], query_params)
 
-    result = service.fetch_html(fetch_url, http_method: http_method, request_body: request_body)
+    result = service.fetch_html(fetch_url, http_method: http_method, request_body: request_body, headers: headers_hash)
 
     if result[:success]
       # Store base URL and query_params separately
@@ -55,9 +59,10 @@ class MapperWizardsController < ApplicationController
       @wizard_state.store_fetch_result(
         params[:search_url],
         result[:html],
-        method:       http_method,
-        body:         request_body,
-        query_params: query_params
+        method:         http_method,
+        body:           request_body,
+        query_params:   query_params,
+        custom_headers: custom_headers
       )
 
       render json: {
@@ -160,6 +165,7 @@ class MapperWizardsController < ApplicationController
     )
 
     endpoint_url = params[:endpoint_url].presence || @wizard_state.search_url
+    custom_headers = params[:custom_headers].presence || @wizard_state.custom_headers
 
     @search_endpoint.assign_attributes(
       mapper_code:    combined_code,
@@ -167,7 +173,8 @@ class MapperWizardsController < ApplicationController
       endpoint_url:   endpoint_url,
       api_method:     params[:api_method] || 'GET',
       name:           params[:name],
-      proxy_requests: deserialize_bool_param(params[:proxy_requests])
+      proxy_requests: deserialize_bool_param(params[:proxy_requests]),
+      custom_headers: custom_headers
     )
 
     if @search_endpoint.save
@@ -227,6 +234,15 @@ class MapperWizardsController < ApplicationController
 
     separator = base_url.include?('?') ? '&' : '?'
     "#{base_url}#{separator}#{query_params}"
+  end
+
+  # Parse custom headers from JSON string to hash
+  def parse_custom_headers custom_headers_json
+    return {} if custom_headers_json.blank?
+
+    JSON.parse(custom_headers_json)
+  rescue JSON::ParserError
+    {}
   end
 
   # Parse combined mapper_code back into separate functions
