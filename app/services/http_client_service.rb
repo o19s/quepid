@@ -29,6 +29,7 @@ require 'base64'
 class HttpClientService
   attr_reader :uri
 
+  # rubocop:disable Metrics/ParameterLists
   def initialize url, headers: {}, credentials: nil, debug: false, timeout: 30, open_timeout: 10
     @url = url
     @headers = headers
@@ -38,6 +39,7 @@ class HttpClientService
     @open_timeout = open_timeout
     @uri = Addressable::URI.parse(url)
   end
+  # rubocop:enable Metrics/ParameterLists
 
   # Perform a GET request
   # @param params [Hash] Additional query parameters
@@ -77,7 +79,7 @@ class HttpClientService
 
   # Check if credentials are available (from parameter or URL userinfo)
   # @return [Boolean]
-  def has_credentials?
+  def credentials?
     @credentials.present? || !@uri.userinfo.nil?
   end
 

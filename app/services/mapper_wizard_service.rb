@@ -19,6 +19,7 @@ class MapperWizardService
   # @param headers [Hash] Custom HTTP headers
   # @param credentials [String] Basic auth credentials in format "username:password"
   # rubocop:disable Metrics/PerceivedComplexity
+  # rubocop:disable Metrics/MethodLength
   def fetch_html url, http_method: 'GET', request_body: nil, headers: {}, credentials: nil
     return { success: false, error: 'URL is required' } if url.blank?
     return { success: false, error: 'Invalid URL format' } unless url.match?(%r{\Ahttps?://.+}i)
@@ -42,6 +43,7 @@ class MapperWizardService
     { success: false, error: e.message }
   end
   # rubocop:enable Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/MethodLength
 
   # Generate mapper functions using RubyLLM
   # rubocop:disable Metrics/MethodLength
@@ -170,7 +172,7 @@ class MapperWizardService
       'User-Agent'   => 'Quepid/1.0 (Web Scraper)',
     }.merge(custom_headers)
 
-    client = HttpClientService.new(url, headers: headers, credentials: credentials, timeout: 30, open_timeout: 10)
+    client = HttpClientService.new(url, headers: headers, credentials: credentials)
     response = client.post(body: request_body)
 
     { success: true, html: response.body }

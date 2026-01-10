@@ -80,6 +80,16 @@
       </div>
 
       <div class="mb-3">
+        <%= form.label :test_query, class: 'form-label' %>
+        <div class="form-text">
+          <strong>Search API only.</strong> A sample query used by the Mapper Wizard for testing mappers.
+          For GET requests, use query params format (e.g., <code>q=test&rows=10</code>).
+          For POST requests, use JSON format (e.g., <code>{"query": "test"}</code>).
+        </div>
+        <%= form.text_area :test_query, rows: 3, class: 'form-control' %>
+      </div>
+
+      <div class="mb-3">
         <%= form.label :mapper_code, class: 'form-label' %>
         <div class="form-text">This Javascript is run in the browser to map custom search api responses to what Quepid understands.</div>
         <%= form.text_area :mapper_code, data: { codemirror_mode: "javascript", codemirror_line_numbers: true, codemirror_height: 600 } %>

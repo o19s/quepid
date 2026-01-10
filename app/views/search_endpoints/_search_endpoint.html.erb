@@ -48,6 +48,14 @@
     <%= text_area_tag 'options', search_endpoint.options, data: { codemirror_mode: "json", codemirror_height: 100,codemirror_width: 500, codemirror_readonly: true } %>
   </p>  
   
+  <% if search_endpoint.search_engine == 'searchapi' %>
+    <p>
+      <strong>Test Query:</strong>
+      <div class="form-text">Search API only. Sample query used by the Mapper Wizard for testing mappers.</div>
+      <pre class="bg-light p-2 border rounded"><%= search_endpoint.test_query.presence || 'Not set' %></pre>
+    </p>
+  <% end %>
+
   <p>
     <strong>Custom Code Mapper:</strong>
     <pre>

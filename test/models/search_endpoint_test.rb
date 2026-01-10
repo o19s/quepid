@@ -16,6 +16,7 @@
 #  proxy_requests        :boolean          default(FALSE)
 #  requests_per_minute   :integer          default(0)
 #  search_engine         :string(50)
+#  test_query            :text(65535)
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null
 #  owner_id              :integer

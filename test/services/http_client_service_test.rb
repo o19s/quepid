@@ -17,8 +17,8 @@ class HttpClientServiceTest < ActiveSupport::TestCase
     client_with_creds = HttpClientService.new('http://user:pass@example.com/search')
     client_without_creds = HttpClientService.new('http://example.com/search')
 
-    assert_predicate client_with_creds, :has_credentials?
-    assert_not client_without_creds.has_credentials?
+    assert_predicate client_with_creds, :credentials?
+    assert_not client_without_creds.credentials?
   end
 
   test 'handles non-ASCII characters in URL' do

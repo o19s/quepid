@@ -5,6 +5,7 @@
 # Table name: mapper_wizard_states
 #
 #  id                       :bigint           not null, primary key
+#  basic_auth_credential    :string(255)
 #  custom_headers           :text(65535)
 #  docs_mapper              :text(65535)
 #  html_content             :text(16777215)
@@ -39,16 +40,15 @@ class MapperWizardState < ApplicationRecord
   end
 
   # Store HTML content from a fetched URL
-  # query_params is stored separately so it can be changed without affecting the base search_url
   # custom_headers stores JSON string of headers to send with the request
-  def store_fetch_result url, html, method: 'GET', body: nil, query_params: nil, custom_headers: nil
+  # basic_auth_credential stores credentials in format "username:password"
+  def store_fetch_result url, html, method: 'GET', custom_headers: nil, basic_auth_credential: nil
     update!(
-      search_url:     url,
-      html_content:   html,
-      http_method:    method,
-      request_body:   body,
-      query_params:   query_params,
-      custom_headers: custom_headers
+      search_url:            url,
+      html_content:          html,
+      http_method:           method,
+      custom_headers:        custom_headers,
+      basic_auth_credential: basic_auth_credential
     )
   end
 

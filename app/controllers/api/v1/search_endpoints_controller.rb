@@ -137,7 +137,7 @@ module Api
       def search_endpoint_params
         params.expect(search_endpoint: [ :api_method, :archived, :basic_auth_credential, :custom_headers,
                                          :endpoint_url, :mapper_code, :name, :proxy_requests, :requests_per_minute,
-                                         :search_engine, { options: {} } ])
+                                         :search_engine, :test_query, { options: {} } ])
       end
     end
   end

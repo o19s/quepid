@@ -6,6 +6,7 @@ class DownloadPage < RubyLLM::Tool
   param :headers, desc: 'Custom HTTP headers as JSON string (e.g., {"X-Api-Key": "secret"})', required: false
   param :credentials, desc: 'Basic auth credentials in format "username:password"', required: false
 
+  # rubocop:disable Metrics/MethodLength
   def execute url:, headers: nil, credentials: nil
     # Validate URL format
     return { error: 'Invalid URL format. Must start with http:// or https://' } unless url&.match?(%r{\Ahttps?://.+}i)
@@ -13,7 +14,7 @@ class DownloadPage < RubyLLM::Tool
     parsed_headers = parse_headers(headers)
     parsed_headers['User-Agent'] ||= 'Quepid/1.0 (Web Scraper)'
 
-    client = HttpClientService.new(url, headers: parsed_headers, credentials: credentials, timeout: 30, open_timeout: 10)
+    client = HttpClientService.new(url, headers: parsed_headers, credentials: credentials)
     response = client.get
 
     # Check for successful response
@@ -32,6 +33,7 @@ class DownloadPage < RubyLLM::Tool
   rescue StandardError => e
     { error: e.message }
   end
+  # rubocop:enable Metrics/MethodLength
 
   private
 
