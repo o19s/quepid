@@ -2,10 +2,6 @@
   <span id="notification-case-<%= acase.id %>">
     <% if counter > 0 %>
       <div class="alert alert-warning" role="alert" >  
-        <% unless query.nil? %>
-        Query: <code><%=query.query_text%></code>
-        <% end %>
-        <br/>    
         Queries Remaining: <code><%= query_count - counter %></code>.    
       </div>
     <% else %>
