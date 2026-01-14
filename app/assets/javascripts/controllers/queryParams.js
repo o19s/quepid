@@ -2,11 +2,11 @@
 
 angular.module('QuepidApp')
   .controller('QueryParamsCtrl', [
-    '$scope',
-    'esUrlSvc','caseTryNavSvc','searchEndpointSvc',
+    '$scope', '$window',
+    'esUrlSvc', 'caseTryNavSvc', 'searchEndpointSvc', 'caseSvc',
     'TryFactory',
-    function ($scope,
-      esUrlSvc, caseTryNavSvc,searchEndpointSvc,
+    function ($scope, $window,
+      esUrlSvc, caseTryNavSvc, searchEndpointSvc, caseSvc,
       TryFactory) {
 
       $scope.qp = {};
@@ -20,21 +20,30 @@ angular.module('QuepidApp')
       $scope.showESTemplateWarning = false;
 
       $scope.showTLSChangeWarning = false;
-      
+
+      $scope.runningEvaluation = false;
+
       searchEndpointSvc.fetchForCase($scope.caseNo)
        .then(function() {
-         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;               
-       });      
-      
+         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;
+       });
+
       $scope.listSearchEndpoints = function() {
         return $scope.searchEndpoints;
       };
-      
-      $scope.createRunCaseInBackgroundLink = function(caseNo, tryNo) {
-        let link = caseTryNavSvc.getQuepidRootUrl() + '/home/run_case_evaluation_job/' + caseNo + '?try_number=' + tryNo;
-        return link;
+
+      $scope.runCaseInBackground = function(caseNo, tryNo) {
+        $scope.runningEvaluation = true;
+        caseSvc.runEvaluation(caseNo, tryNo)
+          .then(function() {
+            $window.location.href = caseTryNavSvc.getQuepidRootUrl();
+          })
+          .catch(function(error) {
+            $scope.runningEvaluation = false;
+            console.error('Failed to queue evaluation job:', error);
+          });
       };
-      
+
       $scope.createSearchEndpointLink = function(searchEndpointId) {
         return caseTryNavSvc.createSearchEndpointLink(searchEndpointId);
       };

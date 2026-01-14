@@ -554,6 +554,55 @@ module Api
         end
       end
 
+      describe 'Running case evaluation' do
+        let(:case_with_two_tries) { cases(:case_with_two_tries) }
+        let(:joey) { users(:joey) }
+
+        before do
+          login_user joey
+        end
+
+        test 'queues a job to evaluate case with default try' do
+          assert_enqueued_with(job: RunCaseEvaluationJob) do
+            post :run_evaluation, params: { case_id: case_with_two_tries.id }
+          end
+
+          assert_response :ok
+
+          body = response.parsed_body
+          assert_equal 'Job queued to evaluate queries', body['message']
+          assert_equal case_with_two_tries.id, body['case_id']
+          assert_equal case_with_two_tries.last_try_number, body['try_number']
+        end
+
+        test 'queues a job with a specific try number' do
+          assert_enqueued_with(job: RunCaseEvaluationJob) do
+            post :run_evaluation, params: { case_id: case_with_two_tries.id, try_number: 1 }
+          end
+
+          assert_response :ok
+
+          body = response.parsed_body
+          assert_equal 1, body['try_number']
+        end
+
+        test 'returns error when try does not exist' do
+          post :run_evaluation, params: { case_id: case_with_two_tries.id, try_number: 999 }
+
+          assert_response :unprocessable_entity
+
+          body = response.parsed_body
+          assert_equal 'Try with try_number 999 not found', body['error']
+        end
+
+        test 'returns not found for case user does not have access to' do
+          login_user doug
+          post :run_evaluation, params: { case_id: case_with_two_tries.id }
+
+          assert_response :not_found
+        end
+      end
+
       describe 'Default scorer' do
         let(:one)     { cases(:one) }
         let(:scorer)  { scorers(:valid) }

@@ -249,9 +249,12 @@
                 </a>
               </span>
             </p>
-            <a ng-href="{{createRunCaseInBackgroundLink(caseNo, settings.selectedTry.tryNo)}}" target="_self" class="btn btn-primary form-control">
-                Rerun My Searches Now in the Background!
-            </a>
+            <button ng-click="runCaseInBackground(caseNo, settings.selectedTry.tryNo)"
+                    ng-disabled="runningEvaluation"
+                    class="btn btn-primary form-control">
+                <span ng-hide="runningEvaluation">Rerun My Searches Now in the Background!</span>
+                <span ng-show="runningEvaluation">Queuing evaluation job...</span>
+            </button>
            <!--  -->
           </div>
         </div>

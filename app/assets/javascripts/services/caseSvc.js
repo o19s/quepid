@@ -32,6 +32,7 @@ angular.module('QuepidApp')
       svc.isBootstrapped    = isBootstrapped;
       svc.listContainsCase  = listContainsCase;
       svc.refetchCaseLists  = refetchCaseLists;
+      svc.runEvaluation     = runEvaluation;
       svc.saveDefaultScorer = saveDefaultScorer;
       svc.renameCase        = renameCase;
       svc.updateNightly     = updateNightly;
@@ -447,7 +448,7 @@ angular.module('QuepidApp')
        * general "update" method.
        */
       function updateNightly(theCase) {
-      
+
         // http PUT api/cases/<int:caseId>
         var url  = 'api/cases/' + theCase.caseNo;
         var data = {
@@ -460,7 +461,21 @@ angular.module('QuepidApp')
           }, function() {
             caseTryNavSvc.notFound();
           });
-      
+
+      }
+
+      /*
+       * Queues a background job to run all queries in the case and score the results.
+       */
+      function runEvaluation(caseNo, tryNumber) {
+        // http POST api/cases/<int:caseId>/run_evaluation
+        var url  = 'api/cases/' + caseNo + '/run_evaluation';
+        var params = {};
+        if (tryNumber) {
+          params.try_number = tryNumber;
+        }
+
+        return $http.post(url, null, { params: params });
       }      
 
       /*
