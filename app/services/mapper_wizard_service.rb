@@ -176,6 +176,8 @@ class MapperWizardService
     response = client.post(body: request_body)
 
     { success: true, html: response.body }
+  rescue Addressable::URI::InvalidURIError => e
+    { success: false, error: "Invalid URL: #{e.message}" }
   rescue Faraday::ConnectionFailed => e
     { success: false, error: "Connection failed: #{e.message}" }
   rescue Faraday::TimeoutError
