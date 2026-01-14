@@ -165,6 +165,7 @@ class MapperWizardService
   private
 
   # Fetch content using POST request with JSON body
+  # rubocop:disable Metrics/MethodLength
   def fetch_with_post url, request_body, custom_headers = {}, credentials = nil
     headers = {
       'Content-Type' => 'application/json',
@@ -185,6 +186,7 @@ class MapperWizardService
   rescue StandardError => e
     { success: false, error: e.message }
   end
+  # rubocop:enable Metrics/MethodLength
 
   def configure_ruby_llm
     RubyLLM.configure do |config|
