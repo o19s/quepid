@@ -32,30 +32,46 @@ class MapperWizardsController < ApplicationController
   # Note: This method stores large HTML content in the database (mapper_wizard_states table)
   # to avoid cookie overflow. The wizard state is tied to the user.
   #
-  # Supports both GET and POST requests. For POST, accepts a JSON body.
-  # query_params is stored separately and appended to search_url for fetching,
-  # but NOT saved to the search endpoint (allows testing different queries).
+  # Supports both GET and POST requests using test_query field:
+  # - For GET: test_query contains query params (e.g., "q=test&rows=10")
+  # - For POST: test_query contains JSON body (e.g., '{"query": "test"}')
   # rubocop:disable Metrics/MethodLength
   def fetch_html
     service = MapperWizardService.new
     http_method = params[:http_method] || 'GET'
-    request_body = params[:request_body]
-    query_params = params[:query_params]
+    test_query = params[:test_query]
+    custom_headers = params[:custom_headers]
+    basic_auth_credential = params[:basic_auth_credential]
 
-    # Build full URL with query params for fetching
-    fetch_url = build_fetch_url(params[:search_url], query_params)
+    # Parse custom headers from JSON string to hash
+    headers_hash = parse_custom_headers(custom_headers)
 
-    result = service.fetch_html(fetch_url, http_method: http_method, request_body: request_body)
+    # Build fetch URL and request body based on HTTP method
+    if 'POST' == http_method
+      fetch_url = params[:search_url]
+      request_body = test_query
+    else
+      fetch_url = build_fetch_url(params[:search_url], test_query)
+      request_body = nil
+    end
+
+    result = service.fetch_html(
+      fetch_url,
+      http_method:  http_method,
+      request_body: request_body,
+      headers:      headers_hash,
+      credentials:  basic_auth_credential
+    )
 
     if result[:success]
-      # Store base URL and query_params separately
-      # Only search_url (without query_params) will be saved to the search endpoint
+      # Store the fetch result in wizard state
       @wizard_state.store_fetch_result(
         params[:search_url],
         result[:html],
-        method:       http_method,
-        body:         request_body,
-        query_params: query_params
+        method:                http_method,
+        test_query:            test_query,
+        custom_headers:        custom_headers,
+        basic_auth_credential: basic_auth_credential
       )
 
       render json: {
@@ -145,6 +161,8 @@ class MapperWizardsController < ApplicationController
   # POST /search_endpoints/:search_endpoint_id/mapper_wizard/save
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
   def save
     @search_endpoint = if params[:search_endpoint_id].present? && 'new' != params[:search_endpoint_id]
                          current_user.search_endpoints_involved_with.find(params[:search_endpoint_id])
@@ -157,18 +175,31 @@ class MapperWizardsController < ApplicationController
       params[:docs_mapper]
     )
 
-    endpoint_url = params[:endpoint_url].presence || @wizard_state.search_url
+    endpoint_url = params[:endpoint_url].presence || @wizard_state.search_url || @search_endpoint.endpoint_url
+    test_query = params[:test_query].presence || @wizard_state.test_query || @search_endpoint.test_query
+    custom_headers = params[:custom_headers].presence || @wizard_state.custom_headers || @search_endpoint.custom_headers
+    basic_auth_credential = params[:basic_auth_credential].presence || @wizard_state.basic_auth_credential || @search_endpoint.basic_auth_credential
 
     @search_endpoint.assign_attributes(
-      mapper_code:    combined_code,
-      search_engine:  'searchapi',
-      endpoint_url:   endpoint_url,
-      api_method:     params[:api_method] || 'GET',
-      name:           params[:name],
-      proxy_requests: deserialize_bool_param(params[:proxy_requests])
+      mapper_code:           combined_code,
+      search_engine:         'searchapi',
+      endpoint_url:          endpoint_url,
+      api_method:            params[:api_method] || 'GET',
+      name:                  params[:name],
+      proxy_requests:        deserialize_bool_param(params[:proxy_requests]),
+      test_query:            test_query,
+      custom_headers:        custom_headers,
+      basic_auth_credential: basic_auth_credential
     )
 
     if @search_endpoint.save
+      # Assign teams if team_ids provided
+      if params[:team_ids].present?
+        team_ids = params[:team_ids].map(&:to_i)
+        teams = current_user.teams.where(id: team_ids)
+        @search_endpoint.teams = teams
+      end
+
       clear_wizard_state
       render json: { success: true, redirect_url: search_endpoint_url(@search_endpoint) }
     else
@@ -177,6 +208,8 @@ class MapperWizardsController < ApplicationController
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/PerceivedComplexity
 
   private
 
@@ -225,6 +258,15 @@ class MapperWizardsController < ApplicationController
 
     separator = base_url.include?('?') ? '&' : '?'
     "#{base_url}#{separator}#{query_params}"
+  end
+
+  # Parse custom headers from JSON string to hash
+  def parse_custom_headers custom_headers_json
+    return {} if custom_headers_json.blank?
+
+    JSON.parse(custom_headers_json)
+  rescue JSON::ParserError
+    {}
   end
 
   # Parse combined mapper_code back into separate functions

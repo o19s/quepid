@@ -3,10 +3,11 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = [
     "searchUrl",
-    "queryParams",
+    "testQuery",
+    "testQueryHint",
     "httpMethod",
-    "requestBody",
-    "requestBodyContainer",
+    "basicAuthCredential",
+    "customHeaders",
     "apiKey",
     "htmlPreview",
     "htmlPreviewContainer",
@@ -21,6 +22,7 @@ export default class extends Controller {
     "status",
     "endpointName",
     "proxyRequests",
+    "teamCheckbox",
     "step2",
     "step3",
     "fetchButton",
@@ -47,13 +49,9 @@ export default class extends Controller {
     // Store references when they become available
     this.numberOfResultsEditor = null
     this.docsEditor = null
-    this.requestBodyEditor = null
 
     // Wait for CodeMirror to initialize the textareas
     setTimeout(() => this.captureEditors(), 500)
-
-    // Initialize request body visibility based on current HTTP method
-    this.toggleRequestBody()
 
     // If editing an existing endpoint with mappers, show steps 2 and 3
     if (this.hasExistingMappersValue) {
@@ -70,16 +68,25 @@ export default class extends Controller {
     if (this.hasDocsMapperTarget && this.docsMapperTarget.editor) {
       this.docsEditor = this.docsMapperTarget.editor
     }
-    if (this.hasRequestBodyTarget && this.requestBodyTarget.editor) {
-      this.requestBodyEditor = this.requestBodyTarget.editor
-    }
   }
 
-  // Toggle visibility of request body based on HTTP method
-  toggleRequestBody() {
-    if (this.hasHttpMethodTarget && this.hasRequestBodyContainerTarget) {
-      const method = this.httpMethodTarget.value
-      this.requestBodyContainerTarget.style.display = method === 'POST' ? 'flex' : 'none'
+  // Update the test query hint text and placeholder based on HTTP method
+  updateTestQueryHint() {
+    if (!this.hasHttpMethodTarget || !this.hasTestQueryHintTarget) return
+
+    const method = this.httpMethodTarget.value
+    const isPost = method === 'POST'
+
+    if (isPost) {
+      this.testQueryHintTarget.innerHTML = 'Enter JSON body for POST request. Saved with endpoint for easy iteration.'
+      if (this.hasTestQueryTarget) {
+        this.testQueryTarget.placeholder = '{"query": "test", "size": 10}'
+      }
+    } else {
+      this.testQueryHintTarget.innerHTML = 'Enter query params (e.g., <code>q=test&rows=10</code>) appended to URL. Saved with endpoint for easy iteration.'
+      if (this.hasTestQueryTarget) {
+        this.testQueryTarget.placeholder = 'q=shirts&rows=10'
+      }
     }
   }
 
@@ -94,20 +101,32 @@ export default class extends Controller {
     }
 
     const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
-    const queryParams = this.hasQueryParamsTarget ? this.queryParamsTarget.value.trim() : ''
+    const testQuery = this.hasTestQueryTarget ? this.testQueryTarget.value.trim() : ''
+    const customHeaders = this.hasCustomHeadersTarget ? this.customHeadersTarget.value.trim() : ''
+    const basicAuthCredential = this.hasBasicAuthCredentialTarget ? this.basicAuthCredentialTarget.value.trim() : ''
 
-    // Get request body for POST requests
-    this.captureEditors()
-    let requestBody = ''
-    if (httpMethod === 'POST' && this.hasRequestBodyTarget) {
-      requestBody = this.requestBodyEditor
-        ? this.requestBodyEditor.getValue()
-        : this.requestBodyTarget.value
+    // Validate custom headers JSON if provided
+    if (customHeaders) {
+      try {
+        JSON.parse(customHeaders)
+      } catch (e) {
+        this.showStatus("Custom headers must be valid JSON", "error")
+        return
+      }
+    }
+
+    // Validate test query is valid JSON for POST requests
+    if (httpMethod === 'POST' && testQuery) {
+      try {
+        JSON.parse(testQuery)
+      } catch (e) {
+        this.showStatus("Test query must be valid JSON for POST requests", "error")
+        return
+      }
     }
 
     this.setButtonLoading(this.fetchButtonTarget, true)
-    const fetchInfo = queryParams ? `${httpMethod} with query params` : httpMethod
-    this.showStatus(`Fetching via ${fetchInfo}...`, "info")
+    this.showStatus(`Fetching via ${httpMethod}...`, "info")
 
     try {
       const response = await fetch(this.fetchUrlValue, {
@@ -119,8 +138,9 @@ export default class extends Controller {
         body: JSON.stringify({
           search_url: url,
           http_method: httpMethod,
-          request_body: requestBody,
-          query_params: queryParams
+          test_query: testQuery,
+          custom_headers: customHeaders,
+          basic_auth_credential: basicAuthCredential
         })
       })
 
@@ -394,6 +414,14 @@ export default class extends Controller {
     this.showStatus("Saving search endpoint...", "info")
 
     const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
+    const testQuery = this.hasTestQueryTarget ? this.testQueryTarget.value.trim() : ''
+    const customHeaders = this.hasCustomHeadersTarget ? this.customHeadersTarget.value.trim() : ''
+    const basicAuthCredential = this.hasBasicAuthCredentialTarget ? this.basicAuthCredentialTarget.value.trim() : ''
+
+    // Collect checked team IDs
+    const teamIds = this.hasTeamCheckboxTarget
+      ? this.teamCheckboxTargets.filter(cb => cb.checked).map(cb => parseInt(cb.value))
+      : []
 
     try {
       const response = await fetch(this.saveUrlValue, {
@@ -408,7 +436,11 @@ export default class extends Controller {
           docs_mapper: docsMapper,
           endpoint_url: this.searchUrlTarget.value.trim(),
           api_method: httpMethod,
-          proxy_requests: this.proxyRequestsTarget.checked
+          proxy_requests: this.proxyRequestsTarget.checked,
+          test_query: testQuery,
+          custom_headers: customHeaders,
+          basic_auth_credential: basicAuthCredential,
+          team_ids: teamIds
         })
       })
 

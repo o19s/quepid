@@ -14,15 +14,19 @@ class MapperWizardService
   # @param url [String] The URL to fetch
   # @param http_method [String] 'GET' or 'POST' (default: 'GET')
   # @param request_body [String] JSON body for POST requests
+  # @param headers [Hash] Custom HTTP headers
+  # @param credentials [String] Basic auth credentials in format "username:password"
   # rubocop:disable Metrics/PerceivedComplexity
-  def fetch_html url, http_method: 'GET', request_body: nil
+  # rubocop:disable Metrics/MethodLength
+  def fetch_html url, http_method: 'GET', request_body: nil, headers: {}, credentials: nil
     return { success: false, error: 'URL is required' } if url.blank?
     return { success: false, error: 'Invalid URL format' } unless url.match?(%r{\Ahttps?://.+}i)
 
     if 'GET' == http_method
       # Use existing DownloadPage tool for GET requests
       downloader = DownloadPage.new
-      result = downloader.execute(url: url)
+      headers_json = headers.presence&.to_json
+      result = downloader.execute(url: url, headers: headers_json, credentials: credentials)
 
       if result.is_a?(Hash) && result[:error]
         { success: false, error: result[:error] }
@@ -31,12 +35,13 @@ class MapperWizardService
       end
     else
       # Handle POST requests with JSON body
-      fetch_with_post(url, request_body)
+      fetch_with_post(url, request_body, headers, credentials)
     end
   rescue StandardError => e
     { success: false, error: e.message }
   end
   # rubocop:enable Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/MethodLength
 
   # Generate mapper functions using RubyLLM
   # rubocop:disable Metrics/MethodLength
@@ -159,26 +164,19 @@ class MapperWizardService
 
   # Fetch content using POST request with JSON body
   # rubocop:disable Metrics/MethodLength
-  def fetch_with_post url, request_body
-    conn = Faraday.new do |f|
-      f.options.timeout = 30
-      f.options.open_timeout = 10
-      f.response :follow_redirects
-      f.adapter Faraday.default_adapter
-    end
-
+  def fetch_with_post url, request_body, custom_headers = {}, credentials = nil
     headers = {
       'Content-Type' => 'application/json',
       'Accept'       => 'application/json, text/html, */*',
       'User-Agent'   => 'Quepid/1.0 (Web Scraper)',
-    }
+    }.merge(custom_headers)
 
-    response = conn.post(url) do |req|
-      req.headers = headers
-      req.body = request_body if request_body.present?
-    end
+    client = HttpClientService.new(url, headers: headers, credentials: credentials)
+    response = client.post(body: request_body)
 
     { success: true, html: response.body }
+  rescue Addressable::URI::InvalidURIError => e
+    { success: false, error: "Invalid URL: #{e.message}" }
   rescue Faraday::ConnectionFailed => e
     { success: false, error: "Connection failed: #{e.message}" }
   rescue Faraday::TimeoutError

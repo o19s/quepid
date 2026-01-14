@@ -9,7 +9,7 @@ angular.module('QuepidApp')
       this.searchEndpoints = [];
       this.archived = [];
 
-      var SearchEndpoint = function(id, name, searchEngine, endpointUrl, apiMethod, customHeaders, proxyRequests, basicAuthCredential, mapperCode) {
+      var SearchEndpoint = function(id, name, searchEngine, endpointUrl, apiMethod, customHeaders, proxyRequests, basicAuthCredential, mapperCode, testQuery) {
         this.id           = id;
         this.name         = name;
         this.searchEngine = searchEngine;
@@ -19,6 +19,7 @@ angular.module('QuepidApp')
         this.proxyRequests= proxyRequests;
         this.basicAuthCredential  = basicAuthCredential;
         this.mapperCode           = mapperCode;
+        this.testQuery            = testQuery;
       };
 
       this.constructFromData = function(data) {
@@ -31,7 +32,8 @@ angular.module('QuepidApp')
           data.custom_headers,
           data.proxy_requests,
           data.basic_auth_credential,
-          data.mapper_code
+          data.mapper_code,
+          data.test_query
         );
       };
 

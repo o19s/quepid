@@ -135,4 +135,57 @@ class DownloadPageTest < ActiveSupport::TestCase
     assert result.key?(:error), 'Should have error key'
     assert_includes result[:error], 'Something went wrong', 'Should include exception message'
   end
+
+  test 'accepts custom headers as JSON string' do
+    stub_request(:get, 'https://example.com/api')
+      .with(headers: { 'X-Api-Key' => 'secret123' })
+      .to_return(status: 200, body: 'authenticated content')
+
+    result = @tool.execute(url: 'https://example.com/api', headers: '{"X-Api-Key": "secret123"}')
+    assert_kind_of String, result, 'Should return content when custom headers are provided'
+    assert_equal 'authenticated content', result
+  end
+
+  test 'handles nil headers gracefully' do
+    stub_request(:get, 'https://example.com')
+      .to_return(status: 200, body: 'content')
+
+    result = @tool.execute(url: 'https://example.com', headers: nil)
+    assert_kind_of String, result, 'Should work with nil headers'
+    assert_equal 'content', result
+  end
+
+  test 'handles empty headers string' do
+    stub_request(:get, 'https://example.com')
+      .to_return(status: 200, body: 'content')
+
+    result = @tool.execute(url: 'https://example.com', headers: '')
+    assert_kind_of String, result, 'Should work with empty headers string'
+    assert_equal 'content', result
+  end
+
+  test 'returns error for invalid headers JSON' do
+    result = @tool.execute(url: 'https://example.com', headers: 'not valid json')
+    assert_kind_of Hash, result, 'Should return error hash for invalid JSON'
+    assert result.key?(:error), 'Should have error key'
+    assert_includes result[:error], 'Invalid headers JSON', 'Should mention JSON parsing error'
+  end
+
+  test 'preserves default User-Agent when not overridden' do
+    stub_request(:get, 'https://example.com')
+      .with(headers: { 'User-Agent' => 'Quepid/1.0 (Web Scraper)' })
+      .to_return(status: 200, body: 'content')
+
+    result = @tool.execute(url: 'https://example.com')
+    assert_kind_of String, result, 'Should include default User-Agent'
+  end
+
+  test 'allows overriding User-Agent header' do
+    stub_request(:get, 'https://example.com')
+      .with(headers: { 'User-Agent' => 'CustomBot/2.0' })
+      .to_return(status: 200, body: 'content')
+
+    result = @tool.execute(url: 'https://example.com', headers: '{"User-Agent": "CustomBot/2.0"}')
+    assert_kind_of String, result, 'Should allow custom User-Agent'
+  end
 end

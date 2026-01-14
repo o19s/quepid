@@ -5,13 +5,14 @@
 # Table name: mapper_wizard_states
 #
 #  id                       :bigint           not null, primary key
+#  basic_auth_credential    :string(255)
+#  custom_headers           :text(65535)
 #  docs_mapper              :text(65535)
 #  html_content             :text(16777215)
 #  http_method              :string(10)       default("GET")
 #  number_of_results_mapper :text(65535)
-#  query_params             :string(255)
-#  request_body             :text(65535)
 #  search_url               :string(2000)
+#  test_query               :text(65535)
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  user_id                  :integer          not null
@@ -37,17 +38,22 @@ class MapperWizardState < ApplicationRecord
     find_or_create_by!(user: user)
   end
 
+  # rubocop:disable Metrics/ParameterLists
   # Store HTML content from a fetched URL
-  # query_params is stored separately so it can be changed without affecting the base search_url
-  def store_fetch_result url, html, method: 'GET', body: nil, query_params: nil
+  # test_query stores either query params (for GET) or JSON body (for POST)
+  # custom_headers stores JSON string of headers to send with the request
+  # basic_auth_credential stores credentials in format "username:password"
+  def store_fetch_result url, html, method: 'GET', test_query: nil, custom_headers: nil, basic_auth_credential: nil
     update!(
-      search_url:   url,
-      html_content: html,
-      http_method:  method,
-      request_body: body,
-      query_params: query_params
+      search_url:            url,
+      html_content:          html,
+      http_method:           method,
+      test_query:            test_query,
+      custom_headers:        custom_headers,
+      basic_auth_credential: basic_auth_credential
     )
   end
+  # rubocop:enable Metrics/ParameterLists
 
   # Store generated mapper code
   def store_mappers number_of_results_mapper:, docs_mapper:

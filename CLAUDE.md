@@ -33,3 +33,5 @@ We use .css, we do not use .scss.
 Never do $window.location.href= '/', do $window.location.href= caseTryNavSvc.getQuepidRootUrl();.
 
 Likewise urls generated should never start with / as we need relative links.
+
+In Ruby we say `credentials?` versus `has_credentials?` for predicates.

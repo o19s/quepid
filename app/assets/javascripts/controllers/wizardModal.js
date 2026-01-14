@@ -166,6 +166,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.proxyRequests            = searchEndpointToUse.proxyRequests;
         $scope.pendingWizardSettings.basicAuthCredential      = searchEndpointToUse.basicAuthCredential;
         $scope.pendingWizardSettings.mapperCode               = searchEndpointToUse.mapperCode;
+        $scope.pendingWizardSettings.testQuery                = searchEndpointToUse.testQuery;
 
         // Now grab default settings for the type of search endpoint you are using
         // These are display/query settings that have sensible defaults per search engine type
@@ -173,9 +174,15 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
-        $scope.pendingWizardSettings.queryParams              = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
 
+        // For searchapi endpoints, use the saved testQuery as the queryParams
+        // This pre-populates the query pattern with what was saved in the search endpoint
+        if (searchEndpointToUse.searchEngine === 'searchapi' && searchEndpointToUse.testQuery) {
+          $scope.pendingWizardSettings.queryParams            = searchEndpointToUse.testQuery;
+        } else {
+          $scope.pendingWizardSettings.queryParams            = settings.queryParams;
+        }
 
         $scope.reset();
       };
@@ -347,10 +354,21 @@ angular.module('QuepidApp')
           settingsForValidation.searchEngine = 'solr';
         }
         else if ($scope.pendingWizardSettings.searchEngine === 'searchapi'){
-          // Substitute #$query## with the test query for validation
-          var queryParamsWithTestQuery = $scope.pendingWizardSettings.queryParams;
-          if ($scope.pendingWizardSettings.testQuery && $scope.pendingWizardSettings.testQuery.trim().length > 0) {
-            queryParamsWithTestQuery = queryParamsWithTestQuery.replace(/#\$query##/g, $scope.pendingWizardSettings.testQuery);
+          // For validation, we need query args:
+          // - If queryParams has #$query##, substitute with testQuery
+          // - If queryParams is not set but testQuery exists (from existing endpoint), use testQuery directly
+          var queryParamsWithTestQuery;
+          if ($scope.pendingWizardSettings.queryParams && $scope.pendingWizardSettings.queryParams.indexOf('#$query##') !== -1) {
+            // queryParams has placeholder, substitute with test query
+            queryParamsWithTestQuery = $scope.pendingWizardSettings.queryParams;
+            if ($scope.pendingWizardSettings.testQuery && $scope.pendingWizardSettings.testQuery.trim().length > 0) {
+              queryParamsWithTestQuery = queryParamsWithTestQuery.replace(/#\$query##/g, $scope.pendingWizardSettings.testQuery);
+            }
+          } else if ($scope.pendingWizardSettings.testQuery && $scope.pendingWizardSettings.testQuery.trim().length > 0) {
+            // Use testQuery directly (from existing endpoint's test_query)
+            queryParamsWithTestQuery = $scope.pendingWizardSettings.testQuery;
+          } else {
+            queryParamsWithTestQuery = $scope.pendingWizardSettings.queryParams || '';
           }
           settingsForValidation.args = queryParamsWithTestQuery;
         

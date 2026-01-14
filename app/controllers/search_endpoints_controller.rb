@@ -104,7 +104,7 @@ class SearchEndpointsController < ApplicationController
     params.expect(search_endpoint: [ :name, :endpoint_url, :search_engine, :custom_headers,
                                      :api_method, :archived,
                                      :basic_auth_credential, :mapper_code, :proxy_requests,
-                                     :options_json, :requests_per_minute,
+                                     :options_json, :requests_per_minute, :test_query,
                                      { team_ids: [] } ])
   end
 end

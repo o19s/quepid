@@ -12,6 +12,7 @@ json.basic_auth_credential  search_endpoint.basic_auth_credential
 json.mapper_code            search_endpoint.mapper_code
 json.proxy_requests         search_endpoint.proxy_requests
 json.requests_per_minute    search_endpoint.requests_per_minute
+json.test_query             search_endpoint.test_query
 json.archived               search_endpoint.archived unless export
 
 json.options search_endpoint.options if export
