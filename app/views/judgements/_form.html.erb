@@ -77,9 +77,16 @@
       return modal && modal.classList.contains('show');
   }
 
+  // Function to check if user is typing in a text field
+  function isTypingInTextField() {
+      const activeElement = document.activeElement;
+      const tagName = activeElement ? activeElement.tagName.toLowerCase() : '';
+      return tagName === 'input' || tagName === 'textarea';
+  }
+
   document.addEventListener('keypress', function(e) {
-      // Skip if explanation modal is open
-      if (isExplanationModalOpen()) {
+      // Skip if explanation modal is open or typing in a text field
+      if (isExplanationModalOpen() || isTypingInTextField()) {
         return;
       }
 
@@ -109,8 +116,8 @@
   });
 
   document.addEventListener('keydown', function(e) {
-      // Skip if explanation modal is open
-      if (isExplanationModalOpen()) {
+      // Skip if explanation modal is open or typing in a text field
+      if (isExplanationModalOpen() || isTypingInTextField()) {
         return;
       }
       
@@ -204,8 +211,7 @@
         <%= render_markdown(@book.effective_scoring_guidelines) %>
       </div>
     </div>
-    
-    
+
 
     <div class="float-end">        
       <%= link_to 'I will Judge Later', book_query_doc_pair_judge_later_path(@book, query_doc_pair), class: 'btn btn-info m-1', role: 'button' %>
@@ -215,11 +221,15 @@
       </button>
     </div>
 
-
-
     <p class="card-text">
       <%= render 'query_doc_pairs/document_fields', document_fields_as_json: @document_fields_as_json %>
     </p>
+    
+    <div class="mt-3">
+      <label for="judgement_explanation" class="form-label">Explanation (optional)</label>
+      <%= form.text_area :explanation, class: 'form-control', rows: 2, placeholder: 'Why did you choose this rating?' %>
+    </div>
+    
     <% if @book.show_rank? %>
     <p class="card-text">
       <b>Document Rank: </b><%= judgement.query_doc_pair.position %>
@@ -268,10 +278,7 @@
       </table>
     <% end %>
     
-    <% if !judgement.explanation.blank? %>
-    <p/>
-    <h6 class="card-subtitle">Judging Explanation: <em><%= judgement.explanation %></em></h5>
-    <% end %>
+
   </div>
   <% if image_url %>
       </div>
