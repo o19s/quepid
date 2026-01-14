@@ -116,11 +116,11 @@ module Api
       end
 
       # rubocop:disable Metrics/MethodLength
-      # @summary Queues a background job to run all queries in the case and score the results.
+      # @summary Run Case Evaluation
       #
       # This endpoint triggers a background job that executes all queries in the case against
       # the search endpoint, collects the results, and calculates scores. Progress updates
-      # are broadcast via WebSocket/Turbo Streams to the `notifications` channel.
+      # are broadcast to the front end.
       #
       # @parameter try_number(query) [Integer] The try number to use for running queries.
       #   If not specified, defaults to the case's last_try_number.
