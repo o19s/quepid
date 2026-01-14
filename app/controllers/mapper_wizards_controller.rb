@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ClassLength
-
 class MapperWizardsController < ApplicationController
   before_action :require_admin_if_restricted
   before_action :set_search_endpoint, only: [ :show ]
@@ -350,5 +348,4 @@ class MapperWizardsController < ApplicationController
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Metrics/ClassLength
 end

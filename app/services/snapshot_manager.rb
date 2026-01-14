@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ClassLength
 class SnapshotManager
   attr_reader :logger, :options
 
@@ -280,4 +279,3 @@ class SnapshotManager
     end
   end
 end
-# rubocop:enable Metrics/ClassLength

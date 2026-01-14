@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ClassLength
 module Api
   module V1
     # @tags scorers
@@ -176,4 +175,3 @@ module Api
     end
   end
 end
-# rubocop:enable Metrics/ClassLength

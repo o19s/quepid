@@ -4,8 +4,8 @@ module Api
   module V1
     # @tags cases
     class CasesController < Api::ApiController
-      before_action :set_case, only: [ :show, :update, :destroy ]
-      before_action :check_case, only: [ :show, :update, :destroy ]
+      before_action :set_case, only: [ :show, :update, :destroy, :run_evaluation ]
+      before_action :check_case, only: [ :show, :update, :destroy, :run_evaluation ]
 
       # Special handling for cases that are "public"
       def authenticate_api!
@@ -114,6 +114,44 @@ module Api
 
         head :no_content
       end
+
+      # rubocop:disable Metrics/MethodLength
+      # @summary Run Case Evaluation
+      #
+      # This endpoint triggers a background job that executes all queries in the case against
+      # the search endpoint, collects the results, and calculates scores. Progress updates
+      # are broadcast to the front end.
+      #
+      # @parameter try_number(query) [Integer] The try number to use for running queries.
+      #   If not specified, defaults to the case's last_try_number.
+      #
+      # @response 200 [Hash{message: String, case_id: Integer, try_number: Integer}]
+      # @response_example 200 [JSON{"message": "Job queued to evaluate queries", "case_id": 1, "try_number": 2}]
+      # @response Case not found or user does not have access Id(404) []
+      # @response Try not found for the specified try_number Id(422) []
+      def run_evaluation
+        try_number = if params[:try_number].present?
+                       params[:try_number].to_i
+                     else
+                       @case.last_try_number
+                     end
+
+        @try = @case.tries.find_by(try_number: try_number)
+
+        if @try.nil?
+          render json: { error: "Try with try_number #{try_number} not found" }, status: :unprocessable_content
+          return
+        end
+
+        RunCaseEvaluationJob.perform_later @case, @try, user: current_user
+
+        render json: {
+          message:    'Job queued to evaluate queries',
+          case_id:    @case.id,
+          try_number: @try.try_number,
+        }, status: :ok
+      end
+      # rubocop:enable Metrics/MethodLength
 
       private
 

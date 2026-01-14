@@ -104,8 +104,7 @@ Metrics/BlockLength:
     - test/**/*
 
 Metrics/ClassLength:
-  Exclude:
-    - test/**/*
+  Enabled: false
 
 Metrics/AbcSize:
   Max: 30

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ClassLength
-
 # == Schema Information
 #
 # Table name: users
@@ -317,4 +315,3 @@ class User < ApplicationRecord
     self[:agreed_time] = Time.zone.now
   end
 end
-# rubocop:enable Metrics/ClassLength

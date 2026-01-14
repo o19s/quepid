@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ClassLength
-
 # == Schema Information
 #
 # Table name: cases
@@ -240,4 +238,3 @@ class Case < ApplicationRecord
     queries << new_query
   end
 end
-# rubocop:enable Metrics/ClassLength

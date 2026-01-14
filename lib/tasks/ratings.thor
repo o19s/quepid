@@ -3,7 +3,6 @@
 require 'colorize'
 require 'csv'
 
-# rubocop:disable Metrics/ClassLength
 class Ratings < Thor
   # rubocop:disable Metrics/MethodLength
   desc 'import CASEID FILENAME', 'imports ratings to a case'
@@ -179,4 +178,3 @@ class Ratings < Thor
     true
   end
 end
-# rubocop:enable Metrics/ClassLength

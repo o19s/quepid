@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ClassLength
-
 require 'v8_mapper_executor'
 
 class MapperWizardService
@@ -316,4 +314,3 @@ class MapperWizardService
   end
   # rubocop:enable Metrics/MethodLength, Metrics/PerceivedComplexity
 end
-# rubocop:enable Metrics/ClassLength

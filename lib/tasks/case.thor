@@ -3,7 +3,6 @@
 require 'colorize'
 require 'zip'
 
-# rubocop:disable Metrics/ClassLength
 class Case < Thor
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Style/VariableInterpolation
@@ -220,4 +219,3 @@ class Case < Thor
     end
   end
 end
-# rubocop:enable Metrics/ClassLength

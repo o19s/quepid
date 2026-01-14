@@ -30,7 +30,6 @@ Rails.application.routes.draw do
   get 'home/sparklines', to: 'home#sparklines'
   get 'home/case_prophet/:case_id', to: 'home#case_prophet', as: :home_case_prophet
   get 'home/book_summary_detail/:book_id', to: 'home#book_summary_detail', as: :home_book_summary_detail
-  get 'home/run_case_evaluation_job/:case_id', to: 'home#run_case_evaluation_job', as: :run_case_evaluation_job
 
   get 'proxy/fetch'
   post 'proxy/fetch'
@@ -168,9 +167,6 @@ Rails.application.routes.draw do
     resources :websocket_tester, only: [ :index ] do
       post 'test_background_job', on: :collection
     end
-    resources :run_case, only: [ :index ] do
-      post 'run_case', on: :collection
-    end
   end
 
   # preview routes for mailers
@@ -202,7 +198,11 @@ Rails.application.routes.draw do
       # This simple setup helps use one before_filter to fetch the case by the
       # :case_id param instead of having multiple helpers to accommodate the
       # different scenarios.
-      resources :cases, except: [ :new, :edit ], param: :case_id
+      resources :cases, except: [ :new, :edit ], param: :case_id do
+        member do
+          post 'run_evaluation'
+        end
+      end
       resources :cases, only: [] do
         # Case Tries
         resources :tries, param: :try_number, except: [ :new, :edit ]

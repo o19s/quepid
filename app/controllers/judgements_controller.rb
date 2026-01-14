@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ClassLength
 class JudgementsController < ApplicationController
   include Pagy::Method
 
@@ -152,4 +151,3 @@ class JudgementsController < ApplicationController
     params.expect(judgement: [ :user_id, :rating, :query_doc_pair_id, :unrateable, :explanation ])
   end
 end
-# rubocop:enable Metrics/ClassLength

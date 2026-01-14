@@ -3,7 +3,6 @@
 require 'faraday'
 require 'faraday/follow_redirects'
 
-# rubocop:disable Metrics/ClassLength
 class FetchService
   # include ProgressIndicator
 
@@ -551,4 +550,3 @@ class FetchService
     processed_args.to_json
   end
 end
-# rubocop:enable Metrics/ClassLength

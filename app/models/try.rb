@@ -31,7 +31,6 @@
 require 'solr_arg_parser'
 require 'es_arg_parser'
 
-# rubocop:disable Metrics/ClassLength
 class Try < ApplicationRecord
   has_ancestry orphan_strategy: :adopt
 
@@ -220,4 +219,3 @@ class Try < ApplicationRecord
     self.number_of_rows = 10 if number_of_rows.blank?
   end
 end
-# rubocop:enable Metrics/ClassLength
