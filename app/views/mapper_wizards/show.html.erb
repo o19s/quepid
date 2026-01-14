@@ -62,7 +62,7 @@
       </div>
 
       <!-- Test Query (used for both GET query params and POST body) -->
-      <% existing_test_query = @search_endpoint.test_query %>
+      <% existing_test_query = @wizard_state.try(:test_query).presence || @search_endpoint.test_query %>
       <div class="row g-3 mt-2">
         <div class="col-12">
           <label for="testQuery" class="form-label">Test Query</label>

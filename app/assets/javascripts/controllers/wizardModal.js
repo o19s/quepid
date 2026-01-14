@@ -174,9 +174,15 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
-        $scope.pendingWizardSettings.queryParams              = settings.queryParams;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
 
+        // For searchapi endpoints, use the saved testQuery as the queryParams
+        // This pre-populates the query pattern with what was saved in the search endpoint
+        if (searchEndpointToUse.searchEngine === 'searchapi' && searchEndpointToUse.testQuery) {
+          $scope.pendingWizardSettings.queryParams            = searchEndpointToUse.testQuery;
+        } else {
+          $scope.pendingWizardSettings.queryParams            = settings.queryParams;
+        }
 
         $scope.reset();
       };

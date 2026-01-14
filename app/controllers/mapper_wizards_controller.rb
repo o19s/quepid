@@ -34,9 +34,9 @@ class MapperWizardsController < ApplicationController
   # Note: This method stores large HTML content in the database (mapper_wizard_states table)
   # to avoid cookie overflow. The wizard state is tied to the user.
   #
-  # Supports both GET and POST requests. For POST, accepts a JSON body.
-  # query_params is stored separately and appended to search_url for fetching,
-  # but NOT saved to the search endpoint (allows testing different queries).
+  # Supports both GET and POST requests using test_query field:
+  # - For GET: test_query contains query params (e.g., "q=test&rows=10")
+  # - For POST: test_query contains JSON body (e.g., '{"query": "test"}')
   # rubocop:disable Metrics/MethodLength
   def fetch_html
     service = MapperWizardService.new
@@ -71,6 +71,7 @@ class MapperWizardsController < ApplicationController
         params[:search_url],
         result[:html],
         method:                http_method,
+        test_query:            test_query,
         custom_headers:        custom_headers,
         basic_auth_credential: basic_auth_credential
       )
@@ -176,10 +177,10 @@ class MapperWizardsController < ApplicationController
       params[:docs_mapper]
     )
 
-    endpoint_url = params[:endpoint_url].presence || @wizard_state.search_url
-    test_query = params[:test_query].presence || @search_endpoint.test_query
-    custom_headers = params[:custom_headers].presence || @wizard_state.custom_headers
-    basic_auth_credential = params[:basic_auth_credential].presence || @search_endpoint.basic_auth_credential
+    endpoint_url = params[:endpoint_url].presence || @wizard_state.search_url || @search_endpoint.endpoint_url
+    test_query = params[:test_query].presence || @wizard_state.test_query || @search_endpoint.test_query
+    custom_headers = params[:custom_headers].presence || @wizard_state.custom_headers || @search_endpoint.custom_headers
+    basic_auth_credential = params[:basic_auth_credential].presence || @wizard_state.basic_auth_credential || @search_endpoint.basic_auth_credential
 
     @search_endpoint.assign_attributes(
       mapper_code:           combined_code,
