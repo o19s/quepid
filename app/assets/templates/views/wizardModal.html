@@ -348,39 +348,16 @@ star wars,1921,3, Star Wars: Return of the Jedi
               </p>
             </div>
 
-            <!-- Query Pattern for Search API endpoints -->
+            <!-- Test Query for Search API endpoints -->
             <div ng-if="pendingWizardSettings.searchEndpointId != null && pendingWizardSettings.searchEngine === 'searchapi'" class="well well-sm" style="margin-top: 15px;">
-              <label class="control-label">Query Pattern</label>
               <p class="help-block">
                 <strong>Endpoint:</strong> <code>{{ pendingWizardSettings.searchUrl }}</code>
                 <span class="label label-default">{{ pendingWizardSettings.apiMethod }}</span>
               </p>
-              <p class="help-block">
-                Modify your query structure to include <code>#$query##</code> where the search text should be substituted.
-                Quepid will replace <code>#$query##</code> with each query you add.
-              </p>
-              <!-- Simple text input for GET requests -->
-              <input ng-if="pendingWizardSettings.apiMethod === 'GET'"
-                type="text"
-                class="form-control"
-                ng-model="pendingWizardSettings.queryParams"
-                placeholder="q=#$query##" />
-              <!-- JSON textarea for POST requests -->
-              <textarea ng-if="pendingWizardSettings.apiMethod !== 'GET'"
-                class="form-control"
-                rows="3"
-                ng-model="pendingWizardSettings.queryParams"
-                placeholder='{ "query": "#$query##" }'></textarea>
-              <p ng-if="!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0" class="text-danger" style="margin-top: 5px;">
-                Query pattern is required.
-              </p>
-              <p ng-if="pendingWizardSettings.queryParams && pendingWizardSettings.queryParams.trim().length > 0 && pendingWizardSettings.queryParams.indexOf('#$query##') === -1" class="text-warning" style="margin-top: 5px;">
-                Your query pattern should include <code>#$query##</code> so Quepid can substitute the search text.
-              </p>
 
-              <label class="control-label" style="margin-top: 10px;">Test Query</label>
+              <label class="control-label">Test Query</label>
               <p class="help-block">
-                Enter a test query to validate the endpoint. This will replace <code>#$query##</code> when pinging.
+                Enter a test query to validate the endpoint works. You'll configure the query pattern in a later step.
               </p>
               <input
                 type="text"
@@ -402,7 +379,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             <div class="row" style="margin-top: 50px;">
 
               <div class="pull-right">
-                <button class="btn btn-primary pull-right continue" ng-show="!showTLSChangeWarning" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0 || !pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))">Continue</button>
+                <button class="btn btn-primary pull-right continue" ng-show="!showTLSChangeWarning" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))">Continue</button>
 
                 <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
                   <span ng-hide="validating">Skip Validation</span>
