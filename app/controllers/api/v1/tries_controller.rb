@@ -2,7 +2,6 @@
 
 module Api
   module V1
-    # rubocop:disable Metrics/ClassLength
     # @tags cases > tries
 
     class TriesController < Api::ApiController
@@ -164,6 +163,5 @@ module Api
         )
       end
     end
-    # rubocop:enable Metrics/ClassLength
   end
 end

@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ClassLength
 class BooksController < ApplicationController
   include Pagy::Method
   include BooksHelper
@@ -420,5 +419,3 @@ class BooksController < ApplicationController
     params_to_use.except(:link_the_case, :origin_case_id)
   end
 end
-
-# rubocop:enable Metrics/ClassLength

@@ -2,7 +2,6 @@
 
 require 'progress_indicator'
 
-# rubocop:disable Metrics/ClassLength
 class RatingsImporter
   include ProgressIndicator
 
@@ -199,4 +198,3 @@ class RatingsImporter
   end
   # rubocop:enable Metrics/MethodLength
 end
-# rubocop:enable Metrics/ClassLength

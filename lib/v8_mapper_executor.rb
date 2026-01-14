@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ClassLength
 class V8MapperExecutor
   class MapperError < StandardError; end
 
@@ -158,4 +157,3 @@ class V8MapperExecutor
     })
   end
 end
-# rubocop:enable Metrics/ClassLength
