@@ -33,6 +33,13 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     }
     assert_response :success
   end
+  
+  test 'should be able to handle a get with a ?q= and no value' do
+    get proxy_fetch_url params: {
+      url: 'http://solr.quepidapp.com:8983/solr/statedecoded/select?q=', fl: 'id,text', rows: 10, start: 0
+    }
+    assert_response :success
+  end  
 
   test 'should be able to handle a get with a ? character in the query' do
     get proxy_fetch_url params: {
