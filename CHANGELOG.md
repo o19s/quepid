@@ -1,5 +1,28 @@
 # Changelog
 
+## 8.5.0 -- 2026-01-14
+
+Changes are coming fast and furious!
+
+## 🔧 HTTP Request Infrastructure Overhaul
+We've completely refactored how Quepid handles external HTTP requests by introducing a shiny new `HttpClientService` that consolidates all the scattered HTTP logic that was previously duplicated across `ProxyController`, `DownloadPage`, and `MapperWizardService`. This isn't just about cleaning up code (though we love that!) - it brings some sweet new capabilities too. The Mapper Wizard now supports custom headers and basic authentication credentials, making it much more flexible when fetching search results from different endpoints. Plus, we've made the proxy controller smarter about preserving content types for HTML responses.
+
+## 📝 Judgment Explanations
+Judges can now add explanations to their individual judgments! This is a simple but powerful addition that lets evaluators provide context about why they rated a particular result the way they did. This is useful for training your LLM as a Judge.
+
+## 🔄 Case Evaluation API Integration  
+We've modernized how case evaluations are triggered by now supporting an case evaluation in response to an API call. This triggers a background job that executes all queries in the case against the search endpoint, collects the results, and calculates scores.
+
+## 🎯 Smarter Rating Calculations
+The way Quepid averages multiple judgments into final ratings got a major upgrade! We've implemented David Fisher's optimistic/pessimistic logic (you can read all about it in the [official docs](https://quepid-docs.dev.o19s.com/2/quepid/63/how-judgements-are-averaged-into-a-rating-in-a-case)). The system now handles edge cases better, especially when you have just one or two judges rating the same result. No more weird averaging artifacts!
+
+## 📚 Customizable Judgement Guidelines for a Book
+Books now support custom judgement guidelines! While we have always had a generic set of guidelines to help a judge in rating, many teams want to provide their own specific flavour.  The guidelines are written in markdown formatting too, so you can make them as detailed and pretty as you want.
+
+## 🔍 Custom Search API Row Limits
+Updated how Custom Search API work to ensure that row limits properly apply to custom search APIs. This was a behind-the-scenes fix to make sure that when you set limits on how many results to display, those limits are actually respected by the search backend.  No more 40 results when you say you want 10.
+
+
 ## 8.4.0 -- 2026-01-07
 
 Two big things! And three nice things! 
