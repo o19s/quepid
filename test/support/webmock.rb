@@ -326,6 +326,20 @@ module ActiveSupport
       stub_request(:post, 'https://api.openai.com/v1/chat/completions')
         .with(headers: { 'Authorization' => 'Bearer OPENAI_429_ERROR' })
         .to_return(status: 429, body: 'Too Many Requests')
+
+      # Add stubs for URLs with double slash (when base URL has trailing slash)
+      stub_request(:post, 'https://api.openai.com//v1/chat/completions')
+        .with(headers: { 'Authorization' => 'Bearer api-key' })
+        .to_return(status: 200, body: chat_completion_body, headers: {})
+
+      stub_request(:post, 'https://api.openai.com//v1/chat/completions')
+        .with(headers: { 'Authorization' => 'Bearer 1234asdf5678' })
+        .to_return(status: 200, body: chat_completion_body, headers: {})
+
+      # Add stub for Gemini API URL construction test
+      stub_request(:post, 'https://generativelanguage.googleapis.com/v1beta/openai/v1/chat/completions')
+        .with(headers: { 'Authorization' => 'Bearer api-key' })
+        .to_return(status: 200, body: chat_completion_body, headers: {})
     end
 
     # rubocop:enable Metrics/MethodLength

@@ -20,9 +20,19 @@ window.dispatchEvent(new Event("vega:load"))
 
 import "ahoy"
 
+
 // Import Bootstrap and its dependencies
 import "@popperjs/core"
 import "bootstrap"
+
+// Import and initialize Stimulus
+import { Application } from "@hotwired/stimulus"
+
+const application = Application.start()
+
+// Configure Stimulus development experience
+application.debug = false
+window.Stimulus   = application
 
 // Import the new CodeMirror module
 import { setupGlobalCodeMirror } from "modules/editor"
