@@ -49,6 +49,7 @@ module Quepid
     # == SSL Specific Settings
     # Note, if true then this will allow Quepid to ONLY talk to HTTPS based search engines.
     config.force_ssl = true if 'true' == ENV['FORCE_SSL']
+    config.assume_ssl = true if 'true' == ENV['ASSUME_SSL']
     # rubocop:disable Style/StabbyLambdaParentheses
     # rubocop:disable Layout/SpaceInLambdaLiteral
     # rubocop:disable Layout/HashAlignment
