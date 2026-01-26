@@ -30,9 +30,6 @@
     "POSTMARK_API_TOKEN": {
       "required": true
     },
-    "QUEPID_DOMAIN": {
-      "required": true
-    },
     "RACK_ENV": {
       "required": true
     },
