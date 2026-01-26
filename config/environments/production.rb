@@ -61,7 +61,7 @@ Rails.application.configure do
 
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
-  # config.logger   = ActiveSupport::TaggedLogging.logger($stdout)
+  config.logger   = ActiveSupport::TaggedLogging.logger($stdout)
 
   # Change to "debug" to log everything (including potentially personally-identifiable information!)
   config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info')
@@ -103,10 +103,11 @@ Rails.application.configure do
   # config.action_mailer.default_url_options = { host: ENV.fetch('QUEPID_DOMAIN', nil) }
 
   # QUEPID_DOMAIN is optional - only needed for absolute URLs (emails, API callbacks, etc.)
-  # If not set, Rails uses relative URLs which work fine for normal web usage, though email links still require it.
+  # If not set, Rails uses relative URLs which work fine for normal web usage, though links
+  # embedded in emails sent by Quepid still need this property to work.
   if ENV['QUEPID_DOMAIN'].present?
     # Determine protocol with the following precedence since we are using full urls not relative urls:
-    # 1. QUEPID_PROTOCOL - explicit override (useful for proxies without X-Forwarded-Proto)
+    # 1. QUEPID_PROTOCOL - explicit override (useful for proxies without X-Forwarded-Proto) to set to http
     # 2. Default to 'https' for safety (assume_ssl and FORCE_SSL are handled globally)
     protocol = ENV['QUEPID_PROTOCOL'].presence || 'https'
 
