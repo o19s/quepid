@@ -105,7 +105,7 @@ Rails.application.configure do
   # QUEPID_DOMAIN is optional - only needed for absolute URLs (emails, API callbacks, etc.)
   # If not set, Rails uses relative URLs which work fine for normal web usage, though email links still require it.
   if ENV['QUEPID_DOMAIN'].present?
-    # Determine protocol with the following precedence since we are using full urls not relative:
+    # Determine protocol with the following precedence since we are using full urls not relative urls:
     # 1. QUEPID_PROTOCOL - explicit override (useful for proxies without X-Forwarded-Proto)
     # 2. assume_ssl - for reverse proxies that send X-Forwarded-Proto headers
     # 3. FORCE_SSL - for direct HTTPS deployments
