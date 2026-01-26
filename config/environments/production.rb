@@ -13,9 +13,8 @@ Rails.application.configure do
   # Eager load code on boot for better performance and memory savings (ignored by Rake tasks).
   config.eager_load = true
 
-  # Full error reports are disabled.
-  # Often Quepid production setup is deployed in a customer site as a "dev", and then promoted to "prod"
-  # Let's be able to see error messages.
+  # Full error reports are controlled by a setting and caching is turned on.
+  # Let's be able to see error messages if needed.
   config.consider_all_requests_local = ENV['QUEPID_CONSIDER_ALL_REQUESTS_LOCAL'].present?
 
   config.action_controller.default_protect_from_forgery = false
@@ -62,7 +61,7 @@ Rails.application.configure do
 
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
-  config.logger   = ActiveSupport::TaggedLogging.logger($stdout)
+  #config.logger   = ActiveSupport::TaggedLogging.logger($stdout)
 
   # Change to "debug" to log everything (including potentially personally-identifiable information!)
   config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info')
@@ -106,7 +105,7 @@ Rails.application.configure do
   if ENV['QUEPID_DOMAIN'].present?
     # Set default URL options for all URL helpers
     config.action_controller.default_url_options = { host: ENV['QUEPID_DOMAIN'], protocol: ENV.fetch('QUEPID_PROTOCOL', nil) }
-    config.action_controller.asset_host = ENV['QUEPID_DOMAIN']
+    config.action_controller.asset_host = "#{ENV.fetch('QUEPID_PROTOCOL', nil)}://#{ENV['QUEPID_DOMAIN']}"
     config.action_mailer.asset_host = "#{ENV.fetch('QUEPID_PROTOCOL', nil)}://#{ENV['QUEPID_DOMAIN']}"
 
     config.action_mailer.default_url_options = {
