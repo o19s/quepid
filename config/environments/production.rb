@@ -48,10 +48,10 @@ Rails.application.configure do
   config.action_cable.disable_request_forgery_protection = true
   config.action_cable.allowed_request_origins = '*'
 
-  # needs updates in thurster world
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  # Can be used together with config.force_ssl for Strict-Transport-Security and secure cookies.
-  # config.assume_ssl = false
+  # When true, Rails will generate HTTPS URLs even if the app itself runs on HTTP.
+  # This is useful when deploying behind nginx/Apache that handles SSL termination.
+  config.assume_ssl = 'true' == ENV['ASSUME_SSL']
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # config.force_ssl = false
@@ -102,17 +102,28 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   # config.action_mailer.default_url_options = { host: ENV.fetch('QUEPID_DOMAIN', nil) }
 
+  # QUEPID_DOMAIN is optional - only needed for absolute URLs (emails, API callbacks, etc.)
+  # If not set, Rails uses relative URLs which work fine for normal web usage, though email links still require it.
   if ENV['QUEPID_DOMAIN'].present?
-    # Set default URL options for all URL helpers
-    config.action_controller.default_url_options = { host: ENV['QUEPID_DOMAIN'], protocol: ENV.fetch('QUEPID_PROTOCOL', nil) }
-    config.action_controller.asset_host = "#{ENV.fetch('QUEPID_PROTOCOL', nil)}://#{ENV['QUEPID_DOMAIN']}"
-    config.action_mailer.asset_host = "#{ENV.fetch('QUEPID_PROTOCOL', nil)}://#{ENV['QUEPID_DOMAIN']}"
+    # Determine protocol with the following precedence since we are using full urls not relative:
+    # 1. QUEPID_PROTOCOL - explicit override (useful for proxies without X-Forwarded-Proto)
+    # 2. assume_ssl - for reverse proxies that send X-Forwarded-Proto headers
+    # 3. FORCE_SSL - for direct HTTPS deployments
+    # 4. Default to 'https' for safety
+    protocol = if ENV['QUEPID_PROTOCOL'].present?
+                 ENV['QUEPID_PROTOCOL']
+               elsif config.assume_ssl || 'true' == ENV['FORCE_SSL']
+                 'https'
+               else
+                 'https'
+               end
 
+    # Set default URL options for emails and mailer tasks (which need absolute URLs)
+    config.action_controller.asset_host = "#{protocol}://#{ENV['QUEPID_DOMAIN']}"
+    config.action_mailer.asset_host = "#{protocol}://#{ENV['QUEPID_DOMAIN']}"
     config.action_mailer.default_url_options = {
-      host: ENV['QUEPID_DOMAIN'], protocol: ENV.fetch('QUEPID_PROTOCOL', nil)
+      host: ENV['QUEPID_DOMAIN'], protocol: protocol
     }
-
-    Rails.application.routes.default_url_options = { host: ENV['QUEPID_DOMAIN'], protocol: ENV.fetch('QUEPID_PROTOCOL', nil) }
   end
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
