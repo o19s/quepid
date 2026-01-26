@@ -107,16 +107,8 @@ Rails.application.configure do
   if ENV['QUEPID_DOMAIN'].present?
     # Determine protocol with the following precedence since we are using full urls not relative urls:
     # 1. QUEPID_PROTOCOL - explicit override (useful for proxies without X-Forwarded-Proto)
-    # 2. assume_ssl - for reverse proxies that send X-Forwarded-Proto headers
-    # 3. FORCE_SSL - for direct HTTPS deployments
-    # 4. Default to 'https' for safety
-    protocol = if ENV['QUEPID_PROTOCOL'].present?
-                 ENV['QUEPID_PROTOCOL']
-               elsif config.assume_ssl || 'true' == ENV['FORCE_SSL']
-                 'https'
-               else
-                 'https'
-               end
+    # 2. Default to 'https' for safety (assume_ssl and FORCE_SSL are handled globally)
+    protocol = ENV['QUEPID_PROTOCOL'].presence || 'https'
 
     # Set default URL options for emails and mailer tasks (which need absolute URLs)
     config.action_controller.asset_host = "#{protocol}://#{ENV['QUEPID_DOMAIN']}"
