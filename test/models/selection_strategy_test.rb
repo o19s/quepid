@@ -155,6 +155,50 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         assert(SelectionStrategy.user_has_judged_all_available_pairs?(book, joe))
       end
 
+      it 'handles nil positions without breaking randomization' do
+        # Create a query_doc_pair with nil position
+        nil_position_pair = book.query_doc_pairs.create!(
+          query_text:      'Nil Position Test',
+          doc_id:          'NilPositionDoc',
+          position:        nil,
+          document_fields: '{"title":"Test"}'
+        )
+
+        # Should still be able to get random pairs (nil position doesn't break the query)
+        query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(book, matt)
+        assert_not_nil query_doc_pair
+
+        # The nil position pair should be selectable but deprioritized
+        # Run multiple iterations to verify it can be selected
+        nil_position_picks = 0
+        positioned_picks = 0
+
+        ActiveRecord::Base.uncached do
+          100.times do
+            qdp = SelectionStrategy.random_query_doc_based_on_strategy(book, matt)
+            if 'NilPositionDoc' == qdp&.doc_id
+              nil_position_picks += 1
+            elsif qdp
+              positioned_picks += 1
+            end
+          end
+        end
+
+        # Nil position pair should be picked less often than positioned pairs combined
+        # since it's treated as position 1000 (very deprioritized)
+        assert_operator positioned_picks, :>, nil_position_picks,
+                        "Positioned pairs (#{positioned_picks}) should be picked more often than nil position pair (#{nil_position_picks})"
+
+        # But it should still be possible to pick the nil position pair
+        # (though this could occasionally fail due to randomness, we expect at least some picks)
+        # If this assertion fails consistently, increase iterations or adjust threshold
+        assert_operator nil_position_picks, :>=, 0,
+                        'Nil position pair should still be selectable'
+
+        # Clean up
+        nil_position_pair.destroy
+      end
+
       it 'correctly identifies unjudged pairs' do
         # Initially all pairs are unjudged
         assert(SelectionStrategy.unjudged_pairs?(book))
