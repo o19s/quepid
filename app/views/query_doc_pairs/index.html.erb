@@ -10,7 +10,7 @@
 
 <%= render 'books/tabs', book: @book %>
 
-<div class="card h-100">
+<div class="card h-100" data-controller="document-fields-modal">
   <div class="card-header">   
     <%= form_tag(book_query_doc_pairs_path(@book), { method: :get }) do %> 
       <div class="mb-0 d-flex fs-6 justify-content-center">
@@ -53,7 +53,20 @@
             <td><%= query_doc_pair.query_text %></td>
             <td><%= query_doc_pair.position %></td>
             <td><%= query_doc_pair.doc_id %></td>
-            <td><%= truncate(query_doc_pair.document_fields, length:100) %></td>
+            <td>
+              <% if query_doc_pair.document_fields.present? %>
+                <%= truncate(query_doc_pair.document_fields, length: 90) %>
+                <a href="#" 
+                   class="ms-1" 
+                   data-action="click->document-fields-modal#show"
+                   data-document-fields="<%= query_doc_pair.document_fields %>"
+                   data-query-text="<%= query_doc_pair.query_text %>"
+                   data-doc-id="<%= query_doc_pair.doc_id %>"
+                   title="View full document fields">
+                  <i class="bi bi-info-circle-fill text-dark"></i>
+                </a>
+              <% end %>
+            </td>
           </tr>
         <% end %>
       </tbody>
@@ -61,5 +74,27 @@
   </div>
   <div class="card-footer d-flex justify-content-center">
     <%== @pagy.series_nav(:bootstrap) %> 
+  </div>
+
+  <!-- Document Fields Modal -->
+  <div class="modal fade" id="documentFieldsModal" tabindex="-1" aria-labelledby="documentFieldsModalLabel" aria-hidden="true" data-document-fields-modal-target="modal">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="documentFieldsModalLabel">Document Fields</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted mb-2">
+            <strong>Query:</strong> <span data-document-fields-modal-target="queryText"></span><br>
+            <strong>Doc ID:</strong> <span data-document-fields-modal-target="docId"></span>
+          </p>
+          <pre data-document-fields-modal-target="content" class="bg-light p-3 rounded" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
