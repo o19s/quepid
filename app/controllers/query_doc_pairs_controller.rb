@@ -7,12 +7,17 @@ class QueryDocPairsController < ApplicationController
   before_action :set_book
 
   def index
+    @include_judgement_count = deserialize_bool_param(params[:include_judgement_count])
+
     query = @book.query_doc_pairs
 
     if params[:q].present?
       query = query.where('query_text LIKE ? OR doc_id LIKE ? OR document_fields LIKE ?',
                           "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
     end
+
+    # Eager load judgements count to avoid N+1 queries when showing the count
+    query = query.left_joins(:judgements).select('query_doc_pairs.*, COUNT(judgements.id) AS judgements_count').group('query_doc_pairs.id') if @include_judgement_count
 
     @pagy, @query_doc_pairs = pagy(query.order(:query_text))
   end

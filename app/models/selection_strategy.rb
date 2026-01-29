@@ -66,13 +66,14 @@ module SelectionStrategy
   # - Ensures the current user hasn't judged this pair yet
   # - Ensures the pair has fewer than 3 total judgements
   # - Uses position-weighted randomization (higher positions are more likely to be selected)
+  # - missing position value query doc pairs are pushed down and less likely to be selected
   def self.random_query_doc_pair_for_multiple_judges book, user
     book.query_doc_pairs
       .left_joins(:judgements)
       .group('query_doc_pairs.id')
       .having('COUNT(CASE WHEN judgements.user_id = ? THEN 1 END) = 0', user.id)
       .having('COUNT(judgements.id) < 3')
-      .order(Arel.sql('-LOG(1.0 - RAND()) * (position + 1)'))
+      .order(Arel.sql('-LOG(1.0 - RAND()) * (COALESCE(position, 1000) + 1)'))
       .first
   end
 end

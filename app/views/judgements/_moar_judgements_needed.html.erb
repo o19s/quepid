@@ -44,7 +44,7 @@
 <% elsif @moar_judgements_needed %>
   <!-- More judgements are needed and user can contribute -->
   <% if unjudged_pairs %>
-    <div class="alert alert-danger" role="alert">
+    <div class="alert alert-warning" role="alert">
       <h5><i class="bi bi-exclamation-circle"></i> Critical: Unjudged Pairs Need Attention</h5>
       <% if user_has_judged_some %>
           <p class="mb-2">You have judged <%= user_judgement_count %> out of <%= pluralize(total_pairs, 'query/doc pair') %>.</p>
@@ -58,10 +58,10 @@
       </p>
       
       <div class="d-grid gap-2 d-md-flex">
-        <%= link_to book_judge_path(book), class: 'btn btn-danger', role: 'button' do %>
+        <%= link_to book_judge_path(book), class: 'btn btn-primary', role: 'button' do %>
           <i class="bi bi-lightning-fill"></i> Start with Unjudged Pairs
         <% end %>
-        <%= link_to book_judge_bulk_path(book), class: 'btn btn-warning', role: 'button' do %>
+        <%= link_to book_judge_bulk_path(book), class: 'btn btn-outline-primary', role: 'button' do %>
           <i class="bi bi-lightning"></i> Judge in Bulk
         <% end %>
       </div>
