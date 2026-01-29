@@ -33,6 +33,14 @@ class HomeController < ApplicationController
 
     @most_recent_books = @most_recent_books.sort_by { |b| b.name.downcase }
 
+    # We should make this a one time function and assert the snapshots exists.
+    @haystack_case = Case.find_by(id: FetchService::HAYSTACK_PUBLIC_CASE)
+    if @haystack_case && !FetchService::SPECIAL_SNAPSHOTS_TO_PRESERVE.all? { |element| @haystack_case.snapshot_ids.include?(element) }
+      # ensure that all the special snapshots to preserve also exist.  This heuristic is how we detect we are in the hosted
+      # Quepid env.
+      @haystack_case = nil
+    end
+
     # Homepage is too slow so we have to cut some stuff out ;-(
     # candidate_cases = @cases.select { |kase| kase.scores.scored.count.positive? }
     # @grouped_cases = candidate_cases.group_by { |kase| kase.case_name.split(':').first }
