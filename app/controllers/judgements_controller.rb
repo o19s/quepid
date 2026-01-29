@@ -18,10 +18,7 @@ class JudgementsController < ApplicationController
     query = query.where(unrateable: true) if params[:unrateable].present?
     query = query.where(judge_later: true) if params[:judge_later].present?
 
-    if params[:q].present?
-      query = query.where('query_doc_pair_id LIKE ? OR doc_id LIKE ? OR query_text LIKE ? OR information_need LIKE ? OR judgements.explanation LIKE ?',
-                          "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
-    end
+    query = apply_search_filter(query, params[:q]) if params[:q].present?
 
     @pagy, @judgements = pagy(query.order(:query_doc_pair_id))
   end
@@ -150,4 +147,43 @@ class JudgementsController < ApplicationController
   def judgement_params
     params.expect(judgement: [ :user_id, :rating, :query_doc_pair_id, :unrateable, :explanation ])
   end
+
+  # rubocop:disable Metrics/MethodLength
+  # Parses search query for field-specific filters (e.g., "query_doc_pair_id:123 doc_id:abc")
+  # Supported fields: query_doc_pair_id, doc_id, query_text
+  # Any text not matching a field filter is used for generic LIKE search
+  def apply_search_filter query, search_term
+    field_filters = {
+      'query_doc_pair_id' => nil,
+      'doc_id'            => nil,
+      'query_text'        => nil,
+    }
+
+    remaining_text = search_term.dup
+
+    # Extract field:value patterns
+    field_filters.each_key do |field|
+      pattern = /#{field}:(\S+)/i
+      if remaining_text =~ pattern
+        field_filters[field] = ::Regexp.last_match(1)
+        remaining_text = remaining_text.gsub(pattern, '').strip
+      end
+    end
+
+    # Apply exact field filters
+    query = query.where(query_doc_pair_id: field_filters['query_doc_pair_id']) if field_filters['query_doc_pair_id']
+    query = query.where(query_doc_pairs: { doc_id: field_filters['doc_id'] }) if field_filters['doc_id']
+    query = query.where(query_doc_pairs: { query_text: field_filters['query_text'] }) if field_filters['query_text']
+
+    # Apply generic LIKE search for remaining text
+    if remaining_text.present?
+      query = query.where(
+        'query_doc_pair_id LIKE ? OR doc_id LIKE ? OR query_text LIKE ? OR information_need LIKE ? OR judgements.explanation LIKE ?',
+        "%#{remaining_text}%", "%#{remaining_text}%", "%#{remaining_text}%", "%#{remaining_text}%", "%#{remaining_text}%"
+      )
+    end
+
+    query
+  end
+  # rubocop:enable Metrics/MethodLength
 end

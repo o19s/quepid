@@ -11,22 +11,32 @@
 <%= render 'books/tabs', book: @book %>
 
 <div class="card h-100" data-controller="document-fields-modal">
-  <div class="card-header">   
-    <%= form_tag(book_query_doc_pairs_path(@book), { method: :get }) do %> 
-      <div class="mb-0 d-flex fs-6 justify-content-center">
-          
-        <div class="input-group">
-          <%= text_field_tag :q, params[:q], 
-              class: 'form-control form-control-sm', 
+  <div class="card-header">
+    <%= form_tag(book_query_doc_pairs_path(@book), { method: :get }) do %>
+      <div class="mb-0 d-flex flex-wrap align-items-center gap-3 fs-6">
+
+        <div class="input-group" style="max-width: 400px;">
+          <%= text_field_tag :q, params[:q],
+              class: 'form-control form-control-sm',
               placeholder: 'Filter by query, doc id, or document field contents',
-              id: 'q' 
+              id: 'q'
           %>
           <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
             <i class="bi bi-search-heart"></i>
           <% end %>
         </div>
-        
-                
+
+        <div class="form-check form-check-inline mb-0">
+          <%= check_box_tag :include_judgement_count,
+              true,
+              @include_judgement_count,
+              class: 'form-check-input',
+              id: 'include_judgement_count',
+              onchange: 'this.form.submit()'
+          %>
+          <label class="form-check-label" for="include_judgement_count">Include Judgement Count</label>
+        </div>
+
       </div>
     <% end %>
   </div>
@@ -39,7 +49,10 @@
           <th>Query text</th>
           <th>Position</th>
           <th>Doc ID</th>
-          <th>Document fields</th>          
+          <% if @include_judgement_count %>
+            <th>Judgements</th>
+          <% end %>
+          <th>Document fields</th>
         </tr>
       </thead>
   
@@ -53,11 +66,16 @@
             <td><%= query_doc_pair.query_text %></td>
             <td><%= query_doc_pair.position %></td>
             <td><%= query_doc_pair.doc_id %></td>
+            <% if @include_judgement_count %>
+              <td>
+                <%= link_to_if query_doc_pair.judgements_count>0, query_doc_pair.judgements_count, book_judgements_path(@book, q: "query_doc_pair_id:#{query_doc_pair.id}") %>
+              </td>
+            <% end %>            
             <td>
               <% if query_doc_pair.document_fields.present? %>
                 <%= truncate(query_doc_pair.document_fields, length: 90) %>
-                <a href="#" 
-                   class="ms-1" 
+                <a href="#"
+                   class="ms-1"
                    data-action="click->document-fields-modal#show"
                    data-document-fields="<%= query_doc_pair.document_fields %>"
                    data-query-text="<%= query_doc_pair.query_text %>"
