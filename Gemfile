@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.4.8'
+ruby '4.0.1'
 
 gem 'active_storage_db'
 gem 'acts_as_list'
@@ -34,7 +34,7 @@ gem 'pagy'
 gem 'postmark-rails'
 gem 'prophet-rb'
 gem 'puma'
-gem 'rails', '8.1.1'
+gem 'rails'
 gem 'rails-html-sanitizer'
 gem 'rack-cors'
 gem 'redcarpet'
@@ -58,7 +58,7 @@ group :development, :test do
   gem 'bullet'
   gem 'memory_profiler'
   gem 'dotenv' # Enable .env file outside of Docker based environment
-  gem 'minitest', '~> 5.25' # Rails 8.1.1 compatibility, remove with Rails 8.1.2
+  gem 'minitest'
 end
 
 group :development do
