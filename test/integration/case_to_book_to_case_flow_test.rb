@@ -63,7 +63,7 @@ class CaseToBookToCaseFlowTest < ActionDispatch::IntegrationTest
     assert_not_equal old_query.arranged_next, new_query.arranged_next
 
     assert_equal old_query.information_need, new_query.information_need
-    assert_equal old_query.notes, new_query.notes
+    assert_nil new_query.notes
     assert_equal old_query.options, new_query.options
   end
 

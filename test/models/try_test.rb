@@ -150,9 +150,7 @@ class TryTest < ActiveSupport::TestCase
 
         args = try.args
 
-        expected_vars = nil
-
-        assert_equal args, expected_vars
+        assert_nil args
       end
 
       test 'handles unknown search_engine' do
@@ -161,9 +159,7 @@ class TryTest < ActiveSupport::TestCase
 
         args = try.args
 
-        expected_vars = nil
-
-        assert_equal args, expected_vars
+        assert_nil args
       end
     end
   end
