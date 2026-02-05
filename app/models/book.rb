@@ -107,6 +107,13 @@ class Book < ApplicationRecord
   has_one_attached :import_file
   has_one_attached :export_file
 
+  # Virtual attribute for form display - allows selecting a scorer to copy scale from
+  attr_accessor :scorer_id
+
+  # Transform scale from array to a string
+  serialize :scale, coder: ScaleSerializer
+  serialize :scale_with_labels, coder: JSON
+
   after_destroy :delete_attachments
 
   # Scopes
@@ -122,13 +129,6 @@ class Book < ApplicationRecord
   def unarchive!
     update(archived: false)
   end
-
-  # Virtual attribute for form display - allows selecting a scorer to copy scale from
-  attr_accessor :scorer_id
-
-  # Transform scale from array to a string
-  serialize :scale, coder: ScaleSerializer
-  serialize :scale_with_labels, coder: JSON
 
   # Custom validation to prevent scale changes but allow label changes
   validate :scale_cannot_be_changed_if_judgements_exist

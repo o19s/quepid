@@ -2,6 +2,7 @@
 
 require 'faraday'
 require 'faraday/follow_redirects'
+require 'addressable/uri'
 
 class FetchService
   # include ProgressIndicator
@@ -331,30 +332,17 @@ class FetchService
     end
   end
 
-  # rubocop:disable Metrics/MethodLength
   def get_connection url, debug_mode, credentials, custom_headers
-    connection = Faraday.new(url: url) do |faraday|
-      # Configure the connection options, such as headers or middleware
-      faraday.response :follow_redirects
-      faraday.response :logger, nil, { headers: debug_mode, bodies: debug_mode, errors: !Rails.env.test? }
-      faraday.ssl.verify = false
+    headers = { 'Content-Type' => 'application/json' }
+    headers.merge!(custom_headers) if custom_headers.present?
 
-      faraday.headers['Content-Type'] = 'application/json'
-      unless credentials.nil?
-        username, password = credentials.split(':')
-        faraday.headers['Authorization'] = "Basic #{Base64.strict_encode64("#{username}:#{password}")}"
-      end
-
-      if custom_headers.present?
-        JSON.parse(custom_headers).to_h.each do |key, value|
-          faraday.headers[key] = value
-        end
-      end
-      faraday.adapter Faraday.default_adapter
-    end
-    connection
+    HttpClientService.new(
+      url,
+      headers:     headers,
+      credentials: credentials,
+      debug:       debug_mode
+    )
   end
-  # rubocop:enable Metrics/MethodLength
 
   def make_request atry, query
     return mock_response if @options[:fake_mode]
@@ -472,9 +460,10 @@ class FetchService
   end
 
   def setup_connection search_endpoint
-    return if @connection
+    return if @search_endpoint == search_endpoint
 
-    @connection = get_connection(
+    @search_endpoint = search_endpoint
+    @http_client = get_connection(
       search_endpoint.endpoint_url,
       @options[:debug_mode],
       search_endpoint.basic_auth_credential,
@@ -505,44 +494,70 @@ class FetchService
   end
 
   def execute_get_request endpoint, atry, query
-    @connection.get do |req|
-      req.url create_url endpoint, atry
-      process_get_params(req, atry.args, query)
+    params = build_get_params(atry.args, query)
+    params = add_engine_specific_params(endpoint, atry, params)
+    @http_client.get(params: params)
+  end
+
+  def add_engine_specific_params endpoint, atry, params
+    case endpoint.search_engine.to_sym
+    when :solr
+      add_solr_params(atry, params)
+    when :es
+      add_elasticsearch_params(atry, params)
+    when :os
+      add_opensearch_params(atry, params)
+    else
+      # SearchAPI and unknown engines use custom parameters only, no engine-specific additions
+      params
     end
   end
 
-  def create_url endpoint, atry
-    "#{endpoint.endpoint_url}?debug=true&debug.explain.structured=true&wt=json&rows=#{atry.number_of_rows}#{append_fl(atry.field_spec)}"
+  def add_solr_params atry, params
+    params['debug'] = 'true'
+    params['debug.explain.structured'] = 'true'
+    params['wt'] = 'json'
+    params['rows'] = atry.number_of_rows.to_s
+
+    # Add field list if specified
+    if atry.field_spec.present?
+      fields = atry.field_spec.split(/[\s,]+/)
+        .map { |field| field.include?(':') ? field.split(':').second : field }
+        .compact_blank
+        .join(',')
+      params['fl'] = fields if fields.present?
+    end
+
+    params
   end
 
-  # should probably be in its own class
-  def append_fl str
-    return nil if str.blank?
-
-    fields = str.split(/[\s,]+/)
-      .map { |field| field.include?(':') ? field.split(':').second : field }
-      .compact_blank
-      .join(',')
-
-    "&fl=#{fields}"
+  def add_elasticsearch_params atry, params
+    # Elasticsearch GET request parameters (if needed in the future)
+    # For now, Elasticsearch typically uses POST with body, so this may remain minimal
+    params['size'] = atry.number_of_rows.to_s if atry.number_of_rows
+    params
   end
 
-  def process_get_params req, args, query
-    puts args
+  def add_opensearch_params atry, params
+    # OpenSearch uses same parameters as Elasticsearch
+    add_elasticsearch_params(atry, params)
+  end
+
+  def build_get_params args, query
+    params = {}
     args.each do |key, values|
       values.each do |val|
-        val.gsub!('#$query##', query.query_text)
-        req.params[key] = val
+        processed_val = val.gsub('#$query##', query.query_text)
+        params[key] = processed_val
       end
     end
+    params
   end
 
-  def execute_body_request method, endpoint, atry, query
+  def execute_body_request method, _endpoint, atry, query
     # need to deal with number_of_rows here
-    @connection.public_send(method) do |req|
-      req.url endpoint.endpoint_url
-      req.body = prepare_request_body(atry.args, query)
-    end
+    body = prepare_request_body(atry.args, query)
+    @http_client.public_send(method, body: body)
   end
 
   def prepare_request_body args, query

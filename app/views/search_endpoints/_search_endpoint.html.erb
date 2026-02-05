@@ -19,7 +19,7 @@
 
   <p>
     <strong>Custom headers:</strong>
-    <%= search_endpoint.custom_headers %>
+    <%= text_area_tag 'custom_headers', format_custom_headers_for_display(search_endpoint.custom_headers), data: { codemirror_mode: "application/json", codemirror_height: 100, codemirror_width: 500, codemirror_readonly: true } %>
   </p>
 
   <p>
@@ -45,8 +45,8 @@
   
   <p>
     <strong>Options:</strong>
-    <%= text_area_tag 'options', search_endpoint.options, data: { codemirror_mode: "json", codemirror_height: 100,codemirror_width: 500, codemirror_readonly: true } %>
-  </p>  
+    <%= text_area_tag 'options', format_custom_headers_for_display(search_endpoint.options), data: { codemirror_mode: "application/json", codemirror_height: 100, codemirror_width: 500, codemirror_readonly: true } %>
+  </p>
   
   <% if search_endpoint.search_engine == 'searchapi' %>
     <p>

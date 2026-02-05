@@ -39,6 +39,12 @@ class SearchEndpoint < ApplicationRecord
 
   has_many   :tries, dependent: :nullify, inverse_of: :search_endpoint
 
+  # Serialization
+  serialize :custom_headers, coder: JSON
+
+  # Concerns
+  include CustomHeadersValidatable
+
   # Scopes
   include ForUserScope
 
