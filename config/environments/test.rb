@@ -76,5 +76,7 @@ Rails.application.configure do
 
   ENV['EMAIL_SENDER'] = 'quepid@o19s.com'
 
+  ENV['SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY'] = 'false'
+
   config.active_storage.variant_processor = :disabled
 end
