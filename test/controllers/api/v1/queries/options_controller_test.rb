@@ -28,14 +28,13 @@ module Api
           end
 
           test "return the query's options" do
-            options = "{ foo: 'bar' }"
+            options = '{ "foo": "bar" }'
             query.options = options
             query.save
 
             get :show, params: { case_id: acase.id, query_id: query.id }
 
             assert_response :ok
-
             data = response.parsed_body
 
             assert_equal data['options'], options

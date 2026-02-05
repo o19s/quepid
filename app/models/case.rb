@@ -83,6 +83,9 @@ class Case < ApplicationRecord
     c.archived = false if c.archived.nil?
   end
 
+  # Concerns
+  include JsonOptionsValidatable
+
   # Scopes
   include ForUserScope
 

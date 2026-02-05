@@ -44,6 +44,7 @@ class SearchEndpoint < ApplicationRecord
 
   # Concerns
   include CustomHeadersValidatable
+  include JsonOptionsValidatable
 
   # Scopes
   include ForUserScope
