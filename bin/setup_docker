@@ -30,7 +30,7 @@ if [ $# -gt 0 ] && [ "$1" = "nobuild" ]; then
 fi
 
 echo -e "\n== Building Docker container =="
-docker compose up ${build_arg} --no-start
+docker compose up ${build_arg} --no-start --remove-orphans
 
 bin/docker r bundle config set --local no-document true
 
