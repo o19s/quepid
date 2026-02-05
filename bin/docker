@@ -27,7 +27,7 @@ case "$1" in
     ;;
   run|r)
     shift
-    docker compose --progress=quiet run --rm app $@
+    docker compose --progress=quiet run --remove-orphans --rm app $@
     ;;
   daemon|q)
     #docker compose up -d
