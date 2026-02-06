@@ -31,8 +31,8 @@ class QueryDocPair < ApplicationRecord
   validates :query_text, presence: true, length: { maximum: 2048 }
   validates :doc_id, presence: true
   validates :position, numericality: { only_integer: true }, allow_nil: true
-  validates :document_fields, presence: true, json: true, allow_nil: true
-  validates :options, json: true
+  validates :document_fields, presence: true, json_format: true, allow_nil: true
+  validates :options, json_format: true, allow_blank: true
 
   scope :has_judgements, -> { joins(:judgements) }
 end
