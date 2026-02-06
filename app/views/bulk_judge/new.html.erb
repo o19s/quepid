@@ -131,16 +131,14 @@
                   <% doc_counter += 1 %>
                   <%
                   judgement = @judgements[query_doc_pair.id]
-                  document_fields_as_json = document_fields_parses_as_json(query_doc_pair.document_fields)
+                  
 
               image_url = nil
-              if !document_fields_as_json.nil?
-                if document_fields_as_json.has_key?('thumb')
-                  image_url = document_fields_as_json['thumb']
-                elsif document_fields_as_json.has_key?('image')
-                  image_url = document_fields_as_json['image']
-                end
-                  end
+              if query_doc_pair.document_fields.has_key?('thumb')
+                image_url = query_doc_pair.document_fields['thumb']
+              elsif query_doc_pair.document_fields.has_key?('image')
+                image_url = query_doc_pair.document_fields['image']
+              end
                   %>
 
                   <div class="document-card mb-3 p-3 border-bottom" id="qdp_<%= query_doc_pair.id %>">
@@ -171,15 +169,15 @@
 
                   <!-- Document fields display -->
                   <div class="document-content mb-3">
-                    <% if document_fields_as_json.nil? %>
-                      <%= sanitize query_doc_pair.document_fields %>
+                    <% if query_doc_pair.document_fields.empty? %>
+                      <%= sanitize query_doc_pair.document_fields.to_json %>
                     <% else %>
-                      <% title_value = document_fields_as_json['title'] %>
+                      <% title_value = query_doc_pair.document_fields['title'] %>
                       <% if title_value.present? %>
                         <h5><%= sanitize title_value %></h5>
                       <% end %>
 
-                      <% document_fields_as_json.except('title', 'thumb', 'image').each do |field, value| %>
+                      <% query_doc_pair.document_fields.except('title', 'thumb', 'image').each do |field, value| %>
                         <p>
                           <span class="fw-bold"><%= field.humanize.titleize %>:</span>
                           <% if value.is_a? String %>

@@ -73,11 +73,12 @@
             <% end %>            
             <td>
               <% if query_doc_pair.document_fields.present? %>
-                <%= truncate(query_doc_pair.document_fields, length: 90) %>
+                <% document_fields_json = query_doc_pair.document_fields.to_json %>
+                <%= truncate(document_fields_json, length: 90) %>
                 <a href="#"
                    class="ms-1"
                    data-action="click->document-fields-modal#show"
-                   data-document-fields="<%= query_doc_pair.document_fields %>"
+                   data-document-fields="<%= document_fields_json %>"
                    data-query-text="<%= query_doc_pair.query_text %>"
                    data-doc-id="<%= query_doc_pair.doc_id %>"
                    title="View full document fields">

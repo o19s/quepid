@@ -105,7 +105,11 @@ class HttpClientService
 
   def apply_headers faraday
     @headers.each do |name, value|
-      header_value = value.is_a?(Array) ? value.join(', ') : value
+      header_value = if value.is_a?(Array)
+                       value.join(', ')
+                     else
+                       value.to_s
+                     end
       faraday.headers[name] = header_value
     end
   end

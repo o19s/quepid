@@ -188,4 +188,28 @@ class HttpClientServiceTest < ActiveSupport::TestCase
     assert_predicate response, :success?
     assert_equal 'homepage', response.body
   end
+
+  test 'converts non-string header values to strings' do
+    # Test that integer, boolean, and other non-string values are converted to strings
+    # This prevents "undefined method 'strip' for Integer" errors
+    stub_request(:get, 'https://example.com/api')
+      .with(headers: {
+        'X-Retry-Count' => '3',
+        'X-Debug'       => 'true',
+        'X-Version'     => '1.5',
+      })
+      .to_return(status: 200, body: 'ok')
+
+    client = HttpClientService.new(
+      'https://example.com/api',
+      headers: {
+        'X-Retry-Count' => 3,
+        'X-Debug'       => true,
+        'X-Version'     => 1.5,
+      }
+    )
+    response = client.get
+
+    assert_predicate response, :success?
+  end
 end

@@ -249,6 +249,20 @@ module ActiveSupport
 
       # Testing out fetch service using
       # search_endpoint   for_case_queries_case
+      # try               for_case_queries_case with custom field_spec
+      stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title,img_500x500,name,brand,product_type&q=First%20Query&rows=10&wt=json')
+        .with(
+          headers: {
+            'Accept'          => '*/*',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'Content-Type'    => 'application/json',
+            'User-Agent'      => /Faraday/,
+          }
+        )
+        .to_return(status: 200, body: mock_statedecoded_body, headers: {})
+
+      # Testing out fetch service using
+      # search_endpoint   for_case_queries_case
       # try               es_try_with_curator_vars
       stub_request(:post, 'http://test.com:9200/tmdb/_search')
         .with(

@@ -43,6 +43,10 @@ class Scorer < ApplicationRecord
   # Validations
   validates_with ScaleValidator
 
+  # Transform scale from array to a string
+  serialize :scale, coder: ScaleSerializer
+  serialize :scale_with_labels, coder: JSON
+
   # Scopes
   scope :for_user, ->(user) do
     base_scope = left_joins(teams: [ :members, :scorers ])
@@ -57,10 +61,6 @@ class Scorer < ApplicationRecord
   def self.system_default_scorer
     find_by(name: Rails.application.config.quepid_default_scorer)
   end
-
-  # Transform scale from array to a string
-  serialize :scale, coder: ScaleSerializer
-  serialize :scale_with_labels, coder: JSON
 
   after_initialize do |scorer|
     scorer.scale      = [] if scorer.scale.blank?

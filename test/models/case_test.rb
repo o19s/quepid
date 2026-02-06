@@ -29,8 +29,11 @@
 #
 
 require 'test_helper'
+require 'support/shared_examples/json_options_validatable_examples'
 
 class CaseTest < ActiveSupport::TestCase
+  include JsonOptionsValidatableExamples
+
   describe 'Creating a case' do
     test 'sets archived flag to false by default' do
       acase = Case.create(case_name: 'test case')
@@ -292,5 +295,13 @@ class CaseTest < ActiveSupport::TestCase
       the_case = Case.with_counts.where(id: case_id).first
       assert_equal 2, the_case.queries_count
     end
+  end
+
+  # Helper method for shared examples
+  def create_record_with_options options
+    Case.new(
+      case_name: 'Test',
+      options:   options
+    )
   end
 end

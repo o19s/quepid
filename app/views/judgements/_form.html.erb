@@ -153,15 +153,13 @@
   # Use enhanced JudgementHelper to generate rating buttons with scorer labels
   @rating_buttons = generate_rating_buttons(@book)
 
-  @document_fields_as_json = document_fields_parses_as_json (query_doc_pair.document_fields)
+  @document_fields = query_doc_pair.document_fields
 
   image_url = nil
-  if !@document_fields_as_json.nil?
-    if @document_fields_as_json.has_key?('thumb')
-      image_url = @document_fields_as_json['thumb']
-    elsif @document_fields_as_json.has_key?('image')
-      image_url = @document_fields_as_json['image']
-    end
+  if @document_fields.has_key?('thumb')
+    image_url = @document_fields['thumb']
+  elsif @document_fields.has_key?('image')
+    image_url = @document_fields['image']
   end
 
 %>
@@ -222,7 +220,7 @@
     </div>
 
     <p class="card-text">
-      <%= render 'query_doc_pairs/document_fields', document_fields_as_json: @document_fields_as_json %>
+      <%= render 'query_doc_pairs/document_fields', document_fields: @document_fields %>
     </p>
     
     <div class="mt-3">

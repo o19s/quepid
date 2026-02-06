@@ -25,8 +25,11 @@
 #
 
 require 'test_helper'
+require 'support/shared_examples/json_options_validatable_examples'
 
 class QueryTest < ActiveSupport::TestCase
+  include JsonOptionsValidatableExamples
+
   describe 'position' do
     let(:queries_case) { cases(:queries_case) }
 
@@ -268,5 +271,15 @@ class QueryTest < ActiveSupport::TestCase
       assert_includes indexed_queries.keys, query1.query_text
       assert_includes indexed_queries.keys, query2.query_text
     end
+  end
+
+  # Helper method for shared examples
+  def create_record_with_options options
+    queries_case = cases(:queries_case)
+    Query.new(
+      query_text: 'Test Query',
+      case:       queries_case,
+      options:    options
+    )
   end
 end

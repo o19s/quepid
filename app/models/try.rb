@@ -81,7 +81,6 @@ class Try < ApplicationRecord
   # with search endpoint options taking precedence
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/PerceivedComplexity
   # rubocop:disable Metrics/CyclomaticComplexity
   def options
     # NOTE: there is weirdness that case options parse as json
@@ -116,7 +115,6 @@ class Try < ApplicationRecord
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Metrics/CyclomaticComplexity
 
   def param

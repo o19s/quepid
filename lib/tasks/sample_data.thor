@@ -42,6 +42,7 @@ class SampleData < Thor
                                                              name: 'Edinburgh University Website',
                                                              endpoint_url: 'https://search.ed.ac.uk', api_method: 'GET',
                                                              proxy_requests: true,
+                                                             test_query: 'q=mental',
                                                              mapper_code: File.read(Rails.root.join('test/fixtures/files/edinburgh_uni_searchapi_mapper_code.js'))
 
     print_step 'End of seeding search endpoints................'
