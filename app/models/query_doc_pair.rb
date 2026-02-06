@@ -32,7 +32,8 @@ class QueryDocPair < ApplicationRecord
   serialize :document_fields, coder: JSON
 
   after_initialize do |query_doc_pair|
-    query_doc_pair.document_fields ||= {}
+    # Only set default if the attribute is loaded (handles partial selects)
+    query_doc_pair.document_fields ||= {} if query_doc_pair.has_attribute?(:document_fields)
   end
 
   validates :query_text, presence: true, length: { maximum: 2048 }
