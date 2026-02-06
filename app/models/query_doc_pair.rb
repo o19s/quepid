@@ -28,10 +28,17 @@ class QueryDocPair < ApplicationRecord
   belongs_to :book
   has_many :judgements, dependent: :destroy, autosave: true
 
+  # Serialization
+  serialize :document_fields, coder: JSON
+
+  after_initialize do |query_doc_pair|
+    query_doc_pair.document_fields ||= {}
+  end
+
   validates :query_text, presence: true, length: { maximum: 2048 }
   validates :doc_id, presence: true
   validates :position, numericality: { only_integer: true }, allow_nil: true
-  validates :document_fields, presence: true, json_format: true, allow_nil: true
+  validates :document_fields, json_format: true
   validates :options, json_format: true, allow_blank: true
 
   scope :has_judgements, -> { joins(:judgements) }

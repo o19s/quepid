@@ -72,7 +72,7 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
 
     # make sure we did create a query_doc_pair and a judgmenet.
     query_doc_pair = book.query_doc_pairs.find_by(query_text: query.query_text, doc_id: rating.doc_id)
-    assert_nil query_doc_pair.document_fields
+    assert_equal({}, query_doc_pair.document_fields)
     assert_nil query_doc_pair.position
     assert_equal 1, query_doc_pair.judgements.count
     assert_equal query_doc_pair.judgements.first.rating, rating.rating

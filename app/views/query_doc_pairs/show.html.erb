@@ -32,11 +32,6 @@
       </p>
 
       <p>
-        <strong>Options:</strong>
-        <%= text_area_tag 'options', format_json(@query_doc_pair.options), data: { codemirror_mode: "application/json", codemirror_height: 100, codemirror_width: 500, codemirror_readonly: true } %>
-      </p>
-
-      <p>
         <strong>Position:</strong>
         <%= @query_doc_pair.position %>
       </p>
@@ -46,13 +41,17 @@
         <%= @query_doc_pair.doc_id %>
       </p>
 
+      <%= render 'query_doc_pairs/document_fields', document_fields: @query_doc_pair.document_fields %>
+      
       <p>
         <strong>Document Fields:</strong>
-        <%= text_area_tag 'document_fields', @query_doc_pair.document_fields, data: { codemirror_mode: "application/json", codemirror_height: 200, codemirror_width: 500, codemirror_readonly: true } %>
+        <%= text_area_tag 'document_fields', format_json(@query_doc_pair.document_fields), data: { codemirror_mode: "application/json", codemirror_height: 200, codemirror_width: 500, codemirror_readonly: true } %>
       </p>
-
-      <% @document_fields_as_json = document_fields_parses_as_json(@query_doc_pair.document_fields) %>
-      <%= render 'query_doc_pairs/document_fields', document_fields_as_json: @document_fields_as_json %>
+      
+      <p>
+        <strong>Options:</strong>
+        <%= text_area_tag 'options', format_json(@query_doc_pair.options), data: { codemirror_mode: "application/json", codemirror_height: 100, codemirror_width: 500, codemirror_readonly: true } %>
+      </p>
     </div>
   </div>
 </div>
