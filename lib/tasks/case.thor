@@ -8,7 +8,6 @@ class Case < Thor
   # rubocop:disable Style/VariableInterpolation
   # rubocop:disable Style/GlobalVars
   # rubocop:disable Metrics/ParameterLists
-  # rubocop:disable Metrics/AbcSize
   desc 'create NAME SEARCH_ENGINE ENDPOINT_URL API_METHOD FIELD_SPEC QUERY_PARAMS SCORER_NAME OWNER_EMAIL',
        'creates a new case'
   long_desc <<-LONGDESC
@@ -121,9 +120,6 @@ class Case < Thor
   # rubocop:enable Style/VariableInterpolation
   # rubocop:enable Style/GlobalVars
   # rubocop:enable Metrics/ParameterLists
-  # rubocop:enable Metrics/AbcSize
-
-  # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/BlockLength
   desc 'load_the_haystack_rating_snapshots', 'load the haystack rating party data'
@@ -191,7 +187,6 @@ class Case < Thor
       end
     end
   end
-  # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/BlockLength
 

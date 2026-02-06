@@ -7,7 +7,6 @@ module Api
         before_action :set_book
         before_action :check_book
 
-        # rubocop:disable Metrics/MethodLength
         # @summary Export a complete book
         # @tags books > import/export
         #
@@ -51,7 +50,6 @@ module Api
             render json: { message: message }, status: :ok
           end
         end
-        # rubocop:enable Metrics/MethodLength
 
         private
 

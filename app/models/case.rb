@@ -112,7 +112,6 @@ class Case < ApplicationRecord
     destroy
   end
 
-  # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/ParameterLists
   def clone_case original_case, user, try: nil, clone_queries: false, clone_ratings: false, preserve_history: false
     transaction do
@@ -138,9 +137,8 @@ class Case < ApplicationRecord
       save!
     end
   end
-  # rubocop:enable Metrics/ParameterLists
-  # rubocop:enable Metrics/MethodLength
 
+  # rubocop:enable Metrics/ParameterLists
   def mark_archived
     self.archived = true
   end

@@ -6,7 +6,6 @@ module Api
       skip_before_action :authenticate_api!
       skip_before_action :verify_authenticity_token
 
-      # rubocop:disable Metrics/MethodLength
       def create
         user_params_to_save = user_params
         # Little workaround for the Angular frontend doing password confirmation on the frontend!
@@ -31,7 +30,6 @@ module Api
           render json: @user.errors, status: :bad_request
         end
       end
-      # rubocop:enable Metrics/MethodLength
 
       private
 

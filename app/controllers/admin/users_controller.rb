@@ -68,7 +68,6 @@ module Admin
 
     # PATCH/PUT /admin/users/1
     # PATCH/PUT /admin/users/1.json
-    # rubocop:disable Metrics/MethodLength
     def update
       respond_to do |format|
         params_to_use = user_params
@@ -96,7 +95,6 @@ module Admin
         end
       end
     end
-    # rubocop:enable Metrics/MethodLength
 
     # DELETE /admin/users/1
     # DELETE /admin/users/1.json

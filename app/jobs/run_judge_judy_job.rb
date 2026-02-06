@@ -14,7 +14,6 @@ class RunJudgeJudyJob < ApplicationJob
   #
   # @example Judge all pairs
   #   RunJudgeJudyJob.perform_later(book, ai_judge, nil)
-  # rubocop:disable Metrics/MethodLength
   def perform book, judge, number_of_pairs
     counter = 0
     llm_service = LlmService.new judge.llm_key, judge.judge_options
@@ -43,7 +42,6 @@ class RunJudgeJudyJob < ApplicationJob
     broadcast_complete(book, judge)
     UpdateCaseJob.perform_later book
   end
-  # rubocop:enable Metrics/MethodLength
 
   private
 

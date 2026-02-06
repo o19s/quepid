@@ -13,7 +13,6 @@ module Api
         respond_with @annotations
       end
 
-      # rubocop:disable Metrics/MethodLength
       def create
         the_score_params = score_params.merge(
           user_id:    current_user.id,
@@ -36,7 +35,6 @@ module Api
           render json: @score.errors, status: :bad_request
         end
       end
-      # rubocop:enable Metrics/MethodLength
 
       def update
         if @annotation.update annotation_params

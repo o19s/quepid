@@ -6,7 +6,6 @@ class JudgementsController < ApplicationController
   before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book
 
-  # rubocop:disable Metrics/AbcSize
   def index
     # compact checkbox: default to checked
     # when form is submitted (filtered param present), use the checkbox value
@@ -22,7 +21,6 @@ class JudgementsController < ApplicationController
 
     @pagy, @judgements = pagy(query.order(:query_doc_pair_id))
   end
-  # rubocop:enable Metrics/AbcSize
 
   def show
     @query_doc_pair = @judgement.query_doc_pair
@@ -33,9 +31,7 @@ class JudgementsController < ApplicationController
   end
 
   # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/PerceivedComplexity
   def new
     track_judging = session[:track_judging]&.symbolize_keys
 
@@ -68,17 +64,14 @@ class JudgementsController < ApplicationController
       end
     end
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/PerceivedComplexity
 
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength
   def edit
     @query_doc_pair = @judgement.query_doc_pair
     @previous_judgement = @judgement.previous_judgement_made
   end
 
-  # rubocop:disable Metrics/MethodLength
   def create
     @judgement = Judgement.new(judgement_params)
     @judgement.user = current_user
@@ -101,7 +94,6 @@ class JudgementsController < ApplicationController
       render action: :new
     end
   end
-  # rubocop:enable Metrics/MethodLength
 
   def unrateable
     @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)

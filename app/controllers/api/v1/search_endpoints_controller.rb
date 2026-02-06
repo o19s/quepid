@@ -6,7 +6,6 @@ module Api
     class SearchEndpointsController < Api::ApiController
       before_action :set_search_endpoint, only: [ :show, :update, :destroy ]
 
-      # rubocop:disable Metrics/MethodLength
       # @parameter archived(query) [Boolean] Whether or not to include archived search endpoints.
       def index
         archived = deserialize_bool_param(params[:archived])
@@ -29,7 +28,6 @@ module Api
 
         respond_with @search_endpoints
       end
-      # rubocop:enable Metrics/MethodLength
 
       def show
         respond_with @search_endpoint

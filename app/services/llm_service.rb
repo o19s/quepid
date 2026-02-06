@@ -37,7 +37,6 @@ class LlmService
     judgement
   end
 
-  # rubocop:disable Metrics/MethodLength
   def make_user_prompt query_doc_pair
     document_fields = query_doc_pair.document_fields
 
@@ -65,10 +64,8 @@ class LlmService
 
     prompt
   end
-  # rubocop:enable Metrics/MethodLength
 
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
   def get_llm_response user_prompt, system_prompt
     conn = Faraday.new(url: @options[:llm_service_url]) do |f|
       f.request :json
@@ -118,5 +115,4 @@ class LlmService
     end
   end
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
 end

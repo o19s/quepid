@@ -5,7 +5,6 @@ module MarkdownHelper
   # Renders markdown text as HTML
   # @param text [String] The markdown text to render
   # @return [String] HTML-safe rendered markdown
-  # rubocop:disable Metrics/MethodLength
   def render_markdown text
     return '' if text.blank?
 
@@ -30,7 +29,6 @@ module MarkdownHelper
     # Sanitize and return as HTML-safe
     sanitize(markdown.render(text), tags: allowed_markdown_tags, attributes: allowed_markdown_attributes)
   end
-  # rubocop:enable Metrics/MethodLength
 
   private
 
