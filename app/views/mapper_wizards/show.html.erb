@@ -110,7 +110,7 @@
                         data-codemirror-mode="application/json"
                         data-codemirror-line-numbers="true"
                         data-codemirror-height="100"
-                        placeholder='{"X-Api-Key": "your-api-key", "Authorization": "Bearer token"}'><%= format_custom_headers_for_form(existing_headers) %></textarea>
+                        placeholder='{"X-Api-Key": "your-api-key", "Authorization": "Bearer token"}'><%= format_json(existing_headers) %></textarea>
               <div class="form-text">Optional. Add custom headers as JSON object (e.g., API keys, authentication tokens). These will be saved with the search endpoint.</div>
             </div>
           </div>

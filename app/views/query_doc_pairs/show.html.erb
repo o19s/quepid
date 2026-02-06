@@ -36,7 +36,7 @@
   
   <p>
     <strong>Options:</strong>
-    <%= @query_doc_pair.options %>
+    <%= text_area_tag 'options', format_json(@query_doc_pair.options), data: { codemirror_mode: "application/json", codemirror_height: 100, codemirror_width: 500, codemirror_readonly: true } %>
   </p>
   
   

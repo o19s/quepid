@@ -43,7 +43,7 @@
       <div class="mb-3">
         <%= form.label :custom_headers, "Custom Headers", class: 'form-label' %>
         <div class="form-text">Add custom HTTP headers as JSON (e.g., for API keys or authentication tokens).</div>
-        <%= form.text_area :custom_headers, value: format_custom_headers_for_form(search_endpoint.custom_headers), data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
+        <%= form.text_area :custom_headers, value: format_json(search_endpoint.custom_headers), data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
       </div>
 
       <div class="mb-3">
@@ -77,7 +77,7 @@
       <div class="mb-3">
         <%= form.label :options, "Options", class: 'form-label' %>
         <div class="form-text">This JSON is for passing in settings to the Query Sandbox as a <code>qOption</code>.</div>
-        <%= form.text_area :options, data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
+        <%= form.text_area :options, value: format_json(search_endpoint.options), data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
       </div>
 
       <div class="mb-3">
