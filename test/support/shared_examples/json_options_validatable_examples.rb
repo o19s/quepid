@@ -37,19 +37,35 @@ module JsonOptionsValidatableExamples
         assert_predicate record, :valid?
       end
 
-      it 'accepts empty hash options' do
-        record = create_record_with_options({})
+      it 'accepts empty string options' do
+        record = create_record_with_options('')
         assert_predicate record, :valid?
       end
 
-      it 'accepts JSON array' do
-        record = create_record_with_options(%w[item1 item2])
+      it 'accepts blank string options' do
+        record = create_record_with_options('   ')
+        assert_predicate record, :valid?
+      end
+
+      it 'accepts empty hash options' do
+        record = create_record_with_options({})
         assert_predicate record, :valid?
       end
 
       it 'accepts nested JSON structures' do
         record = create_record_with_options({ 'nested' => { 'deep' => { 'value' => 123 } } })
         assert_predicate record, :valid?
+      end
+
+      it 'accepts single line string' do
+        record = create_record_with_options('{"Authorization": "Bearer vespa_cloud_jR5ED6pbyseUaXtOFMVlUIOTj2qCCvwDUBmAftVVVMW"}')
+        assert_predicate record, :valid?
+      end
+
+      it 'rejects JSON arrays (must be objects)' do
+        record = create_record_with_options(%w[item1 item2])
+        assert_not record.valid?
+        assert_match(/must be a JSON object/, record.errors[:options].first)
       end
 
       it 'rejects invalid JSON string' do

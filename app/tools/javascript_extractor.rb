@@ -82,7 +82,6 @@ class JavascriptExtractor < RubyLLM::Tool
 
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/PerceivedComplexity
   def validate_javascript_syntax code
     # Basic syntax validation
     return { valid: false, error: 'Empty code' } if code.strip.empty?
@@ -114,5 +113,4 @@ class JavascriptExtractor < RubyLLM::Tool
   end
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/PerceivedComplexity
 end

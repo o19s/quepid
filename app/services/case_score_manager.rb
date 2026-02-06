@@ -99,7 +99,6 @@ class CaseScoreManager
   end
 
   # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/PerceivedComplexity
   def added_query? last_score, score_data
     return true  if last_score.nil? && !score_data.empty?
     return false if last_score.nil? && score_data.empty?
@@ -117,9 +116,8 @@ class CaseScoreManager
 
     last_score_queries != score_data_queries
   end
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/PerceivedComplexity
 
+  # rubocop:enable Metrics/CyclomaticComplexity
   def queries_empty? queries
     queries.blank?
   end

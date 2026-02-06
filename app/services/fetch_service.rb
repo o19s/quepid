@@ -112,7 +112,6 @@ class FetchService
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/PerceivedComplexity
   def setup_docs_for_query query, docs
     results = []
 
@@ -137,10 +136,9 @@ class FetchService
 
     results
   end
+
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/PerceivedComplexity
-
   # This maybe should be split out into a snapshot_query and a snapshot_docs?
   # rubocop:disable Metrics/MethodLength
   def store_query_results query, docs, response_status, response_body
@@ -353,7 +351,6 @@ class FetchService
     response
   end
 
-  # rubocop:disable Metrics/PerceivedComplexity
   def replace_values data, query_text
     if data.is_a?(Hash)
       data.each do |key, value|
@@ -368,7 +365,6 @@ class FetchService
     end
     data
   end
-  # rubocop:enable Metrics/PerceivedComplexity
 
   # rubocop:disable Metrics/MethodLength
   def mock_response_body

@@ -16,7 +16,6 @@ class MapperWizardService
   # @param request_body [String] JSON body for POST requests
   # @param headers [Hash] Custom HTTP headers
   # @param credentials [String] Basic auth credentials in format "username:password"
-  # rubocop:disable Metrics/PerceivedComplexity
   # rubocop:disable Metrics/MethodLength
   def fetch_html url, http_method: 'GET', request_body: nil, headers: {}, credentials: nil
     return { success: false, error: 'URL is required' } if url.blank?
@@ -40,7 +39,6 @@ class MapperWizardService
   rescue StandardError => e
     { success: false, error: e.message }
   end
-  # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Metrics/MethodLength
 
   # Generate mapper functions using RubyLLM
@@ -276,7 +274,7 @@ class MapperWizardService
   end
 
   # rubocop:enable Metrics/MethodLength
-  # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
+  # rubocop:disable Metrics/MethodLength
   def extract_single_function code, function_name
     # Match function definition pattern
     pattern = /#{function_name}\s*=\s*function\s*\([^)]*\)\s*\{/
@@ -310,5 +308,5 @@ class MapperWizardService
 
     code[start_index..end_index]
   end
-  # rubocop:enable Metrics/MethodLength, Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/MethodLength
 end

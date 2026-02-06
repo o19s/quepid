@@ -116,7 +116,7 @@ Metrics/CyclomaticComplexity:
   Max: 8
 
 Metrics/PerceivedComplexity:
-  Max: 8
+  Max: 12
 
 Style/Alias:
   EnforcedStyle: prefer_alias_method

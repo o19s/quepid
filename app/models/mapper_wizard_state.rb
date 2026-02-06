@@ -33,9 +33,9 @@ class MapperWizardState < ApplicationRecord
   serialize :custom_headers, coder: JSON
 
   # Concerns
-  include CustomHeadersValidatable
 
   validates :search_url, length: { maximum: 2000 }
+  validates :custom_headers, json_format: { normalize_values: true }, allow_blank: true
   validates :http_method, inclusion: { in: %w[GET POST], allow_blank: true }
 
   # Find or create a wizard state for a user

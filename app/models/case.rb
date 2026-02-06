@@ -73,6 +73,7 @@ class Case < ApplicationRecord
 
   # Validations
   validates :case_name, presence: true
+  validates :options, json_format: true, allow_blank: true
   validates_with ScorerExistsValidator
 
   # Callbacks
@@ -84,7 +85,6 @@ class Case < ApplicationRecord
   end
 
   # Concerns
-  include JsonOptionsValidatable
 
   # Scopes
   include ForUserScope
