@@ -37,7 +37,6 @@ class LlmService
     judgement
   end
 
-  # rubocop:disable Metrics/MethodLength
   def make_user_prompt query_doc_pair
     document_fields = query_doc_pair.document_fields
 
@@ -59,7 +58,6 @@ class LlmService
 
     prompt
   end
-  # rubocop:enable Metrics/MethodLength
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
