@@ -19,8 +19,6 @@ module HomeHelper
     greetings.sample
   end
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   def greeting2
     current_time = DateTime.current.seconds_since_midnight
     midnight = DateTime.now.beginning_of_day.seconds_since_midnight
@@ -44,8 +42,6 @@ module HomeHelper
     end
     greeting
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
 
   def strip_case_title kase
     kase.case_name.sub(/^case\s+/i, '').titleize

@@ -38,7 +38,6 @@ class DocGenerator
     options[:show_progress]
   end
 
-  # rubocop:disable Metrics/MethodLength
   def fetch_enough_docs_for_sample_words
     print_step 'Fetching docs to extract sample queries'
 
@@ -67,7 +66,6 @@ class DocGenerator
 
     self
   end
-  # rubocop:enable Metrics/MethodLength
 
   def generate_word_list
     print_step 'Generating word list'

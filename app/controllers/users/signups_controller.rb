@@ -4,7 +4,6 @@ module Users
   class SignupsController < ApplicationController
     skip_before_action :require_login
 
-    # rubocop:disable Metrics/MethodLength
     def create
       user_params_to_save = user_params
 
@@ -28,7 +27,6 @@ module Users
         render template: 'sessions/new'
       end
     end
-    # rubocop:enable Metrics/MethodLength
 
     private
 

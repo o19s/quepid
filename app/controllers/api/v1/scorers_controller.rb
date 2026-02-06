@@ -85,8 +85,6 @@ module Api
 
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/PerceivedComplexity
-      # rubocop:disable Metrics/CyclomaticComplexity
-      # rubocop:disable Metrics/AbcSize
 
       # This method lets you delete a scorer, and if you pass in force=true then
       # you update other objects with either the system default scorer, or, if
@@ -135,8 +133,6 @@ module Api
 
         head :no_content
       end
-      # rubocop:enable Metrics/AbcSize
-      # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/PerceivedComplexity
       # rubocop:enable Metrics/MethodLength
 

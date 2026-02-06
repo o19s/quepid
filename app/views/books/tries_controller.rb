@@ -16,7 +16,6 @@ module Api
       end
 
       # rubocop:disable Metrics/MethodLength
-      # rubocop:disable Metrics/AbcSize
       def create
         try_parameters_to_use = try_params
 
@@ -62,10 +61,8 @@ module Api
           render json: @try.errors.concat(@case.errors), status: :bad_request
         end
       end
-      # rubocop:enable Metrics/MethodLength
-      # rubocop:enable Metrics/AbcSize
 
-      # rubocop:disable Metrics/MethodLength
+      # rubocop:enable Metrics/MethodLength
       def update
         search_endpoint_params_to_use = search_endpoint_params
         search_endpoint_params_to_use = convert_blank_values_to_nil search_endpoint_params_to_use
@@ -89,7 +86,6 @@ module Api
           render json: @try.errors, status: :bad_request
         end
       end
-      # rubocop:enable Metrics/MethodLength
 
       def destroy
         @try.destroy

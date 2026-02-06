@@ -45,7 +45,6 @@ class FetchService
     @snapshot
   end
 
-  # rubocop:disable Metrics/MethodLength
   # should be in some other service!
   def extract_docs_from_response_body_for_solr response_body
     docs = []
@@ -70,9 +69,7 @@ class FetchService
 
     docs
   end
-  # rubocop:enable Metrics/MethodLength
 
-  # rubocop:disable Metrics/MethodLength
   # should be in some other service!
   def extract_docs_from_response_body_for_es response_body
     docs = []
@@ -97,7 +94,6 @@ class FetchService
 
     docs
   end
-  # rubocop:enable Metrics/MethodLength
 
   def extract_docs_from_response_body_for_os response_body
     extract_docs_from_response_body_for_es response_body
@@ -109,9 +105,6 @@ class FetchService
     docs
   end
 
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/PerceivedComplexity
   def setup_docs_for_query query, docs
     results = []
 
@@ -136,9 +129,6 @@ class FetchService
 
     results
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/PerceivedComplexity
 
   # This maybe should be split out into a snapshot_query and a snapshot_docs?
   # rubocop:disable Metrics/MethodLength
@@ -331,7 +321,6 @@ class FetchService
     end
   end
 
-  # rubocop:disable Metrics/MethodLength
   def get_connection url, debug_mode, credentials, custom_headers
     connection = Faraday.new(url: url) do |faraday|
       # Configure the connection options, such as headers or middleware
@@ -354,7 +343,6 @@ class FetchService
     end
     connection
   end
-  # rubocop:enable Metrics/MethodLength
 
   def make_request atry, query
     return mock_response if @options[:fake_mode]
@@ -365,7 +353,6 @@ class FetchService
     response
   end
 
-  # rubocop:disable Metrics/PerceivedComplexity
   def replace_values data, query_text
     if data.is_a?(Hash)
       data.each do |key, value|
@@ -380,7 +367,6 @@ class FetchService
     end
     data
   end
-  # rubocop:enable Metrics/PerceivedComplexity
 
   # rubocop:disable Metrics/MethodLength
   def mock_response_body

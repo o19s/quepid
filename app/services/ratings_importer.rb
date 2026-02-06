@@ -175,7 +175,6 @@ class RatingsImporter
 
   private
 
-  # rubocop:disable Metrics/MethodLength
   def extract_rating_info row
     case @options[:format]
     when :csv
@@ -196,5 +195,4 @@ class RatingsImporter
       row
     end
   end
-  # rubocop:enable Metrics/MethodLength
 end
