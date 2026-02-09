@@ -1,0 +1,49 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1>Teams</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= link_to '+ Add New', new_team2_path, class: 'btn btn-success' %>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <%= form_tag(teams2_path, method: :get) do %>
+      <div class="mb-0 d-flex flex-wrap align-items-center gap-3 fs-6">
+
+        <div class="input-group" style="max-width: 500px;">
+          <%= text_field_tag :q, params[:q], class: 'form-control', placeholder: 'Filter teams' %>
+          <%= number_field_tag :per_page, params[:per_page] || 10, class: 'form-control', style: 'width:80px;margin-left:8px;' %>
+        </div>
+
+      </div>
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <table class="table table-hover table-sm">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th class="text-center">Members</th>
+          <th class="text-center">Cases</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @teams.each do |team| %>
+          <tr>
+            <td><%= team.id %></td>
+            <td><%= link_to team.name, team2_path(team) %></td>
+            <td class="text-center"><%= team.members.count %></td>
+            <td class="text-center"><%= team.cases.count %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer d-flex justify-content-center">
+    <%== @pagy && @pagy.series_nav(:bootstrap) %>
+  </div>
+</div>

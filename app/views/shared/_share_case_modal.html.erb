@@ -1,0 +1,25 @@
+<div class="modal fade" id="shareCaseModal" tabindex="-1" aria-labelledby="shareCaseModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="shareCaseModalLabel">Share Case</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="h5">Select a team to share this case with:</p>
+        <div class="mb-3">
+          <div id="share-case-unshared-list" class="list-group mt-2"></div>
+        </div>
+
+        <hr />
+        <p class="h5">Already shared with:</p>
+        <div id="share-case-shared-list" class="list-group mt-2"></div>
+      </div>
+      <div class="modal-footer">
+        <a href="<%= new_team2_path %>" class="btn btn-primary me-auto">+ Create a team</a>
+        <button type="button" id="share-case-commit" class="btn btn-success" disabled data-action="click->share-case#shareSelected" aria-label="Share case with selected team">Share with team</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

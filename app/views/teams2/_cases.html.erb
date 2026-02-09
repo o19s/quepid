@@ -1,0 +1,126 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Cases</h5>
+    <div class="table-responsive">
+      <div class="mb-3">
+        <%= form_with url: team2_path(@team), method: :get, local: true, data: { turbo_frame: 'team_cases' }, html: { class: 'row g-2 align-items-center' } do %>
+          <div class="col-auto" style="flex:1">
+            <div class="input-group">
+              <%= text_field_tag :q, @filter_q.presence || params[:q], class: 'form-control form-control-sm', placeholder: 'Filter by case name or id' %>
+              <button class="btn btn-sm btn-outline-secondary" type="submit" title="Search">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <span class="visually-hidden">Search</span>
+              </button>
+            </div>
+          </div>
+          <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
+            <%= check_box_tag :archived, '1', @archived, class: 'form-check-input', id: 'archived-cases-checkbox', onchange: 'this.form.submit()' %>
+            <%= label_tag 'archived-cases-checkbox', 'Archived Cases', class: 'form-check-label' %>
+          </div>
+        <% end %>
+      </div>
+
+      <table class="table table-sm table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Case Title</th>
+            <th>Last Try #</th>
+            <th># of Queries</th>
+            <th>Last Score</th>
+            <th>Last Run On</th>
+            <th>Last Run By</th>
+            <th>Associated Judgements</th>
+            <th>Teams</th>
+            <th>Owner</th>
+            <th class="text-end"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @cases.each do |kase| %>
+            <% last_score = kase.last_score %>
+            <tr>
+              <td><%= kase.id %></td>
+              <td><%= link_to kase.case_name, case_core_path(kase) %></td>
+              <td><%= kase.last_try_number || (kase.tries.first&.try_number) %></td>
+              <td><%= kase.respond_to?(:queries_count) ? kase.queries_count : kase.queries.size %></td>
+              <td>
+                <% if last_score.present? %>
+                  <%= number_with_precision(last_score.score || 0, precision: 3) %>
+                <% else %>
+                  Never Run
+                <% end %>
+              </td>
+              <td>
+                <% if last_score.present? && last_score.updated_at.present? %>
+                  <%= l(last_score.updated_at, format: :short) %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+              <td>
+                <% if last_score.present? %>
+                  <%= last_score.user&.fullname || 'System' %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+              <td><%= kase.ratings.count %></td>
+              <td>
+                <% if kase.teams.any? %>
+                  <%= safe_join(kase.teams.map { |t| link_to t.name, team2_path(t) }, ', ') %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+              <td><%= kase.owner&.fullname || '—' %></td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button"
+                          class="btn btn-link text-primary p-0 me-3"
+                          title="Share case"
+                          aria-label="Share case"
+                          data-controller="share-case"
+                          data-action="click->share-case#open"
+                          data-share-case-id-value="<%= kase.id %>"
+                          data-share-case-name-value="<%= h(kase.case_name) %>"
+                          data-share-case-shared-teams-json='<%= kase.teams.select(:id, :name).to_json.html_safe %>'
+                          data-share-case-user-team-ids-json='<%= current_user.teams.pluck(:id).to_json.html_safe %>'>
+                    <i class="bi bi-share" aria-hidden="true"></i>
+                    <span class="visually-hidden">Share case</span>
+                  </button>
+
+                  <button type="button"
+                          class="btn btn-link text-warning p-0 me-3"
+                          title="Archive case"
+                          aria-label="Archive case"
+                          data-controller="confirm-delete"
+                          data-action="click->confirm-delete#open"
+                          data-confirm-delete-url-value="<%= team2_archive_case_path(@team, case_id: kase.id) %>"
+                          data-confirm-delete-method-value="post"
+                          data-confirm-delete-message-value="<%= h("Archive #{kase.case_name}?") %>">
+                    <i class="bi bi-archive" aria-hidden="true"></i>
+                    <span class="visually-hidden">Archive case</span>
+                  </button>
+
+                  <button type="button"
+                          class="btn btn-link text-danger p-0"
+                          title="Remove case from team"
+                          aria-label="Remove case"
+                          data-controller="confirm-delete"
+                          data-action="click->confirm-delete#open"
+                          data-confirm-delete-url-value="<%= team2_case_path(@team, case_id: kase.id) %>"
+                          data-confirm-delete-method-value="delete"
+                          data-confirm-delete-message-value="<%= h("Remove case #{kase.case_name} from this team?") %>">
+                    <i class="bi bi-x-circle" aria-hidden="true"></i>
+                    <span class="visually-hidden">Remove case</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

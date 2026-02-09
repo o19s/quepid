@@ -1,0 +1,107 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1>Team: <%= @team.name %></h1>
+  <div class="text-end">
+    <small class="text-muted">Members: <strong><%= @members.count %></strong></small>
+    &nbsp;&nbsp;
+    <small class="text-muted">Cases: <strong><%= @cases_count %></strong></small>
+    &nbsp;&nbsp;
+    <small class="text-muted">Books: <strong><%= @books_count %></strong></small>
+    &nbsp;&nbsp;
+    <small class="text-muted">Scorers: <strong><%= @search_endpoints_count %></strong></small>
+    &nbsp;&nbsp;
+    <small class="text-muted">Scorers: <strong><%= @scorers_count %></strong></small>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Add Team Member</h5>
+        <%= form_with url: team2_members_path(@team), method: :post, local: true do %>
+          <div class="mb-2">
+            <%= text_field_tag :email, nil, class: 'form-control form-control-sm', placeholder: 'User email address' %>
+          </div>
+          <div>
+            <%= submit_tag 'Add user', class: 'btn btn-success btn-sm' %>
+          </div>
+        <% end %>
+        <p class="text-muted mt-2 small">Start typing an email address to add an existing user to this team.</p>
+      </div>
+    </div>
+    
+    <div class="card mt-3">
+      <div class="card-body">
+        <h5 class="card-title">Rename Team</h5>
+        <%= form_with model: @team, url: team2_rename_path(@team), method: :post, local: true do |f| %>
+          <div class="mb-2">
+            <%= f.text_field :name, class: 'form-control form-control-sm', placeholder: 'New team name' %>
+          </div>
+          <div>
+            <%= f.submit 'Rename', class: 'btn btn-primary btn-sm' %>
+          </div>
+        <% end %>
+        <p class="text-muted mt-2 small">Change the display name for this team.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Members</h5>
+        <div class="list-group">
+          <% @members.each do |member| %>
+            <div class="list-group-item d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <%= avatar_tag(member, size: :medium, classes: 'me-3') %>
+                <div>
+                  <div>
+                    <strong><%= member.fullname %></strong>
+                    <% if member.pending_invite? %>
+                      <span class="badge bg-primary rounded-pill ms-2">INVITED</span>
+                    <% end %>
+                  </div>
+                  <div class="text-muted"><%= member.email %></div>
+                  <% if member.pending_invite? %>
+                    <div class="text-muted small">Invite link:
+                      <% if member.stored_raw_invitation_token.present? %>
+                        <% invite_link = "#{request.base_url}/users/invitation/accept?invitation_token=#{member.stored_raw_invitation_token}" %>
+                        <button type="button" class="btn btn-outline-secondary btn-sm ms-2" data-controller="invite" data-invite-link-value="<%= invite_link %>" data-action="click->invite#copy">📋</button>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+              <div class="ms-3">
+                <button type="button"
+                        class="btn btn-link text-danger p-0"
+                        title="Remove member"
+                        aria-label="Remove member"
+                        data-controller="confirm-delete"
+                        data-action="click->confirm-delete#open"
+                        data-confirm-delete-url-value="<%= team2_member_path(@team, member_id: member.id) %>"
+                        data-confirm-delete-message-value="<%= h("Remove #{member.fullname} from this team?") %>"
+                        data-confirm-delete-method-value="delete">
+                  <i class="bi bi-x-circle" aria-hidden="true"></i>
+                  <span class="visually-hidden">Remove member</span>
+                </button>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 mt-3">
+        <turbo-frame id="team_cases" src="<%= team2_cases_fragment_path(@team, q: params[:q], archived: params[:archived]) %>" loading="lazy">
+          <%= render partial: 'teams2/cases' %>
+        </turbo-frame>
+</div>
+
+  <turbo-frame id="team_books" src="<%= team2_books_fragment_path(@team, books_q: params[:books_q], books_archived: params[:books_archived], q: params[:q], archived: params[:archived]) %>" loading="lazy">
+    <%= render partial: 'teams2/books' %>
+  </turbo-frame>
+
+  <%= render 'shared/share_case_modal' %>
+
+  <div id="share-case-data" style="display:none" data-share-case-teams-value="<%= j(current_user.teams.select(:id, :name).to_json) %>"></div>

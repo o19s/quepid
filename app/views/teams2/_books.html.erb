@@ -1,0 +1,78 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Books</h5>
+    <div class="mb-3">
+      <%= form_with url: team2_path(@team), method: :get, local: true, data: { turbo_frame: 'team_books' }, html: { class: 'row g-2 align-items-center' } do %>
+        <div class="col-auto" style="flex:1">
+          <div class="input-group">
+            <%= text_field_tag :books_q, @filter_books_q, class: 'form-control', placeholder: 'Filter books by name' %>
+            <button class="btn btn-outline-secondary" type="submit" title="Search books">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <span class="visually-hidden">Search books</span>
+            </button>
+          </div>
+        </div>
+        <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
+          <%= check_box_tag :books_archived, '1', @filter_books_archived, class: 'form-check-input', id: 'books-archived-cases-checkbox', onchange: 'this.form.submit()' %>
+          <%= label_tag 'books-archived-cases-checkbox', 'Archived Books', class: 'form-check-label ms-2' %>
+        </div>
+        <%# Preserve case filters when submitting books form %>
+        <% if @filter_q.present? %>
+          <%= hidden_field_tag :q, @filter_q %>
+        <% end %>
+        <% if @archived %>
+          <%= hidden_field_tag :archived, '1' %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Number of Query/Doc Pairs</th>
+            <th>Owner</th>
+            <th class="text-end"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (@books || []).each do |book| %>
+            <tr>
+              <td><%= book.id %></td>
+              <td><%= link_to book.name, book_path(book) %></td>
+              <td><%= book.respond_to?(:query_doc_pairs_count) ? book.query_doc_pairs_count : book.query_doc_pairs.size %></td>
+              <td><%= book.owner&.fullname || '—' %></td>
+              <td class="text-end">
+                <% if book.archived? %>
+                  <button type="button" class="btn btn-link text-success p-0 me-2" title="Unarchive book" aria-label="Unarchive book"
+                          data-controller="confirm-delete" data-action="click->confirm-delete#open"
+                          data-confirm-delete-url-value="<%= unarchive_book_path(book) %>"
+                          data-confirm-delete-method-value="patch"
+                          data-confirm-delete-message-value="<%= h("Unarchive #{book.name}?") %>">
+                    <i class="bi bi-folder-check" aria-hidden="true"></i>
+                  </button>
+                <% else %>
+                  <button type="button" class="btn btn-link text-warning p-0 me-2" title="Archive book" aria-label="Archive book"
+                          data-controller="confirm-delete" data-action="click->confirm-delete#open"
+                          data-confirm-delete-url-value="<%= archive_book_path(book) %>"
+                          data-confirm-delete-method-value="patch"
+                          data-confirm-delete-message-value="<%= h("Archive #{book.name}?") %>">
+                    <i class="bi bi-archive" aria-hidden="true"></i>
+                  </button>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <% if defined?(pagy_nav) && @pagy_books %>
+        <div class="mt-2">
+          <%= pagy_nav(@pagy_books, link_extra: 'data-turbo-frame="team_books"') %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
