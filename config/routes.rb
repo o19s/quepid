@@ -310,6 +310,21 @@ Rails.application.routes.draw do
   get '/cases'                        => 'core#index'
   get '/case'                         => 'core#index'
   get '/cases/import'                 => 'core#index'
+  # Server-side comparison routes for Teams (preserve Angular route below)
+  get '/teams2'                       => 'teams2#index', as: :teams2
+  get '/teams2/new'                   => 'teams2#new',   as: :new_team2
+  post '/teams2'                      => 'teams2#create'
+  get '/teams2/:id'                   => 'teams2#show', as: :team2
+  post '/teams2/:id/rename'           => 'teams2#rename', as: :team2_rename
+  post '/teams2/:id/members'          => 'teams2#add_member', as: :team2_members
+  delete '/teams2/:id/members/:member_id' => 'teams2#remove_member', as: :team2_member
+  delete '/teams2/:id/cases/:case_id' => 'teams2#remove_case', as: :team2_case
+  post   '/teams2/:id/cases/:case_id/archive' => 'teams2#archive_case', as: :team2_archive_case
+  post   '/teams2/:id/cases/:case_id/share'   => 'teams2#share_case',   as: :team2_share_case
+
+  # Fragment endpoints for turbo-frame lazy loading of team sections
+  get '/teams2/:id/cases_fragment' => 'teams2#cases_fragment', as: :team2_cases_fragment
+  get '/teams2/:id/books_fragment' => 'teams2#books_fragment', as: :team2_books_fragment
   get '/teams(/:id)'                  => 'core#teams', as: :teams_core
   get '/scorers'                      => 'core#index'
 

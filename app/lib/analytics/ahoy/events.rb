@@ -317,6 +317,25 @@ module Analytics
       end
 
       #
+      # Creates an event when a user removes a member from a team.
+      #
+      # @param user,    User
+      # @param team,    Team
+      # @param member,  User
+      #
+      def user_removed_member_from_team _user, team, _member
+        data = {
+          category: 'Teams',
+          action:   'Removed Member from an Team',
+          label:    team.name,
+          value:    team.members.count,
+        }
+
+        create_event data
+      end
+
+
+      #
       # Creates an event when a user creates a custom scorer.
       #
       # @param user,    User
