@@ -8,7 +8,6 @@ module Api
           before_action :set_case
           before_action :check_case
 
-          # rubocop:disable Metrics/MethodLength
           def create
             # https://github.com/usahg/csv_upload_rails/blob/master/app/controllers/location_controller.rb#L17
             # why importing csv within upload method and not in controller class?
@@ -53,7 +52,6 @@ module Api
                      status: :unprocessable_content
             end
           end
-          # rubocop:enable Metrics/MethodLength
         end
       end
     end

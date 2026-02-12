@@ -43,7 +43,6 @@ module Api
         render json: @scorer.errors, status: :bad_request
       end
 
-      # rubocop:disable Metrics/MethodLength
       def update
         unless @scorer.owner == current_user || (@scorer.communal && current_user.administrator?)
           render(
@@ -81,8 +80,6 @@ module Api
           render json: @scorer.errors, status: :bad_request
         end
       end
-      # rubocop:enable Metrics/MethodLength
-
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/PerceivedComplexity
 

@@ -3,7 +3,6 @@
 require 'colorize'
 
 class User < Thor
-  # rubocop:disable Metrics/MethodLength
   desc 'create EMAIL USERNAME PASSWORD', 'creates a new user'
   long_desc <<-LONGDESC
     `user:create` creates a new user with the passed in email, name and password.
@@ -46,8 +45,6 @@ class User < Thor
       end
     end
   end
-  # rubocop:enable Metrics/MethodLength
-
   desc 'reset_password EMAIL NEWPASSWORD', "resets user's password"
   long_desc <<-LONGDESC
     `user:reset_password` resets the user's password to the new password

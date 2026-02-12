@@ -177,6 +177,7 @@ class Teams2Controller < ApplicationController
     @pagy, @teams = pagy(query.order(:name))
   end
 
+  # rubocop:disable Metrics/AbcSize
   def show
     @archived = deserialize_bool_param(params[:archived])
     @filter_q = params[:q].to_s.strip
@@ -216,6 +217,7 @@ class Teams2Controller < ApplicationController
     @pagy_scorers, @scorers = pagy(scorers_query.order(:name), page_param: :scorers_page)
     @filter_scorers_q = scorers_q
   end
+  # rubocop:enable Metrics/AbcSize
 
   def new
     @team = Team.new
@@ -230,8 +232,10 @@ class Teams2Controller < ApplicationController
     end
   end
 
-  # Simple server-side add-member by email (no AJAX). Looks up an existing user
-  # by email and adds to the team if found.
+  # Looks up an existing user by email and adds to the team if found.
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
   def add_member
     email = params[:email].to_s.strip.downcase
     user = User.where(email: email).first
@@ -271,6 +275,9 @@ class Teams2Controller < ApplicationController
 
     redirect_to team2_path(@team)
   end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/PerceivedComplexity
 
   # Rename the team (server-side form).
   def rename

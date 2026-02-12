@@ -49,7 +49,6 @@ module ApplicationHelper
     button_to(name, options, html_options) if condition
   end
 
-  # rubocop:disable Metrics/MethodLength
   # rubocop:disable Lint/EmptyBlock
   def flash_messages _opts = {}
     flash.each do |msg_type, message|
@@ -77,9 +76,8 @@ module ApplicationHelper
 
     nil
   end
-  # rubocop:enable Lint/EmptyBlock
-  # rubocop:enable Metrics/MethodLength
 
+  # rubocop:enable Lint/EmptyBlock
   def document_fields_parses_as_json document_fields
     begin
       document_fields = JSON.parse document_fields

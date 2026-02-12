@@ -15,7 +15,6 @@ module Api
         respond_with @try
       end
 
-      # rubocop:disable Metrics/MethodLength
       def create
         try_parameters_to_use = try_params
 
@@ -62,7 +61,6 @@ module Api
         end
       end
 
-      # rubocop:enable Metrics/MethodLength
       def update
         search_endpoint_params_to_use = search_endpoint_params
         search_endpoint_params_to_use = convert_blank_values_to_nil search_endpoint_params_to_use
