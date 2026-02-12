@@ -33,14 +33,6 @@ angular.module('QuepidApp')
           controller: 'MainCtrl',
           reloadOnSearch: false
         })
-        .when('/cases', {
-          templateUrl: 'views/cases/index.html',
-          controller: 'CasesCtrl'
-        })
-        .when('/cases/import', {
-          templateUrl: 'views/cases/import.html',
-          controller: 'CasesImportCtrl'
-        })
         .otherwise({
           templateUrl: 'views/404.html',
           controller: '404Ctrl'
