@@ -260,7 +260,7 @@ class TeamsController < ApplicationController
   end
 
   def index
-    query = Team.all
+    query = current_user.teams
 
     query = query.joins(:members).where(users: { id: current_user.id }).distinct if params[:member].present?
 
