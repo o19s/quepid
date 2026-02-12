@@ -13,10 +13,9 @@ module Api
         login_user joey
       end
 
-      # rubocop:disable Metrics/AbcSize
       def assert_try_matches_response response, try
         assert_equal try.query_params, response['query_params']
-        assert_equal try.field_spec,   response['field_spec'] if response['field_spec']
+        assert_equal try.field_spec, response['field_spec'] if response['field_spec']
         assert_nil_or_equal try.search_endpoint.endpoint_url, response['search_url']
         assert_equal try.try_number,   response['try_number']
         assert_equal try.name,         response['name'] if response['name']
@@ -26,11 +25,10 @@ module Api
 
         assert_curator_vars_equal try.curator_vars_map, response['curator_vars']
       end
-      # rubocop:enable Metrics/AbcSize
 
       def assert_try_matches_params params, try
         assert_equal try.query_params, params[:query_params] if params[:query_params]
-        assert_equal try.field_spec,   params[:field_spec]   if params[:field_spec]
+        assert_equal try.field_spec, params[:field_spec] if params[:field_spec]
         assert_equal try.search_endpoint.endpoint_url, params[:search_url] if params[:search_url]
         assert_equal try.name,         params[:name]         if params[:name]
         assert_equal try.escape_query, params[:escape_query] if params[:escape_query]

@@ -41,8 +41,6 @@ class SnapshotManager
   #   ]
   # }
   # manager.add_docs data
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   def add_docs docs, queries
     queries_to_import = []
 
@@ -82,10 +80,7 @@ class SnapshotManager
 
     self
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
 
-  #
   # Imports queries and docs to a snapshot.
   # If the query does not already exists, it adds it to the case first,
   # then it adds it to the snapshot.
@@ -113,7 +108,6 @@ class SnapshotManager
   # manager.import_queries data
   #
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
   def import_queries queries
     queries_to_import = []
     keys              = queries.keys
@@ -163,9 +157,8 @@ class SnapshotManager
 
     self
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
 
+  # rubocop:enable Metrics/MethodLength
   def csv_to_queries_hash docs
     # print_step 'Transforming csv into a queries hash'
 
@@ -180,7 +173,6 @@ class SnapshotManager
     query_docs
   end
 
-  # rubocop:disable Metrics/MethodLength
   def setup_docs_for_query query, docs
     results = []
 
@@ -204,7 +196,6 @@ class SnapshotManager
 
     results
   end
-  # rubocop:enable Metrics/MethodLength
 
   def extract_doc_info row
     case @options[:format]
@@ -234,7 +225,6 @@ class SnapshotManager
     result
   end
 
-  # rubocop:disable Metrics/MethodLength
   def import_docs keys, data
     docs_to_import = []
 
@@ -265,7 +255,6 @@ class SnapshotManager
 
     self
   end
-  # rubocop:enable Metrics/MethodLength
 
   def fetch_or_create_query indexed_queries, query_text
     if indexed_queries[query_text].present?

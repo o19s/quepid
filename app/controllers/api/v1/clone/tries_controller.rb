@@ -8,7 +8,6 @@ module Api
         before_action :check_case
         before_action :set_try, only: [ :create ]
 
-        # rubocop:disable Metrics/MethodLength
         def create
           new_try_params = {
             escape_query:    @try.escape_query,
@@ -36,7 +35,6 @@ module Api
             render json: @new_try.errors.concat(@case.errors), status: :bad_request
           end
         end
-        # rubocop:enable Metrics/MethodLength
 
         private
 

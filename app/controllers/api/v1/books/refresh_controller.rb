@@ -9,7 +9,6 @@ module Api
         before_action :set_case, only: [ :update ]
         before_action :check_case, only: [ :update ]
 
-        # rubocop:disable Metrics/MethodLength
         def update
           @create_missing_queries = deserialize_bool_param(params[:create_missing_queries])
           process_in_background = deserialize_bool_param(params[:process_in_background])
@@ -34,7 +33,6 @@ module Api
 
           respond_with @counts
         end
-        # rubocop:enable Metrics/MethodLength
       end
     end
   end

@@ -4,7 +4,6 @@ module Users
   class OmniauthCallbacksController < Devise::OmniauthCallbacksController
     skip_before_action :require_login, only: [ :keycloakopenid, :google_oauth2, :failure ]
 
-    # rubocop:disable Metrics/AbcSize
     def keycloakopenid
       Rails.logger.debug(request.env['omniauth.auth'])
       @user = create_user_from_omniauth(request.env['omniauth.auth'])
@@ -44,7 +43,6 @@ module Users
         redirect_to root_path, alert: @user.errors.full_messages.join("\n") if @user
       end
     end
-    # rubocop:enable Metrics/AbcSize
 
     def failure
       redirect_to root_path, alert: 'Could not sign user in with OAuth provider.'
@@ -52,8 +50,6 @@ module Users
 
     private
 
-    # rubocop:disable Metrics/AbcSize
-    # rubocop:disable Metrics/MethodLength
     def create_user_from_omniauth auth
       if Rails.application.config.signup_enabled
         user = User.find_or_initialize_by(email: auth['info']['email'])
@@ -83,7 +79,5 @@ module Users
       end
       user
     end
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/MethodLength
   end
 end
