@@ -50,8 +50,6 @@ class BookImporter
     end
   end
 
-  # rubocop:enable Metrics/MethodLength
-  #
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
   def import

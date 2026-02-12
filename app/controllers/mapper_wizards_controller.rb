@@ -119,7 +119,6 @@ class MapperWizardsController < ApplicationController
     end
   end
 
-  # rubocop:enable Metrics/MethodLength
   # POST /search_endpoints/:search_endpoint_id/mapper_wizard/test_mapper
   def test_mapper
     if @wizard_state.html_content.blank?

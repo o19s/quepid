@@ -76,6 +76,7 @@ module ApplicationHelper
 
     nil
   end
+  # rubocop:enable Lint/EmptyBlock
 
   # Override default form_for to disable Turbo Drive on
   # Forms.  Maybe should be an ENV variable?
