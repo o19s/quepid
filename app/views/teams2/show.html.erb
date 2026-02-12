@@ -105,5 +105,3 @@
 </div>
 
   <%= render 'shared/share_case_modal' %>
-
-  <div id="share-case-data" style="display:none" data-share-case-teams-value="<%= j(current_user.teams.select(:id, :name).to_json) %>"></div>

@@ -1,4 +1,4 @@
-<div class="modal fade" id="shareScorerModal" tabindex="-1" aria-labelledby="shareScorerModalLabel" aria-hidden="true">
+<div class="modal fade" id="shareScorerModal" tabindex="-1" aria-labelledby="shareScorerModalLabel" aria-hidden="true" data-controller="share-scorer">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -9,22 +9,18 @@
         <%= form_with url: share_scorers_path, method: :post, local: true, html: { id: 'share-scorer-form', class: 'mb-3' } do %>
           <%= hidden_field_tag :scorer_id, '', id: 'share-scorer-id' %>
 
-          <% if @user_teams.present? %>
-            <p class="h5">Select a team to share this scorer with:</p>
-            <div class="mb-3">
-              <%= select_tag :team_id,
-                             options_for_select([['Select a team', '']] + @user_teams.map { |team| [team.name, team.id] }),
-                             class: 'form-select',
-                             id: 'share-scorer-team',
-                             required: true,
-                             data: { action: 'change->share-scorer#toggleSubmit' } %>
-            </div>
-          <% else %>
-            <p class="text-muted">No teams to share with. Create a team to get started.</p>
-          <% end %>
+          <p class="h5">Select a team to share this scorer with:</p>
+          <div class="mb-3">
+            <%= select_tag :team_id,
+                           options_for_select([['Select a team', '']]),
+                           class: 'form-select',
+                           id: 'share-scorer-team',
+                           required: true,
+                           data: { action: 'change->share-scorer#toggleSubmit' } %>
+          </div>
         <% end %>
 
-        <hr />
+        <hr>
         <p class="h5">Already shared with:</p>
         <div id="share-scorer-shared-list" class="list-group mt-2"></div>
 

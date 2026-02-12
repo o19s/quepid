@@ -76,19 +76,22 @@
               <td><%= kase.owner&.fullname || '—' %></td>
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
-                  <button type="button"
-                          class="btn btn-link text-primary p-0 me-3"
-                          title="Share case"
-                          aria-label="Share case"
-                          data-controller="share-case"
-                          data-action="click->share-case#open"
-                          data-share-case-id-value="<%= kase.id %>"
-                          data-share-case-name-value="<%= h(kase.case_name) %>"
-                          data-share-case-shared-teams-json='<%= kase.teams.select(:id, :name).to_json.html_safe %>'
-                          data-share-case-user-team-ids-json='<%= current_user.teams.pluck(:id).to_json.html_safe %>'>
+                  <%= button_tag type: 'button',
+                                 class: 'btn btn-link p-0 me-2',
+                                 title: 'Share',
+                                 'aria-label': 'Share',
+                                 data: {
+                                   controller: 'share-case',
+                                   action: 'click->share-case#open',
+                                   bs_toggle: 'modal',
+                                   bs_target: '#shareCaseModal',
+                                   share_case_id_value: kase.id,
+                                   share_case_name_value: kase.case_name,
+                                   share_case_all_teams_json: current_user.teams.select(:id, :name).order(:name).to_json,
+                                   share_case_shared_teams_json: kase.teams.select(:id, :name).to_json
+                                 } do %>
                     <i class="bi bi-share" aria-hidden="true"></i>
-                    <span class="visually-hidden">Share case</span>
-                  </button>
+                  <% end %>
 
                   <button type="button"
                           class="btn btn-link text-warning p-0 me-3"

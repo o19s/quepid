@@ -327,7 +327,8 @@ Rails.application.routes.draw do
   delete '/teams2/:id/members/:member_id' => 'teams2#remove_member', as: :team2_member
   delete '/teams2/:id/cases/:case_id' => 'teams2#remove_case', as: :team2_case
   post   '/teams2/:id/cases/:case_id/archive' => 'teams2#archive_case', as: :team2_archive_case
-  post   '/teams2/:id/cases/:case_id/share'   => 'teams2#share_case',   as: :team2_share_case
+  post '/teams2/cases/share' => 'teams2#share_case', as: :share_case
+  post '/teams2/cases/unshare' => 'teams2#unshare_case', as: :unshare_case
 
   get '/teams(/:id)' => 'core#teams', as: :teams_core
 

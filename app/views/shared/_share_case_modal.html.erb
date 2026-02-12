@@ -1,4 +1,4 @@
-<div class="modal fade" id="shareCaseModal" tabindex="-1" aria-labelledby="shareCaseModalLabel" aria-hidden="true">
+<div class="modal fade" id="shareCaseModal" tabindex="-1" aria-labelledby="shareCaseModalLabel" aria-hidden="true" data-controller="share-case">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -6,23 +6,25 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <%= form_with url: '#', method: :post, local: true, html: { id: 'share-case-form', class: 'mb-3' } do %>
+        <%= form_with url: share_case_path, method: :post, local: true, html: { id: 'share-case-form', class: 'mb-3' } do %>
           <%= hidden_field_tag :case_id, '', id: 'share-case-id' %>
-          <%= hidden_field_tag :team_id, '', id: 'share-case-team-hidden' %>
+
+          <p class="h5">Select a team to share this case with:</p>
+          <div class="mb-3">
+            <%= select_tag :team_id,
+                           options_for_select([['Select a team', '']]),
+                           class: 'form-select',
+                           id: 'share-case-team',
+                           required: true,
+                           data: { action: 'change->share-case#toggleSubmit' } %>
+          </div>
         <% end %>
 
-        <p class="h5">Select a team to share this case with:</p>
-        <div class="mb-3">
-          <select class="form-select" id="share-case-team">
-            <option value="">Select a team...</option>
-          </select>
-        </div>
-
-        <hr />
+        <hr>
         <p class="h5">Already shared with:</p>
         <div id="share-case-shared-list" class="list-group mt-2"></div>
 
-        <%= form_with url: '#', method: :post, local: true, html: { id: 'unshare-case-form', class: 'mt-3' } do %>
+        <%= form_with url: unshare_case_path, method: :post, local: true, html: { id: 'unshare-case-form', class: 'mt-3' } do %>
           <%= hidden_field_tag :case_id, '', id: 'unshare-case-id' %>
           <%= hidden_field_tag :team_id, '', id: 'unshare-case-team' %>
         <% end %>

@@ -3,7 +3,7 @@
 class Teams2Controller < ApplicationController
   include Pagy::Method
 
-  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :share_case ]
+  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case ]
 
   # Remove a case from the team
   def remove_case
@@ -24,24 +24,56 @@ class Teams2Controller < ApplicationController
     redirect_to team2_path(@team)
   end
 
-  # Share a case with another team (non-API flow). This action will create the
-  # association and redirect back to the team page (so UX stays on server-side).
+  # Share a case with a team (similar to scorer sharing pattern)
   def share_case
+    team = current_user.teams.find_by(id: params[:team_id])
     kase = Case.find_by(id: params[:case_id])
-    unless kase
-      flash[:alert] = 'Case not found.'
-      redirect_to team2_path(@team) and return
+
+    unless team && kase
+      flash[:alert] = 'Team or case not found.'
+      redirect_back_or_to(teams2_path) and return
     end
 
-    if @team.cases.exists?(kase.id)
-      flash[:alert] = "Case ##{kase.case_name} is already associated with this team."
+    # Check if user has access to this case
+    unless current_user.cases_involved_with.exists?(id: kase.id)
+      flash[:alert] = 'You do not have access to that case.'
+      redirect_back_or_to(teams2_path) and return
+    end
+
+    if team.cases.exists?(kase.id)
+      flash[:alert] = "#{kase.case_name} is already shared with #{team.name}."
     else
-      @team.cases << kase
-      flash[:notice] = "Case #{kase.case_name} shared with team #{@team.name}."
-      Analytics::Tracker.track_case_shared_event(current_user, @team, kase) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_shared_event)
+      team.cases << kase
+      flash[:notice] = "#{kase.case_name} shared with #{team.name}."
+      Analytics::Tracker.track_case_shared_event(current_user, kase, team) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_shared_event)
     end
 
-    redirect_to team2_path(@team)
+    redirect_back_or_to(teams2_path, status: :see_other)
+  end
+
+  def unshare_case
+    team = current_user.teams.find_by(id: params[:team_id])
+    kase = Case.find_by(id: params[:case_id])
+
+    unless team && kase
+      flash[:alert] = 'Team or case not found.'
+      redirect_back_or_to(teams2_path) and return
+    end
+
+    # Check if user has access to this case
+    unless current_user.cases_involved_with.exists?(id: kase.id)
+      flash[:alert] = 'You do not have access to that case.'
+      redirect_back_or_to(teams2_path) and return
+    end
+
+    if team.cases.exists?(kase.id)
+      team.cases.delete(kase)
+      flash[:notice] = "#{kase.case_name} unshared from #{team.name}."
+    else
+      flash[:alert] = "#{kase.case_name} is not shared with #{team.name}."
+    end
+
+    redirect_back_or_to(teams2_path, status: :see_other)
   end
 
   # Archive a case (mark archived and set current_user as owner)
@@ -83,6 +115,7 @@ class Teams2Controller < ApplicationController
     @books_count = @team.books.count
     @scorers_count = @team.scorers.count
     @search_endpoints_count = @team.search_endpoints.count
+    @user_teams = current_user.teams.order(:name)
 
     query = @team.cases
     # Books filtering (separate params to avoid collision with case filters)
