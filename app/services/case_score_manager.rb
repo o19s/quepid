@@ -116,7 +116,6 @@ class CaseScoreManager
     last_score_queries != score_data_queries
   end
 
-  # rubocop:enable Metrics/CyclomaticComplexity
   def queries_empty? queries
     queries.blank?
   end

@@ -36,7 +36,6 @@ class MapperWizardsController < ApplicationController
   # - For GET: test_query contains query params (e.g., "q=test&rows=10")
   # - For POST: test_query contains JSON body (e.g., '{"query": "test"}')
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
   def fetch_html
     http_method = params[:http_method] || 'GET'
 
@@ -122,8 +121,6 @@ class MapperWizardsController < ApplicationController
   end
 
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
-  #
   # POST /search_endpoints/:search_endpoint_id/mapper_wizard/test_mapper
   def test_mapper
     if @wizard_state.html_content.blank?
