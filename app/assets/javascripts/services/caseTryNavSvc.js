@@ -156,13 +156,16 @@ angular.module('QuepidApp')
           absUrl += '/';
         }
         
-        // Look for /case/, /cases/, /scorers or /teams/ in url.
-        var match = absUrl.match(/(.*?)(\/case\/|\/teams\/|\/scorers\/|\/cases\/)/);
+        // Look for /case/ in url (Angular route)
+        var match = absUrl.match(/(.*?)(\/case\/)/);
         if (match && match[1]) {
           return match[1]; // Return the part of URL before the pattern
         }
         else {
-          console.warn('Neither "/case/", "/cases/", "/scorers", nor "/teams/" found in URL');
+          console.warn('"/case/" not found in URL, using origin as fallback');
+          // Fallback: extract base URL from protocol + host + port
+          var urlObj = new URL(absUrl);
+          return urlObj.origin;
         }
       };
       
