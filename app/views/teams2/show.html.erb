@@ -92,15 +92,17 @@
       </div>
     </div>
   </div>
-  <div class="col-12 mt-3">
-        <turbo-frame id="team_cases" src="<%= team2_cases_fragment_path(@team, q: params[:q], archived: params[:archived]) %>" loading="lazy">
-          <%= render partial: 'teams2/cases' %>
-        </turbo-frame>
 </div>
 
-  <turbo-frame id="team_books" src="<%= team2_books_fragment_path(@team, books_q: params[:books_q], books_archived: params[:books_archived], q: params[:q], archived: params[:archived]) %>" loading="lazy">
+<div class="row">
+  <div class="col-12 mb-3">
+    <%= render partial: 'teams2/cases' %>
+  </div>
+
+  <div class="col-12 mb-3">
     <%= render partial: 'teams2/books' %>
-  </turbo-frame>
+  </div>
+</div>
 
   <%= render 'shared/share_case_modal' %>
 

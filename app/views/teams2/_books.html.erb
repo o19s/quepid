@@ -2,7 +2,7 @@
   <div class="card-body">
     <h5 class="card-title">Books</h5>
     <div class="mb-3">
-      <%= form_with url: team2_path(@team), method: :get, local: true, data: { turbo_frame: 'team_books' }, html: { class: 'row g-2 align-items-center' } do %>
+      <%= form_with url: team2_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
         <div class="col-auto" style="flex:1">
           <div class="input-group">
             <%= text_field_tag :books_q, @filter_books_q, class: 'form-control', placeholder: 'Filter books by name' %>
@@ -70,7 +70,7 @@
 
       <% if defined?(pagy_nav) && @pagy_books %>
         <div class="mt-2">
-          <%= pagy_nav(@pagy_books, link_extra: 'data-turbo-frame="team_books"') %>
+          <%= pagy_nav(@pagy_books) %>
         </div>
       <% end %>
     </div>

@@ -329,10 +329,6 @@ Rails.application.routes.draw do
   post   '/teams2/:id/cases/:case_id/archive' => 'teams2#archive_case', as: :team2_archive_case
   post   '/teams2/:id/cases/:case_id/share'   => 'teams2#share_case',   as: :team2_share_case
 
-  # Fragment endpoints for turbo-frame lazy loading of team sections
-  get '/teams2/:id/cases_fragment' => 'teams2#cases_fragment', as: :team2_cases_fragment
-  get '/teams2/:id/books_fragment' => 'teams2#books_fragment', as: :team2_books_fragment
-
   get '/teams(/:id)' => 'core#teams', as: :teams_core
 
   # Static pages

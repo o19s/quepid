@@ -3,7 +3,7 @@
 class Teams2Controller < ApplicationController
   include Pagy::Method
 
-  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :share_case, :cases_fragment, :books_fragment ]
+  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :share_case ]
 
   # Remove a case from the team
   def remove_case
@@ -104,57 +104,6 @@ class Teams2Controller < ApplicationController
     @pagy_books, @books = pagy(books_query.order(:id))
     @filter_books_q = books_q
     @filter_books_archived = books_include_archived
-
-    # If this is a turbo-frame request for one of the frames, return only that partial
-    if turbo_frame_request?
-      frame = request.headers['Turbo-Frame']
-      case frame
-      when 'team_cases'
-        render partial: 'teams2/cases' and return
-      when 'team_books'
-        render partial: 'teams2/books' and return
-      end
-    end
-  end
-
-  # Fragment endpoint for lazy-loading the Cases partial inside a turbo-frame.
-  def cases_fragment
-    @archived = deserialize_bool_param(params[:archived])
-    @filter_q = params[:q].to_s.strip
-
-    query = @team.cases
-    if params[:q].present?
-      query = query.where('case_name LIKE ? OR case_id LIKE ? ',
-                          "%#{params[:q]}%", "%#{params[:q]}%")
-    end
-    query = query.where(archived: @archived)
-    @cases = query.order(:id).includes(:owner, :teams)
-
-    # Render a turbo-frame-wrapped template so Turbo can match the frame id
-    render template: 'teams2/cases_fragment', layout: false
-  end
-
-  # Fragment endpoint for lazy-loading the Books partial inside a turbo-frame.
-  def books_fragment
-    sleep 3
-    books_q = params[:books_q].to_s.strip
-    books_include_archived = params[:books_archived].present? && params[:books_archived].to_s.in?(%w[1 true on])
-
-    books_query = @team.books
-    books_query = books_include_archived ? books_query.archived : books_query.active
-    books_query = books_query.with_counts if books_query.respond_to?(:with_counts)
-    books_query = books_query.where('name LIKE ?', "%#{books_q}%") if books_q.present?
-
-    @pagy_books, @books = pagy(books_query.order(:id))
-    @filter_books_q = books_q
-    @filter_books_archived = books_include_archived
-
-    # Preserve case filters when rendering books fragment
-    @filter_q = params[:q].to_s.strip
-    @archived = deserialize_bool_param(params[:archived])
-
-    # Render a turbo-frame-wrapped template so Turbo can match the frame id
-    render template: 'teams2/books_fragment', layout: false
   end
 
   def new

@@ -3,7 +3,7 @@
     <h5 class="card-title">Cases</h5>
     <div class="table-responsive">
       <div class="mb-3">
-        <%= form_with url: team2_path(@team), method: :get, local: true, data: { turbo_frame: 'team_cases' }, html: { class: 'row g-2 align-items-center' } do %>
+        <%= form_with url: team2_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
           <div class="col-auto" style="flex:1">
             <div class="input-group">
               <%= text_field_tag :q, @filter_q.presence || params[:q], class: 'form-control form-control-sm', placeholder: 'Filter by case name or id' %>
