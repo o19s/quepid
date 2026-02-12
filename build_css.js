@@ -222,7 +222,6 @@ function copyImageFiles() {
   ensureDirectoryExists('app/assets/builds/images');
   
   copyFileIfExists('public/images/querqy-icon.png', 'app/assets/builds/images/querqy-icon.png');
-  copyFileIfExists('public/images/loading.gif', 'app/assets/builds/images/loading.gif');
 }
 
 function buildAllCSS() {
