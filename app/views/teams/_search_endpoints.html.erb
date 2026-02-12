@@ -59,7 +59,12 @@
                 <%= link_to search_endpoint.name.presence || search_endpoint.fullname, search_endpoint_path(search_endpoint) %>
               </td>
               <td>
-                <span class="badge bg-secondary"><%= search_endpoint.search_engine&.titleize || '—' %></span>
+                <span class="badge bg-secondary">
+                  <% if search_endpoint.search_engine %>
+                    <%= image_tag "#{search_endpoint.search_engine}-icon.png", size:'20x20', class:'rounded-circle me-1' %>
+                  <% end %>
+                  <%= search_endpoint.search_engine&.titleize || '—' %>
+                </span>
               </td>
               <td>
                 <small class="text-muted"><%= truncate(search_endpoint.endpoint_url, length: 50) %></small>
