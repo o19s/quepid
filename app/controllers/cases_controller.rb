@@ -27,8 +27,8 @@ class CasesController < ApplicationController
 
     # Include associations and counts for efficient loading
     query = query.with_counts
-    query = query.includes([ :metadata ])
-    query = query.order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
+    #query = query.includes([ :metadata ])
+    #query = query.order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
     query = query.includes(:owner, :teams, scores: :user).distinct
 
     # Paginate results
