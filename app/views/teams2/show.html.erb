@@ -7,7 +7,7 @@
     &nbsp;&nbsp;
     <small class="text-muted">Books: <strong><%= @books_count %></strong></small>
     &nbsp;&nbsp;
-    <small class="text-muted">Scorers: <strong><%= @search_endpoints_count %></strong></small>
+    <small class="text-muted">Search Endpoints: <strong><%= @search_endpoints_count %></strong></small>
     &nbsp;&nbsp;
     <small class="text-muted">Scorers: <strong><%= @scorers_count %></strong></small>
   </div>
@@ -27,6 +27,11 @@
           </div>
         <% end %>
         <p class="text-muted mt-2 small">Start typing an email address to add an existing user to this team.</p>
+        <hr>
+        
+        <%= link_to new_team_ai_judge_path(@team), class: 'btn btn-primary btn-sm w-100' do %>
+          <i class="bi bi-robot"></i> Create AI Judge
+        <% end %>
       </div>
     </div>
     
@@ -73,6 +78,12 @@
                 </div>
               </div>
               <div class="ms-3">
+                
+                <% if member.ai_judge? %>
+                  <%= link_to edit_team_ai_judge_path(@team, member), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                  <% end %>
+                <% end %>
                 <button type="button"
                         class="btn btn-link text-danger p-0"
                         title="Remove member"
@@ -85,6 +96,7 @@
                   <i class="bi bi-x-circle" aria-hidden="true"></i>
                   <span class="visually-hidden">Remove member</span>
                 </button>
+                
               </div>
             </div>
           <% end %>
@@ -104,6 +116,10 @@
   </div>
 
   <div class="col-12 mb-3">
+    <%= render partial: 'teams2/search_endpoints' %>
+  </div>
+  
+  <div class="col-12 mb-3">
     <%= render partial: 'teams2/scorers' %>
   </div>
 </div>
@@ -111,3 +127,4 @@
   <%= render 'shared/share_case_modal' %>
   <%= render 'shared/share_book_modal' %>
   <%= render 'shared/share_scorer_modal' %>
+  <%= render 'shared/share_search_endpoint_modal' %>

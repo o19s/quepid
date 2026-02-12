@@ -328,10 +328,14 @@ Rails.application.routes.draw do
   delete '/teams2/:id/cases/:case_id' => 'teams2#remove_case', as: :team2_case
   post   '/teams2/:id/cases/:case_id/archive' => 'teams2#archive_case', as: :team2_archive_case
   post   '/teams2/:id/cases/:case_id/unarchive' => 'teams2#unarchive_case', as: :team2_unarchive_case
+  post   '/teams2/:id/search_endpoints/:search_endpoint_id/archive' => 'teams2#archive_search_endpoint', as: :team2_archive_search_endpoint
+  post   '/teams2/:id/search_endpoints/:search_endpoint_id/unarchive' => 'teams2#unarchive_search_endpoint', as: :team2_unarchive_search_endpoint
   post '/teams2/cases/share' => 'teams2#share_case', as: :share_case
   post '/teams2/cases/unshare' => 'teams2#unshare_case', as: :unshare_case
   post '/teams2/books/share' => 'teams2#share_book', as: :share_book
   post '/teams2/books/unshare' => 'teams2#unshare_book', as: :unshare_book
+  post '/teams2/search_endpoints/share' => 'teams2#share_search_endpoint', as: :share_search_endpoint
+  post '/teams2/search_endpoints/unshare' => 'teams2#unshare_search_endpoint', as: :unshare_search_endpoint
 
   get '/teams(/:id)' => 'core#teams', as: :teams_core
 

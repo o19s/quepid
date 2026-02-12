@@ -17,6 +17,22 @@
             <%= check_box_tag :archived, '1', @archived, class: 'form-check-input', id: 'archived-cases-checkbox', onchange: 'this.form.submit()' %>
             <%= label_tag 'archived-cases-checkbox', 'Archived Cases', class: 'form-check-label' %>
           </div>
+          <%# Preserve other filters %>
+          <% if @filter_books_q.present? %>
+            <%= hidden_field_tag :books_q, @filter_books_q %>
+          <% end %>
+          <% if @filter_books_archived %>
+            <%= hidden_field_tag :books_archived, '1' %>
+          <% end %>
+          <% if @filter_scorers_q.present? %>
+            <%= hidden_field_tag :scorers_q, @filter_scorers_q %>
+          <% end %>
+          <% if @filter_search_endpoints_q.present? %>
+            <%= hidden_field_tag :search_endpoints_q, @filter_search_endpoints_q %>
+          <% end %>
+          <% if @filter_search_endpoints_archived %>
+            <%= hidden_field_tag :search_endpoints_archived, '1' %>
+          <% end %>
         <% end %>
       </div>
 

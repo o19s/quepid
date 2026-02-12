@@ -1,0 +1,137 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">
+      Search Endpoints 
+      <small class="text-muted ms-2">
+        <%= link_to "See all search endpoints", search_endpoints_path, class: "text-decoration-none" %>
+      </small>
+    </h5>
+    <div class="mb-3">
+      <%= form_with url: team2_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
+        <div class="col-auto" style="flex:1">
+          <div class="input-group">
+            <%= text_field_tag :search_endpoints_q, @filter_search_endpoints_q, class: 'form-control', placeholder: 'Filter search endpoints by name or URL' %>
+            <button class="btn btn-outline-secondary" type="submit" title="Search search endpoints">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <span class="visually-hidden">Search search endpoints</span>
+            </button>
+          </div>
+        </div>
+        <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
+          <%= check_box_tag :search_endpoints_archived, '1', @filter_search_endpoints_archived, class: 'form-check-input', id: 'search-endpoints-archived-checkbox', onchange: 'this.form.submit()' %>
+          <%= label_tag 'search-endpoints-archived-checkbox', 'Archived Search Endpoints', class: 'form-check-label ms-2' %>
+        </div>
+        <%# Preserve case, book, and scorer filters when submitting search endpoints form %>
+        <% if @filter_q.present? %>
+          <%= hidden_field_tag :q, @filter_q %>
+        <% end %>
+        <% if @archived %>
+          <%= hidden_field_tag :archived, '1' %>
+        <% end %>
+        <% if @filter_books_q.present? %>
+          <%= hidden_field_tag :books_q, @filter_books_q %>
+        <% end %>
+        <% if @filter_books_archived %>
+          <%= hidden_field_tag :books_archived, '1' %>
+        <% end %>
+        <% if @filter_scorers_q.present? %>
+          <%= hidden_field_tag :scorers_q, @filter_scorers_q %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Search Engine</th>
+            <th>Endpoint URL</th>
+            <th>API Method</th>
+            <th>Owner</th>
+            <th class="text-end"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (@search_endpoints || []).each do |search_endpoint| %>
+            <tr>
+              <td>
+                <%= link_to search_endpoint.name.presence || search_endpoint.fullname, search_endpoint_path(search_endpoint) %>
+              </td>
+              <td>
+                <span class="badge bg-secondary"><%= search_endpoint.search_engine&.titleize || '—' %></span>
+              </td>
+              <td>
+                <small class="text-muted"><%= truncate(search_endpoint.endpoint_url, length: 50) %></small>
+              </td>
+              <td>
+                <span class="badge bg-info text-dark"><%= search_endpoint.api_method || '—' %></span>
+              </td>
+              <td><%= search_endpoint.owner&.fullname || '—' %></td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                  <%= button_tag type: 'button',
+                                 class: 'btn btn-link p-0 me-2',
+                                 title: 'Share',
+                                 'aria-label': 'Share',
+                                 data: {
+                                   controller: 'share-search-endpoint',
+                                   action: 'click->share-search-endpoint#open',
+                                   bs_toggle: 'modal',
+                                   bs_target: '#shareSearchEndpointModal',
+                                   share_search_endpoint_id_value: search_endpoint.id,
+                                   share_search_endpoint_name_value: search_endpoint.fullname,
+                                   share_search_endpoint_all_teams_json: current_user.teams.select(:id, :name).order(:name).to_json,
+                                   share_search_endpoint_shared_teams_json: search_endpoint.teams.select(:id, :name).to_json
+                                 } do %>
+                    <i class="bi bi-share" aria-hidden="true"></i>
+                  <% end %>
+
+                  <% if search_endpoint.archived? %>
+                    <button type="button"
+                            class="btn btn-link text-success p-0 me-3"
+                            title="Unarchive search endpoint"
+                            aria-label="Unarchive search endpoint"
+                            data-controller="confirm-delete"
+                            data-action="click->confirm-delete#open"
+                            data-confirm-delete-url-value="<%= team2_unarchive_search_endpoint_path(@team, search_endpoint_id: search_endpoint.id) %>"
+                            data-confirm-delete-method-value="post"
+                            data-confirm-delete-message-value="<%= h("Unarchive #{search_endpoint.fullname}?") %>">
+                      <i class="bi-folder-check" aria-hidden="true"></i>
+                      <span class="visually-hidden">Unarchive search endpoint</span>
+                    </button>
+                  <% else %>
+                    <button type="button"
+                            class="btn btn-link text-warning p-0 me-3"
+                            title="Archive search endpoint"
+                            aria-label="Archive search endpoint"
+                            data-controller="confirm-delete"
+                            data-action="click->confirm-delete#open"
+                            data-confirm-delete-url-value="<%= team2_archive_search_endpoint_path(@team, search_endpoint_id: search_endpoint.id) %>"
+                            data-confirm-delete-method-value="post"
+                            data-confirm-delete-message-value="<%= h("Archive #{search_endpoint.fullname}?") %>">
+                      <i class="bi-folder-check" aria-hidden="true"></i>
+                      <span class="visually-hidden">Archive search endpoint</span>
+                    </button>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <% if (@search_endpoints || []).empty? %>
+        <div class="text-center text-muted py-3">
+          <p>No search endpoints found for this team.</p>
+        </div>
+      <% end %>
+
+      <% if defined?(pagy_nav) && @pagy_search_endpoints %>
+        <div class="mt-2">
+          <%= pagy_nav(@pagy_search_endpoints) %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

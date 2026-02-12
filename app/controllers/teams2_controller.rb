@@ -3,7 +3,7 @@
 class Teams2Controller < ApplicationController
   include Pagy::Method
 
-  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case ]
+  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint ]
 
   # Remove a case from the team
   def remove_case
@@ -127,6 +127,97 @@ class Teams2Controller < ApplicationController
     redirect_back_or_to(teams2_path, status: :see_other)
   end
 
+  # Share a search endpoint with a team (similar to case/book sharing pattern)
+  def share_search_endpoint
+    team = current_user.teams.find_by(id: params[:team_id])
+    search_endpoint = SearchEndpoint.find_by(id: params[:search_endpoint_id])
+
+    unless team && search_endpoint
+      flash[:alert] = 'Team or search endpoint not found.'
+      redirect_back_or_to(teams2_path) and return
+    end
+
+    # Check if user has access to this search endpoint
+    unless current_user.search_endpoints_involved_with.exists?(id: search_endpoint.id)
+      flash[:alert] = 'You do not have access to that search endpoint.'
+      redirect_back_or_to(teams2_path) and return
+    end
+
+    if team.search_endpoints.exists?(search_endpoint.id)
+      flash[:alert] = "#{search_endpoint.fullname} is already shared with #{team.name}."
+    else
+      team.search_endpoints << search_endpoint
+      flash[:notice] = "#{search_endpoint.fullname} shared with #{team.name}."
+    end
+
+    redirect_back_or_to(teams2_path, status: :see_other)
+  end
+
+  def unshare_search_endpoint
+    team = current_user.teams.find_by(id: params[:team_id])
+    search_endpoint = SearchEndpoint.find_by(id: params[:search_endpoint_id])
+
+    unless team && search_endpoint
+      flash[:alert] = 'Team or search endpoint not found.'
+      redirect_back_or_to(teams2_path) and return
+    end
+
+    # Check if user has access to this search endpoint
+    unless current_user.search_endpoints_involved_with.exists?(id: search_endpoint.id)
+      flash[:alert] = 'You do not have access to that search endpoint.'
+      redirect_back_or_to(teams2_path) and return
+    end
+
+    if team.search_endpoints.exists?(search_endpoint.id)
+      team.search_endpoints.delete(search_endpoint)
+      flash[:notice] = "#{search_endpoint.fullname} unshared from #{team.name}."
+    else
+      flash[:alert] = "#{search_endpoint.fullname} is not shared with #{team.name}."
+    end
+
+    redirect_back_or_to(teams2_path, status: :see_other)
+  end
+
+  # Archive a search endpoint
+  def archive_search_endpoint
+    search_endpoint = SearchEndpoint.find_by(id: params[:search_endpoint_id])
+    unless search_endpoint
+      flash[:alert] = 'Search endpoint not found.'
+      redirect_to team2_path(@team) and return
+    end
+
+    # Only archive if the search endpoint is associated with this team
+    if @team.search_endpoints.exists?(search_endpoint.id)
+      search_endpoint.owner = current_user
+      search_endpoint.mark_archived!
+      flash[:notice] = "Search endpoint #{search_endpoint.fullname} archived."
+    else
+      flash[:alert] = "Search endpoint #{search_endpoint.fullname} is not associated with this team."
+    end
+
+    redirect_to team2_path(@team)
+  end
+
+  # Unarchive a search endpoint
+  def unarchive_search_endpoint
+    search_endpoint = SearchEndpoint.find_by(id: params[:search_endpoint_id])
+    unless search_endpoint
+      flash[:alert] = 'Search endpoint not found.'
+      redirect_to team2_path(@team) and return
+    end
+
+    # Only unarchive if the search endpoint is associated with this team
+    if @team.search_endpoints.exists?(search_endpoint.id)
+      search_endpoint.archived = false
+      search_endpoint.save
+      flash[:notice] = "Search endpoint #{search_endpoint.fullname} unarchived."
+    else
+      flash[:alert] = "Search endpoint #{search_endpoint.fullname} is not associated with this team."
+    end
+
+    redirect_to team2_path(@team)
+  end
+
   # Archive a case (mark archived and set current_user as owner)
   def archive_case
     kase = Case.find_by(id: params[:case_id])
@@ -178,6 +269,7 @@ class Teams2Controller < ApplicationController
   end
 
   # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   def show
     @archived = deserialize_bool_param(params[:archived])
     @filter_q = params[:q].to_s.strip
@@ -216,8 +308,24 @@ class Teams2Controller < ApplicationController
     scorers_query = scorers_query.where('name LIKE ?', "%#{scorers_q}%") if scorers_q.present?
     @pagy_scorers, @scorers = pagy(scorers_query.order(:name), page_param: :scorers_page)
     @filter_scorers_q = scorers_q
+
+    # Search Endpoints filtering
+    search_endpoints_q = params[:search_endpoints_q].to_s.strip
+    search_endpoints_include_archived = params[:search_endpoints_archived].present? && params[:search_endpoints_archived].to_s.in?(%w[1 true on])
+
+    search_endpoints_query = @team.search_endpoints.includes(:teams)
+    search_endpoints_query = search_endpoints_include_archived ? search_endpoints_query.where(archived: true) : search_endpoints_query.not_archived
+    if search_endpoints_q.present?
+      search_endpoints_query = search_endpoints_query.where('name LIKE ? OR endpoint_url LIKE ?',
+                                                            "%#{search_endpoints_q}%",
+                                                            "%#{search_endpoints_q}%")
+    end
+    @pagy_search_endpoints, @search_endpoints = pagy(search_endpoints_query.order(:id), page_param: :search_endpoints_page)
+    @filter_search_endpoints_q = search_endpoints_q
+    @filter_search_endpoints_archived = search_endpoints_include_archived
   end
   # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength
 
   def new
     @team = Team.new

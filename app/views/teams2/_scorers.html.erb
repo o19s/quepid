@@ -1,7 +1,7 @@
 <div class="card">
   <div class="card-body">
     <h5 class="card-title">
-      Scorers 
+      Custom Scorers 
       <small class="text-muted ms-2">
         <%= link_to "See communal scorers", scorers_path, class: "text-decoration-none" %>
       </small>
@@ -30,6 +30,12 @@
         <% if @filter_books_archived %>
           <%= hidden_field_tag :books_archived, '1' %>
         <% end %>
+        <% if @filter_search_endpoints_q.present? %>
+          <%= hidden_field_tag :search_endpoints_q, @filter_search_endpoints_q %>
+        <% end %>
+        <% if @filter_search_endpoints_archived %>
+          <%= hidden_field_tag :search_endpoints_archived, '1' %>
+        <% end %>
       <% end %>
     </div>
 
@@ -39,7 +45,6 @@
           <tr>
             <th>Name</th>
             <th>Scale</th>
-            <th>Communal</th>
             <th>Owner</th>
             <th class="text-end"></th>
           </tr>
@@ -49,14 +54,6 @@
             <tr>
               <td><%= link_to scorer.name, edit_scorer_path(scorer) %></td>
               <td><%= scorer.scale_list || '—' %></td>
-              <td>
-                <% if scorer.communal? %>
-                  <i class="bi bi-check-circle text-success" aria-hidden="true"></i>
-                  <span class="visually-hidden">Yes</span>
-                <% else %>
-                  —
-                <% end %>
-              </td>
               <td><%= scorer.owner&.fullname || '—' %></td>
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
