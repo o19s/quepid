@@ -51,7 +51,7 @@
             <tr>
               <td><%= book.id %></td>
               <td><%= link_to book.name, book_path(book) %></td>
-              <td><%= book.respond_to?(:query_doc_pairs_count) ? book.query_doc_pairs_count : book.query_doc_pairs.size %></td>
+              <td><span class="badge bg-primary rounded-pill"><%= book.query_doc_pairs_count %> query/doc pairs</span></td>
               <td><%= book.owner&.fullname || '—' %></td>
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">

@@ -260,10 +260,11 @@ class TeamsController < ApplicationController
   end
 
   def index
-    @q = params[:q]
-
     query = Team.all
-    query = query.where('name LIKE ?', "%#{@q}%") if @q.present?
+
+    query = query.joins(:members).where(users: { id: current_user.id }).distinct if params[:member].present?
+
+    query = query.where('teams.name LIKE ?', "%#{params[:q]}%") if params[:q].present?
 
     @pagy, @teams = pagy(query.order(:name))
   end
@@ -334,6 +335,7 @@ class TeamsController < ApplicationController
   def create
     @team = Team.new(team_params)
     if @team.save
+      @team.members << current_user
       redirect_to team_path(@team), notice: 'Team created.'
     else
       render :new

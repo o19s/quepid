@@ -85,6 +85,7 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
             <th>Name</th>
             <th>Search Engine</th>
             <th>Endpoint Url</th>
+            <th class="text-end"></th>
           </tr>
         </thead>
     
@@ -99,6 +100,24 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
                 <%= search_endpoint.search_engine %>
               </td>
               <td><%= search_endpoint.endpoint_url %> </td>
+              <td class="text-end">
+                <%= button_tag type: 'button',
+                               class: 'btn btn-link p-0',
+                               title: 'Share',
+                               'aria-label': 'Share',
+                               data: {
+                                 controller: 'share-search-endpoint',
+                                 action: 'click->share-search-endpoint#open',
+                                 bs_toggle: 'modal',
+                                 bs_target: '#shareSearchEndpointModal',
+                                 share_search_endpoint_id_value: search_endpoint.id,
+                                 share_search_endpoint_name_value: search_endpoint.fullname,
+                                 share_search_endpoint_all_teams_json: @current_user.teams.select(:id, :name).order(:name).to_json,
+                                 share_search_endpoint_shared_teams_json: search_endpoint.teams.select(:id, :name).to_json
+                               } do %>
+                  <i class="bi bi-share" aria-hidden="true"></i>
+                <% end %>
+              </td>
             </tr>
           <% end %>
         </tbody>
@@ -108,3 +127,5 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
       <%== @pagy.series_nav(:bootstrap) %>
     </div>
   </div>
+
+<%= render 'shared/share_search_endpoint_modal' %>
