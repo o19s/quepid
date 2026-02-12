@@ -32,8 +32,8 @@ angular.module('QuepidApp')
       ctrl.goToTeam   = goToTeam;
 
       function goToTeam(teamId) {
-        var path = '/teams/' + teamId;
-        $location.path(path);
+        var url = caseTryNavSvc.getQuepidRootUrl() + '/teams/' + teamId;
+        window.location.href = url;
       }
 
       function rename() {      

@@ -135,6 +135,28 @@ Rails.application.routes.draw do
     resources :export, only: [ :update ], param: :book_id
   end
 
+  resources :teams, only: [ :index, :new, :create, :show ] do
+    member do
+      post :rename
+      post 'members' => 'teams#add_member', as: :members
+      delete 'members/:member_id' => 'teams#remove_member', as: :member
+      delete 'cases/:case_id' => 'teams#remove_case', as: :case
+      post 'cases/:case_id/archive' => 'teams#archive_case', as: :archive_case
+      post 'cases/:case_id/unarchive' => 'teams#unarchive_case', as: :unarchive_case
+      post 'search_endpoints/:search_endpoint_id/archive' => 'teams#archive_search_endpoint', as: :archive_search_endpoint
+      post 'search_endpoints/:search_endpoint_id/unarchive' => 'teams#unarchive_search_endpoint', as: :unarchive_search_endpoint
+    end
+
+    collection do
+      post 'cases/share' => 'teams#share_case', as: :share_case
+      post 'cases/unshare' => 'teams#unshare_case', as: :unshare_case
+      post 'books/share' => 'teams#share_book', as: :share_book
+      post 'books/unshare' => 'teams#unshare_book', as: :unshare_book
+      post 'search_endpoints/share' => 'teams#share_search_endpoint', as: :share_search_endpoint
+      post 'search_endpoints/unshare' => 'teams#unshare_search_endpoint', as: :unshare_search_endpoint
+    end
+  end
+
   devise_for :users, controllers: {
     passwords:          'users/passwords',
     invitations:        'users/invitations',
@@ -317,28 +339,6 @@ Rails.application.routes.draw do
   get '/cases'                        => 'core#index'
   get '/case'                         => 'core#index'
   get '/cases/import'                 => 'core#index'
-  # Teams routes
-  resources :teams, only: [ :index, :new, :create, :show ] do
-    member do
-      post :rename
-      post 'members' => 'teams#add_member', as: :members
-      delete 'members/:member_id' => 'teams#remove_member', as: :member
-      delete 'cases/:case_id' => 'teams#remove_case', as: :case
-      post 'cases/:case_id/archive' => 'teams#archive_case', as: :archive_case
-      post 'cases/:case_id/unarchive' => 'teams#unarchive_case', as: :unarchive_case
-      post 'search_endpoints/:search_endpoint_id/archive' => 'teams#archive_search_endpoint', as: :archive_search_endpoint
-      post 'search_endpoints/:search_endpoint_id/unarchive' => 'teams#unarchive_search_endpoint', as: :unarchive_search_endpoint
-    end
-
-    collection do
-      post 'cases/share' => 'teams#share_case', as: :share_case
-      post 'cases/unshare' => 'teams#unshare_case', as: :unshare_case
-      post 'books/share' => 'teams#share_book', as: :share_book
-      post 'books/unshare' => 'teams#unshare_book', as: :unshare_book
-      post 'search_endpoints/share' => 'teams#share_search_endpoint', as: :share_search_endpoint
-      post 'search_endpoints/unshare' => 'teams#unshare_search_endpoint', as: :unshare_search_endpoint
-    end
-  end
 
   # Static pages
   get '/cookies' => 'pages#show', defaults: { page: 'cookies' }

@@ -8,6 +8,7 @@ angular.module('QuepidApp')
     '$log',
     '$location',
     'teamSvc',
+    'caseTryNavSvc',
     'acase',
     function (
       $rootScope,
@@ -16,6 +17,7 @@ angular.module('QuepidApp')
       $log,
       $location,
       teamSvc,
+      caseTryNavSvc,
       acase
      ) {
       var ctrl = this;
@@ -91,7 +93,8 @@ angular.module('QuepidApp')
 
       ctrl.goToTeamsPage = function () {
         $uibModalInstance.dismiss('cancel');
-        $location.path('/teams');
+        var url = caseTryNavSvc.getQuepidRootUrl() + '/teams';
+        window.location.href = url;
       };
     }
   ]);

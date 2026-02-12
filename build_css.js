@@ -123,7 +123,7 @@ function buildCoreCSS() {
   output += '\n';
 
   // Screen-specific styles
-  const screens = ['cases', 'scorers', 'books', 'search_endpoints', 'teams', 'users', 'docs', 'settings', 'qscore', 'qgraph'];
+  const screens = ['cases', 'docs', 'settings', 'qscore', 'qgraph'];
   for (const screen of screens) {
     output += readFileIfExists(`app/assets/stylesheets/${screen}.css`);
     output += '\n';
