@@ -39,6 +39,11 @@ class SearchEndpoint < ApplicationRecord
 
   has_many   :tries, dependent: :nullify, inverse_of: :search_endpoint
 
+  # Serialization
+  serialize :custom_headers, coder: JSON
+
+  # Concerns
+
   # Scopes
   include ForUserScope
 
@@ -52,6 +57,8 @@ class SearchEndpoint < ApplicationRecord
   validates :search_engine, presence: true
   validates :endpoint_url, presence: true
   validates :api_method, presence: true
+  validates :options, json_format: true, allow_blank: true
+  validates :custom_headers, json_format: { normalize_values: true }, allow_blank: true
   validate :validate_proxy_requests_api_method
 
   def fullname

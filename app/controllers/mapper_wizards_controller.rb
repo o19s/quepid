@@ -37,42 +37,46 @@ class MapperWizardsController < ApplicationController
   # - For POST: test_query contains JSON body (e.g., '{"query": "test"}')
   # rubocop:disable Metrics/MethodLength
   def fetch_html
-    service = MapperWizardService.new
     http_method = params[:http_method] || 'GET'
-    test_query = params[:test_query]
-    custom_headers = params[:custom_headers]
-    basic_auth_credential = params[:basic_auth_credential]
 
-    # Parse custom headers from JSON string to hash
-    headers_hash = parse_custom_headers(custom_headers)
+    # Save wizard state first - Rails serialize handles JSON conversion and validation
+    @wizard_state.assign_attributes(
+      search_url:            params[:search_url],
+      http_method:           http_method,
+      test_query:            params[:test_query],
+      custom_headers:        params[:custom_headers],
+      basic_auth_credential: params[:basic_auth_credential]
+    )
 
+    unless @wizard_state.save
+      return render json: {
+        success: false,
+        error:   @wizard_state.errors.full_messages.join(', '),
+      }, status: :unprocessable_content
+    end
+
+    # Now custom_headers is a normalized Hash, ready to use
     # Build fetch URL and request body based on HTTP method
     if 'POST' == http_method
-      fetch_url = params[:search_url]
-      request_body = test_query
+      fetch_url = @wizard_state.search_url
+      request_body = @wizard_state.test_query
     else
-      fetch_url = build_fetch_url(params[:search_url], test_query)
+      fetch_url = build_fetch_url(@wizard_state.search_url, @wizard_state.test_query)
       request_body = nil
     end
 
+    service = MapperWizardService.new
     result = service.fetch_html(
       fetch_url,
       http_method:  http_method,
       request_body: request_body,
-      headers:      headers_hash,
-      credentials:  basic_auth_credential
+      headers:      @wizard_state.custom_headers || {},
+      credentials:  @wizard_state.basic_auth_credential
     )
 
     if result[:success]
-      # Store the fetch result in wizard state
-      @wizard_state.store_fetch_result(
-        params[:search_url],
-        result[:html],
-        method:                http_method,
-        test_query:            test_query,
-        custom_headers:        custom_headers,
-        basic_auth_credential: basic_auth_credential
-      )
+      # Update with HTML content and save again
+      @wizard_state.update!(html_content: result[:html])
 
       render json: {
         success:      true,
@@ -115,8 +119,8 @@ class MapperWizardsController < ApplicationController
       render json: { success: false, error: result[:error] }, status: :unprocessable_content
     end
   end
-  # rubocop:enable Metrics/MethodLength
 
+  # rubocop:enable Metrics/MethodLength
   # POST /search_endpoints/:search_endpoint_id/mapper_wizard/test_mapper
   def test_mapper
     if @wizard_state.html_content.blank?
@@ -178,6 +182,8 @@ class MapperWizardsController < ApplicationController
     custom_headers = params[:custom_headers].presence || @wizard_state.custom_headers || @search_endpoint.custom_headers
     basic_auth_credential = params[:basic_auth_credential].presence || @wizard_state.basic_auth_credential || @search_endpoint.basic_auth_credential
 
+    # Rails serialize with JSON coder automatically handles JSON string -> Hash conversion
+    # and model validation will catch any invalid JSON
     @search_endpoint.assign_attributes(
       mapper_code:           combined_code,
       search_engine:         'searchapi',
@@ -256,15 +262,6 @@ class MapperWizardsController < ApplicationController
 
     separator = base_url.include?('?') ? '&' : '?'
     "#{base_url}#{separator}#{query_params}"
-  end
-
-  # Parse custom headers from JSON string to hash
-  def parse_custom_headers custom_headers_json
-    return {} if custom_headers_json.blank?
-
-    JSON.parse(custom_headers_json)
-  rescue JSON::ParserError
-    {}
   end
 
   # Parse combined mapper_code back into separate functions

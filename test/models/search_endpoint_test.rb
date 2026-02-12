@@ -26,8 +26,13 @@
 #  index_search_endpoints_on_owner_id_and_id  (owner_id,id)
 #
 require 'test_helper'
+require 'support/shared_examples/custom_headers_validatable_examples'
+require 'support/shared_examples/json_options_validatable_examples'
 
 class SearchEndpointTest < ActiveSupport::TestCase
+  include CustomHeadersValidatableExamples
+  include JsonOptionsValidatableExamples
+
   describe 'full name' do
     it 'requires a search_engine to be defined' do
       endpoint = SearchEndpoint.new endpoint_url: 'http://something'
@@ -52,8 +57,47 @@ class SearchEndpointTest < ActiveSupport::TestCase
 
   describe 'options' do
     let(:search_endpoint) { search_endpoints(:for_case_queries_case) }
+
     it 'handles options from fixture file' do
       assert_equal({ 'corpusId'=> 12_345 }, search_endpoint.options)
+    end
+  end
+
+  # Helper method for CustomHeadersValidatable shared examples
+  def create_record_with_custom_headers custom_headers
+    SearchEndpoint.new(
+      name:           'Test Endpoint',
+      endpoint_url:   'http://test.example.com',
+      search_engine:  'solr',
+      api_method:     'GET',
+      custom_headers: custom_headers
+    )
+  end
+
+  # Helper method for JsonOptionsValidatable shared examples
+  def create_record_with_options options
+    SearchEndpoint.new(
+      name:          'Test',
+      endpoint_url:  'http://test.com',
+      search_engine: 'solr',
+      api_method:    'GET',
+      options:       options
+    )
+  end
+
+  # SearchEndpoint-specific tests
+  describe 'custom_headers persistence' do
+    it 'normalizes after saving and reloading' do
+      endpoint = SearchEndpoint.create!(
+        name:           'Test Endpoint',
+        endpoint_url:   'http://test.example.com',
+        search_engine:  'solr',
+        api_method:     'GET',
+        custom_headers: { 'X-Retry' => 3, 'X-Debug' => true }
+      )
+      endpoint.reload
+      assert_equal '3', endpoint.custom_headers['X-Retry']
+      assert_equal 'true', endpoint.custom_headers['X-Debug']
     end
   end
 end

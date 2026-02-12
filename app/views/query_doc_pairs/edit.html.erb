@@ -1,13 +1,12 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1>Edit Query Doc Pair in <%= book_title(@book) %></h1>
+  <h1>Edit Query Doc Pair</h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= button_to "Delete this Query Doc Pair", book_query_doc_pair_path, method: :delete, class: 'btn btn-sm btn-outline-danger', onclick: "return confirm('Are you sure you want to delete this Query Doc Pair?');" %>
-      <%= link_to "Back to Query Doc Pairs", book_query_doc_pair_path, class: "btn btn-sm btn-outline-secondary" %>
+      <%= button_to "Delete", book_query_doc_pair_path(@book, @query_doc_pair), method: :delete, class: 'btn btn-sm btn-outline-danger', onclick: "return confirm('Are you sure you want to delete this Query Doc Pair?');" %>
     </div>
+
+    <%= link_to "Back", book_query_doc_pairs_path(@book), class: "btn btn-sm btn-outline-secondary" %>
   </div>
 </div>
-
-<p style="color: green"><%= notice %></p>
 
 <%= render 'form', query_doc_pair: @query_doc_pair %>
