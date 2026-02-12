@@ -93,31 +93,35 @@
                     <i class="bi bi-share" aria-hidden="true"></i>
                   <% end %>
 
-                  <button type="button"
-                          class="btn btn-link text-warning p-0 me-3"
-                          title="Archive case"
-                          aria-label="Archive case"
-                          data-controller="confirm-delete"
-                          data-action="click->confirm-delete#open"
-                          data-confirm-delete-url-value="<%= team2_archive_case_path(@team, case_id: kase.id) %>"
-                          data-confirm-delete-method-value="post"
-                          data-confirm-delete-message-value="<%= h("Archive #{kase.case_name}?") %>">
-                    <i class="bi bi-archive" aria-hidden="true"></i>
-                    <span class="visually-hidden">Archive case</span>
-                  </button>
+                  <% if kase.archived? %>
+                    <button type="button"
+                            class="btn btn-link text-success p-0 me-3"
+                            title="Unarchive case"
+                            aria-label="Unarchive case"
+                            data-controller="confirm-delete"
+                            data-action="click->confirm-delete#open"
+                            data-confirm-delete-url-value="<%= team2_unarchive_case_path(@team, case_id: kase.id) %>"
+                            data-confirm-delete-method-value="post"
+                            data-confirm-delete-message-value="<%= h("Unarchive #{kase.case_name}?") %>">
+                      <i class="bi-folder-check" aria-hidden="true"></i>
+                      <span class="visually-hidden">Unarchive case</span>
+                    </button>
+                  <% else %>
+                    <button type="button"
+                            class="btn btn-link text-warning p-0 me-3"
+                            title="Archive case"
+                            aria-label="Archive case"
+                            data-controller="confirm-delete"
+                            data-action="click->confirm-delete#open"
+                            data-confirm-delete-url-value="<%= team2_archive_case_path(@team, case_id: kase.id) %>"
+                            data-confirm-delete-method-value="post"
+                            data-confirm-delete-message-value="<%= h("Archive #{kase.case_name}?") %>">
+                      <i class="bi-folder-check" aria-hidden="true"></i>
+                      <span class="visually-hidden">Archive case</span>
+                    </button>
+                  <% end %>
 
-                  <button type="button"
-                          class="btn btn-link text-danger p-0"
-                          title="Remove case from team"
-                          aria-label="Remove case"
-                          data-controller="confirm-delete"
-                          data-action="click->confirm-delete#open"
-                          data-confirm-delete-url-value="<%= team2_case_path(@team, case_id: kase.id) %>"
-                          data-confirm-delete-method-value="delete"
-                          data-confirm-delete-message-value="<%= h("Remove case #{kase.case_name} from this team?") %>">
-                    <i class="bi bi-x-circle" aria-hidden="true"></i>
-                    <span class="visually-hidden">Remove case</span>
-                  </button>
+
                 </div>
               </td>
             </tr>

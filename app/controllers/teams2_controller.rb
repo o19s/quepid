@@ -3,7 +3,7 @@
 class Teams2Controller < ApplicationController
   include Pagy::Method
 
-  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case ]
+  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case ]
 
   # Remove a case from the team
   def remove_case
@@ -76,6 +76,57 @@ class Teams2Controller < ApplicationController
     redirect_back_or_to(teams2_path, status: :see_other)
   end
 
+  # Share a book with a team (similar to case sharing pattern)
+  def share_book
+    team = current_user.teams.find_by(id: params[:team_id])
+    book = Book.find_by(id: params[:book_id])
+
+    unless team && book
+      flash[:alert] = 'Team or book not found.'
+      redirect_back_or_to(teams2_path) and return
+    end
+
+    # Check if user has access to this book (owner or team member with access)
+    unless current_user.books_involved_with.exists?(id: book.id)
+      flash[:alert] = 'You do not have access to that book.'
+      redirect_back_or_to(teams2_path) and return
+    end
+
+    if team.books.exists?(book.id)
+      flash[:alert] = "#{book.name} is already shared with #{team.name}."
+    else
+      team.books << book
+      flash[:notice] = "#{book.name} shared with #{team.name}."
+    end
+
+    redirect_back_or_to(teams2_path, status: :see_other)
+  end
+
+  def unshare_book
+    team = current_user.teams.find_by(id: params[:team_id])
+    book = Book.find_by(id: params[:book_id])
+
+    unless team && book
+      flash[:alert] = 'Team or book not found.'
+      redirect_back_or_to(teams2_path) and return
+    end
+
+    # Check if user has access to this book
+    unless current_user.books_involved_with.exists?(id: book.id)
+      flash[:alert] = 'You do not have access to that book.'
+      redirect_back_or_to(teams2_path) and return
+    end
+
+    if team.books.exists?(book.id)
+      team.books.delete(book)
+      flash[:notice] = "#{book.name} unshared from #{team.name}."
+    else
+      flash[:alert] = "#{book.name} is not shared with #{team.name}."
+    end
+
+    redirect_back_or_to(teams2_path, status: :see_other)
+  end
+
   # Archive a case (mark archived and set current_user as owner)
   def archive_case
     kase = Case.find_by(id: params[:case_id])
@@ -90,6 +141,26 @@ class Teams2Controller < ApplicationController
       kase.mark_archived!
       Analytics::Tracker.track_case_archived_event(current_user, kase) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_archived_event)
       flash[:notice] = "Case ##{kase.case_name} archived."
+    else
+      flash[:alert] = "Case ##{kase.case_name} is not associated with this team."
+    end
+
+    redirect_to team2_path(@team)
+  end
+
+  # Unarchive a case
+  def unarchive_case
+    kase = Case.find_by(id: params[:case_id])
+    unless kase
+      flash[:alert] = 'Case not found.'
+      redirect_to team2_path(@team) and return
+    end
+
+    # Only unarchive if the case is associated with this team
+    if @team.cases.exists?(kase.id)
+      kase.archived = false
+      kase.save
+      flash[:notice] = "Case ##{kase.case_name} unarchived."
     else
       flash[:alert] = "Case ##{kase.case_name} is not associated with this team."
     end

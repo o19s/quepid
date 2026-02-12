@@ -45,23 +45,42 @@
               <td><%= book.respond_to?(:query_doc_pairs_count) ? book.query_doc_pairs_count : book.query_doc_pairs.size %></td>
               <td><%= book.owner&.fullname || '—' %></td>
               <td class="text-end">
-                <% if book.archived? %>
-                  <button type="button" class="btn btn-link text-success p-0 me-2" title="Unarchive book" aria-label="Unarchive book"
-                          data-controller="confirm-delete" data-action="click->confirm-delete#open"
-                          data-confirm-delete-url-value="<%= unarchive_book_path(book) %>"
-                          data-confirm-delete-method-value="patch"
-                          data-confirm-delete-message-value="<%= h("Unarchive #{book.name}?") %>">
-                    <i class="bi bi-folder-check" aria-hidden="true"></i>
-                  </button>
-                <% else %>
-                  <button type="button" class="btn btn-link text-warning p-0 me-2" title="Archive book" aria-label="Archive book"
-                          data-controller="confirm-delete" data-action="click->confirm-delete#open"
-                          data-confirm-delete-url-value="<%= archive_book_path(book) %>"
-                          data-confirm-delete-method-value="patch"
-                          data-confirm-delete-message-value="<%= h("Archive #{book.name}?") %>">
-                    <i class="bi bi-archive" aria-hidden="true"></i>
-                  </button>
-                <% end %>
+                <div class="btn-group btn-group-sm" role="group">
+                  <%= button_tag type: 'button',
+                                 class: 'btn btn-link p-0 me-2',
+                                 title: 'Share',
+                                 'aria-label': 'Share',
+                                 data: {
+                                   controller: 'share-book',
+                                   action: 'click->share-book#open',
+                                   bs_toggle: 'modal',
+                                   bs_target: '#shareBookModal',
+                                   share_book_id_value: book.id,
+                                   share_book_name_value: book.name,
+                                   share_book_all_teams_json: current_user.teams.select(:id, :name).order(:name).to_json,
+                                   share_book_shared_teams_json: book.teams.select(:id, :name).to_json
+                                 } do %>
+                    <i class="bi bi-share" aria-hidden="true"></i>
+                  <% end %>
+
+                  <% if book.archived? %>
+                    <button type="button" class="btn btn-link text-success p-0 me-2" title="Unarchive book" aria-label="Unarchive book"
+                            data-controller="confirm-delete" data-action="click->confirm-delete#open"
+                            data-confirm-delete-url-value="<%= unarchive_book_path(book) %>"
+                            data-confirm-delete-method-value="patch"
+                            data-confirm-delete-message-value="<%= h("Unarchive #{book.name}?") %>">
+                      <i class="bi bi-folder-check" aria-hidden="true"></i>
+                    </button>
+                  <% else %>
+                    <button type="button" class="btn btn-link text-warning p-0 me-2" title="Archive book" aria-label="Archive book"
+                            data-controller="confirm-delete" data-action="click->confirm-delete#open"
+                            data-confirm-delete-url-value="<%= archive_book_path(book) %>"
+                            data-confirm-delete-method-value="patch"
+                            data-confirm-delete-message-value="<%= h("Archive #{book.name}?") %>">
+                      <i class="bi bi-folder-check" aria-hidden="true"></i>
+                    </button>
+                  <% end %>
+                </div>
               </td>
             </tr>
           <% end %>

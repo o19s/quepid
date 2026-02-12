@@ -96,7 +96,7 @@ export default class extends Controller {
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="button" class="btn btn-danger confirm-delete-confirm">Remove</button>
+              <button type="button" class="btn btn-danger confirm-delete-confirm">Confirm</button>
             </div>
           </div>
         </div>
