@@ -27,10 +27,14 @@
               <td class="text-end">
                 <% if scorer.communal? %>
                   <div class="d-inline-flex align-items-center">
+                    <% if current_user.administrator? %>
+                      <%= link_to edit_scorer_path(scorer), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
+                        <i class="bi bi-pencil" aria-hidden="true"></i>
+                      <% end %>
+                    <% end %>
                     <%= button_to clone_scorer_path(scorer), method: :post, class: 'btn btn-link p-0 me-2', title: 'Clone', 'aria-label': 'Clone' do %>
                       <i class="bi bi-files" aria-hidden="true"></i>
-                    <% end %>
-                    <span class="text-muted small">System scorer</span>
+                    <% end %>                   
                   </div>
                 <% else %>
                   <div class="btn-group btn-group-sm" role="group">
@@ -55,10 +59,7 @@
                     <% end %>
                     <%= button_to clone_scorer_path(scorer), method: :post, class: 'btn btn-link p-0 me-2', title: 'Clone', 'aria-label': 'Clone' do %>
                       <i class="bi bi-files" aria-hidden="true"></i>
-                    <% end %>
-                    <%= button_to scorer_path(scorer), method: :delete, class: 'btn btn-link text-danger p-0', title: 'Delete', 'aria-label': 'Delete', form: { onsubmit: "return confirm('Are you sure you want to delete this scorer?');" } do %>
-                      <i class="bi bi-x-circle" aria-hidden="true"></i>
-                    <% end %>
+                    <% end %>      
                   </div>
                 <% end %>
               </td>

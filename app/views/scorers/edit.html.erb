@@ -8,4 +8,11 @@
   </div>
 </div>
 
+<% if @scorer.communal? && current_user.administrator? %>
+  <div class="alert alert-warning" role="alert">
+    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+    <strong>Warning:</strong> You are editing a communal scorer that is available to all users. Changes will affect everyone using this scorer.
+  </div>
+<% end %>
+
 <%= render 'form', scorer: @scorer %>

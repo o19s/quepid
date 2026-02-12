@@ -155,6 +155,11 @@ class ScorersController < ApplicationController
   end
 
   def update
+    if @scorer.communal? && !current_user.administrator?
+      redirect_to scorers_path, alert: 'You cannot edit communal scorers.'
+      return
+    end
+
     if @scorer.update(scorer_params)
       redirect_to edit_scorer_path(@scorer), notice: 'Scorer updated.'
     else
@@ -163,6 +168,11 @@ class ScorersController < ApplicationController
   end
 
   def destroy
+    if @scorer.communal? && !current_user.administrator?
+      redirect_to scorers_path, alert: 'You cannot delete communal scorers.'
+      return
+    end
+
     @scorer.destroy
     redirect_to scorers_path, notice: 'Scorer deleted.'
   end
@@ -170,7 +180,11 @@ class ScorersController < ApplicationController
   private
 
   def set_scorer
-    @scorer = Scorer.for_user(current_user).where(communal: false).find(params[:id])
+    @scorer = if current_user.administrator?
+                Scorer.for_user(current_user).find(params[:id])
+              else
+                Scorer.for_user(current_user).where(communal: false).find(params[:id])
+              end
   end
 
   def set_source_scorer

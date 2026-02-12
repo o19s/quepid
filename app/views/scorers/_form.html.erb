@@ -12,6 +12,17 @@
         </div>
       <% end %>
 
+      <% if scorer.communal? && current_user.administrator? %>
+        <div class="row mb-3">
+          <div class="col-sm-12">
+            <div class="alert alert-info" role="alert">
+              <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+              This is a <strong>communal scorer</strong> available to all Quepid users.
+            </div>
+          </div>
+        </div>
+      <% end %>
+
       <div class="row mb-3">
         <%= f.label :name, class: 'col-sm-1 col-form-label' %>
         <div class="col-sm-4">
