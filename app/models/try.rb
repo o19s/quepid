@@ -52,8 +52,6 @@ class Try < ApplicationRecord
   # Callbacks
   before_create :set_defaults
 
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/CyclomaticComplexity
   def args
     unless search_endpoint.nil?
       case search_endpoint.search_engine
@@ -74,14 +72,10 @@ class Try < ApplicationRecord
       end
     end
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/CyclomaticComplexity
 
   # merge the search endpoint and case options together,
   # with search endpoint options taking precedence
-  # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/CyclomaticComplexity
   def options
     # NOTE: there is weirdness that case options parse as json
     # but search_endpoint options stay strings and we manually parse them
@@ -113,10 +107,8 @@ class Try < ApplicationRecord
     merged_hash = case_options.merge(search_endpoint_options)
     JSON.parse(merged_hash.to_json)
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/CyclomaticComplexity
 
+  # rubocop:enable Metrics/MethodLength
   def param
     try_number
   end

@@ -19,7 +19,6 @@ module Books
     # rubocop:disable Metrics/MethodLength
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/PerceivedComplexity
-    # rubocop:disable Metrics/CyclomaticComplexity
     # @summary Import a complete book as File
     # @tags books > import/export
     # @request_body Upload a file(multipart/form-data)
@@ -94,7 +93,6 @@ module Books
     # rubocop:enable Metrics/MethodLength
     # rubocop:enable Metrics/AbcSize
     # rubocop:enable Metrics/PerceivedComplexity
-    # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Layout/LineLength
 
     private

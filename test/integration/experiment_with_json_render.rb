@@ -35,7 +35,6 @@ class ExperimentWithJsonRender < ActionController::TestCase
     puts "Elapsed time: #{result.real} seconds"
   end
 
-  # rubocop:disable Metrics/MethodLength
   def save_big_book book
     query_doc_pairs = []
     50_000.times do
@@ -58,7 +57,6 @@ class ExperimentWithJsonRender < ActionController::TestCase
     QueryDocPair.insert_all!(query_doc_pairs)
     # rubocop:enable Rails/SkipsModelValidations
   end
-  # rubocop:enable Metrics/MethodLength
 
   def generate_random_string length: 10
     charset = Array('A'..'Z') + Array('a'..'z')

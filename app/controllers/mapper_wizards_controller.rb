@@ -142,7 +142,6 @@ class MapperWizardsController < ApplicationController
   end
 
   # POST /search_endpoints/:search_endpoint_id/mapper_wizard/refine_mapper
-  # rubocop:disable Metrics/MethodLength
   def refine_mapper
     if @wizard_state.html_content.blank?
       return render json:   { success: false, error: 'No HTML content.' },
@@ -163,7 +162,6 @@ class MapperWizardsController < ApplicationController
 
     render json: result
   end
-  # rubocop:enable Metrics/MethodLength
 
   # POST /search_endpoints/:search_endpoint_id/mapper_wizard/save
   # rubocop:disable Metrics/AbcSize
@@ -343,7 +341,6 @@ class MapperWizardsController < ApplicationController
   # Find the index of the closing brace that matches the opening brace at start_index
   # Handles strings (single/double quotes), template literals, and escaped characters
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
   def find_matching_brace code, start_index
     raise ArgumentError, "Character at start_index must be '{'" unless '{' == code[start_index]
@@ -388,6 +385,5 @@ class MapperWizardsController < ApplicationController
     start_index
   end
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
 end

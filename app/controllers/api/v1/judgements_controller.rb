@@ -10,8 +10,6 @@ module Api
       before_action :check_judgement, only: [ :show, :update, :destroy ]
 
       # rubocop:disable Metrics/MethodLength
-      # rubocop:disable Metrics/AbcSize
-      # rubocop:disable Metrics/CyclomaticComplexity
       # rubocop:disable Metrics/BlockLength
 
       def index
@@ -69,8 +67,6 @@ module Api
         end
       end
       # rubocop:enable Metrics/MethodLength
-      # rubocop:enable Metrics/AbcSize
-      # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/BlockLength
 
       def show

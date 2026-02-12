@@ -16,7 +16,6 @@ class MapperWizardService
   # @param request_body [String] JSON body for POST requests
   # @param headers [Hash] Custom HTTP headers
   # @param credentials [String] Basic auth credentials in format "username:password"
-  # rubocop:disable Metrics/MethodLength
   def fetch_html url, http_method: 'GET', request_body: nil, headers: {}, credentials: nil
     return { success: false, error: 'URL is required' } if url.blank?
     return { success: false, error: 'Invalid URL format' } unless url.match?(%r{\Ahttps?://.+}i)
@@ -39,10 +38,8 @@ class MapperWizardService
   rescue StandardError => e
     { success: false, error: e.message }
   end
-  # rubocop:enable Metrics/MethodLength
 
   # Generate mapper functions using RubyLLM
-  # rubocop:disable Metrics/MethodLength
   def generate_mappers html_content
     return { success: false, error: 'API key required' } if @api_key.blank?
     return { success: false, error: 'HTML content required' } if html_content.blank?
@@ -71,7 +68,6 @@ class MapperWizardService
   rescue StandardError => e
     { success: false, error: "AI generation failed: #{e.message}" }
   end
-  # rubocop:enable Metrics/MethodLength
 
   # Test a single mapper function
   # rubocop:disable Metrics/MethodLength
@@ -161,7 +157,6 @@ class MapperWizardService
   private
 
   # Fetch content using POST request with JSON body
-  # rubocop:disable Metrics/MethodLength
   def fetch_with_post url, request_body, custom_headers = {}, credentials = nil
     headers = {
       'Content-Type' => 'application/json',
@@ -182,7 +177,6 @@ class MapperWizardService
   rescue StandardError => e
     { success: false, error: e.message }
   end
-  # rubocop:enable Metrics/MethodLength
 
   def configure_ruby_llm
     RubyLLM.configure do |config|
@@ -244,7 +238,6 @@ class MapperWizardService
     PROMPT
   end
 
-  # rubocop:disable Metrics/MethodLength
   def extract_functions_from_response content
     # Extract all JavaScript code blocks
     code_blocks = content.scan(/```(?:javascript|js)?\s*\n(.*?)\n```/m).flatten
@@ -273,7 +266,6 @@ class MapperWizardService
     end
   end
 
-  # rubocop:enable Metrics/MethodLength
   # rubocop:disable Metrics/MethodLength
   def extract_single_function code, function_name
     # Match function definition pattern

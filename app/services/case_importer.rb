@@ -18,8 +18,6 @@ class CaseImporter
     @logger = @options[:logger]
   end
 
-  # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/MethodLength
   def validate
     list_of_emails_of_users = []
     params_to_use = @data_to_process
@@ -46,9 +44,6 @@ class CaseImporter
     end
   end
 
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
   def import
@@ -104,7 +99,6 @@ class CaseImporter
 
     @case.save
   end
-  # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
 end

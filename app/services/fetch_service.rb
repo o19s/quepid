@@ -46,7 +46,6 @@ class FetchService
     @snapshot
   end
 
-  # rubocop:disable Metrics/MethodLength
   # should be in some other service!
   def extract_docs_from_response_body_for_solr response_body
     docs = []
@@ -71,9 +70,7 @@ class FetchService
 
     docs
   end
-  # rubocop:enable Metrics/MethodLength
 
-  # rubocop:disable Metrics/MethodLength
   # should be in some other service!
   def extract_docs_from_response_body_for_es response_body
     docs = []
@@ -98,7 +95,6 @@ class FetchService
 
     docs
   end
-  # rubocop:enable Metrics/MethodLength
 
   def extract_docs_from_response_body_for_os response_body
     extract_docs_from_response_body_for_es response_body
@@ -110,8 +106,6 @@ class FetchService
     docs
   end
 
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/CyclomaticComplexity
   def setup_docs_for_query query, docs
     results = []
 
@@ -137,8 +131,6 @@ class FetchService
     results
   end
 
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/CyclomaticComplexity
   # This maybe should be split out into a snapshot_query and a snapshot_docs?
   # rubocop:disable Metrics/MethodLength
   def store_query_results query, docs, response_status, response_body

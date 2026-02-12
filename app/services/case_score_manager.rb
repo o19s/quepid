@@ -98,7 +98,6 @@ class CaseScoreManager
     last_score.updated_at < 1.day.ago
   end
 
-  # rubocop:disable Metrics/CyclomaticComplexity
   def added_query? last_score, score_data
     return true  if last_score.nil? && !score_data.empty?
     return false if last_score.nil? && score_data.empty?

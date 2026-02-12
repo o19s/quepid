@@ -9,7 +9,6 @@ module Api
 
         # rubocop:disable Metrics/MethodLength
         # rubocop:disable Metrics/AbcSize
-        # rubocop:disable Metrics/CyclomaticComplexity
         def create
           file_format = params[:file_format]
           file_format = 'hash' unless params[:file_format]
@@ -110,7 +109,6 @@ module Api
         end
         # rubocop:enable Metrics/MethodLength
         # rubocop:enable Metrics/AbcSize
-        # rubocop:enable Metrics/CyclomaticComplexity
       end
     end
   end

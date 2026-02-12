@@ -106,7 +106,6 @@ class BooksController < ApplicationController
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
 
-  # rubocop:disable Metrics/MethodLength
   def new
     # we actually support passing in starting point configuration for a book
     @book = if params[:book]
@@ -131,7 +130,6 @@ class BooksController < ApplicationController
 
     respond_with(@book)
   end
-  # rubocop:enable Metrics/MethodLength
 
   def edit
     @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
