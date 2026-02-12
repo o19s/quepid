@@ -47,7 +47,7 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
     assert_response :redirect
 
     # confirm a hand off to the angular app to drop you on your team page.
-    assert_redirected_to teams_core_url(invitee.teams.first)
+    assert_redirected_to teams_url(invitee.teams.first)
 
     invitee.reload
 

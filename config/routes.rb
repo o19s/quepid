@@ -317,27 +317,28 @@ Rails.application.routes.draw do
   get '/cases'                        => 'core#index'
   get '/case'                         => 'core#index'
   get '/cases/import'                 => 'core#index'
-  # Server-side comparison routes for Teams (preserve Angular route below)
-  get '/teams2'                       => 'teams2#index', as: :teams2
-  get '/teams2/new'                   => 'teams2#new',   as: :new_team2
-  post '/teams2'                      => 'teams2#create'
-  get '/teams2/:id'                   => 'teams2#show', as: :team2
-  post '/teams2/:id/rename'           => 'teams2#rename', as: :team2_rename
-  post '/teams2/:id/members'          => 'teams2#add_member', as: :team2_members
-  delete '/teams2/:id/members/:member_id' => 'teams2#remove_member', as: :team2_member
-  delete '/teams2/:id/cases/:case_id' => 'teams2#remove_case', as: :team2_case
-  post   '/teams2/:id/cases/:case_id/archive' => 'teams2#archive_case', as: :team2_archive_case
-  post   '/teams2/:id/cases/:case_id/unarchive' => 'teams2#unarchive_case', as: :team2_unarchive_case
-  post   '/teams2/:id/search_endpoints/:search_endpoint_id/archive' => 'teams2#archive_search_endpoint', as: :team2_archive_search_endpoint
-  post   '/teams2/:id/search_endpoints/:search_endpoint_id/unarchive' => 'teams2#unarchive_search_endpoint', as: :team2_unarchive_search_endpoint
-  post '/teams2/cases/share' => 'teams2#share_case', as: :share_case
-  post '/teams2/cases/unshare' => 'teams2#unshare_case', as: :unshare_case
-  post '/teams2/books/share' => 'teams2#share_book', as: :share_book
-  post '/teams2/books/unshare' => 'teams2#unshare_book', as: :unshare_book
-  post '/teams2/search_endpoints/share' => 'teams2#share_search_endpoint', as: :share_search_endpoint
-  post '/teams2/search_endpoints/unshare' => 'teams2#unshare_search_endpoint', as: :unshare_search_endpoint
+  # Teams routes
+  resources :teams, only: [ :index, :new, :create, :show ] do
+    member do
+      post :rename
+      post 'members' => 'teams#add_member', as: :members
+      delete 'members/:member_id' => 'teams#remove_member', as: :member
+      delete 'cases/:case_id' => 'teams#remove_case', as: :case
+      post 'cases/:case_id/archive' => 'teams#archive_case', as: :archive_case
+      post 'cases/:case_id/unarchive' => 'teams#unarchive_case', as: :unarchive_case
+      post 'search_endpoints/:search_endpoint_id/archive' => 'teams#archive_search_endpoint', as: :archive_search_endpoint
+      post 'search_endpoints/:search_endpoint_id/unarchive' => 'teams#unarchive_search_endpoint', as: :unarchive_search_endpoint
+    end
 
-  get '/teams(/:id)' => 'core#teams', as: :teams_core
+    collection do
+      post 'cases/share' => 'teams#share_case', as: :share_case
+      post 'cases/unshare' => 'teams#unshare_case', as: :unshare_case
+      post 'books/share' => 'teams#share_book', as: :share_book
+      post 'books/unshare' => 'teams#unshare_book', as: :unshare_book
+      post 'search_endpoints/share' => 'teams#share_search_endpoint', as: :share_search_endpoint
+      post 'search_endpoints/unshare' => 'teams#unshare_search_endpoint', as: :unshare_search_endpoint
+    end
+  end
 
   # Static pages
   get '/cookies' => 'pages#show', defaults: { page: 'cookies' }

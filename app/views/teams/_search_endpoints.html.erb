@@ -7,7 +7,7 @@
       </small>
     </h5>
     <div class="mb-3">
-      <%= form_with url: team2_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
+      <%= form_with url: team_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
         <div class="col-auto" style="flex:1">
           <div class="input-group">
             <%= text_field_tag :search_endpoints_q, @filter_search_endpoints_q, class: 'form-control', placeholder: 'Filter search endpoints by name or URL' %>
@@ -94,7 +94,7 @@
                             aria-label="Unarchive search endpoint"
                             data-controller="confirm-delete"
                             data-action="click->confirm-delete#open"
-                            data-confirm-delete-url-value="<%= team2_unarchive_search_endpoint_path(@team, search_endpoint_id: search_endpoint.id) %>"
+                            data-confirm-delete-url-value="<%= unarchive_search_endpoint_team_path(@team, search_endpoint_id: search_endpoint.id) %>"
                             data-confirm-delete-method-value="post"
                             data-confirm-delete-message-value="<%= h("Unarchive #{search_endpoint.fullname}?") %>">
                       <i class="bi-folder-check" aria-hidden="true"></i>
@@ -107,7 +107,7 @@
                             aria-label="Archive search endpoint"
                             data-controller="confirm-delete"
                             data-action="click->confirm-delete#open"
-                            data-confirm-delete-url-value="<%= team2_archive_search_endpoint_path(@team, search_endpoint_id: search_endpoint.id) %>"
+                            data-confirm-delete-url-value="<%= archive_search_endpoint_team_path(@team, search_endpoint_id: search_endpoint.id) %>"
                             data-confirm-delete-method-value="post"
                             data-confirm-delete-message-value="<%= h("Archive #{search_endpoint.fullname}?") %>">
                       <i class="bi-folder-check" aria-hidden="true"></i>

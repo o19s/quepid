@@ -18,7 +18,7 @@
     <div class="card">
       <div class="card-body">
         <h5 class="card-title">Add Team Member</h5>
-        <%= form_with url: team2_members_path(@team), method: :post, local: true do %>
+        <%= form_with url: members_team_path(@team), method: :post, local: true do %>
           <div class="mb-2">
             <%= text_field_tag :email, nil, class: 'form-control form-control-sm', placeholder: 'User email address' %>
           </div>
@@ -38,7 +38,7 @@
     <div class="card mt-3">
       <div class="card-body">
         <h5 class="card-title">Rename Team</h5>
-        <%= form_with model: @team, url: team2_rename_path(@team), method: :post, local: true do |f| %>
+        <%= form_with model: @team, url: rename_team_path(@team), method: :post, local: true do |f| %>
           <div class="mb-2">
             <%= f.text_field :name, class: 'form-control form-control-sm', placeholder: 'New team name' %>
           </div>
@@ -90,7 +90,7 @@
                         aria-label="Remove member"
                         data-controller="confirm-delete"
                         data-action="click->confirm-delete#open"
-                        data-confirm-delete-url-value="<%= team2_member_path(@team, member_id: member.id) %>"
+                        data-confirm-delete-url-value="<%= member_team_path(@team, member_id: member.id) %>"
                         data-confirm-delete-message-value="<%= h("Remove #{member.fullname} from this team?") %>"
                         data-confirm-delete-method-value="delete">
                   <i class="bi bi-x-circle" aria-hidden="true"></i>

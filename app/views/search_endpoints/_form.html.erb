@@ -16,7 +16,7 @@
       <% if @current_user.teams.empty? %>
         <div class="alert alert-warning" role="alert">
           Search Endpoints are meant to be shared with Teams, and you have not created any yet.
-          <%= link_to 'Create a Team', teams_core_path, method: :get, class:'btn btn-primary' %>
+          <%= link_to 'Create a Team', teams_path, method: :get, class:'btn btn-primary' %>
         </div>
       <% end %>
 

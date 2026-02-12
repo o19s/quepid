@@ -6,7 +6,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <%= form_with url: share_book_path, method: :post, local: true, html: { id: 'share-book-form', class: 'mb-3' } do %>
+        <%= form_with url: share_book_teams_path, method: :post, local: true, html: { id: 'share-book-form', class: 'mb-3' } do %>
           <%= hidden_field_tag :book_id, '', id: 'share-book-id' %>
 
           <p class="h5">Select a team to share this book with:</p>
@@ -24,13 +24,13 @@
         <p class="h5">Already shared with:</p>
         <div id="share-book-shared-list" class="list-group mt-2"></div>
 
-        <%= form_with url: unshare_book_path, method: :post, local: true, html: { id: 'unshare-book-form', class: 'mt-3' } do %>
+        <%= form_with url: unshare_book_teams_path, method: :post, local: true, html: { id: 'unshare-book-form', class: 'mt-3' } do %>
           <%= hidden_field_tag :book_id, '', id: 'unshare-book-id' %>
           <%= hidden_field_tag :team_id, '', id: 'unshare-book-team' %>
         <% end %>
       </div>
       <div class="modal-footer">
-        <a href="<%= new_team2_path %>" class="btn btn-primary me-auto">+ Create a team</a>
+        <a href="<%= new_team_path %>" class="btn btn-primary me-auto">+ Create a team</a>
         <button type="submit" form="share-book-form" id="share-book-submit" class="btn btn-success" disabled>Share with team</button>
         <button type="submit" form="unshare-book-form" id="unshare-book-submit" class="btn btn-success" disabled>Unshare from team</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

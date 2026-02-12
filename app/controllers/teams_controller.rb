@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Teams2Controller < ApplicationController
+class TeamsController < ApplicationController
   include Pagy::Method
 
   before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint ]
@@ -10,7 +10,7 @@ class Teams2Controller < ApplicationController
     kase = Case.find_by(id: params[:case_id])
     unless kase
       flash[:alert] = 'Case not found.'
-      redirect_to team2_path(@team) and return
+      redirect_to team_path(@team) and return
     end
 
     if @team.cases.exists?(kase.id)
@@ -21,7 +21,7 @@ class Teams2Controller < ApplicationController
       flash[:alert] = "Case ##{kase.case_name} is not associated with this team."
     end
 
-    redirect_to team2_path(@team)
+    redirect_to team_path(@team)
   end
 
   # Share a case with a team (similar to scorer sharing pattern)
@@ -31,13 +31,13 @@ class Teams2Controller < ApplicationController
 
     unless team && kase
       flash[:alert] = 'Team or case not found.'
-      redirect_back_or_to(teams2_path) and return
+      redirect_back_or_to(teams_path) and return
     end
 
     # Check if user has access to this case
     unless current_user.cases_involved_with.exists?(id: kase.id)
       flash[:alert] = 'You do not have access to that case.'
-      redirect_back_or_to(teams2_path) and return
+      redirect_back_or_to(teams_path) and return
     end
 
     if team.cases.exists?(kase.id)
@@ -48,7 +48,7 @@ class Teams2Controller < ApplicationController
       Analytics::Tracker.track_case_shared_event(current_user, kase, team) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_shared_event)
     end
 
-    redirect_back_or_to(teams2_path, status: :see_other)
+    redirect_back_or_to(teams_path, status: :see_other)
   end
 
   def unshare_case
@@ -57,13 +57,13 @@ class Teams2Controller < ApplicationController
 
     unless team && kase
       flash[:alert] = 'Team or case not found.'
-      redirect_back_or_to(teams2_path) and return
+      redirect_back_or_to(teams_path) and return
     end
 
     # Check if user has access to this case
     unless current_user.cases_involved_with.exists?(id: kase.id)
       flash[:alert] = 'You do not have access to that case.'
-      redirect_back_or_to(teams2_path) and return
+      redirect_back_or_to(teams_path) and return
     end
 
     if team.cases.exists?(kase.id)
@@ -73,7 +73,7 @@ class Teams2Controller < ApplicationController
       flash[:alert] = "#{kase.case_name} is not shared with #{team.name}."
     end
 
-    redirect_back_or_to(teams2_path, status: :see_other)
+    redirect_back_or_to(teams_path, status: :see_other)
   end
 
   # Share a book with a team (similar to case sharing pattern)
@@ -83,13 +83,13 @@ class Teams2Controller < ApplicationController
 
     unless team && book
       flash[:alert] = 'Team or book not found.'
-      redirect_back_or_to(teams2_path) and return
+      redirect_back_or_to(teams_path) and return
     end
 
     # Check if user has access to this book (owner or team member with access)
     unless current_user.books_involved_with.exists?(id: book.id)
       flash[:alert] = 'You do not have access to that book.'
-      redirect_back_or_to(teams2_path) and return
+      redirect_back_or_to(teams_path) and return
     end
 
     if team.books.exists?(book.id)
@@ -99,7 +99,7 @@ class Teams2Controller < ApplicationController
       flash[:notice] = "#{book.name} shared with #{team.name}."
     end
 
-    redirect_back_or_to(teams2_path, status: :see_other)
+    redirect_back_or_to(teams_path, status: :see_other)
   end
 
   def unshare_book
@@ -108,13 +108,13 @@ class Teams2Controller < ApplicationController
 
     unless team && book
       flash[:alert] = 'Team or book not found.'
-      redirect_back_or_to(teams2_path) and return
+      redirect_back_or_to(teams_path) and return
     end
 
     # Check if user has access to this book
     unless current_user.books_involved_with.exists?(id: book.id)
       flash[:alert] = 'You do not have access to that book.'
-      redirect_back_or_to(teams2_path) and return
+      redirect_back_or_to(teams_path) and return
     end
 
     if team.books.exists?(book.id)
@@ -124,7 +124,7 @@ class Teams2Controller < ApplicationController
       flash[:alert] = "#{book.name} is not shared with #{team.name}."
     end
 
-    redirect_back_or_to(teams2_path, status: :see_other)
+    redirect_back_or_to(teams_path, status: :see_other)
   end
 
   # Share a search endpoint with a team (similar to case/book sharing pattern)
@@ -134,13 +134,13 @@ class Teams2Controller < ApplicationController
 
     unless team && search_endpoint
       flash[:alert] = 'Team or search endpoint not found.'
-      redirect_back_or_to(teams2_path) and return
+      redirect_back_or_to(teams_path) and return
     end
 
     # Check if user has access to this search endpoint
     unless current_user.search_endpoints_involved_with.exists?(id: search_endpoint.id)
       flash[:alert] = 'You do not have access to that search endpoint.'
-      redirect_back_or_to(teams2_path) and return
+      redirect_back_or_to(teams_path) and return
     end
 
     if team.search_endpoints.exists?(search_endpoint.id)
@@ -150,7 +150,7 @@ class Teams2Controller < ApplicationController
       flash[:notice] = "#{search_endpoint.fullname} shared with #{team.name}."
     end
 
-    redirect_back_or_to(teams2_path, status: :see_other)
+    redirect_back_or_to(teams_path, status: :see_other)
   end
 
   def unshare_search_endpoint
@@ -159,13 +159,13 @@ class Teams2Controller < ApplicationController
 
     unless team && search_endpoint
       flash[:alert] = 'Team or search endpoint not found.'
-      redirect_back_or_to(teams2_path) and return
+      redirect_back_or_to(teams_path) and return
     end
 
     # Check if user has access to this search endpoint
     unless current_user.search_endpoints_involved_with.exists?(id: search_endpoint.id)
       flash[:alert] = 'You do not have access to that search endpoint.'
-      redirect_back_or_to(teams2_path) and return
+      redirect_back_or_to(teams_path) and return
     end
 
     if team.search_endpoints.exists?(search_endpoint.id)
@@ -175,7 +175,7 @@ class Teams2Controller < ApplicationController
       flash[:alert] = "#{search_endpoint.fullname} is not shared with #{team.name}."
     end
 
-    redirect_back_or_to(teams2_path, status: :see_other)
+    redirect_back_or_to(teams_path, status: :see_other)
   end
 
   # Archive a search endpoint
@@ -183,7 +183,7 @@ class Teams2Controller < ApplicationController
     search_endpoint = SearchEndpoint.find_by(id: params[:search_endpoint_id])
     unless search_endpoint
       flash[:alert] = 'Search endpoint not found.'
-      redirect_to team2_path(@team) and return
+      redirect_to team_path(@team) and return
     end
 
     # Only archive if the search endpoint is associated with this team
@@ -195,7 +195,7 @@ class Teams2Controller < ApplicationController
       flash[:alert] = "Search endpoint #{search_endpoint.fullname} is not associated with this team."
     end
 
-    redirect_to team2_path(@team)
+    redirect_to team_path(@team)
   end
 
   # Unarchive a search endpoint
@@ -203,7 +203,7 @@ class Teams2Controller < ApplicationController
     search_endpoint = SearchEndpoint.find_by(id: params[:search_endpoint_id])
     unless search_endpoint
       flash[:alert] = 'Search endpoint not found.'
-      redirect_to team2_path(@team) and return
+      redirect_to team_path(@team) and return
     end
 
     # Only unarchive if the search endpoint is associated with this team
@@ -215,7 +215,7 @@ class Teams2Controller < ApplicationController
       flash[:alert] = "Search endpoint #{search_endpoint.fullname} is not associated with this team."
     end
 
-    redirect_to team2_path(@team)
+    redirect_to team_path(@team)
   end
 
   # Archive a case (mark archived and set current_user as owner)
@@ -223,7 +223,7 @@ class Teams2Controller < ApplicationController
     kase = Case.find_by(id: params[:case_id])
     unless kase
       flash[:alert] = 'Case not found.'
-      redirect_to team2_path(@team) and return
+      redirect_to team_path(@team) and return
     end
 
     # Only archive if the case is associated with this team
@@ -236,7 +236,7 @@ class Teams2Controller < ApplicationController
       flash[:alert] = "Case ##{kase.case_name} is not associated with this team."
     end
 
-    redirect_to team2_path(@team)
+    redirect_to team_path(@team)
   end
 
   # Unarchive a case
@@ -244,7 +244,7 @@ class Teams2Controller < ApplicationController
     kase = Case.find_by(id: params[:case_id])
     unless kase
       flash[:alert] = 'Case not found.'
-      redirect_to team2_path(@team) and return
+      redirect_to team_path(@team) and return
     end
 
     # Only unarchive if the case is associated with this team
@@ -256,7 +256,7 @@ class Teams2Controller < ApplicationController
       flash[:alert] = "Case ##{kase.case_name} is not associated with this team."
     end
 
-    redirect_to team2_path(@team)
+    redirect_to team_path(@team)
   end
 
   def index
@@ -334,7 +334,7 @@ class Teams2Controller < ApplicationController
   def create
     @team = Team.new(team_params)
     if @team.save
-      redirect_to team2_path(@team), notice: 'Team created.'
+      redirect_to team_path(@team), notice: 'Team created.'
     else
       render :new
     end
@@ -356,13 +356,13 @@ class Teams2Controller < ApplicationController
         flash[:notice] = "#{user.fullname} added to the team."
         Analytics::Tracker.track_member_added_to_team_event(current_user, @team, user) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_member_added_to_team_event)
       end
-      redirect_to team2_path(@team) and return
+      redirect_to team_path(@team) and return
     end
 
     # If the user wasn't found, try to invite them (if signups are enabled)
     unless signup_enabled?
       flash[:alert] = "No user found with email #{email}. Signups are disabled so cannot invite."
-      redirect_to team2_path(@team) and return
+      redirect_to team_path(@team) and return
     end
 
     # Create an invited user (Devise Invitable) and add to team
@@ -381,7 +381,7 @@ class Teams2Controller < ApplicationController
       flash[:alert] = member.errors.full_messages.to_sentence
     end
 
-    redirect_to team2_path(@team)
+    redirect_to team_path(@team)
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/CyclomaticComplexity
@@ -395,14 +395,14 @@ class Teams2Controller < ApplicationController
       flash[:alert] = @team.errors.full_messages.to_sentence
     end
 
-    redirect_to team2_path(@team)
+    redirect_to team_path(@team)
   end
 
   def remove_member
     member = User.find_by(id: params[:member_id])
     unless member
       flash[:alert] = 'User not found.'
-      redirect_to team2_path(@team) and return
+      redirect_to team_path(@team) and return
     end
 
     if @team.members.exists?(member.id)
@@ -414,7 +414,7 @@ class Teams2Controller < ApplicationController
       flash[:alert] = "#{member.fullname} is not a member of this team."
     end
 
-    redirect_to team2_path(@team)
+    redirect_to team_path(@team)
   end
 
   private

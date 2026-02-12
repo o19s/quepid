@@ -2,14 +2,14 @@
   <h1>Teams</h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to '+ Add New', new_team2_path, class: 'btn btn-success' %>
+      <%= link_to '+ Add New', new_team_path, class: 'btn btn-success' %>
     </div>
   </div>
 </div>
 
 <div class="card">
   <div class="card-header">
-    <%= form_tag(teams2_path, method: :get) do %>
+    <%= form_tag(teams_path, method: :get) do %>
       <div class="mb-0 d-flex flex-wrap align-items-center gap-3 fs-6">
 
         <div class="input-group" style="max-width: 500px;">
@@ -35,7 +35,7 @@
         <% @teams.each do |team| %>
           <tr>
             <td><%= team.id %></td>
-            <td><%= link_to team.name, team2_path(team) %></td>
+            <td><%= link_to team.name, team_path(team) %></td>
             <td class="text-center"><%= team.members.count %></td>
             <td class="text-center"><%= team.cases.count %></td>
           </tr>

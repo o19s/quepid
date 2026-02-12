@@ -23,7 +23,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
              name: ai_judge.name, llm_key: ai_judge.llm_key, system_prompt: ai_judge.system_prompt
            } }
     end
-    assert_redirected_to teams_core_url(id: team.id)
+    assert_redirected_to team_url(id: team.id)
   end
 
   test 'should destroy ai_judge' do
@@ -31,6 +31,6 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       delete team_ai_judge_url(team_id: team.id, id: ai_judge.id)
     end
 
-    assert_redirected_to teams_core_url(id: team.id)
+    assert_redirected_to team_url(id: team.id)
   end
 end

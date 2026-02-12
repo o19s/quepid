@@ -2,14 +2,14 @@
   <h1>New Team</h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to 'Back to Teams', teams2_path, class: 'btn btn-sm btn-outline-secondary' %>
+      <%= link_to 'Back to Teams', teams_path, class: 'btn btn-sm btn-outline-secondary' %>
     </div>
   </div>
 </div>
 
 <div class="card">
   <div class="card-body">
-    <%= form_for @team, url: teams2_path do |f| %>
+    <%= form_for @team, url: teams_path do |f| %>
       <div class="mb-3">
         <%= f.label :name, class: 'form-label' %>
         <%= f.text_field :name, class: 'form-control' %>

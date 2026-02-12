@@ -7,7 +7,7 @@ module Users
     # Intercepts the login path and redirects the user to their
     # Team page as their first page after joining Quepid!
     def after_accept_path_for resource
-      teams_core_url(resource.teams.first)
+      teams_url(resource.teams.first)
     end
 
     # rubocop:disable Lint/UselessMethodDefinition

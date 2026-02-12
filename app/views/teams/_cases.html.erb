@@ -3,7 +3,7 @@
     <h5 class="card-title">Cases</h5>
     <div class="table-responsive">
       <div class="mb-3">
-        <%= form_with url: team2_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
+        <%= form_with url: team_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
           <div class="col-auto" style="flex:1">
             <div class="input-group">
               <%= text_field_tag :q, @filter_q.presence || params[:q], class: 'form-control form-control-sm', placeholder: 'Filter by case name or id' %>
@@ -84,7 +84,7 @@
               <td><%= kase.ratings.count %></td>
               <td>
                 <% if kase.teams.any? %>
-                  <%= safe_join(kase.teams.map { |t| link_to t.name, team2_path(t) }, ', ') %>
+                  <%= safe_join(kase.teams.map { |t| link_to t.name, team_path(t) }, ', ') %>
                 <% else %>
                   —
                 <% end %>
@@ -116,7 +116,7 @@
                             aria-label="Unarchive case"
                             data-controller="confirm-delete"
                             data-action="click->confirm-delete#open"
-                            data-confirm-delete-url-value="<%= team2_unarchive_case_path(@team, case_id: kase.id) %>"
+                            data-confirm-delete-url-value="<%= unarchive_case_team_path(@team, case_id: kase.id) %>"
                             data-confirm-delete-method-value="post"
                             data-confirm-delete-message-value="<%= h("Unarchive #{kase.case_name}?") %>">
                       <i class="bi-folder-check" aria-hidden="true"></i>
@@ -129,7 +129,7 @@
                             aria-label="Archive case"
                             data-controller="confirm-delete"
                             data-action="click->confirm-delete#open"
-                            data-confirm-delete-url-value="<%= team2_archive_case_path(@team, case_id: kase.id) %>"
+                            data-confirm-delete-url-value="<%= archive_case_team_path(@team, case_id: kase.id) %>"
                             data-confirm-delete-method-value="post"
                             data-confirm-delete-message-value="<%= h("Archive #{kase.case_name}?") %>">
                       <i class="bi-folder-check" aria-hidden="true"></i>
