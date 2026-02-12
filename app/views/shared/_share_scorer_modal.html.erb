@@ -6,7 +6,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <%= form_with url: scorers2_share_path, method: :post, local: true, html: { id: 'share-scorer-form', class: 'mb-3' } do %>
+        <%= form_with url: share_scorers_path, method: :post, local: true, html: { id: 'share-scorer-form', class: 'mb-3' } do %>
           <%= hidden_field_tag :scorer_id, '', id: 'share-scorer-id' %>
 
           <% if @user_teams.present? %>
@@ -28,7 +28,7 @@
         <p class="h5">Already shared with:</p>
         <div id="share-scorer-shared-list" class="list-group mt-2"></div>
 
-        <%= form_with url: scorers2_unshare_path, method: :post, local: true, html: { id: 'unshare-scorer-form', class: 'mt-3' } do %>
+        <%= form_with url: unshare_scorers_path, method: :post, local: true, html: { id: 'unshare-scorer-form', class: 'mt-3' } do %>
           <%= hidden_field_tag :scorer_id, '', id: 'unshare-scorer-id' %>
           <%= hidden_field_tag :team_id, '', id: 'unshare-scorer-team' %>
         <% end %>

@@ -22,7 +22,7 @@ module AvatarHelper
     else
       # generate initials SVG
       initials = (user.name.presence || user.email.to_s).to_s.split.map(&:first).join.upcase[0, 2]
-      color = '#' + Digest::MD5.hexdigest(user.email.to_s.downcase || '')[0..5]
+      color = "##{Digest::MD5.hexdigest(user.email.to_s.downcase || '')[0..5]}"
       font_size = (size_px * 0.42).to_i
 
       svg = <<~SVG

@@ -174,7 +174,7 @@ class Teams2Controller < ApplicationController
   # by email and adds to the team if found.
   def add_member
     email = params[:email].to_s.strip.downcase
-    user = User.where('email = ?', email).first
+    user = User.where(email: email).first
 
     if user
       if @team.members.exists?(user.id)
@@ -196,7 +196,7 @@ class Teams2Controller < ApplicationController
     # Create an invited user (Devise Invitable) and add to team
     member = User.invite!({ email: email, password: '' }, current_user) do |u|
       # If email delivery isn't configured, mark skip_invitation so no email attempt is made
-      u.skip_invitation = !Rails.application.config.action_mailer.delivery_method.present?
+      u.skip_invitation = Rails.application.config.action_mailer.delivery_method.blank?
     end
 
     @team.members << member unless @team.members.exists?(member.id)

@@ -334,7 +334,6 @@ module Analytics
         create_event data
       end
 
-
       #
       # Creates an event when a user creates a custom scorer.
       #

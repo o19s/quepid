@@ -69,10 +69,13 @@ Rails.application.routes.draw do
   resources :sessions, except: [ :edit, :show, :update ]
   resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
-  
-  resources :scorers, only: [ :new, :create, :edit, :update, :destroy ] do
+
+  resources :scorers, only: [ :index, :new, :create, :edit, :update, :destroy ] do
     post :clone, on: :member
   end
+  post '/scorers/default' => 'scorers#update_default', as: :update_default_scorers
+  post '/scorers/share' => 'scorers#share', as: :share_scorers
+  post '/scorers/unshare' => 'scorers#unshare', as: :unshare_scorers
 
   get '/dropdown/cases' => 'dropdown#cases'
   get '/dropdown/books' => 'dropdown#books'
@@ -330,16 +333,7 @@ Rails.application.routes.draw do
   get '/teams2/:id/cases_fragment' => 'teams2#cases_fragment', as: :team2_cases_fragment
   get '/teams2/:id/books_fragment' => 'teams2#books_fragment', as: :team2_books_fragment
 
-   # Server-side Scorers2 (new server-rendered scorers page)
-  get '/scorers2' => 'scorers2#index', as: :scorers2
-  get '/scorers2/communal_fragment' => 'scorers2#communal_fragment', as: :scorers2_communal_fragment
-  get '/scorers2/custom_fragment' => 'scorers2#custom_fragment', as: :scorers2_custom_fragment
-  post '/scorers2/default' => 'scorers2#update_default', as: :scorers2_update_default
-  post '/scorers2/share' => 'scorers2#share', as: :scorers2_share
-  post '/scorers2/unshare' => 'scorers2#unshare', as: :scorers2_unshare
-
-  get '/teams(/:id)'                  => 'core#teams', as: :teams_core
-  get '/scorers'                      => 'core#index'
+  get '/teams(/:id)' => 'core#teams', as: :teams_core
 
   # Static pages
   get '/cookies' => 'pages#show', defaults: { page: 'cookies' }
