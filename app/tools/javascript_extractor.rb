@@ -4,7 +4,6 @@ class JavascriptExtractor < RubyLLM::Tool
   description 'Extracts JavaScript code blocks from markdown content'
   param :markdown_content, desc: 'Markdown content string containing JavaScript code blocks'
 
-  # rubocop:disable Metrics/MethodLength
   def execute markdown_content:
     # Validate input
     return { error: 'Invalid input: markdown_content must be a string' } unless markdown_content.is_a?(String)
@@ -30,7 +29,6 @@ class JavascriptExtractor < RubyLLM::Tool
   rescue StandardError => e
     { error: e.message }
   end
-  # rubocop:enable Metrics/MethodLength
 
   private
 
@@ -80,9 +78,6 @@ class JavascriptExtractor < RubyLLM::Tool
   end
   # rubocop:enable Metrics/MethodLength
 
-  # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/PerceivedComplexity
   def validate_javascript_syntax code
     # Basic syntax validation
     return { valid: false, error: 'Empty code' } if code.strip.empty?
@@ -112,7 +107,4 @@ class JavascriptExtractor < RubyLLM::Tool
   rescue StandardError => e
     { valid: false, error: e.message }
   end
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/PerceivedComplexity
 end

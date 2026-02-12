@@ -17,9 +17,6 @@ module Api
         respond_with @queries, @display_order
       end
 
-      # rubocop:disable Metrics/MethodLength
-      # rubocop:disable Metrics/AbcSize
-
       # @tags cases > queries
       # @request_body Query to be created
       #   [
@@ -74,8 +71,6 @@ module Api
           render json: @query.errors, status: :bad_request
         end
       end
-      # rubocop:enable Metrics/MethodLength
-      # rubocop:enable Metrics/AbcSize
 
       # @tags cases > queries
       # > This method is used to MOVE a query to a different Case ONLY
