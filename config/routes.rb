@@ -165,7 +165,7 @@ Rails.application.routes.draw do
         post :assign_judgements_to_anonymous_user
       end
     end
-    resources :communal_scorers
+
     resources :announcements, except: [ :show ] do
       member do
         post :publish
