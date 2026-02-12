@@ -1,0 +1,79 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1>Scorer Options</h1>
+  <div class="text-end">
+    <small class="text-muted">Communal: <strong><%= @communal_count %></strong></small>
+    &nbsp;&nbsp;
+    <small class="text-muted">Custom: <strong><%= @custom_count %></strong></small>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Your Default Scorer</h5>
+        <p class="text-muted">Change the default scorer you use when creating new cases!</p>
+
+        <div class="mb-2">
+          <%= form_with url: scorers2_update_default_path, method: :post, local: true do %>
+            <div class="mb-2">
+              <%= select_tag :default_scorer_id, options_from_collection_for_select(@combined_scorers, :id, :name, @default_scorer&.id), class: 'form-control form-control-sm' %>
+            </div>
+            <div>
+              <%= submit_tag 'Save', class: 'btn btn-primary btn-sm' %>
+            </div>
+          <% end %>
+        </div>
+
+        <p class="text-muted mt-2 small"><a target="_blank" href="https://quepid-docs.dev.o19s.com/2/quepid/47/managing-scorers">Learn more</a> about the different types of scorers that Quepid ships with.</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8" data-controller="share-scorer">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Scorers</h5>
+        <p>We have two types of scorers, <i>Communal</i> that ship with Quepid and <i>Custom</i> which are scorers that you create and share with your teammates.</p>
+
+        <div class="row mb-3">
+          <div class="col-md-3">
+            <div class="btn-group">
+              <%= link_to '+ Add New', new_scorer_path, class: 'btn btn-success btn-sm' %>
+            </div>
+          </div>
+
+          <div class="col-md-5 form-inline">
+            <%= form_with url: scorers2_path, method: :get, local: true, html: { class: 'd-flex align-items-center' } do %>
+              <div class="input-group">
+                <%= search_field_tag :q, @q.presence || params[:q], class: 'form-control form-control-sm', placeholder: 'Filter scorers' %>
+                <button class="btn btn-sm btn-outline-secondary" type="submit" title="Search">
+                  <i class="bi bi-search" aria-hidden="true"></i>
+                  <span class="visually-hidden">Search</span>
+                </button>
+              </div>
+              <div class="btn-group ms-2" role="group" aria-label="Scorer type filter">
+                <%= check_box_tag 'scorer_type[]', 'communal', @scorer_type_list&.include?('communal'), class: 'btn-check', id: 'scorer-type-communal', onchange: 'this.form.submit()' %>
+                <%= label_tag 'scorer-type-communal', 'Communal', class: 'btn btn-outline-secondary btn-sm' %>
+
+                <%= check_box_tag 'scorer_type[]', 'custom', @scorer_type_list&.include?('custom'), class: 'btn-check', id: 'scorer-type-custom', onchange: 'this.form.submit()' %>
+                <%= label_tag 'scorer-type-custom', 'Custom', class: 'btn btn-outline-secondary btn-sm' %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="row">
+          <div class="col-12 mb-3">
+            <%= render partial: 'scorers2/list' %>
+          </div>
+        </div>
+
+        <%= render 'shared/share_scorer_modal' %>
+
+      </div>
+    </div>
+  </div>
+</div>

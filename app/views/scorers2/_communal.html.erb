@@ -1,0 +1,29 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Communal Scorers</h5>
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Code / Scale</th>
+            <th>Show scale labels?</th>
+            <th>Owner</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (@communal_scorers || []).each do |scorer| %>
+            <tr>
+              <td><strong><%= scorer.name %></strong></td>
+              <td>
+                <div style="max-height:120px; overflow:auto; white-space:pre-wrap; font-family:monospace; font-size:0.9rem"><%= truncate(scorer.code || scorer.scale.to_s, length: 400) %></div>
+              </td>
+              <td><%= scorer.show_scale_labels? ? 'true' : 'false' %></td>
+              <td><%= scorer.owner&.fullname || 'System' %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

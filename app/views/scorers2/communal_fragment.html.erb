@@ -1,0 +1,23 @@
+<%= render partial: 'scorers2/communal' %>
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Communal Scorers</h5>
+    <div class="list-group list-group-horizontal overflow-auto py-2">
+      <% @communal_scorers.each do |scorer| %>
+        <div class="list-group-item me-2" style="min-width: 320px;">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <strong><%= scorer.name %></strong>
+              <div class="text-muted small"><%= truncate(scorer.code.to_s, length: 120) %></div>
+            </div>
+            <div>
+              <% if scorer.show_scale_labels %>
+                <span class="badge bg-secondary">Scale</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
