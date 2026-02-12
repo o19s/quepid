@@ -1,0 +1,92 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">
+      Scorers 
+      <small class="text-muted ms-2">
+        <%= link_to "See communal scorers", scorers_path, class: "text-decoration-none" %>
+      </small>
+    </h5>
+    <div class="mb-3">
+      <%= form_with url: team2_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
+        <div class="col-auto" style="flex:1">
+          <div class="input-group">
+            <%= text_field_tag :scorers_q, @filter_scorers_q, class: 'form-control', placeholder: 'Filter scorers by name' %>
+            <button class="btn btn-outline-secondary" type="submit" title="Search scorers">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <span class="visually-hidden">Search scorers</span>
+            </button>
+          </div>
+        </div>
+        <%# Preserve case and book filters when submitting scorers form %>
+        <% if @filter_q.present? %>
+          <%= hidden_field_tag :q, @filter_q %>
+        <% end %>
+        <% if @archived %>
+          <%= hidden_field_tag :archived, '1' %>
+        <% end %>
+        <% if @filter_books_q.present? %>
+          <%= hidden_field_tag :books_q, @filter_books_q %>
+        <% end %>
+        <% if @filter_books_archived %>
+          <%= hidden_field_tag :books_archived, '1' %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Scale</th>
+            <th>Communal</th>
+            <th>Owner</th>
+            <th class="text-end"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (@scorers || []).each do |scorer| %>
+            <tr>
+              <td><%= link_to scorer.name, edit_scorer_path(scorer) %></td>
+              <td><%= scorer.scale_list || '—' %></td>
+              <td>
+                <% if scorer.communal? %>
+                  <i class="bi bi-check-circle text-success" aria-hidden="true"></i>
+                  <span class="visually-hidden">Yes</span>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+              <td><%= scorer.owner&.fullname || '—' %></td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                  <%= button_tag type: 'button',
+                                 class: 'btn btn-link p-0 me-2',
+                                 title: 'Share',
+                                 'aria-label': 'Share',
+                                 data: {
+                                   action: 'click->share-scorer#open',
+                                   bs_toggle: 'modal',
+                                   bs_target: '#shareScorerModal',
+                                   share_scorer_id: scorer.id,
+                                   share_scorer_name: scorer.name,
+                                   share_scorer_all_teams_json: current_user.teams.select(:id, :name).order(:name).to_json,
+                                   share_scorer_shared_teams_json: scorer.teams.select(:id, :name).to_json
+                                 } do %>
+                    <i class="bi bi-share" aria-hidden="true"></i>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <% if defined?(pagy_nav) && @pagy_scorers %>
+        <div class="mt-2">
+          <%= pagy_nav(@pagy_scorers) %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

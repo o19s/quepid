@@ -6,7 +6,6 @@
       <table class="table table-sm table-hover">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Name</th>
             <th>Type</th>
             <th>Scale</th>
@@ -17,7 +16,6 @@
         <tbody>
           <% @scorers.each do |scorer| %>
             <tr>
-              <td><%= scorer.id %></td>
               <td><%= scorer.name %></td>
               <td><%= scorer.communal? ? 'Communal' : 'Custom' %></td>
               <td>

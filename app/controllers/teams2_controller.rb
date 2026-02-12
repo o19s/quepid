@@ -208,6 +208,13 @@ class Teams2Controller < ApplicationController
     @pagy_books, @books = pagy(books_query.order(:id))
     @filter_books_q = books_q
     @filter_books_archived = books_include_archived
+
+    # Scorers filtering
+    scorers_q = params[:scorers_q].to_s.strip
+    scorers_query = @team.scorers
+    scorers_query = scorers_query.where('name LIKE ?', "%#{scorers_q}%") if scorers_q.present?
+    @pagy_scorers, @scorers = pagy(scorers_query.order(:name), page_param: :scorers_page)
+    @filter_scorers_q = scorers_q
   end
 
   def new
