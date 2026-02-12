@@ -73,6 +73,7 @@ class Case < ApplicationRecord
 
   # Validations
   validates :case_name, presence: true
+  validates :options, json_format: true, allow_blank: true
   validates_with ScorerExistsValidator
 
   # Callbacks
@@ -82,6 +83,8 @@ class Case < ApplicationRecord
   after_initialize do |c|
     c.archived = false if c.archived.nil?
   end
+
+  # Concerns
 
   # Scopes
   include ForUserScope

@@ -48,7 +48,7 @@ class PopulateBookJobTest < ActiveJob::TestCase
       query_doc_pair = book.query_doc_pairs.find_by(query_text: 'test query', doc_id: 'test_doc_1')
       assert_not_nil query_doc_pair
       assert_equal 0, query_doc_pair.position
-      assert_equal({ 'title' => 'Test Document 1', 'year' => '2023' }.to_json, query_doc_pair.document_fields)
+      assert_equal({ 'title' => 'Test Document 1', 'year' => '2023' }, query_doc_pair.document_fields)
 
       # Verify the blob was purged
       assert_raise(ActiveStorage::FileNotFoundError) { blob.download }

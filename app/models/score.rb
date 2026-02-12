@@ -34,8 +34,6 @@
 class Score < ApplicationRecord
   self.table_name = 'case_scores'
 
-  serialize :queries, coder: JSON
-
   # Associations
   belongs_to :case, touch: true
   belongs_to :user, optional: true
@@ -44,6 +42,8 @@ class Score < ApplicationRecord
   belongs_to :scorer, optional: true # optional for legacy reasons, we have old data.
 
   # Validations
+
+  serialize :queries, coder: JSON
 
   # Scopes
 

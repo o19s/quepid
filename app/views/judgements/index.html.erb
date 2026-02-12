@@ -132,7 +132,7 @@
             </td>
             <% unless @compact %>
             <td>            
-              <%= truncate(judgement.query_doc_pair.document_fields, length: 150) %>
+              <%= truncate(judgement.query_doc_pair.document_fields.to_json, length: 150) %>
             </td>
             <% end %> 
             <td>

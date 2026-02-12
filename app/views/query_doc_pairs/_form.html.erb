@@ -1,11 +1,10 @@
-
-<%= form_for([@book, query_doc_pair]) do |form| %>
+<%= form_with(model: [@book, query_doc_pair]) do |form| %>
   <div class="card">
-    <div class="card-body"> 
+    <div class="card-body">
       <% if query_doc_pair.errors.any? %>
         <div id="error_explanation">
-          <h2><%= pluralize(query_doc_pair.errors.count, "error") %> prohibited this query_doc_pair from being saved:</h2>
-    
+          <h2><%= pluralize(query_doc_pair.errors.count, "error") %> prohibited this Query Doc Pair from being saved:</h2>
+
           <ul>
             <% query_doc_pair.errors.each do |error| %>
               <li><%= error.full_message %></li>
@@ -13,51 +12,51 @@
           </ul>
         </div>
       <% end %>
-    
-    
+
       <div class="mb-3">
         <%= form.label :query_text, class: 'form-label' %>
-        <%= form.text_field :query_text %>
+        <%= form.text_field :query_text, class: 'form-control' %>
+        <div class="form-text">The search query text.</div>
       </div>
-      
-    
+
       <div class="mb-3">
-        <%= form.label :position, class: 'form-label'  %>
-        <%= form.text_field :position %>
+        <%= form.label :doc_id, "Document ID", class: 'form-label' %>
+        <%= form.text_field :doc_id, class: 'form-control' %>
+        <div class="form-text">Unique identifier for the document.</div>
       </div>
-    
+
       <div class="mb-3">
-        <%= form.label :doc_id, "Doc ID", class: 'form-label'  %>
-        <%= form.text_field :doc_id %>
+        <%= form.label :position, class: 'form-label' %>
+        <%= form.number_field :position, class: 'form-control' %>
+        <div class="form-text">Position/rank of this document in the result set.</div>
       </div>
-      
+
       <div class="mb-3">
-        <%= form.label :information_need, "Information Need", class: 'form-label'  %>
-        <%= form.text_field :information_need, size: 80 %>
+        <%= form.label :information_need, class: 'form-label' %>
+        <%= form.text_field :information_need, class: 'form-control' %>
+        <div class="form-text">Description of the user's information need for this query.</div>
       </div>
-      
+
       <div class="mb-3">
-        <%= form.label :options, class: 'form-label'  %> <small>JSON</small><br/>
-        <%= form.text_area :options, size: "80x8" %>
-      </div>  
-      
-      <div class="mb-3">
-        <%= form.label :notes, class: 'form-label'  %><br/>
-        <%= form.text_area :notes, size: "80x8" %>
-      </div>  
-    
-      <div class="mb-3">
-        <%= form.label :document_fields, class: 'form-label'  %> <small>JSON</small><br/>
-        <%= form.text_area :document_fields, size: "80x8" %>
+        <%= form.label :notes, class: 'form-label' %>
+        <%= form.text_area :notes, rows: 4, class: 'form-control' %>
+        <div class="form-text">Additional notes about this query-document pair.</div>
       </div>
-    
-    
-    
-    
-      <br>
-    
+
+      <div class="mb-3">
+        <%= form.label :options, class: 'form-label' %>
+        <div class="form-text">Additional configuration options as JSON.</div>
+        <%= form.text_area :options, value: format_json(query_doc_pair.options), data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
+      </div>
+
+      <div class="mb-3">
+        <%= form.label :document_fields, class: 'form-label' %>
+        <div class="form-text">Document fields as JSON object.</div>
+        <%= form.text_area :document_fields, value: format_json(query_doc_pair.document_fields), data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 200 } %>
+      </div>
+
       <div class="actions">
-        <%= form.submit class: "btn btn-primary"%>
+        <%= form.submit class: "btn btn-primary" %>
       </div>
     </div>
   </div>

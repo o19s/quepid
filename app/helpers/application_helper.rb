@@ -77,19 +77,6 @@ module ApplicationHelper
     nil
   end
 
-  # rubocop:enable Lint/EmptyBlock
-  def document_fields_parses_as_json document_fields
-    begin
-      document_fields = JSON.parse document_fields
-    rescue StandardError
-      document_fields = nil
-    end
-
-    document_fields = nil unless document_fields.respond_to?(:keys)
-
-    document_fields
-  end
-
   # Override default form_for to disable Turbo Drive on
   # Forms.  Maybe should be an ENV variable?
   # caused by https on front end attempting to make http
