@@ -8,7 +8,6 @@ module Api
         before_action :set_case
         before_action :check_case
 
-        # rubocop:disable Metrics/MethodLength
         # @summary Bulk create queries
         # @request_body Query to be created
         #   [
@@ -57,7 +56,6 @@ module Api
 
           respond_with @queries, @display_order
         end
-        # rubocop:enable Metrics/MethodLength
 
         # @summary Delete all queries
         # @tags cases > queries

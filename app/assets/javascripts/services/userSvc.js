@@ -63,13 +63,6 @@ angular.module('UtilitiesModule')
         return currUser;
       };
 
-      this.users = function(prefix) {
-        var url     = 'api/users';
-        var params  = { prefix: prefix };
-
-        return $http.get(url, { params: params });
-      };
-
       this.get = function(id) {
         var url     = 'api/users/' + id;
 

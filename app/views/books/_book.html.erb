@@ -11,5 +11,23 @@
     <% end %>
     <span id="notification-book-<%= book.id %>">
     </span>
-  </td> 
+  </td>
+  <td class="text-end">
+    <%= button_tag type: 'button',
+                   class: 'btn btn-link p-0',
+                   title: 'Share',
+                   'aria-label': 'Share',
+                   data: {
+                     controller: 'share-book',
+                     action: 'click->share-book#open',
+                     bs_toggle: 'modal',
+                     bs_target: '#shareBookModal',
+                     share_book_id_value: book.id,
+                     share_book_name_value: book.name,
+                     share_book_all_teams_json: current_user.teams.select(:id, :name).order(:name).to_json,
+                     share_book_shared_teams_json: book.teams.select(:id, :name).to_json
+                   } do %>
+      <i class="bi bi-share" aria-hidden="true"></i>
+    <% end %>
+  </td>
 </tr>

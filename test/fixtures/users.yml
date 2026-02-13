@@ -209,8 +209,41 @@ dropdown_user:
 locked_user:
   <<: *default
   email:     locked_user@example.com
-  locked:       true
-  locked_at:    <%= Time.now - 1.week %>
+  locked:    true
+  locked_at: <%= Time.now - 1.week %>
+
+# Autocomplete test users - same domain as random user (example.com)
+autocomplete_user_1:
+  <<: *default
+  email: autocomplete_user_1@example.com
+  name: Alice Autocomplete
+  administrator: false
+
+autocomplete_user_2:
+  <<: *default
+  email: autocomplete_user_2@example.com
+  name: Bob Searchable
+  administrator: false
+
+autocomplete_user_3:
+  <<: *default
+  email: autocomplete_user_3@example.com
+  name: Charlie Test
+  administrator: false
+
+# Autocomplete test users - different domain
+autocomplete_different_domain:
+  <<: *default
+  email: different@otherdomain.com
+  name: Different Domain User
+  administrator: false
+
+# Autocomplete test user - uppercase email for case sensitivity test
+autocomplete_uppercase:
+  <<: *default
+  email: UpperCase@example.com
+  name: Upper Case User
+  administrator: false
 
 admin:
   <<: *default

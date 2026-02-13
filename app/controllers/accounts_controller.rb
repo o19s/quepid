@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class AccountsController < ApplicationController
-  # rubocop:disable Metrics/MethodLength
   def update
     @user = current_user
     error = false
@@ -28,7 +27,6 @@ class AccountsController < ApplicationController
       format.js
     end
   end
-  # rubocop:enable Metrics/MethodLength
 
   def destroy
     @user = current_user

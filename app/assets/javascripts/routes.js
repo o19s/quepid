@@ -33,26 +33,6 @@ angular.module('QuepidApp')
           controller: 'MainCtrl',
           reloadOnSearch: false
         })
-        .when('/cases', {
-          templateUrl: 'views/cases/index.html',
-          controller: 'CasesCtrl'
-        })
-        .when('/cases/import', {
-          templateUrl: 'views/cases/import.html',
-          controller: 'CasesImportCtrl'
-        })
-        .when('/teams', {
-          templateUrl: 'views/teams/index.html',
-          controller: 'TeamsCtrl'
-        })
-        .when('/teams/:teamId', {
-          templateUrl: 'views/teams/show.html',
-          controller: 'TeamCtrl'
-        })
-        .when('/scorers', {
-          templateUrl: 'views/scorers/index.html',
-          controller: 'ScorersCtrl'
-        })
         .otherwise({
           templateUrl: 'views/404.html',
           controller: '404Ctrl'

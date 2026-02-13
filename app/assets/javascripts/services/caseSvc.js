@@ -26,11 +26,9 @@ angular.module('QuepidApp')
       // Functions
       svc.cloneCase         = cloneCase;
       svc.constructFromData = constructFromData;
-      svc.filterCases       = filterCases;
       svc.get               = get;
       svc.getCases          = getCases;
       svc.isBootstrapped    = isBootstrapped;
-      svc.listContainsCase  = listContainsCase;
       svc.refetchCaseLists  = refetchCaseLists;
       svc.runEvaluation     = runEvaluation;
       svc.saveDefaultScorer = saveDefaultScorer;
@@ -294,17 +292,7 @@ angular.module('QuepidApp')
           });
       };
       
-      this.importCase = function(caseToImport) {
-        var that = this;
-        var url         = 'api/import/cases';
-        var data        = { case: caseToImport };
 
-        return $http.post(url, data)
-          .then(function(response) {          
-              that.refetchCaseLists();
-            return response.data;
-          });
-      };
 
       this.trackLastViewedAt = function(caseNo) {
         var url         = 'api/cases/'+ caseNo + '/metadata';
@@ -391,15 +379,7 @@ angular.module('QuepidApp')
           });
       }
 
-      function filterCases (cases, owned) {
-        if ( angular.isUndefined(owned) ) {
-          owned = false;
-        }
 
-        return cases.filter(function(item) {
-          return item.owned === owned;
-        });
-      }
 
       function constructFromData(data) {
         return new Case(data);

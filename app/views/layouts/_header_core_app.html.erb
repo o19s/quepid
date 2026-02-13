@@ -26,7 +26,7 @@
             </li>
             
             <li class="actions">
-              <a href="cases" class="btn btn-default btn-block">
+              <a href="cases" class="btn btn-default btn-block" target="_self">
                 View all cases
                 <small class="text-muted">
                   ({{ headerScope.casesCount }} active)
@@ -75,8 +75,8 @@
         </li>
         <!-- End book selector -->        
 
-        <li><a href="teams">Teams</a></li>
-        <li><a href="scorers">Scorers</a></li>
+        <li><a href="teams" target="_self">Teams</a></li>
+        <li><a href="scorers" target="_self">Scorers</a></li>
         <li><a ng-attr-target="_blank" href="notebooks/lab/index.html">Notebooks</a></li>
       </ul>
     
@@ -98,7 +98,7 @@
             <li role="separator" class=""></li>
             <li><%= link_to 'Admin Home', admin_path, class: 'dropdown-link', target: '_self' %></li>
             <li><%= link_to 'Users', admin_users_path, class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'Communal Scorers', admin_communal_scorers_path, class: 'dropdown-link', target: '_self' %></li>
+
             <li><%= link_to 'Announcements', admin_announcements_path, class: 'dropdown-item', target: '_self' %></li>
             <li><%= link_to 'Job Manager', mission_control_jobs_path, class: 'dropdown-link', target: '_self' %></li>
             <% end %>

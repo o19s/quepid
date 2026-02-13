@@ -107,15 +107,7 @@ describe('Service: caseSvc', function () {
       case_name: 'new case'
     };
 
-    it('filters cases', function() {
-      var ownedCase = caseSvc.filterCases(caseSvc.allCases, true);
-      expect(ownedCase.length).toBe(2);
-      expect(ownedCase[0].caseName).toBe('test case');
 
-      var sharedCase = caseSvc.filterCases(caseSvc.allCases, false);
-      expect(sharedCase.length).toBe(2);
-      expect(sharedCase[0].caseName).toBe('test case 3');
-    });
 
     it('selects a shared case', function() {
       caseSvc.selectCase(3);
@@ -595,7 +587,7 @@ describe('Service: caseSvc', function () {
 
       caseSvc.uponBeingBootstrapped().
         then(function() {
-          var sharedCase = caseSvc.filterCases(caseSvc.allCases, false);
+          var sharedCase = caseSvc.allCases.filter(function(item) { return item.owned === false; });
           expect(sharedCase.length).toBe(2);
         });
 

@@ -9,11 +9,6 @@ class CoreController < ApplicationController
     Analytics::Tracker.track_user_swapped_protocol current_user, @case, params['protocolToSwitchTo'] if params['protocolToSwitchTo']
   end
 
-  # We want to distingush between a /case url and a /teams for unfurling logic.
-  def teams
-    render 'index'
-  end
-
   def new
     @case = current_user.cases.build case_name: "Case #{current_user.cases.size}"
     @case.save!

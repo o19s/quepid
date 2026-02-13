@@ -1,0 +1,40 @@
+<div class="modal fade" id="shareSearchEndpointModal" tabindex="-1" aria-labelledby="shareSearchEndpointModalLabel" aria-hidden="true" data-controller="share-search-endpoint">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="shareSearchEndpointModalLabel">Share Search Endpoint</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <%= form_with url: share_search_endpoint_teams_path, method: :post, local: true, html: { id: 'share-search-endpoint-form', class: 'mb-3' } do %>
+          <%= hidden_field_tag :search_endpoint_id, '', id: 'share-search-endpoint-id' %>
+
+          <p class="h5">Select a team to share this search endpoint with:</p>
+          <div class="mb-3">
+            <%= select_tag :team_id,
+                           options_for_select([['Select a team', '']]),
+                           class: 'form-select',
+                           id: 'share-search-endpoint-team',
+                           required: true,
+                           data: { action: 'change->share-search-endpoint#toggleSubmit' } %>
+          </div>
+        <% end %>
+
+        <hr>
+        <p class="h5">Already shared with:</p>
+        <div id="share-search-endpoint-shared-list" class="list-group mt-2"></div>
+
+        <%= form_with url: unshare_search_endpoint_teams_path, method: :post, local: true, html: { id: 'unshare-search-endpoint-form', class: 'mt-3' } do %>
+          <%= hidden_field_tag :search_endpoint_id, '', id: 'unshare-search-endpoint-id' %>
+          <%= hidden_field_tag :team_id, '', id: 'unshare-search-endpoint-team' %>
+        <% end %>
+      </div>
+      <div class="modal-footer">
+        <a href="<%= new_team_path %>" class="btn btn-primary me-auto">+ Create a team</a>
+        <button type="submit" form="share-search-endpoint-form" id="share-search-endpoint-submit" class="btn btn-success" disabled>Share with team</button>
+        <button type="submit" form="unshare-search-endpoint-form" id="unshare-search-endpoint-submit" class="btn btn-success" disabled>Unshare from team</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
