@@ -126,12 +126,15 @@ export default class extends Controller {
     name.className = 'autocomplete-name'
     name.textContent = user.display_name
 
-    const email = document.createElement('div')
-    email.className = 'autocomplete-email'
-    email.textContent = user.email
-
     details.appendChild(name)
-    details.appendChild(email)
+
+    // Only show email if the match was on email, not on name
+    if (user.matched_on === 'email') {
+      const email = document.createElement('div')
+      email.className = 'autocomplete-email'
+      email.textContent = user.email
+      details.appendChild(email)
+    }
 
     item.appendChild(avatar)
     item.appendChild(details)

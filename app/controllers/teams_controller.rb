@@ -430,20 +430,33 @@ class TeamsController < ApplicationController
     # Get current user's email domain
     current_domain = current_user.email.split('@').last
 
-    # Find users matching query who are either:
-    # 1. In teams with current user, OR
-    # 2. Have same email domain as current user
-    suggested_users = User.where('LOWER(email) LIKE ? OR LOWER(name) LIKE ?', "%#{query}%", "%#{query}%")
-      .where.not(id: @team.members.pluck(:id)) # Exclude current team members
+    # Base scope: users who are either in teams with current user OR have same email domain
+    base_scope = User.where.not(id: @team.members.pluck(:id))
       .where('id IN (?) OR email LIKE ?', team_member_ids, "%@#{current_domain}")
+
+    # Query 1: Exact email match (prioritize this)
+    exact_email_matches = base_scope.where('LOWER(email) = ?', query).limit(10)
+
+    # Query 2: Prefix email match OR name substring match
+    prefix_and_name_matches = base_scope
+      .where('LOWER(email) LIKE ? OR LOWER(name) LIKE ?', "#{query}%", "%#{query}%")
+      .where.not(id: exact_email_matches.pluck(:id)) # Exclude already matched
       .limit(10)
-      .map do |user|
-        {
-          email:        user.email,
-          name:         user.name,
-          display_name: user.display_name,
-          avatar_url:   user.avatar_url(:small),
-        }
+
+    # Combine results: exact matches first, then prefix/name matches
+    all_matches = (exact_email_matches.to_a + prefix_and_name_matches.to_a).take(10)
+
+    suggested_users = all_matches.map do |user|
+      # Determine if match was on email or name for conditional display
+      matched_on = user.email.downcase == query || user.email.downcase.start_with?(query) ? 'email' : 'name'
+
+      {
+        email:        user.email,
+        name:         user.name,
+        display_name: user.display_name,
+        avatar_url:   user.avatar_url(:small),
+        matched_on:   matched_on,
+      }
     end
 
     render json: suggested_users
