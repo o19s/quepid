@@ -48,7 +48,7 @@
     "urijs": "^1.19.11",
     "vega": "^6.0.0",
     "vega-embed": "^7.1.0",
-    "vega-lite": "^6.4.1"
+    "vega-lite": "^6.4.2"
   },
   "devDependencies": {
     "angular-mocks": "~1.8.3",
