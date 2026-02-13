@@ -138,6 +138,7 @@ Rails.application.routes.draw do
   resources :teams, only: [ :index, :new, :create, :show ] do
     member do
       post :rename
+      get 'suggest_members' => 'teams#suggest_members', as: :suggest_members
       post 'members' => 'teams#add_member', as: :members
       delete 'members/:member_id' => 'teams#remove_member', as: :member
       delete 'cases/:case_id' => 'teams#remove_case', as: :case

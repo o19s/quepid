@@ -72,3 +72,8 @@ body {
 .alert {
   z-index: 100;
 }
+
+/* Slow down Bootstrap spinner animation */
+.spinner-border {
+  animation-duration: 1.5s;
+}

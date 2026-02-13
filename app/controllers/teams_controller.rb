@@ -3,7 +3,7 @@
 class TeamsController < ApplicationController
   include Pagy::Method
 
-  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint ]
+  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint, :suggest_members ]
 
   # Remove a case from the team
   def remove_case
@@ -417,6 +417,36 @@ class TeamsController < ApplicationController
     end
 
     redirect_to team_path(@team)
+  end
+
+  def suggest_members
+    query = params[:query].to_s.strip.downcase
+
+    return render json: [] if query.blank?
+
+    # Get users from teams the current user is in
+    team_member_ids = current_user.teams.joins(:members).pluck('members_teams.member_id').uniq
+
+    # Get current user's email domain
+    current_domain = current_user.email.split('@').last
+
+    # Find users matching query who are either:
+    # 1. In teams with current user, OR
+    # 2. Have same email domain as current user
+    suggested_users = User.where('LOWER(email) LIKE ? OR LOWER(name) LIKE ?', "%#{query}%", "%#{query}%")
+      .where.not(id: @team.members.pluck(:id)) # Exclude current team members
+      .where('id IN (?) OR email LIKE ?', team_member_ids, "%@#{current_domain}")
+      .limit(10)
+      .map do |user|
+        {
+          email:        user.email,
+          name:         user.name,
+          display_name: user.display_name,
+          avatar_url:   user.avatar_url(:small),
+        }
+    end
+
+    render json: suggested_users
   end
 
   private

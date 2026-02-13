@@ -19,14 +19,102 @@
       <div class="card-body">
         <h5 class="card-title">Add Team Member</h5>
         <%= form_with url: members_team_path(@team), method: :post, local: true do %>
-          <div class="mb-2">
-            <%= text_field_tag :email, nil, class: 'form-control form-control-sm', placeholder: 'User email address' %>
+          <div class="mb-2 position-relative" 
+               data-controller="team-member-autocomplete" 
+               data-team-member-autocomplete-url-value="<%= suggest_members_team_path(@team) %>"
+               data-action="click@window->team-member-autocomplete#clickOutside">
+            <div class="position-relative">
+              <%= text_field_tag :email, nil, 
+                  class: 'form-control form-control-sm', 
+                  placeholder: 'User email address', 
+                  autocomplete: 'off',
+                  data: { 
+                    team_member_autocomplete_target: 'input',
+                    action: 'input->team-member-autocomplete#search'
+                  } %>
+              <span data-team-member-autocomplete-target="spinner" class="autocomplete-spinner" style="display: none;">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              </span>
+            </div>
+            <div data-team-member-autocomplete-target="suggestions" class="autocomplete-suggestions" style="display: none;"></div>
           </div>
           <div>
             <%= submit_tag 'Add user', class: 'btn btn-success btn-sm' %>
           </div>
         <% end %>
-        <p class="text-muted mt-2 small">Start typing an email address to add an existing user to this team.</p>
+        <p class="text-muted mt-2 small">Start typing a name or email address to add an existing user to this team.</p>
+        
+        <style>
+          .autocomplete-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ced4da;
+            border-top: none;
+            border-radius: 0 0 0.25rem 0.25rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          
+          .autocomplete-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #f0f0f0;
+          }
+          
+          .autocomplete-item:last-child {
+            border-bottom: none;
+          }
+          
+          .autocomplete-item:hover,
+          .autocomplete-item.selected {
+            background-color: #f8f9fa;
+          }
+          
+          .autocomplete-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 3px;
+            flex-shrink: 0;
+          }
+          
+          .autocomplete-details {
+            flex: 1;
+            min-width: 0;
+          }
+          
+          .autocomplete-name {
+            font-weight: 500;
+            color: #212529;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          
+          .autocomplete-email {
+            font-size: 0.85em;
+            color: #6c757d;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          
+          .autocomplete-spinner {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            transition: opacity 0.2s ease-in-out;
+          }
+        </style>
         <hr>
         
         <%= link_to new_team_ai_judge_path(@team), class: 'btn btn-primary btn-sm w-100' do %>
