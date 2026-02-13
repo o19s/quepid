@@ -419,36 +419,73 @@ class TeamsController < ApplicationController
     redirect_to team_path(@team)
   end
 
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   def suggest_members
+    total_start = Time.current
     query = params[:query].to_s.strip.downcase
 
     return render json: [] if query.blank?
 
     # Get users from teams the current user is in
+    setup_start = Time.current
     team_member_ids = current_user.teams.joins(:members).pluck('members_teams.member_id').uniq
 
     # Get current user's email domain
     current_domain = current_user.email.split('@').last
+    setup_time = ((Time.current - setup_start) * 1000).round(2)
+
+    # Query 1: Exact email match (highest priority)
+    # When user provides complete email, bypass security filters to find anyone
+    query1_start = Time.current
+    exact_email_matches = User
+      .where.not(id: @team.members.pluck(:id))
+      .where('LOWER(email) = ?', query)
+      .limit(10)
+    exact_count = exact_email_matches.to_a.count
+    query1_time = ((Time.current - query1_start) * 1000).round(2)
 
     # Base scope: users who are either in teams with current user OR have same email domain
+    # Used for prefix and name matching (more restricted)
+    scope_start = Time.current
     base_scope = User.where.not(id: @team.members.pluck(:id))
       .where('id IN (?) OR email LIKE ?', team_member_ids, "%@#{current_domain}")
+    scope_time = ((Time.current - scope_start) * 1000).round(2)
 
-    # Query 1: Exact email match (prioritize this)
-    exact_email_matches = base_scope.where('LOWER(email) = ?', query).limit(10)
-
-    # Query 2: Prefix email match OR name substring match
-    prefix_and_name_matches = base_scope
-      .where('LOWER(email) LIKE ? OR LOWER(name) LIKE ?', "#{query}%", "%#{query}%")
-      .where.not(id: exact_email_matches.pluck(:id)) # Exclude already matched
+    # Query 2: Prefix email match (exclude exact matches)
+    # Matches email prefix for users in teams OR same domain
+    # e.g., "kat" matches "kat@o19s.com" and "kat@aol.com" (if in shared team)
+    query2_start = Time.current
+    prefix_email_matches = base_scope
+      .where('LOWER(email) LIKE ?', "#{query}%")
+      .where.not(id: exact_email_matches.pluck(:id))
       .limit(10)
+    prefix_count = prefix_email_matches.to_a.count
+    query2_time = ((Time.current - query2_start) * 1000).round(2)
 
-    # Combine results: exact matches first, then prefix/name matches
-    all_matches = (exact_email_matches.to_a + prefix_and_name_matches.to_a).take(10)
+    # Query 3: Name substring match (exclude email matches)
+    query3_start = Time.current
+    excluded_ids = (exact_email_matches.pluck(:id) + prefix_email_matches.pluck(:id))
+    name_matches = base_scope
+      .where('LOWER(name) LIKE ?', "%#{query}%")
+      .where.not(id: excluded_ids)
+      .limit(10)
+    name_count = name_matches.to_a.count
+    query3_time = ((Time.current - query3_start) * 1000).round(2)
 
+    # Combine results: exact email, then prefix email, then name matches
+    combine_start = Time.current
+    all_matches = (exact_email_matches.to_a + prefix_email_matches.to_a + name_matches.to_a).take(10)
+    combine_time = ((Time.current - combine_start) * 1000).round(2)
+
+    map_start = Time.current
     suggested_users = all_matches.map do |user|
-      # Determine if match was on email or name for conditional display
-      matched_on = user.email.downcase == query || user.email.downcase.start_with?(query) ? 'email' : 'name'
+      # Determine match type based on which query found the user
+      matched_on = if exact_email_matches.include?(user) || prefix_email_matches.include?(user)
+                     'email'
+                   else
+                     'name'
+                   end
 
       {
         email:        user.email,
@@ -458,9 +495,31 @@ class TeamsController < ApplicationController
         matched_on:   matched_on,
       }
     end
+    map_time = ((Time.current - map_start) * 1000).round(2)
+
+    total_time = ((Time.current - total_start) * 1000).round(2)
+
+    # Log performance metrics
+    Rails.logger.info '=== Team Member Autocomplete Performance ==='
+    Rails.logger.info "Query: '#{query}'"
+    Rails.logger.info "Setup time: #{setup_time}ms"
+    Rails.logger.info "Query 1 (exact email): #{query1_time}ms (#{exact_count} results)"
+    Rails.logger.info "Base scope build: #{scope_time}ms"
+    Rails.logger.info "Query 2 (prefix email): #{query2_time}ms (#{prefix_count} results)"
+    Rails.logger.info "Query 3 (name match): #{query3_time}ms (#{name_count} results)"
+    Rails.logger.info "Combine results: #{combine_time}ms"
+    Rails.logger.info "Map to JSON: #{map_time}ms"
+    Rails.logger.info "Total time: #{total_time}ms"
+    Rails.logger.info "Total results: #{suggested_users.count}"
+    Rails.logger.info "==========================================="
+
+    # Add performance timing to response header for easy browser profiling
+    response.headers['X-Performance-Timing'] = "total=#{total_time}ms, q1=#{query1_time}ms, q2=#{query2_time}ms, q3=#{query3_time}ms"
 
     render json: suggested_users
   end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength
 
   private
 
