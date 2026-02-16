@@ -27,7 +27,7 @@ WORKDIR /srv/app
 # Install Ruby gems (these can be cached separately from system dependencies)
 COPY Gemfile* ./
 RUN gem install foreman && \
-    gem install bundler:4.0.5 && \
+    gem install bundler:4.0.6 && \
     bundle install
 
 # Application code will be mounted at runtime

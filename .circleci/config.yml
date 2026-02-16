@@ -29,7 +29,7 @@ jobs:
 
       - run:
           name: Specify bundler!
-          command: gem install bundler:2.7.2
+          command: gem install bundler:4.0.6
 
       - run:
           name: Which bundler?
