@@ -39,7 +39,7 @@ gem 'rails-html-sanitizer'
 gem 'rack-cors'
 gem 'redcarpet'
 gem 'responders'
-gem 'ruby_llm'
+gem 'ruby_llm', '>= 1.9.2'
 gem 'rubyzip'
 gem 'propshaft' # Modern asset pipeline for Rails 8
 gem 'jsbundling-rails' # For bundling the Angular 1 app
