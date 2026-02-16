@@ -50,6 +50,7 @@ gem 'stimulus-rails'
 gem 'thor'
 gem 'turbo-rails'
 gem 'vega'
+gem 'view_component'
 
 group :development, :test do
   gem 'benchmark'

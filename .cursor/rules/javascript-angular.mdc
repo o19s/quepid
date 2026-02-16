@@ -1,0 +1,22 @@
+---
+description: JavaScript and AngularJS conventions (legacy workspace)
+globs: app/assets/javascripts/**/*
+alwaysApply: false
+---
+
+# JavaScript & AngularJS (Legacy)
+
+## Scope
+
+- App entry: `app/assets/javascripts/app.js`, `routes.js`. Main case page: `controllers/mainCtrl.js`.
+- Components: `app/assets/javascripts/components/` — `*_controller.js`, `*_directive.js`, `*.html` (some have modals with extra controllers/templates).
+
+## When Editing Legacy Code
+
+- **Navigation**: Never use `$window.location.href = '/'`. Use `caseTryNavSvc.getQuepidRootUrl()`.
+- **URLs**: Generate relative URLs; never start with `/`.
+- Prefer leaving Angular code stable while migration proceeds; see `docs/angular_services_responsibilities_mapping.md` for service → server/Stimulus placement.
+
+## New JavaScript
+
+- New behavior should go in Stimulus controllers under `app/javascript/`, not new Angular directives or controllers in `app/assets/javascripts/`.

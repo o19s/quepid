@@ -1,0 +1,29 @@
+---
+description: Ruby and Rails conventions for Quepid
+globs: app/**/*.rb, config/**/*.rb, lib/**/*.rb, test/**/*.rb, spec/**/*.rb
+alwaysApply: false
+---
+
+# Ruby & Rails Conventions
+
+## Controllers
+
+- Use **strong parameters** for all user input.
+- For boolean query/params, use: `archived = deserialize_bool_param(params[:archived])`.
+- API lives under `app/controllers/api`; versioned (e.g. V1).
+
+## Models & Business Logic
+
+- Keep models focused; single responsibility.
+- Extract complex business logic to **service objects**.
+- Ensure proper DB indexing for foreign keys and frequent queries.
+
+## Tests
+
+- **Minitest** is the test framework (see `test/`).
+- Write tests for new functionality; keep specs green during migrations.
+
+## General
+
+- Follow Rails conventions and Ruby style used in the codebase.
+- Predicates: `credentials?` not `has_credentials?`.

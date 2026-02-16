@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quepid -- Relevant Search Solved</title>
+<%= favicon_link_tag asset_path "favicon.ico" %>
+<meta name="description" content="Tired of irrelevant search results? Use Quepid to help improve the quality and relevancy of your search results.">
+<meta name="viewport" content="width=device-width">
+
+<%= stylesheet_link_tag 'core', media: 'all', 'data-turbo-track': 'reload' %>
+<%= csrf_meta_tags %>
+
+<base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
+</head>
+<body data-quepid-root-url="<%= quepid_root_url %>">
+  <%= render 'layouts/header_core_app' %>
+
+  <div id="main-content" data-controller="workspace" data-workspace-root-url-value="<%= quepid_root_url %>"<% if @case %> data-workspace-case-id-value="<%= @case.id %>" data-workspace-try-number-value="<%= @try&.try_number %>"<% end %>>
+    <%= yield %>
+  </div>
+
+  <%= render 'layouts/footer_core_app' %>
+
+  <%= javascript_include_tag 'jquery_bundle' %>
+  <%= javascript_importmap_tags 'application_modern' %>
+</body>
+</html>

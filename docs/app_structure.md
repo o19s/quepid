@@ -26,7 +26,7 @@ The API endpoints all live under the `app/controllers/api` folder. The API is ve
 ## Frontend
 The Frontend is built in two different ways.  Much of the application is standard Rails views that are rendered on the server.   However, the "core" of the application is a rich JavaScript app that runs in the browser.
 
-For the migration from AngularJS to Stimulus and what remains to be done, see [De-Angular Migration Review](deangularjs_migration_review.md). A detailed migration checklist is in [Angular to Stimulus, Hotwire, and ViewComponents Checklist](angular_to_stimulus_hotwire_viewcomponents_checklist.md).
+For the migration from AngularJS to Stimulus and what remains to be done, see [De-Angular Migration Review](deangularjs_migration_review.md). A detailed migration checklist is in [Angular to Stimulus, Hotwire, and ViewComponents Checklist](angular_to_stimulus_hotwire_viewcomponents_checklist.md). ViewComponent usage is documented in [ViewComponent Conventions](view_component_conventions.md).
 
 ### Core Frontend App
 
@@ -38,7 +38,9 @@ If what you're looking for isn't a component (we haven't been able to refactor t
 
 The AngularJS app starts with the `app/assets/javascripts/app.js` file and the `app/assets/javascripts/routes.js` file.
 
-The main entry to the app is through a case page, which is controller by the `app/assets/javascripts/controllers/mainCtrl.js` controller.
+The main entry to the app is through a case page. The URL `/case/:id(/try/:try_number)` is served by **Rails** `CoreController#show` (see `config/routes.rb`, `app/controllers/core_controller.rb`). The show action renders the modern layout and view; it does not use Angular client-side routing. Legacy Angular entry was previously via `app/assets/javascripts/controllers/mainCtrl.js` and `routes.js` (case/try routes there have been removed).
+
+**Modern stack (no Angular):** Layout `app/views/layouts/core_modern.html.erb` loads `application_modern.js` (Stimulus/Turbo) only. Use the Rails helper `quepid_root_url` (or in JS `document.body.dataset.quepidRootUrl` / the workspace Stimulus controller) for the app root URL instead of hardcoding `/`.
 
 This is the basic structure of the app and should get you started.
 
@@ -48,3 +50,7 @@ We have a number of long running processes, like exporting/importing files, runn
 ## HTTPS / HTTP
 
 Quepid runs on HTTPS where possible, however interacting via JSONP with Solr means that if Solr is under HTTP, then the Quepid page needs to be under HTTP as well.   We configure `ssl_options` to ensure that Quepid is under HTTPS for all pages except the main `/` or `CoreController` page, which is HTTP.
+
+## Cursor / IDE Rules
+
+Project-specific rules for Cursor live in `.cursor/rules/`. They cover: core project setup (Docker, yarn, docs, URLs), Ruby/Rails conventions, frontend migration (Stimulus, Turbo, ViewComponents), and legacy JavaScript/AngularJS. The "Quepid project" rule is always applied; others apply when editing matching file types.

@@ -1,0 +1,20 @@
+<%# Case/try workspace (modern stack). Rendered by CoreController#show with layout core_modern. %>
+<%# Context: @case, @try are set by set_case_or_bootstrap; layout passes them as data-workspace-*-value. %>
+<div class="core-workspace" data-case-id="<%= @case.id %>" data-try-number="<%= @try&.try_number %>">
+  <div class="d-flex align-items-center gap-3 mb-3">
+    <h2 class="h5 mb-0"><%= @case.case_name %></h2>
+    <span class="text-muted">Try <%= @try&.try_number %></span>
+    <div class="d-flex gap-2 ms-auto">
+      <%= render ActionIconComponent.new(icon_class: "bi bi-file-earmark-arrow-up", title: "Export") %>
+      <%= render ActionIconComponent.new(icon_class: "bi bi-trash", title: "Delete") %>
+      <%= render ActionIconComponent.new(icon_class: "bi bi-share", title: "Share Case") %>
+    </div>
+  </div>
+  <div class="mb-3">
+    <%= render AddQueryComponent.new(
+      case_id: @case.id,
+      can_add_queries: @try.nil? || @try.search_endpoint.nil? || @try.search_endpoint.search_engine != "static"
+    ) %>
+  </div>
+  <p class="text-muted">Workspace for case “<%= @case.case_name %>” (try <%= @try&.try_number %>). Stimulus/ViewComponents. Action icons and Add query form use the new components.</p>
+</div>

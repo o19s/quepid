@@ -2,6 +2,14 @@
 
 # rubocop:disable Metrics/ModuleLength
 module ApplicationHelper
+  # Returns the Quepid application root URL (no trailing slash).
+  # Use this instead of hardcoding '/' or using caseTryNavSvc.getQuepidRootUrl() in migrated JS.
+  # Respects RAILS_RELATIVE_URL_ROOT so deployment under a subpath works.
+  # Exposed in core_modern layout as data-quepid-root-url for Stimulus/JS.
+  def quepid_root_url
+    root_url.chomp('/')
+  end
+
   def book_title book
     if book.name.downcase.starts_with?('book')
       book.name.titleize

@@ -1,0 +1,25 @@
+---
+description: Frontend migration (Stimulus, Turbo, ViewComponents) and patterns
+globs: app/components/**/*, app/views/**/*.erb, app/javascript/**/*
+alwaysApply: false
+---
+
+# Frontend Migration & Patterns
+
+## Stack
+
+- **Legacy**: AngularJS in `app/assets/javascripts/` (components, controllers, templates) — being retired.
+- **Target**: Stimulus + Turbo (Hotwire) + ViewComponents. Server-centric: push state to server, Turbo Frames for dynamic regions.
+- **Reference**: `docs/angular_to_stimulus_hotwire_viewcomponents_checklist.md`, `docs/workspace_state_design.md`.
+
+## ViewComponents
+
+- Components in `app/components/`; inherit from `ApplicationComponent`.
+- Encapsulate markup and Bootstrap; receive data via initializer (no controller instance vars unless passed).
+- Use slots/content blocks for composition; add `data-controller` when Stimulus behavior is needed.
+- Prefer `render Component.new(...)` in views.
+
+## New UI
+
+- Prefer Rails views + Stimulus + Turbo Frames over new Angular. Do not add new Angular features to the core workspace.
+- URL/navigation: use relative URLs and `caseTryNavSvc.getQuepidRootUrl()` (or Rails equivalent); never hardcode `/`.

@@ -1,0 +1,21 @@
+<%= tag.form class: "form input-append vertically-centered", data: { controller: "add-query", add_query_case_id_value: @case_id, add_query_can_add_value: @can_add_queries, action: "submit->add-query#submit" } do %>
+  <input
+    id="add-query"
+    type="text"
+    class="form-control"
+    placeholder="<%= @placeholder %>"
+    data-add-query-target="input"
+    data-action="paste->add-query#handlePaste"
+  />
+
+  <input
+    id="add-query-submit"
+    type="submit"
+    class="btn btn-success"
+    value="Add query"
+    data-add-query-target="submitButton"
+    <%= "disabled" if !@can_add_queries %>
+  />
+
+  <span data-add-query-target="spinner" class="spinner hidden" aria-hidden="true"></span>
+<% end %>

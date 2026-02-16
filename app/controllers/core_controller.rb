@@ -9,6 +9,13 @@ class CoreController < ApplicationController
     Analytics::Tracker.track_user_swapped_protocol current_user, @case, params['protocolToSwitchTo'] if params['protocolToSwitchTo']
   end
 
+  # Renders the case/try workspace with the modern layout (Stimulus/Turbo).
+  # Case and try context are set by set_case_or_bootstrap and available as @case, @try.
+  def show
+    return redirect_to cases_path if @case.blank?
+    render layout: 'core_modern'
+  end
+
   def new
     @case = current_user.cases.build case_name: "Case #{current_user.cases.size}"
     @case.save!

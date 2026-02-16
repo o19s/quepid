@@ -71,6 +71,9 @@ Rails.application.configure do
   # Annotate rendered view with file names.
   config.action_view.annotate_rendered_view_with_filenames = true
 
+  # ViewComponent: enable previews at /rails/view_components (e.g. app/components/previews/)
+  config.view_component.show_previews = true
+
   # Use an evented file watcher to asynchronously detect changes in source code,
   # routes, locales, etc. This feature depends on the listen gem.
   # In Docker, use polling instead to avoid threading issues with listen gem

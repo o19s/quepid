@@ -339,8 +339,8 @@ Rails.application.routes.draw do
   post '/cases/:id/archive' => 'cases#archive', as: :archive_case
   post '/cases/:id/unarchive' => 'cases#unarchive', as: :unarchive_case
 
-  # Routes handled by angular
-  get '/case/:id(/try/:try_number)'   => 'core#index', as: :case_core
+  # Case/try workspace: Rails serves the page (modern stack or legacy); no Angular client routing.
+  get '/case/:id(/try/:try_number)'   => 'core#show', as: :case_core
   get '/cases/new'                    => 'core#new', as: :case_new
   get '/case'                         => 'core#index'
 

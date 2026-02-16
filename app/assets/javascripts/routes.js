@@ -22,17 +22,8 @@ angular.module('QuepidApp')
 
       $locationProvider.html5Mode(true);
 
+      // Case/try URLs are served by Rails (CoreController#show); no client-side Angular routing.
       $routeProvider
-        .when('/case/:caseNo/try/:tryNo', {
-          templateUrl: 'views/queriesLayout.html',
-          controller: 'MainCtrl',
-          reloadOnSearch: false
-        })
-        .when('/case/:caseNo', {
-          templateUrl: 'views/queriesLayout.html',
-          controller: 'MainCtrl',
-          reloadOnSearch: false
-        })
         .otherwise({
           templateUrl: 'views/404.html',
           controller: '404Ctrl'

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'application_system_test_case'
+require 'controllers/application_system_test_case'
 
 # If we start using these, we should enable
 # Capybara/ClickLinkOrButtonStyle
