@@ -55,7 +55,7 @@ module Api
               assert_not_nil query_doc_pair_star_wars
               assert_empty query_doc_pair_star_wars.judgements
 
-              assert_equal data[:query_doc_pairs][0][:document_fields].to_json, query_doc_pair_star_wars.document_fields
+              assert_equal data[:query_doc_pairs][0][:document_fields].symbolize_keys, query_doc_pair_star_wars.document_fields.symbolize_keys
 
               assert_response :no_content
             end
@@ -108,13 +108,13 @@ module Api
               query_doc_pair_star_wars = book.query_doc_pairs.find_by(query_text: 'star wars', doc_id: 'https://www.themoviedb.org/movie/11-star-wars')
               assert_not_nil query_doc_pair_star_wars
 
-              assert_equal data[:query_doc_pairs][0][:document_fields].to_json, query_doc_pair_star_wars.document_fields
+              assert_equal data[:query_doc_pairs][0][:document_fields].symbolize_keys, query_doc_pair_star_wars.document_fields.symbolize_keys
               assert_equal data[:query_doc_pairs][0][:position], query_doc_pair_star_wars.position
 
               query_doc_pair_doramon = book.query_doc_pairs.find_by(query_text: 'star wars', doc_id: 'https://www.themoviedb.org/movie/782054-2021')
               assert_not_nil query_doc_pair_doramon
 
-              assert_equal data[:query_doc_pairs][1][:document_fields].to_json, query_doc_pair_doramon.document_fields
+              assert_equal data[:query_doc_pairs][1][:document_fields].symbolize_keys, query_doc_pair_doramon.document_fields.symbolize_keys
               assert_equal data[:query_doc_pairs][1][:position], query_doc_pair_doramon.position
 
               assert_response :no_content

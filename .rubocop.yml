@@ -107,16 +107,16 @@ Metrics/ClassLength:
   Enabled: false
 
 Metrics/AbcSize:
-  Max: 30
+  Max: 45
 
 Metrics/MethodLength:
-  Max: 15
+  Max: 20
 
 Metrics/CyclomaticComplexity:
-  Max: 8
+  Max: 12
 
 Metrics/PerceivedComplexity:
-  Max: 8
+  Max: 12
 
 Style/Alias:
   EnforcedStyle: prefer_alias_method

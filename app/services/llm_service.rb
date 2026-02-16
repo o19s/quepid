@@ -37,38 +37,29 @@ class LlmService
     judgement
   end
 
-  # rubocop:disable Metrics/MethodLength
   def make_user_prompt query_doc_pair
     document_fields = query_doc_pair.document_fields
-
-    fields = if document_fields.blank?
-               {}
-             else
-               JSON.parse(document_fields)
-             end
 
     text_prompt = <<~TEXT
       Query: #{query_doc_pair.query_text}
 
       doc1:
-        #{fields.to_yaml}
+        #{document_fields.to_yaml}
     TEXT
 
     prompt = [
       { type: 'text', text: text_prompt }
     ]
 
-    if '' != fields['image'].to_s.strip
-      image_url = fields['image']
+    if '' != document_fields['image'].to_s.strip
+      image_url = document_fields['image']
       prompt << { type: 'image_url', image_url: { url: image_url } }
     end
 
     prompt
   end
-  # rubocop:enable Metrics/MethodLength
 
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
   def get_llm_response user_prompt, system_prompt
     conn = Faraday.new(url: @options[:llm_service_url]) do |f|
       f.request :json
@@ -118,5 +109,4 @@ class LlmService
     end
   end
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
 end

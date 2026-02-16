@@ -7,7 +7,6 @@ module Api
         before_action :set_case
         before_action :check_case
 
-        # rubocop:disable Metrics/MethodLength
         def create
           @new_case = Case.new
 
@@ -32,7 +31,6 @@ module Api
             render status: :bad_request
           end
         end
-        # rubocop:enable Metrics/MethodLength
       end
     end
   end

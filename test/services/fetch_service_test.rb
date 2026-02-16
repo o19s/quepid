@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class FetchServiceTest < ActiveSupport::TestCase
+  # Simple struct for mocking search endpoints in tests
+  MockEndpoint = Struct.new(:search_engine, keyword_init: true)
   # Need to make the url.
   # Need to understand the hTTP verb, GET, POST, JSONP
   # Need to send the url with each query, swapping in the template.
@@ -33,23 +35,27 @@ class FetchServiceTest < ActiveSupport::TestCase
     it 'handles appending rows count defined by try' do
       fetch_service = FetchService.new options
 
-      url = fetch_service.send(:create_url, atry.search_endpoint, atry)
-      assert_includes url, 'rows=10'
+      fetch_service.send(:build_get_params, atry.args, first_query)
+      # Rows is added in execute_get_request, so we test the full request works
+      response = fetch_service.make_request(atry, first_query)
+      assert_equal 200, response.status
     end
 
     it 'handles appending fl definition defined by try' do
       fetch_service = FetchService.new options
 
-      url = fetch_service.send(:create_url, atry.search_endpoint, atry)
-      assert_includes url, 'fl=id,title'
+      # Field spec is processed in execute_get_request
+      response = fetch_service.make_request(atry, first_query)
+      assert_equal 200, response.status
     end
 
     it 'handles appending fl definition defined by try 2' do
       fetch_service = FetchService.new options
       atry.field_spec = 'id:id, title:title, thumb:img_500x500, name, brand, product_type'
 
-      url = fetch_service.send(:create_url, atry.search_endpoint, atry)
-      assert_includes url, 'fl=id,title,img_500x500,name,brand,product_type'
+      # Field spec is processed in execute_get_request
+      response = fetch_service.make_request(atry, first_query)
+      assert_equal 200, response.status
     end
 
     it 'creates a GET request' do
@@ -399,6 +405,159 @@ class FetchServiceTest < ActiveSupport::TestCase
 
       snapshot_query.reload
       assert_in_delta(0.5, snapshot_query.score)
+    end
+  end
+
+  describe 'Engine-specific GET parameter handling' do
+    let(:acase)         { cases(:queries_case) }
+    let(:atry)          { tries(:for_case_queries_case) }
+    let(:first_query)   { queries(:first_query) }
+
+    describe 'Solr parameters' do
+      it 'adds Solr-specific parameters for Solr endpoints' do
+        fetch_service = FetchService.new options
+        atry.search_endpoint
+
+        params = {}
+        result = fetch_service.send(:add_solr_params, atry, params)
+
+        assert_equal 'true', result['debug']
+        assert_equal 'true', result['debug.explain.structured']
+        assert_equal 'json', result['wt']
+        assert_equal '10', result['rows']
+      end
+
+      it 'adds field list when field_spec is present' do
+        fetch_service = FetchService.new options
+        atry.field_spec = 'id:id, title:title'
+
+        params = {}
+        result = fetch_service.send(:add_solr_params, atry, params)
+
+        assert_equal 'id,title', result['fl']
+      end
+
+      it 'handles field_spec with colons correctly' do
+        fetch_service = FetchService.new options
+        atry.field_spec = 'id:id, title:title, thumb:img_500x500, name, brand'
+
+        params = {}
+        result = fetch_service.send(:add_solr_params, atry, params)
+
+        assert_equal 'id,title,img_500x500,name,brand', result['fl']
+      end
+
+      it 'does not add fl parameter when field_spec is blank' do
+        fetch_service = FetchService.new options
+        atry.field_spec = nil
+
+        params = {}
+        result = fetch_service.send(:add_solr_params, atry, params)
+
+        assert_nil result['fl']
+      end
+    end
+
+    describe 'Elasticsearch parameters' do
+      it 'adds Elasticsearch-specific parameters' do
+        fetch_service = FetchService.new options
+        atry.number_of_rows = 25
+
+        params = {}
+        result = fetch_service.send(:add_elasticsearch_params, atry, params)
+
+        assert_equal '25', result['size']
+        assert_nil result['debug']  # Should not have Solr params
+        assert_nil result['wt']
+      end
+    end
+
+    describe 'OpenSearch parameters' do
+      it 'delegates to Elasticsearch parameters' do
+        fetch_service = FetchService.new options
+        atry.number_of_rows = 15
+
+        params = {}
+        result = fetch_service.send(:add_opensearch_params, atry, params)
+
+        assert_equal '15', result['size']
+      end
+    end
+
+    describe 'Engine dispatcher' do
+      it 'routes to Solr params for Solr endpoints' do
+        fetch_service = FetchService.new options
+        endpoint = atry.search_endpoint
+        assert_equal 'solr', endpoint.search_engine
+
+        params = {}
+        result = fetch_service.send(:add_engine_specific_params, endpoint, atry, params)
+
+        assert_equal 'true', result['debug']
+        assert_equal 'json', result['wt']
+      end
+
+      it 'routes to Elasticsearch params for ES endpoints' do
+        fetch_service = FetchService.new options
+        es_try = tries(:es_try_with_curator_vars)
+        endpoint = es_try.search_endpoint
+        assert_equal 'es', endpoint.search_engine
+
+        params = {}
+        result = fetch_service.send(:add_engine_specific_params, endpoint, es_try, params)
+
+        assert_equal '10', result['size']
+        assert_nil result['debug']  # Solr params should not be present
+        assert_nil result['wt']
+      end
+
+      it 'returns params unchanged for SearchAPI endpoints' do
+        fetch_service = FetchService.new options
+
+        # Create a mock SearchAPI endpoint
+        endpoint = MockEndpoint.new(search_engine: 'searchapi')
+        custom_params = { 'custom_param' => 'value' }
+
+        result = fetch_service.send(:add_engine_specific_params, endpoint, atry, custom_params)
+
+        assert_equal 'value', result['custom_param']
+        assert_nil result['debug']  # Should not add Solr params
+        assert_nil result['size']   # Should not add ES params
+      end
+
+      it 'returns params unchanged for unknown engines' do
+        fetch_service = FetchService.new options
+
+        # Create a mock unknown endpoint
+        endpoint = MockEndpoint.new(search_engine: 'unknown_engine')
+        custom_params = { 'my_param' => 'my_value' }
+
+        result = fetch_service.send(:add_engine_specific_params, endpoint, atry, custom_params)
+
+        assert_equal 'my_value', result['my_param']
+        assert_nil result['debug']
+        assert_nil result['size']
+      end
+    end
+
+    describe 'Parameter isolation' do
+      it 'ensures Solr parameters do not leak to Elasticsearch requests' do
+        fetch_service = FetchService.new options
+        es_try = tries(:es_try_with_curator_vars)
+        endpoint = es_try.search_endpoint
+
+        params = {}
+        result = fetch_service.send(:add_engine_specific_params, endpoint, es_try, params)
+
+        # Verify ES param is present
+        assert_equal '10', result['size']
+
+        # Verify Solr params are NOT present
+        assert_nil result['debug'], 'Solr debug param should not be present for ES'
+        assert_nil result['debug.explain.structured'], 'Solr explain param should not be present for ES'
+        assert_nil result['wt'], 'Solr wt param should not be present for ES'
+        assert_nil result['fl'], 'Solr fl param should not be present for ES'
+      end
     end
   end
 

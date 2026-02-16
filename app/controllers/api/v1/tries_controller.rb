@@ -73,7 +73,6 @@ module Api
       # rubocop:enable Metrics/MethodLength
       # rubocop:enable Metrics/AbcSize
 
-      # rubocop:disable Metrics/MethodLength
       # @request_body Try to be updated [Reference:#/components/schemas/Try]
       # @request_body_example updating a try
       #   [JSON{
@@ -107,7 +106,6 @@ module Api
           render json: @try.errors, status: :bad_request
         end
       end
-      # rubocop:enable Metrics/MethodLength
 
       def destroy
         @try.destroy

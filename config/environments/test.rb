@@ -5,6 +5,7 @@
 # your test database is "scratch space" for the test suite and is wiped
 # and recreated between test runs. Don't rely on the data there!
 
+# rubocop:disable Metrics/BlockLength
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -76,5 +77,8 @@ Rails.application.configure do
 
   ENV['EMAIL_SENDER'] = 'quepid@o19s.com'
 
+  ENV['SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY'] = 'false'
+
   config.active_storage.variant_processor = :disabled
 end
+# rubocop:enable Metrics/BlockLength

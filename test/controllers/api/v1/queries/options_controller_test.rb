@@ -28,14 +28,14 @@ module Api
           end
 
           test "return the query's options" do
-            options = "{ foo: 'bar' }"
+            options = JSON.parse('{ "foo": "bar" }')
             query.options = options
             query.save
 
             get :show, params: { case_id: acase.id, query_id: query.id }
 
             assert_response :ok
-
+            puts response.body
             data = response.parsed_body
 
             assert_equal data['options'], options
@@ -49,7 +49,7 @@ module Api
             put :update, params: { case_id: acase.id, query_id: query.id, query: { options: options } }
 
             assert_response :ok
-
+            puts response.body
             data = response.parsed_body
 
             query.reload

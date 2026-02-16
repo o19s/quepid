@@ -41,7 +41,6 @@ class CoreController < ApplicationController
     end
   end
 
-  # rubocop:disable Metrics/MethodLength
   def populate_from_params
     if @case.present? && params[:caseName]
       @case.case_name = params[:caseName]
@@ -67,5 +66,4 @@ class CoreController < ApplicationController
       @try.save
     end
   end
-  # rubocop:enable Metrics/MethodLength
 end

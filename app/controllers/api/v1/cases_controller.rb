@@ -69,7 +69,6 @@ module Api
         end
       end
 
-      # rubocop:disable Metrics/MethodLength
       # @request_body Case to be created
       #   [
       #     !Hash{
@@ -106,7 +105,6 @@ module Api
       rescue ActiveRecord::InvalidForeignKey
         render json: { error: 'Invalid id' }, status: :bad_request
       end
-      # rubocop:enable Metrics/MethodLength
 
       def destroy
         @case.really_destroy
@@ -115,7 +113,6 @@ module Api
         head :no_content
       end
 
-      # rubocop:disable Metrics/MethodLength
       # @summary Run Case Evaluation
       #
       # This endpoint triggers a background job that executes all queries in the case against
@@ -151,7 +148,6 @@ module Api
           try_number: @try.try_number,
         }, status: :ok
       end
-      # rubocop:enable Metrics/MethodLength
 
       private
 

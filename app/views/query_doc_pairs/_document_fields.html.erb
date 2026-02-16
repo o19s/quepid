@@ -1,20 +1,17 @@
 <%
 
-if @document_fields_as_json.nil?
+if document_fields.empty?
   %>
-  <%= sanitize @query_doc_pair.document_fields %>
+  <%= sanitize document_fields.to_json %>
   <%
 else
-
-  @title_value = @document_fields_as_json['title']
-  @document_fields_except_title = @document_fields_as_json.except('title')
   %>
   <h5>
-  <%= sanitize @title_value %>
+  <%= sanitize document_fields['title'] %>
   </h5>
 
   <%
-  @document_fields_as_json.except('title').except('thumb').map do |field, value|
+  document_fields.except('title').except('thumb').map do |field, value|
     %>
     <p>
       <span class="h6"><%= field.humanize.titleize %>:</span>

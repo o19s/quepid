@@ -39,8 +39,11 @@ class Query < ApplicationRecord
   has_many    :snapshot_queries,
               dependent: :destroy
 
+  # Concerns
+
   # Validations
   validates :query_text, presence: true, length: { maximum: 2048 }
+  validates :options, json_format: true, allow_blank: true
 
   # Scopes
 

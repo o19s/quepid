@@ -4,7 +4,6 @@ module Api
   module V1
     module Import
       class BooksController < Api::ApiController
-        # rubocop:disable Metrics/MethodLength
         # @summary Import a complete book as JSON
         # @tags books > import/export
         # @request_body Book to be imported
@@ -79,7 +78,6 @@ module Api
             render json: @book.errors, status: :bad_request
           end
         end
-        # rubocop:enable Metrics/MethodLength
 
         private
 
