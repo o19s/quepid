@@ -2,11 +2,20 @@
 
 This document explains how the app is organized.
 
+## Quick Reference
+- Ruby on Rails
+- AngularJS - Being retired
+- Stimulus/Turbo - Being implemented
+- ActiveJob
+- SolidQueue
+- WebSockets
+- Boostrap
+
 ## Backend
 
 The backend is written in Ruby using the Ruby on Rails framework.
 
-Most of the backend is comprised of API endpoints for the exception of the admin area and user account or password management section.
+Most of the backend is comprised of API endpoints with the exception of the admin area and user account or password management section.
 
 The admin section contains a few pages for admins to manage users and default scorers.
 
@@ -16,6 +25,8 @@ The API endpoints all live under the `app/controllers/api` folder. The API is ve
 
 ## Frontend
 The Frontend is built in two different ways.  Much of the application is standard Rails views that are rendered on the server.   However, the "core" of the application is a rich JavaScript app that runs in the browser.
+
+For the migration from AngularJS to Stimulus and what remains to be done, see [De-Angular Migration Review](deangularjs_migration_review.md). A detailed migration checklist is in [Angular to Stimulus, Hotwire, and ViewComponents Checklist](angular_to_stimulus_hotwire_viewcomponents_checklist.md).
 
 ### Core Frontend App
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Administrators in Quepid have special privileges to edit and delete communal scorers. This feature allows admins to maintain and update the system-wide scorers that are available to all users.
+With the removal of the dedicated Admin Communal Scorers interface (see [admin_communal_scorers_removal.md](./admin_communal_scorers_removal.md)), administrators now manage communal scorers directly through the main Scorers interface at `/scorers`. This document describes how that admin functionality works.
 
 ## What are Communal Scorers?
 
@@ -17,7 +17,7 @@ These scorers are marked with `communal: true` in the database and typically don
 ## Admin Capabilities
 
 ### View Communal Scorers
-All users can view communal scorers in the scorers list at `/scorers`. Communal scorers are marked as "System scorer" in the interface.
+All users can view communal scorers in the scorers list at `/scorers`. Use the "Communal" filter button to show only communal scorers. They display "Communal" in the Type column and "System" as the owner.
 
 ### Edit Communal Scorers (Admin Only)
 Administrators can:
@@ -29,25 +29,36 @@ Administrators can:
    - Scale labels
 3. Save changes that will affect all users
 
-**Warning**: When editing a communal scorer, admins will see a warning banner indicating that changes will affect all users.
-
 ### Delete Communal Scorers (Admin Only)
-Administrators can delete communal scorers by:
-1. Clicking the delete icon (X) next to a communal scorer
-2. Confirming the deletion in the prompt
+Administrators can delete communal scorers from the edit page using the "Delete" button in the top-right toolbar.
 
-**Caution**: Deleting a communal scorer will remove it from all users' available scorers. This action should be performed carefully.
+Note: The delete button is on the edit page, not in the list view. The list view for communal scorers only shows edit (admin) and clone (all users) actions.
 
-## UI Indicators
+### Creating Communal Scorers
 
-### Scorers List
-- **Regular Users**: See a clone button and "System scorer" label for communal scorers
-- **Administrators**: See edit, clone, and delete buttons for communal scorers
+The UI always sets `communal: false` for new scorers. Communal scorers should be created via:
 
-### Edit Form
-When an administrator edits a communal scorer, they will see:
-- A warning banner at the top: "Warning: You are editing a communal scorer that is available to all users. Changes will affect everyone using this scorer."
-- An info alert within the form: "This is a communal scorer available to all Quepid users."
+1. **Rails Console**:
+   ```ruby
+   Scorer.create!(
+     name: "My Communal Scorer",
+     code: "setScore(calculateScore());",
+     communal: true,
+     scale: [0, 1, 2, 3]
+   )
+   ```
+
+2. **Database Seeds** (`db/seeds.rb`):
+   ```ruby
+   Scorer.find_or_create_by!(name: "nDCG@10") do |scorer|
+     scorer.code = "// scoring logic here"
+     scorer.communal = true
+     scorer.scale = [0, 1, 2, 3]
+   end
+   ```
+
+### Sharing Communal Scorers
+Communal scorers cannot be shared with teams — they are already available to everyone. The share action returns an alert if attempted.
 
 ## Technical Implementation
 
@@ -57,11 +68,11 @@ The `ScorersController` includes the following admin checks:
 #### `set_scorer` Method
 ```ruby
 def set_scorer
-  if current_user.administrator?
-    @scorer = Scorer.for_user(current_user).find(params[:id])
-  else
-    @scorer = Scorer.for_user(current_user).where(communal: false).find(params[:id])
-  end
+  @scorer = if current_user.administrator?
+              Scorer.for_user(current_user).find(params[:id])
+            else
+              Scorer.for_user(current_user).where(communal: false).find(params[:id])
+            end
 end
 ```
 
@@ -89,22 +100,17 @@ end
 
 ### View Logic
 The `_list.html.erb` partial conditionally shows admin actions:
-
 ```erb
 <% if scorer.communal? %>
   <div class="d-inline-flex align-items-center">
     <% if current_user.administrator? %>
-      <%= link_to edit_scorer_path(scorer), class: 'btn btn-link p-0 me-2' do %>
+      <%= link_to edit_scorer_path(scorer), class: 'btn btn-link p-0 me-2', title: 'Edit' do %>
         <i class="bi bi-pencil" aria-hidden="true"></i>
       <% end %>
     <% end %>
-    <!-- Clone button for all users -->
-    <% if current_user.administrator? %>
-      <%= button_to scorer_path(scorer), method: :delete, class: 'btn btn-link text-danger p-0 me-2' do %>
-        <i class="bi bi-x-circle" aria-hidden="true"></i>
-      <% end %>
+    <%= button_to clone_scorer_path(scorer), method: :post, class: 'btn btn-link p-0 me-2', title: 'Clone' do %>
+      <i class="bi bi-files" aria-hidden="true"></i>
     <% end %>
-    <span class="text-muted small">System scorer</span>
   </div>
 <% end %>
 ```

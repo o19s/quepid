@@ -1,4 +1,4 @@
-Quepid wouldn't have happened without significant contributions over the years.  Unfortunately due to various reasons we had to remove the commit history when Quepid was made open source.  Special thanks to the authors below for their  time and commitment to making Quepid a reality!
+Quepid wouldn't have happened without significant contributions over the years.  Unfortunately due to various reasons we had to remove the commit history when Quepid was made open source.  Special thanks to the authors below for their time and commitment to making Quepid a reality!
  
  ```
  Daniel Beach
