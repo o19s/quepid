@@ -511,7 +511,7 @@ class TeamsController < ApplicationController
     Rails.logger.info "Map to JSON: #{map_time}ms"
     Rails.logger.info "Total time: #{total_time}ms"
     Rails.logger.info "Total results: #{suggested_users.count}"
-    Rails.logger.info "==========================================="
+    Rails.logger.info '==========================================='
 
     # Add performance timing to response header for easy browser profiling
     response.headers['X-Performance-Timing'] = "total=#{total_time}ms, q1=#{query1_time}ms, q2=#{query2_time}ms, q3=#{query3_time}ms"
