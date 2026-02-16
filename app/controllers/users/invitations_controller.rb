@@ -10,7 +10,6 @@ module Users
       teams_core_url(resource.teams.first)
     end
 
-    # rubocop:disable Lint/UselessMethodDefinition
     def edit
       super
     end
@@ -27,8 +26,6 @@ module Users
       session[:current_user_id] = @user.id
       Analytics::Tracker.track_signup_event @user
     end
-
-    # rubocop:enable Lint/UselessMethodDefinition
 
     private
 

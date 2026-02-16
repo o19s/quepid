@@ -79,7 +79,7 @@ module Api
         def set_snapshot
           @snapshot = @case.snapshots
             .where(id: params[:snapshot_id])
-            .includes([ snapshot_queries: [ :snapshot_docs ] ])
+            .includes([ { snapshot_queries: [ :snapshot_docs ] } ])
             .first
         end
       end

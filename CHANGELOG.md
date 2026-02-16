@@ -1,5 +1,9 @@
 # Changelog
 
+## 8.6.0 -- 2026-??-??
+
+Big upgrade of the core application stack, moving Ruby from 3.4.8 to 4.0.1, Rails from 8.1.1 to 8.1.2, and the Debian base image from Bookworm to Trixie, along with Bundler and numerous gem/Node package updates.
+
 ## 8.5.0 -- 2026-01-14
 
 Changes are coming fast and furious!
