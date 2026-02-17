@@ -368,22 +368,27 @@ class TeamsController < ApplicationController
     end
 
     # Create an invited user (Devise Invitable) and add to team
-    member = User.invite!({ email: email, password: '' }, current_user) do |u|
-      # If email delivery isn't configured, mark skip_invitation so no email attempt is made
-      u.skip_invitation = Rails.application.config.action_mailer.delivery_method.blank?
+    begin
+      member = User.invite!({ email: email, password: '' }, current_user) do |u|
+        # If email delivery isn't configured, mark skip_invitation so no email attempt is made
+        u.skip_invitation = Rails.application.config.action_mailer.delivery_method.blank?
+      end
+
+      @team.members << member unless @team.members.exists?(member.id)
+
+      if @team.save
+        Analytics::Tracker.track_member_added_to_team_event(current_user, @team, member) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_member_added_to_team_event)
+        message = member.skip_invitation.present? ? "Please share the invite link with #{member.email} directly so they can join." : "Invitation email was sent to #{member.email}"
+        flash[:notice] = message
+      else
+        flash[:alert] = member.errors.full_messages.to_sentence
+      end
+
+      redirect_to team_path(@team)
+    rescue ActiveRecord::RecordInvalid => e
+      flash[:alert] = "Unable to add member: #{e.record.errors.full_messages.to_sentence}"
+      redirect_to team_path(@team)
     end
-
-    @team.members << member unless @team.members.exists?(member.id)
-
-    if @team.save
-      Analytics::Tracker.track_member_added_to_team_event(current_user, @team, member) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_member_added_to_team_event)
-      message = member.skip_invitation.present? ? "Please share the invite link with #{member.email} directly so they can join." : "Invitation email was sent to #{member.email}"
-      flash[:notice] = message
-    else
-      flash[:alert] = member.errors.full_messages.to_sentence
-    end
-
-    redirect_to team_path(@team)
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/CyclomaticComplexity
