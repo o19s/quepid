@@ -43,6 +43,7 @@
             <th>Name</th>
             <th>Number of Query/Doc Pairs</th>
             <th>Owner</th>
+            <th>Shared</th>
             <th class="text-end"></th>
           </tr>
         </thead>
@@ -53,6 +54,10 @@
               <td><%= link_to book.name, book_path(book) %></td>
               <td><span class="badge bg-primary rounded-pill"><%= book.query_doc_pairs_count %> query/doc pairs</span></td>
               <td><%= book.owner&.fullname || '—' %></td>
+              <td>
+                <span class="badge rounded-pill bg-secondary"><%= book.cases.count %> Cases</span>
+                <span class="badge rounded-pill bg-secondary"><%= book.teams.count %> Teams</span>
+              </td>              
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
                   <%= button_tag type: 'button',
