@@ -346,6 +346,7 @@ class TeamsController < ApplicationController
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/CyclomaticComplexity
   # rubocop:disable Metrics/PerceivedComplexity
+  # rubocop:disable Metrics/MethodLength
   def add_member
     email = params[:email].to_s.strip.downcase
     user = User.where(email: email).first
@@ -393,6 +394,7 @@ class TeamsController < ApplicationController
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/MethodLength
 
   # Rename the team (server-side form).
   def rename

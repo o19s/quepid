@@ -44,8 +44,9 @@
         <thead>
           <tr>
             <th>Name</th>
-            <th>Scale</th>
+            <th>Scale</th>            
             <th>Owner</th>
+            <th>Shared</th>
             <th class="text-end"></th>
           </tr>
         </thead>
@@ -55,6 +56,9 @@
               <td><%= link_to scorer.name, edit_scorer_path(scorer) %></td>
               <td><%= scorer.scale_list || '—' %></td>
               <td><%= scorer.owner&.fullname || '—' %></td>
+              <td>
+                <span class="badge rounded-pill bg-secondary"><%= scorer.cases_count %> Case</span>
+              </td>
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
                   <%= button_tag type: 'button',
@@ -62,6 +66,7 @@
                                  title: 'Share',
                                  'aria-label': 'Share',
                                  data: {
+                                   controller: 'share-scorer',
                                    action: 'click->share-scorer#open',
                                    bs_toggle: 'modal',
                                    bs_target: '#shareScorerModal',

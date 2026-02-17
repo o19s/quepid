@@ -49,6 +49,7 @@
             <th>Endpoint URL</th>
             <th>API Method</th>
             <th>Owner</th>
+            <th>Shared</th>
             <th class="text-end"></th>
           </tr>
         </thead>
@@ -72,7 +73,11 @@
               <td>
                 <span class="badge bg-info text-dark"><%= search_endpoint.api_method || '—' %></span>
               </td>
+
               <td><%= search_endpoint.owner&.fullname || '—' %></td>
+              <td>
+                <span class="badge rounded-pill bg-secondary"><%= search_endpoint.cases_count %> Cases</span>
+              </td>              
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
                   <%= button_tag type: 'button',
