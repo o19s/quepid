@@ -74,7 +74,7 @@
                                    share_scorer_id: scorer.id,
                                    share_scorer_name: scorer.name,
                                    share_scorer_all_teams_json: current_user.teams.select(:id, :name).order(:name).to_json,
-                                   share_scorer_shared_teams_json: scorer.teams.select(:id, :name).to_json
+                                   share_scorer_shared_teams_json: scorer.teams.find_all { |t| current_user.teams.all.include?(t) }.map { |t| { id: t.id, name: t.name } }.to_json
                                  } do %>
                     <i class="bi bi-share" aria-hidden="true"></i>
                   <% end %>
