@@ -41,7 +41,7 @@
           <tr>
             <th>ID</th>
             <th>Name</th>
-            <th>Number of Query/Doc Pairs</th>
+            <th>Number of...</th>
             <th>Owner</th>
             <th>Shared</th>
             <th class="text-end"></th>
@@ -52,7 +52,10 @@
             <tr>
               <td><%= book.id %></td>
               <td><%= link_to book.name, book_path(book) %></td>
-              <td><span class="badge bg-primary rounded-pill"><%= book.query_doc_pairs_count %> query/doc pairs</span></td>
+              <td>
+                <span class="badge bg-primary rounded-pill"><%= book.query_doc_pairs_count %> query/doc pairs</span>
+                <span class="badge bg-primary rounded-pill"><%= book.judgements.count %> judgements</span>
+              </td>
               <td><%= book.owner&.fullname || '—' %></td>
               <td>
                 <span class="badge rounded-pill bg-secondary"><%= book.cases.count %> Cases</span>
