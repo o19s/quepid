@@ -1,0 +1,12 @@
+<%# Rendered by RunCaseEvaluationJob to broadcast updated query scores via Turbo Streams. %>
+<%# Replaces the query list frame when scores change (e.g. after DocFinder bulk rating). %>
+<%= render QueryListComponent.new(
+  case_id: case_id,
+  try_number: try_number,
+  queries: queries,
+  selected_query_id: selected_query_id,
+  other_cases: other_cases,
+  scorer_scale_max: scorer_scale_max,
+  query_scores: query_scores,
+  sortable: sortable
+) %>

@@ -3,10 +3,9 @@
 require 'controllers/application_system_test_case'
 
 # E2E tests for the core case/try workspace.
-# The case/try URL is served by Rails CoreController#show (modern stack). Legacy Angular
-# UI tests are skipped until reimplemented for Stimulus/ViewComponents.
-# See docs/angular_test_coverage_and_migration.md and
-# docs/angular_to_stimulus_hotwire_viewcomponents_checklist.md.
+# The case/try URL is served by Rails CoreController#show (modern stack) with Stimulus/ViewComponents.
+# Add query, export modal, and clone modal use AddQueryComponent, ExportCaseComponent, CloneCaseComponent.
+# Rate-a-document test remains skipped until rating UI is migrated.
 class CoreWorkspaceTest < ApplicationSystemTestCase
   setup do
     @user = users(:doug)
@@ -25,7 +24,6 @@ class CoreWorkspaceTest < ApplicationSystemTestCase
   end
 
   test 'add a query' do
-    skip 'Angular UI; reimplement for Stimulus/ViewComponents when query UI is migrated'
     sign_in_user
     visit case_core_path(@case, @try.try_number)
     wait_for_workspace_to_load
@@ -52,27 +50,51 @@ class CoreWorkspaceTest < ApplicationSystemTestCase
     assert_selector '.ratingNums', wait: 5
     first('.ratingNum').click
     # Score area should reflect update (qscore-query or case score)
-    assert_selector '.results-score, .case-score', wait: 5
+    assert_selector '.re', wait: 5
   end
 
   test 'open export modal' do
-    skip 'Angular UI; reimplement for Stimulus/ViewComponents when export UI is migrated'
     sign_in_user
     visit case_core_path(@case, @try.try_number)
     wait_for_workspace_to_load
 
-    click_link 'Export'
+    find('[aria-label="Export"]').click
     assert_selector '.modal-title', text: /Export Case:/, wait: 5
   end
 
   test 'open clone modal' do
-    skip 'Angular UI; reimplement for Stimulus/ViewComponents when clone UI is migrated'
     sign_in_user
     visit case_core_path(@case, @try.try_number)
     wait_for_workspace_to_load
 
     click_link 'Clone'
     assert_selector '.modal-title', text: /Clone case:/, wait: 5
+  end
+
+  test 'new case wizard auto-opens when creating a case' do
+    sign_in_user
+    visit case_new_path
+
+    # CoreController#new creates a case and redirects with showWizard=true
+    assert_selector '#main-content[data-controller="workspace"]', wait: 10
+    assert_selector '.modal.show', text: /Welcome to your new case/, wait: 5
+  end
+
+  test 'delete a query' do
+    sign_in_user
+    visit case_core_path(@case, @try.try_number)
+    wait_for_workspace_to_load
+
+    query = @case.queries.first
+    assert_text query.query_text, wait: 5
+
+    find('[aria-label="Delete query"]', match: :first).click
+    assert_selector '.modal-title', text: 'Delete Query', wait: 5
+    within '.modal' do
+      click_button 'Delete'
+    end
+
+    assert_no_text query.query_text, wait: 10
   end
 
   private
@@ -87,8 +109,9 @@ class CoreWorkspaceTest < ApplicationSystemTestCase
   end
 
   def wait_for_workspace_to_load
-    # Legacy: Angular case header. Modern stack uses #main-content and .core-workspace.
-    assert_selector '#case-header', wait: 15
+    # Modern stack: workspace controller and core workspace container.
+    assert_selector '#main-content[data-controller="workspace"]', wait: 15
+    assert_selector '.core-workspace'
   end
 
   def stub_core_workspace_search_requests

@@ -1,0 +1,35 @@
+<div class="move-query-wrapper" data-controller="move-query" data-move-query-query-id-value="<%= @query_id %>" data-move-query-case-id-value="<%= @case_id %>" data-move-query-try-number-value="<%= @try_number %>">
+  <button type="button" class="btn btn-warning btn-sm" data-action="click->move-query#open" data-move-query-target="trigger">
+    Move Query
+  </button>
+  <div class="modal fade" id="moveQueryModal-<%= @query_id %>" tabindex="-1" aria-labelledby="moveQueryModalLabel-<%= @query_id %>" aria-hidden="true" data-move-query-target="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="moveQueryModalLabel-<%= @query_id %>">Move Query to Another Case</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <% if other_cases_for_list.empty? %>
+            <p class="text-center text-muted mb-0">Please create another case to move this query to first.</p>
+          <% else %>
+            <p class="mb-2">Select a case:</p>
+            <ul class="list-group list-group-flush move-query-cases-list" data-move-query-target="caseList">
+              <% other_cases_for_list.each do |c| %>
+                <li class="list-group-item list-group-item-action" data-case-id="<%= c[:id] %>" data-case-name="<%= c[:name] %>" data-action="click->move-query#selectCase">
+                  <%= c[:name] %>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success d-none" data-move-query-target="confirmBtn" data-action="click->move-query#move">
+            Move to <span data-move-query-target="selectedCaseName"></span>
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

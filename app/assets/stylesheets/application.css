@@ -25,6 +25,16 @@
 	 height: 5px;
 	 background-color: gold;
  }
+
+/* Turbo loading state (turbo_events_controller.js) */
+turbo-frame.turbo-loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+form.turbo-loading button[type="submit"],
+form.turbo-loading input[type="submit"] {
+  opacity: 0.8;
+}
  
  /* give some space to the top of pages that have bootstrap 5 container */
  main > .container {

@@ -5,6 +5,7 @@
 #  id              :integer          not null, primary key
 #  archived        :boolean
 #  case_name       :string(191)
+#  export_job      :string(255)
 #  last_try_number :integer
 #  nightly         :boolean
 #  options         :json
@@ -232,3 +233,8 @@ case_no_queries:
   case_name: Case with No Queries
   archived:  false
   scorer:   :case_default_scorer
+
+case_single_query:
+  owner:     :random
+  case_name: Case with Single Query
+  archived:  false

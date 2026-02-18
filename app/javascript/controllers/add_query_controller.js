@@ -1,11 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
+import { getQuepidRootUrl, buildCaseQueriesUrl, buildApiCaseQueriesUrl, buildApiBulkCaseQueriesUrl } from "utils/quepid_root"
 
 // Handles the "Add query" form in the case/try workspace. POSTs to the existing
 // queries API (single or bulk); replaces the Angular add_query component.
-// Uses document.body.dataset.quepidRootUrl for API base (no hardcoded "/").
+// Uses getQuepidRootUrl() for API base (no hardcoded "/").
 export default class extends Controller {
   static values = {
     caseId: Number,
+    tryNumber: Number,
     canAdd: { type: Boolean, default: true }
   }
 
@@ -35,13 +37,13 @@ export default class extends Controller {
     if (queries.length === 0) return
 
     this._setLoading(true)
-    const root = document.body?.dataset?.quepidRootUrl || ""
+    const root = getQuepidRootUrl()
     const caseId = this.caseIdValue
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
 
     if (queries.length === 1) {
       this._postOne(root, caseId, queries[0], token)
-        .then(() => this._onSuccess())
+        .then((usedTurboStream) => this._onSuccess(usedTurboStream))
         .catch((err) => this._onError(err))
         .finally(() => this._setLoading(false))
     } else {
@@ -81,23 +83,44 @@ export default class extends Controller {
   }
 
   _postOne(root, caseId, queryText, token) {
-    const url = `${root}/api/cases/${caseId}/queries`
+    // Prefer Turbo Stream route for in-place updates when available
+    const useTurboStream = window.Turbo && this.hasTryNumberValue
+    const url = useTurboStream
+      ? buildCaseQueriesUrl(root, caseId)
+      : buildApiCaseQueriesUrl(root, caseId)
+    const accept = useTurboStream ? "text/vnd.turbo-stream.html" : "application/json"
+
     return fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-CSRF-Token": token || "",
-        Accept: "application/json"
+        Accept: accept
       },
       body: JSON.stringify({ query: { query_text: queryText } })
     }).then((res) => {
-      if (!res.ok) return res.json().then((body) => Promise.reject(new Error(body.error || res.statusText)))
-      return res
+      if (!res.ok) {
+        const ct = res.headers.get("Content-Type") || ""
+        if (ct.includes("turbo-stream")) {
+          return res.text().then((html) => {
+            if (html && html.trim().length > 0) window.Turbo.renderStreamMessage(html)
+            return "error" // error shown via Turbo Stream; don't clear input
+          })
+        }
+        return res.json().then((body) => Promise.reject(new Error(body.error || body.message || res.statusText)))
+      }
+      if (useTurboStream && res.headers.get("Content-Type")?.includes("turbo-stream")) {
+        return res.text().then((html) => {
+          if (html && html.trim().length > 0) window.Turbo.renderStreamMessage(html)
+          return true // used Turbo Stream
+        })
+      }
+      return false // did not use Turbo Stream
     })
   }
 
   _postBulk(root, caseId, queries, token) {
-    const url = `${root}/api/bulk/cases/${caseId}/queries`
+    const url = buildApiBulkCaseQueriesUrl(root, caseId)
     return fetch(url, {
       method: "POST",
       headers: {
@@ -112,11 +135,23 @@ export default class extends Controller {
     })
   }
 
-  _onSuccess() {
+  _onSuccess(usedTurboStream = false) {
+    // Error shown via Turbo Stream: keep input, don't reload
+    if (usedTurboStream === "error") {
+      this._updateButtonState()
+      return
+    }
     this.inputTarget.value = ""
     this._updateButtonState()
     this.dispatch("added", { detail: {} })
-    // Optional: show a brief message; for now we rely on dispatch for future query list refresh
+    // If Turbo Stream already updated the list, no reload needed
+    if (usedTurboStream) return
+    // Reload so the server-rendered query list shows the new query(s)
+    if (window.Turbo?.visit) {
+      window.Turbo.visit(window.location.href, { action: "replace" })
+    } else {
+      window.location.reload()
+    }
   }
 
   _onError(err) {

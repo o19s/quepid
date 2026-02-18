@@ -1,0 +1,58 @@
+<%# Scorer panel: scale, guidelines, case-level score (qscore_case), and scorer picker. Replaces ScorerCtrl. %>
+<div class="scorer-panel-wrapper" data-controller="scorer-panel" data-scorer-panel-case-id-value="<%= @case_id %>">
+  <button type="button" class="btn btn-outline-secondary btn-sm" data-action="click->scorer-panel#toggle" data-scorer-panel-target="trigger">
+    <i class="bi bi-list-task" aria-hidden="true"></i>
+    Scorer
+    <% if @case_id.present? %>
+      <span class="badge bg-secondary ms-1" id="scorer-panel-score-badge-<%= @case_id %>" data-scorer-panel-target="scoreBadge"><%= @score %></span>
+    <% end %>
+  </button>
+  <div class="scorer-panel-content collapse mt-2" data-scorer-panel-target="panel">
+    <div class="card card-body small">
+      <div class="d-flex justify-content-between align-items-center">
+        <h6 class="card-title mb-0"><%= @scorer&.name || "Scorer" %></h6>
+        <% if @case_id.present? %>
+          <button type="button" class="btn btn-sm btn-outline-primary" data-action="click->scorer-panel#openPicker" title="Change scorer">
+            <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Change
+          </button>
+        <% end %>
+      </div>
+      <dl class="mb-0 mt-2">
+        <dt class="text-muted">Scale</dt>
+        <dd class="mb-1"><code><%= scale_display %></code></dd>
+        <% if scale_with_labels.present? %>
+          <dt class="text-muted">Scale labels</dt>
+          <dd class="mb-0"><pre class="small mb-0 bg-light p-2 rounded"><%= guidelines_display %></pre></dd>
+        <% end %>
+      </dl>
+      <% if @case_id.present? %>
+        <hr class="my-2">
+        <%= render QscoreCaseComponent.new(
+          score: @score,
+          max_score: @max_score,
+          score_label: @score_label,
+          scores: @scores,
+          annotations: @annotations,
+          case_id: @case_id,
+          css_class: "case-score"
+        ) %>
+      <% end %>
+    </div>
+  </div>
+  <%# Scorer picker modal %>
+  <% if @case_id.present? %>
+    <div class="modal fade" id="scorer-picker-modal-<%= @case_id %>" tabindex="-1" aria-hidden="true" data-scorer-panel-target="pickerModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Select Scorer</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" data-scorer-panel-target="scorerList">
+            <p class="text-muted">Loading scorers…</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

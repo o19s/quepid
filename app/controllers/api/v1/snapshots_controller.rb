@@ -39,19 +39,38 @@ module Api
       end
 
       def create
+        return render json: { error: 'Missing snapshot params' }, status: :bad_request unless params[:snapshot].present?
+        return render json: { error: 'Snapshot name is required' }, status: :bad_request if params.dig(:snapshot, :name).blank?
+
         @snapshot = @case.snapshots.build(name: params[:snapshot][:name])
         @snapshot.scorer = @case.scorer
-        @snapshot.try = @case.tries.first
+        atry = try_from_params || @case.tries.first
+        @snapshot.try = atry
 
         if @snapshot.save
-          serialized_data = Marshal.dump(snapshot_params)
+          docs = params.dig(:snapshot, :docs)
+          queries = params.dig(:snapshot, :queries)
 
-          #  puts "[SnapshotController] the size of the serialized data is #{number_to_human_size(serialized_data.bytesize)}"
-          compressed_data = Zlib::Deflate.deflate(serialized_data)
-          # puts "[SnapshotController] the size of the compressed data is #{number_to_human_size(compressed_data.bytesize)}"
-          @snapshot.snapshot_file.attach(io: StringIO.new(compressed_data), filename: "snapshot_#{@snapshot.id}.bin.zip",
-                                         content_type: 'application/zip')
-          PopulateSnapshotJob.perform_later @snapshot
+          if docs.present? && queries.present?
+            # Client-side flow: Angular sends full docs/queries payload.
+            # Use JSON (not Marshal) for security and Ruby-version stability.
+            # Extract only docs/queries; to_unsafe_h preserves nested structure for JSON.
+            payload = {
+              snapshot: {
+                docs:    params.dig(:snapshot, :docs)&.to_unsafe_h || {},
+                queries: params.dig(:snapshot, :queries)&.to_unsafe_h || {}
+              }
+            }
+            serialized_data = payload.to_json
+            compressed_data = Zlib::Deflate.deflate(serialized_data)
+            @snapshot.snapshot_file.attach(io: StringIO.new(compressed_data), filename: "snapshot_#{@snapshot.id}.bin.zip",
+                                           content_type: 'application/zip')
+            PopulateSnapshotJob.perform_later @snapshot
+          else
+            # Server-side flow: fetch from search endpoint (modern Take Snapshot)
+            record_document_fields = fetch_record_document_fields(atry)
+            CreateSnapshotFromSearchJob.perform_later @snapshot, user: current_user, record_document_fields: record_document_fields
+          end
 
           Analytics::Tracker.track_snapshot_created_event current_user, @snapshot
 
@@ -85,11 +104,24 @@ module Api
         render json: { error: 'Not Found!' }, status: :not_found unless @snapshot
       end
 
-      def snapshot_params
-        # avoid StrongParameters ;-( to faciliate sending params as
-        # hash to ActiveJob via ActiveStorage by directly getting parameters from request
-        # object
-        request.parameters
+      def try_from_params
+        try_num = params.dig(:snapshot, :try_number)
+        return nil if try_num.blank?
+
+        @case.tries.find_by(try_number: try_num)
+      end
+
+      # For server-side snapshot: engines that support doc lookup by ID (solr, es, os) can
+      # optionally skip recording document fields. Others (e.g. searchapi) must record.
+      def fetch_record_document_fields(atry)
+        raw = params.dig(:snapshot, :record_document_fields)
+        return true if atry.nil? || atry.search_endpoint.nil?
+
+        engine = atry.search_endpoint.search_engine.to_s.downcase
+        must_record = !%w[solr es os].include?(engine)
+        return true if must_record
+
+        ActiveModel::Type::Boolean.new.cast(raw)
       end
     end
   end

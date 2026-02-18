@@ -9,12 +9,17 @@ module Api
 
         def create
           @new_case = Case.new
+          cp = clone_params
 
-          preserve_history    = params[:preserve_history]
-          clone_queries       = params[:clone_queries]
-          clone_ratings       = params[:clone_ratings]
-          the_try             = @case.tries.where(try_number: params[:try_number]).first
-          @new_case.case_name = params[:case_name].presence || "Cloned: #{@case.case_name}"
+          preserve_history    = deserialize_bool_param(cp[:preserve_history])
+          clone_queries       = deserialize_bool_param(cp[:clone_queries])
+          clone_ratings       = deserialize_bool_param(cp[:clone_ratings])
+          the_try             = @case.tries.where(try_number: cp[:try_number]).first
+          @new_case.case_name = cp[:case_name].presence || "Cloned: #{@case.case_name}"
+
+          if !preserve_history && the_try.nil?
+            return render json: { error: "Must select a try or include full history" }, status: :bad_request
+          end
 
           transaction = @new_case.clone_case(
             @case,
@@ -28,8 +33,14 @@ module Api
           if transaction
             respond_with @new_case
           else
-            render status: :bad_request
+            render json: { error: "Clone failed" }, status: :bad_request
           end
+        end
+
+        private
+
+        def clone_params
+          params.permit(:case_id, :case_name, :try_number, :preserve_history, :clone_queries, :clone_ratings)
         end
       end
     end

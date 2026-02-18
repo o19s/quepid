@@ -72,6 +72,7 @@ Rails.application.routes.draw do
 
   resources :scorers, only: [ :index, :new, :create, :edit, :update, :destroy ] do
     post :clone, on: :member
+    post :test, on: :member
   end
   post '/scorers/default' => 'scorers#update_default', as: :update_default_scorers
   post '/scorers/share' => 'scorers#share', as: :share_scorers
@@ -235,7 +236,9 @@ Rails.application.routes.draw do
       end
       resources :cases, only: [] do
         # Case Tries
-        resources :tries, param: :try_number, except: [ :new, :edit ]
+        resources :tries, param: :try_number, except: [ :new, :edit ] do
+          get 'queries/:query_id/search' => 'tries/queries/search#show', as: :query_search
+        end
 
         # Case Scorers
         resources :scorers, only: [ :index, :update ], controller: :case_scorers
@@ -247,6 +250,7 @@ Rails.application.routes.draw do
             resource  :options,   only: [ :show, :update ]
             resource  :position,  only: [ :update ]
             resource  :ratings,   only: [ :update, :destroy ] # not actually a singular resource, doc_id in json payload
+            resource  :score,     only: [ :create ] # lightweight single-query scoring
           end
 
           resource :bulk, only: [] do
@@ -318,7 +322,11 @@ Rails.application.routes.draw do
       # Exports
       namespace :export do
         resources :books, only: [ :update ], param: :book_id
-        resources :cases, only: [ :show ], param: :case_id # should be post (:update)
+        resources :cases, only: [ :show ], param: :case_id do
+          get :general, on: :member
+          get :detailed, on: :member
+          get :snapshot, on: :member
+        end
         resources :ratings, only: [ :show ], param: :case_id # should be post (:update)
         namespace :queries do
           resources :information_needs, only: [ :show ], param: :case_id # should be post (:update)
@@ -339,8 +347,15 @@ Rails.application.routes.draw do
   post '/cases/:id/archive' => 'cases#archive', as: :archive_case
   post '/cases/:id/unarchive' => 'cases#unarchive', as: :unarchive_case
 
-  # Case/try workspace: Rails serves the page (modern stack or legacy); no Angular client routing.
+  # Case/try workspace: Rails serves the page.
   get '/case/:id(/try/:try_number)'   => 'core#show', as: :case_core
+  post '/case/:id/queries'            => 'core/queries#create', as: :case_queries
+  put '/case/:id/queries/:query_id/notes' => 'core/queries/notes#update', as: :case_query_notes
+  delete '/case/:id/queries/:query_id' => 'core/queries#destroy', as: :case_query
+  post '/case/:id/export'             => 'core/exports#create', as: :case_export
+  get '/case/:id/export/download'      => 'core/exports#download', as: :case_export_download
+  post '/case/:id/import/ratings'     => 'core/imports#ratings', as: :case_import_ratings
+  post '/case/:id/import/information_needs' => 'core/imports#information_needs', as: :case_import_information_needs
   get '/cases/new'                    => 'core#new', as: :case_new
   get '/case'                         => 'core#index'
 

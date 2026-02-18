@@ -1,0 +1,47 @@
+<%# Single query row for the query list. Uses unique id (query_row_<id>) for Turbo Stream targeting. %>
+<%# Used by QueryListComponent and Turbo Stream responses (e.g. append after create, remove after delete). %>
+<% query_id = query.respond_to?(:id) ? query.id : nil %>
+<% query_text = query.respond_to?(:query_text) ? query.query_text : query[:query_text] %>
+<li id="query_row_<%= query_id %>"
+    class="list-group-item d-flex flex-wrap align-items-center gap-2 py-2 <%= 'bg-primary bg-opacity-10' if local_assigns[:selected] %>"
+    data-query-id="<%= query_id %>"
+    data-query-text="<%= query_text.to_s.downcase %>"
+    data-query-score="<%= local_assigns[:query_score] %>">
+    <% if local_assigns[:sortable] %>
+      <span class="query-drag-handle text-muted cursor-grab" title="Drag to reorder" aria-hidden="true"><i class="bi bi-grip-vertical"></i></span>
+    <% end %>
+    <a href="<%= case_core_path(local_assigns[:case_id], local_assigns[:try_number]) %>?query_id=<%= query_id %>"
+       class="text-decoration-none text-dark flex-grow-1 text-break <%= 'fw-bold' if local_assigns[:selected] %>"
+       data-turbo-frame="workspace_content">
+      <%= query_text %>
+    </a>
+    <span class="d-flex align-items-center gap-1 flex-shrink-0">
+      <%= render QscoreQueryComponent.new(
+            score: local_assigns[:query_score] || "?",
+            max_score: local_assigns[:scorer_scale_max] || 100,
+            query_id: query_id,
+            css_class: "badge rounded-pill"
+          ) %>
+      <%= render MoveQueryComponent.new(
+            query_id: query_id,
+            case_id: local_assigns[:case_id],
+            other_cases: local_assigns[:other_cases] || [],
+            try_number: local_assigns[:try_number]
+          ) %>
+      <%= render QueryOptionsComponent.new(
+            query_id: query_id,
+            case_id: local_assigns[:case_id],
+            options_json: local_assigns[:options_json]
+          ) %>
+      <%= render QueryExplainComponent.new(query_id: query_id) %>
+      <% if query_id %>
+        <%= render DeleteQueryComponent.new(
+              case_id: local_assigns[:case_id],
+              query_id: query_id,
+              query_text: query_text,
+              try_number: local_assigns[:try_number],
+              selected_query_id: (local_assigns[:selected] ? query_id : nil)
+            ) %>
+      <% end %>
+    </span>
+</li>

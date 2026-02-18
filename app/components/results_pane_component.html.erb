@@ -1,0 +1,76 @@
+<%# Results pane: shows selected query context and placeholder for search results. %>
+<%# Wrapped in Turbo Frame so the region can be updated via Turbo Streams (e.g. rating change, document list refresh). %>
+<%= helpers.turbo_frame_tag "results_pane" do %>
+<div class="results-pane border rounded p-3 bg-white min-vh-20" data-controller="results-pane" data-results-pane-case-id-value="<%= @case_id %>" data-results-pane-try-number-value="<%= @try_number %>" data-results-pane-scale-value="<%= @scorer_scale.to_json %>"<% if query_id.present? %> data-results-pane-query-id-value="<%= query_id %>"<% end %><% if query_text.present? %> data-results-pane-query-text-value="<%= h(query_text) %>"<% end %><% if results_content? %> data-results-pane-skip-fetch-value="true"<% end %>>
+  <% if selected? %>
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+      <h3 class="h6 mb-0">Results for: <span class="text-primary"><%= h(query_text) %></span></h3>
+      <span class="badge bg-info d-none" data-results-pane-target="diffIndicator" title="Comparing with selected snapshot(s). Use the Compare button to clear.">
+        <i class="bi bi-arrow-left-right" aria-hidden="true"></i> Diff mode
+      </span>
+      <% if @try_number.present? %>
+        <%= render DocFinderComponent.new(
+          case_id: @case_id,
+          try_number: @try_number,
+          query_id: query_id,
+          query_text: query_text,
+          scorer_scale: @scorer_scale
+        ) %>
+      <% end %>
+    </div>
+    <%# Notes and information need form — submits via Turbo Frame for no full-page reload %>
+    <%= render "core/queries/notes_form", query: @selected_query, case_id: @case_id %>
+    <div class="d-none text-center py-2" data-results-pane-target="loadingIndicator" role="status">
+      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+      <span class="ms-2">Loading search results…</span>
+    </div>
+    <div class="d-none alert alert-danger alert-dismissible small" data-results-pane-target="errorMessage" role="alert">
+      <span data-results-pane-target="errorText"></span>
+      <button type="button" class="btn-close" data-action="click->results-pane#dismissError" aria-label="Dismiss"></button>
+    </div>
+    <%# Slot allows caller to pass custom results content (e.g. MatchesComponent); default: placeholder. %>
+    <div class="results-placeholder border rounded p-4 text-center text-muted" data-results-pane-target="resultsContainer">
+      <% if results_content? %>
+        <%= results_content %>
+      <% else %>
+        <span class="bi bi-search" aria-hidden="true"></span>
+        Results area — to be connected to search endpoint.
+      <% end %>
+    </div>
+    <%# Detail modal: shows all document fields + raw JSON tab %>
+    <div class="modal fade" id="results-pane-detail-modal" tabindex="-1" aria-hidden="true" data-results-pane-target="detailModal">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" data-results-pane-target="detailModalTitle">Document Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <ul class="nav nav-tabs mb-3" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#detail-fields-tab" type="button" role="tab" aria-selected="true">Fields</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#detail-json-tab" type="button" role="tab" aria-selected="false">Raw JSON</button>
+              </li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane fade show active" id="detail-fields-tab" role="tabpanel">
+                <dl data-results-pane-target="detailFieldsList"></dl>
+              </div>
+              <div class="tab-pane fade" id="detail-json-tab" role="tabpanel">
+                <pre class="mb-0 bg-light p-3 rounded" style="max-height: 60vh; overflow: auto;" data-results-pane-target="detailJsonPre"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <h3 class="h6 mb-2 text-muted">Results</h3>
+    <p class="text-muted small mb-0">
+      Select a query from the list to view its search results and rate documents.
+    </p>
+  <% end %>
+</div>
+<% end %>

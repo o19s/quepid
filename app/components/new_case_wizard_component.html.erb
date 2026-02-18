@@ -1,0 +1,92 @@
+<%# New case wizard modal. Multi-step setup: endpoint, field spec, first query. %>
+<div
+  class="new-case-wizard"
+  data-controller="new-case-wizard"
+  data-new-case-wizard-show-value="<%= @show %>"
+  data-new-case-wizard-user-id-value="<%= @current_user_id %>"
+  data-new-case-wizard-case-id-value="<%= @case_id %>"
+  data-new-case-wizard-try-number-value="<%= @try_number %>"
+  data-new-case-wizard-search-endpoints-value="<%= h(search_endpoints_json) %>"
+>
+  <div class="modal fade" id="newCaseWizardModal" tabindex="-1" aria-labelledby="newCaseWizardModalLabel" aria-hidden="true" data-new-case-wizard-target="modal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="newCaseWizardModalLabel" data-new-case-wizard-target="modalTitle">Welcome to your new case</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <%# Step 1: Welcome %>
+          <div data-new-case-wizard-target="step" data-wizard-step="1">
+            <p class="lead">Get started with <strong><%= h(@case_name) %></strong></p>
+            <p>This wizard will help you set up your case in a few quick steps:</p>
+            <ol>
+              <li>Connect a search endpoint</li>
+              <li>Configure field display</li>
+              <li>Add your first query</li>
+            </ol>
+            <p class="text-muted small">You can always change these settings later via the Settings gear.</p>
+          </div>
+          <%# Step 2: Search Endpoint %>
+          <div data-new-case-wizard-target="step" data-wizard-step="2" class="d-none">
+            <h6>Connect a search endpoint</h6>
+            <p class="text-muted small">Choose an existing endpoint or create a new one.</p>
+            <% if @search_endpoints.any? %>
+              <div class="mb-3">
+                <label class="form-label small fw-bold">Existing endpoints</label>
+                <select class="form-select form-select-sm" data-new-case-wizard-target="existingEndpoint" data-action="change->new-case-wizard#onEndpointSelect">
+                  <option value="">— Create new endpoint —</option>
+                  <% @search_endpoints.each do |ep| %>
+                    <option value="<%= ep.id %>" data-engine="<%= ep.search_engine %>" data-url="<%= ep.endpoint_url %>"><%= ep.name.presence || ep.endpoint_url %> (<%= ep.search_engine %>)</option>
+                  <% end %>
+                </select>
+              </div>
+            <% end %>
+            <div data-new-case-wizard-target="newEndpointFields">
+              <div class="mb-2">
+                <label class="form-label small">Search engine</label>
+                <select class="form-select form-select-sm" data-new-case-wizard-target="searchEngine">
+                  <option value="solr">Solr</option>
+                  <option value="es">Elasticsearch</option>
+                  <option value="os">OpenSearch</option>
+                  <option value="vectara">Vectara</option>
+                  <option value="algolia">Algolia</option>
+                  <option value="searchapi">SearchAPI (Custom)</option>
+                </select>
+              </div>
+              <div class="mb-2">
+                <label class="form-label small">Endpoint URL</label>
+                <input type="url" class="form-control form-control-sm" placeholder="https://my-solr:8983/solr/collection/select" data-new-case-wizard-target="endpointUrl">
+              </div>
+            </div>
+          </div>
+          <%# Step 3: Field Spec %>
+          <div data-new-case-wizard-target="step" data-wizard-step="3" class="d-none">
+            <h6>Configure field display</h6>
+            <p class="text-muted small">Specify which fields to display from search results. Use a comma-separated list. Prefix with <code>title:</code> for the title field, <code>id:</code> for the document ID field.</p>
+            <div class="mb-2">
+              <label class="form-label small">Field spec</label>
+              <input type="text" class="form-control form-control-sm font-monospace" placeholder="id:id, title:title, body, author" data-new-case-wizard-target="fieldSpec" value="id:id, title:title">
+            </div>
+          </div>
+          <%# Step 4: First Query %>
+          <div data-new-case-wizard-target="step" data-wizard-step="4" class="d-none">
+            <h6>Add your first query</h6>
+            <p class="text-muted small">Enter a search query to start tuning. You can add more queries later.</p>
+            <div class="mb-2">
+              <label class="form-label small">Query text</label>
+              <input type="text" class="form-control form-control-sm" placeholder="e.g. laptop, red shoes, pizza near me" data-new-case-wizard-target="firstQuery">
+            </div>
+            <p class="text-muted small">Leave blank to skip — you can add queries anytime.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary d-none" data-action="click->new-case-wizard#back" data-new-case-wizard-target="backBtn">Back</button>
+          <button type="button" class="btn btn-primary" data-action="click->new-case-wizard#next" data-new-case-wizard-target="nextBtn">Next</button>
+          <button type="button" class="btn btn-primary d-none" data-action="click->new-case-wizard#finish" data-new-case-wizard-target="finishBtn">Finish setup</button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Skip for now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

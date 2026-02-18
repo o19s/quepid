@@ -1,0 +1,79 @@
+<div id="annotations"
+     data-controller="annotations"
+     data-annotations-case-id-value="<%= @case_id %>"
+     data-annotations-last-score-value="<%= last_score_json %>">
+  <p>
+    Annotations are like snapshots for scores. Create a new annotation to save the
+    current case score along with a message to help you remember what the state of
+    the case is at this moment.
+  </p>
+
+  <strong>Why?</strong>
+
+  <p>
+    You might have made some changes that are invisible to Quepid (eg. a new tokenizer),
+    and you want to capture that information and the corresponding score.
+  </p>
+
+  <p>
+    <a href="#annotations-list">Scroll down to view list of annotations</a>
+  </p>
+
+  <% unless score? %>
+    <div class="alert alert-warning" role="alert" data-annotations-target="noScoreWarning">
+      No score recorded yet for this case. Run your queries first to generate a score before creating an annotation.
+    </div>
+  <% end %>
+
+  <div class="clearfix">
+    <div class="mb-3">
+      <label class="form-label">Message:</label>
+      <textarea class="form-control" rows="3" data-annotations-target="messageInput"></textarea>
+    </div>
+
+    <div class="mb-3">
+      <button class="btn btn-success"
+              data-action="click->annotations#create"
+              <%= "disabled" unless score? %>>
+        Create
+      </button>
+    </div>
+  </div>
+
+  <div id="annotations-list" class="annotations">
+    <h3>Existing Annotations</h3>
+
+    <ul id="annotations_list" data-annotations-target="annotationsList">
+      <% @annotations.each do |annotation| %>
+        <%= render AnnotationComponent.new(annotation: annotation, case_id: @case_id) %>
+      <% end %>
+    </ul>
+  </div>
+
+  <%# Edit annotation modal (Bootstrap 5) %>
+  <div class="modal fade"
+       id="editAnnotationModal"
+       tabindex="-1"
+       aria-labelledby="editAnnotationModalLabel"
+       aria-hidden="true"
+       data-annotations-target="editModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editAnnotationModalLabel">Edit Annotation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">New Message:</label>
+            <textarea class="form-control" rows="3" data-annotations-target="editMessageInput"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" data-action="click->annotations#updateAnnotation">Update</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

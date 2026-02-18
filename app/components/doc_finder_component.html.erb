@@ -1,0 +1,86 @@
+<%# DocFinder: "Find and rate missing documents" modal. Replaces DocFinderCtrl / TargetedSearchModalCtrl. %>
+<div
+  class="doc-finder-wrapper"
+  data-controller="doc-finder"
+  data-doc-finder-case-id-value="<%= @case_id %>"
+  data-doc-finder-try-number-value="<%= @try_number %>"
+  data-doc-finder-query-id-value="<%= @query_id %>"
+  data-doc-finder-scale-value="<%= scale_json %>"
+>
+  <a href="#" class="btn btn-outline-secondary btn-sm" data-action="click->doc-finder#open" data-doc-finder-target="trigger">
+    <i class="bi bi-search" aria-hidden="true"></i>
+    Find and rate missing documents
+  </a>
+
+  <div
+    class="modal fade"
+    id="docFinderModal"
+    tabindex="-1"
+    aria-labelledby="docFinderModalLabel"
+    aria-hidden="true"
+    data-doc-finder-target="modal"
+  >
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="docFinderModalLabel">Find and Rate Missing Documents</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="doc-finder-modal-body">
+          <p class="text-muted small">
+            Often you know that a document is a good match for a query, but it doesn't match the current query.
+            Search with a custom query to find that document and give it a grade, which influences your scorer.
+          </p>
+          <p class="text-muted small">
+            For example, if your top 10 are all <code>1</code>s and you find and rate a document as <code>3</code>,
+            the score will drop if that <code>3</code> doesn't show up first.
+          </p>
+
+          <form class="mb-3" data-action="submit->doc-finder#search">
+            <div class="row g-2 align-items-end">
+              <div class="col">
+                <label for="doc-finder-query" class="form-label small">Search query</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="doc-finder-query"
+                  placeholder="Enter custom search query..."
+                  data-doc-finder-target="searchInput"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="col-auto">
+                <button type="submit" class="btn btn-primary" data-doc-finder-target="searchBtn">
+                  Search
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div class="alert alert-warning small d-none" data-doc-finder-target="noResultsAlert" role="alert">
+            Your query returned no results.
+          </div>
+
+          <div data-doc-finder-target="resultsSection" class="d-none">
+            <p class="text-muted small mb-2" data-doc-finder-target="resultsSummary"></p>
+            <div class="mb-2 d-flex flex-wrap align-items-center gap-2">
+              <span class="small fw-bold">Score all:</span>
+              <div class="btn-group btn-group-sm" data-doc-finder-target="scaleButtons">
+                <% @scorer_scale.each do |val| %>
+                  <button type="button" class="btn btn-outline-primary" data-action="click->doc-finder#rateAll" data-rating="<%= val %>"><%= val %></button>
+                <% end %>
+              </div>
+              <button type="button" class="btn btn-outline-secondary btn-sm" data-action="click->doc-finder#resetAll">Reset all</button>
+            </div>
+            <p class="text-muted small mb-2">Changing ratings will affect the query score.</p>
+            <div class="doc-finder-results border rounded p-2" style="max-height: 400px; overflow-y: auto;" data-doc-finder-target="resultsContainer">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

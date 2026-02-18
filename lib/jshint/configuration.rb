@@ -6,12 +6,6 @@ module Jshint
     # Returns the list of files that JSHint should lint over
     # relatives to the Application root
     #
-    # @example
-    #   [
-    #     'angular/controllers/*.js',
-    #     'angular/services/*.js'
-    #   ]
-    #
     # @return [Array<String>] An Array of String files paths
     def files
       [ '**/*.js' ] # No need to put app/assets/ or vendor/assets here

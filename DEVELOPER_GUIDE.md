@@ -1,6 +1,6 @@
 # Quepid Developer Guide
 
-This guide provides detailed instructions for developers who want to set up, run, test, and contribute to Quepid.
+This guide provides detailed instructions for developers who want to set up, run, test, and contribute to Quepid. For a full index of documentation by topic, see [docs/README.md](docs/README.md).
 
 ## Table of Contents
 
@@ -24,7 +24,7 @@ This guide provides detailed instructions for developers who want to set up, run
   - [III. Run Tests](#iii-run-tests)
     - [Minitest](#minitest)
     - [JS Lint](#js-lint)
-    - [Karma](#karma)
+    - [Vitest](#vitest)
     - [Rubocop](#rubocop)
     - [All Tests](#all-tests)
     - [Performance Testing](#performance-testing)
@@ -61,10 +61,10 @@ This guide provides detailed instructions for developers who want to set up, run
     - [Migration Errors](#migration-errors)
   - [Frontend Issues](#frontend-issues)
     - [Asset Compilation Errors](#asset-compilation-errors)
-    - [Angular App Not Loading](#angular-app-not-loading)
+    - [Frontend Not Loading](#frontend-not-loading)
   - [Testing Issues](#testing-issues)
     - [Tests Failing Unexpectedly](#tests-failing-unexpectedly)
-    - [Karma Tests Timeout](#karma-tests-timeout)
+    - [Vitest Tests Timeout](#vitest-tests-timeout)
 - [QA](#qa)
   - [Seed Data](#seed-data)
 
@@ -263,16 +263,14 @@ To check the JS syntax:
 bin/docker r rails test:jshint
 ```
 
-### Karma
+### Vitest
 
-Runs tests for the Angular side. There are two modes for the karma tests:
+Runs JavaScript unit tests (Vitest, Jest-compatible API). There are two modes:
 
-* Single run: `bin/docker r rails karma:run`
-* Continuous/watched run: `bin/docker r bin/rake karma:start`
+* Single run: `bin/docker r yarn test:run` or `bin/docker r rails vitest:run`
+* Continuous/watched run: `bin/docker r yarn test` or `bin/docker r bin/rake vitest:start`
 
-**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run.
-If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`).
-The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
+**Note:** Vitest runs tests directly from source; no asset precompilation is required. Tests run in Node.js and support ES modules natively.
 
 ### Rubocop
 
@@ -368,7 +366,7 @@ config.assets.debug = true
 # config.assets.debug = false
 ```
 
-Because there are too many Angular JS files in this application, and in `debug` mode Rails will try to load every file separately, that slows down the application, and becomes really annoying in development mode to wait for the scripts to load. Which is why it is turned off by default.
+In `debug` mode Rails loads each asset file separately, which can slow down the application. It is turned off by default.
 
 **PS:** Don't forget to restart the server when you change the config.
 
@@ -648,13 +646,15 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 
 ## How does the Frontend work?
 
-We use Angular 1 for the core interactive application, and as part of that we use the `angular-ui-bootstrap` package for all our UI components.
-This package is tied to Bootstrap version 3.  
-We import the Bootstrap 3 CSS directly via the file `bootstrap3.css`.
+Quepid's frontend uses **Rails + ViewComponents + Stimulus + Turbo**. Server-rendered HTML is enhanced with Stimulus controllers for local behavior (modals, forms, sortable) and Turbo for dynamic updates (Turbo Frames, Turbo Streams). See [App Structure](docs/app_structure.md) for the full architecture.
 
-For the rest of Quepid, we use Bootstrap 5! That is included via the `package.json` using NPM. See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle`.
+**Key pieces:**
+- **ViewComponents:** `app/components/` — reusable UI components (toolbar, query list, results pane, modals). See [view_component_conventions.md](docs/view_component_conventions.md).
+- **Stimulus controllers:** `app/javascript/controllers/` — behavior for modals, forms, and interactive elements
+- **Turbo:** Frames and Streams for in-place updates. See [turbo_streams_guide.md](docs/turbo_streams_guide.md) and [turbo_frame_boundaries.md](docs/turbo_frame_boundaries.md).
+- **Bootstrap 5:** Used throughout; see [ui_consistency_patterns.md](docs/ui_consistency_patterns.md) for modals and flash.
 
-We currently use Rails Sprockets to compile everything, but do have dreams of moving to Propshaft, and maybe js-bundling.
+The core workspace layout is `app/views/layouts/core_modern.html.erb`, which loads `application_modern.js` (Stimulus/Turbo). We use Rails Sprockets to compile assets.
 
 ## Fonts
 
@@ -773,17 +773,24 @@ This section covers common issues you might encounter during development and how
    bin/docker r yarn -v
    ```
 
-### Angular App Not Loading
+### Frontend Not Loading
 
 **Symptom**: Quepid interface doesn't load properly.
 
 **Solutions**:
 1. Check browser console for errors
 2. Clear browser cache and cookies
-3. Verify that all JS dependencies are installed:
+3. Verify that all JS dependencies are installed and assets are built:
    ```bash
    bin/docker r yarn install
+   bin/docker r yarn build
    ```
+
+4. For a clean build from scratch, run:
+   ```bash
+   bin/docker r yarn build:clean
+   ```
+   Then run `yarn build` again. The main `yarn build` also runs `build:clean` first, so a full build always starts from a clean state.
 
 ## Testing Issues
 
@@ -803,18 +810,14 @@ This section covers common issues you might encounter during development and how
    bin/docker r rails test -v
    ```
 
-### Karma Tests Timeout
+### Vitest Tests Timeout
 
-**Symptom**: Karma tests hang or timeout.
+**Symptom**: Vitest tests hang or timeout.
 
 **Solutions**:
-1. Run in single-run mode:
-   ```bash
-   bin/docker r rails karma:run
-   ```
-
-2. Check for browser compatibility issues
-3. Increase the timeout in karma.conf.js
+1. Run in single-run mode: `bin/docker r yarn test:run`
+2. Check for infinite loops or unresolved promises in tests
+3. Increase the timeout in `vitest.config.js` (e.g. `test: { testTimeout: 10000 }`)
 
 # QA
 

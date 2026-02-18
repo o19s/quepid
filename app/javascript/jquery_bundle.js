@@ -1,5 +1,5 @@
 // jQuery bundle - ONLY jQuery, not jQuery UI
-// This file is bundled as IIFE by esbuild and must load BEFORE angular_app.js
+// This file is bundled as IIFE by esbuild for pages that need jQuery
 
 import jQuery from 'jquery';
 

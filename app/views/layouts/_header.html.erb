@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-secondary">
   <div class="container-fluid">
-    <%= link_to root_path, class: "navbar-brand", data: { turbo: false } do %>
+    <%= link_to root_path, class: "navbar-brand" do %>
       Quepid
       <span class="hover"><%= image_tag 'tagline-sm.png', title: "Give your queries some love" %></span>
     <% end %>
@@ -23,8 +23,8 @@
             
               <li class="actions">
                 <div class="d-grid gap-2">
-                <%= link_to "View all cases", cases_path, class: "btn btn-outline-secondary", data: { turbo: false } %>
-                <%= link_to 'Create a case', case_new_path, class: 'btn btn-success', data: { turbo: false } %>
+                <%= link_to "View all cases", cases_path, class: "btn btn-outline-secondary" %>
+                <%= render NewCaseComponent.new(button_text: "Create a case", block_style: true) %>
                 </div>
               </li>              
             </ul>
@@ -45,7 +45,16 @@
               <li class="actions">
                 <div class="d-grid gap-2">
                 <%= link_to "View all books", books_path, class: "btn btn-outline-secondary" %>
-                <%= link_to 'Create a book', new_book_path, class: 'btn btn-success' %>
+                <%# When viewing a case, pass context so new book form pre-fills scorer, teams, and link-the-case option (legacy HeaderCtrl createNewBookLink behavior) %>
+                <%= link_to 'Create a book',
+                    new_book_path(
+                      @case.present? ? {
+                        scorer_id: @case.scorer_id,
+                        team_ids: @case.team_ids.presence,
+                        origin_case_id: @case.id
+                      }.compact : {}
+                    ),
+                    class: 'btn btn-success' %>
                 </div>
               </li>
               

@@ -239,6 +239,70 @@ class ScorersControllerTest < ActionController::TestCase
     end
   end
 
+  describe 'test' do
+    describe 'when user is signed in' do
+      before do
+        login_user user
+      end
+
+      test 'returns score for custom scorer' do
+        scorer = scorers(:random_scorer)
+        scorer.update!(owner: user, code: File.read(Rails.root.join('db/scorers/p@10.js')))
+
+        post :test, params: { id: scorer.id }, as: :json
+
+        assert_response :success
+        data = JSON.parse(response.body)
+        assert data.key?('score'), "Response should include score: #{response.body}"
+        assert data['score'].is_a?(Numeric), "Score should be numeric"
+      end
+
+      test 'uses params code when provided' do
+        scorer = scorers(:random_scorer)
+        scorer.update!(owner: user, code: 'setScore(99);')
+
+        post :test, params: { id: scorer.id, code: 'setScore(42);' }, as: :json
+
+        assert_response :success
+        data = JSON.parse(response.body)
+        assert_equal 42, data['score']
+      end
+
+      test 'returns error for invalid code' do
+        scorer = scorers(:random_scorer)
+        scorer.update!(owner: user)
+
+        post :test, params: { id: scorer.id, code: 'throw new Error("oops");' }, as: :json
+
+        assert_response :unprocessable_entity
+        data = JSON.parse(response.body)
+        assert data['error'].present?
+      end
+
+      test 'cannot access communal scorer for test (record not found)' do
+        assert_raises(ActiveRecord::RecordNotFound) do
+          post :test, params: { id: communal_scorer.id }, as: :json
+        end
+      end
+    end
+
+    describe 'when admin is signed in' do
+      before do
+        login_user admin
+      end
+
+      test 'can test communal scorer' do
+        scorer = Scorer.create!(name: 'Test Communal', communal: true, code: 'setScore(0.5);')
+
+        post :test, params: { id: scorer.id }, as: :json
+
+        assert_response :success
+        data = JSON.parse(response.body)
+        assert_equal 0.5, data['score']
+      end
+    end
+  end
+
   describe 'clone' do
     describe 'when user is signed in' do
       before do

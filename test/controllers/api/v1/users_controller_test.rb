@@ -96,6 +96,20 @@ module Api
         end
       end
 
+      describe 'Update user authorization' do
+        before do
+          login_user matt
+        end
+
+        test 'forbids updating another user' do
+          doug = users(:doug)
+          patch :update, params: { id: doug.id, user: { completed_case_wizard: true } }
+
+          assert_response :forbidden
+          assert_equal({ message: 'Forbidden' }, response.parsed_body.symbolize_keys.slice(:message))
+        end
+      end
+
       describe "Update user's company" do
         before do
           login_user matt

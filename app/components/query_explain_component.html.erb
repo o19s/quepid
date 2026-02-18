@@ -1,0 +1,79 @@
+<div class="query-explain-wrapper" data-controller="query-explain">
+  <button type="button" class="btn btn-outline-secondary btn-sm" data-action="click->query-explain#open" data-query-explain-target="trigger">
+    Explain Query
+  </button>
+
+  <div class="modal fade" id="<%= modal_id %>" tabindex="-1" aria-labelledby="<%= modal_id %>Label" aria-hidden="true" data-query-explain-target="modal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="<%= modal_id %>Label">Explain Query Parsing</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">These are details returned from the search engine on how it processed the input query.</p>
+
+          <ul class="nav nav-tabs" id="<%= modal_id %>-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="<%= modal_id %>-params-tab" data-bs-toggle="tab" data-bs-target="#<%= modal_id %>-params-pane" type="button" role="tab" aria-controls="<%= modal_id %>-params-pane" aria-selected="true">Params</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="<%= modal_id %>-parsing-tab" data-bs-toggle="tab" data-bs-target="#<%= modal_id %>-parsing-pane" type="button" role="tab" aria-controls="<%= modal_id %>-parsing-pane" aria-selected="false">Parsing</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="<%= modal_id %>-template-tab" data-bs-toggle="tab" data-bs-target="#<%= modal_id %>-template-pane" type="button" role="tab" aria-controls="<%= modal_id %>-template-pane" aria-selected="false">Query Template</button>
+            </li>
+          </ul>
+
+          <div class="tab-content border border-top-0 rounded-bottom p-3" id="<%= modal_id %>-tabContent">
+            <div class="tab-pane fade show active" id="<%= modal_id %>-params-pane" role="tabpanel" data-query-explain-target="paramsPane">
+              <% if has_params? %>
+                <p class="mb-2">These are the query parameters processed by the search engine.</p>
+                <pre class="bg-light p-2 rounded mb-0 overflow-auto" style="max-height: 20rem;" data-query-explain-target="paramsPre"><%= params_display %></pre>
+              <% else %>
+                <p class="bg-warning text-dark p-2 rounded mb-0">
+                  <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                  <%= params_message %>
+                </p>
+              <% end %>
+            </div>
+            <div class="tab-pane fade" id="<%= modal_id %>-parsing-pane" role="tabpanel" data-query-explain-target="parsingPane">
+              <p class="mb-2">This is how the search engine parsed the query.</p>
+              <% if has_parsing? %>
+                <pre class="bg-light p-2 rounded mb-0 overflow-auto" style="max-height: 20rem;" data-query-explain-target="parsingPre"><%= parsing_display %></pre>
+              <% else %>
+                <p class="text-muted mb-0">Run a search to see parsing details.</p>
+              <% end %>
+            </div>
+            <div class="tab-pane fade" id="<%= modal_id %>-template-pane" role="tabpanel" data-query-explain-target="templatePane">
+              <% if has_rendered_template? %>
+                <p class="mb-2">This is what the populated query template looks like.</p>
+                <pre class="bg-light p-2 rounded mb-0 overflow-auto" style="max-height: 20rem;" data-query-explain-target="templatePre"><%= rendered_template_display %></pre>
+              <% else %>
+                <p class="text-muted mb-0">This is not a templated query.</p>
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <% if has_params? %>
+            <button type="button" class="btn btn-outline-secondary me-auto" data-action="click->query-explain#copyParams" data-query-explain-target="copyParamsBtn">
+              <i class="bi bi-clipboard" aria-hidden="true"></i> Copy Params
+            </button>
+          <% end %>
+          <% if has_parsing? %>
+            <button type="button" class="btn btn-outline-secondary me-auto" data-action="click->query-explain#copyParsing" data-query-explain-target="copyParsingBtn">
+              <i class="bi bi-clipboard" aria-hidden="true"></i> Copy Parsing
+            </button>
+          <% end %>
+          <% if has_rendered_template? %>
+            <button type="button" class="btn btn-outline-secondary me-auto" data-action="click->query-explain#copyTemplate" data-query-explain-target="copyTemplateBtn">
+              <i class="bi bi-clipboard" aria-hidden="true"></i> Copy Template
+            </button>
+          <% end %>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -10,6 +10,8 @@ class RunCaseEvaluationJob < ApplicationJob
   limits_concurrency to: 2, key: self.class.name, duration: 12.hours
 
   def perform acase, atry, user: nil
+    raise ArgumentError, "Try #{atry.id} has no search endpoint" unless atry.search_endpoint
+
     @fetch_service = initialize_fetch_service
     @fetch_service.begin(acase, atry)
 
@@ -17,7 +19,7 @@ class RunCaseEvaluationJob < ApplicationJob
 
     @fetch_service.score_run(user)
 
-    broadcast_completion_notifications(acase, acase.queries.count)
+    broadcast_completion_notifications(acase, acase.queries.count, user: user)
 
     @fetch_service.complete
   end
@@ -84,9 +86,58 @@ class RunCaseEvaluationJob < ApplicationJob
     broadcast_case_specific_notification(acase, query, query_count, counter)
   end
 
-  def broadcast_completion_notifications acase, query_count
+  def broadcast_completion_notifications acase, query_count, user: nil
     broadcast_general_notification(nil, query_count, -1)
     broadcast_case_specific_notification(acase, nil, query_count, -1)
+    broadcast_score_update(acase)
+    broadcast_query_list_update(acase, user)
+  end
+
+  def broadcast_score_update(acase)
+    last_score = acase.last_score
+    score_val = last_score&.score || "?"
+    max_score = acase.scorer&.scale&.last || 100
+    Turbo::StreamsChannel.broadcast_replace_to(
+      :notifications,
+      target: "qscore-case-#{acase.id}",
+      partial: "core/scores/qscore_case",
+      locals: {
+        case_id: acase.id,
+        score: score_val,
+        max_score: max_score,
+        score_label: acase.scorer&.name,
+        scores: acase.scores.order(updated_at: :desc).limit(10).map { |s| { score: s.score, updated_at: s.updated_at.iso8601 } },
+        annotations: acase.annotations.map { |a| { message: a.message, updated_at: a.updated_at.iso8601 } }
+      }
+    )
+  end
+
+  def broadcast_query_list_update(acase, user)
+    atry = acase.tries.latest
+    last_score = acase.last_score
+    query_scores = last_score&.queries.is_a?(Hash) ? last_score.queries : {}
+    other_cases = if user
+                    user.cases_involved_with.where.not(id: acase.id).order(:case_name)
+                      .pluck(:id, :case_name).map { |id, name| { id: id, case_name: name } }
+                  else
+                    []
+                  end
+
+    Turbo::StreamsChannel.broadcast_replace_to(
+      :notifications,
+      target: "query_list_#{acase.id}",
+      partial: "core/scores/query_list",
+      locals: {
+        case_id: acase.id,
+        try_number: atry&.try_number,
+        queries: acase.queries,
+        selected_query_id: nil,
+        other_cases: other_cases,
+        scorer_scale_max: acase.scorer&.scale&.last || 100,
+        query_scores: query_scores,
+        sortable: Rails.application.config.query_list_sortable
+      }
+    )
   end
 
   def broadcast_general_notification query, query_count, counter

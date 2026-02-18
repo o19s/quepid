@@ -1,15 +1,16 @@
 # frozen_string_literal: true
 
+# Populates a snapshot from a compressed JSON payload stored in snapshot_file.
+# The payload is JSON (not Marshal) for security and Ruby-version stability.
+# See SnapshotsController#create for the serialization format.
 class PopulateSnapshotJob < ApplicationJob
   queue_as :default
 
-  # rubocop:disable Security/MarshalLoad
   def perform snapshot
     # Using Rails' bulk insert methods for better performance.
-
     compressed_data = snapshot.snapshot_file.download
     serialized_data = Zlib::Inflate.inflate(compressed_data)
-    params = Marshal.load(serialized_data)
+    params = parse_snapshot_payload(serialized_data)
 
     service = SnapshotManager.new(snapshot)
 
@@ -22,5 +23,15 @@ class PopulateSnapshotJob < ApplicationJob
 
     snapshot.snapshot_file.purge
   end
-  # rubocop:enable Security/MarshalLoad
+
+  private
+
+  # Parses JSON payload and converts query_id keys to integers for SnapshotManager.
+  def parse_snapshot_payload(serialized_data)
+    parsed = JSON.parse(serialized_data, symbolize_names: true).deep_symbolize_keys
+    snapshot = parsed[:snapshot] || {}
+    docs = (snapshot[:docs] || {}).transform_keys { |k| k.to_s.to_i }
+    queries = (snapshot[:queries] || {}).transform_keys { |k| k.to_s.to_i }
+    { snapshot: { docs: docs, queries: queries } }
+  end
 end

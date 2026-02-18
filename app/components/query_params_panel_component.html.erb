@@ -1,0 +1,18 @@
+<%# Query params panel: developer sandbox, tuning knobs. Replaces QueryParamsCtrl. %>
+<%# Full query sandbox (textarea/ACE), history tab deferred. %>
+<div class="query-params-panel-wrapper" data-controller="query-params-panel">
+  <button type="button" class="btn btn-outline-secondary btn-sm" data-action="click->query-params-panel#toggle" data-query-params-panel-target="trigger">
+    <i class="bi bi-code-slash" aria-hidden="true"></i>
+    Query params
+  </button>
+  <div class="query-params-panel-content collapse mt-2" data-query-params-panel-target="panel">
+    <div class="card card-body small">
+      <h6 class="card-title">Query params (try config)</h6>
+      <p class="text-muted small mb-1">
+        Query sandbox, tuning knobs, and history are available in the legacy Angular workspace.
+        This panel shows the current try's query params.
+      </p>
+      <pre class="small mb-0 bg-light p-2 rounded" style="max-height: 200px; overflow: auto;"><%= query_params_preview %></pre>
+    </div>
+  </div>
+</div>

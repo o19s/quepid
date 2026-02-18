@@ -112,3 +112,8 @@ query2_for_case_with_book:
   case:         :case_with_book
   query_text:   Han
   arranged_at:  2
+
+single_query:
+  case:         :case_single_query
+  query_text:   Only query
+  arranged_at:  1

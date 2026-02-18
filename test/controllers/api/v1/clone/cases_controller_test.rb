@@ -71,6 +71,71 @@ module Api
               end
             end
           end
+
+          it 'creates a new case when cloning with try_number 0' do
+            try_zero = tries(:try_zero_for_clone)
+            the_case = try_zero.case
+
+            assert_difference 'Case.count' do
+              assert_difference 'Try.count' do
+                data = {
+                  case_id:    the_case.id,
+                  try_number: 0,
+                }
+
+                post :create, params: data
+
+                assert_response :ok
+
+                cloned_case = assigns(:new_case)
+
+                assert_equal 1, cloned_case.tries.count
+                cloned_try = cloned_case.tries.latest
+                # clone_try assigns try_number 1 when cloning a single try
+                assert_equal 1, cloned_try.try_number
+                assert_equal try_zero.query_params, cloned_try.query_params
+              end
+            end
+          end
+
+          it 'creates a new case when cloning with try_number "0" (string param)' do
+            try_zero = tries(:try_zero_for_clone)
+            the_case = try_zero.case
+
+            assert_difference 'Case.count' do
+              assert_difference 'Try.count' do
+                data = {
+                  case_id:    the_case.id,
+                  try_number: '0',
+                }
+
+                post :create, params: data
+
+                assert_response :ok
+
+                cloned_case = assigns(:new_case)
+                assert_equal 1, cloned_case.tries.count
+                cloned_try = cloned_case.tries.latest
+                assert_equal 1, cloned_try.try_number
+              end
+            end
+          end
+
+          it 'returns 400 when preserve_history is false and no try is selected' do
+            assert_no_difference 'Case.count' do
+              data = {
+                case_id:          the_case.id,
+                preserve_history: false,
+                try_number:       nil,
+              }
+
+              post :create, params: data
+
+              assert_response :bad_request
+              json = JSON.parse(response.body)
+              assert_equal "Must select a try or include full history", json["error"]
+            end
+          end
         end
       end
     end

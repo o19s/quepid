@@ -10,8 +10,8 @@ module Api
         # rubocop:disable Metrics/MethodLength
         # rubocop:disable Metrics/AbcSize
         def create
-          file_format = params[:file_format]
-          file_format = 'hash' unless params[:file_format]
+          file_format = params[:file_format] || 'hash'
+          file_format = 'hash' if file_format == 'csv'  # Client sends "csv" for pasted CSV (parsed to ratings)
 
           clear_queries = deserialize_bool_param(params[:clear_queries])
 
@@ -19,13 +19,19 @@ module Api
           when 'hash'
             # convert from ActionController::Parameters to a Hash, symbolize, and
             # then return just the ratings as an array.
-            ratings = params.permit(ratings: [ :query_text, :doc_id, :rating ]).to_h.deep_symbolize_keys[:ratings]
+            ratings = params.permit(ratings: [ :query_text, :doc_id, :rating ]).to_h.deep_symbolize_keys[:ratings] || []
           when 'rre'
             # normalize the RRE ratings format to the default hash format.
             ratings = []
-            rre_json = JSON.parse(params[:rre_json])
-            rre_json['queries'].each do |rre_query|
-              query_text = rre_query['placeholders']['$query']
+            rre_json = begin
+              JSON.parse(params[:rre_json] || '{}')
+            rescue JSON::ParserError
+              return render json: { message: "Invalid RRE JSON format" }, status: :bad_request
+            end
+            rre_json['queries']&.each do |rre_query|
+              query_text = rre_query['placeholders']&.dig('$query')
+              next if query_text.nil?
+
               if rre_query['relevant_documents'] # deal with if a query had no rated docs.
                 rre_query['relevant_documents'].each do |rating_value, doc_ids|
                   doc_ids.each do |doc_id|
@@ -49,16 +55,9 @@ module Api
 
           when 'ltr'
             # normalize the LTR ratings format to the default hash format.
-
-            # What do we do about qid?  Do we assume that qid is in Quepid already?
-            ratings = []
-            ltr_text = params[:ltr_text]
-            ltr_lines = ltr_text.split(/\n+/)
-
-            ltr_lines.each do |ltr_line|
-              rating = rating_from_ltr_line ltr_line
-              ratings << rating
-            end
+            # Invalid lines are skipped (filter_map), matching ImportCaseRatingsJob and Core::ImportsController.
+            ltr_text = params[:ltr_text] || ''
+            ratings = ltr_text.split(/\n+/).filter_map { |line| rating_from_ltr_line(line) }
           end
 
           options = {
@@ -74,38 +73,35 @@ module Api
             service.import
 
             render json: { message: 'Success!' }, status: :ok
-          # rubocop:disable Lint/RescueException
-          rescue Exception => e
+          rescue StandardError => e
             # TODO: report this to logging infrastructure so we won't lose any important
             # errors that we might have to fix.
             Rails.logger.debug { "Import ratings failed: #{e.inspect}" }
 
             render json: { message: e.message }, status: :bad_request
           end
-          # rubocop:enable Lint/RescueException
         end
 
-        def rating_from_ltr_line ltr_line
+        def rating_from_ltr_line(ltr_line)
           # Pattern: 3 qid:1 # 1370 star trek
+          # Returns nil for malformed lines (no space, no #, or missing doc_id/query separator).
           ltr_line = ltr_line.strip
           first_chunk = ltr_line.index(' ')
-          rating = ltr_line[0..first_chunk].strip
+          return nil unless first_chunk
 
+          rating = ltr_line[0..first_chunk].strip
           ltr_line = ltr_line[first_chunk..].strip
           second_chunk_begin = ltr_line.index('#')
+          return nil unless second_chunk_begin
+
           ltr_line = ltr_line[(second_chunk_begin + 1)..].strip
           second_chunk_end = ltr_line.index(' ')
+          return nil unless second_chunk_end
+
           doc_id = ltr_line[0..second_chunk_end].strip
+          query_text = ltr_line[second_chunk_end..].strip
 
-          ltr_line = ltr_line[second_chunk_end..]
-          query_text = ltr_line.strip
-
-          rating = {
-            query_text: query_text,
-            doc_id:     doc_id,
-            rating:     rating,
-          }
-          rating
+          { query_text: query_text, doc_id: doc_id, rating: rating }
         end
         # rubocop:enable Metrics/MethodLength
         # rubocop:enable Metrics/AbcSize

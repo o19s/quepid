@@ -7,6 +7,7 @@
 #  id              :integer          not null, primary key
 #  archived        :boolean
 #  case_name       :string(191)
+#  export_job      :string(255)
 #  last_try_number :integer
 #  nightly         :boolean
 #  options         :json
@@ -69,7 +70,12 @@ class Case < ApplicationRecord
              through:   :scores,
              dependent: :destroy
 
+  has_many   :case_imports,
+             dependent: :destroy
+
   belongs_to :book, optional: true
+
+  has_one_attached :export_file
 
   # Validations
   validates :case_name, presence: true
@@ -79,6 +85,7 @@ class Case < ApplicationRecord
   # Callbacks
   after_initialize  :set_scorer
   after_create      :add_default_try
+  after_destroy     :purge_export_file
 
   after_initialize do |c|
     c.archived = false if c.archived.nil?
@@ -109,6 +116,7 @@ class Case < ApplicationRecord
   # Not proud of this method, but it's the only way I can get the dependent
   # objects of a Case to actually delete!
   def really_destroy
+    case_imports.destroy_all
     snapshots.destroy_all
     queries.unscoped.where(case_id: id).destroy_all
     tries.destroy_all
@@ -172,10 +180,14 @@ class Case < ApplicationRecord
     Arrangement::List.sequence queries
   end
 
+  # Returns the most recent score for this case (by updated_at, created_at, id).
+  # Uses an explicit query instead of Score.last_one scope, which returns an
+  # AssociationRelation when chained on associations (Rails merges only relation
+  # parts, not .first).
+  #
+  # @return [Score, nil]
   def last_score
-    scores.last_one
-    # scores.last
-    # scores.first
+    scores.order(updated_at: :desc, created_at: :desc, id: :desc).first
   end
 
   def first_score
@@ -220,6 +232,10 @@ class Case < ApplicationRecord
       )
       new_try.curator_variables << new_curator_variable
     end
+  end
+
+  def purge_export_file
+    export_file.purge_later if export_file.attached?
   end
 
   def clone_query query, clone_ratings

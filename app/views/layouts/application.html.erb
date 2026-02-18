@@ -68,10 +68,11 @@
   
   <%= javascript_importmap_tags 'application_modern' %>
   <%= debugbar_head  if defined? Debugbar %>
+    <%= javascript_importmap_tags %>
 
 </head>
 
-<body>
+<body data-controller="turbo-events">
 
 <%= render 'layouts/header' %>
 

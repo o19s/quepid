@@ -1,0 +1,32 @@
+<div class="query-options-wrapper" data-controller="query-options" data-query-options-query-id-value="<%= @query_id %>" data-query-options-case-id-value="<%= @case_id %>">
+  <button type="button" class="btn btn-outline-secondary btn-sm" data-action="click->query-options#open" data-query-options-target="trigger">
+    Set Options
+  </button>
+  <div class="modal fade" id="queryOptionsModal-<%= @query_id %>" tabindex="-1" aria-labelledby="queryOptionsModalLabel-<%= @query_id %>" aria-hidden="true" data-query-options-target="modal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="queryOptionsModalLabel-<%= @query_id %>">Query Options</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">Provide a JSON object specifying query-specific options.</p>
+          <p class="text-muted small mb-2">
+            This key ⇒ value object is available in the scorer via <code>qOption('key')</code> or in Query Sandbox as <code>#$qOption.key##</code>.
+          </p>
+          <textarea
+            class="form-control font-monospace"
+            rows="12"
+            data-query-options-target="optionsInput"
+            spellcheck="false"
+          ><%= options_initial_pretty %></textarea>
+          <div class="invalid-feedback" data-query-options-target="validationError">Please provide valid JSON.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-action="click->query-options#save" data-query-options-target="submitBtn">Set Options</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

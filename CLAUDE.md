@@ -23,15 +23,15 @@ Documentation goes in the `docs` directory, not a toplevel `doc` directory.
 
 To understand the data model used by Quepid, consult `./docs/data_mapping.md`.
 
-To understand how the application is built, consult `./docs/app_structure.md`.
+To understand how the application is built, consult `./docs/app_structure.md`. For a full docs index, see [docs/README.md](docs/README.md).
+
+For full development setup (Docker, local, tests, troubleshooting), see [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md).
 
 
 Instead of treating true/false parameters as strings in controller methods use our helper `archived = deserialize_bool_param(params[:archived])` to make them booleans.
 
 We use .css, we do not use .scss.
 
-Never do $window.location.href= '/', do $window.location.href= caseTryNavSvc.getQuepidRootUrl();.
-
-Likewise urls generated should never start with / as we need relative links.
+For URL and navigation rules (never hardcode `/`; use `getQuepidRootUrl()` or `quepid_root_url`), see [docs/api_client.md](docs/api_client.md).
 
 In Ruby we say `credentials?` versus `has_credentials?` for predicates.

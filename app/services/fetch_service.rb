@@ -46,6 +46,15 @@ class FetchService
     @snapshot
   end
 
+  # Use an existing snapshot (e.g. created by user) instead of creating a new one.
+  # Caller must then run process_case_queries logic and score_run.
+  def use_existing_snapshot snapshot, acase, atry
+    @snapshot = snapshot
+    @case = acase
+    @try = atry
+    @snapshot
+  end
+
   # should be in some other service!
   def extract_docs_from_response_body_for_solr response_body
     docs = []
@@ -81,7 +90,9 @@ class FetchService
 
     response['hits']['hits'].each_with_index do |doc_json, index|
       doc = {}
-      doc[:_id] = doc_json['_id']
+      doc_id = doc_json['_id']
+      doc[:id] = doc_id
+      doc[:_id] = doc_id
       unless explain_json.nil?
         explain = explain_json[doc_json['id']]
         doc[:explain] = explain.to_json if explain.present?
@@ -332,12 +343,18 @@ class FetchService
     )
   end
 
-  def make_request atry, query
+  # @param atry [Try] The try (search configuration)
+  # @param query [Query] The query (provides args context; query_text may be overridden)
+  # @param query_text_override [String, nil] Optional. When present, used instead of query.query_text
+  #   for substituting #$query## in request params. Used by DocFinder/targeted search.
+  # @param rows [Integer, nil] Optional. Override number of rows (Solr rows, ES size).
+  # @param start [Integer, nil] Optional. Pagination offset (Solr start, ES from).
+  def make_request atry, query, query_text_override: nil, rows: nil, start: nil
     return mock_response if @options[:fake_mode]
     return handle_missing_endpoint(atry) if atry.search_endpoint.nil?
 
     setup_connection(atry.search_endpoint)
-    response = execute_request(atry, query)
+    response = execute_request(atry, query, query_text_override: query_text_override, rows: rows, start: start)
     response
   end
 
@@ -457,14 +474,15 @@ class FetchService
     )
   end
 
-  def execute_request atry, query
+  def execute_request atry, query, query_text_override: nil, rows: nil, start: nil
     endpoint = atry.search_endpoint
     http_verb = normalize_http_verb(endpoint.api_method)
+    qtext = query_text_override.presence || query.query_text
 
     case http_verb
-    when :get  then execute_get_request(endpoint, atry, query)
-    when :post then execute_body_request(:post, endpoint, atry, query)
-    when :put  then execute_body_request(:put, endpoint, atry, query)
+    when :get  then execute_get_request(endpoint, atry, query, qtext, rows: rows, start: start)
+    when :post then execute_body_request(:post, endpoint, atry, query, qtext)
+    when :put  then execute_body_request(:put, endpoint, atry, query, qtext)
     else
       raise ArgumentError, "Invalid HTTP verb: #{http_verb}"
     end
@@ -479,31 +497,33 @@ class FetchService
     end
   end
 
-  def execute_get_request endpoint, atry, query
-    params = build_get_params(atry.args, query)
-    params = add_engine_specific_params(endpoint, atry, params)
+  def execute_get_request endpoint, atry, query, query_text = nil, rows: nil, start: nil
+    qtext = query_text || query.query_text
+    params = build_get_params(atry.args, qtext)
+    params = add_engine_specific_params(endpoint, atry, params, rows: rows, start: start)
     @http_client.get(params: params)
   end
 
-  def add_engine_specific_params endpoint, atry, params
+  def add_engine_specific_params endpoint, atry, params, rows: nil, start: nil
     case endpoint.search_engine.to_sym
     when :solr
-      add_solr_params(atry, params)
+      add_solr_params(atry, params, rows: rows, start: start)
     when :es
-      add_elasticsearch_params(atry, params)
+      add_elasticsearch_params(atry, params, rows: rows, start: start)
     when :os
-      add_opensearch_params(atry, params)
+      add_opensearch_params(atry, params, rows: rows, start: start)
     else
       # SearchAPI and unknown engines use custom parameters only, no engine-specific additions
       params
     end
   end
 
-  def add_solr_params atry, params
+  def add_solr_params atry, params, rows: nil, start: nil
     params['debug'] = 'true'
     params['debug.explain.structured'] = 'true'
     params['wt'] = 'json'
-    params['rows'] = atry.number_of_rows.to_s
+    params['rows'] = (rows.presence || atry.number_of_rows).to_s
+    params['start'] = (start.presence || 0).to_s
 
     # Add field list if specified
     if atry.field_spec.present?
@@ -517,37 +537,39 @@ class FetchService
     params
   end
 
-  def add_elasticsearch_params atry, params
+  def add_elasticsearch_params atry, params, rows: nil, start: nil
     # Elasticsearch GET request parameters (if needed in the future)
     # For now, Elasticsearch typically uses POST with body, so this may remain minimal
-    params['size'] = atry.number_of_rows.to_s if atry.number_of_rows
+    params['size'] = (rows.presence || atry.number_of_rows).to_s if atry.number_of_rows || rows
+    params['from'] = (start.presence || 0).to_s
     params
   end
 
-  def add_opensearch_params atry, params
+  def add_opensearch_params atry, params, rows: nil, start: nil
     # OpenSearch uses same parameters as Elasticsearch
-    add_elasticsearch_params(atry, params)
+    add_elasticsearch_params(atry, params, rows: rows, start: start)
   end
 
-  def build_get_params args, query
+  def build_get_params args, query_text
     params = {}
+    qtext = query_text.to_s
     args.each do |key, values|
       values.each do |val|
-        processed_val = val.gsub('#$query##', query.query_text)
+        processed_val = val.gsub('#$query##', qtext)
         params[key] = processed_val
       end
     end
     params
   end
 
-  def execute_body_request method, _endpoint, atry, query
-    # need to deal with number_of_rows here
-    body = prepare_request_body(atry.args, query)
+  def execute_body_request method, _endpoint, atry, query, query_text = nil
+    qtext = query_text || query.query_text
+    body = prepare_request_body(atry.args, qtext)
     @http_client.public_send(method, body: body)
   end
 
-  def prepare_request_body args, query
-    processed_args = replace_values(args, query.query_text)
+  def prepare_request_body args, query_text
+    processed_args = replace_values(args, query_text)
     processed_args.to_json
   end
 end

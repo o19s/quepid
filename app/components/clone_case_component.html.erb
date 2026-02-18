@@ -1,0 +1,86 @@
+<%# Wrapper so Stimulus has access to both trigger and modal. %>
+<div
+  class="clone-case-wrapper"
+  data-controller="clone-case"
+  data-clone-case-case-id-value="<%= @case_id %>"
+  data-clone-case-case-name-value="<%= @case_name %>"
+  data-clone-case-tries-value="<%= tries_json %>"
+  data-clone-case-last-try-value="<%= @last_try_number %>"
+>
+  <i class="bi bi-copy" aria-hidden="true"></i>
+  <a href="#" class="action-icon" data-action="click->clone-case#open" data-clone-case-target="trigger">Clone</a>
+
+  <div
+    class="modal fade"
+    id="cloneCaseModal"
+    tabindex="-1"
+    aria-labelledby="cloneCaseModalLabel"
+    aria-hidden="true"
+    data-clone-case-target="modal"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cloneCaseModalLabel">Clone case: <span class="modal-case" data-clone-case-target="caseNameDisplay"><%= @case_name %></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning" role="alert" data-clone-case-target="noQueriesWarning" hidden>
+            You have chosen not to import any queries. The new case will be empty.
+          </div>
+
+          <p>Cloning a case is the best way to reduce the repetitive work of creating multiple cases that use the same search engine. Select the specific elements to include in the new case.</p>
+
+          <div class="mb-3">
+            <label for="clone-case-name" class="form-label">New case name</label>
+            <input
+              type="text"
+              class="form-control"
+              id="clone-case-name"
+              placeholder="Enter new case name"
+              data-clone-case-target="caseName"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Include case history</label>
+            <span class="text-muted" title="Select to include either a single try or all the tries of your case history if you want to evaluate previous attempts." aria-label="Help">?</span>
+            <div class="btn-group w-100" role="group">
+              <input type="radio" class="btn-check" name="clone-history" id="clone-history-specific" autocomplete="off" checked data-clone-case-target="historySpecific" data-action="change->clone-case#setHistorySpecific">
+              <label class="btn btn-outline-primary" for="clone-history-specific">Only include a specific try</label>
+              <input type="radio" class="btn-check" name="clone-history" id="clone-history-all" autocomplete="off" data-clone-case-target="historyAll" data-action="change->clone-case#setHistoryAll">
+              <label class="btn btn-outline-primary" for="clone-history-all">Include the entire try history</label>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3" data-clone-case-target="trySelectWrap">
+              <label for="clone-try-select" class="form-label">Select try</label>
+              <select id="clone-try-select" class="form-select" data-clone-case-target="trySelect">
+                <% (@tries || []).each do |t| %>
+                  <option value="<%= t[:try_number] %>" <%= 'selected' if t[:try_number] == @last_try_number %>><%= t[:name] %></option>
+                <% end %>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Select content</label>
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="clone-include-queries" data-clone-case-target="includeQueries" data-action="change->clone-case#toggleQueriesWarning" checked>
+                <label class="form-check-label" for="clone-include-queries">Include Queries</label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="clone-include-ratings" data-clone-case-target="includeRatings">
+                <label class="form-check-label" for="clone-include-ratings">Include Ratings</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" data-action="click->clone-case#submit" data-clone-case-target="submitBtn">Clone</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

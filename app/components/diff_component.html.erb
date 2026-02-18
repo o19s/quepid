@@ -1,0 +1,33 @@
+<div class="diff-wrapper" data-controller="diff" data-diff-case-id-value="<%= @case_id %>" data-diff-max-snapshots-value="<%= DiffComponent::MAX_SNAPSHOTS %>">
+  <a href="#" class="action-icon" data-action="click->diff#open" data-diff-target="trigger" title="Compare results" aria-label="Compare results">
+    <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+  </a>
+
+  <div class="modal fade" id="diffModal" tabindex="-1" aria-labelledby="diffModalLabel" aria-hidden="true" data-diff-target="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="diffModalLabel">Compare Your Search Results</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">Select 1–3 snapshots to compare against your current search results.</p>
+          <div class="snapshot-selection-container border rounded p-3 bg-light mb-3">
+            <h6 class="mb-2">Select Snapshots</h6>
+            <div data-diff-target="selectionContainer"></div>
+            <button type="button" class="btn btn-sm btn-success mt-2" data-action="click->diff#addSelection" data-diff-target="addBtn">
+              <i class="bi bi-plus" aria-hidden="true"></i> Add Snapshot
+            </button>
+            <div class="alert alert-warning mt-2 d-none" data-diff-target="duplicateWarning">You have selected the same snapshot more than once. Each snapshot should be unique.</div>
+          </div>
+          <div class="alert alert-info d-none" data-diff-target="loadingEl">Loading available snapshots…</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-action="click->diff#apply" data-diff-target="applyBtn">Update Comparison Settings</button>
+          <button type="button" class="btn btn-warning" data-action="click->diff#clear" data-diff-target="clearBtn">Clear Comparison View</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

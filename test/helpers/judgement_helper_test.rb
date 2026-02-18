@@ -32,7 +32,7 @@ class JudgementHelperTest < ActionView::TestCase
     assert_equal({ name: 's', display_name: 'S' }, calculate_keyboard_key('1'))
   end
 
-  test 'calculate_hsl_color generates colors matching Angular app' do
+  test 'calculate_hsl_color generates colors matching app' do
     # Test with scale [0, 1, 2, 3]
     scale = [ 0, 1, 2, 3 ]
 

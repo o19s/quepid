@@ -101,6 +101,10 @@ module Api
         end
 
         if @try.update try_params
+          if params[:curator_vars].present?
+            @try.curator_variables.destroy_all
+            @try.add_curator_vars params[:curator_vars]
+          end
           respond_with @try
         else
           render json: @try.errors, status: :bad_request

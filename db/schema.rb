@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_14_150154) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_17_192438) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -215,6 +215,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_14_150154) do
     t.index ["user_id"], name: "index_books_ai_judges_on_user_id"
   end
 
+  create_table "case_imports", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.integer "case_id", null: false
+    t.datetime "created_at", null: false
+    t.json "import_params"
+    t.string "status"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["case_id"], name: "index_case_imports_on_case_id"
+    t.index ["user_id"], name: "index_case_imports_on_user_id"
+  end
+
   create_table "case_metadata", id: :integer, charset: "latin1", force: :cascade do |t|
     t.integer "case_id", null: false
     t.datetime "last_viewed_at", precision: nil
@@ -247,6 +258,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_14_150154) do
     t.integer "book_id"
     t.string "case_name", limit: 191
     t.datetime "created_at", precision: nil, null: false
+    t.string "export_job"
     t.integer "last_try_number"
     t.boolean "nightly"
     t.json "options"
@@ -642,6 +654,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_14_150154) do
   add_foreign_key "annotations", "users"
   add_foreign_key "book_metadata", "books"
   add_foreign_key "books_ai_judges", "books"
+  add_foreign_key "case_imports", "cases"
+  add_foreign_key "case_imports", "users"
   add_foreign_key "case_metadata", "cases", name: "case_metadata_ibfk_1"
   add_foreign_key "case_metadata", "users", name: "case_metadata_ibfk_2"
   add_foreign_key "case_scores", "annotations"

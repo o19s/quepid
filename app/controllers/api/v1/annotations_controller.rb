@@ -2,10 +2,16 @@
 
 module Api
   module V1
+    # Handles case annotations: create, update, destroy. Supports JSON (API) and
+    # Turbo Stream (prepend AnnotationComponent on create).
+    #
+    # @see docs/turbo_streams_guide.md
     class AnnotationsController < Api::ApiController
+      skip_before_action :set_default_response_format, only: [ :create ]
       before_action :set_case
       before_action :check_case
       before_action :set_annotation, only: [ :update, :destroy ]
+      before_action :set_create_response_format, only: [ :create ]
 
       def index
         @annotations = @case.annotations.includes(:score)
@@ -27,7 +33,15 @@ module Api
           @annotation.score = @score
 
           if @annotation.save
-            respond_with @annotation
+            respond_to do |format|
+              format.turbo_stream do
+                html = render_to_string(
+                  AnnotationComponent.new(annotation: @annotation, case_id: @case.id)
+                )
+                render turbo_stream: turbo_stream.prepend("annotations_list", html), status: :created
+              end
+              format.json { respond_with @annotation }
+            end
           else
             render json: @annotation.errors, status: :bad_request
           end
@@ -71,6 +85,11 @@ module Api
                    :try_id,
                    { queries: [] } ]
         )
+      end
+
+      def set_create_response_format
+        request.format = :turbo_stream if request.headers["Accept"]&.include?("turbo-stream")
+        request.format = :json if request.format != :turbo_stream
       end
     end
   end

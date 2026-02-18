@@ -158,7 +158,7 @@
         <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded-circle' %>
       </a>
       <ul class="dropdown-menu text-small shadow">
-        <li><%= link_to "Create case...", case_new_path, class:'dropdown-item', data: { turbo: false } %></li>
+        <li><%= render NewCaseComponent.new(button_text: "Create case...", button_class: "dropdown-item") %></li>
         <li><%= link_to "Profile", profile_path, class:'dropdown-item' %></li>
         <li><hr class="dropdown-divider"></li>
         <li><%= link_to "Log out", logout_path, class:'dropdown-item' %></li>

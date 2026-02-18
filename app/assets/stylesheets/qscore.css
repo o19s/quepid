@@ -34,22 +34,34 @@ qscore-case, qscore-query {
   padding: 0;
 }
 
-qscore-case.case-score {
+/* Base qscore component styles — ViewComponent class-based selectors */
+.qscore-case, .qscore-query {
+  padding: 0;
+}
+
+qscore-case.case-score,
+.qscore-case.case-score {
   margin: var(--qscore-spacing-xl) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
 /* Simplified diff score margins */
+/* For divs we use :only-child as a close equivalent,
+   since the qscore-case is typically the only child in its wrapper. */
 qscore-case.case-score:not(.diff-score):not(:only-of-type),
-qscore-case.case-score.diff-score {
+qscore-case.case-score.diff-score,
+.qscore-case.case-score:not(.diff-score):not(:only-child),
+.qscore-case.case-score.diff-score {
   margin: var(--qscore-spacing-xl) 0px calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
-qscore-case.case-score.diff-score:last-of-type {
+qscore-case.case-score.diff-score:last-of-type,
+.qscore-case.case-score.diff-score:last-child {
   margin: var(--qscore-spacing-xl) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
 /* Header rating styles */
-qscore-case .header-rating {
+qscore-case .header-rating,
+.qscore-case .header-rating {
   border-radius: var(--qscore-border-radius);
   color: #fff;
   display: inline-block;
@@ -61,9 +73,12 @@ qscore-case .header-rating {
   vertical-align: top;
 }
 
-/* Overall rating styles - consolidated identical selectors */
+/* Overall rating styles */
 qscore-case .overall-rating,
-qscore-query .overall-rating {
+qscore-query .overall-rating,
+/* Overall rating styles — ViewComponent class-based selectors */
+.qscore-case .overall-rating,
+.qscore-query .overall-rating {
   display: block;
   float: left;
   height: 100%;
@@ -78,35 +93,43 @@ qscore-query .overall-rating {
   border-bottom-left-radius: var(--qscore-border-radius);
 }
 
-/* Query score specific positioning - consolidated identical rules */
+/* Query score specific positioning */
 qscore-query.results-score .overall-rating,
-.diff-query-display qscore-query.results-score .overall-rating {
+.diff-query-display qscore-query.results-score .overall-rating,
+.qscore-query.results-score .overall-rating,
+.diff-query-display .qscore-query.results-score .overall-rating {
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
 }
 
-qscore-query.diff-score .overall-rating {
+qscore-query.diff-score .overall-rating,
+.qscore-query.diff-score .overall-rating {
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
 /* Diff score styling */
 qscore-case .overall-rating.diff-score,
-qscore-query.diff-score .overall-rating {
+qscore-query.diff-score .overall-rating,
+.qscore-case .overall-rating.diff-score,
+.qscore-query.diff-score .overall-rating {
   border-radius: 0;
   border-top-right-radius: var(--qscore-border-radius);
   border-bottom-right-radius: var(--qscore-border-radius);
 }
 
 /* Border radius adjustments for multiple scores */
-qscore-case.case-score:not(.diff-score):not(:only-of-type) .header-rating {
+qscore-case.case-score:not(.diff-score):not(:only-of-type) .header-rating,
+.qscore-case.case-score:not(.diff-score):not(:only-child) .header-rating {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
-qscore-case.case-score.diff-score .header-rating {
+qscore-case.case-score.diff-score .header-rating,
+.qscore-case.case-score.diff-score .header-rating {
   border-radius: 0;
 }
 
-qscore-case.case-score.diff-score:last-of-type .header-rating {
+qscore-case.case-score.diff-score:last-of-type .header-rating,
+.qscore-case.case-score.diff-score:last-child .header-rating {
   border-top-right-radius: var(--qscore-border-radius);
   border-bottom-right-radius: var(--qscore-border-radius);
 }
@@ -120,6 +143,21 @@ qscore-case qgraph {
 }
 
 qscore-case qgraph svg {
+  border: var(--qscore-border-width-thick) solid grey;
+  border-right-style: none;
+  border-top-left-radius: var(--qscore-border-radius);
+  border-bottom-left-radius: var(--qscore-border-radius);
+}
+
+/* Graph styling — ViewComponent class-based selectors */
+.qscore-case .qgraph-wrapper {
+  display: inline-block;
+  height: 80px;
+  margin: 0px calc(-1 * var(--qscore-spacing-md)) 0px 0px;
+  width: 150px;
+}
+
+.qscore-case .qgraph-wrapper svg {
   border: var(--qscore-border-width-thick) solid grey;
   border-right-style: none;
   border-top-left-radius: var(--qscore-border-radius);

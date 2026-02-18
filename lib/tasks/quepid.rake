@@ -63,8 +63,8 @@ namespace :test do
     end
   end
 
-  desc 'Run js/karma tests (equivalent of karma:run)'
-  task 'js' => 'karma:run'
+  desc 'Run JS unit tests (Vitest)'
+  task 'js' => 'vitest:run'
 
   desc 'Run all frontend tasks: test:js, test:jshint'
   task frontend: :environment do

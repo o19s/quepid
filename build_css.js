@@ -90,12 +90,12 @@ function buildCoreCSS() {
   console.log('Building core.css...');
   
   const outputFile = 'app/assets/builds/core.css';
-  let output = '/* Core CSS Bundle (Bootstrap 3 for Angular App) */\n';
+  let output = '/* Core CSS Bundle (Bootstrap 5) */\n';
   output += `/* Generated on ${new Date().toISOString()} */\n`;
   output += '\n';
 
-  // Bootstrap 3
-  output += readFileIfExists('app/assets/stylesheets/bootstrap3.css');
+  // Bootstrap 5
+  output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
   output += '\n';
 
   // Bootstrap Icons (shared between both)
@@ -105,7 +105,9 @@ function buildCoreCSS() {
   // Core application styles
   output += readFileIfExists('app/assets/stylesheets/fonts.css');
   output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/bootstrap3-add.css');
+  output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
+  output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/core-add.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/style.css');
   output += '\n';
@@ -116,9 +118,7 @@ function buildCoreCSS() {
   output += readFileIfExists('app/assets/stylesheets/stackedChart.css');
   output += '\n';
 
-  // Tour/Guides
-  output += readFileIfExists('node_modules/tether-shepherd/dist/css/shepherd-theme-arrows.css');
-  output += '\n';
+  // Tour/Guides (tour.css kept for any future tour implementation)
   output += readFileIfExists('app/assets/stylesheets/tour.css');
   output += '\n';
 
@@ -195,17 +195,6 @@ function buildAdminUsersCSS() {
   console.log(`admin_users.css created (${(stats.size / 1024).toFixed(1)}KB)`);
 }
 
-function copyVendorFiles() {
-  console.log('Copying Angular vendor CSS files...');
-  
-  ensureDirectoryExists('app/assets/builds');
-  
-  // Copy Angular third-party CSS files
-  copyFileIfExists('node_modules/ng-json-explorer/dist/angular-json-explorer.css', 'app/assets/builds/angular-json-explorer.css');
-  copyFileIfExists('node_modules/angular-wizard/dist/angular-wizard.css', 'app/assets/builds/angular-wizard.css');
-  copyFileIfExists('node_modules/ng-tags-input/build/ng-tags-input.min.css', 'app/assets/builds/ng-tags-input.min.css');
-  copyFileIfExists('node_modules/ng-tags-input/build/ng-tags-input.bootstrap.min.css', 'app/assets/builds/ng-tags-input.bootstrap.min.css');
-}
 
 function copyFontFiles() {
   console.log('Copying font files...');
@@ -237,8 +226,7 @@ function buildAllCSS() {
     buildAdminCSS();
     buildAdminUsersCSS();
     
-    // Copy vendor and asset files
-    copyVendorFiles();
+    // Copy asset files
     copyFontFiles();
     copyImageFiles();
     

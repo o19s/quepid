@@ -7,7 +7,10 @@ export default class extends Controller {
     event.preventDefault()
     const link = this.linkValue
     const btn = event.currentTarget
-    if (!link) { alert('No invite link available'); return }
+    if (!link) {
+      if (window.flash) window.flash.error = "No invite link available"
+      return
+    }
 
     const setCopied = (text) => {
       const prev = btn.innerHTML
@@ -16,7 +19,9 @@ export default class extends Controller {
     }
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(link).then(() => setCopied('Copied'), () => alert('Copy failed'))
+      navigator.clipboard.writeText(link).then(() => setCopied('Copied'), () => {
+        if (window.flash) window.flash.error = "Copy failed"
+      })
     } else {
       const textarea = document.createElement('textarea')
       textarea.value = link
@@ -28,7 +33,7 @@ export default class extends Controller {
         document.execCommand('copy')
         setCopied('Copied')
       } catch (e) {
-        alert('Copy failed')
+        if (window.flash) window.flash.error = "Copy failed"
       }
       document.body.removeChild(textarea)
     }

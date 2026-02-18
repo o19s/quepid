@@ -8,18 +8,20 @@ alwaysApply: false
 
 ## Stack
 
-- **Legacy**: AngularJS in `app/assets/javascripts/` (components, controllers, templates) — being retired.
-- **Target**: Stimulus + Turbo (Hotwire) + ViewComponents. Server-centric: push state to server, Turbo Frames for dynamic regions.
-- **Reference**: `docs/angular_to_stimulus_hotwire_viewcomponents_checklist.md`, `docs/workspace_state_design.md`.
+- **Stack**: Stimulus + Turbo (Hotwire) + ViewComponents. Server-centric: push state to server, Turbo Frames for dynamic regions.
+- **Reference**: `docs/workspace_state_design.md`, `docs/ui_consistency_patterns.md`, `docs/app_structure.md`.
 
 ## ViewComponents
 
-- Components in `app/components/`; inherit from `ApplicationComponent`.
-- Encapsulate markup and Bootstrap; receive data via initializer (no controller instance vars unless passed).
-- Use slots/content blocks for composition; add `data-controller` when Stimulus behavior is needed.
-- Prefer `render Component.new(...)` in views.
+- See `docs/view_component_conventions.md` for full conventions (location, naming, slots, Turbo Frames).
+
+## UI Consistency
+
+- **Bootstrap 5**: use `data-bs-toggle`, `data-bs-dismiss`, `btn-close` (not Bootstrap 4 `data-toggle`/`data-dismiss`).
+- **Modals**: match `confirm_delete` (generic confirm) or `share_case` (content modal) patterns — see `docs/ui_consistency_patterns.md`.
+- **Flash**: use Rails flash for redirects; `window.flash` for Stimulus feedback; Turbo Streams can append to `#flash`.
 
 ## New UI
 
-- Prefer Rails views + Stimulus + Turbo Frames over new Angular. Do not add new Angular features to the core workspace.
-- URL/navigation: use relative URLs and `caseTryNavSvc.getQuepidRootUrl()` (or Rails equivalent); never hardcode `/`.
+- Use Rails views + Stimulus + Turbo Frames for the core workspace.
+- URL/navigation: see `docs/api_client.md` for URL building rules (never hardcode `/`).

@@ -1,0 +1,7 @@
+<%= turbo_stream.replace "notifications-case-#{acase.id}" do %>
+  <span id="notifications-case-<%= acase.id %>">
+    <div class="alert alert-danger" role="alert">
+      Export failed: <%= message %>
+    </div>
+  </span>
+<% end %>

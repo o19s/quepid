@@ -42,7 +42,7 @@ gem 'responders'
 gem 'ruby_llm'
 gem 'rubyzip'
 gem 'propshaft' # Modern asset pipeline for Rails 8
-gem 'jsbundling-rails' # For bundling the Angular 1 app
+gem 'jsbundling-rails'
 gem 'scout_apm' # using on Heroku to look at memory issues
 gem 'solid_cable'
 gem 'solid_queue'

@@ -25,7 +25,6 @@
   "globals": {
     "after": false,
     "afterEach": false,
-    "angular": false,
     "before": false,
     "beforeEach": false,
     "browser": false,

@@ -1,0 +1,102 @@
+<%# Settings panel: current try display (search URL, engine) and editable query params (try settings). %>
+<%# Replaces SettingsCtrl, CurrSettingsCtrl, QueryParamsPanelComponent. Query options per-query in list. %>
+<div class="settings-panel-wrapper" data-controller="settings-panel" data-settings-panel-case-id-value="<%= @case_id %>" data-settings-panel-try-number-value="<%= @try&.try_number %>" data-settings-panel-curator-vars-value="<%= h(curator_vars_json) %>">
+  <button type="button" class="btn btn-outline-secondary btn-sm" data-action="click->settings-panel#toggle" data-settings-panel-target="trigger">
+    <i class="bi bi-gear" aria-hidden="true"></i>
+    Settings
+  </button>
+  <div class="settings-panel-content collapse mt-2" data-settings-panel-target="panel">
+    <div class="card card-body small">
+      <h6 class="card-title">Current try</h6>
+      <dl class="mb-0 mb-2">
+        <dt class="text-muted">Name</dt>
+        <dd class="mb-1"><%= try_name %></dd>
+        <dt class="text-muted">Search engine</dt>
+        <dd class="mb-1"><%= search_engine %></dd>
+        <dt class="text-muted">Search URL</dt>
+        <dd class="mb-0">
+          <code class="small"><%= search_url %></code>
+        </dd>
+      </dl>
+      <% if @search_endpoint_edit_path %>
+        <%= link_to "Edit search endpoint", @search_endpoint_edit_path, class: "btn btn-sm btn-outline-primary mb-2" %>
+      <% end %>
+      <h6 class="card-title mt-2">Query params (try config)</h6>
+      <% if @try.present? && @case_id.present? %>
+        <form data-settings-panel-target="paramsForm" data-action="submit->settings-panel#saveParams">
+          <div class="mb-2">
+            <label class="form-label small text-muted mb-1">Query parameters</label>
+            <textarea class="form-control form-control-sm font-monospace" rows="5" style="max-height: 200px; overflow: auto;"
+                      data-settings-panel-target="queryParams"
+                      data-action="input->settings-panel#extractVars"><%= query_params_full %></textarea>
+          </div>
+          <div data-settings-panel-target="curatorVarsContainer"></div>
+          <div class="form-check mb-2">
+            <input type="checkbox" class="form-check-input" id="settings-escape-query"
+                   data-settings-panel-target="escapeQuery" <%= "checked" if escape_query? %>>
+            <label class="form-check-label small" for="settings-escape-query">Escape query</label>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small text-muted mb-1" for="settings-number-of-rows">Number of rows</label>
+            <input type="number" class="form-control form-control-sm" id="settings-number-of-rows"
+                   min="1" max="1000" value="<%= number_of_rows %>"
+                   data-settings-panel-target="numberOfRows" style="max-width: 100px;">
+          </div>
+          <button type="submit" class="btn btn-sm btn-primary">
+            <i class="bi bi-save" aria-hidden="true"></i> Save &amp; re-run
+          </button>
+        </form>
+      <% else %>
+        <p class="text-muted small mb-1">No try selected.</p>
+      <% end %>
+      <% if tries.any? %>
+        <hr class="my-2">
+        <h6 class="card-title">
+          <a class="text-decoration-none" data-bs-toggle="collapse" href="#try-history-section" role="button" aria-expanded="false" aria-controls="try-history-section">
+            <i class="bi bi-clock-history" aria-hidden="true"></i> Try history (<%= tries.size %>)
+          </a>
+        </h6>
+        <div class="collapse" id="try-history-section">
+          <div class="list-group list-group-flush small">
+            <% tries.each do |t| %>
+              <div class="list-group-item px-0 py-1 d-flex justify-content-between align-items-center<%= t.try_number == @try&.try_number ? ' bg-light' : '' %>">
+                <div class="flex-grow-1">
+                  <% if t.try_number == @try&.try_number %>
+                    <strong>Try <%= t.try_number %></strong>
+                  <% else %>
+                    <a href="<%= helpers.case_core_path(@case_id, t.try_number) %>"><strong>Try <%= t.try_number %></strong></a>
+                  <% end %>
+                  <% if t.name.present? %>
+                    <span class="text-muted">— <%= t.name %></span>
+                  <% end %>
+                  <% if t.search_endpoint %>
+                    <span class="badge bg-secondary ms-1"><%= t.search_endpoint.search_engine %></span>
+                  <% end %>
+                  <span class="text-muted ms-1"><%= t.created_at.strftime("%b %d, %H:%M") %></span>
+                </div>
+                <div class="d-flex gap-1">
+                  <% if t.try_number != @try&.try_number %>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1"
+                            data-action="click->settings-panel#duplicateTry"
+                            data-try-number="<%= t.try_number %>"
+                            title="Duplicate this try">
+                      <i class="bi bi-copy" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1"
+                            data-action="click->settings-panel#deleteTry"
+                            data-try-number="<%= t.try_number %>"
+                            title="Delete this try">
+                      <i class="bi bi-trash" aria-hidden="true"></i>
+                    </button>
+                  <% else %>
+                    <span class="badge bg-primary">current</span>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-<%= form_with model: scorer, local: true, class: 'form-horizontal', data: { controller: 'scorer-scale' } do |f| %>
+<%= form_with model: scorer, local: true, class: 'form-horizontal', data: { controller: 'scorer-scale scorer-test', scorer_test_url_value: (scorer.persisted? ? test_scorer_path(scorer) : '') } do |f| %>
   <div class="card">
     <div class="card-body">
       <% if scorer.errors.any? %>
@@ -31,10 +31,21 @@
         </div>
       </div>
 
-      <div class="mb-3">
+      <div class="mb-3" data-scorer-test-target="codeSection">
         <%= f.label :code, class: 'form-label' %>
         <div class="form-text">This Javascript is run in the browser to calculate the scores.  Learn more about <a target="_blank" href="https://quepid-docs.dev.o19s.com/2/quepid/47/managing-scorers#what-can-my-code-do">functions available to you</a>.</div>
-        <%= f.text_area :code, data: { codemirror_mode: "javascript", codemirror_height: 800 } %>
+        <%= f.text_area :code, data: { codemirror_mode: "javascript", codemirror_height: 800, scorer_test_target: "codeInput" } %>
+        <% if scorer.persisted? %>
+        <div class="mt-2" data-scorer-test-target="testSection">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="click->scorer-test#run" data-scorer-test-target="testBtn">
+            <span data-scorer-test-target="testBtnLabel">Test</span>
+            <span class="spinner-border spinner-border-sm d-none" data-scorer-test-target="testSpinner" role="status" aria-hidden="true"></span>
+          </button>
+          <span class="ms-2 small" data-scorer-test-target="testResult"></span>
+        </div>
+        <% else %>
+        <p class="form-text text-muted small mt-1">Save the scorer first to use the Test button.</p>
+        <% end %>
       </div>
 
       <div class="mb-3">

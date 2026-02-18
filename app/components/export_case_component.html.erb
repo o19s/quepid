@@ -1,0 +1,125 @@
+<%# Wrapper so Stimulus has access to both trigger and modal. %>
+<div
+  class="export-case-wrapper"
+  data-controller="export-case"
+  data-export-case-case-id-value="<%= @case_id %>"
+  data-export-case-case-name-value="<%= @case_name %>"
+  data-export-case-supports-detailed-value="<%= @supports_detailed_export %>"
+>
+  <% if @icon_only %>
+    <a href="#" class="action-icon" data-action="click->export-case#open" data-export-case-target="trigger" title="Export" aria-label="Export">
+      <i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i>
+    </a>
+  <% else %>
+    <i class="bi bi-file-earmark-arrow-up" aria-hidden="true" title="Export"></i>
+    <a href="#" data-action="click->export-case#open" data-export-case-target="trigger">Export</a>
+  <% end %>
+
+  <div class="modal fade" id="exportCaseModal" tabindex="-1" aria-labelledby="exportCaseModalLabel" aria-hidden="true" data-export-case-target="modal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exportCaseModalLabel">Export Case: <span class="modal-case"><%= @case_name %></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>There are a number of formats for exporting data from Quepid.</p>
+
+          <div class="mb-3">
+            <input type="radio" id="export-information_need" name="exportSelection" value="information_need" class="form-check-input" data-export-case-target="radio" data-action="change->export-case#selectionChanged">
+            <label for="export-information_need" class="form-check-label">Information Need</label>
+            <p class="form-text">CSV file with <code>query,information_need</code>, use as a template for uploading Information Need for queries back into Quepid.</p>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <input type="radio" id="export-general" name="exportSelection" value="general" class="form-check-input" data-export-case-target="radio" data-action="change->export-case#selectionChanged">
+            <label for="export-general" class="form-check-label">General</label>
+            <p class="form-text">CSV file with <code>Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes,Options</code></p>
+          </div>
+
+          <div class="mb-3">
+            <input type="radio" id="export-detailed" name="exportSelection" value="detailed" class="form-check-input" data-export-case-target="radio" data-action="change->export-case#selectionChanged"> <label for="export-detailed" class="form-check-label">Detailed</label>
+            <p class="form-text">CSV file with <code>Team Name,Case Name,Case ID,Query Text,Doc ID,Position,Title,Rating,Field1,...,FieldN</code> where fields are from <strong>Settings</strong> → <strong>Displayed Fields</strong>.</p>
+            <p class="bg-warning text-dark p-2 rounded small d-none" data-export-case-target="detailedWarning">Detailed export is only supported from the individual Case view.</p>
+          </div>
+
+          <div class="mb-3">
+            <input type="radio" id="export-snapshot" name="exportSelection" value="snapshot" class="form-check-input" data-export-case-target="radio" data-action="change->export-case#selectionChanged">
+            <label for="export-snapshot" class="form-check-label">Snapshot</label>
+            <p class="form-text">Snapshot CSV with <code>Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position</code> (and optional field columns).</p>
+            <label for="export-snapshot-select" class="form-label">Snapshot</label>
+            <select id="export-snapshot-select" class="form-select form-select-sm w-auto d-inline-block ms-2" data-export-case-target="snapshotSelect" data-action="change->export-case#selectionChanged">
+              <option value="">—</option>
+            </select>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <input type="radio" id="export-basic" name="exportSelection" value="basic" class="form-check-input" data-export-case-target="radio" data-action="change->export-case#selectionChanged">
+            <label for="export-basic" class="form-check-label">Basic</label>
+            <span class="form-text">Simple CSV <code>query,docid,rating</code>. Compatible with e.g. <a href="https://github.com/tballison/quaerite" target="_blank" rel="noopener">Quaerite</a>.</span>
+            <br>
+            <input type="radio" id="export-trec" name="exportSelection" value="trec" class="form-check-input" data-export-case-target="radio" data-action="change->export-case#selectionChanged">
+            <label for="export-trec" class="form-check-label">TREC</label>
+            <span class="form-text">TREC qrel format <code>query_id 0 docno judgment</code>. Used by <a href="https://trec.nist.gov/" target="_blank" rel="noopener">TREC</a>.</span>
+            <br>
+            <label for="export-basic-snapshot" class="form-label mt-2">Snapshot (optional for Basic/TREC)</label>
+            <select id="export-basic-snapshot" class="form-select form-select-sm w-auto d-inline-block ms-2" data-export-case-target="basicSnapshotSelect">
+              <option value="">—</option>
+            </select>
+            <p class="form-text">If you choose a Snapshot, unrated query/document pairs from that snapshot are exported.</p>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <input type="radio" id="export-rre" name="exportSelection" value="rre" class="form-check-input" data-export-case-target="radio" data-action="change->export-case#selectionChanged">
+            <label for="export-rre" class="form-check-label">Rated Ranking Evaluator / RankQuest</label>
+            <p class="form-text">Export for <a href="https://github.com/SeaseLtd/rated-ranking-evaluator" target="_blank" rel="noopener">RRE</a> or <a href="https://rankquest.jillesvangurp.com/" target="_blank" rel="noopener">RankQuest</a>.</p>
+          </div>
+          <div class="mb-3">
+            <input type="radio" id="export-ltr" name="exportSelection" value="ltr" class="form-check-input" data-export-case-target="radio" data-action="change->export-case#selectionChanged">
+            <label for="export-ltr" class="form-check-label">Learning to Rank</label>
+            <p class="form-text">LTR format <code>rating qid:queryid # docid query</code>, e.g. <code>3 qid:1 # 1370 star trek</code>.</p>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <label class="form-label">Quepid API</label>
+            <p class="form-text">Quepid has an API; use <code>?shallow=true</code> for a smaller dataset.</p>
+            <p class="mb-1">
+              Retrieve
+              <a href="#" data-export-case-target="apiCaseLink">Case</a>,
+              <a href="#" data-export-case-target="apiQueriesLink">Queries</a>,
+              <a href="#" data-export-case-target="apiAnnotationsLink">Annotations</a>,
+              <a href="#" data-export-case-target="apiScoresLink">Scores</a>,
+              <a href="#" data-export-case-target="apiRatingsLink">Ratings</a>,
+              or Snapshot
+              <select class="form-select form-select-sm w-auto d-inline-block" data-export-case-target="apiSnapshotSelect">
+                <option value="">—</option>
+              </select>
+              <span data-export-case-target="apiSnapshotLinkWrap" class="d-none"><a href="#" data-export-case-target="apiSnapshotLink">here</a></span>
+              from API.
+            </p>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <input type="radio" id="export-quepid" name="exportSelection" value="quepid" class="form-check-input" data-export-case-target="radio" data-action="change->export-case#selectionChanged">
+            <label for="export-quepid" class="form-check-label">Quepid</label>
+            <p class="form-text">Full case dump for moving between Quepids or importing as a new case. <a href="#" data-export-case-target="quepidFormatLink">Peek at the JSON format</a>.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" data-action="click->export-case#submit" data-export-case-target="submitBtn">Export</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+<%= tag.div class: "qscore-query #{@css_class}",
+  data: {
+    controller: "qscore",
+    qscore_score_value: @score,
+    qscore_max_score_value: @max_score,
+    qscore_query_id_value: @query_id
+  } do %>
+  <div
+    class="overall-rating"
+    style="<%= inline_style %>"
+    data-qscore-target="rating"
+  >
+    <span class="scorable-score" data-qscore-target="scoreText">
+      <%= display_score %>
+    </span>
+  </div>
+<% end %>

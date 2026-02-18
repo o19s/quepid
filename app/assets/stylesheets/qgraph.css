@@ -1,3 +1,4 @@
+/* custom element styles */
 qgraph {
 	 height: 100px;
 	 display: block;
@@ -33,6 +34,51 @@ qgraph {
 	 stroke-width: 4;
 	 stroke-linecap: round;
 	 stroke-opacity: 0.3;
+}
+
+/* ViewComponent class-based styles */
+.qgraph-wrapper {
+	 height: 100px;
+	 display: block;
+	 margin-top: 20px;
+}
+ .qgraph-wrapper svg {
+	 background-color: white;
+}
+ .qgraph-wrapper path {
+	 stroke: #587;
+	 stroke-width: 2;
+	 fill: none;
+	 stroke-linecap: round;
+}
+ .qgraph-wrapper .axis {
+	 shape-rendering: crispEdges;
+}
+ .qgraph-wrapper .x.axis line {
+	 stroke: lightgrey;
+}
+ .qgraph-wrapper .x.axis .minor {
+	 stroke-opacity: 0.5;
+}
+ .qgraph-wrapper .x.axis path {
+	 display: none;
+}
+ .qgraph-wrapper .y.axis line, .qgraph-wrapper .y.axis path {
+	 fill: none;
+	 stroke: #000;
+}
+ .qgraph-wrapper line.marker {
+	 stroke: blue;
+	 stroke-width: 4;
+	 stroke-linecap: round;
+	 stroke-opacity: 0.3;
+}
+ .qgraph-wrapper .qgraph-hot-point {
+	 transition: fill 0.15s ease;
+}
+ .qgraph-wrapper .qgraph-hot-point:hover {
+	 fill: #587;
+	 fill-opacity: 0.5;
 }
  qgraph .qtip {
 	 position: absolute;

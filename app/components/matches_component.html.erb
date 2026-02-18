@@ -1,0 +1,34 @@
+<div data-controller="matches">
+  <% unless compact? %>
+    <div class="doc-score-explanation">
+      <pre><%= explain_text_display %></pre>
+    </div>
+  <% end %>
+
+  <div class="actions">
+    <%# Debug button — opens modal with raw explain JSON %>
+    <a href="#" class="btn btn-outline-secondary" data-action="click->matches#openDebug" data-matches-target="debugTrigger">Debug</a>
+
+    <%= render ExpandContentComponent.new(
+          id: expand_modal_id,
+          title: expand_title,
+          body: explain_text_display,
+          trigger_label: "Expand"
+        ) %>
+  </div>
+
+  <%# Debug modal — shows raw explain JSON in a <pre> block %>
+  <div class="modal fade" id="<%= modal_id %>" tabindex="-1" aria-hidden="true" data-matches-target="debugModal">
+    <div class="modal-dialog modal-lg doc-detailed-explain-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><%= modal_title %></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body doc-detailed-explain">
+          <pre class="explain-raw"><%= @explain_raw %></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,40 @@
+<%# Query notes form: submits via Turbo Frame for no full-page reload. %>
+<%# @param query [Query] The query to edit notes for %>
+<%# @param case_id [Integer] The case id %>
+<%= turbo_frame_tag "query_notes_#{query.id}" do %>
+  <div class="mb-3">
+    <details class="border rounded p-2 bg-light">
+      <summary class="cursor-pointer">Notes &amp; Information Need</summary>
+      <%= form_with url: case_query_notes_path(case_id, query.id), method: :put, scope: :query, class: "mt-2" do |f| %>
+        <% if flash[:notice].present? %>
+          <div class="alert alert-success alert-dismissible py-2 small mb-2" role="alert">
+            <%= flash[:notice] %>
+            <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <% end %>
+        <% if flash[:alert].present? %>
+          <div class="alert alert-danger alert-dismissible py-2 small mb-2" role="alert">
+            <%= flash[:alert] %>
+            <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <% end %>
+        <div class="mb-2">
+          <%= f.label :information_need, "Information Need", class: "form-label small" %>
+          <%= f.text_field :information_need, value: query.information_need,
+                class: "form-control form-control-sm",
+                id: "information_need-#{query.id}",
+                placeholder: "What is the user trying to find?" %>
+        </div>
+        <div class="mb-2">
+          <%= f.label :notes, "Notes", class: "form-label small" %>
+          <%= f.text_area :notes, value: query.notes,
+                class: "form-control form-control-sm",
+                id: "notes-#{query.id}",
+                rows: 3,
+                placeholder: "Notes on this query..." %>
+        </div>
+        <%= f.submit "Save", class: "btn btn-primary btn-sm" %>
+      <% end %>
+    </details>
+  </div>
+<% end %>

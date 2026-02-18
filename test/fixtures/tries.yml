@@ -148,8 +148,16 @@ try_with_headers:
   try_number:     6
   field_spec:     id:id title:title  
   search_endpoint: :try_with_headers
-  
-  
+
+# Used by clone cases controller test to verify try_number 0 lookup
+try_zero_for_clone:
+  case:           :random_case
+  query_params:   'q=#$query##'
+  try_number:     0
+  field_spec:     id:id title:title
+  name:           Try 0
+  search_endpoint: :try_with_curator_vars
+
 bootstrap_try_1:
   case:           :bootstrap_case
   query_params:   'q=#$query##'
@@ -217,3 +225,9 @@ for_case_no_queries_try_1:
   case:           :case_no_queries
   query_params:   'q=#$query##'
   try_number:     1
+
+for_case_single_query_try_1:
+  case:           :case_single_query
+  query_params:   'q=#$query##'
+  try_number:     1
+  search_endpoint: :one

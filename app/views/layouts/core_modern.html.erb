@@ -12,8 +12,8 @@
 
 <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
 </head>
-<body data-quepid-root-url="<%= quepid_root_url %>">
-  <%= render 'layouts/header_core_app' %>
+<body data-controller="turbo-events" data-quepid-root-url="<%= quepid_root_url %>">
+  <%= render 'layouts/header' %>
 
   <div id="main-content" data-controller="workspace" data-workspace-root-url-value="<%= quepid_root_url %>"<% if @case %> data-workspace-case-id-value="<%= @case.id %>" data-workspace-try-number-value="<%= @try&.try_number %>"<% end %>>
     <%= yield %>

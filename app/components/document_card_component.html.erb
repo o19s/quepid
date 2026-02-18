@@ -1,0 +1,43 @@
+<%# Document card for results pane. Rating badge id matches Turbo Stream target. %>
+<%# data-doc-fields embeds all fields as JSON so the detail modal can display them without an API call. %>
+<div class="card mb-2 document-card" data-doc-id="<%= h(doc_id) %>" data-doc-fields="<%= h(fields_json) %>">
+  <div class="card-body py-2">
+    <div class="d-flex justify-content-between align-items-start">
+      <div class="flex-grow-1">
+        <span class="badge bg-secondary me-2">#<%= position %></span>
+        <strong><%= h(doc_title) %></strong>
+        <span class="text-muted small ms-1">(id: <%= h(doc_id) %>)</span>
+        <% if diff_new? %>
+          <span class="badge bg-success ms-2" title="This document is new compared to selected snapshot(s)">new in current</span>
+        <% elsif diff_entries.any? %>
+          <% labels = diff_entries.map { |e| "was ##{e[:position]} in #{e[:name] || 'Snapshot'}" } %>
+          <span class="badge bg-info ms-2" title="<%= h(labels.join('; ')) %>"><%= h(labels.join('; ')) %></span>
+        <% end %>
+      </div>
+      <div class="d-flex align-items-start gap-1">
+        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1" data-results-pane-details data-doc-id="<%= h(doc_id) %>" title="View all fields">
+          <i class="bi bi-card-text" aria-hidden="true"></i>
+        </button>
+        <div class="rating-badge" id="<%= rating_badge_id %>">
+          <%= render "api/v1/queries/ratings/rating_badge", rating: rating %>
+        </div>
+      </div>
+    </div>
+    <% if fields_preview.present? %>
+      <div class="small text-muted mt-1"><%= h(fields_preview) %></div>
+    <% end %>
+    <% if has_explain? %>
+      <div class="mt-1">
+        <%= render MatchesComponent.new(
+          doc_id: doc_id,
+          doc_title: doc_title,
+          doc_score: nil,
+          explain_text: explain_display_text,
+          explain_raw: explain_raw,
+          max_doc_score: nil,
+          compact: true
+        ) %>
+      </div>
+    <% end %>
+  </div>
+</div>

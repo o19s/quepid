@@ -22,6 +22,11 @@ module Api
       end
 
       def update
+        unless @user == current_user
+          render json: { message: "Forbidden" }, status: :forbidden
+          return
+        end
+
         update_params = user_params
 
         update_params[:default_scorer_id] = Scorer.system_default_scorer.id if default_scorer_removed? update_params

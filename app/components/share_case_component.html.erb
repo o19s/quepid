@@ -1,0 +1,19 @@
+<%= button_tag type: "button",
+               class: "btn btn-outline-secondary btn-sm",
+               title: "Share Case",
+               "aria-label": "Share Case",
+               data: {
+                 controller: "share-case",
+                 action: "click->share-case#open",
+                 bs_toggle: "modal",
+                 bs_target: "#shareCaseModal",
+                 share_case_id_value: @case_id,
+                 share_case_name_value: @case_name,
+                 share_case_all_teams_json: all_teams_json,
+                 share_case_shared_teams_json: shared_teams_json
+               } do %>
+  <i class="bi bi-share" aria-hidden="true"></i>
+  <% unless @icon_only %>
+    <span class="ms-1">Share case</span>
+  <% end %>
+<% end %>

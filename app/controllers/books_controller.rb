@@ -128,6 +128,12 @@ class BooksController < ApplicationController
 
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
+    # Pre-select teams from URL (e.g. from header createNewBookLink); only teams user belongs to
+    if params[:team_ids].present?
+      valid_team_ids = current_user.teams.where(id: params[:team_ids]).pluck(:id)
+      @book.team_ids = valid_team_ids if valid_team_ids.any?
+    end
+
     respond_with(@book)
   end
 

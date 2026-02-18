@@ -46,7 +46,7 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
     # rubocop:enable Layout/HashAlignment
     assert_response :redirect
 
-    # confirm a hand off to the angular app to drop you on your team page.
+    # confirm a hand off to the app to drop you on your team page.
     assert_redirected_to teams_url(invitee.teams.first)
 
     invitee.reload

@@ -1,0 +1,32 @@
+<%# Wrapper so Stimulus has access to both trigger and modal. %>
+<div
+  class="delete-query-wrapper"
+  data-controller="delete-query"
+  data-delete-query-case-id-value="<%= @case_id %>"
+  data-delete-query-query-id-value="<%= @query_id %>"
+  data-delete-query-try-number-value="<%= @try_number %>"
+  <% if @selected_query_id.present? %>data-delete-query-selected-query-id-value="<%= @selected_query_id %>"<% end %>
+>
+  <button type="button" class="btn btn-default btn-sm" data-action="click->delete-query#open" data-delete-query-target="trigger" title="Delete query" aria-label="Delete query">
+    <i class="bi bi-trash" aria-hidden="true"></i>
+  </button>
+
+  <div class="modal fade" id="deleteQueryModal-<%= @query_id %>" tabindex="-1" aria-labelledby="deleteQueryModalLabel-<%= @query_id %>" aria-hidden="true" data-delete-query-target="modal">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteQueryModalLabel-<%= @query_id %>">Delete Query</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Delete this query permanently? This will also remove all ratings for this query.</p>
+          <p class="text-muted small mb-0">"<%= h(@query_text) %>"</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" data-action="click->delete-query#confirm" data-delete-query-target="confirmBtn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

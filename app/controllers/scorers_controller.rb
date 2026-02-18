@@ -3,7 +3,7 @@
 class ScorersController < ApplicationController
   include Pagy::Method
 
-  before_action :set_scorer, only: [ :edit, :update, :destroy ]
+  before_action :set_scorer, only: [ :edit, :update, :destroy, :test ]
   before_action :set_source_scorer, only: [ :clone ]
 
   # Show the scorers page (server-side rendering)
@@ -175,6 +175,40 @@ class ScorersController < ApplicationController
 
     @scorer.destroy
     redirect_to scorers_path, notice: 'Scorer deleted.'
+  end
+
+  # POST scorers/:id/test
+  # Runs the scorer code (from params or scorer) against sample docs. Returns JSON.
+  # Body: { code?: string } — optional; when omitted, uses scorer's saved code.
+  def test
+    if @scorer.communal? && !current_user.administrator?
+      render json: { error: 'You cannot test communal scorers.' }, status: :forbidden
+      return
+    end
+
+    code = params[:code].presence || @scorer.code
+    if code.blank?
+      render json: { error: 'No scorer code to run.' }, status: :bad_request
+      return
+    end
+
+    # Sample docs: 10 docs with mixed ratings (same format as FetchService)
+    docs = (1..10).map do |i|
+      rating = case i
+               when 1, 3, 5 then 3
+               when 2, 6 then 2
+               when 4, 7 then 1
+               else 0
+               end
+      { id: "doc#{i}", rating: rating }
+    end
+    best_docs = docs.select { |d| d[:rating] > 0 }.sort_by { |d| -d[:rating] }
+
+    javascript_scorer = JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
+    score = javascript_scorer.score(docs, best_docs, code)
+    render json: { score: score }
+  rescue JavascriptScorer::ScoreError => e
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 
   private

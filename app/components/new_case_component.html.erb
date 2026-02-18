@@ -1,0 +1,5 @@
+<%= link_to case_new_path,
+            class: [@button_class, ("w-100" if @block_style)].compact.join(" ") do %>
+  <i class="bi bi-plus-lg" aria-hidden="true"></i>
+  <%= @button_text %>
+<% end %>

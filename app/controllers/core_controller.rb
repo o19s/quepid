@@ -1,12 +1,21 @@
 # frozen_string_literal: true
 
-# This hosts the main Angular 1 application that runs in the client.
+# Hosts the case workspace (Stimulus/Turbo layout).
 class CoreController < ApplicationController
   before_action :set_case_or_bootstrap, except: :new
   before_action :populate_from_params, except: :new
 
+  # Visiting /case (no id): redirect to the case workspace if the user has a case,
+  # otherwise to the cases list.
   def index
     Analytics::Tracker.track_user_swapped_protocol current_user, @case, params['protocolToSwitchTo'] if params['protocolToSwitchTo']
+
+    if @case.present?
+      try_number = @case.tries.first&.try_number
+      redirect_to case_core_path(@case, try_number)
+    else
+      redirect_to cases_path
+    end
   end
 
   # Renders the case/try workspace with the modern layout (Stimulus/Turbo).

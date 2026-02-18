@@ -1,20 +1,190 @@
 <%# Case/try workspace (modern stack). Rendered by CoreController#show with layout core_modern. %>
 <%# Context: @case, @try are set by set_case_or_bootstrap; layout passes them as data-workspace-*-value. %>
+<%= turbo_stream_from(:notifications) %>
+<% if @case %>
+  <%= render NewCaseWizardComponent.new(
+    show: ActiveModel::Type::Boolean.new.cast(params[:showWizard]),
+    case_id: @case.id,
+    case_name: @case.case_name,
+    try_number: @try&.try_number,
+    current_user_id: current_user&.id,
+    settings_path: (@try&.search_endpoint && current_user.search_endpoints_involved_with.exists?(@try.search_endpoint.id)) ? search_endpoint_path(@try.search_endpoint) : nil,
+    search_endpoints: current_user.search_endpoints_involved_with.not_archived
+  ) %>
+<% end %>
+<span id="notifications-case-<%= @case.id %>"></span>
 <div class="core-workspace" data-case-id="<%= @case.id %>" data-try-number="<%= @try&.try_number %>">
-  <div class="d-flex align-items-center gap-3 mb-3">
-    <h2 class="h5 mb-0"><%= @case.case_name %></h2>
-    <span class="text-muted">Try <%= @try&.try_number %></span>
-    <div class="d-flex gap-2 ms-auto">
-      <%= render ActionIconComponent.new(icon_class: "bi bi-file-earmark-arrow-up", title: "Export") %>
-      <%= render ActionIconComponent.new(icon_class: "bi bi-trash", title: "Delete") %>
-      <%= render ActionIconComponent.new(icon_class: "bi bi-share", title: "Share Case") %>
+  <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+    <span data-controller="inline-edit"
+          data-inline-edit-url-value="<%= "#{quepid_root_url}/api/cases/#{@case.id}" %>"
+          data-inline-edit-field-value="case_name"
+          data-inline-edit-wrapper-value="case">
+      <h2 class="h5 mb-0 d-inline" data-inline-edit-target="display" data-action="dblclick->inline-edit#edit" title="Double-click to rename"><%= @case.case_name %></h2>
+      <input type="text" class="form-control form-control-sm d-none d-inline-block" style="width: auto; max-width: 300px;"
+             data-inline-edit-target="input"
+             data-action="keydown->inline-edit#onKeydown blur->inline-edit#save"
+             value="<%= @case.case_name %>">
+    </span>
+    <% if @case.public? %><span class="badge bg-info">PUBLIC</span><% end %>
+    <% if @case.archived %><span class="badge bg-warning text-dark">ARCHIVED</span><% end %>
+    <% if @case.nightly %><span class="badge bg-secondary" title="Queries run on a nightly basis"><i class="bi bi-repeat"></i> Nightly</span><% end %>
+    <span data-controller="inline-edit"
+          data-inline-edit-url-value="<%= "#{quepid_root_url}/api/cases/#{@case.id}/tries/#{@try&.try_number}" %>"
+          data-inline-edit-field-value="name"
+          data-inline-edit-wrapper-value="try">
+      <span class="text-muted" data-inline-edit-target="display" data-action="dblclick->inline-edit#edit" title="Double-click to rename">Try <%= @try&.try_number %></span>
+      <input type="text" class="form-control form-control-sm d-none d-inline-block" style="width: auto; max-width: 200px;"
+             data-inline-edit-target="input"
+             data-action="keydown->inline-edit#onKeydown blur->inline-edit#save"
+             value="<%= @try&.name.presence || "Try #{@try&.try_number}" %>">
+    </span>
+    <%= render SettingsPanelComponent.new(
+      try: @try,
+      case_id: @case.id,
+      search_endpoint_edit_path: (@try&.search_endpoint && current_user.search_endpoints_involved_with.exists?(@try.search_endpoint.id)) ? search_endpoint_path(@try.search_endpoint) : nil,
+      tries: @case.tries.includes(:search_endpoint).order(try_number: :desc)
+    ) %>
+    <%= render ScorerPanelComponent.new(
+      scorer: @case.scorer,
+      case_id: @case.id,
+      score: @case.last_score&.score || "?",
+      max_score: @case.scorer&.scale&.last || 100,
+      score_label: @case.scorer&.name,
+      scores: @case.scores.order(updated_at: :desc).limit(10).map { |s| { score: s.score, updated_at: s.updated_at.iso8601 } },
+      annotations: @case.annotations.map { |a| { message: a.message, updated_at: a.updated_at.iso8601 } }
+    ) %>
+    <%= render ChartPanelComponent.new(
+      scores: @case.scores.order(updated_at: :desc).limit(10).map { |s| { score: s.score, updated_at: s.updated_at.iso8601 } },
+      annotations: @case.annotations.map { |a| { message: a.message, updated_at: a.updated_at.iso8601 } },
+      max_score: @case.scorer&.scale&.last || 100
+    ) %>
+    <div class="d-flex gap-2 ms-auto align-items-center">
+      <%= render CloneCaseComponent.new(
+        case_id: @case.id,
+        case_name: @case.case_name,
+        tries: @case.tries.map { |t| { try_number: t.try_number, name: t.name } },
+        last_try_number: @try&.try_number
+      ) %>
+      <%= render ExportCaseComponent.new(case_id: @case.id, case_name: @case.case_name, icon_only: true, supports_detailed_export: true) %>
+      <%= render ImportRatingsComponent.new(case_id: @case.id, case_name: @case.case_name, icon_only: true) %>
+      <%= render DeleteCaseOptionsComponent.new(case_id: @case.id, case_name: @case.case_name, try_number: @try&.try_number, icon_only: true) %>
+      <%= render ShareCaseComponent.new(
+        case_id: @case.id,
+        case_name: @case.case_name,
+        all_teams: current_user.teams.select(:id, :name).order(:name),
+        shared_teams: @case.teams.select(:id, :name),
+        icon_only: true
+      ) %>
+      <%= render JudgementsComponent.new(
+        case_id: @case.id,
+        case_name: @case.case_name,
+        book_id: @case.book_id,
+        book_name: @case.book&.name,
+        queries_count: @case.queries.count,
+        scorer_id: @case.scorer_id,
+        teams: @case.teams.select(:id, :name)
+      ) %>
+      <%= render FrogReportComponent.new(
+        case_id: @case.id,
+        case_name: @case.case_name,
+        queries_count: @case.queries.count,
+        book_id: @case.book_id,
+        book_name: @case.book&.name,
+        depth: @try&.number_of_rows || 10,
+        all_rated: @case.last_score&.all_rated || false,
+        rating_stats: @case.queries.left_joins(:ratings)
+          .group(:id)
+          .pluck(:id, Arel.sql("COUNT(ratings.id)"))
+          .map { |id, count| { query_id: id, ratings_count: count } }
+      ) %>
+      <%= render DiffComponent.new(case_id: @case.id) %>
+      <%= render TakeSnapshotComponent.new(
+        case_id: @case.id,
+        try_number: @try&.try_number,
+        search_engine: @try&.search_endpoint&.search_engine || "solr",
+        field_spec: @try&.field_spec,
+        can_take_snapshot: @try.present? && @try.search_endpoint.present? && @try.search_endpoint.search_engine != "static"
+      ) %>
+      <% if @try&.search_endpoint.present? && current_user.search_endpoints_involved_with.exists?(@try.search_endpoint.id) %>
+        <%= render CustomHeadersComponent.new(
+          search_endpoint_id: @try.search_endpoint.id,
+          custom_headers: @try.search_endpoint.custom_headers
+        ) %>
+      <% end %>
     </div>
   </div>
   <div class="mb-3">
     <%= render AddQueryComponent.new(
       case_id: @case.id,
+      try_number: @try&.try_number,
       can_add_queries: @try.nil? || @try.search_endpoint.nil? || @try.search_endpoint.search_engine != "static"
     ) %>
   </div>
-  <p class="text-muted">Workspace for case “<%= @case.case_name %>” (try <%= @try&.try_number %>). Stimulus/ViewComponents. Action icons and Add query form use the new components.</p>
+  <%# Case-level score: now in Scorer panel. Chart in Chart panel. %>
+
+  <%# Annotations panel: create/list/edit/delete annotations %>
+  <div class="mb-3">
+    <%= render AnnotationsComponent.new(
+      case_id: @case.id,
+      annotations: @case.annotations.includes(:score, :user),
+      last_score: @case.last_score
+    ) %>
+  </div>
+
+  <%# Query list (left) and results pane (right). Selection via ?query_id= %>
+  <%# Wrapped in workspace_content frame so query selection uses Turbo Frame navigation (no full-page reload). %>
+  <% selected_query_id = params[:query_id].presence&.to_i %>
+  <% selected_query_id = nil if selected_query_id&.zero? %>
+  <% selected_query = @case.queries.find_by(id: selected_query_id) %>
+  <% last_score = @case.last_score %>
+  <% query_scores = last_score&.queries.is_a?(Hash) ? last_score.queries : {} %>
+  <% other_cases = current_user.cases_involved_with.where.not(id: @case.id).order(:case_name).pluck(:id, :case_name).map { |id, name| { id: id, case_name: name } } %>
+
+  <%= turbo_frame_tag "workspace_content" do %>
+  <div class="workspace-panels-row g-3 mb-3" data-controller="workspace-panels" data-workspace-panels-case-id-value="<%= @case.id %>">
+    <div class="workspace-panel west" data-workspace-panels-target="westPanel" aria-expanded="true">
+      <div class="workspace-panel__header">
+        <span class="workspace-panel__title">Queries</span>
+        <button type="button" class="workspace-panel__toggle" data-workspace-panels-target="westCollapseBtn" data-action="click->workspace-panels#toggleWest" title="Collapse query list" aria-label="Collapse query list">
+          <i class="bi bi-chevron-left" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="workspace-panel__toggle d-none" data-workspace-panels-target="westExpandBtn" data-action="click->workspace-panels#toggleWest" title="Expand query list" aria-label="Expand query list">
+          <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="workspace-panel__content" data-workspace-panels-target="westContent">
+        <%= render QueryListComponent.new(
+          case_id: @case.id,
+          try_number: @try&.try_number,
+          queries: @case.queries,
+          selected_query_id: selected_query_id,
+          other_cases: other_cases,
+          scorer_scale_max: @case.scorer&.scale&.last || 100,
+          query_scores: query_scores,
+          sortable: Rails.application.config.query_list_sortable
+        ) %>
+      </div>
+    </div>
+    <div class="workspace-panel east" data-workspace-panels-target="eastPanel" aria-expanded="true">
+      <div class="workspace-panel__header">
+        <span class="workspace-panel__title">Results</span>
+        <button type="button" class="workspace-panel__toggle" data-workspace-panels-target="eastCollapseBtn" data-action="click->workspace-panels#toggleEast" title="Collapse results" aria-label="Collapse results">
+          <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="workspace-panel__toggle d-none" data-workspace-panels-target="eastExpandBtn" data-action="click->workspace-panels#toggleEast" title="Expand results" aria-label="Expand results">
+          <i class="bi bi-chevron-left" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="workspace-panel__content" data-workspace-panels-target="eastContent">
+        <%= render ResultsPaneComponent.new(
+          case_id: @case.id,
+          try_number: @try&.try_number,
+          selected_query: selected_query,
+          scorer_scale: @case.scorer&.scale
+        ) %>
+      </div>
+    </div>
+  </div>
+  <% end %>
 </div>
+<%= render "shared/share_case_modal" %>

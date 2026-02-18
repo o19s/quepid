@@ -1,0 +1,51 @@
+<%# Query list for case/try workspace. Each row: query text, score, Move/Options/Explain. %>
+<%# Wrapped in Turbo Frame so the region can be updated via Turbo Streams (e.g. add/remove/reorder queries). %>
+<%# Each query row has a unique turbo-frame id (query_row_<id>) for targeted Turbo Stream updates. %>
+<%= helpers.turbo_frame_tag "query_list_#{@case_id}" do %>
+<div class="query-list border rounded p-2 bg-light" data-controller="query-list" data-query-list-sortable-value="<%= @sortable %>">
+  <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+    <h3 class="h6 mb-0">Queries</h3>
+    <span class="badge bg-secondary" data-query-list-target="count"><%= @queries.size %></span>
+  </div>
+  <% unless @queries.empty? %>
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+      <input type="text" class="form-control form-control-sm" placeholder="Filter queries…" style="max-width: 180px;"
+             data-query-list-target="filterInput" data-action="input->query-list#filter">
+      <div class="form-check form-check-inline mb-0">
+        <input type="checkbox" class="form-check-input" id="query-list-rated-only" data-query-list-target="ratedToggle" data-action="change->query-list#filter">
+        <label class="form-check-label small" for="query-list-rated-only">Rated only</label>
+      </div>
+      <select class="form-select form-select-sm" style="max-width: 140px;" data-query-list-target="sortSelect" data-action="change->query-list#sort">
+        <option value="default">Default order</option>
+        <option value="name">Name</option>
+        <option value="score_asc">Score ↑</option>
+        <option value="score_desc">Score ↓</option>
+      </select>
+    </div>
+  <% end %>
+  <ul class="list-group list-group-flush list-group-numbered" id="query_list_items" data-query-list-target="list">
+  <% if @queries.empty? %>
+    <li id="query_list_empty_placeholder" class="list-group-item text-muted small border-0">
+      <% if empty_state? %>
+        <%= empty_state %>
+      <% else %>
+        No queries yet. Add one above.
+      <% end %>
+    </li>
+  <% else %>
+    <% @queries.each do |query| %>
+        <%= render "core/queries/query_row",
+                   query: query,
+                   case_id: @case_id,
+                   try_number: @try_number,
+                   selected: selected?(query),
+                   sortable: @sortable,
+                   scorer_scale_max: @scorer_scale_max,
+                   query_score: score_for(query),
+                   options_json: options_for_query(query),
+                   other_cases: @other_cases %>
+      <% end %>
+  <% end %>
+  </ul>
+</div>
+<% end %>

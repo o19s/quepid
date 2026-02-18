@@ -1,0 +1,77 @@
+<%# Wrapper so Stimulus has access to both trigger and modal. %>
+<div
+  class="frog-report-wrapper"
+  data-controller="frog-report"
+  data-frog-report-case-id-value="<%= @case_id %>"
+  data-frog-report-book-id-value="<%= @book_id %>"
+  data-frog-report-queries-count-value="<%= @queries_count %>"
+  data-frog-report-chart-data-value="<%= chart_data_json %>"
+>
+  <a href="#" class="action-icon" data-action="click->frog-report#open" title="Frog Pond Report" aria-label="Frog Pond Report">
+    <span aria-hidden="true">🐸</span>
+  </a>
+
+  <div class="modal fade" id="frogReportModal-<%= @case_id %>" tabindex="-1" aria-labelledby="frogReportModalLabel-<%= @case_id %>" aria-hidden="true" data-frog-report-target="modal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="frogReportModalLabel-<%= @case_id %>">The Frog Pond Report: <span class="modal-case"><%= @case_name %></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body frog-pond">
+          <div class="frog-pond-content">
+            <p>The accuracy of the scores calculated by Quepid is directly impacted by the number of 🐸's you have.
+              Chase the frogs into the pond (i.e rate your documents) so that you can have confidence in the changes you are making!</p>
+
+            <h4>Summary</h4>
+
+            <p>
+              You have <%= @queries_count %> Queries for this case, of which <%= queries_with_results_count %> return results,
+              and
+              <% if queries_without_results_count.zero? %>
+                none return
+              <% elsif queries_without_results_count == 1 %>
+                only one returns
+              <% else %>
+                <%= queries_without_results_count %> return
+              <% end %>
+              <strong>zero</strong> results.
+            </p>
+
+            <p>
+              You need to maintain a total of <%= total_ratings_needed %> ratings to eliminate all the 🐸.
+            </p>
+
+            <% if @all_rated %>
+              <p>All the queries have been fully rated! Congratulations!</p>
+            <% else %>
+              <p>
+                There are currently <%= missing_ratings %> ratings missing, leading to <%= missing_rate %>% missing rate.
+                We recommend maintaining less than a 5% missing ratings to have confidence in the scores you are calculating.
+                <% if missing_rate > 5 %>
+                  <br/>So hop to it!
+                <% end %>
+              </p>
+            <% end %>
+
+            <h4 style="margin-top: 60px;">Distribution of Queries Needing Ratings</h4>
+            <p class="text-muted fst-italic">Number of queries grouped by count of missing ratings</p>
+
+            <div data-frog-report-target="chart"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <% if book? %>
+            <button type="button" class="btn btn-outline-secondary" data-action="click->frog-report#refreshFromBook" data-frog-report-target="refreshBtn">
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+              Refresh ratings from book <em><%= @book_name %></em>
+            </button>
+          <% end %>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+
+          <div class="text-danger d-none w-100 mt-2" data-frog-report-target="errorEl"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,9 +1,11 @@
-// This file leverages importmaps and Stimulus for the modern (non-Angular) parts of the application.
-// The Angular app uses a separate build pipeline via esbuild (see package.json).
+// This file leverages importmaps and Stimulus for the modernparts of the application.
 
 // Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
 import "@hotwired/turbo-rails"
 import "controllers"
+
+import { initFlash } from "utils/flash"
+initFlash()
 
 import LocalTime from "local-time"
 import Cookies from 'js-cookie'

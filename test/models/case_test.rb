@@ -7,6 +7,7 @@
 #  id              :integer          not null, primary key
 #  archived        :boolean
 #  case_name       :string(191)
+#  export_job      :string(255)
 #  last_try_number :integer
 #  nightly         :boolean
 #  options         :json
@@ -256,7 +257,7 @@ class CaseTest < ActiveSupport::TestCase
 
     it 'destroys the related objects' do
       assert_difference 'Case.count', -1 do
-        assert_difference 'Try.count', -5 do
+        assert_difference 'Try.count', -6 do
           assert_difference 'Query.count', -3 do
             the_case.really_destroy
             assert_predicate the_case, :destroyed?

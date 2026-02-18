@@ -24,7 +24,7 @@
           <p/>
         </div>
         <div>
-          <%= form.submit 'Run Prompt', class: 'btn btn-default btn-primary' %>
+          <%= form.submit 'Run Prompt', class: 'btn btn-primary' %>
           
           <%= link_to 'Back', judgement_stats_book_path(@book), method: :get, class: 'btn btn-block btn-light float-end' if @book %>
           <%= link_to 'Edit Judge', edit_team_ai_judge_path(team_id: @ai_judge.teams.first.id, id: @ai_judge.id), method: :get, class: 'btn btn-block btn-light float-end' %>

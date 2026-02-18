@@ -1,0 +1,6 @@
+<%# Renders a single flash-style alert. Used by Turbo Stream responses to show errors in-place. %>
+<%# Locals: message (String), type (String, default "danger" for errors) %>
+<div class="alert <%= bootstrap_class_for(local_assigns[:type] || :error) %> alert-dismissible fade show" role="alert">
+  <%= h(message) %>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>

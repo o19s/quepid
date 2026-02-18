@@ -9,7 +9,6 @@ name = "javascript"
 enabled = true
 
   [analyzers.meta]
-  plugins = ["angular"]
 
   
 [[analyzers]]

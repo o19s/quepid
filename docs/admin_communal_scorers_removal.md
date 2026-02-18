@@ -56,34 +56,13 @@ The separate admin interface for communal scorers was redundant. Administrators 
 | Action | Old Way | New Way |
 |--------|---------|---------|
 | **View communal scorers** | `/admin/communal_scorers` | `/scorers` (filter by "Communal") |
-| **Create communal scorer** | Admin interface only | Not supported via UI (use console/seeds) |
+| **Create communal scorer** | Admin interface only | Not supported via UI — see [admin_scorer_editing.md](admin_scorer_editing.md) for console/seeds |
 | **Edit communal scorer** | `/admin/communal_scorers/:id/edit` | `/scorers/:id/edit` (admin only) |
 | **Delete communal scorer** | Admin interface | `/scorers` list (admin only) |
 
 ### Creating Communal Scorers
 
-Communal scorers should now be created via:
-
-1. **Rails Console**:
-   ```ruby
-   Scorer.create!(
-     name: "My Communal Scorer",
-     code: "setScore(calculateScore());",
-     communal: true,
-     scale: [0, 1, 2, 3]
-   )
-   ```
-
-2. **Database Seeds** (`db/seeds.rb`):
-   ```ruby
-   Scorer.find_or_create_by!(name: "nDCG@10") do |scorer|
-     scorer.code = "// scoring logic here"
-     scorer.communal = true
-     scorer.scale = [0, 1, 2, 3]
-   end
-   ```
-
-This approach ensures communal scorers are version-controlled and part of the deployment process.
+Not supported via UI. See [admin_scorer_editing.md](admin_scorer_editing.md) for Rails console and seeds examples.
 
 ## Features Maintained
 

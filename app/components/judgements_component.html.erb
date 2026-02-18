@@ -1,0 +1,51 @@
+<div class="judgements-wrapper"
+     data-controller="judgements"
+     data-judgements-case-id-value="<%= @case_id %>"
+     data-judgements-book-id-value="<%= @book_id %>"
+     data-judgements-queries-count-value="<%= @queries_count %>"
+     data-judgements-teams-value="<%= teams_for_data %>"
+     data-judgements-create-book-url-value="<%= create_book_url %>">
+  <a href="#" class="action-icon" data-action="click->judgements#open" data-judgements-target="trigger" title="Judgements" aria-label="Judgements">
+    <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
+  </a>
+
+  <div class="modal fade" id="judgementsModal" tabindex="-1" aria-labelledby="judgementsModalLabel" aria-hidden="true" data-judgements-target="modal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="judgementsModalLabel">Judgements</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div data-judgements-target="loadingEl" class="mb-3">
+            <p class="mb-0">Loading your teams and books…</p>
+          </div>
+          <div data-judgements-target="noTeamsEl" class="alert alert-info text-center d-none" role="alert">
+            <p class="mb-0">Judgements are meant to be shared with a team. Share this case with a team first, or <a data-action="click->judgements#goToTeams">go to Teams</a>.</p>
+          </div>
+          <div data-judgements-target="noBooksEl" class="text-center d-none mb-3">
+            <p class="mb-2">You have not created any Books of Judgements yet.</p>
+            <a data-judgements-target="createBookLink" href="#" class="btn btn-primary btn-lg">Create a book</a>
+          </div>
+          <div data-judgements-target="booksSection" class="d-none">
+            <p class="small text-muted">Explicit judgements are a good way to measure search quality. Quepid organizes them in a <strong>Book</strong> of query/document pairs for human evaluation.</p>
+            <label class="form-label">Select a Book of Judgements</label>
+            <ul class="list-group list-group-flush mb-3" data-judgements-target="bookList"></ul>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="judgements-create-missing" data-judgements-target="createMissingQueries">
+              <label class="form-check-label" for="judgements-create-missing">Populate missing queries in Case from those in Book</label>
+            </div>
+          </div>
+          <div class="text-danger d-none" data-judgements-target="errorEl" role="alert"></div>
+        </div>
+        <div class="modal-footer">
+          <a data-judgements-target="createBookLinkFooter" href="#" class="btn btn-primary me-auto">Create a book</a>
+          <a data-judgements-target="judgeLink" href="#" class="btn btn-outline-secondary d-none">Judge Documents!</a>
+          <button type="button" class="btn btn-outline-secondary" data-action="click->judgements#refreshFromBook" data-judgements-target="refreshBtn">Refresh ratings from book</button>
+          <button type="button" class="btn btn-success d-none" data-judgements-target="primaryBtn" data-action="click->judgements#primaryAction"></button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

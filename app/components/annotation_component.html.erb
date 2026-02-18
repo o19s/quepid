@@ -1,0 +1,45 @@
+<li class="annotation"
+    data-annotations-target="annotation"
+    data-annotation-id="<%= annotation_id %>">
+  <div class="dropdown float-end">
+    <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-three-dots-vertical"></i>
+    </a>
+    <ul class="dropdown-menu">
+      <li>
+        <%# annotation_message escaped with h() for safe use inside HTML attribute %>
+        <a class="dropdown-item"
+           href="#"
+           data-action="click->annotations#openEditModal"
+           data-annotation-id="<%= annotation_id %>"
+           data-annotation-message="<%= h(annotation_message) %>">
+          <i class="bi bi-pencil"></i> Edit
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item text-danger"
+           href="#"
+           data-action="click->annotations#deleteAnnotation"
+           data-annotation-id="<%= annotation_id %>">
+          <i class="bi bi-trash"></i> Delete
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <em class="annotations-time"><%= time_ago_text %></em>
+
+  <% if display_user.present? %>
+    <span class="annotation-source">by <%= display_user %></span>
+  <% end %>
+
+  <div>
+    <span class="annotation-try">Try No: <%= display_try %></span>
+    <i class="bi bi-circle-fill"></i>
+    <span class="annotation-score">Score: <%= display_score %></span>
+  </div>
+
+  <div class="annotation-message" data-annotations-target="messageDisplay">
+    <%= annotation_message %>
+  </div>
+</li>

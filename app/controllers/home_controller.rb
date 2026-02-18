@@ -57,7 +57,7 @@ class HomeController < ApplicationController
 
       unless scores.empty?
         @for_single_day = scores.first.updated_at.all_day.overlaps?(scores.last.updated_at.all_day)
-        @final = @case.scores.last_one.score
+        @final = @case.last_score.score
       end
 
       data = scores.collect do |score|

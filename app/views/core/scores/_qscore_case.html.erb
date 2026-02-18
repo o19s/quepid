@@ -1,0 +1,9 @@
+<%= render QscoreCaseComponent.new(
+  case_id: case_id,
+  score: score,
+  max_score: max_score,
+  score_label: score_label,
+  scores: scores || [],
+  annotations: annotations || [],
+  css_class: "case-score"
+) %>

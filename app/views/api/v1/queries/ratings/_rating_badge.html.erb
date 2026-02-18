@@ -1,0 +1,9 @@
+<%# Renders the rating badge for a document card in the results pane. %>
+<%# Used by Turbo Stream responses when a rating is updated or cleared. %>
+<%# doc_id: document ID (string); rating: rating value (string, empty for "Rate") %>
+<% rating = local_assigns[:rating].to_s %>
+<% if rating.present? %>
+  <span class="badge bg-primary" data-rating-trigger tabindex="0" role="button" title="Click to change rating"><%= h(rating) %></span>
+<% else %>
+  <span class="badge bg-secondary" data-rating-trigger tabindex="0" role="button" title="Click to rate">Rate</span>
+<% end %>

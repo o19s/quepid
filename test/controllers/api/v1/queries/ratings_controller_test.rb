@@ -216,6 +216,21 @@ module Api
               end
             end
           end
+
+          test 'returns Turbo Stream when Accept includes turbo-stream' do
+            doc_id = 'x123z'
+            rating = { doc_id: doc_id, rating: 3 }
+
+            put :update,
+                params: { case_id: acase.id, query_id: query.id, rating: rating },
+                format: :turbo_stream
+
+            assert_response :ok
+            assert_equal "text/vnd.turbo-stream.html", response.media_type
+            assert_includes response.body, "rating-badge-#{doc_id}"
+            assert_includes response.body, "turbo-stream"
+            assert_includes response.body, "3"
+          end
         end
 
         describe 'Removes doc rating' do
@@ -249,6 +264,21 @@ module Api
                 assert_response :no_content
               end
             end
+          end
+
+          test 'returns Turbo Stream when Accept includes turbo-stream' do
+            doc_id = 'x123z'
+            rating = { doc_id: doc_id }
+            query.ratings.create(doc_id: doc_id, rating: 1)
+
+            delete :destroy,
+                   params: { case_id: acase.id, query_id: query.id, rating: rating },
+                   format: :turbo_stream
+
+            assert_response :ok
+            assert_equal "text/vnd.turbo-stream.html", response.media_type
+            assert_includes response.body, "rating-badge-#{doc_id}"
+            assert_includes response.body, "turbo-stream"
           end
         end
       end

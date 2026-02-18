@@ -1,17 +1,18 @@
 /*
- * Core (Angular) CSS manifest (used by build_css.sh).
+ * Core CSS manifest (used by build_css.sh).
  * Former Sprockets directives converted to informational comments only.
  */
  
  /*
- * Bootstrap 3 is used here (Angular app)
- * include bootstrap3.css
+ * Bootstrap 5 is used here (core_modern layout, core workspace)
+ * include node_modules/bootstrap/dist/css/bootstrap.css
  *
  * Shared Bootstrap Icons
  * include bootstrap-icons/font/bootstrap-icons
  *
  * include fonts.css
- * include bootstrap3-add.css
+ * include bootstrap5-add.css
+ * include core-add.css
  *
  * include style.css
  * include base.css
@@ -19,7 +20,6 @@
  * include stackedChart.css
  *
  * Tour/Guides
- * include tether-shepherd/dist/css/shepherd-theme-arrows.css
  * include tour.css
  *
  * Screens

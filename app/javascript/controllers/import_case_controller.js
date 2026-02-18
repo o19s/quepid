@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { getQuepidRootUrl, buildPageUrl } from "utils/quepid_root"
 
 export default class extends Controller {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner"]
@@ -64,7 +65,8 @@ export default class extends Controller {
         setTimeout(() => {
           // Redirect to the imported case or refresh the page
           if (result.case_id) {
-            window.location.href = `/case/${result.case_id}`
+            const root = getQuepidRootUrl()
+            window.location.href = buildPageUrl(root, "case", result.case_id)
           } else {
             window.location.reload()
           }

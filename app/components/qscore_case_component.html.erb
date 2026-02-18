@@ -1,0 +1,31 @@
+<%= tag.div id: "qscore-case-#{@case_id}",
+  class: "qscore-case #{@css_class}",
+  data: {
+    controller: "qscore",
+    qscore_score_value: @score,
+    qscore_max_score_value: @max_score,
+    qscore_case_id_value: @case_id
+  } do %>
+  <% if show_graph? %>
+    <%= render QgraphComponent.new(
+      scores: @scores,
+      annotations: @annotations,
+      max_score: @max_score
+    ) %>
+  <% end %>
+
+  <div
+    class="header-rating"
+    style="<%= inline_style %>"
+    data-qscore-target="rating"
+  >
+    <span class="scorable-score" data-qscore-target="scoreText">
+      <%= display_score %>
+    </span>
+    <% if @score_label.present? %>
+      <span class="query-score-label low-profile" data-qscore-target="label">
+        <%= @score_label %>
+      </span>
+    <% end %>
+  </div>
+<% end %>

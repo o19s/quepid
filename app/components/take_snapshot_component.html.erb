@@ -1,0 +1,73 @@
+<%# Take Snapshot: trigger + modal. Replaces Angular TakeSnapshotCtrl / PromptSnapshotCtrl. %>
+<% if @can_take_snapshot %>
+<div
+  class="take-snapshot-wrapper"
+  data-controller="take-snapshot"
+  data-take-snapshot-case-id-value="<%= @case_id %>"
+  data-take-snapshot-try-number-value="<%= @try_number %>"
+>
+  <a href="#" class="action-icon" data-action="click->take-snapshot#open" data-take-snapshot-target="trigger" title="Take snapshot" aria-label="Take snapshot">
+    <i class="bi bi-camera" aria-hidden="true"></i>
+  </a>
+
+  <div class="modal fade" id="takeSnapshotModal" tabindex="-1" aria-labelledby="takeSnapshotModalLabel" aria-hidden="true" data-take-snapshot-target="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="takeSnapshotModalLabel">Take a Snapshot of all your queries?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">Recording the current results of your queries is useful for comparing future work against this point in time as well as for comparing multiple Cases. A snapshot stores the individual queries in a case, the ratings made, and optionally all the fields returned for the documents.</p>
+
+          <div class="mb-3">
+            <label for="snapshotName" class="form-label">Snapshot Name</label>
+            <input
+              type="text"
+              class="form-control"
+              id="snapshotName"
+              data-take-snapshot-target="nameInput"
+              placeholder="Name your snapshot"
+              required
+            >
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Include Document Fields</label>
+            <% if support_lookup_by_id? %>
+              <p class="form-text">
+                To facilitate additional analysis, you may want to record as part of the snapshot all the displayed fields for each document returned.
+                This will be the <code><%= field_spec_display %></code> fields.
+              </p>
+              <div class="form-check">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="include-document-fields"
+                  data-take-snapshot-target="recordFieldsCheckbox"
+                >
+                <label class="form-check-label" for="include-document-fields">Record Document Fields?</label>
+              </div>
+            <% else %>
+              <p class="form-text">
+                To power comparisons when using <%= search_engine_display %> the fields of your documents will be stored in Quepid.
+              </p>
+            <% end %>
+          </div>
+
+          <div class="alert alert-danger d-none" data-take-snapshot-target="errorEl" role="alert"></div>
+          <div class="alert alert-info d-none" data-take-snapshot-target="progressEl">Snapshot being created (this can take a minute or so)…</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-action="click->take-snapshot#submit" data-take-snapshot-target="submitBtn">
+            Take Snapshot
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-take-snapshot-target="cancelBtn">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>

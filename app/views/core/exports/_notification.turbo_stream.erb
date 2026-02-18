@@ -1,0 +1,10 @@
+<%= turbo_stream.replace "notifications-case-#{acase.id}" do %>
+  <span id="notifications-case-<%= acase.id %>">
+    <div class="alert alert-info" role="alert">
+      <%= message %>
+      <div class="progress" role="progressbar" aria-label="Export progress" aria-valuenow="<%= progress %>" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar" style="width: <%= progress %>%"></div>
+      </div>
+    </div>
+  </span>
+<% end %>

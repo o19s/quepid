@@ -1,0 +1,59 @@
+<%# Custom Headers: trigger + modal. Replaces Angular CustomHeadersCtrl. %>
+<%# Template stores initial value to avoid data-attribute encoding issues with multi-line JSON. %>
+<div
+  class="custom-headers-wrapper"
+  data-controller="custom-headers"
+  data-custom-headers-search-endpoint-id-value="<%= @search_endpoint_id %>"
+>
+  <template data-custom-headers-target="initialValue"><%= h(custom_headers_pretty) %></template>
+  <a href="#" class="action-icon" data-action="click->custom-headers#open" data-custom-headers-target="trigger" title="Custom headers" aria-label="Custom headers">
+    <i class="bi bi-key" aria-hidden="true"></i>
+  </a>
+
+  <div class="modal fade" id="customHeadersModal" tabindex="-1" aria-labelledby="customHeadersModalLabel" aria-hidden="true" data-custom-headers-target="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="customHeadersModalLabel">Custom HTTP Headers</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="form-text mb-3">If you need to send headers to authenticate with your search engine you can specify them here as JSON.</p>
+
+          <div class="mb-3">
+            <label for="customHeadersType" class="form-label">Preset</label>
+            <select
+              id="customHeadersType"
+              class="form-select"
+              data-custom-headers-target="typeSelect"
+              data-action="change->custom-headers#typeChanged"
+            >
+              <option value="None">None</option>
+              <option value="API Key">API Key</option>
+              <option value="Custom">Custom</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="customHeadersJson" class="form-label">Headers (JSON)</label>
+            <textarea
+              id="customHeadersJson"
+              class="form-control font-monospace"
+              rows="8"
+              data-custom-headers-target="jsonInput"
+              data-action="input->custom-headers#validate"
+              placeholder='{"Authorization": "ApiKey XXX"}'
+            ></textarea>
+            <div class="invalid-feedback" data-custom-headers-target="validationError">Please provide valid JSON.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" data-action="click->custom-headers#save" data-custom-headers-target="submitBtn">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

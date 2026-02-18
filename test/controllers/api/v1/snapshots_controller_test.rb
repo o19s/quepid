@@ -171,7 +171,36 @@ module Api
           end
         end
 
-        test 'sets name to default if blank' do
+        test 'enqueues CreateSnapshotFromSearchJob when docs not provided' do
+          data = {
+            snapshot: {
+              name: 'Server-Side Snapshot',
+            },
+          }
+
+          assert_enqueued_with(job: CreateSnapshotFromSearchJob) do
+            assert_difference 'acase.snapshots.count' do
+              post :create, params: data.merge(case_id: acase.id)
+              assert_response :ok
+            end
+          end
+        end
+
+        test 'returns bad_request when snapshot params missing' do
+          assert_no_difference 'acase.snapshots.count' do
+            post :create, params: { case_id: acase.id }
+            assert_response :bad_request
+          end
+        end
+
+        test 'returns bad_request when snapshot name blank' do
+          assert_no_difference 'acase.snapshots.count' do
+            post :create, params: { case_id: acase.id, snapshot: { name: '' } }
+            assert_response :bad_request
+          end
+        end
+
+        test 'rejects blank name in client-side flow' do
           data = {
             snapshot: {
               name:    '',
@@ -198,14 +227,14 @@ module Api
             },
           }
 
-          assert_difference 'acase.snapshots.count' do
+          assert_no_difference 'acase.snapshots.count' do
             post :create, params: data.merge(case_id: acase.id)
-
-            assert_response :ok
-
-            assert_equal response.parsed_body['name'], "Snapshot #{Time.zone.now.strftime('%D')}"
+            assert_response :bad_request
+            assert_equal response.parsed_body['error'], 'Snapshot name is required'
           end
+        end
 
+        test 'rejects when name omitted but docs provided' do
           data = {
             snapshot: {
               docs:    {
@@ -231,23 +260,29 @@ module Api
             },
           }
 
-          assert_difference 'acase.snapshots.count' do
+          assert_no_difference 'acase.snapshots.count' do
             post :create, params: data.merge(case_id: acase.id)
-
-            assert_response :ok
-
-            assert_equal response.parsed_body['name'], "Snapshot #{Time.zone.now.strftime('%D')}"
+            assert_response :bad_request
+            assert_equal response.parsed_body['error'], 'Snapshot name is required'
           end
         end
 
         describe 'analytics' do
-          let(:acase) { cases(:queries_case) }
-          let(:data)  do
+          let(:acase)         { cases(:queries_case) }
+          let(:first_query)  { queries(:first_query) }
+          let(:second_query) { queries(:second_query) }
+          let(:data)          do
             {
               snapshot: {
                 name:    'New Snapshot',
-                docs:    {},
-                queries: {},
+                docs:    {
+                  first_query.id  => [ { id: 'd1', explain: '1' } ],
+                  second_query.id => [ { id: 'd2', explain: '2' } ],
+                },
+                queries: {
+                  first_query.id  => { score: 0.5, all_rated: true },
+                  second_query.id => { score: 0.3, all_rated: false },
+                },
               },
             }
           end

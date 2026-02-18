@@ -1,0 +1,21 @@
+<%# Chart panel: score-over-time sparkline (Qgraph). Replaces deferred chart panel. %>
+<% if render? %>
+<div class="chart-panel-wrapper" data-controller="chart-panel">
+  <button type="button" class="btn btn-outline-secondary btn-sm" data-action="click->chart-panel#toggle" data-chart-panel-target="trigger">
+    <i class="bi bi-graph-up" aria-hidden="true"></i>
+    Chart
+  </button>
+  <div class="chart-panel-content collapse mt-2" data-chart-panel-target="panel">
+    <div class="card card-body small">
+      <h6 class="card-title">Score over time</h6>
+      <div class="qgraph-chart-panel" style="min-height: 120px;">
+        <%= render QgraphComponent.new(
+          scores: @scores,
+          annotations: @annotations,
+          max_score: @max_score
+        ) %>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>

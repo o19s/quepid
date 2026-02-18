@@ -7,7 +7,6 @@
 # click-only actions (wire via data_action or parent Stimulus controller).
 #
 # @see docs/view_component_conventions.md
-# @see docs/angular_to_stimulus_hotwire_viewcomponents_checklist.md (Phase 4.1: action_icon)
 class ActionIconComponent < ApplicationComponent
   # @param icon_class [String] CSS classes for the icon (e.g. "bi bi-trash", "glyphicon glyphicon-trash")
   # @param title [String] Accessible title and tooltip
