@@ -21,6 +21,7 @@ export default class extends Controller {
     this.messageEl = this.modal.querySelector('.confirm-delete-message')
     this.confirmBtn = this.modal.querySelector('.confirm-delete-confirm')
     this._onConfirm = this._onConfirm.bind(this)
+    this._onModalHidden = this._onModalHidden.bind(this)
   }
 
   open(event) {
@@ -31,11 +32,15 @@ export default class extends Controller {
     this.currentUrl = this.urlValue || this.element.dataset.confirmDeleteUrlValue || this.element.dataset.url
     this.currentMethod = (this.methodValue || this.element.dataset.confirmDeleteMethodValue || 'delete').toLowerCase()
 
+    // Remove any existing listener before adding to prevent accumulation
+    this.confirmBtn.removeEventListener('click', this._onConfirm)
     this.confirmBtn.addEventListener('click', this._onConfirm)
 
     // Try to use Bootstrap modal if available
     if (window.bootstrap && window.bootstrap.Modal) {
       this._bsModal = new window.bootstrap.Modal(this.modal)
+      // Listen for modal hidden event to clean up listeners
+      this.modal.addEventListener('hidden.bs.modal', this._onModalHidden)
       this._bsModal.show()
     } else {
       // fallback to native confirm
@@ -48,7 +53,17 @@ export default class extends Controller {
     e.preventDefault()
     this._submitDeleteForm()
     if (this._bsModal) this._bsModal.hide()
+    this._cleanupListeners()
+  }
+
+  _onModalHidden() {
+    // Clean up listeners when modal is hidden (cancelled or closed)
+    this._cleanupListeners()
+  }
+
+  _cleanupListeners() {
     this.confirmBtn.removeEventListener('click', this._onConfirm)
+    this.modal.removeEventListener('hidden.bs.modal', this._onModalHidden)
   }
 
   _submitDeleteForm() {
