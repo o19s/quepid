@@ -297,7 +297,9 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :search_endpoints, except: [ :new, :edit ]
+      resources :search_endpoints, except: [ :new, :edit ] do
+        resources :fields, only: [ :index ], controller: "search_endpoints/fields"
+      end
       namespace :search_endpoints do
         resource :validation, only: [ :create ]
       end

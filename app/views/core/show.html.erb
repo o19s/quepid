@@ -112,6 +112,9 @@
         all_rated: @case.last_score&.all_rated || false,
         rating_stats: rating_stats
       ) %>
+      <%= render UnarchiveCaseComponent.new(
+        current_user_teams: current_user.teams.select(:id, :name).order(:name)
+      ) %>
       <%= render DiffComponent.new(case_id: @case.id) %>
       <%= render TakeSnapshotComponent.new(
         case_id: @case.id,
@@ -205,7 +208,8 @@
           case_id: @case.id,
           try_number: @try&.try_number,
           selected_query: selected_query,
-          scorer_scale: @case.scorer&.scale
+          scorer_scale: @case.scorer&.scale,
+          scale_with_labels: @case.scorer&.scale_with_labels
         ) %>
       </div>
     </div>

@@ -30,6 +30,10 @@
         </button>
       </div>
       <div class="d-none small mb-2" data-settings-panel-target="urlValidationFeedback"></div>
+      <div class="d-none alert alert-warning py-1 px-2 small mb-2" data-settings-panel-target="templateCallFeedback">
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+        This endpoint uses <code>_search/template</code>. Make sure your query params are formatted as a search template request body.
+      </div>
       <% if search_endpoints.any? %>
         <div class="mb-2">
           <label class="form-label small text-muted mb-1">Search endpoint</label>
@@ -80,7 +84,7 @@
         <div class="collapse" id="try-history-section">
           <div class="list-group list-group-flush small">
             <% tries.each do |t| %>
-              <div class="list-group-item px-0 py-1 d-flex justify-content-between align-items-center<%= t.try_number == @try&.try_number ? ' bg-light' : '' %>">
+              <div class="list-group-item px-0 py-1 d-flex justify-content-between align-items-center<%= t.try_number == @try&.try_number ? ' bg-light' : '' %>" style="border-left: 4px solid <%= url_color_for_try(t) %>; padding-left: 6px;">
                 <div class="flex-grow-1">
                   <% if t.try_number == @try&.try_number %>
                     <strong>Try <%= t.try_number %></strong>

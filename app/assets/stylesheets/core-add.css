@@ -1254,3 +1254,27 @@ form.turbo-loading input[type="submit"] {
   border-left-color: #6c757d;
   background: #e9ecef;
 }
+
+/* JSON tree view (collapsible) */
+.json-tree {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85em;
+  line-height: 1.5;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 0.375rem;
+  overflow: auto;
+  max-height: 60vh;
+}
+.json-tree-toggle {
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+  font-size: 0.75em;
+}
+.json-tree-key { color: #881391; }
+.json-tree-string { color: #0b7285; }
+.json-tree-number { color: #1864ab; }
+.json-tree-boolean { color: #c92a2a; }
+.json-tree-null { color: #868e96; }
+.json-tree-count { color: #868e96; font-size: 0.85em; }

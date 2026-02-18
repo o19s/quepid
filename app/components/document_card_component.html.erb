@@ -37,6 +37,24 @@
         <% end %>
       </div>
     </div>
+    <% if has_media_embeds? %>
+      <div class="mt-1">
+        <% media_embeds.each do |embed| %>
+          <% case embed[:type] %>
+          <% when "audio" %>
+            <audio controls preload="none" class="w-100 mb-1" style="max-height: 40px;">
+              <source src="<%= embed[:url] %>">
+            </audio>
+          <% when "video" %>
+            <video controls preload="none" class="w-100 mb-1 rounded" style="max-height: 200px;">
+              <source src="<%= embed[:url] %>">
+            </video>
+          <% when "image" %>
+            <img src="<%= embed[:url] %>" alt="" class="rounded mb-1" style="max-height: 150px; max-width: 100%;" loading="lazy" onerror="this.style.display='none'">
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
     <% if has_explain? %>
       <div class="mt-1">
         <%= render MatchesComponent.new(

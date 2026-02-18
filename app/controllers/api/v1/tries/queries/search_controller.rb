@@ -77,7 +77,9 @@ module Api
                          scorer_scale:      scorer_scale,
                          diff_entries_map:  diff_entries_map,
                          diff_columns:      diff_columns,
-                         image_prefix:      @try.image_prefix_from_field_spec
+                         image_prefix:      @try.image_prefix_from_field_spec,
+                         scoring_depth:     @try.number_of_rows || 10,
+                         browse_url:        build_browse_url(@try, @query)
                        },
                        layout: false
               end
@@ -184,6 +186,26 @@ module Api
             end
 
             [ entries_map, columns ]
+          end
+
+          # Build a browse URL to view results directly on the search engine.
+          # Only supported for Solr (admin/select UI) and ES/OS (_search endpoint).
+          def build_browse_url(a_try, query)
+            return nil unless a_try&.search_endpoint&.endpoint_url.present?
+
+            endpoint = a_try.search_endpoint
+            base_url = endpoint.endpoint_url.chomp("/")
+            engine = endpoint.search_engine
+
+            case engine
+            when "solr"
+              # Solr: append query params with the query text substituted
+              qp = a_try.query_params.to_s.gsub("#$query##", CGI.escape(query.query_text.to_s))
+              "#{base_url}?#{qp}"
+            when "es", "os"
+              # ES/OS: link to the _search endpoint
+              "#{base_url}/_search"
+            end
           end
 
           def set_search_response_format

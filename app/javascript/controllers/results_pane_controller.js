@@ -14,6 +14,7 @@ export default class extends Controller {
     queryId: Number,
     queryText: String,  // Query text for snapshot search (diff mode)
     scale: Array,  // Scorer scale for rating popover (e.g. [0,1,2,3])
+    scaleLabels: Object,  // Optional labels: { "0": "Not Relevant", "3": "Perfect" }
     skipFetch: Boolean  // When true (e.g. results_content slot provided), do not fetch; preserve slot content
   }
 
@@ -116,9 +117,13 @@ export default class extends Controller {
     }
 
     const scale = this.scaleValue || [ 0, 1, 2, 3 ]
-    const buttonsHtml = scale.map((v) =>
-      `<button type="button" class="btn btn-sm btn-outline-primary" data-rating-value="${v}">${v}</button>`
-    ).join(" ")
+    const labels = this.scaleLabelsValue || {}
+    const buttonsHtml = scale.map((v) => {
+      const label = labels[String(v)]
+      const display = label ? `${v} <small class="text-muted">${this._escapeHtml(label)}</small>` : `${v}`
+      const title = label ? this._escapeHtmlAttr(label) : ""
+      return `<button type="button" class="btn btn-sm btn-outline-primary" data-rating-value="${v}"${title ? ` title="${title}"` : ""}>${display}</button>`
+    }).join(" ")
     const clearHtml = '<button type="button" class="btn btn-sm btn-outline-secondary ms-1" data-rating-value="">Clear</button>'
     const content = `<div class="d-flex flex-wrap gap-1 align-items-center" data-rating-doc-id="${this._escapeHtmlAttr(docId)}">${buttonsHtml}${clearHtml}</div>`
 
@@ -519,6 +524,8 @@ export default class extends Controller {
     } else if (this.hasDetailJsonPreTarget) {
       this.detailJsonPreTarget.textContent = jsonStr
       this.detailJsonPreTarget.classList.remove("d-none")
+      // Initialize json-tree on the pre element
+      this._initJsonTree(this.detailJsonPreTarget)
     }
 
     // Set up copy JSON button
@@ -542,6 +549,38 @@ export default class extends Controller {
     const docId = encodeURIComponent(this._currentDetailDocId)
     const url = `${buildApiUrl(root, "cases", this.caseIdValue, "tries", this.tryNumberValue, "queries", this.queryIdValue, "search", "raw")}?doc_id=${docId}`
     window.open(url, "_blank")
+  }
+
+  _initJsonTree(pre) {
+    const container = pre.parentElement
+    if (!container) return
+
+    // Remove any previously rendered json-tree div
+    const existing = container.querySelector(".json-tree")
+    if (existing) existing.remove()
+
+    // Show the pre again so the json-tree controller can read its content
+    pre.style.display = ""
+
+    container.setAttribute("data-controller", "json-tree")
+    pre.setAttribute("data-json-tree-target", "source")
+
+    // Force Stimulus to notice the new/updated controller attribute
+    const app = this.application
+    if (app) {
+      requestAnimationFrame(() => {
+        const ctrl = app.getControllerForElementAndIdentifier(container, "json-tree")
+        if (ctrl) {
+          // Re-run rendering (clears old trees and rebuilds)
+          ctrl.sourceTargets.forEach(src => {
+            const oldTree = src.nextElementSibling
+            if (oldTree?.classList?.contains("json-tree")) oldTree.remove()
+            src.style.display = ""
+          })
+          ctrl.connect()
+        }
+      })
+    }
   }
 
   _escapeHtml(str) {

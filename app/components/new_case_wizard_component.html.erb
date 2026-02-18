@@ -42,10 +42,15 @@
                 </select>
               </div>
             <% end %>
+            <div class="mb-3">
+              <a href="#" class="small" data-action="click->new-case-wizard#useTmdbDemo" data-new-case-wizard-target="tmdbDemoLink">
+                <i class="bi bi-film" aria-hidden="true"></i> Try the TMDB movie demo
+              </a>
+            </div>
             <div data-new-case-wizard-target="newEndpointFields">
               <div class="mb-2">
                 <label class="form-label small">Search engine</label>
-                <select class="form-select form-select-sm" data-new-case-wizard-target="searchEngine">
+                <select class="form-select form-select-sm" data-new-case-wizard-target="searchEngine" data-action="change->new-case-wizard#onEngineChange">
                   <option value="solr">Solr</option>
                   <option value="es">Elasticsearch</option>
                   <option value="os">OpenSearch</option>
@@ -53,29 +58,44 @@
                   <option value="algolia">Algolia</option>
                   <option value="searchapi">SearchAPI (Custom)</option>
                 </select>
+                <div class="d-none mt-1" data-new-case-wizard-target="searchapiHelp">
+                  <a href="<%= helpers.new_mapper_wizard_path %>" target="_blank" rel="noopener noreferrer" class="small">
+                    <i class="bi bi-wrench" aria-hidden="true"></i> Open SearchAPI Mapper Wizard
+                  </a>
+                </div>
               </div>
               <div class="mb-2">
                 <label class="form-label small">Endpoint URL</label>
                 <input type="url" class="form-control form-control-sm" placeholder="https://my-solr:8983/solr/collection/select" data-new-case-wizard-target="endpointUrl">
               </div>
             </div>
+            <hr class="my-3">
+            <h6 class="text-muted">Or upload static data</h6>
+            <p class="text-muted small">Upload a CSV file to create a case with static data (no live search endpoint required).</p>
+            <div class="mb-2">
+              <label class="form-label small">CSV file</label>
+              <input type="file" class="form-control form-control-sm" accept=".csv,text/csv" data-new-case-wizard-target="csvFile" data-action="change->new-case-wizard#onCsvSelected">
+              <div class="form-text small">Required headers: <code>Query Text</code>, <code>Doc ID</code>, <code>Doc Position</code>. Additional columns become document fields.</div>
+            </div>
+            <div class="d-none" data-new-case-wizard-target="csvPreview"></div>
           </div>
           <%# Step 3: Field Spec %>
           <div data-new-case-wizard-target="step" data-wizard-step="3" class="d-none">
             <h6>Configure field display</h6>
             <p class="text-muted small">Specify which fields to display from search results. Use a comma-separated list. Prefix with <code>title:</code> for the title field, <code>id:</code> for the document ID field.</p>
-            <div class="mb-2">
+            <div class="mb-2 position-relative" data-controller="field-autocomplete" data-field-autocomplete-search-endpoint-id-value="0">
               <label class="form-label small">Field spec</label>
-              <input type="text" class="form-control form-control-sm font-monospace" placeholder="id:id, title:title, body, author" data-new-case-wizard-target="fieldSpec" value="id:id, title:title">
+              <input type="text" class="form-control form-control-sm font-monospace" placeholder="id:id, title:title, body, author" data-new-case-wizard-target="fieldSpec" data-field-autocomplete-target="input" value="id:id, title:title">
+              <div class="dropdown-menu d-none position-absolute w-100" data-field-autocomplete-target="dropdown" style="max-height:200px;overflow:auto"></div>
             </div>
           </div>
           <%# Step 4: First Query %>
           <div data-new-case-wizard-target="step" data-wizard-step="4" class="d-none">
-            <h6>Add your first query</h6>
-            <p class="text-muted small">Enter a search query to start tuning. You can add more queries later.</p>
+            <h6>Add your first queries</h6>
+            <p class="text-muted small">Enter search queries to start tuning. Separate multiple queries with semicolons. Duplicates are removed automatically.</p>
             <div class="mb-2">
               <label class="form-label small">Query text</label>
-              <input type="text" class="form-control form-control-sm" placeholder="e.g. laptop, red shoes, pizza near me" data-new-case-wizard-target="firstQuery">
+              <input type="text" class="form-control form-control-sm" placeholder="e.g. laptop; red shoes; pizza near me" data-new-case-wizard-target="firstQuery">
             </div>
             <p class="text-muted small">Leave blank to skip — you can add queries anytime.</p>
           </div>

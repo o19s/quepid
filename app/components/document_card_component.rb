@@ -131,6 +131,36 @@ class DocumentCardComponent < ApplicationComponent
     end
   end
 
+  # Detect media URLs (audio, video, image) from document fields.
+  # Returns an array of { type: "audio"|"video"|"image", url: "..." } hashes.
+  def media_embeds
+    return @media_embeds if defined?(@media_embeds)
+
+    audio_ext = /\.(mp3|wav|ogg|flac|aac)(\?|$)/i
+    video_ext = /\.(mp4|webm|avi|mov|mkv|ogv)(\?|$)/i
+    image_ext = /\.(jpe?g|png|gif|webp|svg|bmp|tiff?)(\?|$)/i
+
+    @media_embeds = []
+    fields.each_value do |val|
+      url = Array(val).first.to_s.strip
+      next unless url.match?(%r{\Ahttps?://})
+      next if @media_embeds.any? { |e| e[:url] == url }
+
+      if url.match?(audio_ext)
+        @media_embeds << { type: "audio", url: url }
+      elsif url.match?(video_ext)
+        @media_embeds << { type: "video", url: url }
+      elsif url.match?(image_ext) && image_url != url
+        @media_embeds << { type: "image", url: url }
+      end
+    end
+    @media_embeds
+  end
+
+  def has_media_embeds?
+    media_embeds.any?
+  end
+
   def explain_display_text
     raw = explain_raw
     return "No explain text available." if raw.blank?

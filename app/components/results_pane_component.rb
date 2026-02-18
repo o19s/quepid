@@ -29,11 +29,13 @@ class ResultsPaneComponent < ApplicationComponent
   # @param try_number [Integer, nil] Current try number
   # @param selected_query [Query, Hash, nil] Currently selected query (id, query_text); nil if none
   # @param scorer_scale [Array<Integer>, nil] Rating scale from case scorer (e.g. [0,1,2,3]); passed to DocFinder
-  def initialize(case_id:, try_number:, selected_query: nil, scorer_scale: nil)
-    @case_id         = case_id
-    @try_number      = try_number
-    @selected_query  = selected_query
-    @scorer_scale   = scorer_scale.presence || [ 0, 1, 2, 3 ]
+  # @param scale_with_labels [Hash, nil] Optional label map from scorer: { "0" => "Not Relevant", "3" => "Perfect" }
+  def initialize(case_id:, try_number:, selected_query: nil, scorer_scale: nil, scale_with_labels: nil)
+    @case_id             = case_id
+    @try_number          = try_number
+    @selected_query      = selected_query
+    @scorer_scale        = scorer_scale.presence || [ 0, 1, 2, 3 ]
+    @scale_with_labels   = scale_with_labels || {}
   end
 
   def selected?

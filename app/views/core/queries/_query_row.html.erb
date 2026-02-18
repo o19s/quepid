@@ -7,6 +7,8 @@
     data-query-id="<%= query_id %>"
     data-query-text="<%= query_text.to_s.downcase %>"
     data-query-score="<%= local_assigns[:query_score] %>"
+    data-query-modified="<%= query.respond_to?(:updated_at) ? query.updated_at.to_i : 0 %>"
+    data-query-error="<%= local_assigns[:query_score].to_s == '?' || local_assigns[:query_score].to_s == '' ? 'true' : 'false' %>"
     data-controller="query-expand"
     data-query-expand-case-id-value="<%= local_assigns[:case_id] %>"
     data-query-expand-try-number-value="<%= local_assigns[:try_number] %>"

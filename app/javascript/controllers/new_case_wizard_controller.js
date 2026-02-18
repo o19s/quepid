@@ -4,6 +4,24 @@ import { getQuepidRootUrl, buildApiUrl } from "utils/quepid_root"
 
 const TOTAL_STEPS = 4
 
+const TMDB_DEFAULTS = {
+  solr: {
+    url: "http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select",
+    queryParams: "q=##query##&defType=edismax&qf=text_all&tie=1.0",
+    fieldSpec: "id:id, title:title, overview, cast, thumb:poster_path"
+  },
+  es: {
+    url: "http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search",
+    queryParams: '{\n  "query": {\n    "multi_match": {\n      "query": "##query##",\n      "fields": ["title^10", "overview"]\n    }\n  }\n}',
+    fieldSpec: "id:_id, title:title, overview, cast, thumb:poster_path"
+  },
+  os: {
+    url: "http://quepid-opensearch.dev.o19s.com:9000/tmdb/_search",
+    queryParams: '{\n  "query": {\n    "multi_match": {\n      "query": "##query##",\n      "fields": ["title^10", "overview"]\n    }\n  }\n}',
+    fieldSpec: "id:_id, title:title, overview, cast, thumb:poster_path"
+  }
+}
+
 // Multi-step new case wizard. Steps: (1) Welcome, (2) Search Endpoint,
 // (3) Field Spec, (4) First Query. On finish, updates the try with endpoint +
 // field spec, optionally adds a query, and marks the wizard complete.
@@ -16,7 +34,7 @@ export default class extends Controller {
     searchEndpoints: Array
   }
 
-  static targets = ["modal", "modalTitle", "step", "backBtn", "nextBtn", "finishBtn", "existingEndpoint", "newEndpointFields", "searchEngine", "endpointUrl", "fieldSpec", "firstQuery"]
+  static targets = ["modal", "modalTitle", "step", "backBtn", "nextBtn", "finishBtn", "existingEndpoint", "newEndpointFields", "searchEngine", "endpointUrl", "fieldSpec", "firstQuery", "searchapiHelp", "tmdbDemoLink", "csvFile", "csvPreview"]
 
   connect() {
     this._currentStep = 1
@@ -54,6 +72,44 @@ export default class extends Controller {
     if (!this.hasExistingEndpointTarget || !this.hasNewEndpointFieldsTarget) return
     const selected = this.existingEndpointTarget.value
     this.newEndpointFieldsTarget.classList.toggle("d-none", selected !== "")
+
+    // Update field autocomplete endpoint ID
+    const fieldAutoEl = this.element.querySelector("[data-controller='field-autocomplete']")
+    if (fieldAutoEl) {
+      fieldAutoEl.setAttribute("data-field-autocomplete-search-endpoint-id-value", selected || "0")
+    }
+  }
+
+  onEngineChange() {
+    if (!this.hasSearchapiHelpTarget || !this.hasSearchEngineTarget) return
+    this.searchapiHelpTarget.classList.toggle("d-none", this.searchEngineTarget.value !== "searchapi")
+  }
+
+  useTmdbDemo(event) {
+    event.preventDefault()
+    const engine = this.hasSearchEngineTarget ? this.searchEngineTarget.value : "solr"
+    const defaults = TMDB_DEFAULTS[engine]
+    if (!defaults) return
+
+    // Deselect existing endpoint so new endpoint fields are used
+    if (this.hasExistingEndpointTarget) {
+      this.existingEndpointTarget.value = ""
+    }
+    if (this.hasNewEndpointFieldsTarget) {
+      this.newEndpointFieldsTarget.classList.remove("d-none")
+    }
+
+    if (this.hasEndpointUrlTarget) this.endpointUrlTarget.value = defaults.url
+    if (this.hasFieldSpecTarget) this.fieldSpecTarget.value = defaults.fieldSpec
+
+    // Store query params for use in finish()
+    this._tmdbQueryParams = defaults.queryParams
+    this._tmdbActive = true
+
+    // Show feedback
+    if (this.hasTmdbDemoLinkTarget) {
+      this.tmdbDemoLinkTarget.innerHTML = '<i class="bi bi-check-circle text-success"></i> TMDB demo settings applied!'
+    }
   }
 
   async finish() {
@@ -65,13 +121,21 @@ export default class extends Controller {
     try {
       const root = getQuepidRootUrl()
 
-      // Step 2: Update try with search endpoint
-      await this._saveEndpointAndFieldSpec(root)
+      if (this._csvData) {
+        // CSV upload flow: create static endpoint + snapshot
+        await this._handleCsvUpload(root)
+      } else {
+        // Normal flow: endpoint + field spec
+        await this._saveEndpointAndFieldSpec(root)
 
-      // Step 4: Add first query if provided
-      const queryText = this.hasFirstQueryTarget ? this.firstQueryTarget.value.trim() : ""
-      if (queryText) {
-        await this._addFirstQuery(root, queryText)
+        // Step 4: Add queries (supports semicolon-separated, deduped)
+        const queryInput = this.hasFirstQueryTarget ? this.firstQueryTarget.value.trim() : ""
+        if (queryInput) {
+          const queries = this._parseQueries(queryInput)
+          for (const q of queries) {
+            await this._addFirstQuery(root, q)
+          }
+        }
       }
 
       // Mark wizard complete for user
@@ -102,6 +166,11 @@ export default class extends Controller {
     // Field spec from step 3
     const fieldSpec = this.hasFieldSpecTarget ? this.fieldSpecTarget.value.trim() : ""
     if (fieldSpec) body.try.field_spec = fieldSpec
+
+    // Query params from TMDB demo
+    if (this._tmdbActive && this._tmdbQueryParams) {
+      body.try.query_params = this._tmdbQueryParams
+    }
 
     // Search endpoint from step 2
     const existingId = this.hasExistingEndpointTarget ? this.existingEndpointTarget.value : ""
@@ -145,6 +214,60 @@ export default class extends Controller {
     }
   }
 
+  async _handleCsvUpload(root) {
+    if (!this.caseIdValue || !this.tryNumberValue || !this._csvData) return
+
+    // 1. Create a static search endpoint for the try
+    const tryUrl = buildApiUrl(root, "cases", this.caseIdValue, "tries", this.tryNumberValue)
+    const fieldSpec = this.hasFieldSpecTarget ? this.fieldSpecTarget.value.trim() : ""
+    const tryBody = {
+      try: { field_spec: fieldSpec || "id:id, title:title" },
+      search_endpoint: { search_engine: "static", endpoint_url: `static://csv-upload/${this.caseIdValue}` }
+    }
+    const tryRes = await apiFetch(tryUrl, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(tryBody)
+    })
+    if (!tryRes.ok) throw new Error("Failed to create static endpoint")
+
+    // 2. Add queries from CSV
+    for (const queryText of Object.keys(this._csvData.queries)) {
+      await this._addFirstQuery(root, queryText)
+    }
+
+    // 3. Create snapshot with the CSV data
+    const snapshotUrl = buildApiUrl(root, "cases", this.caseIdValue, "snapshots")
+    const snapshotDocs = {}
+    const snapshotQueries = {}
+
+    for (const [queryText, docs] of Object.entries(this._csvData.queries)) {
+      const queryKey = queryText
+      snapshotQueries[queryKey] = { query_text: queryText }
+      snapshotDocs[queryKey] = docs.map(d => {
+        const fields = { ...d }
+        delete fields.id
+        delete fields.position
+        return { id: d.id, fields }
+      })
+    }
+
+    const snapshotRes = await apiFetch(snapshotUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        snapshot: {
+          name: "CSV Upload",
+          docs: snapshotDocs,
+          queries: snapshotQueries
+        }
+      })
+    })
+    if (!snapshotRes.ok) {
+      console.warn("Snapshot creation failed:", snapshotRes.status)
+    }
+  }
+
   async _markWizardComplete(root) {
     if (!this.userIdValue) return
     const url = buildApiUrl(root, "users", this.userIdValue)
@@ -183,6 +306,117 @@ export default class extends Controller {
     if (this.hasModalTitleTarget) {
       this.modalTitleTarget.textContent = titles[this._currentStep] || "Setup"
     }
+  }
+
+  onCsvSelected() {
+    if (!this.hasCsvFileTarget || !this.csvFileTarget.files.length) return
+
+    const file = this.csvFileTarget.files[0]
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const text = e.target.result
+      const result = this._parseCsv(text)
+      if (result.error) {
+        if (this.hasCsvPreviewTarget) {
+          this.csvPreviewTarget.innerHTML = `<div class="alert alert-danger small py-1 px-2">${this._escapeHtml(result.error)}</div>`
+          this.csvPreviewTarget.classList.remove("d-none")
+        }
+        this._csvData = null
+        return
+      }
+
+      this._csvData = result
+      if (this.hasCsvPreviewTarget) {
+        const queryCount = Object.keys(result.queries).length
+        const docCount = Object.values(result.queries).reduce((sum, docs) => sum + docs.length, 0)
+        this.csvPreviewTarget.innerHTML = `
+          <div class="alert alert-success small py-1 px-2">
+            <i class="bi bi-check-circle"></i> Parsed ${queryCount} queries with ${docCount} total documents.
+            <br><small>Fields: ${result.fields.join(", ")}</small>
+          </div>
+        `
+        this.csvPreviewTarget.classList.remove("d-none")
+      }
+    }
+    reader.readAsText(file)
+  }
+
+  _parseCsv(text) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim())
+    if (lines.length < 2) return { error: "CSV must have at least a header and one data row." }
+
+    const headers = this._splitCsvLine(lines[0]).map(h => h.trim())
+    const qIdx = headers.findIndex(h => h.toLowerCase() === "query text")
+    const dIdx = headers.findIndex(h => h.toLowerCase() === "doc id")
+    const pIdx = headers.findIndex(h => h.toLowerCase() === "doc position")
+
+    if (qIdx < 0 || dIdx < 0 || pIdx < 0) {
+      return { error: 'Missing required headers: "Query Text", "Doc ID", "Doc Position"' }
+    }
+
+    const extraFields = headers.filter((_, i) => i !== qIdx && i !== dIdx && i !== pIdx)
+    const queries = {}
+
+    for (let i = 1; i < lines.length; i++) {
+      const cols = this._splitCsvLine(lines[i])
+      if (cols.length <= Math.max(qIdx, dIdx, pIdx)) continue
+
+      const queryText = cols[qIdx].trim()
+      const docId = cols[dIdx].trim()
+      const position = parseInt(cols[pIdx], 10)
+      if (!queryText || !docId) continue
+
+      if (!queries[queryText]) queries[queryText] = []
+
+      const doc = { id: docId, position: isNaN(position) ? i : position }
+      extraFields.forEach((field, fi) => {
+        const colIdx = headers.indexOf(field)
+        if (colIdx >= 0 && cols[colIdx]) {
+          doc[field] = cols[colIdx].trim()
+        }
+      })
+      queries[queryText].push(doc)
+    }
+
+    return { queries, fields: ["id", ...extraFields] }
+  }
+
+  _splitCsvLine(line) {
+    const result = []
+    let current = ""
+    let inQuotes = false
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i]
+      if (ch === '"') {
+        inQuotes = !inQuotes
+      } else if (ch === "," && !inQuotes) {
+        result.push(current)
+        current = ""
+      } else {
+        current += ch
+      }
+    }
+    result.push(current)
+    return result
+  }
+
+  _escapeHtml(str) {
+    if (str == null) return ""
+    const div = document.createElement("div")
+    div.textContent = String(str)
+    return div.innerHTML
+  }
+
+  // Split semicolon-separated queries, trim, and deduplicate (case-insensitive)
+  _parseQueries(input) {
+    const seen = new Set()
+    return input.split(";").map(q => q.trim()).filter(q => {
+      if (!q) return false
+      const key = q.toLowerCase()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
   }
 
   _clearShowWizardFromUrl() {

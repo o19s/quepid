@@ -6,11 +6,12 @@ import { getQuepidRootUrl, buildApiUrl } from "utils/quepid_root"
 // Replaces SettingsCtrl and CurrSettingsCtrl.
 export default class extends Controller {
   static values = { caseId: Number, tryNumber: Number, curatorVars: Object, searchEngine: String }
-  static targets = ["trigger", "panel", "paramsForm", "queryParams", "escapeQuery", "numberOfRows", "curatorVarsContainer", "urlValidationFeedback", "queryParamsFeedback", "endpointSelect"]
+  static targets = ["trigger", "panel", "paramsForm", "queryParams", "escapeQuery", "numberOfRows", "curatorVarsContainer", "urlValidationFeedback", "queryParamsFeedback", "endpointSelect", "templateCallFeedback"]
 
   connect() {
     this._renderCuratorVarInputs()
     this._initCodeMirror()
+    this._checkTemplateCall()
   }
 
   toggle() {
@@ -203,8 +204,21 @@ export default class extends Controller {
       return
     }
 
-    // Only validate JSON for ES/OS engines that use JSON query bodies
     const engine = (this.searchEngineValue || "").toLowerCase()
+
+    // Solr: check for common case-sensitivity typos
+    if (engine === "solr") {
+      const typos = this._checkSolrParamTypos(text)
+      if (typos.length > 0) {
+        const msgs = typos.map(t => `<i class="bi bi-exclamation-triangle"></i> Did you mean <code>${this._escapeHtml(t.correct)}</code> instead of <code>${this._escapeHtml(t.found)}</code>?`)
+        this._showValidationFeedback(feedback, "warning", msgs.join("<br>"))
+      } else {
+        feedback.classList.add("d-none")
+      }
+      return
+    }
+
+    // ES/OS: validate JSON syntax
     const jsonEngines = ["es", "os", "elasticsearch", "opensearch"]
     if (!jsonEngines.some(e => engine.includes(e))) {
       feedback.classList.add("d-none")
@@ -218,6 +232,34 @@ export default class extends Controller {
     } catch (err) {
       this._showValidationFeedback(feedback, "warning", `<i class="bi bi-exclamation-triangle"></i> Invalid JSON: ${this._escapeHtml(err.message)}`)
     }
+  }
+
+  // Check for common Solr parameter case-sensitivity mistakes
+  _checkSolrParamTypos(text) {
+    const correctParams = [
+      "defType", "echoParams", "debugQuery", "timeAllowed", "segmentTerminateEarly",
+      "queryText", "wt", "omitHeader", "logParamsList", "fl",
+      "pf", "pf2", "pf3", "ps", "ps2", "ps3", "qf", "qs",
+      "bq", "bf", "boost", "mm",
+      "lowercaseOperators", "stopwords", "uf"
+    ]
+    const typos = []
+    const params = text.split(/[&\n]/)
+
+    for (const param of params) {
+      const eqIdx = param.indexOf("=")
+      if (eqIdx < 0) continue
+      const key = param.substring(0, eqIdx).trim()
+      if (!key) continue
+
+      for (const correct of correctParams) {
+        if (key !== correct && key.toLowerCase() === correct.toLowerCase()) {
+          typos.push({ found: key, correct })
+          break
+        }
+      }
+    }
+    return typos
   }
 
   _showValidationFeedback(el, type, html) {
@@ -275,7 +317,9 @@ export default class extends Controller {
             <code>##${escapedName}##</code>
           </label>
           <input type="text" class="form-control form-control-sm"
-                 data-curator-var-name="${escapedName}" value="${escapedValue}">
+                 data-curator-var-name="${escapedName}" value="${escapedValue}"
+                 data-action="input->settings-panel#autoGrowInput"
+                 style="width:auto;min-width:50px;max-width:200px">
         </div>
       `
     }).join("")
@@ -284,6 +328,11 @@ export default class extends Controller {
       <h6 class="card-title mt-2 small text-muted">Curator variables</h6>
       ${html}
     `
+
+    // Set initial widths based on existing values
+    this.curatorVarsContainerTarget.querySelectorAll("[data-curator-var-name]").forEach(input => {
+      this._autoSizeInput(input)
+    })
   }
 
   // Initialize CodeMirror on the query params textarea if available
@@ -299,6 +348,28 @@ export default class extends Controller {
         height: 200
       })
     }
+  }
+
+  // Check if search URL contains _search/template and show warning
+  _checkTemplateCall() {
+    if (!this.hasTemplateCallFeedbackTarget) return
+    const urlEl = this.element.querySelector("code.small")
+    const url = urlEl?.textContent?.trim() || ""
+    if (url.includes("_search/template")) {
+      this.templateCallFeedbackTarget.classList.remove("d-none")
+    } else {
+      this.templateCallFeedbackTarget.classList.add("d-none")
+    }
+  }
+
+  // Auto-grow curator variable input width based on content
+  autoGrowInput(event) {
+    this._autoSizeInput(event.target)
+  }
+
+  _autoSizeInput(input) {
+    const length = (input.value || "").length
+    input.style.width = `${Math.max(50, Math.min(200, length * 8 + 30))}px`
   }
 
   // Collect current curator variable values from the rendered inputs

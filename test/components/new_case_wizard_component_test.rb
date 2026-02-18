@@ -51,7 +51,7 @@ class NewCaseWizardComponentTest < ViewComponent::TestCase
     # Step 3: Field Spec (hidden)
     assert_selector "[data-wizard-step='3']", text: /Configure field display/
     # Step 4: First Query (hidden)
-    assert_selector "[data-wizard-step='4']", text: /Add your first query/
+    assert_selector "[data-wizard-step='4']", text: /Add your first queries/
   end
 
   def test_renders_existing_endpoints_dropdown

@@ -1,0 +1,37 @@
+<div data-controller="unarchive-case" data-unarchive-case-teams-value="<%= h(teams_json) %>">
+  <button type="button" class="btn btn-sm btn-outline-secondary" data-action="click->unarchive-case#open" title="Unarchive a case">
+    <i class="bi bi-archive" aria-hidden="true"></i> Unarchive
+  </button>
+
+  <div class="modal fade" tabindex="-1" aria-hidden="true" data-unarchive-case-target="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Unarchive a case</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small">Filter by team</label>
+            <select class="form-select form-select-sm" data-unarchive-case-target="teamFilter" data-action="change->unarchive-case#filterByTeam">
+              <option value="">All teams</option>
+              <% @current_user_teams.each do |team| %>
+                <option value="<%= team.id %>"><%= team.name %></option>
+              <% end %>
+            </select>
+          </div>
+          <div data-unarchive-case-target="caseList">
+            <p class="text-muted small">Click "Unarchive" above to load archived cases.</p>
+          </div>
+          <div class="d-none text-center py-2" data-unarchive-case-target="loading">
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span class="ms-2">Loading archived cases…</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

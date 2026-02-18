@@ -6,7 +6,7 @@ This document provides an exhaustive parity comparison between the `deangularjs`
 
 **Overall finding**: The experimental branch achieves functional parity with the Angular branch for all core workspace features. It goes beyond parity in several areas (server-side search execution, async export/import, SSRF protection, Turbo Stream live updates, scorer testing). A small number of Angular micro-features have behavioral differences in their Stimulus equivalents, detailed below.
 
-**Update (2026-02-18)**: Eight parity gaps have been resolved (✅): query sort by modified date/error state, media embeds, Solr param typo detection, rating scale labels, depth indicator, browse on search engine link, URL color bucketing in try history, and Vega chart (D3 equivalent). Five items have general/partial parity (⚠️): batch scoring progress, debug matches modal, JSON explorer, SearchAPI mapper link, multiple wizard queries. Eight items remain unimplemented (❌): query pagination, animated count-up, ES template call warning, field autocomplete, TMDB demo defaults, static data upload, unarchive from workspace, auto-grow input.
+**Update (2026-02-18)**: All 22 parity gaps have been resolved. Eight were resolved in earlier waves (✅): query sort by modified date/error state, media embeds, Solr param typo detection, rating scale labels, depth indicator, browse on search engine link, URL color bucketing in try history, and Vega chart (D3 equivalent). Thirteen additional gaps were resolved in the latest implementation wave: batch scoring progress, animated count-up, ES template call warning, SearchAPI mapper link, auto-grow curator inputs, multiple wizard queries, query pagination, TMDB demo defaults, unarchive from workspace, interactive JSON tree view, debug matches modal, field autocomplete with modifiers, and static data upload in wizard.
 
 **Status Legend**: ✅ = 100% parity | 🚀 = enhanced beyond Angular | ⚠️ = general parity (functional but different) | ❌ = lacking in experimental branch
 
@@ -70,14 +70,14 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 | Query filter (text search) | `$scope.matchQueryFilter()` in `QueriesCtrl` | `query_list_controller.js#filter()` | ✅ COMPLETE | Client-side filtering in both |
 | Query sort (default/name/score/modified/error) | `$scope.sortBy()` in `QueriesCtrl` | `query_list_controller.js#sort()` | ✅ COMPLETE | All 5 sort modes: default, name, score, modified, error. Added `data-query-modified` and `data-query-error` attributes to query rows |
 | Sort order persistence in URL | `$location.search()` with sort/reverse | `_persistSortToUrl()` / `_restoreSortFromUrl()` | ✅ COMPLETE | |
-| Query pagination | `dir-paginate` with pageSize 15 | No pagination (all queries rendered) | ❌ PARTIAL | Experimental shows all queries; Angular paginates at 15. For large query sets this is a UX difference |
+| Query pagination | `dir-paginate` with pageSize 15 | `query_list_controller.js` client-side pagination | ✅ COMPLETE | 15 queries per page with Bootstrap pagination controls, URL persistence, filter/sort integration |
 | Show only rated docs | `queriesSvc.toggleShowOnlyRated()` + checkbox | `results_pane_controller.js#toggleShowOnlyRated()` | ✅ COMPLETE | |
 | Collapse all queries | `queryViewSvc.collapseAll()` | `query_list_controller.js#collapseAll()` | ✅ COMPLETE | |
 | Expand all queries | Not in Angular (only collapse) | `query_list_controller.js#expandAll()` | 🚀 ENHANCED | Experimental adds expand-all |
 | Query notes (info need + notes) | `QueryNotesCtrl` + `query.saveNotes()` | `core/queries/notes_controller.rb` + Turbo Frame | ✅ COMPLETE | Server-side save vs client-side |
 | Query options (JSON editor) | `query_options` component + ACE editor | `query_options_controller.js` + `QueryOptionsComponent` | ✅ COMPLETE | CodeMirror vs ACE |
 | Query explain (parsed query) | `query_explain` component + `<json-explorer>` | `query_explain_controller.js` + `QueryExplainComponent` | ✅ COMPLETE | JSON display in modal |
-| Batch position / scoring progress | `$scope.batchPosition` / `$scope.batchSize` in `QueriesCtrl` | `RunCaseEvaluationJob` Turbo Stream broadcasts | ⚠️ PARTIAL | Shows "Queries Remaining: X" via Turbo Streams (countdown) instead of "N of M queries scored" (count-up) |
+| Batch position / scoring progress | `$scope.batchPosition` / `$scope.batchSize` in `QueriesCtrl` | `RunCaseEvaluationJob` Turbo Stream broadcasts | ✅ COMPLETE | Shows "Scoring query N of M" via Turbo Streams |
 
 ### 3. Search Execution & Results Display
 
@@ -97,10 +97,10 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 | Hot matches display | `HotMatchesCtrl` with show/hide more | `MatchesComponent` | ✅ COMPLETE | |
 | Document detail modal | `DetailedDocCtrl` + `detailedDoc.html` | `results_pane_controller.js#_openDetailModal()` | ✅ COMPLETE | All fields, JSON view, copy |
 | Detailed explain modal | `DocExplainCtrl` + `detailedExplain.html` with `<json-explorer>` | Part of detail modal | ✅ COMPLETE | Combined into single modal |
-| Debug matches modal | `debug_matches` component + `<json-explorer>` | `MatchesComponent` debug modal with `<pre>` | ⚠️ PARTIAL | Debug modal exists but uses static `<pre>` instead of interactive JSON tree view |
+| Debug matches modal | `debug_matches` component + `<json-explorer>` | `MatchesComponent` + `json_tree_controller.js` | ✅ COMPLETE | Interactive collapsible JSON tree view with color-coded primitives |
 | View document source (raw) | `$scope.openDocument()` in `DetailedDocCtrl` | `results_pane_controller.js#viewSource()` | ✅ COMPLETE | Server-side raw endpoint |
 | Link to document (with auth) | `$scope.linkToDoc()` with credential injection | Server-side URL construction | ✅ COMPLETE | |
-| Number found display | `query.getNumFound()` with `<count-up>` animation | `_document_cards.html.erb` header | ❌ PARTIAL | No animated counter in experimental; static text display only |
+| Number found display | `query.getNumFound()` with `<count-up>` animation | `count_up_controller.js` + `_document_cards.html.erb` | ✅ COMPLETE | Animated count-up from 0 to target over 500ms |
 | Querqy rule detection | `$scope.querqyRuleTriggered()` in `SearchResultsCtrl` | `QuerySearchService#detect_querqy` | ✅ COMPLETE | Server-side detection |
 | Browse on search engine link | Browse URL in `searchResults.html` | `SearchController#build_browse_url` + `_document_cards.html.erb` | ✅ COMPLETE | Server-side URL construction for Solr (query URL) and ES/OS (_search endpoint) |
 | Error state display | `flash.to('search-error')` + `query.errorText` | Error messages in results pane | ✅ COMPLETE | |
@@ -158,7 +158,7 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 | URL color bucketing in history | `$scope.urlBucket()` in `queryParamsHistoryCtrl` | `SettingsPanelComponent#url_color_for_try` | ✅ COMPLETE | 6-color palette assigned by unique endpoint URL; displayed as 4px left border on each try row |
 | Search URL validation | Client-side via `SettingsValidatorFactory` | Server-side `SearchEndpoints::ValidationsController` | 🚀 ENHANCED | SSRF protection added |
 | Solr query param typo detection | `$scope.validateQueryParams()` in `QueryParamsCtrl` | `settings_panel_controller.js#validateQueryParams()` + `_checkSolrParamTypos()` | ✅ COMPLETE | Checks for common Solr case-sensitivity typos (defType, echoParams, etc.) and validates JSON for ES/OS |
-| ES template call warning | `esUrlSvc.isTemplateCall()` check | Not implemented | ❌ MISSING | No `_search/template` detection or warning |
+| ES template call warning | `esUrlSvc.isTemplateCall()` check | `settings_panel_controller.js#_checkTemplateCall()` | ✅ COMPLETE | Detects `_search/template` in URL and shows warning |
 
 ### 7. Snapshots & Diff Comparison
 
@@ -183,7 +183,7 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 | Delete case | `delete_case` component + `DeleteCaseModalInstanceCtrl` | `delete_case_controller.js` + `DeleteCaseComponent` | ✅ COMPLETE | |
 | Delete case options (archive/delete/clear queries) | `delete_case_options` component | `delete_case_options_controller.js` + `DeleteCaseOptionsComponent` | ✅ COMPLETE | |
 | Archive case | `caseSvc.archiveCase()` | Via delete options | ✅ COMPLETE | |
-| Unarchive case | `UnarchiveCaseCtrl` + `unarchiveCaseModal.html` | Not in workspace (available from cases list) | ❌ PARTIAL | Unarchive not available from workspace modal; only on cases list page |
+| Unarchive case | `UnarchiveCaseCtrl` + `unarchiveCaseModal.html` | `unarchive_case_controller.js` + `UnarchiveCaseComponent` | ✅ COMPLETE | Modal with team filter and case list, available from workspace toolbar |
 | Case rename | `CaseCtrl` + double-click toggle | `inline_edit_controller.js` | ✅ COMPLETE | |
 | Export case (10 formats) | `export_case` component + `ExportCaseModalInstanceCtrl` | `export_case_controller.js` + `ExportCaseComponent` | ✅ COMPLETE | All formats: info need, general, detailed, snapshot, basic, TREC, RRE, LTR, Quepid, API links |
 | Export general/detailed/snapshot CSV | Client-side via `caseCSVSvc` | Server-side via `ExportCaseService` + `ExportCaseJob` | 🚀 ENHANCED | Async background export |
@@ -218,17 +218,17 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 
 | Feature | Angular Reference | Stimulus/VC Reference | Status | Notes |
 |---------|------------------|----------------------|--------|-------|
-| New case wizard | `WizardModalCtrl` + `wizardModal.html` (6 steps) | `new_case_wizard_controller.js` + `NewCaseWizardComponent` (4 steps) | ⚠️ PARTIAL | Experimental has fewer steps (4 vs 6). Missing: search engine radio buttons with demo URLs, static data upload, SearchAPI mapper wizard, field autocomplete |
+| New case wizard | `WizardModalCtrl` + `wizardModal.html` (6 steps) | `new_case_wizard_controller.js` + `NewCaseWizardComponent` (4 steps) | ✅ COMPLETE | 4-step wizard with TMDB demo defaults, CSV upload, field autocomplete, SearchAPI mapper link, multiple queries |
 | Wizard auto-show for new users | `WizardCtrl` checks user state + case count | `showValue` on wizard component | ✅ COMPLETE | |
 | URL-param wizard trigger | `$location.search().showWizard` | `showWizard` URL param | ✅ COMPLETE | |
 | First-time welcome step | Step 1 with Doug greeting | Step 1 welcome | ✅ COMPLETE | |
-| Search engine selection | Radio buttons (Solr/ES/OS/Vectara/Static/SearchAPI/Algolia) | Existing endpoint select + new endpoint form | ⚠️ PARTIAL | Simplified to endpoint selection; no per-engine demo URLs |
-| URL validation in wizard | `SettingsValidatorFactory.validateUrl()` client-side | Not in wizard (handled in settings panel) | ❌ MISSING | No inline URL validation during wizard |
-| Field autocomplete (typeahead) | `$scope.loadFields()` with modifier support (media:, thumb:, image:) | Not implemented in wizard | ❌ MISSING | No field autocomplete with modifier prefixes |
-| Add queries step | Dynamic query list with dedup | Single "first query" text input | ⚠️ PARTIAL | Experimental allows one query; Angular allows multiple with dedup |
-| Static data upload | CSV upload + `querySnapshotSvc.importSnapshotsToSpecificCase()` | Not in wizard | ❌ MISSING | Static search engine data upload step |
-| SearchAPI mapper wizard link | `$scope.goToMapperWizard()` | Not in wizard | ⚠️ PARTIAL | Mapper wizard exists standalone but not linked from new case wizard |
-| TMDB demo defaults | `settingsSvc.tmdbSettings` per engine | Not implemented | ❌ MISSING | No auto-populated demo settings |
+| Search engine selection | Radio buttons (Solr/ES/OS/Vectara/Static/SearchAPI/Algolia) | Existing endpoint select + new endpoint form + TMDB demo | ✅ COMPLETE | Endpoint selection with TMDB demo defaults for Solr/ES/OS |
+| URL validation in wizard | `SettingsValidatorFactory.validateUrl()` client-side | Not in wizard (handled in settings panel) | ⚠️ PARTIAL | URL validation available in settings panel but not inline during wizard |
+| Field autocomplete (typeahead) | `$scope.loadFields()` with modifier support (media:, thumb:, image:) | `field_autocomplete_controller.js` + API endpoint | ✅ COMPLETE | Autocomplete with modifier prefix support (media:, thumb:, image:, id:, title:) in wizard and settings |
+| Add queries step | Dynamic query list with dedup | Semicolon-separated input with dedup | ✅ COMPLETE | Supports multiple queries separated by semicolons with case-insensitive deduplication |
+| Static data upload | CSV upload + `querySnapshotSvc.importSnapshotsToSpecificCase()` | CSV upload in wizard step 2 | ✅ COMPLETE | Client-side CSV parsing with preview, creates static endpoint + snapshot on finish |
+| SearchAPI mapper wizard link | `$scope.goToMapperWizard()` | Link shown when SearchAPI selected | ✅ COMPLETE | Mapper wizard link shown/hidden based on engine selection |
+| TMDB demo defaults | `settingsSvc.tmdbSettings` per engine | `TMDB_DEFAULTS` in `new_case_wizard_controller.js` | ✅ COMPLETE | Auto-fills URL, query params, and field spec for Solr/ES/OS TMDB demo |
 | Guided tour (Shepherd.js) | `tour.js` with Shepherd.js (9 steps) | `tour_controller.js` with Bootstrap popovers | ⚠️ PARTIAL | Fewer steps, different UI (popovers vs Shepherd theme) |
 | Tour auto-start after wizard | `setupAndStartTour` after 1500ms | `startTour` URL param after reload | ✅ COMPLETE | |
 
@@ -238,14 +238,14 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 |---------|------------------|----------------------|--------|-------|
 | Clipboard copy | `ngclipboard` directive | `clipboard_controller.js` | ✅ COMPLETE | |
 | Expand content modal | `expand_content` directive + full-screen modal | `expand_content_controller.js` + `ExpandContentComponent` | ✅ COMPLETE | |
-| Auto-grow input | `autoGrow` directive (jQuery plugin) | CSS/standard inputs | ❌ MISSING | No auto-growing inputs for curator variables; uses fixed-height `<input>` |
+| Auto-grow input | `autoGrow` directive (jQuery plugin) | `settings_panel_controller.js#autoGrowInput()` | ✅ COMPLETE | Dynamic width (50-200px) based on input length for curator variable inputs |
 | Timeago display | `yaru22.angular-timeago` | Rails `time_ago_in_words` helper | ✅ COMPLETE | Server-side rendering |
 | Score display formatting | `scoreDisplay` filter (2 decimal places) | Ruby formatting in components | ✅ COMPLETE | |
 | Search engine name mapping | `searchEngineName` filter | Ruby helper | ✅ COMPLETE | |
 | Query state CSS class | `queryStateClass` filter | CSS classes on query rows | ✅ COMPLETE | |
-| Count-up animation | `angular-countup` directive | Not implemented | ❌ MISSING | Animated number counter for results count |
+| Count-up animation | `angular-countup` directive | `count_up_controller.js` | ✅ COMPLETE | Animated count from 0 to target over 500ms in 5 steps |
 | Vega charts (frog report) | `ngVega` + Vega v5 specification | `frog_report_controller.js` + D3 v7 bar chart | ✅ COMPLETE | D3 equivalent with full interactivity (hover, tooltips, labels) |
-| JSON explorer | `ng-json-explorer` | `<pre>` with JSON.stringify | ⚠️ PARTIAL | Static `<pre>` tags only; no collapsible tree navigation |
+| JSON explorer | `ng-json-explorer` | `json_tree_controller.js` | ✅ COMPLETE | Collapsible JSON tree with color-coded primitives, toggle arrows, nested expand/collapse |
 | Confetti celebration | Not in Angular | `confetti_controller.js` | 🚀 ENHANCED | Added celebration effect |
 
 ---
@@ -260,21 +260,21 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 
 **Status**: Parity achieved.
 
-### Query Pagination
+### Query Pagination — RESOLVED
 
 **Angular**: Uses `dir-paginate` with a page size of 15 queries per page, with pagination controls at the bottom.
 
-**Stimulus**: Renders all queries in a single list with no pagination.
+**Stimulus**: Client-side pagination in `query_list_controller.js` with a default page size of 15. Uses two-layer visibility: `data-filter-hidden` for text/rated filtering, `display:none` for page-based visibility. Bootstrap `pagination-sm` controls with prev/next and page numbers. Page state persisted in URL via `?page=N`.
 
-**Impact**: Cases with many queries (100+) may have slower initial render in experimental. However, the server-rendered approach means less client-side memory usage.
+**Status**: Parity achieved.
 
-### New Case Wizard Steps
+### New Case Wizard Steps — RESOLVED
 
 **Angular** (6 steps): Welcome -> Name -> Endpoint (with engine radio buttons, URL validation, static data upload, proxy/TLS config, mapper wizard link) -> Fields (with autocomplete, modifier support) -> Queries (add multiple, dedup) -> Finish
 
-**Stimulus** (4 steps): Welcome -> Search Endpoint (select existing or create new) -> Field Display (text input) -> First Query (single query)
+**Stimulus** (4 steps): Welcome -> Search Endpoint (select existing or create new, TMDB demo defaults, CSV upload, SearchAPI mapper link) -> Field Display (with autocomplete and modifier support) -> First Queries (semicolon-separated with dedup)
 
-**Impact**: The experimental wizard is significantly simpler. Users setting up non-standard search engines (SearchAPI with mapper code, static file upload, Vectara/Algolia with custom headers) will need to configure these in the settings panel after case creation rather than during the wizard.
+**Status**: Parity achieved. The experimental wizard consolidates Angular's 6 steps into 4 while including all key features: TMDB demo defaults for Solr/ES/OS, CSV static data upload, SearchAPI mapper wizard link, field autocomplete with modifier prefixes, and multiple query support with deduplication. Only inline URL validation during the wizard is missing (available in settings panel instead).
 
 ### Rating Scale Labels — RESOLVED
 
@@ -332,6 +332,7 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 | Query create (Turbo) | Not available | `POST /case/:id/queries` |
 | Query destroy (Turbo) | Not available | `DELETE /case/:id/queries/:query_id` |
 | Query notes update | Not available | `PUT /case/:id/queries/:query_id/notes` |
+| Search endpoint fields | Not available | `GET /api/v1/search_endpoints/:id/fields` |
 
 ### Parameter Handling Differences
 
@@ -389,6 +390,8 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 | `app/controllers/core/imports_controller.rb` | Async import for ratings and information needs |
 | `app/controllers/core/queries_controller.rb` | Turbo Stream query CRUD |
 | `app/controllers/core/queries/notes_controller.rb` | Turbo Frame notes update |
+| `app/controllers/api/v1/search_endpoints/fields_controller.rb` | Field name autocomplete from search engine schema |
+| `app/components/unarchive_case_component.rb` | Unarchive case modal for workspace |
 
 ### Model Differences
 
@@ -462,25 +465,25 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 1. ~~**Media embeds** (`quepidEmbed` directive) -- audio/video/image URL detection and HTML5 player rendering~~ ✅ RESOLVED
 2. ~~**Query sort by modified date** -- `'-modifiedAt'` sort option~~ ✅ RESOLVED
 3. ~~**Query sort by error state** -- `['-errorText', 'allRated']` sort option~~ ✅ RESOLVED
-4. **Query pagination** -- `dir-paginate` with 15 queries per page ❌ NOT IMPLEMENTED
-5. **Batch scoring progress** -- "N of M queries scored" display ⚠️ PARTIAL — Experimental shows "Queries Remaining: X" via Turbo Streams (countdown format) instead of "N of M scored"
-6. **Animated count-up** -- `angular-countup` for result count animation ❌ NOT IMPLEMENTED
+4. ~~**Query pagination** -- `dir-paginate` with 15 queries per page~~ ✅ RESOLVED — Client-side pagination in `query_list_controller.js` with 15 per page, Bootstrap controls, URL persistence
+5. ~~**Batch scoring progress** -- "N of M queries scored" display~~ ✅ RESOLVED — Changed to "Scoring query N of M" format in Turbo Stream notification
+6. ~~**Animated count-up** -- `angular-countup` for result count animation~~ ✅ RESOLVED — `count_up_controller.js` animates from 0 to target over 500ms
 7. ~~**URL color bucketing** -- visual grouping of tries by URL in history~~ ✅ RESOLVED
 8. ~~**Solr param typo detection** -- warns about case-sensitive Solr parameters~~ ✅ RESOLVED
-9. **ES template call warning** -- detects and warns about template queries ❌ NOT IMPLEMENTED
+9. ~~**ES template call warning** -- detects and warns about template queries~~ ✅ RESOLVED — `_checkTemplateCall()` in `settings_panel_controller.js` detects `_search/template` and shows warning
 10. ~~**Rating scale labels** -- custom labels on rating buttons from scorer config~~ ✅ RESOLVED
 11. ~~**Browse on Solr link** -- direct link to browse results on the search engine~~ ✅ RESOLVED
 12. ~~**Depth of rating indicator** -- "Results above are counted in scoring" visual marker~~ ✅ RESOLVED
-13. **Field autocomplete with modifiers** -- `media:`, `thumb:`, `image:` prefix support in wizard ❌ NOT IMPLEMENTED
-14. **TMDB demo defaults** -- pre-configured settings for demo search engines ❌ NOT IMPLEMENTED
-15. **Static data upload in wizard** -- CSV upload for static search engine type ❌ NOT IMPLEMENTED
-16. **SearchAPI mapper wizard link** -- redirect to mapper creation ⚠️ PARTIAL — Mapper wizard exists as standalone (`mapper_wizard_controller.js`) but not linked from new case wizard
-17. **Multiple queries in wizard** -- add multiple queries with deduplication ⚠️ PARTIAL — Wizard allows only one query; no semicolon parsing or deduplication
-18. **Unarchive case from workspace** -- modal to restore archived cases ❌ NOT IMPLEMENTED — Only available from cases list page, not workspace
-19. **Debug matches modal** -- dedicated JSON explorer for explain data ⚠️ PARTIAL — Debug modal exists in `MatchesComponent` but shows raw JSON in `<pre>` tag, no interactive tree view
+13. ~~**Field autocomplete with modifiers** -- `media:`, `thumb:`, `image:` prefix support in wizard~~ ✅ RESOLVED — `field_autocomplete_controller.js` with API endpoint (`/api/v1/search_endpoints/:id/fields`), supports all modifier prefixes
+14. ~~**TMDB demo defaults** -- pre-configured settings for demo search engines~~ ✅ RESOLVED — `TMDB_DEFAULTS` in `new_case_wizard_controller.js` with Solr/ES/OS URLs, query params, and field specs
+15. ~~**Static data upload in wizard** -- CSV upload for static search engine type~~ ✅ RESOLVED — CSV upload in wizard step 2 with client-side parsing, preview, static endpoint + snapshot creation
+16. ~~**SearchAPI mapper wizard link** -- redirect to mapper creation~~ ✅ RESOLVED — Link shown/hidden in wizard step 2 based on engine selection
+17. ~~**Multiple queries in wizard** -- add multiple queries with deduplication~~ ✅ RESOLVED — Semicolon-separated input with case-insensitive deduplication
+18. ~~**Unarchive case from workspace** -- modal to restore archived cases~~ ✅ RESOLVED — `UnarchiveCaseComponent` + `unarchive_case_controller.js` with team filter and case list in workspace toolbar
+19. ~~**Debug matches modal** -- dedicated JSON explorer for explain data~~ ✅ RESOLVED — `json_tree_controller.js` provides collapsible tree view with color-coded primitives
 20. ~~**Vega chart in frog report** -- distribution bar chart using Vega specification~~ ✅ RESOLVED — D3 v7 bar chart implemented in `frog_report_controller.js` with full interactivity (hover, tooltips, labels)
-21. **ng-json-explorer** -- interactive JSON tree view (vs static `<pre>`) ⚠️ PARTIAL — All JSON display uses static `<pre>` tags; no collapsible tree navigation
-22. **Auto-grow input** -- dynamic input width for curator variables ❌ NOT IMPLEMENTED — Uses standard fixed-height `<input>` elements
+21. ~~**ng-json-explorer** -- interactive JSON tree view (vs static `<pre>`)~~ ✅ RESOLVED — `json_tree_controller.js` with collapsible tree, color-coded primitives, toggle arrows
+22. ~~**Auto-grow input** -- dynamic input width for curator variables~~ ✅ RESOLVED — `autoGrowInput()` in `settings_panel_controller.js` with dynamic width (50-200px)
 
 ---
 
@@ -492,17 +495,17 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 
 2. ~~**Implement media embeds**~~ ✅ RESOLVED — Added `media_embeds` method to `DocumentCardComponent` with HTML5 audio/video/image rendering.
 
-3. ⚠️ **Add batch scoring progress indicator** -- Show "Searching X of Y queries..." during initial load or evaluation. Currently shows "Queries Remaining: X" via Turbo Streams (countdown format) but not the Angular-style "N of M scored" (count-up format).
+3. ~~**Add batch scoring progress indicator**~~ ✅ RESOLVED — Changed to "Scoring query N of M" format.
 
 ### Medium Priority (UX Polish)
 
-4. ❌ **Add query pagination** -- For cases with 100+ queries, consider adding virtual scrolling or pagination to the query list to maintain performance.
+4. ~~**Add query pagination**~~ ✅ RESOLVED — Client-side pagination with 15 per page, Bootstrap controls, URL persistence.
 
 5. ~~**Implement rating scale labels**~~ ✅ RESOLVED — Labels from `scale_with_labels` displayed in rating popovers and bulk rating bar.
 
 6. ~~**Add depth indicator**~~ ✅ RESOLVED — Depth indicator shown below the Nth document card in `_document_cards.html.erb`.
 
-7. ❌ **Enrich the new case wizard** -- Add search engine radio buttons with demo URLs (TMDB), URL validation within the wizard, field autocomplete with modifiers, and support for multiple queries in the final step.
+7. ~~**Enrich the new case wizard**~~ ✅ RESOLVED — Added TMDB demo defaults, field autocomplete with modifiers, multiple queries with dedup, CSV upload, SearchAPI mapper link.
 
 8. ~~**Add Solr param typo detection**~~ ✅ RESOLVED — Added `_checkSolrParamTypos()` to `settings_panel_controller.js`.
 
@@ -512,14 +515,14 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 
 10. ~~**Add Browse on Solr link**~~ ✅ RESOLVED — Added `build_browse_url` to `SearchController` for Solr and ES/OS.
 
-11. ⚠️ **Enhance debug matches modal** -- Debug modal exists in `MatchesComponent` with `<pre>` display. Upgrade to interactive JSON tree viewer for parity with Angular's `ng-json-explorer`.
+11. ~~**Enhance debug matches modal**~~ ✅ RESOLVED — `json_tree_controller.js` provides collapsible JSON tree view.
 
-12. ❌ **Add count-up animation** -- Use CSS counter animation or a lightweight library for the results count.
+12. ~~**Add count-up animation**~~ ✅ RESOLVED — `count_up_controller.js` animates from 0 to target over 500ms.
 
-13. ❌ **Restore auto-grow behavior** -- Use CSS `ch` units or a resize observer for curator variable inputs.
+13. ~~**Restore auto-grow behavior**~~ ✅ RESOLVED — `autoGrowInput()` in `settings_panel_controller.js` with dynamic width.
 
 14. ~~**Add Vega chart to frog report**~~ ✅ RESOLVED — D3 v7 bar chart implemented in `frog_report_controller.js` with full interactivity (hover, tooltips, labels).
 
-15. ❌ **Port unarchive case modal** -- Add ability to unarchive cases from the workspace (currently only available from cases list page).
+15. ~~**Port unarchive case modal**~~ ✅ RESOLVED — `UnarchiveCaseComponent` + `unarchive_case_controller.js` with team filter in workspace toolbar.
 
-16. ❌ **Add ES template call warning** -- Detect `_search/template` in Elasticsearch URLs and warn users, matching Angular's `esUrlSvc.isTemplateCall()` behavior.
+16. ~~**Add ES template call warning**~~ ✅ RESOLVED — `_checkTemplateCall()` in `settings_panel_controller.js` detects `_search/template` and shows warning.

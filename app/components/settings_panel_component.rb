@@ -68,6 +68,22 @@ class SettingsPanelComponent < ApplicationComponent
     @tries
   end
 
+  # Assign a color bucket to a try based on its search endpoint URL.
+  # Cycles through a small palette so tries targeting different endpoints
+  # are visually distinguishable in the history list.
+  URL_BUCKET_COLORS = %w[#4e79a7 #e15759 #59a14f #f28e2b #76b7b2 #edc949].freeze
+
+  def url_color_for_try(a_try)
+    return "transparent" unless a_try&.search_endpoint&.endpoint_url.present?
+
+    @url_color_map ||= begin
+      unique_urls = @tries.filter_map { |t| t.search_endpoint&.endpoint_url }.uniq
+      unique_urls.each_with_index.to_h { |url, i| [ url, URL_BUCKET_COLORS[i % URL_BUCKET_COLORS.size] ] }
+    end
+
+    @url_color_map[a_try.search_endpoint.endpoint_url] || "transparent"
+  end
+
   # Compare adjacent tries and return a hash of try_number => [changed fields]
   def try_diffs
     return {} if @tries.size < 2

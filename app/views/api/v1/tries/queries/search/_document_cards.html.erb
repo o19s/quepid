@@ -5,12 +5,19 @@
 <% max_score ||= nil %>
 <% querqy_triggered ||= false %>
 <% image_prefix ||= nil %>
+<% scoring_depth ||= 10 %>
+<% browse_url ||= nil %>
 <% diff_active = diff_entries_map.present? %>
 <div data-results-pane-html-response data-num-found="<%= num_found %>" data-shown="<%= docs.size %>"<%= ' data-diff-active="true"'.html_safe if diff_active %>>
   <p class="text-muted small mb-2">
-    <%= num_found %> result<%= num_found != 1 ? "s" : "" %> found.
+    <span data-controller="count-up" data-count-up-end-value="<%= num_found %>"><%= num_found %></span> result<%= num_found != 1 ? "s" : "" %> found.
     <% if querqy_triggered %>
       <span class="badge bg-info ms-1" title="Querqy query rewriting rules were applied to this search"><i class="bi bi-lightning-fill" aria-hidden="true"></i> Querqy rules applied</span>
+    <% end %>
+    <% if browse_url.present? %>
+      <a href="<%= browse_url %>" target="_blank" rel="noopener noreferrer" class="ms-2 small" title="Browse results directly on the search engine">
+        <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Browse on search engine
+      </a>
     <% end %>
   </p>
   <% if docs.empty? %>
@@ -39,6 +46,11 @@
         highlights: doc_highlights,
         image_prefix: image_prefix
       ) %>
+      <% if idx + 1 == scoring_depth && docs.size > scoring_depth %>
+        <div class="depth-indicator text-center small text-muted border-top border-bottom py-1 my-2">
+          <i class="bi bi-rulers" aria-hidden="true"></i> Only the top <%= scoring_depth %> results above are used in scoring
+        </div>
+      <% end %>
     <% end %>
   <% end %>
   <% if num_found > docs.size && diff_columns.blank? %>

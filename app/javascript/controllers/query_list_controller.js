@@ -10,17 +10,20 @@ import { getQuepidRootUrl, buildApiUrl } from "utils/quepid_root"
 // Listens for "query-score:refresh" events to update individual query scores via
 // the lightweight scoring endpoint (no full re-evaluation needed).
 export default class extends Controller {
-  static values = { sortable: Boolean }
+  static values = { sortable: Boolean, pageSize: { type: Number, default: 15 } }
 
-  static targets = ["list", "filterInput", "ratedToggle", "sortSelect", "count"]
+  static targets = ["list", "filterInput", "ratedToggle", "sortSelect", "count", "pagination"]
 
   connect() {
+    this._currentPage = 1
+
     if (this.sortableValue && this.hasListTarget) {
       this._initSortable()
     }
     this._snapshotOriginalOrder()
-    this._updateCount()
     this._restoreSortFromUrl()
+    this._restorePageFromUrl()
+    this._paginate()
 
     // Listen for lightweight per-query score refresh events
     this._boundHandleScoreRefresh = this._handleScoreRefresh.bind(this)
@@ -31,7 +34,7 @@ export default class extends Controller {
       this._observer = new MutationObserver(() => {
         if (this._pauseObserver) return
         this._snapshotOriginalOrder()
-        this._updateCount()
+        this._paginate()
       })
       this._observer.observe(this.listTarget, { childList: true })
     }
@@ -138,10 +141,15 @@ export default class extends Controller {
       const matchesText = !text || queryText.includes(text)
       const matchesRated = !ratedOnly || (queryScore !== "" && queryScore !== "?")
 
-      li.style.display = (matchesText && matchesRated) ? "" : "none"
+      if (matchesText && matchesRated) {
+        delete li.dataset.filterHidden
+      } else {
+        li.dataset.filterHidden = "true"
+      }
     })
 
-    this._updateCount()
+    this._currentPage = 1
+    this._paginate()
   }
 
   sort() {
@@ -170,6 +178,22 @@ export default class extends Controller {
           return sortBy === "score_asc" ? sa - sb : sb - sa
         })
         items.forEach((li) => list.appendChild(li))
+      } else if (sortBy === "modified" || sortBy === "modified_desc") {
+        const dir = sortBy === "modified_desc" ? -1 : 1
+        items.sort((a, b) => {
+          const ma = parseInt(a.dataset.queryModified || "0", 10)
+          const mb = parseInt(b.dataset.queryModified || "0", 10)
+          return dir * (ma - mb)
+        })
+        items.forEach((li) => list.appendChild(li))
+      } else if (sortBy === "error") {
+        items.sort((a, b) => {
+          const aErr = a.dataset.queryError === "true" ? 0 : 1
+          const bErr = b.dataset.queryError === "true" ? 0 : 1
+          if (aErr !== bErr) return aErr - bErr
+          return (a.dataset.queryText || "").localeCompare(b.dataset.queryText || "")
+        })
+        items.forEach((li) => list.appendChild(li))
       }
     } finally {
       this._pauseObserver = false
@@ -177,6 +201,8 @@ export default class extends Controller {
 
     // Persist sort choice in URL
     this._persistSortToUrl(sortBy)
+    this._currentPage = 1
+    this._paginate()
   }
 
   _persistSortToUrl(sortBy) {
@@ -211,14 +237,138 @@ export default class extends Controller {
     if (!this.hasCountTarget || !this.hasListTarget) return
 
     const all = this.listTarget.querySelectorAll("[data-query-id]")
-    const visible = Array.from(all).filter((li) => li.style.display !== "none")
     const total = all.length
+    // Count non-filter-hidden items (not paginated visibility) so the badge
+    // reflects how many queries match the current filter, not how many are
+    // on the current page.
+    const filtered = Array.from(all).filter((li) => !li.dataset.filterHidden)
 
-    if (visible.length === total) {
+    if (filtered.length === total) {
       this.countTarget.textContent = total
     } else {
-      this.countTarget.textContent = `${visible.length} / ${total}`
+      this.countTarget.textContent = `${filtered.length} / ${total}`
     }
+  }
+
+  goToPage(event) {
+    event.preventDefault()
+    const page = parseInt(event.currentTarget.dataset.page, 10)
+    if (page) {
+      this._currentPage = page
+      this._paginate()
+    }
+  }
+
+  nextPage(event) {
+    event.preventDefault()
+    const totalPages = this._totalPages()
+    if (this._currentPage < totalPages) {
+      this._currentPage++
+      this._paginate()
+    }
+  }
+
+  prevPage(event) {
+    event.preventDefault()
+    if (this._currentPage > 1) {
+      this._currentPage--
+      this._paginate()
+    }
+  }
+
+  _paginate() {
+    if (!this.hasListTarget) return
+
+    const all = Array.from(this.listTarget.querySelectorAll("[data-query-id]"))
+    const visible = all.filter(li => !li.dataset.filterHidden)
+    const pageSize = this.pageSizeValue
+    const totalPages = Math.max(1, Math.ceil(visible.length / pageSize))
+
+    // Clamp current page
+    if (this._currentPage > totalPages) this._currentPage = totalPages
+    if (this._currentPage < 1) this._currentPage = 1
+
+    const startIdx = (this._currentPage - 1) * pageSize
+    const endIdx = startIdx + pageSize
+
+    // Hide all, then show only items on current page
+    all.forEach(li => { li.style.display = "none" })
+    visible.forEach((li, idx) => {
+      if (idx >= startIdx && idx < endIdx) {
+        li.style.display = ""
+      }
+    })
+
+    this._updateCount()
+    this._renderPaginationControls(totalPages)
+    this._persistPageToUrl()
+  }
+
+  _totalPages() {
+    if (!this.hasListTarget) return 1
+    const all = this.listTarget.querySelectorAll("[data-query-id]")
+    const visible = Array.from(all).filter(li => !li.dataset.filterHidden)
+    return Math.max(1, Math.ceil(visible.length / this.pageSizeValue))
+  }
+
+  _renderPaginationControls(totalPages) {
+    if (!this.hasPaginationTarget) return
+
+    if (totalPages <= 1) {
+      this.paginationTarget.innerHTML = ""
+      return
+    }
+
+    const current = this._currentPage
+    let html = '<nav aria-label="Query pagination"><ul class="pagination pagination-sm justify-content-center mb-0 mt-2">'
+
+    // Previous
+    html += `<li class="page-item${current <= 1 ? " disabled" : ""}"><a class="page-link" href="#" data-action="click->query-list#prevPage">&laquo;</a></li>`
+
+    // Page numbers (show max 7 pages with ellipsis)
+    const pages = this._pageRange(current, totalPages)
+    for (const p of pages) {
+      if (p === "...") {
+        html += '<li class="page-item disabled"><span class="page-link">…</span></li>'
+      } else {
+        html += `<li class="page-item${p === current ? " active" : ""}"><a class="page-link" href="#" data-action="click->query-list#goToPage" data-page="${p}">${p}</a></li>`
+      }
+    }
+
+    // Next
+    html += `<li class="page-item${current >= totalPages ? " disabled" : ""}"><a class="page-link" href="#" data-action="click->query-list#nextPage">&raquo;</a></li>`
+    html += "</ul></nav>"
+
+    this.paginationTarget.innerHTML = html
+  }
+
+  _pageRange(current, total) {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+    const pages = []
+    pages.push(1)
+    if (current > 3) pages.push("...")
+    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+      pages.push(i)
+    }
+    if (current < total - 2) pages.push("...")
+    pages.push(total)
+    return pages
+  }
+
+  _persistPageToUrl() {
+    const url = new URL(window.location.href)
+    if (this._currentPage > 1) {
+      url.searchParams.set("page", this._currentPage)
+    } else {
+      url.searchParams.delete("page")
+    }
+    window.history.replaceState({}, "", url.toString())
+  }
+
+  _restorePageFromUrl() {
+    const url = new URL(window.location.href)
+    const page = parseInt(url.searchParams.get("page"), 10)
+    if (page && page > 0) this._currentPage = page
   }
 
   _initSortable() {
