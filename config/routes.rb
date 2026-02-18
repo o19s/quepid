@@ -238,6 +238,7 @@ Rails.application.routes.draw do
         # Case Tries
         resources :tries, param: :try_number, except: [ :new, :edit ] do
           get 'queries/:query_id/search' => 'tries/queries/search#show', as: :query_search
+          get 'queries/:query_id/search/raw' => 'tries/queries/search#raw', as: :query_search_raw
         end
 
         # Case Scorers

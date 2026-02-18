@@ -191,6 +191,24 @@ class Try < ApplicationRecord
     # rubocop:enable Style/SoleNestedConditional
   end
 
+  # Extract image prefix from JSON-style field spec entries.
+  # Supports: {"name": "image_url", "type":"image", "prefix": "https://cdn.example.com/"}
+  # Also supports: thumb:field_name and image:field_name (returns nil prefix for those).
+  def image_prefix_from_field_spec
+    return nil if field_spec.blank?
+
+    # Try to find JSON objects in the field spec (they can be mixed with simple fields)
+    field_spec.scan(/\{[^}]+\}/).each do |json_str|
+      parsed = JSON.parse(json_str)
+      if %w[image thumb thumbnail media].include?(parsed["type"]) && parsed["prefix"].present?
+        return parsed["prefix"]
+      end
+    rescue JSON::ParserError
+      next
+    end
+    nil
+  end
+
   def index_name_from_search_url
     # NOTE: currently all supported engines have the index name as second to last element, refactor when this changes
     case search_endpoint.search_engine

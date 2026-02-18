@@ -76,7 +76,8 @@ module Api
                          ratings_map:       ratings_map,
                          scorer_scale:      scorer_scale,
                          diff_entries_map:  diff_entries_map,
-                         diff_columns:      diff_columns
+                         diff_columns:      diff_columns,
+                         image_prefix:      @try.image_prefix_from_field_spec
                        },
                        layout: false
               end
@@ -89,6 +90,26 @@ module Api
                 }
               end
             end
+          end
+
+          # GET api/cases/:case_id/tries/:try_number/queries/:query_id/search/raw?doc_id=xxx
+          #
+          # Returns the raw, unprocessed search engine response for a single document.
+          # Auth credentials and proxy settings are handled server-side via FetchService
+          # so they are never exposed to the browser.
+          def raw
+            doc_id = params[:doc_id].presence
+            return render(json: { error: 'doc_id parameter is required' }, status: :bad_request) unless doc_id
+
+            fetch_service = FetchService.new(fake_mode: false, debug_mode: false)
+            response = fetch_service.make_request(
+              @try,
+              @query,
+              query_text_override: doc_id,
+              rows: 1
+            )
+
+            render body: response.body, content_type: "application/json", status: response.status
           end
 
           private

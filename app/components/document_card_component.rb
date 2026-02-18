@@ -16,13 +16,14 @@ class DocumentCardComponent < ApplicationComponent
   # @param index [Integer] 0-based index for display position
   # @param diff_entries [Array<Hash>, nil] Optional diff info: [{ position:, name: }]
   # @param scale [Array<Integer>] Scorer scale for rating popover (e.g. [0,1,2,3])
-  def initialize(doc:, rating: nil, index: 0, diff_entries: nil, scale: [ 0, 1, 2, 3 ], highlights: nil)
+  def initialize(doc:, rating: nil, index: 0, diff_entries: nil, scale: [ 0, 1, 2, 3 ], highlights: nil, image_prefix: nil)
     @doc          = doc
     @rating       = rating.to_s.presence || ""
     @index        = index
     @diff_entries = diff_entries
     @scale        = scale
     @highlights   = highlights || {}
+    @image_prefix = image_prefix
   end
 
   def doc_id
@@ -110,6 +111,8 @@ class DocumentCardComponent < ApplicationComponent
   end
 
   # Detect an image URL from document fields by common naming patterns or URL extension.
+  # When an image_prefix is configured (via JSON field spec), relative URLs are prefixed
+  # to produce a full URL (e.g. "/images/photo.jpg" → "https://cdn.example.com/images/photo.jpg").
   def image_url
     return nil if fields.blank?
 
@@ -121,7 +124,11 @@ class DocumentCardComponent < ApplicationComponent
     return nil if image_keys.empty?
 
     url = Array(fields[image_keys.first]).first.to_s
-    url.match?(%r{\Ahttps?://}) ? url : nil
+    return url if url.match?(%r{\Ahttps?://})
+
+    if @image_prefix.present? && url.present?
+      "#{@image_prefix.chomp('/')}#{url.start_with?('/') ? '' : '/'}#{url}"
+    end
   end
 
   def explain_display_text

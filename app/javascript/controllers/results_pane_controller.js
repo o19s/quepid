@@ -540,7 +540,7 @@ export default class extends Controller {
     if (!this._currentDetailDocId) return
     const root = getQuepidRootUrl()
     const docId = encodeURIComponent(this._currentDetailDocId)
-    const url = `${buildApiUrl(root, "cases", this.caseIdValue, "tries", this.tryNumberValue, "queries", this.queryIdValue, "search")}?q=${docId}&rows=1`
+    const url = `${buildApiUrl(root, "cases", this.caseIdValue, "tries", this.tryNumberValue, "queries", this.queryIdValue, "search", "raw")}?doc_id=${docId}`
     window.open(url, "_blank")
   }
 

@@ -4,6 +4,7 @@
 <% diff_columns ||= [] %>
 <% max_score ||= nil %>
 <% querqy_triggered ||= false %>
+<% image_prefix ||= nil %>
 <% diff_active = diff_entries_map.present? %>
 <div data-results-pane-html-response data-num-found="<%= num_found %>" data-shown="<%= docs.size %>"<%= ' data-diff-active="true"'.html_safe if diff_active %>>
   <p class="text-muted small mb-2">
@@ -35,7 +36,8 @@
         index: idx,
         diff_entries: diff_entries,
         scale: scorer_scale,
-        highlights: doc_highlights
+        highlights: doc_highlights,
+        image_prefix: image_prefix
       ) %>
     <% end %>
   <% end %>

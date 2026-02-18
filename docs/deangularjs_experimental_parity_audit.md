@@ -1,12 +1,12 @@
 # deangularjs-experimental vs deangularjs: Functional Parity Audit
 
 > Generated: 2026-02-18
-> Updated: 2026-02-18 — All P0 gaps resolved.
+> Updated: 2026-02-18 — All P0 gaps resolved. Wave 7: All P1 gaps resolved (14 of 14 items).
 > Comparing `deangularjs-experimental` against `deangularjs` base branch.
 
 ## Executive Summary
 
-The `deangularjs-experimental` branch replaces AngularJS with a server-rendered ViewComponent + Stimulus + Turbo architecture. It successfully ports the **structural scaffold** and **all core interactive features** of the workspace. All **P0 (critical) gaps have been resolved**. The most significant architectural change is the removal of `splainer-search` (the client-side search library) in favor of a server-side `QuerySearchService`, which simplifies the architecture while retaining feature parity for the core workflow. Remaining gaps are P1/P2 polish items.
+The `deangularjs-experimental` branch replaces AngularJS with a server-rendered ViewComponent + Stimulus + Turbo architecture. It successfully ports the **structural scaffold** and **all core interactive features** of the workspace. **All P0 (critical) and P1 (important) gaps have been resolved.** The most significant architectural change is the removal of `splainer-search` (the client-side search library) in favor of a server-side `QuerySearchService`, which simplifies the architecture while retaining feature parity for the core workflow. Only minor P2 polish items remain.
 
 ---
 
@@ -76,23 +76,23 @@ The `deangularjs-experimental` branch replaces AngularJS with a server-rendered 
 |---|---|---|
 | `MainCtrl` | `workspace_controller.js` | ⚠️ **Minimal** — only provides root URL. Missing: case bootstrapping, error handling, search engine change detection, pane management |
 | `QueriesCtrl` | `query_list_controller.js` + `query_expand_controller.js` | ⚠️ **Partial** — has filter/sort/sortable, inline expand/collapse with 5-result preview. Missing: `scoring-complete` full recalc, `rating-changed` debounced diff refresh |
-| `SearchResultsCtrl` | `results_pane_controller.js` | ⚠️ **Partial** — has rating, pagination, detail modal, diff integration, bulk rating, rated-only filter. Missing: `querqyRuleTriggered` indicator |
-| `SearchResultCtrl` | _(inline in results pane)_ | ⚠️ **Partial** — has rating. Missing: image URL formatting with prefix option, snippet highlighting (`subSnippets`), `hotMatchesOutOf` display |
-| `SettingsCtrl` | `settings_panel_controller.js` | ⚠️ **Partial** — has save/duplicate/delete try, search URL validation (connection test + SSRF protection), JSON syntax validation for ES/OS query params, TLS warning. Missing: ES template detection, search engine URL change flow |
+| `SearchResultsCtrl` | `results_pane_controller.js` | ✅ **Complete** — has rating, pagination, detail modal (with CodeMirror JSON viewer, copy JSON, view source), diff integration, bulk rating, rated-only filter, Querqy indicator badge |
+| `SearchResultCtrl` | _(inline in results pane)_ | ✅ **Complete** — has rating, image thumbnail detection, snippet highlighting (server-side via `QuerySearchService`), `hotMatchesOutOf` display in `MatchesComponent` |
+| `SettingsCtrl` | `settings_panel_controller.js` | ✅ **Complete** — has save/duplicate/delete try (with safe redirect), search URL validation, JSON syntax validation, TLS warning, CodeMirror for query params, endpoint switcher dropdown, try history diff badges, clipboard copy URL |
 | `CurrSettingsCtrl` | `inline_edit_controller.js` | ✅ Try rename works via inline edit |
-| `CaseCtrl` | `inline_edit_controller.js` | ⚠️ **Partial** — case rename works. Missing: `updateNightly` toggle, case `scores` watch |
+| `CaseCtrl` | `inline_edit_controller.js` + `nightly_toggle_controller.js` | ✅ **Complete** — case rename works, nightly toggle via `nightly_toggle_controller.js` |
 | `HeaderCtrl` | _(server-rendered `_header.html.erb`)_ | ⚠️ **Partial** — header is shared partial. Missing: dynamic dropdown of recent cases/books (fetched via `caseSvc.fetchDropdownCases` / `bookSvc.fetchDropdownBooks`), `goToCase` SPA navigation |
 | `ScorerCtrl` | `scorer_panel_controller.js` | ✅ Fetches and displays scorer list, allows selection, page reload |
-| `QueryParamsCtrl` | `settings_panel_controller.js` + `query_params_panel_controller.js` | ⚠️ **Partial** — has save, curator vars. Missing: `runCaseInBackground` evaluation, search endpoint listing, search URL validation |
+| `QueryParamsCtrl` | `settings_panel_controller.js` + `run_evaluation_controller.js` | ✅ **Complete** — has save, curator vars, CodeMirror editor, `run_evaluation_controller.js` for background evaluation, endpoint switcher, search URL validation |
 | `CustomHeadersCtrl` | `custom_headers_controller.js` | ✅ |
 | `QueryNotesCtrl` | `Core::Queries::NotesController` (server-side) | ✅ Notes form via Turbo Frame |
-| `WizardCtrl` + `WizardModalCtrl` | `new_case_wizard_controller.js` | ⚠️ **Partial** — wizard UI exists. Missing: auto-trigger for new users based on `completedCaseWizard` + `casesInvolvedWithCount`, tour trigger (`setupAndStartTour`) |
+| `WizardCtrl` + `WizardModalCtrl` | `new_case_wizard_controller.js` + `tour_controller.js` | ✅ **Complete** — wizard UI with auto-trigger for new users (`completedCaseWizard` + `casesInvolvedWithCount`), tour auto-starts after wizard via URL param |
 | `PromptSnapshotCtrl` | `take_snapshot_controller.js` | ✅ |
-| `DetailedDocCtrl` | _(inline in `results_pane_controller.js`)_ | ⚠️ **Partial** — has detail modal. Missing: link-to-doc with basic auth credential injection, proxy URL support, `$window.open` behavior |
+| `DetailedDocCtrl` | _(inline in `results_pane_controller.js`)_ | ✅ **Complete** — detail modal with fields + raw JSON tabs; "View source" proxies through `SearchController#raw` with server-side auth (more secure than Angular's client-side credential injection) |
 | `DocExplainCtrl` | `query_explain_controller.js` | ✅ |
 | `TargetedSearchCtrl/Modal` | `doc_finder_controller.js` | ✅ |
 | `QueryDiffResultsCtrl` | `diff_controller.js` + `DiffComparisonComponent` | ✅ **Ported** — server renders side-by-side multi-column comparison with position change color coding (improved/degraded/new/missing). See §5 for details |
-| `HotMatchesCtrl` | _(server-rendered in MatchesComponent)_ | ⚠️ **Partial** — server renders matches but `hotMatchesOutOf(maxDocScore)` scoring comparison is not implemented |
+| `HotMatchesCtrl` | _(server-rendered in MatchesComponent)_ | ✅ **Complete** — `MatchesComponent#hot_matches_display` shows "score / max_score (percentage%)" via `QuerySearchService#extract_max_score` |
 | `UnarchiveCaseCtrl` | ❌ **Missing** | No unarchive modal in experimental |
 | `404Ctrl` | ❌ **Missing** | No explicit 404 handling (Rails handles it) |
 | `LoadingCtrl` | _(N/A)_ | ✅ Not needed — no SPA bootstrap loading screen |
@@ -121,10 +121,10 @@ The `deangularjs-experimental` branch replaces AngularJS with a server-rendered 
 |---|---|---|
 | `queriesSvc` (1,356 lines) | `query_list_controller.js` + `query_expand_controller.js` + server-side | ⚠️ Partial: `toggleShowOnlyRated` ported (server-side filter), inline query expand with rating. Missing: `createSearcherFromSettings`, `createSearcherFromSnapshot`, `normalizeDocExplains`, `updateScores` (full case rescore), query `scoreOthers()` |
 | `settingsSvc` | `settings_panel_controller.js` | ❌ Missing: `editableSettings()` state management, try history/selection, `isTrySelected` validation |
-| `caseSvc` | Server-rendered + `inline_edit_controller.js` | ❌ Missing: `fetchDropdownCases`, `selectTheCase`, `unarchiveCase`, `updateNightly` |
+| `caseSvc` | Server-rendered + `inline_edit_controller.js` + `nightly_toggle_controller.js` | ⚠️ Partial: `updateNightly` ported via `nightly_toggle_controller.js`. Missing: `fetchDropdownCases`, `selectTheCase`, `unarchiveCase` |
 | `scorerSvc` | `scorer_panel_controller.js` | ⚠️ Simplified: Fetches list, selects. Missing: scorer code testing from workspace (but `scorer_test_controller.js` exists for scorer edit page) |
 | `diffResultsSvc` | `diff_controller.js` + `DiffComparisonComponent` (server-side) | ✅ **Architecture change** — server renders side-by-side multi-column comparison via `DiffComparisonComponent`. See §5 |
-| `queryViewSvc` | `query_expand_controller.js` + `query_list_controller.js` | ⚠️ Partial: `toggleQuery` ported (inline expand/collapse with 5-result preview + rating). Missing: `collapseAll` |
+| `queryViewSvc` | `query_expand_controller.js` + `query_list_controller.js` | ✅ Complete: `toggleQuery` ported (inline expand/collapse), `expandAll` / `collapseAll` via `query_list_controller.js` |
 | `paneSvc` | `workspace_resizer_controller.js` | ✅ Draggable divider between query list and results pane, persists to localStorage, hidden when panels collapse |
 | `querySnapshotSvc` | `take_snapshot_controller.js` | ⚠️ Simplified — create snapshot works. Missing: `listSnapshotsForCase` in workspace context, snapshot comparison history |
 | `snapshotSearcherSvc` | Server-side diff badge rendering | ❌ **Architecture change** — no client-side SnapshotSearcher |
@@ -140,7 +140,7 @@ The `deangularjs-experimental` branch replaces AngularJS with a server-rendered 
 | `rateElementSvc` | Rating scale per-doc (colors + click handlers) | ✅ Replaced by popover in `results_pane_controller.js` |
 | `ratingsStoreSvc` | Client-side ratings cache per query | ✅ Not needed — server provides ratings |
 | `broadcastSvc` | Angular `$rootScope.$broadcast` | ✅ Replaced by `CustomEvent` dispatch |
-| `searchEndpointSvc` | Fetch/manage search endpoints | ⚠️ Only partially used — settings panel doesn't list endpoints |
+| `searchEndpointSvc` | Fetch/manage search endpoints | ✅ Settings panel endpoint switcher dropdown via `SettingsPanelComponent` + `settings_panel_controller.js#changeEndpoint()` |
 | `qscoreSvc` | Score calculation on client | ⚠️ Server computes scores; `qscore_controller.js` displays |
 | `normalDocsSvc` | Normalize doc fields from different engines | ✅ Done server-side in `QuerySearchService` |
 
@@ -191,30 +191,30 @@ The **most significant architectural difference** between the branches:
 
 | # | Feature | Angular Location | Status in Experimental |
 |---|---|---|---|
-| 9 | **Ace code editor** in workspace query params | `ui.ace` / `angular-ui-ace` | ❌ Missing — query param editing uses plain textarea |
-| 10 | **JSON tree viewer** for document detail | `ngJsonExplorer` | ❌ Missing — replaced by flat `<pre>` JSON dump |
-| 11 | **Importmap pins** (43 → 1) | `config/importmap.rb` | ⚠️ May break CodeMirror 6, Vega charts, and other importmap-dependent features on non-workspace pages |
-| 12 | **Case nightly update toggle** | `CaseCtrl.$scope.updateNightly()` | ❌ Missing |
-| 13 | **Run evaluation in background** | `QueryParamsCtrl.runCaseInBackground()` | ❌ Missing |
-| 14 | **Search endpoint picker in settings** | `QueryParamsCtrl` + `searchEndpointSvc.fetchForCase()` | ❌ Missing — no endpoint list |
-| 15 | **New user auto-wizard trigger** | `WizardCtrl` (auto-shows for new users with no cases/teams) | ❌ Missing — wizard component exists but no auto-trigger |
-| 16 | **Doc detail link with auth credentials** | `DetailedDocCtrl.linkToDoc()` — injects basicAuth into URL | ❌ Missing |
-| 17 | **Clipboard copy support** | `ngclipboard` | ❌ Missing — no copy buttons |
-| 18 | **Relative time display** ("3 hours ago") | `angular-timeago` | ❌ Missing — timestamps show absolute dates |
-| 19 | **Querqy rule triggered indicator** | `SearchResultsCtrl.querqyRuleTriggered()` | ❌ Missing |
-| 20 | **Hot matches scoring display** | `HotMatchesCtrl.$scope.hots` with `hotMatchesOutOf(maxDocScore)` | ❌ Missing — matches component exists but without scoring comparison |
-| 21 | **Image URL prefix formatting** | `SearchResultCtrl.formatImageUrl(url, options)` with prefix support | ❌ Missing |
-| 22 | **Tour system integration** | `setupAndStartTour` triggered after wizard | ❌ Missing |
+| 9 | **Ace code editor** in workspace query params | `ui.ace` / `angular-ui-ace` | ✅ Resolved — CodeMirror 6 via `modules/editor.js` wrapper, initialized in `settings_panel_controller.js#_initCodeMirror()` |
+| 10 | **JSON tree viewer** for document detail | `ngJsonExplorer` | ✅ Resolved — CodeMirror 6 read-only JSON viewer in detail modal (tabs: Fields + Raw JSON), with fallback to `<pre>` |
+| 11 | **Importmap pins** (43 → 1) | `config/importmap.rb` | ✅ Resolved — importmap now has 50+ pins (CodeMirror 6, Vega, Bootstrap, SortableJS, local-time, etc.) |
+| 12 | **Case nightly update toggle** | `CaseCtrl.$scope.updateNightly()` | ✅ Resolved — `nightly_toggle_controller.js` with toggle switch in workspace toolbar |
+| 13 | **Run evaluation in background** | `QueryParamsCtrl.runCaseInBackground()` | ✅ Resolved — `run_evaluation_controller.js` with Evaluate button in workspace toolbar |
+| 14 | **Search endpoint picker in settings** | `QueryParamsCtrl` + `searchEndpointSvc.fetchForCase()` | ✅ Resolved — endpoint switcher dropdown in `SettingsPanelComponent`, triggers `settings_panel_controller.js#changeEndpoint()` |
+| 15 | **New user auto-wizard trigger** | `WizardCtrl` (auto-shows for new users with no cases/teams) | ✅ Resolved — auto-trigger based on `completed_case_wizard` + `cases_involved_with.count` in `core/show.html.erb` |
+| 16 | **Doc detail link with auth credentials** | `DetailedDocCtrl.linkToDoc()` — injects basicAuth into URL | ✅ Resolved — "View source" proxies through server-side `SearchController#raw` action; auth credentials handled by `FetchService` (never exposed to browser) |
+| 17 | **Clipboard copy support** | `ngclipboard` | ✅ Resolved — `clipboard_controller.js` with `navigator.clipboard` + fallback, used in detail modal (Copy JSON) and settings (Copy URL) |
+| 18 | **Relative time display** ("3 hours ago") | `angular-timeago` | ✅ Resolved — `local-time` v3 imported and started in `application_modern.js`; uses `MutationObserver` to auto-process dynamically inserted `<time data-local="time-ago">` elements (Turbo Stream compatible) |
+| 19 | **Querqy rule triggered indicator** | `SearchResultsCtrl.querqyRuleTriggered()` | ✅ Resolved — `QuerySearchService#detect_querqy` detects rules, badge rendered in `_document_cards.html.erb` |
+| 20 | **Hot matches scoring display** | `HotMatchesCtrl.$scope.hots` with `hotMatchesOutOf(maxDocScore)` | ✅ Resolved — `MatchesComponent#hot_matches_display` shows "score / max_score (percentage%)" via `QuerySearchService#extract_max_score` |
+| 21 | **Image URL prefix formatting** | `SearchResultCtrl.formatImageUrl(url, options)` with prefix support | ✅ Resolved — `DocumentCardComponent#image_url` auto-detects image fields; `image_prefix` extracted from JSON field spec entries via `Try#image_prefix_from_field_spec` and applied to relative URLs |
+| 22 | **Tour system integration** | `setupAndStartTour` triggered after wizard | ✅ Resolved — `tour_controller.js` with Bootstrap popover tour, auto-starts via `?startTour=true` URL param after wizard completion |
 
 ### P2 — Minor / Low-Impact Gaps
 
 | # | Feature | Angular Location | Status in Experimental |
 |---|---|---|---|
-| 23 | **Snippet highlighting** | `$scope.snippets = doc.subSnippets('<strong>', '</strong>')` | ⚠️ Server may provide; needs verification |
-| 24 | **Query params history** (try history sidebar) | `queryParamsHistory.js` | ⚠️ Settings panel shows tries but history browsing is limited |
-| 25 | **Collapse all queries** | `queryViewSvc.collapseAll()` | ❌ Not applicable — different query list model |
+| 23 | **Snippet highlighting** | `$scope.snippets = doc.subSnippets('<strong>', '</strong>')` | ✅ Resolved — `QuerySearchService#extract_highlights` extracts per-doc highlights from Solr/ES/OS; `DocumentCardComponent#highlighted_snippets` renders with sanitized HTML tags |
+| 24 | **Query params history** (try history sidebar) | `queryParamsHistory.js` | ⚠️ Settings panel shows tries with diff badges but history browsing is limited |
+| 25 | **Collapse all queries** | `queryViewSvc.collapseAll()` | ✅ Resolved — `query_list_controller.js` `expandAll()` / `collapseAll()` with toolbar buttons |
 | 26 | **Sort queries by reverse** | `queriesSvc` sort with `$location.search().reverse` | ⚠️ Sort exists but `reverse` URL param not persisted |
-| 27 | **Not all rated indicator** | `query.isNotAllRated()` display | ⚠️ Server could include this |
+| 27 | **Not all rated indicator** | `query.isNotAllRated()` display | ✅ Resolved — `QueryListComponent#unrated?` checks `rating_stats` (zero ratings → warning badge in query row) |
 | 28 | **Animated score numbers** | `countUp` / `angular-countup` | ❌ Minor — cosmetic only |
 
 ---
@@ -267,20 +267,20 @@ In the experimental branch, this is replaced by `QuerySearchService` (server-sid
 
 ### JS Module System
 - `deangularjs` importmap: **43 pins** (Stimulus, Turbo, D3, Vega, CodeMirror 6, Bootstrap, etc.)
-- `deangularjs-experimental` importmap: **1 pin** (`application`) — suggests esbuild bundling instead
-- ⚠️ This may affect CodeMirror 6, Vega chart rendering, and other importmap-pinned libraries
+- `deangularjs-experimental` importmap: **50+ pins** (CodeMirror 6, Vega, Bootstrap, SortableJS, local-time, D3, etc.)
+- ✅ All required libraries pinned and imported via `application_modern.js`
 
-### Removed JS Libraries (no replacement)
-| Library | Angular Usage | Impact |
+### Removed JS Libraries (replaced by modern equivalents)
+| Library | Angular Usage | Replacement |
 |---|---|---|
-| `ace-builds` / `angular-ui-ace` | Code editor in scorer edit and query params | ❌ **No code editor** — `ui.ace` was used for editing scorer JS code and complex query params |
-| `ngVega` / Vega-Lite | Vega chart rendering in workspace | ⚠️ Vega pinned in old importmap but not in new — chart rendering may be affected |
-| `ng-json-explorer` | JSON tree viewer for document details | ❌ **No JSON tree view** — replaced by flat `<pre>` JSON dump |
-| `angular-countup` / `countUp` | Animated number display | ❌ Minor — score numbers don't animate |
-| `ngclipboard` | Copy to clipboard buttons | ❌ Missing — no clipboard copy support |
-| `tether-shepherd` | Guided tour system | ❌ Missing — no product tours |
-| `angular-csv-import` / `ngCsvImport` | CSV file import in browser | ⚠️ Server-side import replaces this |
-| `angular-timeago` | Relative time display ("3 hours ago") | ❌ Missing — timestamps may show absolute dates |
+| `ace-builds` / `angular-ui-ace` | Code editor in scorer edit and query params | ✅ CodeMirror 6 via `modules/editor.js` wrapper |
+| `ngVega` / Vega-Lite | Vega chart rendering in workspace | ✅ Vega/Vega-Lite/Vega-Embed pinned in importmap, imported in `application_modern.js` |
+| `ng-json-explorer` | JSON tree viewer for document details | ✅ CodeMirror 6 read-only JSON viewer in detail modal |
+| `angular-countup` / `countUp` | Animated number display | ❌ Minor — score numbers don't animate (cosmetic) |
+| `ngclipboard` | Copy to clipboard buttons | ✅ `clipboard_controller.js` with `navigator.clipboard` + fallback |
+| `tether-shepherd` | Guided tour system | ✅ `tour_controller.js` with Bootstrap popover tour |
+| `angular-csv-import` / `ngCsvImport` | CSV file import in browser | ✅ Server-side import via `Core::ImportsController` |
+| `angular-timeago` | Relative time display ("3 hours ago") | ✅ `local-time` v3 with MutationObserver for dynamic elements |
 | `jquery-autogrowinput` | Auto-growing text inputs | ❌ Minor UI polish |
 
 ### Build Pipeline
@@ -314,20 +314,16 @@ Angular test infrastructure (`karma`, `jasmine`, `puppeteer`) is removed.
 4. ~~**Dynamic header dropdowns**~~ — ✅ Resolved: `DropdownController` + lazy Turbo Frames (pre-existing).
 5. ~~**Search endpoint validation**~~ — ✅ Resolved: `ValidationsController` with SSRF protection, TLS warnings, JSON syntax validation for ES/OS.
 
-### P1 — Consider Before or Shortly After Merge
+### P1 — All Resolved ✅
 
-- Ace/CodeMirror code editor for query params (plain textarea is functional but less ergonomic for complex JSON)
-- JSON tree viewer for document detail modal (flat `<pre>` works but tree is more navigable)
-- Case nightly update toggle
-- Run evaluation in background
-- Search endpoint picker in settings panel
-- New user auto-wizard trigger
+All 14 P1 items have been resolved:
+- CodeMirror 6 editor for query params and JSON viewer
+- Case nightly update toggle, run evaluation, endpoint picker, auto-wizard
+- Doc detail auth proxy, relative time display, image URL prefix
+- Clipboard copy, Querqy indicator, hot matches, tour system
 
 ### Can Defer (P2)
 
-- Querqy rule indicator (niche feature)
-- Tour system (can re-add later)
-- Image URL prefix formatting (uncommon use case)
-- Hot matches scoring comparison (visual nice-to-have)
-- Animated score numbers (cosmetic)
-- Clipboard copy support (browser API is straightforward to add later)
+- Query params history browsing (try history sidebar with diff browsing)
+- Sort queries by reverse (bookmarkable `reverse` URL param)
+- Animated score numbers (cosmetic only)
