@@ -21,12 +21,12 @@
           <%= check_box_tag :search_endpoints_archived, '1', @filter_search_endpoints_archived, class: 'form-check-input', id: 'search-endpoints-archived-checkbox', onchange: 'this.form.submit()' %>
           <%= label_tag 'search-endpoints-archived-checkbox', 'Archived Search Endpoints', class: 'form-check-label ms-2' %>
         </div>
-        <%# Preserve case, book, and scorer filters when submitting search endpoints form %>
-        <% if @filter_q.present? %>
-          <%= hidden_field_tag :q, @filter_q %>
+        <%# Preserve other filters when submitting search endpoints form %>
+        <% if @filter_cases_q.present? %>
+          <%= hidden_field_tag :cases_q, @filter_cases_q %>
         <% end %>
-        <% if @archived %>
-          <%= hidden_field_tag :archived, '1' %>
+        <% if @filter_cases_archived %>
+          <%= hidden_field_tag :cases_archived, '1' %>
         <% end %>
         <% if @filter_books_q.present? %>
           <%= hidden_field_tag :books_q, @filter_books_q %>
@@ -54,7 +54,7 @@
           </tr>
         </thead>
         <tbody>
-          <% (@search_endpoints || []).each do |search_endpoint| %>
+          <% @search_endpoints.each do |search_endpoint| %>
             <tr>
               <td>
                 <%= link_to search_endpoint.name.presence || search_endpoint.fullname, search_endpoint_path(search_endpoint) %>

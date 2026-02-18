@@ -16,12 +16,12 @@
           <%= check_box_tag :books_archived, '1', @filter_books_archived, class: 'form-check-input', id: 'books-archived-cases-checkbox', onchange: 'this.form.submit()' %>
           <%= label_tag 'books-archived-cases-checkbox', 'Archived Books', class: 'form-check-label ms-2' %>
         </div>
-        <%# Preserve case filters when submitting books form %>
-        <% if @filter_q.present? %>
-          <%= hidden_field_tag :q, @filter_q %>
+        <%# Preserve other filters when submitting books form %>
+        <% if @filter_cases_q.present? %>
+          <%= hidden_field_tag :cases_q, @filter_cases_q %>
         <% end %>
-        <% if @archived %>
-          <%= hidden_field_tag :archived, '1' %>
+        <% if @filter_cases_archived %>
+          <%= hidden_field_tag :cases_archived, '1' %>
         <% end %>
         <% if @filter_scorers_q.present? %>
           <%= hidden_field_tag :scorers_q, @filter_scorers_q %>
@@ -48,7 +48,7 @@
           </tr>
         </thead>
         <tbody>
-          <% (@books || []).each do |book| %>
+          <% @books.each do |book| %>
             <tr>
               <td><%= book.id %></td>
               <td><%= link_to book.name, book_path(book) %></td>

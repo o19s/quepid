@@ -17,12 +17,12 @@
             </button>
           </div>
         </div>
-        <%# Preserve case and book filters when submitting scorers form %>
-        <% if @filter_q.present? %>
-          <%= hidden_field_tag :q, @filter_q %>
+        <%# Preserve other filters when submitting scorers form %>
+        <% if @filter_cases_q.present? %>
+          <%= hidden_field_tag :cases_q, @filter_cases_q %>
         <% end %>
-        <% if @archived %>
-          <%= hidden_field_tag :archived, '1' %>
+        <% if @filter_cases_archived %>
+          <%= hidden_field_tag :cases_archived, '1' %>
         <% end %>
         <% if @filter_books_q.present? %>
           <%= hidden_field_tag :books_q, @filter_books_q %>
@@ -51,7 +51,7 @@
           </tr>
         </thead>
         <tbody>
-          <% (@scorers || []).each do |scorer| %>
+          <% @scorers.each do |scorer| %>
             <tr>
               <td><%= link_to scorer.name, edit_scorer_path(scorer) %></td>
               <td><%= scorer.scale_list || '—' %></td>

@@ -6,7 +6,7 @@
         <%= form_with url: team_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
           <div class="col-auto" style="flex:1">
             <div class="input-group">
-              <%= text_field_tag :q, @filter_q.presence || params[:q], class: 'form-control form-control-sm', placeholder: 'Filter by case name or id' %>
+              <%= text_field_tag :cases_q, @filter_cases_q.presence || params[:cases_q], class: 'form-control form-control-sm', placeholder: 'Filter by case name or id' %>
               <button class="btn btn-sm btn-outline-secondary" type="submit" title="Search">
                 <i class="bi bi-search" aria-hidden="true"></i>
                 <span class="visually-hidden">Search</span>
@@ -14,7 +14,7 @@
             </div>
           </div>
           <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
-            <%= check_box_tag :archived, '1', @archived, class: 'form-check-input', id: 'archived-cases-checkbox', onchange: 'this.form.submit()' %>
+            <%= check_box_tag :cases_archived, '1', @filter_cases_archived, class: 'form-check-input', id: 'archived-cases-checkbox', onchange: 'this.form.submit()' %>
             <%= label_tag 'archived-cases-checkbox', 'Archived Cases', class: 'form-check-label' %>
           </div>
           <%# Preserve other filters %>
@@ -141,6 +141,12 @@
           <% end %>
         </tbody>
       </table>
+      
+      <% if defined?(pagy_nav) && @pagy_cases %>
+        <div class="mt-2">
+          <%= pagy_nav(@pagy_cases) %>
+        </div>
+      <% end %>
     </div>
   </div>
 </div>

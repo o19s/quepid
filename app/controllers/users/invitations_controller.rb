@@ -7,7 +7,7 @@ module Users
     # Intercepts the login path and redirects the user to their
     # Team page as their first page after joining Quepid!
     def after_accept_path_for resource
-      teams_url(resource.teams.first)
+      team_path(resource.teams.first)
     end
 
     def edit

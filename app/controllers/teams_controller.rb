@@ -272,8 +272,8 @@ class TeamsController < ApplicationController
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   def show
-    @archived = deserialize_bool_param(params[:archived])
-    @filter_q = params[:q].to_s.strip
+    cases_q = params[:cases_q].to_s.strip
+    cases_include_archived = deserialize_bool_param(params[:cases_archived])
 
     @members = @team.members.order(:name)
     @cases_count = @team.cases.count
@@ -282,17 +282,19 @@ class TeamsController < ApplicationController
     @search_endpoints_count = @team.search_endpoints.count
     @user_teams = current_user.teams.order(:name)
 
-    query = @team.cases
     # Books filtering (separate params to avoid collision with case filters)
     books_q = params[:books_q].to_s.strip
-    books_include_archived = params[:books_archived].present? && params[:books_archived].to_s.in?(%w[1 true on])
+    books_include_archived = deserialize_bool_param(params[:books_archived])
 
-    if params[:q].present?
-      query = query.where('case_name LIKE ? OR case_id LIKE ? ',
-                          "%#{params[:q]}%", "%#{params[:q]}%")
+    cases_query = @team.cases
+    if cases_q.present?
+      cases_query = cases_query.where('case_name LIKE ? OR id LIKE ? ',
+                                      "%#{cases_q}%", "%#{cases_q}%")
     end
-    query = query.where(archived: @archived)
-    @cases = query.order(:id).includes(:owner, :teams)
+    cases_query = cases_include_archived ? cases_query.archived : cases_query.active
+    @page_cases, @cases = pagy(cases_query.order(:id).includes(:owner, :teams))
+    @filter_cases_q = cases_q
+    @filter_cases_archived = cases_include_archived
 
     books_query = @team.books
     books_query = books_include_archived ? books_query.archived : books_query.active
