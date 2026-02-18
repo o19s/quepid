@@ -229,7 +229,7 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 | Static data upload | CSV upload + `querySnapshotSvc.importSnapshotsToSpecificCase()` | CSV upload in wizard step 2 | ✅ COMPLETE | Client-side CSV parsing with preview, creates static endpoint + snapshot on finish |
 | SearchAPI mapper wizard link | `$scope.goToMapperWizard()` | Link shown when SearchAPI selected | ✅ COMPLETE | Mapper wizard link shown/hidden based on engine selection |
 | TMDB demo defaults | `settingsSvc.tmdbSettings` per engine | `TMDB_DEFAULTS` in `new_case_wizard_controller.js` | ✅ COMPLETE | Auto-fills URL, query params, and field spec for Solr/ES/OS TMDB demo |
-| Guided tour (Shepherd.js) | `tour.js` with Shepherd.js (9 steps) | `tour_controller.js` with Bootstrap popovers | ⚠️ PARTIAL | Fewer steps, different UI (popovers vs Shepherd theme) |
+| Guided tour (Shepherd.js) | `tour.js` with Shepherd.js (9 steps) | `tour_controller.js` with Bootstrap popovers (9 steps) | ✅ COMPLETE | 9-step tour with highlight overlay, back/next navigation; Bootstrap popovers replace Shepherd.js |
 | Tour auto-start after wizard | `setupAndStartTour` after 1500ms | `startTour` URL param after reload | ✅ COMPLETE | |
 
 ### 12. UI Utilities & Micro-features
