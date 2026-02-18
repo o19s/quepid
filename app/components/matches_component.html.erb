@@ -5,6 +5,10 @@
     </div>
   <% end %>
 
+  <% if hot_matches_display.present? %>
+    <span class="badge bg-warning text-dark me-1" title="Document relevance score"><%= hot_matches_display %></span>
+  <% end %>
+
   <div class="actions">
     <%# Debug button — opens modal with raw explain JSON %>
     <a href="#" class="btn btn-outline-secondary" data-action="click->matches#openDebug" data-matches-target="debugTrigger">Debug</a>

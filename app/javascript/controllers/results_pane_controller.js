@@ -17,7 +17,7 @@ export default class extends Controller {
     skipFetch: Boolean  // When true (e.g. results_content slot provided), do not fetch; preserve slot content
   }
 
-  static targets = ["resultsContainer", "loadingIndicator", "errorMessage", "errorText", "diffIndicator", "loadMoreArea", "detailModal", "detailModalTitle", "detailFieldsList", "detailJsonPre", "showOnlyRatedToggle", "bulkRatingBar"]
+  static targets = ["resultsContainer", "loadingIndicator", "errorMessage", "errorText", "diffIndicator", "loadMoreArea", "detailModal", "detailModalTitle", "detailFieldsList", "detailJsonPre", "detailJsonTextarea", "detailJsonContainer", "detailModalBody", "viewSourceBtn", "copyJsonBtn", "showOnlyRatedToggle", "bulkRatingBar"]
 
   connect() {
     this._fetchRequestId = 0
@@ -494,14 +494,54 @@ export default class extends Controller {
       }
     }
 
-    // Populate raw JSON tab
-    if (this.hasDetailJsonPreTarget) {
-      const fullDoc = { id: docId, fields }
-      this.detailJsonPreTarget.textContent = JSON.stringify(fullDoc, null, 2)
+    // Populate raw JSON tab — use CodeMirror read-only viewer when available
+    const fullDoc = { id: docId, fields }
+    const jsonStr = JSON.stringify(fullDoc, null, 2)
+
+    if (this.hasDetailJsonTextareaTarget && window.CodeMirror) {
+      const textarea = this.detailJsonTextareaTarget
+      if (textarea.editor) {
+        // Reuse existing CodeMirror instance — just update its content
+        textarea.editor.setValue(jsonStr)
+        textarea.editor.formatJSON()
+      } else {
+        textarea.value = jsonStr
+        window.CodeMirror.fromTextArea(textarea, {
+          mode: "json",
+          readOnly: true,
+          lineNumbers: true,
+          height: 400
+        })
+        // formatJSON is auto-called by fromTextArea for valid JSON
+      }
+      // Hide the fallback <pre>
+      if (this.hasDetailJsonPreTarget) this.detailJsonPreTarget.classList.add("d-none")
+    } else if (this.hasDetailJsonPreTarget) {
+      this.detailJsonPreTarget.textContent = jsonStr
+      this.detailJsonPreTarget.classList.remove("d-none")
+    }
+
+    // Set up copy JSON button
+    if (this.hasCopyJsonBtnTarget) {
+      this.copyJsonBtnTarget.setAttribute("data-clipboard-text-value", jsonStr)
+    }
+
+    // Set up view source button — doc_id is stored for viewSource action
+    this._currentDetailDocId = docId
+    if (this.hasViewSourceBtnTarget) {
+      this.viewSourceBtnTarget.classList.remove("d-none")
     }
 
     const modal = this.hasDetailModalTarget && window.bootstrap?.Modal?.getOrCreateInstance(this.detailModalTarget)
     modal?.show()
+  }
+
+  viewSource() {
+    if (!this._currentDetailDocId) return
+    const root = getQuepidRootUrl()
+    const docId = encodeURIComponent(this._currentDetailDocId)
+    const url = `${buildApiUrl(root, "cases", this.caseIdValue, "tries", this.tryNumberValue, "queries", this.queryIdValue, "search")}?q=${docId}&rows=1`
+    window.open(url, "_blank")
   }
 
   _escapeHtml(str) {

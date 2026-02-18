@@ -77,10 +77,12 @@ export default class extends Controller {
       // Mark wizard complete for user
       await this._markWizardComplete(root)
 
-      // Reload to show the configured workspace
+      // Reload to show the configured workspace, with startTour flag for tour controller
       this._modal?.hide()
-      this._clearShowWizardFromUrl()
-      window.location.reload()
+      const url = new URL(window.location.href)
+      url.searchParams.delete("showWizard")
+      url.searchParams.set("startTour", "true")
+      window.location.href = url.toString()
     } catch (err) {
       console.error("Wizard finish failed:", err)
       if (window.flash) window.flash.error = err.message
@@ -127,7 +129,7 @@ export default class extends Controller {
   async _addFirstQuery(root, queryText) {
     if (!this.caseIdValue) return
 
-    const url = `${root}case${this.caseIdValue}/queries`
+    const url = `${root}case/${this.caseIdValue}/queries`
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
     const res = await fetch(url, {
       method: "POST",

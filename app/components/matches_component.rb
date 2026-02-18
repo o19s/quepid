@@ -46,6 +46,18 @@ class MatchesComponent < ApplicationComponent
     "Relevancy Score: #{@doc_score}"
   end
 
+  # Hot matches scoring display: "score / max_score (percentage%)"
+  def hot_matches_display
+    return nil if @doc_score.nil? || @max_doc_score.nil? || @max_doc_score.zero?
+
+    percentage = (@doc_score.to_f / @max_doc_score * 100).round(1)
+    "#{@doc_score} / #{@max_doc_score} (#{percentage}%)"
+  end
+
+  def has_score?
+    @doc_score.present?
+  end
+
   # Safe text for display and for ExpandContentComponent; avoids nil/blank body.
   def explain_text_display
     @explain_text.presence || "No explain text available."

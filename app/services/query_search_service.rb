@@ -31,13 +31,22 @@ class QuerySearchService
 
     return error_response(response) unless response.status == 200
 
+    # extract_docs delegates to FetchService which parses internally;
+    # parse once here for the remaining metadata extractors.
     docs = extract_docs(response.body, atry, fetch_service)
-    num_found = extract_num_found(response.body, atry)
+    parsed = parse_json_safe(response.body)
+    engine = atry.search_endpoint.search_engine.to_sym
+    num_found = extract_num_found(parsed, engine)
+    highlights = extract_highlights(parsed, engine)
+    max_score = extract_max_score(parsed, engine)
+    querqy_triggered = detect_querqy(parsed, engine)
 
     {
-      docs:            docs.map { |d| doc_for_api(d) },
-      num_found:       num_found,
-      response_status: response.status
+      docs:              docs.map { |d| doc_for_api(d, highlights) },
+      num_found:         num_found,
+      max_score:         max_score,
+      querqy_triggered:  querqy_triggered,
+      response_status:   response.status
     }
   end
 
@@ -74,31 +83,79 @@ class QuerySearchService
     []
   end
 
-  def extract_num_found(response_body, atry)
-    data = parse_json_safe(response_body)
+  def extract_num_found(data, engine)
     return 0 if data.blank?
 
-    case atry.search_endpoint.search_engine.to_sym
+    case engine
     when :solr
       data.dig('response', 'numFound') || 0
     when :es, :os
       total = data.dig('hits', 'total')
       total.is_a?(Hash) ? total['value'] || 0 : total.to_i
     when :searchapi
-      # SearchAPI uses mapper; num_found may be in response
       data['numberOfResults'] || data['total'] || 0
     else
       0
     end
   end
 
-  def doc_for_api(doc)
-    {
+  def doc_for_api(doc, highlights = {})
+    result = {
       id:        doc[:id],
       position:  doc[:position],
       fields:    doc[:fields],
       explain:   doc[:explain]
     }.compact
+
+    doc_highlights = highlights[doc[:id].to_s] || highlights[doc[:id]]
+    result[:highlights] = doc_highlights if doc_highlights.present?
+
+    result
+  end
+
+  def extract_highlights(data, engine)
+    return {} if data.blank?
+
+    case engine
+    when :solr
+      data.dig("highlighting") || {}
+    when :es, :os
+      hits = data.dig("hits", "hits") || []
+      hits.each_with_object({}) do |hit, memo|
+        hl = hit["highlight"]
+        memo[hit["_id"]] = hl if hl.present?
+      end
+    else
+      {}
+    end
+  end
+
+  def extract_max_score(data, engine)
+    return nil if data.blank?
+
+    case engine
+    when :solr
+      data.dig("response", "maxScore")
+    when :es, :os
+      data.dig("hits", "max_score")
+    else
+      nil
+    end
+  end
+
+  def detect_querqy(data, engine)
+    return false if data.blank?
+
+    case engine
+    when :solr
+      decorations = data.dig("responseHeader", "params", "querqy.decorations") ||
+                    data.dig("querqy_decorations")
+      decorations.present?
+    when :es, :os
+      data.dig("ext", "querqy").present?
+    else
+      false
+    end
   end
 
   def parse_json_safe(str)

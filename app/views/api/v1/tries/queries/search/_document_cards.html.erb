@@ -2,9 +2,16 @@
 <%# Wrapper has data attributes for client to parse; inner content replaces resultsContainer. %>
 <% diff_entries_map ||= {} %>
 <% diff_columns ||= [] %>
+<% max_score ||= nil %>
+<% querqy_triggered ||= false %>
 <% diff_active = diff_entries_map.present? %>
 <div data-results-pane-html-response data-num-found="<%= num_found %>" data-shown="<%= docs.size %>"<%= ' data-diff-active="true"'.html_safe if diff_active %>>
-  <p class="text-muted small mb-2"><%= num_found %> result<%= num_found != 1 ? "s" : "" %> found.</p>
+  <p class="text-muted small mb-2">
+    <%= num_found %> result<%= num_found != 1 ? "s" : "" %> found.
+    <% if querqy_triggered %>
+      <span class="badge bg-info ms-1" title="Querqy query rewriting rules were applied to this search"><i class="bi bi-lightning-fill" aria-hidden="true"></i> Querqy rules applied</span>
+    <% end %>
+  </p>
   <% if docs.empty? %>
     <p class="text-muted small">No documents returned.</p>
   <% elsif diff_columns.present? %>
@@ -21,12 +28,14 @@
       <% doc_id_str = doc_hash[:id].to_s %>
       <% rating = ratings_map[doc_id_str]&.to_s || "" %>
       <% diff_entries = diff_active ? (diff_entries_map[doc_id_str] || []) : nil %>
+      <% doc_highlights = doc_hash[:highlights] || {} %>
       <%= render DocumentCardComponent.new(
         doc: doc_hash,
         rating: rating,
         index: idx,
         diff_entries: diff_entries,
-        scale: scorer_scale
+        scale: scorer_scale,
+        highlights: doc_highlights
       ) %>
     <% end %>
   <% end %>

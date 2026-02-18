@@ -102,8 +102,10 @@ module Api
 
         if @try.update try_params
           if params[:curator_vars].present?
-            @try.curator_variables.destroy_all
-            @try.add_curator_vars params[:curator_vars]
+            ActiveRecord::Base.transaction do
+              @try.curator_variables.destroy_all
+              @try.add_curator_vars params[:curator_vars]
+            end
           end
           respond_with @try
         else

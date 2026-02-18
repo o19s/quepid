@@ -3,7 +3,7 @@
 <%= turbo_stream_from(:notifications) %>
 <% if @case %>
   <%= render NewCaseWizardComponent.new(
-    show: ActiveModel::Type::Boolean.new.cast(params[:showWizard]),
+    show: ActiveModel::Type::Boolean.new.cast(params[:showWizard]) || (!current_user.completed_case_wizard && current_user.cases_involved_with.count <= 1),
     case_id: @case.id,
     case_name: @case.case_name,
     try_number: @try&.try_number,
@@ -13,7 +13,7 @@
   ) %>
 <% end %>
 <span id="notifications-case-<%= @case.id %>"></span>
-<div class="core-workspace" data-case-id="<%= @case.id %>" data-try-number="<%= @try&.try_number %>">
+<div class="core-workspace" data-case-id="<%= @case.id %>" data-try-number="<%= @try&.try_number %>" data-controller="tour">
   <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
     <span data-controller="inline-edit"
           data-inline-edit-url-value="<%= "#{quepid_root_url}/api/cases/#{@case.id}" %>"
@@ -27,7 +27,14 @@
     </span>
     <% if @case.public? %><span class="badge bg-info">PUBLIC</span><% end %>
     <% if @case.archived %><span class="badge bg-warning text-dark">ARCHIVED</span><% end %>
-    <% if @case.nightly %><span class="badge bg-secondary" title="Queries run on a nightly basis"><i class="bi bi-repeat"></i> Nightly</span><% end %>
+    <span data-controller="nightly-toggle" data-nightly-toggle-case-id-value="<%= @case.id %>" data-nightly-toggle-nightly-value="<%= @case.nightly %>">
+      <div class="form-check form-switch d-inline-block mb-0">
+        <input type="checkbox" class="form-check-input" role="switch" id="nightly-toggle-<%= @case.id %>"
+               data-nightly-toggle-target="checkbox" data-action="change->nightly-toggle#toggle"
+               <%= "checked" if @case.nightly %>>
+        <label class="form-check-label small" for="nightly-toggle-<%= @case.id %>" data-nightly-toggle-target="label"><%= @case.nightly ? "Nightly: ON" : "Nightly: OFF" %></label>
+      </div>
+    </span>
     <span data-controller="inline-edit"
           data-inline-edit-url-value="<%= "#{quepid_root_url}/api/cases/#{@case.id}/tries/#{@try&.try_number}" %>"
           data-inline-edit-field-value="name"
@@ -42,7 +49,8 @@
       try: @try,
       case_id: @case.id,
       search_endpoint_edit_path: (@try&.search_endpoint && current_user.search_endpoints_involved_with.exists?(@try.search_endpoint.id)) ? search_endpoint_path(@try.search_endpoint) : nil,
-      tries: @case.tries.includes(:search_endpoint).order(try_number: :desc)
+      tries: @case.tries.includes(:search_endpoint).order(try_number: :desc),
+      search_endpoints: current_user.search_endpoints_involved_with.not_archived
     ) %>
     <%= render ScorerPanelComponent.new(
       scorer: @case.scorer,
@@ -59,6 +67,12 @@
       max_score: @case.scorer&.scale&.last || 100
     ) %>
     <div class="d-flex gap-2 ms-auto align-items-center">
+      <span data-controller="run-evaluation" data-run-evaluation-case-id-value="<%= @case.id %>" data-run-evaluation-try-number-value="<%= @try&.try_number %>">
+        <button type="button" class="btn btn-sm btn-outline-success" data-run-evaluation-target="button" data-action="click->run-evaluation#run" title="Run evaluation for all queries">
+          <span class="spinner-border spinner-border-sm d-none" data-run-evaluation-target="spinner" aria-hidden="true"></span>
+          <i class="bi bi-play-fill" aria-hidden="true"></i> Evaluate
+        </button>
+      </span>
       <%= render CloneCaseComponent.new(
         case_id: @case.id,
         case_name: @case.case_name,
@@ -84,6 +98,10 @@
         scorer_id: @case.scorer_id,
         teams: @case.teams.select(:id, :name)
       ) %>
+      <% rating_stats ||= @case.queries.left_joins(:ratings)
+           .group(:id)
+           .pluck(:id, Arel.sql("COUNT(ratings.id)"))
+           .map { |id, count| { query_id: id, ratings_count: count } } %>
       <%= render FrogReportComponent.new(
         case_id: @case.id,
         case_name: @case.case_name,
@@ -92,10 +110,7 @@
         book_name: @case.book&.name,
         depth: @try&.number_of_rows || 10,
         all_rated: @case.last_score&.all_rated || false,
-        rating_stats: @case.queries.left_joins(:ratings)
-          .group(:id)
-          .pluck(:id, Arel.sql("COUNT(ratings.id)"))
-          .map { |id, count| { query_id: id, ratings_count: count } }
+        rating_stats: rating_stats
       ) %>
       <%= render DiffComponent.new(case_id: @case.id) %>
       <%= render TakeSnapshotComponent.new(
@@ -162,7 +177,8 @@
           scorer_scale_max: @case.scorer&.scale&.last || 100,
           scorer_scale: @case.scorer&.scale,
           query_scores: query_scores,
-          sortable: Rails.application.config.query_list_sortable
+          sortable: Rails.application.config.query_list_sortable,
+          rating_stats: rating_stats
         ) %>
       </div>
     </div>

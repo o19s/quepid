@@ -16,12 +16,13 @@ class DocumentCardComponent < ApplicationComponent
   # @param index [Integer] 0-based index for display position
   # @param diff_entries [Array<Hash>, nil] Optional diff info: [{ position:, name: }]
   # @param scale [Array<Integer>] Scorer scale for rating popover (e.g. [0,1,2,3])
-  def initialize(doc:, rating: nil, index: 0, diff_entries: nil, scale: [ 0, 1, 2, 3 ])
+  def initialize(doc:, rating: nil, index: 0, diff_entries: nil, scale: [ 0, 1, 2, 3 ], highlights: nil)
     @doc          = doc
     @rating       = rating.to_s.presence || ""
     @index        = index
     @diff_entries = diff_entries
     @scale        = scale
+    @highlights   = highlights || {}
   end
 
   def doc_id
@@ -89,6 +90,38 @@ class DocumentCardComponent < ApplicationComponent
 
   def rating
     @rating
+  end
+
+  def highlights
+    @highlights
+  end
+
+  def has_highlights?
+    @highlights.present? && @highlights.any?
+  end
+
+  # Returns highlighted snippets for display. Allows only safe HTML tags.
+  def highlighted_snippets
+    return [] unless has_highlights?
+
+    @highlights.flat_map do |_field, fragments|
+      Array(fragments).first(2)
+    end
+  end
+
+  # Detect an image URL from document fields by common naming patterns or URL extension.
+  def image_url
+    return nil if fields.blank?
+
+    image_keys = fields.keys.select do |k|
+      k.to_s.match?(/image|img|thumb|photo|picture|poster|cover/i) ||
+        Array(fields[k]).first.to_s.match?(/\.(jpe?g|png|gif|webp|svg)(\?|$)/i)
+    end
+
+    return nil if image_keys.empty?
+
+    url = Array(fields[image_keys.first]).first.to_s
+    url.match?(%r{\Ahttps?://}) ? url : nil
   end
 
   def explain_display_text

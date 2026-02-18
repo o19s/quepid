@@ -27,7 +27,7 @@
     </ul>
   </div>
 
-  <em class="annotations-time"><%= time_ago_text %></em>
+  <em class="annotations-time"><time datetime="<%= @annotation.created_at&.iso8601 %>" data-local="time-ago"><%= time_ago_text %></time></em>
 
   <% if display_user.present? %>
     <span class="annotation-source">by <%= display_user %></span>

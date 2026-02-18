@@ -6,6 +6,16 @@
   <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
     <h3 class="h6 mb-0">Queries</h3>
     <span class="badge bg-secondary" data-query-list-target="count"><%= @queries.size %></span>
+    <% unless @queries.empty? %>
+      <div class="btn-group btn-group-sm ms-auto">
+        <button type="button" class="btn btn-outline-secondary" data-action="click->query-list#expandAll" title="Expand all queries">
+          <i class="bi bi-chevron-expand" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="btn btn-outline-secondary" data-action="click->query-list#collapseAll" title="Collapse all queries">
+          <i class="bi bi-chevron-contract" aria-hidden="true"></i>
+        </button>
+      </div>
+    <% end %>
   </div>
   <% unless @queries.empty? %>
     <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
@@ -17,7 +27,8 @@
       </div>
       <select class="form-select form-select-sm" style="max-width: 140px;" data-query-list-target="sortSelect" data-action="change->query-list#sort">
         <option value="default">Default order</option>
-        <option value="name">Name</option>
+        <option value="name">Name A-Z</option>
+        <option value="name_desc">Name Z-A</option>
         <option value="score_asc">Score ↑</option>
         <option value="score_desc">Score ↓</option>
       </select>
@@ -44,7 +55,8 @@
                    scorer_scale: @scorer_scale,
                    query_score: score_for(query),
                    options_json: options_for_query(query),
-                   other_cases: @other_cases %>
+                   other_cases: @other_cases,
+                   unrated: unrated?(query) %>
       <% end %>
   <% end %>
   </ul>

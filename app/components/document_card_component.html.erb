@@ -23,9 +23,20 @@
         </div>
       </div>
     </div>
-    <% if fields_preview.present? %>
-      <div class="small text-muted mt-1"><%= h(fields_preview) %></div>
-    <% end %>
+    <div class="d-flex gap-2 mt-1">
+      <% if image_url.present? %>
+        <img src="<%= image_url %>" alt="" class="rounded" style="width: 60px; height: 60px; object-fit: cover; flex-shrink: 0;" loading="lazy" onerror="this.style.display='none'">
+      <% end %>
+      <div class="flex-grow-1">
+        <% if has_highlights? %>
+          <% highlighted_snippets.each do |snippet| %>
+            <div class="small mt-1"><%= sanitize(snippet, tags: %w[em strong mark b i]) %></div>
+          <% end %>
+        <% elsif fields_preview.present? %>
+          <div class="small text-muted"><%= h(fields_preview) %></div>
+        <% end %>
+      </div>
+    </div>
     <% if has_explain? %>
       <div class="mt-1">
         <%= render MatchesComponent.new(

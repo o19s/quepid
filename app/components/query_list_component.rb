@@ -19,7 +19,7 @@ class QueryListComponent < ApplicationComponent
   # @param scorer_scale_max [Numeric] Max scale value for QscoreQueryComponent (e.g. scorer.scale.last)
   # @param query_scores [Hash] Optional query_id => score for last run (from Score#queries)
   # @param sortable [Boolean] Whether drag-and-drop reorder is enabled (Rails.config.query_list_sortable)
-  def initialize(case_id:, try_number:, queries:, selected_query_id: nil, other_cases: [], scorer_scale_max: 100, query_scores: {}, sortable: true, scorer_scale: nil)
+  def initialize(case_id:, try_number:, queries:, selected_query_id: nil, other_cases: [], scorer_scale_max: 100, query_scores: {}, sortable: true, scorer_scale: nil, rating_stats: nil)
     @case_id           = case_id
     @try_number        = try_number
     @queries           = queries.respond_to?(:to_a) ? queries.to_a : Array(queries)
@@ -29,6 +29,18 @@ class QueryListComponent < ApplicationComponent
     @scorer_scale       = scorer_scale || [ 0, 1, 2, 3 ]
     @query_scores       = query_scores.is_a?(Hash) ? query_scores : {}
     @sortable           = sortable
+    @rating_stats       = if rating_stats.present?
+                            rating_stats.each_with_object({}) { |entry, memo| memo[entry[:query_id]] = entry[:ratings_count] }
+                          else
+                            {}
+                          end
+  end
+
+  def unrated?(query)
+    return false unless query.respond_to?(:id)
+
+    count = @rating_stats[query.id]
+    count.present? && count.zero?
   end
 
   def selected?(query)
@@ -45,4 +57,5 @@ class QueryListComponent < ApplicationComponent
     return nil unless query.respond_to?(:options)
     query.options
   end
+
 end

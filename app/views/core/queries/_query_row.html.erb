@@ -24,6 +24,9 @@
          data-turbo-frame="workspace_content">
         <%= query_text %>
       </a>
+      <% if local_assigns[:unrated] %>
+        <span class="badge bg-warning text-dark" title="No ratings for this query"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i></span>
+      <% end %>
       <span class="d-flex align-items-center gap-1 flex-shrink-0">
         <%= render QscoreQueryComponent.new(
               score: local_assigns[:query_score] || "?",

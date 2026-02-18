@@ -71,6 +71,8 @@ module Api
                        locals: {
                          docs:              result[:docs],
                          num_found:         result[:num_found],
+                         max_score:         result[:max_score],
+                         querqy_triggered:  result[:querqy_triggered],
                          ratings_map:       ratings_map,
                          scorer_scale:      scorer_scale,
                          diff_entries_map:  diff_entries_map,

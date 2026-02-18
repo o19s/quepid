@@ -36,6 +36,7 @@ export default class extends Controller {
 
   connect() {
     this._boundUpdate = this._handleScoreEvent.bind(this)
+    this._initialRender = true
     document.addEventListener("qscore:update", this._boundUpdate)
   }
 
@@ -60,10 +61,17 @@ export default class extends Controller {
   }
 
   _applyUpdate(detail) {
+    const oldScore = parseFloat(this.scoreValue)
     if (detail.score !== undefined)    this.scoreValue    = String(detail.score)
     if (detail.maxScore !== undefined) this.maxScoreValue = detail.maxScore
     if (detail.backgroundColor) {
       this._setColor(detail.backgroundColor)
+    }
+
+    // Animate the score transition (skip on initial render)
+    const newScore = parseFloat(this.scoreValue)
+    if (!this._initialRender && !isNaN(oldScore) && !isNaN(newScore) && oldScore !== newScore) {
+      this._animateScore(oldScore, newScore)
     }
   }
 
@@ -73,6 +81,11 @@ export default class extends Controller {
 
     if (this.hasScoreTextTarget) {
       this.scoreTextTarget.textContent = this._formatScore(this.scoreValue)
+    }
+
+    // Mark initial render done after first paint
+    if (this._initialRender) {
+      requestAnimationFrame(() => { this._initialRender = false })
     }
   }
 
@@ -98,6 +111,29 @@ export default class extends Controller {
     const scaled  = parseInt(clamped * 100 / maxScore, 10)
     const bucket  = Math.round(scaled / 10)
     return SCORE_COLORS[String(bucket)] || DEFAULT_COLOR
+  }
+
+  _animateScore(from, to) {
+    if (!this.hasScoreTextTarget) return
+    const duration = 600
+    const start = performance.now()
+    const target = this.scoreTextTarget
+
+    const step = (now) => {
+      const elapsed = now - start
+      const progress = Math.min(elapsed / duration, 1)
+      // EaseOut cubic
+      const eased = 1 - Math.pow(1 - progress, 3)
+      const current = from + (to - from) * eased
+      target.textContent = current.toFixed(2)
+      if (progress < 1) {
+        requestAnimationFrame(step)
+      } else {
+        target.textContent = this._formatScore(String(to))
+      }
+    }
+
+    requestAnimationFrame(step)
   }
 
   _formatScore(score) {

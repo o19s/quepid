@@ -20,6 +20,7 @@ export default class extends Controller {
     }
     this._snapshotOriginalOrder()
     this._updateCount()
+    this._restoreSortFromUrl()
 
     // Listen for lightweight per-query score refresh events
     this._boundHandleScoreRefresh = this._handleScoreRefresh.bind(this)
@@ -91,6 +92,32 @@ export default class extends Controller {
     }
   }
 
+  expandAll() {
+    this._toggleAllQueryExpand(true)
+  }
+
+  collapseAll() {
+    this._toggleAllQueryExpand(false)
+  }
+
+  _toggleAllQueryExpand(expand) {
+    if (!this.hasListTarget) return
+    const rows = this.listTarget.querySelectorAll("[data-controller~='query-expand']")
+    rows.forEach(row => {
+      const app = this.application
+      const controller = app.getControllerForElementAndIdentifier(row, "query-expand")
+      if (!controller) return
+      const resultsTarget = row.querySelector("[data-query-expand-target='inlineResults']")
+      if (!resultsTarget) return
+      const isExpanded = !resultsTarget.classList.contains("d-none")
+      if (expand && !isExpanded) {
+        controller.toggle()
+      } else if (!expand && isExpanded) {
+        controller.toggle()
+      }
+    })
+  }
+
   _snapshotOriginalOrder() {
     if (this.hasListTarget) {
       this._originalOrder = Array.from(this.listTarget.querySelectorAll("[data-query-id]"))
@@ -132,8 +159,9 @@ export default class extends Controller {
         this._originalOrder.forEach((li) => {
           if (li.parentNode === list) list.appendChild(li)
         })
-      } else if (sortBy === "name") {
-        items.sort((a, b) => (a.dataset.queryText || "").localeCompare(b.dataset.queryText || ""))
+      } else if (sortBy === "name" || sortBy === "name_desc") {
+        const dir = sortBy === "name_desc" ? -1 : 1
+        items.sort((a, b) => dir * (a.dataset.queryText || "").localeCompare(b.dataset.queryText || ""))
         items.forEach((li) => list.appendChild(li))
       } else if (sortBy === "score_asc" || sortBy === "score_desc") {
         items.sort((a, b) => {
@@ -145,6 +173,31 @@ export default class extends Controller {
       }
     } finally {
       this._pauseObserver = false
+    }
+
+    // Persist sort choice in URL
+    this._persistSortToUrl(sortBy)
+  }
+
+  _persistSortToUrl(sortBy) {
+    const url = new URL(window.location.href)
+    if (sortBy && sortBy !== "default") {
+      url.searchParams.set("sort", sortBy)
+    } else {
+      url.searchParams.delete("sort")
+    }
+    window.history.replaceState({}, "", url.toString())
+  }
+
+  _restoreSortFromUrl() {
+    const url = new URL(window.location.href)
+    const sort = url.searchParams.get("sort")
+    if (sort && this.hasSortSelectTarget) {
+      const option = this.sortSelectTarget.querySelector(`option[value="${sort}"]`)
+      if (option) {
+        this.sortSelectTarget.value = sort
+        this.sort()
+      }
     }
   }
 

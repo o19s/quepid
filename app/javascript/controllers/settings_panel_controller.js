@@ -6,10 +6,11 @@ import { getQuepidRootUrl, buildApiUrl } from "utils/quepid_root"
 // Replaces SettingsCtrl and CurrSettingsCtrl.
 export default class extends Controller {
   static values = { caseId: Number, tryNumber: Number, curatorVars: Object, searchEngine: String }
-  static targets = ["trigger", "panel", "paramsForm", "queryParams", "escapeQuery", "numberOfRows", "curatorVarsContainer", "urlValidationFeedback", "queryParamsFeedback"]
+  static targets = ["trigger", "panel", "paramsForm", "queryParams", "escapeQuery", "numberOfRows", "curatorVarsContainer", "urlValidationFeedback", "queryParamsFeedback", "endpointSelect"]
 
   connect() {
     this._renderCuratorVarInputs()
+    this._initCodeMirror()
   }
 
   toggle() {
@@ -53,6 +54,31 @@ export default class extends Controller {
     }
   }
 
+  async changeEndpoint() {
+    if (!this.hasEndpointSelectTarget || !this.caseIdValue || !this.tryNumberValue) return
+
+    const endpointId = parseInt(this.endpointSelectTarget.value, 10)
+    if (!endpointId) return
+
+    try {
+      const root = getQuepidRootUrl()
+      const url = buildApiUrl(root, "cases", this.caseIdValue, "tries", this.tryNumberValue)
+      const res = await apiFetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ try: { search_endpoint_id: endpointId } })
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || data.message || `Endpoint change failed (${res.status})`)
+      }
+      window.location.reload()
+    } catch (err) {
+      console.error("Change endpoint failed:", err)
+      if (window.flash) window.flash.error = err.message
+    }
+  }
+
   async deleteTry(event) {
     const tryNumber = event.currentTarget.dataset.tryNumber
     if (!tryNumber || !this.caseIdValue) return
@@ -69,7 +95,15 @@ export default class extends Controller {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error || data.message || `Delete failed (${res.status})`)
       }
-      window.location.reload()
+      // If we just deleted the try we're currently viewing, navigate to case root
+      // (which loads the latest try) instead of reloading (which would 404).
+      const currentTry = String(this.tryNumberValue)
+      if (String(tryNumber) === currentTry) {
+        const root = getQuepidRootUrl()
+        window.location.href = `${root}case/${this.caseIdValue}`
+      } else {
+        window.location.reload()
+      }
     } catch (err) {
       console.error("Delete try failed:", err)
       if (window.flash) window.flash.error = err.message
@@ -80,6 +114,11 @@ export default class extends Controller {
     event.preventDefault()
 
     if (!this.caseIdValue || !this.tryNumberValue) return
+
+    // Sync CodeMirror value back to textarea before reading
+    if (this.hasQueryParamsTarget && this.queryParamsTarget.editor) {
+      this.queryParamsTarget.value = this.queryParamsTarget.editor.getValue()
+    }
 
     const curatorVars = this._collectCuratorVars()
     const body = {
@@ -245,6 +284,21 @@ export default class extends Controller {
       <h6 class="card-title mt-2 small text-muted">Curator variables</h6>
       ${html}
     `
+  }
+
+  // Initialize CodeMirror on the query params textarea if available
+  _initCodeMirror() {
+    if (!this.hasQueryParamsTarget) return
+    const textarea = this.queryParamsTarget
+    if (textarea.editor) return // already initialized
+
+    if (window.CodeMirror && textarea.dataset.codemirrorMode) {
+      window.CodeMirror.fromTextArea(textarea, {
+        mode: textarea.dataset.codemirrorMode,
+        lineNumbers: true,
+        height: 200
+      })
+    }
   }
 
   // Collect current curator variable values from the rendered inputs
