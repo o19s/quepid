@@ -62,6 +62,12 @@ class DiffComparisonComponent < ApplicationComponent
     end
   end
 
+  def format_score(score)
+    return nil if score.nil?
+
+    score == score.to_i ? score.to_i.to_s : format("%.2f", score)
+  end
+
   def doc_title(doc)
     return doc[:title] || doc[:name] || doc_id(doc) if doc.is_a?(Hash)
 

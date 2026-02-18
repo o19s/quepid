@@ -27,6 +27,16 @@
       <div class="diff-column__header sticky-top bg-white border-bottom pb-1 mb-2">
         <strong class="small"><%= h(col[:name]) %></strong>
         <span class="badge bg-secondary ms-1"><%= col[:docs]&.size || 0 %></span>
+        <% if col[:query_score] || col[:case_score] %>
+          <div class="small text-muted mt-1">
+            <% if col[:query_score] %>
+              <span title="Query score at snapshot time">Q: <%= format_score(col[:query_score]) %></span>
+            <% end %>
+            <% if col[:case_score] %>
+              <span class="<%= 'ms-2' if col[:query_score] %>" title="Case score at snapshot time">Case: <%= format_score(col[:case_score]) %></span>
+            <% end %>
+          </div>
+        <% end %>
       </div>
       <% (col[:docs] || []).sort_by { |d| d[:position].to_i }.each do |snap_doc| %>
         <% status = diff_status(snap_doc, current_position_map) %>

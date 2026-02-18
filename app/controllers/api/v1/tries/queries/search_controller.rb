@@ -143,7 +143,7 @@ module Api
 
           # Build both diff structures from a single set of DB queries:
           #   entries_map: { doc_id => [{ position: N, name: "Snapshot X" }] } for badge display
-          #   columns: [{ name: String, docs: [{ doc_id:, position: }] }] for side-by-side view
+          #   columns: [{ name: String, docs: [...], query_score: Float, case_score: Float }]
           # Returns [entries_map, columns]
           def build_diff_data(snapshot_ids)
             return [ {}, [] ] if snapshot_ids.blank?
@@ -155,6 +155,12 @@ module Api
             snapshot_queries = SnapshotQuery
               .where(snapshot_id: snapshot_ids, query_id: @query.id)
               .includes(:snapshot_docs)
+
+            # Pre-fetch case-level scores for each snapshot's try
+            try_ids = snapshots.values.filter_map(&:try_id).uniq
+            case_scores_by_try = Score.where(case_id: @case.id, try_id: try_ids)
+                                      .group(:try_id)
+                                      .maximum(:score)
 
             entries_map = Hash.new { |h, k| h[k] = [] }
             columns = snapshot_ids.filter_map do |sid|
@@ -169,7 +175,12 @@ module Api
                 { doc_id: doc_id_str, position: sd.position }
               end
 
-              { name: snapshot_name, docs: col_docs }
+              {
+                name:        snapshot_name,
+                docs:        col_docs,
+                query_score: sq&.score,
+                case_score:  case_scores_by_try[snapshot.try_id]
+              }
             end
 
             [ entries_map, columns ]
