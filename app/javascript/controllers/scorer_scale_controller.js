@@ -33,9 +33,6 @@ export default class extends Controller {
       case 'graded':
         scaleValue = "0,1,2,3"
         break
-      case 'detail':
-        scaleValue = "1,2,3,4,5,6,7,8,9,10"
-        break
       case 'custom':
         // Clear the field for custom and update placeholder
         if (this.hasScaleListTarget) {
