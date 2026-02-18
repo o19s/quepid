@@ -3,15 +3,17 @@
 class TeamsController < ApplicationController
   include Pagy::Method
 
+  rescue_from ActiveRecord::RecordNotFound do |exception|
+    resource_name = exception.model.underscore.humanize
+    flash[:alert] = "#{resource_name} not found."
+    redirect_back_or_to(teams_path)
+  end
+
   before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint, :suggest_members ]
 
   # Remove a case from the team
   def remove_case
-    kase = Case.find_by(id: params[:case_id])
-    unless kase
-      flash[:alert] = 'Case not found.'
-      redirect_to team_path(@team) and return
-    end
+    kase = Case.find(params[:case_id])
 
     if @team.cases.exists?(kase.id)
       @team.cases.delete(kase)
@@ -26,13 +28,8 @@ class TeamsController < ApplicationController
 
   # Share a case with a team (similar to scorer sharing pattern)
   def share_case
-    team = current_user.teams.find_by(id: params[:team_id])
-    kase = Case.find_by(id: params[:case_id])
-
-    unless team && kase
-      flash[:alert] = 'Team or case not found.'
-      redirect_back_or_to(teams_path) and return
-    end
+    team = current_user.teams.find(params[:team_id])
+    kase = Case.find(params[:case_id])
 
     # Check if user has access to this case
     unless current_user.cases_involved_with.exists?(id: kase.id)
@@ -52,13 +49,8 @@ class TeamsController < ApplicationController
   end
 
   def unshare_case
-    team = current_user.teams.find_by(id: params[:team_id])
-    kase = Case.find_by(id: params[:case_id])
-
-    unless team && kase
-      flash[:alert] = 'Team or case not found.'
-      redirect_back_or_to(teams_path) and return
-    end
+    team = current_user.teams.find(params[:team_id])
+    kase = Case.find(params[:case_id])
 
     # Check if user has access to this case
     unless current_user.cases_involved_with.exists?(id: kase.id)
@@ -78,13 +70,8 @@ class TeamsController < ApplicationController
 
   # Share a book with a team (similar to case sharing pattern)
   def share_book
-    team = current_user.teams.find_by(id: params[:team_id])
-    book = Book.find_by(id: params[:book_id])
-
-    unless team && book
-      flash[:alert] = 'Team or book not found.'
-      redirect_back_or_to(teams_path) and return
-    end
+    team = current_user.teams.find(params[:team_id])
+    book = Book.find(params[:book_id])
 
     # Check if user has access to this book (owner or team member with access)
     unless current_user.books_involved_with.exists?(id: book.id)
@@ -103,13 +90,8 @@ class TeamsController < ApplicationController
   end
 
   def unshare_book
-    team = current_user.teams.find_by(id: params[:team_id])
-    book = Book.find_by(id: params[:book_id])
-
-    unless team && book
-      flash[:alert] = 'Team or book not found.'
-      redirect_back_or_to(teams_path) and return
-    end
+    team = current_user.teams.find(params[:team_id])
+    book = Book.find(params[:book_id])
 
     # Check if user has access to this book
     unless current_user.books_involved_with.exists?(id: book.id)
@@ -129,13 +111,8 @@ class TeamsController < ApplicationController
 
   # Share a search endpoint with a team (similar to case/book sharing pattern)
   def share_search_endpoint
-    team = current_user.teams.find_by(id: params[:team_id])
-    search_endpoint = SearchEndpoint.find_by(id: params[:search_endpoint_id])
-
-    unless team && search_endpoint
-      flash[:alert] = 'Team or search endpoint not found.'
-      redirect_back_or_to(teams_path) and return
-    end
+    team = current_user.teams.find(params[:team_id])
+    search_endpoint = SearchEndpoint.find(params[:search_endpoint_id])
 
     # Check if user has access to this search endpoint
     unless current_user.search_endpoints_involved_with.exists?(id: search_endpoint.id)
@@ -154,13 +131,8 @@ class TeamsController < ApplicationController
   end
 
   def unshare_search_endpoint
-    team = current_user.teams.find_by(id: params[:team_id])
-    search_endpoint = SearchEndpoint.find_by(id: params[:search_endpoint_id])
-
-    unless team && search_endpoint
-      flash[:alert] = 'Team or search endpoint not found.'
-      redirect_back_or_to(teams_path) and return
-    end
+    team = current_user.teams.find(params[:team_id])
+    search_endpoint = SearchEndpoint.find(params[:search_endpoint_id])
 
     # Check if user has access to this search endpoint
     unless current_user.search_endpoints_involved_with.exists?(id: search_endpoint.id)
@@ -180,11 +152,7 @@ class TeamsController < ApplicationController
 
   # Archive a search endpoint
   def archive_search_endpoint
-    search_endpoint = SearchEndpoint.find_by(id: params[:search_endpoint_id])
-    unless search_endpoint
-      flash[:alert] = 'Search endpoint not found.'
-      redirect_to team_path(@team) and return
-    end
+    search_endpoint = SearchEndpoint.find(params[:search_endpoint_id])
 
     # Only archive if the search endpoint is associated with this team
     if @team.search_endpoints.exists?(search_endpoint.id)
@@ -200,11 +168,7 @@ class TeamsController < ApplicationController
 
   # Unarchive a search endpoint
   def unarchive_search_endpoint
-    search_endpoint = SearchEndpoint.find_by(id: params[:search_endpoint_id])
-    unless search_endpoint
-      flash[:alert] = 'Search endpoint not found.'
-      redirect_to team_path(@team) and return
-    end
+    search_endpoint = SearchEndpoint.find(params[:search_endpoint_id])
 
     # Only unarchive if the search endpoint is associated with this team
     if @team.search_endpoints.exists?(search_endpoint.id)
@@ -220,11 +184,7 @@ class TeamsController < ApplicationController
 
   # Archive a case (mark archived and set current_user as owner)
   def archive_case
-    kase = Case.find_by(id: params[:case_id])
-    unless kase
-      flash[:alert] = 'Case not found.'
-      redirect_to team_path(@team) and return
-    end
+    kase = Case.find(params[:case_id])
 
     # Only archive if the case is associated with this team
     if @team.cases.exists?(kase.id)
@@ -241,11 +201,7 @@ class TeamsController < ApplicationController
 
   # Unarchive a case
   def unarchive_case
-    kase = Case.find_by(id: params[:case_id])
-    unless kase
-      flash[:alert] = 'Case not found.'
-      redirect_to team_path(@team) and return
-    end
+    kase = Case.find(params[:case_id])
 
     # Only unarchive if the case is associated with this team
     if @team.cases.exists?(kase.id)
@@ -404,11 +360,7 @@ class TeamsController < ApplicationController
   end
 
   def remove_member
-    member = User.find_by(id: params[:member_id])
-    unless member
-      flash[:alert] = 'User not found.'
-      redirect_to team_path(@team) and return
-    end
+    member = User.find(params[:member_id])
 
     if @team.members.exists?(member.id)
       @team.members.delete(member)
