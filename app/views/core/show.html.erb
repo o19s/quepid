@@ -160,11 +160,20 @@
           selected_query_id: selected_query_id,
           other_cases: other_cases,
           scorer_scale_max: @case.scorer&.scale&.last || 100,
+          scorer_scale: @case.scorer&.scale,
           query_scores: query_scores,
           sortable: Rails.application.config.query_list_sortable
         ) %>
       </div>
     </div>
+    <div class="workspace-resizer"
+         data-controller="workspace-resizer"
+         data-workspace-resizer-case-id-value="<%= @case.id %>"
+         data-action="mousedown->workspace-resizer#startDrag touchstart->workspace-resizer#startTouchDrag"
+         role="separator"
+         aria-orientation="vertical"
+         aria-label="Resize panels"
+         tabindex="0"></div>
     <div class="workspace-panel east" data-workspace-panels-target="eastPanel" aria-expanded="true">
       <div class="workspace-panel__header">
         <span class="workspace-panel__title">Results</span>

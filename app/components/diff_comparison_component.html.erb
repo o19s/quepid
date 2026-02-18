@@ -1,0 +1,55 @@
+<%# Side-by-side diff comparison: Current results vs snapshot columns %>
+<% snap_cols = prepared_snapshot_columns %>
+<div class="diff-comparison">
+  <%# Column: Current results %>
+  <div class="diff-column">
+    <div class="diff-column__header sticky-top bg-white border-bottom pb-1 mb-2">
+      <strong class="small">Current Results</strong>
+      <span class="badge bg-secondary ms-1"><%= @current_docs.size %></span>
+    </div>
+    <% @current_docs.each_with_index do |doc, idx| %>
+      <% did = doc_id(doc) %>
+      <% status = current_doc_status(doc, snap_cols) %>
+      <div class="diff-doc <%= status %>" title="<%= status.present? ? 'New in current results' : '' %>">
+        <span class="diff-doc__position badge bg-dark"><%= idx + 1 %></span>
+        <span class="diff-doc__id text-truncate small"><%= h(doc_title(doc)) %></span>
+        <% r = rating_for(doc) %>
+        <% if r.present? %>
+          <span class="badge bg-primary ms-auto"><%= r %></span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Snapshot columns %>
+  <% snap_cols.each do |col| %>
+    <div class="diff-column">
+      <div class="diff-column__header sticky-top bg-white border-bottom pb-1 mb-2">
+        <strong class="small"><%= h(col[:name]) %></strong>
+        <span class="badge bg-secondary ms-1"><%= col[:docs]&.size || 0 %></span>
+      </div>
+      <% (col[:docs] || []).sort_by { |d| d[:position].to_i }.each do |snap_doc| %>
+        <% status = diff_status(snap_doc, current_position_map) %>
+        <div class="diff-doc <%= status %>" title="<%= h(position_change_title(snap_doc, status)) %>">
+          <span class="diff-doc__position badge bg-dark"><%= snap_doc[:position] %></span>
+          <span class="diff-doc__id text-truncate small"><%= h(snap_doc[:doc_id]) %></span>
+          <% if status == "diff-doc--improved" %>
+            <span class="badge bg-success ms-auto"><i class="bi bi-arrow-up"></i></span>
+          <% elsif status == "diff-doc--degraded" %>
+            <span class="badge bg-danger ms-auto"><i class="bi bi-arrow-down"></i></span>
+          <% elsif status == "diff-doc--missing" %>
+            <span class="badge bg-secondary ms-auto"><i class="bi bi-dash-circle"></i></span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<%# Legend %>
+<div class="diff-legend d-flex gap-3 mt-2 small text-muted">
+  <span><span class="diff-legend-swatch diff-doc--new"></span> New in current</span>
+  <span><span class="diff-legend-swatch diff-doc--improved"></span> Improved</span>
+  <span><span class="diff-legend-swatch diff-doc--degraded"></span> Degraded</span>
+  <span><span class="diff-legend-swatch diff-doc--missing"></span> Missing from current</span>
+</div>

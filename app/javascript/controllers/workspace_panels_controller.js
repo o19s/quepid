@@ -67,6 +67,11 @@ export default class extends Controller {
     if (this.hasWestPanelTarget) {
       this.westPanelTarget.classList.toggle("workspace-panel--collapsed", this._westCollapsed)
       this.westPanelTarget.setAttribute("aria-expanded", !this._westCollapsed)
+      // Clear custom flex-basis when collapsing so collapse CSS takes over
+      if (this._westCollapsed) {
+        this.westPanelTarget.style.flexBasis = ""
+        this.westPanelTarget.style.flex = ""
+      }
     }
     if (this.hasEastPanelTarget) {
       this.eastPanelTarget.classList.toggle("workspace-panel--collapsed", this._eastCollapsed)

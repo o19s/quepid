@@ -17,6 +17,11 @@
           scorer_scale: @scorer_scale
         ) %>
       <% end %>
+      <% rated_checkbox_id = "showOnlyRated_#{@case_id}_#{query_id}" %>
+      <div class="form-check form-check-inline ms-2">
+        <input type="checkbox" class="form-check-input" id="<%= rated_checkbox_id %>" data-results-pane-target="showOnlyRatedToggle" data-action="change->results-pane#toggleShowOnlyRated">
+        <label class="form-check-label small" for="<%= rated_checkbox_id %>">Rated only</label>
+      </div>
     </div>
     <%# Notes and information need form — submits via Turbo Frame for no full-page reload %>
     <%= render "core/queries/notes_form", query: @selected_query, case_id: @case_id %>
@@ -27,6 +32,18 @@
     <div class="d-none alert alert-danger alert-dismissible small" data-results-pane-target="errorMessage" role="alert">
       <span data-results-pane-target="errorText"></span>
       <button type="button" class="btn-close" data-action="click->results-pane#dismissError" aria-label="Dismiss"></button>
+    </div>
+    <%# Bulk rating bar: rate all / clear all visible docs %>
+    <div class="d-none mb-2" data-results-pane-target="bulkRatingBar">
+      <div class="d-flex align-items-center gap-1 flex-wrap">
+        <span class="small text-muted me-1">Rate all:</span>
+        <% @scorer_scale.each do |val| %>
+          <button type="button" class="btn btn-sm btn-outline-primary" data-action="click->results-pane#bulkRate" data-rating-value="<%= val %>"><%= val %></button>
+        <% end %>
+        <button type="button" class="btn btn-sm btn-outline-danger ms-2" data-action="click->results-pane#bulkClear">
+          <i class="bi bi-x-circle" aria-hidden="true"></i> Clear all
+        </button>
+      </div>
     </div>
     <%# Slot allows caller to pass custom results content (e.g. MatchesComponent); default: placeholder. %>
     <div class="results-placeholder border rounded p-4 text-center text-muted" data-results-pane-target="resultsContainer">

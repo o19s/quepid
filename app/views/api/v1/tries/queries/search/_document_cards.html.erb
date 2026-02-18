@@ -1,11 +1,20 @@
 <%# Renders document cards for results pane. Used when search API is requested with Accept: text/html. %>
 <%# Wrapper has data attributes for client to parse; inner content replaces resultsContainer. %>
 <% diff_entries_map ||= {} %>
+<% diff_columns ||= [] %>
 <% diff_active = diff_entries_map.present? %>
 <div data-results-pane-html-response data-num-found="<%= num_found %>" data-shown="<%= docs.size %>"<%= ' data-diff-active="true"'.html_safe if diff_active %>>
   <p class="text-muted small mb-2"><%= num_found %> result<%= num_found != 1 ? "s" : "" %> found.</p>
   <% if docs.empty? %>
     <p class="text-muted small">No documents returned.</p>
+  <% elsif diff_columns.present? %>
+    <%# Side-by-side diff comparison view %>
+    <%= render DiffComparisonComponent.new(
+      current_docs: docs.map { |d| d.is_a?(Hash) ? d.symbolize_keys : d.to_h.symbolize_keys },
+      snapshot_columns: diff_columns,
+      ratings_map: ratings_map,
+      scorer_scale: scorer_scale
+    ) %>
   <% else %>
     <% docs.each_with_index do |doc, idx| %>
       <% doc_hash = doc.is_a?(Hash) ? doc.symbolize_keys : doc.to_h.symbolize_keys %>
@@ -21,7 +30,7 @@
       ) %>
     <% end %>
   <% end %>
-  <% if num_found > docs.size %>
+  <% if num_found > docs.size && diff_columns.blank? %>
     <% remaining = num_found - docs.size %>
     <div class="text-center mt-3" data-results-pane-target="loadMoreArea">
       <button type="button" class="btn btn-outline-primary btn-sm" data-results-pane-load-more>

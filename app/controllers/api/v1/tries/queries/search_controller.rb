@@ -56,8 +56,14 @@ module Api
             ratings_map = @query.ratings.fully_rated.pluck(:doc_id, :rating).to_h
             scorer_scale = @case.scorer&.scale || [ 0, 1, 2, 3 ]
 
-            # Build diff entries map when comparing with snapshots
-            diff_entries_map = build_diff_entries_map(params[:diff_snapshot_ids])
+            # Filter to only rated docs when requested
+            if deserialize_bool_param(params[:show_only_rated])
+              rated_doc_ids = ratings_map.keys.map(&:to_s).to_set
+              result[:docs] = result[:docs].select { |doc| rated_doc_ids.include?(doc["id"].to_s) }
+            end
+
+            # Build diff data (shared query for both badge map and side-by-side columns)
+            diff_entries_map, diff_columns = build_diff_data(params[:diff_snapshot_ids])
 
             respond_to do |format|
               format.html do
@@ -67,7 +73,8 @@ module Api
                          num_found:         result[:num_found],
                          ratings_map:       ratings_map,
                          scorer_scale:      scorer_scale,
-                         diff_entries_map:  diff_entries_map
+                         diff_entries_map:  diff_entries_map,
+                         diff_columns:      diff_columns
                        },
                        layout: false
               end
@@ -111,32 +118,38 @@ module Api
             end
           end
 
-          # Build a map of { doc_id => [{ position: N, name: "Snapshot X" }] } for diff badges.
-          # Only queries SnapshotQuery rows for THIS query (not all queries in each snapshot).
-          def build_diff_entries_map(snapshot_ids)
-            return {} if snapshot_ids.blank?
+          # Build both diff structures from a single set of DB queries:
+          #   entries_map: { doc_id => [{ position: N, name: "Snapshot X" }] } for badge display
+          #   columns: [{ name: String, docs: [{ doc_id:, position: }] }] for side-by-side view
+          # Returns [entries_map, columns]
+          def build_diff_data(snapshot_ids)
+            return [ {}, [] ] if snapshot_ids.blank?
 
             snapshot_ids = Array(snapshot_ids).map(&:to_i).reject(&:zero?)
-            return {} if snapshot_ids.empty?
+            return [ {}, [] ] if snapshot_ids.empty?
 
-            # Load snapshot names for display
             snapshots = @case.snapshots.where(id: snapshot_ids).index_by(&:id)
-
-            # Load snapshot_queries for this query in the requested snapshots, with their docs
             snapshot_queries = SnapshotQuery
               .where(snapshot_id: snapshot_ids, query_id: @query.id)
               .includes(:snapshot_docs)
 
-            # Build { doc_id => [{ position: N, name: "Snapshot X" }] }
             entries_map = Hash.new { |h, k| h[k] = [] }
-            snapshot_queries.each do |sq|
-              snapshot_name = snapshots[sq.snapshot_id]&.name || "Snapshot #{sq.snapshot_id}"
-              sq.snapshot_docs.each do |sd|
-                entries_map[sd.doc_id.to_s] << { position: sd.position, name: snapshot_name }
+            columns = snapshot_ids.filter_map do |sid|
+              snapshot = snapshots[sid]
+              next unless snapshot
+
+              snapshot_name = snapshot.name.presence || "Snapshot #{sid}"
+              sq = snapshot_queries.find { |s| s.snapshot_id == sid }
+              col_docs = (sq&.snapshot_docs || []).sort_by(&:position).map do |sd|
+                doc_id_str = sd.doc_id.to_s
+                entries_map[doc_id_str] << { position: sd.position, name: snapshot_name }
+                { doc_id: doc_id_str, position: sd.position }
               end
+
+              { name: snapshot_name, docs: col_docs }
             end
 
-            entries_map
+            [ entries_map, columns ]
           end
 
           def set_search_response_format

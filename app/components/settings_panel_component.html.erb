@@ -1,6 +1,6 @@
 <%# Settings panel: current try display (search URL, engine) and editable query params (try settings). %>
 <%# Replaces SettingsCtrl, CurrSettingsCtrl, QueryParamsPanelComponent. Query options per-query in list. %>
-<div class="settings-panel-wrapper" data-controller="settings-panel" data-settings-panel-case-id-value="<%= @case_id %>" data-settings-panel-try-number-value="<%= @try&.try_number %>" data-settings-panel-curator-vars-value="<%= h(curator_vars_json) %>">
+<div class="settings-panel-wrapper" data-controller="settings-panel" data-settings-panel-case-id-value="<%= @case_id %>" data-settings-panel-try-number-value="<%= @try&.try_number %>" data-settings-panel-curator-vars-value="<%= h(curator_vars_json) %>" data-settings-panel-search-engine-value="<%= search_engine %>">
   <button type="button" class="btn btn-outline-secondary btn-sm" data-action="click->settings-panel#toggle" data-settings-panel-target="trigger">
     <i class="bi bi-gear" aria-hidden="true"></i>
     Settings
@@ -18,9 +18,15 @@
           <code class="small"><%= search_url %></code>
         </dd>
       </dl>
-      <% if @search_endpoint_edit_path %>
-        <%= link_to "Edit search endpoint", @search_endpoint_edit_path, class: "btn btn-sm btn-outline-primary mb-2" %>
-      <% end %>
+      <div class="d-flex gap-2 align-items-center mb-2">
+        <% if @search_endpoint_edit_path %>
+          <%= link_to "Edit search endpoint", @search_endpoint_edit_path, class: "btn btn-sm btn-outline-primary" %>
+        <% end %>
+        <button type="button" class="btn btn-sm btn-outline-info" data-action="click->settings-panel#validateUrl" title="Test connection to search endpoint">
+          <i class="bi bi-plug" aria-hidden="true"></i> Test connection
+        </button>
+      </div>
+      <div class="d-none small mb-2" data-settings-panel-target="urlValidationFeedback"></div>
       <h6 class="card-title mt-2">Query params (try config)</h6>
       <% if @try.present? && @case_id.present? %>
         <form data-settings-panel-target="paramsForm" data-action="submit->settings-panel#saveParams">
@@ -28,7 +34,8 @@
             <label class="form-label small text-muted mb-1">Query parameters</label>
             <textarea class="form-control form-control-sm font-monospace" rows="5" style="max-height: 200px; overflow: auto;"
                       data-settings-panel-target="queryParams"
-                      data-action="input->settings-panel#extractVars"><%= query_params_full %></textarea>
+                      data-action="input->settings-panel#extractVars blur->settings-panel#validateQueryParams"><%= query_params_full %></textarea>
+            <div class="d-none small mt-1" data-settings-panel-target="queryParamsFeedback"></div>
           </div>
           <div data-settings-panel-target="curatorVarsContainer"></div>
           <div class="form-check mb-2">

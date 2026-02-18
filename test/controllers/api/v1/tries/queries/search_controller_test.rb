@@ -151,10 +151,11 @@ module Api
 
             assert_response :success
             assert_includes response.body, "data-diff-active"
-            # doc1 was at position 3 in the snapshot
-            assert_includes response.body, "was #3 in Test Snapshot"
-            # doc_new is not in the snapshot — shows "new in current"
-            assert_includes response.body, "new in current"
+            # Side-by-side diff: snapshot column shows doc1 at position 3 with improved status
+            assert_includes response.body, "diff-comparison"
+            assert_includes response.body, "Test Snapshot"
+            # doc_new is not in the snapshot — shows "New in current" in the legend/status
+            assert_includes response.body, "New in current"
           end
 
           test "returns HTML without diff when diff_snapshot_ids is empty" do

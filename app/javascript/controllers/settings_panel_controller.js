@@ -5,8 +5,8 @@ import { getQuepidRootUrl, buildApiUrl } from "utils/quepid_root"
 // Toggles the settings panel and handles saving try query params.
 // Replaces SettingsCtrl and CurrSettingsCtrl.
 export default class extends Controller {
-  static values = { caseId: Number, tryNumber: Number, curatorVars: Object }
-  static targets = ["trigger", "panel", "paramsForm", "queryParams", "escapeQuery", "numberOfRows", "curatorVarsContainer"]
+  static values = { caseId: Number, tryNumber: Number, curatorVars: Object, searchEngine: String }
+  static targets = ["trigger", "panel", "paramsForm", "queryParams", "escapeQuery", "numberOfRows", "curatorVarsContainer", "urlValidationFeedback", "queryParamsFeedback"]
 
   connect() {
     this._renderCuratorVarInputs()
@@ -116,6 +116,88 @@ export default class extends Controller {
     }
   }
 
+  async validateUrl() {
+    if (!this.hasUrlValidationFeedbackTarget) return
+    const feedback = this.urlValidationFeedbackTarget
+
+    // Extract the search URL from the panel display
+    const urlEl = this.element.querySelector("code.small")
+    const url = urlEl?.textContent?.trim()
+    if (!url) {
+      this._showValidationFeedback(feedback, "warning", "No search URL configured")
+      return
+    }
+
+    this._showValidationFeedback(feedback, "info", '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Testing connection…')
+
+    try {
+      const root = getQuepidRootUrl()
+      const apiUrl = buildApiUrl(root, "search_endpoints", "validation")
+      const res = await apiFetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ url })
+      })
+      const data = await res.json()
+
+      if (data.valid) {
+        let msg = '<i class="bi bi-check-circle-fill text-success"></i> Connection successful'
+        if (data.warnings?.length) {
+          msg += "<br>" + data.warnings.map(w => `<small class="text-warning"><i class="bi bi-exclamation-triangle"></i> ${this._escapeHtml(w)}</small>`).join("<br>")
+        }
+        this._showValidationFeedback(feedback, "success", msg)
+      } else {
+        this._showValidationFeedback(feedback, "danger", `<i class="bi bi-x-circle-fill"></i> ${this._escapeHtml(data.error || "Connection failed")}`)
+      }
+    } catch (err) {
+      this._showValidationFeedback(feedback, "danger", `<i class="bi bi-x-circle-fill"></i> ${this._escapeHtml(err.message)}`)
+    }
+  }
+
+  validateQueryParams() {
+    if (!this.hasQueryParamsFeedbackTarget || !this.hasQueryParamsTarget) return
+    const feedback = this.queryParamsFeedbackTarget
+    const text = this.queryParamsTarget.value.trim()
+
+    if (!text) {
+      feedback.classList.add("d-none")
+      return
+    }
+
+    // Only validate JSON for ES/OS engines that use JSON query bodies
+    const engine = (this.searchEngineValue || "").toLowerCase()
+    const jsonEngines = ["es", "os", "elasticsearch", "opensearch"]
+    if (!jsonEngines.some(e => engine.includes(e))) {
+      feedback.classList.add("d-none")
+      return
+    }
+
+    try {
+      JSON.parse(text)
+      this._showValidationFeedback(feedback, "success", '<i class="bi bi-check-circle"></i> Valid JSON')
+      setTimeout(() => feedback.classList.add("d-none"), 2000)
+    } catch (err) {
+      this._showValidationFeedback(feedback, "warning", `<i class="bi bi-exclamation-triangle"></i> Invalid JSON: ${this._escapeHtml(err.message)}`)
+    }
+  }
+
+  _showValidationFeedback(el, type, html) {
+    el.className = `small mb-2 alert alert-${type} py-1 px-2`
+    el.innerHTML = html
+    el.classList.remove("d-none")
+  }
+
+  _escapeHtml(str) {
+    if (str == null) return ""
+    const div = document.createElement("div")
+    div.textContent = String(str)
+    return div.innerHTML
+  }
+
+  _escapeHtmlAttr(str) {
+    return String(str ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  }
+
   // Extract ##varName## placeholders from query params text
   _extractCuratorVars() {
     if (!this.hasQueryParamsTarget) return []
@@ -146,8 +228,8 @@ export default class extends Controller {
     const savedVars = this.curatorVarsValue || {}
     const html = varNames.map(name => {
       const value = savedVars[name] ?? ""
-      const escapedName = name.replace(/"/g, "&quot;").replace(/</g, "&lt;")
-      const escapedValue = String(value).replace(/"/g, "&quot;").replace(/</g, "&lt;")
+      const escapedName = this._escapeHtmlAttr(name)
+      const escapedValue = this._escapeHtmlAttr(String(value))
       return `
         <div class="mb-2">
           <label class="form-label small text-muted mb-1">

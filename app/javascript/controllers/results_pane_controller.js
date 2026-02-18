@@ -17,7 +17,7 @@ export default class extends Controller {
     skipFetch: Boolean  // When true (e.g. results_content slot provided), do not fetch; preserve slot content
   }
 
-  static targets = ["resultsContainer", "loadingIndicator", "errorMessage", "errorText", "diffIndicator", "loadMoreArea", "detailModal", "detailModalTitle", "detailFieldsList", "detailJsonPre"]
+  static targets = ["resultsContainer", "loadingIndicator", "errorMessage", "errorText", "diffIndicator", "loadMoreArea", "detailModal", "detailModalTitle", "detailFieldsList", "detailJsonPre", "showOnlyRatedToggle", "bulkRatingBar"]
 
   connect() {
     this._fetchRequestId = 0
@@ -26,6 +26,7 @@ export default class extends Controller {
     this._currentStart = 0
     this._lastNumFound = 0
     this._diffSnapshotIds = []
+    this._showOnlyRated = false
     this._boundHandleResultsClick = this._handleResultsClick.bind(this)
     this._boundHandleResultsKeydown = this._handleResultsKeydown.bind(this)
     this._boundHandleDiffChanged = this._handleDiffChanged.bind(this)
@@ -119,7 +120,7 @@ export default class extends Controller {
       `<button type="button" class="btn btn-sm btn-outline-primary" data-rating-value="${v}">${v}</button>`
     ).join(" ")
     const clearHtml = '<button type="button" class="btn btn-sm btn-outline-secondary ms-1" data-rating-value="">Clear</button>'
-    const content = `<div class="d-flex flex-wrap gap-1 align-items-center" data-rating-doc-id="${this._escapeHtml(docId)}">${buttonsHtml}${clearHtml}</div>`
+    const content = `<div class="d-flex flex-wrap gap-1 align-items-center" data-rating-doc-id="${this._escapeHtmlAttr(docId)}">${buttonsHtml}${clearHtml}</div>`
 
     const Popover = window.bootstrap?.Popover
     if (!Popover) return
@@ -272,6 +273,12 @@ export default class extends Controller {
       url = `${url}${sep}${diffParams}`
     }
 
+    // Append show_only_rated filter
+    if (this._showOnlyRated) {
+      const sep = url.includes("?") ? "&" : "?"
+      url = `${url}${sep}show_only_rated=true`
+    }
+
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
 
     try {
@@ -306,6 +313,7 @@ export default class extends Controller {
       this.resultsContainerTarget.innerHTML = ""
     }
     this._clearError()
+    this._showBulkRatingBar(false)
   }
 
   _setLoading(loading) {
@@ -340,6 +348,61 @@ export default class extends Controller {
     this._clearError()
   }
 
+  toggleShowOnlyRated() {
+    this._showOnlyRated = this.hasShowOnlyRatedToggleTarget && this.showOnlyRatedToggleTarget.checked
+    if (this._canFetch()) this.fetchResults()
+  }
+
+  async bulkRate(event) {
+    const rating = parseInt(event.currentTarget.dataset.ratingValue, 10)
+    if (isNaN(rating)) return
+    const docIds = this._collectVisibleDocIds()
+    if (docIds.length === 0) return
+
+    const root = getQuepidRootUrl()
+    const url = buildApiUrl(root, "cases", this.caseIdValue, "queries", this.queryIdValue, "bulk", "ratings")
+    try {
+      const res = await apiFetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ doc_ids: docIds, rating })
+      })
+      if (!res.ok) throw new Error(`Bulk rate failed (${res.status})`)
+      this._triggerScoreRefresh()
+      if (this._canFetch()) this.fetchResults()
+    } catch (err) {
+      console.error("Bulk rating failed:", err)
+    }
+  }
+
+  async bulkClear() {
+    const docIds = this._collectVisibleDocIds()
+    if (docIds.length === 0) return
+    if (!confirm(`Clear all ratings for ${docIds.length} documents?`)) return
+
+    const root = getQuepidRootUrl()
+    const url = buildApiUrl(root, "cases", this.caseIdValue, "queries", this.queryIdValue, "bulk", "ratings", "delete")
+    try {
+      const res = await apiFetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ doc_ids: docIds })
+      })
+      if (!res.ok) throw new Error(`Bulk clear failed (${res.status})`)
+      this._triggerScoreRefresh()
+      if (this._canFetch()) this.fetchResults()
+    } catch (err) {
+      console.error("Bulk clear failed:", err)
+    }
+  }
+
+  _collectVisibleDocIds() {
+    if (!this.hasResultsContainerTarget) return []
+    return Array.from(this.resultsContainerTarget.querySelectorAll(".document-card[data-doc-id]"))
+      .map(el => el.dataset.docId)
+      .filter(Boolean)
+  }
+
   /** Render server-rendered HTML (DocumentCardComponent + MatchesComponent). */
   _renderHtmlResults(htmlText, append = false) {
     if (!this.hasResultsContainerTarget) return
@@ -356,6 +419,8 @@ export default class extends Controller {
     const headerEl = wrapper.querySelector("p.text-muted.small.mb-2")
     const cards = wrapper.querySelectorAll(".document-card")
     const loadMoreEl = wrapper.querySelector("[data-results-pane-target='loadMoreArea']")
+
+    this._showBulkRatingBar(cards.length > 0)
 
     if (append && this.resultsContainerTarget.querySelector("p.text-muted.small.mb-2")) {
       this._lastNumFound = numFound
@@ -379,6 +444,12 @@ export default class extends Controller {
       cards.forEach((c) => { inner += c.outerHTML })
       if (loadMoreEl) inner += loadMoreEl.outerHTML
       this.resultsContainerTarget.innerHTML = inner
+    }
+  }
+
+  _showBulkRatingBar(visible) {
+    if (this.hasBulkRatingBarTarget) {
+      this.bulkRatingBarTarget.classList.toggle("d-none", !visible)
     }
   }
 

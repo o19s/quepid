@@ -297,6 +297,9 @@ Rails.application.routes.draw do
       end
 
       resources :search_endpoints, except: [ :new, :edit ]
+      namespace :search_endpoints do
+        resource :validation, only: [ :create ]
+      end
       resources :scorers, except: [ :new, :edit ]
 
       resources :teams, except: [ :new, :edit ], param: :team_id
