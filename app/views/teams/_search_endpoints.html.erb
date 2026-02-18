@@ -10,7 +10,7 @@
       <%= form_with url: team_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
         <div class="col-auto" style="flex:1">
           <div class="input-group">
-            <%= text_field_tag :search_endpoints_q, @filter_search_endpoints_q, class: 'form-control', placeholder: 'Filter search endpoints by name or URL' %>
+            <%= text_field_tag :search_endpoints_q, @search_endpoints_q, class: 'form-control', placeholder: 'Filter search endpoints by name or URL' %>
             <button class="btn btn-outline-secondary" type="submit" title="Search search endpoints">
               <i class="bi bi-search" aria-hidden="true"></i>
               <span class="visually-hidden">Search search endpoints</span>
@@ -18,24 +18,24 @@
           </div>
         </div>
         <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
-          <%= check_box_tag :search_endpoints_archived, '1', @filter_search_endpoints_archived, class: 'form-check-input', id: 'search-endpoints-archived-checkbox', onchange: 'this.form.submit()' %>
+          <%= check_box_tag :search_endpoints_archived, '1', @search_endpoints_archived, class: 'form-check-input', id: 'search-endpoints-archived-checkbox', onchange: 'this.form.submit()' %>
           <%= label_tag 'search-endpoints-archived-checkbox', 'Archived Search Endpoints', class: 'form-check-label ms-2' %>
         </div>
         <%# Preserve other filters when submitting search endpoints form %>
-        <% if @filter_cases_q.present? %>
-          <%= hidden_field_tag :cases_q, @filter_cases_q %>
+        <% if @cases_q.present? %>
+          <%= hidden_field_tag :cases_q, @cases_q %>
         <% end %>
-        <% if @filter_cases_archived %>
+        <% if @cases_archived %>
           <%= hidden_field_tag :cases_archived, '1' %>
         <% end %>
-        <% if @filter_books_q.present? %>
-          <%= hidden_field_tag :books_q, @filter_books_q %>
+        <% if @books_q.present? %>
+          <%= hidden_field_tag :books_q, @books_q %>
         <% end %>
-        <% if @filter_books_archived %>
+        <% if @books_archived %>
           <%= hidden_field_tag :books_archived, '1' %>
         <% end %>
-        <% if @filter_scorers_q.present? %>
-          <%= hidden_field_tag :scorers_q, @filter_scorers_q %>
+        <% if @scorers_q.present? %>
+          <%= hidden_field_tag :scorers_q, @scorers_q %>
         <% end %>
       <% end %>
     </div>
@@ -48,7 +48,7 @@
             <th>Search Engine</th>
             <th>Endpoint URL</th>
             <th>API Method</th>
-            <th>Owner</th>
+            <th>Owner</th>            
             <th>Shared</th>
             <th class="text-end"></th>
           </tr>
@@ -73,12 +73,11 @@
               <td>
                 <span class="badge bg-info text-dark"><%= search_endpoint.api_method || '—' %></span>
               </td>
-
-              <td><%= search_endpoint.owner&.fullname || '—' %></td>
+              <td><%= search_endpoint.owner&.fullname || '—' %></td>  
               <td>
                 <span class="badge rounded-pill bg-secondary"><%= search_endpoint.cases_count %> Cases</span>
                 <span class="badge rounded-pill bg-secondary"><%= search_endpoint.teams.count %> Teams</span>
-              </td>              
+              </td>            
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
                   <%= button_tag type: 'button',

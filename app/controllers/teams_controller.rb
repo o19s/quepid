@@ -272,8 +272,8 @@ class TeamsController < ApplicationController
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   def show
-    cases_q = params[:cases_q].to_s.strip
-    cases_include_archived = deserialize_bool_param(params[:cases_archived])
+    @cases_q = params[:cases_q].to_s.strip
+    @cases_archived = deserialize_bool_param(params[:cases_archived])
 
     @members = @team.members.order(:name)
     @cases_count = @team.cases.count
@@ -282,50 +282,44 @@ class TeamsController < ApplicationController
     @search_endpoints_count = @team.search_endpoints.count
     @user_teams = current_user.teams.order(:name)
 
-    # Books filtering (separate params to avoid collision with case filters)
-    books_q = params[:books_q].to_s.strip
-    books_include_archived = deserialize_bool_param(params[:books_archived])
-
+    # Cases filtering
     cases_query = @team.cases
-    if cases_q.present?
+    if @cases_q.present?
       cases_query = cases_query.where('case_name LIKE ? OR id LIKE ? ',
-                                      "%#{cases_q}%", "%#{cases_q}%")
+                                      "%#{@cases_q}%", "%#{@cases_q}%")
     end
-    cases_query = cases_include_archived ? cases_query.archived : cases_query.active
-    @page_cases, @cases = pagy(cases_query.order(:id).includes(:owner, :teams))
-    @filter_cases_q = cases_q
-    @filter_cases_archived = cases_include_archived
+    cases_query = @cases_archived ? cases_query.archived : cases_query.active
+    @pagy_cases, @cases = pagy(cases_query.order(:id).includes(:owner, :teams))
+
+    # Books filtering
+    @books_q = params[:books_q].to_s.strip
+    @books_archived = deserialize_bool_param(params[:books_archived])
 
     books_query = @team.books
-    books_query = books_include_archived ? books_query.archived : books_query.active
+    books_query = @books_archived ? books_query.archived : books_query.active
     books_query = books_query.with_counts if books_query.respond_to?(:with_counts)
-    books_query = books_query.where('name LIKE ?', "%#{books_q}%") if books_q.present?
+    books_query = books_query.where('name LIKE ?', "%#{@books_q}%") if @books_q.present?
 
     @pagy_books, @books = pagy(books_query.order(:id))
-    @filter_books_q = books_q
-    @filter_books_archived = books_include_archived
 
     # Scorers filtering
-    scorers_q = params[:scorers_q].to_s.strip
+    @scorers_q = params[:scorers_q].to_s.strip
     scorers_query = @team.scorers
-    scorers_query = scorers_query.where('name LIKE ?', "%#{scorers_q}%") if scorers_q.present?
+    scorers_query = scorers_query.where('name LIKE ?', "%#{@scorers_q}%") if @scorers_q.present?
     @pagy_scorers, @scorers = pagy(scorers_query.order(:name), page_param: :scorers_page)
-    @filter_scorers_q = scorers_q
 
     # Search Endpoints filtering
-    search_endpoints_q = params[:search_endpoints_q].to_s.strip
-    search_endpoints_include_archived = params[:search_endpoints_archived].present? && params[:search_endpoints_archived].to_s.in?(%w[1 true on])
+    @search_endpoints_q = params[:search_endpoints_q].to_s.strip
+    @search_endpoints_archived = deserialize_bool_param(params[:search_endpoints_archived])
 
     search_endpoints_query = @team.search_endpoints.includes(:teams)
-    search_endpoints_query = search_endpoints_include_archived ? search_endpoints_query.where(archived: true) : search_endpoints_query.not_archived
-    if search_endpoints_q.present?
+    search_endpoints_query = @search_endpoints_archived ? search_endpoints_query.where(archived: true) : search_endpoints_query.not_archived
+    if @search_endpoints_q.present?
       search_endpoints_query = search_endpoints_query.where('name LIKE ? OR endpoint_url LIKE ?',
-                                                            "%#{search_endpoints_q}%",
-                                                            "%#{search_endpoints_q}%")
+                                                            "%#{@search_endpoints_q}%",
+                                                            "%#{@search_endpoints_q}%")
     end
     @pagy_search_endpoints, @search_endpoints = pagy(search_endpoints_query.order(:id), page_param: :search_endpoints_page)
-    @filter_search_endpoints_q = search_endpoints_q
-    @filter_search_endpoints_archived = search_endpoints_include_archived
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength

@@ -6,7 +6,7 @@
         <%= form_with url: team_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
           <div class="col-auto" style="flex:1">
             <div class="input-group">
-              <%= text_field_tag :cases_q, @filter_cases_q.presence || params[:cases_q], class: 'form-control form-control-sm', placeholder: 'Filter by case name or id' %>
+              <%= text_field_tag :cases_q, @cases_q, class: 'form-control form-control-sm', placeholder: 'Filter by case name or id' %>
               <button class="btn btn-sm btn-outline-secondary" type="submit" title="Search">
                 <i class="bi bi-search" aria-hidden="true"></i>
                 <span class="visually-hidden">Search</span>
@@ -14,23 +14,23 @@
             </div>
           </div>
           <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
-            <%= check_box_tag :cases_archived, '1', @filter_cases_archived, class: 'form-check-input', id: 'archived-cases-checkbox', onchange: 'this.form.submit()' %>
-            <%= label_tag 'archived-cases-checkbox', 'Archived Cases', class: 'form-check-label' %>
+            <%= check_box_tag :cases_archived, '1', @cases_archived, class: 'form-check-input', id: 'archived-cases-checkbox', onchange: 'this.form.submit()' %>
+            <%= label_tag 'archived-cases-checkbox', 'Archived Cases', class: 'form-check-label ms-2' %>
           </div>
           <%# Preserve other filters %>
-          <% if @filter_books_q.present? %>
-            <%= hidden_field_tag :books_q, @filter_books_q %>
+          <% if @books_q.present? %>
+            <%= hidden_field_tag :books_q, @books_q %>
           <% end %>
-          <% if @filter_books_archived %>
+          <% if @books_archived %>
             <%= hidden_field_tag :books_archived, '1' %>
           <% end %>
-          <% if @filter_scorers_q.present? %>
-            <%= hidden_field_tag :scorers_q, @filter_scorers_q %>
+          <% if @scorers_q.present? %>
+            <%= hidden_field_tag :scorers_q, @scorers_q %>
           <% end %>
-          <% if @filter_search_endpoints_q.present? %>
-            <%= hidden_field_tag :search_endpoints_q, @filter_search_endpoints_q %>
+          <% if @search_endpoints_q.present? %>
+            <%= hidden_field_tag :search_endpoints_q, @search_endpoints_q %>
           <% end %>
-          <% if @filter_search_endpoints_archived %>
+          <% if @search_endpoints_archived %>
             <%= hidden_field_tag :search_endpoints_archived, '1' %>
           <% end %>
         <% end %>
@@ -85,8 +85,7 @@
               <td><%= kase.owner&.fullname || '—' %></td>
               <td>
                 <span class="badge rounded-pill bg-secondary"><%= kase.teams.count %> Teams</span>
-              </td>
-              
+              </td>              
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
                   <%= button_tag type: 'button',
@@ -141,8 +140,14 @@
           <% end %>
         </tbody>
       </table>
+
+      <% if @cases.empty? %>
+        <div class="text-center text-muted py-3">
+          <p>No cases found for this team.</p>
+        </div>
+      <% end %>
       
-      <% if defined?(pagy_nav) && @pagy_cases %>
+      <% if defined?(pagy_nav) && @page_cases %>
         <div class="mt-2">
           <%= pagy_nav(@pagy_cases) %>
         </div>

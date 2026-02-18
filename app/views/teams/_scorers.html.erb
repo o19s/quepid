@@ -10,7 +10,7 @@
       <%= form_with url: team_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
         <div class="col-auto" style="flex:1">
           <div class="input-group">
-            <%= text_field_tag :scorers_q, @filter_scorers_q, class: 'form-control', placeholder: 'Filter scorers by name' %>
+            <%= text_field_tag :scorers_q, @scorers_q, class: 'form-control', placeholder: 'Filter scorers by name' %>
             <button class="btn btn-outline-secondary" type="submit" title="Search scorers">
               <i class="bi bi-search" aria-hidden="true"></i>
               <span class="visually-hidden">Search scorers</span>
@@ -18,22 +18,22 @@
           </div>
         </div>
         <%# Preserve other filters when submitting scorers form %>
-        <% if @filter_cases_q.present? %>
-          <%= hidden_field_tag :cases_q, @filter_cases_q %>
+        <% if @cases_q.present? %>
+          <%= hidden_field_tag :cases_q, @cases_q %>
         <% end %>
-        <% if @filter_cases_archived %>
+        <% if @cases_archived %>
           <%= hidden_field_tag :cases_archived, '1' %>
         <% end %>
-        <% if @filter_books_q.present? %>
-          <%= hidden_field_tag :books_q, @filter_books_q %>
+        <% if @books_q.present? %>
+          <%= hidden_field_tag :books_q, @books_q %>
         <% end %>
-        <% if @filter_books_archived %>
+        <% if @books_archived %>
           <%= hidden_field_tag :books_archived, '1' %>
         <% end %>
-        <% if @filter_search_endpoints_q.present? %>
-          <%= hidden_field_tag :search_endpoints_q, @filter_search_endpoints_q %>
+        <% if @search_endpoints_q.present? %>
+          <%= hidden_field_tag :search_endpoints_q, @search_endpoints_q %>
         <% end %>
-        <% if @filter_search_endpoints_archived %>
+        <% if @search_endpoints_archived %>
           <%= hidden_field_tag :search_endpoints_archived, '1' %>
         <% end %>
       <% end %>
@@ -44,7 +44,7 @@
         <thead>
           <tr>
             <th>Name</th>
-            <th>Scale</th>            
+            <th>Scale</th>
             <th>Owner</th>
             <th>Shared</th>
             <th class="text-end"></th>
@@ -84,6 +84,12 @@
           <% end %>
         </tbody>
       </table>
+
+      <% if @scorers.empty? %>
+        <div class="text-center text-muted py-3">
+          <p>No scorers found for this team.</p>
+        </div>
+      <% end %>
 
       <% if defined?(pagy_nav) && @pagy_scorers %>
         <div class="mt-2">
