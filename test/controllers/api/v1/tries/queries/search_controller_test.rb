@@ -38,7 +38,7 @@ module Api
             get :show, params: { case_id: acase.id, try_try_number: atry.try_number, query_id: query.id }
             assert_response :bad_request
             json = response.parsed_body
-            assert json['error'].present?
+            assert_predicate json['error'], :present?
           end
 
           test 'returns 400 when static search engine' do
@@ -46,7 +46,7 @@ module Api
             get :show, params: { case_id: acase.id, try_try_number: atry.try_number, query_id: query.id }
             assert_response :bad_request
             json = response.parsed_body
-            assert_match /static/i, json['error']
+            assert_match(/static/i, json['error'])
           end
 
           test 'returns docs and num_found when search succeeds' do
@@ -56,11 +56,11 @@ module Api
                 body:    {
                   'response' => {
                     'numFound' => 2,
-                    'docs' => [
+                    'docs'     => [
                       { 'id' => 'doc1', 'title' => [ 'Title 1' ] },
                       { 'id' => 'doc2', 'title' => [ 'Title 2' ] }
-                    ]
-                  }
+                    ],
+                  },
                 }.to_json,
                 headers: { 'Content-Type' => 'application/json' }
               )
@@ -69,9 +69,9 @@ module Api
 
             assert_response :success
             json = response.parsed_body
-            assert json["docs"].is_a?(Array)
-            assert json['num_found'].present?
-            assert json['ratings'].is_a?(Hash)
+            assert_kind_of Array, json['docs']
+            assert_predicate json['num_found'], :present?
+            assert_kind_of Hash, json['ratings']
             assert_equal 200, json['response_status']
           end
 
@@ -83,105 +83,105 @@ module Api
                 body:    {
                   'response' => {
                     'numFound' => 1,
-                    'docs' => [ { 'id' => 'doc1', 'title' => [ 'Custom Result' ] } ]
-                  }
+                    'docs'     => [ { 'id' => 'doc1', 'title' => [ 'Custom Result' ] } ],
+                  },
                 }.to_json,
                 headers: { 'Content-Type' => 'application/json' }
               )
 
-            get :show, params: { case_id: acase.id, try_try_number: atry.try_number, query_id: query.id, q: "custom search" }, format: :json
+            get :show, params: { case_id: acase.id, try_try_number: atry.try_number, query_id: query.id, q: 'custom search' }, format: :json
 
             assert_response :success
             json = response.parsed_body
-            assert_equal 1, json["docs"].length
-            assert_equal "doc1", json["docs"].first["id"]
+            assert_equal 1, json['docs'].length
+            assert_equal 'doc1', json['docs'].first['id']
           end
 
-          test "returns HTML document cards when Accept text/html" do
+          test 'returns HTML document cards when Accept text/html' do
             stub_request(:get, %r{http://test\.com/solr/tmdb/select})
               .to_return(
                 status:  200,
                 body:    {
-                  "response" => {
-                    "numFound" => 1,
-                    "docs" => [ { "id" => "doc1", "title" => [ "Title 1" ] } ]
-                  }
+                  'response' => {
+                    'numFound' => 1,
+                    'docs'     => [ { 'id' => 'doc1', 'title' => [ 'Title 1' ] } ],
+                  },
                 }.to_json,
-                headers: { "Content-Type" => "application/json" }
+                headers: { 'Content-Type' => 'application/json' }
               )
 
-            request.env["HTTP_ACCEPT"] = "text/html"
+            request.env['HTTP_ACCEPT'] = 'text/html'
             get :show, params: { case_id: acase.id, try_try_number: atry.try_number, query_id: query.id }
 
             assert_response :success
-            assert_includes response.body, "document-card"
-            assert_includes response.body, "data-doc-id=\"doc1\""
-            assert_includes response.body, "rating-badge-doc1"
+            assert_includes response.body, 'document-card'
+            assert_includes response.body, 'data-doc-id="doc1"'
+            assert_includes response.body, 'rating-badge-doc1'
           end
 
-          test "returns HTML with diff entries when diff_snapshot_ids provided" do
+          test 'returns HTML with diff entries when diff_snapshot_ids provided' do
             # Create a snapshot with docs for this query
-            snapshot = Snapshot.create!(case: acase, name: "Test Snapshot")
+            snapshot = Snapshot.create!(case: acase, name: 'Test Snapshot')
             sq = SnapshotQuery.create!(snapshot: snapshot, query: query, score: 1.0)
-            SnapshotDoc.create!(snapshot_query: sq, doc_id: "doc1", position: 3,
+            SnapshotDoc.create!(snapshot_query: sq, doc_id: 'doc1', position: 3,
                                 fields: '{"title":"Title 1"}')
 
             stub_request(:get, %r{http://test\.com/solr/tmdb/select})
               .to_return(
                 status:  200,
                 body:    {
-                  "response" => {
-                    "numFound" => 2,
-                    "docs" => [
-                      { "id" => "doc1", "title" => [ "Title 1" ] },
-                      { "id" => "doc_new", "title" => [ "New Doc" ] }
-                    ]
-                  }
+                  'response' => {
+                    'numFound' => 2,
+                    'docs'     => [
+                      { 'id' => 'doc1', 'title' => [ 'Title 1' ] },
+                      { 'id' => 'doc_new', 'title' => [ 'New Doc' ] }
+                    ],
+                  },
                 }.to_json,
-                headers: { "Content-Type" => "application/json" }
+                headers: { 'Content-Type' => 'application/json' }
               )
 
-            request.env["HTTP_ACCEPT"] = "text/html"
+            request.env['HTTP_ACCEPT'] = 'text/html'
             get :show, params: {
-              case_id: acase.id,
-              try_try_number: atry.try_number,
-              query_id: query.id,
-              diff_snapshot_ids: [ snapshot.id ]
+              case_id:           acase.id,
+              try_try_number:    atry.try_number,
+              query_id:          query.id,
+              diff_snapshot_ids: [ snapshot.id ],
             }
 
             assert_response :success
-            assert_includes response.body, "data-diff-active"
+            assert_includes response.body, 'data-diff-active'
             # Side-by-side diff: snapshot column shows doc1 at position 3 with improved status
-            assert_includes response.body, "diff-comparison"
-            assert_includes response.body, "Test Snapshot"
+            assert_includes response.body, 'diff-comparison'
+            assert_includes response.body, 'Test Snapshot'
             # doc_new is not in the snapshot — shows "New in current" in the legend/status
-            assert_includes response.body, "New in current"
+            assert_includes response.body, 'New in current'
           end
 
-          test "returns HTML without diff when diff_snapshot_ids is empty" do
+          test 'returns HTML without diff when diff_snapshot_ids is empty' do
             stub_request(:get, %r{http://test\.com/solr/tmdb/select})
               .to_return(
                 status:  200,
                 body:    {
-                  "response" => {
-                    "numFound" => 1,
-                    "docs" => [ { "id" => "doc1", "title" => [ "Title 1" ] } ]
-                  }
+                  'response' => {
+                    'numFound' => 1,
+                    'docs'     => [ { 'id' => 'doc1', 'title' => [ 'Title 1' ] } ],
+                  },
                 }.to_json,
-                headers: { "Content-Type" => "application/json" }
+                headers: { 'Content-Type' => 'application/json' }
               )
 
-            request.env["HTTP_ACCEPT"] = "text/html"
+            request.env['HTTP_ACCEPT'] = 'text/html'
             get :show, params: {
-              case_id: acase.id,
-              try_try_number: atry.try_number,
-              query_id: query.id,
-              diff_snapshot_ids: []
+              case_id:           acase.id,
+              try_try_number:    atry.try_number,
+              query_id:          query.id,
+              diff_snapshot_ids: [],
             }
 
             assert_response :success
-            assert_not_includes response.body, "data-diff-active"
-            assert_not_includes response.body, "new in current"
+            assert_not_includes response.body, 'data-diff-active'
+            assert_not_includes response.body, 'new in current'
           end
         end
       end

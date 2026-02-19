@@ -23,7 +23,7 @@ module Api
 
       def update
         unless @user == current_user
-          render json: { message: "Forbidden" }, status: :forbidden
+          render json: { message: 'Forbidden' }, status: :forbidden
           return
         end
 

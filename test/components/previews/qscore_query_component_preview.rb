@@ -15,10 +15,10 @@ class QscoreQueryComponentPreview < ViewComponent::Preview
   end
 
   def unknown
-    render(QscoreQueryComponent.new(score: "?", max_score: 10))
+    render(QscoreQueryComponent.new(score: '?', max_score: 10))
   end
 
   def pending
-    render(QscoreQueryComponent.new(score: "--", max_score: 10))
+    render(QscoreQueryComponent.new(score: '--', max_score: 10))
   end
 end

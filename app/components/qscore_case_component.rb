@@ -16,8 +16,8 @@ class QscoreCaseComponent < ApplicationComponent
   # @param background_color [String, nil] Pre-computed background color (overrides score_to_color)
   # @param case_id [Integer, nil] Case id for Stimulus live-update targeting
   # @param css_class [String] Additional CSS classes on the wrapper element
-  def initialize(score: "?", max_score: 100, score_label: nil, scores: [], annotations: [],
-                 background_color: nil, case_id: nil, css_class: "case-score")
+  def initialize(score: '?', max_score: 100, score_label: nil, scores: [], annotations: [],
+                 background_color: nil, case_id: nil, css_class: 'case-score')
     @score            = score
     @max_score        = max_score
     @score_label      = score_label

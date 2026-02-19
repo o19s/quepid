@@ -5,20 +5,20 @@
 class ActionIconComponentPreview < ViewComponent::Preview
   def default
     render(ActionIconComponent.new(
-      icon_class: "bi bi-file-earmark-arrow-up",
-      title: "Export"
-    ))
+             icon_class: 'bi bi-file-earmark-arrow-up',
+             title:      'Export'
+           ))
   end
 
   def as_link
     render(ActionIconComponent.new(
-      icon_class: "bi bi-file-earmark-arrow-up",
-      title: "Export",
-      url: "#"
-    ))
+             icon_class: 'bi bi-file-earmark-arrow-up',
+             title:      'Export',
+             url:        '#'
+           ))
   end
 
   def share_icon
-    render(ActionIconComponent.new(icon_class: "bi bi-share", title: "Share Case"))
+    render(ActionIconComponent.new(icon_class: 'bi bi-share', title: 'Share Case'))
   end
 end

@@ -23,9 +23,9 @@ module Api
 
         def fetch_fields
           case @search_endpoint.search_engine.downcase
-          when "solr"
+          when 'solr'
             fetch_solr_fields
-          when "es", "elasticsearch", "os", "opensearch"
+          when 'es', 'elasticsearch', 'os', 'opensearch'
             fetch_es_fields
           else
             []
@@ -36,29 +36,29 @@ module Api
           # Derive admin/luke URL from the select URL
           base_url = @search_endpoint.endpoint_url.to_s
           # Replace /select or /query with /admin/luke
-          luke_url = base_url.sub(%r{/(select|query)(\?.*)?$}, "/admin/luke?numTerms=0&wt=json")
+          luke_url = base_url.sub(%r{/(select|query)(\?.*)?$}, '/admin/luke?numTerms=0&wt=json')
 
           response = make_request(luke_url)
           data = JSON.parse(response.body)
-          (data["fields"] || {}).keys.sort
+          (data['fields'] || {}).keys.sort
         end
 
         def fetch_es_fields
           # Derive mapping URL from search URL
           base_url = @search_endpoint.endpoint_url.to_s
           # Remove /_search or /_search/template suffix
-          mapping_url = base_url.sub(%r{/_search(/template)?(\?.*)?$}, "/_mapping")
+          mapping_url = base_url.sub(%r{/_search(/template)?(\?.*)?$}, '/_mapping')
 
           response = make_request(mapping_url)
           data = JSON.parse(response.body)
           extract_es_fields(data).sort.uniq
         end
 
-        def extract_es_fields(data, prefix = "")
+        def extract_es_fields data, prefix = ''
           fields = []
           if data.is_a?(Hash)
-            if data["properties"]
-              data["properties"].each do |name, config|
+            if data['properties']
+              data['properties'].each do |name, config|
                 full_name = prefix.present? ? "#{prefix}.#{name}" : name
                 fields << full_name
                 fields.concat(extract_es_fields(config, full_name))
@@ -72,10 +72,10 @@ module Api
           fields
         end
 
-        def make_request(url)
+        def make_request url
           uri = URI.parse(url)
           http = Net::HTTP.new(uri.host, uri.port)
-          http.use_ssl = (uri.scheme == "https")
+          http.use_ssl = ('https' == uri.scheme)
           http.open_timeout = 5
           http.read_timeout = 10
           http.verify_mode = OpenSSL::SSL::VERIFY_PEER
@@ -84,7 +84,7 @@ module Api
 
           # Add basic auth if configured
           if @search_endpoint.basic_auth_credential.present?
-            user, pass = @search_endpoint.basic_auth_credential.split(":", 2)
+            user, pass = @search_endpoint.basic_auth_credential.split(':', 2)
             request.basic_auth(user, pass)
           end
 

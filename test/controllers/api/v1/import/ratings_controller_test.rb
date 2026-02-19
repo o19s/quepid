@@ -128,8 +128,8 @@ module Api
         end
         test 'hash format with absent ratings does not raise' do
           data = {
-            case_id:      acase.id,
-            file_format:  'hash',
+            case_id:       acase.id,
+            file_format:   'hash',
             clear_queries: false,
           }
           post :create, params: data
@@ -139,9 +139,9 @@ module Api
         test 'accepts file_format csv as hash (client parses CSV to ratings)' do
           data = {
             case_id:       acase.id,
-            file_format:  'csv',
+            file_format:   'csv',
             clear_queries: false,
-            ratings:      [
+            ratings:       [
               { query_text: 'dog', doc_id: '123', rating: 1 },
               { query_text: 'dog', doc_id: '234', rating: 2 }
             ],
@@ -188,8 +188,8 @@ module Api
             }
             post :create, params: data
             assert_response :bad_request
-            json = JSON.parse(response.body)
-            assert_equal "Invalid RRE JSON format", json["message"]
+            json = response.parsed_body
+            assert_equal 'Invalid RRE JSON format', json['message']
           end
 
           test 'skips RRE queries with missing placeholders or $query' do
@@ -228,9 +228,9 @@ module Api
 
           test 'skips invalid LTR lines when importing' do
             data = {
-              case_id:      acase.id,
-              file_format:  'ltr',
-              ltr_text:     "0 qid:1 # 123 valid query\nbadline\n1 qid:2 # 456 another query",
+              case_id:     acase.id,
+              file_format: 'ltr',
+              ltr_text:    "0 qid:1 # 123 valid query\nbadline\n1 qid:2 # 456 another query",
             }
             assert_difference 'Rating.count', 2 do
               post :create, params: data

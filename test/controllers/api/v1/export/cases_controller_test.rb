@@ -44,8 +44,8 @@ module Api
             get :general, params: { case_id: acase.id }, format: :csv
             assert_response :ok
             assert_equal 'text/csv', response.media_type
-            assert response.body.include?('Team Name')
-            assert response.body.include?('Query Text')
+            assert_includes response.body, 'Team Name'
+            assert_includes response.body, 'Query Text'
           end
 
           test 'returns CSV with data when case has last_score with queries' do
@@ -53,9 +53,9 @@ module Api
             get :general, params: { case_id: acase.id }, format: :csv
             assert_response :ok
             assert_equal 'text/csv', response.media_type
-            assert response.body.include?('Team Name')
+            assert_includes response.body, 'Team Name'
             # May have rows if score_with_queries is last_score
-            assert response.body.include?('Query Text')
+            assert_includes response.body, 'Query Text'
           end
         end
 
@@ -65,8 +65,8 @@ module Api
             get :detailed, params: { case_id: acase.id }, format: :csv
             assert_response :ok
             assert_equal 'text/csv', response.media_type
-            assert response.body.include?('Doc ID')
-            assert response.body.include?('Rating')
+            assert_includes response.body, 'Doc ID'
+            assert_includes response.body, 'Rating'
           end
         end
 
@@ -79,7 +79,7 @@ module Api
 
           test 'returns 404 when snapshot not found' do
             acase = cases(:snapshot_case)
-            get :snapshot, params: { case_id: acase.id, snapshot_id: 99999 }, format: :csv
+            get :snapshot, params: { case_id: acase.id, snapshot_id: 99_999 }, format: :csv
             assert_response :not_found
           end
 
@@ -90,7 +90,7 @@ module Api
             get :snapshot, params: { case_id: acase.id, snapshot_id: snap.id }, format: :csv
             assert_response :ok
             assert_equal 'text/csv', response.media_type
-            assert response.body.include?('Snapshot Name')
+            assert_includes response.body, 'Snapshot Name'
           end
         end
       end

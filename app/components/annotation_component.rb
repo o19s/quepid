@@ -11,15 +11,15 @@
 class AnnotationComponent < ApplicationComponent
   # @param annotation [Annotation] AR object (with score and user loaded)
   # @param case_id [Integer] Case id for API calls
-  def initialize(annotation:, case_id:)
+  def initialize annotation:, case_id:
     @annotation = annotation
     @case_id    = case_id
   end
 
   def time_ago_text
-    return "" unless @annotation.created_at
+    return '' unless @annotation.created_at
 
-    time_ago_in_words(@annotation.created_at) + " ago"
+    "#{time_ago_in_words(@annotation.created_at)} ago"
   end
 
   def display_score

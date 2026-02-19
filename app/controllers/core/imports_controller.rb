@@ -23,32 +23,30 @@ module Core
     # Imports ratings (CSV, RRE, LTR). Sync for small; async job for large.
     def ratings
       format = params[:file_format] || 'hash'
-      format = 'hash' if format == 'csv'  # Client sends "csv" for pasted CSV (parsed to ratings)
+      format = 'hash' if 'csv' == format # Client sends "csv" for pasted CSV (parsed to ratings)
       clear_queries = deserialize_bool_param(params[:clear_queries])
 
       ratings = extract_ratings(format)
-      if ratings.nil?
-        return render_error("Invalid format or missing data")
-      end
+      return render_error('Invalid format or missing data') if ratings.nil?
 
       if ratings.size > ASYNC_RATINGS_THRESHOLD
         case_import = CaseImport.create!(
-          case: @case,
-          user: current_user,
+          case:          @case,
+          user:          current_user,
           import_params: build_import_params(format, ratings, clear_queries),
-          status: "pending"
+          status:        'pending'
         )
         ImportCaseRatingsJob.perform_later(case_import.id)
 
         respond_to do |fmt|
           fmt.turbo_stream do
             render turbo_stream: turbo_stream.append(
-              "flash",
-              partial: "shared/flash_alert",
-              locals: { message: "Import started (#{ratings.size} ratings). You will be notified when complete." }
+              'flash',
+              partial: 'shared/flash_alert',
+              locals:  { message: "Import started (#{ratings.size} ratings). You will be notified when complete." }
             ), status: :accepted
           end
-          fmt.html { redirect_to case_core_path(@case, @try), notice: "Import started." }
+          fmt.html { redirect_to case_core_path(@case, @try), notice: 'Import started.' }
         end
       else
         import_sync(format, ratings, clear_queries)
@@ -57,13 +55,12 @@ module Core
 
     # POST /case/:id/import/information_needs
     # Imports information needs from CSV. Always sync (typically small).
+    # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     def information_needs
       csv_text = params[:csv_text].to_s.strip
       create_queries = deserialize_bool_param(params[:create_queries])
 
-      if csv_text.blank?
-        return render_error("Please provide CSV content (query,information_need)")
-      end
+      return render_error('Please provide CSV content (query,information_need)') if csv_text.blank?
 
       csv_data = CSV.parse(csv_text, liberal_parsing: true)
       headers = csv_data.shift&.map(&:to_s) || []
@@ -75,9 +72,7 @@ module Core
         missing_queries = []
       end
 
-      unless missing_queries.empty?
-        return render_error("Didn't find #{missing_queries.count} query(ies): #{missing_queries.to_sentence}")
-      end
+      return render_error("Didn't find #{missing_queries.count} query(ies): #{missing_queries.to_sentence}") unless missing_queries.empty?
 
       data.each do |row|
         query = @case.queries.find_by(query_text: row['query'])
@@ -87,17 +82,18 @@ module Core
       respond_to do |format|
         format.turbo_stream do
           render turbo_stream: turbo_stream.append(
-            "flash",
-            partial: "shared/flash_alert",
-            locals: { message: "Successfully imported information needs." }
+            'flash',
+            partial: 'shared/flash_alert',
+            locals:  { message: 'Successfully imported information needs.' }
           ), status: :ok
         end
-        format.html { redirect_to case_core_path(@case, @try), notice: "Information needs imported." }
+        format.html { redirect_to case_core_path(@case, @try), notice: 'Information needs imported.' }
       end
     rescue StandardError => e
       Rails.logger.error("ImportsController#information_needs: #{e.class} - #{e.message}\n#{e.backtrace.first(5).join("\n")}")
       render_error(e.message)
     end
+    # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
     private
 
@@ -106,13 +102,14 @@ module Core
       set_case
     end
 
-    def extract_ratings(format)
+    # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
+    def extract_ratings format
       case format.to_s
       when 'hash'
         raw = params[:ratings]
         if raw.is_a?(String)
-          parsed = begin
-            JSON.parse(raw)
+          begin
+            parsed = JSON.parse(raw)
           rescue JSON::ParserError
             return nil
           end
@@ -121,10 +118,11 @@ module Core
           params.permit(ratings: [ :query_text, :doc_id, :rating ]).to_h[:ratings]&.map(&:to_h) || []
         end
       when 'rre'
-        return nil unless params[:rre_json].present?
+        return nil if params[:rre_json].blank?
+
         ratings = []
-        rre = begin
-          JSON.parse(params[:rre_json])
+        begin
+          rre = JSON.parse(params[:rre_json])
         rescue JSON::ParserError
           return nil
         end
@@ -140,30 +138,33 @@ module Core
         end
         ratings
       when 'ltr'
-        return nil unless params[:ltr_text].present?
+        return nil if params[:ltr_text].blank?
+
         params[:ltr_text].split(/\n+/).filter_map { |line| rating_from_ltr_line(line) }
-      else
-        nil
       end
     end
+    # rubocop:enable Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
 
-    def rating_from_ltr_line(line)
+    def rating_from_ltr_line line
       line = line.strip
       first = line.index(' ')
       return nil unless first
+
       rating = line[0..first].strip
       line = line[first..].strip
       hash_pos = line.index('#')
       return nil unless hash_pos
+
       line = line[(hash_pos + 1)..].strip
       space_pos = line.index(' ')
       return nil unless space_pos
+
       doc_id = line[0..space_pos].strip
       query_text = line[space_pos..].strip
       { query_text: query_text, doc_id: doc_id, rating: rating }
     end
 
-    def build_import_params(format, ratings, clear_queries)
+    def build_import_params format, ratings, clear_queries
       base = { format: format, clear_queries: clear_queries }
       case format
       when 'hash' then base.merge(ratings: ratings)
@@ -173,7 +174,7 @@ module Core
       end
     end
 
-    def import_sync(format, ratings, clear_queries)
+    def import_sync _format, ratings, clear_queries
       options = { format: :hash, force: true, clear_existing: clear_queries, show_progress: false }
       service = RatingsImporter.new(@case, ratings, options)
       service.import
@@ -181,12 +182,12 @@ module Core
       respond_to do |fmt|
         fmt.turbo_stream do
           render turbo_stream: turbo_stream.append(
-            "flash",
-            partial: "shared/flash_alert",
-            locals: { message: "Successfully imported #{ratings.size} ratings." }
+            'flash',
+            partial: 'shared/flash_alert',
+            locals:  { message: "Successfully imported #{ratings.size} ratings." }
           ), status: :ok
         end
-        fmt.html { redirect_to case_core_path(@case, @try), notice: "Ratings imported." }
+        fmt.html { redirect_to case_core_path(@case, @try), notice: 'Ratings imported.' }
       end
     rescue StandardError => e
       Rails.logger.error("ImportsController#import_sync: #{e.class} - #{e.message}\n#{e.backtrace.first(5).join("\n")}")
@@ -197,14 +198,14 @@ module Core
       @try = @case.tries.latest
     end
 
-    def render_error(message)
+    def render_error message
       respond_to do |format|
         format.turbo_stream do
           render turbo_stream: turbo_stream.append(
-            "flash",
-            partial: "shared/flash_alert",
-            locals: { message: message }
-          ), status: :unprocessable_entity
+            'flash',
+            partial: 'shared/flash_alert',
+            locals:  { message: message }
+          ), status: :unprocessable_content
         end
         format.html { redirect_to case_core_path(@case, @try), alert: message }
       end

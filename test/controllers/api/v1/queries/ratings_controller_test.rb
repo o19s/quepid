@@ -226,10 +226,10 @@ module Api
                 format: :turbo_stream
 
             assert_response :ok
-            assert_equal "text/vnd.turbo-stream.html", response.media_type
+            assert_equal 'text/vnd.turbo-stream.html', response.media_type
             assert_includes response.body, "rating-badge-#{doc_id}"
-            assert_includes response.body, "turbo-stream"
-            assert_includes response.body, "3"
+            assert_includes response.body, 'turbo-stream'
+            assert_includes response.body, '3'
           end
         end
 
@@ -276,9 +276,9 @@ module Api
                    format: :turbo_stream
 
             assert_response :ok
-            assert_equal "text/vnd.turbo-stream.html", response.media_type
+            assert_equal 'text/vnd.turbo-stream.html', response.media_type
             assert_includes response.body, "rating-badge-#{doc_id}"
-            assert_includes response.body, "turbo-stream"
+            assert_includes response.body, 'turbo-stream'
           end
         end
       end

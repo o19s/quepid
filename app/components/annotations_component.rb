@@ -8,7 +8,7 @@ class AnnotationsComponent < ApplicationComponent
   # @param case_id [Integer] Case id for API calls
   # @param annotations [ActiveRecord::Relation] annotations collection (with score, user included)
   # @param last_score [Score, nil] Most recent case score for creating new annotations
-  def initialize(case_id:, annotations:, last_score: nil)
+  def initialize case_id:, annotations:, last_score: nil
     @case_id     = case_id
     @annotations = annotations
     @last_score  = last_score
@@ -19,13 +19,13 @@ class AnnotationsComponent < ApplicationComponent
   end
 
   def last_score_json
-    return "{}" unless score?
+    return '{}' unless score?
 
     {
       all_rated: @last_score.all_rated,
       score:     @last_score.score,
       try_id:    @last_score.try_id,
-      queries:   @last_score.queries
+      queries:   @last_score.queries,
     }.to_json
   end
 end

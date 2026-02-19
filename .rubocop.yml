@@ -34,6 +34,18 @@ Rails/I18nLocaleTexts:
 Naming/VariableNumber:
   Enabled: false  # we have a lot of legacy code to update
 
+Naming/PredicateMethod:
+  Enabled: false # detect_querqy returns data not boolean, not a true predicate
+
+Metrics/ParameterLists:
+  Exclude:
+    - app/components/**/*
+    - app/services/fetch_service.rb
+
+Style/GlobalVars:
+  Exclude:
+    - app/controllers/api/v1/tries/queries/search_controller.rb
+
 Bundler/OrderedGems:
   Enabled: false  # legacy gem file, someday.
 

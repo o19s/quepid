@@ -22,6 +22,7 @@ class CoreController < ApplicationController
   # Case and try context are set by set_case_or_bootstrap and available as @case, @try.
   def show
     return redirect_to cases_path if @case.blank?
+
     render layout: 'core_modern'
   end
 
@@ -70,7 +71,7 @@ class CoreController < ApplicationController
 
         }
         search_endpoint = SearchEndpoint.find_or_create_by search_endpoint_params
-        Rails.logger.debug "Found search end point with id #{search_endpoint.id} and name #{search_endpoint.fullname}"
+        Rails.logger.debug { "Found search end point with id #{search_endpoint.id} and name #{search_endpoint.fullname}" }
         @try.search_endpoint = search_endpoint
         @try.field_spec = params[:fieldSpec]
       end

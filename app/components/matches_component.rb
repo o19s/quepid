@@ -16,7 +16,7 @@ class MatchesComponent < ApplicationComponent
   # @param explain_raw [String, nil] Raw explain JSON string (explain().rawStr()) for the debug modal
   # @param max_doc_score [Numeric, nil] Maximum document score in the result set
   # @param compact [Boolean] When true, show only Debug/Expand buttons (no inline explain pre)
-  def initialize(doc_id:, doc_title: nil, doc_score: nil, explain_text: nil, explain_raw: nil, max_doc_score: nil, compact: false)
+  def initialize doc_id:, doc_title: nil, doc_score: nil, explain_text: nil, explain_raw: nil, max_doc_score: nil, compact: false
     @doc_id        = doc_id
     @doc_title     = doc_title
     @doc_score     = doc_score
@@ -54,13 +54,13 @@ class MatchesComponent < ApplicationComponent
     "#{@doc_score} / #{@max_doc_score} (#{percentage}%)"
   end
 
-  def has_score?
+  def score?
     @doc_score.present?
   end
 
   # Safe text for display and for ExpandContentComponent; avoids nil/blank body.
   def explain_text_display
-    @explain_text.presence || "No explain text available."
+    @explain_text.presence || 'No explain text available.'
   end
 
   private
@@ -68,6 +68,6 @@ class MatchesComponent < ApplicationComponent
   # Sanitize doc_id for use in HTML id attributes — replace non-alphanumeric
   # characters with hyphens to avoid breaking querySelector-based modal targeting.
   def sanitized_doc_id
-    @doc_id.to_s.gsub(/[^a-zA-Z0-9_-]/, "-")
+    @doc_id.to_s.gsub(/[^a-zA-Z0-9_-]/, '-')
   end
 end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class UnarchiveCaseComponent < ApplicationComponent
-  def initialize(current_user_teams:)
+  def initialize current_user_teams:
     @current_user_teams = current_user_teams
   end
 

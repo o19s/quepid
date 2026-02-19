@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: case_imports
@@ -20,7 +22,7 @@
 #  fk_rails_...  (case_id => cases.id)
 #  fk_rails_...  (user_id => users.id)
 #
-require "test_helper"
+require 'test_helper'
 
 class CaseImportTest < ActiveSupport::TestCase
   # test "the truth" do

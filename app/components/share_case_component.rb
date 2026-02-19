@@ -11,7 +11,7 @@ class ShareCaseComponent < ApplicationComponent
   # @param all_teams [Array<Hash>, ActiveRecord::Relation] User's teams (id, name) for share dropdown
   # @param shared_teams [Array<Hash>, ActiveRecord::Relation] Teams the case is already shared with (id, name)
   # @param icon_only [Boolean] If true, render only the icon; otherwise icon + "Share case" text
-  def initialize(case_id:, case_name:, all_teams:, shared_teams:, icon_only: true)
+  def initialize case_id:, case_name:, all_teams:, shared_teams:, icon_only: true
     @case_id      = case_id
     @case_name    = case_name
     @all_teams    = all_teams.respond_to?(:to_json) ? all_teams : all_teams.to_a
@@ -29,8 +29,9 @@ class ShareCaseComponent < ApplicationComponent
 
   private
 
-  def team_json(teams)
+  def team_json teams
     return teams if teams.is_a?(String)
+
     arr = teams.respond_to?(:to_ary) ? teams.to_ary : teams.to_a
     arr.map { |t| t.respond_to?(:id) ? { id: t.id, name: t.name } : t }.to_json
   end

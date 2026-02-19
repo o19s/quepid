@@ -298,7 +298,7 @@ Rails.application.routes.draw do
       end
 
       resources :search_endpoints, except: [ :new, :edit ] do
-        resources :fields, only: [ :index ], controller: "search_endpoints/fields"
+        resources :fields, only: [ :index ], controller: 'search_endpoints/fields'
       end
       namespace :search_endpoints do
         resource :validation, only: [ :create ]
@@ -358,9 +358,9 @@ Rails.application.routes.draw do
   post '/case/:id/queries'            => 'core/queries#create', as: :case_queries
   put '/case/:id/queries/:query_id/notes' => 'core/queries/notes#update', as: :case_query_notes
   delete '/case/:id/queries/:query_id' => 'core/queries#destroy', as: :case_query
-  post '/case/:id/export'             => 'core/exports#create', as: :case_export
-  get '/case/:id/export/download'      => 'core/exports#download', as: :case_export_download
-  post '/case/:id/import/ratings'     => 'core/imports#ratings', as: :case_import_ratings
+  post '/case/:id/export' => 'core/exports#create', as: :case_export
+  get '/case/:id/export/download' => 'core/exports#download', as: :case_export_download
+  post '/case/:id/import/ratings' => 'core/imports#ratings', as: :case_import_ratings
   post '/case/:id/import/information_needs' => 'core/imports#information_needs', as: :case_import_information_needs
   get '/cases/new'                    => 'core#new', as: :case_new
   get '/case'                         => 'core#index'

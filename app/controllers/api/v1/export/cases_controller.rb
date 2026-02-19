@@ -19,9 +19,7 @@ module Api
         def general
           last_score = @case.last_score
           last_score = last_score.first if last_score.is_a?(ActiveRecord::Relation)
-          unless last_score.respond_to?(:queries) && last_score.queries.present?
-            return send_csv([], general_header_row, "general")
-          end
+          return send_csv([], general_header_row, 'general') unless last_score.respond_to?(:queries) && last_score.queries.present?
 
           rows = []
           queries_by_id = @case.queries.index_by(&:id)
@@ -35,7 +33,7 @@ module Api
 
             options = query.options.presence
             options = nil if options.is_a?(Hash) && options.empty?
-            options_str = (options.is_a?(Hash) || options.is_a?(Array)) ? JSON.generate(options) : options.to_s
+            options_str = options.is_a?(Hash) || options.is_a?(Array) ? JSON.generate(options) : options.to_s
 
             rows << [
               team_names,
@@ -51,7 +49,7 @@ module Api
             ]
           end
 
-          send_csv(rows, general_header_row, "general")
+          send_csv(rows, general_header_row, 'general')
         end
 
         # GET api/export/cases/:case_id/detailed.csv
@@ -67,7 +65,7 @@ module Api
           csv_headers = detailed_header_row(extra_fields)
           rows = []
 
-          @case.queries.includes(:ratings).each do |query|
+          @case.queries.includes(:ratings).find_each do |query|
             ratings = query.ratings.fully_rated.order(:id)
             if ratings.empty?
               row = [ team_names, @case.case_name, case_id, query.query_text, '', '', '', '' ]
@@ -82,21 +80,19 @@ module Api
             end
           end
 
-          send_csv(rows, csv_headers, "detailed")
+          send_csv(rows, csv_headers, 'detailed')
         end
 
         # GET api/export/cases/:case_id/snapshot.csv?snapshot_id=:id
         # Snapshot CSV: Snapshot Name, Snapshot Time, Case ID, Query Text, Doc ID, Doc Position, [Field keys from snapshot_docs]
         def snapshot
-          unless @snapshot
-            return render json: { error: 'Snapshot not found' }, status: :not_found
-          end
+          return render json: { error: 'Snapshot not found' }, status: :not_found unless @snapshot
 
           field_keys = snapshot_field_keys
           csv_headers = snapshot_header_row(field_keys)
           rows = []
 
-          @snapshot.snapshot_queries.includes(:query, :snapshot_docs).each do |sq|
+          @snapshot.snapshot_queries.includes(:query, :snapshot_docs).find_each do |sq|
             query_text = sq.query&.query_text || ''
             sq.snapshot_docs.order(:position).each_with_index do |doc, idx|
               fields = doc.fields.present? ? JSON.parse(doc.fields) : {}
@@ -106,14 +102,14 @@ module Api
                 @case.id,
                 query_text,
                 doc.doc_id,
-                (doc.position || idx + 1)
+                doc.position || (idx + 1)
               ]
               field_keys.each { |k| row << (fields[k] || fields[k.to_s]) }
               rows << row
             end
           end
 
-          send_csv(rows, csv_headers, "snapshot")
+          send_csv(rows, csv_headers, 'snapshot')
         end
 
         private
@@ -123,27 +119,28 @@ module Api
         end
 
         def general_header_row
-          %w[Team\ Name Case\ Name Case\ ID Query\ Text Score Date\ Last\ Scored Count Information\ Need Notes Options]
+          [ 'Team Name', 'Case Name', 'Case ID', 'Query Text', 'Score', 'Date Last Scored', 'Count', 'Information Need', 'Notes', 'Options' ]
         end
 
-        def detailed_header_row(extra_fields)
-          %w[Team\ Name Case\ Name Case\ ID Query\ Text Doc\ ID Doc\ Position Title Rating] + extra_fields
+        def detailed_header_row extra_fields
+          [ 'Team Name', 'Case Name', 'Case ID', 'Query Text', 'Doc ID', 'Doc Position', 'Title', 'Rating' ] + extra_fields
         end
 
-        def field_spec_extra_columns(field_spec)
+        def field_spec_extra_columns field_spec
           specs = field_spec.to_s.split(/[\s,]+/)
-          specs.reject { |f| f == 'id' || f == '_id' || f.to_s.downcase.include?('title') }.uniq
+          specs.reject { |f| 'id' == f || '_id' == f || f.to_s.downcase.include?('title') }.uniq
         end
 
-        def snapshot_header_row(field_keys)
-          %w[Snapshot\ Name Snapshot\ Time Case\ ID Query\ Text Doc\ ID Doc\ Position] + field_keys
+        def snapshot_header_row field_keys
+          [ 'Snapshot Name', 'Snapshot Time', 'Case ID', 'Query Text', 'Doc ID', 'Doc Position' ] + field_keys
         end
 
         def snapshot_field_keys
           keys = []
-          @snapshot.snapshot_queries.includes(:snapshot_docs).each do |sq|
+          @snapshot.snapshot_queries.includes(:snapshot_docs).find_each do |sq|
             sq.snapshot_docs.each do |doc|
-              next unless doc.fields.present?
+              next if doc.fields.blank?
+
               parsed = JSON.parse(doc.fields)
               keys = (keys + parsed.keys).uniq
             rescue JSON::ParserError
@@ -153,7 +150,7 @@ module Api
           keys
         end
 
-        def send_csv(rows, csv_header_row, suffix)
+        def send_csv rows, csv_header_row, suffix
           safe_name = @case.case_name.to_s.gsub(/[\s:]+/, '_')
           response.headers['Content-Disposition'] = "attachment; filename=\"#{safe_name}_#{suffix}.csv\""
           response.headers['Content-Type'] = 'text/csv'
@@ -168,11 +165,10 @@ module Api
           render plain: csv_string
         end
 
-        def csv_cell(val)
+        def csv_cell val
           return '' if val.nil?
-          if val.is_a?(Hash) || val.is_a?(Array)
-            return JSON.generate(val)
-          end
+          return JSON.generate(val) if val.is_a?(Hash) || val.is_a?(Array)
+
           s = val.to_s.strip
           s = " #{s}" if s.start_with?('=', '@', '+', '-')
           s

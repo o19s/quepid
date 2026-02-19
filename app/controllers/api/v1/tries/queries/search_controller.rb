@@ -34,6 +34,7 @@ module Api
           #
           # Returns JSON (default): { docs: [...], num_found: N, ratings: { doc_id => rating } }
           # Returns HTML (Accept: text/html): Document cards for results pane (DocumentCardComponent)
+          # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
           def show
             query_text_override = params[:q].presence
             rows = params[:rows].presence&.to_i
@@ -43,8 +44,8 @@ module Api
               @try,
               @query,
               query_text_override: query_text_override,
-              rows: rows,
-              start: start_offset
+              rows:                rows,
+              start:               start_offset
             )
 
             if result[:error]
@@ -58,8 +59,8 @@ module Api
 
             # Filter to only rated docs when requested
             if deserialize_bool_param(params[:show_only_rated])
-              rated_doc_ids = ratings_map.keys.map(&:to_s).to_set
-              result[:docs] = result[:docs].select { |doc| rated_doc_ids.include?(doc["id"].to_s) }
+              rated_doc_ids = ratings_map.keys.to_set(&:to_s)
+              result[:docs] = result[:docs].select { |doc| rated_doc_ids.include?(doc['id'].to_s) }
             end
 
             # Build diff data (shared query for both badge map and side-by-side columns)
@@ -67,32 +68,33 @@ module Api
 
             respond_to do |format|
               format.html do
-                render partial: "api/v1/tries/queries/search/document_cards",
-                       locals: {
-                         docs:              result[:docs],
-                         num_found:         result[:num_found],
-                         max_score:         result[:max_score],
-                         querqy_triggered:  result[:querqy_triggered],
-                         ratings_map:       ratings_map,
-                         scorer_scale:      scorer_scale,
-                         diff_entries_map:  diff_entries_map,
-                         diff_columns:      diff_columns,
-                         image_prefix:      @try.image_prefix_from_field_spec,
-                         scoring_depth:     @try.number_of_rows || 10,
-                         browse_url:        build_browse_url(@try, @query)
+                render partial: 'api/v1/tries/queries/search/document_cards',
+                       locals:  {
+                         docs:             result[:docs],
+                         num_found:        result[:num_found],
+                         max_score:        result[:max_score],
+                         querqy_triggered: result[:querqy_triggered],
+                         ratings_map:      ratings_map,
+                         scorer_scale:     scorer_scale,
+                         diff_entries_map: diff_entries_map,
+                         diff_columns:     diff_columns,
+                         image_prefix:     @try.image_prefix_from_field_spec,
+                         scoring_depth:    @try.number_of_rows || 10,
+                         browse_url:       build_browse_url(@try, @query),
                        },
-                       layout: false
+                       layout:  false
               end
               format.json do
                 render json: {
                   docs:            result[:docs],
                   num_found:       result[:num_found],
                   ratings:         ratings_map,
-                  response_status: result[:response_status]
+                  response_status: result[:response_status],
                 }
               end
             end
           end
+          # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
           # GET api/cases/:case_id/tries/:try_number/queries/:query_id/search/raw?doc_id=xxx
           #
@@ -108,10 +110,10 @@ module Api
               @try,
               @query,
               query_text_override: doc_id,
-              rows: 1
+              rows:                1
             )
 
-            render body: response.body, content_type: "application/json", status: response.status
+            render body: response.body, content_type: 'application/json', status: response.status
           end
 
           private
@@ -138,7 +140,7 @@ module Api
 
             if @try.search_endpoint.nil?
               render json: { error: 'No search endpoint configured for this try' }, status: :bad_request
-            elsif @try.search_endpoint.search_engine == 'static'
+            elsif 'static' == @try.search_endpoint.search_engine
               render json: { error: 'Static search engine does not support live search' }, status: :bad_request
             end
           end
@@ -147,7 +149,8 @@ module Api
           #   entries_map: { doc_id => [{ position: N, name: "Snapshot X" }] } for badge display
           #   columns: [{ name: String, docs: [...], query_score: Float, case_score: Float }]
           # Returns [entries_map, columns]
-          def build_diff_data(snapshot_ids)
+          # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+          def build_diff_data snapshot_ids
             return [ {}, [] ] if snapshot_ids.blank?
 
             snapshot_ids = Array(snapshot_ids).map(&:to_i).reject(&:zero?)
@@ -161,8 +164,8 @@ module Api
             # Pre-fetch case-level scores for each snapshot's try
             try_ids = snapshots.values.filter_map(&:try_id).uniq
             case_scores_by_try = Score.where(case_id: @case.id, try_id: try_ids)
-                                      .group(:try_id)
-                                      .maximum(:score)
+              .group(:try_id)
+              .maximum(:score)
 
             entries_map = Hash.new { |h, k| h[k] = [] }
             columns = snapshot_ids.filter_map do |sid|
@@ -181,36 +184,37 @@ module Api
                 name:        snapshot_name,
                 docs:        col_docs,
                 query_score: sq&.score,
-                case_score:  case_scores_by_try[snapshot.try_id]
+                case_score:  case_scores_by_try[snapshot.try_id],
               }
             end
 
             [ entries_map, columns ]
           end
+          # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
           # Build a browse URL to view results directly on the search engine.
           # Only supported for Solr (admin/select UI) and ES/OS (_search endpoint).
-          def build_browse_url(a_try, query)
-            return nil unless a_try&.search_endpoint&.endpoint_url.present?
+          def build_browse_url a_try, query
+            return nil if a_try&.search_endpoint&.endpoint_url.blank?
 
             endpoint = a_try.search_endpoint
-            base_url = endpoint.endpoint_url.chomp("/")
+            base_url = endpoint.endpoint_url.chomp('/')
             engine = endpoint.search_engine
 
             case engine
-            when "solr"
+            when 'solr'
               # Solr: append query params with the query text substituted
-              qp = a_try.query_params.to_s.gsub("#$query##", CGI.escape(query.query_text.to_s))
+              qp = a_try.query_params.to_s.gsub("#{$query}##", CGI.escape(query.query_text.to_s))
               "#{base_url}?#{qp}"
-            when "es", "os"
+            when 'es', 'os'
               # ES/OS: link to the _search endpoint
               "#{base_url}/_search"
             end
           end
 
           def set_search_response_format
-            request.format = :html if request.headers["Accept"]&.include?("text/html")
-            request.format = :json if request.format != :html
+            request.format = :html if request.headers['Accept']&.include?('text/html')
+            request.format = :json if :html != request.format
           end
         end
       end

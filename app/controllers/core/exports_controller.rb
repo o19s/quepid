@@ -24,24 +24,20 @@ module Core
       format = params[:export_format] || params[:format]
       snapshot_id = params[:snapshot_id].presence
 
-      unless ASYNC_FORMATS.include?(format)
-        return render status: :unprocessable_entity, plain: "Unsupported format: #{format}"
-      end
+      return render status: :unprocessable_content, plain: "Unsupported format: #{format}" unless ASYNC_FORMATS.include?(format)
 
-      if format == 'snapshot' && snapshot_id.blank?
-        return render status: :unprocessable_entity, plain: "Snapshot required for snapshot export"
-      end
+      return render status: :unprocessable_content, plain: 'Snapshot required for snapshot export' if 'snapshot' == format && snapshot_id.blank?
 
       if @case.export_job.present?
         respond_to do |fmt|
           fmt.turbo_stream do
             render turbo_stream: turbo_stream.append(
-              "flash",
-              partial: "shared/flash_alert",
-              locals: { message: "Export already in progress: #{@case.export_job}" }
-            ), status: :unprocessable_entity
+              'flash',
+              partial: 'shared/flash_alert',
+              locals:  { message: "Export already in progress: #{@case.export_job}" }
+            ), status: :unprocessable_content
           end
-          fmt.html { redirect_to case_core_path(@case, @try), alert: "Export already in progress" }
+          fmt.html { redirect_to case_core_path(@case, @try), alert: 'Export already in progress' }
         end
         return
       end
@@ -53,12 +49,12 @@ module Core
       respond_to do |fmt|
         fmt.turbo_stream do
           render turbo_stream: turbo_stream.append(
-            "flash",
-            partial: "shared/flash_alert",
-            locals: { message: "Export started. You will be notified when it is ready." }
+            'flash',
+            partial: 'shared/flash_alert',
+            locals:  { message: 'Export started. You will be notified when it is ready.' }
           ), status: :accepted
         end
-        fmt.html { redirect_to case_core_path(@case, @try), notice: "Export started." }
+        fmt.html { redirect_to case_core_path(@case, @try), notice: 'Export started.' }
       end
     end
 
@@ -66,7 +62,7 @@ module Core
     # Serves the exported file when ready (after job completes).
     def download
       unless @case.export_file.attached?
-        redirect_to case_core_path(@case, @try), alert: "No export file available. Run an export first."
+        redirect_to case_core_path(@case, @try), alert: 'No export file available. Run an export first.'
         return
       end
 

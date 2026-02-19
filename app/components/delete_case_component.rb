@@ -8,7 +8,7 @@
 class DeleteCaseComponent < ApplicationComponent
   # @param case_id [Integer] Case id for API
   # @param case_name [String] Optional display name in modal (for confirmation text)
-  def initialize(case_id:, case_name: nil)
+  def initialize case_id:, case_name: nil
     @case_id   = case_id
     @case_name = case_name
   end

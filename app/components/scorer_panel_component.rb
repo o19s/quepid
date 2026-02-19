@@ -14,7 +14,7 @@ class ScorerPanelComponent < ApplicationComponent
   # @param score_label [String, nil] Scorer name
   # @param scores [Array<Hash>] Score history for sparkline: [{ score:, updated_at: }, ...]
   # @param annotations [Array<Hash>] Annotations for sparkline markers
-  def initialize(scorer: nil, case_id: nil, score: "?", max_score: 100, score_label: nil, scores: [], annotations: [])
+  def initialize scorer: nil, case_id: nil, score: '?', max_score: 100, score_label: nil, scores: [], annotations: []
     @scorer       = scorer
     @case_id      = case_id
     @score        = score
@@ -25,9 +25,9 @@ class ScorerPanelComponent < ApplicationComponent
   end
 
   def scale_display
-    return "—" if @scorer.blank? || @scorer.scale.blank?
+    return '—' if @scorer.blank? || @scorer.scale.blank?
 
-    @scorer.scale.join(", ")
+    @scorer.scale.join(', ')
   end
 
   def scale_with_labels
@@ -37,7 +37,7 @@ class ScorerPanelComponent < ApplicationComponent
   end
 
   def guidelines_display
-    return "" if scale_with_labels.blank?
+    return '' if scale_with_labels.blank?
 
     scale_with_labels.is_a?(Hash) ? scale_with_labels.to_json : scale_with_labels.to_s
   end

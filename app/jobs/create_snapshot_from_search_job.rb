@@ -42,9 +42,7 @@ class CreateSnapshotFromSearchJob < ApplicationJob
     response_code = response.status
     response_body = response.body
 
-    unless response_code == 200
-      Rails.logger.warn "CreateSnapshotFromSearchJob: Search returned #{response_code} for query #{query.id} (#{query.query_text})"
-    end
+    Rails.logger.warn "CreateSnapshotFromSearchJob: Search returned #{response_code} for query #{query.id} (#{query.query_text})" unless 200 == response_code
 
     docs = extract_docs_if_successful(response_code, response_body, atry)
     docs = strip_doc_fields(docs) unless @record_document_fields
@@ -57,7 +55,7 @@ class CreateSnapshotFromSearchJob < ApplicationJob
   end
 
   def extract_docs_if_successful response_code, response_body, atry
-    return [] unless response_code == 200
+    return [] unless 200 == response_code
 
     search_endpoint = atry.search_endpoint
     case search_endpoint.search_engine.to_sym

@@ -16,9 +16,9 @@ class DocumentCardComponent < ApplicationComponent
   # @param index [Integer] 0-based index for display position
   # @param diff_entries [Array<Hash>, nil] Optional diff info: [{ position:, name: }]
   # @param scale [Array<Integer>] Scorer scale for rating popover (e.g. [0,1,2,3])
-  def initialize(doc:, rating: nil, index: 0, diff_entries: nil, scale: [ 0, 1, 2, 3 ], highlights: nil, image_prefix: nil)
+  def initialize doc:, rating: nil, index: 0, diff_entries: nil, scale: [ 0, 1, 2, 3 ], highlights: nil, image_prefix: nil
     @doc          = doc
-    @rating       = rating.to_s.presence || ""
+    @rating       = rating.to_s.presence || ''
     @index        = index
     @diff_entries = diff_entries
     @scale        = scale
@@ -27,30 +27,30 @@ class DocumentCardComponent < ApplicationComponent
   end
 
   def doc_id
-    @doc[:id] || @doc["id"]
+    @doc[:id] || @doc['id']
   end
 
   def position
-    @doc[:position] || @doc["position"] || (@index + 1)
+    @doc[:position] || @doc['position'] || (@index + 1)
   end
 
   def fields
-    @doc[:fields] || @doc["fields"] || {}
+    @doc[:fields] || @doc['fields'] || {}
   end
 
   def explain_raw
-    ex = @doc[:explain] || @doc["explain"]
+    ex = @doc[:explain] || @doc['explain']
     ex.is_a?(String) ? ex : ex&.to_json
   end
 
-  def has_explain?
+  def explain?
     explain_raw.present?
   end
 
   def doc_title
     return doc_id.to_s if fields.blank?
 
-    title_field = fields["title"] || fields["name"] || fields["text"]
+    title_field = fields['title'] || fields['name'] || fields['text']
     return doc_id.to_s if title_field.blank?
 
     Array(title_field).first || doc_id.to_s
@@ -58,14 +58,14 @@ class DocumentCardComponent < ApplicationComponent
 
   def fields_preview
     keys = fields.keys.reject { |k| %w[id _id title name].include?(k.to_s) }
-    return "" if keys.empty?
+    return '' if keys.empty?
 
     preview = keys.first(3).map do |k|
       v = fields[k]
       str = v.is_a?(Array) ? v.first : v.to_s
       str.to_s.length > 50 ? "#{str.to_s[0, 50]}…" : str.to_s
-    end.join(" · ")
-    preview.presence || ""
+    end.join(' · ')
+    preview.presence || ''
   end
 
   # Full fields as JSON for the detail modal (embedded as data attribute on the card).
@@ -89,21 +89,15 @@ class DocumentCardComponent < ApplicationComponent
     diff_active? && @diff_entries.empty?
   end
 
-  def rating
-    @rating
-  end
+  attr_reader :rating, :highlights
 
-  def highlights
-    @highlights
-  end
-
-  def has_highlights?
+  def highlights?
     @highlights.present? && @highlights.any?
   end
 
   # Returns highlighted snippets for display. Allows only safe HTML tags.
   def highlighted_snippets
-    return [] unless has_highlights?
+    return [] unless highlights?
 
     @highlights.flat_map do |_field, fragments|
       Array(fragments).first(2)
@@ -127,7 +121,7 @@ class DocumentCardComponent < ApplicationComponent
     return url if url.match?(%r{\Ahttps?://})
 
     if @image_prefix.present? && url.present?
-      "#{@image_prefix.chomp('/')}#{url.start_with?('/') ? '' : '/'}#{url}"
+      "#{@image_prefix.chomp('/')}#{'/' unless url.start_with?('/')}#{url}"
     end
   end
 
@@ -147,23 +141,23 @@ class DocumentCardComponent < ApplicationComponent
       next if @media_embeds.any? { |e| e[:url] == url }
 
       if url.match?(audio_ext)
-        @media_embeds << { type: "audio", url: url }
+        @media_embeds << { type: 'audio', url: url }
       elsif url.match?(video_ext)
-        @media_embeds << { type: "video", url: url }
+        @media_embeds << { type: 'video', url: url }
       elsif url.match?(image_ext) && image_url != url
-        @media_embeds << { type: "image", url: url }
+        @media_embeds << { type: 'image', url: url }
       end
     end
     @media_embeds
   end
 
-  def has_media_embeds?
+  def media_embeds?
     media_embeds.any?
   end
 
   def explain_display_text
     raw = explain_raw
-    return "No explain text available." if raw.blank?
+    return 'No explain text available.' if raw.blank?
 
     parsed = JSON.parse(raw)
     JSON.pretty_generate(parsed)

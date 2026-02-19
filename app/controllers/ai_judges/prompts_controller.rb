@@ -45,9 +45,9 @@ module AiJudges
     def set_ai_judge
       accessible_book_ids = current_user.books_involved_with.select(:id)
       @ai_judge = User.joins('INNER JOIN books_ai_judges ON books_ai_judges.user_id = users.id')
-                       .where(books_ai_judges: { book_id: accessible_book_ids })
-                       .where(users: { id: params[:ai_judge_id] })
-                       .first
+        .where(books_ai_judges: { book_id: accessible_book_ids })
+        .where(users: { id: params[:ai_judge_id] })
+        .first
 
       return if @ai_judge
 

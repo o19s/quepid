@@ -5,14 +5,14 @@ class FrogReportComponentPreview < ViewComponent::Preview
   def default
     render(
       FrogReportComponent.new(
-        case_id: 1,
-        case_name: "Sample Case",
+        case_id:       1,
+        case_name:     'Sample Case',
         queries_count: 5,
-        book_id: nil,
-        book_name: nil,
-        depth: 10,
-        all_rated: false,
-        rating_stats: [
+        book_id:       nil,
+        book_name:     nil,
+        depth:         10,
+        all_rated:     false,
+        rating_stats:  [
           { query_id: 1, ratings_count: 10 },
           { query_id: 2, ratings_count: 7 },
           { query_id: 3, ratings_count: 0 },
@@ -26,14 +26,14 @@ class FrogReportComponentPreview < ViewComponent::Preview
   def with_book
     render(
       FrogReportComponent.new(
-        case_id: 1,
-        case_name: "Case with Book",
+        case_id:       1,
+        case_name:     'Case with Book',
         queries_count: 3,
-        book_id: 7,
-        book_name: "My Book",
-        depth: 10,
-        all_rated: false,
-        rating_stats: [
+        book_id:       7,
+        book_name:     'My Book',
+        depth:         10,
+        all_rated:     false,
+        rating_stats:  [
           { query_id: 1, ratings_count: 10 },
           { query_id: 2, ratings_count: 3 },
           { query_id: 3, ratings_count: 0 }
@@ -45,14 +45,14 @@ class FrogReportComponentPreview < ViewComponent::Preview
   def all_rated
     render(
       FrogReportComponent.new(
-        case_id: 1,
-        case_name: "Fully Rated Case",
+        case_id:       1,
+        case_name:     'Fully Rated Case',
         queries_count: 2,
-        book_id: nil,
-        book_name: nil,
-        depth: 10,
-        all_rated: true,
-        rating_stats: [
+        book_id:       nil,
+        book_name:     nil,
+        depth:         10,
+        all_rated:     true,
+        rating_stats:  [
           { query_id: 1, ratings_count: 10 },
           { query_id: 2, ratings_count: 10 }
         ]

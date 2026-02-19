@@ -14,17 +14,17 @@ module Api
 
         def create
           query = @case.queries.find_by(id: params[:query_id])
-          return render(json: { error: "Query not found" }, status: :not_found) unless query
+          return render(json: { error: 'Query not found' }, status: :not_found) unless query
 
           scorer = @case.scorer
-          return render(json: { error: "No scorer configured" }, status: :unprocessable_entity) unless scorer
+          return render(json: { error: 'No scorer configured' }, status: :unprocessable_content) unless scorer
 
           score = QueryScoreService.score(query, scorer)
 
           render json: {
-            query_id: query.id,
-            score: score,
-            max_score: scorer.scale&.last
+            query_id:  query.id,
+            score:     score,
+            max_score: scorer.scale&.last,
           }
         end
       end

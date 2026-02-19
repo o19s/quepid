@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require 'test_helper'
 
 class AddQueryComponentTest < ViewComponent::TestCase
   def test_renders_form_with_input_and_submit
@@ -13,12 +13,12 @@ class AddQueryComponentTest < ViewComponent::TestCase
 
   def test_disabled_state_when_can_add_queries_false
     render_inline(AddQueryComponent.new(case_id: 1, can_add_queries: false))
-    assert_selector "input#add-query-submit[disabled]"
+    assert_selector 'input#add-query-submit[disabled]'
     assert_selector "input#add-query[placeholder='Adding queries is not supported']"
   end
 
   def test_custom_placeholder
-    render_inline(AddQueryComponent.new(case_id: 1, placeholder: "Enter query text"))
+    render_inline(AddQueryComponent.new(case_id: 1, placeholder: 'Enter query text'))
     assert_selector "input#add-query[placeholder='Enter query text']"
   end
 end

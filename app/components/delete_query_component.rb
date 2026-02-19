@@ -15,7 +15,7 @@ class DeleteQueryComponent < ApplicationComponent
   # @param query_text [String] Query text for confirmation message (truncated)
   # @param try_number [Integer, nil] Try number for redirect after delete
   # @param selected_query_id [Integer, nil] When present and equal to query_id, server clears results pane
-  def initialize(case_id:, query_id:, query_text:, try_number: nil, selected_query_id: nil)
+  def initialize case_id:, query_id:, query_text:, try_number: nil, selected_query_id: nil
     @case_id           = case_id
     @query_id          = query_id
     @query_text        = query_text.to_s.truncate(50)

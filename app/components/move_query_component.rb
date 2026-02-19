@@ -9,7 +9,7 @@ class MoveQueryComponent < ApplicationComponent
   # @param case_id [Integer] Current case (query is in this case; excluded from target list)
   # @param other_cases [Array<Hash>, ActiveRecord::Relation] Cases the user can move to (id, name)
   # @param try_number [Integer, nil] Current try (for redirect after move; optional)
-  def initialize(query_id:, case_id:, other_cases:, try_number: nil)
+  def initialize query_id:, case_id:, other_cases:, try_number: nil
     @query_id    = query_id
     @case_id     = case_id
     @try_number  = try_number
@@ -17,6 +17,6 @@ class MoveQueryComponent < ApplicationComponent
   end
 
   def other_cases_for_list
-    @other_cases.map { |c| c.respond_to?(:id) ? { id: c.id, name: c.case_name } : { id: c[:id] || c["id"], name: c[:case_name] || c["case_name"] || c[:name] || c["name"] } }
+    @other_cases.map { |c| c.respond_to?(:id) ? { id: c.id, name: c.case_name } : { id: c[:id] || c['id'], name: c[:case_name] || c['case_name'] || c[:name] || c['name'] } }
   end
 end

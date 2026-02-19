@@ -12,7 +12,7 @@ class SettingsPanelComponent < ApplicationComponent
   # @param search_endpoint_edit_path [String, nil] URL to edit the search endpoint (caller provides)
   # @param case_id [Integer, nil] Case id for API URL construction
   # @param tries [Array<Try>, nil] All tries for the case (for history browser)
-  def initialize(try: nil, search_endpoint: nil, search_endpoint_edit_path: nil, case_id: nil, tries: nil, search_endpoints: nil)
+  def initialize try: nil, search_endpoint: nil, search_endpoint_edit_path: nil, case_id: nil, tries: nil, search_endpoints: nil
     @try                      = try
     @search_endpoint          = search_endpoint || try&.search_endpoint
     @search_endpoint_edit_path = search_endpoint_edit_path
@@ -21,16 +21,12 @@ class SettingsPanelComponent < ApplicationComponent
     @search_endpoints         = search_endpoints || []
   end
 
-  def search_endpoints
-    @search_endpoints
-  end
-
   def current_search_endpoint_id
     @search_endpoint&.id
   end
 
   def query_params_full
-    return "" if @try.blank? || @try.query_params.blank?
+    return '' if @try.blank? || @try.query_params.blank?
 
     @try.query_params.to_s
   end
@@ -48,40 +44,38 @@ class SettingsPanelComponent < ApplicationComponent
   end
 
   def search_engine
-    @search_endpoint&.search_engine || "—"
+    @search_endpoint&.search_engine || '—'
   end
 
   def search_url
-    return "—" if @search_endpoint.blank?
+    return '—' if @search_endpoint.blank?
 
-    @search_endpoint.endpoint_url.presence || "—"
+    @search_endpoint.endpoint_url.presence || '—'
   end
 
   # Curator variables as JSON for Stimulus value binding.
   def curator_vars_json
-    return "{}" if @try.blank?
+    return '{}' if @try.blank?
 
     @try.curator_vars_map.transform_keys(&:to_s).to_json
   end
 
-  def tries
-    @tries
-  end
+  attr_reader :search_endpoints, :tries
 
   # Assign a color bucket to a try based on its search endpoint URL.
   # Cycles through a small palette so tries targeting different endpoints
   # are visually distinguishable in the history list.
   URL_BUCKET_COLORS = %w[#4e79a7 #e15759 #59a14f #f28e2b #76b7b2 #edc949].freeze
 
-  def url_color_for_try(a_try)
-    return "transparent" unless a_try&.search_endpoint&.endpoint_url.present?
+  def url_color_for_try a_try
+    return 'transparent' if a_try&.search_endpoint&.endpoint_url.blank?
 
     @url_color_map ||= begin
       unique_urls = @tries.filter_map { |t| t.search_endpoint&.endpoint_url }.uniq
       unique_urls.each_with_index.to_h { |url, i| [ url, URL_BUCKET_COLORS[i % URL_BUCKET_COLORS.size] ] }
     end
 
-    @url_color_map[a_try.search_endpoint.endpoint_url] || "transparent"
+    @url_color_map[a_try.search_endpoint.endpoint_url] || 'transparent'
   end
 
   # Compare adjacent tries and return a hash of try_number => [changed fields]
@@ -92,11 +86,11 @@ class SettingsPanelComponent < ApplicationComponent
     diffs = {}
     sorted.each_cons(2) do |older, newer|
       changes = []
-      changes << "query_params" if older.query_params != newer.query_params
-      changes << "search_endpoint" if older.search_endpoint_id != newer.search_endpoint_id
-      changes << "field_spec" if older.field_spec != newer.field_spec
-      changes << "escape_query" if older.escape_query != newer.escape_query
-      changes << "number_of_rows" if older.number_of_rows != newer.number_of_rows
+      changes << 'query_params' if older.query_params != newer.query_params
+      changes << 'search_endpoint' if older.search_endpoint_id != newer.search_endpoint_id
+      changes << 'field_spec' if older.field_spec != newer.field_spec
+      changes << 'escape_query' if older.escape_query != newer.escape_query
+      changes << 'number_of_rows' if older.number_of_rows != newer.number_of_rows
       diffs[newer.try_number] = changes if changes.any?
     end
     diffs

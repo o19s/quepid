@@ -88,7 +88,7 @@ class CoreWorkspaceTest < ApplicationSystemTestCase
     query = @case.queries.first
     assert_text query.query_text, wait: 5
 
-    find('[aria-label="Delete query"]', match: :first).click
+    first('[aria-label="Delete query"]').click
     assert_selector '.modal-title', text: 'Delete Query', wait: 5
     within '.modal' do
       click_button 'Delete'
@@ -125,14 +125,14 @@ class CoreWorkspaceTest < ApplicationSystemTestCase
   def mock_search_response_body
     {
       responseHeader: { status: 0 },
-      response: {
+      response:       {
         numFound: 10,
-        start: 0,
-        docs: [
+        start:    0,
+        docs:     [
           { id: 'doc1', title: 'First doc' },
           { id: 'doc2', title: 'Second doc' }
-        ]
-      }
+        ],
+      },
     }.to_json
   end
 end

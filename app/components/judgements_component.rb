@@ -16,7 +16,7 @@ class JudgementsComponent < ApplicationComponent
   # @param queries_count [Integer] Number of queries (for background refresh threshold)
   # @param scorer_id [Integer, nil] Case scorer id (for create-book link)
   # @param teams [Array<Hash>, ActiveRecord::Relation] Teams the case is shared with (id, name)
-  def initialize(case_id:, case_name:, book_id: nil, book_name: nil, queries_count: 0, scorer_id: nil, teams: [])
+  def initialize case_id:, case_name:, book_id: nil, book_name: nil, queries_count: 0, scorer_id: nil, teams: []
     @case_id       = case_id
     @case_name     = case_name
     @book_id       = book_id
@@ -27,14 +27,14 @@ class JudgementsComponent < ApplicationComponent
   end
 
   def teams_for_data
-    @teams.map { |t| t.respond_to?(:id) ? { id: t.id, name: t.name } : { id: t[:id] || t["id"], name: t[:name] || t["name"] } }.to_json
+    @teams.map { |t| t.respond_to?(:id) ? { id: t.id, name: t.name } : { id: t[:id] || t['id'], name: t[:name] || t['name'] } }.to_json
   end
 
   # URL for creating a new book, with query params so BooksController#new can pre-fill
   # scorer, teams, and link-the-case. BooksController#new accepts origin_case_id,
   # scorer_id, and team_ids (or team_ids[]) as query params.
   def create_book_url
-    team_ids = @teams.map { |t| t.respond_to?(:id) ? t.id : (t[:id] || t["id"]) }
+    team_ids = @teams.map { |t| t.respond_to?(:id) ? t.id : (t[:id] || t['id']) }
     view_context.new_book_path(origin_case_id: @case_id, scorer_id: @scorer_id, team_ids: team_ids)
   end
 end

@@ -7,7 +7,7 @@
 class ImportCaseRatingsJob < ApplicationJob
   queue_as :bulk_processing
 
-  def perform(case_import_id)
+  def perform case_import_id
     case_import = CaseImport.find_by(id: case_import_id)
     unless case_import
       Rails.logger.warn "ImportCaseRatingsJob: CaseImport #{case_import_id} not found"
@@ -18,20 +18,20 @@ class ImportCaseRatingsJob < ApplicationJob
 
     case_import.update(status: "import started at #{Time.zone.now}")
 
-    broadcast_progress(acase, "Importing ratings...", 50)
+    broadcast_progress(acase, 'Importing ratings...', 50)
 
     ratings = extract_ratings(params)
     options = {
-      format: :hash,
-      force: true,
+      format:         :hash,
+      force:          true,
       clear_existing: params[:clear_queries],
-      show_progress: false
+      show_progress:  false,
     }
 
     service = RatingsImporter.new(acase, ratings, options)
     service.import
 
-    case_import.update(status: "completed")
+    case_import.update(status: 'completed')
     broadcast_complete(acase)
     case_import.destroy
   rescue StandardError => e
@@ -42,9 +42,10 @@ class ImportCaseRatingsJob < ApplicationJob
 
   private
 
-  def extract_ratings(params)
+  # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+  def extract_ratings params
     format = params[:format].to_s
-    format = 'hash' if format == 'csv'  # Defensive: csv maps to hash (client parses CSV to ratings)
+    format = 'hash' if 'csv' == format # Defensive: csv maps to hash (client parses CSV to ratings)
     case format
     when 'hash'
       params[:ratings] || []
@@ -70,8 +71,9 @@ class ImportCaseRatingsJob < ApplicationJob
       []
     end
   end
+  # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
-  def rating_from_ltr_line(ltr_line)
+  def rating_from_ltr_line ltr_line
     ltr_line = ltr_line.strip
     first_chunk = ltr_line.index(' ')
     return nil unless first_chunk
@@ -91,30 +93,30 @@ class ImportCaseRatingsJob < ApplicationJob
     { query_text: query_text, doc_id: doc_id, rating: rating }
   end
 
-  def broadcast_progress(acase, message, progress)
+  def broadcast_progress acase, message, progress
     Turbo::StreamsChannel.broadcast_render_to(
       :notifications,
-      target: "notifications-case-#{acase.id}",
-      partial: "core/imports/notification",
-      locals: { acase: acase, message: message, progress: progress }
+      target:  "notifications-case-#{acase.id}",
+      partial: 'core/imports/notification',
+      locals:  { acase: acase, message: message, progress: progress }
     )
   end
 
-  def broadcast_complete(acase)
+  def broadcast_complete acase
     Turbo::StreamsChannel.broadcast_render_to(
       :notifications,
-      target: "notifications-case-#{acase.id}",
-      partial: "core/imports/notification_complete",
-      locals: { acase: acase }
+      target:  "notifications-case-#{acase.id}",
+      partial: 'core/imports/notification_complete',
+      locals:  { acase: acase }
     )
   end
 
-  def broadcast_error(acase, message)
+  def broadcast_error acase, message
     Turbo::StreamsChannel.broadcast_render_to(
       :notifications,
-      target: "notifications-case-#{acase.id}",
-      partial: "core/imports/notification_error",
-      locals: { acase: acase, message: message }
+      target:  "notifications-case-#{acase.id}",
+      partial: 'core/imports/notification_error',
+      locals:  { acase: acase, message: message }
     )
   end
 end

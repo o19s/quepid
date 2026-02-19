@@ -11,7 +11,7 @@ class ExpandContentComponent < ApplicationComponent
   # @param title [String] Modal heading
   # @param body [String] Modal body content (escaped in the template; named body to avoid ViewComponent#content)
   # @param trigger_label [String] Label for the expand button (default: "Expand")
-  def initialize(id:, title:, body:, trigger_label: "Expand")
+  def initialize id:, title:, body:, trigger_label: 'Expand'
     @id            = id
     @title         = title
     @body          = body

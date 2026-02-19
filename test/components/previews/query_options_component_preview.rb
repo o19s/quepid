@@ -4,10 +4,10 @@
 class QueryOptionsComponentPreview < ViewComponent::Preview
   def default
     render(QueryOptionsComponent.new(
-      query_id: 1,
-      case_id: 1,
-      options_json: { "query_type" => "test", "weight" => 1.5 }
-    ))
+             query_id:     1,
+             case_id:      1,
+             options_json: { 'query_type' => 'test', 'weight' => 1.5 }
+           ))
   end
 
   def empty

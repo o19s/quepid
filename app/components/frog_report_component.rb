@@ -18,7 +18,7 @@ class FrogReportComponent < ApplicationComponent
   # @param depth [Integer] try's number_of_rows (k)
   # @param all_rated [Boolean] from last score's all_rated flag
   # @param rating_stats [Array<Hash>] each { query_id:, ratings_count: }
-  def initialize(case_id:, case_name:, queries_count:, book_id:, book_name:, depth:, all_rated:, rating_stats:)
+  def initialize case_id:, case_name:, queries_count:, book_id:, book_name:, depth:, all_rated:, rating_stats:
     @case_id = case_id
     @case_name = case_name
     @queries_count = queries_count
@@ -38,7 +38,7 @@ class FrogReportComponent < ApplicationComponent
   end
 
   def missing_ratings
-    @rating_stats.sum { |s| [@depth - s[:ratings_count], 0].max }
+    @rating_stats.sum { |s| [ @depth - s[:ratings_count], 0 ].max }
   end
 
   def missing_rate
@@ -48,7 +48,7 @@ class FrogReportComponent < ApplicationComponent
   end
 
   def queries_with_results_count
-    @rating_stats.count { |s| s[:ratings_count] > 0 }
+    @rating_stats.count { |s| s[:ratings_count].positive? }
   end
 
   def queries_without_results_count
@@ -64,15 +64,15 @@ class FrogReportComponent < ApplicationComponent
   def chart_data_json
     distribution = Hash.new(0)
     @rating_stats.each do |s|
-      missing = [@depth - s[:ratings_count], 0].max
+      missing = [ @depth - s[:ratings_count], 0 ].max
       distribution[missing] += 1
     end
 
     rows = distribution.sort_by(&:first).map do |missing_count, query_count|
       label = if missing_count.zero?
-                "Fully Rated"
+                'Fully Rated'
               elsif missing_count == @depth
-                "No Ratings"
+                'No Ratings'
               else
                 "Missing #{missing_count}"
               end

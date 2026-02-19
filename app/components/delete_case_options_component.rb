@@ -10,7 +10,7 @@ class DeleteCaseOptionsComponent < ApplicationComponent
   # @param case_name [String] Display name in modal title
   # @param try_number [Integer, nil] Current try number for redirect after "Delete All Queries" (optional)
   # @param icon_only [Boolean] If true, render only icon; otherwise icon + "Delete" text
-  def initialize(case_id:, case_name:, try_number: nil, icon_only: true)
+  def initialize case_id:, case_name:, try_number: nil, icon_only: true
     @case_id     = case_id
     @case_name   = case_name
     @try_number  = try_number

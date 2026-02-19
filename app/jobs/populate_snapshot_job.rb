@@ -27,7 +27,7 @@ class PopulateSnapshotJob < ApplicationJob
   private
 
   # Parses JSON payload and converts query_id keys to integers for SnapshotManager.
-  def parse_snapshot_payload(serialized_data)
+  def parse_snapshot_payload serialized_data
     parsed = JSON.parse(serialized_data, symbolize_names: true).deep_symbolize_keys
     snapshot = parsed[:snapshot] || {}
     docs = (snapshot[:docs] || {}).transform_keys { |k| k.to_s.to_i }

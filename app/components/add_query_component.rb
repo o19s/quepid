@@ -10,7 +10,7 @@ class AddQueryComponent < ApplicationComponent
   # @param try_number [Integer, nil] Try number for Turbo Stream route (optional)
   # @param can_add_queries [Boolean] If false, form is disabled (e.g. static search engine)
   # @param placeholder [String] Input placeholder text
-  def initialize(case_id:, try_number: nil, can_add_queries: true, placeholder: nil)
+  def initialize case_id:, try_number: nil, can_add_queries: true, placeholder: nil
     @case_id         = case_id
     @try_number      = try_number
     @can_add_queries = can_add_queries

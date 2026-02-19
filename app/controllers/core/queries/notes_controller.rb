@@ -24,17 +24,17 @@ module Core
       def update
         if @query.update(query_params)
           Analytics::Tracker.track_query_notes_updated_event current_user, @query
-          flash.now[:notice] = "Notes saved."
+          flash.now[:notice] = 'Notes saved.'
           status = :ok
         else
           flash.now[:alert] = @query.errors.full_messages.to_sentence
           status = :unprocessable_entity
         end
 
-        render partial: "core/queries/notes_form",
-               locals: { query: @query, case_id: @case.id },
-               layout: false,
-               status: status
+        render partial: 'core/queries/notes_form',
+               locals:  { query: @query, case_id: @case.id },
+               layout:  false,
+               status:  status
       end
 
       private
@@ -57,11 +57,11 @@ module Core
       end
 
       def check_query
-        render status: :not_found, plain: "Query not found" unless @query
+        render status: :not_found, plain: 'Query not found' unless @query
       end
 
       def query_params
-        params.require(:query).permit(:notes, :information_need)
+        params.expect(query: [ :notes, :information_need ])
       end
     end
   end

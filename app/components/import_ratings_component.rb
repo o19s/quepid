@@ -13,7 +13,7 @@ class ImportRatingsComponent < ApplicationComponent
   # @param case_id [Integer] Case to import into
   # @param case_name [String] Display name for modal title
   # @param icon_only [Boolean] If true, render only icon; otherwise icon + "Import" text
-  def initialize(case_id:, case_name:, icon_only: true)
+  def initialize case_id:, case_name:, icon_only: true
     @case_id   = case_id
     @case_name = case_name
     @icon_only = icon_only

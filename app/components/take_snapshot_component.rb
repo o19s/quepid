@@ -14,7 +14,7 @@ class TakeSnapshotComponent < ApplicationComponent
   # @param search_engine [String] e.g. "solr", "es", "os", "static"
   # @param field_spec [String, nil] Displayed fields (e.g. "id,title,description")
   # @param can_take_snapshot [Boolean] Whether snapshot is allowed (requires non-static search endpoint)
-  def initialize(case_id:, try_number: nil, search_engine: "solr", field_spec: nil, can_take_snapshot: true)
+  def initialize case_id:, try_number: nil, search_engine: 'solr', field_spec: nil, can_take_snapshot: true
     @case_id = case_id
     @try_number = try_number
     @search_engine = search_engine.to_s
@@ -27,15 +27,15 @@ class TakeSnapshotComponent < ApplicationComponent
   end
 
   def field_spec_display
-    @field_spec.presence || "id, title, and other displayed fields"
+    @field_spec.presence || 'id, title, and other displayed fields'
   end
 
   def search_engine_display
     case @search_engine.downcase
-    when "solr" then "Solr"
-    when "es" then "Elasticsearch"
-    when "os" then "OpenSearch"
-    when "static" then "Static"
+    when 'solr' then 'Solr'
+    when 'es' then 'Elasticsearch'
+    when 'os' then 'OpenSearch'
+    when 'static' then 'Static'
     else @search_engine
     end
   end

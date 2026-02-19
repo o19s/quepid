@@ -13,7 +13,7 @@ class NewCaseComponent < ApplicationComponent
   # @param button_text [String] Label for the link/button (e.g. "Create a case")
   # @param button_class [String] CSS classes for the link (default: btn btn-success)
   # @param block_style [Boolean] If true, render as full-width block (e.g. in dropdown)
-  def initialize(button_text: "Create a case", button_class: "btn btn-success", block_style: false)
+  def initialize button_text: 'Create a case', button_class: 'btn btn-success', block_style: false
     @button_text  = button_text
     @button_class = button_class
     @block_style  = block_style

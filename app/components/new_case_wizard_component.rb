@@ -16,7 +16,7 @@ class NewCaseWizardComponent < ApplicationComponent
   # @param current_user_id [Integer] Current user id (for completed_case_wizard API)
   # @param settings_path [String, nil] Path to search endpoint settings (optional)
   # @param search_endpoints [ActiveRecord::Relation, Array] User's available search endpoints
-  def initialize(show: false, case_id: nil, case_name: "", try_number: nil, current_user_id: nil, settings_path: nil, search_endpoints: [])
+  def initialize show: false, case_id: nil, case_name: '', try_number: nil, current_user_id: nil, settings_path: nil, search_endpoints: []
     @show              = show
     @case_id           = case_id
     @case_name         = case_name

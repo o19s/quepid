@@ -24,8 +24,8 @@ module Api
               format.turbo_stream do
                 render turbo_stream: turbo_stream.update(
                   rating_badge_id(@doc_id),
-                  partial: "api/v1/queries/ratings/rating_badge",
-                  locals: { rating: @rating.rating.to_s }
+                  partial: 'api/v1/queries/ratings/rating_badge',
+                  locals:  { rating: @rating.rating.to_s }
                 ), status: :ok
               end
               format.json { respond_with @rating }
@@ -34,10 +34,10 @@ module Api
             respond_to do |format|
               format.turbo_stream do
                 render turbo_stream: turbo_stream.append(
-                  "flash",
-                  partial: "shared/flash_alert",
-                  locals: { message: @rating.errors.full_messages.to_sentence }
-                ), status: :unprocessable_entity
+                  'flash',
+                  partial: 'shared/flash_alert',
+                  locals:  { message: @rating.errors.full_messages.to_sentence }
+                ), status: :unprocessable_content
               end
               format.json { render json: @rating.errors, status: :bad_request }
             end
@@ -53,8 +53,8 @@ module Api
             format.turbo_stream do
               render turbo_stream: turbo_stream.update(
                 rating_badge_id(@doc_id),
-                partial: "api/v1/queries/ratings/rating_badge",
-                locals: { rating: "" }
+                partial: 'api/v1/queries/ratings/rating_badge',
+                locals:  { rating: '' }
               ), status: :ok
             end
             format.json { head :no_content }
@@ -72,12 +72,12 @@ module Api
         end
 
         def set_ratings_response_format
-          request.format = :turbo_stream if request.headers["Accept"]&.include?("turbo-stream")
-          request.format = :json if request.format != :turbo_stream
+          request.format = :turbo_stream if request.headers['Accept']&.include?('turbo-stream')
+          request.format = :json if :turbo_stream != request.format
         end
 
         # Sanitize doc_id for use in HTML id attribute (no spaces, valid chars).
-        def rating_badge_id(doc_id)
+        def rating_badge_id doc_id
           "rating-badge-#{doc_id.to_s.gsub(/\s/, '_')}"
         end
       end

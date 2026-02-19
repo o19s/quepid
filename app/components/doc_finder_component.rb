@@ -15,7 +15,7 @@ class DocFinderComponent < ApplicationComponent
   # @param query_id [Integer] Selected query id
   # @param query_text [String] Selected query text (for display)
   # @param scorer_scale [Array<Integer>] Rating scale from case scorer (e.g. [0,1,2,3])
-  def initialize(case_id:, try_number:, query_id:, query_text: "", scorer_scale: [ 0, 1, 2, 3 ])
+  def initialize case_id:, try_number:, query_id:, query_text: '', scorer_scale: [ 0, 1, 2, 3 ]
     @case_id       = case_id
     @try_number    = try_number
     @query_id      = query_id

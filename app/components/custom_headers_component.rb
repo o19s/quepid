@@ -9,21 +9,23 @@
 class CustomHeadersComponent < ApplicationComponent
   # @param search_endpoint_id [Integer] Search endpoint id (for API)
   # @param custom_headers [Hash, String, nil] Current custom headers (JSON object or string)
-  def initialize(search_endpoint_id:, custom_headers: nil)
+  def initialize search_endpoint_id:, custom_headers: nil
     @search_endpoint_id = search_endpoint_id
     @custom_headers = custom_headers
   end
 
   def custom_headers_initial
-    return "" if @custom_headers.blank?
+    return '' if @custom_headers.blank?
     return @custom_headers if @custom_headers.is_a?(String)
+
     @custom_headers.to_json
   rescue StandardError
-    "{}"
+    '{}'
   end
 
   def custom_headers_pretty
-    return "{}" if custom_headers_initial.blank?
+    return '{}' if custom_headers_initial.blank?
+
     parsed = JSON.parse(custom_headers_initial)
     parsed.is_a?(Hash) ? JSON.pretty_generate(parsed) : custom_headers_initial
   rescue JSON::ParserError

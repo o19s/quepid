@@ -202,13 +202,13 @@ class ScorersController < ApplicationController
                end
       { id: "doc#{i}", rating: rating }
     end
-    best_docs = docs.select { |d| d[:rating] > 0 }.sort_by { |d| -d[:rating] }
+    best_docs = docs.select { |d| d[:rating].positive? }.sort_by { |d| -d[:rating] }
 
     javascript_scorer = JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
     score = javascript_scorer.score(docs, best_docs, code)
     render json: { score: score }
   rescue JavascriptScorer::ScoreError => e
-    render json: { error: e.message }, status: :unprocessable_entity
+    render json: { error: e.message }, status: :unprocessable_content
   end
 
   private

@@ -10,7 +10,7 @@ class QueryScoreService
   # @param query [Query] The query to score
   # @param scorer [Scorer] The scorer with JS code and scale
   # @return [Float, nil] The computed score, or nil if scoring fails
-  def self.score(query, scorer)
+  def self.score query, scorer
     return nil if scorer.blank? || scorer.code.blank?
 
     # Build the docs array: we don't have snapshot docs, so we build a minimal
@@ -31,7 +31,7 @@ class QueryScoreService
     # best_docs: all rated docs, sorted by rating descending
     best_docs = docs.sort_by { |d| -(d[:rating] || 0) }
 
-    javascript_scorer = JavascriptScorer.new(Rails.root.join("lib/scorer_logic.js"))
+    javascript_scorer = JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
     score = javascript_scorer.score(docs, best_docs, scorer.code.dup)
 
     score = 0 if score.is_a?(Float) && score.nan?

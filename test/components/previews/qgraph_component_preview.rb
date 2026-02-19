@@ -14,8 +14,8 @@ class QgraphComponentPreview < ViewComponent::Preview
       { score: (rand * 10).round(2), updated_at: (Time.current - (6 - i).days).iso8601 }
     end
     annotations = [
-      { message: "Tuned boost", updated_at: (Time.current - 4.days).iso8601 },
-      { message: "Changed synonym list", updated_at: (Time.current - 2.days).iso8601 }
+      { message: 'Tuned boost', updated_at: 4.days.ago.iso8601 },
+      { message: 'Changed synonym list', updated_at: 2.days.ago.iso8601 }
     ]
     render(QgraphComponent.new(scores: scores, annotations: annotations, max_score: 10))
   end

@@ -12,7 +12,7 @@ class QueryExplainComponent < ApplicationComponent
   # @param parsing_json [String, nil] JSON string of parsed query details; nil if not available
   # @param params_message [String, nil] Message when Params tab has no data (e.g. "Query parameters are not returned by the current Search Engine.")
   # @param rendered_template_json [String, nil] JSON string of rendered query template; nil if not a templated query
-  def initialize(query_id:, params_json: nil, parsing_json: nil, params_message: nil, rendered_template_json: nil)
+  def initialize query_id:, params_json: nil, parsing_json: nil, params_message: nil, rendered_template_json: nil
     @query_id             = query_id
     @params_json          = params_json
     @parsing_json         = parsing_json
@@ -25,18 +25,18 @@ class QueryExplainComponent < ApplicationComponent
   end
 
   def params_message
-    @params_message.presence || "Query parameters are not returned by the current Search Engine."
+    @params_message.presence || 'Query parameters are not returned by the current Search Engine.'
   end
 
-  def has_params?
+  def params?
     @params_json.present?
   end
 
-  def has_parsing?
+  def parsing?
     @parsing_json.present?
   end
 
-  def has_rendered_template?
+  def rendered_template?
     @rendered_template_json.present?
   end
 
@@ -55,11 +55,12 @@ class QueryExplainComponent < ApplicationComponent
   private
 
   def sanitized_query_id
-    @query_id.to_s.gsub(/[^a-zA-Z0-9_-]/, "-")
+    @query_id.to_s.gsub(/[^a-zA-Z0-9_-]/, '-')
   end
 
-  def format_json(str)
-    return "" if str.blank?
+  def format_json str
+    return '' if str.blank?
+
     parsed = JSON.parse(str)
     JSON.pretty_generate(parsed)
   rescue JSON::ParserError

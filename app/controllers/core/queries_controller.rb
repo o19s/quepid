@@ -21,6 +21,7 @@ module Core
     # POST /case/:id/queries
     # Creates a query and returns Turbo Stream to append the new row to the query list.
     # Falls back to redirect when Turbo Stream not requested.
+    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def create
       q_params = query_params
       q_params[:query_text] = q_params[:query_text].to_s.strip if q_params[:query_text]
@@ -36,12 +37,12 @@ module Core
           respond_to do |format|
             format.turbo_stream do
               render turbo_stream: turbo_stream.append(
-                "flash",
-                partial: "shared/flash_alert",
-                locals: { message: error_message }
-              ), status: :unprocessable_entity
+                'flash',
+                partial: 'shared/flash_alert',
+                locals:  { message: error_message }
+              ), status: :unprocessable_content
             end
-            format.json { render json: { error: error_message }, status: :unprocessable_entity }
+            format.json { render json: { error: error_message }, status: :unprocessable_content }
             format.html { redirect_to case_core_path(@case, @try), alert: error_message }
           end
           return
@@ -55,8 +56,8 @@ module Core
       respond_to do |format|
         format.turbo_stream do
           if created
-            streams = [turbo_stream.append("query_list_items", partial: "core/queries/query_row", locals: query_row_locals)]
-            streams.unshift(turbo_stream.remove("query_list_empty_placeholder")) if @case.queries.count == 1
+            streams = [ turbo_stream.append('query_list_items', partial: 'core/queries/query_row', locals: query_row_locals) ]
+            streams.unshift(turbo_stream.remove('query_list_empty_placeholder')) if @case.queries.one?
             render turbo_stream: streams, status: :created
           else
             render turbo_stream: [], status: :ok
@@ -65,6 +66,7 @@ module Core
         format.html { redirect_to case_core_path(@case, @try) }
       end
     end
+    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
     # DELETE /case/:id/queries/:query_id
     # Destroys a query and returns Turbo Stream to remove the row from the query list.
@@ -80,22 +82,20 @@ module Core
 
       respond_to do |format|
         format.turbo_stream do
-          streams = [turbo_stream.remove("query_row_#{deleted_id}")]
+          streams = [ turbo_stream.remove("query_row_#{deleted_id}") ]
           if params[:selected_query_id].to_i == deleted_id
             streams << turbo_stream.replace(
-              "results_pane",
+              'results_pane',
               render_to_string(
                 ResultsPaneComponent.new(
-                  case_id: @case.id,
-                  try_number: @try&.try_number,
+                  case_id:        @case.id,
+                  try_number:     @try&.try_number,
                   selected_query: nil
                 )
               )
             )
           end
-          if @case.queries.reload.count.zero?
-            streams << turbo_stream.append("query_list_items", partial: "core/queries/empty_placeholder")
-          end
+          streams << turbo_stream.append('query_list_items', partial: 'core/queries/empty_placeholder') if @case.queries.reload.none?
           render turbo_stream: streams, status: :ok
         end
         format.html { redirect_to case_core_path(@case, @try) }
@@ -122,11 +122,11 @@ module Core
     end
 
     def check_query
-      render status: :not_found, plain: "Query not found" unless @query
+      render status: :not_found, plain: 'Query not found' unless @query
     end
 
     def query_params
-      params.require(:query).permit(:query_text, :information_need, :notes, options: {})
+      params.expect(query: [ :query_text, :information_need, :notes, { options: {} } ])
     end
 
     def query_row_locals
@@ -135,15 +135,15 @@ module Core
       other_cases = current_user.cases_involved_with.where.not(id: @case.id).pluck(:id, :case_name).map { |id, name| { id: id, case_name: name } }
 
       {
-        query: @query,
-        case_id: @case.id,
-        try_number: @try&.try_number,
-        selected: false,
-        sortable: Rails.application.config.query_list_sortable,
+        query:            @query,
+        case_id:          @case.id,
+        try_number:       @try&.try_number,
+        selected:         false,
+        sortable:         Rails.application.config.query_list_sortable,
         scorer_scale_max: @case.scorer&.scale&.last || 100,
-        query_score: query_scores[@query.id.to_s] || query_scores[@query.id] || "?",
-        options_json: @query.options,
-        other_cases: other_cases
+        query_score:      query_scores[@query.id.to_s] || query_scores[@query.id] || '?',
+        options_json:     @query.options,
+        other_cases:      other_cases,
       }
     end
   end

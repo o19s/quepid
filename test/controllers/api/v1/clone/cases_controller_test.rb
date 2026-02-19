@@ -132,8 +132,8 @@ module Api
               post :create, params: data
 
               assert_response :bad_request
-              json = JSON.parse(response.body)
-              assert_equal "Must select a try or include full history", json["error"]
+              json = response.parsed_body
+              assert_equal 'Must select a try or include full history', json['error']
             end
           end
         end

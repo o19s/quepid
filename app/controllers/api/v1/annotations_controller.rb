@@ -38,7 +38,7 @@ module Api
                 html = render_to_string(
                   AnnotationComponent.new(annotation: @annotation, case_id: @case.id)
                 )
-                render turbo_stream: turbo_stream.prepend("annotations_list", html), status: :created
+                render turbo_stream: turbo_stream.prepend('annotations_list', html), status: :created
               end
               format.json { respond_with @annotation }
             end
@@ -88,8 +88,8 @@ module Api
       end
 
       def set_create_response_format
-        request.format = :turbo_stream if request.headers["Accept"]&.include?("turbo-stream")
-        request.format = :json if request.format != :turbo_stream
+        request.format = :turbo_stream if request.headers['Accept']&.include?('turbo-stream')
+        request.format = :json if :turbo_stream != request.format
       end
     end
   end

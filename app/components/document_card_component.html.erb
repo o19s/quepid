@@ -28,7 +28,7 @@
         <img src="<%= image_url %>" alt="" class="rounded" style="width: 60px; height: 60px; object-fit: cover; flex-shrink: 0;" loading="lazy" onerror="this.style.display='none'">
       <% end %>
       <div class="flex-grow-1">
-        <% if has_highlights? %>
+        <% if highlights? %>
           <% highlighted_snippets.each do |snippet| %>
             <div class="small mt-1"><%= sanitize(snippet, tags: %w[em strong mark b i]) %></div>
           <% end %>
@@ -37,7 +37,7 @@
         <% end %>
       </div>
     </div>
-    <% if has_media_embeds? %>
+    <% if media_embeds? %>
       <div class="mt-1">
         <% media_embeds.each do |embed| %>
           <% case embed[:type] %>
@@ -55,7 +55,7 @@
         <% end %>
       </div>
     <% end %>
-    <% if has_explain? %>
+    <% if explain? %>
       <div class="mt-1">
         <%= render MatchesComponent.new(
           doc_id: doc_id,

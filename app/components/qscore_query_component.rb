@@ -13,7 +13,7 @@ class QscoreQueryComponent < ApplicationComponent
   # @param background_color [String, nil] Pre-computed background color (overrides score_to_color)
   # @param query_id [Integer, nil] Query id for Stimulus live-update targeting
   # @param css_class [String] Additional CSS classes on the wrapper element
-  def initialize(score: "?", max_score: 100, background_color: nil, query_id: nil, css_class: "results-score")
+  def initialize score: '?', max_score: 100, background_color: nil, query_id: nil, css_class: 'results-score'
     @score            = score
     @max_score        = max_score
     @background_color = background_color || score_to_color(score, max_score)

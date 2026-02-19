@@ -230,7 +230,7 @@ module Api
           assert_no_difference 'acase.snapshots.count' do
             post :create, params: data.merge(case_id: acase.id)
             assert_response :bad_request
-            assert_equal response.parsed_body['error'], 'Snapshot name is required'
+            assert_equal 'Snapshot name is required', response.parsed_body['error']
           end
         end
 
@@ -263,15 +263,15 @@ module Api
           assert_no_difference 'acase.snapshots.count' do
             post :create, params: data.merge(case_id: acase.id)
             assert_response :bad_request
-            assert_equal response.parsed_body['error'], 'Snapshot name is required'
+            assert_equal 'Snapshot name is required', response.parsed_body['error']
           end
         end
 
         describe 'analytics' do
-          let(:acase)         { cases(:queries_case) }
+          let(:acase) { cases(:queries_case) }
           let(:first_query)  { queries(:first_query) }
           let(:second_query) { queries(:second_query) }
-          let(:data)          do
+          let(:data) do
             {
               snapshot: {
                 name:    'New Snapshot',

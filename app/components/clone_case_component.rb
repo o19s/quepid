@@ -10,7 +10,7 @@ class CloneCaseComponent < ApplicationComponent
   # @param case_name [String] Display name in modal title
   # @param tries [Array<Hash>] List of { try_number:, name: } for the try dropdown
   # @param last_try_number [Integer] Default selected try when "only a specific try" is chosen
-  def initialize(case_id:, case_name:, tries:, last_try_number: nil)
+  def initialize case_id:, case_name:, tries:, last_try_number: nil
     @case_id          = case_id
     @case_name        = case_name
     @tries            = tries

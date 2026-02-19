@@ -9,7 +9,7 @@ class QgraphComponent < ApplicationComponent
   # @param scores [Array<Hash>] Score history: [{ score: Float, updated_at: String }, ...]
   # @param annotations [Array<Hash>] Annotations: [{ message: String, updated_at: String }, ...]
   # @param max_score [Numeric] Maximum possible score (y-axis ceiling)
-  def initialize(scores:, annotations: [], max_score: 100)
+  def initialize scores:, annotations: [], max_score: 100
     @scores      = scores || []
     @annotations = annotations || []
     @max_score   = max_score

@@ -11,7 +11,7 @@ class ExportCaseComponent < ApplicationComponent
   # @param case_name [String] Display name in modal title and download filenames
   # @param icon_only [Boolean] If true, render only the icon link; otherwise icon + "Export" text
   # @param supports_detailed_export [Boolean] If true, "Detailed" export option is enabled (case view only)
-  def initialize(case_id:, case_name:, icon_only: true, supports_detailed_export: true)
+  def initialize case_id:, case_name:, icon_only: true, supports_detailed_export: true
     @case_id                    = case_id
     @case_name                  = case_name
     @icon_only                  = icon_only

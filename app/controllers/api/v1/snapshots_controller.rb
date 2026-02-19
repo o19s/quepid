@@ -38,8 +38,9 @@ module Api
         respond_with @snapshot
       end
 
+      # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/PerceivedComplexity
       def create
-        return render json: { error: 'Missing snapshot params' }, status: :bad_request unless params[:snapshot].present?
+        return render json: { error: 'Missing snapshot params' }, status: :bad_request if params[:snapshot].blank?
         return render json: { error: 'Snapshot name is required' }, status: :bad_request if params.dig(:snapshot, :name).blank?
 
         @snapshot = @case.snapshots.build(name: params[:snapshot][:name])
@@ -58,8 +59,8 @@ module Api
             payload = {
               snapshot: {
                 docs:    params.dig(:snapshot, :docs)&.to_unsafe_h || {},
-                queries: params.dig(:snapshot, :queries)&.to_unsafe_h || {}
-              }
+                queries: params.dig(:snapshot, :queries)&.to_unsafe_h || {},
+              },
             }
             serialized_data = payload.to_json
             compressed_data = Zlib::Deflate.deflate(serialized_data)
@@ -80,6 +81,7 @@ module Api
           render json: @snapshot.errors, status: :bad_request
         end
       end
+      # rubocop:enable Metrics/AbcSize, Metrics/MethodLength, Metrics/PerceivedComplexity
 
       def destroy
         @snapshot.destroy
@@ -113,12 +115,12 @@ module Api
 
       # For server-side snapshot: engines that support doc lookup by ID (solr, es, os) can
       # optionally skip recording document fields. Others (e.g. searchapi) must record.
-      def fetch_record_document_fields(atry)
+      def fetch_record_document_fields atry
         raw = params.dig(:snapshot, :record_document_fields)
         return true if atry.nil? || atry.search_endpoint.nil?
 
         engine = atry.search_endpoint.search_engine.to_s.downcase
-        must_record = !%w[solr es os].include?(engine)
+        must_record = %w[solr es os].exclude?(engine)
         return true if must_record
 
         ActiveModel::Type::Boolean.new.cast(raw)

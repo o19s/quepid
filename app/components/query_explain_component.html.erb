@@ -27,7 +27,7 @@
 
           <div class="tab-content border border-top-0 rounded-bottom p-3" id="<%= modal_id %>-tabContent">
             <div class="tab-pane fade show active" id="<%= modal_id %>-params-pane" role="tabpanel" data-query-explain-target="paramsPane">
-              <% if has_params? %>
+              <% if params? %>
                 <p class="mb-2">These are the query parameters processed by the search engine.</p>
                 <pre class="bg-light p-2 rounded mb-0 overflow-auto" style="max-height: 20rem;" data-query-explain-target="paramsPre"><%= params_display %></pre>
               <% else %>
@@ -39,14 +39,14 @@
             </div>
             <div class="tab-pane fade" id="<%= modal_id %>-parsing-pane" role="tabpanel" data-query-explain-target="parsingPane">
               <p class="mb-2">This is how the search engine parsed the query.</p>
-              <% if has_parsing? %>
+              <% if parsing? %>
                 <pre class="bg-light p-2 rounded mb-0 overflow-auto" style="max-height: 20rem;" data-query-explain-target="parsingPre"><%= parsing_display %></pre>
               <% else %>
                 <p class="text-muted mb-0">Run a search to see parsing details.</p>
               <% end %>
             </div>
             <div class="tab-pane fade" id="<%= modal_id %>-template-pane" role="tabpanel" data-query-explain-target="templatePane">
-              <% if has_rendered_template? %>
+              <% if rendered_template? %>
                 <p class="mb-2">This is what the populated query template looks like.</p>
                 <pre class="bg-light p-2 rounded mb-0 overflow-auto" style="max-height: 20rem;" data-query-explain-target="templatePre"><%= rendered_template_display %></pre>
               <% else %>
@@ -56,17 +56,17 @@
           </div>
         </div>
         <div class="modal-footer">
-          <% if has_params? %>
+          <% if params? %>
             <button type="button" class="btn btn-outline-secondary me-auto" data-action="click->query-explain#copyParams" data-query-explain-target="copyParamsBtn">
               <i class="bi bi-clipboard" aria-hidden="true"></i> Copy Params
             </button>
           <% end %>
-          <% if has_parsing? %>
+          <% if parsing? %>
             <button type="button" class="btn btn-outline-secondary me-auto" data-action="click->query-explain#copyParsing" data-query-explain-target="copyParsingBtn">
               <i class="bi bi-clipboard" aria-hidden="true"></i> Copy Parsing
             </button>
           <% end %>
-          <% if has_rendered_template? %>
+          <% if rendered_template? %>
             <button type="button" class="btn btn-outline-secondary me-auto" data-action="click->query-explain#copyTemplate" data-query-explain-target="copyTemplateBtn">
               <i class="bi bi-clipboard" aria-hidden="true"></i> Copy Template
             </button>

@@ -13,7 +13,7 @@ class DiffComponent < ApplicationComponent
   MAX_SNAPSHOTS = 3
 
   # @param case_id [Integer] Case id (for snapshots API)
-  def initialize(case_id:)
+  def initialize case_id:
     @case_id = case_id
   end
 end

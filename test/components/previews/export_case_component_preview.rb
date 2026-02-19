@@ -5,9 +5,9 @@ class ExportCaseComponentPreview < ViewComponent::Preview
   def default
     render(
       ExportCaseComponent.new(
-        case_id: 1,
-        case_name: "Sample Case",
-        icon_only: true,
+        case_id:                  1,
+        case_name:                'Sample Case',
+        icon_only:                true,
         supports_detailed_export: true
       )
     )
@@ -16,9 +16,9 @@ class ExportCaseComponentPreview < ViewComponent::Preview
   def with_text_link
     render(
       ExportCaseComponent.new(
-        case_id: 1,
-        case_name: "Another Case",
-        icon_only: false,
+        case_id:                  1,
+        case_name:                'Another Case',
+        icon_only:                false,
         supports_detailed_export: true
       )
     )

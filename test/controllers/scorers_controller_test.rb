@@ -252,9 +252,9 @@ class ScorersControllerTest < ActionController::TestCase
         post :test, params: { id: scorer.id }, as: :json
 
         assert_response :success
-        data = JSON.parse(response.body)
+        data = response.parsed_body
         assert data.key?('score'), "Response should include score: #{response.body}"
-        assert data['score'].is_a?(Numeric), "Score should be numeric"
+        assert_kind_of Numeric, data['score'], 'Score should be numeric'
       end
 
       test 'uses params code when provided' do
@@ -264,7 +264,7 @@ class ScorersControllerTest < ActionController::TestCase
         post :test, params: { id: scorer.id, code: 'setScore(42);' }, as: :json
 
         assert_response :success
-        data = JSON.parse(response.body)
+        data = response.parsed_body
         assert_equal 42, data['score']
       end
 
@@ -275,8 +275,8 @@ class ScorersControllerTest < ActionController::TestCase
         post :test, params: { id: scorer.id, code: 'throw new Error("oops");' }, as: :json
 
         assert_response :unprocessable_entity
-        data = JSON.parse(response.body)
-        assert data['error'].present?
+        data = response.parsed_body
+        assert_predicate data['error'], :present?
       end
 
       test 'cannot access communal scorer for test (record not found)' do
@@ -297,8 +297,8 @@ class ScorersControllerTest < ActionController::TestCase
         post :test, params: { id: scorer.id }, as: :json
 
         assert_response :success
-        data = JSON.parse(response.body)
-        assert_equal 0.5, data['score']
+        data = response.parsed_body
+        assert_in_delta(0.5, data['score'])
       end
     end
   end

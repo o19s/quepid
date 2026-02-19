@@ -200,9 +200,7 @@ class Try < ApplicationRecord
     # Try to find JSON objects in the field spec (they can be mixed with simple fields)
     field_spec.scan(/\{[^}]+\}/).each do |json_str|
       parsed = JSON.parse(json_str)
-      if %w[image thumb thumbnail media].include?(parsed["type"]) && parsed["prefix"].present?
-        return parsed["prefix"]
-      end
+      return parsed['prefix'] if %w[image thumb thumbnail media].include?(parsed['type']) && parsed['prefix'].present?
     rescue JSON::ParserError
       next
     end

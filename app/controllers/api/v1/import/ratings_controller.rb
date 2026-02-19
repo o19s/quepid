@@ -9,9 +9,10 @@ module Api
 
         # rubocop:disable Metrics/MethodLength
         # rubocop:disable Metrics/AbcSize
+        # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
         def create
           file_format = params[:file_format] || 'hash'
-          file_format = 'hash' if file_format == 'csv'  # Client sends "csv" for pasted CSV (parsed to ratings)
+          file_format = 'hash' if 'csv' == file_format # Client sends "csv" for pasted CSV (parsed to ratings)
 
           clear_queries = deserialize_bool_param(params[:clear_queries])
 
@@ -23,10 +24,10 @@ module Api
           when 'rre'
             # normalize the RRE ratings format to the default hash format.
             ratings = []
-            rre_json = begin
-              JSON.parse(params[:rre_json] || '{}')
+            begin
+              rre_json = JSON.parse(params[:rre_json] || '{}')
             rescue JSON::ParserError
-              return render json: { message: "Invalid RRE JSON format" }, status: :bad_request
+              return render json: { message: 'Invalid RRE JSON format' }, status: :bad_request
             end
             rre_json['queries']&.each do |rre_query|
               query_text = rre_query['placeholders']&.dig('$query')
@@ -81,8 +82,9 @@ module Api
             render json: { message: e.message }, status: :bad_request
           end
         end
+        # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
-        def rating_from_ltr_line(ltr_line)
+        def rating_from_ltr_line ltr_line
           # Pattern: 3 qid:1 # 1370 star trek
           # Returns nil for malformed lines (no space, no #, or missing doc_id/query separator).
           ltr_line = ltr_line.strip
