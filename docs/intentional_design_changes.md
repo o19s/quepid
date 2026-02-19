@@ -91,7 +91,160 @@ These Angular in-workspace modals are now handled by separate Rails pages. This 
 
 ---
 
-## Adding to This Document
+## 9. Two-Tier Scoring Instead of Client-Side Scoring
+
+**Angular:** Scoring happened entirely in the browser. `scorerSvc` ran the scorer JavaScript against local results, computed per-query scores, and aggregated case-level scores — all in the same synchronous pipeline.
+
+**Now:** Scoring uses a two-tier approach:
+1. **Immediate per-query score:** After a rating change, `QueryScoreService` computes the score for just that query using existing ratings (no search engine call). The result updates the UI instantly.
+2. **Background full-case evaluation:** `RunCaseEvaluationJob` re-scores all queries and computes the case-level aggregate, broadcasting the result via Turbo Stream.
+
+**Why:** Client-side scoring required the full scorer JavaScript to run in the browser with access to all search results. With server-side search, results aren't held in client memory. The two-tier approach gives users immediate feedback on the query they just rated, while the full case score updates asynchronously. This is actually faster perceived UX than Angular — the query score badge updates before you could blink.
+
+---
+
+## 10. API Responses Support Turbo Stream, Not Just JSON
+
+**Angular:** All API endpoints returned JSON. The Angular app parsed JSON and updated the DOM via two-way data binding.
+
+**Now:** Key workspace API endpoints support both JSON and Turbo Stream responses:
+- `RatingsController#update/destroy` — returns a `turbo_stream.update` that replaces the rating badge in place
+- `AnnotationsController#create` — returns a `turbo_stream.prepend` that inserts the new annotation into the list
+- Format is negotiated via the `Accept` header (Turbo sends `text/vnd.turbo-stream.html` automatically)
+
+**Why:** Turbo Stream responses let the server send surgical DOM updates — "replace this one element" — without any client-side JavaScript to parse JSON and manipulate the DOM. The JSON format is preserved for API consumers and backward compatibility.
+
+---
+
+## 11. Authorization Scoped Through User Associations (IDOR Hardening)
+
+**Angular:** Several controllers used global `Case.find` or `Team.find` to look up records, meaning any authenticated user could potentially access any case or team by ID.
+
+**Now:** Controllers scope lookups through user associations:
+- `CasesController#set_case` uses `current_user.cases_involved_with.find_by(id:)` instead of `Case.find_by(id:)`
+- `TeamsController#set_team` uses `current_user.teams.find_by(id:)` with a `check_team` guard
+- `TeamsController#share_case` scopes both team and case through `current_user`
+- `QueryDocPairsController` scopes through `@book.query_doc_pairs`
+
+**Why:** Defense in depth. Even though the Angular UI only showed a user's own cases and teams, the API endpoints were directly accessible. Now the server enforces that you can only access records you're associated with, regardless of how the request arrives.
+
+**Key commit:** `010f3043`
+
+---
+
+## 12. Rating Deletion Is Nil-Safe
+
+**Angular:** `RatingsController#destroy` called `@rating.delete` directly, which would raise if the rating didn't exist (e.g., double-click on "clear rating").
+
+**Now:** Uses `@rating&.delete` with a nil guard. If the rating is already gone, the request succeeds silently instead of returning a 500 error.
+
+**Why:** With Turbo Stream responses and real-time UI updates, race conditions are more likely (e.g., two browser tabs, or a Turbo Stream broadcast already cleared the rating). Graceful handling is better than crashing.
+
+---
+
+# New Features (Not in Angular)
+
+These features have no Angular equivalent. They are new capabilities added during the migration. Documenting them here so they aren't mistaken for unfinished migration artifacts.
+
+---
+
+## 13. Case Export (CSV)
+
+`ExportCaseComponent` → `Core::ExportsController` → `ExportCaseJob` → `ExportCaseService`
+
+Users can export case data as CSV in three formats:
+- **General** — summary scores per query
+- **Detailed** — individual ratings per query/doc pair
+- **Snapshot** — snapshot document positions
+
+The export runs asynchronously via `ExportCaseJob` and broadcasts progress via Turbo Stream. Angular had no export feature — case data was only accessible through the API.
+
+---
+
+## 14. Case Import (CSV/RRE/LTR)
+
+`ImportRatingsComponent` → `Core::ImportsController` → `ImportCaseRatingsJob`
+
+Users can import relevance judgements from external formats:
+- CSV (hash format)
+- RRE JSON
+- LTR text format
+
+Import status is tracked via the `CaseImport` model. Angular had no import capability.
+
+---
+
+## 15. Search Endpoint Field Introspection
+
+`Api::V1::SearchEndpoints::FieldsController#index`
+
+Returns available fields for a search endpoint by introspecting the search engine directly:
+- Solr: schema API
+- Elasticsearch/OpenSearch: mapping API
+- Algolia: index settings
+- Vectara: corpus metadata
+
+Used by the new case wizard and workspace field autocomplete. Angular required users to manually type field names.
+
+---
+
+## 16. Search Endpoint Validation
+
+`Api::V1::SearchEndpoints::ValidationsController`
+
+Tests whether a search endpoint is reachable and properly configured before saving. Angular would only discover connection problems when you tried to search.
+
+---
+
+## 17. Snapshot Creation from Live Search
+
+`TakeSnapshotComponent` → `CreateSnapshotFromSearchJob`
+
+Users can take a named snapshot at any time from the workspace. The job fetches current search results for all queries and populates the snapshot asynchronously. Angular only created snapshots as a side effect of running a full case evaluation.
+
+---
+
+## 18. Server-Side Query Execution API
+
+`Api::V1::Tries::Queries::SearchController#show`
+
+Central endpoint for executing a query and returning results with ratings merged in. Supports:
+- Format negotiation: HTML (renders `DocumentCardComponent` partials) or JSON
+- Query text override (`q` param) for DocFinder
+- Pagination (`rows`, `start`)
+- Rated-only filter (`show_only_rated`)
+- Snapshot diff (`diff_snapshot_ids[]`)
+
+This is the server-side replacement for `splainer-search`. Angular executed searches entirely in the browser.
+
+---
+
+## 19. Lightweight Per-Query Scoring API
+
+`Api::V1::Queries::ScoresController#create` → `QueryScoreService`
+
+Scores a single query using its existing ratings without re-fetching from the search engine. Returns `{ score, max_score }` immediately. This powers the instant score badge update after rating a document — Angular computed scores client-side in the same thread.
+
+---
+
+## 20. Query Notes Endpoint
+
+`Core::Queries::NotesController`
+
+Dedicated endpoint for updating a query's information need / notes field. Angular handled this inline through the query update API.
+
+---
+
+## 21. Vectara and Algolia Document Extraction
+
+`FetchService#extract_docs_from_response_body_for_vectara`
+`FetchService#extract_docs_from_response_body_for_algolia`
+
+Server-side document extraction for Vectara (v1 responseSet format) and Algolia (`hits` array with `objectID`). Used by `QuerySearchService`, `RunCaseEvaluationJob`, and `CreateSnapshotFromSearchJob`. Angular delegated this to `splainer-search` in the browser; the server-side jobs had TODOs for these engines.
+
+---
+
+# Adding to This Document
 
 When you make a deliberate choice to differ from the Angular behavior, add an entry here with:
 1. What Angular did
