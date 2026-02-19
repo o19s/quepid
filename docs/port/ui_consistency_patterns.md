@@ -35,7 +35,7 @@ Migrated pages use **Bootstrap 5**. Use Bootstrap 5 attributes and classes consi
 
 ## 2. Modal Patterns
 
-Two established patterns: **confirm_delete** (generic confirmation) and **share_case** (content modal with form).
+Four established patterns: **confirm_delete** (generic confirmation), **share_case** (shared content modal), **per-component** (row-specific modals), and **expand_content** (full-screen content display).
 
 ### Pattern A: confirm_delete (generic confirmation)
 
@@ -126,9 +126,49 @@ For modals that are unique per row/item (e.g. delete query, query options). Wrap
 </div>
 ```
 
-**Controller:** `open()` uses `window.bootstrap.Modal.getOrCreateInstance(el)` then `show()`.
+**Controller:** `open()` uses `window.bootstrap.Modal.getOrCreateInstance(el)` then `show()`. Prefer `getOrCreateInstance` over `new Modal()` to avoid creating duplicate instances.
 
-**Examples:** `DeleteQueryComponent`, `QueryOptionsComponent`, `FrogReportComponent`, `DiffComponent`, `ImportRatingsComponent`, `JudgementsComponent`.
+```javascript
+// Preferred: reuses existing instance if present
+const modal = window.bootstrap.Modal.getOrCreateInstance(this.modalTarget)
+modal.show()
+
+// Alternative (if instance management is handled elsewhere):
+const modal = new window.bootstrap.Modal(this.modalTarget)
+modal.show()
+```
+
+**Modal instantiation:** Always check for Bootstrap availability before instantiating:
+
+```javascript
+if (window.bootstrap && window.bootstrap.Modal) {
+  const modal = window.bootstrap.Modal.getOrCreateInstance(el)
+  modal.show()
+}
+```
+
+**Examples:** `DeleteQueryComponent`, `QueryOptionsComponent`, `FrogReportComponent`, `DiffComponent`, `ImportRatingsComponent`, `JudgementsComponent`, `MatchesComponent` (debug modal).
+
+---
+
+### Pattern D: Expand content (full-screen modal)
+
+For displaying large content (JSON, explain text, etc.) in a full-screen modal. Uses `ExpandContentComponent` which wraps the trigger and modal together.
+
+**Usage:**
+
+```erb
+<%= render ExpandContentComponent.new(
+      id: "explain-modal-1",
+      title: "Relevancy Score: 1.5",
+      body: explain_text_display,
+      trigger_label: "Expand"
+    ) %>
+```
+
+**Structure:** Component renders a button trigger and a `modal-fullscreen` modal. The `expand_content` controller handles opening via `window.bootstrap.Modal.getOrCreateInstance`.
+
+**Examples:** `MatchesComponent` (explain text expansion), any component needing full-screen content display.
 
 ---
 
@@ -139,6 +179,7 @@ For modals that are unique per row/item (e.g. delete query, query options). Wrap
 | Simple confirm (archive, delete) | confirm_delete |
 | Shared modal, many triggers     | share_case     |
 | Per-row modal (query options)    | Per-component  |
+| Full-screen content display      | ExpandContentComponent |
 
 ---
 
@@ -181,6 +222,8 @@ window.location.href = newCaseUrl
   turbo_stream.append "flash", partial: "shared/flash_alert", locals: { message: "Query deleted.", type: :success }
   ```
 
+  The `shared/_flash_alert.html.erb` partial renders a Bootstrap alert with proper classes and dismiss button. Use `type: :success`, `:error`, `:notice`, `:info`, or `:alert`.
+
 - **`turbo_events_controller.js`:** On `turbo:submit-end`, if the response is JSON and indicates failure, it sets `window.flash.error`. It skips flash when the response is HTML (form re-render) so the frame already shows validation errors.
 
 ### Flash types
@@ -190,6 +233,9 @@ window.location.href = newCaseUrl
 | success | alert-success    |
 | error   | alert-danger     |
 | notice  | alert-info       |
+| info    | alert-info       |
 | alert   | alert-warning    |
+
+**Note:** Both `notice` and `info` map to `alert-info`. Use `notice` for Rails flash (conventional), `info` for client-side when you want explicit info styling.
 
 Defined in `application_helper#bootstrap_class_for` and `utils/flash.js`.

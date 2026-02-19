@@ -10,12 +10,13 @@ import { getQuepidRootUrl, buildApiUrl } from "utils/quepid_root"
 // Listens for "query-score:refresh" events to update individual query scores via
 // the lightweight scoring endpoint (no full re-evaluation needed).
 export default class extends Controller {
-  static values = { sortable: Boolean, pageSize: { type: Number, default: 15 } }
+  static values = { sortable: Boolean, pageSize: { type: Number, default: 15 }, caseId: Number }
 
   static targets = ["list", "filterInput", "ratedToggle", "sortSelect", "count", "pagination"]
 
   connect() {
     this._currentPage = 1
+    this._scoreRefreshSeqByQuery = new Map()
 
     if (this.sortableValue && this.hasListTarget) {
       this._initSortable()
@@ -55,6 +56,11 @@ export default class extends Controller {
   async _handleScoreRefresh(event) {
     const { queryId, caseId } = event.detail || {}
     if (!queryId || !caseId) return
+    if (this.hasCaseIdValue && Number(caseId) !== this.caseIdValue) return
+
+    const queryKey = String(queryId)
+    const requestSeq = (this._scoreRefreshSeqByQuery.get(queryKey) || 0) + 1
+    this._scoreRefreshSeqByQuery.set(queryKey, requestSeq)
 
     try {
       const root = getQuepidRootUrl()
@@ -64,6 +70,7 @@ export default class extends Controller {
         headers: { "Content-Type": "application/json", Accept: "application/json" }
       })
       if (!res.ok) return
+      if (this._scoreRefreshSeqByQuery.get(queryKey) !== requestSeq) return
 
       const data = await res.json()
       if (data.score == null) return
@@ -90,7 +97,7 @@ export default class extends Controller {
 
       // Dispatch qscore:update for color recalculation
       document.dispatchEvent(new CustomEvent("qscore:update", {
-        detail: { queryId, caseId: this.caseId, score, maxScore }
+        detail: { queryId, caseId: this.caseIdValue, score, maxScore }
       }))
     }
   }
@@ -385,7 +392,7 @@ export default class extends Controller {
     const { item, oldIndex, newIndex } = evt
     if (oldIndex === newIndex) return
 
-    const caseId = this.caseId
+    const caseId = this.caseIdValue
     if (!caseId) return
 
     const queryId = parseInt(item.dataset.queryId, 10)
@@ -438,10 +445,5 @@ export default class extends Controller {
     } finally {
       this._sortable?.option("disabled", false)
     }
-  }
-
-  get caseId() {
-    const workspace = document.querySelector("[data-workspace-case-id-value]")
-    return workspace?.dataset?.workspaceCaseIdValue || ""
   }
 }

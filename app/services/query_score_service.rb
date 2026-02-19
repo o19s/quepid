@@ -7,6 +7,8 @@
 # @see FetchService#score_snapshot for the full (snapshot-based) scoring path
 # @see JavascriptScorer for the V8/MiniRacer execution engine
 class QueryScoreService
+  SCORER_LOGIC_PATH = Rails.root.join('lib/scorer_logic.js').freeze
+
   # @param query [Query] The query to score
   # @param scorer [Scorer] The scorer with JS code and scale
   # @return [Float, nil] The computed score, or nil if scoring fails
@@ -18,7 +20,7 @@ class QueryScoreService
     # best_docs: all rated docs, sorted by rating descending
     best_docs = docs.sort_by { |d| -(d[:rating] || 0) }
 
-    javascript_scorer = JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
+    javascript_scorer = JavascriptScorer.new(SCORER_LOGIC_PATH)
     score = javascript_scorer.score(docs, best_docs, scorer.code.dup)
 
     score = 0 if score.is_a?(Float) && score.nan?

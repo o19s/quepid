@@ -44,12 +44,24 @@ export function triggerScoreRefresh(caseId, queryId, tryNumber) {
   }
 
   if (!tryNumber) return
-  // Debounced globally via a module-level timer
-  if (triggerScoreRefresh._timer) clearTimeout(triggerScoreRefresh._timer)
-  triggerScoreRefresh._timer = setTimeout(() => {
+  // Debounce full evaluation per case/try to avoid duplicate overlapping jobs.
+  const timerKey = `${caseId}:${tryNumber}`
+  triggerScoreRefresh._timers ||= new Map()
+  triggerScoreRefresh._timerSeq ||= 0
+  const existingTimerState = triggerScoreRefresh._timers.get(timerKey)
+  if (existingTimerState) clearTimeout(existingTimerState.timerId)
+  const timerSeq = ++triggerScoreRefresh._timerSeq
+  const timer = setTimeout(() => {
     const root = getQuepidRootUrl()
     const url = `${buildApiUrl(root, "cases", caseId, "run_evaluation")}?try_number=${encodeURIComponent(tryNumber)}`
     apiFetch(url, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" } })
       .catch((err) => console.warn("Score refresh trigger failed:", err))
+      .finally(() => {
+        const currentTimerState = triggerScoreRefresh._timers.get(timerKey)
+        if (currentTimerState && currentTimerState.timerSeq === timerSeq) {
+          triggerScoreRefresh._timers.delete(timerKey)
+        }
+      })
   }, 3000)
+  triggerScoreRefresh._timers.set(timerKey, { timerId: timer, timerSeq })
 }

@@ -45,14 +45,78 @@ The following items were verified in current code and moved into this archive:
 
 1. **Gap 1: Large document-fields payload guard** - `DocumentCardComponent#fields_json` now enforces `MAX_FIELDS_JSON_BYTES = 10_000` and omits oversized payloads.
 2. **Gap 1: Detail modal ID collision** - `ResultsPaneComponent` now generates unique modal/tab IDs via `modal_dom_suffix`.
-3. **Gap 2: Delete-last-try protection** - client-side guard in `settings_panel_controller.js` (`triesCountValue <= 1`) and server-side guard in `Api::V1::TriesController#destroy`.
-4. **Gap 2: Try history truncation** - `SettingsPanelComponent` shows the first 20 tries and reveals extras via "Show all N tries".
-5. **Gap 3: Duplicate try copies curator vars** - `Api::V1::TriesController#create` copies parent `curator_vars_map` when duplicating from `parent_try_number`.
-6. **Gap 3: Server-side curator var name validation** - `CuratorVariable` now validates `name` with `/\A[A-Za-z0-9_]+\z/`.
-7. **Gap 4: Wizard step validation** - `new_case_wizard_controller.js` blocks step progression unless required endpoint URL/field spec inputs are present.
-8. **Gap 4: Engine options no longer hardcoded** - `NewCaseWizardComponent` now uses `SearchEndpoint::SEARCH_ENGINES`.
-9. **Gap 4: `_addFirstQuery` uses `apiFetch`** - wizard first-query POST now uses `apiFetch` with form-encoded body.
-10. **Gap 5: Lightweight scoring includes position data** - `QueryScoreService` builds docs from latest snapshot ordering with `position`.
+3. **Gap 1: Detailed Document View Implementation** - Document cards are server-rendered by `DocumentCardComponent` (`app/components/document_card_component.html.erb`). The `data-doc-fields` attribute is set with ERB `h(fields_json)`. The results pane fetches HTML from the query search API and injects it; the detail modal in `results_pane_controller.js` reads `data-doc-fields` from the card and builds the fields list in JS.
+4. **Gap 2: Delete-last-try protection** - client-side guard in `settings_panel_controller.js` (`triesCountValue <= 1`) and server-side guard in `Api::V1::TriesController#destroy`.
+5. **Gap 2: Try history truncation** - `SettingsPanelComponent` shows the first 20 tries and reveals extras via "Show all N tries".
+6. **Gap 2: Try History Browser + Try Management** - `settings_panel_controller.js` implements `deleteTry()`. When the deleted try is the current try, it navigates to `buildPageUrl(root, "case", caseId)` (case root, which loads the latest try) instead of reloading, avoiding a 404.
+7. **Gap 3: Duplicate try copies curator vars** - `Api::V1::TriesController#create` copies parent `curator_vars_map` when duplicating from `parent_try_number`.
+8. **Gap 3: Server-side curator var name validation** - `CuratorVariable` now validates `name` with `/\A[A-Za-z0-9_]+\z/`.
+9. **Gap 3: Curator Variables Implementation** - `Api::V1::TriesController#update` wraps `curator_variables.destroy_all` and `add_curator_vars` in `ActiveRecord::Base.transaction` when `params[:curator_vars].present?` (lines 103–107). Curator inputs are rendered in `settings_panel_controller.js` via `_renderCuratorVarInputs()`.
+10. **Gap 4: Wizard step validation** - `new_case_wizard_controller.js` blocks step progression unless required endpoint URL/field spec inputs are present.
+11. **Gap 4: Engine options no longer hardcoded** - `NewCaseWizardComponent` now uses `SearchEndpoint::SEARCH_ENGINES`.
+12. **Gap 4: `_addFirstQuery` uses `apiFetch`** - wizard first-query POST now uses `apiFetch` with form-encoded body.
+13. **Gap 4: New Case Setup Wizard Implementation** - `new_case_wizard_controller.js` uses `buildCaseQueriesUrl(root, this.caseIdValue)` for the first-query POST (`_addFirstQuery`), so the URL is correct. `Api::V1::TriesController#update` supports inline endpoint creation: it accepts `params[:search_endpoint]`, finds or creates a `SearchEndpoint` (including `SearchEndpoint.new(...).save!` when not found), and assigns it to `@try` (lines 86–100).
+14. **Gap 5: Lightweight scoring includes position data** - `QueryScoreService` builds docs from latest snapshot ordering with `position`.
+15. **Gap 5: Client-Side Real-Time Scoring Implementation** - `QueryScoreService` provides lightweight per-query scoring using persisted ratings (no search re-fetch). The score endpoint (`Api::V1::Queries::ScoresController`) uses `QueryScoreService` to compute scores server-side. `query_list_controller.js` listens for `query-score:refresh` events and updates score badges. Scorer testing has been enhanced: `ScorersController#test` (POST `/scorers/:id/test`) runs scorer code server-side with sample docs, and `scorer_test_controller.js` provides the UI integration.
+
+---
+
+## Completed Gap Implementations (2026-02-19)
+
+The following 5 high-priority gaps from the gap implementation review have been fully implemented and are now complete:
+
+### Gap 1: Detailed Document View / Full Field Explorer
+
+**Status:** ✅ **COMPLETE**
+
+**Implementation:** Document cards are server-rendered by `DocumentCardComponent` (`app/components/document_card_component.html.erb`). The `data-doc-fields` attribute is set with ERB `h(fields_json)`. The results pane fetches HTML from the query search API and injects it; the detail modal in `results_pane_controller.js` reads `data-doc-fields` from the card and builds the fields list in JS.
+
+**Key Features:**
+- Large document-fields payload guard: `DocumentCardComponent#fields_json` enforces `MAX_FIELDS_JSON_BYTES = 10_000` and omits oversized payloads
+- Unique detail modal IDs: `ResultsPaneComponent` generates unique modal/tab IDs via `modal_dom_suffix` to prevent ID collisions
+
+### Gap 2: Try History Browser + Try Management
+
+**Status:** ✅ **COMPLETE**
+
+**Implementation:** `settings_panel_controller.js` implements `deleteTry()` for try deletion. When the deleted try is the current try, it navigates to `buildPageUrl(root, "case", caseId)` (case root, which loads the latest try) instead of reloading, avoiding a 404.
+
+**Key Features:**
+- Delete-last-try protection: client-side guard in `settings_panel_controller.js` (`triesCountValue <= 1`) and server-side guard in `Api::V1::TriesController#destroy`
+- Try history truncation: `SettingsPanelComponent` shows the first 20 tries and reveals extras via "Show all N tries"
+
+### Gap 3: Curator Variables / Tuning Knobs
+
+**Status:** ✅ **COMPLETE**
+
+**Implementation:** `Api::V1::TriesController#update` wraps `curator_variables.destroy_all` and `add_curator_vars` in `ActiveRecord::Base.transaction` when `params[:curator_vars].present?` (lines 103–107). Curator inputs are rendered in `settings_panel_controller.js` via `_renderCuratorVarInputs()`.
+
+**Key Features:**
+- Duplicate try copies curator vars: `Api::V1::TriesController#create` copies parent `curator_vars_map` when duplicating from `parent_try_number`
+- Server-side curator var name validation: `CuratorVariable` validates `name` with `/\A[A-Za-z0-9_]+\z/`
+- Transaction-wrapped updates ensure atomicity
+
+### Gap 4: New Case Setup Wizard (Enhanced)
+
+**Status:** ✅ **COMPLETE**
+
+**Implementation:** `new_case_wizard_controller.js` uses `buildCaseQueriesUrl(root, this.caseIdValue)` for the first-query POST (`_addFirstQuery`), so the URL is correct. `Api::V1::TriesController#update` supports inline endpoint creation: it accepts `params[:search_endpoint]`, finds or creates a `SearchEndpoint` (including `SearchEndpoint.new(...).save!` when not found), and assigns it to `@try` (lines 86–100).
+
+**Key Features:**
+- Wizard step validation: `new_case_wizard_controller.js` blocks step progression unless required endpoint URL/field spec inputs are present
+- Engine options no longer hardcoded: `NewCaseWizardComponent` uses `SearchEndpoint::SEARCH_ENGINES`
+- `_addFirstQuery` uses `apiFetch`: wizard first-query POST uses `apiFetch` with form-encoded body
+
+### Gap 5: Client-Side Real-Time Scoring
+
+**Status:** ✅ **COMPLETE**
+
+**Implementation:** `QueryScoreService` provides lightweight per-query scoring using persisted ratings (no search re-fetch). The score endpoint (`Api::V1::Queries::ScoresController`) uses `QueryScoreService` to compute scores server-side. `query_list_controller.js` listens for `query-score:refresh` events and updates score badges. Scorer testing has been enhanced: `ScorersController#test` (POST `/scorers/:id/test`) runs scorer code server-side with sample docs, and `scorer_test_controller.js` provides the UI integration.
+
+**Key Features:**
+- Lightweight scoring includes position data: `QueryScoreService` builds docs from latest snapshot ordering with `position`
+- Server-side scoring execution for security and consistency
+- Real-time score badge updates via custom events
 
 ### Resolved: Client-Side Real-Time Scoring
 **Angular:** `ScorerFactory.runCode()` executed custom JavaScript scorer code in the browser instantly after each rating change.
@@ -809,6 +873,61 @@ These ViewComponents were added during migration and don't have Angular equivale
 
 ---
 
+## Completed: Admin Scorer Editing (2026-02-19)
+
+All functionality for managing communal scorers has been completed and moved from `admin_scorer_editing.md`:
+
+- ✅ View all communal scorers - All users can view communal scorers in the scorers list at `/scorers` with "Communal" filter button
+- ✅ Edit communal scorers (admin only) - Administrators can edit name, code, scale, and scale labels of communal scorers
+- ✅ Delete communal scorers (admin only) - Administrators can delete communal scorers from the edit page
+- ✅ Clone communal scorers (all users) - All users can clone communal scorers to create custom versions
+- ✅ Test communal scorers (admin only) - Administrators can test communal scorers using `POST /scorers/:id/test`
+- ✅ Search/filter communal scorers - Filter functionality available in scorers list
+- ✅ Warning messages when editing communal scorers - Alert displayed when editing communal scorers
+
+**Implementation details:**
+- `ScorersController` uses `set_scorer` method to control access (admins can access all scorers, regular users only custom scorers)
+- Authorization checks in `update`, `destroy`, and `test` methods prevent non-admins from modifying communal scorers
+- Warning alert displayed in edit view when administrator edits a communal scorer
+- Previous separate admin interface (`/admin/communal_scorers`) was removed and unified into main scorers UI
+
+**Related files:**
+- `app/controllers/scorers_controller.rb` - Controller with admin checks
+- `app/views/scorers/edit.html.erb` - Edit view with warning alert
+- `app/views/scorers/_list.html.erb` - List view with conditional admin actions
+- `test/controllers/scorers_controller_test.rb` - Comprehensive test coverage
+
+---
+
+## Completed: Angular to Stimulus Migration Checklist (2026-02-19)
+
+Migration is complete. All Angular code has been removed. 37 ViewComponents and 60 Stimulus controllers are in production.
+
+### Phase 3: ViewComponent Patterns — ✅ Complete
+
+The following components are wired into the core try page:
+- QueryListComponent — renders per query row with QscoreQuery, MoveQuery, QueryOptions, QueryExplain, DeleteQuery
+- ResultsPaneComponent — shows selected query context, query notes, and search results
+- AnnotationsComponent — case-level annotations panel
+- FrogReportComponent — rating stats
+- DiffComponent — snapshot diff
+- MatchesComponent — document cards in results pane
+- AnnotationComponent — single-annotation edit within annotations list
+
+### Phase 4: Component-by-Component Migration — ✅ Complete
+
+All 25 original Angular components plus 12 new components have been migrated (37 ViewComponents total). See the "Components Fully Migrated" section above for the complete list.
+
+**Migration pattern applied:**
+- Angular Component → ViewComponent + Stimulus Controller
+- Template (.html) → ViewComponent template (.html.erb)
+- Service ($http) → Rails controller action or apiFetch()
+- $scope / bindings → data-* attributes, Turbo Frame
+- ng-click → data-action="click->controller#method"
+- ng-if / ng-show → Server-rendered or Stimulus toggle
+
+---
+
 ## 1. ✅ Migrated: Tour Functionality
 
 **Files:** `app/javascript/modules/tour_steps.js`, `app/javascript/controllers/tour_controller.js`, `app/assets/stylesheets/tour.css` (in use)
@@ -907,3 +1026,152 @@ Only one orphaned file remains in `app/assets/javascripts/` — all Angular serv
 ### Low — MOSTLY DONE
 
 8. **Resolve or document TODOs** — QuerySearchService Vectara/Algolia extraction **FIXED**. FetchService (line 285) and import ratings controller (line 78) TODOs remain open.
+
+---
+
+## Gap 1: Detailed Document View / Full Field Explorer
+
+**Status:** ✅ **COMPLETE** — See [archives/port_completed.md](archives/port_completed.md#completed-gap-implementations-2026-02-19).
+
+### Recommendations
+
+- Add an integration test that clicks the Details button and verifies modal content renders.
+
+---
+
+## Gap 2: Try History Browser + Try Management
+
+**Status:** ✅ **COMPLETE** — See [archives/port_completed.md](archives/port_completed.md#completed-gap-implementations-2026-02-19).
+
+### Recommendations
+
+- Keep existing guard and truncation behavior covered by tests.
+
+---
+
+## Gap 3: Curator Variables / Tuning Knobs
+
+**Status:** ✅ **COMPLETE** — See [archives/port_completed.md](archives/port_completed.md#completed-gap-implementations-2026-02-19).
+
+### Concerns
+
+1. **`innerHTML` with user-controlled content** — `_renderCuratorVarInputs()` in `settings_panel_controller.js` builds HTML via string interpolation with `_escapeHtmlAttr(name)` and `_escapeHtmlAttr(value)`. Values go into `value="..."` attributes; ensure `_escapeHtmlAttr` covers all necessary characters (e.g. `"`, `<`, `&`). Prefer DOM API or a shared safe-builder for defense-in-depth.
+
+### Recommendations
+
+- Switch `_renderCuratorVarInputs()` to DOM API (`document.createElement`) instead of innerHTML where practical.
+
+---
+
+## Gap 4: New Case Setup Wizard (Enhanced)
+
+**Status:** ✅ **COMPLETE** — See [archives/port_completed.md](archives/port_completed.md#completed-gap-implementations-2026-02-19).
+
+### Concerns
+
+- **`_markWizardComplete` updates user profile** — Sends `{ user: { completed_case_wizard: true } }` to the users API. This is a per-user flag; once set, the wizard does not show again for new cases. Consider per-case or conditional display based on try configuration.
+
+### Recommendations
+
+- Reconsider the per-user `completed_case_wizard` flag — e.g. per-case or show wizard when try has no configured endpoint.
+
+
+# Angular to Stimulus, Hotwire, and ViewComponents Migration Checklist
+
+**Status:** Migration is **complete**. All Angular code has been removed. 37 ViewComponents and 60 Stimulus controllers are in production. See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md) for the full component inventory and parity record.
+
+## Phase 3: ViewComponent Patterns — ✅ Complete
+
+> **Note:** Completed implementation details have been moved to [archives/port_completed.md](archives/port_completed.md#completed-angular-to-stimulus-migration-checklist-2026-02-19).
+
+### 3.3 Components wired into workspace
+
+The following components are **wired** into the core try page:
+
+- **QueryListComponent** — renders per query row: QscoreQuery, MoveQuery, QueryOptions, QueryExplain, DeleteQuery. Selection via `?query_id=`; sortable when `Rails.application.config.query_list_sortable` is true.
+- **ResultsPaneComponent** — shows selected query context, query notes (information need), and placeholder for search results.
+- **AnnotationsComponent** — case-level annotations panel; rendered in core/show.
+- **FrogReportComponent** — rating stats; rendered in core/show toolbar.
+- **DiffComponent** — snapshot diff; rendered in core/show toolbar.
+
+- **MatchesComponent** — document cards in results pane; wired via DocumentCardComponent and search API HTML format.
+- **AnnotationComponent** — single-annotation edit within annotations list; wired in AnnotationsComponent; create returns Turbo Stream with AnnotationComponent.
+
+---
+
+## Phase 4: Component-by-Component Migration — ✅ Complete
+
+> **Note:** Completed implementation details have been moved to [archives/port_completed.md](archives/port_completed.md#completed-angular-to-stimulus-migration-checklist-2026-02-19).
+
+All 25 original Angular components plus 12 new components have been migrated (37 ViewComponents total). See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md) for the full list with ViewComponent and Stimulus controller mappings.
+
+### 4.2 Per-Component Checklist Template (reference)
+
+**Template (apply per component):**
+
+- [ ] **Analyze Angular implementation**
+  - [ ] Read directive, controller, templates
+  - [ ] List all service dependencies
+  - [ ] List all API calls
+  - [ ] List all DOM events and user interactions
+
+- [ ] **Design replacement** (Option A: server-centric)
+  - [ ] ViewComponent: what markup? what props?
+  - [ ] Stimulus: what actions? what minimal UI state? (prefer server over client)
+  - [ ] Turbo Frame: is this region dynamically updated? (prefer yes for Option A)
+  - [ ] Server: new controller action? or use existing API? (prefer server-rendered responses)
+
+- [ ] **Implement**
+  - [ ] Create ViewComponent
+  - [ ] Create Stimulus controller (if needed)
+  - [ ] Create/update Rails view or partial
+  - [ ] Wire up `data-controller` and `data-action`
+  - [ ] Ensure URLs use `getQuepidRootUrl()` or Rails helpers — see [api_client.md](api_client.md)
+
+- [ ] **Test**
+  - [ ] Manual verification
+  - [ ] E2E test if critical path
+  - [ ] Unit test for ViewComponent (optional)
+
+## Phase 9: Quality & Polish — In Progress
+
+### 9.1 Accessibility
+
+- [ ] **Keyboard navigation** — ensure modals, lists, buttons are keyboard-accessible
+- [ ] **ARIA attributes** — modals, live regions for score updates (see [gap_implementation_review.md](gap_implementation_review.md) for specific gaps)
+- [ ] **Focus management** — modal open/close, Turbo Frame updates
+- [ ] **Screen reader announcements** — step navigation, score changes, rating updates
+
+### 9.2 Performance
+
+- [x] **Minimize JS** — Stimulus controllers are small and focused
+- [x] **Asset size** — verified no duplicate libraries (Bootstrap 5 once, Angular removed)
+- [ ] **Scorer instantiation optimization** — consider caching `JavascriptScorer` instances per-request (see [gap_implementation_review.md](gap_implementation_review.md))
+
+### 9.3 Security
+
+- [ ] **XSS prevention** — review `innerHTML` usage patterns, prefer DOM API or templates (see [gap_implementation_review.md](gap_implementation_review.md))
+- [x] **CSRF protection** — `apiFetch` wrapper adds CSRF token automatically
+- [x] **URL generation** — all URLs use `getQuepidRootUrl()` or Rails helpers (see [api_client.md](api_client.md))
+
+### 9.4 Testing
+
+- [ ] **JavaScript tests** — add Vitest tests for Stimulus controllers (see [gap_implementation_review.md](gap_implementation_review.md))
+- [x] **Rails controller tests** — comprehensive coverage for scorers, teams, cases
+- [ ] **Integration tests** — add system tests for wizard flows, detail modals
+
+---
+
+## Quick Reference: Migration Pattern
+
+```
+Angular Component          →    Rails Replacement
+─────────────────────────────────────────────────────────
+Directive + Controller     →    ViewComponent + Stimulus
+Template (.html)           →    ViewComponent template (.html.erb)
+Modal template             →    Shared partial or ModalComponent
+Service ($http)            →    Rails controller action or apiFetch()
+$scope / bindings          →    data-* attributes, Turbo Frame
+ng-click                   →    data-action="click->controller#method"
+ng-if / ng-show            →    Server-rendered or Stimulus toggle
+```

@@ -30,7 +30,15 @@
 - Wrapped in `turbo_frame_tag "query_list_#{case_id}"` (case-specific for Turbo Stream targeting).
 - Renders list of queries with QscoreQuery, MoveQuery, QueryOptions, QueryExplain, DeleteQuery per row.
 - Selection via link to same page with `?query_id=`; uses `data-turbo-frame="workspace_content"` so only the workspace content updates (no full-page reload).
-- **Future:** Turbo Streams for add/remove/reorder without full reload.
+- **Turbo Streams:** Add/remove queries via Turbo Streams (`append` to `query_list_items`, `remove` `query_row_<id>`). Real-time score updates via `RunCaseEvaluationJob` broadcasts `replace` for entire frame.
+- **Client-side features** (via `query_list_controller.js`):
+  - **Pagination:** Client-side pagination (default 15 per page) with URL state (`?page=`).
+  - **Filtering:** Text filter + "Rated only" toggle; filters client-side DOM visibility.
+  - **Sorting:** Multiple sort options (name A-Z/Z-A, score ↑↓, modified ↑↓, errors first) with URL state (`?sort=`).
+  - **Drag-and-drop reorder:** SortableJS integration; persists order via `PUT api/cases/:caseId/queries/:queryId/position`.
+  - **Expand/collapse all:** Buttons to expand or collapse all query rows at once.
+  - **Score refresh:** Listens for `query-score:refresh` events; fetches lightweight score updates per query without full re-evaluation.
+- **MutationObserver:** Watches for Turbo Stream additions/removals to maintain pagination and original order snapshot.
 
 ---
 
@@ -48,7 +56,13 @@
 - Shows selected query context, notes/information need form, and placeholder for search results.
 - **Query notes form** (`query_notes_<query_id>`): submits via Turbo Frame; `Core::Queries::NotesController#update` returns HTML to replace the form region without full-page reload.
 - When no query selected: prompt "Select a query from the list".
-- Document cards with ratings, pagination (Load more), and Debug/Expand explain buttons are implemented via DocumentCardComponent + MatchesComponent (server-rendered when Accept: text/html) or results_pane Stimulus controller (JSON fallback, e.g. diff mode).
+- **Results fetching:** Via `results_pane_controller.js` using `fetch()` with `Accept: text/html`. Server renders DocumentCardComponent + MatchesComponent. Results are not lazy-loaded via frame `src`; controller manages fetch lifecycle.
+- **Rating updates:** Individual ratings can return Turbo Streams (`update` action for `rating-badge-<doc_id>`) when requested with `Accept: text/vnd.turbo-stream.html`. Controller applies via `Turbo.renderStreamMessage`. Falls back to JSON + manual DOM update.
+- **Bulk rating:** Bulk rate/clear operations via `PUT api/cases/:caseId/queries/:queryId/bulk/ratings` and `POST .../bulk/ratings/delete`. Triggers score refresh and re-fetches results.
+- **Diff mode:** Supports `diff_snapshot_ids[]` query params; server renders diff badges on document cards. Listens for `diff-snapshots-changed` events.
+- **Show only rated filter:** Toggle to filter results to show only documents with ratings.
+- **Pagination:** "Load more" button appends next page of results (default 10 per page).
+- **Detail modal:** Bootstrap modal showing document fields and raw JSON (with CodeMirror viewer when available).
 
 ---
 
@@ -131,13 +145,19 @@ See [turbo_streams_guide.md](turbo_streams_guide.md) for actions, client/server 
 
 ### Implemented Turbo Stream Flows (workspace-specific)
 
-- **Add query** (single): `Core::QueriesController#create` → append to `query_list_items`, remove `query_list_empty_placeholder` when adding first query. Add query Stimulus controller POSTs with `Accept: text/vnd.turbo-stream.html` and applies response via `Turbo.renderStreamMessage`.
-- **Delete query**: `Core::QueriesController#destroy` → remove `query_row_<id>`; when deleted query was selected (`?selected_query_id=`), also replace `results_pane` with empty state. Delete query Stimulus controller DELETEs with Turbo Stream accept header and applies response.
+- **Add query** (single): `Core::QueriesController#create` → `append` to `query_list_items`, `remove` `query_list_empty_placeholder` when adding first query. Add query Stimulus controller POSTs with `Accept: text/vnd.turbo-stream.html` and applies response via `Turbo.renderStreamMessage`.
+- **Delete query**: `Core::QueriesController#destroy` → `remove` `query_row_<id>`; when deleted query was selected (`?selected_query_id=`), also `replace` `results_pane` with empty state. Delete query Stimulus controller DELETEs with Turbo Stream accept header and applies response.
 - **Query notes form**: `Core::Queries::NotesController#update` → form submits via Turbo Frame (`query_notes_<query_id>`); server returns HTML with matching frame to replace form region (no full-page reload).
+- **Rating update**: `Api::V1::Queries::RatingsController#update` → `update` action for `rating-badge-<doc_id>` when requested with `Accept: text/vnd.turbo-stream.html`. Results pane controller requests Turbo Stream format and applies via `Turbo.renderStreamMessage`. Falls back to JSON + manual DOM update. Triggers `query-score:refresh` event for lightweight score update.
+- **Rating delete**: `Api::V1::Queries::RatingsController#destroy` → similar to update; can return Turbo Stream to update badge or flash error.
 
 ### Real-Time Updates (Implemented)
 
 The core workspace subscribes to `turbo_stream_from(:notifications)` in `core/show.html.erb`. `RunCaseEvaluationJob` broadcasts Turbo Stream `replace` actions for `qscore-case-#{case_id}` and `query_list_#{case_id}` when scoring completes. See [turbo_streams_guide.md](turbo_streams_guide.md) for the full pattern.
+
+**Score refresh mechanism:**
+- **Lightweight per-query refresh:** After rating updates, `triggerScoreRefresh()` dispatches `query-score:refresh` event. Query list controller listens and fetches `POST api/cases/:caseId/queries/:queryId/score` to update individual query score badges without full case re-evaluation.
+- **Full case evaluation:** Debounced (3s) trigger to `POST api/cases/:caseId/run_evaluation?try_number=...` which queues `RunCaseEvaluationJob`. Job broadcasts Turbo Stream updates when complete.
 
 ---
 
@@ -174,7 +194,7 @@ Use `data: { turbo: false }` **only when necessary**:
 | Boundary | Frame ID | Implemented | Notes |
 |----------|----------|-------------|-------|
 | Workspace content | `workspace_content` | Yes | Query selection; wraps query list + results pane |
-| Query list | `query_list_<case_id>` | Yes | Turbo Streams for add/remove; per-row id `query_row_<id>` |
-| Results pane | `results_pane` | Yes | Add `src` + Turbo Streams when API wired |
+| Query list | `query_list_<case_id>` | Yes | Turbo Streams for add/remove/reorder; pagination, filtering, sorting, drag-and-drop; per-row id `query_row_<id>` |
+| Results pane | `results_pane` | Yes | JavaScript fetch (not `src`); Turbo Streams for rating updates; bulk rating, diff mode, show only rated filter, load more pagination |
 | Side panels | TBD | No | Deferred; use lazy `src` when added |
 | Modals | Various | Yes (Bootstrap) | Consider Turbo Frame + lazy `src` for heavy modals |

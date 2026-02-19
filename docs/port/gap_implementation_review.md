@@ -6,71 +6,18 @@ Review of the 5 high-priority gaps implemented during de-Angularization. For the
 
 ---
 
-## Gap 1: Detailed Document View / Full Field Explorer
-
-**Current implementation:** Document cards are **server-rendered** by `DocumentCardComponent` (`app/components/document_card_component.html.erb`). The `data-doc-fields` attribute is set with ERB `h(fields_json)`. The results pane fetches HTML from the query search API and injects it; the detail modal in `results_pane_controller.js` reads `data-doc-fields` from the card and builds the fields list in JS.
-
-### Concerns
-
-- No open concerns currently.
-
-### Recommendations
-
-- Add an integration test that clicks the Details button and verifies modal content renders.
-
----
-
-## Gap 2: Try History Browser + Try Management
-
-**Current implementation:** `settings_panel_controller.js` implements `deleteTry()`. When the deleted try is the current try, it navigates to `buildPageUrl(root, "case", caseId)` (case root, which loads the latest try) instead of reloading, avoiding a 404.
-
-### Concerns
-
-- No open concerns currently.
-
-### Recommendations
-
-- Keep existing guard and truncation behavior covered by tests.
-
----
-
-## Gap 3: Curator Variables / Tuning Knobs
-
-**Current implementation:** `Api::V1::TriesController#update` wraps `curator_variables.destroy_all` and `add_curator_vars` in `ActiveRecord::Base.transaction` when `params[:curator_vars].present?` (lines 103–107). Curator inputs are rendered in `settings_panel_controller.js` via `_renderCuratorVarInputs()`.
-
-### Concerns
-
-1. **`innerHTML` with user-controlled content** — `_renderCuratorVarInputs()` in `settings_panel_controller.js` builds HTML via string interpolation with `_escapeHtmlAttr(name)` and `_escapeHtmlAttr(value)`. Values go into `value="..."` attributes; ensure `_escapeHtmlAttr` covers all necessary characters (e.g. `"`, `<`, `&`). Prefer DOM API or a shared safe-builder for defense-in-depth.
-
-### Recommendations
-
-- Switch `_renderCuratorVarInputs()` to DOM API (`document.createElement`) instead of innerHTML where practical.
-
----
-
-## Gap 4: New Case Setup Wizard (Enhanced)
-
-**Current implementation:** `new_case_wizard_controller.js` uses `buildCaseQueriesUrl(root, this.caseIdValue)` for the first-query POST (`_addFirstQuery`), so the URL is correct. `Api::V1::TriesController#update` supports inline endpoint creation: it accepts `params[:search_endpoint]`, finds or creates a `SearchEndpoint` (including `SearchEndpoint.new(...).save!` when not found), and assigns it to `@try` (lines 86–100).
-
-### Concerns
-
-- **`_markWizardComplete` updates user profile** — Sends `{ user: { completed_case_wizard: true } }` to the users API. This is a per-user flag; once set, the wizard does not show again for new cases. Consider per-case or conditional display based on try configuration.
-
-### Recommendations
-
-- Reconsider the per-user `completed_case_wizard` flag — e.g. per-case or show wizard when try has no configured endpoint.
+**Note:** All 5 gap implementations are complete. Implementation details have been moved to [archives/port_completed.md](archives/port_completed.md#completed-gap-implementations-2026-02-19). This document now focuses on remaining concerns and recommendations.
 
 ---
 
 ## Gap 5: Client-Side Real-Time Scoring
 
-**Current implementation:** `QueryScoreService` provides lightweight per-query scoring using persisted ratings (no search re-fetch). The score endpoint (`Api::V1::Queries::ScoresController`) uses `QueryScoreService` to compute scores server-side. `query_list_controller.js` listens for `query-score:refresh` events and updates score badges. Scorer testing has been enhanced: `ScorersController#test` (POST `/scorers/:id/test`) runs scorer code server-side with sample docs, and `scorer_test_controller.js` provides the UI integration.
+**Status:** ✅ **COMPLETE** — See [archives/port_completed.md](archives/port_completed.md#completed-gap-implementations-2026-02-19).
 
 ### Concerns
 
 - **JavascriptScorer instantiation per request** — `QueryScoreService.score` creates a new `JavascriptScorer` (MiniRacer context) per call. MiniRacer context creation is expensive (~10-50ms). For rapid rating changes, this could add up. Consider caching the scorer instance per-request or using a connection pool.
 - **`this.caseId` vs `this.caseIdValue` inconsistency** — In `query_list_controller.js:93`, the score update dispatches `caseId: this.caseId` (a computed getter at line 443-446 that reads from the workspace DOM element), but the refresh event handler at line 56 reads `event.detail.caseId`. These work but use different casing conventions (`caseId` getter vs `caseIdValue` Stimulus value). The controller doesn't declare `caseId` as a Stimulus value, relying instead on the DOM getter. This is fine but could confuse future maintainers.
-- **Authorization on the score endpoint** — `Api::V1::Queries::ScoresController` uses `set_case` (from `CurrentCaseManager`: case is loaded via `current_user.cases_involved_with` or as a public case) and `check_case` (renders 404 if `@case` is nil). So only cases the user can access are scoreable; no change needed for auth.
 - **Race condition between lightweight and full scoring** — The lightweight score updates the badge immediately, then the 3-second debounced full evaluation overwrites it. If the user rates multiple docs quickly, the sequence could be: lightweight score A → lightweight score B → full eval (using all ratings) → badge shows full eval score. This is fine, but the badge may "jump" from the lightweight score to the full score, which could confuse users.
 - **Missing error handling for non-JS scorers** — Some scorers may use external scoring (e.g. LLM-based scorers via `AiJudge`). `QueryScoreService` only handles `JavascriptScorer`. If the case uses a non-JS scorer, the endpoint returns `nil` score, and the badge shows nothing. Should fall back gracefully.
 

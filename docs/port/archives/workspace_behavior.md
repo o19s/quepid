@@ -1,6 +1,8 @@
 # Workspace Behavior Reference (Legacy Angular)
 
-> **Historical reference:** This document describes the behavior of the **AngularJS** workspace as it existed on `main`. The `deangularjs-experimental` branch has replaced all Angular code with ViewComponents + Stimulus + Turbo. The user flows, keyboard shortcuts, and error handling patterns described below were used as migration requirements and are preserved or improved in the modern stack.
+> **Historical reference:** This document describes the behavior of the **AngularJS** workspace as it existed on `main`. The modern stack has replaced all Angular code with ViewComponents + Stimulus + Turbo. The user flows, keyboard shortcuts, and error handling patterns described below were used as migration requirements and are preserved or improved in the modern stack.
+
+> **Current status:** All flows described below have been migrated to the modern stack. See [workspace_state_design.md](workspace_state_design.md) for the current architecture and [workspace_api_usage.md](workspace_api_usage.md) for API usage patterns.
 
 This document describes the behavior of the core query-tuning workspace at `/case/:caseNo/try/:tryNo` (and `/case/:caseNo`) as implemented in AngularJS.
 
@@ -143,6 +145,8 @@ All flows described above have been migrated to the modern stack:
 
 - **User flows:** Load → add query → rate → score update → export → clone are all functional via ViewComponents + Stimulus. See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md) for parity and gap history.
 - **Keyboard:** Rating shortcuts (a/s/d/f/g/h/j/k/l/;) preserved in the Rails-rendered judgement form (`app/views/judgements/_form.html.erb`).
-- **Real-time:** The modern workspace subscribes to `turbo_stream_from(:notifications)` for score update broadcasts from `RunCaseEvaluationJob`. This is a new capability not present in the Angular version.
+- **Real-time:** The modern workspace subscribes to `turbo_stream_from(:notifications)` for score update broadcasts from `RunCaseEvaluationJob`. This is a new capability not present in the Angular version. Score updates are broadcast via Turbo Streams to update `qscore-case-#{case_id}` and `query_list_#{case_id}` frames.
 - **Errors:** Flash messages use `window.flash` (from `utils/flash.js`) for client-side feedback and Rails flash for server-side. See [ui_consistency_patterns.md](ui_consistency_patterns.md).
 - **Search:** Now goes through server-side `QuerySearchService` proxy, eliminating CORS/mixed-content issues.
+- **Turbo Frames:** The workspace uses Turbo Frames (`workspace_content`, `query_list_<case_id>`, `results_pane`) for independent region updates. Query selection uses Turbo Frame navigation instead of full-page reload. See [turbo_frame_boundaries.md](turbo_frame_boundaries.md) for frame mapping.
+- **Turbo Streams:** Add/remove queries, rating updates, and score changes use Turbo Streams for live DOM updates without full-page reload. See [turbo_streams_guide.md](turbo_streams_guide.md) for implementation patterns.

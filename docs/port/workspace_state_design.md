@@ -50,10 +50,10 @@ The workspace page is split into **Turbo Frame** regions. See **[turbo_frame_bou
 
 | Region | Purpose | Update mechanism |
 |--------|---------|-------------------|
-| **Query list** | List of queries for the case/try; add, remove, reorder, select | Turbo Frame with `id` (e.g. `query_list`). Updates: full frame replace on add/delete/reorder; or Turbo Stream `append`/`replace`/`remove`. Selection can drive results frame `src`. |
-| **Results pane** | Search results and ratings for the selected query | Turbo Frame (e.g. `results_pane`) with `src` pointing to results URL for current query (and try). Reload on query select or on rating change (Turbo Stream or frame refresh). |
-| **Side panels** | East/west panels (e.g. annotations, snapshot list, options) | Each panel in its own Turbo Frame; lazy load via `src` when opened; Turbo Streams to update content when server data changes. |
-| **Modals** | Export, clone, share, import ratings, etc. | Modal content in a Turbo Frame (or Stimulus-revealed partial). Open: load frame `src` or show server-rendered partial. Submit: form POST; response can be Turbo Stream (e.g. close modal, flash, redirect). |
+| **Query list** | List of queries for the case/try; add, remove, reorder, select | Turbo Frame with `id` `query_list_<case_id>` (case-specific for Turbo Stream targeting). Updates: Turbo Stream `append`/`replace`/`remove` targeting `query_list_items` container or `query_row_<id>` per row. Selection uses `data-turbo-frame="workspace_content"` to update workspace content. |
+| **Results pane** | Search results and ratings for the selected query | Turbo Frame `results_pane` with `src` pointing to results URL for current query (and try). Reload on query select or on rating change (Turbo Stream or frame refresh). |
+| **Side panels** | East/west panels (e.g. annotations, snapshot list, options) | Each panel in its own Turbo Frame; lazy load via `src` when opened; Turbo Streams to update content when server data changes. Currently implemented via `workspace_panels_controller.js` for collapsible panels. |
+| **Modals** | Export, clone, share, import ratings, etc. | Modal content in a Turbo Frame (or Stimulus-revealed partial). Most are in-page Bootstrap modals rendered with the page; Stimulus controllers handle open/close. For lazy-loaded modals, use `turbo_frame_tag "modal"` with `src`. Submit: form POST; response can be Turbo Stream (e.g. close modal, flash, redirect). |
 
 **Principles:**
 
@@ -74,10 +74,17 @@ The workspace page is split into **Turbo Frame** regions. See **[turbo_frame_bou
 │  All CRUD via server; client renders server response.                    │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  TURBO FRAME REGIONS                                                     │
-│  ┌──────────────┐ ┌─────────────────┐ ┌──────────────┐ ┌──────────────┐ │
-│  │ query list   │ │ results pane    │ │ side panels  │ │ modals       │ │
-│  │ (frame)      │ │ (frame, src=…)  │ │ (frames)     │ │ (frames)     │ │
-│  └──────────────┘ └─────────────────┘ └──────────────┘ └──────────────┘ │
+│  ┌──────────────────────────┐                                           │
+│  │ workspace_content (frame) │                                           │
+│  │ ┌──────────────┐ ┌──────┐ │                                         │
+│  │ │ query_list_  │ │results│ │                                         │
+│  │ │ <case_id>    │ │_pane  │ │                                         │
+│  │ └──────────────┘ └──────┘ │                                         │
+│  └──────────────────────────┘                                           │
+│  ┌──────────────┐ ┌──────────────┐                                     │
+│  │ side panels  │ │ modals       │ │                                     │
+│  │ (collapsible)│ │ (Bootstrap)  │ │                                     │
+│  └──────────────┘ └──────────────┘                                     │
 │  Updates: Turbo Streams / frame navigation / form POST → server response  │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  CLIENT-ONLY STATE (Stimulus)                                            │

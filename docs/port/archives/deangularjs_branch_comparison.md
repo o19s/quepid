@@ -2,6 +2,8 @@
 
 > Updated 2026-02-19 | Migration Complete
 
+> **Note:** Completed migration details have been moved to [archives/port_completed.md](archives/port_completed.md). This document remains as a historical summary.
+
 **See also:** The full migration including the **core workspace** (`/case/:id/try/:try_number`) is documented in [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md).
 
 ## Overview
@@ -83,7 +85,7 @@ Routes for `/cases`, `/cases/import`, `/teams(/:id)`, and `/scorers` removed fro
 - Route: `resources :communal_scorers` removed from admin namespace
 - Admin nav link removed from `admin/home/index.html.erb`
 
-This was replaced by allowing admins to edit communal scorers directly from the regular scorers UI (documented in `docs/admin_communal_scorers_removal.md` and `docs/admin_scorer_editing.md`).
+This was replaced by allowing admins to edit communal scorers directly from the regular scorers UI (documented in `docs/port/admin_scorer_editing.md`).
 
 ### Stylesheets (5 files deleted)
 
@@ -201,10 +203,9 @@ post '/cases/:id/unarchive' => 'cases#unarchive'
 - `test/controllers/teams_controller_test.rb` — 94 lines
 - `test/helpers/avatar_helper_test.rb` — 95 lines
 
-### Documentation (2 new files)
+### Documentation (1 new file)
 
-- `docs/admin_communal_scorers_removal.md` — Explains why the admin communal scorers UI was removed
-- `docs/admin_scorer_editing.md` — Documents how admins now edit communal scorers
+- `docs/port/admin_scorer_editing.md` — Documents how admins edit communal scorers, including historical context about the removal of the separate admin interface
 
 ---
 

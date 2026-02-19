@@ -4,6 +4,8 @@ This document audits all API endpoints used by the workspace and documents reque
 
 **Note:** All paths are relative to the app root (no leading `/`). For URL building rules, see [api_client.md](api_client.md). Search requests go through `QuerySearchService` (server-side proxy to the user's search endpoint), not directly from the client. The only client-accessible "search" API is `api/cases/:case_id/tries/:try_number/queries/:query_id/search`.
 
+**Modern stack:** The workspace uses Stimulus controllers with `apiFetch` from `app/javascript/api/fetch.js` for API calls, and Rails controllers return Turbo Stream responses (`text/vnd.turbo-stream.html`) for live DOM updates. See [turbo_streams_guide.md](turbo_streams_guide.md) for implementation patterns.
+
 ---
 
 ## Summary: Read-only vs mutating
@@ -301,4 +303,5 @@ The Export Case modal (`ExportCaseComponent` + `export_case_controller.js`) expo
 4. **Snake vs camel:** Backend uses snake_case; frontend uses camelCase in JavaScript.
 5. **Search:** Live search goes through the server-side `QuerySearchService` proxy (`api/cases/:caseId/tries/:tryNumber/queries/:queryId/search`), eliminating CORS issues. Snapshot doc lookup uses `api/cases/:caseId/snapshots/:snapshotId/search`.
 6. **Export modal:** The export modal (`ExportCaseComponent` + `export_case_controller.js`) provides API links for direct download; the same endpoints are accessible when opened in the browser.
-7. **Turbo Streams:** Some endpoints (queries create/destroy, ratings) support `Accept: text/vnd.turbo-stream.html` for live DOM updates. See [turbo_streams_guide.md](turbo_streams_guide.md).
+7. **Turbo Streams:** Some endpoints (queries create/destroy, ratings) support `Accept: text/vnd.turbo-stream.html` for live DOM updates. The client must explicitly request this format and apply responses via `Turbo.renderStreamMessage(html)`. See [turbo_streams_guide.md](turbo_streams_guide.md) for client/server patterns.
+8. **Real-time updates:** The workspace subscribes to `turbo_stream_from(:notifications)` for score updates broadcast by `RunCaseEvaluationJob`. Score changes trigger Turbo Stream `replace` actions for `qscore-case-#{case_id}` and `query_list_#{case_id}`.

@@ -2,14 +2,14 @@
 
 This document maps each Angular service used by the core workspace (`/case/:id/try/:try_number`) to its responsibilities and recommends where each should live after migration: **server-side (Rails)** or **client-side (Stimulus/JS)**.
 
-**See also:** [angular_to_stimulus_hotwire_viewcomponents_checklist.md](angular_to_stimulus_hotwire_viewcomponents_checklist.md), [workspace_api_usage.md](workspace_api_usage.md), [workspace_state_design.md](workspace_state_design.md), [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md).
+**See also:** [workspace_api_usage.md](workspace_api_usage.md), [workspace_state_design.md](workspace_state_design.md), [deangularjs_branch_comparison.md](deangularjs_branch_comparison.md), [archives/port_completed.md](archives/port_completed.md).
 
 ---
 
 ## Current State
 
 - **All routes** now use the **modern stack**: ViewComponents + Stimulus + Turbo. Angular has been **completely removed** from the codebase — `app/assets/javascripts/services/`, `app/assets/javascripts/factories/`, and `app/assets/javascripts/components/` directories no longer exist.
-- **Core workspace** (`/case/:id/try/:try_number`): Uses `core_modern` layout, `application_modern.js`, 36 ViewComponents, and 50 Stimulus controllers.
+- **Core workspace** (`/case/:id/try/:try_number`): Uses `core_modern` layout, `application_modern.js`, 37 ViewComponents, and 60 Stimulus controllers.
 - **Cases, Teams, Scorers pages**: Migrated to Rails views + Stimulus in the `deangularjs` branch (see [deangularjs_branch_comparison.md](deangularjs_branch_comparison.md)).
 - **Key replacements**: `docCacheSvc` → `app/javascript/modules/doc_cache.js` (DocCache); `caseTryNavSvc.getQuepidRootUrl()` → `utils/quepid_root.js` (`getQuepidRootUrl`). Export uses `app/javascript/controllers/export_case_controller.js` and `Api::V1::Export::CasesController` (server-side). All API calls use `app/javascript/api/fetch.js` (`apiFetch`) for CSRF handling.
 
@@ -20,9 +20,9 @@ This document maps each Angular service used by the core workspace (`/case/:id/t
 | Service | Primary responsibility | Recommendation |
 |--------|------------------------|----------------|
 | `caseSvc` | Case CRUD, selection, archive | **Server** (API + Turbo); selection/UI state **Client** |
-| `queriesSvc` | Query CRUD, scoring, search, ordering | **Hybrid**: CRUD/ordering **Server**; search execution + scoring **Client** (or move scoring to server) |
+| `queriesSvc` | Query CRUD, scoring, search, ordering | **Server**: CRUD/ordering/scoring via `QueryScoreService`; search via `QuerySearchService` proxy; UI state **Client** |
 | `settingsSvc` | Try (search config) settings | **Server** (API); current try selection **Client** |
-| `scorerSvc` / `ScorerFactory` | Scorer metadata + scoring logic | **Server** for CRUD; **Client** for runCode/score (or reimplement server-side) |
+| `scorerSvc` / `ScorerFactory` | Scorer metadata + scoring logic | **Server**: CRUD + all scoring via `QueryScoreService`/`RunCaseEvaluationJob` (V8/MiniRacer) |
 | `docCacheSvc` | Document caching (by id) | **Client** (or replace with server doc lookup). *Replaced by `modules/doc_cache.js` in Stimulus.* |
 | `diffResultsSvc` | Diff (snapshot comparison) state & fetching | **Client** (or server-rendered diff views) |
 | `querySnapshotSvc` / `snapshotSearcherSvc` | Snapshots list/CRUD; snapshot-as-searcher | **Server** API; snapshot “searcher” **Client** |

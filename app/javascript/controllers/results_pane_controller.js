@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
+import { triggerScoreRefresh } from "utils/rating_api"
 import { getQuepidRootUrl, buildApiUrl, buildApiQuerySearchUrl } from "utils/quepid_root"
 
 // Holds the results pane region for the case/try workspace. When a query is selected,
@@ -213,23 +214,7 @@ export default class extends Controller {
 
   _triggerScoreRefresh() {
     if (!this.caseIdValue) return
-
-    // Lightweight per-query score refresh (fast feedback)
-    if (this.queryIdValue) {
-      document.dispatchEvent(new CustomEvent("query-score:refresh", {
-        detail: { queryId: this.queryIdValue, caseId: this.caseIdValue }
-      }))
-    }
-
-    // Debounced full case evaluation (updates case-level score)
-    if (!this.tryNumberValue) return
-    if (this._scoreRefreshTimer) clearTimeout(this._scoreRefreshTimer)
-    this._scoreRefreshTimer = setTimeout(() => {
-      const root = getQuepidRootUrl()
-      const url = `${buildApiUrl(root, "cases", this.caseIdValue, "run_evaluation")}?try_number=${encodeURIComponent(this.tryNumberValue)}`
-      apiFetch(url, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" } })
-        .catch((err) => console.warn("Score refresh trigger failed:", err))
-    }, 3000)
+    triggerScoreRefresh(this.caseIdValue, this.queryIdValue, this.tryNumberValue)
   }
 
   queryIdValueChanged() {
