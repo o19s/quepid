@@ -214,7 +214,7 @@ module Api
 
           def set_search_response_format
             request.format = :html if request.headers['Accept']&.include?('text/html')
-            request.format = :json if :html != request.format
+            request.format = :json unless :html == request.format
           end
         end
       end

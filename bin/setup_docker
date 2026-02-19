@@ -44,5 +44,8 @@ bin/docker r rails log:clear tmp:clear
 echo -e "\n== Setting up stupid simple model to power LLM as a Judge for Development =="
 docker exec ollama ollama pull qwen3:0.6b
 
+echo -e "\n== Installing Lefthook git hooks =="
+command -v lefthook >/dev/null && lefthook install || echo "Lefthook not found, skipping git hooks setup"
+
 echo -e "\n== Setting up Seed Data for Development =="
 bin/docker r bundle exec thor sample_data:sample_data

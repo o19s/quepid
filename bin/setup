@@ -36,6 +36,9 @@ FileUtils.chdir APP_ROOT do
   puts "\n== Removing old logs and tempfiles =="
   system! "bin/rails log:clear tmp:clear"
   
+  puts "\n== Installing Lefthook git hooks =="
+  system "which lefthook > /dev/null 2>&1 && lefthook install || echo 'Lefthook not found, skipping git hooks setup'"
+
   puts "\n== Setting up Seed Data for Development =="
   system "bundle exec thor sample_data:sample_data"
 

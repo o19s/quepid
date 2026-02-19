@@ -37,6 +37,7 @@ This guide provides detailed instructions for developers who want to set up, run
     - [Rake](#rake)
     - [Thor](#thor)
 - [Elasticsearch](#elasticsearch)
+- [Lefthook (Git Hooks)](#lefthook-git-hooks)
 - [Dev Errata](#dev-errata)
   - [What is Claude on Rails?](#what-is-claude-on-rails)
   - [How to use a new Node module or update an existing one](#how-to-use-a-new-node-module-or-update-an-existing-one)
@@ -438,6 +439,39 @@ http.cors:
 ```
 
 See more details on the wiki at https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid
+
+# Lefthook (Git Hooks)
+
+[Lefthook](https://github.com/evilmartians/lefthook) runs RuboCop automatically on staged `.rb` files at commit time, catching lint issues before they reach CI.
+
+## Installing Lefthook
+
+```bash
+brew install lefthook   # macOS
+# or
+curl -1sLf 'https://dl.evilmartians.technology/lefthook/setup.deb.sh' | sudo -E bash
+sudo apt install lefthook  # Debian/Ubuntu
+```
+
+Then install the git hooks:
+
+```bash
+lefthook install
+```
+
+This is also run automatically by `bin/setup` and `bin/setup_docker` if Lefthook is available.
+
+## How it works
+
+When you `git commit`, Lefthook runs `bundle exec rubocop` on only the staged Ruby files. If RuboCop finds violations, the commit is blocked until you fix them.
+
+## Skipping the hook
+
+If you need to bypass the hook (e.g., you don't have Ruby installed locally and rely on CI):
+
+```bash
+git commit --no-verify
+```
 
 # Dev Errata
 
