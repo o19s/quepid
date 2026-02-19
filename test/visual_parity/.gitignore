@@ -1,0 +1,4 @@
+# Generated artifacts - don't commit screenshots or reports
+screenshots/
+api_structures/
+report.html

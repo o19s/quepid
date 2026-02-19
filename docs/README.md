@@ -32,6 +32,7 @@
 | [angular_services_responsibilities_mapping.md](angular_services_responsibilities_mapping.md) | Angular services → server/client placement |
 | [per_component_migration_checklist.md](per_component_migration_checklist.md) | List of components to migrate |
 | [code_review_angular_removal.md](code_review_angular_removal.md) | Code review findings (lost functionality, orphaned files) |
+| [codebase_review_report.md](codebase_review_report.md) | In-depth codebase review: bugs, bad practices, security, regressions |
 | [deangularjs_branch_comparison.md](deangularjs_branch_comparison.md) | Branch diff: main vs deangularjs |
 | [deangularjs_experimental_functionality_gap_report.md](deangularjs_experimental_functionality_gap_report.md) | Functionality gap analysis |
 | [operating_documentation.md](operating_documentation.md) | Operations, scripting, Thor tasks |
