@@ -36,6 +36,49 @@ module Api
 
           assert_response :not_found
         end
+
+        test 'returns last known score when lightweight scoring is unavailable' do
+          acase.scores.create!(
+            user:    user,
+            try:     acase.tries.first,
+            score:   0.0,
+            queries: { query.id.to_s => { score: 7.25 } }
+          )
+
+          original_score_method = QueryScoreService.method(:score)
+          begin
+            QueryScoreService.define_singleton_method(:score) { |_query, _scorer| nil }
+
+            post api_case_query_score_url(acase, query),
+                 headers: { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }
+
+            assert_response :success
+            body = response.parsed_body
+            assert_in_delta 7.25, body['score']
+            assert body['fallback']
+            assert_equal 'lightweight_score_unavailable', body['fallback_reason']
+          ensure
+            QueryScoreService.define_singleton_method(:score, original_score_method)
+          end
+        end
+
+        test 'returns unknown fallback score when lightweight scoring is unavailable and no prior score exists' do
+          original_score_method = QueryScoreService.method(:score)
+          begin
+            QueryScoreService.define_singleton_method(:score) { |_query, _scorer| nil }
+
+            post api_case_query_score_url(acase, query),
+                 headers: { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }
+
+            assert_response :success
+            body = response.parsed_body
+            assert_equal '?', body['score']
+            assert body['fallback']
+            assert_equal 'lightweight_score_unavailable', body['fallback_reason']
+          ensure
+            QueryScoreService.define_singleton_method(:score, original_score_method)
+          end
+        end
       end
     end
   end

@@ -73,27 +73,33 @@ export default class extends Controller {
       if (this._scoreRefreshSeqByQuery.get(queryKey) !== requestSeq) return
 
       const data = await res.json()
-      if (data.score == null) return
+      const score = data.score == null ? "?" : data.score
 
-      this._updateQueryScoreBadge(queryId, data.score, data.max_score)
+      this._updateQueryScoreBadge(queryId, score, data.max_score, data.fallback_reason)
     } catch (err) {
       console.warn("Lightweight score refresh failed:", err)
     }
   }
 
-  _updateQueryScoreBadge(queryId, score, maxScore) {
+  _updateQueryScoreBadge(queryId, score, maxScore, fallbackReason = null) {
     if (!this.hasListTarget) return
     const row = this.listTarget.querySelector(`[data-query-id="${queryId}"]`)
     if (!row) return
 
     // Update data attribute for sorting
     row.dataset.queryScore = String(score)
+    row.dataset.queryError = (score === "?" || score === "" || score == null) ? "true" : "false"
 
     // Find and update the score badge (dispatches qscore:update for color)
     const scoreBadge = row.querySelector("[data-controller~='qscore']")
     if (scoreBadge) {
       const scoreText = scoreBadge.querySelector(".qscore-value, .badge")
       if (scoreText) scoreText.textContent = score
+      if (fallbackReason) {
+        scoreBadge.setAttribute("title", "Using fallback score while lightweight scoring is unavailable.")
+      } else {
+        scoreBadge.removeAttribute("title")
+      }
 
       // Dispatch qscore:update for color recalculation
       document.dispatchEvent(new CustomEvent("qscore:update", {

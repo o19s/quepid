@@ -110,4 +110,19 @@ class QueryScoreServiceTest < ActiveSupport::TestCase
       JavascriptScorer.define_singleton_method(:new, original_js_new)
     end
   end
+
+  test 'scores repeatedly on the same thread' do
+    scorer = scorers(:valid)
+    scorer.code = File.read(Rails.root.join('db/scorers/p@10.js'))
+    query = queries(:first_query)
+    query.ratings.destroy_all
+    query.ratings.create!(doc_id: 'doc1', rating: 1)
+    query.ratings.create!(doc_id: 'doc2', rating: 0)
+
+    first = QueryScoreService.score(query, scorer)
+    second = QueryScoreService.score(query, scorer)
+
+    assert_in_delta first, second
+    assert_not_nil second
+  end
 end

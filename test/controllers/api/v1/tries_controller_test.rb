@@ -196,6 +196,34 @@ search_endpoint: es_endpoint.attributes }
           assert_equal %w[locale platform], response.parsed_body['curator_vars'].keys.sort
           assert_not_includes the_try.curator_vars_map.keys, :old_var
         end
+
+        test 'preserves existing endpoint method when search endpoint payload omits api_method' do
+          existing_endpoint = SearchEndpoint.create!(
+            owner:         joey,
+            search_engine: 'es',
+            endpoint_url:  'http://example.test/es/_search',
+            api_method:    'POST'
+          )
+          the_try.update!(search_endpoint: existing_endpoint)
+
+          put :update,
+              params: {
+                case_id:         the_case.id,
+                try_number:      the_try.try_number,
+                try:             { field_spec: 'id:id,title:title' },
+                search_endpoint: {
+                  search_engine: existing_endpoint.search_engine,
+                  endpoint_url:  existing_endpoint.endpoint_url,
+                },
+              }
+
+          assert_response :ok
+
+          the_try.reload
+          assert_equal existing_endpoint.id, the_try.search_endpoint.id
+          assert_equal 'POST', the_try.search_endpoint.api_method
+          assert_equal 'POST', response.parsed_body['api_method']
+        end
       end
 
       describe 'Creates new case tries' do

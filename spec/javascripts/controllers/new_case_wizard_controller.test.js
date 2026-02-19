@@ -4,6 +4,17 @@ vi.mock('@hotwired/stimulus', () => ({
   Controller: class {},
 }))
 
+vi.mock('api/fetch', () => ({
+  apiFetch: vi.fn(),
+}))
+
+vi.mock('utils/quepid_root', () => ({
+  getQuepidRootUrl: () => '',
+  buildApiUrl: () => '/api/cases/1/tries/1',
+  buildCaseQueriesUrl: () => '/case/1/queries',
+}))
+
+import { apiFetch } from 'api/fetch'
 import NewCaseWizardController from 'controllers/new_case_wizard_controller'
 
 function makeStep(stepNum) {
@@ -56,5 +67,39 @@ describe('new_case_wizard_controller', () => {
     expect(stepAnnouncerTarget.textContent).toContain('Wizard step 2 of 4')
     expect(controller.stepTargets[0].getAttribute('aria-hidden')).toBe('true')
     expect(controller.stepTargets[1].getAttribute('aria-hidden')).toBe('false')
+  })
+
+  it('defaults api method by engine', () => {
+    expect(NewCaseWizardController.prototype._defaultApiMethodForEngine.call({}, 'solr')).toBe('GET')
+    expect(NewCaseWizardController.prototype._defaultApiMethodForEngine.call({}, 'searchapi')).toBe('GET')
+    expect(NewCaseWizardController.prototype._defaultApiMethodForEngine.call({}, 'es')).toBe('POST')
+    expect(NewCaseWizardController.prototype._defaultApiMethodForEngine.call({}, 'os')).toBe('POST')
+  })
+
+  it('sends POST api_method for es endpoints in save payload', async () => {
+    vi.clearAllMocks()
+    apiFetch.mockResolvedValue({ ok: true, json: async () => ({}) })
+    const controller = {
+      caseIdValue: 1,
+      tryNumberValue: 1,
+      hasFieldSpecTarget: true,
+      fieldSpecTarget: { value: 'id:_id,title:title' },
+      _tmdbActive: true,
+      _tmdbQueryParams: '{"query":{"match_all":{}}}',
+      hasExistingEndpointTarget: true,
+      existingEndpointTarget: { value: '' },
+      hasSearchEngineTarget: true,
+      searchEngineTarget: { value: 'es' },
+      hasEndpointUrlTarget: true,
+      endpointUrlTarget: { value: 'http://example.test/es/_search' },
+      _defaultApiMethodForEngine: NewCaseWizardController.prototype._defaultApiMethodForEngine,
+    }
+
+    await NewCaseWizardController.prototype._saveEndpointAndFieldSpec.call(controller, '')
+
+    expect(apiFetch).toHaveBeenCalledTimes(1)
+    const body = JSON.parse(apiFetch.mock.calls[0][1].body)
+    expect(body.search_endpoint.api_method).toBe('POST')
+    expect(body.search_endpoint.search_engine).toBe('es')
   })
 })

@@ -49,6 +49,7 @@ module Api
         if params.key?(:search_endpoint)
           search_endpoint_params_to_use = search_endpoint_params
           convert_blank_values_to_nil search_endpoint_params_to_use
+          normalize_search_endpoint_params search_endpoint_params_to_use
 
           unless search_endpoint_params_to_use.empty?
             search_endpoint = @current_user.search_endpoints_involved_with.find_by search_endpoint_params_to_use
@@ -105,6 +106,7 @@ module Api
       def update
         search_endpoint_params_to_use = search_endpoint_params
         search_endpoint_params_to_use = convert_blank_values_to_nil search_endpoint_params_to_use
+        normalize_search_endpoint_params search_endpoint_params_to_use
         unless search_endpoint_params_to_use.empty?
 
           # really should be a search_endpoint_id passed in versus all the properties of one!
@@ -150,6 +152,20 @@ module Api
             hash[key] = nil
           end
         end
+      end
+
+      def normalize_search_endpoint_params hash
+        return if hash.blank?
+
+        # When omitted, do not force or persist api_method. Removing blank values
+        # lets endpoint lookup match existing endpoints regardless of method.
+        api_method_key = if hash.key?(:api_method)
+                           :api_method
+                         elsif hash.key?('api_method')
+                           'api_method'
+                         end
+
+        hash.delete(api_method_key) if api_method_key && hash[api_method_key].blank?
       end
 
       def set_try

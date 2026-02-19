@@ -81,13 +81,13 @@ These Angular in-workspace modals are now handled by separate Rails pages. This 
 
 ---
 
-## 8. Query List Renders All Queries (No Pagination)
+## 8. Client-Side Query List Pagination
 
-**Angular:** `dir-pagination-controls` paginated the query list.
+**Angular:** `dir-pagination-controls` paginated the query list with a page size of 15.
 
-**Now:** All queries render at once. Filter and sort help manage large lists.
+**Now:** Client-side pagination with a default page size of 15 queries per page. All queries are rendered in the DOM, but only the current page is visible. Filter and sort work across all queries, then pagination applies to the filtered/sorted results. Page state persists in the URL (`?page=N`).
 
-**Why:** Simplification. Pagination added complexity with minimal benefit since filter/sort handles the common "find a specific query" case. For extremely large cases (1000+ queries), this is a known tradeoff — virtual scrolling could be added later if needed, but hasn't been requested.
+**Why:** Client-side pagination provides a better UX than rendering all queries at once for large cases, while keeping the implementation simple (no server round-trips). The page size matches Angular's default. Filter and sort operate on the full dataset before pagination, so users can find specific queries regardless of which page they're on.
 
 ---
 
@@ -96,10 +96,10 @@ These Angular in-workspace modals are now handled by separate Rails pages. This 
 **Angular:** Scoring happened entirely in the browser. `scorerSvc` ran the scorer JavaScript against local results, computed per-query scores, and aggregated case-level scores — all in the same synchronous pipeline.
 
 **Now:** Scoring uses a two-tier approach:
-1. **Immediate per-query score:** After a rating change, `Api::V1::Queries::ScoresController#create` → `QueryScoreService` computes the score for just that query using existing ratings (no search engine call). The result updates the UI instantly. See [Workspace API Usage](workspace_api_usage.md) for scoring endpoint documentation.
+1. **Immediate per-query score:** After a rating change, the workspace dispatches a `query-score:refresh` event. `QueryListController` listens for this event and calls `Api::V1::Queries::ScoresController#create` → `QueryScoreService`. The service builds a docs array from the query's existing ratings and the latest snapshot (for position data), then runs the scorer JavaScript in a MiniRacer context. The result updates the UI instantly without any search engine call. If scoring fails (e.g., scorer code error), the endpoint falls back to the last known score from `Case#last_score`. See [Workspace API Usage](workspace_api_usage.md) for scoring endpoint documentation.
 2. **Background full-case evaluation:** `RunCaseEvaluationJob` re-scores all queries and computes the case-level aggregate, broadcasting the result via Turbo Stream.
 
-**Why:** Client-side scoring required the full scorer JavaScript to run in the browser with access to all search results. With server-side search, results aren't held in client memory. The two-tier approach gives users immediate feedback on the query they just rated, while the full case score updates asynchronously. This is actually faster perceived UX than Angular — the query score badge updates before you could blink.
+**Why:** Client-side scoring required the full scorer JavaScript to run in the browser with access to all search results. With server-side search, results aren't held in client memory. The two-tier approach gives users immediate feedback on the query they just rated, while the full case score updates asynchronously. This is actually faster perceived UX than Angular — the query score badge updates before you could blink. The lightweight scoring path uses snapshot data for document positions (when available), ensuring scores reflect the current result ordering even without re-running search.
 
 ---
 

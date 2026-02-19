@@ -1,6 +1,6 @@
 # Quepid Developer Guide
 
-This guide provides detailed instructions for developers who want to set up, run, test, and contribute to Quepid. For a full index of documentation by topic, see [docs/README.md](docs/README.md).
+This guide provides detailed instructions for developers who want to set up, run, test, and contribute to Quepid. For architecture and port-specific docs, see [docs/app_structure.md](docs/app_structure.md) and [docs/port/README.md](docs/port/README.md). For a pragmatic analysis of setup, testing, and tooling improvements, see [docs/pragmatic_engineering_setup_review.md](docs/pragmatic_engineering_setup_review.md).
 
 ## Table of Contents
 
@@ -39,6 +39,7 @@ This guide provides detailed instructions for developers who want to set up, run
 - [Elasticsearch](#elasticsearch)
 - [Lefthook (Git Hooks)](#lefthook-git-hooks)
 - [Dev Errata](#dev-errata)
+  - [Project Conventions](#project-conventions)
   - [What is Claude on Rails?](#what-is-claude-on-rails)
   - [How to use a new Node module or update an existing one](#how-to-use-a-new-node-module-or-update-an-existing-one)
   - [How to use a new Ruby Gem or update an existing one](#how-to-use-a-new-ruby-gem-or-update-an-existing-one)
@@ -106,6 +107,8 @@ Now fire up Quepid locally at http://localhost:
 bin/docker server
 ```
 
+(or `bin/docker s` for short)
+
 It can take up to a minute for the server to respond as it compiles all the front end assets on the first call.
 
 We've created a helper script to run and manage the app through docker that wraps around the `docker-compose` command. You will need Ruby installed.
@@ -136,8 +139,8 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 #### Database Setup
 
-1. Start up MySQL however you like.  Some folks set up Quepid with Docker, and then 
-
+1. Start MySQL. If you use Docker for development, MySQL runs in a container. For local setup, install and start MySQL 8.0+ (e.g. `brew services start mysql` on macOS, or your system's package manager).
+2. Ensure the database user and credentials in `config/database.yml` (or `.env` if used) match your MySQL setup. The default assumes `root` with password `password`.
 
 #### Application Setup
 
@@ -176,6 +179,8 @@ bin/rails test                # Run backend tests
 bin/rails test:frontend       # Run frontend tests
 bundle exec rubocop           # Run Ruby linter
 ```
+
+**Local Ruby commands:** When running Ruby commands locally (e.g. `rails`, `rake`, `bundle exec`), use `rv run` so the correct Ruby version is used: e.g. `rv run bundle exec rails test`.
 
 As you read through the rest of this guide, just ignore the `bin/docker r` part of the commands! Feedback welcome 🙏.
 
@@ -474,6 +479,15 @@ git commit --no-verify
 ```
 
 # Dev Errata
+
+## Project Conventions
+
+When contributing, follow these conventions:
+
+- **URLs & navigation:** Never hardcode `/` or absolute paths. Use `getQuepidRootUrl()` and `buildPageUrl()` (or `buildApiUrl`) in JavaScript, and `quepid_root_url` in Rails. See [docs/port/api_client.md](docs/port/api_client.md).
+- **Boolean params:** In controllers, use `deserialize_bool_param(params[:foo])` instead of string comparison for boolean parameters.
+- **Predicates:** In Ruby, use `credentials?` not `has_credentials?` for predicate method names.
+- **Styling:** Use `.css` only; do not use `.scss`.
 
 ## What is Claude on Rails?
 

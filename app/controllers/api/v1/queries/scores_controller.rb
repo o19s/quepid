@@ -17,15 +17,41 @@ module Api
           return render(json: { error: 'Query not found' }, status: :not_found) unless query
 
           scorer = @case.scorer
-          return render(json: { error: 'No scorer configured' }, status: :unprocessable_content) unless scorer
+          unless scorer
+            return render json: {
+              query_id:        query.id,
+              score:           fallback_score_for(query),
+              max_score:       nil,
+              fallback:        true,
+              fallback_reason: 'no_scorer_configured',
+            }
+          end
 
-          score = QueryScoreService.score(query, scorer)
+          computed_score = QueryScoreService.score(query, scorer)
+          used_fallback = computed_score.nil?
+          score = used_fallback ? fallback_score_for(query) : computed_score
 
           render json: {
-            query_id:  query.id,
-            score:     score,
-            max_score: scorer.scale&.last,
+            query_id:        query.id,
+            score:           score,
+            max_score:       scorer.scale&.last,
+            fallback:        used_fallback,
+            fallback_reason: used_fallback ? 'lightweight_score_unavailable' : nil,
           }
+        end
+
+        private
+
+        def fallback_score_for query
+          queries = @case.last_score&.queries
+          return '?' unless queries.is_a?(Hash)
+
+          entry = queries[query.id.to_s] || queries[query.id]
+          if entry.is_a?(Hash)
+            entry['score'] || entry[:score] || '?'
+          else
+            entry || '?'
+          end
         end
       end
     end

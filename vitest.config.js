@@ -18,6 +18,7 @@ export default {
   },
   resolve: {
     alias: {
+      '@hotwired/stimulus': path.resolve(__dirname, 'spec/javascripts/support/stimulus_stub.js'),
       modules: path.resolve(__dirname, 'app/javascript/modules'),
       utils: path.resolve(__dirname, 'app/javascript/utils'),
       api: path.resolve(__dirname, 'app/javascript/api'),

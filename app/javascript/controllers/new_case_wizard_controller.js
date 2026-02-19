@@ -194,7 +194,11 @@ export default class extends Controller {
       const engine = this.hasSearchEngineTarget ? this.searchEngineTarget.value : ""
       const endpointUrl = this.hasEndpointUrlTarget ? this.endpointUrlTarget.value.trim() : ""
       if (engine && endpointUrl) {
-        body.search_endpoint = { search_engine: engine, endpoint_url: endpointUrl }
+        body.search_endpoint = {
+          search_engine: engine,
+          endpoint_url: endpointUrl,
+          api_method: this._defaultApiMethodForEngine(engine)
+        }
       }
     }
 
@@ -207,6 +211,12 @@ export default class extends Controller {
       const data = await res.json().catch(() => ({}))
       throw new Error(data.error || data.message || `Failed to save settings (${res.status})`)
     }
+  }
+
+  _defaultApiMethodForEngine(engine) {
+    const normalized = String(engine || "").toLowerCase()
+    if (normalized === "es" || normalized === "os") return "POST"
+    return "GET"
   }
 
   async _addFirstQuery(root, queryText) {
@@ -234,7 +244,11 @@ export default class extends Controller {
     const fieldSpec = this.hasFieldSpecTarget ? this.fieldSpecTarget.value.trim() : ""
     const tryBody = {
       try: { field_spec: fieldSpec || "id:id, title:title" },
-      search_endpoint: { search_engine: "static", endpoint_url: `static://csv-upload/${this.caseIdValue}` }
+      search_endpoint: {
+        search_engine: "static",
+        endpoint_url: `static://csv-upload/${this.caseIdValue}`,
+        api_method: "GET"
+      }
     }
     const tryRes = await apiFetch(tryUrl, {
       method: "PUT",
