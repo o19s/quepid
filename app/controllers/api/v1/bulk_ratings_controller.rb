@@ -41,14 +41,10 @@ module Api
 
       private
 
-      # def rating_params
-      #  params.permit(:rating)
-      # should be params.require(:rating).permit(:rating) to
-      # follow standard pattern.
-      # end
-
       def pluck_out_just_rating_param
-        params[:rating]
+        # Bulk ratings API accepts a top-level scalar `rating`:
+        # { doc_ids: ["id1", "id2"], rating: 5 }
+        params.permit(:rating)[:rating]
       end
     end
   end

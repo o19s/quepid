@@ -56,7 +56,7 @@
       <% end %>
     </div>
     <%# Detail modal: shows all document fields + raw JSON tab %>
-    <div class="modal fade" id="results-pane-detail-modal" tabindex="-1" aria-hidden="true" data-results-pane-target="detailModal">
+    <div class="modal fade" id="<%= detail_modal_id %>" tabindex="-1" aria-hidden="true" data-results-pane-target="detailModal">
       <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
@@ -66,17 +66,17 @@
           <div class="modal-body" data-results-pane-target="detailModalBody">
             <ul class="nav nav-tabs mb-3" role="tablist">
               <li class="nav-item" role="presentation">
-                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#detail-fields-tab" type="button" role="tab" aria-selected="true">Fields</button>
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#<%= detail_fields_tab_id %>" type="button" role="tab" aria-selected="true">Fields</button>
               </li>
               <li class="nav-item" role="presentation">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#detail-json-tab" type="button" role="tab" aria-selected="false">Raw JSON</button>
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#<%= detail_json_tab_id %>" type="button" role="tab" aria-selected="false">Raw JSON</button>
               </li>
             </ul>
             <div class="tab-content">
-              <div class="tab-pane fade show active" id="detail-fields-tab" role="tabpanel">
+              <div class="tab-pane fade show active" id="<%= detail_fields_tab_id %>" role="tabpanel">
                 <dl data-results-pane-target="detailFieldsList"></dl>
               </div>
-              <div class="tab-pane fade" id="detail-json-tab" role="tabpanel">
+              <div class="tab-pane fade" id="<%= detail_json_tab_id %>" role="tabpanel">
                 <div data-results-pane-target="detailJsonContainer" style="max-height: 60vh; overflow: auto;">
                   <textarea class="d-none" data-results-pane-target="detailJsonTextarea" data-codemirror-mode="json" data-codemirror-readonly="true"></textarea>
                   <pre class="mb-0 bg-light p-3 rounded" data-results-pane-target="detailJsonPre"></pre>

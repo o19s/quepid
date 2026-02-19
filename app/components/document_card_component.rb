@@ -11,6 +11,7 @@
 # @see MatchesComponent
 # @see docs/view_component_conventions.md
 class DocumentCardComponent < ApplicationComponent
+  MAX_FIELDS_JSON_BYTES = 10_000
   # @param doc [Hash] Document from search API: id, position, fields, explain (optional)
   # @param rating [String, nil] Current rating for this doc (empty for "Rate")
   # @param index [Integer] 0-based index for display position
@@ -70,7 +71,12 @@ class DocumentCardComponent < ApplicationComponent
 
   # Full fields as JSON for the detail modal (embedded as data attribute on the card).
   def fields_json
-    fields.to_json
+    return @fields_json if defined?(@fields_json)
+
+    json = fields.to_json
+    return nil if json.bytesize > MAX_FIELDS_JSON_BYTES
+
+    @fields_json = json
   end
 
   def rating_badge_id

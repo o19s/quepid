@@ -22,6 +22,8 @@ class CuratorVariable < ApplicationRecord
 
   validates :name,
             presence: true
+  validates :name,
+            format: { with: /\A[A-Za-z0-9_]+\z/, message: 'may only contain letters, numbers, and underscores' }
 
   validates :value,
             presence: true

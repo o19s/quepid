@@ -216,11 +216,7 @@ module Api
             requested_format = params[:format]&.to_sym
 
             request.format =
-              if :html == requested_format
-                :html
-              elsif :json == requested_format
-                :json
-              elsif request.headers['Accept']&.include?('text/html')
+              if :html == requested_format || request.headers['Accept']&.include?('text/html')
                 :html
               else
                 :json

@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Runs the scorer code against sample docs via POST scorers/:id/test.
-// Replaces the Angular scorerEvalTest.js worker; uses server-side JavascriptScorer.
+// Uses server-side JavascriptScorer for evaluation.
 export default class extends Controller {
   static values = {
     url: String

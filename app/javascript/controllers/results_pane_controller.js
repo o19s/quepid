@@ -463,16 +463,21 @@ export default class extends Controller {
     await this.fetchResults(true)
   }
 
-  _openDetailModal(triggerEl) {
+  async _openDetailModal(triggerEl) {
     const card = triggerEl.closest(".document-card")
     if (!card) return
 
     const docId = card.dataset.docId || "Unknown"
     let fields = {}
 
-    // Read fields from data-doc-fields (always present on server-rendered cards)
+    // Read fields from data-doc-fields when present on server-rendered cards.
     if (card.dataset.docFields) {
       try { fields = JSON.parse(card.dataset.docFields) } catch (_e) { /* ignore */ }
+    }
+
+    // For large docs, data-doc-fields may be omitted. Fetch on demand.
+    if (Object.keys(fields).length === 0) {
+      fields = await this._fetchDetailFields(docId)
     }
 
     // Populate title
@@ -541,6 +546,28 @@ export default class extends Controller {
 
     const modal = this.hasDetailModalTarget && window.bootstrap?.Modal?.getOrCreateInstance(this.detailModalTarget)
     modal?.show()
+  }
+
+  async _fetchDetailFields(docId) {
+    if (!this.caseIdValue || !this.tryNumberValue || !this.queryIdValue) return {}
+
+    try {
+      const root = getQuepidRootUrl()
+      const url = new URL(buildApiUrl(root, "cases", this.caseIdValue, "tries", this.tryNumberValue, "queries", this.queryIdValue, "search"))
+      url.searchParams.set("q", docId)
+      url.searchParams.set("rows", "10")
+      url.searchParams.set("start", "0")
+      const res = await apiFetch(url.toString(), { headers: { Accept: "application/json" } })
+      if (!res.ok) return {}
+      const data = await res.json().catch(() => ({}))
+      const docs = Array.isArray(data.docs) ? data.docs : []
+      if (docs.length === 0) return {}
+
+      const exact = docs.find((d) => String(d?.id) === String(docId)) || docs[0]
+      return exact?.fields || {}
+    } catch (_e) {
+      return {}
+    }
   }
 
   viewSource() {

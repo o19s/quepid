@@ -75,11 +75,7 @@ module Api
           requested_format = params[:format]&.to_sym
 
           request.format =
-            if :turbo_stream == requested_format
-              :turbo_stream
-            elsif :json == requested_format
-              :json
-            elsif request.headers['Accept']&.include?('turbo-stream')
+            if :turbo_stream == requested_format || request.headers['Accept']&.include?('turbo-stream')
               :turbo_stream
             else
               :json

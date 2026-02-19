@@ -53,6 +53,8 @@ class CoreController < ApplicationController
     end
   end
 
+  # Applies legacy core workspace form/query params to persisted case/try settings.
+  # Used by core page submissions and query-string driven updates in CoreController.
   def populate_from_params
     if @case.present? && params[:caseName]
       @case.case_name = params[:caseName]
@@ -60,7 +62,8 @@ class CoreController < ApplicationController
     end
 
     if @try.present?
-      # Deal with front end UI changes to search engine being stored in backend
+      # Maps core page params (`searchEngine`, `searchUrl`, `apiMethod`,
+      # `basicAuthCredential`, `fieldSpec`) to SearchEndpoint/@try persistence.
       if params[:searchEngine].present?
 
         search_endpoint_params = {

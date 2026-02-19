@@ -239,6 +239,52 @@ search_endpoint: es_endpoint.attributes }
           end
         end
 
+        test 'copies curator vars when duplicating from parent try' do
+          parent_try = the_case.tries.latest
+          parent_try.update!(
+            query_params:   'q=##query##&defType=edismax',
+            field_spec:     'id:id, title:title, body',
+            number_of_rows: 25,
+            escape_query:   false
+          )
+          parent_try.curator_variables.create!(name: 'boost_factor', value: 2.5)
+          parent_try.curator_variables.create!(name: 'title_weight', value: 10)
+
+          assert_difference 'the_case.tries.count', 1 do
+            post :create, params: {
+              case_id:           the_case.id,
+              parent_try_number: parent_try.try_number,
+              try:               {},
+            }
+          end
+
+          assert_response :ok
+          created_try = the_case.tries.where(try_number: response.parsed_body['try_number']).first
+          assert_equal parent_try.curator_vars_map, created_try.curator_vars_map
+          assert_equal parent_try.search_endpoint_id, created_try.search_endpoint_id
+          assert_equal parent_try.query_params, created_try.query_params
+          assert_equal parent_try.field_spec, created_try.field_spec
+          assert_equal parent_try.number_of_rows, created_try.number_of_rows
+          assert_equal parent_try.escape_query, created_try.escape_query
+        end
+
+        test 'uses explicit try params as overrides when duplicating from parent try' do
+          parent_try = the_case.tries.latest
+          parent_try.update!(query_params: 'q=##query##&defType=edismax', number_of_rows: 25)
+
+          post :create, params: {
+            case_id:           the_case.id,
+            parent_try_number: parent_try.try_number,
+            try:               { query_params: 'q=##query##&rows=100', number_of_rows: 100 },
+          }
+
+          assert_response :ok
+          created_try = the_case.tries.where(try_number: response.parsed_body['try_number']).first
+          assert_equal 'q=##query##&rows=100', created_try.query_params
+          assert_equal 100, created_try.number_of_rows
+          assert_equal parent_try.search_endpoint_id, created_try.search_endpoint_id
+        end
+
         test 'adds curator vars to the try' do
           try_params = {
 
@@ -369,6 +415,14 @@ search_endpoint: solr_endpoint.attributes }
           assert_equal 10, created_try.number_of_rows
         end
 
+        test 'does not accidentally assign a search endpoint when omitted and no parent is provided' do
+          post :create, params: { case_id: the_case.id, try: { name: 'No Endpoint' } }
+
+          assert_response :ok
+          created_try = the_case.tries.where(try_number: response.parsed_body['try_number']).first
+          assert_nil created_try.search_endpoint_id
+        end
+
         test 'updates a search endpoint while creating a try' do
           try = the_case.tries.first
           post :create,
@@ -424,6 +478,20 @@ search_endpoint: { search_engine: 'os', endpoint_url: 'http://my.os.url', api_me
 
             assert_response :no_content
           end
+        end
+      end
+
+      describe 'Deletes only try guard' do
+        let(:the_case) { cases(:case_with_one_try) }
+        let(:the_try) { the_case.tries.first }
+
+        test 'cannot delete the only try in a case' do
+          assert_no_difference 'the_case.tries.count' do
+            delete :destroy, params: { case_id: the_case.id, try_number: the_try.try_number }
+          end
+
+          assert_response :unprocessable_entity
+          assert_equal 'Cannot delete the only try in a case', response.parsed_body['error']
         end
       end
 

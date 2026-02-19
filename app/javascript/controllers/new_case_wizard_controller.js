@@ -46,6 +46,7 @@ export default class extends Controller {
       this._modal = window.bootstrap.Modal.getOrCreateInstance(this.modalTarget) ?? new window.bootstrap.Modal(this.modalTarget)
       requestAnimationFrame(() => this._modal?.show())
     }
+    this._showStep()
   }
 
   disconnect() {
@@ -55,6 +56,7 @@ export default class extends Controller {
   }
 
   next() {
+    if (!this._canProceedFromCurrentStep()) return
     if (this._currentStep < TOTAL_STEPS) {
       this._currentStep++
       this._showStep()
@@ -78,11 +80,17 @@ export default class extends Controller {
     if (fieldAutoEl) {
       fieldAutoEl.setAttribute("data-field-autocomplete-search-endpoint-id-value", selected || "0")
     }
+    this._updateNavState()
   }
 
   onEngineChange() {
     if (!this.hasSearchapiHelpTarget || !this.hasSearchEngineTarget) return
     this.searchapiHelpTarget.classList.toggle("d-none", this.searchEngineTarget.value !== "searchapi")
+    this._updateNavState()
+  }
+
+  onStepInputChange() {
+    this._updateNavState()
   }
 
   useTmdbDemo(event) {
@@ -110,6 +118,7 @@ export default class extends Controller {
     if (this.hasTmdbDemoLinkTarget) {
       this.tmdbDemoLinkTarget.innerHTML = '<i class="bi bi-check-circle text-success"></i> TMDB demo settings applied!'
     }
+    this._updateNavState()
   }
 
   async finish() {
@@ -199,12 +208,10 @@ export default class extends Controller {
     if (!this.caseIdValue) return
 
     const url = buildCaseQueriesUrl(root, this.caseIdValue)
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
-    const res = await fetch(url, {
+    const res = await apiFetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        "X-CSRF-Token": token || "",
         Accept: "text/html"
       },
       body: `query_text=${encodeURIComponent(queryText)}`
@@ -306,6 +313,7 @@ export default class extends Controller {
     if (this.hasModalTitleTarget) {
       this.modalTitleTarget.textContent = titles[this._currentStep] || "Setup"
     }
+    this._updateNavState()
   }
 
   onCsvSelected() {
@@ -322,6 +330,7 @@ export default class extends Controller {
           this.csvPreviewTarget.classList.remove("d-none")
         }
         this._csvData = null
+        this._updateNavState()
         return
       }
 
@@ -337,8 +346,37 @@ export default class extends Controller {
         `
         this.csvPreviewTarget.classList.remove("d-none")
       }
+      this._updateNavState()
     }
     reader.readAsText(file)
+  }
+
+  _canProceedFromCurrentStep() {
+    if (this._currentStep === 2) return this._stepTwoValid()
+    if (this._currentStep === 3) return this._stepThreeValid()
+    return true
+  }
+
+  _stepTwoValid() {
+    if (this._csvData) return true
+    const existingId = this.hasExistingEndpointTarget ? this.existingEndpointTarget.value : ""
+    if (existingId) return true
+    const endpointUrl = this.hasEndpointUrlTarget ? this.endpointUrlTarget.value.trim() : ""
+    return endpointUrl.length > 0
+  }
+
+  _stepThreeValid() {
+    const fieldSpec = this.hasFieldSpecTarget ? this.fieldSpecTarget.value.trim() : ""
+    return fieldSpec.length > 0
+  }
+
+  _updateNavState() {
+    if (!this.hasNextBtnTarget) return
+    if (this._currentStep >= TOTAL_STEPS) {
+      this.nextBtnTarget.disabled = true
+      return
+    }
+    this.nextBtnTarget.disabled = !this._canProceedFromCurrentStep()
   }
 
   _parseCsv(text) {

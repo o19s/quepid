@@ -28,7 +28,8 @@ module Authentication
                 current_user.cases_involved_with.where(id: case_id).first
               end
 
-      @case = Case.public_cases.find_by(id: case_id) if @case.nil? # We didn't find a match, so let's see if it's a public case
+      # Fallback: if not found in current_user.cases_involved_with, allow public case access.
+      @case = Case.public_cases.find_by(id: case_id) if @case.nil?
     end
 
     def recent_cases count

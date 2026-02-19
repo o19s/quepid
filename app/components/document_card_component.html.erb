@@ -1,6 +1,6 @@
 <%# Document card for results pane. Rating badge id matches Turbo Stream target. %>
 <%# data-doc-fields embeds all fields as JSON so the detail modal can display them without an API call. %>
-<div class="card mb-2 document-card" data-doc-id="<%= h(doc_id) %>" data-doc-fields="<%= h(fields_json) %>">
+<div class="card mb-2 document-card" data-doc-id="<%= h(doc_id) %>"<% if fields_json %> data-doc-fields="<%= h(fields_json) %>"<% end %>>
   <div class="card-body py-2">
     <div class="d-flex justify-content-between align-items-start">
       <div class="flex-grow-1">

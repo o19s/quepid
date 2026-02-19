@@ -5,13 +5,14 @@ import { getQuepidRootUrl, buildApiUrl, buildPageUrl } from "utils/quepid_root"
 // Toggles the settings panel and handles saving try query params.
 // Replaces SettingsCtrl and CurrSettingsCtrl.
 export default class extends Controller {
-  static values = { caseId: Number, tryNumber: Number, curatorVars: Object, searchEngine: String }
-  static targets = ["trigger", "panel", "paramsForm", "queryParams", "escapeQuery", "numberOfRows", "curatorVarsContainer", "urlValidationFeedback", "queryParamsFeedback", "endpointSelect", "templateCallFeedback"]
+  static values = { caseId: Number, tryNumber: Number, curatorVars: Object, searchEngine: String, triesCount: Number }
+  static targets = ["trigger", "panel", "paramsForm", "queryParams", "escapeQuery", "numberOfRows", "curatorVarsContainer", "urlValidationFeedback", "queryParamsFeedback", "endpointSelect", "templateCallFeedback", "tryHistoryToggle"]
 
   connect() {
     this._renderCuratorVarInputs()
     this._initCodeMirror()
     this._checkTemplateCall()
+    this._tryHistoryExpanded = false
   }
 
   toggle() {
@@ -83,6 +84,10 @@ export default class extends Controller {
   async deleteTry(event) {
     const tryNumber = event.currentTarget.dataset.tryNumber
     if (!tryNumber || !this.caseIdValue) return
+    if (this.triesCountValue <= 1) {
+      if (window.flash) window.flash.error = "Cannot delete the only try in a case."
+      return
+    }
     if (!confirm(`Delete Try ${tryNumber}? This cannot be undone.`)) return
 
     try {
@@ -108,6 +113,20 @@ export default class extends Controller {
     } catch (err) {
       console.error("Delete try failed:", err)
       if (window.flash) window.flash.error = err.message
+    }
+  }
+
+  toggleTryHistory() {
+    const extras = this.element.querySelectorAll(".js-try-history-extra")
+    if (extras.length === 0) return
+
+    this._tryHistoryExpanded = !this._tryHistoryExpanded
+    extras.forEach((el) => el.classList.toggle("d-none", !this._tryHistoryExpanded))
+
+    if (this.hasTryHistoryToggleTarget) {
+      this.tryHistoryToggleTarget.textContent = this._tryHistoryExpanded
+        ? "Show fewer tries"
+        : `Show all ${this.triesCountValue} tries`
     }
   }
 

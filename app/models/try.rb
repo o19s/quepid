@@ -115,7 +115,10 @@ class Try < ApplicationRecord
     return if vars.blank?
 
     vars.each do |name, value|
-      curator_variables.create(name: name, value: value)
+      normalized_name = name.to_s.gsub(/[^A-Za-z0-9_]/, '_').gsub(/\A_+|_+\z/, '')
+      next if normalized_name.blank?
+
+      curator_variables.create(name: normalized_name, value: value)
     end
   end
 

@@ -1,14 +1,17 @@
-# Branch Comparison: `main` vs `deangularjs`
+# DeAngularJS Migration Summary
 
-> Generated 2026-02-14 | 31 commits | 223 files changed | +4,860 / -5,413 lines
+> Updated 2026-02-19 | Migration Complete
 
-**See also:** The `deangularjs-experimental` branch extends this work by migrating the **core workspace** (`/case/:id/try/:try_number`) to Stimulus + ViewComponents, completing the full removal of Angular from the codebase. See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md).
+**See also:** The full migration including the **core workspace** (`/case/:id/try/:try_number`) is documented in [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md).
 
 ## Overview
 
-The `deangularjs` branch is a large-scale migration effort that replaces AngularJS-powered UI pages with server-rendered Rails views and Stimulus controllers. The areas migrated are **Cases listing**, **Teams**, **Scorers**, and supporting features like sharing modals and import flows. The core AngularJS query/try tuning interface is **not** touched by this branch.
+This document summarizes the migration from AngularJS to Rails server-rendered views + Stimulus controllers. The migration was completed in phases:
 
-The `deangularjs-experimental` branch builds on this and migrates the core workspace, resulting in **complete removal of all Angular code** — 36 ViewComponents, 50 Stimulus controllers, and 4 new Core sub-controllers replace the entire Angular frontend.
+1. **Phase 1 (`deangularjs` branch)**: Migrated **Cases listing**, **Teams**, **Scorers**, and supporting features like sharing modals and import flows.
+2. **Phase 2 (`deangularjs-experimental` branch)**: Migrated the core workspace (`/case/:id/try/:try_number`), completing the full removal of Angular from the codebase.
+
+**Current state:** Angular has been **completely removed** from the codebase. The application now uses **37 ViewComponents**, **60 Stimulus controllers**, and server-rendered Rails views throughout. All routes use the modern stack (ViewComponents + Stimulus + Turbo).
 
 ---
 
@@ -50,13 +53,15 @@ Entire component directories under `app/assets/javascripts/components/` were rem
 - `teamsCtrl.js` — Teams listing controller
 - `unarchiveSearchEndpoint.js` — Unarchive search endpoint controller
 
-### AngularJS Services & Filters
+### AngularJS Services & Filters (fully removed)
 
-- `scorerControllerActionsSvc.js` — Deleted entirely
-- `teamSvc.js` — Heavily gutted (~220 lines removed), retains minimal functionality
-- `searchEndpointSvc.js` — Heavily gutted (~100 lines removed)
-- `caseSvc.js`, `bookSvc.js`, `userSvc.js` — Minor removals of now-unused methods
-- `scorerType.js` filter — Deleted
+All AngularJS services and filters have been completely removed from the codebase:
+- `scorerControllerActionsSvc.js` — **Deleted**
+- `teamSvc.js` — **Deleted** (replaced by Rails `teams_controller.rb`)
+- `searchEndpointSvc.js` — **Deleted** (replaced by Rails controllers and API endpoints)
+- `caseSvc.js`, `bookSvc.js`, `userSvc.js` — **Deleted** (replaced by Rails controllers, Stimulus controllers, and ViewComponents)
+- `scorerType.js` filter — **Deleted**
+- All other Angular services — **Deleted** (see [angular_services_responsibilities_mapping.md](angular_services_responsibilities_mapping.md) for replacements)
 
 ### AngularJS Templates (6 files deleted)
 
@@ -99,10 +104,12 @@ This was replaced by allowing admins to edit communal scorers directly from the 
 | Controller | Lines | Responsibilities |
 |---|---|---|
 | `cases_controller.rb` | ~75 | Cases index listing, archive/unarchive actions |
-| `scorers_controller.rb` | ~203 | Full CRUD for scorers, clone, share/unshare, set default |
-| `teams_controller.rb` | ~533 | Full CRUD for teams, member management, sharing cases/books/scorers/search endpoints, archive/unarchive |
+| `scorers_controller.rb` | ~237 | Full CRUD for scorers, clone, share/unshare, set default, test scorer code |
+| `teams_controller.rb` | ~541 | Full CRUD for teams, member management, sharing cases/books/scorers/search endpoints, archive/unarchive, member autocomplete |
 
-### Stimulus Controllers (10 new files)
+### Stimulus Controllers (60 total)
+
+The initial migration added 10 Stimulus controllers for Cases, Teams, and Scorers pages:
 
 | Controller | Purpose |
 |---|---|
@@ -116,6 +123,8 @@ This was replaced by allowing admins to edit communal scorers directly from the 
 | `share_scorer_controller.js` | Share/unshare scorers with teams |
 | `share_search_endpoint_controller.js` | Share/unshare search endpoints with teams |
 | `team_member_autocomplete_controller.js` | Autocomplete for adding team members |
+
+The core workspace migration added 50 additional Stimulus controllers for query management, results display, scoring, annotations, and workspace features. See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md) for the complete list.
 
 ### Rails Views (13 new files)
 
@@ -214,10 +223,15 @@ post '/cases/:id/unarchive' => 'cases#unarchive'
 - `books/_book.html.erb` — Updated sharing icon to use embedded SVG instead of AngularJS directive
 - `books/index.html.erb` — Added sharing modal include
 
-### AngularJS Services (slimmed down in `deangularjs`, fully removed in `deangularjs-experimental`)
-- `teamSvc.js` — Slimmed in `deangularjs`; **deleted entirely** in `deangularjs-experimental`
-- `searchEndpointSvc.js` — Slimmed in `deangularjs`; **deleted entirely** in `deangularjs-experimental`
-- `caseTryNavSvc.js` — Minor changes in `deangularjs`; **deleted entirely** in `deangularjs-experimental` (replaced by `utils/quepid_root.js`)
+### AngularJS Services (fully removed)
+
+All AngularJS services have been removed from the codebase:
+- `teamSvc.js` — **Deleted** (replaced by Rails `teams_controller.rb` and server-rendered views)
+- `searchEndpointSvc.js` — **Deleted** (replaced by Rails controllers and API endpoints)
+- `caseTryNavSvc.js` — **Deleted** (replaced by `app/javascript/utils/quepid_root.js`)
+- All other Angular services — **Deleted** (replaced by Stimulus controllers, ViewComponents, and Rails API endpoints)
+
+See [angular_services_responsibilities_mapping.md](angular_services_responsibilities_mapping.md) for the complete mapping of Angular services to their modern replacements.
 
 ### CSS
 - `bootstrap5-add.css` — New styles added
@@ -232,3 +246,17 @@ post '/cases/:id/unarchive' => 'cases#unarchive'
 
 ### Test Fixtures
 - `test/fixtures/users.yml` — Significantly reworked (~37 lines changed)
+
+---
+
+## Current Architecture
+
+The migration is complete. The codebase now uses:
+
+- **37 ViewComponents** (`app/components/`) — Server-rendered UI components
+- **60 Stimulus controllers** (`app/javascript/controllers/`) — Client-side interactivity
+- **Rails controllers** — Server-side request handling and rendering
+- **Turbo** — For dynamic page updates and navigation
+- **Modern layout** — `core_modern.html.erb` for the workspace, standard Rails layouts elsewhere
+
+All AngularJS code has been removed. The only remaining file from the Angular era is `app/assets/javascripts/mode-json.js` (ACE editor JSON mode), which is an orphaned file that can be safely deleted as it's no longer referenced anywhere in the codebase.

@@ -13,20 +13,7 @@ class QueryScoreService
   def self.score query, scorer
     return nil if scorer.blank? || scorer.code.blank?
 
-    # Build the docs array: we don't have snapshot docs, so we build a minimal
-    # array from the query's ratings (same shape JavascriptScorer expects).
-    # In the full flow, docs come from snapshot_docs with merged ratings.
-    # Here we only have rated docs, which is sufficient for most scorers.
-    doc_ratings = {}
-    query.ratings.each do |rating|
-      doc_ratings[rating.doc_id] = rating.rating
-    end
-
-    # docs: array of rated docs in no particular order (scorers that need
-    # position info won't work without a search, but most only need ratings)
-    docs = query.ratings.map do |rating|
-      { id: rating.doc_id, rating: rating.rating }
-    end
+    docs = build_docs query
 
     # best_docs: all rated docs, sorted by rating descending
     best_docs = docs.sort_by { |d| -(d[:rating] || 0) }
@@ -40,4 +27,42 @@ class QueryScoreService
     Rails.logger.warn("QueryScoreService: scoring failed for query #{query.id}: #{e.message}")
     nil
   end
+
+  def self.build_docs query
+    docs = []
+    ratings_by_doc_id = query.ratings.to_h { |rating| [ rating.doc_id.to_s, rating.rating ] }
+    seen_doc_ids = {}
+
+    latest_snapshot_query_for(query)&.snapshot_docs&.each do |snapshot_doc|
+      doc_id = snapshot_doc.doc_id.to_s
+      docs << {
+        id:       snapshot_doc.doc_id,
+        rating:   ratings_by_doc_id[doc_id],
+        position: snapshot_doc.position,
+      }
+      seen_doc_ids[doc_id] = true
+    end
+
+    # Include rated docs not present in the latest snapshot ordering.
+    next_position = docs.size + 1
+    ratings_by_doc_id.each do |doc_id, rating|
+      next if seen_doc_ids[doc_id]
+
+      docs << { id: doc_id, rating: rating, position: next_position }
+      next_position += 1
+    end
+
+    docs
+  end
+  private_class_method :build_docs
+
+  def self.latest_snapshot_query_for query
+    query.snapshot_queries
+      .joins(:snapshot)
+      .where(snapshots: { case_id: query.case_id })
+      .includes(:snapshot_docs)
+      .order('snapshots.created_at DESC')
+      .first
+  end
+  private_class_method :latest_snapshot_query_for
 end

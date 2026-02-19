@@ -51,12 +51,9 @@
               <div class="mb-2">
                 <label class="form-label small">Search engine</label>
                 <select class="form-select form-select-sm" data-new-case-wizard-target="searchEngine" data-action="change->new-case-wizard#onEngineChange">
-                  <option value="solr">Solr</option>
-                  <option value="es">Elasticsearch</option>
-                  <option value="os">OpenSearch</option>
-                  <option value="vectara">Vectara</option>
-                  <option value="algolia">Algolia</option>
-                  <option value="searchapi">SearchAPI (Custom)</option>
+                  <% search_engine_options.each do |label, value| %>
+                    <option value="<%= value %>"><%= label %></option>
+                  <% end %>
                 </select>
                 <div class="d-none mt-1" data-new-case-wizard-target="searchapiHelp">
                   <a href="<%= helpers.new_mapper_wizard_path %>" target="_blank" rel="noopener noreferrer" class="small">
@@ -66,7 +63,7 @@
               </div>
               <div class="mb-2">
                 <label class="form-label small">Endpoint URL</label>
-                <input type="url" class="form-control form-control-sm" placeholder="https://my-solr:8983/solr/collection/select" data-new-case-wizard-target="endpointUrl">
+                <input type="url" class="form-control form-control-sm" placeholder="https://my-solr:8983/solr/collection/select" data-new-case-wizard-target="endpointUrl" data-action="input->new-case-wizard#onStepInputChange">
               </div>
             </div>
             <hr class="my-3">
@@ -85,7 +82,7 @@
             <p class="text-muted small">Specify which fields to display from search results. Use a comma-separated list. Prefix with <code>title:</code> for the title field, <code>id:</code> for the document ID field.</p>
             <div class="mb-2 position-relative" data-controller="field-autocomplete" data-field-autocomplete-search-endpoint-id-value="0">
               <label class="form-label small">Field spec</label>
-              <input type="text" class="form-control form-control-sm font-monospace" placeholder="id:id, title:title, body, author" data-new-case-wizard-target="fieldSpec" data-field-autocomplete-target="input" value="id:id, title:title">
+              <input type="text" class="form-control form-control-sm font-monospace" placeholder="id:id, title:title, body, author" data-new-case-wizard-target="fieldSpec" data-field-autocomplete-target="input" value="id:id, title:title" data-action="input->new-case-wizard#onStepInputChange">
               <div class="dropdown-menu d-none position-absolute w-100" data-field-autocomplete-target="dropdown" style="max-height:200px;overflow:auto"></div>
             </div>
           </div>

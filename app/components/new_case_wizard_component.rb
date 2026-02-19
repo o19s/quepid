@@ -29,4 +29,8 @@ class NewCaseWizardComponent < ApplicationComponent
   def search_endpoints_json
     @search_endpoints.map { |ep| { id: ep.id, name: ep.name, search_engine: ep.search_engine, endpoint_url: ep.endpoint_url } }.to_json
   end
+
+  def search_engine_options
+    SearchEndpoint::SEARCH_ENGINES
+  end
 end

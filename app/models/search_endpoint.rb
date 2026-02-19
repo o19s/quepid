@@ -27,6 +27,15 @@
 #
 
 class SearchEndpoint < ApplicationRecord
+  SEARCH_ENGINES = {
+    'Solr'               => 'solr',
+    'Elasticsearch'      => 'es',
+    'OpenSearch'         => 'os',
+    'Vectara'            => 'vectara',
+    'Algolia'            => 'algolia',
+    'SearchAPI (Custom)' => 'searchapi',
+  }.freeze
+
   # Associations
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany

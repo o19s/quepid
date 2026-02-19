@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'securerandom'
+
 # Renders the results pane for the case/try workspace. When a query is selected,
 # fetches search results and displays document cards with inline rating (popover).
 # When no query is selected, prompts the user to select one.
@@ -65,4 +67,21 @@ class ResultsPaneComponent < ApplicationComponent
 
     @selected_query.respond_to?(:information_need) ? @selected_query.information_need.to_s : ''
   end
+
+  def detail_modal_id
+    "results-pane-detail-modal-#{modal_dom_suffix}"
+  end
+
+  def detail_fields_tab_id
+    "detail-fields-tab-#{modal_dom_suffix}"
+  end
+
+  def detail_json_tab_id
+    "detail-json-tab-#{modal_dom_suffix}"
+  end
+
+  def modal_dom_suffix
+    @modal_dom_suffix ||= "#{@case_id}-#{query_id || 'none'}-#{SecureRandom.hex(4)}"
+  end
+  private :modal_dom_suffix
 end

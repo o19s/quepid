@@ -39,6 +39,21 @@ The following features are fully functional in the current codebase:
 
 All previously reported high and medium priority gaps have been resolved:
 
+### Completed Items Moved from `gap_implementation_review.md` (2026-02-19)
+
+The following items were verified in current code and moved into this archive:
+
+1. **Gap 1: Large document-fields payload guard** - `DocumentCardComponent#fields_json` now enforces `MAX_FIELDS_JSON_BYTES = 10_000` and omits oversized payloads.
+2. **Gap 1: Detail modal ID collision** - `ResultsPaneComponent` now generates unique modal/tab IDs via `modal_dom_suffix`.
+3. **Gap 2: Delete-last-try protection** - client-side guard in `settings_panel_controller.js` (`triesCountValue <= 1`) and server-side guard in `Api::V1::TriesController#destroy`.
+4. **Gap 2: Try history truncation** - `SettingsPanelComponent` shows the first 20 tries and reveals extras via "Show all N tries".
+5. **Gap 3: Duplicate try copies curator vars** - `Api::V1::TriesController#create` copies parent `curator_vars_map` when duplicating from `parent_try_number`.
+6. **Gap 3: Server-side curator var name validation** - `CuratorVariable` now validates `name` with `/\A[A-Za-z0-9_]+\z/`.
+7. **Gap 4: Wizard step validation** - `new_case_wizard_controller.js` blocks step progression unless required endpoint URL/field spec inputs are present.
+8. **Gap 4: Engine options no longer hardcoded** - `NewCaseWizardComponent` now uses `SearchEndpoint::SEARCH_ENGINES`.
+9. **Gap 4: `_addFirstQuery` uses `apiFetch`** - wizard first-query POST now uses `apiFetch` with form-encoded body.
+10. **Gap 5: Lightweight scoring includes position data** - `QueryScoreService` builds docs from latest snapshot ordering with `position`.
+
 ### Resolved: Client-Side Real-Time Scoring
 **Angular:** `ScorerFactory.runCode()` executed custom JavaScript scorer code in the browser instantly after each rating change.
 **Resolution:** Two-tier approach: `QueryScoreService` provides immediate per-query score feedback after rating, plus `RunCaseEvaluationJob` for full case-level scoring. `qscore_controller.js` `_animateScore()` provides smooth animated score transitions with cubic ease-out.
@@ -786,3 +801,109 @@ These ViewComponents were added during migration and don't have Angular equivale
 - **DocFinderComponent** + `doc_finder_controller.js` — Find and rate missing documents
 - **NewCaseWizardComponent** + `new_case_wizard_controller.js` — Guided case creation flow
 - **QscoreColorable** — Shared module for score-to-color mapping
+
+# Code Review: Angular Removal
+
+**Date:** Feb 17, 2026
+**Updated:** Feb 19, 2026 — Angular is now fully removed from the codebase. Tour and New Case Wizard have been migrated.
+
+---
+
+## 1. ✅ Migrated: Tour Functionality
+
+**Files:** `app/javascript/modules/tour_steps.js`, `app/javascript/controllers/tour_controller.js`, `app/assets/stylesheets/tour.css` (in use)
+
+**Status:** The Shepherd tour has been fully migrated to Stimulus using Bootstrap popovers. The tour controller (`tour_controller.js`) implements a 9-step guided tour matching the original Angular/Shepherd.js structure. The tour is triggered via `?startTour=true` URL param (set by the wizard after completion) or manually.
+
+**Implementation:** 
+- `tour_controller.js`: Stimulus controller managing tour state, navigation, and Bootstrap popover display
+- `tour_steps.js`: Step definitions targeting modern workspace DOM elements
+- `tour.css`: Styles for overlay and highlight effects (actively used)
+
+**Usage:** The tour is attached to the workspace via `data-controller="tour"` in `app/views/core/show.html.erb`.
+
+---
+
+## 2. ✅ Migrated: New Case Wizard
+
+**Files:** `app/components/new_case_wizard_component.rb`, `app/javascript/controllers/new_case_wizard_controller.js`, `app/views/core/show.html.erb`
+
+**Status:** The Angular `WizardModalCtrl` / `WizardCtrl` has been fully replaced with a Stimulus-based wizard modal. The wizard guides users through a 4-step setup: welcome, search endpoint selection, field spec configuration, and first query.
+
+**Implementation:**
+- `NewCaseWizardComponent`: ViewComponent rendering the wizard modal
+- `new_case_wizard_controller.js`: Stimulus controller managing wizard state and step navigation
+- Rendered in `app/views/core/show.html.erb` when `showWizard=true` or for first-time users
+
+**Usage:** `CoreController#new` redirects with `showWizard=true`, and the wizard is automatically displayed. The wizard can also auto-show for users who haven't completed it (`!current_user.completed_case_wizard && current_user.cases_involved_with.count <= 1`).
+
+---
+
+## 3. Low: Orphaned Files
+
+**Files:** `app/assets/javascripts/mode-json.js`
+
+Only one orphaned file remains in `app/assets/javascripts/` — all Angular services, factories, components, controllers, and templates have been deleted. `scorerEvalTest.js` has been removed.
+
+| File | Purpose | Referenced by | Modern equivalent | Recommendation |
+|------|---------|---------------|-------------------|----------------|
+| **mode-json.js** | ACE editor JSON syntax highlighting mode | `lib/jshint/lint.rb` (line 72, skip list only) | **CodeMirror 6** (`app/javascript/modules/editor.js`) is actively used throughout the modern stack. CodeMirror is initialized globally in `application_modern.js` and used via `data-codemirror-mode` attributes in views (e.g., `mapper_wizards/show.html.erb`, `settings_panel_component.html.erb`, `results_pane_component.html.erb`). | **Remove.** ACE editor is completely unused — no ACE initialization or `ace.require()` calls exist. The lint skip reference at line 72 of `lib/jshint/lint.rb` should also be removed. |
+| ~~**scorerEvalTest.js**~~ | ~~Scorer evaluation test utility~~ | ~~N/A~~ | `scorer_test_controller.js` + server-side `JavascriptScorer` | ✅ **Removed.** File deleted; comment in `scorer_test_controller.js` updated. |
+
+---
+
+## 4. Functionality from Deleted Angular Code — Migration Status
+
+| Functionality | Deleted Source | Modern Status | Notes |
+|---------------|----------------|---------------|-------|
+| **Tour (onboarding)** | `tour.js` | ✅ Migrated | Stimulus `tour_controller.js` + Bootstrap popovers. 9-step tour matching original structure. `tour.css` actively used. |
+| **New Case Wizard** | Angular `WizardModalCtrl` / `WizardCtrl` | ✅ Migrated | `NewCaseWizardComponent` + `new_case_wizard_controller.js`. 4-step guided setup flow. |
+| **Full Angular app** | `app/assets/javascripts/` | ✅ Fully removed | Only `mode-json.js` remains as an orphaned file (safe to delete). |
+| **Case listing** | Angular `casesCtrl.js` + components | ✅ Migrated | `cases_controller.rb` + `app/views/cases/index.html.erb` |
+| **Teams** | Angular `teamsCtrl.js` + components | ✅ Migrated | `teams_controller.rb` + `app/views/teams/` |
+| **Scorers** | Angular `scorersCtrl.js` + components | ✅ Migrated | `scorers_controller.rb` + `app/views/scorers/` |
+| **Core workspace** | Angular directives + controllers | ✅ Migrated | 36+ ViewComponents + 50+ Stimulus controllers |
+
+## 4. Regressions / Lost Functionality
+
+### 4.2 TODOs / Incomplete Behavior
+
+| Location | Note |
+|----------|------|
+| `app/services/query_search_service.rb` (line 76) | `# TODO: add extraction when supported` — **FIXED**: Implemented Vectara and Algolia doc extraction in FetchService and wired into QuerySearchService. |
+
+---
+
+## 5. Inconsistencies
+
+### 5.2 Navigation After Background Job
+
+| Location | Issue |
+|----------|--------|
+| `app/javascript/controllers/judgements_controller.js` (line 260) | After "refresh ratings" in background: `window.location.href = buildPageUrl(root)` navigates to root URL. **Verified as intended behavior** — navigation to root after background job completion is correct. |
+
+---
+
+## 6. Documentation and Comments
+
+| Location | Recommendation |
+|----------|----------------|
+| `app/controllers/core_controller.rb` (lines 62–78) | Add a short comment on `populate_from_params` and the search endpoint / try update logic (params like `searchEngine`, `searchUrl`, `apiMethod`, `basicAuthCredential`, `fieldSpec`) and where they are used. |
+| `app/controllers/concerns/authentication/current_case_manager.rb` (lines 21–31) | Add a one-line comment on the fallback: e.g. "try public case if not found in involved_with." |
+
+---
+
+## 7. Test Coverage (Critical Paths) — FIXED
+
+- **Cases (API):** Archive/unarchive and team-member permissions are tested in `test/controllers/api/v1/cases_controller_test.rb`.
+- **Rails `CasesController` (HTML archive/unarchive):** **FIXED** — Tests exist in `test/controllers/cases_controller_test.rb` that verify authorization for archive/unarchive actions, preventing access to cases the user doesn't have access to.
+- **TeamsController:** **FIXED** — Tests exist in `test/controllers/teams_controller_test.rb` that assert non-members cannot access teams they're not part of.
+- **QueryDocPairsController:** **FIXED** — Tests exist in `test/controllers/query_doc_pairs_controller_test.rb` that assert users cannot access query_doc_pairs from different books via URL manipulation.
+
+---
+
+## 9. Recommendations (Priority)
+
+### Low — MOSTLY DONE
+
+8. **Resolve or document TODOs** — QuerySearchService Vectara/Algolia extraction **FIXED**. FetchService (line 285) and import ratings controller (line 78) TODOs remain open.

@@ -2,8 +2,9 @@
 <%# Context: @case, @try are set by set_case_or_bootstrap; layout passes them as data-workspace-*-value. %>
 <%= turbo_stream_from(:notifications) %>
 <% if @case %>
+  <% wizard_needed_for_case = @try.blank? || @try.search_endpoint.blank? || @try.field_spec.blank? %>
   <%= render NewCaseWizardComponent.new(
-    show: ActiveModel::Type::Boolean.new.cast(params[:showWizard]) || (!current_user.completed_case_wizard && current_user.cases_involved_with.count <= 1),
+    show: ActiveModel::Type::Boolean.new.cast(params[:showWizard]) || wizard_needed_for_case || (!current_user.completed_case_wizard && current_user.cases_involved_with.count <= 1),
     case_id: @case.id,
     case_name: @case.case_name,
     try_number: @try&.try_number,
