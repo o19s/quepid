@@ -2,7 +2,7 @@
 
 This document maps each Angular service used by the core workspace (`/case/:id/try/:try_number`) to its responsibilities and recommends where each should live after migration: **server-side (Rails)** or **client-side (Stimulus/JS)**.
 
-**See also:** [workspace_api_usage.md](workspace_api_usage.md), [workspace_state_design.md](workspace_state_design.md), [deangularjs_branch_comparison.md](deangularjs_branch_comparison.md), [archives/port_completed.md](archives/port_completed.md).
+**See also:** [workspace_api_usage.md](../workspace_api_usage.md), [workspace_state_design.md](../workspace_state_design.md), [deangularjs_branch_comparison.md](../deangularjs_branch_comparison.md), [port_completed.md](port_completed.md).
 
 ---
 
@@ -10,7 +10,7 @@ This document maps each Angular service used by the core workspace (`/case/:id/t
 
 - **All routes** now use the **modern stack**: ViewComponents + Stimulus + Turbo. Angular has been **completely removed** from the codebase — `app/assets/javascripts/services/`, `app/assets/javascripts/factories/`, and `app/assets/javascripts/components/` directories no longer exist.
 - **Core workspace** (`/case/:id/try/:try_number`): Uses `core_modern` layout, `application_modern.js`, 37 ViewComponents, and 60 Stimulus controllers.
-- **Cases, Teams, Scorers pages**: Migrated to Rails views + Stimulus in the `deangularjs` branch (see [deangularjs_branch_comparison.md](deangularjs_branch_comparison.md)).
+- **Cases, Teams, Scorers pages**: Migrated to Rails views + Stimulus in the `deangularjs` branch (see [deangularjs_branch_comparison.md](../deangularjs_branch_comparison.md)).
 - **Key replacements**: `docCacheSvc` → `app/javascript/modules/doc_cache.js` (DocCache); `caseTryNavSvc.getQuepidRootUrl()` → `utils/quepid_root.js` (`getQuepidRootUrl`). Export uses `app/javascript/controllers/export_case_controller.js` and `Api::V1::Export::CasesController` (server-side). All API calls use `app/javascript/api/fetch.js` (`apiFetch`) for CSRF handling.
 
 ---
@@ -164,7 +164,7 @@ This document maps each Angular service used by the core workspace (`/case/:id/t
 
 **Migration**
 
-- Replaced by `utils/quepid_root.js` (Stimulus). See [api_client.md](api_client.md) for URL building rules and helpers (`getQuepidRootUrl`, `buildApiUrl`, `buildPageUrl`, etc.).
+- Replaced by `utils/quepid_root.js` (Stimulus). See [api_client.md](../api_client.md) for URL building rules and helpers (`getQuepidRootUrl`, `buildApiUrl`, `buildPageUrl`, etc.).
 
 ---
 
@@ -243,20 +243,13 @@ This document maps each Angular service used by the core workspace (`/case/:id/t
 
 ## Other services referenced
 
-- **broadcastSvc:** Event bus; replace with Turbo Streams (see [turbo_streams_guide.md](turbo_streams_guide.md)), custom events, or Stimulus values/callbacks.
-- **docResolverSvc:** (splainer-search) Fetches docs by id; used by docCacheSvc; can stay client or become a server doc-lookup endpoint.
+Services not covered in detail above but referenced in the codebase:
+
+- **broadcastSvc:** Event bus; replace with Turbo Streams (see [turbo_streams_guide.md](../turbo_streams_guide.md)), custom events, or Stimulus values/callbacks.
+- **docResolverSvc:** (splainer-search) Fetches docs by id; used by docCacheSvc (see section 5); can stay client or become a server doc-lookup endpoint.
 - **searchSvc:** (splainer-search) Creates searchers and runs live search; must stay client (or proxy) for hitting user’s search endpoint.
 - **bookSvc:** Books dropdown, populate, refresh; API is server; UI is client.
 - **configurationSvc:** App config; can be server-rendered (e.g. in a script tag or data attributes) and read by Stimulus.
-- **qscoreSvc:** Score-to-color mapping (`scoreToColor`) for query list badges; pure client utility.
-- **searchEndpointSvc:** Search endpoint list (GET `api/search_endpoints`), fetch for case; API is server.
-- **caseCSVSvc:** Export CSV/JSON stringify, format download filenames; used by legacy export modal. Modern export uses `Api::V1::Export::CasesController` and `export_case_controller.js`.
-- **rateBulkSvc:** Bulk rating scale UI (setScale, handleRatingScale); like rateElementSvc for bulk context.
-- **varExtractorSvc:** Extracts curator variable names from query params (e.g. `##var##`); pure client utility.
-- **searchErrorTranslatorSvc:** HTTP status code to string, format search error messages; pure client utility.
-- **bootstrapSvc:** Fetches current user via userSvc on app init; assigns to `$rootScope.currentUser`.
-- **teamSvc:** Teams list, share/unshare case; API is server.
-- **userSvc:** Current user get/update; API is server.
 
 ---
 
@@ -267,4 +260,4 @@ The migration is complete. All Angular services have been replaced:
 1. **Server-first:** All mutations and canonical data go through Rails controllers/API. Turbo Frames handle list/detail and modals.
 2. **Client minimal:** Stimulus/JS handles: route/URL state (case/try), pane layout, rating control bindings, diff/snapshot selection, and live search execution (via server-side proxy `QuerySearchService`).
 3. **Scoring:** Server-side scoring via `RunCaseEvaluationJob` + `QueryScoreService` for lightweight per-query scores. Client receives score updates via Turbo Streams and custom events (`qscore:update`).
-4. **URLs:** See [api_client.md](api_client.md) for URL building rules (never hardcode `/`; use `getQuepidRootUrl()` or Rails helpers).
+4. **URLs:** See [api_client.md](../api_client.md) for URL building rules (never hardcode `/`; use `getQuepidRootUrl()` or Rails helpers).

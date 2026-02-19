@@ -9,13 +9,14 @@
   data-new-case-wizard-search-endpoints-value="<%= h(search_endpoints_json) %>"
 >
   <div class="modal fade" id="newCaseWizardModal" tabindex="-1" aria-labelledby="newCaseWizardModalLabel" aria-hidden="true" data-new-case-wizard-target="modal">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="newCaseWizardModalLabel" data-new-case-wizard-target="modalTitle">Welcome to your new case</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
+          <div class="visually-hidden" aria-live="polite" data-new-case-wizard-target="stepAnnouncer"></div>
           <%# Step 1: Welcome %>
           <div data-new-case-wizard-target="step" data-wizard-step="1">
             <p class="lead">Get started with <strong><%= h(@case_name) %></strong></p>
@@ -33,8 +34,8 @@
             <p class="text-muted small">Choose an existing endpoint or create a new one.</p>
             <% if @search_endpoints.any? %>
               <div class="mb-3">
-                <label class="form-label small fw-bold">Existing endpoints</label>
-                <select class="form-select form-select-sm" data-new-case-wizard-target="existingEndpoint" data-action="change->new-case-wizard#onEndpointSelect">
+                <label class="form-label small fw-bold" for="new-case-wizard-existing-endpoint">Existing endpoints</label>
+                <select id="new-case-wizard-existing-endpoint" class="form-select form-select-sm" data-new-case-wizard-target="existingEndpoint" data-action="change->new-case-wizard#onEndpointSelect" aria-label="Existing endpoints">
                   <option value="">— Create new endpoint —</option>
                   <% @search_endpoints.each do |ep| %>
                     <option value="<%= ep.id %>" data-engine="<%= ep.search_engine %>" data-url="<%= ep.endpoint_url %>"><%= ep.name.presence || ep.endpoint_url %> (<%= ep.search_engine %>)</option>
@@ -49,8 +50,8 @@
             </div>
             <div data-new-case-wizard-target="newEndpointFields">
               <div class="mb-2">
-                <label class="form-label small">Search engine</label>
-                <select class="form-select form-select-sm" data-new-case-wizard-target="searchEngine" data-action="change->new-case-wizard#onEngineChange">
+                <label class="form-label small" for="new-case-wizard-search-engine">Search engine</label>
+                <select id="new-case-wizard-search-engine" class="form-select form-select-sm" data-new-case-wizard-target="searchEngine" data-action="change->new-case-wizard#onEngineChange" aria-label="Search engine">
                   <% search_engine_options.each do |label, value| %>
                     <option value="<%= value %>"><%= label %></option>
                   <% end %>
@@ -62,17 +63,19 @@
                 </div>
               </div>
               <div class="mb-2">
-                <label class="form-label small">Endpoint URL</label>
-                <input type="url" class="form-control form-control-sm" placeholder="https://my-solr:8983/solr/collection/select" data-new-case-wizard-target="endpointUrl" data-action="input->new-case-wizard#onStepInputChange">
+                <label class="form-label small" for="new-case-wizard-endpoint-url">Endpoint URL</label>
+                <input id="new-case-wizard-endpoint-url" type="url" class="form-control form-control-sm" placeholder="https://my-solr:8983/solr/collection/select" data-new-case-wizard-target="endpointUrl" data-action="input->new-case-wizard#onStepInputChange" aria-describedby="new-case-wizard-endpoint-url-help">
+                <div id="new-case-wizard-endpoint-url-help" class="visually-hidden">Enter the URL for your search endpoint.</div>
               </div>
             </div>
             <hr class="my-3">
             <h6 class="text-muted">Or upload static data</h6>
             <p class="text-muted small">Upload a CSV file to create a case with static data (no live search endpoint required).</p>
             <div class="mb-2">
-              <label class="form-label small">CSV file</label>
-              <input type="file" class="form-control form-control-sm" accept=".csv,text/csv" data-new-case-wizard-target="csvFile" data-action="change->new-case-wizard#onCsvSelected">
+              <label class="form-label small" for="new-case-wizard-csv-file">CSV file</label>
+              <input id="new-case-wizard-csv-file" type="file" class="form-control form-control-sm" accept=".csv,text/csv" data-new-case-wizard-target="csvFile" data-action="change->new-case-wizard#onCsvSelected" aria-describedby="new-case-wizard-csv-help">
               <div class="form-text small">Required headers: <code>Query Text</code>, <code>Doc ID</code>, <code>Doc Position</code>. Additional columns become document fields.</div>
+              <div id="new-case-wizard-csv-help" class="visually-hidden">Upload a CSV with required Query Text, Doc ID, and Doc Position columns.</div>
             </div>
             <div class="d-none" data-new-case-wizard-target="csvPreview"></div>
           </div>
@@ -81,8 +84,9 @@
             <h6>Configure field display</h6>
             <p class="text-muted small">Specify which fields to display from search results. Use a comma-separated list. Prefix with <code>title:</code> for the title field, <code>id:</code> for the document ID field.</p>
             <div class="mb-2 position-relative" data-controller="field-autocomplete" data-field-autocomplete-search-endpoint-id-value="0">
-              <label class="form-label small">Field spec</label>
-              <input type="text" class="form-control form-control-sm font-monospace" placeholder="id:id, title:title, body, author" data-new-case-wizard-target="fieldSpec" data-field-autocomplete-target="input" value="id:id, title:title" data-action="input->new-case-wizard#onStepInputChange">
+              <label class="form-label small" for="new-case-wizard-field-spec">Field spec</label>
+              <input id="new-case-wizard-field-spec" type="text" class="form-control form-control-sm font-monospace" placeholder="id:id, title:title, body, author" data-new-case-wizard-target="fieldSpec" data-field-autocomplete-target="input" value="id:id, title:title" data-action="input->new-case-wizard#onStepInputChange" aria-describedby="new-case-wizard-field-spec-help">
+              <div id="new-case-wizard-field-spec-help" class="visually-hidden">Use a comma separated list of fields. Prefix title and id fields with title: and id:.</div>
               <div class="dropdown-menu d-none position-absolute w-100" data-field-autocomplete-target="dropdown" style="max-height:200px;overflow:auto"></div>
             </div>
           </div>
@@ -91,8 +95,9 @@
             <h6>Add your first queries</h6>
             <p class="text-muted small">Enter search queries to start tuning. Separate multiple queries with semicolons. Duplicates are removed automatically.</p>
             <div class="mb-2">
-              <label class="form-label small">Query text</label>
-              <input type="text" class="form-control form-control-sm" placeholder="e.g. laptop; red shoes; pizza near me" data-new-case-wizard-target="firstQuery">
+              <label class="form-label small" for="new-case-wizard-first-query">Query text</label>
+              <input id="new-case-wizard-first-query" type="text" class="form-control form-control-sm" placeholder="e.g. laptop; red shoes; pizza near me" data-new-case-wizard-target="firstQuery" aria-describedby="new-case-wizard-first-query-help">
+              <div id="new-case-wizard-first-query-help" class="visually-hidden">Enter one or more queries separated by semicolons.</div>
             </div>
             <p class="text-muted small">Leave blank to skip — you can add queries anytime.</p>
           </div>

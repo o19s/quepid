@@ -15,7 +15,7 @@
         <% end %>
       </div>
       <div class="d-flex align-items-start gap-1">
-        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1" data-results-pane-details data-doc-id="<%= h(doc_id) %>" title="View all fields">
+        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1" data-results-pane-details data-doc-id="<%= h(doc_id) %>" title="View all fields" aria-label="View details for document <%= h(doc_id) %>">
           <i class="bi bi-card-text" aria-hidden="true"></i>
         </button>
         <div class="rating-badge" id="<%= rating_badge_id %>">

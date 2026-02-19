@@ -230,8 +230,6 @@ When a component wraps a region that will be updated via Turbo Streams (e.g. que
 <% end %>
 ```
 
-**Important:** Use `helpers.` prefix for view helpers (e.g. `turbo_frame_tag`, `link_to`, `form_with`) in component templates so they work in tests and previews.
-
 ---
 
 ## View helpers

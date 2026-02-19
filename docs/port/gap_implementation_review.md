@@ -2,11 +2,7 @@
 
 Review of the 5 high-priority gaps implemented during de-Angularization. For the full gap inventory and resolution record, see [archives/deangularjs_experimental_functionality_gaps_complete.md](archives/deangularjs_experimental_functionality_gaps_complete.md).
 
-**Status (current codebase):** Multiple items from this review are now complete and have been moved to the archive record (`archives/deangularjs_experimental_functionality_gaps_complete.md`): URL fix in `_addFirstQuery`, curator-vars transaction, delete-current-try redirect, inline endpoint creation, document-field payload guard, unique details modal IDs, try duplication curator-var copy, wizard step validation, dynamic engine options, and `apiFetch` usage in `_addFirstQuery`.
-
----
-
-**Note:** All 5 gap implementations are complete. Implementation details have been moved to [archives/port_completed.md](archives/port_completed.md#completed-gap-implementations-2026-02-19). This document now focuses on remaining concerns and recommendations.
+**Status:** All 5 gap implementations are complete. Implementation details have been moved to [archives/port_completed.md](archives/port_completed.md#completed-gap-implementations-2026-02-19). This document now focuses on remaining concerns and recommendations.
 
 ---
 
@@ -37,7 +33,7 @@ Document cards are server-rendered (`DocumentCardComponent`); the results pane s
 - Or `<template>` elements in HTML, cloned and populated
 
 ### 2. `apiFetch` vs raw `fetch`
-Most controllers use `apiFetch()` (CSRF and root URL). `new_case_wizard_controller.js` now uses `apiFetch()` in `_addFirstQuery` with form-encoded content. `scorer_test_controller.js` still uses raw `fetch()` (lines 31–39) with manual CSRF token extraction.
+Most controllers use `apiFetch()` (CSRF and root URL). `new_case_wizard_controller.js` now uses `apiFetch()` in `_addFirstQuery` with form-encoded content. `scorer_test_controller.js` still uses raw `fetch()` (lines 31–39) with manual CSRF token extraction. See [API Client Guide](api_client.md) for URL building and `apiFetch` usage patterns.
 
 ### 4. Missing test coverage
 - No JS tests for any of the 5 gap implementations (Vitest)
@@ -45,6 +41,8 @@ Most controllers use `apiFetch()` (CSRF and root URL). `new_case_wizard_controll
 - No controller test for `TriesController#update` with `curator_vars` parameter
 - The `QueryScoreService` test doesn't test with a real scorer code string (mocking would require MiniRacer setup in test env)
 - `ScorersController#test` has controller tests (`scorers_controller_test.rb` lines 242-304), but no JS tests for `scorer_test_controller.js`
+
+For API endpoint documentation, see [Workspace API Usage](workspace_api_usage.md).
 
 ### 5. Accessibility
 - Detail modal, wizard steps, and curator var inputs lack `aria-label` or `aria-describedby` attributes
@@ -55,12 +53,3 @@ Most controllers use `apiFetch()` (CSRF and root URL). `new_case_wizard_controll
 - The detail modal `<dl class="row">` with `col-sm-3`/`col-sm-9` will stack on small screens, which is fine
 - The wizard modal is `modal-lg` — on phones this could overflow. Consider `modal-dialog-scrollable`
 - Try history buttons are very small (`py-0 px-1`) — hard to tap on touch devices
-
----
-
-## Priority Fix List
-
-| Priority | Gap | Issue | Status / Effort |
-|----------|-----|-------|-----------------|
-| **P3** | All | Add JS tests for new controllers | 2-4 hrs |
-| **P3** | All | Accessibility improvements | 1-2 hrs |

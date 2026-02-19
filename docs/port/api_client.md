@@ -51,6 +51,8 @@ const token = getCsrfToken()
 
 **Never hardcode `/` or absolute paths.** Use one of the following approaches:
 
+**Note:** All URL builder functions (`buildApiUrl`, `buildPageUrl`, and dedicated helpers) automatically filter out `undefined` and `null` values from path segments.
+
 ### 1. Data Attributes (Preferred for Known URLs)
 
 When the URL is known at render time, pass it from the server using a Rails helper. This respects subpath deployments automatically.
@@ -98,8 +100,6 @@ const url = buildApiUrl(root, "teams", teamId, "books")           // /api/teams/
 const url = buildApiUrl(root, "cases", caseId, "annotations", id) // /api/cases/1/annotations/42
 ```
 
-**Note:** `buildApiUrl` filters out `undefined` and `null` values from path segments automatically.
-
 ### 3. buildPageUrl(root, ...pathSegments)
 
 Builds page URLs (no `api/` prefix) for navigation. When `root` is empty, returns relative paths for subpath deployments.
@@ -117,8 +117,6 @@ buildPageUrl(root, "cases")
 buildPageUrl(root, "teams")
 buildPageUrl(root, "books", bookId, "judge")  // /books/123/judge
 ```
-
-**Note:** `buildPageUrl` filters out `undefined` and `null` values from path segments automatically.
 
 ### 4. Dedicated URL Helpers
 

@@ -81,4 +81,33 @@ class QueryScoreServiceTest < ActiveSupport::TestCase
       QueryScoreService.send(:private_class_method, :latest_snapshot_query_for) if QueryScoreService.respond_to?(:private_class_method)
     end
   end
+
+  test 'passes real scorer code string to JavascriptScorer' do
+    scorer = scorers(:valid)
+    scorer.code = File.read(Rails.root.join('db/scorers/p@10.js'))
+    query = queries(:first_query)
+    query.ratings.destroy_all
+    query.ratings.create!(doc_id: 'doc1', rating: 1)
+
+    scorer_double_class = Class.new do
+      attr_reader :captured_code
+
+      def score _docs, _best_docs, code
+        @captured_code = code
+        0.25
+      end
+    end
+    javascript_scorer = scorer_double_class.new
+    original_js_new = JavascriptScorer.method(:new)
+
+    begin
+      JavascriptScorer.define_singleton_method(:new) { |_path| javascript_scorer }
+
+      assert_in_delta(0.25, QueryScoreService.score(query, scorer))
+      assert_equal scorer.code, javascript_scorer.captured_code
+      assert_includes javascript_scorer.captured_code, 'setScore('
+    ensure
+      JavascriptScorer.define_singleton_method(:new, original_js_new)
+    end
+  end
 end

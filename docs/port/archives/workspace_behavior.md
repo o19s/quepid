@@ -43,9 +43,9 @@ This document describes the behavior of the core query-tuning workspace at `/cas
   - Listeners: `queriesSvc` and `queriesCtrl` (and others) react to `rating-changed`. `queriesSvc.updateScores()` marks queries dirty and runs `scoreAll()` so query and case scores recompute and the UI updates (no full page reload).
 
   **B. Book-of-judgements modal**  
-  - User opens the Judgements modal (e.g. from header) to rate documents in the context of a Book. The modal can load the Rails-rendered judgement form (`app/views/judgements/_form.html.erb`) for a single query-doc pair, which includes keyboard shortcuts (see below). Submitting the form persists the rating; on refresh/close, the workspace can show updated scores via the same `rating-changed` / `updateScores` flow when back on the try view.
+  - User opens the Judgements modal (e.g. from header) to rate documents in the context of a Book. The modal can load the Rails-rendered judgement form (`app/views/judgements/_form.html.erb`) for a single query-doc pair, which includes keyboard shortcuts (see below). Submitting the form persists the rating; on refresh/close, the workspace shows updated scores via the same `rating-changed` / `updateScores` flow when back on the try view.
 
-- **Score display:** Query scores appear in `qscore-query`; case score in `qscore-case`. Scores are updated when ratings change via `rating-changed` and debounced case-score refresh in `queriesCtrl`.
+- **Score display:** Query scores appear in `qscore-query`; case score in `qscore-case`. Scores update automatically when ratings change (via the `rating-changed` event and debounced case-score refresh in `queriesCtrl`).
 
 ### 1.4 Export
 
@@ -143,9 +143,9 @@ When the judgement form is shown (Rails-rendered `app/views/judgements/_form.htm
 
 All flows described above have been migrated to the modern stack:
 
-- **User flows:** Load → add query → rate → score update → export → clone are all functional via ViewComponents + Stimulus. See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md) for parity and gap history.
+- **User flows:** Load → add query → rate → score update → export → clone are all functional via ViewComponents + Stimulus. See [deangularjs_experimental_functionality_gaps_complete.md](deangularjs_experimental_functionality_gaps_complete.md) for parity and gap history.
 - **Keyboard:** Rating shortcuts (a/s/d/f/g/h/j/k/l/;) preserved in the Rails-rendered judgement form (`app/views/judgements/_form.html.erb`).
-- **Real-time:** The modern workspace subscribes to `turbo_stream_from(:notifications)` for score update broadcasts from `RunCaseEvaluationJob`. This is a new capability not present in the Angular version. Score updates are broadcast via Turbo Streams to update `qscore-case-#{case_id}` and `query_list_#{case_id}` frames.
+- **Real-time:** The modern workspace subscribes to `turbo_stream_from(:notifications)` for score update broadcasts from `RunCaseEvaluationJob` (new capability not present in Angular). Score updates broadcast via Turbo Streams to update `qscore-case-#{case_id}` and `query_list_#{case_id}` frames.
 - **Errors:** Flash messages use `window.flash` (from `utils/flash.js`) for client-side feedback and Rails flash for server-side. See [ui_consistency_patterns.md](ui_consistency_patterns.md).
 - **Search:** Now goes through server-side `QuerySearchService` proxy, eliminating CORS/mixed-content issues.
 - **Turbo Frames:** The workspace uses Turbo Frames (`workspace_content`, `query_list_<case_id>`, `results_pane`) for independent region updates. Query selection uses Turbo Frame navigation instead of full-page reload. See [turbo_frame_boundaries.md](turbo_frame_boundaries.md) for frame mapping.

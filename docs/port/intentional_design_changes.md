@@ -52,7 +52,7 @@
 
 **Angular:** Search execution happened entirely in the browser via the `splainer-search` JavaScript library, which spoke directly to Solr/ES/OS.
 
-**Now:** Search goes through `QuerySearchService` → `FetchService` on the server.
+**Now:** Search goes through `QuerySearchService` → `FetchService` on the server. See [Workspace API Usage](workspace_api_usage.md) for search endpoint documentation.
 
 **Why:** Eliminates CORS configuration headaches (the #1 support issue), enables search engine credentials to stay server-side, and simplifies the JavaScript. The tradeoff is a small amount of added latency for each search request.
 
@@ -75,9 +75,9 @@ These Angular in-workspace modals are now handled by separate Rails pages. This 
 | Feature | Angular (workspace modal) | Now (dedicated page) |
 |---------|--------------------------|---------------------|
 | Archive/unarchive search endpoint | Workspace modal | Teams page |
-| Create/edit/delete scorer | Workspace modals | `/scorers` page |
 | Team member management | Workspace modals | `/teams/:id` page |
-| Clone scorer, share scorer | Workspace modals | `/scorers` page |
+
+*Note: Scorer management is covered in detail in Section 2.*
 
 ---
 
@@ -96,7 +96,7 @@ These Angular in-workspace modals are now handled by separate Rails pages. This 
 **Angular:** Scoring happened entirely in the browser. `scorerSvc` ran the scorer JavaScript against local results, computed per-query scores, and aggregated case-level scores — all in the same synchronous pipeline.
 
 **Now:** Scoring uses a two-tier approach:
-1. **Immediate per-query score:** After a rating change, `QueryScoreService` computes the score for just that query using existing ratings (no search engine call). The result updates the UI instantly.
+1. **Immediate per-query score:** After a rating change, `Api::V1::Queries::ScoresController#create` → `QueryScoreService` computes the score for just that query using existing ratings (no search engine call). The result updates the UI instantly. See [Workspace API Usage](workspace_api_usage.md) for scoring endpoint documentation.
 2. **Background full-case evaluation:** `RunCaseEvaluationJob` re-scores all queries and computes the case-level aggregate, broadcasting the result via Turbo Stream.
 
 **Why:** Client-side scoring required the full scorer JavaScript to run in the browser with access to all search results. With server-side search, results aren't held in client memory. The two-tier approach gives users immediate feedback on the query they just rated, while the full case score updates asynchronously. This is actually faster perceived UX than Angular — the query score badge updates before you could blink.
@@ -113,6 +113,8 @@ These Angular in-workspace modals are now handled by separate Rails pages. This 
 - Format is negotiated via the `Accept` header (Turbo sends `text/vnd.turbo-stream.html` automatically)
 
 **Why:** Turbo Stream responses let the server send surgical DOM updates — "replace this one element" — without any client-side JavaScript to parse JSON and manipulate the DOM. The JSON format is preserved for API consumers and backward compatibility.
+
+See [Turbo Streams Guide](turbo_streams_guide.md) for implementation patterns.
 
 ---
 
@@ -219,15 +221,7 @@ This is the server-side replacement for `splainer-search`. Angular executed sear
 
 ---
 
-## 19. Lightweight Per-Query Scoring API
-
-`Api::V1::Queries::ScoresController#create` → `QueryScoreService`
-
-Scores a single query using its existing ratings without re-fetching from the search engine. Returns `{ score, max_score }` immediately. This powers the instant score badge update after rating a document — Angular computed scores client-side in the same thread.
-
----
-
-## 20. Query Notes Endpoint
+## 19. Query Notes Endpoint
 
 `Core::Queries::NotesController`
 
@@ -235,7 +229,7 @@ Dedicated endpoint for updating a query's information need / notes field. Angula
 
 ---
 
-## 21. Vectara and Algolia Document Extraction
+## 20. Vectara and Algolia Document Extraction
 
 `FetchService#extract_docs_from_response_body_for_vectara`
 `FetchService#extract_docs_from_response_body_for_algolia`

@@ -1,10 +1,10 @@
 # Workspace API Usage
 
-This document audits all API endpoints used by the workspace and documents request/response shapes and whether each call is read-only or mutating. Originally derived from AngularJS `$http`/`$resource` calls; these same endpoints are now used by the **modern stack** (Stimulus controllers via `apiFetch` from `app/javascript/api/fetch.js`, and Rails controllers for server-rendered responses).
+This document audits all API endpoints used by the workspace and documents request/response shapes and whether each call is read-only or mutating. Originally derived from AngularJS `$http`/`$resource` calls; these same endpoints are now used by the **modern stack**.
 
 **Note:** All paths are relative to the app root (no leading `/`). For URL building rules, see [api_client.md](api_client.md). Search requests go through `QuerySearchService` (server-side proxy to the user's search endpoint), not directly from the client. The only client-accessible "search" API is `api/cases/:case_id/tries/:try_number/queries/:query_id/search`.
 
-**Modern stack:** The workspace uses Stimulus controllers with `apiFetch` from `app/javascript/api/fetch.js` for API calls, and Rails controllers return Turbo Stream responses (`text/vnd.turbo-stream.html`) for live DOM updates. See [turbo_streams_guide.md](turbo_streams_guide.md) for implementation patterns.
+**Modern stack:** The workspace uses Stimulus controllers with `apiFetch` from `app/javascript/api/fetch.js` for API calls, and Rails controllers return Turbo Stream responses (`text/vnd.turbo-stream.html`) for live DOM updates. See [turbo_streams_guide.md](turbo_streams_guide.md) for implementation patterns. The workspace uses Turbo Frames for independent region updates; see [turbo_frame_boundaries.md](turbo_frame_boundaries.md) for frame structure.
 
 ---
 
@@ -255,6 +255,8 @@ The Export Case modal (`ExportCaseComponent` + `export_case_controller.js`) expo
 
 ### Modern stack (Stimulus controllers + Rails controllers)
 
+The modern stack uses ViewComponents for server-rendered UI and Stimulus controllers for client-side interactivity. See [ViewComponent Conventions](view_component_conventions.md) for component patterns.
+
 | File | Endpoints covered |
 |------|--------------------|
 | `controllers/clone_case_controller.js` | POST clone/cases |
@@ -305,3 +307,4 @@ The Export Case modal (`ExportCaseComponent` + `export_case_controller.js`) expo
 6. **Export modal:** The export modal (`ExportCaseComponent` + `export_case_controller.js`) provides API links for direct download; the same endpoints are accessible when opened in the browser.
 7. **Turbo Streams:** Some endpoints (queries create/destroy, ratings) support `Accept: text/vnd.turbo-stream.html` for live DOM updates. The client must explicitly request this format and apply responses via `Turbo.renderStreamMessage(html)`. See [turbo_streams_guide.md](turbo_streams_guide.md) for client/server patterns.
 8. **Real-time updates:** The workspace subscribes to `turbo_stream_from(:notifications)` for score updates broadcast by `RunCaseEvaluationJob`. Score changes trigger Turbo Stream `replace` actions for `qscore-case-#{case_id}` and `query_list_#{case_id}`.
+9. **Flash messages:** Server-side flash messages are rendered via Rails flash; client-side feedback uses `window.flash` in Stimulus controllers. See [UI Consistency Patterns](ui_consistency_patterns.md) for flash message patterns.

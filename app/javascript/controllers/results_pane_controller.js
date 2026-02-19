@@ -19,7 +19,7 @@ export default class extends Controller {
     skipFetch: Boolean  // When true (e.g. results_content slot provided), do not fetch; preserve slot content
   }
 
-  static targets = ["resultsContainer", "loadingIndicator", "errorMessage", "errorText", "diffIndicator", "loadMoreArea", "detailModal", "detailModalTitle", "detailFieldsList", "detailJsonPre", "detailJsonTextarea", "detailJsonContainer", "detailModalBody", "viewSourceBtn", "copyJsonBtn", "showOnlyRatedToggle", "bulkRatingBar"]
+  static targets = ["resultsContainer", "loadingIndicator", "errorMessage", "errorText", "diffIndicator", "loadMoreArea", "detailModal", "detailModalTitle", "detailFieldsList", "detailJsonPre", "detailJsonTextarea", "detailJsonContainer", "detailModalBody", "viewSourceBtn", "copyJsonBtn", "showOnlyRatedToggle", "bulkRatingBar", "ratingAnnouncement"]
 
   connect() {
     this._fetchRequestId = 0
@@ -119,14 +119,7 @@ export default class extends Controller {
 
     const scale = this.scaleValue || [ 0, 1, 2, 3 ]
     const labels = this.scaleLabelsValue || {}
-    const buttonsHtml = scale.map((v) => {
-      const label = labels[String(v)]
-      const display = label ? `${v} <small class="text-muted">${this._escapeHtml(label)}</small>` : `${v}`
-      const title = label ? this._escapeHtmlAttr(label) : ""
-      return `<button type="button" class="btn btn-sm btn-outline-primary" data-rating-value="${v}"${title ? ` title="${title}"` : ""}>${display}</button>`
-    }).join(" ")
-    const clearHtml = '<button type="button" class="btn btn-sm btn-outline-secondary ms-1" data-rating-value="">Clear</button>'
-    const content = `<div class="d-flex flex-wrap gap-1 align-items-center" data-rating-doc-id="${this._escapeHtmlAttr(docId)}">${buttonsHtml}${clearHtml}</div>`
+    const content = this._buildRatingPopoverContent(docId, scale, labels)
 
     const Popover = window.bootstrap?.Popover
     if (!Popover) return
@@ -140,6 +133,37 @@ export default class extends Controller {
     })
     popover.show()
     this._popovers.set(docId, popover)
+  }
+
+  _buildRatingPopoverContent(docId, scale, labels) {
+    const wrapper = document.createElement("div")
+    wrapper.className = "d-flex flex-wrap gap-1 align-items-center"
+    wrapper.dataset.ratingDocId = String(docId)
+
+    scale.forEach((value) => {
+      const button = document.createElement("button")
+      button.type = "button"
+      button.className = "btn btn-sm btn-outline-primary"
+      button.dataset.ratingValue = String(value)
+      const label = labels[String(value)]
+      if (label) button.title = String(label)
+      button.append(String(value))
+      if (label) {
+        const labelEl = document.createElement("small")
+        labelEl.className = "text-muted"
+        labelEl.textContent = ` ${label}`
+        button.appendChild(labelEl)
+      }
+      wrapper.appendChild(button)
+    })
+
+    const clear = document.createElement("button")
+    clear.type = "button"
+    clear.className = "btn btn-sm btn-outline-secondary ms-1"
+    clear.dataset.ratingValue = ""
+    clear.textContent = "Clear"
+    wrapper.appendChild(clear)
+    return wrapper
   }
 
   async _applyRating(docId, rating) {
@@ -194,6 +218,7 @@ export default class extends Controller {
           this._updateDocCardRating(docId, newRating)
         }
       }
+      this._announceRatingChange(docId, isClear ? "" : String(rating))
       this._triggerScoreRefresh()
       this._popovers.get(docId)?.hide()
     } catch (err) {
@@ -207,9 +232,22 @@ export default class extends Controller {
     if (!card) return
     const badge = card.querySelector(".rating-badge")
     if (!badge) return
-    badge.innerHTML = rating !== ""
-      ? `<span class="badge bg-primary" data-rating-trigger tabindex="0" role="button">${this._escapeHtml(rating)}</span>`
-      : `<span class="badge bg-secondary" data-rating-trigger tabindex="0" role="button" title="Click to rate">Rate</span>`
+    const ratingEl = document.createElement("span")
+    ratingEl.dataset.ratingTrigger = ""
+    ratingEl.tabIndex = 0
+    ratingEl.setAttribute("role", "button")
+    if (rating !== "") {
+      ratingEl.className = "badge bg-primary"
+      ratingEl.textContent = String(rating)
+      ratingEl.title = "Click to change rating"
+      ratingEl.setAttribute("aria-label", `Current rating ${rating}. Click to change rating`)
+    } else {
+      ratingEl.className = "badge bg-secondary"
+      ratingEl.textContent = "Rate"
+      ratingEl.title = "Click to rate"
+      ratingEl.setAttribute("aria-label", "No rating. Click to rate")
+    }
+    badge.replaceChildren(ratingEl)
   }
 
   _triggerScoreRefresh() {
@@ -269,14 +307,11 @@ export default class extends Controller {
       url = `${url}${sep}show_only_rated=true`
     }
 
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
-
     try {
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method: "GET",
         headers: {
-          "Accept": "text/html",
-          "X-CSRF-Token": token || "",
+          "Accept": "text/html"
         },
       })
       const text = await res.text()
@@ -300,7 +335,7 @@ export default class extends Controller {
 
   clearResults() {
     if (this.hasResultsContainerTarget) {
-      this.resultsContainerTarget.innerHTML = ""
+      this.resultsContainerTarget.replaceChildren()
     }
     this._clearError()
     this._showBulkRatingBar(false)
@@ -330,7 +365,7 @@ export default class extends Controller {
     }
     // Only clear results if there were none before (preserve existing results on error)
     if (this.hasResultsContainerTarget && !this.resultsContainerTarget.querySelector(".document-card")) {
-      this.resultsContainerTarget.innerHTML = ""
+      this.resultsContainerTarget.replaceChildren()
     }
   }
 
@@ -424,16 +459,16 @@ export default class extends Controller {
         }
       })
       if (loadMoreArea && loadMoreEl) {
-        loadMoreArea.outerHTML = loadMoreEl.outerHTML
+        loadMoreArea.replaceWith(loadMoreEl.cloneNode(true))
       }
     } else {
       this._lastNumFound = numFound
       this._currentStart = cards.length
-      let inner = ""
-      if (headerEl) inner += headerEl.outerHTML
-      cards.forEach((c) => { inner += c.outerHTML })
-      if (loadMoreEl) inner += loadMoreEl.outerHTML
-      this.resultsContainerTarget.innerHTML = inner
+      const nodes = []
+      if (headerEl) nodes.push(headerEl.cloneNode(true))
+      cards.forEach((card) => nodes.push(card.cloneNode(true)))
+      if (loadMoreEl) nodes.push(loadMoreEl.cloneNode(true))
+      this.resultsContainerTarget.replaceChildren(...nodes)
     }
   }
 
@@ -476,16 +511,33 @@ export default class extends Controller {
     if (this.hasDetailFieldsListTarget) {
       const keys = Object.keys(fields)
       if (keys.length === 0) {
-        this.detailFieldsListTarget.innerHTML = '<p class="text-muted">No fields available.</p>'
+        const empty = document.createElement("p")
+        empty.className = "text-muted"
+        empty.textContent = "No fields available."
+        this.detailFieldsListTarget.replaceChildren(empty)
       } else {
-        const html = keys.map(k => {
-          const v = fields[k]
-          const display = (typeof v === "object" && v !== null)
-            ? `<pre class="mb-0 small bg-light p-2 rounded">${this._escapeHtml(JSON.stringify(v, null, 2))}</pre>`
-            : this._escapeHtml(String(v ?? ""))
-          return `<dt class="col-sm-3 text-truncate" title="${this._escapeHtmlAttr(k)}">${this._escapeHtml(k)}</dt><dd class="col-sm-9">${display}</dd>`
-        }).join("")
-        this.detailFieldsListTarget.innerHTML = `<dl class="row mb-0">${html}</dl>`
+        const dl = document.createElement("dl")
+        dl.className = "row mb-0"
+        keys.forEach((key) => {
+          const value = fields[key]
+          const dt = document.createElement("dt")
+          dt.className = "col-sm-3 text-truncate"
+          dt.title = String(key)
+          dt.textContent = String(key)
+          const dd = document.createElement("dd")
+          dd.className = "col-sm-9"
+          if (typeof value === "object" && value !== null) {
+            const pre = document.createElement("pre")
+            pre.className = "mb-0 small bg-light p-2 rounded"
+            pre.textContent = JSON.stringify(value, null, 2)
+            dd.appendChild(pre)
+          } else {
+            dd.textContent = String(value ?? "")
+          }
+          dl.appendChild(dt)
+          dl.appendChild(dd)
+        })
+        this.detailFieldsListTarget.replaceChildren(dl)
       }
     }
 
@@ -593,6 +645,13 @@ export default class extends Controller {
         }
       })
     }
+  }
+
+  _announceRatingChange(docId, rating) {
+    if (!this.hasRatingAnnouncementTarget) return
+    this.ratingAnnouncementTarget.textContent = rating === ""
+      ? `Cleared rating for document ${docId}.`
+      : `Set rating ${rating} for document ${docId}.`
   }
 
   _escapeHtml(str) {

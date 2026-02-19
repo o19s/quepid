@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { apiFetch } from "api/fetch"
 
 // Runs the scorer code against sample docs via POST scorers/:id/test.
 // Uses server-side JavascriptScorer for evaluation.
@@ -25,15 +26,12 @@ export default class extends Controller {
     this._setLoading(true)
     this._showResult("")
 
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
-
     try {
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json",
-          "X-CSRF-Token": token || ""
+          "Accept": "application/json"
         },
         body: JSON.stringify({ code: code })
       })

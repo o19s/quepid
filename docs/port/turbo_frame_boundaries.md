@@ -1,5 +1,7 @@
 # Turbo Frame Boundaries
 
+> **Related documentation:** See [Workspace State Design](workspace_state_design.md) for server/client state boundaries and [Turbo Streams Guide](turbo_streams_guide.md) for stream action patterns.
+
 ---
 
 ## 1. Workspace Content (Query List + Results Pane)
@@ -14,6 +16,7 @@
 **Details:**
 - Wraps both query list and results pane so query selection uses Turbo Frame navigation instead of full-page reload.
 - Query links target this frame; Turbo replaces only the workspace content, keeping header/sidebar intact.
+- See [ViewComponent Conventions](view_component_conventions.md) for component structure.
 
 ---
 
@@ -29,8 +32,9 @@
 **Details:**
 - Wrapped in `turbo_frame_tag "query_list_#{case_id}"` (case-specific for Turbo Stream targeting).
 - Renders list of queries with QscoreQuery, MoveQuery, QueryOptions, QueryExplain, DeleteQuery per row.
+- See [ViewComponent Conventions](view_component_conventions.md) for component structure.
 - Selection via link to same page with `?query_id=`; uses `data-turbo-frame="workspace_content"` so only the workspace content updates (no full-page reload).
-- **Turbo Streams:** Add/remove queries via Turbo Streams (`append` to `query_list_items`, `remove` `query_row_<id>`). Real-time score updates via `RunCaseEvaluationJob` broadcasts `replace` for entire frame.
+- **Turbo Streams:** Add/remove queries via Turbo Streams (`append` to `query_list_items`, `remove` `query_row_<id>`). Real-time score updates via `RunCaseEvaluationJob` broadcasts `replace` for entire frame. See section 7 for detailed implementation patterns.
 - **Client-side features** (via `query_list_controller.js`):
   - **Pagination:** Client-side pagination (default 15 per page) with URL state (`?page=`).
   - **Filtering:** Text filter + "Rated only" toggle; filters client-side DOM visibility.
@@ -54,10 +58,11 @@
 **Details:**
 - Wrapped in `turbo_frame_tag "results_pane"`.
 - Shows selected query context, notes/information need form, and placeholder for search results.
-- **Query notes form** (`query_notes_<query_id>`): submits via Turbo Frame; `Core::Queries::NotesController#update` returns HTML to replace the form region without full-page reload.
+- See [ViewComponent Conventions](view_component_conventions.md) for component structure.
+- **Query notes form** (`query_notes_<query_id>`): submits via Turbo Frame; server returns HTML to replace the form region without full-page reload. See section 7 for detailed implementation.
 - When no query selected: prompt "Select a query from the list".
 - **Results fetching:** Via `results_pane_controller.js` using `fetch()` with `Accept: text/html`. Server renders DocumentCardComponent + MatchesComponent. Results are not lazy-loaded via frame `src`; controller manages fetch lifecycle.
-- **Rating updates:** Individual ratings can return Turbo Streams (`update` action for `rating-badge-<doc_id>`) when requested with `Accept: text/vnd.turbo-stream.html`. Controller applies via `Turbo.renderStreamMessage`. Falls back to JSON + manual DOM update.
+- **Rating updates:** Individual ratings can return Turbo Streams (`update` action for `rating-badge-<doc_id>`) when requested with `Accept: text/vnd.turbo-stream.html`. See section 7 for detailed implementation patterns.
 - **Bulk rating:** Bulk rate/clear operations via `PUT api/cases/:caseId/queries/:queryId/bulk/ratings` and `POST .../bulk/ratings/delete`. Triggers score refresh and re-fetches results.
 - **Diff mode:** Supports `diff_snapshot_ids[]` query params; server renders diff badges on document cards. Listens for `diff-snapshots-changed` events.
 - **Show only rated filter:** Toggle to filter results to show only documents with ratings.
@@ -109,6 +114,7 @@
 - Most modals are **in-page Bootstrap modals** rendered with the page; Stimulus controllers handle open/close.
 - **Turbo Frame modals:** Use `target="_top"` for links/forms that should affect the whole page (e.g. redirect after submit). For lazy-loaded modals, use `turbo_frame_tag "modal"` with `src` (see `app/views/books/show.html.erb`).
 - **Recommendation:** For heavy modals (e.g. Judgements with large content), consider lazy-loading via `src` on a Turbo Frame. Form submits can return Turbo Streams to close modal and update parent frames.
+- See [UI Consistency Patterns](ui_consistency_patterns.md) for modal patterns and Bootstrap 5 conventions.
 
 ---
 
@@ -143,7 +149,11 @@ All Turbo Frames that use `src` to fetch content include `loading="lazy"` so con
 
 See [turbo_streams_guide.md](turbo_streams_guide.md) for actions, client/server patterns, and use cases. Server responses: frame navigation returns HTML with matching `<turbo-frame id>`; Turbo Streams return `Content-Type: text/vnd.turbo-stream.html`.
 
+**For detailed implementation patterns and code examples**, see [Turbo Streams Guide - Primary Use Cases](turbo_streams_guide.md#2-primary-use-cases-in-the-core-workspace).
+
 ### Implemented Turbo Stream Flows (workspace-specific)
+
+> **Note:** This section provides workspace-specific context (which frames are updated). For general Turbo Stream patterns and code examples, see [turbo_streams_guide.md](turbo_streams_guide.md).
 
 - **Add query** (single): `Core::QueriesController#create` → `append` to `query_list_items`, `remove` `query_list_empty_placeholder` when adding first query. Add query Stimulus controller POSTs with `Accept: text/vnd.turbo-stream.html` and applies response via `Turbo.renderStreamMessage`.
 - **Delete query**: `Core::QueriesController#destroy` → `remove` `query_row_<id>`; when deleted query was selected (`?selected_query_id=`), also `replace` `results_pane` with empty state. Delete query Stimulus controller DELETEs with Turbo Stream accept header and applies response.
@@ -156,7 +166,7 @@ See [turbo_streams_guide.md](turbo_streams_guide.md) for actions, client/server 
 The core workspace subscribes to `turbo_stream_from(:notifications)` in `core/show.html.erb`. `RunCaseEvaluationJob` broadcasts Turbo Stream `replace` actions for `qscore-case-#{case_id}` and `query_list_#{case_id}` when scoring completes. See [turbo_streams_guide.md](turbo_streams_guide.md) for the full pattern.
 
 **Score refresh mechanism:**
-- **Lightweight per-query refresh:** After rating updates, `triggerScoreRefresh()` dispatches `query-score:refresh` event. Query list controller listens and fetches `POST api/cases/:caseId/queries/:queryId/score` to update individual query score badges without full case re-evaluation.
+- **Lightweight per-query refresh:** After rating updates, `triggerScoreRefresh()` dispatches `query-score:refresh` event. Query list controller listens and fetches `POST api/cases/:caseId/queries/:queryId/score` to update individual query score badges without full case re-evaluation (see section 2 for client-side implementation).
 - **Full case evaluation:** Debounced (3s) trigger to `POST api/cases/:caseId/run_evaluation?try_number=...` which queues `RunCaseEvaluationJob`. Job broadcasts Turbo Stream updates when complete.
 
 ---
@@ -186,6 +196,8 @@ Use `data: { turbo: false }` **only when necessary**:
 - **Legacy forms** — Some forms may require full POST (e.g. mixed HTTP/HTTPS; see `application_helper.rb`)
 
 **Do not use** for normal navigation links (navbar brand, "View all cases", create case). Let Turbo Drive handle them when enabled.
+
+For URL building rules (never hardcode `/`; use `getQuepidRootUrl()` or Rails helpers), see [API Client Guide](api_client.md).
 
 ---
 

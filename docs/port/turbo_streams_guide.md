@@ -98,37 +98,9 @@ if (!res.ok) {
 }
 ```
 
-#### Using apiFetch helper
+#### Complete example: Using apiFetch helper
 
-When using `apiFetch` from `app/javascript/api/fetch.js`:
-
-```javascript
-import { apiFetch } from "api/fetch"
-
-const useTurboStream = !!window.Turbo
-const accept = useTurboStream ? "text/vnd.turbo-stream.html" : "application/json"
-
-const res = await apiFetch(url, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Accept: accept
-  },
-  body: JSON.stringify(payload)
-})
-
-if (useTurboStream && res.headers.get("Content-Type")?.includes("turbo-stream")) {
-  const html = await res.text()
-  if (html?.trim()) window.Turbo.renderStreamMessage(html)
-} else {
-  const data = await res.json()
-  // Manual DOM update fallback
-}
-```
-
-#### Complete example: Create annotation
-
-See `app/javascript/controllers/annotations_controller.js`:
+When using `apiFetch` from `app/javascript/api/fetch.js`, here's a complete example from `app/javascript/controllers/annotations_controller.js`:
 
 ```javascript
 async create() {

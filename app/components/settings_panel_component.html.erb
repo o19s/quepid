@@ -105,16 +105,18 @@
                 </div>
                 <div class="d-flex gap-1">
                   <% if t.try_number != @try&.try_number %>
-                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1"
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2"
                             data-action="click->settings-panel#duplicateTry"
                             data-try-number="<%= t.try_number %>"
-                            title="Duplicate this try">
+                            title="Duplicate this try"
+                            aria-label="Duplicate try <%= t.try_number %>">
                       <i class="bi bi-copy" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1"
+                    <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2"
                             data-action="click->settings-panel#deleteTry"
                             data-try-number="<%= t.try_number %>"
-                            title="Delete this try">
+                            title="Delete this try"
+                            aria-label="Delete try <%= t.try_number %>">
                       <i class="bi bi-trash" aria-hidden="true"></i>
                     </button>
                   <% else %>

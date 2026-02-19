@@ -173,6 +173,29 @@ search_endpoint: es_endpoint.attributes }
           assert_equal 'New field_spec', the_try.field_spec
           assert_equal 'es', the_try.search_endpoint.search_engine
         end
+
+        test 'replaces curator vars on update' do
+          the_try.curator_variables.destroy_all
+          the_try.add_curator_vars(old_var: 'old_value')
+          curator_vars_params = {
+            platform: 'web',
+            locale:   'en-US',
+          }
+
+          put :update,
+              params: {
+                case_id:      the_case.id,
+                try_number:   the_try.try_number,
+                try:          { name: the_try.name },
+                curator_vars: curator_vars_params,
+              }
+
+          assert_response :ok
+          the_try.reload
+          assert_equal [ :locale, :platform ], the_try.curator_vars_map.keys.sort
+          assert_equal %w[locale platform], response.parsed_body['curator_vars'].keys.sort
+          assert_not_includes the_try.curator_vars_map.keys, :old_var
+        end
       end
 
       describe 'Creates new case tries' do

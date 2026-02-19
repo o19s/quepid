@@ -321,32 +321,53 @@ export default class extends Controller {
     if (!this.hasCuratorVarsContainerTarget) return
     const varNames = this._extractCuratorVars()
     if (varNames.length === 0) {
-      this.curatorVarsContainerTarget.innerHTML = ""
+      this.curatorVarsContainerTarget.replaceChildren()
       return
     }
 
     const savedVars = this.curatorVarsValue || {}
-    const html = varNames.map(name => {
-      const value = savedVars[name] ?? ""
-      const escapedName = this._escapeHtmlAttr(name)
-      const escapedValue = this._escapeHtmlAttr(String(value))
-      return `
-        <div class="mb-2">
-          <label class="form-label small text-muted mb-1">
-            <code>##${escapedName}##</code>
-          </label>
-          <input type="text" class="form-control form-control-sm"
-                 data-curator-var-name="${escapedName}" value="${escapedValue}"
-                 data-action="input->settings-panel#autoGrowInput"
-                 style="width:auto;min-width:50px;max-width:200px">
-        </div>
-      `
-    }).join("")
+    const headingId = `curator-vars-heading-${Date.now()}`
+    const heading = document.createElement("h6")
+    heading.className = "card-title mt-2 small text-muted"
+    heading.id = headingId
+    heading.textContent = "Curator variables"
 
-    this.curatorVarsContainerTarget.innerHTML = `
-      <h6 class="card-title mt-2 small text-muted">Curator variables</h6>
-      ${html}
-    `
+    const fragment = document.createDocumentFragment()
+    fragment.appendChild(heading)
+
+    varNames.forEach((name, index) => {
+      const value = savedVars[name] ?? ""
+      const wrapper = document.createElement("div")
+      wrapper.className = "mb-2"
+
+      const label = document.createElement("label")
+      label.className = "form-label small text-muted mb-1"
+      const inputId = `curator-var-${index}`
+      label.id = `${inputId}-label`
+      label.setAttribute("for", inputId)
+      const code = document.createElement("code")
+      code.textContent = `##${name}##`
+      label.appendChild(code)
+
+      const input = document.createElement("input")
+      input.type = "text"
+      input.id = inputId
+      input.className = "form-control form-control-sm"
+      input.dataset.curatorVarName = name
+      input.setAttribute("data-action", "input->settings-panel#autoGrowInput")
+      input.setAttribute("aria-describedby", label.id)
+      input.setAttribute("aria-label", `Value for curator variable ${name}`)
+      input.style.width = "auto"
+      input.style.minWidth = "50px"
+      input.style.maxWidth = "200px"
+      input.value = String(value)
+
+      wrapper.appendChild(label)
+      wrapper.appendChild(input)
+      fragment.appendChild(wrapper)
+    })
+
+    this.curatorVarsContainerTarget.replaceChildren(fragment)
 
     // Set initial widths based on existing values
     this.curatorVarsContainerTarget.querySelectorAll("[data-curator-var-name]").forEach(input => {

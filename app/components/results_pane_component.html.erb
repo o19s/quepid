@@ -33,6 +33,7 @@
       <span data-results-pane-target="errorText"></span>
       <button type="button" class="btn-close" data-action="click->results-pane#dismissError" aria-label="Dismiss"></button>
     </div>
+    <div class="visually-hidden" aria-live="polite" data-results-pane-target="ratingAnnouncement"></div>
     <%# Bulk rating bar: rate all / clear all visible docs %>
     <div class="d-none mb-2" data-results-pane-target="bulkRatingBar">
       <div class="d-flex align-items-center gap-1 flex-wrap">
@@ -74,7 +75,7 @@
             </ul>
             <div class="tab-content">
               <div class="tab-pane fade show active" id="<%= detail_fields_tab_id %>" role="tabpanel">
-                <dl data-results-pane-target="detailFieldsList"></dl>
+                <div data-results-pane-target="detailFieldsList" aria-label="Document fields"></div>
               </div>
               <div class="tab-pane fade" id="<%= detail_json_tab_id %>" role="tabpanel">
                 <div data-results-pane-target="detailJsonContainer" style="max-height: 60vh; overflow: auto;">

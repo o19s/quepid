@@ -1,10 +1,8 @@
 # Future Tasks
 
-RuboCop issues we've deferred rather than fixed, tracked here for future refactoring.
-
 > **Last updated:** 2026-02-19
 
-This document tracks RuboCop violations that have been deferred via configuration-level excludes or documented inline disables. For a complete list of inline `rubocop:disable` comments, search the codebase for `rubocop:disable`.
+This document tracks RuboCop violations that have been deferred rather than fixed, via configuration-level excludes or documented inline disables. For a complete list of inline `rubocop:disable` comments, search the codebase for `rubocop:disable`.
 
 ## Naming/PredicateMethod for `detect_querqy`
 

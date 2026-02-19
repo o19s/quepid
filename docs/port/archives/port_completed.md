@@ -39,28 +39,6 @@ The following features are fully functional in the current codebase:
 
 All previously reported high and medium priority gaps have been resolved:
 
-### Completed Items Moved from `gap_implementation_review.md` (2026-02-19)
-
-The following items were verified in current code and moved into this archive:
-
-1. **Gap 1: Large document-fields payload guard** - `DocumentCardComponent#fields_json` now enforces `MAX_FIELDS_JSON_BYTES = 10_000` and omits oversized payloads.
-2. **Gap 1: Detail modal ID collision** - `ResultsPaneComponent` now generates unique modal/tab IDs via `modal_dom_suffix`.
-3. **Gap 1: Detailed Document View Implementation** - Document cards are server-rendered by `DocumentCardComponent` (`app/components/document_card_component.html.erb`). The `data-doc-fields` attribute is set with ERB `h(fields_json)`. The results pane fetches HTML from the query search API and injects it; the detail modal in `results_pane_controller.js` reads `data-doc-fields` from the card and builds the fields list in JS.
-4. **Gap 2: Delete-last-try protection** - client-side guard in `settings_panel_controller.js` (`triesCountValue <= 1`) and server-side guard in `Api::V1::TriesController#destroy`.
-5. **Gap 2: Try history truncation** - `SettingsPanelComponent` shows the first 20 tries and reveals extras via "Show all N tries".
-6. **Gap 2: Try History Browser + Try Management** - `settings_panel_controller.js` implements `deleteTry()`. When the deleted try is the current try, it navigates to `buildPageUrl(root, "case", caseId)` (case root, which loads the latest try) instead of reloading, avoiding a 404.
-7. **Gap 3: Duplicate try copies curator vars** - `Api::V1::TriesController#create` copies parent `curator_vars_map` when duplicating from `parent_try_number`.
-8. **Gap 3: Server-side curator var name validation** - `CuratorVariable` now validates `name` with `/\A[A-Za-z0-9_]+\z/`.
-9. **Gap 3: Curator Variables Implementation** - `Api::V1::TriesController#update` wraps `curator_variables.destroy_all` and `add_curator_vars` in `ActiveRecord::Base.transaction` when `params[:curator_vars].present?` (lines 103–107). Curator inputs are rendered in `settings_panel_controller.js` via `_renderCuratorVarInputs()`.
-10. **Gap 4: Wizard step validation** - `new_case_wizard_controller.js` blocks step progression unless required endpoint URL/field spec inputs are present.
-11. **Gap 4: Engine options no longer hardcoded** - `NewCaseWizardComponent` now uses `SearchEndpoint::SEARCH_ENGINES`.
-12. **Gap 4: `_addFirstQuery` uses `apiFetch`** - wizard first-query POST now uses `apiFetch` with form-encoded body.
-13. **Gap 4: New Case Setup Wizard Implementation** - `new_case_wizard_controller.js` uses `buildCaseQueriesUrl(root, this.caseIdValue)` for the first-query POST (`_addFirstQuery`), so the URL is correct. `Api::V1::TriesController#update` supports inline endpoint creation: it accepts `params[:search_endpoint]`, finds or creates a `SearchEndpoint` (including `SearchEndpoint.new(...).save!` when not found), and assigns it to `@try` (lines 86–100).
-14. **Gap 5: Lightweight scoring includes position data** - `QueryScoreService` builds docs from latest snapshot ordering with `position`.
-15. **Gap 5: Client-Side Real-Time Scoring Implementation** - `QueryScoreService` provides lightweight per-query scoring using persisted ratings (no search re-fetch). The score endpoint (`Api::V1::Queries::ScoresController`) uses `QueryScoreService` to compute scores server-side. `query_list_controller.js` listens for `query-score:refresh` events and updates score badges. Scorer testing has been enhanced: `ScorersController#test` (POST `/scorers/:id/test`) runs scorer code server-side with sample docs, and `scorer_test_controller.js` provides the UI integration.
-
----
-
 ## Completed Gap Implementations (2026-02-19)
 
 The following 5 high-priority gaps from the gap implementation review have been fully implemented and are now complete:
@@ -117,10 +95,7 @@ The following 5 high-priority gaps from the gap implementation review have been 
 - Lightweight scoring includes position data: `QueryScoreService` builds docs from latest snapshot ordering with `position`
 - Server-side scoring execution for security and consistency
 - Real-time score badge updates via custom events
-
-### Resolved: Client-Side Real-Time Scoring
-**Angular:** `ScorerFactory.runCode()` executed custom JavaScript scorer code in the browser instantly after each rating change.
-**Resolution:** Two-tier approach: `QueryScoreService` provides immediate per-query score feedback after rating, plus `RunCaseEvaluationJob` for full case-level scoring. `qscore_controller.js` `_animateScore()` provides smooth animated score transitions with cubic ease-out.
+- Two-tier approach: `QueryScoreService` provides immediate per-query score feedback after rating, plus `RunCaseEvaluationJob` for full case-level scoring. `qscore_controller.js` `_animateScore()` provides smooth animated score transitions with cubic ease-out
 
 ### Resolved: Side-by-Side Diff View
 **Angular:** Dedicated columnar view showing "Current Results" vs snapshot columns side-by-side.
@@ -130,13 +105,7 @@ The following 5 high-priority gaps from the gap implementation review have been 
 **Angular:** `diffResultsSvc` computed a numeric score per query per snapshot.
 **Resolution:** `build_diff_data` in `SearchController` includes `SnapshotQuery#score` (per-query) and `Score` records (case-level) for each snapshot. Displayed in `DiffComparisonComponent` column headers.
 
-### 1. Media Embeds, Translations, Per-Field Type Rendering
-
-**Angular:** Document cards rendered `doc.embeds` (audio/video/image) via the `quepid-embed` directive, `doc.translations` with Google Translate links, and `doc.unabridgeds` for full field content.
-
-**Current:** **Media embeds:** ✅ Resolved — `DocumentCardComponent#media_embeds` detects audio/video/image URLs from document fields and renders HTML5 `<audio>`, `<video>`, and `<img>` in the card. **Translations and per-field type formatting:** Not implemented. The document detail modal shows all fields and raw JSON but no Google Translate links or per-field type formatting. Remaining work is P3 polish.
-
-Other resolved gaps (Querqy indicator, Browse on Solr link, Depth of rating warning, and the rest) are listed in **Parity Audit Completed Items** below.
+**Note:** Media embeds are covered in Gap 1 above. Other resolved gaps (Querqy indicator, Browse on Solr link, Depth of rating warning, and the rest) are listed in **Parity Audit Completed Items** below.
 
 ## Components Fully Migrated
 
@@ -731,7 +700,7 @@ This document provides an exhaustive parity comparison between the `deangularjs`
 
 **Overall finding**: The experimental branch achieves functional parity with the Angular branch for all core workspace features. It goes beyond parity in several areas (server-side search execution, async export/import, SSRF protection, Turbo Stream live updates, scorer testing). A small number of Angular micro-features have behavioral differences in their Stimulus equivalents, detailed below.
 
-**Update (2026-02-19)**: Parity audit refreshed for current codebase. All 22 parity gaps are resolved. Completed items and resolution details are recorded in [archives/deangularjs_experimental_functionality_gaps_complete.md](archives/deangularjs_experimental_functionality_gaps_complete.md).
+**Update (2026-02-19)**: Parity audit refreshed for current codebase. All 22 parity gaps are resolved. Completed items and resolution details are recorded in [deangularjs_experimental_functionality_gaps_complete.md](deangularjs_experimental_functionality_gaps_complete.md).
 
 **Status Legend**: ✅ = 100% parity | 🚀 = enhanced beyond Angular | ⚠️ = general parity (functional but different) | ❌ = lacking in experimental branch
 
@@ -763,7 +732,7 @@ The experimental branch contains **60 Stimulus controllers**, **37 ViewComponent
 
 # Per-Component Migration Checklist
 
-Apply the template from [angular_to_stimulus_hotwire_viewcomponents_checklist.md](angular_to_stimulus_hotwire_viewcomponents_checklist.md) (Phase 4.2) to each component below.
+The migration checklist template (Phase 4.2) has been applied to all components below. See the "Per-Component Migration Checklist" section above for the template structure.
 
 **Status:** All components have been migrated to ViewComponents + Stimulus controllers as of the `deangularjs-experimental` branch. Angular is fully removed from the codebase.
 
@@ -899,65 +868,6 @@ All functionality for managing communal scorers has been completed and moved fro
 
 ---
 
-## Completed: Angular to Stimulus Migration Checklist (2026-02-19)
-
-Migration is complete. All Angular code has been removed. 37 ViewComponents and 60 Stimulus controllers are in production.
-
-### Phase 3: ViewComponent Patterns — ✅ Complete
-
-The following components are wired into the core try page:
-- QueryListComponent — renders per query row with QscoreQuery, MoveQuery, QueryOptions, QueryExplain, DeleteQuery
-- ResultsPaneComponent — shows selected query context, query notes, and search results
-- AnnotationsComponent — case-level annotations panel
-- FrogReportComponent — rating stats
-- DiffComponent — snapshot diff
-- MatchesComponent — document cards in results pane
-- AnnotationComponent — single-annotation edit within annotations list
-
-### Phase 4: Component-by-Component Migration — ✅ Complete
-
-All 25 original Angular components plus 12 new components have been migrated (37 ViewComponents total). See the "Components Fully Migrated" section above for the complete list.
-
-**Migration pattern applied:**
-- Angular Component → ViewComponent + Stimulus Controller
-- Template (.html) → ViewComponent template (.html.erb)
-- Service ($http) → Rails controller action or apiFetch()
-- $scope / bindings → data-* attributes, Turbo Frame
-- ng-click → data-action="click->controller#method"
-- ng-if / ng-show → Server-rendered or Stimulus toggle
-
----
-
-## 1. ✅ Migrated: Tour Functionality
-
-**Files:** `app/javascript/modules/tour_steps.js`, `app/javascript/controllers/tour_controller.js`, `app/assets/stylesheets/tour.css` (in use)
-
-**Status:** The Shepherd tour has been fully migrated to Stimulus using Bootstrap popovers. The tour controller (`tour_controller.js`) implements a 9-step guided tour matching the original Angular/Shepherd.js structure. The tour is triggered via `?startTour=true` URL param (set by the wizard after completion) or manually.
-
-**Implementation:** 
-- `tour_controller.js`: Stimulus controller managing tour state, navigation, and Bootstrap popover display
-- `tour_steps.js`: Step definitions targeting modern workspace DOM elements
-- `tour.css`: Styles for overlay and highlight effects (actively used)
-
-**Usage:** The tour is attached to the workspace via `data-controller="tour"` in `app/views/core/show.html.erb`.
-
----
-
-## 2. ✅ Migrated: New Case Wizard
-
-**Files:** `app/components/new_case_wizard_component.rb`, `app/javascript/controllers/new_case_wizard_controller.js`, `app/views/core/show.html.erb`
-
-**Status:** The Angular `WizardModalCtrl` / `WizardCtrl` has been fully replaced with a Stimulus-based wizard modal. The wizard guides users through a 4-step setup: welcome, search endpoint selection, field spec configuration, and first query.
-
-**Implementation:**
-- `NewCaseWizardComponent`: ViewComponent rendering the wizard modal
-- `new_case_wizard_controller.js`: Stimulus controller managing wizard state and step navigation
-- Rendered in `app/views/core/show.html.erb` when `showWizard=true` or for first-time users
-
-**Usage:** `CoreController#new` redirects with `showWizard=true`, and the wizard is automatically displayed. The wizard can also auto-show for users who haven't completed it (`!current_user.completed_case_wizard && current_user.cases_involved_with.count <= 1`).
-
----
-
 ## 3. Low: Orphaned Files
 
 **Files:** `app/assets/javascripts/mode-json.js`
@@ -1027,62 +937,19 @@ Only one orphaned file remains in `app/assets/javascripts/` — all Angular serv
 
 8. **Resolve or document TODOs** — QuerySearchService Vectara/Algolia extraction **FIXED**. FetchService (line 285) and import ratings controller (line 78) TODOs remain open.
 
----
-
-## Gap 1: Detailed Document View / Full Field Explorer
-
-**Status:** ✅ **COMPLETE** — See [archives/port_completed.md](archives/port_completed.md#completed-gap-implementations-2026-02-19).
-
-### Recommendations
-
-- Add an integration test that clicks the Details button and verifies modal content renders.
+**Note:** For detailed gap implementation information, see the "Completed Gap Implementations" section above.
 
 ---
-
-## Gap 2: Try History Browser + Try Management
-
-**Status:** ✅ **COMPLETE** — See [archives/port_completed.md](archives/port_completed.md#completed-gap-implementations-2026-02-19).
-
-### Recommendations
-
-- Keep existing guard and truncation behavior covered by tests.
-
----
-
-## Gap 3: Curator Variables / Tuning Knobs
-
-**Status:** ✅ **COMPLETE** — See [archives/port_completed.md](archives/port_completed.md#completed-gap-implementations-2026-02-19).
-
-### Concerns
-
-1. **`innerHTML` with user-controlled content** — `_renderCuratorVarInputs()` in `settings_panel_controller.js` builds HTML via string interpolation with `_escapeHtmlAttr(name)` and `_escapeHtmlAttr(value)`. Values go into `value="..."` attributes; ensure `_escapeHtmlAttr` covers all necessary characters (e.g. `"`, `<`, `&`). Prefer DOM API or a shared safe-builder for defense-in-depth.
-
-### Recommendations
-
-- Switch `_renderCuratorVarInputs()` to DOM API (`document.createElement`) instead of innerHTML where practical.
-
----
-
-## Gap 4: New Case Setup Wizard (Enhanced)
-
-**Status:** ✅ **COMPLETE** — See [archives/port_completed.md](archives/port_completed.md#completed-gap-implementations-2026-02-19).
-
-### Concerns
-
-- **`_markWizardComplete` updates user profile** — Sends `{ user: { completed_case_wizard: true } }` to the users API. This is a per-user flag; once set, the wizard does not show again for new cases. Consider per-case or conditional display based on try configuration.
-
-### Recommendations
-
-- Reconsider the per-user `completed_case_wizard` flag — e.g. per-case or show wizard when try has no configured endpoint.
-
 
 # Angular to Stimulus, Hotwire, and ViewComponents Migration Checklist
 
-**Status:** Migration is **complete**. All Angular code has been removed. 37 ViewComponents and 60 Stimulus controllers are in production. See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md) for the full component inventory and parity record.
+**Status:** Migration is **complete**. All Angular code has been removed. 37 ViewComponents and 60 Stimulus controllers are in production. See [deangularjs_experimental_functionality_gaps_complete.md](deangularjs_experimental_functionality_gaps_complete.md) for the full component inventory and parity record.
+
+> **Related documents:** This is the comprehensive migration record. For branch comparison and historical context, see [deangularjs_branch_comparison.md](deangularjs_branch_comparison.md).
 
 ## Phase 3: ViewComponent Patterns — ✅ Complete
 
-> **Note:** Completed implementation details have been moved to [archives/port_completed.md](archives/port_completed.md#completed-angular-to-stimulus-migration-checklist-2026-02-19).
+> **Note:** Completed implementation details are documented in the "Completed Gap Implementations" section above.
 
 ### 3.3 Components wired into workspace
 
@@ -1101,9 +968,9 @@ The following components are **wired** into the core try page:
 
 ## Phase 4: Component-by-Component Migration — ✅ Complete
 
-> **Note:** Completed implementation details have been moved to [archives/port_completed.md](archives/port_completed.md#completed-angular-to-stimulus-migration-checklist-2026-02-19).
+> **Note:** Completed implementation details are documented in the "Completed Gap Implementations" section above.
 
-All 25 original Angular components plus 12 new components have been migrated (37 ViewComponents total). See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md) for the full list with ViewComponent and Stimulus controller mappings.
+All 25 original Angular components plus 12 new components have been migrated (37 ViewComponents total). See [deangularjs_experimental_functionality_gaps_complete.md](deangularjs_experimental_functionality_gaps_complete.md) for the full list with ViewComponent and Stimulus controller mappings.
 
 ### 4.2 Per-Component Checklist Template (reference)
 

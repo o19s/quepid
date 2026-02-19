@@ -1,6 +1,6 @@
 # UX Feedback & Discussion Notes
 
-> User observations collected during testing of the `deangularjs-experimental` branch. Some items are addressed by the modern stack (e.g., guided tour work tracked in the parity archive). Many are UX design issues independent of the Angular→Stimulus migration. See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md).
+> User observations collected during testing of the `deangularjs-experimental` branch. Some items are addressed by the modern stack (e.g., guided tour work tracked in the parity archive). Many are UX design issues independent of the Angular→Stimulus migration. See [archives/deangularjs_experimental_functionality_gaps_complete.md](archives/deangularjs_experimental_functionality_gaps_complete.md).
 
 ---
 
@@ -25,12 +25,11 @@
 - The difference between Subject Matter Experts and Expert Users is not clear.
 - The reason we are told to change the Select Scorer is so we can make binary judgments but AP@10 also showed hte binaryu judgment screen.
 - May want to warn users about conversions when changing between different scoring methods.
-- Invalid queries seem to incremeent Try, which isn't ideal.
+- Invalid queries seem to increment Try, which isn't ideal.
+    - It is unclear how to access the Try.
 - One gets a dropdown with other fields on the initial case creation menu but not when in Tune Relevance -> Settings -> Displayed Fields.
 - Should not show option to select team for Search Endpoints when there is no team.
 - The frog icon is not intuitive for unrated docs.
-- If we enter an invalid query it should not iterate the Try.
-    - It is unclear how to access the Try.
 - Explain Query - Params doesn't seem helpful with OpenSearch?
 - Explain Query - Parsing does but could be broken out a lot more to provide more insight.
 - It isn't intuitive that one needs to go to Tune Relevance -> History to see history of tries, would be nice if clicking on a Try maybe took to this.

@@ -2,9 +2,12 @@
 
 > Updated 2026-02-19 | Migration Complete
 
-> **Note:** Completed migration details have been moved to [archives/port_completed.md](archives/port_completed.md). This document remains as a historical summary.
+> **Note:** Completed migration details have been moved to [port_completed.md](port_completed.md). This document remains as a historical summary.
 
-**See also:** The full migration including the **core workspace** (`/case/:id/try/:try_number`) is documented in [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md).
+**See also:** 
+- The full migration including the **core workspace** (`/case/:id/try/:try_number`) is documented in [deangularjs_experimental_functionality_gaps_complete.md](deangularjs_experimental_functionality_gaps_complete.md).
+- For complete component migration list with ViewComponent and Stimulus mappings, see [port_completed.md](port_completed.md#components-fully-migrated).
+- For detailed completion records and gap implementations, see [port_completed.md](port_completed.md).
 
 ## Overview
 
@@ -126,7 +129,7 @@ The initial migration added 10 Stimulus controllers for Cases, Teams, and Scorer
 | `share_search_endpoint_controller.js` | Share/unshare search endpoints with teams |
 | `team_member_autocomplete_controller.js` | Autocomplete for adding team members |
 
-The core workspace migration added 50 additional Stimulus controllers for query management, results display, scoring, annotations, and workspace features. See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md) for the complete list.
+The core workspace migration added 50 additional Stimulus controllers for query management, results display, scoring, annotations, and workspace features. See [deangularjs_experimental_functionality_gaps_complete.md](deangularjs_experimental_functionality_gaps_complete.md) for the complete list.
 
 ### Rails Views (13 new files)
 
@@ -223,16 +226,6 @@ post '/cases/:id/unarchive' => 'cases#unarchive'
 ### Books
 - `books/_book.html.erb` — Updated sharing icon to use embedded SVG instead of AngularJS directive
 - `books/index.html.erb` — Added sharing modal include
-
-### AngularJS Services (fully removed)
-
-All AngularJS services have been removed from the codebase:
-- `teamSvc.js` — **Deleted** (replaced by Rails `teams_controller.rb` and server-rendered views)
-- `searchEndpointSvc.js` — **Deleted** (replaced by Rails controllers and API endpoints)
-- `caseTryNavSvc.js` — **Deleted** (replaced by `app/javascript/utils/quepid_root.js`)
-- All other Angular services — **Deleted** (replaced by Stimulus controllers, ViewComponents, and Rails API endpoints)
-
-See [angular_services_responsibilities_mapping.md](angular_services_responsibilities_mapping.md) for the complete mapping of Angular services to their modern replacements.
 
 ### CSS
 - `bootstrap5-add.css` — New styles added

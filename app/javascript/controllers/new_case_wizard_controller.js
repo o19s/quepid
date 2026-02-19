@@ -34,7 +34,7 @@ export default class extends Controller {
     searchEndpoints: Array
   }
 
-  static targets = ["modal", "modalTitle", "step", "backBtn", "nextBtn", "finishBtn", "existingEndpoint", "newEndpointFields", "searchEngine", "endpointUrl", "fieldSpec", "firstQuery", "searchapiHelp", "tmdbDemoLink", "csvFile", "csvPreview"]
+  static targets = ["modal", "modalTitle", "step", "backBtn", "nextBtn", "finishBtn", "existingEndpoint", "newEndpointFields", "searchEngine", "endpointUrl", "fieldSpec", "firstQuery", "searchapiHelp", "tmdbDemoLink", "csvFile", "csvPreview", "stepAnnouncer"]
 
   connect() {
     this._currentStep = 1
@@ -116,7 +116,12 @@ export default class extends Controller {
 
     // Show feedback
     if (this.hasTmdbDemoLinkTarget) {
-      this.tmdbDemoLinkTarget.innerHTML = '<i class="bi bi-check-circle text-success"></i> TMDB demo settings applied!'
+      this.tmdbDemoLinkTarget.replaceChildren()
+      const icon = document.createElement("i")
+      icon.className = "bi bi-check-circle text-success"
+      icon.setAttribute("aria-hidden", "true")
+      this.tmdbDemoLinkTarget.appendChild(icon)
+      this.tmdbDemoLinkTarget.append(" TMDB demo settings applied!")
     }
     this._updateNavState()
   }
@@ -289,7 +294,9 @@ export default class extends Controller {
     const steps = this.stepTargets
     steps.forEach(el => {
       const stepNum = parseInt(el.dataset.wizardStep, 10)
-      el.classList.toggle("d-none", stepNum !== this._currentStep)
+      const isCurrentStep = stepNum === this._currentStep
+      el.classList.toggle("d-none", !isCurrentStep)
+      el.setAttribute("aria-hidden", isCurrentStep ? "false" : "true")
     })
 
     // Update navigation buttons
@@ -313,6 +320,9 @@ export default class extends Controller {
     if (this.hasModalTitleTarget) {
       this.modalTitleTarget.textContent = titles[this._currentStep] || "Setup"
     }
+    if (this.hasStepAnnouncerTarget) {
+      this.stepAnnouncerTarget.textContent = `Wizard step ${this._currentStep} of ${TOTAL_STEPS}: ${titles[this._currentStep] || "Setup"}`
+    }
     this._updateNavState()
   }
 
@@ -326,7 +336,7 @@ export default class extends Controller {
       const result = this._parseCsv(text)
       if (result.error) {
         if (this.hasCsvPreviewTarget) {
-          this.csvPreviewTarget.innerHTML = `<div class="alert alert-danger small py-1 px-2">${this._escapeHtml(result.error)}</div>`
+          this.csvPreviewTarget.replaceChildren(this._buildCsvPreview("danger", result.error))
           this.csvPreviewTarget.classList.remove("d-none")
         }
         this._csvData = null
@@ -338,12 +348,8 @@ export default class extends Controller {
       if (this.hasCsvPreviewTarget) {
         const queryCount = Object.keys(result.queries).length
         const docCount = Object.values(result.queries).reduce((sum, docs) => sum + docs.length, 0)
-        this.csvPreviewTarget.innerHTML = `
-          <div class="alert alert-success small py-1 px-2">
-            <i class="bi bi-check-circle"></i> Parsed ${queryCount} queries with ${docCount} total documents.
-            <br><small>Fields: ${result.fields.join(", ")}</small>
-          </div>
-        `
+        const message = `Parsed ${queryCount} queries with ${docCount} total documents.`
+        this.csvPreviewTarget.replaceChildren(this._buildCsvPreview("success", message, `Fields: ${result.fields.join(", ")}`))
         this.csvPreviewTarget.classList.remove("d-none")
       }
       this._updateNavState()
@@ -438,11 +444,24 @@ export default class extends Controller {
     return result
   }
 
-  _escapeHtml(str) {
-    if (str == null) return ""
-    const div = document.createElement("div")
-    div.textContent = String(str)
-    return div.innerHTML
+  _buildCsvPreview(type, message, details = "") {
+    const alert = document.createElement("div")
+    alert.className = `alert alert-${type} small py-1 px-2`
+    if (type === "success") {
+      const icon = document.createElement("i")
+      icon.className = "bi bi-check-circle"
+      icon.setAttribute("aria-hidden", "true")
+      alert.appendChild(icon)
+      alert.append(" ")
+    }
+    alert.append(message)
+    if (details) {
+      alert.appendChild(document.createElement("br"))
+      const detailsEl = document.createElement("small")
+      detailsEl.textContent = details
+      alert.appendChild(detailsEl)
+    }
+    return alert
   }
 
   // Split semicolon-separated queries, trim, and deduplicate (case-insensitive)

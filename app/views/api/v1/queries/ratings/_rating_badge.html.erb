@@ -3,7 +3,7 @@
 <%# doc_id: document ID (string); rating: rating value (string, empty for "Rate") %>
 <% rating = local_assigns[:rating].to_s %>
 <% if rating.present? %>
-  <span class="badge bg-primary" data-rating-trigger tabindex="0" role="button" title="Click to change rating"><%= h(rating) %></span>
+  <span class="badge bg-primary" data-rating-trigger tabindex="0" role="button" title="Click to change rating" aria-label="Current rating <%= h(rating) %>. Click to change rating"><%= h(rating) %></span>
 <% else %>
-  <span class="badge bg-secondary" data-rating-trigger tabindex="0" role="button" title="Click to rate">Rate</span>
+  <span class="badge bg-secondary" data-rating-trigger tabindex="0" role="button" title="Click to rate" aria-label="No rating. Click to rate">Rate</span>
 <% end %>

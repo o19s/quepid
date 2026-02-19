@@ -76,18 +76,6 @@ The UI always sets `communal: false` for new scorers. Communal scorers should be
 
 Communal scorers cannot be shared with teams — they are already available to everyone. The share action returns an alert if attempted.
 
-## Features Summary
-
-All functionality for managing communal scorers:
-
-- ✅ View all communal scorers
-- ✅ Edit communal scorers (admin only)
-- ✅ Delete communal scorers (admin only)
-- ✅ Clone communal scorers (all users)
-- ✅ Test communal scorers (admin only)
-- ✅ Search/filter communal scorers
-- ✅ Warning messages when editing communal scorers
-
 ## Technical Implementation
 
 ### Database Schema
@@ -276,5 +264,5 @@ git checkout COMMIT_HASH^ -- test/controllers/admin/communal_scorers_controller_
 ## Related Documentation
 
 - [Managing Scorers](https://quepid-docs.dev.o19s.com/2/quepid/47/managing-scorers)
-- [Data Model](./data_mapping.md) - Understanding the scorer data model
-- [Application Structure](./app_structure.md) - Overall application architecture
+- [Data Model](../data_mapping.md) - Understanding the scorer data model
+- [Application Structure](../app_structure.md) - Overall application architecture

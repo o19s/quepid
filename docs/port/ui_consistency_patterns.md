@@ -126,24 +126,17 @@ For modals that are unique per row/item (e.g. delete query, query options). Wrap
 </div>
 ```
 
-**Controller:** `open()` uses `window.bootstrap.Modal.getOrCreateInstance(el)` then `show()`. Prefer `getOrCreateInstance` over `new Modal()` to avoid creating duplicate instances.
-
-```javascript
-// Preferred: reuses existing instance if present
-const modal = window.bootstrap.Modal.getOrCreateInstance(this.modalTarget)
-modal.show()
-
-// Alternative (if instance management is handled elsewhere):
-const modal = new window.bootstrap.Modal(this.modalTarget)
-modal.show()
-```
-
-**Modal instantiation:** Always check for Bootstrap availability before instantiating:
+**Controller:** `open()` uses `window.bootstrap.Modal.getOrCreateInstance(el)` then `show()`. Always check for Bootstrap availability before instantiating. Prefer `getOrCreateInstance` over `new Modal()` to avoid creating duplicate instances.
 
 ```javascript
 if (window.bootstrap && window.bootstrap.Modal) {
-  const modal = window.bootstrap.Modal.getOrCreateInstance(el)
+  // Preferred: reuses existing instance if present
+  const modal = window.bootstrap.Modal.getOrCreateInstance(this.modalTarget)
   modal.show()
+  
+  // Alternative (if instance management is handled elsewhere):
+  // const modal = new window.bootstrap.Modal(this.modalTarget)
+  // modal.show()
 }
 ```
 
