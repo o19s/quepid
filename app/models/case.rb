@@ -91,6 +91,9 @@ class Case < ApplicationRecord
 
   scope :not_archived, -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
 
+  scope :active, -> { where(archived: false) }
+  scope :archived, -> { where(archived: true) }
+
   scope :public_cases, -> { where(public: true) }
 
   scope :nightly_run, -> { where(nightly: true) }

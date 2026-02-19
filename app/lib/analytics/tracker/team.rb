@@ -18,6 +18,10 @@ module Analytics
       def track_member_added_to_team_event user, team, member
         Analytics::Ahoy.user_added_member_to_team user, team, member
       end
+
+      def track_member_removed_from_team_event user, team, member
+        Analytics::Ahoy.user_removed_member_from_team user, team, member
+      end
     end
   end
 end

@@ -31,7 +31,6 @@ class JudgementsController < ApplicationController
   end
 
   # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   def new
     track_judging = session[:track_judging]&.symbolize_keys
 
@@ -66,7 +65,6 @@ class JudgementsController < ApplicationController
   end
 
   # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
   def edit
     @query_doc_pair = @judgement.query_doc_pair
     @previous_judgement = @judgement.previous_judgement_made
@@ -140,7 +138,6 @@ class JudgementsController < ApplicationController
     params.expect(judgement: [ :user_id, :rating, :query_doc_pair_id, :unrateable, :explanation ])
   end
 
-  # rubocop:disable Metrics/MethodLength
   # Parses search query for field-specific filters (e.g., "query_doc_pair_id:123 doc_id:abc")
   # Supported fields: query_doc_pair_id, doc_id, query_text
   # Any text not matching a field filter is used for generic LIKE search
@@ -177,5 +174,4 @@ class JudgementsController < ApplicationController
 
     query
   end
-  # rubocop:enable Metrics/MethodLength
 end

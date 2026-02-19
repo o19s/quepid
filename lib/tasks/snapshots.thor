@@ -3,7 +3,6 @@
 require 'colorize'
 
 class Snapshots < Thor
-  # rubocop:disable Metrics/MethodLength
   desc 'import CASEID SNAPSHOTNAME FILENAME', 'imports a snapshot to a case'
   long_desc <<-LONGDESC
     `snapshots:import` imports a snapshot to a case.
@@ -169,5 +168,4 @@ class Snapshots < Thor
 
     true
   end
-  # rubocop:enable Metrics/MethodLength
 end

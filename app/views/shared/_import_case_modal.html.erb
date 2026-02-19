@@ -1,0 +1,41 @@
+<div class="modal fade" id="importCaseModal" tabindex="-1" aria-labelledby="importCaseModalLabel" aria-hidden="true" data-controller="import-case">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="importCaseModalLabel">Import Quepid Case</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          Importing a Quepid Case is useful when you are migrating between Quepid installs or if you want to create your Case outside of Quepid.
+        </p>
+        <p>
+          Your best option for understanding the format is to just export a case and use that as a template. Importing will create a brand new Case.
+          Before the import happens Quepid will validate your Case data structures.
+        </p>
+
+        <%= form_with url: api_import_cases_path, method: :post, local: false, html: { id: 'import-case-form', data: { import_case_target: 'form', action: 'submit->import-case#submit' } } do |f| %>
+          <div class="mb-3">
+            <label for="caseJsonFile" class="form-label">Select JSON file to import:</label>
+            <%= file_field_tag :case_json,
+                accept: 'application/json',
+                class: 'form-control',
+                id: 'caseJsonFile',
+                required: true,
+                data: { import_case_target: 'fileInput', action: 'change->import-case#fileSelected' }
+            %>
+          </div>
+
+          <div id="import-case-alert" data-import-case-target="alert" class="alert d-none" role="alert"></div>
+        <% end %>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" form="import-case-form" id="import-case-submit" class="btn btn-success" data-import-case-target="submitButton">
+          <span data-import-case-target="submitText">Import</span>
+          <span data-import-case-target="spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

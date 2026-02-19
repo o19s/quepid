@@ -32,7 +32,6 @@ class JavascriptExtractor < RubyLLM::Tool
 
   private
 
-  # rubocop:disable Metrics/MethodLength
   def extract_javascript_blocks content
     # Match code blocks that are either ```javascript or just ```
     # This regex captures the content between the backticks
@@ -76,7 +75,6 @@ class JavascriptExtractor < RubyLLM::Tool
 
     javascript_blocks
   end
-  # rubocop:enable Metrics/MethodLength
 
   def validate_javascript_syntax code
     # Basic syntax validation

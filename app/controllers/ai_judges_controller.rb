@@ -83,7 +83,7 @@ class AiJudgesController < ApplicationController
     if @ai_judge.save
       @team.members << @ai_judge
       @team.save
-      redirect_to teams_core_path @team
+      redirect_to team_path(@team)
     else
       render :new
     end
@@ -92,7 +92,7 @@ class AiJudgesController < ApplicationController
   def update
     @ai_judge = User.find(params[:id])
     if @ai_judge.update(ai_judge_params)
-      redirect_to teams_core_path @team
+      redirect_to team_path(@team)
     else
       render 'edit'
     end
@@ -101,7 +101,7 @@ class AiJudgesController < ApplicationController
   def destroy
     @ai_judge = User.find(params[:id])
     @ai_judge.destroy
-    redirect_to teams_core_path @team # , notice: 'AI Judge was successfully removed.'
+    redirect_to team_path(@team) # , notice: 'AI Judge was successfully removed.'
   end
 
   private

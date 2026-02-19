@@ -7,7 +7,6 @@ class CaseScoreManager
     @the_case = the_case
   end
 
-  # rubocop:disable Metrics/MethodLength
   def update score_data
     score_data.deep_symbolize_keys!
     return nil if empty_score? score_data
@@ -47,7 +46,6 @@ class CaseScoreManager
     @errors = @score.errors
     raise ActiveRecord::RecordInvalid, @score
   end
-  # rubocop:enable Metrics/MethodLength
 
   private
 

@@ -1,0 +1,204 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1>Cases</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <%= button_tag type: 'button',
+                     class: 'btn btn-sm btn-outline-secondary',
+                     data: {
+                       bs_toggle: 'modal',
+                       bs_target: '#importCaseModal'
+                     } do %>
+        Import Case from JSON
+      <% end %>
+      
+      <%= button_tag type: 'button',
+                     class: 'btn btn-sm btn-outline-secondary',
+                     data: {
+                       bs_toggle: 'modal',
+                       bs_target: '#importSnapshotModal'
+                     } do %>
+        Import Snapshots from CSV
+      <% end %>
+    </div>    
+  </div>
+</div>
+Cases are a group of queries that you are evaluating and experimenting with.
+
+<p id="notice"><%= notice %></p>
+
+<% if @cases.empty? %>
+  Create your first case by clicking on the New Case button above.
+  <br>
+<% end %>
+
+<div class="card h-100">
+  <div class="card-header">
+    <%= form_tag(cases_path, { method: :get }) do %>
+      <div class="mb-0 d-flex flex-wrap align-items-center gap-3 fs-6">
+
+        <!-- Search input with fixed width -->
+        <div class="input-group" style="max-width: 280px;">
+          <%= text_field_tag :q, params[:q],
+              class: 'form-control form-control-sm',
+              placeholder: 'Filter by case name or id',
+              id: 'q'
+          %>
+          <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary' do %>
+            <i class="bi bi-search"></i>
+          <% end %>
+        </div>
+
+        <!-- Checkboxes -->
+        <div class="d-flex align-items-center gap-3">
+          <div class="form-check form-check-inline mb-0">
+            <%= check_box_tag :archived,
+                '1',
+                @archived,
+                class: 'form-check-input',
+                id: 'archived',
+                onchange: 'this.form.submit()'
+            %>
+            <label class="form-check-label" for="archived">Archived</label>
+          </div>
+        </div>
+
+        <div class="col-auto d-flex align-items-center">
+          <label for="team_id" class="me-2 mb-0">Team:</label>
+          <%= select_tag :team_id,
+              options_for_select(
+                [['All', '']] + current_user.teams.map { |t| [t.name, t.id] },
+                params[:team_id]
+              ),
+              class: 'form-select form-select-sm',
+              style: 'width: auto; min-width: 140px;',
+              id: 'team_id',
+              onchange: 'this.form.submit()'
+          %>
+        </div>
+
+      </div>
+    <% end %>
+  </div>
+  
+  <div class="card-body">
+    <table class="table table-hover table-sm">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Case Title</th>
+          <th>Last Try #</th>
+          <th># of Queries</th>
+          <th>Last Score</th>
+          <th>Last Run On</th>
+          <th>Last Run By</th>
+          <th>Associated Judgements</th>
+          <th>Teams</th>
+          <th>Owner</th>
+          <th class="text-end"></th>
+        </tr>
+      </thead>
+  
+      <tbody>      
+        <% @cases.each do |kase| %>
+          <% last_score = kase.last_score %>
+          <tr>
+            <td><%= kase.id %></td>
+            <td><%= link_to kase.case_name, case_core_path(kase) %></td>
+            <td><%= kase.last_try_number || (kase.tries.first&.try_number) %></td>
+            <td><%= kase.respond_to?(:queries_count) ? kase.queries_count : kase.queries.size %></td>
+            <td>
+              <% if last_score.present? %>
+                <%= number_with_precision(last_score.score || 0, precision: 3) %>
+              <% else %>
+                Never Run
+              <% end %>
+            </td>
+            <td>
+              <% if last_score.present? && last_score.updated_at.present? %>
+                <%= l(last_score.updated_at, format: :short) %>
+              <% else %>
+                —
+              <% end %>
+            </td>
+            <td>
+              <% if last_score.present? %>
+                <%= last_score.user&.fullname || 'System' %>
+              <% else %>
+                —
+              <% end %>
+            </td>
+            <td>
+              <% if kase.ratings.count > 0 %>
+                <span class="badge bg-primary rounded-pill"><%= kase.ratings.count %></span>
+              <% else %>
+                —
+              <% end %>
+            </td>
+            
+            <td>
+              <% if kase.teams.any? %>
+                <%= safe_join(kase.teams.map { |t| link_to t.name, team_path(t) }, ', ') %>
+              <% else %>
+                —
+              <% end %>
+            </td>
+            <td><%= kase.owner&.fullname || '—' %></td>
+            <td class="text-end text-nowrap">
+              <%= button_tag type: 'button',
+                             class: 'btn btn-link p-0 me-2',
+                             title: 'Share',
+                             'aria-label': 'Share',
+                             data: {
+                               controller: 'share-case',
+                               action: 'click->share-case#open',
+                               bs_toggle: 'modal',
+                               bs_target: '#shareCaseModal',
+                               share_case_id_value: kase.id,
+                               share_case_name_value: kase.case_name,
+                               share_case_all_teams_json: current_user.teams.select(:id, :name).order(:name).to_json,
+                               share_case_shared_teams_json: kase.teams.select(:id, :name).to_json
+                             } do %>
+                <i class="bi bi-share" aria-hidden="true"></i>
+              <% end %>
+
+              <% if kase.archived? %>
+                <button type="button"
+                        class="btn btn-link text-success p-0"
+                        title="Unarchive case"
+                        aria-label="Unarchive case"
+                        data-controller="confirm-delete"
+                        data-action="click->confirm-delete#open"
+                        data-confirm-delete-url-value="<%= unarchive_case_path(kase) %>"
+                        data-confirm-delete-method-value="post"
+                        data-confirm-delete-message-value="<%= h("Unarchive #{kase.case_name}?") %>">
+                  <i class="bi-folder-check" aria-hidden="true"></i>
+                  <span class="visually-hidden">Unarchive case</span>
+                </button>
+              <% else %>
+                <button type="button"
+                        class="btn btn-link text-warning p-0"
+                        title="Archive case"
+                        aria-label="Archive case"
+                        data-controller="confirm-delete"
+                        data-action="click->confirm-delete#open"
+                        data-confirm-delete-url-value="<%= archive_case_path(kase) %>"
+                        data-confirm-delete-method-value="post"
+                        data-confirm-delete-message-value="<%= h("Archive #{kase.case_name}?") %>">
+                  <i class="bi-folder-check" aria-hidden="true"></i>
+                  <span class="visually-hidden">Archive case</span>
+                </button>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer d-flex justify-content-center">
+    <%== @pagy.series_nav(:bootstrap) %>
+  </div>
+</div>
+
+<%= render 'shared/share_case_modal' %>
+<%= render 'shared/import_case_modal' %>
+<%= render 'shared/import_snapshot_modal' %>

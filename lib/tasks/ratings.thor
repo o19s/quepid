@@ -4,7 +4,6 @@ require 'colorize'
 require 'csv'
 
 class Ratings < Thor
-  # rubocop:disable Metrics/MethodLength
   desc 'import CASEID FILENAME', 'imports ratings to a case'
   long_desc <<-LONGDESC
     `ratings:import` imports ratings to a case.
@@ -66,8 +65,6 @@ class Ratings < Thor
       puts 'Could not find file'.red
     end
   end
-  # rubocop:enable Metrics/MethodLength
-
   desc 'generate SOLRURL FILENAME', 'generates random ratings into a .csv file'
   long_desc <<-LONGDESC
     `ratings:generate` generates ratings that can be imported into a case.

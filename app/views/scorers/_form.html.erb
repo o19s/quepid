@@ -1,0 +1,91 @@
+<%= form_with model: scorer, local: true, class: 'form-horizontal', data: { controller: 'scorer-scale' } do |f| %>
+  <div class="card">
+    <div class="card-body">
+      <% if scorer.errors.any? %>
+        <div id="error_explanation">
+          <h2><%= pluralize(scorer.errors.count, "error") %> prohibited this scorer from being saved:</h2>
+          <ul>
+            <% scorer.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <% if scorer.communal? && current_user.administrator? %>
+        <div class="row mb-3">
+          <div class="col-sm-12">
+            <div class="alert alert-info" role="alert">
+              <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+              This is a <strong>communal scorer</strong> available to all Quepid users.
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="row mb-3">
+        <%= f.label :name, class: 'col-sm-1 col-form-label' %>
+        <div class="col-sm-4">
+          <%= f.text_field :name, class: 'form-control' %>
+          <div class="form-text">The scorer name typically includes the depth of scoring as part of the name, i.e @10</div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :code, class: 'form-label' %>
+        <div class="form-text">This Javascript is run in the browser to calculate the scores.  Learn more about <a target="_blank" href="https://quepid-docs.dev.o19s.com/2/quepid/47/managing-scorers#what-can-my-code-do">functions available to you</a>.</div>
+        <%= f.text_area :code, data: { codemirror_mode: "javascript", codemirror_height: 800 } %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :scale, "Scale for query ratings:", class: 'form-label' %>
+        <div class="form-check">
+          <%= radio_button_tag 'scale_preset', 'binary', scorer.scale == [0, 1], class: 'form-check-input', id: 'scale-binary' %>
+          <%= label_tag 'scale-binary', 'Binary Scale (0, 1)', class: 'form-check-label' %>
+        </div>
+        <div class="form-check">
+          <%= radio_button_tag 'scale_preset', 'graded', scorer.scale == [0, 1, 2, 3], class: 'form-check-input', id: 'scale-graded' %>
+          <%= label_tag 'scale-graded', 'Graded Scale (0, 1, 2, 3)', class: 'form-check-label' %>
+        </div>
+        <div class="form-check">
+          <% is_custom = ![[0, 1], [0, 1, 2, 3]].include?(scorer.scale) %>
+          <%= radio_button_tag 'scale_preset', 'custom', is_custom, class: 'form-check-input', id: 'scale-custom' %>
+          <%= label_tag 'scale-custom', 'Custom', class: 'form-check-label' %>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <%= f.label :scale_list, class: 'col-sm-1 col-form-label' %>
+        <div class="col-sm-6">
+          <%= f.text_field :scale_list, class: 'form-control', placeholder: 'Provide a list of comma separated INTEGERS to use for the scoring scale', data: { scorer_scale_target: 'scaleList', 'live-update': 'scorer_scale_with_labels' } %>
+          <div class="form-text">Use a comma delimited list. This will update below the list of labels for each grade.</div>
+        </div>
+      </div>
+
+      <div class="mb-3 form-check">
+        <%= f.check_box :show_scale_labels, class: 'form-check-input' %>
+        <%= f.label :show_scale_labels, 'Show scale labels?' %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :scale_with_labels, class: 'col-sm-2 control-label' %>
+        <div class="col-sm-10" id="scorer_scale_with_labels" data-scorer-scale-target="scaleLabels">
+          <% scorer.scale.each do |value| -%>
+            <label class='scale-with-label-element clearfix' style="display: inline-block; margin-right: 10px;">
+              <%= value %>:
+              <input
+                class="form-control scale-label clearfix"
+                type="text"
+                name="scorer[scale_with_labels][<%= value %>]"
+                value="<%= scorer.scale_with_labels[value.to_s] unless scorer.scale_with_labels.blank? %>"
+                style="width: 100px; display: inline-block;"
+              />
+            </label>
+          <% end -%>
+        </div>
+      </div>
+
+      <%= f.submit 'Save', class: 'btn btn-primary' %>
+    </div>
+  </div>
+<% end %>

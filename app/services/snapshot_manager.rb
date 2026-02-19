@@ -107,7 +107,6 @@ class SnapshotManager
   # }
   # manager.import_queries data
   #
-  # rubocop:disable Metrics/MethodLength
   def import_queries queries
     queries_to_import = []
     keys              = queries.keys
@@ -158,7 +157,6 @@ class SnapshotManager
     self
   end
 
-  # rubocop:enable Metrics/MethodLength
   def csv_to_queries_hash docs
     # print_step 'Transforming csv into a queries hash'
 

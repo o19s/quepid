@@ -6,7 +6,6 @@ require 'action_controller'
 class ExportBookJob < ApplicationJob
   queue_as :bulk_processing
 
-  # rubocop:disable Metrics/MethodLength
   def perform book
     book.update(export_job: "export started at #{Time.zone.now}")
     Turbo::StreamsChannel.broadcast_render_to(
@@ -41,7 +40,6 @@ class ExportBookJob < ApplicationJob
                  progress: 100 }
     )
   end
-  # rubocop:enable Metrics/MethodLength
 
   def create_zip_from_json json_string, filename
     zip_data = Zip::OutputStream.write_buffer do |zipfile|

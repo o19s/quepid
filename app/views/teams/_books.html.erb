@@ -1,0 +1,120 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Books</h5>
+    <div class="mb-3">
+      <%= form_with url: team_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
+        <div class="col-auto" style="flex:1">
+          <div class="input-group">
+            <%= text_field_tag :books_q, @books_q, class: 'form-control', placeholder: 'Filter books by name' %>
+            <button class="btn btn-outline-secondary" type="submit" title="Search books">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <span class="visually-hidden">Search books</span>
+            </button>
+          </div>
+        </div>
+        <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
+          <%= check_box_tag :books_archived, '1', @books_archived, class: 'form-check-input', id: 'books-archived-cases-checkbox', onchange: 'this.form.submit()' %>
+          <%= label_tag 'books-archived-cases-checkbox', 'Archived Books', class: 'form-check-label ms-2' %>
+        </div>
+        <%# Preserve other filters when submitting books form %>
+        <% if @cases_q.present? %>
+          <%= hidden_field_tag :cases_q, @cases_q %>
+        <% end %>
+        <% if @cases_archived %>
+          <%= hidden_field_tag :cases_archived, '1' %>
+        <% end %>
+        <% if @scorers_q.present? %>
+          <%= hidden_field_tag :scorers_q, @scorers_q %>
+        <% end %>
+        <% if @search_endpoints_q.present? %>
+          <%= hidden_field_tag :search_endpoints_q, @search_endpoints_q %>
+        <% end %>
+        <% if @search_endpoints_archived %>
+          <%= hidden_field_tag :search_endpoints_archived, '1' %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Number of ...</th>
+            <th>Owner</th>
+            <th>Shared</th>
+            <th class="text-end"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @books.each do |book| %>
+            <tr>
+              <td><%= book.id %></td>
+              <td><%= link_to book.name, book_path(book) %></td>
+              <td>
+                <span class="badge bg-primary rounded-pill"><%= book.query_doc_pairs_count %> Query/Doc Pairs</span>
+                <span class="badge bg-primary rounded-pill"><%= book.judgements.count %> Judgements</span>
+              </td>
+              <td><%= book.owner&.fullname || '—' %></td>
+              <td>
+                <span class="badge rounded-pill bg-secondary"><%= book.cases.count %> Cases</span>
+                <span class="badge rounded-pill bg-secondary"><%= book.teams.count %> Teams</span>
+              </td>              
+              <td class="text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                  <%= button_tag type: 'button',
+                                 class: 'btn btn-link p-0 me-2',
+                                 title: 'Share',
+                                 'aria-label': 'Share',
+                                 data: {
+                                   controller: 'share-book',
+                                   action: 'click->share-book#open',
+                                   bs_toggle: 'modal',
+                                   bs_target: '#shareBookModal',
+                                   share_book_id_value: book.id,
+                                   share_book_name_value: book.name,
+                                   share_book_all_teams_json: current_user.teams.select(:id, :name).order(:name).to_json,
+                                   share_book_shared_teams_json: book.teams.select(:id, :name).to_json
+                                 } do %>
+                    <i class="bi bi-share" aria-hidden="true"></i>
+                  <% end %>
+
+                  <% if book.archived? %>
+                    <button type="button" class="btn btn-link text-success p-0 me-2" title="Unarchive book" aria-label="Unarchive book"
+                            data-controller="confirm-delete" data-action="click->confirm-delete#open"
+                            data-confirm-delete-url-value="<%= unarchive_book_path(book) %>"
+                            data-confirm-delete-method-value="patch"
+                            data-confirm-delete-message-value="<%= h("Unarchive #{book.name}?") %>">
+                      <i class="bi bi-folder-check" aria-hidden="true"></i>
+                    </button>
+                  <% else %>
+                    <button type="button" class="btn btn-link text-warning p-0 me-2" title="Archive book" aria-label="Archive book"
+                            data-controller="confirm-delete" data-action="click->confirm-delete#open"
+                            data-confirm-delete-url-value="<%= archive_book_path(book) %>"
+                            data-confirm-delete-method-value="patch"
+                            data-confirm-delete-message-value="<%= h("Archive #{book.name}?") %>">
+                      <i class="bi bi-folder-check" aria-hidden="true"></i>
+                    </button>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <% if @books.empty? %>
+        <div class="text-center text-muted py-3">
+          <p>No books found for this team.</p>
+        </div>
+      <% end %>
+
+      <% if defined?(pagy_nav) && @pagy_books %>
+        <div class="mt-2">
+          <%= pagy_nav(@pagy_books) %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
