@@ -141,7 +141,7 @@ When the judgement form is shown (Rails-rendered `app/views/judgements/_form.htm
 
 All flows described above have been migrated to the modern stack:
 
-- **User flows:** Load → add query → rate → score update → export → clone are all functional via ViewComponents + Stimulus. See [deangularjs_experimental_functionality_gap_report.md](deangularjs_experimental_functionality_gap_report.md) for remaining gaps.
+- **User flows:** Load → add query → rate → score update → export → clone are all functional via ViewComponents + Stimulus. See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md) for parity and gap history.
 - **Keyboard:** Rating shortcuts (a/s/d/f/g/h/j/k/l/;) preserved in the Rails-rendered judgement form (`app/views/judgements/_form.html.erb`).
 - **Real-time:** The modern workspace subscribes to `turbo_stream_from(:notifications)` for score update broadcasts from `RunCaseEvaluationJob`. This is a new capability not present in the Angular version.
 - **Errors:** Flash messages use `window.flash` (from `utils/flash.js`) for client-side feedback and Rails flash for server-side. See [ui_consistency_patterns.md](ui_consistency_patterns.md).

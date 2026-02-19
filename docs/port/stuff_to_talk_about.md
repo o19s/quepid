@@ -1,6 +1,6 @@
 # UX Feedback & Discussion Notes
 
-> User observations collected during testing of the `deangularjs-experimental` branch. Some items are addressed by the modern stack (e.g., guided tour is a known gap — see [deangularjs_experimental_functionality_gap_report.md](deangularjs_experimental_functionality_gap_report.md) Gap #20). Many are UX design issues independent of the Angular→Stimulus migration.
+> User observations collected during testing of the `deangularjs-experimental` branch. Some items are addressed by the modern stack (e.g., guided tour work tracked in the parity archive). Many are UX design issues independent of the Angular→Stimulus migration. See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md).
 
 ---
 

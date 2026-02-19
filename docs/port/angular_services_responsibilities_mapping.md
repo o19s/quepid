@@ -2,7 +2,7 @@
 
 This document maps each Angular service used by the core workspace (`/case/:id/try/:try_number`) to its responsibilities and recommends where each should live after migration: **server-side (Rails)** or **client-side (Stimulus/JS)**.
 
-**See also:** [angular_to_stimulus_hotwire_viewcomponents_checklist.md](angular_to_stimulus_hotwire_viewcomponents_checklist.md), [workspace_api_usage.md](workspace_api_usage.md), [workspace_state_design.md](workspace_state_design.md), [per_component_migration_checklist.md](per_component_migration_checklist.md).
+**See also:** [angular_to_stimulus_hotwire_viewcomponents_checklist.md](angular_to_stimulus_hotwire_viewcomponents_checklist.md), [workspace_api_usage.md](workspace_api_usage.md), [workspace_state_design.md](workspace_state_design.md), [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md).
 
 ---
 

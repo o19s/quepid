@@ -1,6 +1,6 @@
 # Angular to Stimulus, Hotwire, and ViewComponents Migration Checklist
 
-**Status:** Migration is **complete**. All Angular code has been removed. 36 ViewComponents and 50 Stimulus controllers are in production on the `deangularjs-experimental` branch. See [per_component_migration_checklist.md](per_component_migration_checklist.md) for the full component inventory.
+**Status:** Migration is **complete**. All Angular code has been removed. 36 ViewComponents and 50 Stimulus controllers are in production on the `deangularjs-experimental` branch. See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md) for the full component inventory and parity record.
 
 ## Phase 3: ViewComponent Patterns — ✅ Complete
 
@@ -21,7 +21,7 @@ The following components are **wired** into the core try page:
 
 ## Phase 4: Component-by-Component Migration — ✅ Complete
 
-All 25 original Angular components plus 8 new components have been migrated. See [per_component_migration_checklist.md](per_component_migration_checklist.md) for the full list with ViewComponent and Stimulus controller mappings.
+All 25 original Angular components plus 8 new components have been migrated. See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md) for the full list with ViewComponent and Stimulus controller mappings.
 
 ### 4.2 Per-Component Checklist Template (reference)
 

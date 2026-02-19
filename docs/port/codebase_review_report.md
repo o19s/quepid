@@ -93,6 +93,5 @@ The codebase is generally well-structured with clear migration from Angular to S
 
 - [docs/README.md](README.md) — Documentation index
 - [docs/api_client.md](api_client.md) — URL building (getQuepidRootUrl, quepid_root_url)
-- [docs/deangularjs_parity_audit.md](deangularjs_parity_audit.md) — Parity audit
-- [docs/deangularjs_experimental_functionality_gap_report.md](deangularjs_experimental_functionality_gap_report.md) — Functionality gaps
+- [docs/archives/deangularjs_experimental_functionality_gaps_complete.md](archives/deangularjs_experimental_functionality_gaps_complete.md) — Resolved parity gaps and completed recommendations (archive)
 - `.cursor/rules/quepid-project.mdc` — Project rules (Docker, URLs, booleans, CSS)

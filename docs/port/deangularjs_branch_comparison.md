@@ -2,7 +2,7 @@
 
 > Generated 2026-02-14 | 31 commits | 223 files changed | +4,860 / -5,413 lines
 
-**See also:** The `deangularjs-experimental` branch extends this work by migrating the **core workspace** (`/case/:id/try/:try_number`) to Stimulus + ViewComponents, completing the full removal of Angular from the codebase. See [per_component_migration_checklist.md](per_component_migration_checklist.md), [deangularjs_experimental_functionality_gap_report.md](deangularjs_experimental_functionality_gap_report.md).
+**See also:** The `deangularjs-experimental` branch extends this work by migrating the **core workspace** (`/case/:id/try/:try_number`) to Stimulus + ViewComponents, completing the full removal of Angular from the codebase. See [../archives/deangularjs_experimental_functionality_gaps_complete.md](../archives/deangularjs_experimental_functionality_gaps_complete.md).
 
 ## Overview
 

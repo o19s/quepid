@@ -1,40 +1,215 @@
-# Deangularjs Branch Parity Audit
-
-## Executive Summary
-
-This document provides an exhaustive parity comparison between the `deangularjs` branch (Angular 1 SPA) and the `deangularjs-experimental` branch (Stimulus/ViewComponents/Turbo). The audit covers every feature, behavioral difference, and backend change between the two branches.
-
-**Overall finding**: The experimental branch achieves functional parity with the Angular branch for all core workspace features. It goes beyond parity in several areas (server-side search execution, async export/import, SSRF protection, Turbo Stream live updates, scorer testing). A small number of Angular micro-features have behavioral differences in their Stimulus equivalents, detailed below.
-
-**Update (2026-02-18)**: All 22 parity gaps have been resolved. Eight were resolved in earlier waves (✅): query sort by modified date/error state, media embeds, Solr param typo detection, rating scale labels, depth indicator, browse on search engine link, URL color bucketing in try history, and Vega chart (D3 equivalent). Thirteen additional gaps were resolved in the latest implementation wave: batch scoring progress, animated count-up, ES template call warning, SearchAPI mapper link, auto-grow curator inputs, multiple wizard queries, query pagination, TMDB demo defaults, unarchive from workspace, interactive JSON tree view, debug matches modal, field autocomplete with modifiers, and static data upload in wizard.
-
-**Status Legend**: ✅ = 100% parity | 🚀 = enhanced beyond Angular | ⚠️ = general parity (functional but different) | ❌ = lacking in experimental branch
-
-The experimental branch contains **58 Stimulus controllers**, **36 ViewComponents**, and **14 new backend files** (controllers, services, jobs, models) that have no equivalent in the Angular branch. The Angular branch contains **28 controllers**, **26+ services/factories**, **23 components/directives**, and relies on client-side search execution via the splainer-search library.
 
 ---
 
-## Branch Architecture
+> **Archive note:** Completed items from the deangularjs parity audit were moved here on 2026-02-19; this file holds the full resolution record for resolved gaps and recommendations.
 
-### deangularjs (Angular 1 SPA)
+## What's Working Well
 
-- **Layout**: `core.html.erb` loads Angular via `ng-app="QuepidApp"` with four JS bundles (jquery_bundle, angular_app, angular_templates, quepid_angular_app)
-- **Routing**: Angular's `ngRoute` handles client-side routing between `/case/:caseNo/try/:tryNo` and `/404`
-- **State management**: Angular services (`caseSvc`, `queriesSvc`, `settingsSvc`, etc.) maintain client-side state with `$watch`, `$broadcast`, and `$on` event patterns
-- **Search execution**: Client-side via the `splainer-search` library (Solr, ES, OS, Vectara, Algolia, SearchAPI, Static). The browser directly queries the search engine
-- **UI components**: 23+ Angular components/directives with `$uibModal` for modals, `ui-sortable` for drag-and-drop, ACE editor for code/JSON editing
-- **CSS**: Bootstrap 3.3.6 with `bootstrap3-add.css` (1,159 lines of custom styles)
-- **Dependencies**: D3, Vega, ACE, Shepherd.js (tours), angular-wizard, angular-ui-bootstrap, splainer-search, FileSaver.js, ngclipboard
+The following features are fully functional in the current codebase:
 
-### deangularjs-experimental (Stimulus + ViewComponents + Turbo)
+- Query list with drag-reorder (SortableJS), client-side filter, sort, score badges
+- Live search results with pagination ("Load more")
+- Inline rating via Bootstrap popover (individual docs)
+- **Bulk rating** in results pane: "Rate all" / "Clear all" for visible docs (`results_pane_controller.js` → `bulkRate` / `bulkClear`; `ResultsPaneComponent` has `bulkRatingBar` target)
+- **Detailed document view**: "View all fields" on each document card opens a modal with Fields list and Raw JSON tab (CodeMirror when available); `results_pane_controller.js` `_openDetailModal` reads `data-doc-fields` from the card
+- **Try history and try management**: Settings panel has collapsible "Try history" with list of tries, duplicate (copy) and delete per try, and link to switch try
+- **Curator variables**: Settings panel parses `##varName##` from query params and renders labeled inputs; values are saved with "Save & re-run" via `settings_panel_controller.js` (`_extractCuratorVars`, `_renderCuratorVarInputs`, `_collectCuratorVars`)
+- **New case wizard**: 4-step modal (Welcome → Search Endpoint [existing or new with engine + URL] → Field spec → First query) via `NewCaseWizardComponent` and `new_case_wizard_controller.js`
+- **Search endpoint switching**: Settings panel dropdown to change endpoint for current try; `settings_panel_controller.js` `changeEndpoint()` with reload
+- **Draggable pane resizer**: `workspace_resizer_controller.js` resizes west/east panels with mouse/touch and persists width to localStorage per case
+- **CodeMirror for query params**: Settings panel uses CodeMirror for the query params textarea (JSON mode, line numbers)
+- **Onboarding tour**: `tour_controller.js` and `modules/tour_steps` provide a Bootstrap popover–based guided tour (triggered by `startTour` param or "Start tour" button)
+- Snapshot creation and diff comparison (inline position-delta badges)
+- **Browse on search engine:** Link in results header to open results directly on Solr/ES/OpenSearch (`build_browse_url`, `_document_cards.html.erb`)
+- **Depth-of-rating indicator:** "Only the top N results above are used in scoring" below the Nth doc when results exceed scoring depth (`_document_cards.html.erb`)
+- **Media embeds in document cards:** `DocumentCardComponent#media_embeds` renders audio/video/image from document field URLs
+- All modal actions: Clone, Export, Import Ratings, Delete, Share, Judgements, Frog Report, Custom Headers, DocFinder, Query Explain, Move Query, Query Options
+- Annotations CRUD (create, edit, delete)
+- D3 sparkline chart with annotation markers
+- Scorer selection + color-coded score display
+- Panel collapse with localStorage persistence
+- Inline editing of case/try names
+- Query notes / Information Need form
+- Flash messages (client-side with sessionStorage persistence across redirects)
+- Turbo loading states via `turbo_events_controller.js`
+- All legacy Angular routes have Rails equivalents
+- All API endpoints are preserved
 
-- **Layout**: `core_modern.html.erb` with `data-controller="workspace"`, `data-quepid-root-url`, and `javascript_importmap_tags`
-- **Routing**: Server-side via `CoreController#show` rendering the workspace; Rails routes handle navigation
-- **State management**: Stimulus controllers with `values` and `targets`; Turbo Streams for live updates from background jobs
-- **Search execution**: Server-side via `QuerySearchService` and `FetchService`. The server queries the search engine and returns rendered HTML (DocumentCardComponent) or JSON
-- **UI components**: 36 ViewComponents with Bootstrap 5 modals, SortableJS for drag-and-drop, CodeMirror for code editing
-- **CSS**: Bootstrap 5 via npm with `bootstrap5-add.css` + `core-add.css`
-- **Dependencies**: D3 (importmap), SortableJS, Bootstrap 5, no Angular, no splainer-search, no ACE, no Vega (replaced by D3 charts), no Shepherd (replaced by Bootstrap popovers)
+## RESOLVED GAPS
+
+All previously reported high and medium priority gaps have been resolved:
+
+### Resolved: Client-Side Real-Time Scoring
+**Angular:** `ScorerFactory.runCode()` executed custom JavaScript scorer code in the browser instantly after each rating change.
+**Resolution:** Two-tier approach: `QueryScoreService` provides immediate per-query score feedback after rating, plus `RunCaseEvaluationJob` for full case-level scoring. `qscore_controller.js` `_animateScore()` provides smooth animated score transitions with cubic ease-out.
+
+### Resolved: Side-by-Side Diff View
+**Angular:** Dedicated columnar view showing "Current Results" vs snapshot columns side-by-side.
+**Resolution:** `DiffComparisonComponent` renders multi-column side-by-side comparison with position change color coding (improved/degraded/new/missing), position change tooltips, per-snapshot query scores, and case-level score display in column headers.
+
+### Resolved: Diff Numeric Scores
+**Angular:** `diffResultsSvc` computed a numeric score per query per snapshot.
+**Resolution:** `build_diff_data` in `SearchController` includes `SnapshotQuery#score` (per-query) and `Score` records (case-level) for each snapshot. Displayed in `DiffComparisonComponent` column headers.
+
+### 1. Media Embeds, Translations, Per-Field Type Rendering
+
+**Angular:** Document cards rendered `doc.embeds` (audio/video/image) via the `quepid-embed` directive, `doc.translations` with Google Translate links, and `doc.unabridgeds` for full field content.
+
+**Current:** **Media embeds:** ✅ Resolved — `DocumentCardComponent#media_embeds` detects audio/video/image URLs from document fields and renders HTML5 `<audio>`, `<video>`, and `<img>` in the card. **Translations and per-field type formatting:** Not implemented. The document detail modal shows all fields and raw JSON but no Google Translate links or per-field type formatting. Remaining work is P3 polish.
+
+Other resolved gaps (Querqy indicator, Browse on Solr link, Depth of rating warning, and the rest) are listed in **Parity Audit Completed Items** below.
+
+## Components Fully Migrated
+
+All of the following Angular components have equivalent ViewComponents + Stimulus controllers. The main workspace view (`core/show.html.erb`) uses `SettingsPanelComponent` for try history, query params, curator vars, and endpoint switching; `QueryParamsPanelComponent` exists but is a minimal alternate and is not used in the main workspace.
+
+| Angular Component | ViewComponent | Stimulus Controller |
+|---|---|---|
+| `action_icon` | `ActionIconComponent` | (static UI) |
+| `add_query` | `AddQueryComponent` | `add_query_controller.js` |
+| `annotation` + `annotations` | `AnnotationComponent` + `AnnotationsComponent` | `annotations_controller.js` |
+| `clone_case` | `CloneCaseComponent` | `clone_case_controller.js` |
+| `custom_headers` | `CustomHeadersComponent` | `custom_headers_controller.js` |
+| `debug_matches` | `MatchesComponent` | `matches_controller.js` |
+| `delete_case` | `DeleteCaseComponent` | `delete_case_controller.js` |
+| `delete_case_options` | `DeleteCaseOptionsComponent` | `delete_case_options_controller.js` |
+| `delete_query` | `DeleteQueryComponent` | `delete_query_controller.js` |
+| `diff` | `DiffComponent` | `diff_controller.js` |
+| `expand_content` | `ExpandContentComponent` | `expand_content_controller.js` |
+| `export_case` | `ExportCaseComponent` | `export_case_controller.js` |
+| `frog_report` | `FrogReportComponent` | `frog_report_controller.js` |
+| `import_ratings` | `ImportRatingsComponent` | `import_ratings_controller.js` |
+| `judgements` | `JudgementsComponent` | `judgements_controller.js` |
+| `matches` | `MatchesComponent` | `matches_controller.js` |
+| `move_query` | `MoveQueryComponent` | `move_query_controller.js` |
+| `new_case` | `NewCaseComponent` + `NewCaseWizardComponent` | `new_case_wizard_controller.js` |
+| `qgraph` | `QgraphComponent` | `qgraph_controller.js` |
+| `qscore_case` | `QscoreCaseComponent` | `qscore_controller.js` |
+| `qscore_query` | `QscoreQueryComponent` | `qscore_controller.js` |
+| `query_explain` | `QueryExplainComponent` | `query_explain_controller.js` |
+| `query_options` | `QueryOptionsComponent` | `query_options_controller.js` |
+| `share_case` | `ShareCaseComponent` | `share_case_controller.js` |
+| `take_snapshot` | `TakeSnapshotComponent` | `take_snapshot_controller.js` |
+| `unarchive_case` | `UnarchiveCaseComponent` | `unarchive_case_controller.js` |
+
+Additional ViewComponents without a direct single Angular counterpart: `DocumentCardComponent` (doc cards in results, including media embeds), `ResultsPaneComponent` (results container + detail modal + bulk rating bar), `SettingsPanelComponent` (replaces Settings + query params + try history), `ScorerPanelComponent`, `ChartPanelComponent`, `QueryListComponent`, `DocFinderComponent`. The codebase has **60 Stimulus controllers** and **37 ViewComponents** (workspace and supporting pages).
+
+---
+
+
+## Angular Services Replacement Summary
+
+| Angular Service | Replacement | Status |
+|---|---|---|
+| `caseTryNavSvc` | `utils/quepid_root.js` + Turbo Drive | Fully replaced |
+| `docCacheSvc` | `modules/doc_cache.js` (ported but unused) | Available, unwired |
+| `qscore_service` | `qscore_controller.js` | Fully replaced |
+| `annotationsSvc` | `annotations_controller.js` | Fully replaced |
+| `ratingsStoreSvc` + `rateElementSvc` | `results_pane_controller.js` | Fully replaced |
+| `rateBulkSvc` | `results_pane_controller.js` (`bulkRate` / `bulkClear`) + `doc_finder_controller.js` | Fully replaced |
+| `caseSvc` | Rails controllers + Stimulus modals | Fully replaced |
+| `scorerSvc` | `scorer_panel_controller.js` | Fully replaced |
+| `queriesSvc` | `add_query_controller.js` + `delete_query_controller.js` + `query_list_controller.js` | Fully replaced |
+| `querySnapshotSvc` | `take_snapshot_controller.js` + `diff_controller.js` | Fully replaced |
+| `snapshotSearcherSvc` | `results_pane_controller.js` (server-side fetch) | Fully replaced |
+| `settingsSvc` | `settings_panel_controller.js` | Fully replaced |
+| `bootstrapSvc` | Server-rendered page + Rails auth | Fully replaced |
+| `configurationSvc` | Stimulus `values` from ViewComponents | Fully replaced |
+| `bookSvc` | `judgements_controller.js` + Turbo Frames in header | Fully replaced (push to book via Books page) |
+| `teamSvc` | Server-side Rails views | Fully replaced |
+| `userSvc` | Rails `current_user` | Fully replaced |
+| `importRatingsSvc` | `import_ratings_controller.js` | Fully replaced |
+| `caseCSVSvc` | `ExportCaseService` (Ruby, server-side) | Fully replaced (improved) |
+| `paneSvc` | `workspace_panels_controller.js` + `workspace_resizer_controller.js` | Fully replaced (drag-resize + persist) |
+| `queryViewSvc` | Custom events + data attributes | Fully replaced |
+| `searchEndpointSvc` | `settings_panel_controller.js` (endpoint dropdown + `changeEndpoint`) | Fully replaced |
+| `searchErrorTranslatorSvc` | Server-side error handling | Fully replaced |
+| `diffResultsSvc` | `diff_controller.js` + `DiffComparisonComponent` | Fully replaced (per-snapshot query + case scores) |
+| `varExtractorSvc` | `settings_panel_controller.js` (`_extractCuratorVars`, `_renderCuratorVarInputs`) | Fully replaced |
+| `broadcastSvc` | CustomEvent + Turbo Streams | Fully replaced |
+| `docListFactory` | `QuerySearchService` (server-side) | Fully replaced |
+| `ScorerFactory` | Server-side scoring + `qscore_controller.js` + `QueryScoreService` | Fully replaced (two-tier: immediate per-query + background full case) |
+| `SettingsFactory` | `settings_panel_controller.js` (try history, duplicate, delete, params) | Fully replaced |
+| `TryFactory` | Server-rendered try data + curator vars in Settings panel | Fully replaced |
+| `AnnotationFactory` | `annotations_controller.js` | Fully replaced |
+| `SnapshotFactory` | Server-side snapshot handling | Fully replaced |
+
+---
+
+## Routes Coverage
+
+All Angular routes have Rails equivalents:
+
+| Angular Route | Rails Equivalent | Status |
+|---|---|---|
+| `/case/:caseNo/try/:tryNo` | `GET /case/:id/try/:try_number` -> `core#show` | Covered |
+| `/case/:caseNo` | `GET /case/:id` -> `core#show` | Covered |
+| `/cases` | `GET /cases` -> `cases#index` | Covered |
+| `/cases/import` | Modal on `/cases` page | Covered |
+| `/teams` | `GET /teams` -> `teams#index` | Covered |
+| `/teams/:teamId` | `GET /teams/:id` -> `teams#show` | Covered |
+| `/scorers` | `GET /scorers` -> `scorers#index` | Covered |
+
+---
+
+## Parity Audit Completed Items
+
+The following 22 items were originally unique to the Angular branch (`deangularjs`) and have been resolved in the experimental branch.
+
+1. **Media embeds** (`quepidEmbed` directive) — audio/video/image URL detection and HTML5 player rendering. ✅ Resolved: `DocumentCardComponent#media_embeds` with HTML5 `<audio>`, `<video>`, `<img>`.
+2. **Query sort by modified date** — `'-modifiedAt'` sort option. ✅ Resolved: `modified`, `modified_desc` in `query_list_controller.js`.
+3. **Query sort by error state** — `['-errorText', 'allRated']` sort option. ✅ Resolved: `error` sort mode in `query_list_controller.js`.
+4. **Query pagination** — `dir-paginate` with 15 queries per page. ✅ Resolved: Client-side pagination in `query_list_controller.js` with 15 per page, Bootstrap controls, URL persistence.
+5. **Batch scoring progress** — "N of M queries scored" display. ✅ Resolved: "Scoring query N of M" in Turbo Stream notification.
+6. **Animated count-up** — `angular-countup` for result count. ✅ Resolved: `count_up_controller.js` animates from 0 to target over 500ms.
+7. **URL color bucketing** — visual grouping of tries by URL in history. ✅ Resolved: `SettingsPanelComponent#url_color_for_try` with 6-color palette.
+8. **Solr param typo detection** — warns about case-sensitive Solr parameters. ✅ Resolved: `_checkSolrParamTypos()` in `settings_panel_controller.js`.
+9. **ES template call warning** — detects and warns about template queries. ✅ Resolved: `_checkTemplateCall()` in `settings_panel_controller.js` for `_search/template`.
+10. **Rating scale labels** — custom labels on rating buttons from scorer config. ✅ Resolved: `scale_with_labels` in rating popovers and bulk rating bar.
+11. **Browse on Solr link** — direct link to browse results on the search engine. ✅ Resolved: `SearchController#build_browse_url` for Solr and ES/OS.
+12. **Depth of rating indicator** — "Results above are counted in scoring" visual marker. ✅ Resolved: depth-indicator in `_document_cards.html.erb`.
+13. **Field autocomplete with modifiers** — `media:`, `thumb:`, `image:` prefix support. ✅ Resolved: `field_autocomplete_controller.js` + `/api/v1/search_endpoints/:id/fields`.
+14. **TMDB demo defaults** — pre-configured settings for demo search engines. ✅ Resolved: `TMDB_DEFAULTS` in `new_case_wizard_controller.js` (Solr/ES/OS).
+15. **Static data upload in wizard** — CSV upload for static search engine type. ✅ Resolved: CSV upload in wizard step 2, static endpoint + snapshot creation.
+16. **SearchAPI mapper wizard link** — redirect to mapper creation. ✅ Resolved: Link in wizard step 2 based on engine selection.
+17. **Multiple queries in wizard** — add multiple queries with deduplication. ✅ Resolved: Semicolon-separated input with case-insensitive dedup.
+18. **Unarchive case from workspace** — modal to restore archived cases. ✅ Resolved: `UnarchiveCaseComponent` + `unarchive_case_controller.js` with team filter.
+19. **Debug matches modal** — dedicated JSON explorer for explain data. ✅ Resolved: `json_tree_controller.js` collapsible tree, color-coded primitives.
+20. **Vega chart in frog report** — distribution bar chart. ✅ Resolved: D3 v7 bar chart in `frog_report_controller.js` (hover, tooltips, labels).
+21. **ng-json-explorer** — interactive JSON tree view. ✅ Resolved: `json_tree_controller.js` with collapsible tree, toggle arrows.
+22. **Auto-grow input** — dynamic input width for curator variables. ✅ Resolved: `autoGrowInput()` in `settings_panel_controller.js` (50–200px).
+
+---
+
+## Parity Audit Recommendations Completed
+
+All recommendations from the parity audit have been completed.
+
+### High Priority (Functional Gaps)
+
+1. **Add query sort by modified date and error state** — `modified`, `modified_desc`, `error` in `query_list_controller.js`.
+2. **Implement media embeds** — `DocumentCardComponent#media_embeds` with HTML5 audio/video/image.
+3. **Add batch scoring progress indicator** — "Scoring query N of M" in Turbo Stream.
+
+### Medium Priority (UX Polish)
+
+4. **Add query pagination** — 15 per page, Bootstrap controls, URL persistence.
+5. **Implement rating scale labels** — `scale_with_labels` in popovers and bulk bar.
+6. **Add depth indicator** — Below Nth document card in `_document_cards.html.erb`.
+7. **Enrich the new case wizard** — TMDB defaults, field autocomplete, multiple queries, CSV upload, SearchAPI mapper link.
+8. **Add Solr param typo detection** — `_checkSolrParamTypos()` in `settings_panel_controller.js`.
+9. **Add URL color bucketing in try history** — `url_color_for_try` in `SettingsPanelComponent`.
+
+### Low Priority (Nice to Have)
+
+10. **Add Browse on Solr link** — `build_browse_url` in `SearchController`.
+11. **Enhance debug matches modal** — `json_tree_controller.js` collapsible JSON tree.
+12. **Add count-up animation** — `count_up_controller.js` (0 to target, 500ms).
+13. **Restore auto-grow behavior** — `autoGrowInput()` in `settings_panel_controller.js`.
+14. **Add Vega chart to frog report** — D3 v7 bar chart in `frog_report_controller.js`.
+15. **Port unarchive case modal** — `UnarchiveCaseComponent` + `unarchive_case_controller.js`.
+16. **Add ES template call warning** — `_checkTemplateCall()` in `settings_panel_controller.js`.
+
 
 ---
 
@@ -462,67 +637,152 @@ The experimental branch contains **58 Stimulus controllers**, **36 ViewComponent
 
 ## Items Unique to deangularjs (Potential Gaps)
 
-1. ~~**Media embeds** (`quepidEmbed` directive) -- audio/video/image URL detection and HTML5 player rendering~~ ✅ RESOLVED
-2. ~~**Query sort by modified date** -- `'-modifiedAt'` sort option~~ ✅ RESOLVED
-3. ~~**Query sort by error state** -- `['-errorText', 'allRated']` sort option~~ ✅ RESOLVED
-4. ~~**Query pagination** -- `dir-paginate` with 15 queries per page~~ ✅ RESOLVED — Client-side pagination in `query_list_controller.js` with 15 per page, Bootstrap controls, URL persistence
-5. ~~**Batch scoring progress** -- "N of M queries scored" display~~ ✅ RESOLVED — Changed to "Scoring query N of M" format in Turbo Stream notification
-6. ~~**Animated count-up** -- `angular-countup` for result count animation~~ ✅ RESOLVED — `count_up_controller.js` animates from 0 to target over 500ms
-7. ~~**URL color bucketing** -- visual grouping of tries by URL in history~~ ✅ RESOLVED
-8. ~~**Solr param typo detection** -- warns about case-sensitive Solr parameters~~ ✅ RESOLVED
-9. ~~**ES template call warning** -- detects and warns about template queries~~ ✅ RESOLVED — `_checkTemplateCall()` in `settings_panel_controller.js` detects `_search/template` and shows warning
-10. ~~**Rating scale labels** -- custom labels on rating buttons from scorer config~~ ✅ RESOLVED
-11. ~~**Browse on Solr link** -- direct link to browse results on the search engine~~ ✅ RESOLVED
-12. ~~**Depth of rating indicator** -- "Results above are counted in scoring" visual marker~~ ✅ RESOLVED
-13. ~~**Field autocomplete with modifiers** -- `media:`, `thumb:`, `image:` prefix support in wizard~~ ✅ RESOLVED — `field_autocomplete_controller.js` with API endpoint (`/api/v1/search_endpoints/:id/fields`), supports all modifier prefixes
-14. ~~**TMDB demo defaults** -- pre-configured settings for demo search engines~~ ✅ RESOLVED — `TMDB_DEFAULTS` in `new_case_wizard_controller.js` with Solr/ES/OS URLs, query params, and field specs
-15. ~~**Static data upload in wizard** -- CSV upload for static search engine type~~ ✅ RESOLVED — CSV upload in wizard step 2 with client-side parsing, preview, static endpoint + snapshot creation
-16. ~~**SearchAPI mapper wizard link** -- redirect to mapper creation~~ ✅ RESOLVED — Link shown/hidden in wizard step 2 based on engine selection
-17. ~~**Multiple queries in wizard** -- add multiple queries with deduplication~~ ✅ RESOLVED — Semicolon-separated input with case-insensitive deduplication
-18. ~~**Unarchive case from workspace** -- modal to restore archived cases~~ ✅ RESOLVED — `UnarchiveCaseComponent` + `unarchive_case_controller.js` with team filter and case list in workspace toolbar
-19. ~~**Debug matches modal** -- dedicated JSON explorer for explain data~~ ✅ RESOLVED — `json_tree_controller.js` provides collapsible tree view with color-coded primitives
-20. ~~**Vega chart in frog report** -- distribution bar chart using Vega specification~~ ✅ RESOLVED — D3 v7 bar chart implemented in `frog_report_controller.js` with full interactivity (hover, tooltips, labels)
-21. ~~**ng-json-explorer** -- interactive JSON tree view (vs static `<pre>`)~~ ✅ RESOLVED — `json_tree_controller.js` with collapsible tree, color-coded primitives, toggle arrows
-22. ~~**Auto-grow input** -- dynamic input width for curator variables~~ ✅ RESOLVED — `autoGrowInput()` in `settings_panel_controller.js` with dynamic width (50-200px)
+All 22 items that were originally unique to the Angular branch have been resolved in the experimental branch. For the full list and resolution notes, see [archives/deangularjs_experimental_functionality_gaps_complete.md](archives/deangularjs_experimental_functionality_gaps_complete.md#parity-audit-completed-items).
 
 ---
 
 ## Recommendations
 
-### High Priority (Functional Gaps)
+All high-, medium-, and low-priority recommendations from the parity audit have been completed. Resolution details are in [archives/deangularjs_experimental_functionality_gaps_complete.md](archives/deangularjs_experimental_functionality_gaps_complete.md#parity-audit-recommendations-completed).
 
-1. ~~**Add query sort by modified date and error state**~~ ✅ RESOLVED — Added `modified`, `modified_desc`, and `error` sort modes to `query_list_controller.js`.
 
-2. ~~**Implement media embeds**~~ ✅ RESOLVED — Added `media_embeds` method to `DocumentCardComponent` with HTML5 audio/video/image rendering.
+## Executive Summary
 
-3. ~~**Add batch scoring progress indicator**~~ ✅ RESOLVED — Changed to "Scoring query N of M" format.
+This document provides an exhaustive parity comparison between the `deangularjs` branch (Angular 1 SPA) and the `deangularjs-experimental` branch (Stimulus/ViewComponents/Turbo). The audit covers every feature, behavioral difference, and backend change between the two branches.
 
-### Medium Priority (UX Polish)
+**Overall finding**: The experimental branch achieves functional parity with the Angular branch for all core workspace features. It goes beyond parity in several areas (server-side search execution, async export/import, SSRF protection, Turbo Stream live updates, scorer testing). A small number of Angular micro-features have behavioral differences in their Stimulus equivalents, detailed below.
 
-4. ~~**Add query pagination**~~ ✅ RESOLVED — Client-side pagination with 15 per page, Bootstrap controls, URL persistence.
+**Update (2026-02-19)**: Parity audit refreshed for current codebase. All 22 parity gaps are resolved. Completed items and resolution details are recorded in [archives/deangularjs_experimental_functionality_gaps_complete.md](archives/deangularjs_experimental_functionality_gaps_complete.md).
 
-5. ~~**Implement rating scale labels**~~ ✅ RESOLVED — Labels from `scale_with_labels` displayed in rating popovers and bulk rating bar.
+**Status Legend**: ✅ = 100% parity | 🚀 = enhanced beyond Angular | ⚠️ = general parity (functional but different) | ❌ = lacking in experimental branch
 
-6. ~~**Add depth indicator**~~ ✅ RESOLVED — Depth indicator shown below the Nth document card in `_document_cards.html.erb`.
+The experimental branch contains **60 Stimulus controllers**, **37 ViewComponents**, and **14 new backend files** (controllers, services, jobs, models) that have no equivalent in the Angular branch. The Angular branch contains **28 controllers**, **26+ services/factories**, **23 components/directives**, and relies on client-side search execution via the splainer-search library.
 
-7. ~~**Enrich the new case wizard**~~ ✅ RESOLVED — Added TMDB demo defaults, field autocomplete with modifiers, multiple queries with dedup, CSV upload, SearchAPI mapper link.
+---
 
-8. ~~**Add Solr param typo detection**~~ ✅ RESOLVED — Added `_checkSolrParamTypos()` to `settings_panel_controller.js`.
+## Branch Architecture
 
-9. ~~**Add URL color bucketing in try history**~~ ✅ RESOLVED — Added `url_color_for_try` to `SettingsPanelComponent` with 6-color palette.
+### deangularjs (Angular 1 SPA)
 
-### Low Priority (Nice to Have)
+- **Layout**: `core.html.erb` loads Angular via `ng-app="QuepidApp"` with four JS bundles (jquery_bundle, angular_app, angular_templates, quepid_angular_app)
+- **Routing**: Angular's `ngRoute` handles client-side routing between `/case/:caseNo/try/:tryNo` and `/404`
+- **State management**: Angular services (`caseSvc`, `queriesSvc`, `settingsSvc`, etc.) maintain client-side state with `$watch`, `$broadcast`, and `$on` event patterns
+- **Search execution**: Client-side via the `splainer-search` library (Solr, ES, OS, Vectara, Algolia, SearchAPI, Static). The browser directly queries the search engine
+- **UI components**: 23+ Angular components/directives with `$uibModal` for modals, `ui-sortable` for drag-and-drop, ACE editor for code/JSON editing
+- **CSS**: Bootstrap 3.3.6 with `bootstrap3-add.css` (1,159 lines of custom styles)
+- **Dependencies**: D3, Vega, ACE, Shepherd.js (tours), angular-wizard, angular-ui-bootstrap, splainer-search, FileSaver.js, ngclipboard
 
-10. ~~**Add Browse on Solr link**~~ ✅ RESOLVED — Added `build_browse_url` to `SearchController` for Solr and ES/OS.
+### deangularjs-experimental (Stimulus + ViewComponents + Turbo)
 
-11. ~~**Enhance debug matches modal**~~ ✅ RESOLVED — `json_tree_controller.js` provides collapsible JSON tree view.
+- **Layout**: `core_modern.html.erb` with `data-controller="workspace"`, `data-quepid-root-url`, and `javascript_importmap_tags`
+- **Routing**: Server-side via `CoreController#show` rendering the workspace; Rails routes handle navigation
+- **State management**: Stimulus controllers with `values` and `targets`; Turbo Streams for live updates from background jobs
+- **Search execution**: Server-side via `QuerySearchService` and `FetchService`. The server queries the search engine and returns rendered HTML (DocumentCardComponent) or JSON
+- **UI components**: 36 ViewComponents with Bootstrap 5 modals, SortableJS for drag-and-drop, CodeMirror for code editing
+- **CSS**: Bootstrap 5 via npm with `bootstrap5-add.css` + `core-add.css`
+- **Dependencies**: D3 (importmap), SortableJS, Bootstrap 5, no Angular, no splainer-search, no ACE, no Vega (replaced by D3 charts), no Shepherd (replaced by Bootstrap popovers)
 
-12. ~~**Add count-up animation**~~ ✅ RESOLVED — `count_up_controller.js` animates from 0 to target over 500ms.
+# Per-Component Migration Checklist
 
-13. ~~**Restore auto-grow behavior**~~ ✅ RESOLVED — `autoGrowInput()` in `settings_panel_controller.js` with dynamic width.
+Apply the template from [angular_to_stimulus_hotwire_viewcomponents_checklist.md](angular_to_stimulus_hotwire_viewcomponents_checklist.md) (Phase 4.2) to each component below.
 
-14. ~~**Add Vega chart to frog report**~~ ✅ RESOLVED — D3 v7 bar chart implemented in `frog_report_controller.js` with full interactivity (hover, tooltips, labels).
+**Status:** All components have been migrated to ViewComponents + Stimulus controllers as of the `deangularjs-experimental` branch. Angular is fully removed from the codebase.
 
-15. ~~**Port unarchive case modal**~~ ✅ RESOLVED — `UnarchiveCaseComponent` + `unarchive_case_controller.js` with team filter in workspace toolbar.
+## 1. action_icon — [x] Migrated
+**ViewComponent:** `ActionIconComponent` | **Stimulus:** (static UI, no controller needed)
 
-16. ~~**Add ES template call warning**~~ ✅ RESOLVED — `_checkTemplateCall()` in `settings_panel_controller.js` detects `_search/template` and shows warning.
+## 2. add_query — [x] Migrated
+**ViewComponent:** `AddQueryComponent` | **Stimulus:** `add_query_controller.js`
+
+## 3. clone_case — [x] Migrated
+**ViewComponent:** `CloneCaseComponent` | **Stimulus:** `clone_case_controller.js`
+
+## 4. export_case — [x] Migrated
+**ViewComponent:** `ExportCaseComponent` | **Stimulus:** `export_case_controller.js`
+
+## 5. delete_case — [x] Migrated
+**ViewComponent:** `DeleteCaseComponent` | **Stimulus:** `delete_case_controller.js`
+
+## 6. delete_case_options — [x] Migrated
+**ViewComponent:** `DeleteCaseOptionsComponent` | **Stimulus:** `delete_case_options_controller.js`
+
+## 7. share_case — [x] Migrated
+**ViewComponent:** `ShareCaseComponent` | **Stimulus:** `share_case_controller.js`
+
+## 8. new_case — [x] Migrated
+**ViewComponent:** `NewCaseComponent` | **Stimulus:** (static form, no controller needed)
+
+## 9. move_query — [x] Migrated
+**ViewComponent:** `MoveQueryComponent` | **Stimulus:** `move_query_controller.js`
+
+## 10. query_options — [x] Migrated
+**ViewComponent:** `QueryOptionsComponent` | **Stimulus:** `query_options_controller.js`
+
+## 10a. delete_query — [x] Migrated
+**ViewComponent:** `DeleteQueryComponent` | **Stimulus:** `delete_query_controller.js`
+
+## 11. import_ratings — [x] Migrated
+**ViewComponent:** `ImportRatingsComponent` | **Stimulus:** `import_ratings_controller.js`
+
+## 12. judgements — [x] Migrated
+**ViewComponent:** `JudgementsComponent` | **Stimulus:** `judgements_controller.js`
+
+## 13. diff — [x] Migrated
+**ViewComponent:** `DiffComponent` | **Stimulus:** `diff_controller.js`
+
+## 13a. take_snapshot — [x] Migrated
+**ViewComponent:** `TakeSnapshotComponent` | **Stimulus:** `take_snapshot_controller.js`
+
+## 13b. custom_headers — [x] Migrated
+**ViewComponent:** `CustomHeadersComponent` | **Stimulus:** `custom_headers_controller.js`
+
+## 14. expand_content — [x] Migrated
+**ViewComponent:** `ExpandContentComponent` | **Stimulus:** `expand_content_controller.js`
+
+## 15. query_explain — [x] Migrated
+**ViewComponent:** `QueryExplainComponent` | **Stimulus:** `query_explain_controller.js`
+
+## 16. debug_matches — [x] Migrated
+**ViewComponent:** `MatchesComponent` (renamed from `debug_matches`) | **Stimulus:** `matches_controller.js`
+
+## 17. frog_report — [x] Migrated
+**ViewComponent:** `FrogReportComponent` | **Stimulus:** `frog_report_controller.js`
+
+## 18. annotation — [x] Migrated
+**ViewComponent:** `AnnotationComponent` | **Stimulus:** `annotations_controller.js` (shared)
+
+## 19. annotations — [x] Migrated
+**ViewComponent:** `AnnotationsComponent` | **Stimulus:** `annotations_controller.js`
+
+## 20. qscore_case — [x] Migrated
+**ViewComponent:** `QscoreCaseComponent` | **Stimulus:** `qscore_controller.js` (shared)
+
+## 21. qscore_query — [x] Migrated
+**ViewComponent:** `QscoreQueryComponent` | **Stimulus:** `qscore_controller.js` (shared)
+
+## 22. qgraph — [x] Migrated
+**ViewComponent:** `QgraphComponent` | **Stimulus:** `qgraph_controller.js`
+
+## 23. matches — [x] Migrated
+**ViewComponent:** `MatchesComponent` | **Stimulus:** `matches_controller.js`
+
+## 24. query_list (composite) — [x] Migrated
+**ViewComponent:** `QueryListComponent` | **Stimulus:** `query_list_controller.js`
+
+## 25. results_pane (composite) — [x] Migrated
+**ViewComponent:** `ResultsPaneComponent` | **Stimulus:** `results_pane_controller.js`
+
+---
+
+## Additional Components (not in original Angular)
+
+These ViewComponents were added during migration and don't have Angular equivalents:
+
+- **ChartPanelComponent** + `chart_panel_controller.js` — D3 score chart panel
+- **ScorerPanelComponent** + `scorer_panel_controller.js` — Scorer selection panel
+- **SettingsPanelComponent** + `settings_panel_controller.js` — Settings/try configuration panel
+- **QueryParamsPanelComponent** + `query_params_panel_controller.js` — Query params display
+- **DocumentCardComponent** — Individual document card rendering
+- **DocFinderComponent** + `doc_finder_controller.js` — Find and rate missing documents
+- **NewCaseWizardComponent** + `new_case_wizard_controller.js` — Guided case creation flow
+- **QscoreColorable** — Shared module for score-to-color mapping
