@@ -111,6 +111,47 @@ class FetchService
     extract_docs_from_response_body_for_es response_body
   end
 
+  def extract_docs_from_response_body_for_vectara response_body
+    docs = []
+    response = JSON.parse(response_body)
+
+    documents = response.dig('responseSet', 0, 'document') || []
+    documents.each_with_index do |doc_json, index|
+      doc = {}
+      doc[:id] = doc_json['id']
+      doc[:position] = index + 1
+      doc[:rated_only] = nil
+
+      # Vectara stores fields as metadata array: [{ "name": "field1", "value": "val" }]
+      metadata = doc_json['metadata'] || []
+      doc[:fields] = metadata.each_with_object({}) do |entry, fields|
+        fields[entry['name']] = entry['value']
+      end
+
+      docs << doc
+    end
+
+    docs
+  end
+
+  def extract_docs_from_response_body_for_algolia response_body
+    docs = []
+    response = JSON.parse(response_body)
+
+    hits = response['hits'] || []
+    hits.each_with_index do |doc_json, index|
+      doc = {}
+      doc[:id] = doc_json['objectID']
+      doc[:position] = index + 1
+      doc[:rated_only] = nil
+      doc[:fields] = doc_json.except('objectID', '_rankingInfo', '_highlightResult', '_snippetResult')
+
+      docs << doc
+    end
+
+    docs
+  end
+
   # should be in some other service??
   def extract_docs_from_response_body_for_searchapi mapper_code, response_body
     docs = @v8_executor.extract_docs mapper_code, response_body

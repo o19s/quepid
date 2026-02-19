@@ -72,9 +72,10 @@ class QuerySearchService
         search_endpoint.mapper_code,
         response_body
       )
-    when :vectara, :algolia
-      # TODO: add extraction when supported
-      []
+    when :vectara
+      fetch_service.extract_docs_from_response_body_for_vectara(response_body)
+    when :algolia
+      fetch_service.extract_docs_from_response_body_for_algolia(response_body)
     else
       []
     end
@@ -94,6 +95,11 @@ class QuerySearchService
       total.is_a?(Hash) ? total['value'] || 0 : total.to_i
     when :searchapi
       data['numberOfResults'] || data['total'] || 0
+    when :vectara
+      documents = data.dig('responseSet', 0, 'document')
+      documents&.length || 0
+    when :algolia
+      data['nbHits'] || 0
     else
       0
     end

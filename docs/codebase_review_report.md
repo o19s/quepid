@@ -21,7 +21,7 @@ The codebase is generally well-structured with clear migration from Angular to S
 
 | Location | Note |
 |----------|------|
-| `app/services/query_search_service.rb` (line 76) | `# TODO: add extraction when supported` — incomplete feature. |
+| `app/services/query_search_service.rb` (line 76) | `# TODO: add extraction when supported` — **FIXED**: Implemented Vectara and Algolia doc extraction in FetchService and wired into QuerySearchService. |
 | `app/services/fetch_service.rb` (line 244) | `# TODO: Confirm with David Fisher this is right.` — behavior may need confirmation. |
 | `app/controllers/api/v1/import/ratings_controller.rb` (line 77) | `# TODO: report this to logging infrastructure ...` — error reporting not implemented. |
 
@@ -85,7 +85,7 @@ The codebase is generally well-structured with clear migration from Angular to S
 
 ### Low — MOSTLY DONE
 
-8. **Resolve or document TODOs** in QuerySearchService, FetchService, and import ratings controller — Open.
+8. **Resolve or document TODOs** — QuerySearchService Vectara/Algolia extraction **FIXED**. FetchService and import ratings controller TODOs remain open.
 
 ---
 

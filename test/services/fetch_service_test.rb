@@ -380,6 +380,111 @@ class FetchServiceTest < ActiveSupport::TestCase
       assert_equal [ '1--field value' ], doc[:fields]['field']
       assert_equal [ '1--field1 value' ], doc[:fields]['field1']
     end
+
+    it 'lets you extract from raw vectara dump' do
+      mock_vectara_response_body = <<~HEREDOC
+        {
+          "responseSet": [{
+            "response": [],
+            "status": [],
+            "document": [
+              {
+                "id": "doc-1",
+                "metadata": [
+                  { "name": "title", "value": "First Document" },
+                  { "name": "author", "value": "Alice" }
+                ]
+              },
+              {
+                "id": "doc-2",
+                "metadata": [
+                  { "name": "title", "value": "Second Document" },
+                  { "name": "author", "value": "Bob" }
+                ]
+              }
+            ],
+            "generated": [],
+            "summary": []
+          }],
+          "status": [],
+          "metrics": null
+        }
+      HEREDOC
+
+      fetch_service = FetchService.new options
+      docs = fetch_service.extract_docs_from_response_body_for_vectara mock_vectara_response_body
+      assert_equal 2, docs.count
+
+      doc = docs.first
+      assert_equal 'doc-1', doc[:id]
+      assert_equal 1, doc[:position]
+      assert_equal 'First Document', doc[:fields]['title']
+      assert_equal 'Alice', doc[:fields]['author']
+
+      doc2 = docs.second
+      assert_equal 'doc-2', doc2[:id]
+      assert_equal 2, doc2[:position]
+      assert_equal 'Bob', doc2[:fields]['author']
+    end
+
+    it 'handles empty vectara response' do
+      mock_empty_response = '{"responseSet": [{"document": [], "response": [], "status": []}], "status": []}'
+
+      fetch_service = FetchService.new options
+      docs = fetch_service.extract_docs_from_response_body_for_vectara mock_empty_response
+      assert_equal 0, docs.count
+    end
+
+    it 'lets you extract from raw algolia dump' do
+      mock_algolia_response_body = <<~HEREDOC
+        {
+          "hits": [
+            {
+              "title": "Custom Post-it Notes",
+              "imageUrl": "https://example.com/image.png",
+              "objectID": "postItNotes",
+              "_rankingInfo": { "promoted": true, "userScore": 5805 }
+            },
+            {
+              "title": "Postcards",
+              "landingUrl": "/postcards",
+              "objectID": "postcards",
+              "_rankingInfo": { "userScore": 5842 }
+            }
+          ],
+          "nbHits": 10,
+          "page": 0,
+          "nbPages": 2,
+          "hitsPerPage": 5,
+          "query": "post"
+        }
+      HEREDOC
+
+      fetch_service = FetchService.new options
+      docs = fetch_service.extract_docs_from_response_body_for_algolia mock_algolia_response_body
+      assert_equal 2, docs.count
+
+      doc = docs.first
+      assert_equal 'postItNotes', doc[:id]
+      assert_equal 1, doc[:position]
+      assert_equal 'Custom Post-it Notes', doc[:fields]['title']
+      assert_equal 'https://example.com/image.png', doc[:fields]['imageUrl']
+      assert_nil doc[:fields]['_rankingInfo'], '_rankingInfo should be excluded from fields'
+      assert_nil doc[:fields]['objectID'], 'objectID should be excluded from fields'
+
+      doc2 = docs.second
+      assert_equal 'postcards', doc2[:id]
+      assert_equal 2, doc2[:position]
+      assert_equal '/postcards', doc2[:fields]['landingUrl']
+    end
+
+    it 'handles empty algolia response' do
+      mock_empty_response = '{"hits": [], "nbHits": 0}'
+
+      fetch_service = FetchService.new options
+      docs = fetch_service.extract_docs_from_response_body_for_algolia mock_empty_response
+      assert_equal 0, docs.count
+    end
   end
 
   describe 'scoring logic' do
