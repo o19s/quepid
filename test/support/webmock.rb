@@ -236,7 +236,7 @@ module ActiveSupport
       # Testing out fetch service using
       # search_endpoint   for_case_queries_case
       # try               for_case_queries_case
-      stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title&q=First%20Query&rows=10&wt=json')
+      stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title&q=First%20Query&rows=10&start=0&wt=json')
         .with(
           headers: {
             'Accept'          => '*/*',
@@ -250,7 +250,7 @@ module ActiveSupport
       # Testing out fetch service using
       # search_endpoint   for_case_queries_case
       # try               for_case_queries_case with custom field_spec
-      stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title,img_500x500,name,brand,product_type&q=First%20Query&rows=10&wt=json')
+      stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title,img_500x500,name,brand,product_type&q=First%20Query&rows=10&start=0&wt=json')
         .with(
           headers: {
             'Accept'          => '*/*',
@@ -280,7 +280,7 @@ module ActiveSupport
       # search_endpoint   for_case_queries_case
       # try               es_try_with_curator_vars
       # query             blowup_query
-      stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title&q=BLOWUP_QUERY&rows=10&wt=json')
+      stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title&q=BLOWUP_QUERY&rows=10&start=0&wt=json')
         .with(
           headers: {
             'Accept'          => '*/*',
