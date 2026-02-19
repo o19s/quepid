@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
-import { getQuepidRootUrl, buildApiUrl } from "utils/quepid_root"
+import { getQuepidRootUrl, buildApiUrl, buildPageUrl } from "utils/quepid_root"
 
 // Toggles the settings panel and handles saving try query params.
 // Replaces SettingsCtrl and CurrSettingsCtrl.
@@ -48,7 +48,7 @@ export default class extends Controller {
       }
       const data = await res.json()
       const newTryNumber = data.try_number
-      window.location.href = `${root}case/${this.caseIdValue}/try/${newTryNumber}`
+      window.location.href = buildPageUrl(root, "case", this.caseIdValue, "try", newTryNumber)
     } catch (err) {
       console.error("Duplicate try failed:", err)
       if (window.flash) window.flash.error = err.message
@@ -101,7 +101,7 @@ export default class extends Controller {
       const currentTry = String(this.tryNumberValue)
       if (String(tryNumber) === currentTry) {
         const root = getQuepidRootUrl()
-        window.location.href = `${root}case/${this.caseIdValue}`
+        window.location.href = buildPageUrl(root, "case", this.caseIdValue)
       } else {
         window.location.reload()
       }

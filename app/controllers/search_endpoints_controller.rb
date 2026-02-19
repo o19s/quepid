@@ -9,8 +9,7 @@ class SearchEndpointsController < ApplicationController
   respond_to :html
 
   def index
-    bool = ActiveRecord::Type::Boolean.new
-    @archived = bool.deserialize(params[:archived] || false )
+    @archived = deserialize_bool_param(params[:archived])
 
     query = @current_user.search_endpoints_involved_with.order(updated_at: :desc)
     query = query.where(archived: @archived)

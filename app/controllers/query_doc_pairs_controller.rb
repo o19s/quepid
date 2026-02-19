@@ -3,8 +3,8 @@
 class QueryDocPairsController < ApplicationController
   include Pagy::Method
 
-  before_action :set_query_doc_pair, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book
+  before_action :set_query_doc_pair, only: [ :show, :edit, :update, :destroy ]
 
   def index
     @include_judgement_count = deserialize_bool_param(params[:include_judgement_count])
@@ -57,7 +57,7 @@ class QueryDocPairsController < ApplicationController
   private
 
   def set_query_doc_pair
-    @query_doc_pair = QueryDocPair.find(params[:id])
+    @query_doc_pair = @book.query_doc_pairs.find(params[:id])
   end
 
   def query_doc_pair_params

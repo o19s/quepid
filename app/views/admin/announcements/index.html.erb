@@ -51,7 +51,7 @@
       <tbody>      
         <% @announcements.each do |announcement| %>
           <tr class="<%= announcement.live? ? 'table-success' : '' %>">
-            <td><%= announcement.text.html_safe %></td>
+            <td><%= sanitize(announcement.text) %></td>
             <td><%= announcement.author.name %> </td>
             <td><%= announcement.created_at.strftime("%B %d %Y, %l:%M%P") %> </td>
             <td><%= announcement.announcement_viewed.size %> </td>

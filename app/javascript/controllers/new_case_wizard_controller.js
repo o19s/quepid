@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
-import { getQuepidRootUrl, buildApiUrl } from "utils/quepid_root"
+import { getQuepidRootUrl, buildApiUrl, buildCaseQueriesUrl } from "utils/quepid_root"
 
 const TOTAL_STEPS = 4
 
@@ -198,7 +198,7 @@ export default class extends Controller {
   async _addFirstQuery(root, queryText) {
     if (!this.caseIdValue) return
 
-    const url = `${root}case/${this.caseIdValue}/queries`
+    const url = buildCaseQueriesUrl(root, this.caseIdValue)
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
     const res = await fetch(url, {
       method: "POST",

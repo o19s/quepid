@@ -9,6 +9,25 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test @user
   end
 
+  describe 'authorization' do
+    it 'redirects with alert when accessing a team the user is not a member of' do
+      inaccessible_team = teams(:owned_team) # only has team_finder_user
+
+      get team_path(inaccessible_team)
+
+      assert_redirected_to teams_path
+      assert_equal 'Team not found.', flash[:alert]
+    end
+
+    it 'allows access to a team the user is a member of' do
+      Bullet.enable = false
+      get team_path(@team)
+      Bullet.enable = true
+
+      assert_response :success
+    end
+  end
+
   describe 'suggest_members' do
     it 'returns users with matching email from same teams' do
       # random user is already in the 'shared' team with random_1

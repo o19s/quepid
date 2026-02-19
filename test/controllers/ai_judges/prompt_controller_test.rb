@@ -34,5 +34,16 @@ module AiJudges
     #   patch ai_judge_prompt_url
     #   assert_response :success
     # end
+
+    describe 'authorization' do
+      test 'rejects access to a user who is not an AI judge on any accessible book' do
+        non_judge = users(:doug)
+
+        get edit_ai_judge_prompt_url(ai_judge_id: non_judge.id)
+
+        assert_redirected_to root_path
+        assert_equal 'AI judge not found.', flash[:alert]
+      end
+    end
   end
 end

@@ -3,14 +3,13 @@
 module AiJudges
   class PromptsController < ApplicationController
     before_action :set_book
+    before_action :set_ai_judge
 
     def show
       redirect_to edit_ai_judge_prompt_path(params[:ai_judge_id], @book)
     end
 
     def edit
-      @ai_judge = User.find(params[:ai_judge_id])
-
       @query_doc_pair = if @book
                           @book.query_doc_pairs.sample
                         else
@@ -26,7 +25,6 @@ module AiJudges
     end
 
     def update
-      @ai_judge = User.find(params[:ai_judge_id])
       @ai_judge.update(ai_judge_params)
 
       @query_doc_pair = QueryDocPair.new(query_doc_pair_params)
@@ -42,6 +40,19 @@ module AiJudges
 
     def set_book
       @book = current_user.books_involved_with.where(id: params[:book_id]).first
+    end
+
+    def set_ai_judge
+      accessible_book_ids = current_user.books_involved_with.select(:id)
+      @ai_judge = User.joins('INNER JOIN books_ai_judges ON books_ai_judges.user_id = users.id')
+                       .where(books_ai_judges: { book_id: accessible_book_ids })
+                       .where(users: { id: params[:ai_judge_id] })
+                       .first
+
+      return if @ai_judge
+
+      flash[:alert] = 'AI judge not found.'
+      redirect_to root_path
     end
 
     # Only allow a list of trusted parameters through.

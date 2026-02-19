@@ -15,7 +15,7 @@
 valid:
   name:     valid team
   cases:    shared_through_owned_team, queries_case
-  members:  doug
+  members:  doug, random
 
 shared:
   name:     a shared team

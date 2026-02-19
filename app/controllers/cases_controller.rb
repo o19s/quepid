@@ -70,6 +70,6 @@ class CasesController < ApplicationController
   private
 
   def set_case
-    @case = Case.find_by(id: params[:id])
+    @case = current_user.cases_involved_with.find_by(id: params[:id])
   end
 end

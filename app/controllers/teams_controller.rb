@@ -4,6 +4,7 @@ class TeamsController < ApplicationController
   include Pagy::Method
 
   before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint, :suggest_members ]
+  before_action :check_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint, :suggest_members ]
 
   # Remove a case from the team
   def remove_case
@@ -285,7 +286,7 @@ class TeamsController < ApplicationController
     query = @team.cases
     # Books filtering (separate params to avoid collision with case filters)
     books_q = params[:books_q].to_s.strip
-    books_include_archived = params[:books_archived].present? && params[:books_archived].to_s.in?(%w[1 true on])
+    books_include_archived = deserialize_bool_param(params[:books_archived])
 
     if params[:q].present?
       query = query.where('case_name LIKE ? OR case_id LIKE ? ',
@@ -312,7 +313,7 @@ class TeamsController < ApplicationController
 
     # Search Endpoints filtering
     search_endpoints_q = params[:search_endpoints_q].to_s.strip
-    search_endpoints_include_archived = params[:search_endpoints_archived].present? && params[:search_endpoints_archived].to_s.in?(%w[1 true on])
+    search_endpoints_include_archived = deserialize_bool_param(params[:search_endpoints_archived])
 
     search_endpoints_query = @team.search_endpoints.includes(:teams)
     search_endpoints_query = search_endpoints_include_archived ? search_endpoints_query.where(archived: true) : search_endpoints_query.not_archived
@@ -524,7 +525,14 @@ class TeamsController < ApplicationController
   private
 
   def set_team
-    @team = Team.find(params[:id])
+    @team = current_user.teams.find_by(id: params[:id])
+  end
+
+  def check_team
+    return if @team
+
+    flash[:alert] = 'Team not found.'
+    redirect_to teams_path
   end
 
   def team_params

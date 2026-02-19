@@ -11,7 +11,7 @@ module Api
       let(:scorer2)               { scorers(:random_scorer_2) }
       let(:shared_scorer)         { scorers(:shared_scorer) }
       let(:team)                  { teams(:scorers_team) }
-      let(:other_team)            { teams(:valid) }
+      let(:other_team)            { teams(:owned_team) }
       let(:shared_team)           { teams(:shared) }
 
       before do
