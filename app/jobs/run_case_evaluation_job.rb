@@ -76,6 +76,10 @@ class RunCaseEvaluationJob < ApplicationJob
         search_endpoint.mapper_code,
         response_body
       )
+    when :vectara
+      @fetch_service.extract_docs_from_response_body_for_vectara(response_body)
+    when :algolia
+      @fetch_service.extract_docs_from_response_body_for_algolia(response_body)
     else
       raise "Search engine #{search_endpoint.search_engine} is not supported."
     end
