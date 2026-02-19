@@ -20,6 +20,7 @@
 | **Workspace API usage** | [workspace_api_usage.md](workspace_api_usage.md) | Endpoints, request/response shapes |
 | **ViewComponent conventions** | [view_component_conventions.md](view_component_conventions.md) | Location, naming, slots, Turbo Frames |
 | **App structure** | [app_structure.md](app_structure.md) | Frontend stack, workspace architecture |
+| **Intentional design changes** | [intentional_design_changes.md](intentional_design_changes.md) | Behaviors that intentionally differ from Angular — not bugs |
 | **Development setup** | [../DEVELOPER_GUIDE.md](../DEVELOPER_GUIDE.md) | Docker, local, tests, troubleshooting |
 
 ---

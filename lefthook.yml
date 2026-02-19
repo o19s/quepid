@@ -4,3 +4,5 @@ pre-commit:
     rubocop:
       glob: "*.rb"
       run: bundle exec rubocop --force-exclusion {staged_files}
+    related-tests:
+      run: bash .githooks/run-related-tests.sh

@@ -72,8 +72,18 @@ module Api
         end
 
         def set_ratings_response_format
-          request.format = :turbo_stream if request.headers['Accept']&.include?('turbo-stream')
-          request.format = :json unless :turbo_stream == request.format
+          requested_format = params[:format]&.to_sym
+
+          request.format =
+            if :turbo_stream == requested_format
+              :turbo_stream
+            elsif :json == requested_format
+              :json
+            elsif request.headers['Accept']&.include?('turbo-stream')
+              :turbo_stream
+            else
+              :json
+            end
         end
 
         # Sanitize doc_id for use in HTML id attribute (no spaces, valid chars).
