@@ -1,6 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 import { getQuepidRootUrl, buildApiQuerySearchUrl } from 'utils/quepid_root';
 import { applyRating, triggerScoreRefresh } from 'utils/rating_api';
+import { toggleRatingPopover, disposePopovers } from 'utils/rating_popover';
 
 // Expand/collapse inline preview for a query row. Fetches 5 results
 // and shows them directly below the query. Rating is supported inline.
@@ -26,14 +27,14 @@ export default class extends Controller {
     this._expanded = false;
     this._loaded = false;
     this._fetchRequestId = 0;
-    this._popovers = [];
+    this._popovers = new Map();
     this._boundInlineClick = this._handleInlineClick.bind(this);
     this._listenerAttached = false;
   }
 
   disconnect() {
     this._removeInlineListener();
-    this._disposePopovers();
+    disposePopovers(this._popovers);
   }
 
   toggle(event) {
@@ -102,7 +103,7 @@ export default class extends Controller {
 
     // Clean up before re-rendering
     this._removeInlineListener();
-    this._disposePopovers();
+    disposePopovers(this._popovers);
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlText, 'text/html');
@@ -130,23 +131,15 @@ export default class extends Controller {
     }
   }
 
-  _disposePopovers() {
-    this._popovers.forEach((p) => {
-      try {
-        p.dispose();
-      } catch (_e) {
-        /* ignore */
-      }
-    });
-    this._popovers = [];
-  }
-
   _handleInlineClick(event) {
     const ratingTrigger = event.target.closest('[data-rating-trigger]');
     if (ratingTrigger) {
       event.preventDefault();
       event.stopPropagation();
-      this._showInlineRatingPopover(ratingTrigger);
+      const docId = ratingTrigger.closest('[data-doc-id]')?.dataset?.docId;
+      if (docId) {
+        toggleRatingPopover(this._popovers, ratingTrigger, docId, this.scaleValue || [0, 1, 2, 3]);
+      }
       return;
     }
 
@@ -160,42 +153,6 @@ export default class extends Controller {
       const rating = ratingVal === '' ? NaN : parseInt(ratingVal, 10);
       if (docId != null) this._applyInlineRating(docId, rating);
     }
-  }
-
-  _showInlineRatingPopover(triggerEl) {
-    const docId = triggerEl.closest('[data-doc-id]')?.dataset?.docId;
-    if (!docId) return;
-
-    // Destroy existing popover if any
-    const existing = window.bootstrap?.Popover?.getInstance(triggerEl);
-    if (existing) {
-      existing.toggle();
-      return;
-    }
-
-    const scale = this.scaleValue || [0, 1, 2, 3];
-    const buttonsHtml = scale
-      .map(
-        (v) =>
-          `<button type="button" class="btn btn-sm btn-outline-primary" data-rating-value="${v}">${v}</button>`
-      )
-      .join(' ');
-    const clearHtml =
-      '<button type="button" class="btn btn-sm btn-outline-secondary ms-1" data-rating-value="">Clear</button>';
-    const content = `<div class="d-flex flex-wrap gap-1 align-items-center" data-rating-doc-id="${this._escapeHtmlAttr(docId)}">${buttonsHtml}${clearHtml}</div>`;
-
-    const Popover = window.bootstrap?.Popover;
-    if (!Popover) return;
-
-    const popover = new Popover(triggerEl, {
-      content,
-      html: true,
-      trigger: 'manual',
-      placement: 'left',
-      container: 'body',
-    });
-    popover.show();
-    this._popovers.push(popover);
   }
 
   async _applyInlineRating(docId, rating) {
@@ -215,13 +172,5 @@ export default class extends Controller {
     const div = document.createElement('div');
     div.textContent = String(str);
     return div.innerHTML;
-  }
-
-  _escapeHtmlAttr(str) {
-    return String(str ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
   }
 }

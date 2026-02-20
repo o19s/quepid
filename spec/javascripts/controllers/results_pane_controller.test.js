@@ -11,6 +11,7 @@ vi.mock('api/fetch', () => ({
 
 vi.mock('utils/rating_api', () => ({
   triggerScoreRefresh: vi.fn(),
+  applyRating: vi.fn(),
 }));
 
 vi.mock('utils/quepid_root', () => ({
@@ -19,8 +20,28 @@ vi.mock('utils/quepid_root', () => ({
   buildApiQuerySearchUrl: vi.fn(() => '/api/cases/1/tries/1/queries/1/search'),
 }));
 
-import { apiFetch } from 'api/fetch';
-import { triggerScoreRefresh } from 'utils/rating_api';
+vi.mock('utils/results_fetcher', () => ({
+  fetchResultsHtml: vi.fn(),
+  parseResultsHtml: vi.fn(),
+}));
+
+vi.mock('utils/rating_popover', () => ({
+  toggleRatingPopover: vi.fn(),
+  disposePopovers: vi.fn(),
+}));
+
+vi.mock('utils/bulk_rating', () => ({
+  bulkRate: vi.fn(),
+  bulkClear: vi.fn(),
+  collectVisibleDocIds: vi.fn(() => []),
+}));
+
+vi.mock('utils/detail_modal', () => ({
+  openDetailModal: vi.fn(),
+}));
+
+import { triggerScoreRefresh, applyRating } from 'utils/rating_api';
+import { fetchResultsHtml, parseResultsHtml } from 'utils/results_fetcher';
 import ResultsPaneController from 'controllers/results_pane_controller';
 
 function buildController() {
@@ -126,7 +147,8 @@ describe('results_pane_controller', () => {
   });
 
   describe('_openDetailModal', () => {
-    it('opens detail modal with fields from data-doc-fields', async () => {
+    it('delegates to openDetailModal utility', async () => {
+      const { openDetailModal } = await import('utils/detail_modal');
       const controller = buildController();
       const card = document.createElement('div');
       card.className = 'document-card';
@@ -139,94 +161,40 @@ describe('results_pane_controller', () => {
 
       await ResultsPaneController.prototype._openDetailModal.call(controller, triggerEl);
 
-      expect(controller.detailModalTitleTarget.textContent).toBe('Document: Test Doc');
-      expect(controller.detailFieldsListTarget.querySelector('dl')).toBeTruthy();
-      expect(controller.detailFieldsListTarget.querySelector('dt').textContent).toBe('title');
-      expect(controller.detailFieldsListTarget.querySelector('dd').textContent).toBe('Test Doc');
-    });
-
-    it('handles empty fields gracefully', async () => {
-      const controller = buildController();
-      const card = document.createElement('div');
-      card.className = 'document-card';
-      card.dataset.docId = 'doc1';
-      card.dataset.docFields = JSON.stringify({});
-
-      const triggerEl = document.createElement('button');
-      triggerEl.setAttribute('data-results-pane-details', '');
-      card.appendChild(triggerEl);
-
-      await ResultsPaneController.prototype._openDetailModal.call(controller, triggerEl);
-
-      expect(controller.detailFieldsListTarget.querySelector('p.text-muted').textContent).toBe(
-        'No fields available.'
+      expect(openDetailModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          triggerEl,
+          caseId: 1,
+          tryNumber: 1,
+          queryId: 1,
+        })
       );
-    });
-
-    it('renders object fields as JSON', async () => {
-      const controller = buildController();
-      const card = document.createElement('div');
-      card.className = 'document-card';
-      card.dataset.docId = 'doc1';
-      card.dataset.docFields = JSON.stringify({ metadata: { tags: ['tag1', 'tag2'] } });
-
-      const triggerEl = document.createElement('button');
-      triggerEl.setAttribute('data-results-pane-details', '');
-      card.appendChild(triggerEl);
-
-      await ResultsPaneController.prototype._openDetailModal.call(controller, triggerEl);
-
-      const pre = controller.detailFieldsListTarget.querySelector('pre');
-      expect(pre).toBeTruthy();
-      expect(pre.textContent).toContain('tag1');
     });
   });
 
   describe('_applyRating', () => {
-    it('sends PUT request to update rating', async () => {
+    it('calls applyRating utility to update rating', async () => {
       const controller = buildController();
-      apiFetch.mockResolvedValue({
-        ok: true,
-        headers: { get: vi.fn(() => 'application/json') },
-        json: async () => ({ rating: 3 }),
-      });
+      applyRating.mockResolvedValue(3);
 
       await ResultsPaneController.prototype._applyRating.call(controller, 'doc1', 3);
 
-      expect(apiFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/ratings'),
-        expect.objectContaining({
-          method: 'PUT',
-          body: JSON.stringify({ rating: { doc_id: 'doc1', rating: 3 } }),
-        })
-      );
+      expect(applyRating).toHaveBeenCalledWith(1, 1, 'doc1', 3);
       expect(triggerScoreRefresh).toHaveBeenCalled();
     });
 
-    it('sends DELETE request to clear rating', async () => {
+    it('calls applyRating utility to clear rating', async () => {
       const controller = buildController();
-      apiFetch.mockResolvedValue({
-        ok: true,
-        headers: { get: vi.fn(() => 'application/json') },
-      });
+      applyRating.mockResolvedValue(null);
 
       await ResultsPaneController.prototype._applyRating.call(controller, 'doc1', NaN);
 
-      expect(apiFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/ratings'),
-        expect.objectContaining({
-          method: 'DELETE',
-        })
-      );
+      expect(applyRating).toHaveBeenCalledWith(1, 1, 'doc1', NaN);
     });
 
     it('announces rating change after successful update', async () => {
       const controller = buildController();
-      apiFetch.mockResolvedValue({
-        ok: true,
-        headers: { get: vi.fn(() => 'application/json') },
-        json: async () => ({ rating: 2 }),
-      });
+      applyRating.mockResolvedValue(2);
 
       await ResultsPaneController.prototype._applyRating.call(controller, 'doc1', 2);
 
@@ -246,36 +214,51 @@ describe('results_pane_controller', () => {
           <div class="document-card" data-doc-id="doc2"></div>
         </div>
       `;
-      apiFetch.mockResolvedValue({
+      fetchResultsHtml.mockResolvedValue({
         ok: true,
         text: async () => mockHtml,
       });
 
+      // parseResultsHtml is used by _renderHtmlResults — provide real parsed output
+      const card1 = document.createElement('div');
+      card1.className = 'document-card';
+      card1.dataset.docId = 'doc1';
+      const card2 = document.createElement('div');
+      card2.className = 'document-card';
+      card2.dataset.docId = 'doc2';
+      parseResultsHtml.mockReturnValue({
+        numFound: 5,
+        headerEl: null,
+        cards: [card1, card2],
+        loadMoreEl: null,
+      });
+
       await ResultsPaneController.prototype.fetchResults.call(controller);
 
-      expect(apiFetch).toHaveBeenCalled();
+      expect(fetchResultsHtml).toHaveBeenCalledWith(
+        expect.objectContaining({ caseId: 1, tryNumber: 1, queryId: 1 })
+      );
       expect(controller.resultsContainerTarget.querySelector('.document-card')).toBeTruthy();
     });
 
-    it('appends diff snapshot IDs to URL when present', async () => {
+    it('passes diff snapshot IDs to fetchResultsHtml', async () => {
       const controller = buildController();
       controller._diffSnapshotIds = [1, 2];
-      apiFetch.mockResolvedValue({
+      fetchResultsHtml.mockResolvedValue({
         ok: true,
         text: async () => '<div data-results-pane-html-response data-num-found="0"></div>',
       });
 
       await ResultsPaneController.prototype.fetchResults.call(controller);
 
-      expect(apiFetch).toHaveBeenCalledWith(
-        expect.stringContaining('diff_snapshot_ids'),
-        expect.any(Object)
+      expect(fetchResultsHtml).toHaveBeenCalledWith(
+        expect.objectContaining({ diffSnapshotIds: [1, 2] })
       );
     });
 
     it('shows error message on fetch failure', async () => {
       const controller = buildController();
-      apiFetch.mockRejectedValue(new Error('Network error'));
+      fetchResultsHtml.mockRejectedValue(new Error('Network error'));
 
       await ResultsPaneController.prototype.fetchResults.call(controller);
 

@@ -109,6 +109,89 @@ A few diffs show `string → object` or `object → string` (e.g., `scores`, `us
 
 ---
 
+## Coverage Gaps
+
+The visual parity tool captures **26 static full-page screenshots** and **9 API endpoints**. The following pages, interactions, and endpoints are **not** currently captured.
+
+### Pages / Views Not Captured
+
+| Category | Missing Page | Route |
+|----------|--------------|-------|
+| Case | Create new case | `/cases/new` |
+| Team | Create new team | `/teams/new` |
+| Scorer | Edit scorer | `/scorers/:id/edit` |
+| Search Endpoint | Edit | `/search_endpoints/:id/edit` |
+| Search Endpoint | Clone | `/search_endpoints/:id/clone` |
+| Search Endpoint | Mapper wizard | `/search_endpoints/mapper_wizard`, `/search_endpoints/:id/mapper_wizard` |
+| Book | Import new/edit | `/books/:id/import/new`, `/books/:id/import/edit` |
+| Book | Bulk judge | `/books/:id/judge/bulk` |
+| Book | Query doc pair edit/show | `/books/:id/query_doc_pairs/:id/edit`, `/books/:id/query_doc_pairs/:id` |
+| Judgement | Edit/show | `/books/:id/query_doc_pairs/:id/judgements/:id/edit`, `/judgements/:id` |
+| Home | Sparklines, Case prophet, Book summary detail | `/home/sparklines`, `/home/case_prophet/:case_id`, `/home/book_summary_detail/:book_id` |
+| Admin | User edit/show, Announcement new/edit | `/admin/users/:id/edit`, `/admin/users/:id`, `/admin/announcements/new`, `/admin/announcements/:id/edit` |
+| Admin | Websocket tester, Mission Control Jobs, Blazer | `/admin/websocket_tester`, `/admin/jobs`, `/admin/blazer` |
+| Auth | Signup, Password reset, Invitation | `/users/signup`, `/users/password/new`, `/users/password/edit`, `/users/invitation/edit` |
+| Account | Account settings | `/account` |
+| Static | Cookies | `/cookies` |
+| AI | AI judge new/edit, Prompt edit | `/teams/:id/ai_judges/new`, `/teams/:id/ai_judges/:id/edit`, `/ai_judges/:id/prompt/edit` |
+| Case | Ratings index, Scores index | `/cases/:id/ratings`, `/cases/:id/scores` |
+| Analytics | Duplicate scores | `/analytics/cases/:id/duplicate_scores` |
+
+### Interactions Not Captured
+
+The tool captures **static screenshots only**. No user interaction is simulated.
+
+| Interaction Type | Examples |
+|------------------|----------|
+| **Modal dialogs** | Share Case, Share Book, Share Scorer, Share Search Endpoint, Import Ratings, Import Snapshot, Clone Case, Export Case, Delete Query, Move Query, Query Options, Edit Annotation, Judgements, Diff, Frog Report |
+| **Dropdowns** | Case switcher, try switcher, header menus |
+| **Expandable panels** | Annotations panel (open vs collapsed) |
+| **Hover states** | Buttons, links, table rows |
+| **Form validation** | Error states, validation messages |
+| **Toast notifications** | Flash messages, success/error toasts |
+| **Turbo stream updates** | Post-create/update/delete UI changes |
+| **Keyboard shortcuts** | Workspace shortcuts |
+
+### Case Workspace State Variations
+
+The workspace is captured only in its **initial load** state. These variations are not captured:
+
+- Different try numbers (e.g. Try 2 vs Try 1)
+- Annotations panel open vs collapsed
+- Query options modal open
+- Judgements modal open
+- Diff modal (compare snapshots)
+- Search results expanded/collapsed
+- Query list with a selected query
+
+### API Endpoints Not Compared
+
+The API comparison covers 9 endpoints. Notable omissions:
+
+- `/api/search_endpoints/:id` (individual show)
+- `/api/scorers/:id` (individual scorer)
+- `/api/books/:id` (individual book)
+- `/api/cases/:id/search_endpoints`
+- Case-nested endpoints (tries, queries, snapshots, annotations, etc.)
+- `/api/announcements` (skipped — returns HTML, not JSON)
+
+### Data / User Context Gaps
+
+- **Single user:** `quepid+realisticactivity@o19s.com` — no admin vs non-admin comparison
+- **Team membership:** Seed user may have no teams; share modals may appear empty
+- **AI judges:** No AI judge setup; AI judge pages may be unreachable
+- **Book judge:** Data-dependent; if all pairs judged, redirects to "You Have Judged All"
+
+### Recommendations for Broader Coverage
+
+1. **Add more pages** to `PAGES` in `capture_screenshots.mjs`: `/cases/new`, `/teams/new`, `/scorers/:id/edit`, `/search_endpoints/:id/edit`, `/search_endpoints/:id/clone`, `/books/:id/import/new`, `/books/:id/judge/bulk`, `/admin/users/:id/edit`, `/admin/announcements/new`, `/cookies`, `/home/sparklines`
+2. **Add interaction-based captures** using `entry.setup`: click "Share Case", "Import", etc. before screenshot; capture workspace with annotations panel open
+3. **Capture multiple try numbers** for the case workspace (e.g. Try 1 and Try 2)
+4. **Add admin user** or use admin-capable seed user for admin page coverage
+5. **Add more API endpoints** to `compare_apis.mjs` for nested resources (case detail, try detail, etc.)
+
+---
+
 ## Methodology Notes
 
 - Screenshots captured via Playwright (headless Chromium, 1440x900 viewport)

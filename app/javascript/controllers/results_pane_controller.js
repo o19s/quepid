@@ -1,7 +1,9 @@
 import { Controller } from '@hotwired/stimulus';
-import { apiFetch } from 'api/fetch';
-import { triggerScoreRefresh } from 'utils/rating_api';
-import { getQuepidRootUrl, buildApiUrl, buildApiQuerySearchUrl } from 'utils/quepid_root';
+import { applyRating, triggerScoreRefresh } from 'utils/rating_api';
+import { fetchResultsHtml, parseResultsHtml } from 'utils/results_fetcher';
+import { toggleRatingPopover, disposePopovers } from 'utils/rating_popover';
+import { bulkRate, bulkClear, collectVisibleDocIds } from 'utils/bulk_rating';
+import { openDetailModal } from 'utils/detail_modal';
 
 // Holds the results pane region for the case/try workspace. When a query is selected,
 // fetches server-rendered search results (DocumentCardComponent) from the query execution
@@ -66,14 +68,12 @@ export default class extends Controller {
     document.removeEventListener('diff-snapshots-changed', this._boundHandleDiffChanged);
     document.removeEventListener('click', this._boundHandleResultsClick);
     document.removeEventListener('keydown', this._boundHandleResultsKeydown);
-    this._popovers.forEach((p) => p?.dispose());
-    this._popovers.clear();
+    disposePopovers(this._popovers);
   }
 
   _handleDiffChanged(event) {
     this._diffSnapshotIds = event.detail?.snapshotIds || [];
     this._updateDiffIndicator();
-    // Re-fetch from server — it will render diff badges (or not) based on the IDs
     if (this._canFetch()) {
       this.fetchResults();
     }
@@ -95,7 +95,7 @@ export default class extends Controller {
     if (!ratingTrigger) return;
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      this._toggleRatingPopover(ratingTrigger);
+      this._handleRatingTrigger(ratingTrigger);
     }
   }
 
@@ -103,7 +103,8 @@ export default class extends Controller {
     const ratingTrigger = event.target.closest('[data-rating-trigger]');
     if (ratingTrigger) {
       event.preventDefault();
-      this._toggleRatingPopover(ratingTrigger);
+      this._handleRatingTrigger(ratingTrigger);
+      return;
     }
     const ratingBtn = event.target.closest('[data-rating-value]');
     if (ratingBtn) {
@@ -115,11 +116,13 @@ export default class extends Controller {
       if (docId != null) {
         this._applyRating(docId, rating);
       }
+      return;
     }
     const detailBtn = event.target.closest('[data-results-pane-details]');
     if (detailBtn) {
       event.preventDefault();
       this._openDetailModal(detailBtn);
+      return;
     }
     const loadMoreBtn = event.target.closest('[data-results-pane-load-more]');
     if (loadMoreBtn) {
@@ -128,124 +131,26 @@ export default class extends Controller {
     }
   }
 
-  _toggleRatingPopover(triggerEl) {
+  _handleRatingTrigger(triggerEl) {
     const docId = triggerEl.closest('[data-doc-id]')?.dataset?.docId;
     if (!docId) return;
-
-    const existing = this._popovers.get(docId);
-    if (existing) {
-      existing.toggle();
-      return;
-    }
-
-    const scale = this.scaleValue || [0, 1, 2, 3];
-    const labels = this.scaleLabelsValue || {};
-    const content = this._buildRatingPopoverContent(docId, scale, labels);
-
-    const Popover = window.bootstrap?.Popover;
-    if (!Popover) return;
-
-    const popover = new Popover(triggerEl, {
-      content,
-      html: true,
-      trigger: 'manual',
-      placement: 'left',
-      container: 'body',
-    });
-    popover.show();
-    this._popovers.set(docId, popover);
-  }
-
-  _buildRatingPopoverContent(docId, scale, labels) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'd-flex flex-wrap gap-1 align-items-center';
-    wrapper.dataset.ratingDocId = String(docId);
-
-    scale.forEach((value) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'btn btn-sm btn-outline-primary';
-      button.dataset.ratingValue = String(value);
-      const label = labels[String(value)];
-      if (label) button.title = String(label);
-      button.append(String(value));
-      if (label) {
-        const labelEl = document.createElement('small');
-        labelEl.className = 'text-muted';
-        labelEl.textContent = ` ${label}`;
-        button.appendChild(labelEl);
-      }
-      wrapper.appendChild(button);
-    });
-
-    const clear = document.createElement('button');
-    clear.type = 'button';
-    clear.className = 'btn btn-sm btn-outline-secondary ms-1';
-    clear.dataset.ratingValue = '';
-    clear.textContent = 'Clear';
-    wrapper.appendChild(clear);
-    return wrapper;
+    toggleRatingPopover(
+      this._popovers,
+      triggerEl,
+      docId,
+      this.scaleValue || [0, 1, 2, 3],
+      this.scaleLabelsValue || {}
+    );
   }
 
   async _applyRating(docId, rating) {
     if (!this.caseIdValue || !this.queryIdValue) return;
 
-    const root = getQuepidRootUrl();
-    const url = buildApiUrl(
-      root,
-      'cases',
-      this.caseIdValue,
-      'queries',
-      this.queryIdValue,
-      'ratings'
-    );
-    const useTurboStream = !!window.Turbo;
+    const isClear = rating === '' || (typeof rating === 'number' && isNaN(rating));
 
     try {
-      const isClear = rating === '' || (typeof rating === 'number' && isNaN(rating));
-      const accept = useTurboStream ? 'text/vnd.turbo-stream.html' : 'application/json';
-
-      if (isClear) {
-        const res = await apiFetch(url, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json', Accept: accept },
-          body: JSON.stringify({ rating: { doc_id: docId } }),
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || data.message || 'Failed to clear rating');
-        }
-        if (useTurboStream && res.headers.get('Content-Type')?.includes('turbo-stream')) {
-          const html = await res.text();
-          if (html?.trim()) window.Turbo.renderStreamMessage(html);
-        } else {
-          this._updateDocCardRating(docId, '');
-        }
-      } else {
-        const res = await apiFetch(url, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Accept: accept },
-          body: JSON.stringify({ rating: { doc_id: docId, rating } }),
-        });
-        if (!res.ok) {
-          const ct = res.headers.get('Content-Type') || '';
-          if (ct.includes('turbo-stream')) {
-            const html = await res.text();
-            if (html?.trim()) window.Turbo.renderStreamMessage(html);
-            return;
-          }
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || data.message || 'Failed to update rating');
-        }
-        if (useTurboStream && res.headers.get('Content-Type')?.includes('turbo-stream')) {
-          const html = await res.text();
-          if (html?.trim()) window.Turbo.renderStreamMessage(html);
-        } else {
-          const data = await res.json().catch(() => ({}));
-          const newRating = data.rating != null ? String(data.rating) : '';
-          this._updateDocCardRating(docId, newRating);
-        }
-      }
+      const newRating = await applyRating(this.caseIdValue, this.queryIdValue, docId, rating);
+      this._updateDocCardRating(docId, isClear ? '' : String(newRating ?? rating));
       this._announceRatingChange(docId, isClear ? '' : String(rating));
       this._triggerScoreRefresh();
       this._popovers.get(docId)?.hide();
@@ -310,38 +215,15 @@ export default class extends Controller {
       this._lastNumFound = 0;
     }
 
-    let url = buildApiQuerySearchUrl(
-      getQuepidRootUrl(),
-      this.caseIdValue,
-      this.tryNumberValue,
-      this.queryIdValue,
-      null,
-      this._pageSize,
-      start
-    );
-
-    // Append diff snapshot IDs so server renders diff badges
-    const diffIds = this._diffSnapshotIds || [];
-    if (diffIds.length > 0) {
-      const sep = url.includes('?') ? '&' : '?';
-      const diffParams = diffIds
-        .map((id) => `diff_snapshot_ids[]=${encodeURIComponent(id)}`)
-        .join('&');
-      url = `${url}${sep}${diffParams}`;
-    }
-
-    // Append show_only_rated filter
-    if (this._showOnlyRated) {
-      const sep = url.includes('?') ? '&' : '?';
-      url = `${url}${sep}show_only_rated=true`;
-    }
-
     try {
-      const res = await apiFetch(url, {
-        method: 'GET',
-        headers: {
-          Accept: 'text/html',
-        },
+      const res = await fetchResultsHtml({
+        caseId: this.caseIdValue,
+        tryNumber: this.tryNumberValue,
+        queryId: this.queryIdValue,
+        rows: this._pageSize,
+        start,
+        diffSnapshotIds: this._diffSnapshotIds || [],
+        showOnlyRated: this._showOnlyRated,
       });
       const text = await res.text();
 
@@ -414,26 +296,11 @@ export default class extends Controller {
   async bulkRate(event) {
     const rating = parseInt(event.currentTarget.dataset.ratingValue, 10);
     if (isNaN(rating)) return;
-    const docIds = this._collectVisibleDocIds();
+    const docIds = collectVisibleDocIds(this.resultsContainerTarget);
     if (docIds.length === 0) return;
 
-    const root = getQuepidRootUrl();
-    const url = buildApiUrl(
-      root,
-      'cases',
-      this.caseIdValue,
-      'queries',
-      this.queryIdValue,
-      'bulk',
-      'ratings'
-    );
     try {
-      const res = await apiFetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ doc_ids: docIds, rating }),
-      });
-      if (!res.ok) throw new Error(`Bulk rate failed (${res.status})`);
+      await bulkRate(this.caseIdValue, this.queryIdValue, docIds, rating);
       this._triggerScoreRefresh();
       if (this._canFetch()) this.fetchResults();
     } catch (err) {
@@ -442,28 +309,12 @@ export default class extends Controller {
   }
 
   async bulkClear() {
-    const docIds = this._collectVisibleDocIds();
+    const docIds = collectVisibleDocIds(this.resultsContainerTarget);
     if (docIds.length === 0) return;
     if (!confirm(`Clear all ratings for ${docIds.length} documents?`)) return;
 
-    const root = getQuepidRootUrl();
-    const url = buildApiUrl(
-      root,
-      'cases',
-      this.caseIdValue,
-      'queries',
-      this.queryIdValue,
-      'bulk',
-      'ratings',
-      'delete'
-    );
     try {
-      const res = await apiFetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ doc_ids: docIds }),
-      });
-      if (!res.ok) throw new Error(`Bulk clear failed (${res.status})`);
+      await bulkClear(this.caseIdValue, this.queryIdValue, docIds);
       this._triggerScoreRefresh();
       if (this._canFetch()) this.fetchResults();
     } catch (err) {
@@ -471,29 +322,12 @@ export default class extends Controller {
     }
   }
 
-  _collectVisibleDocIds() {
-    if (!this.hasResultsContainerTarget) return [];
-    return Array.from(this.resultsContainerTarget.querySelectorAll('.document-card[data-doc-id]'))
-      .map((el) => el.dataset.docId)
-      .filter(Boolean);
-  }
-
-  /** Render server-rendered HTML (DocumentCardComponent + MatchesComponent). */
   _renderHtmlResults(htmlText, append = false) {
     if (!this.hasResultsContainerTarget) return;
 
-    this._popovers.forEach((p) => p?.dispose());
-    this._popovers.clear();
+    disposePopovers(this._popovers);
 
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlText, 'text/html');
-    const wrapper = doc.querySelector('[data-results-pane-html-response]');
-    if (!wrapper) return;
-
-    const numFound = parseInt(wrapper.dataset.numFound || '0', 10);
-    const headerEl = wrapper.querySelector('p.text-muted.small.mb-2');
-    const cards = wrapper.querySelectorAll('.document-card');
-    const loadMoreEl = wrapper.querySelector("[data-results-pane-target='loadMoreArea']");
+    const { numFound, headerEl, cards, loadMoreEl } = parseResultsHtml(htmlText);
 
     this._showBulkRatingBar(cards.length > 0);
 
@@ -536,175 +370,47 @@ export default class extends Controller {
   }
 
   async _openDetailModal(triggerEl) {
-    const card = triggerEl.closest('.document-card');
-    if (!card) return;
-
-    const docId = card.dataset.docId || 'Unknown';
-    let fields = {};
-
-    // Read fields from data-doc-fields when present on server-rendered cards.
-    if (card.dataset.docFields) {
-      try {
-        fields = JSON.parse(card.dataset.docFields);
-      } catch (_e) {
-        /* ignore */
-      }
-    }
-
-    // For large docs, data-doc-fields may be omitted. Fetch on demand.
-    if (Object.keys(fields).length === 0) {
-      fields = await this._fetchDetailFields(docId);
-    }
-
-    // Populate title
-    if (this.hasDetailModalTitleTarget) {
-      const title = fields.title || fields.name || docId;
-      const displayTitle = Array.isArray(title) ? title[0] : title;
-      this.detailModalTitleTarget.textContent = `Document: ${displayTitle}`;
-    }
-
-    // Populate fields list as <dl>
-    if (this.hasDetailFieldsListTarget) {
-      const keys = Object.keys(fields);
-      if (keys.length === 0) {
-        const empty = document.createElement('p');
-        empty.className = 'text-muted';
-        empty.textContent = 'No fields available.';
-        this.detailFieldsListTarget.replaceChildren(empty);
-      } else {
-        const dl = document.createElement('dl');
-        dl.className = 'row mb-0';
-        keys.forEach((key) => {
-          const value = fields[key];
-          const dt = document.createElement('dt');
-          dt.className = 'col-sm-3 text-truncate';
-          dt.title = String(key);
-          dt.textContent = String(key);
-          const dd = document.createElement('dd');
-          dd.className = 'col-sm-9';
-          if (typeof value === 'object' && value !== null) {
-            const pre = document.createElement('pre');
-            pre.className = 'mb-0 small bg-light p-2 rounded';
-            pre.textContent = JSON.stringify(value, null, 2);
-            dd.appendChild(pre);
-          } else {
-            dd.textContent = String(value ?? '');
-          }
-          dl.appendChild(dt);
-          dl.appendChild(dd);
-        });
-        this.detailFieldsListTarget.replaceChildren(dl);
-      }
-    }
-
-    // Populate raw JSON tab — use CodeMirror read-only viewer when available
-    const fullDoc = { id: docId, fields };
-    const jsonStr = JSON.stringify(fullDoc, null, 2);
-
-    if (this.hasDetailJsonTextareaTarget && window.CodeMirror) {
-      const textarea = this.detailJsonTextareaTarget;
-      if (textarea.editor) {
-        // Reuse existing CodeMirror instance — just update its content
-        textarea.editor.setValue(jsonStr);
-        textarea.editor.formatJSON();
-      } else {
-        textarea.value = jsonStr;
-        window.CodeMirror.fromTextArea(textarea, {
-          mode: 'json',
-          readOnly: true,
-          lineNumbers: true,
-          height: 400,
-        });
-        // formatJSON is auto-called by fromTextArea for valid JSON
-      }
-      // Hide the fallback <pre>
-      if (this.hasDetailJsonPreTarget) this.detailJsonPreTarget.classList.add('d-none');
-    } else if (this.hasDetailJsonPreTarget) {
-      this.detailJsonPreTarget.textContent = jsonStr;
-      this.detailJsonPreTarget.classList.remove('d-none');
-      // Initialize json-tree on the pre element
-      this._initJsonTree(this.detailJsonPreTarget);
-    }
-
-    // Set up copy JSON button
-    if (this.hasCopyJsonBtnTarget) {
-      this.copyJsonBtnTarget.setAttribute('data-clipboard-text-value', jsonStr);
-    }
-
-    // Set up view source button — doc_id is stored for viewSource action
-    this._currentDetailDocId = docId;
-    if (this.hasViewSourceBtnTarget) {
-      this.viewSourceBtnTarget.classList.remove('d-none');
-    }
-
-    const modal =
-      this.hasDetailModalTarget &&
-      window.bootstrap?.Modal?.getOrCreateInstance(this.detailModalTarget);
-    modal?.show();
-  }
-
-  async _fetchDetailFields(docId) {
-    if (!this.caseIdValue || !this.tryNumberValue || !this.queryIdValue) return {};
-
-    try {
-      const root = getQuepidRootUrl();
-      const url = new URL(
-        buildApiUrl(
-          root,
-          'cases',
-          this.caseIdValue,
-          'tries',
-          this.tryNumberValue,
-          'queries',
-          this.queryIdValue,
-          'search'
-        )
-      );
-      url.searchParams.set('q', docId);
-      url.searchParams.set('rows', '10');
-      url.searchParams.set('start', '0');
-      const res = await apiFetch(url.toString(), { headers: { Accept: 'application/json' } });
-      if (!res.ok) return {};
-      const data = await res.json().catch(() => ({}));
-      const docs = Array.isArray(data.docs) ? data.docs : [];
-      if (docs.length === 0) return {};
-
-      const exact = docs.find((d) => String(d?.id) === String(docId)) || docs[0];
-      return exact?.fields || {};
-    } catch (_e) {
-      return {};
-    }
+    await openDetailModal({
+      triggerEl,
+      modalEl: this.hasDetailModalTarget ? this.detailModalTarget : null,
+      targets: {
+        title: this.hasDetailModalTitleTarget ? this.detailModalTitleTarget : null,
+        fieldsList: this.hasDetailFieldsListTarget ? this.detailFieldsListTarget : null,
+        jsonPre: this.hasDetailJsonPreTarget ? this.detailJsonPreTarget : null,
+        jsonTextarea: this.hasDetailJsonTextareaTarget ? this.detailJsonTextareaTarget : null,
+        viewSourceBtn: this.hasViewSourceBtnTarget ? this.viewSourceBtnTarget : null,
+        copyJsonBtn: this.hasCopyJsonBtnTarget ? this.copyJsonBtnTarget : null,
+      },
+      caseId: this.caseIdValue,
+      tryNumber: this.tryNumberValue,
+      queryId: this.queryIdValue,
+      initJsonTree: (pre) => this._initJsonTree(pre),
+    });
   }
 
   viewSource() {
-    if (!this._currentDetailDocId) return;
-    const root = getQuepidRootUrl();
-    const docId = encodeURIComponent(this._currentDetailDocId);
-    const url = `${buildApiUrl(root, 'cases', this.caseIdValue, 'tries', this.tryNumberValue, 'queries', this.queryIdValue, 'search', 'raw')}?doc_id=${docId}`;
-    window.open(url, '_blank');
+    if (!this.hasViewSourceBtnTarget) return;
+    const url = this.viewSourceBtnTarget.dataset.viewSourceUrl;
+    if (url) window.open(url, '_blank');
   }
 
   _initJsonTree(pre) {
     const container = pre.parentElement;
     if (!container) return;
 
-    // Remove any previously rendered json-tree div
     const existing = container.querySelector('.json-tree');
     if (existing) existing.remove();
 
-    // Show the pre again so the json-tree controller can read its content
     pre.style.display = '';
 
     container.setAttribute('data-controller', 'json-tree');
     pre.setAttribute('data-json-tree-target', 'source');
 
-    // Force Stimulus to notice the new/updated controller attribute
     const app = this.application;
     if (app) {
       requestAnimationFrame(() => {
         const ctrl = app.getControllerForElementAndIdentifier(container, 'json-tree');
         if (ctrl) {
-          // Re-run rendering (clears old trees and rebuilds)
           ctrl.sourceTargets.forEach((src) => {
             const oldTree = src.nextElementSibling;
             if (oldTree?.classList?.contains('json-tree')) oldTree.remove();
@@ -722,26 +428,5 @@ export default class extends Controller {
       rating === ''
         ? `Cleared rating for document ${docId}.`
         : `Set rating ${rating} for document ${docId}.`;
-  }
-
-  _escapeHtml(str) {
-    if (str == null) return '';
-    const div = document.createElement('div');
-    div.textContent = String(str);
-    return div.innerHTML;
-  }
-
-  _escapeHtmlAttr(str) {
-    if (str == null) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
-
-  /** Sanitize doc_id for HTML id used by Turbo Stream targets. Must match server. */
-  _ratingBadgeId(docId) {
-    return `rating-badge-${String(docId).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
   }
 }
