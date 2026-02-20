@@ -138,7 +138,6 @@ module Core
         query:            @query,
         case_id:          @case.id,
         try_number:       @try&.try_number,
-        selected:         false,
         sortable:         Rails.application.config.query_list_sortable,
         scorer_scale_max: @case.scorer&.scale&.last || 100,
         query_score:      query_scores[@query.id.to_s] || query_scores[@query.id] || '?',

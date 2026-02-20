@@ -42,12 +42,11 @@ class QueryListComponentTest < ViewComponent::TestCase
     ]
     render_inline(
       QueryListComponent.new(
-        case_id:           1,
-        try_number:        1,
-        queries:           queries,
-        selected_query_id: 10,
-        other_cases:       [ { id: 2, name: 'Other Case' } ],
-        query_scores:      { '10' => 75, '11' => '?' }
+        case_id:      1,
+        try_number:   1,
+        queries:      queries,
+        other_cases:  [ { id: 2, name: 'Other Case' } ],
+        query_scores: { '10' => 75, '11' => '?' }
       )
     )
     assert_selector 'turbo-frame#query_list_1'
@@ -55,7 +54,22 @@ class QueryListComponentTest < ViewComponent::TestCase
     assert_selector '.query-list ul.list-group-numbered > li.list-group-item', count: 2
     assert_text 'first query'
     assert_text 'second query'
-    assert_selector "a[href*='query_id=10']"
-    assert_selector '.bg-primary.bg-opacity-10', count: 1
+    # Query text is a clickable span (expand toggle), not a turbo-frame link
+    assert_selector 'span[data-action="click->query-expand#toggle"]', count: 2
+  end
+
+  def test_renders_add_query_slot
+    render_inline(
+      QueryListComponent.new(
+        case_id:     1,
+        try_number:  1,
+        queries:     [],
+        other_cases: []
+      )
+    ) do |component|
+      component.with_add_query { '<form class="add-query-form">Add query here</form>'.html_safe }
+    end
+    assert_selector '.add-query-form'
+    assert_text 'Add query here'
   end
 end

@@ -1,9 +1,11 @@
 <%# Query list for case/try workspace. Each row: query text, score, Move/Options/Explain. %>
 <%# Wrapped in Turbo Frame so the region can be updated via Turbo Streams (e.g. add/remove/reorder queries). %>
-<%# Each query row has a unique turbo-frame id (query_row_<id>) for targeted Turbo Stream updates. %>
 <%= helpers.turbo_frame_tag "query_list_#{@case_id}" do %>
 <div class="query-list border rounded p-2 bg-light" data-controller="query-list" data-query-list-sortable-value="<%= @sortable %>" data-query-list-case-id-value="<%= @case_id %>">
   <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+    <% if add_query? %>
+      <div class="flex-grow-1"><%= add_query %></div>
+    <% end %>
     <h3 class="h6 mb-0">Queries</h3>
     <span class="badge bg-secondary" data-query-list-target="count"><%= @queries.size %></span>
     <% unless @queries.empty? %>
@@ -52,7 +54,6 @@
                    query: query,
                    case_id: @case_id,
                    try_number: @try_number,
-                   selected: selected?(query),
                    sortable: @sortable,
                    scorer_scale_max: @scorer_scale_max,
                    scorer_scale: @scorer_scale,

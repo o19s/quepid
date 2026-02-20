@@ -3,7 +3,7 @@
 <% query_id = query.respond_to?(:id) ? query.id : nil %>
 <% query_text = query.respond_to?(:query_text) ? query.query_text : query[:query_text] %>
 <li id="query_row_<%= query_id %>"
-    class="list-group-item py-2 <%= 'bg-primary bg-opacity-10' if local_assigns[:selected] %>"
+    class="list-group-item py-2"
     data-query-id="<%= query_id %>"
     data-query-text="<%= query_text.to_s.downcase %>"
     data-query-score="<%= local_assigns[:query_score] %>"
@@ -21,11 +21,10 @@
       <% if local_assigns[:sortable] %>
         <span class="query-drag-handle text-muted cursor-grab" title="Drag to reorder" aria-hidden="true"><i class="bi bi-grip-vertical"></i></span>
       <% end %>
-      <a href="<%= case_core_path(local_assigns[:case_id], local_assigns[:try_number]) %>?query_id=<%= query_id %>"
-         class="text-decoration-none text-dark flex-grow-1 text-break <%= 'fw-bold' if local_assigns[:selected] %>"
-         data-turbo-frame="workspace_content">
+      <span class="text-dark flex-grow-1 text-break" role="button" style="cursor: pointer;"
+            data-action="click->query-expand#toggle">
         <%= query_text %>
-      </a>
+      </span>
       <% if local_assigns[:unrated] %>
         <span class="badge bg-warning text-dark" title="No ratings for this query"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i></span>
       <% end %>
@@ -53,8 +52,7 @@
                 case_id: local_assigns[:case_id],
                 query_id: query_id,
                 query_text: query_text,
-                try_number: local_assigns[:try_number],
-                selected_query_id: (local_assigns[:selected] ? query_id : nil)
+                try_number: local_assigns[:try_number]
               ) %>
         <% end %>
       </span>

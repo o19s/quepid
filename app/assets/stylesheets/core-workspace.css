@@ -1,117 +1,117 @@
 /*
- * Core workspace: collapsible panels, resizer, query expand.
+ * Core workspace: toolbar, query container, tune-relevance panel, query expand.
  * Used by core workspace (core_modern layout).
- * See workspace_panels_controller.js.
  */
 
-/* Collapsible east/west side panels */
-.workspace-panels-row {
+/* Case header row */
+.case-header {
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 0;
-  min-height: 300px;
-  padding: var(--quepid-spacing-4) 0;
-}
-
-.workspace-panel {
-  display: flex;
-  flex-direction: column;
-  transition: min-width var(--quepid-duration-base) ease, flex var(--quepid-duration-base) ease;
-}
-
-.workspace-panel.west {
-  flex: 0 1 25%;
-  min-width: 200px;
-  border-right: var(--quepid-border-width) solid var(--quepid-color-border);
-}
-
-.workspace-panel.east {
-  flex: 1 1 75%;
-  min-width: 300px;
-}
-
-.workspace-panel--collapsed.west {
-  flex: 0 0 var(--quepid-spacing-14);
-  min-width: var(--quepid-spacing-14);
-  border-right: var(--quepid-border-width) solid var(--quepid-color-border);
-}
-
-.workspace-panel--collapsed.east {
-  flex: 0 0 var(--quepid-spacing-14);
-  min-width: var(--quepid-spacing-14);
-}
-
-.workspace-panel__toggle {
-  flex-shrink: 0;
-  width: var(--quepid-spacing-12);
-  height: var(--quepid-spacing-12);
-  padding: 0;
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border: var(--quepid-border-width) solid var(--quepid-color-border);
-  border-radius: var(--quepid-border-radius-sm);
-  background: var(--quepid-color-bg-subtle);
-  color: var(--quepid-color-neutral);
-  cursor: pointer;
+  gap: var(--quepid-spacing-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--quepid-spacing-4);
 }
 
-.workspace-panel__toggle:hover {
-  background: var(--quepid-color-neutral-bg);
-  color: var(--quepid-color-neutral-dark);
+/* Toolbar actions row */
+.case-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--quepid-spacing-2);
+  flex-wrap: wrap;
+  padding: var(--quepid-spacing-2) 0;
+  border-bottom: var(--quepid-border-width) solid var(--quepid-color-border);
+  margin-bottom: var(--quepid-spacing-4);
 }
 
-.workspace-panel__header {
+/* Sliding tune-relevance panel (right edge) */
+.tune-relevance-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 420px;
+  max-width: 90vw;
+  height: 100vh;
+  background: #2d2d2d;
+  color: #eee;
+  z-index: 1050;
+  transform: translateX(100%);
+  transition: transform var(--quepid-duration-base, 0.3s) ease;
+  overflow-y: auto;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.tune-relevance-panel--open {
+  transform: translateX(0);
+}
+
+.tune-relevance-panel__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--quepid-spacing-4);
-  margin-bottom: var(--quepid-spacing-4);
-  padding: 0 var(--quepid-spacing-4);
-}
-
-.workspace-panel--collapsed .workspace-panel__header {
-  flex-direction: column;
-  margin-bottom: 0;
   padding: var(--quepid-spacing-4);
-  justify-content: flex-start;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.workspace-panel--collapsed .workspace-panel__header .workspace-panel__title {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-height: 120px;
-  font-size: var(--quepid-font-size-sm);
+.tune-relevance-panel__header h5 {
+  margin: 0;
+  color: #eee;
 }
 
-.workspace-panel__content {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  padding: 0 var(--quepid-spacing-4);
+.tune-relevance-panel__body {
+  padding: var(--quepid-spacing-4);
 }
 
-/* Draggable resizer between west/east panels */
-.workspace-resizer {
-  flex: 0 0 var(--quepid-spacing-3);
-  cursor: col-resize;
-  background: var(--quepid-color-border);
-  transition: background var(--quepid-duration-fast) ease;
-  position: relative;
-  z-index: 2;
+/* Override settings panel styles inside tune-relevance (dark theme) */
+.tune-relevance-panel .settings-panel-wrapper > [data-settings-panel-target="trigger"] {
+  display: none; /* Hide the toggle trigger — panel is already open */
 }
-.workspace-resizer:hover,
-.workspace-resizer:active {
-  background: var(--quepid-color-info);
+
+.tune-relevance-panel .settings-panel-content {
+  display: block !important; /* Force open inside sliding panel */
 }
-.workspace-resizer:focus-visible {
-  outline: var(--quepid-border-width-thick) solid var(--quepid-color-info);
-  outline-offset: -1px;
+
+.tune-relevance-panel .card {
+  background: #3a3a3a;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #eee;
+}
+
+.tune-relevance-panel .card-title {
+  color: #ccc;
+}
+
+.tune-relevance-panel .text-muted {
+  color: #aaa !important;
+}
+
+.tune-relevance-panel .form-control,
+.tune-relevance-panel .form-select {
+  background: #444;
+  border-color: #555;
+  color: #eee;
+}
+
+.tune-relevance-panel .form-control:focus,
+.tune-relevance-panel .form-select:focus {
+  background: #555;
+  border-color: var(--quepid-color-info);
+  color: #fff;
+}
+
+/* Backdrop overlay when panel is open */
+.tune-relevance-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1040;
+}
+
+.tune-relevance-backdrop--visible {
+  display: block;
 }
 
 /* Query expand/collapse inline preview */

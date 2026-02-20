@@ -14,8 +14,10 @@
   ) %>
 <% end %>
 <span id="notifications-case-<%= @case.id %>"></span>
-<div class="core-workspace" data-case-id="<%= @case.id %>" data-try-number="<%= @try&.try_number %>" data-controller="tour">
-  <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+<div class="core-workspace" data-case-id="<%= @case.id %>" data-try-number="<%= @try&.try_number %>" data-controller="tour tune-relevance">
+  <%# ===== Case header: name, try, score, badges ===== %>
+  <div class="case-header">
+    <%= render 'core/scores/case_header_score', case_id: @case.id, score: @case.last_score&.score || "?" %>
     <span data-controller="inline-edit"
           data-inline-edit-url-value="<%= "#{quepid_root_url}/api/cases/#{@case.id}" %>"
           data-inline-edit-field-value="case_name"
@@ -25,16 +27,6 @@
              data-inline-edit-target="input"
              data-action="keydown->inline-edit#onKeydown blur->inline-edit#save"
              value="<%= @case.case_name %>">
-    </span>
-    <% if @case.public? %><span class="badge bg-info">PUBLIC</span><% end %>
-    <% if @case.archived %><span class="badge bg-warning text-dark">ARCHIVED</span><% end %>
-    <span data-controller="nightly-toggle" data-nightly-toggle-case-id-value="<%= @case.id %>" data-nightly-toggle-nightly-value="<%= @case.nightly %>">
-      <div class="form-check form-switch d-inline-block mb-0">
-        <input type="checkbox" class="form-check-input" role="switch" id="nightly-toggle-<%= @case.id %>"
-               data-nightly-toggle-target="checkbox" data-action="change->nightly-toggle#toggle"
-               <%= "checked" if @case.nightly %>>
-        <label class="form-check-label small" for="nightly-toggle-<%= @case.id %>" data-nightly-toggle-target="label"><%= @case.nightly ? "Nightly: ON" : "Nightly: OFF" %></label>
-      </div>
     </span>
     <span class="text-muted mx-1" aria-hidden="true">—</span>
     <span data-controller="inline-edit"
@@ -48,15 +40,21 @@
              value="<%= @try&.name.presence || "Try #{@try&.try_number}" %>">
     </span>
     <span class="text-muted mx-1" aria-hidden="true">—</span>
-    <%= render 'core/scores/case_header_score', case_id: @case.id, score: @case.last_score&.score || "?" %>
-    <% if @case.scorer&.name.present? %><span class="text-muted small ms-1"><%= @case.scorer.name %></span><% end %>
-    <%= render SettingsPanelComponent.new(
-      try: @try,
-      case_id: @case.id,
-      search_endpoint_edit_path: (@try&.search_endpoint && current_user.search_endpoints_involved_with.exists?(@try.search_endpoint.id)) ? search_endpoint_path(@try.search_endpoint) : nil,
-      tries: @case.tries.includes(:search_endpoint).order(try_number: :desc),
-      search_endpoints: current_user.search_endpoints_involved_with.not_archived
-    ) %>
+    <% if @case.scorer&.name.present? %><span class="text-muted small"><%= @case.scorer.name %></span><% end %>
+    <% if @case.public? %><span class="badge bg-info">PUBLIC</span><% end %>
+    <% if @case.archived %><span class="badge bg-warning text-dark">ARCHIVED</span><% end %>
+    <span data-controller="nightly-toggle" data-nightly-toggle-case-id-value="<%= @case.id %>" data-nightly-toggle-nightly-value="<%= @case.nightly %>">
+      <div class="form-check form-switch d-inline-block mb-0">
+        <input type="checkbox" class="form-check-input" role="switch" id="nightly-toggle-<%= @case.id %>"
+               data-nightly-toggle-target="checkbox" data-action="change->nightly-toggle#toggle"
+               <%= "checked" if @case.nightly %>>
+        <label class="form-check-label small" for="nightly-toggle-<%= @case.id %>" data-nightly-toggle-target="label"><%= @case.nightly ? "Nightly: ON" : "Nightly: OFF" %></label>
+      </div>
+    </span>
+  </div>
+
+  <%# ===== Toolbar: all action buttons ===== %>
+  <div class="case-actions">
     <%= render ScorerPanelComponent.new(
       scorer: @case.scorer,
       case_id: @case.id,
@@ -71,159 +69,172 @@
       annotations: @case.annotations.map { |a| { message: a.message, updated_at: a.updated_at.iso8601 } },
       max_score: @case.scorer&.scale&.last || 100
     ) %>
-    <div class="d-flex gap-2 ms-auto align-items-center">
-      <%# Angular parity: Annotations, Create Snapshot, Compare Snapshots, Export, Share Case, Clone, Filter Relevancy %>
-      <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#annotations-panel" aria-expanded="false" aria-controls="annotations-panel" title="Show annotations">
-        <i class="bi bi-journal-bookmark" aria-hidden="true"></i> Annotations
-      </button>
-      <%= render TakeSnapshotComponent.new(
-        case_id: @case.id,
-        try_number: @try&.try_number,
-        search_engine: @try&.search_endpoint&.search_engine || "solr",
-        field_spec: @try&.field_spec,
-        can_take_snapshot: @try.present? && @try.search_endpoint.present? && @try.search_endpoint.search_engine != "static",
-        button_label: "Create Snapshot"
-      ) %>
-      <%= render DiffComponent.new(case_id: @case.id, button_label: "Compare Snapshots") %>
-      <%= render ExportCaseComponent.new(case_id: @case.id, case_name: @case.case_name, icon_only: true, supports_detailed_export: true) %>
-      <%= render ShareCaseComponent.new(
-        case_id: @case.id,
-        case_name: @case.case_name,
-        all_teams: current_user.teams.select(:id, :name).order(:name),
-        shared_teams: @case.teams.select(:id, :name),
-        icon_only: true
-      ) %>
-      <%= render CloneCaseComponent.new(
-        case_id: @case.id,
-        case_name: @case.case_name,
-        tries: @case.tries.map { |t| { try_number: t.try_number, name: t.name } },
-        last_try_number: @try&.try_number
-      ) %>
-      <%= render JudgementsComponent.new(
-        case_id: @case.id,
-        case_name: @case.case_name,
-        book_id: @case.book_id,
-        book_name: @case.book&.name,
-        queries_count: @case.queries.count,
-        scorer_id: @case.scorer_id,
-        teams: @case.teams.select(:id, :name),
-        button_label: "Filter Relevancy"
-      ) %>
-      <span data-controller="run-evaluation" data-run-evaluation-case-id-value="<%= @case.id %>" data-run-evaluation-try-number-value="<%= @try&.try_number %>">
-        <button type="button" class="btn btn-sm btn-outline-success" data-run-evaluation-target="button" data-action="click->run-evaluation#run" title="Run evaluation for all queries">
-          <span class="spinner-border spinner-border-sm d-none" data-run-evaluation-target="spinner" aria-hidden="true"></span>
-          <i class="bi bi-play-fill" aria-hidden="true"></i> Evaluate
-        </button>
-      </span>
-      <%= render ImportRatingsComponent.new(case_id: @case.id, case_name: @case.case_name, icon_only: true) %>
-      <%= render DeleteCaseOptionsComponent.new(case_id: @case.id, case_name: @case.case_name, try_number: @try&.try_number, icon_only: true) %>
-      <% rating_stats ||= @case.queries.left_joins(:ratings)
-           .group(:id)
-           .pluck(:id, Arel.sql("COUNT(ratings.id)"))
-           .map { |id, count| { query_id: id, ratings_count: count } } %>
-      <%= render FrogReportComponent.new(
-        case_id: @case.id,
-        case_name: @case.case_name,
-        queries_count: @case.queries.count,
-        book_id: @case.book_id,
-        book_name: @case.book&.name,
-        depth: @try&.number_of_rows || 10,
-        all_rated: @case.last_score&.all_rated || false,
-        rating_stats: rating_stats
-      ) %>
-      <%= render UnarchiveCaseComponent.new(
-        current_user_teams: current_user.teams.select(:id, :name).order(:name)
-      ) %>
-      <% if @try&.search_endpoint.present? && current_user.search_endpoints_involved_with.exists?(@try.search_endpoint.id) %>
-        <%= render CustomHeadersComponent.new(
-          search_endpoint_id: @try.search_endpoint.id,
-          custom_headers: @try.search_endpoint.custom_headers
-        ) %>
-      <% end %>
-    </div>
-  </div>
-  <div class="mb-3">
-    <%= render AddQueryComponent.new(
+    <%= render JudgementsComponent.new(
+      case_id: @case.id,
+      case_name: @case.case_name,
+      book_id: @case.book_id,
+      book_name: @case.book&.name,
+      queries_count: @case.queries.count,
+      scorer_id: @case.scorer_id,
+      teams: @case.teams.select(:id, :name),
+      button_label: "Filter Relevancy"
+    ) %>
+    <%= render TakeSnapshotComponent.new(
       case_id: @case.id,
       try_number: @try&.try_number,
-      can_add_queries: @try.nil? || @try.search_endpoint.nil? || @try.search_endpoint.search_engine != "static"
+      search_engine: @try&.search_endpoint&.search_engine || "solr",
+      field_spec: @try&.field_spec,
+      can_take_snapshot: @try.present? && @try.search_endpoint.present? && @try.search_endpoint.search_engine != "static",
+      button_label: "Create Snapshot"
     ) %>
+    <%= render DiffComponent.new(case_id: @case.id, button_label: "Compare Snapshots") %>
+    <%= render ImportRatingsComponent.new(case_id: @case.id, case_name: @case.case_name, icon_only: true) %>
+    <%= render ShareCaseComponent.new(
+      case_id: @case.id,
+      case_name: @case.case_name,
+      all_teams: current_user.teams.select(:id, :name).order(:name),
+      shared_teams: @case.teams.select(:id, :name),
+      icon_only: true
+    ) %>
+    <%= render CloneCaseComponent.new(
+      case_id: @case.id,
+      case_name: @case.case_name,
+      tries: @case.tries.map { |t| { try_number: t.try_number, name: t.name } },
+      last_try_number: @try&.try_number
+    ) %>
+    <%= render DeleteCaseOptionsComponent.new(case_id: @case.id, case_name: @case.case_name, try_number: @try&.try_number, icon_only: true) %>
+    <%= render ExportCaseComponent.new(case_id: @case.id, case_name: @case.case_name, icon_only: true, supports_detailed_export: true) %>
+    <span data-controller="run-evaluation" data-run-evaluation-case-id-value="<%= @case.id %>" data-run-evaluation-try-number-value="<%= @try&.try_number %>">
+      <button type="button" class="btn btn-sm btn-outline-success" data-run-evaluation-target="button" data-action="click->run-evaluation#run" title="Run evaluation for all queries">
+        <span class="spinner-border spinner-border-sm d-none" data-run-evaluation-target="spinner" aria-hidden="true"></span>
+        <i class="bi bi-play-fill" aria-hidden="true"></i> Evaluate
+      </button>
+    </span>
+    <button type="button" class="btn btn-sm btn-outline-secondary" data-action="click->tune-relevance#toggle" title="Tune Relevance settings">
+      <i class="bi bi-gear" aria-hidden="true"></i> Tune Relevance
+    </button>
+    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#annotations-panel" aria-expanded="false" aria-controls="annotations-panel" title="Show annotations">
+      <i class="bi bi-journal-bookmark" aria-hidden="true"></i> Annotations
+    </button>
+    <% rating_stats ||= @case.queries.left_joins(:ratings)
+         .group(:id)
+         .pluck(:id, Arel.sql("COUNT(ratings.id)"))
+         .map { |id, count| { query_id: id, ratings_count: count } } %>
+    <%= render FrogReportComponent.new(
+      case_id: @case.id,
+      case_name: @case.case_name,
+      queries_count: @case.queries.count,
+      book_id: @case.book_id,
+      book_name: @case.book&.name,
+      depth: @try&.number_of_rows || 10,
+      all_rated: @case.last_score&.all_rated || false,
+      rating_stats: rating_stats
+    ) %>
+    <%= render UnarchiveCaseComponent.new(
+      current_user_teams: current_user.teams.select(:id, :name).order(:name)
+    ) %>
+    <% if @try&.search_endpoint.present? && current_user.search_endpoints_involved_with.exists?(@try.search_endpoint.id) %>
+      <%= render CustomHeadersComponent.new(
+        search_endpoint_id: @try.search_endpoint.id,
+        custom_headers: @try.search_endpoint.custom_headers
+      ) %>
+    <% end %>
   </div>
 
-  <%# Query list (left) and results pane (right). Primary focus for visual parity with Angular. %>
-  <%# Wrapped in workspace_content frame so query selection uses Turbo Frame navigation (no full-page reload). %>
-  <% selected_query_id = params[:query_id].presence&.to_i %>
-  <% selected_query_id = nil if selected_query_id&.zero? %>
-  <% selected_query = @case.queries.find_by(id: selected_query_id) %>
+  <%# ===== Query list (full-width, single column) ===== %>
   <% last_score = @case.last_score %>
   <% query_scores = last_score&.queries.is_a?(Hash) ? last_score.queries : {} %>
   <% other_cases = current_user.cases_involved_with.where.not(id: @case.id).order(:case_name).pluck(:id, :case_name).map { |id, name| { id: id, case_name: name } } %>
 
-  <%= turbo_frame_tag "workspace_content" do %>
-  <div class="workspace-panels-row mb-3" data-controller="workspace-panels" data-workspace-panels-case-id-value="<%= @case.id %>">
-    <div class="workspace-panel west" data-workspace-panels-target="westPanel" aria-expanded="true">
-      <div class="workspace-panel__header">
-        <span class="workspace-panel__title">Queries</span>
-        <button type="button" class="workspace-panel__toggle" data-workspace-panels-target="westCollapseBtn" data-action="click->workspace-panels#toggleWest" title="Collapse query list" aria-label="Collapse query list">
-          <i class="bi bi-chevron-left" aria-hidden="true"></i>
-        </button>
-        <button type="button" class="workspace-panel__toggle d-none" data-workspace-panels-target="westExpandBtn" data-action="click->workspace-panels#toggleWest" title="Expand query list" aria-label="Expand query list">
-          <i class="bi bi-chevron-right" aria-hidden="true"></i>
-        </button>
-      </div>
-      <div class="workspace-panel__content" data-workspace-panels-target="westContent">
-        <%= render QueryListComponent.new(
-          case_id: @case.id,
-          try_number: @try&.try_number,
-          queries: @case.queries,
-          selected_query_id: selected_query_id,
-          other_cases: other_cases,
-          scorer_scale_max: @case.scorer&.scale&.last || 100,
-          scorer_scale: @case.scorer&.scale,
-          query_scores: query_scores,
-          sortable: Rails.application.config.query_list_sortable,
-          rating_stats: rating_stats
-        ) %>
-      </div>
-    </div>
-    <div class="workspace-resizer"
-         data-controller="workspace-resizer"
-         data-workspace-resizer-case-id-value="<%= @case.id %>"
-         data-action="mousedown->workspace-resizer#startDrag touchstart->workspace-resizer#startTouchDrag"
-         role="separator"
-         aria-orientation="vertical"
-         aria-label="Resize panels"
-         tabindex="0"></div>
-    <div class="workspace-panel east" data-workspace-panels-target="eastPanel" aria-expanded="true">
-      <div class="workspace-panel__header">
-        <span class="workspace-panel__title">Results</span>
-        <button type="button" class="workspace-panel__toggle" data-workspace-panels-target="eastCollapseBtn" data-action="click->workspace-panels#toggleEast" title="Collapse results" aria-label="Collapse results">
-          <i class="bi bi-chevron-right" aria-hidden="true"></i>
-        </button>
-        <button type="button" class="workspace-panel__toggle d-none" data-workspace-panels-target="eastExpandBtn" data-action="click->workspace-panels#toggleEast" title="Expand results" aria-label="Expand results">
-          <i class="bi bi-chevron-left" aria-hidden="true"></i>
-        </button>
-      </div>
-      <div class="workspace-panel__content" data-workspace-panels-target="eastContent">
-        <%= render ResultsPaneComponent.new(
-          case_id: @case.id,
-          try_number: @try&.try_number,
-          selected_query: selected_query,
-          scorer_scale: @case.scorer&.scale,
-          scale_with_labels: @case.scorer&.scale_with_labels
-        ) %>
+  <%= render QueryListComponent.new(
+    case_id: @case.id,
+    try_number: @try&.try_number,
+    queries: @case.queries,
+    other_cases: other_cases,
+    scorer_scale_max: @case.scorer&.scale&.last || 100,
+    scorer_scale: @case.scorer&.scale,
+    query_scores: query_scores,
+    sortable: Rails.application.config.query_list_sortable,
+    rating_stats: rating_stats
+  ) do |component| %>
+    <% component.with_add_query do %>
+      <%= render AddQueryComponent.new(
+        case_id: @case.id,
+        try_number: @try&.try_number,
+        can_add_queries: @try.nil? || @try.search_endpoint.nil? || @try.search_endpoint.search_engine != "static"
+      ) %>
+    <% end %>
+  <% end %>
+
+  <%# ===== Shared detail modal (used by query_expand_controller via document.getElementById) ===== %>
+  <div class="modal fade" id="document-detail-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="document-detail-modal-title">Document Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#detail-fields-tab" type="button" role="tab" aria-selected="true">Fields</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#detail-json-tab" type="button" role="tab" aria-selected="false">Raw JSON</button>
+            </li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="detail-fields-tab" role="tabpanel">
+              <div id="document-detail-fields-list" aria-label="Document fields"></div>
+            </div>
+            <div class="tab-pane fade" id="detail-json-tab" role="tabpanel">
+              <div id="document-detail-json-container" class="max-h-60vh overflow-auto">
+                <textarea class="d-none" id="document-detail-json-textarea"></textarea>
+                <pre class="mb-0 bg-light p-3 rounded" id="document-detail-json-pre"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-outline-primary d-none" id="document-detail-view-source-btn">
+            <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> View source
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-controller="clipboard" data-clipboard-text-value="" id="document-detail-copy-json-btn" data-action="click->clipboard#copy">
+            <i class="bi bi-clipboard" aria-hidden="true"></i> Copy JSON
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
       </div>
     </div>
   </div>
-  <% end %>
 
-  <%# Annotations panel: collapsible, collapsed by default for visual parity with Angular. %>
+  <%# ===== Annotations panel: collapsible, collapsed by default ===== %>
   <div class="collapse mt-3" id="annotations-panel">
     <div class="card card-body">
       <%= render AnnotationsComponent.new(
         case_id: @case.id,
         annotations: @case.annotations.includes(:score, :user),
         last_score: @case.last_score
+      ) %>
+    </div>
+  </div>
+
+  <%# ===== Tune Relevance sliding panel ===== %>
+  <div class="tune-relevance-backdrop" data-tune-relevance-target="backdrop" data-action="click->tune-relevance#close"></div>
+  <div class="tune-relevance-panel" data-tune-relevance-target="panel">
+    <div class="tune-relevance-panel__header">
+      <h5>Tune Relevance</h5>
+      <button type="button" class="btn btn-sm btn-outline-light" data-action="click->tune-relevance#close" aria-label="Close settings">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="tune-relevance-panel__body">
+      <%= render SettingsPanelComponent.new(
+        try: @try,
+        case_id: @case.id,
+        search_endpoint_edit_path: (@try&.search_endpoint && current_user.search_endpoints_involved_with.exists?(@try.search_endpoint.id)) ? search_endpoint_path(@try.search_endpoint) : nil,
+        tries: @case.tries.includes(:search_endpoint).order(try_number: :desc),
+        search_endpoints: current_user.search_endpoints_involved_with.not_archived
       ) %>
     </div>
   </div>
