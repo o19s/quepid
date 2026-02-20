@@ -1,4 +1,5 @@
-/* Tour overlay: dims the background behind the highlighted element */
+/* Tour overlay: dims the background behind the highlighted element.
+   pointer-events: auto so clicking the dimmed area closes the tour. */
 .tour-overlay {
   position: fixed;
   top: 0;
@@ -7,7 +8,8 @@
   height: 100%;
   background: rgba(0, 0, 0, 0.3);
   z-index: 1039; /* Below Bootstrap popover (1070) and modal (1055) */
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: default;
 }
 
 /* Highlighted tour target: lifted above the overlay */

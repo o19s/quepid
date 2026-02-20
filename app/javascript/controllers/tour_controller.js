@@ -4,8 +4,10 @@ import { buildCurrentPageUrlWithParams, getCurrentPageSearchParams } from 'utils
 
 // Guided tour for the workspace using Bootstrap popovers.
 // 9-step tour covering the full workspace layout, matching the Angular/Shepherd.js
-// tour structure. Features: highlight overlay, back/next navigation, step counter.
+// tour structure. Features: highlight overlay, back/next navigation, step counter,
+// close (X) button, Escape key, and click-outside-to-close on the dimmed overlay.
 // Triggered via ?startTour=true URL param (set by wizard) or manually.
+// Popover uses container: this.element so Stimulus actions (Skip/Back/Next) work.
 export default class extends Controller {
   static values = { autoStart: Boolean };
 
@@ -13,6 +15,7 @@ export default class extends Controller {
     this._currentStep = -1;
     this._popovers = [];
     this._overlay = null;
+    this._escapeHandler = null;
 
     // Check for startTour URL param (set by wizard after completion + reload)
     if (getCurrentPageSearchParams().has('startTour')) {
@@ -105,13 +108,20 @@ export default class extends Controller {
       </div>
     `;
 
+    const titleHtml = `
+      <span class="d-flex justify-content-between align-items-center w-100">
+        <span>${step.title}</span>
+        <button type="button" class="btn-close btn-sm" data-action="click->tour#skip" aria-label="Close tour"></button>
+      </span>
+    `;
+
     const popover = new Popover(target, {
-      title: step.title,
+      title: titleHtml,
       content: content,
       html: true,
       trigger: 'manual',
       placement: step.placement || 'bottom',
-      container: 'body',
+      container: this.element,
     });
     popover.show();
     this._popovers.push(popover);
@@ -131,7 +141,13 @@ export default class extends Controller {
     if (this._overlay) return;
     this._overlay = document.createElement('div');
     this._overlay.className = 'tour-overlay';
+    this._overlay.addEventListener('click', () => this.skip());
     document.body.appendChild(this._overlay);
+
+    this._escapeHandler = (e) => {
+      if (e.key === 'Escape') this.skip();
+    };
+    document.addEventListener('keydown', this._escapeHandler);
   }
 
   _highlightTarget(target) {
@@ -155,6 +171,10 @@ export default class extends Controller {
     this._popovers = [];
     this._currentStep = -1;
     this._clearHighlight();
+    if (this._escapeHandler) {
+      document.removeEventListener('keydown', this._escapeHandler);
+      this._escapeHandler = null;
+    }
     if (this._overlay) {
       this._overlay.remove();
       this._overlay = null;

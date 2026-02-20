@@ -187,7 +187,7 @@ module Api
         @no_teams = false
         @no_scores = false
 
-        base_query.includes(:owner, :book).preload(:tries, :teams, :cases_teams)
+        base_query.includes(:owner, :book).preload(:tries, :teams)
           .left_outer_joins(:metadata) # this is slow!
           .select('cases.*, case_metadata.last_viewed_at')
           .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))

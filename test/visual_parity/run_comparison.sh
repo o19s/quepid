@@ -56,9 +56,9 @@ get_worktree_path() {
 }
 
 # Returns the path to use for a branch.
-# For full comparison: always uses worktree (never GIT_ROOT) so the main repo is never touched.
-# For --capture <branch>: uses GIT_ROOT when already on that branch (convenience), else worktree.
-# $1 = branch name, $2 = "1" or "true" to allow GIT_ROOT when on that branch (--capture only)
+# Uses GIT_ROOT when already on that branch (avoids "branch already used by worktree" when main
+# repo is checked out to one of the comparison branches). Otherwise uses a worktree.
+# $1 = branch name, $2 = "1" or "true" to allow GIT_ROOT when on that branch
 get_branch_root() {
   local branch="$1"
   local allow_cwd_if_match="${2:-}"
@@ -248,9 +248,9 @@ main() {
 
   local start_time=$SECONDS
 
-  # Capture each branch
+  # Capture each branch (use GIT_ROOT when already on that branch to avoid worktree conflict)
   for branch in "${BRANCHES[@]}"; do
-    capture_branch "$branch"
+    capture_branch "$branch" "1"
   done
 
   # Generate API diff and report (from main repo)
