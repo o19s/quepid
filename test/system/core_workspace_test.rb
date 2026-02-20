@@ -39,11 +39,12 @@ class CoreWorkspaceTest < ApplicationSystemTestCase
     visit case_core_path(@case, @try.try_number)
     wait_for_workspace_to_load
 
-    # Select "First Query" to load results pane (matches WebMock stub)
-    within('[data-workspace-panels-target="westContent"]') { click_link 'First Query' }
-    assert_selector '.document-card', wait: 25
+    # Expand the first query by clicking its text (waits for Stimulus to connect)
+    first_query = @case.queries.first
+    find('span[data-action="click->query-expand#toggle"]', text: first_query.query_text, wait: 15).click
+    assert_selector '.document-card', wait: 30
     # Use bulk "Rate all" to set rating 3 (avoids popover timing issues)
-    find('[data-action="click->results-pane#bulkRate"][data-rating-value="3"]').click
+    first('[data-action="click->query-expand#bulkRate"][data-rating-value="3"]').click
     # Document card badge should reflect the rating (regression guard)
     assert_selector '.document-card .badge.bg-primary', text: /3/, wait: 15
   end
