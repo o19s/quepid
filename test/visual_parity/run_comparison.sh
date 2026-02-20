@@ -151,6 +151,17 @@ capture_branch() {
   log "Processing branch: $branch (root: $branch_root)"
   log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
+  # Ensure VP compose files exist in branch_root (worktrees may not have them if created before VP was added).
+  # Always copy from GIT_ROOT so worktrees get the latest override (e.g. !reset for ports).
+  if [ -f "$GIT_ROOT/docker-compose.visual-parity.yml" ]; then
+    log "Copying VP compose files to worktree..."
+    cp "$GIT_ROOT/docker-compose.visual-parity.yml" "$branch_root/"
+    cp "$GIT_ROOT/nginx.vp.conf" "$branch_root/"
+  elif [ ! -f "$branch_root/docker-compose.visual-parity.yml" ]; then
+    fail "docker-compose.visual-parity.yml not found. Run from main repo or ensure VP files are in your branch."
+    return 1
+  fi
+
   # 1. Full Docker rebuild with fresh seed data (uses isolated quepid-vp project)
   cd "$branch_root"
   export COMPOSE_PROJECT_NAME="$VP_COMPOSE_PROJECT_NAME"

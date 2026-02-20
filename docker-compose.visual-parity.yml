@@ -4,32 +4,33 @@
 # Gives visual parity its own containers, volumes, and ports so it never conflicts
 # with the main quepid stack (no data loss, can run alongside main quepid).
 
+# Use !reset to replace (not append) ports so VP doesn't conflict with main quepid
 services:
   app:
     container_name: quepid-vp-app
-    ports:
+    ports: !reset
       - "3010:3000"
 
   mysql:
     container_name: quepid-vp-db
-    ports:
+    ports: !reset
       - "3307:3306"
 
   keycloak:
     container_name: quepid-vp-keycloak
-    ports:
+    ports: !reset
       - "9081:9080"
 
   ollama:
     container_name: quepid-vp-ollama
-    ports:
+    ports: !reset
       - "11431:11434"
     volumes:
       - ./volumes/ollama/vp-data:/tmp/data
 
   nginx:
     container_name: quepid-vp-nginx
-    ports:
+    ports: !reset
       - "8444:8443"
       - "8080:80"
     volumes:
