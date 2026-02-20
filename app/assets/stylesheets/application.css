@@ -1,8 +1,8 @@
 /*
- * Application CSS manifest (used by build_css.sh).
+ * Application CSS manifest (used by build_css.js).
  * Former Sprockets directives converted to plain comments for reference only.
  *
- * We use Bootstrap 5 everywhere except the core app (Bootstrap 3).
+ * We use Bootstrap 5 everywhere (application, core workspace, admin).
  * include bootstrap/dist/css/bootstrap
  *
  * We use Bootstrap Icons shared across areas
@@ -11,6 +11,7 @@
  * CodeMirror 6 styling handled via style-mod JS
  * include fonts.css
  * include bootstrap5-add.css
+ * include turbo.css
  * include signup.css
  * include judgements.css
  */
@@ -26,21 +27,6 @@
 	 background-color: gold;
  }
 
-/* Turbo loading state (turbo_events_controller.js) */
-turbo-frame.turbo-loading {
-  opacity: 0.7;
-  pointer-events: none;
-}
-form.turbo-loading button[type="submit"],
-form.turbo-loading input[type="submit"] {
-  opacity: 0.8;
-}
- 
- /* give some space to the top of pages that have bootstrap 5 container */
- main > .container {
-	 padding: 20px 15px 0;
- }
- 
  /* For the kraken image */
 .fade-out {
   animation: fadeOut 4s;

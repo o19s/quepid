@@ -1,5 +1,5 @@
-import { Controller } from "@hotwired/stimulus"
-import party from "party-js"
+import { Controller } from '@hotwired/stimulus';
+import party from 'party-js';
 
 // Connects to data-controller="confetti"
 export default class extends Controller {
@@ -8,7 +8,7 @@ export default class extends Controller {
     party.confetti(this.element, {
       count: party.variation.range(40, 60),
       size: party.variation.range(1, 1.5),
-      spread: party.variation.range(40, 55)
-    })
+      spread: party.variation.range(40, 55),
+    });
   }
 }

@@ -41,4 +41,12 @@ class DocumentCardComponentTest < ViewComponent::TestCase
 
     assert_no_selector "[data-controller='matches']"
   end
+
+  def test_sanitizes_doc_id_for_rating_badge_with_special_characters
+    doc = { id: 'http://example.com/doc/42', position: 1, fields: {} }
+    render_inline(DocumentCardComponent.new(doc: doc, rating: '1', index: 0))
+
+    # Special chars replaced with hyphens for valid HTML id (Bootstrap querySelector, Turbo Stream targets)
+    assert_selector '#rating-badge-http---example-com-doc-42'
+  end
 end

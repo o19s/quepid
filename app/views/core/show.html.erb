@@ -21,7 +21,7 @@
           data-inline-edit-field-value="case_name"
           data-inline-edit-wrapper-value="case">
       <h2 class="h5 mb-0 d-inline" data-inline-edit-target="display" data-action="dblclick->inline-edit#edit" title="Double-click to rename"><%= @case.case_name %></h2>
-      <input type="text" class="form-control form-control-sm d-none d-inline-block" style="width: auto; max-width: 300px;"
+      <input type="text" class="form-control form-control-sm d-none d-inline-block max-w-300"
              data-inline-edit-target="input"
              data-action="keydown->inline-edit#onKeydown blur->inline-edit#save"
              value="<%= @case.case_name %>">
@@ -41,7 +41,7 @@
           data-inline-edit-field-value="name"
           data-inline-edit-wrapper-value="try">
       <span class="text-muted" data-inline-edit-target="display" data-action="dblclick->inline-edit#edit" title="Double-click to rename">Try <%= @try&.try_number %></span>
-      <input type="text" class="form-control form-control-sm d-none d-inline-block" style="width: auto; max-width: 200px;"
+      <input type="text" class="form-control form-control-sm d-none d-inline-block max-w-200"
              data-inline-edit-target="input"
              data-action="keydown->inline-edit#onKeydown blur->inline-edit#save"
              value="<%= @try&.name.presence || "Try #{@try&.try_number}" %>">
@@ -160,7 +160,7 @@
   <% other_cases = current_user.cases_involved_with.where.not(id: @case.id).order(:case_name).pluck(:id, :case_name).map { |id, name| { id: id, case_name: name } } %>
 
   <%= turbo_frame_tag "workspace_content" do %>
-  <div class="workspace-panels-row g-3 mb-3" data-controller="workspace-panels" data-workspace-panels-case-id-value="<%= @case.id %>">
+  <div class="workspace-panels-row mb-3" data-controller="workspace-panels" data-workspace-panels-case-id-value="<%= @case.id %>">
     <div class="workspace-panel west" data-workspace-panels-target="westPanel" aria-expanded="true">
       <div class="workspace-panel__header">
         <span class="workspace-panel__title">Queries</span>

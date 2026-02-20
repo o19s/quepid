@@ -1,7 +1,7 @@
-import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
-import { triggerScoreRefresh } from "utils/rating_api"
-import { getQuepidRootUrl, buildApiUrl, buildApiQuerySearchUrl } from "utils/quepid_root"
+import { Controller } from '@hotwired/stimulus';
+import { apiFetch } from 'api/fetch';
+import { triggerScoreRefresh } from 'utils/rating_api';
+import { getQuepidRootUrl, buildApiUrl, buildApiQuerySearchUrl } from 'utils/quepid_root';
 
 // Holds the results pane region for the case/try workspace. When a query is selected,
 // fetches server-rendered search results (DocumentCardComponent) from the query execution
@@ -13,274 +13,301 @@ export default class extends Controller {
     caseId: Number,
     tryNumber: Number,
     queryId: Number,
-    queryText: String,  // Query text for snapshot search (diff mode)
-    scale: Array,  // Scorer scale for rating popover (e.g. [0,1,2,3])
-    scaleLabels: Object,  // Optional labels: { "0": "Not Relevant", "3": "Perfect" }
-    skipFetch: Boolean  // When true (e.g. results_content slot provided), do not fetch; preserve slot content
-  }
+    queryText: String, // Query text for snapshot search (diff mode)
+    scale: Array, // Scorer scale for rating popover (e.g. [0,1,2,3])
+    scaleLabels: Object, // Optional labels: { "0": "Not Relevant", "3": "Perfect" }
+    skipFetch: Boolean, // When true (e.g. results_content slot provided), do not fetch; preserve slot content
+  };
 
-  static targets = ["resultsContainer", "loadingIndicator", "errorMessage", "errorText", "diffIndicator", "loadMoreArea", "detailModal", "detailModalTitle", "detailFieldsList", "detailJsonPre", "detailJsonTextarea", "detailJsonContainer", "detailModalBody", "viewSourceBtn", "copyJsonBtn", "showOnlyRatedToggle", "bulkRatingBar", "ratingAnnouncement"]
+  static targets = [
+    'resultsContainer',
+    'loadingIndicator',
+    'errorMessage',
+    'errorText',
+    'diffIndicator',
+    'loadMoreArea',
+    'detailModal',
+    'detailModalTitle',
+    'detailFieldsList',
+    'detailJsonPre',
+    'detailJsonTextarea',
+    'detailJsonContainer',
+    'detailModalBody',
+    'viewSourceBtn',
+    'copyJsonBtn',
+    'showOnlyRatedToggle',
+    'bulkRatingBar',
+    'ratingAnnouncement',
+  ];
 
   connect() {
-    this._fetchRequestId = 0
-    this._popovers = new Map()
-    this._pageSize = 10
-    this._currentStart = 0
-    this._lastNumFound = 0
-    this._diffSnapshotIds = []
-    this._showOnlyRated = false
-    this._boundHandleResultsClick = this._handleResultsClick.bind(this)
-    this._boundHandleResultsKeydown = this._handleResultsKeydown.bind(this)
-    this._boundHandleDiffChanged = this._handleDiffChanged.bind(this)
-    document.addEventListener("click", this._boundHandleResultsClick)
-    document.addEventListener("keydown", this._boundHandleResultsKeydown)
-    document.addEventListener("diff-snapshots-changed", this._boundHandleDiffChanged)
-    this._updateDiffIndicator()
+    this._fetchRequestId = 0;
+    this._popovers = new Map();
+    this._pageSize = 10;
+    this._currentStart = 0;
+    this._lastNumFound = 0;
+    this._diffSnapshotIds = [];
+    this._showOnlyRated = false;
+    this._boundHandleResultsClick = this._handleResultsClick.bind(this);
+    this._boundHandleResultsKeydown = this._handleResultsKeydown.bind(this);
+    this._boundHandleDiffChanged = this._handleDiffChanged.bind(this);
+    document.addEventListener('click', this._boundHandleResultsClick);
+    document.addEventListener('keydown', this._boundHandleResultsKeydown);
+    document.addEventListener('diff-snapshots-changed', this._boundHandleDiffChanged);
+    this._updateDiffIndicator();
     if (this._canFetch()) {
-      this.fetchResults()
+      this.fetchResults();
     } else if (this.hasResultsContainerTarget && this.hasQueryIdValue && !this.queryIdValue) {
-      this.clearResults()
+      this.clearResults();
     }
   }
 
   disconnect() {
-    document.removeEventListener("diff-snapshots-changed", this._boundHandleDiffChanged)
-    document.removeEventListener("click", this._boundHandleResultsClick)
-    document.removeEventListener("keydown", this._boundHandleResultsKeydown)
-    this._popovers.forEach((p) => p?.dispose())
-    this._popovers.clear()
+    document.removeEventListener('diff-snapshots-changed', this._boundHandleDiffChanged);
+    document.removeEventListener('click', this._boundHandleResultsClick);
+    document.removeEventListener('keydown', this._boundHandleResultsKeydown);
+    this._popovers.forEach((p) => p?.dispose());
+    this._popovers.clear();
   }
 
   _handleDiffChanged(event) {
-    this._diffSnapshotIds = event.detail?.snapshotIds || []
-    this._updateDiffIndicator()
+    this._diffSnapshotIds = event.detail?.snapshotIds || [];
+    this._updateDiffIndicator();
     // Re-fetch from server — it will render diff badges (or not) based on the IDs
     if (this._canFetch()) {
-      this.fetchResults()
+      this.fetchResults();
     }
   }
 
   _updateDiffIndicator() {
-    if (!this.hasDiffIndicatorTarget) return
-    const workspace = document.querySelector("[data-controller~=\"workspace\"]")
-    const ids = this._diffSnapshotIds?.length ? this._diffSnapshotIds : (workspace?.dataset?.diffSnapshotIds || "").split(",").filter(Boolean)
-    this._diffSnapshotIds = ids
-    this.diffIndicatorTarget.classList.toggle("d-none", ids.length === 0)
+    if (!this.hasDiffIndicatorTarget) return;
+    const workspace = document.querySelector('[data-controller~="workspace"]');
+    const ids = this._diffSnapshotIds?.length
+      ? this._diffSnapshotIds
+      : (workspace?.dataset?.diffSnapshotIds || '').split(',').filter(Boolean);
+    this._diffSnapshotIds = ids;
+    this.diffIndicatorTarget.classList.toggle('d-none', ids.length === 0);
   }
 
   _handleResultsKeydown(event) {
-    if (!this.hasResultsContainerTarget) return
-    const ratingTrigger = event.target.closest("[data-rating-trigger]")
-    if (!ratingTrigger) return
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault()
-      this._toggleRatingPopover(ratingTrigger)
+    if (!this.hasResultsContainerTarget) return;
+    const ratingTrigger = event.target.closest('[data-rating-trigger]');
+    if (!ratingTrigger) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this._toggleRatingPopover(ratingTrigger);
     }
   }
 
   _handleResultsClick(event) {
-    const ratingTrigger = event.target.closest("[data-rating-trigger]")
+    const ratingTrigger = event.target.closest('[data-rating-trigger]');
     if (ratingTrigger) {
-      event.preventDefault()
-      this._toggleRatingPopover(ratingTrigger)
+      event.preventDefault();
+      this._toggleRatingPopover(ratingTrigger);
     }
-    const ratingBtn = event.target.closest("[data-rating-value]")
+    const ratingBtn = event.target.closest('[data-rating-value]');
     if (ratingBtn) {
-      event.preventDefault()
-      const wrapper = ratingBtn.closest("[data-rating-doc-id]")
-      const docId = wrapper?.dataset?.ratingDocId
-      const ratingVal = ratingBtn.dataset.ratingValue
-      const rating = ratingVal === "" ? NaN : parseInt(ratingVal, 10)
+      event.preventDefault();
+      const wrapper = ratingBtn.closest('[data-rating-doc-id]');
+      const docId = wrapper?.dataset?.ratingDocId;
+      const ratingVal = ratingBtn.dataset.ratingValue;
+      const rating = ratingVal === '' ? NaN : parseInt(ratingVal, 10);
       if (docId != null) {
-        this._applyRating(docId, rating)
+        this._applyRating(docId, rating);
       }
     }
-    const detailBtn = event.target.closest("[data-results-pane-details]")
+    const detailBtn = event.target.closest('[data-results-pane-details]');
     if (detailBtn) {
-      event.preventDefault()
-      this._openDetailModal(detailBtn)
+      event.preventDefault();
+      this._openDetailModal(detailBtn);
     }
-    const loadMoreBtn = event.target.closest("[data-results-pane-load-more]")
+    const loadMoreBtn = event.target.closest('[data-results-pane-load-more]');
     if (loadMoreBtn) {
-      event.preventDefault()
-      this._loadMore()
+      event.preventDefault();
+      this._loadMore();
     }
   }
 
   _toggleRatingPopover(triggerEl) {
-    const docId = triggerEl.closest("[data-doc-id]")?.dataset?.docId
-    if (!docId) return
+    const docId = triggerEl.closest('[data-doc-id]')?.dataset?.docId;
+    if (!docId) return;
 
-    const existing = this._popovers.get(docId)
+    const existing = this._popovers.get(docId);
     if (existing) {
-      existing.toggle()
-      return
+      existing.toggle();
+      return;
     }
 
-    const scale = this.scaleValue || [ 0, 1, 2, 3 ]
-    const labels = this.scaleLabelsValue || {}
-    const content = this._buildRatingPopoverContent(docId, scale, labels)
+    const scale = this.scaleValue || [0, 1, 2, 3];
+    const labels = this.scaleLabelsValue || {};
+    const content = this._buildRatingPopoverContent(docId, scale, labels);
 
-    const Popover = window.bootstrap?.Popover
-    if (!Popover) return
+    const Popover = window.bootstrap?.Popover;
+    if (!Popover) return;
 
     const popover = new Popover(triggerEl, {
       content,
       html: true,
-      trigger: "manual",
-      placement: "left",
-      container: "body"
-    })
-    popover.show()
-    this._popovers.set(docId, popover)
+      trigger: 'manual',
+      placement: 'left',
+      container: 'body',
+    });
+    popover.show();
+    this._popovers.set(docId, popover);
   }
 
   _buildRatingPopoverContent(docId, scale, labels) {
-    const wrapper = document.createElement("div")
-    wrapper.className = "d-flex flex-wrap gap-1 align-items-center"
-    wrapper.dataset.ratingDocId = String(docId)
+    const wrapper = document.createElement('div');
+    wrapper.className = 'd-flex flex-wrap gap-1 align-items-center';
+    wrapper.dataset.ratingDocId = String(docId);
 
     scale.forEach((value) => {
-      const button = document.createElement("button")
-      button.type = "button"
-      button.className = "btn btn-sm btn-outline-primary"
-      button.dataset.ratingValue = String(value)
-      const label = labels[String(value)]
-      if (label) button.title = String(label)
-      button.append(String(value))
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn btn-sm btn-outline-primary';
+      button.dataset.ratingValue = String(value);
+      const label = labels[String(value)];
+      if (label) button.title = String(label);
+      button.append(String(value));
       if (label) {
-        const labelEl = document.createElement("small")
-        labelEl.className = "text-muted"
-        labelEl.textContent = ` ${label}`
-        button.appendChild(labelEl)
+        const labelEl = document.createElement('small');
+        labelEl.className = 'text-muted';
+        labelEl.textContent = ` ${label}`;
+        button.appendChild(labelEl);
       }
-      wrapper.appendChild(button)
-    })
+      wrapper.appendChild(button);
+    });
 
-    const clear = document.createElement("button")
-    clear.type = "button"
-    clear.className = "btn btn-sm btn-outline-secondary ms-1"
-    clear.dataset.ratingValue = ""
-    clear.textContent = "Clear"
-    wrapper.appendChild(clear)
-    return wrapper
+    const clear = document.createElement('button');
+    clear.type = 'button';
+    clear.className = 'btn btn-sm btn-outline-secondary ms-1';
+    clear.dataset.ratingValue = '';
+    clear.textContent = 'Clear';
+    wrapper.appendChild(clear);
+    return wrapper;
   }
 
   async _applyRating(docId, rating) {
-    if (!this.caseIdValue || !this.queryIdValue) return
+    if (!this.caseIdValue || !this.queryIdValue) return;
 
-    const root = getQuepidRootUrl()
-    const url = buildApiUrl(root, "cases", this.caseIdValue, "queries", this.queryIdValue, "ratings")
-    const useTurboStream = !!window.Turbo
+    const root = getQuepidRootUrl();
+    const url = buildApiUrl(
+      root,
+      'cases',
+      this.caseIdValue,
+      'queries',
+      this.queryIdValue,
+      'ratings'
+    );
+    const useTurboStream = !!window.Turbo;
 
     try {
-      const isClear = rating === "" || (typeof rating === "number" && isNaN(rating))
-      const accept = useTurboStream ? "text/vnd.turbo-stream.html" : "application/json"
+      const isClear = rating === '' || (typeof rating === 'number' && isNaN(rating));
+      const accept = useTurboStream ? 'text/vnd.turbo-stream.html' : 'application/json';
 
       if (isClear) {
         const res = await apiFetch(url, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json", Accept: accept },
-          body: JSON.stringify({ rating: { doc_id: docId } })
-        })
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', Accept: accept },
+          body: JSON.stringify({ rating: { doc_id: docId } }),
+        });
         if (!res.ok) {
-          const data = await res.json().catch(() => ({}))
-          throw new Error(data.error || data.message || "Failed to clear rating")
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || data.message || 'Failed to clear rating');
         }
-        if (useTurboStream && res.headers.get("Content-Type")?.includes("turbo-stream")) {
-          const html = await res.text()
-          if (html?.trim()) window.Turbo.renderStreamMessage(html)
+        if (useTurboStream && res.headers.get('Content-Type')?.includes('turbo-stream')) {
+          const html = await res.text();
+          if (html?.trim()) window.Turbo.renderStreamMessage(html);
         } else {
-          this._updateDocCardRating(docId, "")
+          this._updateDocCardRating(docId, '');
         }
       } else {
         const res = await apiFetch(url, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json", Accept: accept },
-          body: JSON.stringify({ rating: { doc_id: docId, rating } })
-        })
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Accept: accept },
+          body: JSON.stringify({ rating: { doc_id: docId, rating } }),
+        });
         if (!res.ok) {
-          const ct = res.headers.get("Content-Type") || ""
-          if (ct.includes("turbo-stream")) {
-            const html = await res.text()
-            if (html?.trim()) window.Turbo.renderStreamMessage(html)
-            return
+          const ct = res.headers.get('Content-Type') || '';
+          if (ct.includes('turbo-stream')) {
+            const html = await res.text();
+            if (html?.trim()) window.Turbo.renderStreamMessage(html);
+            return;
           }
-          const data = await res.json().catch(() => ({}))
-          throw new Error(data.error || data.message || "Failed to update rating")
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || data.message || 'Failed to update rating');
         }
-        if (useTurboStream && res.headers.get("Content-Type")?.includes("turbo-stream")) {
-          const html = await res.text()
-          if (html?.trim()) window.Turbo.renderStreamMessage(html)
+        if (useTurboStream && res.headers.get('Content-Type')?.includes('turbo-stream')) {
+          const html = await res.text();
+          if (html?.trim()) window.Turbo.renderStreamMessage(html);
         } else {
-          const data = await res.json().catch(() => ({}))
-          const newRating = data.rating != null ? String(data.rating) : ""
-          this._updateDocCardRating(docId, newRating)
+          const data = await res.json().catch(() => ({}));
+          const newRating = data.rating != null ? String(data.rating) : '';
+          this._updateDocCardRating(docId, newRating);
         }
       }
-      this._announceRatingChange(docId, isClear ? "" : String(rating))
-      this._triggerScoreRefresh()
-      this._popovers.get(docId)?.hide()
+      this._announceRatingChange(docId, isClear ? '' : String(rating));
+      this._triggerScoreRefresh();
+      this._popovers.get(docId)?.hide();
     } catch (err) {
-      console.error("Rating update failed:", err)
-      if (window.flash) window.flash.error = err.message
+      console.error('Rating update failed:', err);
+      if (window.flash) window.flash.error = err.message;
     }
   }
 
   _updateDocCardRating(docId, rating) {
-    const card = this.resultsContainerTarget?.querySelector(`[data-doc-id="${CSS.escape(String(docId))}"]`)
-    if (!card) return
-    const badge = card.querySelector(".rating-badge")
-    if (!badge) return
-    const ratingEl = document.createElement("span")
-    ratingEl.dataset.ratingTrigger = ""
-    ratingEl.tabIndex = 0
-    ratingEl.setAttribute("role", "button")
-    if (rating !== "") {
-      ratingEl.className = "badge bg-primary"
-      ratingEl.textContent = String(rating)
-      ratingEl.title = "Click to change rating"
-      ratingEl.setAttribute("aria-label", `Current rating ${rating}. Click to change rating`)
+    const card = this.resultsContainerTarget?.querySelector(
+      `[data-doc-id="${CSS.escape(String(docId))}"]`
+    );
+    if (!card) return;
+    const badge = card.querySelector('.rating-badge');
+    if (!badge) return;
+    const ratingEl = document.createElement('span');
+    ratingEl.dataset.ratingTrigger = '';
+    ratingEl.tabIndex = 0;
+    ratingEl.setAttribute('role', 'button');
+    if (rating !== '') {
+      ratingEl.className = 'badge bg-primary';
+      ratingEl.textContent = String(rating);
+      ratingEl.title = 'Click to change rating';
+      ratingEl.setAttribute('aria-label', `Current rating ${rating}. Click to change rating`);
     } else {
-      ratingEl.className = "badge bg-secondary"
-      ratingEl.textContent = "Rate"
-      ratingEl.title = "Click to rate"
-      ratingEl.setAttribute("aria-label", "No rating. Click to rate")
+      ratingEl.className = 'badge bg-secondary';
+      ratingEl.textContent = 'Rate';
+      ratingEl.title = 'Click to rate';
+      ratingEl.setAttribute('aria-label', 'No rating. Click to rate');
     }
-    badge.replaceChildren(ratingEl)
+    badge.replaceChildren(ratingEl);
   }
 
   _triggerScoreRefresh() {
-    if (!this.caseIdValue) return
-    triggerScoreRefresh(this.caseIdValue, this.queryIdValue, this.tryNumberValue)
+    if (!this.caseIdValue) return;
+    triggerScoreRefresh(this.caseIdValue, this.queryIdValue, this.tryNumberValue);
   }
 
   queryIdValueChanged() {
     if (this.hasQueryIdValue && this.queryIdValue) {
-      this.fetchResults()
+      this.fetchResults();
     } else {
-      this.clearResults()
+      this.clearResults();
     }
   }
 
   _canFetch() {
-    if (this.hasSkipFetchValue && this.skipFetchValue) return false
-    return this.hasQueryIdValue &&
-      this.queryIdValue &&
-      this.caseIdValue &&
-      this.tryNumberValue
+    if (this.hasSkipFetchValue && this.skipFetchValue) return false;
+    return this.hasQueryIdValue && this.queryIdValue && this.caseIdValue && this.tryNumberValue;
   }
 
   async fetchResults(append = false) {
-    if (!this._canFetch()) return
+    if (!this._canFetch()) return;
 
-    const requestId = ++this._fetchRequestId
-    const start = append ? this._currentStart : 0
-    this._setLoading(true)
-    this._clearError()
+    const requestId = ++this._fetchRequestId;
+    const start = append ? this._currentStart : 0;
+    this._setLoading(true);
+    this._clearError();
     if (!append) {
-      this._currentStart = 0
-      this._lastNumFound = 0
+      this._currentStart = 0;
+      this._lastNumFound = 0;
     }
 
     let url = buildApiQuerySearchUrl(
@@ -291,387 +318,430 @@ export default class extends Controller {
       null,
       this._pageSize,
       start
-    )
+    );
 
     // Append diff snapshot IDs so server renders diff badges
-    const diffIds = this._diffSnapshotIds || []
+    const diffIds = this._diffSnapshotIds || [];
     if (diffIds.length > 0) {
-      const sep = url.includes("?") ? "&" : "?"
-      const diffParams = diffIds.map(id => `diff_snapshot_ids[]=${encodeURIComponent(id)}`).join("&")
-      url = `${url}${sep}${diffParams}`
+      const sep = url.includes('?') ? '&' : '?';
+      const diffParams = diffIds
+        .map((id) => `diff_snapshot_ids[]=${encodeURIComponent(id)}`)
+        .join('&');
+      url = `${url}${sep}${diffParams}`;
     }
 
     // Append show_only_rated filter
     if (this._showOnlyRated) {
-      const sep = url.includes("?") ? "&" : "?"
-      url = `${url}${sep}show_only_rated=true`
+      const sep = url.includes('?') ? '&' : '?';
+      url = `${url}${sep}show_only_rated=true`;
     }
 
     try {
       const res = await apiFetch(url, {
-        method: "GET",
+        method: 'GET',
         headers: {
-          "Accept": "text/html"
+          Accept: 'text/html',
         },
-      })
-      const text = await res.text()
+      });
+      const text = await res.text();
 
-      if (requestId !== this._fetchRequestId) return
+      if (requestId !== this._fetchRequestId) return;
 
       if (!res.ok) {
-        throw new Error(`Search failed (${res.status})`)
+        throw new Error(`Search failed (${res.status})`);
       }
 
-      this._renderHtmlResults(text, append)
+      this._renderHtmlResults(text, append);
     } catch (err) {
-      if (requestId !== this._fetchRequestId) return
-      this._showError(err.message)
+      if (requestId !== this._fetchRequestId) return;
+      this._showError(err.message);
     } finally {
       if (requestId === this._fetchRequestId) {
-        this._setLoading(false)
+        this._setLoading(false);
       }
     }
   }
 
   clearResults() {
     if (this.hasResultsContainerTarget) {
-      this.resultsContainerTarget.replaceChildren()
+      this.resultsContainerTarget.replaceChildren();
     }
-    this._clearError()
-    this._showBulkRatingBar(false)
+    this._clearError();
+    this._showBulkRatingBar(false);
   }
 
   _setLoading(loading) {
     if (this.hasLoadingIndicatorTarget) {
-      this.loadingIndicatorTarget.classList.toggle("d-none", !loading)
+      this.loadingIndicatorTarget.classList.toggle('d-none', !loading);
     }
   }
 
   _clearError() {
     if (this.hasErrorMessageTarget) {
-      this.errorMessageTarget.classList.add("d-none")
-      if (this.hasErrorTextTarget) this.errorTextTarget.textContent = ""
+      this.errorMessageTarget.classList.add('d-none');
+      if (this.hasErrorTextTarget) this.errorTextTarget.textContent = '';
     }
   }
 
   _showError(message) {
     if (this.hasErrorMessageTarget) {
       if (this.hasErrorTextTarget) {
-        this.errorTextTarget.textContent = message
+        this.errorTextTarget.textContent = message;
       } else {
-        this.errorMessageTarget.textContent = message
+        this.errorMessageTarget.textContent = message;
       }
-      this.errorMessageTarget.classList.remove("d-none")
+      this.errorMessageTarget.classList.remove('d-none');
     }
     // Only clear results if there were none before (preserve existing results on error)
-    if (this.hasResultsContainerTarget && !this.resultsContainerTarget.querySelector(".document-card")) {
-      this.resultsContainerTarget.replaceChildren()
+    if (
+      this.hasResultsContainerTarget &&
+      !this.resultsContainerTarget.querySelector('.document-card')
+    ) {
+      this.resultsContainerTarget.replaceChildren();
     }
   }
 
   dismissError() {
-    this._clearError()
+    this._clearError();
   }
 
   toggleShowOnlyRated() {
-    this._showOnlyRated = this.hasShowOnlyRatedToggleTarget && this.showOnlyRatedToggleTarget.checked
-    if (this._canFetch()) this.fetchResults()
+    this._showOnlyRated =
+      this.hasShowOnlyRatedToggleTarget && this.showOnlyRatedToggleTarget.checked;
+    if (this._canFetch()) this.fetchResults();
   }
 
   async bulkRate(event) {
-    const rating = parseInt(event.currentTarget.dataset.ratingValue, 10)
-    if (isNaN(rating)) return
-    const docIds = this._collectVisibleDocIds()
-    if (docIds.length === 0) return
+    const rating = parseInt(event.currentTarget.dataset.ratingValue, 10);
+    if (isNaN(rating)) return;
+    const docIds = this._collectVisibleDocIds();
+    if (docIds.length === 0) return;
 
-    const root = getQuepidRootUrl()
-    const url = buildApiUrl(root, "cases", this.caseIdValue, "queries", this.queryIdValue, "bulk", "ratings")
+    const root = getQuepidRootUrl();
+    const url = buildApiUrl(
+      root,
+      'cases',
+      this.caseIdValue,
+      'queries',
+      this.queryIdValue,
+      'bulk',
+      'ratings'
+    );
     try {
       const res = await apiFetch(url, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ doc_ids: docIds, rating })
-      })
-      if (!res.ok) throw new Error(`Bulk rate failed (${res.status})`)
-      this._triggerScoreRefresh()
-      if (this._canFetch()) this.fetchResults()
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ doc_ids: docIds, rating }),
+      });
+      if (!res.ok) throw new Error(`Bulk rate failed (${res.status})`);
+      this._triggerScoreRefresh();
+      if (this._canFetch()) this.fetchResults();
     } catch (err) {
-      console.error("Bulk rating failed:", err)
+      console.error('Bulk rating failed:', err);
     }
   }
 
   async bulkClear() {
-    const docIds = this._collectVisibleDocIds()
-    if (docIds.length === 0) return
-    if (!confirm(`Clear all ratings for ${docIds.length} documents?`)) return
+    const docIds = this._collectVisibleDocIds();
+    if (docIds.length === 0) return;
+    if (!confirm(`Clear all ratings for ${docIds.length} documents?`)) return;
 
-    const root = getQuepidRootUrl()
-    const url = buildApiUrl(root, "cases", this.caseIdValue, "queries", this.queryIdValue, "bulk", "ratings", "delete")
+    const root = getQuepidRootUrl();
+    const url = buildApiUrl(
+      root,
+      'cases',
+      this.caseIdValue,
+      'queries',
+      this.queryIdValue,
+      'bulk',
+      'ratings',
+      'delete'
+    );
     try {
       const res = await apiFetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ doc_ids: docIds })
-      })
-      if (!res.ok) throw new Error(`Bulk clear failed (${res.status})`)
-      this._triggerScoreRefresh()
-      if (this._canFetch()) this.fetchResults()
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ doc_ids: docIds }),
+      });
+      if (!res.ok) throw new Error(`Bulk clear failed (${res.status})`);
+      this._triggerScoreRefresh();
+      if (this._canFetch()) this.fetchResults();
     } catch (err) {
-      console.error("Bulk clear failed:", err)
+      console.error('Bulk clear failed:', err);
     }
   }
 
   _collectVisibleDocIds() {
-    if (!this.hasResultsContainerTarget) return []
-    return Array.from(this.resultsContainerTarget.querySelectorAll(".document-card[data-doc-id]"))
-      .map(el => el.dataset.docId)
-      .filter(Boolean)
+    if (!this.hasResultsContainerTarget) return [];
+    return Array.from(this.resultsContainerTarget.querySelectorAll('.document-card[data-doc-id]'))
+      .map((el) => el.dataset.docId)
+      .filter(Boolean);
   }
 
   /** Render server-rendered HTML (DocumentCardComponent + MatchesComponent). */
   _renderHtmlResults(htmlText, append = false) {
-    if (!this.hasResultsContainerTarget) return
+    if (!this.hasResultsContainerTarget) return;
 
-    this._popovers.forEach((p) => p?.dispose())
-    this._popovers.clear()
+    this._popovers.forEach((p) => p?.dispose());
+    this._popovers.clear();
 
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(htmlText, "text/html")
-    const wrapper = doc.querySelector("[data-results-pane-html-response]")
-    if (!wrapper) return
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlText, 'text/html');
+    const wrapper = doc.querySelector('[data-results-pane-html-response]');
+    if (!wrapper) return;
 
-    const numFound = parseInt(wrapper.dataset.numFound || "0", 10)
-    const headerEl = wrapper.querySelector("p.text-muted.small.mb-2")
-    const cards = wrapper.querySelectorAll(".document-card")
-    const loadMoreEl = wrapper.querySelector("[data-results-pane-target='loadMoreArea']")
+    const numFound = parseInt(wrapper.dataset.numFound || '0', 10);
+    const headerEl = wrapper.querySelector('p.text-muted.small.mb-2');
+    const cards = wrapper.querySelectorAll('.document-card');
+    const loadMoreEl = wrapper.querySelector("[data-results-pane-target='loadMoreArea']");
 
-    this._showBulkRatingBar(cards.length > 0)
+    this._showBulkRatingBar(cards.length > 0);
 
-    if (append && this.resultsContainerTarget.querySelector("p.text-muted.small.mb-2")) {
-      this._lastNumFound = numFound
-      this._currentStart += cards.length
-      const loadMoreArea = this.resultsContainerTarget.querySelector("[data-results-pane-target='loadMoreArea']")
+    if (append && this.resultsContainerTarget.querySelector('p.text-muted.small.mb-2')) {
+      this._lastNumFound = numFound;
+      this._currentStart += cards.length;
+      const loadMoreArea = this.resultsContainerTarget.querySelector(
+        "[data-results-pane-target='loadMoreArea']"
+      );
       cards.forEach((card) => {
         if (loadMoreArea) {
-          loadMoreArea.insertAdjacentElement("beforebegin", card.cloneNode(true))
+          loadMoreArea.insertAdjacentElement('beforebegin', card.cloneNode(true));
         } else {
-          this.resultsContainerTarget.appendChild(card.cloneNode(true))
+          this.resultsContainerTarget.appendChild(card.cloneNode(true));
         }
-      })
+      });
       if (loadMoreArea && loadMoreEl) {
-        loadMoreArea.replaceWith(loadMoreEl.cloneNode(true))
+        loadMoreArea.replaceWith(loadMoreEl.cloneNode(true));
       }
     } else {
-      this._lastNumFound = numFound
-      this._currentStart = cards.length
-      const nodes = []
-      if (headerEl) nodes.push(headerEl.cloneNode(true))
-      cards.forEach((card) => nodes.push(card.cloneNode(true)))
-      if (loadMoreEl) nodes.push(loadMoreEl.cloneNode(true))
-      this.resultsContainerTarget.replaceChildren(...nodes)
+      this._lastNumFound = numFound;
+      this._currentStart = cards.length;
+      const nodes = [];
+      if (headerEl) nodes.push(headerEl.cloneNode(true));
+      cards.forEach((card) => nodes.push(card.cloneNode(true)));
+      if (loadMoreEl) nodes.push(loadMoreEl.cloneNode(true));
+      this.resultsContainerTarget.replaceChildren(...nodes);
     }
   }
 
   _showBulkRatingBar(visible) {
     if (this.hasBulkRatingBarTarget) {
-      this.bulkRatingBarTarget.classList.toggle("d-none", !visible)
+      this.bulkRatingBarTarget.classList.toggle('d-none', !visible);
     }
   }
 
   async _loadMore() {
-    if (!this._canFetch()) return
-    await this.fetchResults(true)
+    if (!this._canFetch()) return;
+    await this.fetchResults(true);
   }
 
   async _openDetailModal(triggerEl) {
-    const card = triggerEl.closest(".document-card")
-    if (!card) return
+    const card = triggerEl.closest('.document-card');
+    if (!card) return;
 
-    const docId = card.dataset.docId || "Unknown"
-    let fields = {}
+    const docId = card.dataset.docId || 'Unknown';
+    let fields = {};
 
     // Read fields from data-doc-fields when present on server-rendered cards.
     if (card.dataset.docFields) {
-      try { fields = JSON.parse(card.dataset.docFields) } catch (_e) { /* ignore */ }
+      try {
+        fields = JSON.parse(card.dataset.docFields);
+      } catch (_e) {
+        /* ignore */
+      }
     }
 
     // For large docs, data-doc-fields may be omitted. Fetch on demand.
     if (Object.keys(fields).length === 0) {
-      fields = await this._fetchDetailFields(docId)
+      fields = await this._fetchDetailFields(docId);
     }
 
     // Populate title
     if (this.hasDetailModalTitleTarget) {
-      const title = fields.title || fields.name || docId
-      const displayTitle = Array.isArray(title) ? title[0] : title
-      this.detailModalTitleTarget.textContent = `Document: ${displayTitle}`
+      const title = fields.title || fields.name || docId;
+      const displayTitle = Array.isArray(title) ? title[0] : title;
+      this.detailModalTitleTarget.textContent = `Document: ${displayTitle}`;
     }
 
     // Populate fields list as <dl>
     if (this.hasDetailFieldsListTarget) {
-      const keys = Object.keys(fields)
+      const keys = Object.keys(fields);
       if (keys.length === 0) {
-        const empty = document.createElement("p")
-        empty.className = "text-muted"
-        empty.textContent = "No fields available."
-        this.detailFieldsListTarget.replaceChildren(empty)
+        const empty = document.createElement('p');
+        empty.className = 'text-muted';
+        empty.textContent = 'No fields available.';
+        this.detailFieldsListTarget.replaceChildren(empty);
       } else {
-        const dl = document.createElement("dl")
-        dl.className = "row mb-0"
+        const dl = document.createElement('dl');
+        dl.className = 'row mb-0';
         keys.forEach((key) => {
-          const value = fields[key]
-          const dt = document.createElement("dt")
-          dt.className = "col-sm-3 text-truncate"
-          dt.title = String(key)
-          dt.textContent = String(key)
-          const dd = document.createElement("dd")
-          dd.className = "col-sm-9"
-          if (typeof value === "object" && value !== null) {
-            const pre = document.createElement("pre")
-            pre.className = "mb-0 small bg-light p-2 rounded"
-            pre.textContent = JSON.stringify(value, null, 2)
-            dd.appendChild(pre)
+          const value = fields[key];
+          const dt = document.createElement('dt');
+          dt.className = 'col-sm-3 text-truncate';
+          dt.title = String(key);
+          dt.textContent = String(key);
+          const dd = document.createElement('dd');
+          dd.className = 'col-sm-9';
+          if (typeof value === 'object' && value !== null) {
+            const pre = document.createElement('pre');
+            pre.className = 'mb-0 small bg-light p-2 rounded';
+            pre.textContent = JSON.stringify(value, null, 2);
+            dd.appendChild(pre);
           } else {
-            dd.textContent = String(value ?? "")
+            dd.textContent = String(value ?? '');
           }
-          dl.appendChild(dt)
-          dl.appendChild(dd)
-        })
-        this.detailFieldsListTarget.replaceChildren(dl)
+          dl.appendChild(dt);
+          dl.appendChild(dd);
+        });
+        this.detailFieldsListTarget.replaceChildren(dl);
       }
     }
 
     // Populate raw JSON tab — use CodeMirror read-only viewer when available
-    const fullDoc = { id: docId, fields }
-    const jsonStr = JSON.stringify(fullDoc, null, 2)
+    const fullDoc = { id: docId, fields };
+    const jsonStr = JSON.stringify(fullDoc, null, 2);
 
     if (this.hasDetailJsonTextareaTarget && window.CodeMirror) {
-      const textarea = this.detailJsonTextareaTarget
+      const textarea = this.detailJsonTextareaTarget;
       if (textarea.editor) {
         // Reuse existing CodeMirror instance — just update its content
-        textarea.editor.setValue(jsonStr)
-        textarea.editor.formatJSON()
+        textarea.editor.setValue(jsonStr);
+        textarea.editor.formatJSON();
       } else {
-        textarea.value = jsonStr
+        textarea.value = jsonStr;
         window.CodeMirror.fromTextArea(textarea, {
-          mode: "json",
+          mode: 'json',
           readOnly: true,
           lineNumbers: true,
-          height: 400
-        })
+          height: 400,
+        });
         // formatJSON is auto-called by fromTextArea for valid JSON
       }
       // Hide the fallback <pre>
-      if (this.hasDetailJsonPreTarget) this.detailJsonPreTarget.classList.add("d-none")
+      if (this.hasDetailJsonPreTarget) this.detailJsonPreTarget.classList.add('d-none');
     } else if (this.hasDetailJsonPreTarget) {
-      this.detailJsonPreTarget.textContent = jsonStr
-      this.detailJsonPreTarget.classList.remove("d-none")
+      this.detailJsonPreTarget.textContent = jsonStr;
+      this.detailJsonPreTarget.classList.remove('d-none');
       // Initialize json-tree on the pre element
-      this._initJsonTree(this.detailJsonPreTarget)
+      this._initJsonTree(this.detailJsonPreTarget);
     }
 
     // Set up copy JSON button
     if (this.hasCopyJsonBtnTarget) {
-      this.copyJsonBtnTarget.setAttribute("data-clipboard-text-value", jsonStr)
+      this.copyJsonBtnTarget.setAttribute('data-clipboard-text-value', jsonStr);
     }
 
     // Set up view source button — doc_id is stored for viewSource action
-    this._currentDetailDocId = docId
+    this._currentDetailDocId = docId;
     if (this.hasViewSourceBtnTarget) {
-      this.viewSourceBtnTarget.classList.remove("d-none")
+      this.viewSourceBtnTarget.classList.remove('d-none');
     }
 
-    const modal = this.hasDetailModalTarget && window.bootstrap?.Modal?.getOrCreateInstance(this.detailModalTarget)
-    modal?.show()
+    const modal =
+      this.hasDetailModalTarget &&
+      window.bootstrap?.Modal?.getOrCreateInstance(this.detailModalTarget);
+    modal?.show();
   }
 
   async _fetchDetailFields(docId) {
-    if (!this.caseIdValue || !this.tryNumberValue || !this.queryIdValue) return {}
+    if (!this.caseIdValue || !this.tryNumberValue || !this.queryIdValue) return {};
 
     try {
-      const root = getQuepidRootUrl()
-      const url = new URL(buildApiUrl(root, "cases", this.caseIdValue, "tries", this.tryNumberValue, "queries", this.queryIdValue, "search"))
-      url.searchParams.set("q", docId)
-      url.searchParams.set("rows", "10")
-      url.searchParams.set("start", "0")
-      const res = await apiFetch(url.toString(), { headers: { Accept: "application/json" } })
-      if (!res.ok) return {}
-      const data = await res.json().catch(() => ({}))
-      const docs = Array.isArray(data.docs) ? data.docs : []
-      if (docs.length === 0) return {}
+      const root = getQuepidRootUrl();
+      const url = new URL(
+        buildApiUrl(
+          root,
+          'cases',
+          this.caseIdValue,
+          'tries',
+          this.tryNumberValue,
+          'queries',
+          this.queryIdValue,
+          'search'
+        )
+      );
+      url.searchParams.set('q', docId);
+      url.searchParams.set('rows', '10');
+      url.searchParams.set('start', '0');
+      const res = await apiFetch(url.toString(), { headers: { Accept: 'application/json' } });
+      if (!res.ok) return {};
+      const data = await res.json().catch(() => ({}));
+      const docs = Array.isArray(data.docs) ? data.docs : [];
+      if (docs.length === 0) return {};
 
-      const exact = docs.find((d) => String(d?.id) === String(docId)) || docs[0]
-      return exact?.fields || {}
+      const exact = docs.find((d) => String(d?.id) === String(docId)) || docs[0];
+      return exact?.fields || {};
     } catch (_e) {
-      return {}
+      return {};
     }
   }
 
   viewSource() {
-    if (!this._currentDetailDocId) return
-    const root = getQuepidRootUrl()
-    const docId = encodeURIComponent(this._currentDetailDocId)
-    const url = `${buildApiUrl(root, "cases", this.caseIdValue, "tries", this.tryNumberValue, "queries", this.queryIdValue, "search", "raw")}?doc_id=${docId}`
-    window.open(url, "_blank")
+    if (!this._currentDetailDocId) return;
+    const root = getQuepidRootUrl();
+    const docId = encodeURIComponent(this._currentDetailDocId);
+    const url = `${buildApiUrl(root, 'cases', this.caseIdValue, 'tries', this.tryNumberValue, 'queries', this.queryIdValue, 'search', 'raw')}?doc_id=${docId}`;
+    window.open(url, '_blank');
   }
 
   _initJsonTree(pre) {
-    const container = pre.parentElement
-    if (!container) return
+    const container = pre.parentElement;
+    if (!container) return;
 
     // Remove any previously rendered json-tree div
-    const existing = container.querySelector(".json-tree")
-    if (existing) existing.remove()
+    const existing = container.querySelector('.json-tree');
+    if (existing) existing.remove();
 
     // Show the pre again so the json-tree controller can read its content
-    pre.style.display = ""
+    pre.style.display = '';
 
-    container.setAttribute("data-controller", "json-tree")
-    pre.setAttribute("data-json-tree-target", "source")
+    container.setAttribute('data-controller', 'json-tree');
+    pre.setAttribute('data-json-tree-target', 'source');
 
     // Force Stimulus to notice the new/updated controller attribute
-    const app = this.application
+    const app = this.application;
     if (app) {
       requestAnimationFrame(() => {
-        const ctrl = app.getControllerForElementAndIdentifier(container, "json-tree")
+        const ctrl = app.getControllerForElementAndIdentifier(container, 'json-tree');
         if (ctrl) {
           // Re-run rendering (clears old trees and rebuilds)
-          ctrl.sourceTargets.forEach(src => {
-            const oldTree = src.nextElementSibling
-            if (oldTree?.classList?.contains("json-tree")) oldTree.remove()
-            src.style.display = ""
-          })
-          ctrl.connect()
+          ctrl.sourceTargets.forEach((src) => {
+            const oldTree = src.nextElementSibling;
+            if (oldTree?.classList?.contains('json-tree')) oldTree.remove();
+            src.style.display = '';
+          });
+          ctrl.connect();
         }
-      })
+      });
     }
   }
 
   _announceRatingChange(docId, rating) {
-    if (!this.hasRatingAnnouncementTarget) return
-    this.ratingAnnouncementTarget.textContent = rating === ""
-      ? `Cleared rating for document ${docId}.`
-      : `Set rating ${rating} for document ${docId}.`
+    if (!this.hasRatingAnnouncementTarget) return;
+    this.ratingAnnouncementTarget.textContent =
+      rating === ''
+        ? `Cleared rating for document ${docId}.`
+        : `Set rating ${rating} for document ${docId}.`;
   }
 
   _escapeHtml(str) {
-    if (str == null) return ""
-    const div = document.createElement("div")
-    div.textContent = String(str)
-    return div.innerHTML
+    if (str == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
   }
 
   _escapeHtmlAttr(str) {
-    if (str == null) return ""
+    if (str == null) return '';
     return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/"/g, "&quot;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 
   /** Sanitize doc_id for HTML id used by Turbo Stream targets. Must match server. */
   _ratingBadgeId(docId) {
-    return `rating-badge-${String(docId).replace(/\s/g, "_")}`
+    return `rating-badge-${String(docId).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
   }
 }

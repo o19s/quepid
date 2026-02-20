@@ -17,21 +17,21 @@
         </div>
       <% end %>
     
-      <div class="form-group clearfix">
+      <div class="mb-3 clearfix">
         <%= f.label :email, class: 'col-sm-2 control-label' %>
         <div class="col-sm-10">
           <%= f.text_field :email, class: 'form-control' %>
         </div>
       </div>
       
-      <div class="form-group clearfix">
+      <div class="mb-3 clearfix">
         <%= f.label :name, class: 'col-sm-2 control-label' %>
         <div class="col-sm-10">
           <%= f.text_field :name, class: 'form-control' %>
         </div>
       </div>  
       
-      <div class="form-group clearfix">
+      <div class="mb-3 clearfix">
         <%= f.label :company, class: 'col-sm-2 control-label' %>
         <div class="col-sm-10">
           <%= f.text_field :company, class: 'form-control' %>
@@ -39,8 +39,8 @@
       </div>  
     
       <p/>
-      <div class="form-group clearfix">
-        <div class="col-sm-offset-2 col-sm-10m" >
+      <div class="mb-3 clearfix">
+        <div class="offset-sm-2 col-sm-10">
           <div class="form-check form-switch">
             <%= f.label :administrator, class:'form-check-label' do %>
               <%= f.check_box :administrator, class:'form-check-input' %>
@@ -59,12 +59,12 @@
           You can either set the user's password in plain text, or, if you know their encrypted password provide it.
         </p>
         
-        <div class="form-group">
+        <div class="mb-3">
           <%= f.label :password, class: 'control-label' %>
           <%= f.password_field :password, class: 'form-control input-lg', placeholder: 'New Password' %>
         </div>
       
-        <div class="form-group">
+        <div class="mb-3">
           <%= f.label :password_confirmation, class: 'control-label' %>
           <%= f.password_field :password_confirmation, class: 'form-control input-lg', placeholder: 'Confirm New Password' %>
         </div>
@@ -73,7 +73,7 @@
         
         OR
         
-        <div class="form-group">
+        <div class="mb-3">
           <%= label_tag :password_encrypted, 'Encrypted Password', class: 'col-sm-2 control-label' %>
           <div class="col-sm-10">
             <%= text_field_tag :password_encrypted, nil, class: "form-control" %>
@@ -81,7 +81,7 @@
         </div>
       <% end %>
     
-      <div class="form-group clearfix">
+      <div class="mb-3 clearfix">
           <%= f.submit class: 'btn btn-primary btn-lg' %>
       </div>
   </div>
@@ -111,13 +111,13 @@
           </div>
         <% end %>
     
-        <div class="form-group">
+        <div class="mb-3">
           <%= f.label :password, class: 'control-label' %>
           <%= f.password_field :password, class: 'form-control input-lg', placeholder: 'New Password' %>
     
         </div>
     
-        <div class="form-group">
+        <div class="mb-3">
           <%= f.label :password_confirmation, class: 'control-label' %>
           <%= f.password_field :password_confirmation, class: 'form-control input-lg', placeholder: 'Confirm New Password' %>
         </div>
@@ -126,7 +126,7 @@
         
         OR
         
-        <div class="form-group">
+        <div class="mb-3">
           <%= label_tag :password_encrypted, 'Encrypted Password', class: 'col-sm-2 control-label' %>
           <div class="col-sm-10">
             <%= text_field_tag :password_encrypted, nil, class: "form-control" %>
@@ -134,7 +134,7 @@
           </div>
         </div>
     
-        <div class="form-group">
+        <div class="mb-3">
           <button type="submit" class="btn btn-primary btn-lg">Update password</button>
         </div>
       <% end %>

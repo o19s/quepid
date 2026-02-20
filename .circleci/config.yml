@@ -88,8 +88,8 @@ jobs:
           command: bundle exec rake test
 
       - run:
-          name: Run jshint
-          command: bundle exec rake test:jshint
+          name: Run ESLint and Prettier
+          command: bundle exec rake test:lint
 
       - run:
           name: Run rubocop

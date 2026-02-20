@@ -7,7 +7,7 @@
   data-delete-query-try-number-value="<%= @try_number %>"
   <% if @selected_query_id.present? %>data-delete-query-selected-query-id-value="<%= @selected_query_id %>"<% end %>
 >
-  <button type="button" class="btn btn-default btn-sm" data-action="click->delete-query#open" data-delete-query-target="trigger" title="Delete query" aria-label="Delete query">
+  <button type="button" class="btn btn-secondary btn-sm" data-action="click->delete-query#open" data-delete-query-target="trigger" title="Delete query" aria-label="Delete query">
     <i class="bi bi-trash" aria-hidden="true"></i>
   </button>
 

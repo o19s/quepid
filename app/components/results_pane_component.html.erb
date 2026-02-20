@@ -40,7 +40,7 @@
         <span class="small text-muted me-1">Rate all:</span>
         <% @scorer_scale.each do |val| %>
           <% label = @scale_with_labels.is_a?(Hash) ? @scale_with_labels[val.to_s] : nil %>
-          <button type="button" class="btn btn-sm btn-outline-primary" data-action="click->results-pane#bulkRate" data-rating-value="<%= val %>"<%= label.present? ? " title=\"#{h(label)}\"".html_safe : "" %>><%= val %><%= label.present? ? " <small class=\"text-muted\">#{h(label)}</small>".html_safe : "" %></button>
+          <button type="button" class="btn btn-sm btn-outline-primary" data-action="click->results-pane#bulkRate" data-rating-value="<%= val %>"<% if label.present? %> title="<%= h(label) %>"<% end %>><%= val %><% if label.present? %> <%= content_tag(:small, h(label), class: "text-muted") %><% end %></button>
         <% end %>
         <button type="button" class="btn btn-sm btn-outline-danger ms-2" data-action="click->results-pane#bulkClear">
           <i class="bi bi-x-circle" aria-hidden="true"></i> Clear all
@@ -78,7 +78,7 @@
                 <div data-results-pane-target="detailFieldsList" aria-label="Document fields"></div>
               </div>
               <div class="tab-pane fade" id="<%= detail_json_tab_id %>" role="tabpanel">
-                <div data-results-pane-target="detailJsonContainer" style="max-height: 60vh; overflow: auto;">
+                <div data-results-pane-target="detailJsonContainer" class="max-h-60vh overflow-auto">
                   <textarea class="d-none" data-results-pane-target="detailJsonTextarea" data-codemirror-mode="json" data-codemirror-readonly="true"></textarea>
                   <pre class="mb-0 bg-light p-3 rounded" data-results-pane-target="detailJsonPre"></pre>
                 </div>

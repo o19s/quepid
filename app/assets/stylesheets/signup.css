@@ -3,17 +3,17 @@
 */
 h2 {
   font-family: 'allerregular';
-  color: #036;
-  margin: 10px 0 20px 0;
+  color: var(--quepid-color-signup-heading);
+  margin: var(--quepid-spacing-md) 0 var(--quepid-spacing-xl) 0;
   padding: 0;
-  font-size: 24px;
+  font-size: var(--quepid-font-size-xl);
 }
 
 h3 {
   font-family: 'allerregular';
-  font-size: 20px;
-  color: #036;
-  margin: 10px 0 20px 0;
+  font-size: var(--quepid-font-size-lg);
+  color: var(--quepid-color-signup-heading);
+  margin: var(--quepid-spacing-md) 0 var(--quepid-spacing-xl) 0;
   padding: 0;
 }
 
@@ -23,7 +23,7 @@ h3 {
 }
 
 .m-t-20 {
-  margin-top: 20px !important;
+  margin-top: var(--quepid-spacing-xl) !important;
 }
 
 /*

@@ -32,14 +32,13 @@ module Api
           warnings = []
 
           # Validate URL format
-          begin
-            uri = URI.parse(url_string)
-          rescue URI::InvalidURIError
+          uri = UrlParserService.parse(url_string)
+          unless uri
             render json: { valid: false, warnings: [], error: 'Invalid URL format' }
             return
           end
 
-          unless uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
+          unless UrlParserService.http_or_https?(url_string)
             render json: { valid: false, warnings: [], error: 'URL must start with http:// or https://' }
             return
           end

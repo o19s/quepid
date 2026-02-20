@@ -9,18 +9,18 @@
  *
  * @returns {string} Root URL with no trailing slash, or "" if not set.
  */
-let _warnedEmpty = false
+let _warnedEmpty = false;
 
 export function getQuepidRootUrl() {
-  const root = document.body?.dataset?.quepidRootUrl ?? ""
+  const root = document.body?.dataset?.quepidRootUrl ?? '';
   if (!root && !_warnedEmpty) {
-    _warnedEmpty = true
+    _warnedEmpty = true;
     console.warn(
-      "[Quepid] data-quepid-root-url is empty. Set it on <body> (e.g. via core_modern layout). " +
-      "URLs may fall back to relative paths; see docs/app_structure.md."
-    )
+      '[Quepid] data-quepid-root-url is empty. Set it on <body> (e.g. via core_modern layout). ' +
+        'URLs may fall back to relative paths; see docs/app_structure.md.'
+    );
   }
-  return root
+  return root;
 }
 
 /**
@@ -35,14 +35,15 @@ export function getQuepidRootUrl() {
  * @returns {string} Full URL or relative path
  */
 export function buildCaseQueriesUrl(root, caseId, queryId = null) {
-  const base = root ? root.replace(/\/$/, "") : ""
+  const base = root ? root.replace(/\/$/, '') : '';
   if (base) {
-    const suffix = queryId ? `/${queryId}` : ""
-    return `${base}/case/${caseId}/queries${suffix}`
+    const suffix = queryId ? `/${queryId}` : '';
+    return `${base}/case/${caseId}/queries${suffix}`;
   }
-  const hasTryInPath = typeof window !== "undefined" && window.location?.pathname?.includes("/try/")
-  const rel = hasTryInPath ? "../queries" : "queries"
-  return queryId ? `${rel}/${queryId}` : rel
+  const hasTryInPath =
+    typeof window !== 'undefined' && window.location?.pathname?.includes('/try/');
+  const rel = hasTryInPath ? '../queries' : 'queries';
+  return queryId ? `${rel}/${queryId}` : rel;
 }
 
 /**
@@ -56,10 +57,10 @@ export function buildCaseQueriesUrl(root, caseId, queryId = null) {
  * @returns {string} Full URL or absolute path
  */
 export function buildApiCaseQueriesUrl(root, caseId, queryId = null) {
-  const base = root ? root.replace(/\/$/, "") : ""
-  const suffix = queryId ? `/${queryId}` : ""
-  if (base) return `${base}/api/cases/${caseId}/queries${suffix}`
-  return `/api/cases/${caseId}/queries${suffix}`
+  const base = root ? root.replace(/\/$/, '') : '';
+  const suffix = queryId ? `/${queryId}` : '';
+  if (base) return `${base}/api/cases/${caseId}/queries${suffix}`;
+  return `/api/cases/${caseId}/queries${suffix}`;
 }
 
 /**
@@ -73,14 +74,16 @@ export function buildApiCaseQueriesUrl(root, caseId, queryId = null) {
  * @example
  *   buildPageUrl(root, "cases")  // /cases or ../../cases
  *   buildPageUrl(root, "teams")  // /teams or ../../teams
+ *   // When root is empty: uses ../../../ for deep paths (/try/, /judge/) else ../../
  */
 export function buildPageUrl(root, ...pathSegments) {
-  const path = pathSegments.filter((s) => s !== undefined && s !== null).join("/")
-  const base = root ? root.replace(/\/$/, "") : ""
-  if (base) return path ? `${base}/${path}` : base
-  const hasTryInPath = typeof window !== "undefined" && window.location?.pathname?.includes("/try/")
-  const prefix = hasTryInPath ? "../../../" : "../../"
-  return path ? `${prefix}${path}` : prefix.replace(/\/$/, "")
+  const path = pathSegments.filter((s) => s !== undefined && s !== null).join('/');
+  const base = root ? root.replace(/\/$/, '') : '';
+  if (base) return path ? `${base}/${path}` : base;
+  const pathname = typeof window !== 'undefined' ? (window.location?.pathname ?? '') : '';
+  const needsThreeLevels = pathname.includes('/try/') || pathname.includes('/judge/');
+  const prefix = needsThreeLevels ? '../../../' : '../../';
+  return path ? `${prefix}${path}` : prefix.replace(/\/$/, '');
 }
 
 /**
@@ -99,11 +102,11 @@ export function buildPageUrl(root, ...pathSegments) {
  * against the current path (e.g. case/1/try/2/api/...) and hit the wrong endpoint.
  */
 export function buildApiUrl(root, ...pathSegments) {
-  const path = pathSegments.filter((s) => s !== undefined && s !== null).join("/")
-  const apiPath = `api/${path}`
-  const base = root ? root.replace(/\/$/, "") : ""
-  if (base) return `${base}/${apiPath}`
-  return `/${apiPath}`
+  const path = pathSegments.filter((s) => s !== undefined && s !== null).join('/');
+  const apiPath = `api/${path}`;
+  const base = root ? root.replace(/\/$/, '') : '';
+  if (base) return `${base}/${apiPath}`;
+  return `/${apiPath}`;
 }
 
 /**
@@ -115,9 +118,9 @@ export function buildApiUrl(root, ...pathSegments) {
  * @returns {string} Full URL or absolute path
  */
 export function buildApiBulkCaseQueriesUrl(root, caseId) {
-  const base = root ? root.replace(/\/$/, "") : ""
-  if (base) return `${base}/api/bulk/cases/${caseId}/queries`
-  return `/api/bulk/cases/${caseId}/queries`
+  const base = root ? root.replace(/\/$/, '') : '';
+  if (base) return `${base}/api/bulk/cases/${caseId}/queries`;
+  return `/api/bulk/cases/${caseId}/queries`;
 }
 
 /**
@@ -129,7 +132,7 @@ export function buildApiBulkCaseQueriesUrl(root, caseId) {
  * @returns {string} Full URL or relative path
  */
 export function buildCaseImportRatingsUrl(root, caseId) {
-  return buildPageUrl(root, "case", caseId, "import", "ratings")
+  return buildPageUrl(root, 'case', caseId, 'import', 'ratings');
 }
 
 /**
@@ -141,7 +144,7 @@ export function buildCaseImportRatingsUrl(root, caseId) {
  * @returns {string} Full URL or relative path
  */
 export function buildCaseImportInformationNeedsUrl(root, caseId) {
-  return buildPageUrl(root, "case", caseId, "import", "information_needs")
+  return buildPageUrl(root, 'case', caseId, 'import', 'information_needs');
 }
 
 /**
@@ -157,14 +160,70 @@ export function buildCaseImportInformationNeedsUrl(root, caseId) {
  * @param {number} [start] - Optional. Offset for pagination.
  * @returns {string} Full URL or relative path
  */
-export function buildApiQuerySearchUrl(root, caseId, tryNumber, queryId, queryTextOverride = null, rows = null, start = null) {
-  const base = buildApiUrl(root, "cases", caseId, "tries", tryNumber, "queries", queryId, "search")
-  const params = new URLSearchParams()
+export function buildApiQuerySearchUrl(
+  root,
+  caseId,
+  tryNumber,
+  queryId,
+  queryTextOverride = null,
+  rows = null,
+  start = null
+) {
+  const base = buildApiUrl(root, 'cases', caseId, 'tries', tryNumber, 'queries', queryId, 'search');
+  const params = new URLSearchParams();
   if (queryTextOverride && String(queryTextOverride).trim()) {
-    params.set("q", queryTextOverride.trim())
+    params.set('q', queryTextOverride.trim());
   }
-  if (rows != null && rows > 0) params.set("rows", String(rows))
-  if (start != null && start > 0) params.set("start", String(start))
-  const qs = params.toString()
-  return qs ? `${base}?${qs}` : base
+  if (rows != null && rows > 0) params.set('rows', String(rows));
+  if (start != null && start > 0) params.set('start', String(start));
+  const qs = params.toString();
+  return qs ? `${base}?${qs}` : base;
+}
+
+/**
+ * Builds the current page URL with modified query parameters.
+ * Use for history.replaceState or navigation when staying on the current path
+ * with modified params. Subpath-safe: preserves the full path from window.location.
+ *
+ * @param {Object} paramOverrides - { key: value } to set. Use null/undefined to delete a param.
+ *   Other existing params are preserved.
+ * @returns {string} Full URL string
+ * @example
+ *   buildCurrentPageUrlWithParams({ startTour: null })     // remove startTour
+ *   buildCurrentPageUrlWithParams({ sort: 'name' })       // set sort, preserve others
+ *   buildCurrentPageUrlWithParams({ sort: null, page: 1 }) // delete sort, set page
+ */
+export function buildCurrentPageUrlWithParams(paramOverrides = {}) {
+  const url = new URL(window.location.href);
+  for (const [key, value] of Object.entries(paramOverrides)) {
+    if (value === undefined || value === null) {
+      url.searchParams.delete(key);
+    } else {
+      url.searchParams.set(key, String(value));
+    }
+  }
+  return url.toString();
+}
+
+/**
+ * Returns the search params of the current page URL.
+ * Use for reading query params. Subpath-safe.
+ *
+ * @returns {URLSearchParams}
+ */
+export function getCurrentPageSearchParams() {
+  return new URL(window.location.href).searchParams;
+}
+
+/**
+ * Refreshes the current page. Prefers Turbo.visit when available for SPA-style
+ * navigation; falls back to window.location.reload(). Subpath-safe because
+ * window.location.href already contains the full path.
+ */
+export function reloadOrTurboVisit() {
+  if (typeof window !== 'undefined' && window.Turbo?.visit) {
+    window.Turbo.visit(window.location.href, { action: 'replace' });
+  } else {
+    window.location.reload();
+  }
 }

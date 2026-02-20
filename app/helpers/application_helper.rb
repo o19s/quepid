@@ -137,13 +137,7 @@ module ApplicationHelper
   end
 
   def get_protocol_from_url url
-    parsed_url = URI.parse(url)
-    protocol = parsed_url.scheme # This gets the protocol (http, https, etc.)
-    protocol
-  rescue URI::InvalidURIError => e
-    # Handle the error (e.g., log it, return nil)
-    Rails.logger.error("Invalid URL for search endpoint: #{url} - Error: #{e.message}")
-    nil
+    UrlParserService.scheme(url)
   end
 end
 # rubocop:enable Metrics/ModuleLength

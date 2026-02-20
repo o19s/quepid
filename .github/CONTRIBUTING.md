@@ -34,6 +34,11 @@ This guide is essential to keeping the contribution process easy and simple for 
   * You can disable rubocop rules inline when necessary, but try not to make a habit of it.
   * If you strongly disagree with a rubocop rule, discuss it with the team and we can
     potentially change the configuration.
+* **Pre-commit hooks (Lefthook):** If you have [Lefthook](https://github.com/evilmartians/lefthook) installed (via `bin/setup` or `bin/setup_docker`), it runs automatically on commit:
+  * **Rubocop** on staged `.rb` files
+  * **ESLint and Prettier** on staged `.js` files
+  * **Related tests** (Vitest for JS, Minitest for Ruby) based on staged files
+  * To bypass hooks in edge cases (e.g. WIP commits, emergency hotfixes), use `git commit --no-verify`. Use sparingly.
 * Make sure your commit messages are in the proper format.
 
 ```git

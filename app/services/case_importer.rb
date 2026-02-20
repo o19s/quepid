@@ -44,8 +44,7 @@ class CaseImporter
     end
   end
 
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
   def import
     params_to_use = @data_to_process
 
@@ -67,12 +66,16 @@ class CaseImporter
       return
     end
 
+    # Batch-load users to avoid N+1 queries when creating ratings
+    emails = params_to_use[:queries]&.flat_map { |q| q[:ratings]&.map { |r| r[:user_email] } }&.compact&.uniq || []
+    users_by_email = User.where(email: emails).index_by(&:email)
+
     params_to_use[:queries]&.each do |query|
       new_query = @case.queries.build(query.except(:ratings))
       next unless query[:ratings]
 
       query[:ratings].each do |rating|
-        rating[:user] = User.find_by(email: rating[:user_email]) if rating[:user_email].present?
+        rating[:user] = users_by_email[rating[:user_email]] if rating[:user_email].present?
         new_query.ratings.build(rating.except(:user_email))
       end
     end
@@ -99,6 +102,5 @@ class CaseImporter
 
     @case.save
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 end

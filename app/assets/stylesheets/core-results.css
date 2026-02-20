@@ -1,0 +1,77 @@
+/*
+ * Core results: results list, document cards, query scores.
+ * Used by core workspace (core_modern layout).
+ */
+
+/* Main - results */
+.dragging {
+  border: var(--quepid-border-width) dashed var(--quepid-color-text-lighter);
+  padding: var(--quepid-spacing-sm) 0px;
+}
+.result-header {
+  align-items: stretch;
+  overflow: auto;
+  position: relative;
+  padding: var(--quepid-spacing-md) var(--quepid-spacing-xl);
+}
+.result-header:hover {
+  background: var(--quepid-color-bg-hover);
+}
+
+.case-score {
+  display: block;
+}
+
+.results-title {
+	color:       var(--quepid-color-text);
+	cursor:      pointer;
+	font-size:   var(--quepid-font-size-lg);
+	font-weight: normal;
+	line-height: 1.5em;
+	margin:      0;
+  display:    block;
+  flex:       2 2 10%;
+  float:      left;
+}
+
+.results .unrated-results-text {
+  display: block;
+  clear: both;
+}
+
+.results .total-results {
+  display:      block;
+  float:        right;
+  line-height:  var(--quepid-spacing-xxl);
+  margin-right: var(--quepid-spacing-15);
+  text-align:   right;
+}
+
+.results .total-results.unrated-results {
+  line-height:  1em;
+}
+
+.low-profile {
+  opacity: 0.5;
+  font-size: 60%;
+}
+
+.query-score-label {
+  display: block;
+}
+
+.results .error-warning {
+	display: none;
+}
+
+/* Move query */
+.move-query-cases-list {
+  max-height: 300px;
+  overflow:   scroll;
+}
+
+
+
+.result-rank {
+  font-size:  1em;
+}

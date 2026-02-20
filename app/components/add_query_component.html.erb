@@ -1,22 +1,24 @@
-<%= tag.form class: "form input-append vertically-centered", data: { controller: "add-query", add_query_case_id_value: @case_id, add_query_try_number_value: @try_number, add_query_can_add_value: @can_add_queries, action: "submit->add-query#submit" } do %>
-  <input
-    id="add-query"
-    type="text"
-    class="form-control"
-    style="field-sizing: content; min-width: 50px; max-width: 400px;"
-    placeholder="<%= @placeholder %>"
-    data-add-query-target="input"
-    data-action="paste->add-query#handlePaste"
-  />
+<%= tag.form class: "form vertically-centered", data: { controller: "add-query", add_query_case_id_value: @case_id, add_query_try_number_value: @try_number, add_query_can_add_value: @can_add_queries, action: "submit->add-query#submit" } do %>
+  <div class="input-group add-query-input-group">
+    <input
+      id="add-query"
+      type="text"
+      class="form-control field-sizing-content min-w-50 max-w-400"
+      placeholder="<%= @placeholder %>"
+      data-add-query-target="input"
+      data-action="paste->add-query#handlePaste"
+    />
 
-  <input
-    id="add-query-submit"
-    type="submit"
-    class="btn btn-success"
-    value="Add query"
-    data-add-query-target="submitButton"
-    <%= "disabled" if !@can_add_queries %>
-  />
+    <button
+      id="add-query-submit"
+      type="submit"
+      class="btn btn-success"
+      data-add-query-target="submitButton"
+      <%= "disabled" if !@can_add_queries %>
+    >
+      Add query
+    </button>
+  </div>
 
-  <span data-add-query-target="spinner" class="spinner hidden" aria-hidden="true"></span>
+  <span data-add-query-target="spinner" class="spinner d-none" aria-hidden="true"></span>
 <% end %>

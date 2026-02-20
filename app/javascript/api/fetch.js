@@ -16,14 +16,14 @@
  * @see docs/app_structure.md — URL generation: use data-* attributes or getQuepidRootUrl() + path
  */
 
-const CSRF_HEADER = "X-CSRF-Token"
+const CSRF_HEADER = 'X-CSRF-Token';
 
 /**
  * Reads the CSRF token from the page's meta tag (set by Rails csrf_meta_tags).
  * @returns {string} Token or empty string if not found
  */
 export function getCsrfToken() {
-  return document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || ""
+  return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 }
 
 /**
@@ -32,16 +32,17 @@ export function getCsrfToken() {
  * @returns {Record<string, string>} Headers with CSRF token
  */
 function headersWithCsrf(headers = {}) {
-  const token = getCsrfToken()
-  const out = typeof headers === "object" && headers !== null && !(headers instanceof Headers)
-    ? { ...headers }
-    : headers instanceof Headers
-      ? Object.fromEntries(headers.entries())
-      : {}
-  if (!(CSRF_HEADER in out) || out[CSRF_HEADER] === "") {
-    out[CSRF_HEADER] = token
+  const token = getCsrfToken();
+  const out =
+    typeof headers === 'object' && headers !== null && !(headers instanceof Headers)
+      ? { ...headers }
+      : headers instanceof Headers
+        ? Object.fromEntries(headers.entries())
+        : {};
+  if (!(CSRF_HEADER in out) || out[CSRF_HEADER] === '') {
+    out[CSRF_HEADER] = token;
   }
-  return out
+  return out;
 }
 
 /**
@@ -53,7 +54,7 @@ function headersWithCsrf(headers = {}) {
  * @returns {Promise<Response>}
  */
 export function apiFetch(input, init = {}) {
-  const merged = { ...init }
-  merged.headers = headersWithCsrf(init.headers)
-  return fetch(input, merged)
+  const merged = { ...init };
+  merged.headers = headersWithCsrf(init.headers);
+  return fetch(input, merged);
 }

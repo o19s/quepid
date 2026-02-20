@@ -240,7 +240,8 @@ class FetchService
   def score_snapshot snapshot, try, user
     queries_detail = {}
 
-    snapshot.snapshot_queries.each do |snapshot_query|
+    # Include snapshot_docs to avoid N+1 when mapping docs per snapshot_query
+    snapshot.snapshot_queries.includes(:snapshot_docs, query: :ratings).find_each do |snapshot_query|
       javascript_scorer = JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
 
       # Prepare some items to score
@@ -297,7 +298,7 @@ class FetchService
           snapshot_query.query.save!
         end
       rescue JavascriptScorer::ScoreError => e
-        puts "Scoring failed: #{e.message}"
+        Rails.logger.error "Scoring failed: #{e.message}"
       end
 
       queries_detail[snapshot_query.query_id] =

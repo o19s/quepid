@@ -108,10 +108,11 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     json = response.parsed_body
     assert json['success']
-    assert_predicate json['redirect_url'], :present?
+    assert_predicate json['redirect_id'], :present?
 
     # Verify the created endpoint
     endpoint = SearchEndpoint.last
+    assert_equal endpoint.id, json['redirect_id']
     assert_equal 'Test Search API', endpoint.name
     assert_equal 'searchapi', endpoint.search_engine
     assert_equal 'https://example.com/search', endpoint.endpoint_url

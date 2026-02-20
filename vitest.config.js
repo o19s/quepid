@@ -5,10 +5,10 @@
  * for tests. Path aliases mirror config/importmap.rb for consistent resolution.
  */
 
-import path from 'path'
-import { fileURLToPath } from 'url'
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default {
   test: {
@@ -25,4 +25,4 @@ export default {
       controllers: path.resolve(__dirname, 'app/javascript/controllers'),
     },
   },
-}
+};

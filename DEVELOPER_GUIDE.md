@@ -263,11 +263,20 @@ tail -f log/test.log
 
 ### JS Lint
 
-To check the JS syntax:
+To check JavaScript with ESLint and Prettier:
 
 ```bash
-bin/docker r rails test:jshint
+bin/docker r bundle exec rake test:lint
 ```
+
+Or run them separately:
+
+```bash
+bin/docker r yarn lint
+bin/docker r yarn format
+```
+
+See [docs/linting.md](docs/linting.md) for full details.
 
 ### Vitest
 
@@ -420,7 +429,7 @@ bin/docker r bin/rails routes
 # tests
 bin/docker r rails test
 bin/docker r rails test:frontend
-bin/docker r bin/rake test:jshint
+bin/docker r bundle exec rake test:lint
 ```
 
 ### Thor
@@ -806,7 +815,7 @@ This section covers common issues you might encounter during development and how
 **Solutions**:
 1. Check for JavaScript syntax errors:
    ```bash
-   bin/docker r rails test:jshint
+   bin/docker r bundle exec rake test:lint
    ```
 
 2. Clear asset cache:

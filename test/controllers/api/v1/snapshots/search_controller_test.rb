@@ -128,6 +128,23 @@ module Api
             assert_equal rows, data['response']['docs'].length
           end
 
+          test 'coerces invalid rows/start to 0 and returns empty docs' do
+            snapshot_query = snapshot.snapshot_queries.first
+            query_text = snapshot_query.query.query_text
+
+            get :index, params: {
+              case_id: acase.id, snapshot_id: snapshot.id, q: query_text,
+              rows: 'abc', start: 'xyz'
+            }
+
+            assert_response :ok
+
+            data = response.parsed_body
+            # Invalid rows/start coerce to 0; pagination yields empty slice
+            assert_equal 2, data['response']['numFound']
+            assert_equal 0, data['response']['docs'].length
+          end
+
           test 'deals with pagination' do
             snapshot_query = snapshot.snapshot_queries.first
             query_text = snapshot_query.query.query_text
@@ -151,7 +168,9 @@ module Api
             assert_equal 2, data['response']['numFound']
             assert_equal solr_params[:rows], data['response']['docs'].length
 
-            assert_equal data['responseHeader']['params'], solr_params.stringify_keys.transform_values(&:to_s)
+            expected_params = solr_params.stringify_keys.transform_values(&:to_s)
+            actual_params = data['responseHeader']['params'].transform_values(&:to_s)
+            assert_equal expected_params, actual_params
           end
         end
 

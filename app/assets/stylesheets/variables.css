@@ -1,0 +1,156 @@
+/*
+ * Quepid CSS variables: shared spacing, colors, and borders.
+ * Use these across core, application, and screen-specific stylesheets
+ * for consistent theming and easier maintenance.
+ *
+ * See docs/frontend_report_bootstrap_css_export.md.
+ */
+
+:root {
+  /*
+   * Spacing scale (step-based). Step N is a design token index, not a pixel value.
+   * Values can change without renaming. See docs/css_variables.md.
+   */
+  --quepid-spacing-0: 2px;
+  --quepid-spacing-1: 4px;
+  --quepid-spacing-2: 5px;
+  --quepid-spacing-3: 6px;
+  --quepid-spacing-4: 8px;
+  --quepid-spacing-5: 10px;
+  --quepid-spacing-6: 12px;
+  --quepid-spacing-7: 15px;
+  --quepid-spacing-8: 18px;
+  --quepid-spacing-9: 20px;
+  --quepid-spacing-10: 24px;
+  --quepid-spacing-11: 30px;
+  --quepid-spacing-12: 32px;
+  --quepid-spacing-13: 40px;
+  --quepid-spacing-14: 48px;
+  --quepid-spacing-15: 50px;
+  --quepid-spacing-16: 80px;
+  --quepid-spacing-17: 100px;
+
+  /*
+   * Breakpoints (aligned with Bootstrap 5). Use in media queries via build resolution.
+   * min-width: use --quepid-breakpoint-*; max-width: use --quepid-breakpoint-*-max.
+   * See docs/css_variables.md.
+   */
+  --quepid-breakpoint-sm: 576px;
+  --quepid-breakpoint-sm-max: 575.98px;
+  --quepid-breakpoint-md: 768px;
+  --quepid-breakpoint-md-max: 767.98px;
+  --quepid-breakpoint-lg: 992px;
+  --quepid-breakpoint-lg-max: 991.98px;
+  --quepid-breakpoint-xl: 1200px;
+  --quepid-breakpoint-xl-max: 1199.98px;
+  --quepid-breakpoint-xxl: 1400px;
+  --quepid-breakpoint-xxl-max: 1399.98px;
+
+  /* Semantic aliases (prefer steps in new code) */
+  --quepid-spacing-xs: var(--quepid-spacing-0);
+  --quepid-spacing-sm: var(--quepid-spacing-2);
+  --quepid-spacing-md: var(--quepid-spacing-5);
+  --quepid-spacing-lg: var(--quepid-spacing-7);
+  --quepid-spacing-xl: var(--quepid-spacing-9);
+  --quepid-spacing-xxl: var(--quepid-spacing-11);
+
+  /* Border radius */
+  --quepid-border-radius-xs: 2px;
+  --quepid-border-radius-sm: 4px;
+  --quepid-border-radius-md: 5px;
+  --quepid-border-radius-lg: 6px;
+  --quepid-border-radius-xl: 10px;
+
+  /* Border width */
+  --quepid-border-width: 1px;
+  --quepid-border-width-thick: 2px;
+  --quepid-border-width-medium: 3px;
+  --quepid-highlight-width: 4px;
+
+  /*
+   * Typography scale (rem-based for accessibility). Step N is a design token index.
+   * Use these instead of hardcoded font-size values.
+   */
+  --quepid-font-size-2xs: 0.5rem;
+  --quepid-font-size-3xs: 0.625rem; /* 10px */
+  --quepid-font-size-xs: 0.7rem;
+  --quepid-font-size-xs-2: 0.75rem; /* 12px */
+  --quepid-font-size-sm: 0.85rem;
+  --quepid-font-size-sm-2: 0.875rem; /* 14px equivalent */
+  --quepid-font-size-base: 1rem;
+  --quepid-font-size-md: 1.1rem;
+  --quepid-font-size-lg: 1.25rem;
+  --quepid-font-size-lg-2: 1.375rem; /* 22px */
+  --quepid-font-size-xl: 1.5rem;
+  --quepid-font-size-2xl: 1.75rem;
+  --quepid-font-size-3xl: 2rem;
+  --quepid-font-size-4xl: 4rem;
+
+  /*
+   * Motion/duration tokens for transitions and animations.
+   * Use these instead of ad-hoc values like 0.2s or 0.15s.
+   */
+  --quepid-duration-instant: 0ms;
+  --quepid-duration-fast: 150ms;
+  --quepid-duration-base: 200ms;
+  --quepid-duration-moderate: 300ms;
+
+  /* Gray scale (borders, backgrounds, text) */
+  --quepid-color-border: #dee2e6;
+  --quepid-color-border-light: #eee;
+  --quepid-color-border-lighter: #f0f0f0;
+  --quepid-color-bg-subtle: #f8f9fa;
+  --quepid-color-bg-hover: #eee;
+  --quepid-color-bg-muted: #ccc;
+  --quepid-color-text: #222;
+  --quepid-color-text-dark: #333;
+  --quepid-color-text-muted: #666;
+  --quepid-color-text-light: #888;
+  --quepid-color-text-light-2: #999;
+  --quepid-color-text-lighter: #aaa;
+  --quepid-color-text-darker: #444;
+  --quepid-color-black: #000;
+
+  /* Semantic (aligned with Bootstrap 5 where applicable) */
+  --quepid-color-success: #198754;
+  --quepid-color-success-bg: #d1e7dd;
+  --quepid-color-success-hover: #449d44;
+  --quepid-color-success-hover-border: #398439;
+  --quepid-color-success-alt: #5cb85c;
+  --quepid-color-danger: #dc3545;
+  --quepid-color-danger-dark: #a94442;
+  --quepid-color-danger-bg: #f8d7da;
+  --quepid-color-warning: #ffc107;
+  --quepid-color-info: #0d6efd;
+  --quepid-color-info-bg: #cfe2ff;
+  --quepid-color-info-hover: #337ab7;
+  --quepid-color-info-hover-border: #2e6da4;
+  --quepid-color-info-light: #4db7f9;
+  /* JSON tree syntax highlighting */
+  --quepid-color-json-key: #881391;
+  --quepid-color-json-string: #0b7285;
+  --quepid-color-json-number: #1864ab;
+  --quepid-color-json-boolean: #c92a2a;
+  --quepid-color-neutral: #6c757d;
+  --quepid-color-neutral-dark: #495057;
+  --quepid-color-neutral-bg: #e9ecef;
+  --quepid-color-white: #fff;
+  --quepid-color-border-dd: #ddd;
+
+  /* Theme / branding */
+  --quepid-color-footer-bg: #0a4275;
+  --quepid-color-brand-gradient-top: #4f8ecc;
+  --quepid-color-brand-gradient-bottom: #2774c0;
+  --quepid-color-brand-solid: #369;
+  --quepid-color-profile-text: #2b2a2a;
+  --quepid-color-profile-bg-muted: #efefef;
+  --quepid-color-profile-hero-bg: #9de2ff;
+  --quepid-color-signup-heading: #036;
+  --quepid-color-rating: #db918f;
+  --quepid-color-qgraph-stroke: #558877;
+  --quepid-color-qgraph-axis: #d3d3d3;
+  --quepid-color-qgraph-marker: #0000ff;
+
+  /* Sidebar */
+  --quepid-color-sidebar-icon: #6495ed; /* cornflowerblue */
+}

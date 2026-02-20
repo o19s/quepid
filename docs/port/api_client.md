@@ -213,6 +213,45 @@ const root = getQuepidRootUrl()
 
 **Note:** The function warns once if `data-quepid-root-url` is missing, but continues to work by returning an empty string.
 
+### buildCurrentPageUrlWithParams(paramOverrides)
+
+Builds the current page URL with modified query parameters. Use for `history.replaceState` or navigation when staying on the current path with modified params. Subpath-safe.
+
+```javascript
+import { buildCurrentPageUrlWithParams } from "utils/quepid_root"
+
+// Remove startTour param
+buildCurrentPageUrlWithParams({ startTour: null })
+
+// Set sort, preserve other params
+buildCurrentPageUrlWithParams({ sort: "name" })
+
+// Delete sort and set page
+buildCurrentPageUrlWithParams({ sort: null, page: 1 })
+```
+
+### getCurrentPageSearchParams()
+
+Returns the `URLSearchParams` of the current page URL. Use for reading query params. Subpath-safe.
+
+```javascript
+import { getCurrentPageSearchParams } from "utils/quepid_root"
+
+const sort = getCurrentPageSearchParams().get("sort")
+const page = parseInt(getCurrentPageSearchParams().get("page"), 10)
+```
+
+### reloadOrTurboVisit()
+
+Refreshes the current page. Prefers `Turbo.visit` when available (SPA-style navigation); falls back to `window.location.reload()`. Use instead of raw `window.location.reload()` so Turbo can handle the refresh when available. Subpath-safe because `window.location.href` already contains the full path.
+
+```javascript
+import { reloadOrTurboVisit } from "utils/quepid_root"
+
+// After an API mutation that requires a full page refresh
+reloadOrTurboVisit()
+```
+
 ## Error Handling
 
 Always check `res.ok` and handle errors appropriately:
@@ -272,4 +311,5 @@ export default class extends Controller {
 1. **Data attributes**: Use when the URL is known at render time (most common case)
 2. **buildApiUrl/buildPageUrl**: Use when building URLs dynamically in JavaScript
 3. **Dedicated helpers**: Use for specific endpoints that have helpers (queries, imports, search)
-4. **getQuepidRootUrl()**: Always call this first when building URLs dynamically; it may return an empty string, which URL builders handle correctly
+4. **buildCurrentPageUrlWithParams/getCurrentPageSearchParams**: Use when modifying or reading query params on the current page (e.g. persist sort, page, or remove wizard flags)
+5. **getQuepidRootUrl()**: Always call this first when building URLs dynamically; it may return an empty string, which URL builders handle correctly

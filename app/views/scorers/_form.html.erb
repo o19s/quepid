@@ -82,14 +82,14 @@
         <%= f.label :scale_with_labels, class: 'col-sm-2 control-label' %>
         <div class="col-sm-10" id="scorer_scale_with_labels" data-scorer-scale-target="scaleLabels">
           <% scorer.scale.each do |value| -%>
-            <label class='scale-with-label-element clearfix' style="display: inline-block; margin-right: 10px;">
+            <label class="scale-with-label-element clearfix d-inline-block me-2">
               <%= value %>:
               <input
                 class="form-control scale-label clearfix"
                 type="text"
                 name="scorer[scale_with_labels][<%= value %>]"
                 value="<%= scorer.scale_with_labels[value.to_s] unless scorer.scale_with_labels.blank? %>"
-                style="width: 100px; display: inline-block;"
+                class="form-control scale-label clearfix max-w-100 d-inline-block"
               />
             </label>
           <% end -%>

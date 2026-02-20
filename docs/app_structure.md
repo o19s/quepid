@@ -24,6 +24,8 @@ The user account and password section are a few pages for the user to set or res
 
 The API endpoints all live under the `app/controllers/api` folder. The API is versioned, even though there's only one version at the moment: `V1`.
 
+**Services:** Shared business logic lives in `app/services/`. Key services include `HttpClientService` (HTTP requests) and `UrlParserService` (URL parsing: scheme, query values, validation). Use these instead of duplicating URL/HTTP logic in controllers.
+
 ## Frontend
 
 The frontend uses **Rails + ViewComponents + Stimulus + Turbo**. Server-rendered HTML is enhanced with Stimulus controllers for local behavior and Turbo for dynamic updates.

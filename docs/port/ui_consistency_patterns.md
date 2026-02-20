@@ -1,6 +1,13 @@
 # UI Consistency Patterns
 
-> Guidelines for Bootstrap 5, modals, and flash messages in the Stimulus/Turbo/ViewComponents stack. Use these patterns consistently across migrated pages.
+> Guidelines for Bootstrap 5, modals, flash messages, and styling in the Stimulus/Turbo/ViewComponents stack. Use these patterns consistently across migrated pages.
+
+**Related documentation:**
+- [ViewComponent Conventions](view_component_conventions.md) — Component structure, modal patterns in components
+- [Turbo Frame Boundaries](turbo_frame_boundaries.md) — Frame structure and responsibilities
+- [Turbo Streams Guide](turbo_streams_guide.md) — Stream action patterns
+- [CSS Variables](../css_variables.md) — Spacing, colors, borders for consistent styling
+- [API Client](api_client.md) — URL building rules (never hardcode `/`)
 
 ---
 
@@ -163,6 +170,8 @@ For displaying large content (JSON, explain text, etc.) in a full-screen modal. 
 
 **Examples:** `MatchesComponent` (explain text expansion), any component needing full-screen content display.
 
+**Custom fullscreen variant:** For modals that need a large viewport but with margins (e.g. Debug JSON modal), use `modal-fullscreen-custom` on the `.modal` wrapper. Defined in `core-modals.css`; uses `calc(100% - 100px)` for dialog size.
+
 ---
 
 ### Choosing a pattern
@@ -232,3 +241,26 @@ window.location.href = newCaseUrl
 **Note:** Both `notice` and `info` map to `alert-info`. Use `notice` for Rails flash (conventional), `info` for client-side when you want explicit info styling.
 
 Defined in `application_helper#bootstrap_class_for` and `utils/flash.js`.
+
+---
+
+## 4. Styling (CSS Variables)
+
+Use shared CSS custom properties for spacing, colors, and borders so UI stays consistent across components. See [CSS Variables](../css_variables.md) for the full reference.
+
+**Prefer in new code:**
+- `var(--quepid-spacing-*)` for padding and margins (step-based scale)
+- `var(--quepid-color-*)` for text, borders, backgrounds
+- `var(--quepid-border-radius-*)`, `var(--quepid-border-width)` for borders
+
+**Example:**
+```css
+.my-component {
+  padding: var(--quepid-spacing-5) var(--quepid-spacing-7);
+  border: var(--quepid-border-width) solid var(--quepid-color-border);
+  border-radius: var(--quepid-border-radius-md);
+  color: var(--quepid-color-text);
+}
+```
+
+Variables are defined in `app/assets/stylesheets/variables.css` and loaded in all CSS bundles.

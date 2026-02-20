@@ -87,7 +87,7 @@
               <label class="form-label small" for="new-case-wizard-field-spec">Field spec</label>
               <input id="new-case-wizard-field-spec" type="text" class="form-control form-control-sm font-monospace" placeholder="id:id, title:title, body, author" data-new-case-wizard-target="fieldSpec" data-field-autocomplete-target="input" value="id:id, title:title" data-action="input->new-case-wizard#onStepInputChange" aria-describedby="new-case-wizard-field-spec-help">
               <div id="new-case-wizard-field-spec-help" class="visually-hidden">Use a comma separated list of fields. Prefix title and id fields with title: and id:.</div>
-              <div class="dropdown-menu d-none position-absolute w-100" data-field-autocomplete-target="dropdown" style="max-height:200px;overflow:auto"></div>
+              <div class="dropdown-menu d-none position-absolute w-100 max-h-200 overflow-y-auto" data-field-autocomplete-target="dropdown"></div>
             </div>
           </div>
           <%# Step 4: First Query %>

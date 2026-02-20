@@ -18,14 +18,14 @@
             <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         <% end %>
-        <div class="mb-2">
+        <div class="mb-3">
           <%= f.label :information_need, "Information Need", class: "form-label small" %>
           <%= f.text_field :information_need, value: query.information_need,
                 class: "form-control form-control-sm",
                 id: "information_need-#{query.id}",
                 placeholder: "What is the user trying to find?" %>
         </div>
-        <div class="mb-2">
+        <div class="mb-3">
           <%= f.label :notes, "Notes", class: "form-label small" %>
           <%= f.text_area :notes, value: query.notes,
                 class: "form-control form-control-sm",

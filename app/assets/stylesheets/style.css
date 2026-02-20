@@ -1,66 +1,28 @@
-/* Non Brian Styles, brought in from dumb programmer UI quepid
- *
- *
- * */
+/* Workspace styles: ratings, notes, query score, new-query wizard */
 .align-top {
   vertical-align: top;
 }
 
-.rating, .ratingNum, .curRating, .removeRating {
-    color: white;
-    font-size: .7em;
-}
-
-.rating {
-    background: #db918f;
-    padding: 3px;
-    position: absolute;
-}
-
-.rating:hover, .ratingNum:hover, .curRating:hover, .close:hover, #submitbutton {
-    cursor: pointer;
-}
-
-.ratingNum, .curRating {
-    margin-right: 2px;
-    padding: 3px 5px;
-}
-
-.ratingNums {
-    /* background: white;
-    border: 1px solid #86989B;
-    padding: 3px 5px 6px;
-    z-index: 100; */
-}
-
-/* Maybe not needed with new btn-core-close?
-.close {
-    font-size: .7em;
-    color: gray;
-    padding-left: 5px;
-}
-*/
-
 .notes-box {
     width: 100%;
-    color: #222;
-    margin-bottom: 25px;
+    color: var(--quepid-color-text);
+    margin-bottom: var(--quepid-spacing-10);
 }
 
 .notes-box label {
     font-family: 'allerregular';
-    font-size: 20px;
-    margin-bottom: 20px;
-    color: #222;
-    padding-top: 15px;
+    font-size: var(--quepid-font-size-lg);
+    margin-bottom: var(--quepid-spacing-xl);
+    color: var(--quepid-color-text);
+    padding-top: var(--quepid-spacing-lg);
 }
 
 .notes-box textarea {
-    background: #FFF;
-    color: #444;
+    background: var(--quepid-color-white);
+    color: var(--quepid-color-text-darker);
     width: 100%;
     height: 300px !important;
-    margin-bottom: 15px;
+    margin-bottom: var(--quepid-spacing-lg);
 }
 
 .notes-content {
@@ -69,37 +31,4 @@
 
 .query-score-label {
     font-size: x-small;
-}
-
-.wiz_new_query {
-  position:relative;
-  background:#369;
-  border-radius: 5px;
-  margin: 10px 0 0 10px;
-  display: inline-block;
-  padding: 8px 12px;
-}
-.wiz_new_query .query_text {
-  font:italic 18px Verdana;
-  color:#FFF;
-  vertical-align:middle;
-  position: inherit;
-  display: inline-block;
-}
-.wiz_new_query button {
-  font-size: 70%;
-  font-weight: bold;
-  padding: 3px 6px;
-  margin: 0 0 0 10px;
-  border-radius: 5px;
-  border: none;
-  background: #F0F0F0;
-  color: #369;
-  border: 1px solid #F0F0F0;
-}
-.wiz_new_query button:hover {
-  cursor: pointer;
-  border: 1px solid #69C;
-  background: #036;
-  color: #FFF;
 }

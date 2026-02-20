@@ -1,20 +1,5 @@
-.doc-detailed-explain-modal {
-  height:   100%;
-  z-index:  2050 !important;
-
-  .modal-dialog {
-    height: calc(100% - 100px);
-    width:  calc(100% - 100px);
-  }
-
-  .modal-content {
-    height:   100%;
-    overflow: scroll;
-  }
-}
-
 .doc-detailed-explain {
-  padding: 20px;
+  padding: var(--quepid-spacing-xl);
 }
 
 .doc-score-explanation {

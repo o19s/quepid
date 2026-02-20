@@ -29,7 +29,7 @@
             <div class="tab-pane fade show active" id="<%= modal_id %>-params-pane" role="tabpanel" data-query-explain-target="paramsPane">
               <% if params? %>
                 <p class="mb-2">These are the query parameters processed by the search engine.</p>
-                <pre class="bg-light p-2 rounded mb-0 overflow-auto" style="max-height: 20rem;" data-query-explain-target="paramsPre"><%= params_display %></pre>
+                <pre class="bg-light p-2 rounded mb-0 overflow-auto max-h-20rem" data-query-explain-target="paramsPre"><%= params_display %></pre>
               <% else %>
                 <p class="bg-warning text-dark p-2 rounded mb-0">
                   <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
@@ -40,7 +40,7 @@
             <div class="tab-pane fade" id="<%= modal_id %>-parsing-pane" role="tabpanel" data-query-explain-target="parsingPane">
               <p class="mb-2">This is how the search engine parsed the query.</p>
               <% if parsing? %>
-                <pre class="bg-light p-2 rounded mb-0 overflow-auto" style="max-height: 20rem;" data-query-explain-target="parsingPre"><%= parsing_display %></pre>
+                <pre class="bg-light p-2 rounded mb-0 overflow-auto max-h-20rem" data-query-explain-target="parsingPre"><%= parsing_display %></pre>
               <% else %>
                 <p class="text-muted mb-0">Run a search to see parsing details.</p>
               <% end %>
@@ -48,7 +48,7 @@
             <div class="tab-pane fade" id="<%= modal_id %>-template-pane" role="tabpanel" data-query-explain-target="templatePane">
               <% if rendered_template? %>
                 <p class="mb-2">This is what the populated query template looks like.</p>
-                <pre class="bg-light p-2 rounded mb-0 overflow-auto" style="max-height: 20rem;" data-query-explain-target="templatePre"><%= rendered_template_display %></pre>
+                <pre class="bg-light p-2 rounded mb-0 overflow-auto max-h-20rem" data-query-explain-target="templatePre"><%= rendered_template_display %></pre>
               <% else %>
                 <p class="text-muted mb-0">This is not a templated query.</p>
               <% end %>

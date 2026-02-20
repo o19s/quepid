@@ -133,7 +133,7 @@ class SelectionStrategyTest < ActiveSupport::TestCase
 
       it 'correctly identifies when user has judged all available pairs' do
         # Initially, user has not judged all pairs
-        assert_not(SelectionStrategy.user_has_judged_all_available_pairs?(book, matt))
+        assert_not(SelectionStrategy.user_judged_all_available_pairs?(book, matt))
 
         # Matt judges all pairs once
         book.query_doc_pairs.each do |qdp|
@@ -141,10 +141,10 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         end
 
         # Now Matt has judged all available pairs
-        assert(SelectionStrategy.user_has_judged_all_available_pairs?(book, matt))
+        assert(SelectionStrategy.user_judged_all_available_pairs?(book, matt))
 
         # But Joe still has not judged any pairs
-        assert_not(SelectionStrategy.user_has_judged_all_available_pairs?(book, joe))
+        assert_not(SelectionStrategy.user_judged_all_available_pairs?(book, joe))
 
         # Joe judges all pairs once
         book.query_doc_pairs.each do |qdp|
@@ -152,7 +152,7 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         end
 
         # Now Joe has also judged all available pairs
-        assert(SelectionStrategy.user_has_judged_all_available_pairs?(book, joe))
+        assert(SelectionStrategy.user_judged_all_available_pairs?(book, joe))
       end
 
       it 'handles nil positions without breaking randomization' do

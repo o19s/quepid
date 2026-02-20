@@ -183,7 +183,7 @@
     </div>
   <% end %>
   <% if image_url %>
-  <div class="card mb-3" style="">
+  <div class="card mb-3">
     <div class="row g-0">
       <div class="col-md-4 p-2">
         <img src="<%= image_url %>" class="img-fluid rounded-start rounded-end" alt="Thumbnail Image">
@@ -288,7 +288,7 @@
 
   <%= form.hidden_field :rating %>
   <%= form.hidden_field :query_doc_pair_id, :value => query_doc_pair.id %>
-  <%= form.submit class: 'hidden'%>
+  <%= form.submit class: 'visually-hidden-for-judgements' %>
 
 <% end %>
 

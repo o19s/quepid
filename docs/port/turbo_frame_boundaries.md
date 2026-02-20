@@ -183,7 +183,7 @@ The `turbo_events_controller` (attached to `<body>` in both `application` and `c
 | `turbo:submit-end` | Clear form loading; show flash error if `success: false` |
 | `turbo:fetch-request-error` | Clear loading and show error on network failure |
 
-CSS in `application.css` and `core-add.css` styles `turbo-frame.turbo-loading` and `form.turbo-loading button[type="submit"]` for visual feedback.
+`turbo.css` (included in both application and core bundles) styles `turbo-frame.turbo-loading` and `form.turbo-loading button[type="submit"]` for visual feedback.
 
 ---
 

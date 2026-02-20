@@ -1,7 +1,7 @@
 <%# Document card for results pane. Rating badge id matches Turbo Stream target. %>
 <%# data-doc-fields embeds all fields as JSON so the detail modal can display them without an API call. %>
 <div class="card mb-2 document-card" data-doc-id="<%= h(doc_id) %>"<% if fields_json %> data-doc-fields="<%= h(fields_json) %>"<% end %>>
-  <div class="card-body py-2">
+  <div class="card-body p-2 d-flex flex-column gap-2">
     <div class="d-flex justify-content-between align-items-start">
       <div class="flex-grow-1">
         <span class="badge bg-secondary me-2">#<%= position %></span>
@@ -23,9 +23,9 @@
         </div>
       </div>
     </div>
-    <div class="d-flex gap-2 mt-1">
+    <div class="d-flex gap-2">
       <% if image_url.present? %>
-        <img src="<%= image_url %>" alt="" class="rounded" style="width: 60px; height: 60px; object-fit: cover; flex-shrink: 0;" loading="lazy" onerror="this.style.display='none'">
+        <img src="<%= h(image_url) %>" alt="" class="rounded w-60 object-fit-cover flex-shrink-0" loading="lazy" onerror="this.style.display='none'">
       <% end %>
       <div class="flex-grow-1">
         <% if highlights? %>
@@ -38,25 +38,25 @@
       </div>
     </div>
     <% if media_embeds? %>
-      <div class="mt-1">
+      <div>
         <% media_embeds.each do |embed| %>
           <% case embed[:type] %>
           <% when "audio" %>
-            <audio controls preload="none" class="w-100 mb-1" style="max-height: 40px;">
-              <source src="<%= embed[:url] %>">
+            <audio controls preload="none" class="w-100 mb-1 max-h-40">
+              <source src="<%= h(embed[:url]) %>">
             </audio>
           <% when "video" %>
-            <video controls preload="none" class="w-100 mb-1 rounded" style="max-height: 200px;">
-              <source src="<%= embed[:url] %>">
+            <video controls preload="none" class="w-100 mb-1 rounded max-h-200">
+              <source src="<%= h(embed[:url]) %>">
             </video>
           <% when "image" %>
-            <img src="<%= embed[:url] %>" alt="" class="rounded mb-1" style="max-height: 150px; max-width: 100%;" loading="lazy" onerror="this.style.display='none'">
+            <img src="<%= h(embed[:url]) %>" alt="" class="rounded mb-1 max-h-150 max-w-full" loading="lazy" onerror="this.style.display='none'">
           <% end %>
         <% end %>
       </div>
     <% end %>
     <% if explain? %>
-      <div class="mt-1">
+      <div>
         <%= render MatchesComponent.new(
           doc_id: doc_id,
           doc_title: doc_title,

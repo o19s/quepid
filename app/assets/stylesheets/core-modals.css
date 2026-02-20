@@ -1,0 +1,81 @@
+/*
+ * Core modals: modal overrides, popover, tooltip.
+ * Used by core workspace (core_modern layout).
+ */
+
+/* Full-screen modal (custom variant: calc(100% - 100px) for dialog) */
+.modal-fullscreen-custom {
+  height: 100%;
+  z-index: 2050 !important;
+}
+.modal-fullscreen-custom .modal-dialog {
+  height: calc(100% - 100px);
+  width: calc(100% - 100px);
+}
+.modal-fullscreen-custom .modal-content {
+  height: 100%;
+  overflow: scroll;
+}
+
+/* Popover sizing */
+.popover {
+    max-width: 800px;
+    width: auto;
+    max-height: 600px;
+}
+
+.popover-content {
+    overflow-y: auto;
+    height: auto;
+    max-height: 550px;
+}
+
+.popper:hover {
+  cursor:           pointer;
+  text-decoration:  underline;
+}
+
+.matches-popper:hover {
+  cursor:           pointer;
+  text-decoration:  underline;
+}
+
+.modal-body .btn-primary:focus {
+  background: var(--quepid-color-info-hover);
+  border-color: var(--quepid-color-info-hover-border);
+}
+
+.modal-body .row .col-md-6 {
+	padding-left: 0;
+}
+
+.modal-body .bi {
+	font-size: var(--quepid-font-size-base);
+	color: var(--quepid-color-text-lighter);
+}
+
+.modal-body .checkbox {
+	margin-top: 0;
+	margin-bottom: var(--quepid-spacing-sm);
+	padding: var(--quepid-spacing-4) 0;
+}
+
+.modal-body .checkbox label {
+	padding-right: var(--quepid-spacing-md);
+}
+
+.modal-footer .float-left {
+	float: left;
+}
+
+.tooltip-inner {
+	text-align: left;
+	padding: var(--quepid-spacing-md);
+  min-width: var(--quepid-spacing-17);
+  max-width: 100%
+}
+
+.modal-title .modal-case {
+	font-weight: 200;
+	color: var(--quepid-color-text-light);
+}

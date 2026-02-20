@@ -18,6 +18,7 @@ This folder contains documentation for the Angular-to-Stimulus/Turbo/ViewCompone
 
 ## Historical / Audit References
 
+- `main_vs_deangularjs_experimental_comparison.md` - Deep dive: functionality, visual aesthetics, and changes vs main.
 - `archives/workspace_behavior.md` - Legacy behavior reference used for parity checks.
 - `archives/angular_services_responsibilities_mapping.md` - Service-to-architecture mapping.
 - `archives/deangularjs_branch_comparison.md` - Historical branch comparison.

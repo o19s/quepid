@@ -10,7 +10,7 @@ const path = require('path');
 const WATCH_PATHS = [
   'app/assets/stylesheets',
   'node_modules/bootstrap/dist/css',
-  'node_modules/bootstrap-icons/font'
+  'node_modules/bootstrap-icons/font',
 ];
 
 function ensureDirectoryExists(dirPath) {
@@ -30,6 +30,32 @@ function readFileIfExists(filePath) {
   return '';
 }
 
+/**
+ * Resolves breakpoint variables in CSS output. CSS var() does not work in media
+ * queries, so we replace var(--quepid-breakpoint-*) with the actual values.
+ * See app/assets/stylesheets/variables.css and docs/css_variables.md.
+ */
+const BREAKPOINT_RESOLUTIONS = {
+  'var(--quepid-breakpoint-sm)': '576px',
+  'var(--quepid-breakpoint-sm-max)': '575.98px',
+  'var(--quepid-breakpoint-md)': '768px',
+  'var(--quepid-breakpoint-md-max)': '767.98px',
+  'var(--quepid-breakpoint-lg)': '992px',
+  'var(--quepid-breakpoint-lg-max)': '991.98px',
+  'var(--quepid-breakpoint-xl)': '1200px',
+  'var(--quepid-breakpoint-xl-max)': '1199.98px',
+  'var(--quepid-breakpoint-xxl)': '1400px',
+  'var(--quepid-breakpoint-xxl-max)': '1399.98px',
+};
+
+function resolveBreakpointVariables(css) {
+  let result = css;
+  for (const [varRef, value] of Object.entries(BREAKPOINT_RESOLUTIONS)) {
+    result = result.split(varRef).join(value);
+  }
+  return result;
+}
+
 function copyFileIfExists(src, dest) {
   try {
     if (fs.existsSync(src)) {
@@ -45,7 +71,7 @@ function copyFileIfExists(src, dest) {
 
 function buildApplicationCSS() {
   console.log('Building application.css...');
-  
+
   const outputFile = 'app/assets/builds/application.css';
   let output = '/* Application CSS Bundle (Bootstrap 5) */\n';
   output += `/* Generated on ${new Date().toISOString()} */\n`;
@@ -62,11 +88,21 @@ function buildApplicationCSS() {
   // Application styles
   output += readFileIfExists('app/assets/stylesheets/fonts.css');
   output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/variables.css');
+  output += '\n';
   output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
+  output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/sidebar.css');
+  output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/turbo.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/signup.css');
   output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/misc.css');
+  output += '\n';
   output += readFileIfExists('app/assets/stylesheets/judgements.css');
+  output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/bulk_judge.css');
   output += '\n';
 
   // Add the inline styles from application.css (excluding comments)
@@ -81,14 +117,14 @@ function buildApplicationCSS() {
     }
   }
 
-  fs.writeFileSync(outputFile, output);
+  fs.writeFileSync(outputFile, resolveBreakpointVariables(output));
   const stats = fs.statSync(outputFile);
   console.log(`application.css created (${(stats.size / 1024).toFixed(1)}KB)`);
 }
 
 function buildCoreCSS() {
   console.log('Building core.css...');
-  
+
   const outputFile = 'app/assets/builds/core.css';
   let output = '/* Core CSS Bundle (Bootstrap 5) */\n';
   output += `/* Generated on ${new Date().toISOString()} */\n`;
@@ -105,15 +141,25 @@ function buildCoreCSS() {
   // Core application styles
   output += readFileIfExists('app/assets/stylesheets/fonts.css');
   output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/variables.css');
+  output += '\n';
   output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
   output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/core-add.css');
+  output += readFileIfExists('app/assets/stylesheets/turbo.css');
   output += '\n';
+  const coreAddFiles = [
+    'core-layout',
+    'core-results',
+    'core-modals',
+    'core-workspace',
+    'core-diff',
+    'core-json-tree',
+  ];
+  for (const name of coreAddFiles) {
+    output += readFileIfExists(`app/assets/stylesheets/${name}.css`);
+    output += '\n';
+  }
   output += readFileIfExists('app/assets/stylesheets/style.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/base.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/panes.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/stackedChart.css');
   output += '\n';
@@ -137,14 +183,14 @@ function buildCoreCSS() {
   output += readFileIfExists('app/assets/stylesheets/froggy.css');
   output += '\n';
 
-  fs.writeFileSync(outputFile, output);
+  fs.writeFileSync(outputFile, resolveBreakpointVariables(output));
   const stats = fs.statSync(outputFile);
   console.log(`core.css created (${(stats.size / 1024).toFixed(1)}KB)`);
 }
 
 function buildAdminCSS() {
   console.log('Building admin.css...');
-  
+
   const outputFile = 'app/assets/builds/admin.css';
   let output = '/* Admin CSS Bundle (Bootstrap 5) */\n';
   output += `/* Generated on ${new Date().toISOString()} */\n`;
@@ -166,6 +212,10 @@ function buildAdminCSS() {
   output += readFileIfExists('app/assets/stylesheets/fonts.css');
   output += '\n';
 
+  // Variables
+  output += readFileIfExists('app/assets/stylesheets/variables.css');
+  output += '\n';
+
   // Bootstrap 5 additions
   output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
   output += '\n';
@@ -174,62 +224,51 @@ function buildAdminCSS() {
   output += readFileIfExists('app/assets/stylesheets/admin2.css');
   output += '\n';
 
-  fs.writeFileSync(outputFile, output);
+  fs.writeFileSync(outputFile, resolveBreakpointVariables(output));
   const stats = fs.statSync(outputFile);
   console.log(`admin.css created (${(stats.size / 1024).toFixed(1)}KB)`);
 }
 
-function buildAdminUsersCSS() {
-  console.log('Building admin_users.css...');
-  
-  const outputFile = 'app/assets/builds/admin_users.css';
-  let output = '/* Admin Users CSS Bundle */\n';
-  output += `/* Generated on ${new Date().toISOString()} */\n`;
-  output += '\n';
-
-  // Copy admin_users.css if it exists
-  output += readFileIfExists('app/assets/stylesheets/admin_users.css');
-
-  fs.writeFileSync(outputFile, output);
-  const stats = fs.statSync(outputFile);
-  console.log(`admin_users.css created (${(stats.size / 1024).toFixed(1)}KB)`);
-}
-
-
 function copyFontFiles() {
   console.log('Copying font files...');
-  
+
   ensureDirectoryExists('app/assets/builds/fonts');
-  
-  copyFileIfExists('node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff', 'app/assets/builds/fonts/bootstrap-icons.woff');
-  copyFileIfExists('node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2', 'app/assets/builds/fonts/bootstrap-icons.woff2');
+
+  copyFileIfExists(
+    'node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff',
+    'app/assets/builds/fonts/bootstrap-icons.woff'
+  );
+  copyFileIfExists(
+    'node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2',
+    'app/assets/builds/fonts/bootstrap-icons.woff2'
+  );
 }
 
 function copyImageFiles() {
   console.log('Copying image files...');
-  
+
   ensureDirectoryExists('app/assets/builds/images');
-  
+
   copyFileIfExists('public/images/querqy-icon.png', 'app/assets/builds/images/querqy-icon.png');
+  copyFileIfExists('app/assets/images/blue_bg.jpg', 'app/assets/builds/images/blue_bg.jpg');
 }
 
 function buildAllCSS() {
   console.log('Building CSS bundles...');
-  
+
   try {
     // Create builds directory if it doesn't exist
     ensureDirectoryExists('app/assets/builds');
-    
+
     // Build all CSS bundles
     buildApplicationCSS();
     buildCoreCSS();
     buildAdminCSS();
-    buildAdminUsersCSS();
-    
+
     // Copy asset files
     copyFontFiles();
     copyImageFiles();
-    
+
     console.log('CSS bundles created successfully!');
     return true;
   } catch (error) {
@@ -241,26 +280,26 @@ function buildAllCSS() {
 // Main execution
 function main() {
   const isWatchMode = process.argv.includes('--watch');
-  
+
   // Initial build
   buildAllCSS();
-  
+
   if (isWatchMode) {
     console.log('Watching for CSS changes...');
-    
+
     try {
       const chokidar = require('chokidar');
-      
+
       let debounceTimer;
       const DEBOUNCE_DELAY = 300; // Wait 300ms before rebuilding
-      
+
       const watcher = chokidar.watch(WATCH_PATHS, {
-        ignored: [/(^|[\/\\])\./, 'node_modules/.bin', 'app/assets/builds'],
+        ignored: [/(^|[/\\])\./, 'node_modules/.bin', 'app/assets/builds'],
         persistent: true,
         awaitWriteFinish: {
           stabilityThreshold: 100,
-          pollInterval: 100
-        }
+          pollInterval: 100,
+        },
       });
 
       const debouncedRebuild = () => {
@@ -276,7 +315,7 @@ function main() {
         debouncedRebuild();
       });
 
-      watcher.on('add', (path) => {
+      watcher.on('add', (_path) => {
         debouncedRebuild();
       });
 
@@ -285,10 +324,9 @@ function main() {
         debouncedRebuild();
       });
 
-      watcher.on('error', error => {
+      watcher.on('error', (error) => {
         console.error('CSS watcher error:', error);
       });
-      
     } catch (error) {
       if (error.code === 'MODULE_NOT_FOUND') {
         console.error('chokidar not found. Please run: npm install');

@@ -79,8 +79,10 @@ class DocumentCardComponent < ApplicationComponent
     @fields_json = json
   end
 
+  # Sanitize doc_id for use in HTML id attribute — replace non-alphanumeric
+  # chars so Bootstrap querySelector and Turbo Stream targets work with URLs, slashes, etc.
   def rating_badge_id
-    "rating-badge-#{doc_id.to_s.gsub(/\s/, '_')}"
+    "rating-badge-#{doc_id.to_s.gsub(/[^a-zA-Z0-9_-]/, '-')}"
   end
 
   def diff_entries

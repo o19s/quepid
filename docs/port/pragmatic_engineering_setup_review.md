@@ -13,7 +13,7 @@ This document provides a pragmatic analysis of Quepid's development setup, testi
 | **Local setup** | ✅ Solid | Docker-first; `bin/setup_docker` works well. Local (non-Docker) path documented. |
 | **Unit tests (Ruby)** | ✅ Good | Minitest; good coverage of API controllers, models, services. |
 | **Unit tests (JS)** | ✅ Good | Vitest with Stimulus stubs; tests run from source, no build step. |
-| **E2E / System tests** | ⚠️ Partial | Capybara/Playwright; some tests; rating flow still skipped (Angular). |
+| **E2E / System tests** | ⚠️ Partial | Capybara/Playwright; some tests; rating flow now tested (Stimulus). |
 | **CI pipeline** | ⚠️ Gaps | GitHub Actions runs only Rails tests; no frontend, lint, or security checks. |
 | **Pre-commit hooks** | ✅ Good | Lefthook runs Rubocop + related tests on staged files. |
 | **Local CI** | ✅ Strong | `bin/ci` runs full pipeline (lint, security, all tests). |
@@ -29,7 +29,7 @@ This document provides a pragmatic analysis of Quepid's development setup, testi
 
 - Triggers on every push
 - Runs `bin/setup_docker` then `bin/docker r rails test`
-- **Does not run:** Vitest, JSHint, Rubocop, Brakeman, bundler-audit, importmap audit
+- **Does not run:** Vitest, ESLint/Prettier, Rubocop, Brakeman, bundler-audit, importmap audit
 
 **Local CI** (`config/ci.rb`, `bin/ci`):
 
@@ -45,7 +45,7 @@ This document provides a pragmatic analysis of Quepid's development setup, testi
 | **P0** | Add Rubocop to GitHub Actions. Enforce style in CI; Lefthook is optional locally. | Low |
 | **P1** | Run `bin/ci` (or equivalent steps) in CI so local and CI stay aligned. | Medium |
 | **P2** | Add security checks (Brakeman, bundler-audit) to CI; fail on high/critical findings. | Low |
-| **P3** | Add JSHint to CI if still used; otherwise deprecate in favor of ESLint. | Low |
+| **P3** | Add ESLint/Prettier to CI (replaces JSHint). | Low |
 
 **Pragmatic approach:** Start by adding Vitest and Rubocop to the existing workflow. Both run quickly. Align CI with `config/ci.rb` over time.
 
@@ -77,7 +77,7 @@ This document provides a pragmatic analysis of Quepid's development setup, testi
 - Location: `test/system/`
 - Run: `bin/rails test:system` (not in default CI)
 - `CoreWorkspaceTest` covers load, add query, export/clone modals, new case wizard
-- Rating flow skipped until Stimulus migration complete
+- Rating flow tested (Stimulus query-expand inline results)
 
 **Playwright:**
 
@@ -88,8 +88,8 @@ This document provides a pragmatic analysis of Quepid's development setup, testi
 | Priority | Recommendation | Effort |
 |----------|----------------|--------|
 | **P0** | Ensure Vitest runs in CI (see §1). | Low |
-| **P1** | Add `rails test:frontend` to GitHub Actions (Vitest + JSHint). | Low |
-| **P1** | Un-skip rating test when Stimulus rating UI is ready; keep as regression guard. | Medium |
+| **P1** | Add `rails test:frontend` to GitHub Actions (Vitest + ESLint/Prettier). | Low |
+| ~~**P1**~~ | ~~Un-skip rating test when Stimulus rating UI is ready; keep as regression guard.~~ ✅ Done | — |
 | **P2** | Add system tests to CI (e.g. weekly or on main) if stable; or document as manual. | Medium |
 | **P2** | Consider Playwright for cross-browser E2E if needed; otherwise defer. | Medium |
 | **P3** | Add `bin/rails test` as single entrypoint that runs Ruby + frontend (DEVELOPER_GUIDE notes "we should be able to"). | Low |
@@ -101,14 +101,14 @@ This document provides a pragmatic analysis of Quepid's development setup, testi
 ### Current State
 
 - **Ruby:** Rubocop with Rails, Minitest, Capybara plugins. Lefthook runs on staged `.rb` files.
-- **JavaScript:** JSHint via `rails test:jshint`. No ESLint, Prettier, or standard formatter.
+- **JavaScript:** ESLint + Prettier via `rails test:lint` (replaces JSHint). See [docs/linting.md](../linting.md).
 
 ### Recommendations
 
 | Priority | Recommendation | Effort |
 |----------|----------------|--------|
 | **P1** | Run Rubocop in CI; block merge on failures. | Low |
-| **P2** | Evaluate ESLint + Prettier for JS; JSHint is maintenance mode. Migrate gradually. | Medium |
+| **P2** | Add ESLint/Prettier to CI (run `rails test:lint`). | Low |
 | **P3** | Add `rubocop -a` (autocorrect) to CONTRIBUTING or pre-commit docs. | Low |
 
 ---
@@ -127,7 +127,7 @@ This document provides a pragmatic analysis of Quepid's development setup, testi
 | Priority | Recommendation | Effort |
 |----------|----------------|--------|
 | **P2** | Document Lefthook in CONTRIBUTING; note `--no-verify` for edge cases. | Low |
-| **P3** | Consider adding JSHint to pre-commit for staged JS if not migrating to ESLint soon. | Low |
+| **P3** | Consider adding ESLint/Prettier to pre-commit for staged JS. | Low |
 
 ---
 
@@ -206,8 +206,8 @@ This document provides a pragmatic analysis of Quepid's development setup, testi
 ### Medium-term (Backlog)
 
 6. **Add bundler-audit + importmap audit to CI** — Dependency vulnerability checks.
-7. **Evaluate ESLint/Prettier** — Plan migration from JSHint.
-8. **Enable system tests in CI** — When rating flow is migrated and stable.
+7. **ESLint/Prettier** — Migration from JSHint complete. See [docs/linting.md](../linting.md).
+8. **Enable system tests in CI** — Rating flow migrated; Chrome/headless setup in CI remains.
 
 ---
 
@@ -221,5 +221,5 @@ This document provides a pragmatic analysis of Quepid's development setup, testi
 | Rubocop | `bin/docker r bundle exec rubocop` |
 | Vitest watch | `bin/docker r yarn test` |
 | Vitest single run | `bin/docker r yarn test:run` |
-| JSHint | `bin/docker r rails test:jshint` |
+| ESLint + Prettier | `bin/docker r bundle exec rake test:lint` |
 | Install hooks | `lefthook install` |

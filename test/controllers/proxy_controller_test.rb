@@ -27,6 +27,13 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'should be able to handle a get with multiple query params in the URL' do
+    get proxy_fetch_url params: {
+      url: 'http://solr.quepidapp.com:8983/solr/statedecoded/select?q=test&rows=10', fl: 'id,text', start: 0
+    }
+    assert_response :success
+  end
+
   test 'should be able to handle a get with a trailing ? parameter and nothing else' do
     get proxy_fetch_url params: {
       url: 'http://solr.quepidapp.com:8983/solr/statedecoded/select?', fl: 'id,text', q: 'legal', rows: 10, start: 0

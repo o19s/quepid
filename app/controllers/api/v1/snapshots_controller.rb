@@ -38,7 +38,7 @@ module Api
         respond_with @snapshot
       end
 
-      # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/PerceivedComplexity
+      # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       def create
         return render json: { error: 'Missing snapshot params' }, status: :bad_request if params[:snapshot].blank?
         return render json: { error: 'Snapshot name is required' }, status: :bad_request if params.dig(:snapshot, :name).blank?
@@ -53,13 +53,16 @@ module Api
           queries = params.dig(:snapshot, :queries)
 
           if docs.present? && queries.present?
-            # Client-side flow: Angular sends full docs/queries payload.
+            # Client-side flow: client sends full docs/queries payload (e.g. CSV import, snapshot restore).
             # Use JSON (not Marshal) for security and Ruby-version stability.
-            # Extract only docs/queries; to_unsafe_h preserves nested structure for JSON.
+            # Convert params to plain hashes via JSON round-trip; strong params cannot express
+            # the arbitrary nested structure from search engine responses (dynamic doc fields).
+            # Data is serialized to storage and consumed by PopulateSnapshotJob, which extracts
+            # only known fields (id, explain, fields, position, score, etc.) via SnapshotManager.
             payload = {
               snapshot: {
-                docs:    params.dig(:snapshot, :docs)&.to_unsafe_h || {},
-                queries: params.dig(:snapshot, :queries)&.to_unsafe_h || {},
+                docs:    extract_snapshot_payload_hash(params.dig(:snapshot, :docs)),
+                queries: extract_snapshot_payload_hash(params.dig(:snapshot, :queries)),
               },
             }
             serialized_data = payload.to_json
@@ -81,7 +84,7 @@ module Api
           render json: @snapshot.errors, status: :bad_request
         end
       end
-      # rubocop:enable Metrics/AbcSize, Metrics/MethodLength, Metrics/PerceivedComplexity
+      # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
       def destroy
         @snapshot.destroy
@@ -91,6 +94,15 @@ module Api
       end
 
       private
+
+      # Converts ActionController::Parameters to plain Hash for JSON serialization.
+      # Uses JSON round-trip instead of to_unsafe_h; structure comes from search engine
+      # responses and cannot be expressed with strong parameters.
+      def extract_snapshot_payload_hash value
+        return {} if value.blank?
+
+        JSON.parse(value.to_json, symbolize_names: true)
+      end
 
       def set_snapshot
         @snapshot = if 'latest' == params[:id]

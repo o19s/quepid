@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'colorize'
-require 'jshint/lint'
 
 # rubocop:disable Metrics/BlockLength
 namespace :test do
@@ -66,28 +65,33 @@ namespace :test do
   desc 'Run JS unit tests (Vitest)'
   task 'js' => 'vitest:run'
 
-  desc 'Run all frontend tasks: test:js, test:jshint'
+  desc 'Run all frontend tasks: test:js, test:lint'
   task frontend: :environment do
     Rake::Task['test:js'].invoke
-    Rake::Task['test:jshint'].invoke
+    Rake::Task['test:lint'].invoke
   end
 
-  desc 'Run jshint on js files using configuration .jshintrc'
-  task jshint: :environment do
+  desc 'Run ESLint and Prettier on JS files'
+  task lint: :environment do
     puts '-' * 100
-    puts 'Starting JSHint tests'.yellow
+    puts 'Running ESLint and Prettier checks'.yellow
 
-    linter = Jshint::Lint.new
-    linter.lint
-
-    if linter.errors?
-      puts 'JSHint tests failed!'.red
+    eslint_ok = system 'yarn lint'
+    unless eslint_ok
+      puts 'ESLint failed!'.red
       puts '-' * 100
       exit false
-    else
-      puts 'JSHint tests passed!'.green
-      puts '-' * 100
     end
+
+    format_ok = system 'yarn format'
+    unless format_ok
+      puts 'Prettier check failed! Run `yarn format:fix` to auto-format.'.red
+      puts '-' * 100
+      exit false
+    end
+
+    puts 'ESLint and Prettier checks passed!'.green
+    puts '-' * 100
   end
 end
 # rubocop:enable Metrics/BlockLength

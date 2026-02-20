@@ -20,6 +20,15 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'does not expose judgement from another book (IDOR)' do
+    # judgement belongs to book_of_star_wars_judgements; user requests via book_of_comedy_films
+    other_book = books(:book_of_comedy_films)
+    judgement_from_other_book = judgements(:starwars_qdp1_judgement)
+
+    get book_judgement_url(other_book, judgement_from_other_book)
+    assert_response :not_found
+  end
+
   #   test 'should get new' do
   #     get new_judgement_url
   #     assert_response :success

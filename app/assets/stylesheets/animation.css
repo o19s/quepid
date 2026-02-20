@@ -1,12 +1,7 @@
 /*
-using ngAnimate and css from the https://animate.style project
-*/
-
-/* when hiding the picture */
-.froggy-animation.ng-hide-add         { animation:2s flipOutX ease; }
-
-/* when showing the picture */
-.froggy-animation.ng-hide-remove      { animation:2s flipInX ease; }
+ * Animations from https://animate.style project.
+ * flipInX/flipOutX keyframes retained for potential reuse.
+ */
 
 /* ANIMATIONS (FROM ANIMATE.CSS) ======================== */
 
@@ -20,28 +15,19 @@ using ngAnimate and css from the https://animate.style project
 
   40% {
     transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
-    transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
-    transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
-    transition-timing-function: ease-in;
     transition-timing-function: ease-in;
   }
 
   60% {
-    transform: perspective(400px) rotate3d(1, 0, 0, 10deg);
-    transform: perspective(400px) rotate3d(1, 0, 0, 10deg);
     transform: perspective(400px) rotate3d(1, 0, 0, 10deg);
     opacity: 1;
   }
 
   80% {
     transform: perspective(400px) rotate3d(1, 0, 0, -5deg);
-    transform: perspective(400px) rotate3d(1, 0, 0, -5deg);
-    transform: perspective(400px) rotate3d(1, 0, 0, -5deg);
   }
 
   100% {
-    transform: perspective(400px);
-    transform: perspective(400px);
     transform: perspective(400px);
   }
 }
@@ -80,33 +66,6 @@ using ngAnimate and css from the https://animate.style project
 }
 
 
-
-/* begin alert icon for missing ratings */
-.icon-container {
-    position: relative;
-    display: inline-block;
-}
-
-.notification-bubble {
-    position: absolute;
-    top: -10px; /* Adjust as needed */
-    right: -12px; /* Adjust as needed */
-    background-color: rgba(255, 0, 0, 0.7); /* Red with 50% opacity */
-    color: white;
-    border-radius: 50%;
-    width: 20px; /* Set width */
-    height: 20px; /* Set height equal to width */
-    display: flex; /* Center content */
-    justify-content: center; /* Center content horizontally */
-    align-items: center; /* Center content vertically */
-    font-size: 12px;
-}
-
-.frog-icon {
-    color: grey; 
-    filter: grayscale(100%); 
-}
-/* end alert icon for missing ratings */
 
 .spinner {
     display: inline-block; /* Inline to work with <i> */

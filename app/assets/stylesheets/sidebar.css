@@ -1,0 +1,65 @@
+/*
+ * Sidebar layout styles. Uses breakpoint variables for responsive rules.
+ * See docs/css_variables.md.
+ */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 0px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
+  z-index: 99;
+}
+
+@media (max-width: var(--quepid-breakpoint-md-max)) {
+  .sidebar {
+    top: 11.5rem;
+    padding: 0;
+  }
+}
+
+@media (min-width: var(--quepid-breakpoint-md)) {
+  .navbar {
+    top: 0;
+    position: sticky;
+    z-index: 999;
+  }
+}
+
+.sidebar .nav-link {
+  color: var(--quepid-color-text-dark);
+}
+
+.sidebar .nav-link .feather {
+  margin-right: 4px;
+  color: var(--quepid-color-text-light);
+}
+
+.sidebar .nav-link.active {
+  color: var(--quepid-color-info);
+}
+
+.sidebar .nav-link:hover .feather,
+.sidebar .nav-link.active .feather {
+  color: inherit;
+}
+
+/* Sidebar nav icons: size and active/inactive colors (no inline styles) */
+.sidebar .nav-link .bi {
+  font-size: var(--quepid-font-size-xl);
+  color: var(--quepid-color-sidebar-icon);
+}
+
+.sidebar .nav-link.active .bi,
+.sidebar .nav-link.sidebar-context-case .bi {
+  color: var(--quepid-color-white);
+}
+
+/* eric - this is the icon in the navbar placeholder */
+.feather {
+  width: 24px;
+  height: 24px;
+}

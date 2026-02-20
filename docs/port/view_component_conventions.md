@@ -18,10 +18,11 @@ This document describes how we use [ViewComponent](https://viewcomponent.org/) i
 Example:
 
 ```ruby
-# app/components/example_component.rb
-class ExampleComponent < ApplicationComponent
-  def initialize(title:)
-    @title = title
+# app/components/add_query_component.rb
+class AddQueryComponent < ApplicationComponent
+  def initialize(case_id:, can_add_queries: true)
+    @case_id         = case_id
+    @can_add_queries = can_add_queries
   end
 end
 ```
@@ -36,7 +37,7 @@ end
 In a view:
 
 ```erb
-<%= render ExampleComponent.new(title: "My Title") %>
+<%= render AddQueryComponent.new(case_id: @case.id, can_add_queries: true) %>
 ```
 
 ---
@@ -121,7 +122,7 @@ When a component needs a Stimulus controller that manages both trigger and modal
   data-delete-query-case-id-value="<%= @case_id %>"
   data-delete-query-query-id-value="<%= @query_id %>"
 >
-  <button type="button" class="btn btn-default btn-sm" data-action="click->delete-query#open">
+  <button type="button" class="btn btn-secondary btn-sm" data-action="click->delete-query#open">
     Delete
   </button>
   <div class="modal fade" id="deleteQueryModal-<%= @query_id %>" data-delete-query-target="modal">
@@ -167,6 +168,38 @@ Components can render other components, each with their own Stimulus controllers
 - **Targets:** Mark elements as targets with `data-{controller-name}-target="{target-name}"`.
 - **Actions:** Wire up events with `data-action="{event}->{controller}#{method}"`.
 
+### Event listener cleanup
+
+When a Stimulus controller adds event listeners in `connect()`, it must remove them in `disconnect()` to avoid memory leaks on Turbo navigation. Two patterns:
+
+1. **Explicit cleanup:** Store bound handlers and remove in `disconnect()`:
+   ```javascript
+   connect() {
+     this._boundHandler = this.handleEvent.bind(this);
+     this.element.addEventListener('input', this._boundHandler);
+   }
+   disconnect() {
+     this.element.removeEventListener('input', this._boundHandler);
+   }
+   ```
+
+2. **Event delegation:** For dynamically created elements (e.g. modal content rebuilt on each open), attach one listener to a stable parent and handle events via delegation. Only the parent listener needs cleanup:
+   ```javascript
+   connect() {
+     this._boundClick = (e) => this._handleClick(e);
+     this.containerTarget.addEventListener('click', this._boundClick);
+   }
+   disconnect() {
+     this.containerTarget.removeEventListener('click', this._boundClick);
+   }
+   _handleClick(event) {
+     const item = event.target.closest('[data-item-id]');
+     if (item) this.selectItem(item.dataset.itemId);
+   }
+   ```
+
+See [port_completed.md](archives/port_completed.md) for the controllers that were updated to follow these patterns.
+
 See [UI Consistency Patterns](ui_consistency_patterns.md) for modal patterns and Bootstrap 5 conventions.
 
 ---
@@ -176,16 +209,16 @@ See [UI Consistency Patterns](ui_consistency_patterns.md) for modal patterns and
 Previews let you develop and inspect components in the browser at `/rails/view_components` (when `config.view_component.show_previews` is enabled in development).
 
 - **Location:** Preview classes live in `test/components/previews/`.
-- **Naming:** `{ComponentName}Preview` in a file `{component_name}_preview.rb` (e.g. `example_component_preview.rb` → `ExampleComponentPreview`).
+- **Naming:** `{ComponentName}Preview` in a file `{component_name}_preview.rb` (e.g. `add_query_component_preview.rb` → `AddQueryComponentPreview`).
 - **When to add:** Add previews for key or complex components so designers and developers can iterate without going through full app flows.
 
 Example preview:
 
 ```ruby
-# test/components/previews/example_component_preview.rb
-class ExampleComponentPreview < ViewComponent::Preview
+# test/components/previews/add_query_component_preview.rb
+class AddQueryComponentPreview < ViewComponent::Preview
   def default
-    render(ExampleComponent.new(title: "Example Title"))
+    render(AddQueryComponent.new(case_id: 1, can_add_queries: true))
   end
 end
 ```

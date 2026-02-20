@@ -1,6 +1,6 @@
 <%= form_with url: ai_judge_prompt_path, model: ai_judge, data: { controller: "prompt-form", action: "submit->prompt-form#submit" } do |form| %>
   <% if ai_judge.errors.any? %>
-    <div style="color: red">
+    <div class="text-danger">
       <h2><%= pluralize(ai_judge.errors.count, "error") %> prohibited this Prompt from being saved:</h2>
 
       <ul>
@@ -31,7 +31,7 @@
         </div>
       </div>
       <!-- Loading spinner shown during form submission -->
-      <div data-prompt-form-target="loadingSpinner" style="display: none;">
+      <div data-prompt-form-target="loadingSpinner" class="d-none">
         <h2>Rating Information</h2>
         <div class="text-center my-4">
           <div class="spinner-border text-primary" role="status">

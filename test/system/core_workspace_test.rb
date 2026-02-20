@@ -5,12 +5,12 @@ require 'controllers/application_system_test_case'
 # E2E tests for the core case/try workspace.
 # The case/try URL is served by Rails CoreController#show (modern stack) with Stimulus/ViewComponents.
 # Add query, export modal, and clone modal use AddQueryComponent, ExportCaseComponent, CloneCaseComponent.
-# Rate-a-document test remains skipped until rating UI is migrated.
+# Rate-a-document test exercises Stimulus rating UI (query-expand inline results).
 class CoreWorkspaceTest < ApplicationSystemTestCase
   setup do
-    @user = users(:doug)
-    @case = cases(:one)
-    @try = tries(:one)
+    @user = users(:random)
+    @case = cases(:queries_case)
+    @try = tries(:for_case_queries_case)
     stub_core_workspace_search_requests
   end
 
@@ -35,22 +35,17 @@ class CoreWorkspaceTest < ApplicationSystemTestCase
   end
 
   test 'rate a document and see score update' do
-    skip 'Angular UI; reimplement for Stimulus/ViewComponents when rating UI is migrated'
     sign_in_user
     visit case_core_path(@case, @try.try_number)
     wait_for_workspace_to_load
 
-    # Expand first query to show results (toggle)
-    first('.toggleSign').click
-    # Wait for search results to load
-    assert_selector '.search-result', wait: 10
-    # Open rating control (single-rating button) and pick a rating
-    first('.single-rating .btn').click
-    # Popover has rating numbers
-    assert_selector '.ratingNums', wait: 5
-    first('.ratingNum').click
-    # Score area should reflect update (qscore-query or case score)
-    assert_selector '.re', wait: 5
+    # Select "First Query" to load results pane (matches WebMock stub)
+    within('[data-workspace-panels-target="westContent"]') { click_link 'First Query' }
+    assert_selector '.document-card', wait: 25
+    # Use bulk "Rate all" to set rating 3 (avoids popover timing issues)
+    find('[data-action="click->results-pane#bulkRate"][data-rating-value="3"]').click
+    # Document card badge should reflect the rating (regression guard)
+    assert_selector '.document-card .badge.bg-primary', text: /3/, wait: 15
   end
 
   test 'open export modal' do

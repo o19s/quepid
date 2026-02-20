@@ -27,33 +27,35 @@
                 <input class="form-check-input" type="checkbox" id="import-clear-queries" data-import-ratings-target="clearQueries">
                 <label class="form-check-label" for="import-clear-queries">Clear existing queries?</label>
               </div>
-              <div class="mb-2">Format:</div>
-              <div class="mb-2">
-                <input type="radio" name="importFormat" id="fmt-csv" value="csv" class="form-check-input" data-import-ratings-target="formatRadio" data-action="change->import-ratings#formatChanged">
-                <label class="form-check-label" for="fmt-csv">CSV</label>
-                <span class="form-text d-block">Headers: <code>query,docid,rating</code>. Paste CSV below or choose file.</span>
+              <div class="mb-3">Format:</div>
+              <div class="d-flex flex-column gap-2">
+                <div>
+                  <input type="radio" name="importFormat" id="fmt-csv" value="csv" class="form-check-input" data-import-ratings-target="formatRadio" data-action="change->import-ratings#formatChanged">
+                  <label class="form-check-label" for="fmt-csv">CSV</label>
+                  <span class="form-text d-block">Headers: <code>query,docid,rating</code>. Paste CSV below or choose file.</span>
+                </div>
+                <div>
+                  <input type="radio" name="importFormat" id="fmt-rre" value="rre" class="form-check-input" data-import-ratings-target="formatRadio" data-action="change->import-ratings#formatChanged">
+                  <label class="form-check-label" for="fmt-rre">RRE (Rated Ranking Evaluator) JSON</label>
+                </div>
+                <div>
+                  <input type="radio" name="importFormat" id="fmt-ltr" value="ltr" class="form-check-input" data-import-ratings-target="formatRadio" data-action="change->import-ratings#formatChanged">
+                  <label class="form-check-label" for="fmt-ltr">LTR (Learning to Rank) text</label>
+                </div>
+                <div class="d-none" data-import-ratings-target="csvPane">
+                  <label class="form-label">CSV content</label>
+                  <textarea class="form-control font-monospace" rows="6" data-import-ratings-target="csvText" placeholder="query,docid,rating&#10;star wars,3574597,3"></textarea>
+                </div>
+                <div class="d-none" data-import-ratings-target="rrePane">
+                  <label class="form-label">RRE JSON file</label>
+                  <input type="file" class="form-control" accept="application/json" data-import-ratings-target="rreFile" data-action="change->import-ratings#rreFilePicked">
+                </div>
+                <div class="d-none" data-import-ratings-target="ltrPane">
+                  <label class="form-label">LTR text file</label>
+                  <input type="file" class="form-control" accept="text/plain,.txt" data-import-ratings-target="ltrFile" data-action="change->import-ratings#ltrFilePicked">
+                </div>
               </div>
-              <div class="mb-2">
-                <input type="radio" name="importFormat" id="fmt-rre" value="rre" class="form-check-input" data-import-ratings-target="formatRadio" data-action="change->import-ratings#formatChanged">
-                <label class="form-check-label" for="fmt-rre">RRE (Rated Ranking Evaluator) JSON</label>
-              </div>
-              <div class="mb-2">
-                <input type="radio" name="importFormat" id="fmt-ltr" value="ltr" class="form-check-input" data-import-ratings-target="formatRadio" data-action="change->import-ratings#formatChanged">
-                <label class="form-check-label" for="fmt-ltr">LTR (Learning to Rank) text</label>
-              </div>
-              <div class="mb-2 d-none" data-import-ratings-target="csvPane">
-                <label class="form-label">CSV content</label>
-                <textarea class="form-control font-monospace" rows="6" data-import-ratings-target="csvText" placeholder="query,docid,rating&#10;star wars,3574597,3"></textarea>
-              </div>
-              <div class="mb-2 d-none" data-import-ratings-target="rrePane">
-                <label class="form-label">RRE JSON file</label>
-                <input type="file" class="form-control" accept="application/json" data-import-ratings-target="rreFile" data-action="change->import-ratings#rreFilePicked">
-              </div>
-              <div class="mb-2 d-none" data-import-ratings-target="ltrPane">
-                <label class="form-label">LTR text file</label>
-                <input type="file" class="form-control" accept="text/plain,.txt" data-import-ratings-target="ltrFile" data-action="change->import-ratings#ltrFilePicked">
-              </div>
-              <div class="alert alert-danger d-none" data-import-ratings-target="ratingsError" role="alert"></div>
+              <div class="alert alert-danger d-none mt-2" data-import-ratings-target="ratingsError" role="alert"></div>
             </div>
             <div class="tab-pane fade" id="panel-info-needs" role="tabpanel">
               <p class="text-muted small">Import information needs from a CSV with <code>query,information_need</code>. Export a template from Export first.</p>
@@ -62,7 +64,7 @@
                 <label class="form-check-label" for="import-create-queries">Create missing queries?</label>
               </div>
               <label class="form-label">CSV content (query,information_need)</label>
-              <textarea class="form-control font-monospace mb-2" rows="6" data-import-ratings-target="infoNeedsText" placeholder="query,information_need&#10;star wars,&quot;The original movie&quot;"></textarea>
+              <textarea class="form-control font-monospace mb-3" rows="6" data-import-ratings-target="infoNeedsText" placeholder="query,information_need&#10;star wars,&quot;The original movie&quot;"></textarea>
               <div class="alert alert-danger d-none" data-import-ratings-target="infoNeedsError" role="alert"></div>
             </div>
           </div>

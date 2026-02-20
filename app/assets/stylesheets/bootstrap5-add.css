@@ -8,11 +8,11 @@ and updated to Bootstrap 5 standards.
 }
 
 body {
-  background: url('blue_bg.jpg') top center repeat;
+  background: url('images/blue_bg.jpg') top center repeat;
 }
 
 .footer-bar {
-  background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
+  background-image: linear-gradient(to bottom, var(--quepid-color-brand-gradient-top) 0%, var(--quepid-color-brand-gradient-bottom) 100%);
 }
 
 /*
@@ -29,15 +29,15 @@ body {
   min-width: 120px;
 	/*padding: 16px 15px 0 0;*/
 	font-family: 'alleritalic';
-	font-size: 28px;
-	color: #FFF !important;
+	font-size: var(--quepid-font-size-2xl);
+	color: var(--quepid-color-white) !important;
 }
 
-.navbar-brand .hover {
+.navbar-brand .navbar-brand__tagline {
 	display: none;
 }
 
-.navbar-brand:hover .hover {
+.navbar-brand:hover .navbar-brand__tagline {
 	display: block;
 	position: absolute;
 	top: 5px;
@@ -50,8 +50,8 @@ body {
 */
 
 .navbar-secondary {
-	background: #369;
-	background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
+	background: var(--quepid-color-brand-solid);
+	background-image: linear-gradient(to bottom, var(--quepid-color-brand-gradient-top) 0%, var(--quepid-color-brand-gradient-bottom) 100%);
 	/* border-bottom: 1px solid #258; */
 	font-family: 'allerregular';
   padding: 0px;
@@ -59,15 +59,11 @@ body {
 
 
 .navbar-secondary .nav-link {
-	color: #FFF;
+	color: var(--quepid-color-white);
   font-family: 'allerregular';
-  font-size: 14px;
+  font-size: var(--quepid-font-size-sm-2);
 }
 
-
-.img-rounded {
-  border-radius: 6px;
-}
 
 .alert {
   z-index: 100;
@@ -77,3 +73,56 @@ body {
 .spinner-border {
   animation-duration: 1.5s;
 }
+
+/*
+ * Main container padding — shared by application, admin, and analytics layouts.
+ * All use <main> with a direct .container child. Core workspace uses #main-content
+ * (no .container) and has its own layout in core-layout.css.
+ */
+main > .container {
+  padding: var(--quepid-spacing-xl) var(--quepid-spacing-lg) 0;
+}
+
+/*
+ * Layout utility classes — replace common inline style="max-width: Npx" etc.
+ * Used across application, core, and admin bundles.
+ */
+.max-w-100 { max-width: 100px; }
+.max-w-140 { max-width: 140px; }
+.max-w-150 { max-width: 150px; }
+.max-w-180 { max-width: 180px; }
+.max-w-200 { max-width: 200px; }
+.max-w-250 { max-width: 250px; }
+.max-w-280 { max-width: 280px; }
+.max-w-300 { max-width: 300px; }
+.max-w-340 { max-width: 340px; }
+.max-w-400 { max-width: 400px; }
+.max-w-full { max-width: 100%; }
+.w-180 { width: 180px; } /* profile avatar */
+.w-250 { width: 250px; }
+.dropdown-menu.w-250 { left: auto; }
+.dropdown-menu.dropdown-right { right: 0; left: auto; }
+.w-60 { width: 60px; height: 60px; }
+.h-84 { height: 84px; }
+.min-h-120 { min-height: 120px; }
+.max-h-20rem { max-height: 20rem; }
+.max-h-40 { max-height: 40px; }
+.max-h-150 { max-height: 150px; }
+.max-h-200 { max-height: 200px; }
+.max-h-300 { max-height: 300px; }
+.max-h-400 { max-height: 400px; }
+.max-h-60vh { max-height: 60vh; }
+.sidebar-w { width: 3.5rem; }
+.mb-40 { margin-bottom: 40px; }
+.px-150 { padding-left: 150px; padding-right: 150px; }
+.mt-60 { margin-top: 60px; }
+.text-pre-wrap { white-space: pre-wrap; word-wrap: break-word; }
+.min-w-50 { min-width: 50px; }
+.min-w-150 { min-width: 150px; }
+/* field-sizing: content — input grows/shrinks with content; use with min-w/max-w for bounds */
+.field-sizing-content { field-sizing: content; }
+.w-40pct { width: 40%; }
+.footer-bg { background-color: var(--quepid-color-footer-bg); }
+.profile-text { color: var(--quepid-color-profile-text); }
+.profile-bg-muted { background-color: var(--quepid-color-profile-bg-muted); }
+.profile-hero-bg { background-color: var(--quepid-color-profile-hero-bg); }

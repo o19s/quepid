@@ -15,7 +15,7 @@
     <%= form_tag(book_query_doc_pairs_path(@book), { method: :get }) do %>
       <div class="mb-0 d-flex flex-wrap align-items-center gap-3 fs-6">
 
-        <div class="input-group" style="max-width: 400px;">
+        <div class="input-group max-w-400">
           <%= text_field_tag :q, params[:q],
               class: 'form-control form-control-sm',
               placeholder: 'Filter by query, doc id, or document field contents',
@@ -108,7 +108,7 @@
             <strong>Query:</strong> <span data-document-fields-modal-target="queryText"></span><br>
             <strong>Doc ID:</strong> <span data-document-fields-modal-target="docId"></span>
           </p>
-          <pre data-document-fields-modal-target="content" class="bg-light p-3 rounded" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+          <pre data-document-fields-modal-target="content" class="bg-light p-3 rounded" class="text-pre-wrap"></pre>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

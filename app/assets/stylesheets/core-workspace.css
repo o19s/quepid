@@ -1,0 +1,134 @@
+/*
+ * Core workspace: collapsible panels, resizer, query expand.
+ * Used by core workspace (core_modern layout).
+ * See workspace_panels_controller.js.
+ */
+
+/* Collapsible east/west side panels */
+.workspace-panels-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 0;
+  min-height: 300px;
+  padding: var(--quepid-spacing-4) 0;
+}
+
+.workspace-panel {
+  display: flex;
+  flex-direction: column;
+  transition: min-width var(--quepid-duration-base) ease, flex var(--quepid-duration-base) ease;
+}
+
+.workspace-panel.west {
+  flex: 0 1 25%;
+  min-width: 200px;
+  border-right: var(--quepid-border-width) solid var(--quepid-color-border);
+}
+
+.workspace-panel.east {
+  flex: 1 1 75%;
+  min-width: 300px;
+}
+
+.workspace-panel--collapsed.west {
+  flex: 0 0 var(--quepid-spacing-14);
+  min-width: var(--quepid-spacing-14);
+  border-right: var(--quepid-border-width) solid var(--quepid-color-border);
+}
+
+.workspace-panel--collapsed.east {
+  flex: 0 0 var(--quepid-spacing-14);
+  min-width: var(--quepid-spacing-14);
+}
+
+.workspace-panel__toggle {
+  flex-shrink: 0;
+  width: var(--quepid-spacing-12);
+  height: var(--quepid-spacing-12);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--quepid-border-width) solid var(--quepid-color-border);
+  border-radius: var(--quepid-border-radius-sm);
+  background: var(--quepid-color-bg-subtle);
+  color: var(--quepid-color-neutral);
+  cursor: pointer;
+}
+
+.workspace-panel__toggle:hover {
+  background: var(--quepid-color-neutral-bg);
+  color: var(--quepid-color-neutral-dark);
+}
+
+.workspace-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--quepid-spacing-4);
+  margin-bottom: var(--quepid-spacing-4);
+  padding: 0 var(--quepid-spacing-4);
+}
+
+.workspace-panel--collapsed .workspace-panel__header {
+  flex-direction: column;
+  margin-bottom: 0;
+  padding: var(--quepid-spacing-4);
+  justify-content: flex-start;
+}
+
+.workspace-panel--collapsed .workspace-panel__header .workspace-panel__title {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 120px;
+  font-size: var(--quepid-font-size-sm);
+}
+
+.workspace-panel__content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 var(--quepid-spacing-4);
+}
+
+/* Draggable resizer between west/east panels */
+.workspace-resizer {
+  flex: 0 0 var(--quepid-spacing-3);
+  cursor: col-resize;
+  background: var(--quepid-color-border);
+  transition: background var(--quepid-duration-fast) ease;
+  position: relative;
+  z-index: 2;
+}
+.workspace-resizer:hover,
+.workspace-resizer:active {
+  background: var(--quepid-color-info);
+}
+.workspace-resizer:focus-visible {
+  outline: var(--quepid-border-width-thick) solid var(--quepid-color-info);
+  outline-offset: -1px;
+}
+
+/* Query expand/collapse inline preview */
+.query-expand-chevron {
+  transition: transform var(--quepid-duration-base) ease;
+  line-height: 1;
+}
+.query-expand-chevron--expanded {
+  transform: rotate(90deg);
+}
+.query-inline-results {
+  padding: var(--quepid-spacing-4) 0 0 var(--quepid-spacing-10);
+  max-height: 400px;
+  overflow-y: auto;
+  font-size: var(--quepid-font-size-sm-2);
+}
+.query-inline-results .document-card {
+  margin-bottom: var(--quepid-spacing-1);
+  padding: var(--quepid-spacing-3) var(--quepid-spacing-4);
+}

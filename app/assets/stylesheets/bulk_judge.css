@@ -1,0 +1,63 @@
+/*
+ * Bulk Judge page styles.
+ * Shared with judgements.css for rating buttons; unique layout here.
+ */
+
+.query-group-card {
+  overflow: visible;
+}
+
+.query-sidebar {
+  background-color: var(--quepid-color-bg-subtle);
+  border-right: 2px solid var(--quepid-color-border);
+  min-height: 100%;
+}
+
+.sticky-query-label {
+  position: sticky;
+  top: 70px; /* Accounts for navbar height (typically ~56px) plus some padding */
+}
+
+.query-title {
+  color: var(--quepid-color-neutral);
+  font-size: var(--quepid-font-size-sm-2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.query-text {
+  font-size: var(--quepid-font-size-md);
+  color: var(--quepid-color-text);
+  word-break: break-word;
+}
+
+.document-card {
+  background-color: var(--quepid-color-white);
+}
+
+.document-card:last-child {
+  border-bottom: none !important;
+}
+
+.document-header {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--quepid-color-neutral-bg);
+  min-height: 3rem;
+}
+
+/* .rating-buttons and .btn-preselected come from judgements.css */
+
+.document-content {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spin {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}

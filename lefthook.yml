@@ -4,5 +4,16 @@ pre-commit:
     rubocop:
       glob: "*.rb"
       run: bundle exec rubocop --force-exclusion {staged_files}
+    eslint:
+      glob: "**/*.{js,mjs}"
+      run: yarn eslint {staged_files}
+    prettier:
+      glob:
+        - "app/javascript/**/*.js"
+        - "spec/javascripts/**/*.js"
+        - "build_*.js"
+        - "vitest.config.js"
+        - "eslint.config.mjs"
+      run: yarn prettier --check {staged_files}
     related-tests:
       run: bash .githooks/run-related-tests.sh

@@ -21,7 +21,7 @@
         <%= form_with url: members_team_path(@team), method: :post, local: true do %>
           <div class="mb-2 position-relative" 
                data-controller="team-member-autocomplete" 
-               data-team-member-autocomplete-url-value="<%= suggest_members_team_path(@team) %>"
+               data-team-member-autocomplete-team-id-value="<%= @team.id %>"
                data-action="click@window->team-member-autocomplete#clickOutside">
             <div class="position-relative">
               <%= text_field_tag :email, nil, 
@@ -32,11 +32,11 @@
                     team_member_autocomplete_target: 'input',
                     action: 'input->team-member-autocomplete#search'
                   } %>
-              <span data-team-member-autocomplete-target="spinner" class="autocomplete-spinner" style="display: none;">
+              <span data-team-member-autocomplete-target="spinner" class="autocomplete-spinner d-none">
                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               </span>
             </div>
-            <div data-team-member-autocomplete-target="suggestions" class="autocomplete-suggestions" style="display: none;"></div>
+            <div data-team-member-autocomplete-target="suggestions" class="autocomplete-suggestions rounded-bottom-1 d-none"></div>
           </div>
           <div>
             <%= submit_tag 'Add user', class: 'btn btn-success btn-sm' %>
@@ -56,7 +56,6 @@
             background: white;
             border: 1px solid #ced4da;
             border-top: none;
-            border-radius: 0 0 0.25rem 0.25rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           }
           
@@ -81,7 +80,6 @@
           .autocomplete-avatar {
             width: 24px;
             height: 24px;
-            border-radius: 3px;
             flex-shrink: 0;
           }
           

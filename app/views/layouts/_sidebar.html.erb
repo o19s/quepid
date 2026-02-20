@@ -1,74 +1,4 @@
- 
- <!--script async src="https://cdn.jsdelivr.net/npm/es-module-shims@1/dist/es-module-shims.min.js" crossorigin="anonymous"></script-->
-    <!--script type="importmap">
-    {
-      "imports": {
-        "@popperjs/core": "https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/esm/popper.min.js",
-        "bootstrap": "https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.esm.min.js"
-      }
-    }
-    </script-->
-    <script type="module">
-      //import * as bootstrap from 'bootstrap'
-
-      //const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-      //const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-    </script>
-
-
-<style>
-.sidebar {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 100;
-  padding: 0px 0 0;
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-  z-index: 99;
-}
-
-@media (max-width: 767.98px) {
-  .sidebar {
-    top: 11.5rem;
-    padding: 0;
-  }
-}
-
-
-@media (min-width: 767.98px) {
-  .navbar {
-    top: 0;
-    position: sticky;
-    z-index: 999;
-  }
-}
-
-.sidebar .nav-link {
-  color: #333;
-}
-
-.sidebar .nav-link .feather {
-  margin-right: 4px;
-  color: #727272;
-}
-
-.sidebar .nav-link.active {
-  color: #0d6efd;
-}
-
-.sidebar .nav-link:hover .feather,
-.sidebar .nav-link.active .feather {
-  color: inherit;
-}
-
-/* eric - this is the icon in the navbar placeholder */
-.feather {
-  width: 24px;
-  height: 24px;
-}
-</style>
-<div class="sidebar d-flex flex-column flex-shrink-0 bg-body-tertiary" style="width: 3.5rem;">
+<div class="sidebar d-flex flex-column flex-shrink-0 bg-body-tertiary sidebar-w">
     <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
       <li class="nav-item">
         <a href="#" class="nav-link active py-3 border-bottom rounded-0" aria-current="page" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Home" data-bs-original-title="Home">
@@ -77,79 +7,37 @@
       </li>
       <li>
         <%= link_to root_path, class: "nav-link #{make_active?({controller: 'home'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Dashboard', 'data-bs-original-title':'Dashboard' do %>
-          <i
-            class="bi bi-speedometer2"
-            aria-hidden="true"
-            title="Dashboard"
-            alt="Dashboard"
-            style="font-size: 1.5rem; color: <%= make_active?({controller: 'home'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
+          <i class="bi bi-speedometer2" aria-hidden="true" title="Dashboard" alt="Dashboard"></i>
         <% end %>
       </li>
       <li>
         <%= link_to cases_path, data: { turbo_prefetch: false }, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Relevancy Cases', 'data-bs-original-title':'Relevancy Cases' do %>
-          <i
-            class="bi bi-briefcase"
-            aria-hidden="true"
-            title="Relevancy Cases"
-            alt="Relevancy Cases"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
+          <i class="bi bi-briefcase" aria-hidden="true" title="Relevancy Cases" alt="Relevancy Cases"></i>
         <% end %>
       </li>
       <li>
         <%= link_to books_path, class: "nav-link #{make_active?({path: 'book'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Judgements', 'data-bs-original-title':'Judgements' do %>
-          <i
-            class="bi bi-book"
-            aria-hidden="true"
-            title="Judgement Books"
-            alt="Judgement Books"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'book'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
+          <i class="bi bi-book" aria-hidden="true" title="Judgement Books" alt="Judgement Books"></i>
         <% end %>
       </li>
       <li>
         <%= link_to scorers_path, data: { turbo_prefetch: false }, class: "nav-link #{make_active?({path: 'scorers'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Scorers', 'data-bs-original-title':'Scorers' do %>
-          <i
-            class="bi bi-list-task"
-            aria-hidden="true"
-            title="Scorers"
-            alt="Scorers"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'scorers'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
+          <i class="bi bi-list-task" aria-hidden="true" title="Scorers" alt="Scorers"></i>
         <% end %>
       </li>
       <li>
-        <%= link_to "#{root_path}notebooks/lab/index.html", target: '_blank', class: "nav-link py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Notebooks', 'data-bs-original-title':'Notebooks' do %>
-          <i
-            class="bi bi-journal-medical"
-            aria-hidden="true"
-            title="Notebooks"
-            alt="Notebooks"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'case'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
+        <%= link_to "#{root_path}notebooks/lab/index.html", target: '_blank', class: "nav-link #{make_active?({path: 'case'}) ? 'sidebar-context-case' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Notebooks', 'data-bs-original-title':'Notebooks' do %>
+          <i class="bi bi-journal-medical" aria-hidden="true" title="Notebooks" alt="Notebooks"></i>
         <% end %>
       </li>
       <li>
         <%= link_to search_endpoints_path, class: "nav-link #{make_active?({path: 'search_endpoint'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Search Endpoints', 'data-bs-original-title':'Search Endpoints' do %>
-          <i
-            class="bi bi-send-fill"
-            aria-hidden="true"
-            title="Search Endpoints"
-            alt="Search Endpoints"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'search_endpoint'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
+          <i class="bi bi-send-fill" aria-hidden="true" title="Search Endpoints" alt="Search Endpoints"></i>
         <% end %>
       </li>
       <li>
         <%= link_to teams_path, data: { turbo_prefetch: false }, class: "nav-link #{make_active?({path: 'teams'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Search Endpoints', 'data-bs-original-title':'Search Endpoints' do %>
-          <i
-            class="bi bi-people-fill"
-            aria-hidden="true"
-            title="Teams"
-            alt="Teams"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'teams'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
+          <i class="bi bi-people-fill" aria-hidden="true" title="Teams" alt="Teams"></i>
         <% end %>
       </li>
     </ul>

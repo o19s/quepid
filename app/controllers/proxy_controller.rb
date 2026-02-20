@@ -10,7 +10,7 @@ class ProxyController < ApplicationController
   #
   def fetch
     url_param = proxy_url_params
-    proxy_debug = 'true' == params[:proxy_debug]
+    proxy_debug = deserialize_bool_param(params[:proxy_debug])
 
     headers = build_forwarded_headers
     headers['Content-Type'] = 'application/json'
@@ -58,11 +58,7 @@ class ProxyController < ApplicationController
   end
 
   def extract_extra_url_params url_param
-    return {} unless url_param.include?('?')
-
-    # Handle URLs like http://myserver.com/search?q=tiger or http://myserver.com/search?q=tiger?
-    extra_query_param = url_param.split('?', 2).last.split('=')
-    { extra_query_param.first => extra_query_param.second }
+    UrlParserService.query_values(url_param)
   end
 
   def build_forwarded_headers

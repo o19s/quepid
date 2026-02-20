@@ -1,0 +1,8 @@
+vendor/
+node_modules/
+app/assets/javascripts/mode-json.js
+db/scorers/
+test/fixtures/
+*.min.js
+lib/
+public/javascripts/

@@ -20,7 +20,7 @@
  * a fetch-based resolver or server doc-lookup endpoint can be used when needed.
  */
 
-const CHUNK_SIZE = 15
+const CHUNK_SIZE = 15;
 
 /**
  * @typedef {Object} DocResolver
@@ -33,7 +33,7 @@ const CHUNK_SIZE = 15
 export class DocCache {
   constructor() {
     /** @type {Record<string, Object|null>} */
-    this._cache = {}
+    this._cache = {};
   }
 
   /**
@@ -41,10 +41,10 @@ export class DocCache {
    * @param {string[]} [ids] - Doc ids to track; null/undefined is a no-op (matches docCacheSvc).
    */
   addIds(ids) {
-    if (!ids) return
+    if (!ids) return;
     for (const id of ids) {
       if (!Object.prototype.hasOwnProperty.call(this._cache, id)) {
-        this._cache[id] = null
+        this._cache[id] = null;
       }
     }
   }
@@ -54,7 +54,7 @@ export class DocCache {
    * @returns {Object|null|undefined}
    */
   getDoc(id) {
-    return this._cache[id]
+    return this._cache[id];
   }
 
   /**
@@ -62,7 +62,7 @@ export class DocCache {
    * @returns {boolean}
    */
   hasDoc(id) {
-    return this.knowsDoc(id) && this._cache[id] !== null
+    return this.knowsDoc(id) && this._cache[id] !== null;
   }
 
   /**
@@ -70,18 +70,18 @@ export class DocCache {
    * @returns {boolean}
    */
   knowsDoc(id) {
-    return Object.prototype.hasOwnProperty.call(this._cache, id)
+    return Object.prototype.hasOwnProperty.call(this._cache, id);
   }
 
   /** Clear all entries. */
   empty() {
-    this._cache = {}
+    this._cache = {};
   }
 
   /** Mark all entries as stale (null); next update() will re-fetch. */
   invalidate() {
     for (const id of Object.keys(this._cache)) {
-      this._cache[id] = null
+      this._cache[id] = null;
     }
   }
 
@@ -93,36 +93,36 @@ export class DocCache {
    * @returns {Promise<void>}
    */
   async update(settings, docResolver, proxyUrl = null) {
-    const idsToFetch = []
+    const idsToFetch = [];
     for (const [id, doc] of Object.entries(this._cache)) {
       if (doc === null) {
-        idsToFetch.push(id)
+        idsToFetch.push(id);
       }
     }
 
     if (idsToFetch.length === 0) {
-      return
+      return;
     }
 
-    const settingsToUse = { ...settings }
+    const settingsToUse = { ...settings };
     if (settings.proxyRequests === true && proxyUrl) {
-      settingsToUse.proxyUrl = proxyUrl
+      settingsToUse.proxyUrl = proxyUrl;
     }
 
-    const resolver = docResolver.createResolver(idsToFetch, settingsToUse, CHUNK_SIZE)
+    const resolver = docResolver.createResolver(idsToFetch, settingsToUse, CHUNK_SIZE);
     try {
-      await resolver.fetchDocs()
+      await resolver.fetchDocs();
       for (const doc of resolver.docs || []) {
         if (doc && doc.id != null) {
-          this._cache[doc.id] = doc
+          this._cache[doc.id] = doc;
         }
       }
     } catch (response) {
-      console.info('Error fetching Docs in DocCache:', response)
+      console.info('Error fetching Docs in DocCache:', response);
       // Match docCacheSvc: resolve (don't reject) so callers can chain without .catch
     }
   }
 }
 
 /** Singleton instance for shared use across Stimulus controllers. */
-export const docCache = new DocCache()
+export const docCache = new DocCache();

@@ -1042,3 +1042,236 @@ $scope / bindings          →    data-* attributes, Turbo Frame
 ng-click                   →    data-action="click->controller#method"
 ng-if / ng-show            →    Server-rendered or Stimulus toggle
 ```
+
+### 3. IDOR: JudgementsController Unscoped Lookup — **P0** — **FIXED**
+
+**Location:** `app/controllers/judgements_controller.rb`
+
+**Issue:** `set_judgement` used `Judgement.find(params[:id])` without scoping through the book. The `before_action` order ran `set_judgement` before `set_book`, and the judgement was not verified to belong to the current book.
+
+**Fix applied:**
+1. Reordered: `before_action :set_book` before `before_action :set_judgement`
+2. Scoped the lookup: `@judgement = @book.judgements.find(params[:id])`
+3. Added `before_action :check_book` so missing/inaccessible book returns 404 instead of 500
+4. **unrateable / judge_later:** Scope through `@book.query_doc_pairs.find(params[:query_doc_pair_id])` before `find_or_initialize_by`
+5. **create:** Validate `query_doc_pair` belongs to `@book` via `@book.query_doc_pairs.find(...)`; scope duplicate lookup to `@book.judgements`
+
+**Verification:** `test/controllers/judgements_controller_test.rb` includes `does not expose judgement from another book (IDOR)`.
+
+
+## 9. JSHint → ESLint/Prettier Migration Review (Feb 2026)
+
+**Scope:** Changes from replacing JSHint with ESLint and Prettier.
+
+### Summary
+
+The migration is **sound**. No bugs, regressions, or lost functionality identified. A few minor observations below.
+
+### Findings
+
+| # | Severity | Finding |
+|---|----------|---------|
+| 1 | P3 | **Untracked file:** `docs/linting.md` is new and untracked. Add to git. |
+| 2 | P3 | **Dead code:** `export_case_controller.js` — `_filename` is assigned in the sync export path but never used (form submit handles download). Consider removing the variable in a future cleanup. |
+| 3 | P3 | **Archived reference:** `docs/port/archives/port_completed.md` line 879 references `lib/jshint/lint.rb` (deleted). Historical context only; no action required. |
+
+### Verified OK
+
+- **Rake task:** `test:lint` correctly invokes `yarn lint` and `yarn format`; `test:frontend` runs Vitest + lint.
+- **CircleCI:** Updated to `rake test:lint`.
+- **config/ci.rb:** Uses `test:frontend`, which includes `test:lint`.
+- **build_css.js regex:** `[\/\\]` → `[/\\]` is correct; forward slash does not need escaping in a regex character class.
+- **tour_controller.js:** `let buttons` without init is safe; all branches assign before use.
+- **doc_cache_spec.js:** Removal of unused `DocCache` import is correct; tests use `docCache` only.
+- **Lint scope:** ESLint ignores vendor, builds, coverage, lib, etc. Matches intent. JSHint only linted `app/assets/javascripts` (effectively empty); ESLint now covers `app/javascript`, `spec/javascripts`, and build scripts.
+
+### No Regressions
+
+- Vitest passes (60 tests).
+- `rake test:frontend` passes.
+- ESLint and Prettier both pass.
+
+---
+
+---
+
+### 4. IDOR: ApiKeysController Unscoped Lookup — **P0** — **FIXED**
+
+**Location:** `app/controllers/api_keys_controller.rb:38`
+
+**Issue:** `destroy` used `ApiKey.find(params[:id])` without scoping through the current user.
+
+**Fix applied:** Now uses `current_user.api_keys.find(params[:id])` to scope the lookup to the current user's API keys.
+
+### 17. Incomplete URL Building in Some Controllers — **P2** — FIXED
+
+**Location:** Multiple JavaScript controllers
+
+**Issue:** Some controllers use `new URL(window.location.href)` to parse URLs but don't use the project's URL building helpers consistently.
+
+**Examples:**
+- `app/javascript/controllers/tour_controller.js:17`
+- `app/javascript/controllers/new_case_wizard_controller.js:160,494`
+- `app/javascript/controllers/query_list_controller.js:222,232,372,382`
+
+**Impact:** May break in subpath deployments.
+
+**Severity:** Low-Medium
+
+**Recommendation:** Use `getQuepidRootUrl()` and `buildPageUrl()` consistently.
+
+**Pragmatic note:** Same as #10 — subpath deployment blocker.
+
+**Fix:** Added `buildCurrentPageUrlWithParams()` and `getCurrentPageSearchParams()` to `utils/quepid_root.js`. Updated tour_controller, new_case_wizard_controller, query_list_controller, and delete_query_controller to use these helpers. Wizard finish now uses `buildPageUrl()` for navigation. See `docs/port/api_client.md` for usage.
+
+
+### Dead code: ScoresController#set_score ✅
+
+**Location:** `app/controllers/scores_controller.rb:24-26`
+
+`set_score` is defined but never used in a `before_action`. The only score-destroy path is `destroy_multiple`, which uses `@case.scores.where(id: params[:score_ids])` — correctly scoped. Safe to delete `set_score`.
+
+**Fixed:** Removed unused `set_score` method.
+
+### 2. URL Parsing Bug in Proxy Controller — **P3** — **FIXED**
+
+**Location:** `app/controllers/proxy_controller.rb`
+
+**Issue:** The `extract_extra_url_params` method had a bug when parsing query parameters from URLs. It split on `=` but didn't handle multiple query parameters correctly.
+
+**Fix:** Replaced manual string parsing with `Addressable::URI.parse` and `query_values`, which correctly parses all query parameters including multi-param URLs like `http://example.com/search?q=test&rows=10`.
+
+**Tests:** Added `test 'should be able to handle a get with multiple query params in the URL'` in `proxy_controller_test.rb`; added corresponding webmock stub for `?q=test&rows=10`.
+
+---
+
+### 1. Boolean Parameter Parsing Inconsistency — **P3**
+
+**Location:** `app/controllers/proxy_controller.rb:13`
+
+**Issue:** The `proxy_debug` parameter is parsed using string comparison (`'true' == params[:proxy_debug]`) instead of the project's standard `deserialize_bool_param` helper.
+
+**Current Code:**
+```ruby
+proxy_debug = 'true' == params[:proxy_debug]
+```
+
+**Expected:**
+```ruby
+proxy_debug = deserialize_bool_param(params[:proxy_debug])
+```
+
+**Impact:** Inconsistent behavior with other boolean parameters. The string comparison will fail for `true`, `1`, `"1"`, etc., which `deserialize_bool_param` handles correctly.
+
+**Severity:** Medium
+
+**Pragmatic note:** Proxy is used when `proxyRequests` is true on search endpoints (see `doc_cache.js`). `proxy_debug` is rarely passed; low real-world impact.
+
+### 9. Stimulus Controller Event Listener Leaks — **P2** ✅ Addressed
+
+**Location:** Multiple Stimulus controllers
+
+**Issue:** Several controllers add event listeners in `connect()` but do not remove them in `disconnect()`. When Turbo navigates away, controllers disconnect but listeners may persist if attached to `document` or long-lived elements, or the controller may not fully clean up.
+
+**Affected Controllers (all fixed):**
+- `add_query_controller.js` — added `disconnect()` to remove input listener
+- `share_case_controller.js`, `share_book_controller.js`, `share_search_endpoint_controller.js`, `share_scorer_controller.js` — event delegation on stable `sharedListEl` parent; single listener removed in `disconnect()`
+- `scorer_scale_controller.js` — added `disconnect()` to remove scale preset and scale list listeners
+- `diff_controller.js` — event delegation on `selectionContainerTarget` for change/click
+- `judgements_controller.js` — event delegation on `bookListTarget` for book selection clicks
+
+**Impact:** Memory leaks on SPA-style navigation, duplicate handlers if elements are re-used, potential "ghost" behavior.
+
+**Severity:** Low–Medium
+
+**Resolution:** Added `disconnect()` methods that remove all listeners. For dynamically created elements, switched to event delegation on stable parents.
+
+### 10. Inconsistent Navigation Patterns — **P2** — RESOLVED
+
+**Location:** Multiple JavaScript controllers
+
+**Issue:** Many controllers use `window.location.href` and `window.location.reload()` directly instead of using the project's URL helper methods (`getQuepidRootUrl()`, `buildPageUrl()`).
+
+**Resolution (2025-02):** All affected controllers now use `buildPageUrl(root, ...)` for navigation and `reloadOrTurboVisit()` (from `utils/quepid_root`) instead of raw `window.location.reload()`. The `reloadOrTurboVisit()` helper prefers Turbo.visit when available. `import_snapshot_controller.js` was also updated to use `buildApiUrl()` instead of a hardcoded `/api/...` path. `mapper_wizard_controller.js` uses `buildPageUrl(root, 'search_endpoints', data.redirect_id)` for subpath-safe navigation (server returns `redirect_id`).
+
+### 12. Predicate Method Naming Inconsistency — **P3** — *Fixed*
+
+**Location:** Multiple files
+
+**Issue:** Some code uses `has_*` prefix for predicate methods, which violates the project convention of using `*?` suffix.
+
+**Examples:**
+- `app/models/selection_strategy.rb:10,24,56` - `every_query_doc_pair_has_three_judgements?`, `user_has_judged_all_available_pairs?`
+- `app/views/bulk_judge/new.html.erb:137,139` - `has_key?` (this is Ruby Hash method, acceptable)
+- `app/views/judgements/_form.html.erb:159,161` - `has_key?` (Ruby Hash method, acceptable)
+
+**Impact:** Inconsistent with project conventions (`.cursor/rules/quepid-project.mdc` states: "In Ruby we say `credentials?` versus `has_credentials?` for predicates").
+
+**Severity:** Low
+
+**Recommendation:** Rename predicate methods to use `?` suffix:
+- `every_query_doc_pair_has_three_judgements?` → (kept as-is; "has" is part of natural phrasing for "every X has Y")
+- `user_has_judged_all_available_pairs?` → `user_judged_all_available_pairs?` ✓
+
+**Note:** `has_key?` is a Ruby Hash method and should remain as-is.
+
+**Pragmatic note:** Style-only. Don't block releases.
+
+## Bug: Share Controllers — Wrong Element Receives `active` Class
+
+**Severity:** Medium (broken UI behavior)
+
+**Location:** `share_case_controller.js`, `share_book_controller.js`, `share_search_endpoint_controller.js`, `share_scorer_controller.js` — `toggleSharedSelect()`
+
+**Issue:** With event delegation, `event.currentTarget` is the delegated parent (`sharedListEl`), not the clicked button. The code uses:
+
+```javascript
+const el = e.currentTarget || e.target;
+el.classList.add('active');
+```
+
+This adds `active` to the list container instead of the clicked team button. The selected team will not show the active state correctly.
+
+**Fix:** Use `closest()` to resolve the actual button:
+
+```javascript
+const el = e.target.closest('button[data-team-id]');
+if (el) el.classList.add('active');
+```
+
+**Status:** ✅ Fixed in all four share controllers.
+
+
+### 13. Code Duplication: URL Parameter Extraction — **P3** ✅ Addressed
+
+**Location:** Multiple controllers
+
+**Issue:** Similar logic for extracting and parsing URL parameters appears in multiple places:
+
+- `app/controllers/proxy_controller.rb:60-65` - `extract_extra_url_params`
+- `app/controllers/api/v1/search_endpoints/validations_controller.rb` - URL parsing logic
+- `app/helpers/application_helper.rb:139-147` - `get_protocol_from_url`
+
+**Impact:** Maintenance burden, potential for bugs to be fixed in one place but not others.
+
+**Severity:** Low
+
+**Recommendation:** Extract common URL parsing logic into a shared service or helper.
+
+**Pragmatic note:** Extract when fixing proxy URL parsing (#2); don't do a separate refactor.
+
+**Resolution:** Extracted to `app/services/url_parser_service.rb` with `parse`, `scheme`, `query_values`, and `http_or_https?`. All three call sites now use the service.
+
+---
+
+### 6. Unsafe Integer Coercion — **P3** ✅ Fixed
+
+**Location:** `app/controllers/api/v1/snapshots/search_controller.rb:45-46`
+
+**Issue:** `params[:rows].to_i` and `params[:start].to_i` are used without validation. Non-numeric strings (e.g., `"abc"`) coerce to `0`, which may cause unexpected behavior (e.g., zero rows returned).
+
+**Fix applied:** Use `params[:rows].presence&.to_i` and `params[:start].presence&.to_i`, with `start = 0 if start&.negative?` to validate range. Matches the pattern in `Api::V1::Tries::Queries::SearchController` (lines 40-42).
+
+**Severity:** Low
+
+**Pragmatic note:** `"abc".to_i` → 0; user gets empty results. Unlikely to be hit by normal use. Fix if you see odd pagination bugs.

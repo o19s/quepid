@@ -8,7 +8,7 @@
   <div class="chart-panel-content collapse mt-2" data-chart-panel-target="panel">
     <div class="card card-body small">
       <h6 class="card-title">Score over time</h6>
-      <div class="qgraph-chart-panel" style="min-height: 120px;">
+      <div class="qgraph-chart-panel min-h-120">
         <%= render QgraphComponent.new(
           scores: @scores,
           annotations: @annotations,

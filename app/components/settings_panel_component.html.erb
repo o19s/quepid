@@ -21,7 +21,7 @@
           </button>
         </dd>
       </dl>
-      <div class="d-flex gap-2 align-items-center mb-2">
+      <div class="d-flex gap-2 align-items-center mb-3">
         <% if @search_endpoint_edit_path %>
           <%= link_to "Edit search endpoint", @search_endpoint_edit_path, class: "btn btn-sm btn-outline-primary" %>
         <% end %>
@@ -29,13 +29,13 @@
           <i class="bi bi-plug" aria-hidden="true"></i> Test connection
         </button>
       </div>
-      <div class="d-none small mb-2" data-settings-panel-target="urlValidationFeedback"></div>
-      <div class="d-none alert alert-warning py-1 px-2 small mb-2" data-settings-panel-target="templateCallFeedback">
+      <div class="d-none small mb-3" data-settings-panel-target="urlValidationFeedback"></div>
+      <div class="d-none alert alert-warning py-1 px-2 small mb-3" data-settings-panel-target="templateCallFeedback">
         <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
         This endpoint uses <code>_search/template</code>. Make sure your query params are formatted as a search template request body.
       </div>
       <% if search_endpoints.any? %>
-        <div class="mb-2">
+        <div class="mb-3">
           <label class="form-label small text-muted mb-1">Search endpoint</label>
           <select class="form-select form-select-sm" data-settings-panel-target="endpointSelect" data-action="change->settings-panel#changeEndpoint">
             <% search_endpoints.each do |ep| %>
@@ -47,25 +47,25 @@
       <h6 class="card-title mt-2">Query params (try config)</h6>
       <% if @try.present? && @case_id.present? %>
         <form data-settings-panel-target="paramsForm" data-action="submit->settings-panel#saveParams">
-          <div class="mb-2">
+          <div class="mb-3">
             <label class="form-label small text-muted mb-1">Query parameters</label>
-            <textarea class="form-control form-control-sm font-monospace" rows="5" style="max-height: 200px; overflow: auto;"
+            <textarea class="form-control form-control-sm font-monospace max-h-200 overflow-auto" rows="5"
                       data-settings-panel-target="queryParams"
                       data-codemirror-mode="json"
                       data-action="input->settings-panel#extractVars blur->settings-panel#validateQueryParams"><%= query_params_full %></textarea>
             <div class="d-none small mt-1" data-settings-panel-target="queryParamsFeedback"></div>
           </div>
           <div data-settings-panel-target="curatorVarsContainer"></div>
-          <div class="form-check mb-2">
+          <div class="form-check mb-3">
             <input type="checkbox" class="form-check-input" id="settings-escape-query"
                    data-settings-panel-target="escapeQuery" <%= "checked" if escape_query? %>>
             <label class="form-check-label small" for="settings-escape-query">Escape query</label>
           </div>
-          <div class="mb-2">
+          <div class="mb-3">
             <label class="form-label small text-muted mb-1" for="settings-number-of-rows">Number of rows</label>
-            <input type="number" class="form-control form-control-sm" id="settings-number-of-rows"
+            <input type="number" class="form-control form-control-sm max-w-100" id="settings-number-of-rows"
                    min="1" max="1000" value="<%= number_of_rows %>"
-                   data-settings-panel-target="numberOfRows" style="max-width: 100px;">
+                   data-settings-panel-target="numberOfRows">
           </div>
           <button type="submit" class="btn btn-sm btn-primary">
             <i class="bi bi-save" aria-hidden="true"></i> Save &amp; re-run
@@ -84,7 +84,7 @@
         <div class="collapse" id="try-history-section">
           <div class="list-group list-group-flush small">
             <% tries.each_with_index do |t, idx| %>
-              <div class="list-group-item px-0 py-1 d-flex justify-content-between align-items-center<%= t.try_number == @try&.try_number ? ' bg-light' : '' %><%= idx >= 20 ? ' d-none js-try-history-extra' : '' %>" style="border-left: 4px solid <%= url_color_for_try(t) %>; padding-left: 6px;">
+              <div class="list-group-item px-0 py-1 d-flex justify-content-between align-items-center border-start<%= t.try_number == @try&.try_number ? ' bg-light' : '' %><%= idx >= 20 ? ' d-none js-try-history-extra' : '' %>" style="--try-accent: <%= url_color_for_try(t) %>; border-left-color: var(--try-accent); border-left-width: 4px; padding-left: 6px;">
                 <div class="flex-grow-1">
                   <% if t.try_number == @try&.try_number %>
                     <strong>Try <%= t.try_number %></strong>

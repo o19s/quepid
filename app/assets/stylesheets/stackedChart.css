@@ -1,30 +1,28 @@
 .graph-explain .progress {
     height: 7px;
-    margin: 2px 0 5px 0;
+    margin: var(--quepid-spacing-xs) 0 var(--quepid-spacing-sm) 0;
 }
 
 .graph-explain .graph-label {
-    font-size: 10px;
+    font-size: var(--quepid-font-size-3xs);
     word-wrap: break-word;
 }
 
 .stacked-chart-container {
-	padding: 15px;
+	padding: var(--quepid-spacing-lg);
 }
 
 .stacked-chart-container .nav-tabs li a {
-	font-size: 12px;
-	padding: 8px 10px;
+	font-size: var(--quepid-font-size-xs-2);
+	padding: var(--quepid-spacing-4) var(--quepid-spacing-md);
 }
 
 .stacked-chart-container .tab-body {
-	padding: 15px;
-	background: #FFF;
-	border-left: 1px solid #DDD;
-	border-right: 1px solid #DDD;
-	border-bottom: 1px solid #DDD;
+	padding: var(--quepid-spacing-lg);
+	background: var(--quepid-color-white);
+	border-left: var(--quepid-border-width) solid var(--quepid-color-border-dd);
+	border-right: var(--quepid-border-width) solid var(--quepid-color-border-dd);
+	border-bottom: var(--quepid-border-width) solid var(--quepid-color-border-dd);
 }
 
-.detailed-explain-modal { }
-
-small { font-size: 11px; }
+small { font-size: var(--quepid-font-size-xs); }

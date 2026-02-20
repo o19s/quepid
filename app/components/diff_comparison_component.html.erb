@@ -8,9 +8,8 @@
       <span class="badge bg-secondary ms-1"><%= @current_docs.size %></span>
     </div>
     <% @current_docs.each_with_index do |doc, idx| %>
-      <% did = doc_id(doc) %>
       <% status = current_doc_status(doc, snap_cols) %>
-      <div class="diff-doc <%= status %>" title="<%= status.present? ? 'New in current results' : '' %>">
+      <div class="diff-doc rounded-1 <%= status %>" title="<%= status.present? ? 'New in current results' : '' %>">
         <span class="diff-doc__position badge bg-dark"><%= idx + 1 %></span>
         <span class="diff-doc__id text-truncate small"><%= h(doc_title(doc)) %></span>
         <% r = rating_for(doc) %>
@@ -40,7 +39,7 @@
       </div>
       <% (col[:docs] || []).sort_by { |d| d[:position].to_i }.each do |snap_doc| %>
         <% status = diff_status(snap_doc, current_position_map) %>
-        <div class="diff-doc <%= status %>" title="<%= h(position_change_title(snap_doc, status)) %>">
+        <div class="diff-doc rounded-1 <%= status %>" title="<%= h(position_change_title(snap_doc, status)) %>">
           <span class="diff-doc__position badge bg-dark"><%= snap_doc[:position] %></span>
           <span class="diff-doc__id text-truncate small"><%= h(snap_doc[:doc_id]) %></span>
           <% if status == "diff-doc--improved" %>

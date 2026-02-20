@@ -320,11 +320,11 @@ render turbo_stream: streams, status: :ok
 
 ### ID sanitization
 
-When using dynamic IDs (e.g., doc IDs), sanitize them for HTML attributes:
+When using dynamic IDs (e.g., doc IDs), sanitize them for HTML attributes. Doc IDs from search engines can contain URLs, slashes, colons, etc., which break Bootstrap's `querySelector` and Turbo Stream targets:
 
 ```ruby
 def rating_badge_id(doc_id)
-  "rating-badge-#{doc_id.to_s.gsub(/\s/, '_')}"
+  "rating-badge-#{doc_id.to_s.gsub(/[^a-zA-Z0-9_-]/, '-')}"
 end
 ```
 

@@ -1,6 +1,6 @@
 <%
   # User status checks
-  current_user_has_judged_all = SelectionStrategy.user_has_judged_all_available_pairs?(book, current_user)
+  current_user_has_judged_all = SelectionStrategy.user_judged_all_available_pairs?(book, current_user)
   user_has_judged_some = book.judgements.where(user: current_user).exists?
   user_judgement_count = book.judgements.where(user: current_user).count
   

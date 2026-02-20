@@ -1,0 +1,263 @@
+/*
+ * Core layout: html, body, base structure for core workspace (core_modern layout).
+ * Legacy #resize-wrap, #main, #footer removed — core_modern uses #main-content.
+ * Includes .element-attribute (formerly in base.css).
+ */
+
+/* Base */
+html, body {
+  width:    100%;
+  height:   100%;
+  padding:  0;
+  margin:   0;
+  overflow: auto; /* when page gets too small */
+}
+
+.container {
+  width: 100%;
+}
+
+hr {
+  border-color: var(--quepid-color-text-lighter);
+}
+
+button:focus {
+	outline: 0;
+}
+
+.element-attribute {
+  margin: var(--quepid-spacing-xl) 0;
+}
+
+a, button, .button {
+  cursor: pointer;
+}
+
+.cursor-grab {
+  cursor: grab;
+}
+.cursor-grab:active {
+  cursor: grabbing;
+}
+
+.dropdown-menu .actions {
+  overflow: auto;
+  padding-top: var(--quepid-spacing-xl);
+}
+
+.dropdown-menu .actions a.btn-success {
+  color: var(--quepid-color-white);
+}
+
+.dropdown-menu .actions a:hover.btn-success {
+  color: var(--quepid-color-white);
+  background-color: var(--quepid-color-success-hover);
+  border-color: var(--quepid-color-success-hover-border);
+}
+
+.table-striped > tbody > tr > td, .table-striped > tbody > tr > th {
+	border-top: var(--quepid-border-width) solid var(--quepid-color-black);
+}
+
+.table-striped > thead > tr > th {
+	border: none;
+}
+
+.add-query-input-group {
+  margin-inline-end: var(--quepid-spacing-13);
+}
+
+.btn-group {
+	z-index: 10;
+}
+
+.row {
+	margin: 0;
+}
+
+/* Primary navbar */
+.navbar-primary {
+	background: var(--quepid-color-white);
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(var(--quepid-color-white)), to(var(--quepid-color-border-lighter)));
+	background: -moz-linear-gradient(top, var(--quepid-color-white), var(--quepid-color-border-lighter));
+	border: none;
+	border-radius: 0;
+	margin-bottom: 0;
+}
+
+.navbar-primary .nav-label {
+	padding: var(--quepid-spacing-8) var(--quepid-spacing-8) var(--quepid-spacing-8) 0;
+	float: left;
+	color: var(--quepid-color-text-muted);
+}
+
+.toggle-label {
+	padding: var(--quepid-spacing-lg) var(--quepid-spacing-lg) var(--quepid-spacing-lg) var(--quepid-spacing-sm);
+}
+
+/* Footer */
+footer {
+  margin-top: var(--quepid-spacing-xxl);
+}
+
+/* Shared UI components */
+.ace_editor {
+    height: 400px;
+}
+
+.scorer.code .ace_editor {
+  height: 200px;
+}
+
+.queryparams.code .ace_editor {
+  height: 125px;
+}
+
+.customheaders.code .ace_editor {
+  height: 125px;
+}
+
+.detaileddoc.code .ace_editor {
+  height: 300px;
+}
+
+.scorer .max-score input:disabled {
+  background-color: var(--quepid-color-bg-hover);
+}
+
+.doc-desc {
+    font-size: var(--quepid-font-size-xl);
+    font-family: serif;
+    text-align: right;
+}
+
+.osc_logo {
+    height: 2em;
+}
+
+.footer {
+  text-align: center;
+  padding-left: var(--quepid-spacing-lg);
+  padding-right: var(--quepid-spacing-lg);
+}
+
+.help-panel {
+  display: block;
+  overflow: auto;
+  margin-bottom: var(--quepid-spacing-xxl);
+}
+
+.search-feedback {
+  margin: var(--quepid-spacing-xl) 0;
+}
+
+#flash-messages {
+  bottom:     0;
+  position:   fixed;
+  width:      100%;
+  z-index:    100;
+}
+
+.flash {
+  border-radius:  0;
+  display:        none;
+  margin:         0;
+  width:          100%;
+  padding-right:  var(--quepid-spacing-16);
+}
+.flash.in {
+  display: block;
+}
+
+.flash > span {
+  display:      block;
+  margin-left:  var(--quepid-spacing-xl);
+}
+
+.flash .close {
+  line-height: 17px;
+}
+
+
+.loading-app {
+  color: var(--quepid-color-info-light);
+  font-size: var(--quepid-font-size-sm-2);
+}
+
+.loading-app .loading-spinner {
+  font-size: calc(4 * var(--quepid-font-size-sm-2)) !important;
+}
+
+.loading-app .loading-text {
+  font-size: calc(0.5 * var(--quepid-font-size-sm-2)) !important;
+}
+
+.loading-app i {
+  background-color: transparent;
+}
+
+#profile {
+  margin-top:     var(--quepid-spacing-13);
+  margin-bottom:  var(--quepid-spacing-13);
+}
+
+#profile .avatar {
+  margin-right: var(--quepid-spacing-xl);
+}
+
+.account-type {
+  font-size:      var(--quepid-font-size-lg);
+  display:        block;
+  border-radius:  0;
+}
+
+.alert-danger h2 {
+  color: var(--quepid-color-danger-dark);
+}
+
+/* Import */
+.import-content {
+  max-height: 200px;
+  overflow:   scroll;
+}
+
+#annotations {
+  overflow: auto;
+  height:   auto;
+}
+
+li.annotation {
+  border: var(--quepid-border-width) solid var(--quepid-color-text-darker);
+}
+
+.annotations-time {
+  font-size: var(--quepid-font-size-xs);
+}
+
+.annotation-source {
+  font-size: var(--quepid-font-size-sm);
+}
+
+.annotation {
+  margin: var(--quepid-spacing-md) 0;
+}
+
+.annotation > div {
+  margin: var(--quepid-spacing-sm) 0;
+}
+
+.annotation .dropdown > a.dropdown-toggle:hover {
+  color: var(--quepid-color-text-light);
+}
+
+.annotation > .dropdown > .dropdown-menu > li {
+  border-bottom: var(--quepid-border-width) solid var(--quepid-color-text-lighter) !important;
+}
+
+.annotation .dropdown-menu > li > a.text-danger {
+  color: var(--quepid-color-danger-dark);
+}
+
+.btn:focus,.btn:active {
+   outline: none !important;
+}

@@ -42,8 +42,9 @@ module Api
             @snapshot_docs = []
           end
 
-          rows = params[:rows].to_i if params[:rows]
-          start = params[:start].to_i if params[:start]
+          rows = params[:rows].presence&.to_i
+          start = params[:start].presence&.to_i
+          start = 0 if start&.negative?
 
           @number_found = @snapshot_docs.count
 
@@ -57,8 +58,8 @@ module Api
           @solr_params = {
             q: @q,
           }
-          @solr_params[:rows] = params[:rows] if params[:rows]
-          @solr_params[:start] = params[:start] if params[:start]
+          @solr_params[:rows] = rows if rows
+          @solr_params[:start] = start if start
 
           respond_with @snapshot
         end

@@ -3,8 +3,9 @@
 class JudgementsController < ApplicationController
   include Pagy::Method
 
-  before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book
+  before_action :check_book
+  before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
 
   def index
     # compact checkbox: default to checked
@@ -47,11 +48,11 @@ class JudgementsController < ApplicationController
       # if @query_doc_pair
       #   @query = Query.joins(:case).where(case: { book_id: @query_doc_pair.book.id }).has_information_need.where(query_text: @query_doc_pair.query_text).first
       # end
-      @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @current_user, updated_at: Time.zone.now)
+      @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: current_user, updated_at: Time.zone.now)
       @previous_judgement = @judgement.previous_judgement_made # unless @judgement.new_record?
       if (track_judging[:counter] % 50).zero? # It's party time!
         @party_time = true
-        @judged_by_user = @book.judgements.where(user: @current_user).count.to_f
+        @judged_by_user = @book.judgements.where(user: current_user).count.to_f
         @total_pool_of_judgements = @book.query_doc_pairs.count.to_f
 
         @leaderboard_data = []
@@ -71,15 +72,18 @@ class JudgementsController < ApplicationController
   end
 
   def create
+    @query_doc_pair = @book.query_doc_pairs.find(judgement_params[:query_doc_pair_id])
+
     @judgement = Judgement.new(judgement_params)
+    @judgement.query_doc_pair = @query_doc_pair
     @judgement.user = current_user
     @judgement.unrateable = false
 
     # Make sure that we haven't already created the same judgement before
     # This create UI can happen very quickly, and somehow we get overlapping creates..
-    if !@judgement.valid? && (@judgement.errors.added? :user_id, :taken, value: @current_user.id)
-      @judgement = Judgement.find_by(user_id: @current_user.id, query_doc_pair_id: @judgement.query_doc_pair_id)
-      @judgement.update(judgement_params)
+    if !@judgement.valid? && (@judgement.errors.added? :user_id, :taken, value: current_user.id)
+      @judgement = @book.judgements.find_by(user: current_user, query_doc_pair: @query_doc_pair)
+      @judgement.update(judgement_params.except(:query_doc_pair_id))
       @judgement.user = current_user
       @judgement.unrateable = false
     end
@@ -94,7 +98,8 @@ class JudgementsController < ApplicationController
   end
 
   def unrateable
-    @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
+    @query_doc_pair = @book.query_doc_pairs.find(params[:query_doc_pair_id])
+    @judgement = @book.judgements.find_or_initialize_by(query_doc_pair: @query_doc_pair, user: current_user)
     @judgement.update(judgement_params)
 
     @judgement.mark_unrateable!
@@ -103,7 +108,8 @@ class JudgementsController < ApplicationController
   end
 
   def judge_later
-    @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
+    @query_doc_pair = @book.query_doc_pairs.find(params[:query_doc_pair_id])
+    @judgement = @book.judgements.find_or_initialize_by(query_doc_pair: @query_doc_pair, user: current_user)
 
     @judgement.mark_judge_later!
     UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
@@ -131,7 +137,7 @@ class JudgementsController < ApplicationController
   private
 
   def set_judgement
-    @judgement = Judgement.find(params[:id])
+    @judgement = @book.judgements.find(params[:id])
   end
 
   def judgement_params

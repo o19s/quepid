@@ -1,37 +1,13 @@
-/* CSS Custom Properties for consistent spacing and styling */
+/* QScore uses shared variables from variables.css; aliases for backwards compatibility */
 :root {
-  --qscore-spacing-sm: 5px;
-  --qscore-spacing-md: 10px;
-  --qscore-spacing-lg: 15px;
-  --qscore-spacing-xl: 20px;
-  --qscore-border-radius: 5px;
-  --qscore-border-width: 1px;
-  --qscore-border-width-thick: 2px;
-  --qscore-highlight-width: 4px;
-}
-
-/* Utility classes for common border radius patterns */
-.border-radius-left {
-  border-top-left-radius: var(--qscore-border-radius);
-  border-bottom-left-radius: var(--qscore-border-radius);
-}
-
-.border-radius-right {
-  border-top-right-radius: var(--qscore-border-radius);
-  border-bottom-right-radius: var(--qscore-border-radius);
-}
-
-.border-radius-none {
-  border-radius: 0;
-}
-
-.border-radius-full {
-  border-radius: var(--qscore-border-radius);
-}
-
-/* Base qscore component styles */
-qscore-case, qscore-query {
-  padding: 0;
+  --qscore-spacing-sm: var(--quepid-spacing-sm);
+  --qscore-spacing-md: var(--quepid-spacing-md);
+  --qscore-spacing-lg: var(--quepid-spacing-lg);
+  --qscore-spacing-xl: var(--quepid-spacing-xl);
+  --qscore-border-radius: var(--quepid-border-radius-md);
+  --qscore-border-width: var(--quepid-border-width);
+  --qscore-border-width-thick: var(--quepid-border-width-thick);
+  --qscore-highlight-width: var(--quepid-highlight-width);
 }
 
 /* Base qscore component styles — ViewComponent class-based selectors */
@@ -39,33 +15,29 @@ qscore-case, qscore-query {
   padding: 0;
 }
 
-qscore-case.case-score,
 .qscore-case.case-score {
   margin: var(--qscore-spacing-xl) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
 /* Simplified diff score margins */
-/* For divs we use :only-child as a close equivalent,
-   since the qscore-case is typically the only child in its wrapper. */
-qscore-case.case-score:not(.diff-score):not(:only-of-type),
-qscore-case.case-score.diff-score,
+/* Assumption: parent contains only divs (ViewComponents render divs as direct children).
+   We use :only-child and :last-child instead of :only-of-type/:last-of-type; they are
+   equivalent when siblings are all the same element type. */
 .qscore-case.case-score:not(.diff-score):not(:only-child),
 .qscore-case.case-score.diff-score {
   margin: var(--qscore-spacing-xl) 0px calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
-qscore-case.case-score.diff-score:last-of-type,
 .qscore-case.case-score.diff-score:last-child {
   margin: var(--qscore-spacing-xl) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
 /* Header rating styles */
-qscore-case .header-rating,
 .qscore-case .header-rating {
   border-radius: var(--qscore-border-radius);
-  color: #fff;
+  color: var(--quepid-color-white);
   display: inline-block;
-  font-size: 22px;
+  font-size: var(--quepid-font-size-lg-2);
   margin: 0;
   min-height: 80px;
   padding: var(--qscore-spacing-lg) 0;
@@ -74,9 +46,6 @@ qscore-case .header-rating,
 }
 
 /* Overall rating styles */
-qscore-case .overall-rating,
-qscore-query .overall-rating,
-/* Overall rating styles — ViewComponent class-based selectors */
 .qscore-case .overall-rating,
 .qscore-query .overall-rating {
   display: block;
@@ -85,30 +54,25 @@ qscore-query .overall-rating,
   width: 90px;
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
   padding: var(--qscore-spacing-md) 0;
-  color: #fff;
+  color: var(--quepid-color-white);
   font-family: 'allerbold_italic';
-  font-size: 22px;
+  font-size: var(--quepid-font-size-lg-2);
   text-align: center;
   border-top-left-radius: var(--qscore-border-radius);
   border-bottom-left-radius: var(--qscore-border-radius);
 }
 
 /* Query score specific positioning */
-qscore-query.results-score .overall-rating,
-.diff-query-display qscore-query.results-score .overall-rating,
 .qscore-query.results-score .overall-rating,
 .diff-query-display .qscore-query.results-score .overall-rating {
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
 }
 
-qscore-query.diff-score .overall-rating,
 .qscore-query.diff-score .overall-rating {
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
 /* Diff score styling */
-qscore-case .overall-rating.diff-score,
-qscore-query.diff-score .overall-rating,
 .qscore-case .overall-rating.diff-score,
 .qscore-query.diff-score .overall-rating {
   border-radius: 0;
@@ -117,36 +81,18 @@ qscore-query.diff-score .overall-rating,
 }
 
 /* Border radius adjustments for multiple scores */
-qscore-case.case-score:not(.diff-score):not(:only-of-type) .header-rating,
 .qscore-case.case-score:not(.diff-score):not(:only-child) .header-rating {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
-qscore-case.case-score.diff-score .header-rating,
 .qscore-case.case-score.diff-score .header-rating {
   border-radius: 0;
 }
 
-qscore-case.case-score.diff-score:last-of-type .header-rating,
 .qscore-case.case-score.diff-score:last-child .header-rating {
   border-top-right-radius: var(--qscore-border-radius);
   border-bottom-right-radius: var(--qscore-border-radius);
-}
-
-/* Graph styling */
-qscore-case qgraph {
-  display: inline-block;
-  height: 80px;
-  margin: 0px calc(-1 * var(--qscore-spacing-md)) 0px 0px;
-  width: 150px;
-}
-
-qscore-case qgraph svg {
-  border: var(--qscore-border-width-thick) solid grey;
-  border-right-style: none;
-  border-top-left-radius: var(--qscore-border-radius);
-  border-bottom-left-radius: var(--qscore-border-radius);
 }
 
 /* Graph styling — ViewComponent class-based selectors */
@@ -158,7 +104,7 @@ qscore-case qgraph svg {
 }
 
 .qscore-case .qgraph-wrapper svg {
-  border: var(--qscore-border-width-thick) solid grey;
+  border: var(--qscore-border-width-thick) solid var(--quepid-color-qgraph-axis);
   border-right-style: none;
   border-top-left-radius: var(--qscore-border-radius);
   border-bottom-left-radius: var(--qscore-border-radius);
@@ -173,7 +119,7 @@ qscore-case qgraph svg {
 .diff-header {
   display: flex;
   margin-bottom: var(--qscore-spacing-xl);
-  border-bottom: var(--qscore-border-width-thick) solid #eee;
+  border-bottom: var(--qscore-border-width-thick) solid var(--quepid-color-border-light);
 }
 
 .diff-header .diff-column {
@@ -183,13 +129,13 @@ qscore-case qgraph svg {
 .diff-row {
   display: flex;
   min-height: 200px;
-  border-bottom: var(--qscore-border-width) solid #f0f0f0;
+  border-bottom: var(--qscore-border-width) solid var(--quepid-color-border-lighter);
   margin-bottom: var(--qscore-spacing-xl);
 }
 
 .diff-column {
   flex: 1;
-  border-right: var(--qscore-border-width) solid #eee;
+  border-right: var(--qscore-border-width) solid var(--quepid-color-border-light);
   padding: 0 var(--qscore-spacing-lg);
   text-align: left;
 }
@@ -221,24 +167,24 @@ qscore-case qgraph svg {
 .diff-actions {
   text-align: center;
   padding-top: var(--qscore-spacing-xl);
-  border-top: var(--qscore-border-width) solid #eee;
+  border-top: var(--qscore-border-width) solid var(--quepid-color-border-light);
 }
 
 /* Search result highlighting */
 .search-result.different {
-  border-left: var(--qscore-highlight-width) solid #ffc107;
+  border-left: var(--qscore-highlight-width) solid var(--quepid-color-warning);
 }
 
 .search-result.missing {
-  border-left: var(--qscore-highlight-width) solid #dc3545;
+  border-left: var(--qscore-highlight-width) solid var(--quepid-color-danger);
 }
 
 .search-result.new {
-  border-left: var(--qscore-highlight-width) solid #28a745;
+  border-left: var(--qscore-highlight-width) solid var(--quepid-color-success);
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
+@media (max-width: var(--quepid-breakpoint-md-max)) {
   .diff-header,
   .diff-row {
     flex-direction: column;
@@ -246,7 +192,7 @@ qscore-case qgraph svg {
 
   .diff-column {
     border-right: none;
-    border-bottom: var(--qscore-border-width) solid #eee;
+    border-bottom: var(--qscore-border-width) solid var(--quepid-color-border-light);
     margin-bottom: var(--qscore-spacing-lg);
     padding: var(--qscore-spacing-lg) 0;
   }

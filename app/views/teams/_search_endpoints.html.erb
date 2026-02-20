@@ -8,7 +8,7 @@
     </h5>
     <div class="mb-3">
       <%= form_with url: team_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
-        <div class="col-auto" style="flex:1">
+        <div class="col-auto flex-grow-1">
           <div class="input-group">
             <%= text_field_tag :search_endpoints_q, @filter_search_endpoints_q, class: 'form-control', placeholder: 'Filter search endpoints by name or URL' %>
             <button class="btn btn-outline-secondary" type="submit" title="Search search endpoints">

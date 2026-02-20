@@ -21,7 +21,7 @@ module SelectionStrategy
 
   # Checks if the given user has judged all available query-document pairs
   # Returns true if the user has no more pairs available to judge
-  def self.user_has_judged_all_available_pairs? book, user
+  def self.user_judged_all_available_pairs? book, user
     random_query_doc_pair_for_multiple_judges(book, user).nil?
   end
 

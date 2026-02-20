@@ -4,7 +4,7 @@
   </div>
   <div class="card-body">
     <% if ai_judge.errors.any? %>
-      <div style="color: red">
+      <div class="text-danger">
         <h2><%= pluralize(ai_judge.errors.count, "error") %> prohibited this ai_judge from being saved:</h2>
   
         <ul>

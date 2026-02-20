@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <%= link_to root_path, class: "navbar-brand" do %>
       Quepid
-      <span class="hover"><%= image_tag 'tagline-sm.png', title: "Give your queries some love" %></span>
+      <span class="navbar-brand__tagline"><%= image_tag 'tagline-sm.png', title: "Give your queries some love" %></span>
     <% end %>
     <% if current_user.present? %>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -12,7 +12,7 @@
             <a class="nav-link dropdown-toggle" href="#" id="dropdownCases" role="button" data-bs-toggle="dropdown">
               <span class="nav-label">Relevancy Cases</span>
             </a>
-            <ul class="dropdown-menu p-2" style="left: auto; width:250px;" aria-labelledby="navbarDropdown">
+            <ul class="dropdown-menu p-2 w-250" aria-labelledby="navbarDropdown">
               <li class="text-muted">
                 RECENT CASES
               </li>
@@ -33,7 +33,7 @@
             <a class="nav-link dropdown-toggle" href="#" id="dropdownBooks" role="button" data-bs-toggle="dropdown">
               <span class="nav-label">Books</span>
             </a>
-            <ul class="dropdown-menu p-2" style="left: auto; width:250px;" aria-labelledby="navbarDropdownBooks">
+            <ul class="dropdown-menu p-2 w-250" aria-labelledby="navbarDropdownBooks">
               <li class="text-muted">
                 RECENT BOOKS
               </li>
@@ -84,10 +84,10 @@
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-              <%= image_tag current_user.avatar_url, size: '24x24', class: 'img-rounded', title: 'Avatar image' %>
+              <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded', title: 'Avatar image' %>
               <span data-display-name><%= current_user.display_name %> </span>
             </a>
-            <ul class="dropdown-menu navbar-right" style="right: 0; left: auto;" aria-labelledby="navbarDropdown">
+            <ul class="dropdown-menu navbar-right dropdown-right" aria-labelledby="navbarDropdown">
               <li><%= link_to 'My profile', profile_path, class: 'dropdown-item', target: '_self' %></li>
               <li><%= link_to 'Log out', logout_path, class: 'dropdown-item', target: '_self' %></li>
               <li><hr class="dropdown-divider"></li>

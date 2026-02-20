@@ -203,7 +203,8 @@ class MapperWizardsController < ApplicationController
       end
 
       clear_wizard_state
-      render json: { success: true, redirect_url: search_endpoint_url(@search_endpoint) }
+      # Return redirect_id so client can build URL via buildPageUrl() for subpath-safe navigation
+      render json: { success: true, redirect_id: @search_endpoint.id }
     else
       render json: { success: false, errors: @search_endpoint.errors.full_messages }, status: :unprocessable_content
     end

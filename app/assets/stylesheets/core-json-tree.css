@@ -1,0 +1,28 @@
+/*
+ * Core JSON tree: collapsible JSON view.
+ * Used by core workspace (core_modern layout).
+ */
+
+/* JSON tree view (collapsible) */
+.json-tree {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: var(--quepid-font-size-sm);
+  line-height: 1.5;
+  padding: var(--quepid-spacing-6);
+  background: var(--quepid-color-bg-subtle);
+  border-radius: var(--quepid-border-radius-lg);
+  overflow: auto;
+  max-height: 60vh;
+}
+.json-tree-toggle {
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+  font-size: var(--quepid-font-size-xs-2);
+}
+.json-tree-key { color: var(--quepid-color-json-key); }
+.json-tree-string { color: var(--quepid-color-json-string); }
+.json-tree-number { color: var(--quepid-color-json-number); }
+.json-tree-boolean { color: var(--quepid-color-json-boolean); }
+.json-tree-null { color: var(--quepid-color-neutral); }
+.json-tree-count { color: var(--quepid-color-neutral); font-size: var(--quepid-font-size-sm); }

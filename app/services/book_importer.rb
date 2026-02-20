@@ -50,8 +50,7 @@ class BookImporter
     end
   end
 
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
   def import
     params_to_use = @data_to_process
 
@@ -76,6 +75,12 @@ class BookImporter
     @book.save
 
     if params_to_use[:query_doc_pairs]
+      # Batch-load users to avoid N+1 queries when creating judgements
+      emails = params_to_use[:query_doc_pairs]
+        .flat_map { |q| q[:judgements]&.map { |j| j[:user_email] } }
+        .compact.uniq
+      users_by_email = User.where(email: emails).index_by(&:email)
+
       total = params_to_use[:query_doc_pairs].size
       counter = total
       last_percent = 0
@@ -96,12 +101,11 @@ class BookImporter
         next unless query_doc_pair[:judgements]
 
         query_doc_pair[:judgements].each do |judgement|
-          judgement[:user] = User.find_by(email: judgement[:user_email])
+          judgement[:user] = users_by_email[judgement[:user_email]]
           qdp.judgements.create(judgement.except(:user_email))
         end
       end
     end
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 end

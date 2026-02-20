@@ -1,23 +1,20 @@
 
-<section styled="background-color: #9de2ff;">
+<section class="profile-hero-bg">
   <div class="container py-5 h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
       <div class="col-8">
-        <div class="card" style="border-radius: 15px;">
+        <div class="card rounded-4">
           <div class="card-body p-4">
             <div class="d-flex text-black">
               <div class="flex-shrink-0">
-                <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', class:'img-fluid img-rounded', style:"width: 180px;", title: 'Avatar image' %>
+                <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', class: 'img-fluid rounded w-180', title: 'Avatar image' %>
               </div>
               <div class="flex-grow-1 ms-3">
                 <h5 class="mb-1"><%= current_user.display_name %></h5>
-                <p class="mb-2 pb-1" style="color: #2b2a2a;">
+                <p class="mb-2 pb-1 profile-text">
                   <%= current_user.email %>
                 </p>
-                <div
-                  class="d-flex justify-content-start rounded-3 p-2 mb-2"
-                  style="background-color: #efefef;"
-                >
+                <div class="d-flex justify-content-start rounded-3 p-2 mb-2 profile-bg-muted">
                   <div>
                     <p class="small text-muted mb-1">
                       Cases

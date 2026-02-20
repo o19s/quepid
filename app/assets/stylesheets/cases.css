@@ -6,7 +6,7 @@
 	 width: 20%;
 }
  #cases-listing {
-	 margin: 30px 0;
+	 margin: var(--quepid-spacing-xxl) 0;
 }
  #cases-listing .listing-header {
 	 font-weight: bold;
@@ -21,20 +21,20 @@
 }
  #cases-listing .cases-list-item {
 	 line-height: 34px;
-	 margin: 2px 0;
+	 margin: var(--quepid-spacing-xs) 0;
 }
  #cases-listing .cases-list-item .owner {
 	 line-height: 1;
-	 margin: 10px 0;
+	 margin: var(--quepid-spacing-md) 0;
 	 word-wrap: break-word;
 }
  #cases-listing .cases-list-item .item-box {
-	 background: #fff;
-	 border-radius: 6px;
-	 border: 1px solid #aaa;
-	 margin: 0px 2px;
-	 padding-top: 10px;
-	 padding-bottom: 10px;
+	 background: var(--quepid-color-white);
+	 border-radius: var(--quepid-border-radius-lg);
+	 border: var(--quepid-border-width) solid var(--quepid-color-text-lighter);
+	 margin: 0px var(--quepid-spacing-xs);
+	 padding-top: var(--quepid-spacing-md);
+	 padding-bottom: var(--quepid-spacing-md);
 	 text-align: center;
 }
  #cases-listing .cases-list-item .case-title:hover {
@@ -48,13 +48,13 @@
 	 display: inherit;
 }
  .archived-cases {
-	 margin: 20px;
+	 margin: var(--quepid-spacing-xl);
 }
  .no-data {
-	 font-size: 0.8em;
+	 font-size: var(--quepid-font-size-sm);
 }
  .loading-cases-msg {
-	 padding: 15px 0 0 15px;
+	 padding: var(--quepid-spacing-lg) 0 0 var(--quepid-spacing-lg);
 	 font-weight: 600;
 }
  .media-embed {
