@@ -1,0 +1,37 @@
+# Override for visual parity comparison runs.
+# Use with: COMPOSE_PROJECT_NAME=quepid-vp COMPOSE_FILE=docker-compose.yml:docker-compose.visual-parity.yml
+#
+# Gives visual parity its own containers, volumes, and ports so it never conflicts
+# with the main quepid stack (no data loss, can run alongside main quepid).
+
+services:
+  app:
+    container_name: quepid-vp-app
+    ports:
+      - "3010:3000"
+
+  mysql:
+    container_name: quepid-vp-db
+    ports:
+      - "3307:3306"
+
+  keycloak:
+    container_name: quepid-vp-keycloak
+    ports:
+      - "9081:9080"
+
+  ollama:
+    container_name: quepid-vp-ollama
+    ports:
+      - "11431:11434"
+    volumes:
+      - ./volumes/ollama/vp-data:/tmp/data
+
+  nginx:
+    container_name: quepid-vp-nginx
+    ports:
+      - "8444:8443"
+      - "8080:80"
+    volumes:
+      - ./nginx.vp.conf:/etc/nginx/nginx.conf:ro
+      - ./.ssl/:/etc/nginx/certs

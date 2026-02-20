@@ -22,7 +22,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 # GIT_ROOT: git worktree root. When run from main repo = main repo path; when run from a worktree = that worktree path. Used for running capture scripts and writing output.
 GIT_ROOT="$(cd "$PROJECT_ROOT" && git rev-parse --show-toplevel)"
-BASE_URL="http://localhost:3000"
+# Visual parity uses its own Docker project (quepid-vp) with different ports to avoid
+# conflicting with the main quepid stack. App is on 3010 when using VP compose.
+BASE_URL_DEFAULT="http://localhost:3000"
+BASE_URL_VP="http://localhost:3010"
+# Env for docker compose when running visual parity (isolated from main quepid)
+export VP_COMPOSE_PROJECT_NAME="quepid-vp"
+export VP_COMPOSE_FILE="docker-compose.yml:docker-compose.visual-parity.yml"
 BRANCHES=("deangularjs" "deangularjs-experimental")
 # Worktrees live next to the main repo
 WT_BASE="$(dirname "$GIT_ROOT")"
@@ -114,12 +120,13 @@ preflight() {
 # Wait for the app to be ready
 # ---------------------------------------------------------------------------
 wait_for_app() {
+  local base_url="${1:-$BASE_URL_DEFAULT}"
   local max_attempts=60
   local attempt=0
 
-  log "Waiting for app at $BASE_URL..."
+  log "Waiting for app at $base_url..."
   while [ $attempt -lt $max_attempts ]; do
-    if curl -s -o /dev/null -w "%{http_code}" "$BASE_URL" 2>/dev/null | grep -q "200\|302"; then
+    if curl -s -o /dev/null -w "%{http_code}" "$base_url" 2>/dev/null | grep -q "200\|302"; then
       ok "App is ready"
       return 0
     fi
@@ -144,10 +151,12 @@ capture_branch() {
   log "Processing branch: $branch (root: $branch_root)"
   log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-  # 1. Full Docker rebuild with fresh seed data
+  # 1. Full Docker rebuild with fresh seed data (uses isolated quepid-vp project)
   cd "$branch_root"
+  export COMPOSE_PROJECT_NAME="$VP_COMPOSE_PROJECT_NAME"
+  export COMPOSE_FILE="$VP_COMPOSE_FILE"
   log "Rebuilding Docker environment (this may take a while)..."
-  bin/docker d 2>/dev/null || true   # Tear down any existing containers
+  bin/docker d 2>/dev/null || true   # Tear down any existing VP containers only
   bin/setup_docker
   # When using main repo (--capture on current branch), setup_docker wipes volumes
   # and only creates dev DB. Ensure test DB exists so we don't leave a dirty state.
@@ -163,21 +172,21 @@ capture_branch() {
   bin/docker q
 
   # 3. Wait for ready
-  if ! wait_for_app; then
+  if ! wait_for_app "$BASE_URL_VP"; then
     fail "App failed to start for $branch"
     bin/docker d 2>/dev/null || true
     return 1
   fi
 
-  # 4. Capture screenshots and API (run from main repo; app is at localhost:3000)
+  # 4. Capture screenshots and API (run from main repo; app is at localhost:3010 for VP)
   cd "$GIT_ROOT"
   log "Capturing screenshots for $branch..."
-  node "$GIT_ROOT/test/visual_parity/capture_screenshots.mjs" --branch "$branch" --base-url "$BASE_URL" \
+  node "$GIT_ROOT/test/visual_parity/capture_screenshots.mjs" --branch "$branch" --base-url "$BASE_URL_VP" \
     --email "quepid+realisticactivity@o19s.com" --password "password"
   ok "Screenshots captured"
 
   log "Capturing API structures for $branch..."
-  node "$GIT_ROOT/test/visual_parity/compare_apis.mjs" --branch "$branch" --base-url "$BASE_URL" \
+  node "$GIT_ROOT/test/visual_parity/compare_apis.mjs" --branch "$branch" --base-url "$BASE_URL_VP" \
     --email "quepid+realisticactivity@o19s.com" --password "password"
   ok "API structures captured"
 

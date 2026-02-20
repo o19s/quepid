@@ -122,6 +122,8 @@ A few diffs show `string → object` or `object → string` (e.g., `scores`, `us
 
 The comparison uses **git worktrees** so each branch runs in its own directory—no branch switching, so `package.json`/`yarn.lock` changes (e.g. from Playwright install) never block the run.
 
+Visual parity runs use an **isolated Docker project** (`quepid-vp`) with its own containers, volumes, and ports (app on 3010, mysql on 3307, etc.). This avoids any conflict with the main quepid stack—you can run the comparison while main quepid is running, and main repo data is never touched.
+
 ```bash
 # Full automated comparison (both branches, ~20 min)
 # Creates worktrees at ../quepid-visual-parity-wt-<branch> if needed
@@ -148,6 +150,7 @@ When the app is already running (e.g. via `bin/docker s`), you can capture scree
 
 ```bash
 # App must be running at BASE_URL (default http://localhost:3000)
+# For visual parity orchestrator runs, the app is at http://localhost:3010
 node test/visual_parity/capture_screenshots.mjs --branch <name> --base-url http://localhost:3000
 node test/visual_parity/compare_apis.mjs --branch <name> --base-url http://localhost:3000
 
