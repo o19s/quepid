@@ -71,8 +71,10 @@ export default class extends Controller {
   // ── Toggle expand/collapse ──────────────────────────────────────────
 
   toggle(event) {
-    event.preventDefault();
-    event.stopPropagation();
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
 
     this._expanded = !this._expanded;
 

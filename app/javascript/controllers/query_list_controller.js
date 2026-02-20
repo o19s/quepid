@@ -130,6 +130,7 @@ export default class extends Controller {
   _toggleAllQueryExpand(expand) {
     if (!this.hasListTarget) return;
     const rows = this.listTarget.querySelectorAll("[data-controller~='query-expand']");
+    let delay = 0;
     rows.forEach((row) => {
       const app = this.application;
       const controller = app.getControllerForElementAndIdentifier(row, 'query-expand');
@@ -138,9 +139,11 @@ export default class extends Controller {
       if (!resultsTarget) return;
       const isExpanded = !resultsTarget.classList.contains('d-none');
       if (expand && !isExpanded) {
-        controller.toggle();
+        // Stagger fetches by 50ms to avoid hammering the API
+        setTimeout(() => controller.toggle(), delay);
+        delay += 50;
       } else if (!expand && isExpanded) {
-        controller.toggle();
+        controller.toggle(); // Collapse is instant, no stagger needed
       }
     });
   }
