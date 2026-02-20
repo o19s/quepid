@@ -4,7 +4,7 @@
  * Replaces JSHint. Rules are mapped from .jshintrc equivalents:
  * - bitwise, curly, eqeqeq, eqnull, latedef, newcap, noarg, strict, trailing, undef, unused
  * - indent, quotmark, smarttabs → Prettier
- * - globals: test (describe, it, expect, etc.) and browser ($, jQuery)
+ * - globals: test (describe, it, expect, etc.) and browser
  *
  * @see docs/linting.md
  */
@@ -49,9 +49,6 @@ export default [
         quepidMocks: 'readonly',
         spyOn: 'readonly',
         testTry: 'readonly',
-        // jQuery
-        jQuery: 'readonly',
-        $: 'readonly',
         // Bundled/imported globals
         Turbo: 'readonly',
         CodeMirror: 'readonly',

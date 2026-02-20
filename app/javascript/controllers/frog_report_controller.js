@@ -1,9 +1,9 @@
 import { Controller } from '@hotwired/stimulus';
-import * as d3 from 'd3';
+import vegaEmbed from 'vega-embed';
 import { apiFetch } from 'api/fetch';
 import { buildApiUrl, buildPageUrl, getQuepidRootUrl, reloadOrTurboVisit } from 'utils/quepid_root';
 
-// Handles the Frog Pond Report modal: opens modal, renders D3 bar chart,
+// Handles the Frog Pond Report modal: opens modal, renders Vega-Lite bar chart,
 // and optionally refreshes ratings from a linked book.
 // Replaces the Angular frog_report directive + FrogReportModalInstanceCtrl.
 export default class extends Controller {
@@ -36,7 +36,6 @@ export default class extends Controller {
     this._modal.show();
 
     if (!this._chartRendered) {
-      // Small delay so the modal is visible and the chart container has dimensions
       requestAnimationFrame(() => this._renderChart());
       this._chartRendered = true;
     }
@@ -92,114 +91,60 @@ export default class extends Controller {
     if (!data || data.length === 0) return;
 
     const container = this.chartTarget;
-    const margin = { top: 10, right: 20, bottom: 60, left: 50 };
-    const width = 800 - margin.left - margin.right;
-    const height = 200 - margin.top - margin.bottom;
+    const width = 800;
+    const height = 200;
 
-    const svg = d3
-      .select(container)
-      .append('svg')
-      .attr(
-        'viewBox',
-        `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`
-      )
-      .attr('preserveAspectRatio', 'xMidYMid meet')
-      .attr('style', 'max-width: 800px; width: 100%; height: auto;')
-      .append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
+    const spec = {
+      $schema: 'https://vega.github.io/schema/vega-lite/v6.json',
+      width,
+      height,
+      data: { values: data },
+      params: [
+        {
+          name: 'barHover',
+          select: { type: 'point', on: 'pointerover' },
+        },
+      ],
+      encoding: {
+        x: {
+          field: 'category',
+          type: 'nominal',
+          title: 'Rating Status',
+          axis: { labelAngle: -25, labelAlign: 'right' },
+        },
+        y: {
+          field: 'amount',
+          type: 'quantitative',
+          title: 'Number Queries',
+        },
+      },
+      layer: [
+        {
+          mark: { type: 'bar', cornerRadiusTop: 2 },
+          encoding: {
+            fill: {
+              condition: { param: 'barHover', value: 'red' },
+              value: 'steelblue',
+            },
+            tooltip: [
+              { field: 'category', type: 'nominal', title: 'Rating Status' },
+              { field: 'amount', type: 'quantitative', title: 'Count' },
+            ],
+          },
+        },
+        {
+          mark: { type: 'text', align: 'middle', baseline: 'bottom', dy: -4, fontSize: 11 },
+          encoding: {
+            text: { field: 'amount', type: 'quantitative' },
+          },
+        },
+      ],
+    };
 
-    const x = d3
-      .scaleBand()
-      .domain(data.map((d) => d.category))
-      .range([0, width])
-      .padding(0.05);
-
-    const y = d3
-      .scaleLinear()
-      .domain([0, d3.max(data, (d) => d.amount)])
-      .nice()
-      .range([height, 0]);
-
-    // X axis
-    svg
-      .append('g')
-      .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(x))
-      .selectAll('text')
-      .attr('transform', 'rotate(-25)')
-      .style('text-anchor', 'end');
-
-    // Y axis
-    svg.append('g').call(d3.axisLeft(y));
-
-    // Axis labels
-    svg
-      .append('text')
-      .attr('x', width / 2)
-      .attr('y', height + margin.bottom - 5)
-      .attr('text-anchor', 'middle')
-      .attr('class', 'axis-label')
-      .text('Rating Status');
-
-    svg
-      .append('text')
-      .attr('transform', 'rotate(-90)')
-      .attr('y', -margin.left + 15)
-      .attr('x', -height / 2)
-      .attr('text-anchor', 'middle')
-      .attr('class', 'axis-label')
-      .text('Number Queries');
-
-    // Tooltip
-    const tooltip = d3
-      .select(container)
-      .append('div')
-      .attr('class', 'rounded-1')
-      .style('position', 'absolute')
-      .style('background', 'rgba(0,0,0,0.7)')
-      .style('color', '#fff')
-      .style('padding', '4px 8px')
-      .style('font-size', '12px')
-      .style('pointer-events', 'none')
-      .style('opacity', 0);
-
-    // Bars
-    svg
-      .selectAll('.bar')
-      .data(data)
-      .enter()
-      .append('rect')
-      .attr('class', 'bar')
-      .attr('x', (d) => x(d.category))
-      .attr('y', (d) => y(d.amount))
-      .attr('width', x.bandwidth())
-      .attr('height', (d) => height - y(d.amount))
-      .attr('fill', 'steelblue')
-      .on('mouseover', function (event, d) {
-        d3.select(this).attr('fill', 'red');
-        tooltip.style('opacity', 1).html(`${d.category}: ${d.amount}`);
-      })
-      .on('mousemove', function (event) {
-        tooltip.style('left', event.offsetX + 10 + 'px').style('top', event.offsetY - 28 + 'px');
-      })
-      .on('mouseout', function () {
-        d3.select(this).attr('fill', 'steelblue');
-        tooltip.style('opacity', 0);
-      });
-
-    // Value labels on top of bars
-    svg
-      .selectAll('.label')
-      .data(data)
-      .enter()
-      .append('text')
-      .attr('class', 'label')
-      .attr('x', (d) => x(d.category) + x.bandwidth() / 2)
-      .attr('y', (d) => y(d.amount) - 2)
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#333')
-      .attr('font-size', '11px')
-      .text((d) => d.amount);
+    container.innerHTML = '';
+    vegaEmbed(container, spec, { actions: false }).catch((err) => {
+      console.error('frog_report vegaEmbed error', err);
+    });
   }
 
   _hideError() {

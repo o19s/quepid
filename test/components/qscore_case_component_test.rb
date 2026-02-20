@@ -37,7 +37,7 @@ class QscoreCaseComponentTest < ViewComponent::TestCase
                   ))
 
     assert_selector ".qgraph-wrapper[data-controller='qgraph']"
-    assert_selector "svg[data-qgraph-target='svg']"
+    assert_selector "[data-qgraph-target='chart']"
   end
 
   def test_hides_qgraph_with_single_score

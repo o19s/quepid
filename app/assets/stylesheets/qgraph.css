@@ -1,45 +1,34 @@
-/* QgraphComponent uses .qgraph-wrapper (ViewComponent). The legacy qgraph custom element is unused. */
+/* QgraphComponent uses .qgraph-wrapper (ViewComponent). Vega-Lite renders into .vega-embed. */
 .qgraph-wrapper {
 	height: 100px;
 	display: block;
 	margin-top: var(--quepid-spacing-xl);
 }
-.qgraph-wrapper svg {
+.qgraph-wrapper .vega-embed {
+	width: 100%;
+	height: 100%;
+}
+.qgraph-wrapper .vega-embed svg {
 	background-color: var(--quepid-color-white);
 }
-.qgraph-wrapper path {
+.qgraph-wrapper .vega-embed path.mark-line {
 	stroke: var(--quepid-color-qgraph-stroke);
 	stroke-width: 2;
 	fill: none;
 	stroke-linecap: round;
 }
-.qgraph-wrapper .axis {
-	shape-rendering: crispEdges;
+.qgraph-wrapper .vega-embed path.mark-point,
+.qgraph-wrapper .vega-embed circle.mark-point {
+	transition: fill var(--quepid-duration-fast) ease;
 }
-.qgraph-wrapper .x.axis line {
-	stroke: var(--quepid-color-qgraph-axis);
+.qgraph-wrapper .vega-embed path.mark-point:hover,
+.qgraph-wrapper .vega-embed circle.mark-point:hover {
+	fill: var(--quepid-color-qgraph-stroke);
+	fill-opacity: 0.5;
 }
-.qgraph-wrapper .x.axis .minor {
-	stroke-opacity: 0.5;
-}
-.qgraph-wrapper .x.axis path {
-	display: none;
-}
-.qgraph-wrapper .y.axis line,
-.qgraph-wrapper .y.axis path {
-	fill: none;
-	stroke: var(--quepid-color-black);
-}
-.qgraph-wrapper line.marker {
+.qgraph-wrapper .vega-embed line.mark-rule {
 	stroke: var(--quepid-color-qgraph-marker);
 	stroke-width: 4;
 	stroke-linecap: round;
 	stroke-opacity: 0.3;
-}
-.qgraph-wrapper .qgraph-hot-point {
-	transition: fill var(--quepid-duration-fast) ease;
-}
-.qgraph-wrapper .qgraph-hot-point:hover {
-	fill: var(--quepid-color-qgraph-stroke);
-	fill-opacity: 0.5;
 }

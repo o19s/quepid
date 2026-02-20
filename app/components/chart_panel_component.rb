@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Renders a collapsible chart panel showing the case score history sparkline (Qgraph).
-# Integrates QgraphComponent (Vega/D3) for the score-over-time visualization.
+# Integrates QgraphComponent (Vega-Lite) for the score-over-time visualization.
 # Replaces the deferred chart panel; QgraphComponent was previously only embedded in QscoreCaseComponent.
 #
 # @see docs/view_component_conventions.md

@@ -2,7 +2,6 @@
 
 # Renders the "Frog Pond Report" trigger and modal for the case/try workspace.
 # Shows rating coverage analysis: how many query/document pairs are missing ratings.
-# Replaces the Angular frog_report directive. The D3 bar chart replaces the Vega spec.
 #
 # Stats are computed server-side from Rating records. The `depth` parameter (try's
 # number_of_rows) defines the expected rating depth per query. For each query,
@@ -59,7 +58,7 @@ class FrogReportComponent < ApplicationComponent
     @book_id.present?
   end
 
-  # JSON array for D3 chart: distribution of queries grouped by missing-rating count.
+  # JSON array for Vega-Lite chart: distribution of queries grouped by missing-rating count.
   # Same logic as Angular numberOfMissingRatingsByMissingCount.
   def chart_data_json
     distribution = Hash.new(0)

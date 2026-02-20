@@ -1,6 +1,6 @@
 # API Client Guide
 
-Quepid uses a centralized fetch wrapper for client-side API calls. Use it instead of raw `fetch` or jQuery `$.ajax` for all new code.
+Quepid uses a centralized fetch wrapper for client-side API calls. Use it instead of raw `fetch` for all new code.
 
 **URL rules:** Never hardcode `/` or absolute paths. Use `getQuepidRootUrl()` (Stimulus) or `quepid_root_url` (Rails). See [URL Generation](#url-generation) below.
 

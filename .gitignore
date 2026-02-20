@@ -88,3 +88,6 @@ claude-swarm.log
 
 /node_modules
 *.patch
+
+IDE
+.idea

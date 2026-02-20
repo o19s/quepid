@@ -18,7 +18,6 @@ pin 'vega-embed', to: 'vega-embed.js'
 pin 'ahoy', to: 'ahoy.js'
 
 pin 'js-cookie' # @3.0.5
-pin 'd3' # @7.9.0
 
 # Bootstrap and its dependencies
 pin 'bootstrap', to: 'bootstrap.min.js' # @5.3.3

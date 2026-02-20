@@ -1,6 +1,6 @@
 /**
  * Centralized fetch wrapper for Quepid API calls. Adds CSRF token automatically.
- * Use this instead of raw fetch or jQuery $.ajax for all new API code.
+ * Use this instead of raw fetch for all new API code.
  *
  * @example
  *   import { apiFetch } from "api/fetch"

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-# Renders an inline SVG sparkline of recent case scores with annotation markers.
-# Replaces the Angular qgraph directive. D3 rendering is handled by the qgraph
+# Renders a Vega-Lite sparkline of recent case scores with annotation markers.
+# Replaces the Angular qgraph directive. Vega-Lite rendering is handled by the qgraph
 # Stimulus controller; this component provides the container and serialized data.
 #
 # @see docs/view_component_conventions.md

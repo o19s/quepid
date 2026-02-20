@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class QgraphComponentTest < ViewComponent::TestCase
-  def test_renders_svg_container_with_data
+  def test_renders_chart_container_with_data
     scores = [
       { score: 5.0, updated_at: '2026-01-01T00:00:00Z' },
       { score: 7.0, updated_at: '2026-01-02T00:00:00Z' }
@@ -12,7 +12,7 @@ class QgraphComponentTest < ViewComponent::TestCase
 
     assert_selector ".qgraph-wrapper[data-controller='qgraph']"
     assert_selector "[data-qgraph-max-value='10']"
-    assert_selector "svg[data-qgraph-target='svg']"
+    assert_selector "[data-qgraph-target='chart']"
   end
 
   def test_does_not_render_with_single_score
