@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-18
 **Method:** Automated Playwright screenshots (26 pages) + API structure comparison (9 endpoints)
-**Users:** `quepid+realisticactivity@o19s.com` (deangularjs) / `random@example.com` (deangularjs-experimental)
+**Users:** `quepid+realisticactivity@o19s.com` (both branches; seeded by sample_data)
 
 > Note: Different seed data between branches means data content differs — the comparison focuses on **layout and structural parity**, not pixel-perfect matching.
 
@@ -122,17 +122,24 @@ A few diffs show `string → object` or `object → string` (e.g., `scores`, `us
 
 ## How to Re-run
 
+The comparison uses **git worktrees** so each branch runs in its own directory—no branch switching, so `package.json`/`yarn.lock` changes (e.g. from Playwright install) never block the run.
+
 ```bash
 # Full automated comparison (both branches, ~20 min)
+# Creates worktrees at ../quepid-visual-parity-wt-<branch> if needed
 bash test/visual_parity/run_comparison.sh
 
-# Single branch capture (app must be running)
-node test/visual_parity/capture_screenshots.mjs --branch <name> --email <user> --password <pass>
-node test/visual_parity/compare_apis.mjs --branch <name> --email <user> --password <pass>
+# Single branch capture
+bash test/visual_parity/run_comparison.sh --capture deangularjs-experimental
 
 # Generate report from existing captures
 bash test/visual_parity/run_comparison.sh --report
 
+# Remove worktrees when done (optional)
+bash test/visual_parity/run_comparison.sh --remove-worktrees
+
 # Open report
 xdg-open test/visual_parity/report.html
 ```
+
+Worktrees persist between runs for faster re-captures. Use `--remove-worktrees` to clean up.

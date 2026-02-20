@@ -3,8 +3,8 @@
 # Visual Parity Comparison: deangularjs vs deangularjs-experimental
 #
 # Fully automated orchestrator that:
-# 1. Checks out each branch
-# 2. Rebuilds Docker (fresh DB + seed data)
+# 1. Uses git worktrees so each branch runs in its own directory (no branch switching)
+# 2. Rebuilds Docker per worktree (fresh DB + seed data)
 # 3. Captures screenshots and API structures
 # 4. Generates an HTML comparison report
 #
@@ -19,8 +19,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+# Main repo root (resolves correctly from worktrees)
+GIT_ROOT="$(cd "$PROJECT_ROOT" && git rev-parse --show-toplevel)"
 BASE_URL="http://localhost:3000"
 BRANCHES=("deangularjs" "deangularjs-experimental")
+# Worktrees live next to the main repo
+WT_BASE="$(dirname "$GIT_ROOT")"
+WT_SUFFIX="-visual-parity-wt"
 
 # Colors for output
 RED='\033[0;31m'
@@ -33,6 +38,30 @@ log()   { echo -e "${BLUE}[$(date +%H:%M:%S)]${NC} $*"; }
 warn()  { echo -e "${YELLOW}[$(date +%H:%M:%S)] ⚠️  $*${NC}"; }
 ok()    { echo -e "${GREEN}[$(date +%H:%M:%S)] ✅ $*${NC}"; }
 fail()  { echo -e "${RED}[$(date +%H:%M:%S)] ❌ $*${NC}"; }
+
+# ---------------------------------------------------------------------------
+# Worktree management
+# ---------------------------------------------------------------------------
+get_worktree_path() {
+  local branch="$1"
+  # Sanitize branch name for directory (e.g. deangularjs-experimental -> deangularjs-experimental)
+  local safe_name="${branch//\//-}"
+  echo "${WT_BASE}/quepid${WT_SUFFIX}-${safe_name}"
+}
+
+ensure_worktree() {
+  local branch="$1"
+  local wt_path
+  wt_path=$(get_worktree_path "$branch")
+  if [ -d "$wt_path" ]; then
+    log "Worktree for $branch already exists at $wt_path"
+    return 0
+  fi
+  log "Creating worktree for $branch at $wt_path..."
+  cd "$GIT_ROOT"
+  git worktree add "$wt_path" "$branch"
+  ok "Worktree created"
+}
 
 # ---------------------------------------------------------------------------
 # Pre-flight checks
@@ -55,24 +84,15 @@ preflight() {
     exit 1
   fi
 
-  # Check playwright is installed
-  if [ ! -d "$PROJECT_ROOT/node_modules/@playwright" ]; then
-    warn "Playwright not found. Installing..."
-    cd "$PROJECT_ROOT"
+  # Check playwright is installed (in main repo / current project)
+  if [ ! -d "$GIT_ROOT/node_modules/@playwright" ]; then
+    warn "Playwright not found. Installing in $GIT_ROOT..."
+    cd "$GIT_ROOT"
     yarn add -D @playwright/test
     npx playwright install chromium
   fi
 
-  # Check for uncommitted changes
-  cd "$PROJECT_ROOT"
-  if ! git diff --quiet || ! git diff --cached --quiet; then
-    warn "You have uncommitted changes. They will be stashed."
-    git stash push -m "visual-parity-comparison-$(date +%s)"
-    STASHED=true
-  else
-    STASHED=false
-  fi
-
+  # No stash needed: we use worktrees, so the main repo is never switched
   ok "Pre-flight checks passed"
 }
 
@@ -98,59 +118,52 @@ wait_for_app() {
 }
 
 # ---------------------------------------------------------------------------
-# Capture a single branch
+# Capture a single branch (runs from its worktree)
 # ---------------------------------------------------------------------------
 capture_branch() {
   local branch="$1"
+  local wt_path
+  wt_path=$(get_worktree_path "$branch")
 
   log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  log "Processing branch: $branch"
+  log "Processing branch: $branch (worktree: $wt_path)"
   log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-  cd "$PROJECT_ROOT"
+  ensure_worktree "$branch"
 
-  # 1. Check out branch
-  log "Checking out $branch..."
-  git checkout "$branch"
-  ok "On branch $branch"
-
-  # 2. Full Docker rebuild with fresh seed data
+  # 1. Full Docker rebuild with fresh seed data (from worktree)
+  cd "$wt_path"
   log "Rebuilding Docker environment (this may take a while)..."
   bin/docker d 2>/dev/null || true   # Tear down any existing containers
   bin/setup_docker
   ok "Docker environment rebuilt"
 
-  # 2b. Ensure Playwright is installed (node_modules may differ per branch)
-  if [ ! -d "$PROJECT_ROOT/node_modules/@playwright" ]; then
-    log "Installing Playwright for this branch..."
-    cd "$PROJECT_ROOT"
-    yarn add -D @playwright/test
-  fi
-
-  # 3. Start the app in daemon mode (avoids stdin-close issues with background execution)
+  # 2. Start the app in daemon mode
   log "Starting application..."
   docker compose up --no-deps -d nginx
   bin/docker q
 
-  # 4. Wait for ready
+  # 3. Wait for ready
   if ! wait_for_app; then
     fail "App failed to start for $branch"
-    kill $APP_PID 2>/dev/null || true
     bin/docker d 2>/dev/null || true
     return 1
   fi
 
-  # 5. Capture screenshots
+  # 4. Capture screenshots and API (run from main repo; app is at localhost:3000)
+  cd "$GIT_ROOT"
   log "Capturing screenshots for $branch..."
-  node "$SCRIPT_DIR/capture_screenshots.mjs" --branch "$branch" --base-url "$BASE_URL"
+  node "$GIT_ROOT/test/visual_parity/capture_screenshots.mjs" --branch "$branch" --base-url "$BASE_URL" \
+    --email "quepid+realisticactivity@o19s.com" --password "password"
   ok "Screenshots captured"
 
-  # 6. Capture API structures
   log "Capturing API structures for $branch..."
-  node "$SCRIPT_DIR/compare_apis.mjs" --branch "$branch" --base-url "$BASE_URL"
+  node "$GIT_ROOT/test/visual_parity/compare_apis.mjs" --branch "$branch" --base-url "$BASE_URL" \
+    --email "quepid+realisticactivity@o19s.com" --password "password"
   ok "API structures captured"
 
-  # 7. Tear down
+  # 5. Tear down (from worktree)
+  cd "$wt_path"
   log "Tearing down Docker for $branch..."
   bin/docker d 2>/dev/null || true
   ok "Docker torn down"
@@ -178,31 +191,17 @@ main() {
     capture_branch "$branch"
   done
 
-  # Generate API diff
+  # Generate API diff and report (from main repo)
+  cd "$GIT_ROOT"
   log "Generating API structure diff..."
-  node "$SCRIPT_DIR/compare_apis.mjs" --diff
+  node "$GIT_ROOT/test/visual_parity/compare_apis.mjs" --diff
   ok "API diff complete"
 
-  # Generate report
   log "Generating HTML comparison report..."
-  node "$SCRIPT_DIR/generate_report.mjs"
+  node "$GIT_ROOT/test/visual_parity/generate_report.mjs"
   ok "Report generated"
 
-  # Restore original branch
-  cd "$PROJECT_ROOT"
-  local current_branch
-  current_branch=$(git branch --show-current)
-  if [ "$current_branch" != "deangularjs-experimental" ]; then
-    log "Returning to deangularjs-experimental branch..."
-    git checkout deangularjs-experimental
-  fi
-
-  # Restore stashed changes if needed
-  if [ "$STASHED" = true ]; then
-    log "Restoring stashed changes..."
-    git stash pop || warn "Could not restore stash (may have conflicts)"
-  fi
-
+  # Main repo is never switched; no stash/restore needed
   local elapsed=$(( SECONDS - start_time ))
   local minutes=$(( elapsed / 60 ))
   local seconds=$(( elapsed % 60 ))
@@ -226,19 +225,36 @@ case "${1:-}" in
       fail "Usage: $0 --capture <branch_name>"
       exit 1
     fi
+    preflight
     capture_branch "$2"
     ;;
   --report)
     log "Generating report only..."
-    node "$SCRIPT_DIR/compare_apis.mjs" --diff 2>/dev/null || true
-    node "$SCRIPT_DIR/generate_report.mjs"
+    cd "$GIT_ROOT"
+    node "$GIT_ROOT/test/visual_parity/compare_apis.mjs" --diff 2>/dev/null || true
+    node "$GIT_ROOT/test/visual_parity/generate_report.mjs"
+    ;;
+  --remove-worktrees)
+    log "Removing visual parity worktrees..."
+    for branch in "${BRANCHES[@]}"; do
+      wt_path=$(get_worktree_path "$branch")
+      if [ -d "$wt_path" ]; then
+        cd "$GIT_ROOT"
+        git worktree remove "$wt_path" --force 2>/dev/null || warn "Could not remove $wt_path (cd to main repo first if you're inside it)"
+      fi
+    done
+    ok "Done"
     ;;
   --help)
     echo "Usage:"
-    echo "  $0                      Run full comparison (both branches)"
+    echo "  $0                      Run full comparison (both branches, using worktrees)"
     echo "  $0 --capture <branch>   Capture a single branch"
     echo "  $0 --report             Generate report from existing captures"
+    echo "  $0 --remove-worktrees    Remove worktrees created for comparison"
     echo "  $0 --help               Show this help"
+    echo ""
+    echo "Worktrees are created at: ${WT_BASE}/quepid${WT_SUFFIX}-<branch>"
+    echo "They persist between runs for faster re-captures. Use --remove-worktrees to clean up."
     ;;
   *)
     main

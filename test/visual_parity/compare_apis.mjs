@@ -26,7 +26,7 @@ const BRANCH   = getArg('branch', 'unknown');
 const BASE_URL = getArg('base-url', 'http://localhost:3000');
 const OUT_DIR  = path.join(__dirname, 'api_structures');
 
-const LOGIN_EMAIL    = getArg('email', 'random@example.com');
+const LOGIN_EMAIL    = getArg('email', 'quepid+realisticactivity@o19s.com');
 const LOGIN_PASSWORD = getArg('password', 'password');
 
 // ---------------------------------------------------------------------------
@@ -173,11 +173,18 @@ async function capture() {
     redirect: 'manual',
   });
 
-  const cookies = sessionResp.headers.getSetCookie?.() || [];
-  const cookieHeader = cookies.map(c => c.split(';')[0]).join('; ');
+  // getSetCookie() is Node 18.19+ / undici; fallback for older Node
+  let cookies = [];
+  if (typeof sessionResp.headers.getSetCookie === 'function') {
+    cookies = sessionResp.headers.getSetCookie();
+  } else {
+    const setCookie = sessionResp.headers.get('set-cookie') || sessionResp.headers.get('Set-Cookie');
+    if (setCookie) cookies = [setCookie];
+  }
+  const cookieHeader = cookies.map(c => String(c).split(';')[0]).join('; ');
 
   if (!cookieHeader) {
-    console.error('❌ Login failed – no session cookie received');
+    console.error('❌ Login failed – no session cookie received. Node 18.19+ recommended.');
     process.exit(1);
   }
   console.log('   ✅ Logged in\n');

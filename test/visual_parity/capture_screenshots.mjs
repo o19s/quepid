@@ -29,7 +29,7 @@ const BRANCH   = getArg('branch', 'unknown');
 const BASE_URL = getArg('base-url', 'http://localhost:3000');
 const OUT_DIR  = path.join(__dirname, 'screenshots', BRANCH);
 
-const LOGIN_EMAIL    = getArg('email', 'random@example.com');
+const LOGIN_EMAIL    = getArg('email', 'quepid+realisticactivity@o19s.com');
 const LOGIN_PASSWORD = getArg('password', 'password');
 
 // ---------------------------------------------------------------------------
@@ -237,6 +237,15 @@ async function main() {
   await loginForm.locator('input[name="user[password]"]').fill(LOGIN_PASSWORD);
   await loginForm.locator('input[type="submit"]').click();
   await page.waitForLoadState('networkidle');
+  // Verify we're no longer on the login page (login succeeded)
+  const url = page.url();
+  if (url.includes('/sessions/new') || url.includes('/sessions')) {
+    const hasError = await page.locator('#error_explanation, .alert-danger').isVisible();
+    const msg = hasError
+      ? 'Login failed (invalid credentials or form error). Use --email and --password for a seeded user (e.g. quepid+realisticactivity@o19s.com / password).'
+      : 'Login may have failed; still on login page after submit.';
+    throw new Error(msg);
+  }
   console.log('   ✅ Logged in\n');
 
   // ---- Capture authenticated pages ----
@@ -262,8 +271,8 @@ async function captureScreenshot(page, entry) {
     console.log(`  📷 ${name} → ${urlPath}`);
     await page.goto(fullUrl, { waitUntil: 'networkidle', timeout: 30000 });
 
-    // Wait a bit for JS rendering
-    await page.waitForTimeout(1500);
+    // Wait a bit for JS rendering (avoid deprecated waitForTimeout)
+    await new Promise(r => setTimeout(r, 1500));
 
     // Run optional setup
     if (entry.setup) {

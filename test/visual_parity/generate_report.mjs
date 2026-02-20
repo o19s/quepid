@@ -61,8 +61,8 @@ const pairs = allFiles.map(file => {
     file,
     hasA: filesA.has(file),
     hasB: filesB.has(file),
-    pathA: filesA.has(file) ? path.relative(__dirname, path.join(dirA, file)) : null,
-    pathB: filesB.has(file) ? path.relative(__dirname, path.join(dirB, file)) : null,
+    pathA: filesA.has(file) ? path.relative(__dirname, path.join(dirA, file)).replace(/\\/g, '/') : null,
+    pathB: filesB.has(file) ? path.relative(__dirname, path.join(dirB, file)).replace(/\\/g, '/') : null,
   };
 });
 
