@@ -3,7 +3,7 @@
 // Mirrors the 9-step Angular/Shepherd.js tour adapted for the Stimulus workspace layout.
 const TOUR_STEPS = [
   {
-    target: "[data-controller='inline-edit']:first-of-type",
+    target: '.case-header',
     title: 'Case Header',
     content:
       'This is your case name and try number. Double-click either to rename. The try number tracks each iteration of your search configuration.',
@@ -31,17 +31,17 @@ const TOUR_STEPS = [
     placement: 'right',
   },
   {
-    target: '.d-flex.gap-2.ms-auto',
+    target: '.case-actions',
     title: 'Case Actions',
     content:
       'Everything you can do with a case is here: evaluate all queries, clone, export, import ratings, delete, share with teams, manage judgements, and compare snapshots.',
     placement: 'bottom',
   },
   {
-    target: "[data-controller='settings-panel'] [data-settings-panel-target='trigger']",
+    target: "[data-action='click->tune-relevance#toggle']",
     title: 'Tune Relevance',
     content:
-      'This is where the magic happens! Click Settings to open the query sandbox where you can tune your search parameters, change endpoints, and configure field display.',
+      'This is where the magic happens! Click Tune Relevance to open the settings panel where you can tune your search parameters, change endpoints, and configure field display.',
     placement: 'bottom',
   },
   {
@@ -59,7 +59,7 @@ const TOUR_STEPS = [
     placement: 'right',
   },
   {
-    target: "[data-controller='tour']",
+    target: "[data-controller~='tour']",
     title: "You're All Set!",
     content:
       "That's how Quepid works! Explore the case actions toolbar for advanced features like snapshots, diff comparisons, and exporting. Check the Knowledge Base for detailed guides and tutorials.",

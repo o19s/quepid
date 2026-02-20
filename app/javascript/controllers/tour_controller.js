@@ -13,7 +13,7 @@ export default class extends Controller {
 
   connect() {
     this._currentStep = -1;
-    this._popovers = [];
+    this._currentPopover = null;
     this._overlay = null;
     this._escapeHandler = null;
 
@@ -34,29 +34,43 @@ export default class extends Controller {
   start() {
     this._cleanup();
     this._createOverlay();
-    this._currentStep = 0;
-    this._showStep();
+    this._currentStep = -1;
+    this._advance(1);
   }
 
   next() {
     this._hideCurrentStep();
-    this._currentStep++;
-    if (this._currentStep < TOUR_STEPS.length) {
-      this._showStep();
-    } else {
-      this._finish();
-    }
+    this._advance(1);
   }
 
   back() {
-    if (this._currentStep <= 0) return;
     this._hideCurrentStep();
-    this._currentStep--;
-    this._showStep();
+    this._advance(-1);
   }
 
   skip() {
     this._cleanup();
+  }
+
+  // Move in the given direction (+1 or -1), skipping steps whose target is missing.
+  _advance(direction) {
+    const maxAttempts = TOUR_STEPS.length;
+    for (let i = 0; i < maxAttempts; i++) {
+      this._currentStep += direction;
+
+      if (this._currentStep < 0 || this._currentStep >= TOUR_STEPS.length) {
+        this._finish();
+        return;
+      }
+
+      const step = TOUR_STEPS[this._currentStep];
+      if (step && document.querySelector(step.target)) {
+        this._showStep();
+        return;
+      }
+    }
+    // All remaining steps have missing targets
+    this._finish();
   }
 
   _showStep() {
@@ -64,11 +78,7 @@ export default class extends Controller {
     if (!step) return;
 
     const target = document.querySelector(step.target);
-    if (!target) {
-      // Skip missing targets
-      this.next();
-      return;
-    }
+    if (!target) return;
 
     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     this._highlightTarget(target);
@@ -119,17 +129,24 @@ export default class extends Controller {
       title: titleHtml,
       content: content,
       html: true,
+      sanitize: false, // Allow Stimulus data-action attributes (Bootstrap strips non-data-bs-* by default)
       trigger: 'manual',
       placement: step.placement || 'bottom',
       container: this.element,
     });
     popover.show();
-    this._popovers.push(popover);
+    this._currentPopover = popover;
   }
 
   _hideCurrentStep() {
-    const popover = this._popovers[this._currentStep];
-    if (popover) popover.dispose();
+    if (this._currentPopover) {
+      try {
+        this._currentPopover.dispose();
+      } catch (_e) {
+        /* noop */
+      }
+      this._currentPopover = null;
+    }
     this._clearHighlight();
   }
 
@@ -161,16 +178,8 @@ export default class extends Controller {
   }
 
   _cleanup() {
-    this._popovers.forEach((p) => {
-      try {
-        p.dispose();
-      } catch (_e) {
-        /* noop */
-      }
-    });
-    this._popovers = [];
+    this._hideCurrentStep();
     this._currentStep = -1;
-    this._clearHighlight();
     if (this._escapeHandler) {
       document.removeEventListener('keydown', this._escapeHandler);
       this._escapeHandler = null;

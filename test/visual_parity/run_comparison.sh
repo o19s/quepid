@@ -3,10 +3,11 @@
 # Visual Parity Comparison: deangularjs vs deangularjs-experimental
 #
 # Fully automated orchestrator that:
-# 1. Uses git worktrees so each branch runs in its own directory (no branch switching)
-# 2. Rebuilds Docker per worktree (fresh DB + seed data)
-# 3. Captures screenshots and API structures
-# 4. Generates an HTML comparison report
+# 1. Checks for existing worktrees and prompts to reuse or delete before continuing
+# 2. Uses git worktrees so each branch runs in its own directory (no branch switching)
+# 3. Rebuilds Docker per worktree (fresh DB + seed data)
+# 4. Captures screenshots and API structures
+# 5. Generates an HTML comparison report
 #
 # Usage:
 #   bash test/visual_parity/run_comparison.sh
@@ -49,6 +50,65 @@ fail()  { echo -e "${RED}[$(date +%H:%M:%S)] ❌ $*${NC}"; }
 # ---------------------------------------------------------------------------
 # Worktree management
 # ---------------------------------------------------------------------------
+
+# Returns 0 if any visual parity worktrees exist, 1 otherwise.
+check_existing_worktrees() {
+  for branch in "${BRANCHES[@]}"; do
+    wt_path=$(get_worktree_path "$branch")
+    if [ -d "$wt_path" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+# If worktrees exist, prompt user: reuse or delete. On delete, removes them.
+# Non-interactive (no TTY): defaults to reuse.
+prompt_worktree_action() {
+  if ! check_existing_worktrees; then
+    return 0
+  fi
+
+  warn "Visual parity worktrees already exist:"
+  for branch in "${BRANCHES[@]}"; do
+    wt_path=$(get_worktree_path "$branch")
+    if [ -d "$wt_path" ]; then
+      echo "  - $wt_path"
+    fi
+  done
+  echo ""
+
+  if [ ! -t 0 ]; then
+    log "Not a TTY; defaulting to reuse existing worktrees"
+    return 0
+  fi
+
+  while true; do
+    read -r -p "Reuse (r) or delete (d)? [r/d]: " choice
+    case "${choice,,}" in
+      r|reuse|"")
+        log "Reusing existing worktrees"
+        return 0
+        ;;
+      d|delete)
+        log "Removing worktrees..."
+        for branch in "${BRANCHES[@]}"; do
+          wt_path=$(get_worktree_path "$branch")
+          if [ -d "$wt_path" ]; then
+            cd "$GIT_ROOT"
+            git worktree remove "$wt_path" --force 2>/dev/null || warn "Could not remove $wt_path"
+          fi
+        done
+        ok "Worktrees removed"
+        return 0
+        ;;
+      *)
+        echo "Please enter 'r' (reuse) or 'd' (delete)"
+        ;;
+    esac
+  done
+}
+
 get_worktree_path() {
   local branch="$1"
   local safe_name="${branch//\//-}"
@@ -245,6 +305,7 @@ main() {
   echo ""
 
   preflight
+  prompt_worktree_action
 
   local start_time=$SECONDS
 
@@ -316,7 +377,8 @@ case "${1:-}" in
     echo "  $0 --help               Show this help"
     echo ""
     echo "Worktrees are created at: ${WT_BASE}/quepid${WT_SUFFIX}-<branch>"
-    echo "They persist between runs for faster re-captures. Use --remove-worktrees to clean up."
+    echo "They persist between runs for faster re-captures. On startup, if worktrees exist,"
+    echo "you'll be prompted to reuse or delete them. Use --remove-worktrees to clean up."
     ;;
   *)
     main

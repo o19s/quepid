@@ -14,6 +14,7 @@
           </tr>
         </thead>
         <tbody>
+          <% user_team_ids = @user_teams.map(&:id).to_set %>
           <% @scorers.each do |scorer| %>
             <tr>
               <td><%= scorer.name %></td>
@@ -38,7 +39,7 @@
                   </div>
                 <% else %>
                   <div class="btn-group btn-group-sm" role="group">
-                    <% shared_teams = scorer.teams.where(id: @user_teams.select(:id)).select(:id, :name) %>
+                    <% shared_teams = scorer.teams.select { |t| user_team_ids.include?(t.id) } %>
                     <%= button_tag type: 'button',
                                    class: 'btn btn-link p-0 me-2',
                                    title: 'Share',
