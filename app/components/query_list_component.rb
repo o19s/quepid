@@ -19,13 +19,14 @@ class QueryListComponent < ApplicationComponent
   # @param scorer_scale_max [Numeric] Max scale value for QscoreQueryComponent (e.g. scorer.scale.last)
   # @param query_scores [Hash] Optional query_id => score for last run (from Score#queries)
   # @param sortable [Boolean] Whether drag-and-drop reorder is enabled (Rails.config.query_list_sortable)
-  def initialize case_id:, try_number:, queries:, other_cases: [], scorer_scale_max: 100, query_scores: {}, sortable: true, scorer_scale: nil, rating_stats: nil
+  def initialize case_id:, try_number:, queries:, other_cases: [], scorer_scale_max: 100, query_scores: {}, sortable: true, scorer_scale: nil, scale_with_labels: nil, rating_stats: nil
     @case_id           = case_id
     @try_number        = try_number
     @queries           = queries.respond_to?(:to_a) ? queries.to_a : Array(queries)
     @other_cases = other_cases.respond_to?(:to_a) ? other_cases.to_a : Array(other_cases)
     @scorer_scale_max   = scorer_scale_max
     @scorer_scale       = scorer_scale || [ 0, 1, 2, 3 ]
+    @scale_with_labels  = scale_with_labels || {}
     @query_scores       = query_scores.is_a?(Hash) ? query_scores : {}
     @sortable           = sortable
     @rating_stats       = if rating_stats.present?

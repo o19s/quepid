@@ -91,38 +91,6 @@ module Core
         assert_redirected_to case_core_path(acase, atry)
       end
 
-      test 'includes turbo stream to clear results pane when deleted query was selected' do
-        delete :destroy,
-               params: { id: acase.id, query_id: query.id, selected_query_id: query.id },
-               format: :turbo_stream
-
-        assert_response :ok
-        assert_includes response.body, 'results_pane'
-        assert_includes response.body, 'replace'
-        assert_includes response.body, 'Select a query from the list'
-      end
-
-      test 'does not include results pane stream when deleted query was not selected' do
-        # selected_query_id: other query id, or nil when only one query exists
-        other_query = acase.queries.second
-        delete :destroy,
-               params: { id: acase.id, query_id: query.id, selected_query_id: other_query&.id },
-               format: :turbo_stream
-
-        assert_response :ok
-        assert_includes response.body, 'remove'
-        assert_not_includes response.body, 'results_pane'
-      end
-
-      test 'does not include results pane stream when selected_query_id is nil' do
-        delete :destroy,
-               params: { id: acase.id, query_id: query.id, selected_query_id: nil },
-               format: :turbo_stream
-
-        assert_response :ok
-        assert_not_includes response.body, 'results_pane'
-      end
-
       test 'appends empty placeholder when deleting last query' do
         single_case = cases(:case_single_query)
         single_query = single_case.queries.first

@@ -138,13 +138,15 @@ class RunCaseEvaluationJob < ApplicationJob
       target:  "query_list_#{acase.id}",
       partial: 'core/scores/query_list',
       locals:  {
-        case_id:          acase.id,
-        try_number:       atry&.try_number,
-        queries:          acase.queries,
-        other_cases:      other_cases,
-        scorer_scale_max: acase.scorer&.scale&.last || 100,
-        query_scores:     query_scores,
-        sortable:         Rails.application.config.query_list_sortable,
+        case_id:           acase.id,
+        try_number:        atry&.try_number,
+        queries:           acase.queries,
+        other_cases:       other_cases,
+        scorer_scale_max:  acase.scorer&.scale&.last || 100,
+        scorer_scale:      acase.scorer&.scale,
+        scale_with_labels: acase.scorer&.scale_with_labels,
+        query_scores:      query_scores,
+        sortable:          Rails.application.config.query_list_sortable,
       }
     )
   end

@@ -52,11 +52,11 @@ const TOUR_STEPS = [
     placement: 'bottom',
   },
   {
-    target: '.results-pane',
-    title: 'Results Pane',
+    target: '.query-expand-chevron',
+    title: 'Inline Results',
     content:
-      'Search results appear here when you select a query. Click the rating badge on each document to judge its relevance. Use the bulk rating bar to rate all visible results at once.',
-    placement: 'left',
+      'Click the chevron (or query text) to expand a query and see its search results inline. Rate each document by clicking its rating badge. Use the bulk rating bar to rate all visible results at once.',
+    placement: 'right',
   },
   {
     target: "[data-controller='tour']",

@@ -2,7 +2,7 @@
 
 require 'test_helper'
 
-QueryRow = Struct.new(:id, :query_text, :options, keyword_init: true)
+QueryRow = Struct.new(:id, :query_text, :options, :information_need, :notes, :updated_at, keyword_init: true)
 
 class QueryListComponentTest < ViewComponent::TestCase
   def test_renders_empty_state

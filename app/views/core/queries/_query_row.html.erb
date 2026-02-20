@@ -13,7 +13,9 @@
     data-query-expand-case-id-value="<%= local_assigns[:case_id] %>"
     data-query-expand-try-number-value="<%= local_assigns[:try_number] %>"
     data-query-expand-query-id-value="<%= query_id %>"
-    data-query-expand-scale-value="<%= (local_assigns[:scorer_scale] || [0,1,2,3]).to_json %>">
+    data-query-expand-query-text-value="<%= h(query_text) %>"
+    data-query-expand-scale-value="<%= (local_assigns[:scorer_scale] || [0,1,2,3]).to_json %>"
+    data-query-expand-scale-labels-value="<%= (local_assigns[:scale_with_labels] || {}).to_json %>">
     <div class="d-flex flex-wrap align-items-center gap-2">
       <button type="button" class="btn btn-sm btn-link p-0 text-muted query-expand-chevron" data-action="click->query-expand#toggle" data-query-expand-target="chevron" title="Preview results" aria-label="Expand inline results">
         <i class="bi bi-chevron-right" aria-hidden="true"></i>
@@ -28,6 +30,7 @@
       <% if local_assigns[:unrated] %>
         <span class="badge bg-warning text-dark" title="No ratings for this query"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i></span>
       <% end %>
+      <span class="text-muted small" data-query-expand-target="resultCount"></span>
       <span class="d-flex align-items-center gap-1 flex-shrink-0">
         <%= render QscoreQueryComponent.new(
               score: local_assigns[:query_score] || "?",
@@ -57,5 +60,56 @@
         <% end %>
       </span>
     </div>
-    <div class="query-inline-results d-none" data-query-expand-target="inlineResults"></div>
+    <%# ===== Inline results area (shown when expanded) ===== %>
+    <div class="query-inline-results d-none" data-query-expand-target="inlineResults">
+      <%# Diff mode badge %>
+      <span class="badge bg-info d-none mb-2" data-query-expand-target="diffIndicator" title="Comparing with selected snapshot(s)">
+        <i class="bi bi-arrow-left-right" aria-hidden="true"></i> Diff mode
+      </span>
+      <%# Bulk rating bar %>
+      <div class="d-none mb-2" data-query-expand-target="bulkRatingBar">
+        <div class="d-flex align-items-center gap-1 flex-wrap">
+          <span class="small text-muted me-1">Rate all:</span>
+          <% (local_assigns[:scorer_scale] || [0,1,2,3]).each do |val| %>
+            <% label = local_assigns[:scale_with_labels].is_a?(Hash) ? local_assigns[:scale_with_labels][val.to_s] : nil %>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-action="click->query-expand#bulkRate" data-rating-value="<%= val %>"<% if label.present? %> title="<%= h(label) %>"<% end %>><%= val %></button>
+          <% end %>
+          <button type="button" class="btn btn-sm btn-outline-danger ms-2" data-action="click->query-expand#bulkClear">
+            <i class="bi bi-x-circle" aria-hidden="true"></i> Clear all
+          </button>
+          <div class="form-check form-check-inline ms-auto mb-0">
+            <input type="checkbox" class="form-check-input" id="showOnlyRated_<%= query_id %>" data-query-expand-target="showOnlyRatedToggle" data-action="change->query-expand#toggleShowOnlyRated">
+            <label class="form-check-label small" for="showOnlyRated_<%= query_id %>">Rated only</label>
+          </div>
+        </div>
+      </div>
+      <%# Notes form %>
+      <% if query.respond_to?(:id) && query.id %>
+        <%= render "core/queries/notes_form", query: query, case_id: local_assigns[:case_id] %>
+      <% end %>
+      <%# Doc finder %>
+      <% if local_assigns[:try_number].present? && query_id %>
+        <%= render DocFinderComponent.new(
+          case_id: local_assigns[:case_id],
+          try_number: local_assigns[:try_number],
+          query_id: query_id,
+          query_text: query_text,
+          scorer_scale: local_assigns[:scorer_scale] || [0,1,2,3]
+        ) %>
+      <% end %>
+      <%# Loading indicator %>
+      <div class="d-none text-center py-2" data-query-expand-target="loadingIndicator" role="status">
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span class="ms-2">Loading search results…</span>
+      </div>
+      <%# Error message %>
+      <div class="d-none alert alert-danger alert-dismissible small" data-query-expand-target="errorMessage" role="alert">
+        <span data-query-expand-target="errorText"></span>
+        <button type="button" class="btn-close" data-action="click->query-expand#dismissError" aria-label="Dismiss"></button>
+      </div>
+      <%# Accessibility announcement %>
+      <div class="visually-hidden" aria-live="polite" data-query-expand-target="ratingAnnouncement"></div>
+      <%# Results container (populated by Stimulus) %>
+      <div data-query-expand-target="resultsContainer"></div>
+    </div>
 </li>

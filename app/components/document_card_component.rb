@@ -1,13 +1,11 @@
 # frozen_string_literal: true
 
-# Renders a single document card in the results pane. Uses MatchesComponent for
+# Renders a single document card in the inline results area. Uses MatchesComponent for
 # the explain section when the document has explain data.
 #
-# Replaces inline HTML built by results_pane_controller.js. The rating badge uses
-# id="rating-badge-<doc_id>" so Turbo Stream responses from the ratings API can
-# update it in-place.
+# The rating badge uses id="rating-badge-<doc_id>" so Turbo Stream responses from
+# the ratings API can update it in-place.
 #
-# @see ResultsPaneComponent
 # @see MatchesComponent
 # @see docs/view_component_conventions.md
 class DocumentCardComponent < ApplicationComponent

@@ -70,8 +70,6 @@ module Core
 
     # DELETE /case/:id/queries/:query_id
     # Destroys a query and returns Turbo Stream to remove the row from the query list.
-    # When the deleted query was the currently selected one (selected_query_id param),
-    # also returns a Turbo Stream to clear the results pane.
     def destroy
       deleted_id = @query.id
       Analytics::Tracker.track_query_deleted_event current_user, @query
@@ -83,18 +81,6 @@ module Core
       respond_to do |format|
         format.turbo_stream do
           streams = [ turbo_stream.remove("query_row_#{deleted_id}") ]
-          if params[:selected_query_id].to_i == deleted_id
-            streams << turbo_stream.replace(
-              'results_pane',
-              render_to_string(
-                ResultsPaneComponent.new(
-                  case_id:        @case.id,
-                  try_number:     @try&.try_number,
-                  selected_query: nil
-                )
-              )
-            )
-          end
           streams << turbo_stream.append('query_list_items', partial: 'core/queries/empty_placeholder') if @case.queries.reload.none?
           render turbo_stream: streams, status: :ok
         end
@@ -135,14 +121,17 @@ module Core
       other_cases = current_user.cases_involved_with.where.not(id: @case.id).pluck(:id, :case_name).map { |id, name| { id: id, case_name: name } }
 
       {
-        query:            @query,
-        case_id:          @case.id,
-        try_number:       @try&.try_number,
-        sortable:         Rails.application.config.query_list_sortable,
-        scorer_scale_max: @case.scorer&.scale&.last || 100,
-        query_score:      query_scores[@query.id.to_s] || query_scores[@query.id] || '?',
-        options_json:     @query.options,
-        other_cases:      other_cases,
+        query:             @query,
+        case_id:           @case.id,
+        try_number:        @try&.try_number,
+        sortable:          Rails.application.config.query_list_sortable,
+        scorer_scale_max:  @case.scorer&.scale&.last || 100,
+        scorer_scale:      @case.scorer&.scale,
+        scale_with_labels: @case.scorer&.scale_with_labels,
+        query_score:       query_scores[@query.id.to_s] || query_scores[@query.id] || '?',
+        options_json:      @query.options,
+        other_cases:       other_cases,
+        unrated:           @query.ratings.none?,
       }
     end
   end

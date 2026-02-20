@@ -153,6 +153,7 @@
     other_cases: other_cases,
     scorer_scale_max: @case.scorer&.scale&.last || 100,
     scorer_scale: @case.scorer&.scale,
+    scale_with_labels: @case.scorer&.scale_with_labels,
     query_scores: query_scores,
     sortable: Rails.application.config.query_list_sortable,
     rating_stats: rating_stats
