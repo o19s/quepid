@@ -149,6 +149,12 @@ capture_branch() {
   log "Rebuilding Docker environment (this may take a while)..."
   bin/docker d 2>/dev/null || true   # Tear down any existing containers
   bin/setup_docker
+  # When using main repo (--capture on current branch), setup_docker wipes volumes
+  # and only creates dev DB. Ensure test DB exists so we don't leave a dirty state.
+  if [ "$branch_root" = "$GIT_ROOT" ]; then
+    log "Ensuring test database exists (main repo)..."
+    bin/docker r bin/rake db:test:prepare
+  fi
   ok "Docker environment rebuilt"
 
   # 2. Start the app in daemon mode
