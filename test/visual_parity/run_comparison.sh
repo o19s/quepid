@@ -23,7 +23,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 # GIT_ROOT: git worktree root. When run from main repo = main repo path; when run from a worktree = that worktree path. Used for running capture scripts and writing output.
 GIT_ROOT="$(cd "$PROJECT_ROOT" && git rev-parse --show-toplevel)"
 # Visual parity uses its own Docker project (quepid-vp) with different ports to avoid
-# conflicting with the main quepid stack. App is on 3010 when using VP compose.
+# conflicting with the main quepid stack. Hit app directly on 3010 (run container publishes it).
 BASE_URL_DEFAULT="http://localhost:3000"
 BASE_URL_VP="http://localhost:3010"
 # Env for docker compose when running visual parity (isolated from main quepid)
@@ -76,10 +76,12 @@ get_branch_root() {
     echo "$wt_path"
     return
   fi
-  log "Creating worktree for $branch at $wt_path..."
+  # This function is used in command substitution; keep logs on stderr
+  # so stdout contains only the resolved path.
+  log "Creating worktree for $branch at $wt_path..." >&2
   cd "$GIT_ROOT"
   git worktree add "$wt_path" "$branch"
-  ok "Worktree created"
+  ok "Worktree created" >&2
   echo "$wt_path"
 }
 
@@ -121,20 +123,30 @@ preflight() {
 # ---------------------------------------------------------------------------
 wait_for_app() {
   local base_url="${1:-$BASE_URL_DEFAULT}"
-  local max_attempts=60
+  local max_attempts=120
   local attempt=0
 
-  log "Waiting for app at $base_url..."
+  log "Waiting for app at $base_url (asset builds can take 2–5 min)..."
+  sleep 30
   while [ $attempt -lt $max_attempts ]; do
-    if curl -s -o /dev/null -w "%{http_code}" "$base_url" 2>/dev/null | grep -q "200\|302"; then
+    local code
+    code=$(curl -s -o /dev/null -w "%{http_code}" "$base_url" 2>/dev/null || echo "000")
+    if echo "$code" | grep -q "200\|302"; then
       ok "App is ready"
       return 0
     fi
+    [ $attempt -lt 3 ] && log "  (attempt $((attempt + 1)): HTTP $code)"
     attempt=$((attempt + 1))
     sleep 5
   done
 
   fail "App did not become ready within $((max_attempts * 5)) seconds"
+  warn "Diagnostics:"
+  docker compose ps 2>/dev/null || true
+  docker ps -a --filter "name=quepid-vp" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || true
+  warn "Last 80 lines of app/nginx logs:"
+  docker compose logs --tail=80 app nginx 2>/dev/null || true
+  echo "  curl $base_url -> $(curl -s -o /dev/null -w '%{http_code}' "$base_url" 2>/dev/null || echo 'failed')"
   return 1
 }
 
@@ -152,11 +164,14 @@ capture_branch() {
   log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
   # Ensure VP compose files exist in branch_root (worktrees may not have them if created before VP was added).
-  # Always copy from GIT_ROOT so worktrees get the latest override (e.g. !reset for ports).
+  # Always copy from GIT_ROOT so worktrees get the latest override (e.g. !override for ports).
   if [ -f "$GIT_ROOT/docker-compose.visual-parity.yml" ]; then
-    log "Copying VP compose files to worktree..."
-    cp "$GIT_ROOT/docker-compose.visual-parity.yml" "$branch_root/"
-    cp "$GIT_ROOT/nginx.vp.conf" "$branch_root/"
+    # Skip copy when capturing current branch from GIT_ROOT.
+    if [ "$branch_root" != "$GIT_ROOT" ]; then
+      log "Copying VP compose files to worktree..."
+      cp "$GIT_ROOT/docker-compose.visual-parity.yml" "$branch_root/"
+      cp "$GIT_ROOT/nginx.vp.conf" "$branch_root/"
+    fi
   elif [ ! -f "$branch_root/docker-compose.visual-parity.yml" ]; then
     fail "docker-compose.visual-parity.yml not found. Run from main repo or ensure VP files are in your branch."
     return 1
@@ -169,6 +184,8 @@ capture_branch() {
   log "Rebuilding Docker environment (this may take a while)..."
   bin/docker d 2>/dev/null || true   # Tear down any existing VP containers only
   bin/setup_docker
+  log "Building frontend assets once for visual parity..."
+  bin/docker r yarn build
   # When using main repo (--capture on current branch), setup_docker wipes volumes
   # and only creates dev DB. Ensure test DB exists so we don't leave a dirty state.
   if [ "$branch_root" = "$GIT_ROOT" ]; then
@@ -178,9 +195,15 @@ capture_branch() {
   ok "Docker environment rebuilt"
 
   # 2. Start the app in daemon mode
+  # Use a minimal Procfile for VP runs. Foreman stops all processes if any one exits;
+  # one-shot/watch build processes in Procfile.dev can exit in detached mode and kill app.
+  cat > "$branch_root/Procfile.vp" <<'EOF'
+web: bundle exec puma -C config/puma.rb -b tcp://0.0.0.0:3000
+worker: bundle exec bin/jobs
+EOF
   log "Starting application..."
+  docker compose up -d app
   docker compose up --no-deps -d nginx
-  bin/docker q
 
   # 3. Wait for ready
   if ! wait_for_app "$BASE_URL_VP"; then
