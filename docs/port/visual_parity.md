@@ -55,14 +55,12 @@ These pages have the same layout, structure, and UI components across both branc
 
 ## Pages with Notable Differences
 
-### 1. Case Workspace (`04-case-workspace`) — Expected Difference
+### 1. Case Workspace (`04-case-workspace`) — Visual Parity Implemented
 
-This is the **core Angular SPA page** that is being replaced in the migration. The two branches render it fundamentally differently:
+This is the **core Angular SPA page** that is being replaced in the migration. Full visual parity has been implemented:
 
-- **deangularjs:** Classic Angular workspace — "SOLR CASE — Try 1 — AP@10" header with action buttons (Annotations, Create Snapshot, Compare Snapshots, Export, Share Case, Clone, Filter Relevancy). Shows query list and results pane.
-- **deangularjs-experimental:** Server-rendered workspace — landed on annotations view showing "Existing Annotations" with query/results split pane below. Different navigation pattern.
-
-**This is the expected and most significant difference** between the branches — it's the whole point of the migration.
+- **deangularjs:** Classic Angular workspace — "CASE — Try 1 — AP@10" header format, action buttons (Annotations, Create Snapshot, Compare Snapshots, Export, Share Case, Clone, Filter Relevancy). Query list and results pane as primary focus. Annotations behind a button/panel.
+- **deangularjs-experimental:** Server-rendered workspace — same layout. Header shows case name — Try N — score scorer_name (e.g. "SOLR CASE — Try 1 — 0.42 AP@10"). Same action button order and labels. Annotations panel collapsed by default. Query list and results as primary focus.
 
 ### 2. Book Judge (`23-book-judge`) — Data Difference
 
@@ -143,3 +141,16 @@ xdg-open test/visual_parity/report.html
 ```
 
 Worktrees persist between runs for faster re-captures. Use `--remove-worktrees` to clean up.
+
+### Standalone capture (app already running)
+
+When the app is already running (e.g. via `bin/docker s`), you can capture screenshots and API structures directly without the orchestrator:
+
+```bash
+# App must be running at BASE_URL (default http://localhost:3000)
+node test/visual_parity/capture_screenshots.mjs --branch <name> --base-url http://localhost:3000
+node test/visual_parity/compare_apis.mjs --branch <name> --base-url http://localhost:3000
+
+# With custom credentials (default: quepid+realisticactivity@o19s.com / password)
+node test/visual_parity/capture_screenshots.mjs --branch deangularjs --email user@example.com --password secret
+```

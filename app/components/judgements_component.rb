@@ -16,7 +16,8 @@ class JudgementsComponent < ApplicationComponent
   # @param queries_count [Integer] Number of queries (for background refresh threshold)
   # @param scorer_id [Integer, nil] Case scorer id (for create-book link)
   # @param teams [Array<Hash>, ActiveRecord::Relation] Teams the case is shared with (id, name)
-  def initialize case_id:, case_name:, book_id: nil, book_name: nil, queries_count: 0, scorer_id: nil, teams: []
+  # @param button_label [String, nil] Optional label for Angular parity (e.g. "Filter Relevancy")
+  def initialize case_id:, case_name:, book_id: nil, book_name: nil, queries_count: 0, scorer_id: nil, teams: [], button_label: nil
     @case_id       = case_id
     @case_name     = case_name
     @book_id       = book_id
@@ -24,6 +25,7 @@ class JudgementsComponent < ApplicationComponent
     @queries_count = queries_count
     @scorer_id     = scorer_id
     @teams         = teams.respond_to?(:to_ary) ? teams.to_ary : teams.to_a
+    @button_label  = button_label
   end
 
   def teams_for_data

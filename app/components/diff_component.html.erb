@@ -1,7 +1,13 @@
 <div class="diff-wrapper" data-controller="diff" data-diff-case-id-value="<%= @case_id %>" data-diff-max-snapshots-value="<%= DiffComponent::MAX_SNAPSHOTS %>">
-  <a href="#" class="action-icon" data-action="click->diff#open" data-diff-target="trigger" title="Compare results" aria-label="Compare results">
-    <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
-  </a>
+  <% if @button_label.present? %>
+    <button type="button" class="btn btn-outline-secondary btn-sm" data-action="click->diff#open" data-diff-target="trigger" title="<%= @button_label %>" aria-label="<%= @button_label %>">
+      <i class="bi bi-arrow-left-right" aria-hidden="true"></i> <%= @button_label %>
+    </button>
+  <% else %>
+    <a href="#" class="action-icon" data-action="click->diff#open" data-diff-target="trigger" title="Compare results" aria-label="Compare results">
+      <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+    </a>
+  <% end %>
 
   <div class="modal fade" id="diffModal" tabindex="-1" aria-labelledby="diffModalLabel" aria-hidden="true" data-diff-target="modal">
     <div class="modal-dialog">

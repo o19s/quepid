@@ -31,6 +31,9 @@ module Api
           used_fallback = computed_score.nil?
           score = used_fallback ? fallback_score_for(query) : computed_score
 
+          # Broadcast case header score for immediate UI update (visual parity with Angular)
+          broadcast_case_header_score(query.id, score) unless used_fallback
+
           render json: {
             query_id:        query.id,
             score:           score,
@@ -41,6 +44,18 @@ module Api
         end
 
         private
+
+        def broadcast_case_header_score query_id, score
+          case_score = @case.lightweight_case_score_for_updated_query(query_id, score)
+          return unless case_score
+
+          Turbo::StreamsChannel.broadcast_replace_to(
+            :notifications,
+            target:  "case-header-score-#{@case.id}",
+            partial: 'core/scores/case_header_score',
+            locals:  { case_id: @case.id, score: case_score }
+          )
+        end
 
         def fallback_score_for query
           queries = @case.last_score&.queries

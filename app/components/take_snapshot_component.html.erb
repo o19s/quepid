@@ -6,9 +6,15 @@
   data-take-snapshot-case-id-value="<%= @case_id %>"
   data-take-snapshot-try-number-value="<%= @try_number %>"
 >
-  <a href="#" class="action-icon" data-action="click->take-snapshot#open" data-take-snapshot-target="trigger" title="Take snapshot" aria-label="Take snapshot">
-    <i class="bi bi-camera" aria-hidden="true"></i>
-  </a>
+  <% if @button_label.present? %>
+    <button type="button" class="btn btn-outline-secondary btn-sm" data-action="click->take-snapshot#open" data-take-snapshot-target="trigger" title="<%= @button_label %>" aria-label="<%= @button_label %>">
+      <i class="bi bi-camera" aria-hidden="true"></i> <%= @button_label %>
+    </button>
+  <% else %>
+    <a href="#" class="action-icon" data-action="click->take-snapshot#open" data-take-snapshot-target="trigger" title="Take snapshot" aria-label="Take snapshot">
+      <i class="bi bi-camera" aria-hidden="true"></i>
+    </a>
+  <% end %>
 
   <div class="modal fade" id="takeSnapshotModal" tabindex="-1" aria-labelledby="takeSnapshotModalLabel" aria-hidden="true" data-take-snapshot-target="modal">
     <div class="modal-dialog">

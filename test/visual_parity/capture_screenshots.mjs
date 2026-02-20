@@ -153,12 +153,12 @@ const PAGES = [
   // Profile
   { name: '16-profile', path: '/profile' },
 
-  // Analytics – tries visualization
+  // Analytics – tries visualization (Rails route: /analytics/tries_visualization/:case_id)
   {
     name: '17-analytics-tries',
     resolve: async (page) => {
       const id = await getFirstCaseId(page);
-      return id ? `/case/${id}/analytics` : '/cases';
+      return id ? `/analytics/tries_visualization/${id}` : '/cases';
     },
   },
 

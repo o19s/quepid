@@ -14,12 +14,14 @@ class TakeSnapshotComponent < ApplicationComponent
   # @param search_engine [String] e.g. "solr", "es", "os", "static"
   # @param field_spec [String, nil] Displayed fields (e.g. "id,title,description")
   # @param can_take_snapshot [Boolean] Whether snapshot is allowed (requires non-static search endpoint)
-  def initialize case_id:, try_number: nil, search_engine: 'solr', field_spec: nil, can_take_snapshot: true
+  # @param button_label [String, nil] Optional label for Angular parity (e.g. "Create Snapshot")
+  def initialize case_id:, try_number: nil, search_engine: 'solr', field_spec: nil, can_take_snapshot: true, button_label: nil
     @case_id = case_id
     @try_number = try_number
     @search_engine = search_engine.to_s
     @field_spec = field_spec
     @can_take_snapshot = can_take_snapshot
+    @button_label = button_label
   end
 
   def support_lookup_by_id?

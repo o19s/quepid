@@ -12,4 +12,10 @@ class DiffComponentTest < ViewComponent::TestCase
     assert_selector "button[data-action='click->diff#apply']", text: /Update Comparison/
     assert_selector "button[data-action='click->diff#clear']", text: /Clear Comparison/
   end
+
+  def test_renders_button_trigger_when_button_label_present
+    render_inline(DiffComponent.new(case_id: 1, button_label: 'Compare Snapshots'))
+    assert_selector "button[data-action='click->diff#open']", text: /Compare Snapshots/
+    assert_no_selector "a[data-action='click->diff#open']"
+  end
 end

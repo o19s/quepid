@@ -41,14 +41,23 @@ const branches = detectBranches();
 const BRANCH_A = getArg('branch-a', branches[0]);
 const BRANCH_B = getArg('branch-b', branches[1]);
 
+const dirA = path.join(SCREENSHOTS_DIR, BRANCH_A);
+const dirB = path.join(SCREENSHOTS_DIR, BRANCH_B);
+
+if (!fs.existsSync(dirA) || !fs.existsSync(dirB)) {
+  const available = fs.readdirSync(SCREENSHOTS_DIR).filter(d =>
+    fs.statSync(path.join(SCREENSHOTS_DIR, d)).isDirectory()
+  ).join(', ');
+  console.error(`Missing screenshot dir(s). ${dirA} or ${dirB} not found.`);
+  console.error(`Available: ${available || '(none)'}`);
+  process.exit(1);
+}
+
 console.log(`\n📊 Generating comparison report: ${BRANCH_A} vs ${BRANCH_B}\n`);
 
 // ---------------------------------------------------------------------------
 // Gather screenshot pairs
 // ---------------------------------------------------------------------------
-const dirA = path.join(SCREENSHOTS_DIR, BRANCH_A);
-const dirB = path.join(SCREENSHOTS_DIR, BRANCH_B);
-
 const filesA = new Set(fs.readdirSync(dirA).filter(f => f.endsWith('.png')));
 const filesB = new Set(fs.readdirSync(dirB).filter(f => f.endsWith('.png')));
 

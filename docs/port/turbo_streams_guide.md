@@ -33,7 +33,7 @@
 | **Rating updated** | Implemented | `Api::V1::Queries::RatingsController#update` → `update` `rating-badge-<doc_id>`; `#destroy` → `update` with empty rating. Results pane requests `Accept: text/vnd.turbo-stream.html` and applies via `Turbo.renderStreamMessage`. Error handling: `append` to `flash` on validation failure. |
 | **Rating deleted** | Implemented | `Api::V1::Queries::RatingsController#destroy` → `update` `rating-badge-<doc_id>` with empty rating string. |
 | **Annotation created** | Implemented | `Api::V1::AnnotationsController#create` → `prepend` to `annotations_list` using `AnnotationComponent`. Client requests `Accept: text/vnd.turbo-stream.html` and applies via `Turbo.renderStreamMessage`. |
-| **Score changed** | Implemented | `RunCaseEvaluationJob` broadcasts `replace` for `qscore-case-#{case_id}` and `query_list_#{case_id}` when job completes; core workspace subscribes via `turbo_stream_from(:notifications)`. DocFinder bulk rate/delete triggers run_evaluation so scores refresh. |
+| **Score changed** | Implemented | **Immediate:** `Api::V1::Queries::ScoresController#create` broadcasts `replace` for `case-header-score-#{case_id}` when a single query is scored (visual parity with Angular). **Full run:** `RunCaseEvaluationJob` broadcasts `replace` for `qscore-case-#{case_id}`, `case-header-score-#{case_id}`, and `query_list_#{case_id}` when job completes. Core workspace subscribes via `turbo_stream_from(:notifications)`. DocFinder bulk rate/delete triggers run_evaluation so scores refresh. |
 
 **Prefer Turbo Streams** over client-side `fetch` + manual DOM update. When the server can return `text/vnd.turbo-stream.html`, use that so Turbo handles DOM updates consistently.
 

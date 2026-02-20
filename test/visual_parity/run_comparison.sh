@@ -18,8 +18,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# PROJECT_ROOT: directory containing test/ (where script lives). Used to find git root.
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-# Main repo root (resolves correctly from worktrees)
+# GIT_ROOT: git worktree root. When run from main repo = main repo path; when run from a worktree = that worktree path. Used for running capture scripts and writing output.
 GIT_ROOT="$(cd "$PROJECT_ROOT" && git rev-parse --show-toplevel)"
 BASE_URL="http://localhost:3000"
 BRANCHES=("deangularjs" "deangularjs-experimental")
@@ -44,23 +45,36 @@ fail()  { echo -e "${RED}[$(date +%H:%M:%S)] ❌ $*${NC}"; }
 # ---------------------------------------------------------------------------
 get_worktree_path() {
   local branch="$1"
-  # Sanitize branch name for directory (e.g. deangularjs-experimental -> deangularjs-experimental)
   local safe_name="${branch//\//-}"
   echo "${WT_BASE}/quepid${WT_SUFFIX}-${safe_name}"
 }
 
-ensure_worktree() {
+# Returns the path to use for a branch.
+# For full comparison: always uses worktree (never GIT_ROOT) so the main repo is never touched.
+# For --capture <branch>: uses GIT_ROOT when already on that branch (convenience), else worktree.
+# $1 = branch name, $2 = "1" or "true" to allow GIT_ROOT when on that branch (--capture only)
+get_branch_root() {
   local branch="$1"
+  local allow_cwd_if_match="${2:-}"
+  local current_branch
+  current_branch=$(cd "$GIT_ROOT" && git branch --show-current)
+  if [ "$allow_cwd_if_match" = "1" ] || [ "$allow_cwd_if_match" = "true" ]; then
+    if [ "$current_branch" = "$branch" ]; then
+      echo "$GIT_ROOT"
+      return
+    fi
+  fi
   local wt_path
   wt_path=$(get_worktree_path "$branch")
   if [ -d "$wt_path" ]; then
-    log "Worktree for $branch already exists at $wt_path"
-    return 0
+    echo "$wt_path"
+    return
   fi
   log "Creating worktree for $branch at $wt_path..."
   cd "$GIT_ROOT"
   git worktree add "$wt_path" "$branch"
   ok "Worktree created"
+  echo "$wt_path"
 }
 
 # ---------------------------------------------------------------------------
@@ -122,17 +136,16 @@ wait_for_app() {
 # ---------------------------------------------------------------------------
 capture_branch() {
   local branch="$1"
-  local wt_path
-  wt_path=$(get_worktree_path "$branch")
+  local allow_cwd="${2:-}"
+  local branch_root
+  branch_root=$(get_branch_root "$branch" "$allow_cwd")
 
   log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  log "Processing branch: $branch (worktree: $wt_path)"
+  log "Processing branch: $branch (root: $branch_root)"
   log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-  ensure_worktree "$branch"
-
-  # 1. Full Docker rebuild with fresh seed data (from worktree)
-  cd "$wt_path"
+  # 1. Full Docker rebuild with fresh seed data
+  cd "$branch_root"
   log "Rebuilding Docker environment (this may take a while)..."
   bin/docker d 2>/dev/null || true   # Tear down any existing containers
   bin/setup_docker
@@ -162,8 +175,8 @@ capture_branch() {
     --email "quepid+realisticactivity@o19s.com" --password "password"
   ok "API structures captured"
 
-  # 5. Tear down (from worktree)
-  cd "$wt_path"
+  # 5. Tear down
+  cd "$branch_root"
   log "Tearing down Docker for $branch..."
   bin/docker d 2>/dev/null || true
   ok "Docker torn down"
@@ -226,7 +239,7 @@ case "${1:-}" in
       exit 1
     fi
     preflight
-    capture_branch "$2"
+    capture_branch "$2" "1"
     ;;
   --report)
     log "Generating report only..."

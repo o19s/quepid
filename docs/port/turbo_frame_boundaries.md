@@ -83,8 +83,8 @@
 - **West panel:** Query list (QueryListComponent). Collapsible via chevron button; state persisted in localStorage per case.
 - **East panel:** Results pane (ResultsPaneComponent). Collapsible via chevron button; state persisted in localStorage per case.
 - **Legacy Angular:** Had "Tune Relevance" / dev settings (`devQueryParams`, `_dev_settings.html`) and scorer picker (`pick_scorer.html`) as side panels.
-- **Current modern stack:** Scorer, Settings, Chart panels are in the toolbar (Bootstrap collapse). Query list and results are collapsible east/west side panels.
-- **Future:** For additional panels (e.g. annotations drawer, snapshot list), wrap each in its own Turbo Frame with `loading="lazy"` and `src` pointing to a dedicated endpoint.
+- **Current modern stack:** Scorer, Settings, Chart panels are in the toolbar (Bootstrap collapse). Query list and results are collapsible east/west side panels. Annotations panel is a Bootstrap collapse below the workspace (collapsed by default for visual parity with Angular).
+- **Future:** For additional panels (e.g. snapshot list), wrap each in its own Turbo Frame with `loading="lazy"` and `src` pointing to a dedicated endpoint.
 
 ---
 

@@ -114,6 +114,12 @@ class RunCaseEvaluationJob < ApplicationJob
         annotations: acase.annotations.map { |a| { message: a.message, updated_at: a.updated_at.iso8601 } },
       }
     )
+    Turbo::StreamsChannel.broadcast_replace_to(
+      :notifications,
+      target:  "case-header-score-#{acase.id}",
+      partial: 'core/scores/case_header_score',
+      locals:  { case_id: acase.id, score: score_val }
+    )
   end
 
   def broadcast_query_list_update acase, user

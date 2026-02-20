@@ -36,6 +36,7 @@
         <label class="form-check-label small" for="nightly-toggle-<%= @case.id %>" data-nightly-toggle-target="label"><%= @case.nightly ? "Nightly: ON" : "Nightly: OFF" %></label>
       </div>
     </span>
+    <span class="text-muted mx-1" aria-hidden="true">—</span>
     <span data-controller="inline-edit"
           data-inline-edit-url-value="<%= "#{quepid_root_url}/api/cases/#{@case.id}/tries/#{@try&.try_number}" %>"
           data-inline-edit-field-value="name"
@@ -46,6 +47,9 @@
              data-action="keydown->inline-edit#onKeydown blur->inline-edit#save"
              value="<%= @try&.name.presence || "Try #{@try&.try_number}" %>">
     </span>
+    <span class="text-muted mx-1" aria-hidden="true">—</span>
+    <%= render 'core/scores/case_header_score', case_id: @case.id, score: @case.last_score&.score || "?" %>
+    <% if @case.scorer&.name.present? %><span class="text-muted small ms-1"><%= @case.scorer.name %></span><% end %>
     <%= render SettingsPanelComponent.new(
       try: @try,
       case_id: @case.id,
@@ -68,27 +72,32 @@
       max_score: @case.scorer&.scale&.last || 100
     ) %>
     <div class="d-flex gap-2 ms-auto align-items-center">
-      <span data-controller="run-evaluation" data-run-evaluation-case-id-value="<%= @case.id %>" data-run-evaluation-try-number-value="<%= @try&.try_number %>">
-        <button type="button" class="btn btn-sm btn-outline-success" data-run-evaluation-target="button" data-action="click->run-evaluation#run" title="Run evaluation for all queries">
-          <span class="spinner-border spinner-border-sm d-none" data-run-evaluation-target="spinner" aria-hidden="true"></span>
-          <i class="bi bi-play-fill" aria-hidden="true"></i> Evaluate
-        </button>
-      </span>
-      <%= render CloneCaseComponent.new(
+      <%# Angular parity: Annotations, Create Snapshot, Compare Snapshots, Export, Share Case, Clone, Filter Relevancy %>
+      <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#annotations-panel" aria-expanded="false" aria-controls="annotations-panel" title="Show annotations">
+        <i class="bi bi-journal-bookmark" aria-hidden="true"></i> Annotations
+      </button>
+      <%= render TakeSnapshotComponent.new(
         case_id: @case.id,
-        case_name: @case.case_name,
-        tries: @case.tries.map { |t| { try_number: t.try_number, name: t.name } },
-        last_try_number: @try&.try_number
+        try_number: @try&.try_number,
+        search_engine: @try&.search_endpoint&.search_engine || "solr",
+        field_spec: @try&.field_spec,
+        can_take_snapshot: @try.present? && @try.search_endpoint.present? && @try.search_endpoint.search_engine != "static",
+        button_label: "Create Snapshot"
       ) %>
+      <%= render DiffComponent.new(case_id: @case.id, button_label: "Compare Snapshots") %>
       <%= render ExportCaseComponent.new(case_id: @case.id, case_name: @case.case_name, icon_only: true, supports_detailed_export: true) %>
-      <%= render ImportRatingsComponent.new(case_id: @case.id, case_name: @case.case_name, icon_only: true) %>
-      <%= render DeleteCaseOptionsComponent.new(case_id: @case.id, case_name: @case.case_name, try_number: @try&.try_number, icon_only: true) %>
       <%= render ShareCaseComponent.new(
         case_id: @case.id,
         case_name: @case.case_name,
         all_teams: current_user.teams.select(:id, :name).order(:name),
         shared_teams: @case.teams.select(:id, :name),
         icon_only: true
+      ) %>
+      <%= render CloneCaseComponent.new(
+        case_id: @case.id,
+        case_name: @case.case_name,
+        tries: @case.tries.map { |t| { try_number: t.try_number, name: t.name } },
+        last_try_number: @try&.try_number
       ) %>
       <%= render JudgementsComponent.new(
         case_id: @case.id,
@@ -97,8 +106,17 @@
         book_name: @case.book&.name,
         queries_count: @case.queries.count,
         scorer_id: @case.scorer_id,
-        teams: @case.teams.select(:id, :name)
+        teams: @case.teams.select(:id, :name),
+        button_label: "Filter Relevancy"
       ) %>
+      <span data-controller="run-evaluation" data-run-evaluation-case-id-value="<%= @case.id %>" data-run-evaluation-try-number-value="<%= @try&.try_number %>">
+        <button type="button" class="btn btn-sm btn-outline-success" data-run-evaluation-target="button" data-action="click->run-evaluation#run" title="Run evaluation for all queries">
+          <span class="spinner-border spinner-border-sm d-none" data-run-evaluation-target="spinner" aria-hidden="true"></span>
+          <i class="bi bi-play-fill" aria-hidden="true"></i> Evaluate
+        </button>
+      </span>
+      <%= render ImportRatingsComponent.new(case_id: @case.id, case_name: @case.case_name, icon_only: true) %>
+      <%= render DeleteCaseOptionsComponent.new(case_id: @case.id, case_name: @case.case_name, try_number: @try&.try_number, icon_only: true) %>
       <% rating_stats ||= @case.queries.left_joins(:ratings)
            .group(:id)
            .pluck(:id, Arel.sql("COUNT(ratings.id)"))
@@ -116,14 +134,6 @@
       <%= render UnarchiveCaseComponent.new(
         current_user_teams: current_user.teams.select(:id, :name).order(:name)
       ) %>
-      <%= render DiffComponent.new(case_id: @case.id) %>
-      <%= render TakeSnapshotComponent.new(
-        case_id: @case.id,
-        try_number: @try&.try_number,
-        search_engine: @try&.search_endpoint&.search_engine || "solr",
-        field_spec: @try&.field_spec,
-        can_take_snapshot: @try.present? && @try.search_endpoint.present? && @try.search_endpoint.search_engine != "static"
-      ) %>
       <% if @try&.search_endpoint.present? && current_user.search_endpoints_involved_with.exists?(@try.search_endpoint.id) %>
         <%= render CustomHeadersComponent.new(
           search_endpoint_id: @try.search_endpoint.id,
@@ -139,18 +149,8 @@
       can_add_queries: @try.nil? || @try.search_endpoint.nil? || @try.search_endpoint.search_engine != "static"
     ) %>
   </div>
-  <%# Case-level score: now in Scorer panel. Chart in Chart panel. %>
 
-  <%# Annotations panel: create/list/edit/delete annotations %>
-  <div class="mb-3">
-    <%= render AnnotationsComponent.new(
-      case_id: @case.id,
-      annotations: @case.annotations.includes(:score, :user),
-      last_score: @case.last_score
-    ) %>
-  </div>
-
-  <%# Query list (left) and results pane (right). Selection via ?query_id= %>
+  <%# Query list (left) and results pane (right). Primary focus for visual parity with Angular. %>
   <%# Wrapped in workspace_content frame so query selection uses Turbo Frame navigation (no full-page reload). %>
   <% selected_query_id = params[:query_id].presence&.to_i %>
   <% selected_query_id = nil if selected_query_id&.zero? %>
@@ -216,5 +216,16 @@
     </div>
   </div>
   <% end %>
+
+  <%# Annotations panel: collapsible, collapsed by default for visual parity with Angular. %>
+  <div class="collapse mt-3" id="annotations-panel">
+    <div class="card card-body">
+      <%= render AnnotationsComponent.new(
+        case_id: @case.id,
+        annotations: @case.annotations.includes(:score, :user),
+        last_score: @case.last_score
+      ) %>
+    </div>
+  </div>
 </div>
 <%= render "shared/share_case_modal" %>

@@ -13,7 +13,9 @@ class DiffComponent < ApplicationComponent
   MAX_SNAPSHOTS = 3
 
   # @param case_id [Integer] Case id (for snapshots API)
-  def initialize case_id:
+  # @param button_label [String, nil] Optional label for Angular parity (e.g. "Compare Snapshots")
+  def initialize case_id:, button_label: nil
     @case_id = case_id
+    @button_label = button_label
   end
 end

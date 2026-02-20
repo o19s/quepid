@@ -190,6 +190,32 @@ class Case < ApplicationRecord
     scores.order(updated_at: :desc, created_at: :desc, id: :desc).first
   end
 
+  # Computes a lightweight case-level score by merging one query's updated score
+  # into last_score.queries and averaging. Used for immediate header updates when
+  # a user rates a document, without running the full RunCaseEvaluationJob.
+  #
+  # @param query_id [Integer, String] The query that was just scored
+  # @param new_score [Float] The newly computed score for that query
+  # @return [Float, nil] The case average, or nil if last_score/queries unavailable
+  def lightweight_case_score_for_updated_query query_id, new_score
+    return nil unless last_score
+
+    queries = last_score.queries
+    return nil unless queries.is_a?(Hash)
+
+    normalized = queries.transform_keys(&:to_s)
+    merged = normalized.merge(query_id.to_s => { 'score' => new_score })
+    scores = merged.values.filter_map do |entry|
+      next unless entry.is_a?(Hash)
+
+      val = entry['score'] || entry[:score]
+      val.is_a?(Numeric) ? val : nil
+    end
+    return nil if scores.empty?
+
+    scores.sum.to_f / scores.length
+  end
+
   def first_score
     scores.last
   end

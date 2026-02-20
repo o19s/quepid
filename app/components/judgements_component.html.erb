@@ -5,9 +5,15 @@
      data-judgements-queries-count-value="<%= @queries_count %>"
      data-judgements-teams-value="<%= teams_for_data %>"
      data-judgements-create-book-url-value="<%= create_book_url %>">
-  <a href="#" class="action-icon" data-action="click->judgements#open" data-judgements-target="trigger" title="Judgements" aria-label="Judgements">
-    <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
-  </a>
+  <% if @button_label.present? %>
+    <button type="button" class="btn btn-outline-secondary btn-sm" data-action="click->judgements#open" data-judgements-target="trigger" title="<%= @button_label %>" aria-label="<%= @button_label %>">
+      <i class="bi bi-journal-bookmark" aria-hidden="true"></i> <%= @button_label %>
+    </button>
+  <% else %>
+    <a href="#" class="action-icon" data-action="click->judgements#open" data-judgements-target="trigger" title="Judgements" aria-label="Judgements">
+      <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
+    </a>
+  <% end %>
 
   <div class="modal fade" id="judgementsModal" tabindex="-1" aria-labelledby="judgementsModalLabel" aria-hidden="true" data-judgements-target="modal">
     <div class="modal-dialog modal-lg">

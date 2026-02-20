@@ -17,6 +17,19 @@ class TakeSnapshotComponentTest < ViewComponent::TestCase
     assert_selector '#takeSnapshotModal'
   end
 
+  def test_renders_button_trigger_when_button_label_present
+    render_inline(TakeSnapshotComponent.new(
+                    case_id:           1,
+                    try_number:        1,
+                    search_engine:     'solr',
+                    field_spec:        'id,title',
+                    can_take_snapshot: true,
+                    button_label:      'Create Snapshot'
+                  ))
+    assert_selector "button[data-action='click->take-snapshot#open']", text: /Create Snapshot/
+    assert_no_selector "a[data-action='click->take-snapshot#open']"
+  end
+
   def test_does_not_render_when_not_allowed
     render_inline(TakeSnapshotComponent.new(
                     case_id:           1,
