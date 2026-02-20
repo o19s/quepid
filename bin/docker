@@ -16,7 +16,10 @@ cd "$APP_ROOT"
 
 case "$1" in
   server|s)
+    docker compose up -d mysql keycloak ollama
     docker compose up --no-deps -d nginx
+    docker compose run --rm app ./wait-for mysql:3306 --timeout=120 -- true
+    docker compose run --rm app bin/rake db:prepare
     docker compose run --rm --service-ports app foreman s -f Procfile.dev
     ;;
   bash|b)
@@ -30,7 +33,9 @@ case "$1" in
     docker compose --progress=quiet run --remove-orphans --rm app $@
     ;;
   daemon|q)
-    #docker compose up -d
+    docker compose up -d mysql keycloak ollama
+    docker compose run --rm app ./wait-for mysql:3306 --timeout=120 -- true
+    docker compose run --rm app bin/rake db:prepare
     docker compose run -d --service-ports app foreman s -f Procfile.dev
     ;;
   destroy|d)
