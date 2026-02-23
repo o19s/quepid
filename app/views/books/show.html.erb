@@ -106,7 +106,7 @@ This book consists of <%= @book.queries_count %> queries.
 <p>
   <strong>Teams:</strong>
   <% @book.teams.each do |team| %>
-    <%= link_to team.name, teams_core_path(team) %>
+    <%= link_to team.name, team_path(team) %>
   <% end %>
 </p>
 

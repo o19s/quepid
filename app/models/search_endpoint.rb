@@ -74,6 +74,10 @@ class SearchEndpoint < ApplicationRecord
     save
   end
 
+  def cases_count
+    Case.joins(:tries).where(tries: { search_endpoint_id: id }).distinct.count
+  end
+
   private
 
   def middle_truncate str, total: 30, lead: 15, trail: 15

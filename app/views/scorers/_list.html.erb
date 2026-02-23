@@ -1,0 +1,80 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Scorers</h5>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Scale</th>
+            <th>Owner</th>
+            <th class="text-end"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @scorers.each do |scorer| %>
+            <tr>
+              <td><%= scorer.name %></td>
+              <td><%= scorer.communal? ? 'Communal' : 'Custom' %></td>
+              <td>
+                <div>
+                  <%= truncate(scorer.scale.to_s, length: 300) %>
+                </div>
+              </td>
+              <td><%= scorer.owner&.fullname || 'System' %></td>
+              <td class="text-end">
+                <% if scorer.communal? %>
+                  <div class="d-inline-flex align-items-center">
+                    <% if current_user.administrator? %>
+                      <%= link_to edit_scorer_path(scorer), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
+                        <i class="bi bi-pencil" aria-hidden="true"></i>
+                      <% end %>
+                    <% end %>
+                    <%= button_to clone_scorer_path(scorer), method: :post, class: 'btn btn-link p-0 me-2', title: 'Clone', 'aria-label': 'Clone' do %>
+                      <i class="bi bi-files" aria-hidden="true"></i>
+                    <% end %>                   
+                  </div>
+                <% else %>
+                  <div class="btn-group btn-group-sm" role="group">
+                    <% shared_teams = scorer.teams.where(id: @user_teams.select(:id)).select(:id, :name) %>
+                    <%= button_tag type: 'button',
+                                   class: 'btn btn-link p-0 me-2',
+                                   title: 'Share',
+                                   'aria-label': 'Share',
+                                   data: {
+                                     action: 'click->share-scorer#open',
+                                     bs_toggle: 'modal',
+                                     bs_target: '#shareScorerModal',
+                                     share_scorer_id: scorer.id,
+                                     share_scorer_name: scorer.name,
+                                     share_scorer_all_teams_json: @user_teams.map { |t| { id: t.id, name: t.name } }.to_json,
+                                     share_scorer_shared_teams_json: shared_teams.map { |t| { id: t.id, name: t.name } }.to_json
+                                   } do %>
+                      <i class="bi bi-share" aria-hidden="true"></i>
+                    <% end %>
+                    <%= link_to edit_scorer_path(scorer), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
+                      <i class="bi bi-pencil" aria-hidden="true"></i>
+                    <% end %>
+                    <%= button_to clone_scorer_path(scorer), method: :post, class: 'btn btn-link p-0 me-2', title: 'Clone', 'aria-label': 'Clone' do %>
+                      <i class="bi bi-files" aria-hidden="true"></i>
+                    <% end %>      
+                  </div>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+
+    <div class="mt-2">
+          
+    <%== @pagy.series_nav(:bootstrap) %>
+
+    </div>
+
+  </div>
+</div>

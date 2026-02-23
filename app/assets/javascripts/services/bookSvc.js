@@ -49,24 +49,7 @@ angular.module('QuepidApp')
           });
       };
 
-      this.shareCase = function(team, book, caseNo) {
-        // http POST api/teams/<int:teamId>/cases
-        var url   = 'api/teams/' + team.id + '/cases';
-        var data  = {
-          id: caseNo,
-          book_id: book.id
-        };
 
-        return $http.post(url, data)
-          .then(function(response) {
-            team.cases.push(response.data);
-
-            broadcastSvc.send('bookCaseTeamAdded', {
-              caseNo: caseNo,
-              team:   team,
-            });
-          });
-      };
 
       this.updateQueryDocPairs = function(bookId, caseId, queries) {
         // http POST api/books/<int:bookId>/populate

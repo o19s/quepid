@@ -231,7 +231,8 @@ angular.module('QuepidApp')
 
       ctrl.goToTeamsPage = function () {
         $uibModalInstance.dismiss('cancel');
-        $location.path('/teams');
+        var url = caseTryNavSvc.getQuepidRootUrl() + '/teams';
+        window.location.href = url;
       };
       
       ctrl.createNewBookLink = function() {

@@ -70,6 +70,13 @@ Rails.application.routes.draw do
   resource :account, only: [ :update, :destroy ]
   resource :profile, only: [ :show, :update ]
 
+  resources :scorers, only: [ :index, :new, :create, :edit, :update, :destroy ] do
+    post :clone, on: :member
+  end
+  post '/scorers/default' => 'scorers#update_default', as: :update_default_scorers
+  post '/scorers/share' => 'scorers#share', as: :share_scorers
+  post '/scorers/unshare' => 'scorers#unshare', as: :unshare_scorers
+
   get '/dropdown/cases' => 'dropdown#cases'
   get '/dropdown/books' => 'dropdown#books'
 
@@ -128,6 +135,29 @@ Rails.application.routes.draw do
     resources :export, only: [ :update ], param: :book_id
   end
 
+  resources :teams, only: [ :index, :new, :create, :show ] do
+    member do
+      post :rename
+      get 'suggest_members' => 'teams#suggest_members', as: :suggest_members
+      post 'members' => 'teams#add_member', as: :members
+      delete 'members/:member_id' => 'teams#remove_member', as: :member
+      delete 'cases/:case_id' => 'teams#remove_case', as: :case
+      post 'cases/:case_id/archive' => 'teams#archive_case', as: :archive_case
+      post 'cases/:case_id/unarchive' => 'teams#unarchive_case', as: :unarchive_case
+      post 'search_endpoints/:search_endpoint_id/archive' => 'teams#archive_search_endpoint', as: :archive_search_endpoint
+      post 'search_endpoints/:search_endpoint_id/unarchive' => 'teams#unarchive_search_endpoint', as: :unarchive_search_endpoint
+    end
+
+    collection do
+      post 'cases/share' => 'teams#share_case', as: :share_case
+      post 'cases/unshare' => 'teams#unshare_case', as: :unshare_case
+      post 'books/share' => 'teams#share_book', as: :share_book
+      post 'books/unshare' => 'teams#unshare_book', as: :unshare_book
+      post 'search_endpoints/share' => 'teams#share_search_endpoint', as: :share_search_endpoint
+      post 'search_endpoints/unshare' => 'teams#unshare_search_endpoint', as: :unshare_search_endpoint
+    end
+  end
+
   devise_for :users, controllers: {
     passwords:          'users/passwords',
     invitations:        'users/invitations',
@@ -158,7 +188,7 @@ Rails.application.routes.draw do
         post :assign_judgements_to_anonymous_user
       end
     end
-    resources :communal_scorers
+
     resources :announcements, except: [ :show ] do
       member do
         post :publish
@@ -304,14 +334,15 @@ Rails.application.routes.draw do
     end
   end
 
+  # Rails-based cases listing
+  get '/cases' => 'cases#index', as: :cases
+  post '/cases/:id/archive' => 'cases#archive', as: :archive_case
+  post '/cases/:id/unarchive' => 'cases#unarchive', as: :unarchive_case
+
   # Routes handled by angular
   get '/case/:id(/try/:try_number)'   => 'core#index', as: :case_core
   get '/cases/new'                    => 'core#new', as: :case_new
-  get '/cases'                        => 'core#index'
   get '/case'                         => 'core#index'
-  get '/cases/import'                 => 'core#index'
-  get '/teams(/:id)'                  => 'core#teams', as: :teams_core
-  get '/scorers'                      => 'core#index'
 
   # Static pages
   get '/cookies' => 'pages#show', defaults: { page: 'cookies' }

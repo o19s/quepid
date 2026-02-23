@@ -1,0 +1,8 @@
+<div class="container-fluid mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Create New Scorer</h2>
+    <%= link_to 'Back to Scorers', scorers_path, class: 'btn btn-outline-secondary' %>
+  </div>
+
+  <%= render 'form', scorer: @scorer %>
+</div>

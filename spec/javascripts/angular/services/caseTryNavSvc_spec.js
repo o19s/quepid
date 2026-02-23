@@ -92,11 +92,6 @@ describe('Service: caseTryNavSvc', function () {
     expect(caseTryNavSvc.getTryNo()).toBe(1);
   });
 
-  it('is smart about navigating to case listing page', function() {
-    caseTryNavSvc.navigateToCasesListing();
-    expect(locationMock.path).toHaveBeenCalledWith('/cases/');
-  });
-  
   it('returns the quepid root url', function() {
     expect(caseTryNavSvc.getQuepidRootUrl()).toEqual('https://localhost:443/quepid');    
   });

@@ -1,0 +1,157 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Cases</h5>
+    <div class="table-responsive">
+      <div class="mb-3">
+        <%= form_with url: team_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
+          <div class="col-auto" style="flex:1">
+            <div class="input-group">
+              <%= text_field_tag :cases_q, @cases_q, class: 'form-control form-control-sm', placeholder: 'Filter by case name or id' %>
+              <button class="btn btn-sm btn-outline-secondary" type="submit" title="Search">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <span class="visually-hidden">Search</span>
+              </button>
+            </div>
+          </div>
+          <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
+            <%= check_box_tag :cases_archived, '1', @cases_archived, class: 'form-check-input', id: 'archived-cases-checkbox', onchange: 'this.form.submit()' %>
+            <%= label_tag 'archived-cases-checkbox', 'Archived Cases', class: 'form-check-label ms-2' %>
+          </div>
+          <%# Preserve other filters %>
+          <% if @books_q.present? %>
+            <%= hidden_field_tag :books_q, @books_q %>
+          <% end %>
+          <% if @books_archived %>
+            <%= hidden_field_tag :books_archived, '1' %>
+          <% end %>
+          <% if @scorers_q.present? %>
+            <%= hidden_field_tag :scorers_q, @scorers_q %>
+          <% end %>
+          <% if @search_endpoints_q.present? %>
+            <%= hidden_field_tag :search_endpoints_q, @search_endpoints_q %>
+          <% end %>
+          <% if @search_endpoints_archived %>
+            <%= hidden_field_tag :search_endpoints_archived, '1' %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <table class="table table-sm table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Case Title</th>
+            <th>Last Try #</th>
+            <th># of Queries</th>
+            <th>Last Score</th>
+            <th>Last Run On</th>
+            <th>Last Run By</th>
+            <th>Associated Judgements</th>
+            <th>Owner</th>
+            <th>Shared</th>
+            <th class="text-end"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @cases.each do |kase| %>
+            <% last_score = kase.last_score %>
+            <tr>
+              <td><%= kase.id %></td>
+              <td><%= link_to kase.case_name, case_core_path(kase) %></td>
+              <td><%= kase.last_try_number || (kase.tries.first&.try_number) %></td>
+              <td><%= kase.respond_to?(:queries_count) ? kase.queries_count : kase.queries.size %></td>
+              <td>
+                <% if last_score.present? %>
+                  <%= number_with_precision(last_score.score || 0, precision: 3) %>
+                <% else %>
+                  Never Run
+                <% end %>
+              </td>
+              <td>
+                <% if last_score.present? && last_score.updated_at.present? %>
+                  <%= l(last_score.updated_at, format: :short) %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+              <td>
+                <% if last_score.present? %>
+                  <%= last_score.user&.fullname || 'System' %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+              <td><%= kase.ratings.count %></td>
+              <td><%= kase.owner&.fullname || '—' %></td>
+              <td>
+                <span class="badge rounded-pill bg-secondary"><%= kase.teams.count %> Teams</span>
+              </td>              
+              <td class="text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                  <%= button_tag type: 'button',
+                                 class: 'btn btn-link p-0 me-2',
+                                 title: 'Share',
+                                 'aria-label': 'Share',
+                                 data: {
+                                   controller: 'share-case',
+                                   action: 'click->share-case#open',
+                                   bs_toggle: 'modal',
+                                   bs_target: '#shareCaseModal',
+                                   share_case_id_value: kase.id,
+                                   share_case_name_value: kase.case_name,
+                                   share_case_all_teams_json: current_user.teams.select(:id, :name).order(:name).to_json,
+                                   share_case_shared_teams_json: kase.teams.select(:id, :name).to_json
+                                 } do %>
+                    <i class="bi bi-share" aria-hidden="true"></i>
+                  <% end %>
+
+                  <% if kase.archived? %>
+                    <button type="button"
+                            class="btn btn-link text-success p-0 me-3"
+                            title="Unarchive case"
+                            aria-label="Unarchive case"
+                            data-controller="confirm-delete"
+                            data-action="click->confirm-delete#open"
+                            data-confirm-delete-url-value="<%= unarchive_case_team_path(@team, case_id: kase.id) %>"
+                            data-confirm-delete-method-value="post"
+                            data-confirm-delete-message-value="<%= h("Unarchive #{kase.case_name}?") %>">
+                      <i class="bi-folder-check" aria-hidden="true"></i>
+                      <span class="visually-hidden">Unarchive case</span>
+                    </button>
+                  <% else %>
+                    <button type="button"
+                            class="btn btn-link text-warning p-0 me-3"
+                            title="Archive case"
+                            aria-label="Archive case"
+                            data-controller="confirm-delete"
+                            data-action="click->confirm-delete#open"
+                            data-confirm-delete-url-value="<%= archive_case_team_path(@team, case_id: kase.id) %>"
+                            data-confirm-delete-method-value="post"
+                            data-confirm-delete-message-value="<%= h("Archive #{kase.case_name}?") %>">
+                      <i class="bi-folder-check" aria-hidden="true"></i>
+                      <span class="visually-hidden">Archive case</span>
+                    </button>
+                  <% end %>
+
+
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <% if @cases.empty? %>
+        <div class="text-center text-muted py-3">
+          <p>No cases found for this team.</p>
+        </div>
+      <% end %>
+      
+      <% if defined?(pagy_nav) && @page_cases %>
+        <div class="mt-2">
+          <%= pagy_nav(@pagy_cases) %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
