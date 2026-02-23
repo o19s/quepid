@@ -1,0 +1,25 @@
+{
+  "name": "Quepid",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/srv/app",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Shopify.ruby-lsp",
+        "rubocop.vscode-rubocop",
+        "dbaeumer.vscode-eslint",
+        "EditorConfig.EditorConfig"
+      ],
+      "settings": {
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+      }
+    }
+  },
+
+  "postCreateCommand": "cp -n .env.example .env 2>/dev/null; bundle install && yarn install && ./wait-for mysql:3306 --timeout=60 -- bin/rake db:setup"
+}
