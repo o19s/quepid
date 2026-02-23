@@ -162,7 +162,10 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.searchEngine             = searchEndpointToUse.searchEngine;
         $scope.pendingWizardSettings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
         $scope.pendingWizardSettings.apiMethod                = searchEndpointToUse.apiMethod;
-        $scope.pendingWizardSettings.customHeaders            = searchEndpointToUse.customHeaders;
+        // Convert customHeaders to string if it's an object (from JSON serialization)
+        $scope.pendingWizardSettings.customHeaders            = typeof searchEndpointToUse.customHeaders === 'object' && searchEndpointToUse.customHeaders !== null ?
+          JSON.stringify(searchEndpointToUse.customHeaders, null, 2) :
+          searchEndpointToUse.customHeaders;
         $scope.pendingWizardSettings.proxyRequests            = searchEndpointToUse.proxyRequests;
         $scope.pendingWizardSettings.basicAuthCredential      = searchEndpointToUse.basicAuthCredential;
         $scope.pendingWizardSettings.mapperCode               = searchEndpointToUse.mapperCode;

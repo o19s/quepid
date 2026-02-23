@@ -111,8 +111,13 @@ angular.module('QuepidApp')
 
         if (passedInSettings && passedInSettings.selectedTry) {
 
+          // Convert customHeaders to string if it's an object (from JSON serialization)
+          let customHeaders = typeof passedInSettings.customHeaders === 'object' && passedInSettings.customHeaders !== null ?
+            JSON.stringify(passedInSettings.customHeaders) :
+            passedInSettings.customHeaders;
+
           let searcherOptions = {
-            customHeaders: passedInSettings.customHeaders,
+            customHeaders: customHeaders,
             escapeQuery:   passedInSettings.escapeQuery,
             numberOfRows:  passedInSettings.numberOfRows,
             basicAuthCredential: passedInSettings.basicAuthCredential
