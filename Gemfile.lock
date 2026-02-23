@@ -438,7 +438,7 @@ GEM
       omniauth (~> 2.0)
     orm_adapter (0.5.0)
     ostruct (0.6.3)
-    pagy (43.2.10)
+    pagy (43.3.0)
       json
       uri
       yaml

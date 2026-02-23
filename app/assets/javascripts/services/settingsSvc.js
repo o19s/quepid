@@ -451,12 +451,11 @@ angular.module('QuepidApp')
 
           // TODO: Store type in db?...
           // See if we have "ApiKey" in our custom headers, which tells us we have an API Key.
-          var headersToCheck = settings.customHeaders && typeof settings.customHeaders === 'object' 
-            ? JSON.stringify(settings.customHeaders) 
-            : '';
+          var headersToCheck = settings.customHeaders && typeof settings.customHeaders === 'object' ?
+            JSON.stringify(settings.customHeaders) : '';
           
-          settings.headerType = headersToCheck.includes('ApiKey') ? 'API Key'
-            : headersToCheck.length > 0 ? 'Custom' : 'None';
+          settings.headerType = headersToCheck.includes('ApiKey') ? 'API Key' :
+            headersToCheck.length > 0 ? 'Custom' : 'None';
 
 
           return settings;
