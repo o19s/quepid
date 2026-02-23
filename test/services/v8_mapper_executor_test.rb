@@ -187,22 +187,22 @@ class V8MapperExecutorTest < ActiveSupport::TestCase
       # Simulate a JSON response from Vespa or similar API
       json_response = {
         root: {
-          id: 'toplevel',
+          id:        'toplevel',
           relevance: 1,
-          fields: { totalCount: 2 },
-          children: [
+          fields:    { totalCount: 2 },
+          children:  [
             {
-              id: 'doc1',
+              id:        'doc1',
               relevance: 0.95,
-              fields: { title: 'First Document', content: 'Content here' }
+              fields:    { title: 'First Document', content: 'Content here' },
             },
             {
-              id: 'doc2',
+              id:        'doc2',
               relevance: 0.85,
-              fields: { title: 'Second Document', content: 'More content' }
+              fields:    { title: 'Second Document', content: 'More content' },
             }
-          ]
-        }
+          ],
+        },
       }.to_json
 
       # Extract documents
@@ -210,7 +210,7 @@ class V8MapperExecutorTest < ActiveSupport::TestCase
       assert_equal 2, docs.length
       assert_equal 'doc1', docs[0]['id']
       assert_equal 'First Document', docs[0]['title']
-      assert_equal 0.95, docs[0]['relevance']
+      assert_in_delta(0.95, docs[0]['relevance'])
 
       # Extract number of results
       num_results = v8_executor.extract_number_of_results(code_mapper, json_response)

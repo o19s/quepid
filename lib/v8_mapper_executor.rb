@@ -118,7 +118,7 @@ class V8MapperExecutor
     response_body = response_body.join("\n") if response_body.is_a?(Array)
 
     # If responseBody is a JSON string, parse it first before converting to JavaScript
-    begin   
+    begin
       parsed_body = JSON.parse(response_body)
       @context.eval("var responseBody = #{parsed_body.to_json};")
     rescue JSON::ParserError
