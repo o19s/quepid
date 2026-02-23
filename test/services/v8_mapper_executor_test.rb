@@ -162,4 +162,102 @@ class V8MapperExecutorTest < ActiveSupport::TestCase
                    doc[:url]
     end
   end
+
+  describe 'parsing JSON string and HTML response bodies' do
+    test 'parses JSON string response body correctly' do
+      code_mapper = <<~JS
+        numberOfResultsMapper = function(data) {
+          return data.root.fields.totalCount;
+        }
+        docsMapper = function(data) {
+          let docs = [];
+          if (data.root && data.root.children) {
+            for (let child of data.root.children) {
+              docs.push({
+                id: child.id,
+                title: child.fields.title,
+                relevance: child.relevance
+              });
+            }
+          }
+          return docs;
+        }
+      JS
+
+      # Simulate a JSON response from Vespa or similar API
+      json_response = {
+        root: {
+          id: 'toplevel',
+          relevance: 1,
+          fields: { totalCount: 2 },
+          children: [
+            {
+              id: 'doc1',
+              relevance: 0.95,
+              fields: { title: 'First Document', content: 'Content here' }
+            },
+            {
+              id: 'doc2',
+              relevance: 0.85,
+              fields: { title: 'Second Document', content: 'More content' }
+            }
+          ]
+        }
+      }.to_json
+
+      # Extract documents
+      docs = v8_executor.extract_docs(code_mapper, json_response)
+      assert_equal 2, docs.length
+      assert_equal 'doc1', docs[0]['id']
+      assert_equal 'First Document', docs[0]['title']
+      assert_equal 0.95, docs[0]['relevance']
+
+      # Extract number of results
+      num_results = v8_executor.extract_number_of_results(code_mapper, json_response)
+      assert_equal 2, num_results
+    end
+
+    test 'handles plain HTML text response body' do
+      code_mapper = <<~JS
+        numberOfResultsMapper = function(data) {
+          // For HTML, just return a fixed count for testing
+          return 2;
+        }
+        docsMapper = function(data) {
+          var docs = [];
+          // Simple check - if it contains HTML, return mock docs
+          if (data.indexOf('<html>') > -1) {
+            docs.push({ id: 'res1', title: 'HTML Result One' });
+            docs.push({ id: 'res2', title: 'HTML Result Two' });
+          }
+          return docs;
+        }
+      JS
+
+      html_response = <<~HTML
+        <html>
+          <body>
+            <div class="result" id="res1">
+              <h2>HTML Result One</h2>
+              <p>Description</p>
+            </div>
+            <div class="result" id="res2">
+              <h2>HTML Result Two</h2>
+              <p>Another description</p>
+            </div>
+          </body>
+        </html>
+      HTML
+
+      # Extract documents from HTML
+      docs = v8_executor.extract_docs(code_mapper, html_response)
+      assert_equal 2, docs.length
+      assert_equal 'res1', docs[0]['id']
+      assert_equal 'HTML Result One', docs[0]['title']
+
+      # Extract number of results from HTML
+      num_results = v8_executor.extract_number_of_results(code_mapper, html_response)
+      assert_equal 2, num_results
+    end
+  end
 end
