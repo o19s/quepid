@@ -443,7 +443,7 @@ GEM
       uri
       yaml
     parallel (1.27.0)
-    parser (3.3.10.1)
+    parser (3.3.10.2)
       ast (~> 2.4.1)
       racc
     postmark (1.25.1)
@@ -598,7 +598,7 @@ GEM
     ruby_llm-schema (0.2.5)
     rubyzip (3.2.2)
     safely_block (0.5.0)
-    scout_apm (6.1.0)
+    scout_apm (6.1.1)
       parser
     securerandom (0.4.1)
     selenium-webdriver (4.40.0)
