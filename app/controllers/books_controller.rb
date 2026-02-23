@@ -164,7 +164,6 @@ class BooksController < ApplicationController
   end
 
   # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   def update
     # this logic is crazy, but basically we don't want to touch the teams that are associated with
     # an book that the current_user CAN NOT see, so we clear out of the relationship all the ones
@@ -203,9 +202,8 @@ class BooksController < ApplicationController
 
     respond_with(@book)
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
 
+  # rubocop:enable Metrics/AbcSize
   def destroy
     @book.really_destroy
     redirect_to books_path, notice: 'Book is deleted'

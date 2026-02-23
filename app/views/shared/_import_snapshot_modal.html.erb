@@ -1,0 +1,64 @@
+<div class="modal fade" id="importSnapshotModal" tabindex="-1" aria-labelledby="importSnapshotModalLabel" aria-hidden="true" data-controller="import-snapshot">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="importSnapshotModalLabel">Import Snapshot</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          Importing snapshots lets you bring in a view of search that you might have created externally, for example if you are working
+          with a legacy search engine. Just create a Snapshot file in the below format, and you can compare your current search engine
+          to a previous search engine!
+        </p>
+        <p>
+          The CSV file should have the headers: <code>Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position</code>.
+          The <code>Case ID</code> must already exist in Quepid. You can have multiple snapshots in a single file, separated by the <code>Snapshot Name</code> field.
+          The file should look similar to:
+        </p>
+        <pre class="bg-light p-3 rounded">
+Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position
+Legacy Search,10/10/18 18:05,2098,star wars,11,1
+Legacy Search,10/10/18 18:05,2098,star wars,1893,2
+Legacy Search,10/10/18 18:05,2098,star wars,12180,3
+Legacy Search,10/10/18 18:05,2098,star wars,1891,4
+Legacy Search,10/10/18 18:05,2098,star wars,1892,5
+Legacy Search 2,10/15/18 18:05,2098,star trek,1894,1
+Legacy Search 2,10/15/18 18:05,2098,star trek,1895,2
+Legacy Search 2,10/15/18 18:05,2098,star trek,10431,3
+Legacy Search 2,10/15/18 18:05,2098,star trek,10521,4
+Legacy Search,10/15/18 18:05,2098,star trek,10592,5
+        </pre>
+
+        <%= form_with url: '#', method: :post, local: false, html: { id: 'import-snapshot-form', data: { import_snapshot_target: 'form', action: 'submit->import-snapshot#submit' } } do |f| %>
+          <div class="mb-3">
+            <label for="snapshotCsvFile" class="form-label">Select CSV file to import:</label>
+            <%= file_field_tag :snapshot_csv,
+                accept: 'text/csv,.csv',
+                class: 'form-control',
+                id: 'snapshotCsvFile',
+                required: true,
+                data: { import_snapshot_target: 'fileInput', action: 'change->import-snapshot#fileSelected' }
+            %>
+          </div>
+
+          <div id="import-snapshot-alert" data-import-snapshot-target="alert" class="alert d-none" role="alert"></div>
+
+          <div data-import-snapshot-target="preview" class="d-none">
+            <h6>CSV Preview:</h6>
+            <div class="border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
+              <pre data-import-snapshot-target="previewContent" class="mb-0 small"></pre>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" form="import-snapshot-form" id="import-snapshot-submit" class="btn btn-success" data-import-snapshot-target="submitButton" disabled>
+          <span data-import-snapshot-target="submitText">Import</span>
+          <span data-import-snapshot-target="spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

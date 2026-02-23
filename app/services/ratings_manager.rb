@@ -31,7 +31,6 @@ class RatingsManager
     broadcast_completion_notifications kase, kase.queries.size
   end
 
-  # rubocop:disable Metrics/MethodLength
   def sync_judgements_to_ratings kase, query_doc_pair
     @counter += 1
     query = Query.find_or_initialize_by(case: kase, query_text: query_doc_pair.query_text)
@@ -76,7 +75,6 @@ class RatingsManager
     end
   end
 
-  # rubocop:enable Metrics/MethodLength
   # Calculates a rating from multiple judgements using an optimistic-pessimistic approach:
   # 1. If only 1-2 judgements exist, average them (not enough data for consensus)
   # 2. Take the three highest ratings (optimistic: assume the best judges rated highest)

@@ -81,7 +81,6 @@ class BulkJudgeController < ApplicationController
 
   # POST /books/:book_id/judge/bulk/save
   # Save individual judgement via AJAX
-  # rubocop:disable Metrics/MethodLength
   def save
     query_doc_pair = @book.query_doc_pairs.find(params[:query_doc_pair_id])
     judgement = Judgement.find_or_initialize_by(
@@ -115,7 +114,6 @@ class BulkJudgeController < ApplicationController
       end
     end
   end
-  # rubocop:enable Metrics/MethodLength
 
   def destroy
     judgement = Judgement.find_by(

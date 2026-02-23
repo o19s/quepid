@@ -35,7 +35,6 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   end
 
   # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   def test_functionality
     # definitly an opportunity for refactoring!
 
@@ -73,9 +72,8 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     book.reload
     assert_equal 8, book.query_doc_pairs.count
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
 
+  # rubocop:enable Metrics/AbcSize
   def test_more
     login_user_for_integration_test user
 

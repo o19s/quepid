@@ -39,17 +39,6 @@ angular.module('QuepidApp')
         $scope.caseName.startRename = !$scope.caseName.startRename;
       };
 
-      $scope.caseModel.newCase = function() {
-        // the server will bootstrap a new case
-        // and return some default values down
-        caseSvc.createCase(); //Note createCase() switches to the new case
-        $scope.wizard.triggerModal();
-      };
-
-      $scope.caseModel.caseEdit = function(caseNo, caseName) {
-        $log.debug('Case edited!' + caseNo + ' -- '  + caseName);
-      };
-
       $scope.$watch(function() { return caseSvc.getSelectedCase(); }, function(aCase) {
         if (aCase) {
           $scope.theCase = aCase;
@@ -68,20 +57,6 @@ angular.module('QuepidApp')
 
       $scope.caseModel.caseLoaded = function() {
         return $scope.caseModel.selectedCase().caseNo !== -1;
-      };
-
-      $scope.caseModel.unarchive = function(currentTeam) {
-        $scope.currentTeam = currentTeam; // this can be null if we don't have a currentTeam
-        
-        $uibModal.open({
-          templateUrl: 'views/unarchiveCaseModal.html',
-          controller: 'UnarchiveCaseCtrl',
-          resolve : {
-            currentTeam: function() {
-              return $scope.currentTeam;
-            }
-          }
-        });
       };
     }
   ]);

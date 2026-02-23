@@ -84,4 +84,8 @@ class Scorer < ApplicationRecord
     # scale&.join(',')
     # rubocop:enable Style/SafeNavigation
   end
+
+  def cases_count
+    Case.where(scorer_id: id).count
+  end
 end

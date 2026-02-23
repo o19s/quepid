@@ -22,7 +22,6 @@ class BookImporter
     @logger = @options[:logger]
   end
 
-  # rubocop:disable Metrics/MethodLength
   def validate
     params_to_use = @data_to_process
 
@@ -51,8 +50,6 @@ class BookImporter
     end
   end
 
-  # rubocop:enable Metrics/MethodLength
-  #
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
   def import
