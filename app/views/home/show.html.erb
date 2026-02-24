@@ -22,18 +22,40 @@ Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashb
   <%= render partial: "book_summary", collection: @most_recent_books, as: :book, cached: true %>
 </div>
 
-<% if @cases.empty? && @most_recent_books.empty?  %>
-  <div class="container my-5">
-    <div class="p-5 text-center bg-body-tertiary rounded-3">
-      <h1 class="text-body-emphasis">Welcome to Quepid!</h1>
-      <p class="col-lg-8 mx-auto fs-5 text-muted">
-        We're so excited that you are embarking on the journey to improving search quality!   There is so much to explore in Quepid.   However a good place to start is to create your first relevancy case using our demo datasets.
-      </p>
-      <div class="d-inline-flex gap-2 mb-5">
-        <%= button_to "Create Your First Relevancy Case", case_new_path, data: { turbo_prefetch: false }, method: :get, class: 'd-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill' %>
+<% if @cases.empty? && @most_recent_books.empty? %>
+  <% if @haystack_case %>
+    <div class="container my-4">
+      <div class="p-5 text-center bg-body-tertiary rounded-3">
+        <h1 class="text-body-emphasis">Welcome to Quepid!</h1>
+        <p class="col-lg-8 mx-auto fs-5 text-muted">
+          We're so excited that you are embarking on the journey to improving search quality!   There is so much to explore in Quepid.   
+          
+          However a good place to start is to look at a sample Case created during the 2023 <a href="https://haystackconf.com/" target="_blank">Haystack Conference</a>:
+        </p>
+        <div class="d-inline-flex gap-2 mb-5">
+          <%= button_to "View the Haystack Rating Party Case", case_core_path(@haystack_case), data: { turbo_prefetch: false }, method: :get, class: 'd-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill' %>
+        </div>
+        <p class="col-lg-8 mx-auto fs-5 text-muted">
+          Ready to get started with your own data and search engine?
+        </p>
+        <div class="d-inline-flex gap-2 mb-5">
+          <%= button_to "Create Your First Relevancy Case", case_new_path, data: { turbo_prefetch: false }, method: :get, class: 'd-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill' %>
+        </div>
       </div>
     </div>
-  </div>
+  <% else %>  
+    <div class="container my-5">
+      <div class="p-5 text-center bg-body-tertiary rounded-3">
+        <h1 class="text-body-emphasis">Welcome to Quepid!</h1>
+        <p class="col-lg-8 mx-auto fs-5 text-muted">
+          We're so excited that you are embarking on the journey to improving search quality!   There is so much to explore in Quepid.   However a good place to start is to create your first relevancy case using our demo datasets.
+        </p>
+        <div class="d-inline-flex gap-2 mb-5">
+          <%= button_to "Create Your First Relevancy Case", case_new_path, data: { turbo_prefetch: false }, method: :get, class: 'd-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill' %>
+        </div>
+      </div>
+    </div>
+  <% end %>
 <% else %>
   <div class="row">
       <div class="col-12 col-xl-8 mb-4 mb-lg-0">
@@ -64,9 +86,9 @@ Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashb
         </div>      
       </div>
       <div class="col-12 col-xl-4">
-        <% if true == false # disable%>
+        <% if true == false # disable %>
         <% @grouped_cases.keys[0..2].each do |key| %>
-        <%= render partial: "grouped_cases", locals: {grouped_cases_name: key, grouped_cases: @grouped_cases[key]}%>
+        <%= render partial: "grouped_cases", locals: {grouped_cases_name: key, grouped_cases: @grouped_cases[key]} %>
         <% end %>
         <% end %>
                       
