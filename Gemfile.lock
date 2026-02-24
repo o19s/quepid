@@ -352,7 +352,8 @@ GEM
     mini_mime (1.1.5)
     mini_racer (0.19.2)
       libv8-node (~> 24.12.0.1)
-    minitest (6.0.1)
+    minitest (6.0.2)
+      drb (~> 2.0)
       prism (~> 1.5)
     minitest-reporters (1.7.1)
       ansi
