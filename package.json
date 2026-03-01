@@ -35,7 +35,7 @@
     "d3": "~7.9.0",
     "d3-tip": "~0.9.1",
     "file-saver": "^2.0.5",
-    "jquery": "^3.7.1",
+    "jquery": "^4.0.0",
     "jquery-autogrowinput": "^1.0.3",
     "jquery-ui-dist": "^1.13.3",
     "local-time": "^3.0.0",
