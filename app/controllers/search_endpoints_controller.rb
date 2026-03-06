@@ -74,7 +74,13 @@ class SearchEndpointsController < ApplicationController
 
     @search_endpoint.teams.replace(teams)
 
-    @search_endpoint.update(search_endpoint_params.except(:team_ids))
+    filtered_params = search_endpoint_params.except(:team_ids)
+    if filtered_params[:basic_auth_credential].present? &&
+       filtered_params[:basic_auth_credential] == @search_endpoint.masked_basic_auth_credential
+      filtered_params = filtered_params.except(:basic_auth_credential)
+    end
+
+    @search_endpoint.update(filtered_params)
     respond_with(@search_endpoint)
   end
 

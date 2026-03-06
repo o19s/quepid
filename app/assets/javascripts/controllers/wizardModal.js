@@ -286,7 +286,7 @@ angular.module('QuepidApp')
       
       function linkToSearchEndpointUrl() {
         if ($scope.pendingWizardSettings.proxyRequests === true){
-          return caseTryNavSvc.getQuepidProxyUrl() + $scope.pendingWizardSettings.searchUrl;
+          return caseTryNavSvc.getQuepidProxyUrl($scope.pendingWizardSettings.searchEndpointId) + $scope.pendingWizardSettings.searchUrl;
         }
         else {
           return $scope.pendingWizardSettings.searchUrl;
@@ -447,7 +447,7 @@ angular.module('QuepidApp')
         
         if (settingsForValidation.proxyRequests === true){
           // Pass in the Quepid specific proxy url
-          settingsForValidation.proxyUrl = caseTryNavSvc.getQuepidProxyUrl();
+          settingsForValidation.proxyUrl = caseTryNavSvc.getQuepidProxyUrl(settingsForValidation.searchEndpointId);
         }
         var validator = new SettingsValidatorFactory(settingsForValidation);
       

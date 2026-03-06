@@ -71,7 +71,10 @@
 
       <div class="mb-3">
         <%= form.label :basic_auth_credential, class: 'form-label' %>
-        <%= form.text_field :basic_auth_credential %>
+        <%= form.text_field :basic_auth_credential, value: search_endpoint.masked_basic_auth_credential %>
+        <% if search_endpoint.basic_auth_credential_masked? %>
+          <div class="form-text">Password is hidden. Enter a new value to change it, or leave as-is to keep the current password.</div>
+        <% end %>
       </div>
 
       <div class="mb-3">

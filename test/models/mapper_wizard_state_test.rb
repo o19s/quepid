@@ -5,7 +5,7 @@
 # Table name: mapper_wizard_states
 #
 #  id                       :bigint           not null, primary key
-#  basic_auth_credential    :string(255)
+#  basic_auth_credential    :string(4000)
 #  custom_headers           :text(65535)
 #  docs_mapper              :text(65535)
 #  html_content             :text(16777215)
