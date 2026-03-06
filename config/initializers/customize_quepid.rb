@@ -103,7 +103,7 @@ Rails.application.config.search_endpoint_views_admin_only = bool.deserialize(ENV
 
 # == Show Basic Auth Credentials
 # When disabled, basic auth passwords are masked in the UI and credentials are
-# handled server-side through the proxy. Endpoints with credentials must use
+# handled server-side through the proxy. Endpoints with credentials are required to use
 # proxy_requests when this is false.
 #
 Rails.application.config.show_basic_auth_credentials = bool.deserialize(ENV.fetch('SHOW_BASIC_AUTH_CREDENTIALS', true))
