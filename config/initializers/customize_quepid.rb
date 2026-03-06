@@ -101,6 +101,13 @@ Rails.application.config.action_cable.url = "#{ENV.fetch('RAILS_RELATIVE_URL_ROO
 #
 Rails.application.config.search_endpoint_views_admin_only = bool.deserialize(ENV.fetch('SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY', false))
 
+# == Show Basic Auth Credentials
+# When disabled, basic auth passwords are masked in the UI and credentials are
+# handled server-side through the proxy. Endpoints with credentials are required to use
+# proxy_requests when this is false.
+#
+Rails.application.config.show_basic_auth_credentials = bool.deserialize(ENV.fetch('SHOW_BASIC_AUTH_CREDENTIALS', true))
+
 # == Set up encryption for Quepid
 # We provide some defaults, but you should set your own keys and NOT lose them.
 Rails.application.config.active_record.encryption.deterministic_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY', 'OItaH6HSftjoxkl9QDejPAmQ8EaFOlwk')

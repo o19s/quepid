@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_14_150154) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_06_000002) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -282,7 +282,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_14_150154) do
   end
 
   create_table "mapper_wizard_states", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
-    t.string "basic_auth_credential"
+    t.string "basic_auth_credential", limit: 4000
     t.datetime "created_at", null: false
     t.text "custom_headers"
     t.text "docs_mapper"
@@ -351,7 +351,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_14_150154) do
   create_table "search_endpoints", charset: "utf8mb3", force: :cascade do |t|
     t.string "api_method"
     t.boolean "archived", default: false
-    t.string "basic_auth_credential"
+    t.string "basic_auth_credential", limit: 4000
     t.datetime "created_at", null: false
     t.string "custom_headers", limit: 6000
     t.string "endpoint_url", limit: 500

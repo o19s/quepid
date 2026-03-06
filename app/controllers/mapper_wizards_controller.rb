@@ -39,13 +39,21 @@ class MapperWizardsController < ApplicationController
   def fetch_html
     http_method = params[:http_method] || 'GET'
 
+    # Preserve real credential when masked value is submitted unchanged
+    credential_param = params[:basic_auth_credential]
+    if credential_param.present?
+      current_masked = @wizard_state.masked_basic_auth_credential.presence ||
+                       @search_endpoint&.masked_basic_auth_credential
+      credential_param = @wizard_state.basic_auth_credential if credential_param == current_masked
+    end
+
     # Save wizard state first - Rails serialize handles JSON conversion and validation
     @wizard_state.assign_attributes(
       search_url:            params[:search_url],
       http_method:           http_method,
       test_query:            params[:test_query],
       custom_headers:        params[:custom_headers],
-      basic_auth_credential: params[:basic_auth_credential]
+      basic_auth_credential: credential_param
     )
 
     unless @wizard_state.save
@@ -179,6 +187,12 @@ class MapperWizardsController < ApplicationController
     test_query = params[:test_query].presence || @wizard_state.test_query || @search_endpoint.test_query
     custom_headers = params[:custom_headers].presence || @wizard_state.custom_headers || @search_endpoint.custom_headers
     basic_auth_credential = params[:basic_auth_credential].presence || @wizard_state.basic_auth_credential || @search_endpoint.basic_auth_credential
+
+    # Preserve real credential when masked value is submitted unchanged
+    if basic_auth_credential.present? && @search_endpoint.persisted? &&
+       basic_auth_credential == @search_endpoint.masked_basic_auth_credential
+      basic_auth_credential = @search_endpoint.basic_auth_credential
+    end
 
     # Rails serialize with JSON coder automatically handles JSON string -> Hash conversion
     # and model validation will catch any invalid JSON

@@ -202,6 +202,16 @@ module ActiveSupport
         )
         .to_return(status: 200, body: mock_statedecoded_body)
 
+      # Stub for verifying that proxy looks up search endpoint credentials by ID
+      stub_request(:get, 'http://solr.quepidapp.com:8983/solr/statedecoded/with_endpoint_auth?q=test')
+        .with(
+          headers: {
+            'Authorization' => 'Basic dXNlcjpwYXNz', # Base64 of 'user:pass'
+            'Content-Type'  => 'application/json',
+          }
+        )
+        .to_return(status: 200, body: mock_statedecoded_body)
+
       # demonstrate following redirects
       stub_request(:get, 'https://example.com/old-url')
         .to_return(status: 302, headers: { 'Location' => 'https://example.com/new-location' })

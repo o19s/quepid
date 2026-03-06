@@ -86,6 +86,24 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'should look up search endpoint credentials by search_endpoint_id' do
+    endpoint = SearchEndpoint.create!(
+      name:                  'Auth Endpoint',
+      endpoint_url:          'http://solr.quepidapp.com:8983/solr/statedecoded/with_endpoint_auth',
+      search_engine:         'solr',
+      api_method:            'GET',
+      basic_auth_credential: 'user:pass',
+      proxy_requests:        true
+    )
+
+    get proxy_fetch_url params: {
+      url:                'http://solr.quepidapp.com:8983/solr/statedecoded/with_endpoint_auth',
+      search_endpoint_id: endpoint.id,
+      q:                  'test',
+    }
+    assert_response :success
+  end
+
   describe 'should follow 302 redirects' do
     test 'on a get' do
       old_url = 'https://example.com/old-url'
