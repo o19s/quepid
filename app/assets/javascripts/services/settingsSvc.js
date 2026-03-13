@@ -437,7 +437,9 @@ angular.module('QuepidApp')
 
           settings.escapeQuery = tryToUse.escapeQuery;
           settings.apiMethod = tryToUse.apiMethod;
-          settings.customHeaders = tryToUse.customHeaders || '';
+          settings.customHeaders = tryToUse.customHeaders && typeof tryToUse.customHeaders === 'object'
+            ? JSON.stringify(tryToUse.customHeaders)
+            : (tryToUse.customHeaders || '');
           settings.fieldSpec = tryToUse.fieldSpec;
           settings.numberOfRows = tryToUse.numberOfRows;
           settings.queryParams = tryToUse.queryParams;
