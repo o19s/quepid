@@ -13,7 +13,7 @@ Everything outside this core (homepage, cases listing, teams, books, scorers, ju
 ```
 core.html.erb (ng-app="QuepidApp")
   -> _header_core_app.html.erb (HeaderCtrl)
-  -> ng-view
+  -> yield → core/index.html.erb (flash, LoadingCtrl, ng-view)
       -> routes.js (ngRoute)
           -> /case/:caseNo/try/:tryNo -> queriesLayout.html (MainCtrl)
           -> /case/:caseNo            -> queriesLayout.html (MainCtrl)
@@ -43,6 +43,7 @@ core.html.erb (ng-app="QuepidApp")
 | Package | Version | Purpose |
 |---------|---------|---------|
 | angular | ~1.8.3 | Core framework |
+| angular-resource | ~1.8.3 | Resource (used by vendor bundle) |
 | angular-route | ~1.8.3 | Client-side routing |
 | angular-cookies | ~1.8.3 | Cookie handling |
 | angular-sanitize | ~1.8.3 | HTML sanitization |
@@ -68,6 +69,7 @@ core.html.erb (ng-app="QuepidApp")
 - ACE editor (ace-builds)
 - file-saver (download exports)
 - urijs (URL manipulation)
+- tether-shepherd (in-app product tour in `tour.js`)
 
 ---
 
@@ -135,7 +137,7 @@ core.html.erb (ng-app="QuepidApp")
 
 ---
 
-## Services (27)
+## Services (26)
 
 ### Core Data Services
 
@@ -284,7 +286,7 @@ Each component lives in `app/assets/javascripts/components/<name>/` with `_direc
 
 ### Component Templates (co-located)
 
-Each component in `app/assets/javascripts/components/<name>/` has its own `.html` and `_modal.html` files (38 total HTML files across 23 components).
+Each component in `app/assets/javascripts/components/<name>/` has its own `.html` and optionally `_modal.html` files. With `app/assets/templates/`, there are ~62 HTML templates total (24 in templates/views, 38 in components).
 
 ---
 
@@ -317,10 +319,17 @@ Also defined inline: `plusOrMinus` (in searchResults directive), `stackChartColo
 
 Inter-component communication uses `broadcastSvc` wrapping `$rootScope.$broadcast`. Key events:
 
-- `settings-changed` — Try/settings updated
+- `settings-changed`, `settings-updated` — Try/settings updated
 - `updatedCasesList` — Cases list refreshed
 - `caseSelected` — Case selection changed
-- `fetchedCasesList` — Cases loaded from server
+- `fetchedDropdownCasesList`, `fetchedDropdownBooksList` — Cases/books loaded for dropdowns
+- `bootstrapped` — Initial cases loaded on startup
+- `updatedCaseScore` — Case or annotation score changed
+- `updatedScorersList` — Scorers list refreshed
+- `caseRenamed`, `caseUpdate` — Case metadata changed
+- `associateBook` — Book associated with case
+- `caseTeamAdded`, `caseTeamRemoved` — Team sharing changed
+- `annotationDeleted` — Annotation removed
 
 ---
 
@@ -349,7 +358,7 @@ Inter-component communication uses `broadcastSvc` wrapping `$rootScope.$broadcas
 
 ### Still AngularJS (to migrate)
 
-**Everything under `/case/:id/try/:tryNo`:**
+**Everything under `/case/:caseNo/try/:tryNo`:**
 - Query list management
 - Search result display and rating
 - Score visualization (qscore, qgraph)
@@ -361,16 +370,65 @@ Inter-component communication uses `broadcastSvc` wrapping `$rootScope.$broadcas
 
 ---
 
+## Gaps and Additions (from code scan)
+
+Items that were missed in the initial inventory or need clarification:
+
+### Additional Angular modules
+
+- **UtilitiesModule** — Separate module (required by QuepidApp). Hosts `bootstrapSvc`, `configurationSvc`, `userSvc`. Defined in `utilitiesModule.js`.
+- **ngVega** — Separate module for the Vega directive (`angular-vega.js`). QuepidApp depends on it.
+- **ng-rails-csrf** — Standalone module for the CSRF HTTP interceptor.
+
+### Third-party dependency (added to table)
+
+- **angular-resource** — In `package.json` and imported in `app/javascript/angular_app.js`; now included in the "Third-Party AngularJS Dependencies" table above.
+
+### Services from splainer-search (o19s.splainer-search)
+
+The app injects these services; they are **not** defined in Quepid — they come from the `splainer-search` package:
+
+| Service           | Used by |
+|-------------------|---------|
+| **normalDocsSvc** | docListFactory, snapshotFactory, snapshotSearcherSvc, queriesSvc — `createNormalDoc()`, `explainDoc()` |
+| **docResolverSvc** | docCacheSvc — `createResolver()` |
+| **fieldSpecSvc**  | TryFactory, querySnapshotSvc (and specs) — `createFieldSpec()` |
+| **searchSvc**     | queriesSvc — `createSearcher()` |
+| **esUrlSvc**      | QueryParamsCtrl — `isTemplateCall()` |
+
+Migration must either reimplement these or keep a compatibility layer with splainer-search.
+
+### Tour and supporting entry points
+
+- **Shepherd / tether-shepherd** — In `package.json` and `angular_app.js`. Used by `tour.js` for the in-app product tour (steps for case header, score, add query, etc.). Now listed under Non-Angular JS dependencies above.
+- **tour.js** — Run via `quepid_app.js`; sets up `Shepherd.Tour` and triggers on `[data-trigger-tour]`.
+- **footer.js** — Mutates footer into `.pane_main` when present (MutationObserver). Loaded by `quepid_app.js`.
+- **ace_config.js** — Sets ACE worker/theme paths. Loaded by `quepid_app.js`.
+
+### Controller count clarification
+
+The "28 controllers" count refers to **main** controllers in `controllers/`. There are **additional** controllers in components (e.g. `NewCaseCtrl`, `CloneCaseModalInstanceCtrl`, `ShareCaseModalInstanceCtrl`, `EditAnnotationModalInstanceCtrl`, etc.). Total is roughly **28 + ~40 component/modal controllers**. The inventory’s component table describes the 23 components but does not sum their controllers.
+
+### flashProvider in config
+
+`routes.js` configures `flashProvider.errorClassnames.push('alert-danger')` (angular-flash). The inventory mentions angular-flash but not this config.
+
+### Template path note
+
+Component templates reference paths like `'import_ratings/import_ratings.html'` and `'views/wizardModal.html'`; the template cache (build_templates.js) serves both `views/` and component paths.
+
+---
+
 ## File Statistics
 
 | Category | Count | Total Size (approx.) |
 |----------|-------|---------------------|
 | Controllers | 28 | ~3,285 lines |
-| Services | 27 | ~175KB |
+| Services | 26 | ~175KB |
 | Factories | 7 | ~40KB |
 | Directives | 11 | ~15KB |
 | Components | 23 | ~70KB |
 | Filters | 5 | ~3KB |
-| Templates | ~60 | ~50KB |
+| Templates | ~62 | ~50KB |
 | Tests | 28 | ~25KB |
 | **Total** | **~147 JS files** | **~380KB of AngularJS code** |
