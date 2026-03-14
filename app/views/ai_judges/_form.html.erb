@@ -48,10 +48,27 @@
           <div class="row mb-3">
             <%= label_tag "judge_options[#{key}]", key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
             <div class="col-sm-4">
-              <%= text_field_tag "user[judge_options][#{key}]", value, 
-                id: "judge_options_#{key}",
-                class: 'form-control form-control-sm structured-field'
-              %>
+              <% if key.to_s == 'llm_provider' %>
+                <%= select_tag "user[judge_options][llm_provider]",
+                      options_for_select([
+                        ['OpenAI',                          'openai'],
+                        ['Azure OpenAI',                    'azure_openai'],
+                        ['Azure AI Foundry',                'azure_ai_foundry'],
+                        ['Azure AI Foundry (Serverless)',    'azure_ai_foundry_serverless'],
+                        ['Azure AI Foundry (Anthropic)',     'azure_ai_foundry_anthropic'],
+                        ['Anthropic',                       'anthropic'],
+                        ['Google Gemini',                   'google_gemini'],
+                        ['Ollama',                          'ollama'],
+                      ], value.to_s),
+                      id: 'judge_options_llm_provider',
+                      class: 'form-select form-select-sm structured-field'
+                %>
+              <% else %>
+                <%= text_field_tag "user[judge_options][#{key}]", value,
+                  id: "judge_options_#{key}",
+                  class: 'form-control form-control-sm structured-field'
+                %>
+              <% end %>
             </div>
           </div>
         <% end %>
@@ -111,12 +128,38 @@
     jsonTab.addEventListener('click', function() {
       // Enable JSON field
       jsonField.disabled = false;
-      
+
       // Disable structured fields
       structuredFields.forEach(field => {
         field.disabled = true;
       });
     });
+
+    // Provider presets for auto-filling URL and API version
+    const PROVIDER_PRESETS = {
+      openai:                        { llm_service_url: 'https://api.openai.com',       llm_api_version: '' },
+      azure_openai:                  { llm_service_url: 'https://RESOURCE.openai.azure.com', llm_api_version: '' },
+      azure_ai_foundry:              { llm_service_url: 'https://RESOURCE.services.ai.azure.com', llm_api_version: '2025-01-01-preview' },
+      azure_ai_foundry_serverless:   { llm_service_url: 'https://MODEL-NAME.REGION.models.ai.azure.com', llm_api_version: '' },
+      azure_ai_foundry_anthropic:    { llm_service_url: 'https://RESOURCE.services.ai.azure.com/anthropic', llm_api_version: '' },
+      anthropic:                     { llm_service_url: 'https://api.anthropic.com',     llm_api_version: '' },
+      google_gemini:                 { llm_service_url: 'https://generativelanguage.googleapis.com/v1beta/openai', llm_api_version: '' },
+      ollama:                        { llm_service_url: 'http://ollama:11434',           llm_api_version: '' },
+    };
+
+    const providerSelect = document.getElementById('judge_options_llm_provider');
+    if (providerSelect) {
+      providerSelect.addEventListener('change', function() {
+        const preset = PROVIDER_PRESETS[this.value];
+        if (!preset) return;
+
+        const urlField = document.getElementById('judge_options_llm_service_url');
+        const apiVersionField = document.getElementById('judge_options_llm_api_version');
+
+        if (urlField) urlField.value = preset.llm_service_url;
+        if (apiVersionField) apiVersionField.value = preset.llm_api_version;
+      });
+    }
   });
 </script>
 
