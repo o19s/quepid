@@ -171,6 +171,8 @@ class LlmService
   end
 
   def strip_markdown_code_block text
+    return text if text.nil?
+
     text = text.strip
     if text.start_with?('```')
       text = text.sub(/\A```\w*\n?/, '').sub(/\n?```\z/, '')

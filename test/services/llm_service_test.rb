@@ -263,6 +263,40 @@ class LlmServiceTest < ActiveSupport::TestCase
                        headers: { 'x-api-key' => 'my-anthropic-azure-key', 'anthropic-version' => '2023-06-01' })
     end
 
+    test 'Anthropic provider uses x-api-key header and Messages API' do
+      anthropic_url = 'https://api.anthropic.com/v1/messages'
+      anthropic_response = {
+        content: [ { type: 'text', text: '{"judgment": 3, "explanation": "Highly relevant"}' } ],
+        model:   'claude-sonnet-4-20250514',
+        role:    'assistant',
+      }
+      stub_request(:post, anthropic_url)
+        .with(
+          headers: {
+            'x-api-key'         => 'my-anthropic-key',
+            'anthropic-version' => '2023-06-01',
+          }
+        )
+        .to_return(
+          status: 200,
+          body: anthropic_response.to_json,
+          headers: { 'Content-Type' => 'application/json' }
+        )
+
+      opts = {
+        llm_provider:    'anthropic',
+        llm_service_url: 'https://api.anthropic.com',
+        llm_model:       'claude-sonnet-4-20250514',
+      }
+      service = LlmService.new 'my-anthropic-key', opts
+      result = service.get_llm_response(USER_PROMPT_COMPOSED, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
+
+      assert_equal 3, result[:judgment]
+      assert_equal 'Highly relevant', result[:explanation]
+      assert_requested(:post, anthropic_url,
+                       headers: { 'x-api-key' => 'my-anthropic-key', 'anthropic-version' => '2023-06-01' })
+    end
+
     test 'existing judges with no llm_provider use Bearer auth and v1 path' do
       # Uses the existing webmock stub for https://api.openai.com/v1/chat/completions
       # with Authorization: Bearer 1234asdf5678
