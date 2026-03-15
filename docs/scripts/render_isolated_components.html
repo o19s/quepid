@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quepid Component Rendering — Isolated</title>
+<!-- Bootstrap 3 from CDN (same version Quepid uses) -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<!-- Glyphicons (bundled with Bootstrap 3) -->
+
+<style>
+  /* Dark east-pane background like the real app */
+  .east-pane-bg {
+    background-color: #333;
+    color: #ccc;
+    padding: 20px;
+    border-radius: 4px;
+    max-width: 500px;
+  }
+  .east-pane-bg a { color: #5bc0de; }
+  .east-pane-bg h4 { color: #fff; }
+
+  /* Annotation styles from bootstrap3-add.css */
+  li.annotation { border: 1px solid #444; }
+  .annotations-time { font-size: 0.7em; }
+  .annotation-source { font-size: 0.8em; }
+  .annotation { margin: 10px 0; padding: 8px; }
+  .annotation > div { margin: 5px 0; }
+  .annotation .dropdown > a.dropdown-toggle:hover { color: #888; }
+  .annotation > .dropdown > .dropdown-menu > li { border-bottom: 1px solid #AAA !important; }
+  .annotation .dropdown-menu > li > a.text-danger { color: #a94442; }
+  .annotation-message { margin-top: 8px; color: #eee; }
+  .annotation-try, .annotation-score { color: #aaa; font-size: 0.85em; }
+
+  /* Component container for screenshots */
+  .component-demo {
+    margin: 30px 0;
+    padding: 20px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+  }
+  .component-demo h3 {
+    margin-top: 0;
+    color: #555;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+  }
+
+  /* Expand content modal styling */
+  .expand-content-demo pre {
+    max-height: 300px;
+    overflow: auto;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body style="padding: 30px; background: #f5f5f5;">
+
+<h1>Quepid — Isolated Component Renders</h1>
+<p class="text-muted">Static mockups of Angular components that are hard to screenshot in context.</p>
+
+<!-- ================================================ -->
+<!-- ANNOTATION — single item with data               -->
+<!-- ================================================ -->
+<div class="component-demo" id="annotation-item">
+  <h3>&lt;annotation&gt; — Single Annotation Item</h3>
+  <div class="east-pane-bg">
+    <h4>Existing Annotations</h4>
+    <ul class="list-unstyled">
+
+      <!-- Annotation 1 -->
+      <li class="annotation">
+        <div class="dropdown pull-right">
+          <a class="dropdown-toggle" data-toggle="dropdown">
+            <i class="glyphicon glyphicon-menu-hamburger" style="color:#888;cursor:pointer;"></i>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a><i class="glyphicon glyphicon-pencil"></i> Edit</a></li>
+            <li><a class="text-danger"><i class="glyphicon glyphicon-trash"></i> Delete</a></li>
+          </ul>
+        </div>
+
+        <em class="annotations-time">2 hours ago - </em>
+        <span class="annotation-source">by User with Realistic Activity</span>
+
+        <div>
+          <span class="annotation-try">Try No: 31</span>
+          <i class="bi bi-circle-fill" style="font-size:6px; vertical-align:middle; color:#5bc0de;"></i>
+          <span class="annotation-score">Score: 0.66</span>
+        </div>
+
+        <div class="annotation-message">
+          Baseline config — edismax with magicBoost=31. AP@10 = 0.66. Ready for comparison.
+        </div>
+      </li>
+
+      <!-- Annotation 2 -->
+      <li class="annotation">
+        <div class="dropdown pull-right">
+          <a class="dropdown-toggle" data-toggle="dropdown">
+            <i class="glyphicon glyphicon-menu-hamburger" style="color:#888;cursor:pointer;"></i>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a><i class="glyphicon glyphicon-pencil"></i> Edit</a></li>
+            <li><a class="text-danger"><i class="glyphicon glyphicon-trash"></i> Delete</a></li>
+          </ul>
+        </div>
+
+        <em class="annotations-time">3 days ago - </em>
+        <span class="annotation-source">by Admin User</span>
+
+        <div>
+          <span class="annotation-try">Try No: 28</span>
+          <i class="bi bi-circle-fill" style="font-size:6px; vertical-align:middle; color:#5bc0de;"></i>
+          <span class="annotation-score">Score: 0.52</span>
+        </div>
+
+        <div class="annotation-message">
+          Before boosting title field. Need to add pf=title to improve precision.
+        </div>
+      </li>
+
+      <!-- Annotation 3 -->
+      <li class="annotation">
+        <div class="dropdown pull-right">
+          <a class="dropdown-toggle" data-toggle="dropdown">
+            <i class="glyphicon glyphicon-menu-hamburger" style="color:#888;cursor:pointer;"></i>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a><i class="glyphicon glyphicon-pencil"></i> Edit</a></li>
+            <li><a class="text-danger"><i class="glyphicon glyphicon-trash"></i> Delete</a></li>
+          </ul>
+        </div>
+
+        <em class="annotations-time">1 week ago - </em>
+        <span class="annotation-source">by User with Realistic Activity</span>
+
+        <div>
+          <span class="annotation-try">Try No: 25</span>
+          <i class="bi bi-circle-fill" style="font-size:6px; vertical-align:middle; color:#5bc0de;"></i>
+          <span class="annotation-score">Score: 0.38</span>
+        </div>
+
+        <div class="annotation-message">
+          Initial setup with default params. Queries returning but relevance is poor.
+        </div>
+      </li>
+
+    </ul>
+  </div>
+</div>
+
+<!-- ================================================ -->
+<!-- ANNOTATION UPDATE — edit modal                   -->
+<!-- ================================================ -->
+<div class="component-demo" id="annotation-update-modal">
+  <h3>&lt;annotation&gt; _update.html — Edit Annotation Modal</h3>
+  <div style="max-width: 500px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h3 class="modal-title">Edit Annotation</h3>
+      </div>
+      <div class="modal-body">
+        <div class="clearfix">
+          <div class="form-group">
+            <label>New Message:</label>
+            <textarea class="form-control" rows="3">Baseline config — edismax with magicBoost=31. AP@10 = 0.66. Ready for comparison.</textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary">Update</button>
+        <button class="btn btn-default">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================ -->
+<!-- EXPAND CONTENT — modal with long content         -->
+<!-- ================================================ -->
+<div class="component-demo expand-content-demo" id="expand-content-modal">
+  <h3>&lt;expand-content&gt; _modal.html — Expanded Content View</h3>
+  <div style="max-width: 700px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h3 class="modal-title">Expanded View</h3>
+      </div>
+      <div class="modal-body">
+        <h1>Relevancy Score: 12.45</h1>
+        <pre>12.449598 = sum of:
+  5.917079 = weight(title:"star wars" in 23827) [SchemaSimilarity], result of:
+    5.917079 = score(freq=1.0), computed as boost * idf * tf from:
+      3.951885 = idf, computed as log(1 + (N - n + 0.5) / (n + 0.5))
+      1.497358 = tf, computed as freq / (freq + k1 * (1 - b + b * dl/avgdl))
+  3.853271 = weight(text_all:wars in 23827) [SchemaSimilarity], result of:
+    3.853271 = score(freq=4.0), computed as boost * idf * tf from:
+      2.938475 = idf, computed as log(1 + (N - n + 0.5) / (n + 0.5))
+      1.311349 = tf, computed as freq / (freq + k1 * (1 - b + b * dl/avgdl))
+  2.679248 = weight(text_all:star in 23827) [SchemaSimilarity], result of:
+    2.679248 = score(freq=3.0), computed as boost * idf * tf from:
+      2.147582 = idf, computed as log(1 + (N - n + 0.5) / (n + 0.5))
+      1.247435 = tf, computed as freq / (freq + k1 * (1 - b + b * dl/avgdl))</pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================ -->
+<!-- DEBUG MATCHES — modal with JSON explain tree     -->
+<!-- ================================================ -->
+<div class="component-demo" id="debug-matches-modal">
+  <h3>&lt;debug-matches&gt; _modal.html — Debug Explain</h3>
+  <div style="max-width: 700px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h3 class="modal-title">Debug Explain</h3>
+      </div>
+      <div class="modal-body">
+        <div class="doc-detailed-explain">
+          <h3>Debug Explain for <em>Star Wars Uncut: Director's Cut</em> (id:578870)</h3>
+          <!-- Simulated json-explorer output -->
+          <div style="font-family: monospace; font-size: 13px; line-height: 1.6; padding: 10px; background: #fafafa; border: 1px solid #ddd; border-radius: 3px;">
+            <div>
+              <span style="cursor:pointer;">&#9660;</span>
+              <span style="color: #0033B3;">12.449598</span> = sum of:
+              <div style="margin-left: 20px;">
+                <div>
+                  <span style="cursor:pointer;">&#9660;</span>
+                  <span style="color: #0033B3;">5.917079</span> = weight(title:"star wars" in 23827) [SchemaSimilarity], result of:
+                  <div style="margin-left: 20px;">
+                    <span style="color: #0033B3;">5.917079</span> = score(freq=1.0), computed as boost * idf * tf from:<br>
+                    <div style="margin-left: 20px;">
+                      <span style="color: #067D17;">3.951885</span> = idf, computed as log(1 + (N - n + 0.5) / (n + 0.5))<br>
+                      <span style="color: #067D17;">1.497358</span> = tf, computed as freq / (freq + k1 * (1 - b + b * dl/avgdl))
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span style="cursor:pointer;">&#9660;</span>
+                  <span style="color: #0033B3;">3.853271</span> = weight(text_all:wars in 23827) [SchemaSimilarity], result of:
+                  <div style="margin-left: 20px;">
+                    <span style="color: #067D17;">2.938475</span> = idf<br>
+                    <span style="color: #067D17;">1.311349</span> = tf
+                  </div>
+                </div>
+                <div>
+                  <span style="cursor:pointer;">&#9660;</span>
+                  <span style="color: #0033B3;">2.679248</span> = weight(text_all:star in 23827) [SchemaSimilarity], result of:
+                  <div style="margin-left: 20px;">
+                    <span style="color: #067D17;">2.147582</span> = idf<br>
+                    <span style="color: #067D17;">1.247435</span> = tf
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -3,3 +3,5 @@
     - `bundle exec annotaterb models`
 - `database_consistency` helps keep Rails models and database schemas in sync.
 - DeepSource is a static analysis / code quality tool that runs automated checks on a repo.
+- Rake is Ruby's build/automation took (think make, npm scripts).
+- RSpec is a testing framework (unit, integration, etc.) that uses a behavior-driven style.
