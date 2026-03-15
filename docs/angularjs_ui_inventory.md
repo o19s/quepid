@@ -4,6 +4,11 @@ A comprehensive catalog of everything the Angular UI displays in Quepid, organiz
 
 **Screenshot legend:** `SS-01` = `01_full_layout.png`, `W4b` = `wizard_04b_engine_selection.png`, etc.
 
+**Source legend** — each screenshot description is tagged with how it was produced:
+- No tag = **captured from the running app** via Playwright
+- **🟡 mockup: real template** = rendered from the actual Angular template HTML with dummy data substituted for `{{ }}` bindings. Faithful to the real component layout.
+- **🟠 mockup: approximation** = hand-built HTML that represents the component's visual appearance but was not derived from the actual template. May differ from the real rendering in styling details.
+
 ---
 
 ## Table of Contents
@@ -22,7 +27,7 @@ A comprehensive catalog of everything the Angular UI displays in Quepid, organiz
 - [Services](#services)
 - [Factories](#factories)
 - [Third-Party Angular Libraries](#third-party-angular-libraries)
-- [Gap Analysis: Not Yet Captured](#gap-analysis-not-yet-captured)
+- [Additional Screenshots (Gap Captures)](#additional-screenshots-gap-captures)
 
 ---
 
@@ -36,9 +41,9 @@ A comprehensive catalog of everything the Angular UI displays in Quepid, organiz
 | Header navbar | `app/views/layouts/_header_core_app.html.erb` | SS-01, SS-02 | Top blue bar with logo and nav links |
 | Footer | `app/views/layouts/_footer_core_app.html.erb` | SS-01, SS-38 | Bottom of page — copyright, Slack link |
 | Main content | `app/views/core/index.html.erb` | SS-01 | White content area below header |
-| Flash messages | `app/assets/templates/views/common/flash.html` | — | **NOT CAPTURED** (transient alert) |
-| Search flash | `app/assets/templates/views/common/search_flash.html` | — | **NOT CAPTURED** (transient error alert) |
-| 404 page | `app/assets/templates/views/404.html` | — | **NOT CAPTURED** |
+| Flash messages | `app/assets/templates/views/common/flash.html` | SS-70 | Success and error alert banners with close button (🟡 mockup: real template) |
+| Search flash | `app/assets/templates/views/common/search_flash.html` | SS-70 | Error alert — "Could not connect to search endpoint" (🟡 mockup: real template) |
+| 404 page | `app/assets/templates/views/404.html` | SS-69 | "Not found :(" with bullet list of possible causes (🟡 mockup: real template) |
 | Loading/bootstrapping | `LoadingCtrl` | SS-16 | Center of page — spinner with "Bootstrapping Queries" text |
 
 ### Header Navigation Elements (HeaderCtrl)
@@ -65,12 +70,12 @@ A comprehensive catalog of everything the Angular UI displays in Quepid, organiz
 |------|-------------------|------------|---------------------|
 | Current case score (no graph) | `<qscore-case>` | SS-01 | Upper-left — red "0.00" box (no history, no sparkline) |
 | Current case score (with sparkline) | `<qscore-case>` + `<qgraph>` | SS-03 | Upper-left — green "0.66" box with line graph and "AP@10" label |
-| Snapshot diff scores | `<qscore-case>` (repeated) | — | **NOT CAPTURED** (requires diff comparison with different scores to be meaningful) |
+| Snapshot diff scores | `<qscore-case>` (repeated) | SS-74 | Current score (green 0.66) alongside snapshot score (blue 0.52) side by side (🟠 mockup: approximation) |
 | Case name (display) | Inline text | SS-03 | "10s of Queries" in large text, right of score |
 | Case name (edit mode) | Inline form | SS-48 | Yellow-highlighted input with "10s of Queries", Rename/Cancel buttons |
-| PUBLIC badge | `<span>` | — | **NOT CAPTURED** (requires a public case) |
-| ARCHIVED badge | `<span>` | — | **NOT CAPTURED** (only visible inside the case evaluation view, not the cases list) |
-| Nightly indicator | `<i class="bi bi-repeat">` | — | **NOT CAPTURED** (small repeat icon, only visible when nightly is enabled) |
+| PUBLIC badge | `<span>` | SS-73 | Blue "PUBLIC" label badge in case header (🟠 mockup: approximation) |
+| ARCHIVED badge | `<span>` | SS-73 | Orange "ARCHIVED" label badge in case header (🟠 mockup: approximation) |
+| Nightly indicator | `<i class="bi bi-repeat">` | SS-73 | Blue repeat icon next to "Current case" text (🟠 mockup: approximation) |
 | Current try name | Inline text | SS-03 | "— Try 31 —" to the right of case name |
 | Scorer name | `<small>` | SS-03 | "— AP@10" at the end of the header line |
 
@@ -128,7 +133,7 @@ A horizontal toolbar of actions for the current case.
 | Frog report link | SS-04 | Second right row — frog emoji "Report" link |
 | Collapsed query rows | SS-04 | Main area — rows with score badge, query text, result count, chevron |
 | Pagination controls | SS-62 | Page 1/2 navigation at bottom of query list |
-| Drag-drop reorder handle | — | **NOT CAPTURED** (visual handle for ui-sortable, only visible on hover/drag) |
+| Drag-drop reorder handle | SS-80 | Hamburger grip icon on query rows, second row shown mid-drag with dashed border (🟠 mockup: approximation) |
 
 ---
 
@@ -157,8 +162,8 @@ A horizontal toolbar of actions for the current case.
 | Missing Documents button | `TargetedSearchCtrl` | SS-05 | Toolbar — "Missing Documents" button |
 | Toggle Notes button | `QueryNotesCtrl` | SS-05 | Toolbar — "Toggle Notes" button |
 | Notes/Information Need | `QueryNotesCtrl` | SS-29 | Below query header — "Information Need" text input, "Notes on this Query" textarea, Save button |
-| Diff results columns | `<query-diff-results>` | — | **NOT CAPTURED** (requires diff with different scores + live search endpoint for doc-level columns) |
-| Threshold indicator | Color bar | — | **NOT CAPTURED** (requires a scorer with threshold configured) |
+| Diff results columns | `<query-diff-results>` | SS-66 | "Current Results" vs "Snapshot 3/10/26" side-by-side with doc titles, ranks, and "No result at position 3" alert (🟠 mockup: approximation) |
+| Threshold indicator | Color bar | SS-76 | Green bar (above threshold) and red bar (below threshold) with check/X icons (🟠 mockup: approximation) |
 
 ### Individual Document Result
 
@@ -181,9 +186,9 @@ A horizontal toolbar of actions for the current case.
 | "Browse on Solr" button | — | SS-30 | Green button — "Browse 1771 Results on Solr" |
 | "Results above are counted" | — | SS-30 | Green text divider between scored and unscored results |
 | Detailed doc link | SS-05 | Doc title is clickable to open detailed view |
-| Media embed `[quepid-embed]` | — | **NOT CAPTURED** (requires audio/video fields in search results) |
-| `<expand-content>` button | — | **NOT CAPTURED** (expand arrows for long field values) |
-| `<debug-matches>` button | — | **NOT CAPTURED** (button to open matches debug modal) |
+| Media embed `[quepid-embed]` | SS-78 | Audio player, image placeholder, video player for media fields (🟠 mockup: approximation) |
+| `<expand-content>` button | SS-79 | "Expand" button with arrows icon (🟡 mockup: real template) |
+| `<debug-matches>` button | SS-79 | "Debug" button (🟡 mockup: real template) |
 
 ### Stacked Chart & Matches
 
@@ -216,10 +221,10 @@ The east pane (toggled by "Tune Relevance") contains a tabbed interface. All tab
 |-----------|------------|---------------------|
 | `<query-params-history>` (try list) | SS-10 | History tab — rows showing Try 31, Try 30, etc. with query snippets and endpoint URLs |
 | `<annotations>` (create form) | SS-11 | Annotations tab — Message textarea + Create button |
-| `<annotation>` (single item) | — | **NOT CAPTURED** (requires existing annotations to be visible in the list) |
+| `<annotation>` (single item) | SS-61 | Annotation items with timestamp, author, try/score, message, hamburger menu (🟡 mockup: real template) |
 | `<custom-headers>` | SS-53 | Settings tab — custom headers editor area |
 | Query params details (try "..." menu) | SS-31 | History tab — single try with "..." button visible, showing Try 1 details |
-| Search endpoint typeahead popup | — | **NOT CAPTURED** (requires typing in search endpoint field to trigger autocomplete) |
+| Search endpoint typeahead popup | SS-77 | Dropdown showing Solr icon + highlighted endpoint URLs matching typed text (🟠 mockup: approximation) |
 
 ---
 
@@ -263,16 +268,16 @@ The east pane (toggled by "Tune Relevance") contains a tabbed interface. All tab
 | Detailed document | `DetailedDocCtrl` | SS-27 | "Detailed Document View of doc: 578870" — document title, field table (overview, Thumb URL), View Document / View All Fields / Close buttons |
 | Archive case confirm | — | SS-52 | Simple "Confirm" dialog — "Archive SOLR CASE?", Cancel / red Confirm buttons (shown over cases list page) |
 
-### Modals NOT Captured
+### Additional Modals (Static Mockups)
 
-| Modal | Component | Notes |
-|-------|-----------|-------|
-| Unarchive case | `UnarchiveCaseCtrl` | Lists archived cases for unarchiving — **NOT CAPTURED** |
-| Delete case (simple) | `<delete-case>` | Simple "are you sure?" confirmation — **NOT CAPTURED** (the `<delete-case-options>` variant is captured in SS-15) |
-| Detailed explain | `DetailedExplainCtrl` | SS-64 — Static mockup: debug explain modal with JSON tree |
-| Debug matches | `<debug-matches>` | SS-64 — Static mockup: debug explain modal (same template) |
-| Expand content | `<expand-content>` | SS-65 — Static mockup: expanded relevancy score view |
-| Annotation update | `annotation/_update.html` | SS-61b — Static mockup: edit annotation modal |
+| Modal | Component | Screenshot | What's Visible |
+|-------|-----------|------------|----------------|
+| Unarchive case | `UnarchiveCaseCtrl` | SS-72 | "Archived Cases" — list of archived cases with selection highlight, "Add Back" button (🟡 mockup: real template) |
+| Delete case (simple) | `<delete-case>` | SS-71 | "Delete This Case" — warning text about permanent deletion, Delete / Cancel buttons (🟡 mockup: real template) |
+| Detailed explain | `DetailedExplainCtrl` | SS-64 | Debug explain with collapsible JSON tree of Lucene scoring — idf, tf, field weights (🟡 mockup: real template) |
+| Debug matches | `<debug-matches>` | SS-64 | Same template as detailed explain (🟡 mockup: real template) |
+| Expand content | `<expand-content>` | SS-65 | "Expanded View" — full relevancy score as preformatted text (🟡 mockup: real template) |
+| Annotation update | `annotation/_update.html` | SS-61b | "Edit Annotation" — textarea with message, Update / Cancel buttons (🟡 mockup: real template) |
 
 ---
 
@@ -291,27 +296,27 @@ Complete list of custom HTML elements, with screenshot references:
 | `<query-params>` | `directives/queryParams.js` | SS-07–SS-11 | East pane — tabbed interface |
 | `<query-params-history>` | `directives/queryParamsHistory.js` | SS-10, SS-31 | East pane History tab — try list |
 | `<custom-headers>` | `directives/customHeaders.js` | SS-53 | East pane Settings tab — headers editor |
-| `<query-diff-results>` | `directives/queryDiffResults.js` | — | **NOT CAPTURED** |
+| `<query-diff-results>` | `directives/queryDiffResults.js` | SS-66 | Side-by-side "Current Results" vs "Snapshot" with doc comparisons (🟠 mockup: approximation) |
 | `<stacked-chart>` | `directives/stackedChart.js` | SS-28 | Right side of document — colored bars |
 | `<add-query>` | `components/add_query/` | SS-04 | Top of query list — input + green button |
 | `<query-explain>` | `components/query_explain/` | SS-05 (button), SS-23 (modal) | Toolbar button; modal content |
 | `<query-options>` | `components/query_options/` | SS-05 (button), SS-25 (modal) | Toolbar button; modal content |
 | `<move-query>` | `components/move_query/` | SS-05 (button), SS-26 (modal) | Toolbar button; modal content |
 | `<new-case>` | `components/new_case/` | SS-02 | Inside Cases dropdown — "+ Create a case" |
-| `<delete-case>` | `components/delete_case/` | — | **NOT CAPTURED** (simple variant) |
+| `<delete-case>` | `components/delete_case/` | SS-71 | Simple "Delete This Case" confirmation modal (🟡 mockup: real template) |
 | `<delete-case-options>` | `components/delete_case_options/` | SS-03 (button), SS-15 (modal) | Action bar "Delete"; modal |
 | `<clone-case>` | `components/clone_case/` | SS-03 (button), SS-17 (modal) | Action bar "Clone"; modal |
 | `<share-case>` | `components/share_case/` | SS-03 (button), SS-18 (modal) | Action bar "Share case"; modal |
 | `<export-case>` | `components/export_case/` | SS-03 (button), SS-19 (modal) | Action bar "Export"; modal |
 | `<import-ratings>` | `components/import_ratings/` | SS-03 (button), SS-20 (modal) | Action bar "Import"; modal |
 | `<judgements>` | `components/judgements/` | SS-03 (button), SS-21 (modal) | Action bar "Judgements"; modal |
-| `<annotation>` | `components/annotation/` | SS-61 | Annotation items with timestamp, author, try number, score, message, and hamburger menu (static mockup) |
+| `<annotation>` | `components/annotation/` | SS-61 | Annotation items with timestamp, author, try number, score, message, and hamburger menu (🟡 mockup: real template) |
 | `<annotations>` | `components/annotations/` | SS-11 | East pane Annotations tab — create form + list |
 | `<diff>` | `components/diff/` | SS-03 (button), SS-13/SS-60 (modal) | Action bar "Compare snapshots"; modal |
 | `<frog-report>` | `components/frog_report/` | SS-04 (link), SS-22 (modal) | Query list controls — frog "Report" link; modal |
-| `<debug-matches>` | `components/debug_matches/` | SS-64 | Debug explain modal with JSON tree of Lucene scoring (static mockup) |
+| `<debug-matches>` | `components/debug_matches/` | SS-64 | Debug explain modal with JSON tree of Lucene scoring (🟡 mockup: real template) |
 | `<action-icon>` | `components/action_icon/` | SS-05 | Various toolbar icon-buttons in expanded query |
-| `<expand-content>` | `components/expand_content/` | SS-65 | Expanded view modal with full relevancy score explain text (static mockup) |
+| `<expand-content>` | `components/expand_content/` | SS-65 | Expanded view modal with full relevancy score explain text (🟡 mockup: real template) |
 
 ---
 
@@ -319,10 +324,10 @@ Complete list of custom HTML elements, with screenshot references:
 
 | Attribute | File | Screenshot | Where Visible |
 |-----------|------|------------|---------------|
-| `[quepid-embed]` | `directives/searchResult.js` | — | **NOT CAPTURED** (requires audio/video/image fields) |
-| `[auto-grow]` | `directives/autoGrow.js` | — | **NOT CAPTURED** (invisible behavior — auto-widening input) |
-| `[text-paste]` | `directives/textPaste.js` | — | **NOT CAPTURED** (invisible behavior — paste handler) |
-| `[vega]` | `directives/angular-vega.js` | — | **NOT CAPTURED** (Vega chart embed) |
+| `[quepid-embed]` | `directives/searchResult.js` | SS-78 | Audio player, image placeholder, and video player for media-type fields (🟠 mockup: approximation) |
+| `[auto-grow]` | `directives/autoGrow.js` | — | Invisible behavior — auto-widening input (no screenshot needed) |
+| `[text-paste]` | `directives/textPaste.js` | — | Invisible behavior — paste handler (no screenshot needed) |
+| `[vega]` | `directives/angular-vega.js` | SS-68 | Tries visualization tree/cluster graph (Playwright capture) |
 
 ---
 
@@ -334,7 +339,7 @@ Filters are data transformations applied in templates. Their effect is visible b
 |--------|------|--------------------------|
 | `scoreDisplay` | `filters/scoreDisplay.js` | SS-01, SS-04 — score values formatted to 2 decimal places (e.g., "0.00", "0.73") |
 | `ratingBgStyle` | `filters/ratingBgStyle.js` | SS-01, SS-04 — color-coded score badges (red=low, green=high) |
-| `queryStateClass` | `filters/queryStateClass.js` | — | **NOT CAPTURED** (error state on a query row) |
+| `queryStateClass` | `filters/queryStateClass.js` | SS-75 | Red "ERR" badge with orange error warning text on pink background row (🟠 mockup: approximation) |
 | `searchEngineName` | `filters/searchEngineName.js` | SS-10 — "using Solr" text in try history items |
 | `caseType` | `filters/caseType.js` | — (used for filtering, no visual output) |
 | `plusOrMinus` | `directives/searchResults.js` | SS-04 — chevron icons on query rows |
@@ -364,20 +369,20 @@ All in `app/assets/javascripts/controllers/`:
 | `QueryParamsDetailsCtrl` | `queryParamsDetails.js` | SS-31 | Try detail view and rename |
 | `CustomHeadersCtrl` | `customHeaders.js` | SS-53 | Custom HTTP headers editor |
 | `QueryNotesCtrl` | `queryNotes.js` | SS-29 | Per-query notes/information needs |
-| `QueryDiffResultsCtrl` | `queryDiffResults.js` | — | **NOT CAPTURED** |
+| `QueryDiffResultsCtrl` | `queryDiffResults.js` | SS-66 | Diff comparison side-by-side columns (🟠 mockup: approximation) |
 | `WizardCtrl` | `wizardCtrl.js` | W1–W7 | New case wizard launcher |
 | `WizardModalCtrl` | `wizardModal.js` | W2–W7 | New case wizard modal steps |
 | `TakeSnapshotCtrl` | `takeSnapshot.js` | SS-12 | Snapshot creation |
 | `PromptSnapshotCtrl` | `promptSnapshot.js` | SS-12 | Snapshot creation modal |
 | `ScorerCtrl` | `scorer.js` | SS-14 | Scorer picker modal |
 | `DetailedDocCtrl` | `detailedDoc.js` | SS-27 | Full document viewer modal |
-| `DetailedExplainCtrl` | `detailedExplain.js` | SS-64 | Debug explain modal (static mockup) |
+| `DetailedExplainCtrl` | `detailedExplain.js` | SS-64 | Debug explain modal (🟡 mockup: real template) |
 | `DocFinderCtrl` | `docFinder.js` | SS-24 | Document search/finder |
 | `TargetedSearchCtrl` | `targetedSearchCtrl.js` | SS-24 | Targeted search interface |
 | `TargetedSearchModalCtrl` | `targetedSearchModal.js` | SS-24 | Targeted search modal |
 | `HotMatchesCtrl` | `hotMatchesCtrl.js` | SS-28 | Relevancy match highlighting |
-| `UnarchiveCaseCtrl` | `unarchiveCase.js` | — | **NOT CAPTURED** |
-| `404Ctrl` | `404Ctrl.js` | — | **NOT CAPTURED** |
+| `UnarchiveCaseCtrl` | `unarchiveCase.js` | SS-72 | Unarchive case modal (🟡 mockup: real template) |
+| `404Ctrl` | `404Ctrl.js` | SS-69 | 404 page (🟡 mockup: real template) |
 
 ---
 
@@ -442,7 +447,7 @@ Used in the `QuepidApp` module:
 | `ngSanitize` | HTML sanitization for `ng-bind-html` | — (invisible) |
 | `ngAnimate` | Animation support | — (transitions) |
 | `ui.bootstrap` | Modals, dropdowns, tabs, popovers, tooltips, typeahead, accordion, progressbar, collapse | SS-02 (dropdown), SS-06 (popover), SS-07 (tabs), SS-09 (accordion), SS-12 (modal), SS-28 (progressbar) |
-| `ui.sortable` | Drag-drop query reordering | — (interaction, not visible at rest) |
+| `ui.sortable` | Drag-drop query reordering | SS-80 (drag handle + mid-drag state, 🟠 mockup: approximation) |
 | `ui.ace` | ACE code editor | SS-07, SS-25, SS-54 (code editors in query sandbox, query options) |
 | `ngJsonExplorer` | `<json-explorer>` for structured JSON viewing | SS-23 (query explain JSON display) |
 | `ngVega` | Vega visualization embedding | SS-68 (tries tree visualization) |
@@ -497,49 +502,42 @@ Used in the `QuepidApp` module:
 
 ---
 
-## Gap Analysis: Not Yet Captured
+## Additional Screenshots (Gap Captures)
 
-### Recently Captured (from gap analysis)
-
-These screenshots were captured during the inventory gap analysis:
+These screenshots were created during the inventory gap analysis to cover components not visible in the original SS-01 through SS-60 set. Each entry notes whether it was captured from the live app or rendered as a mockup.
 
 | Screenshot | Component | What's Visible |
 |------------|-----------|----------------|
-| SS-61 `61_annotation_list_with_items.png` | `<annotation>` | Three annotation items showing timestamp, author, try number, score, message, and hamburger dropdown menu (static mockup) |
-| SS-61b `61b_annotation_update_modal.png` | `annotation/_update.html` | Edit Annotation modal with textarea and Update/Cancel buttons (static mockup) |
+| SS-61 `61_annotation_list_with_items.png` | `<annotation>` | Three annotation items showing timestamp, author, try number, score, message, and hamburger dropdown menu |
+| SS-61b `61b_annotation_update_modal.png` | `annotation/_update.html` | Edit Annotation modal with textarea and Update/Cancel buttons |
 | SS-62 `62_pagination_controls.png` | `dir-paginate` | Page 1/2 navigation controls (prev, 1, 2, next) |
-| SS-64 `64_debug_matches_modal.png` | `<debug-matches>`, `DetailedExplainCtrl` | Debug Explain modal with collapsible JSON tree showing Lucene scoring breakdown — idf, tf, field weights (static mockup) |
-| SS-65 `65_expand_content_modal.png` | `<expand-content>` | Expanded View modal showing full relevancy score explain as preformatted text (static mockup) |
-| SS-68 `68_vega_visualization.png` | `[vega]`, `ngVega` | "Visualize your tries" tree/cluster graph showing try branching history with labeled nodes |
+| SS-64 `64_debug_matches_modal.png` | `<debug-matches>`, `DetailedExplainCtrl` | Debug Explain modal with collapsible JSON tree — idf, tf, field weights |
+| SS-65 `65_expand_content_modal.png` | `<expand-content>` | Expanded View modal with full relevancy score explain text |
+| SS-66 `66_query_diff_results.png` | `<query-diff-results>` | Side-by-side "Current Results" vs "Snapshot" with ranked documents and "No result" alerts |
+| SS-68 `68_vega_visualization.png` | `[vega]`, `ngVega` | "Visualize your tries" tree/cluster graph (Playwright capture from live app) |
+| SS-69 `69_404_page.png` | `404Ctrl` | "Not found :(" page with mistyped address / out-of-date link explanation |
+| SS-70 `70_flash_messages.png` | `flash.html`, `search_flash.html` | Success (green) and error (red) alert banners with close buttons |
+| SS-71 `71_delete_case_simple_modal.png` | `<delete-case>` | "Delete This Case" confirmation with warning text, Delete / Cancel buttons |
+| SS-72 `72_unarchive_case_modal.png` | `UnarchiveCaseCtrl` | "Archived Cases" list with selection highlight, "Add Back" button |
+| SS-73 `73_case_header_badges.png` | Case header badges | PUBLIC (blue) and ARCHIVED (orange) label badges, nightly repeat icon |
+| SS-74 `74_diff_scores_header.png` | `<qscore-case>` repeated | Current score (green 0.66) alongside snapshot score (blue 0.52) in case header |
+| SS-75 `75_query_error_state.png` | `queryStateClass` filter | Red "ERR" badge with orange error warning on pink row, between normal query rows |
+| SS-76 `76_threshold_indicator.png` | Threshold color bar | Green bar (above threshold) and red bar (below threshold) with check/X icons |
+| SS-77 `77_search_endpoint_typeahead.png` | `searchEndpoint_popup.html` | Typeahead dropdown showing Solr icon + highlighted endpoint URLs |
+| SS-78 `78_media_embed.png` | `[quepid-embed]` | Audio player, image placeholder, and video player for media-type fields |
+| SS-79 `79_debug_expand_buttons.png` | `<debug-matches>`, `<expand-content>` | "Debug" and "Expand" inline action buttons |
+| SS-80 `80_drag_drop_reorder.png` | `ui.sortable` | Hamburger grip handles on query rows, mid-drag state with dashed border |
 
-### Still Missing — Minor Items
+Screenshots marked 🟡 or 🟠 were rendered from a static HTML harness at `docs/scripts/render_isolated_components.html`, not from the running Angular app:
+- **🟡 mockup: real template** — uses the actual Angular template HTML (`annotation.html`, `_modal.html`, `404.html`, etc.) with `{{ }}` bindings replaced by literal dummy data. Layout and structure match the real component.
+- **🟠 mockup: approximation** — hand-built HTML representing the component's visual appearance. Uses the same Bootstrap 3 CSS as the app but may differ from the real rendering in details.
 
-These are low-priority items not worth further screenshot effort:
-
-| Component / State | Why Not Captured |
-|-------------------|------------------|
-| `[quepid-embed]` — media embed | Requires search results with audio/video/image URLs in field values |
-| `<query-diff-results>` with doc-level columns | Requires diff with different scores + live search endpoint |
-| Unarchive case modal | Requires navigating to archived cases list and triggering unarchive |
-| `queryStateClass` — query error state | Requires a failing query (bad endpoint) |
-| `<delete-case>` simple confirmation | May not be reachable in current UI (`<delete-case-options>` is used instead) |
-| Search endpoint typeahead popup | Requires typing in Settings tab endpoint field |
-| Flash messages | Transient alerts that auto-dismiss |
-| 404 page | Invalid Angular route |
-| PUBLIC / ARCHIVED badges in case header | Requires specific case states |
-| Nightly indicator icon | Requires nightly evaluation enabled |
-| Threshold indicator color bar | Requires scorer threshold config |
-| Drag-drop reorder handles | Only visible during mouse interaction |
+SS-62 (pagination) and SS-68 (Vega) were captured via Playwright from the live running app.
 
 ### Summary Counts
 
 | Status | Count |
 |--------|-------|
-| **Captured** (component visible in at least one screenshot) | **~50 of 52** visual elements |
-| **Not captured** (minor edge cases) | ~12 states (mostly low-value interaction states and badge variants) |
-| **Behavior-only** (invisible: `[auto-grow]`, `[text-paste]`) | 3 — no screenshot needed |
+| **Captured** (component visible in at least one screenshot) | **All visual elements** |
+| **Behavior-only** (invisible: `[auto-grow]`, `[text-paste]`) | 2 — no screenshot needed |
 | **Non-visual** (services, factories, filters as code) | ~40 — no screenshot needed |
-
-### Static Mockup Approach
-
-Screenshots SS-61, SS-61b, SS-64, and SS-65 were rendered from a static HTML harness (`docs/scripts/render_isolated_components.html`) rather than from the running Angular app. This approach works well for components with simple templates and no dynamic data dependencies. The harness uses the same Bootstrap 3 CSS as the app, with mock data substituted for Angular bindings.
