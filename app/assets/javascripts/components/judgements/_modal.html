@@ -131,13 +131,17 @@
         <hr style="margin: 8px 0;"/>
 
         <div class="row">
-          <div class="col-sm-12">
+          <div class="col-sm-8">
             <label>
-              <input type="checkbox" ng-model='ctrl.createMissingQueries'>
-              Sync missing queries from Book to Case
+              Case <i class="glyphicon glyphicon-arrow-left"></i> Book: Sync missing queries from Book to Case
               <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Create queries in this Case that exist in the Book but don't currently exist in the Case."></span>
             </label>
             <p class="text-muted small">Case <i class="glyphicon glyphicon-arrow-left"></i> Book: add queries that exist in Book but not in Case.</p>
+          </div>
+          <div class="col-sm-4 text-right">
+            <button class="btn btn-default btn-sm" ng-click="ctrl.manualSyncQueries()" ng-disabled="processingPrompt.inProgress || !ctrl.activeBookId">
+              <i class="glyphicon glyphicon-plus"></i> Sync Queries
+            </button>
           </div>
         </div>
       </div>

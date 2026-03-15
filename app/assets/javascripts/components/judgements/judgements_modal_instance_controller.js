@@ -30,7 +30,6 @@ angular.module('QuepidApp')
      ) {
       var ctrl = this;
 
-      ctrl.createMissingQueries = false;
       ctrl.autoPopulateBookPairs = acase.autoPopulateBookPairs || false;
       ctrl.autoPopulateCaseJudgements    = acase.autoPopulateCaseJudgements !== false;
 
@@ -115,8 +114,7 @@ angular.module('QuepidApp')
         var bookChanged = ctrl.activeBookId !== ctrl.share.acase.bookId;
         var syncChanged = ctrl.autoPopulateBookPairs !== (acase.autoPopulateBookPairs || false) ||
                           ctrl.autoPopulateCaseJudgements !== (acase.autoPopulateCaseJudgements !== false);
-        var createMissingQueriesChanged = ctrl.createMissingQueries !== false;
-        return bookChanged || syncChanged || createMissingQueriesChanged;
+        return bookChanged || syncChanged;
       };
 
       ctrl.ok = function () {
@@ -128,12 +126,12 @@ angular.module('QuepidApp')
         // Save book association and sync settings in a single request
         caseSvc.saveBookSettings(acase, ctrl.activeBookId, ctrl.autoPopulateBookPairs, ctrl.autoPopulateCaseJudgements);
 
-        // Refresh ratings if auto-populate is enabled and book changed, or if createMissingQueries is checked
-        var shouldRefreshRatings = (ctrl.autoPopulateCaseJudgements && bookChanged && ctrl.activeBookId) || ctrl.createMissingQueries;
+        // Refresh ratings if auto-populate is enabled and book changed
+        var shouldRefreshRatings = (ctrl.autoPopulateCaseJudgements && bookChanged && ctrl.activeBookId);
 
         if (shouldRefreshRatings && ctrl.activeBookId) {
           var processInBackground = ctrl.share.acase.queriesCount >= 50 ? true : false;
-          bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, ctrl.createMissingQueries, processInBackground)
+          bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, false, processInBackground)
           .then(function(response) {
             $scope.processingPrompt.inProgress = false;
             $uibModalInstance.close(true);
@@ -187,7 +185,7 @@ angular.module('QuepidApp')
       ctrl.manualRefreshRatings = function() {
         $scope.processingPrompt.inProgress = true;
         var processInBackground = ctrl.share.acase.queriesCount >= 50 ? true : false;
-        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, ctrl.createMissingQueries, processInBackground)
+        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, false, processInBackground)
         .then(function() {
           $scope.processingPrompt.inProgress = false;
 
@@ -198,6 +196,33 @@ angular.module('QuepidApp')
             flash.success = 'Case ratings refreshed from book.';
           }
           $uibModalInstance.close(true);
+        }, function(response) {
+          $scope.processingPrompt.inProgress = false;
+          $scope.processingPrompt.error = response.data.statusText;
+        });
+      };
+
+      ctrl.manualSyncQueries = function() {
+        $scope.processingPrompt.inProgress = true;
+        var processInBackground = ctrl.share.acase.queriesCount >= 50 ? true : false;
+        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, true, processInBackground)
+        .then(function(response) {
+          $scope.processingPrompt.inProgress = false;
+
+          if (processInBackground) {
+            flash.success = 'Missing queries are being synced from book in the background.';
+          }
+          else {
+            flash.success = 'Missing queries synced from book.';
+          }
+          $uibModalInstance.close(true);
+
+          // Check if we should redirect to homepage
+          if (response && response.data && processInBackground) {
+            setTimeout(function() {
+              $window.location.href = caseTryNavSvc.getQuepidRootUrl();
+            }, 500);
+          }
         }, function(response) {
           $scope.processingPrompt.inProgress = false;
           $scope.processingPrompt.error = response.data.statusText;
