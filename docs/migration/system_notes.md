@@ -1,0 +1,5 @@
+- Annotaterb is a Ruby gem that adds schema annotations to your Rails app. It writes comments at the top of models (and optionally routes, factories, fixtures, etc.) describing the database schema so you can see columns and types without opening the schema or DB.
+    - In this project it’s used to keep model, routes, etc. files documented. 
+    - `bundle exec annotaterb models`
+- `database_consistency` helps keep Rails models and database schemas in sync.
+- DeepSource is a static analysis / code quality tool that runs automated checks on a repo.

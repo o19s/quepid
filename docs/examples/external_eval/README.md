@@ -2,7 +2,7 @@
 
 ## Store and Visualize Scores via Quepid 
 
-This demonstrates how to store query evalution results in Quepid as a repository, and leverage the existing visualization capablities.   
+This demonstrates how to store query evalution results in Quepid as a repository, and leverage the existing visualization capabilities.   
 
 Quepid would NOT do the running of the queries, or even store the individual queries and the judgements.  The script generates the Case at run time if it doesn't already exist.  Over time you build up a Case for a specific Scorer that has a set of Scores over time.
 
@@ -14,9 +14,9 @@ When you create it, you will get an example call you can use to test your setup:
 curl -H "Authorization: Bearer 0d078b465f73c8f5f34dd57c50e317053b4bd69b22f0f6a25479c00775f47589" http://go.quepidapp.com/api/users/3
 ```
 
-The docs below reference access token, replace with you own.  
+The docs below reference access token, replace with your own.  
 
-setup your tokens via:
+Setup your tokens via:
 
 ```
 export QUEPID_TOKEN=0d078b465f73c8f317053b4bd69b22f0f6a25479c00775f47589

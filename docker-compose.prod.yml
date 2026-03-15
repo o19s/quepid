@@ -24,7 +24,9 @@ services:
     #  - .env.prod
     depends_on:
       mysql:
-        condition: service_healthy    
+        condition: service_healthy
+      ollama:
+        condition: service_started
     environment:
       - PORT=3000
       - RACK_ENV=production
@@ -52,9 +54,6 @@ services:
     #  - 80:3000 # Map to port 80 for outside users when you are not using Nginx
       - 3000:3000
     links:
-      - mysql
-      - ollama
-    depends_on:
       - mysql
       - ollama
   nginx:

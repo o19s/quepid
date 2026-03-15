@@ -2,9 +2,9 @@
 
 You are working on Quepid, a Rails application. Review the ClaudeOnRails context file at @.claude-on-rails/context.md
 
-We run Quepid in Docker primarily, don't run Rails and other build tasks locally..
+We run Quepid in Docker primarily, don't run Rails and other build tasks locally.
 
-To set up the envirnoment use:
+To set up the environment use:
 
 `bin/setup_docker`.
 
