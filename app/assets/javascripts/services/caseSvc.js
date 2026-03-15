@@ -34,8 +34,7 @@ angular.module('QuepidApp')
       svc.saveDefaultScorer = saveDefaultScorer;
       svc.renameCase        = renameCase;
       svc.updateNightly     = updateNightly;
-      svc.associateBook     = associateBook;
-      svc.updateSyncSettings = updateSyncSettings;
+      svc.saveBookSettings  = saveBookSettings;
 
       // an individual case, ie
       // a search problem to be solved
@@ -462,50 +461,23 @@ angular.module('QuepidApp')
       }      
 
       /*
-       * update which book the case is tied to.  This could be refactored into a more
-       * general "update" method.
+       * Save book association and sync settings in a single request.
        */
-      function associateBook(theCase, bookId) {
-
-        // HTTP PUT api/cases/<int:caseId>
+      function saveBookSettings(theCase, bookId, autoPopulateBookPairs, autoPopulateCaseJudgements) {
         var url  = 'api/cases/' + theCase.caseNo;
         var data = {
-          book_id: bookId
+          book_id: bookId,
+          auto_populate_book_pairs: bookId ? autoPopulateBookPairs : false,
+          auto_populate_case_judgements: bookId ? autoPopulateCaseJudgements : false
         };
-
-        // When unlinking a book, reset sync flags
-        if (!bookId) {
-          data.auto_populate_book_pairs = false;
-          data.auto_populate_case_judgements = false;
-        }
 
         return $http.put(url, data)
           .then(function(response) {
-
             theCase.bookId = bookId;
-            theCase.bookName = response.book_name;
-            if (!bookId) {
-              theCase.autoPopulateBookPairs = false;
-              theCase.autoPopulateCaseJudgements = false;
-            }
+            theCase.bookName = response.data ? response.data.book_name : null;
+            theCase.autoPopulateBookPairs = data.auto_populate_book_pairs;
+            theCase.autoPopulateCaseJudgements = data.auto_populate_case_judgements;
             broadcastSvc.send('associateBook', svc.dropdownBooks);
-          }, function() {
-            caseTryNavSvc.notFound();
-          });
-      }
-
-
-      function updateSyncSettings(theCase, autoPopulateBookPairs, autoPopulateCaseJudgements) {
-        var url  = 'api/cases/' + theCase.caseNo;
-        var data = {
-          auto_populate_book_pairs: autoPopulateBookPairs,
-          auto_populate_case_judgements: autoPopulateCaseJudgements
-        };
-
-        return $http.put(url, data)
-          .then(function() {
-            theCase.autoPopulateBookPairs = autoPopulateBookPairs;
-            theCase.autoPopulateCaseJudgements = autoPopulateCaseJudgements;
           }, function() {
             caseTryNavSvc.notFound();
           });

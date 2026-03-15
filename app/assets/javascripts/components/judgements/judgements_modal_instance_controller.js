@@ -125,13 +125,8 @@ angular.module('QuepidApp')
 
         var bookChanged = ctrl.activeBookId !== ctrl.share.acase.bookId;
 
-        // Save book association if changed
-        if (bookChanged) {
-          caseSvc.associateBook(acase, ctrl.activeBookId);
-        }
-
-        // Save sync settings (includes resetting flags when unlinking)
-        caseSvc.updateSyncSettings(acase, ctrl.autoPopulateBookPairs, ctrl.autoPopulateCaseJudgements);
+        // Save book association and sync settings in a single request
+        caseSvc.saveBookSettings(acase, ctrl.activeBookId, ctrl.autoPopulateBookPairs, ctrl.autoPopulateCaseJudgements);
 
         // Refresh ratings if auto-populate is enabled and book changed, or if createMissingQueries is checked
         var shouldRefreshRatings = (ctrl.autoPopulateCaseJudgements && bookChanged && ctrl.activeBookId) || ctrl.createMissingQueries;

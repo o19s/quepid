@@ -82,14 +82,24 @@
 
     <div class="panel panel-default">
       <div class="panel-body">
+        <div class="alert alert-info" role="alert">
+          <strong>About Book-Case Synchronization:</strong> Books and Cases can share data bi-directionally.
+          Your Case provides query/doc pairs to judge, while Book judgements flow back as ratings.
+          <a href="https://quepid-docs.dev.o19s.com/2/quepid/64/thinking-about-cases-and-books-of-judgements" target="_out">
+            Learn more <i class="bi bi-arrow-up-right-circle"></i>
+          </a>
+        </div>
         <div class="row">
           <div class="col-sm-8">
             <label>
               <input type="checkbox" ng-model='ctrl.autoPopulateBookPairs'>
-              Auto-populate Book query/doc pairs
+              Case <i class="glyphicon glyphicon-arrow-right"></i> Book: Query/Doc Pairs
               <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="When enabled, new query/doc pairs are automatically sent to the Book whenever searches run in this Case."></span>
             </label>
-            <p class="text-muted small">Case <i class="glyphicon glyphicon-arrow-right"></i> Book: query/doc pairs updated on every search.</p>
+            <p class="text-muted small">
+              <strong>On:</strong> New query/doc pairs automatically added to Book when Case runs.<br/>
+              <strong>Off:</strong> Manually trigger updates to the Book when needed.
+            </p>
           </div>
           <div class="col-sm-4 text-right">
             <button class="btn btn-default btn-sm" ng-click="ctrl.manualPopulateBook()" ng-disabled="processingPrompt.inProgress || !ctrl.activeBookId">
@@ -104,10 +114,13 @@
           <div class="col-sm-8">
             <label>
               <input type="checkbox" ng-model='ctrl.autoPopulateCaseJudgements'>
-              Auto-update Case ratings from judgements
+                Case <i class="glyphicon glyphicon-arrow-left"></i> Book: Judgement Ratings
               <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="When enabled, Case ratings are updated as judgements are made in the Book."></span>
             </label>
-            <p class="text-muted small">Case <i class="glyphicon glyphicon-arrow-left"></i> Book: ratings synced with judgements as they are created.</p>
+            <p class="text-muted small">
+              <strong>On:</strong> Case ratings update immediately as judgements are made.<br/>
+              <strong>Off:</strong> Manually import judgements when ready to test.
+            </p>
           </div>
           <div class="col-sm-4 text-right">
             <button class="btn btn-default btn-sm" ng-click="ctrl.manualRefreshRatings()" ng-disabled="processingPrompt.inProgress || !ctrl.activeBookId">
