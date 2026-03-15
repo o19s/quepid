@@ -146,7 +146,8 @@ angular.module('QuepidApp')
             // Check if we should redirect to homepage
             if (response && response.data && processInBackground) {
               setTimeout(function() {
-                $window.location.href = caseTryNavSvc.getQuepidRootUrl();
+                var url = caseTryNavSvc.getQuepidRootUrl() + '?notice=' + encodeURIComponent('Settings saved. Ratings are being refreshed in the background.');
+                $window.location.href = url;
               }, 500);
             }
           }, function(response) {
@@ -190,11 +191,15 @@ angular.module('QuepidApp')
           $scope.processingPrompt.inProgress = false;
 
           if (processInBackground) {
-            flash.success = 'Case ratings are being refreshed from book in the background.';
+            $uibModalInstance.close(true);
+            setTimeout(function() {
+              var url = caseTryNavSvc.getQuepidRootUrl() + '?notice=' + encodeURIComponent('Case ratings are being refreshed from book in the background.');
+              $window.location.href = url;
+            }, 500);
+            return;
           }
-          else {
-            flash.success = 'Case ratings refreshed from book.';
-          }
+
+          flash.success = 'Case ratings refreshed from book.';
           $uibModalInstance.close(true);
         }, function(response) {
           $scope.processingPrompt.inProgress = false;
@@ -220,7 +225,8 @@ angular.module('QuepidApp')
           // Check if we should redirect to homepage
           if (response && response.data && processInBackground) {
             setTimeout(function() {
-              $window.location.href = caseTryNavSvc.getQuepidRootUrl();
+              var url = caseTryNavSvc.getQuepidRootUrl() + '?notice=' + encodeURIComponent('Missing queries are being synced from book in the background.');
+              $window.location.href = url;
             }, 500);
           }
         }, function(response) {
