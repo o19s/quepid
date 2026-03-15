@@ -152,7 +152,9 @@ module Api
       private
 
       def case_params
-        params.expect(case: [ :case_name, :scorer_id, :archived, :book_id, :last_try_number, :nightly ])
+        params.expect(case: [ :case_name, :scorer_id, :archived, :book_id, :last_try_number, :nightly,
+                              :auto_populate_book_pairs,
+                              :auto_populate_case_judgements ])
       end
 
       def default_scorer_removed? params = {}

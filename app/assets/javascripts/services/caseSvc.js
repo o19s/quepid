@@ -35,6 +35,7 @@ angular.module('QuepidApp')
       svc.renameCase        = renameCase;
       svc.updateNightly     = updateNightly;
       svc.associateBook     = associateBook;
+      svc.updateSyncSettings = updateSyncSettings;
 
       // an individual case, ie
       // a search problem to be solved
@@ -51,6 +52,8 @@ angular.module('QuepidApp')
         theCase.ownerId           = data.owner_id;
         theCase.bookId            = data.book_id;
         theCase.bookName          = data.book_name;
+        theCase.autoPopulateBookPairs = data.auto_populate_book_pairs;
+        theCase.autoPopulateCaseJudgements    = data.auto_populate_case_judgements;
         theCase.queriesCount      = data.queries_count;
         theCase.public            = data.public;
         theCase.archived          = data.archived;
@@ -470,17 +473,43 @@ angular.module('QuepidApp')
           book_id: bookId
         };
 
+        // When unlinking a book, reset sync flags
+        if (!bookId) {
+          data.auto_populate_book_pairs = false;
+          data.auto_populate_case_judgements = false;
+        }
+
         return $http.put(url, data)
           .then(function(response) {
 
             theCase.bookId = bookId;
             theCase.bookName = response.book_name;
+            if (!bookId) {
+              theCase.autoPopulateBookPairs = false;
+              theCase.autoPopulateCaseJudgements = false;
+            }
             broadcastSvc.send('associateBook', svc.dropdownBooks);
           }, function() {
             caseTryNavSvc.notFound();
           });
       }
 
+
+      function updateSyncSettings(theCase, autoPopulateBookPairs, autoPopulateCaseJudgements) {
+        var url  = 'api/cases/' + theCase.caseNo;
+        var data = {
+          auto_populate_book_pairs: autoPopulateBookPairs,
+          auto_populate_case_judgements: autoPopulateCaseJudgements
+        };
+
+        return $http.put(url, data)
+          .then(function() {
+            theCase.autoPopulateBookPairs = autoPopulateBookPairs;
+            theCase.autoPopulateCaseJudgements = autoPopulateCaseJudgements;
+          }, function() {
+            caseTryNavSvc.notFound();
+          });
+      }
 
       function get(id, useCache) {
         // http GET api/cases/<int:caseId>

@@ -1268,6 +1268,10 @@ angular.module('QuepidApp')
             return; // No book associated with this case
           }
 
+          if (!theCase.auto_populate_book_pairs) {
+            return; // Auto-populate of book query/doc pairs is disabled for this case
+          }
+
           var bookId = theCase.book_id;
 
           // Initialize cache for this book if not exists

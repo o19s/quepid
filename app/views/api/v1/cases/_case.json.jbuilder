@@ -17,6 +17,8 @@ end
 json.owner_name       acase.owner.name if acase.owner.present?
 json.owner_id         acase.owner.id if acase.owner.present?
 json.book_name        acase.book.name if acase.book.present?
+json.auto_populate_book_pairs acase.auto_populate_book_pairs
+json.auto_populate_case_judgements acase.auto_populate_case_judgements
 json.public           acase.public.presence || false
 json.archived         acase.archived
 json.nightly          acase.nightly
