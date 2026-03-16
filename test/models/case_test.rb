@@ -299,6 +299,31 @@ class CaseTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'reset_sync_flags_without_book callback' do
+    test 'resets sync flags when book is removed' do
+      books(:book_of_star_wars_judgements)
+      acase = cases(:case_with_book)
+      acase.update!(auto_populate_book_pairs: true, auto_populate_case_judgements: true)
+
+      acase.book = nil
+      acase.save!
+
+      assert_not acase.auto_populate_book_pairs
+      assert_not acase.auto_populate_case_judgements
+    end
+
+    test 'preserves sync flags when book is present' do
+      acase = cases(:case_with_book)
+      acase.update!(auto_populate_book_pairs: true, auto_populate_case_judgements: true)
+
+      acase.case_name = 'Renamed'
+      acase.save!
+
+      assert acase.auto_populate_book_pairs
+      assert acase.auto_populate_case_judgements
+    end
+  end
+
   # Helper method for shared examples
   def create_record_with_options options
     Case.new(
