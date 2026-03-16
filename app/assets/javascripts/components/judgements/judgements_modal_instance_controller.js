@@ -130,7 +130,7 @@ angular.module('QuepidApp')
         var shouldRefreshRatings = (ctrl.autoPopulateCaseJudgements && bookChanged && ctrl.activeBookId);
 
         if (shouldRefreshRatings && ctrl.activeBookId) {
-          var processInBackground = ctrl.share.acase.queriesCount >= 50 ? true : false;
+          var processInBackground = ctrl.share.acase.queriesCount >= 50;
           bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, false, processInBackground)
           .then(function(response) {
             $scope.processingPrompt.inProgress = false;
@@ -185,7 +185,7 @@ angular.module('QuepidApp')
 
       ctrl.manualRefreshRatings = function() {
         $scope.processingPrompt.inProgress = true;
-        var processInBackground = ctrl.share.acase.queriesCount >= 50 ? true : false;
+        var processInBackground = ctrl.share.acase.queriesCount >= 50;
         bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, false, processInBackground)
         .then(function() {
           $scope.processingPrompt.inProgress = false;
@@ -209,7 +209,7 @@ angular.module('QuepidApp')
 
       ctrl.manualSyncQueries = function() {
         $scope.processingPrompt.inProgress = true;
-        var processInBackground = ctrl.share.acase.queriesCount >= 50 ? true : false;
+        var processInBackground = ctrl.share.acase.queriesCount >= 50;
         bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, true, processInBackground)
         .then(function(response) {
           $scope.processingPrompt.inProgress = false;
