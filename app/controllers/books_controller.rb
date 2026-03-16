@@ -121,6 +121,7 @@ class BooksController < ApplicationController
         @book.scale_with_labels = scorer.scale_with_labels
         # Set scorer_id to the one that would appear in dropdown for this scale combination
         @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
+        @book.scoring_guidelines = @book.default_scoring_guidelines
       end
     end
 
@@ -128,7 +129,10 @@ class BooksController < ApplicationController
 
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
-    @book.name = "Book for #{@origin_case.case_name}" if @origin_case
+    if @origin_case
+      @book.name = "Book for #{@origin_case.case_name}"
+      @book.team_ids = @origin_case.team_ids & current_user.team_ids
+    end
 
     respond_with(@book)
   end
