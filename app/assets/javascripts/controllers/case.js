@@ -58,5 +58,27 @@ angular.module('QuepidApp')
       $scope.caseModel.caseLoaded = function() {
         return $scope.caseModel.selectedCase().caseNo !== -1;
       };
+
+      // POC: Send fake data to a Stimulus-powered modal via CustomEvent
+      $scope.pocResult = null;
+
+      $scope.openPocModal = function() {
+        var theCase = $scope.caseModel.selectedCase();
+        window.dispatchEvent(new CustomEvent('open-poc-modal', {
+          detail: {
+            id: theCase.caseNo,
+            name: theCase.caseName,
+            color: 'blue'
+          }
+        }));
+      };
+
+      // POC: Listen for data coming back from the Stimulus modal
+      window.addEventListener('poc-modal-saved', function(event) {
+        $scope.$apply(function() {
+          $scope.pocResult = 'Got back: ' + event.detail.name + ' (' + event.detail.color + ')';
+          $log.info('POC modal returned:', event.detail);
+        });
+      });
     }
   ]);

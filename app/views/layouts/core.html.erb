@@ -10,6 +10,7 @@
 <%= stylesheet_link_tag 'core', media: 'all' %>
 <%= stylesheet_link_tag 'angular-json-explorer', 'angular-wizard', 'ng-tags-input.min', 'ng-tags-input.bootstrap.min', media: 'all' %>
 <%= csrf_meta_tags %>
+<%= javascript_importmap_tags 'application_core' %>
 
 <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
 </head>
@@ -19,6 +20,8 @@
   <div id="main-content">
     <%= yield %>
   </div>
+
+  <%= render 'shared/poc_modal' %>
 
   <%= render 'layouts/footer_core_app' %>
 

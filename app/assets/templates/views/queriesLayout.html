@@ -90,6 +90,15 @@
               </judgements>
             </li>
             <li>
+              <span class="glyphicon glyphicon-transfer"></span>
+              <a ng-click="openPocModal()">
+                POC Modal
+              </a>
+              <span ng-show="pocResult" class="label label-success" style="margin-left: 5px;">
+                {{ pocResult }}
+              </span>
+            </li>
+            <li>
               <span class="glyphicon glyphicon-camera"></span>
               <a ng-controller="TakeSnapshotCtrl" type="button" ng-click="snapshot.prompt()">
                 Create snapshot
