@@ -4,18 +4,20 @@
 #
 # Table name: cases
 #
-#  id              :integer          not null, primary key
-#  archived        :boolean
-#  case_name       :string(191)
-#  last_try_number :integer
-#  nightly         :boolean
-#  options         :json
-#  public          :boolean
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  book_id         :integer
-#  owner_id        :integer
-#  scorer_id       :integer
+#  id                            :integer          not null, primary key
+#  archived                      :boolean
+#  auto_populate_book_pairs      :boolean          default(FALSE), not null
+#  auto_populate_case_judgements :boolean          default(TRUE), not null
+#  case_name                     :string(191)
+#  last_try_number               :integer
+#  nightly                       :boolean
+#  options                       :json
+#  public                        :boolean
+#  created_at                    :datetime         not null
+#  updated_at                    :datetime         not null
+#  book_id                       :integer
+#  owner_id                      :integer
+#  scorer_id                     :integer
 #
 # Indexes
 #
@@ -78,6 +80,7 @@ class Case < ApplicationRecord
 
   # Callbacks
   after_initialize  :set_scorer
+  before_save       :reset_sync_flags_without_book
   after_create      :add_default_try
 
   after_initialize do |c|
@@ -190,6 +193,13 @@ class Case < ApplicationRecord
   end
 
   private
+
+  def reset_sync_flags_without_book
+    return if book_id.present?
+
+    self.auto_populate_book_pairs = false
+    self.auto_populate_case_judgements = false
+  end
 
   def set_scorer
     return if scorer_id.present?

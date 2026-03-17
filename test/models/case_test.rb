@@ -4,18 +4,20 @@
 #
 # Table name: cases
 #
-#  id              :integer          not null, primary key
-#  archived        :boolean
-#  case_name       :string(191)
-#  last_try_number :integer
-#  nightly         :boolean
-#  options         :json
-#  public          :boolean
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  book_id         :integer
-#  owner_id        :integer
-#  scorer_id       :integer
+#  id                            :integer          not null, primary key
+#  archived                      :boolean
+#  auto_populate_book_pairs      :boolean          default(FALSE), not null
+#  auto_populate_case_judgements :boolean          default(TRUE), not null
+#  case_name                     :string(191)
+#  last_try_number               :integer
+#  nightly                       :boolean
+#  options                       :json
+#  public                        :boolean
+#  created_at                    :datetime         not null
+#  updated_at                    :datetime         not null
+#  book_id                       :integer
+#  owner_id                      :integer
+#  scorer_id                     :integer
 #
 # Indexes
 #
@@ -294,6 +296,31 @@ class CaseTest < ActiveSupport::TestCase
       # instead of a reload
       the_case = Case.with_counts.where(id: case_id).first
       assert_equal 2, the_case.queries_count
+    end
+  end
+
+  describe 'reset_sync_flags_without_book callback' do
+    test 'resets sync flags when book is removed' do
+      books(:book_of_star_wars_judgements)
+      acase = cases(:case_with_book)
+      acase.update!(auto_populate_book_pairs: true, auto_populate_case_judgements: true)
+
+      acase.book = nil
+      acase.save!
+
+      assert_not acase.auto_populate_book_pairs
+      assert_not acase.auto_populate_case_judgements
+    end
+
+    test 'preserves sync flags when book is present' do
+      acase = cases(:case_with_book)
+      acase.update!(auto_populate_book_pairs: true, auto_populate_case_judgements: true)
+
+      acase.case_name = 'Renamed'
+      acase.save!
+
+      assert acase.auto_populate_book_pairs
+      assert acase.auto_populate_case_judgements
     end
   end
 

@@ -13,7 +13,13 @@ class UpdateCaseJob < ApplicationJob
       'queries_created' => 0,
       'ratings_created' => 0,
     }
-    kases_to_sync = specific_case.present? ? [ specific_case ] : book.cases
+    kases_to_sync = if specific_case.present?
+                      # Explicit manual refresh for a specific case — always run
+                      [ specific_case ]
+                    else
+                      # Bulk update from book-level operations — respect the auto-populate flag
+                      book.cases.where(auto_populate_case_judgements: true)
+                    end
 
     kases_to_sync.each do |kase|
       service.sync_ratings_for_case(kase)

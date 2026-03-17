@@ -281,7 +281,7 @@ module Api
       end
 
       describe 'Updating cases' do
-        let(:one) { cases(:one) }
+        let(:the_case) { cases(:one) }
 
         describe 'when case does not exist' do
           test 'returns not found error' do
@@ -292,36 +292,36 @@ module Api
 
         describe 'when changing the case name' do
           test 'updates name successfully using PATCH verb' do
-            patch :update, params: { case_id: one.id, case: { case_name: 'New Name' } }
+            patch :update, params: { case_id: the_case.id, case: { case_name: 'New Name' } }
             assert_response :ok
 
-            one.reload
-            assert_equal 'New Name', one.case_name
+            the_case.reload
+            assert_equal 'New Name', the_case.case_name
           end
 
           test 'updates name successfully using PUT verb' do
-            put :update, params: { case_id: one.id, case: { case_name: 'New Name' } }
+            put :update, params: { case_id: the_case.id, case: { case_name: 'New Name' } }
             assert_response :ok
 
-            one.reload
-            assert_equal 'New Name', one.case_name
+            the_case.reload
+            assert_equal 'New Name', the_case.case_name
           end
         end
 
         describe 'when unarchiving the case' do
           before do
-            one.mark_archived!
+            the_case.mark_archived!
           end
 
           test 'unarchives case successfully using PATCH verb' do
             count_unarchived  = doug.cases.where(archived: false).count
             count_archived    = doug.cases.where(archived: true).count
 
-            post :update, params: { case_id: one.id, case: { archived: false } }
+            post :update, params: { case_id: the_case.id, case: { archived: false } }
             assert_response :ok
 
-            one.reload
-            assert_not one.archived
+            the_case.reload
+            assert_not the_case.archived
 
             assert_equal count_unarchived + 1,  doug.cases.where(archived: false).count
             assert_equal count_archived - 1,    doug.cases.where(archived: true).count
@@ -331,11 +331,11 @@ module Api
             count_unarchived  = doug.cases.where(archived: false).count
             count_archived    = doug.cases.where(archived: true).count
 
-            post :update, params: { case_id: one.id, case: { archived: false } }
+            post :update, params: { case_id: the_case.id, case: { archived: false } }
             assert_response :ok
 
-            one.reload
-            assert_not one.archived
+            the_case.reload
+            assert_not the_case.archived
 
             assert_equal count_unarchived + 1,  doug.cases.where(archived: false).count
             assert_equal count_archived - 1,    doug.cases.where(archived: true).count
@@ -347,9 +347,42 @@ module Api
             expects_any_ga_event_call
 
             perform_enqueued_jobs do
-              patch :update, params: { case_id: one.id, case: { case_name: 'New Name' } }
+              patch :update, params: { case_id: the_case.id, case: { case_name: 'New Name' } }
               assert_response :ok
             end
+          end
+        end
+
+        describe 'when updating sync flags' do
+          let(:book) { books(:book_of_star_wars_judgements) }
+
+          test 'accepts sync flag params with a book' do
+            the_case.update!(book: book)
+
+            put :update, params: {
+              case_id: the_case.id,
+              case:    {
+                book_id:                       book.id,
+                auto_populate_book_pairs:      true,
+                auto_populate_case_judgements: true,
+              },
+            }
+            assert_response :ok
+
+            the_case.reload
+            assert the_case.auto_populate_book_pairs
+            assert the_case.auto_populate_case_judgements
+          end
+
+          test 'returns sync flags in JSON response' do
+            the_case.update!(book: book, auto_populate_book_pairs: true, auto_populate_case_judgements: true)
+
+            get :show, params: { case_id: the_case.id }
+            assert_response :ok
+
+            body = response.parsed_body
+            assert body['auto_populate_book_pairs']
+            assert body['auto_populate_case_judgements']
           end
         end
       end

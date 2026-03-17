@@ -77,6 +77,10 @@ describe('Controller: WizardModalCtrl', function () {
       scope = $rootScope.$new();
       settingsSvc = _settingsSvc_;
       $httpBackend = $injector.get('$httpBackend');
+
+      // Handle the case data fetch for book sync properties (triggered by queriesSvc.changeSettings)
+      $httpBackend.whenGET(/^api\/cases\/\d+$/).respond(200, {book_id: null, auto_populate_book_pairs: false});
+
       WizardModalCtrl = $controller('WizardModalCtrl', {
         $scope: scope
       });

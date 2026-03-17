@@ -1,11 +1,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1>
     <%= image_tag @user.avatar_url(:big), size:'96x96', class:'img-rounded', title: 'Avatar image' unless @user.ai_judge? %>
-    <%= @user.display_name %>    
+    <%= @user.display_name %>
   </h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to 'Edit', edit_admin_user_path(@user), class: "btn btn-sm btn-outline-primary " %>      
+      <%= link_to 'Edit', edit_admin_user_path(@user), class: "btn btn-sm btn-outline-primary " %>
       <%= link_to "Back", admin_users_path, class: "btn btn-sm btn-outline-secondary"  %>
       <%= button_to (@user.locked? ? 'Unlock' : 'Lock'), admin_user_lock_path(@user), method: :patch, class: 'btn btn-outline-warning btn-sm' %>
 
@@ -16,29 +16,29 @@
 <div class="card">
   <div class="card-body">
     <p id="notice"><%= notice %></p>
-    
-  
+
+
     <div class="form-group">
       <label class="col-sm-2 control-label">Email</label>
       <div class="col-sm-10">
         <p class="form-control-static"><%= @user.email %></p>
       </div>
     </div>
-  
+
     <div class="form-group">
       <label class="col-sm-2 control-label">Name</label>
       <div class="col-sm-10">
         <p class="form-control-static"><%= @user.name || 'N/A' %></p>
       </div>
     </div>
-  
+
     <div class="form-group">
       <label class="col-sm-2 control-label">Company</label>
       <div class="col-sm-10">
         <p class="form-control-static"><%= @user.company %></p>
       </div>
     </div>
-    
+
     <div class="form-group">
       <label class="col-sm-2 control-label">Signed Up</label>
       <div class="col-sm-10">
@@ -56,35 +56,35 @@
         <p class="form-control-static"><%= @user.created_by_invite? %></p>
       </div>
     </div>
-  
+
     <div class="form-group">
       <label class="col-sm-2 control-label">Email Marketing</label>
       <div class="col-sm-10">
         <p class="form-control-static"><%= @user.email_marketing %></p>
       </div>
     </div>
-  
+
     <div class="form-group">
       <label class="col-sm-2 control-label">Number of Logins</label>
       <div class="col-sm-10">
         <p class="form-control-static"><%= @user.num_logins %></p>
       </div>
     </div>
-  
+
     <div class="form-group">
       <label class="col-sm-2 control-label">Is Administrator?</label>
       <div class="col-sm-10">
         <p class="form-control-static"><%= @user.administrator %></p>
       </div>
     </div>
-  
+
     <div class="form-group">
       <label class="col-sm-2 control-label">Locked?</label>
       <div class="col-sm-10">
         <p class="form-control-static"><%= @user.locked? %></p>
       </div>
     </div>
-    
+
     <div class="form-group">
       <label class="col-sm-2 control-label">Encrypted Password</label>
       <div class="col-sm-10">
@@ -106,7 +106,7 @@
     <% if @user.pending_invite? %>
       <div class="alert alert-info" role="alert">This user hasn't accepted the invite to join Quepid, therefore no usage data is available.</div>
     <% else %>
-    
+
 
       <h3>Cases viewed</h3>
       <div
@@ -117,7 +117,7 @@
         style="margin-bottom: 40px;"
       >
       </div>
-    
+
       <h3>Cases scored</h3>
       <div
         id="cases-scored"
@@ -127,7 +127,7 @@
         style="margin-bottom: 40px;"
       >
       </div>
-      
+
       <h3>Cases created</h3>
       <div
         id="cases-created"
@@ -137,7 +137,7 @@
         style="margin-bottom: 40px;"
       >
       </div>
-      
+
       <h3>Queries created</h3>
       <div
         id="queries-created"
@@ -147,7 +147,7 @@
         style="margin-bottom: 40px;"
       >
       </div>
-      
+
       <h3>Books created</h3>
       <div
         id="books-created"
@@ -157,16 +157,16 @@
         style="margin-bottom: 40px;"
       >
       </div>
-      
-      <h3>Judgments created</h3>
+
+      <h3>Judgements created</h3>
       <div
-        id="judgments-created"
+        id="judgements-created"
         data-controller="user-activity"
-        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'judgments-created'} %>"
-        data-user-activity-label-value="judgments created"
+        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'judgements-created'} %>"
+        data-user-activity-label-value="judgements created"
         style="margin-bottom: 40px;"
       >
-      </div>      
+      </div>
     </div>
   <% end %>
 </div>
