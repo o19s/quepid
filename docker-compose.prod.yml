@@ -54,9 +54,6 @@ services:
     links:
       - mysql
       - ollama
-    depends_on:
-      - mysql
-      - ollama
   nginx:
     image: nginx:1.29.3-alpine-slim
     container_name: quepid_nginx
