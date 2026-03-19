@@ -149,7 +149,10 @@ angular.module('QuepidApp')
         $scope.settings.searchEngine             = searchEndpointToUse.searchEngine;
         $scope.settings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
         $scope.settings.apiMethod                = searchEndpointToUse.apiMethod;
-        $scope.settings.customHeaders            = searchEndpointToUse.customHeaders;
+        // Convert customHeaders to string if it's an object (from JSON serialization)
+        $scope.settings.customHeaders            = typeof searchEndpointToUse.customHeaders === 'object' && searchEndpointToUse.customHeaders !== null ?
+          JSON.stringify(searchEndpointToUse.customHeaders, null, 2) :
+          searchEndpointToUse.customHeaders;
         
         // The remaining settings remain the same from before, which means you can get a weird situation
         // where you then need to fix the fields or the query params.

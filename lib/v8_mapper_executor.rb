@@ -78,7 +78,18 @@ class V8MapperExecutor
 
     response_body = response_body.join("\n") if response_body.is_a?(Array)
 
-    @context.eval("var responseBody = #{response_body.to_json};")
+    # If responseBody is a JSON string, parse it first before converting to JavaScript
+    if response_body.is_a?(String)
+      begin
+        parsed_body = JSON.parse(response_body)
+        @context.eval("var responseBody = #{parsed_body.to_json};")
+      rescue JSON::ParserError
+        # If it's not valid JSON, treat it as a plain string
+        @context.eval("var responseBody = #{response_body.to_json};")
+      end
+    else
+      @context.eval("var responseBody = #{response_body.to_json};")
+    end
 
     @context.eval <<-JS
       try {
@@ -106,7 +117,14 @@ class V8MapperExecutor
 
     response_body = response_body.join("\n") if response_body.is_a?(Array)
 
-    @context.eval("var responseBody = #{response_body.to_json};")
+    # If responseBody is a JSON string, parse it first before converting to JavaScript
+    begin
+      parsed_body = JSON.parse(response_body)
+      @context.eval("var responseBody = #{parsed_body.to_json};")
+    rescue JSON::ParserError
+      # If it's not valid JSON, treat it as a plain string
+      @context.eval("var responseBody = #{response_body.to_json};")
+    end
 
     @context.eval <<-JS
       try {

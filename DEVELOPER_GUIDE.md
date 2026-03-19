@@ -380,9 +380,43 @@ you will want individual files. So replace `//= require sprockets` with `//= req
 
 `docker-compose.override.yml.example` can be copied to `docker-compose.override.yml` and use it to override environment variables or work with a local copy of the splainer-search JS library during development defined in `docker-compose.yml`. Example is included. Just update the path to `splainer-search` with your local checkout! https://docs.docker.com/compose/extends/
 
+#### Working with Local Splainer-Search
+
+When developing Quepid alongside changes to `splainer-search`, you can mount your local splainer-search files into the Docker container. Here's how:
+
+1. **Set up the override file**: Create or edit `docker-compose.override.yml` to mount your local splainer-search files:
+
+2. **Restart Docker containers**: After creating or modifying `docker-compose.override.yml`:
+
+   ```bash
+   bin/docker s
+   ```
+
+3. **Rebuild after making changes**: This is the critical step! The esbuild watch process monitors changes to `app/javascript/angular_app.js` but does NOT automatically watch files inside `node_modules/`. Your mounted splainer-search files ARE being used during builds, but changes won't be detected automatically.
+
+   **After making ANY changes to your local splainer-search files, run:**
+   
+```bash
+   bin/docker r yarn build:angular-vendor
+   ```
+
+   Then refresh your browser to see the changes.
+
+4. **Why is this rebuild needed?**
+   - Splainer-search gets bundled into `app/assets/builds/angular_app.js` by esbuild
+   - The bundling happens at build time, not runtime
+   - Changes to files in `node_modules/` aren't watched by default
+   - Your local files ARE being used, but you need to trigger a rebuild to bundle them
+
+
 ## Convenience Scripts
 
 This application has two ways of running scripts: `rake` & `thor`.
+
+Additionally, there are some Docker-specific convenience scripts in the `bin/` directory:
+
+- `bin/docker` - Wrapper for common Docker Compose operations (see `bin/docker` for usage)
+- `bin/setup_docker` - Initial Docker environment setup
 
 Rake is great for simple tasks that depend on the application environment, and default tasks that come by default with Rails.
 

@@ -50,7 +50,7 @@ module Admin
             .where(created_at: (params[:start])..(params[:end]))
             .group(:created_at)
             .count
-        when 'judgments-created'
+        when 'judgements-created'
           @data = current_user.judgements
             .where(created_at: (params[:start])..(params[:end]))
             .group(:created_at)

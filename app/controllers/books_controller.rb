@@ -121,12 +121,18 @@ class BooksController < ApplicationController
         @book.scale_with_labels = scorer.scale_with_labels
         # Set scorer_id to the one that would appear in dropdown for this scale combination
         @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
+        @book.scoring_guidelines = @book.default_scoring_guidelines
       end
     end
 
     @ai_judges = []
 
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
+
+    if @origin_case
+      @book.name = "Book for #{@origin_case.case_name}"
+      @book.team_ids = @origin_case.team_ids & current_user.team_ids
+    end
 
     respond_with(@book)
   end
@@ -154,6 +160,12 @@ class BooksController < ApplicationController
       if params[:book][:link_the_case]
         @origin_case = current_user.cases_involved_with.where(id: params[:book][:origin_case_id]).first
         @origin_case.book = @book
+        @origin_case.auto_populate_book_pairs = deserialize_bool_param(
+          params[:book][:auto_populate_book_pairs]
+        )
+        @origin_case.auto_populate_case_judgements = deserialize_bool_param(
+          params[:book][:auto_populate_case_judgements]
+        )
         @origin_case.save
       end
 
@@ -189,7 +201,9 @@ class BooksController < ApplicationController
 
     @book.update(book_params.except(
                    :team_ids, :ai_judges, :link_the_case, :origin_case_id, :scorer_id,
-                   :delete_export_file, :delete_import_file
+                   :delete_export_file, :delete_import_file,
+                   :auto_populate_book_pairs,
+                   :auto_populate_case_judgements
                  ))
 
     @book.export_file.purge if '1' == book_params[:delete_export_file]
@@ -401,6 +415,8 @@ class BooksController < ApplicationController
   def book_params
     params_to_use = params.expect(book: [ :scorer_id, :name,
                                           :support_implicit_judgements, :link_the_case, :origin_case_id,
+                                          :auto_populate_book_pairs,
+                                          :auto_populate_case_judgements,
                                           :delete_export_file, :delete_import_file,
                                           :show_rank, :scoring_guidelines,
                                           { team_ids: [], ai_judge_ids: [] } ])
@@ -412,6 +428,8 @@ class BooksController < ApplicationController
     params_to_use[:ai_judge_ids] = params[:ai_judge_ids] if params[:ai_judge_ids]
     params_to_use[:ai_judge_ids]&.compact_blank!
 
-    params_to_use.except(:link_the_case, :origin_case_id)
+    params_to_use.except(:link_the_case, :origin_case_id,
+                         :auto_populate_book_pairs,
+                         :auto_populate_case_judgements)
   end
 end

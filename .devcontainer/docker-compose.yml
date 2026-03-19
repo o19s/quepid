@@ -1,0 +1,34 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile.dev
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      - DOCKER_CONTAINER=true
+      - LAUNCHY_DRY_RUN=true
+      - BROWSER=/dev/null
+      - PUPPETEER_SKIP_DOWNLOAD=true
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+    command: sleep infinity
+    volumes:
+      - ..:/srv/app:cached
+    ports:
+      - 3000:3000
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.4.3
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
