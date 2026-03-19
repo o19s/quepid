@@ -576,16 +576,16 @@ angular.module('QuepidApp')
         // (4) possibly modified curator vars
         // probably could be a bit more restful
         // Note that we map between camelCase in JS and snake_case in API here.
-        var currCaseNo = caseTryNavSvc.getCaseNo();
-        var currTryNo = caseTryNavSvc.getTryNo();
+        const currCaseNo = caseTryNavSvc.getCaseNo();
+        const currTryNo = caseTryNavSvc.getTryNo();
 
         // because this is only called at the end of the case creation wizard
         // we don't have a sentData.name = settingsToSave.selectedTry.name
         // for completeness we should.   If we enable more edit of existing try
         // tries are odd, cause we pretty much only create new ones!
 
-        var payload = {};
-        var payloadTry = {};
+        const payload = {};
+        const payloadTry = {};
         payload.try = payloadTry;
 
         payload.parent_try_number = settingsToSave.selectedTry.tryNo;
@@ -605,7 +605,7 @@ angular.module('QuepidApp')
         }
         // Or we are creating a new one.
         else {
-          var payloadSearchEndpoint = {};
+          const payloadSearchEndpoint = {};
           payloadSearchEndpoint.search_engine = settingsToSave.searchEngine;
           payloadSearchEndpoint.endpoint_url = settingsToSave.searchUrl;
           payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
@@ -616,11 +616,11 @@ angular.module('QuepidApp')
           payload.search_endpoint = payloadSearchEndpoint;
         }
 
-        return $http.put('api/cases/' + currCaseNo + '/tries/' + currTryNo, payload)
+        return $http.put(`api/cases/${currCaseNo}/tries/${currTryNo}`, payload)
           .then(function() {
 
             // Broadcast that settings for case have been updated
-            var args = {
+            const args = {
               caseNo: currCaseNo,
               lastTry: settingsToSave.selectedTry
             };
