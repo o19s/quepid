@@ -90,7 +90,6 @@ class LlmService
     end
   end
 
-  # rubocop:disable Metrics/MethodLength
   def get_openai_response user_prompt, system_prompt
     body = {
       temperature:     0.7,
@@ -105,19 +104,17 @@ class LlmService
     response = post_request(body)
     parse_response(response) { |body| body.dig('choices', 0, 'message', 'content') }
   end
-  # rubocop:enable Metrics/MethodLength
 
-  # rubocop:disable Metrics/MethodLength
   def get_anthropic_response user_prompt, system_prompt
     # Anthropic Messages API format: system is a top-level param, not a message
     user_content = user_prompt.is_a?(Array) ? user_prompt.map { |p| anthropic_content_block(p) } : user_prompt
 
     body = {
-      model:      @options[:llm_model],
-      max_tokens: 1048,
+      model:       @options[:llm_model],
+      max_tokens:  1048,
       temperature: 0.7,
-      system:     system_prompt,
-      messages:   [
+      system:      system_prompt,
+      messages:    [
         { role: 'user', content: user_content }
       ],
     }
@@ -131,7 +128,6 @@ class LlmService
       strip_markdown_code_block(body.dig('content', 0, 'text'))
     end
   end
-  # rubocop:enable Metrics/MethodLength
 
   def post_request body
     @conn.post(@completions_path) do |req|
@@ -143,9 +139,7 @@ class LlmService
   end
 
   def parse_response response
-    unless response.success?
-      raise "LLM API Error: #{response.status} - #{response.body}"
-    end
+    raise "LLM API Error: #{response.status} - #{response.body}" unless response.success?
 
     response_body = response.body
     response_body = JSON.parse(response_body) if response_body.is_a?(String)
@@ -174,9 +168,7 @@ class LlmService
     return text if text.nil?
 
     text = text.strip
-    if text.start_with?('```')
-      text = text.sub(/\A```\w*\n?/, '').sub(/\n?```\z/, '')
-    end
+    text = text.sub(/\A```\w*\n?/, '').sub(/\n?```\z/, '') if text.start_with?('```')
     text
   end
 
@@ -200,11 +192,7 @@ class LlmService
     when 'azure_ai_foundry'
       api_version ||= '2025-01-01-preview'
       "models/chat/completions?api-version=#{api_version}"
-    when 'azure_ai_foundry_serverless'
-      'v1/chat/completions'
-    when 'azure_ai_foundry_anthropic'
-      'v1/messages'
-    when 'anthropic'
+    when 'azure_ai_foundry_anthropic', 'anthropic'
       'v1/messages'
     else
       'v1/chat/completions'

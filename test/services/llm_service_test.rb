@@ -147,8 +147,8 @@ class LlmServiceTest < ActiveSupport::TestCase
       stub_request(:post, azure_url)
         .with(headers: { 'api-key' => 'my-azure-key' })
         .to_return(
-          status: 200,
-          body: { choices: [ { message: { content: '{"judgment": 2, "explanation": "Good"}' } } ] }.to_json,
+          status:  200,
+          body:    { choices: [ { message: { content: '{"judgment": 2, "explanation": "Good"}' } } ] }.to_json,
           headers: { 'Content-Type' => 'application/json' }
         )
 
@@ -170,8 +170,8 @@ class LlmServiceTest < ActiveSupport::TestCase
       stub_request(:post, foundry_url)
         .with(headers: { 'api-key' => 'my-foundry-key' })
         .to_return(
-          status: 200,
-          body: { choices: [ { message: { content: '{"judgment": 1, "explanation": "OK"}' } } ] }.to_json,
+          status:  200,
+          body:    { choices: [ { message: { content: '{"judgment": 1, "explanation": "OK"}' } } ] }.to_json,
           headers: { 'Content-Type' => 'application/json' }
         )
 
@@ -192,8 +192,8 @@ class LlmServiceTest < ActiveSupport::TestCase
       stub_request(:post, serverless_url)
         .with(headers: { 'api-key' => 'my-serverless-key' })
         .to_return(
-          status: 200,
-          body: { choices: [ { message: { content: '{"judgment": 2, "explanation": "Decent"}' } } ] }.to_json,
+          status:  200,
+          body:    { choices: [ { message: { content: '{"judgment": 2, "explanation": "Decent"}' } } ] }.to_json,
           headers: { 'Content-Type' => 'application/json' }
         )
 
@@ -213,8 +213,8 @@ class LlmServiceTest < ActiveSupport::TestCase
       azure_url = 'https://myresource.openai.azure.com/openai/v1/chat/completions'
       stub_request(:post, azure_url)
         .to_return(
-          status: 200,
-          body: { choices: [ { message: { content: '{"judgment": 3, "explanation": "Great"}' } } ] }.to_json,
+          status:  200,
+          body:    { choices: [ { message: { content: '{"judgment": 3, "explanation": "Great"}' } } ] }.to_json,
           headers: { 'Content-Type' => 'application/json' }
         )
 
@@ -244,8 +244,8 @@ class LlmServiceTest < ActiveSupport::TestCase
           }
         )
         .to_return(
-          status: 200,
-          body: anthropic_response.to_json,
+          status:  200,
+          body:    anthropic_response.to_json,
           headers: { 'Content-Type' => 'application/json' }
         )
 
@@ -278,8 +278,8 @@ class LlmServiceTest < ActiveSupport::TestCase
           }
         )
         .to_return(
-          status: 200,
-          body: anthropic_response.to_json,
+          status:  200,
+          body:    anthropic_response.to_json,
           headers: { 'Content-Type' => 'application/json' }
         )
 
