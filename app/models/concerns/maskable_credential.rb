@@ -9,28 +9,24 @@ module MaskableCredential
     validate :validate_basic_auth_credential_format
   end
 
-  # Returns the credential with password masked when SHOW_BASIC_AUTH_CREDENTIALS is false.
+  # Returns the credential with password masked.
   # Used in HTML views and edit forms.
   def masked_basic_auth_credential
     return basic_auth_credential if basic_auth_credential.blank?
-    return basic_auth_credential if Rails.application.config.show_basic_auth_credentials
 
     username, _password = basic_auth_credential.split(':', 2)
     "#{username}:#{MASKED_PASSWORD}"
   end
 
-  # Returns nil when credentials are hidden, so the browser never receives the credential.
+  # Returns nil when proxy is required to prevent credentials from being sent to the browser.
+  # Otherwise returns the full credential for direct browser connections.
   # Used in JSON API responses.
   def api_basic_auth_credential
-    return basic_auth_credential if basic_auth_credential.blank?
-    return nil unless Rails.application.config.show_basic_auth_credentials
+    return nil if Rails.application.config.require_proxy_with_basic_auth_credentials && basic_auth_credential.present?
 
     basic_auth_credential
   end
 
-  def basic_auth_credential_masked?
-    !Rails.application.config.show_basic_auth_credentials && basic_auth_credential.present?
-  end
 
   private
 

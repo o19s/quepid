@@ -129,22 +129,9 @@ class SearchEndpointTest < ActiveSupport::TestCase
   end
 
   describe 'masked_basic_auth_credential' do
-    it 'returns full credential when show_basic_auth_credentials is true' do
-      original = Rails.application.config.show_basic_auth_credentials
-      Rails.application.config.show_basic_auth_credentials = true
-      endpoint = SearchEndpoint.new(basic_auth_credential: 'bob:password')
-      assert_equal 'bob:password', endpoint.masked_basic_auth_credential
-    ensure
-      Rails.application.config.show_basic_auth_credentials = original
-    end
-
-    it 'masks password when show_basic_auth_credentials is false' do
-      original = Rails.application.config.show_basic_auth_credentials
-      Rails.application.config.show_basic_auth_credentials = false
+    it 'always masks password' do
       endpoint = SearchEndpoint.new(basic_auth_credential: 'bob:password')
       assert_equal 'bob:******', endpoint.masked_basic_auth_credential
-    ensure
-      Rails.application.config.show_basic_auth_credentials = original
     end
 
     it 'returns nil for blank credential' do
@@ -154,29 +141,29 @@ class SearchEndpointTest < ActiveSupport::TestCase
   end
 
   describe 'api_basic_auth_credential' do
-    it 'returns full credential when show_basic_auth_credentials is true' do
-      original = Rails.application.config.show_basic_auth_credentials
-      Rails.application.config.show_basic_auth_credentials = true
-      endpoint = SearchEndpoint.new(basic_auth_credential: 'bob:password')
-      assert_equal 'bob:password', endpoint.api_basic_auth_credential
-    ensure
-      Rails.application.config.show_basic_auth_credentials = original
-    end
-
-    it 'returns nil when show_basic_auth_credentials is false' do
-      original = Rails.application.config.show_basic_auth_credentials
-      Rails.application.config.show_basic_auth_credentials = false
+    it 'always returns nil when require_proxy_with_basic_auth_credentials is true' do
+      original = Rails.application.config.require_proxy_with_basic_auth_credentials
+      Rails.application.config.require_proxy_with_basic_auth_credentials = true
       endpoint = SearchEndpoint.new(basic_auth_credential: 'bob:password')
       assert_nil endpoint.api_basic_auth_credential
     ensure
-      Rails.application.config.show_basic_auth_credentials = original
+      Rails.application.config.require_proxy_with_basic_auth_credentials = original
+    end
+
+    it 'returns none nil for blank credential' do
+      original = Rails.application.config.require_proxy_with_basic_auth_credentials
+      Rails.application.config.require_proxy_with_basic_auth_credentials = false
+      endpoint = SearchEndpoint.new(basic_auth_credential: 'bob:password')
+      assert_equal 'bob:password', endpoint.api_basic_auth_credential
+    ensure
+      Rails.application.config.require_proxy_with_basic_auth_credentials = original
     end
   end
 
-  describe 'proxy required for hidden credentials' do
-    it 'requires proxy_requests when credentials are hidden' do
-      original = Rails.application.config.show_basic_auth_credentials
-      Rails.application.config.show_basic_auth_credentials = false
+  describe 'proxy required with basic auth credentials' do
+    it 'requires proxy_requests when require_proxy_with_basic_auth_credentials is true' do
+      original = Rails.application.config.require_proxy_with_basic_auth_credentials
+      Rails.application.config.require_proxy_with_basic_auth_credentials = true
       endpoint = SearchEndpoint.new(
         name:                  'Test',
         endpoint_url:          'http://test.example.com',
@@ -186,14 +173,14 @@ class SearchEndpointTest < ActiveSupport::TestCase
         proxy_requests:        false
       )
       assert_not endpoint.valid?
-      assert_includes endpoint.errors[:proxy_requests], 'must be enabled when basic auth credentials are hidden'
+      assert_includes endpoint.errors[:proxy_requests], 'must be enabled when basic auth credentials are present'
     ensure
-      Rails.application.config.show_basic_auth_credentials = original
+      Rails.application.config.require_proxy_with_basic_auth_credentials = original
     end
 
-    it 'allows non-proxy when credentials are shown' do
-      original = Rails.application.config.show_basic_auth_credentials
-      Rails.application.config.show_basic_auth_credentials = true
+    it 'allows non-proxy when require_proxy_with_basic_auth_credentials is false' do
+      original = Rails.application.config.require_proxy_with_basic_auth_credentials
+      Rails.application.config.require_proxy_with_basic_auth_credentials = false
       endpoint = SearchEndpoint.new(
         name:                  'Test',
         endpoint_url:          'http://test.example.com',
@@ -204,7 +191,7 @@ class SearchEndpointTest < ActiveSupport::TestCase
       )
       assert_predicate endpoint, :valid?
     ensure
-      Rails.application.config.show_basic_auth_credentials = original
+      Rails.application.config.require_proxy_with_basic_auth_credentials = original
     end
   end
 

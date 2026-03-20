@@ -94,9 +94,9 @@ class SearchEndpoint < ApplicationRecord
   end
 
   def validate_proxy_required_for_hidden_credentials
-    return if Rails.application.config.show_basic_auth_credentials
+    return unless Rails.application.config.require_proxy_with_basic_auth_credentials
     return if basic_auth_credential.blank?
 
-    errors.add(:proxy_requests, 'must be enabled when basic auth credentials are hidden') unless proxy_requests?
+    errors.add(:proxy_requests, 'must be enabled when basic auth credentials are present') unless proxy_requests?
   end
 end
