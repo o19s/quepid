@@ -1,0 +1,59 @@
+<% if @case.present? %>
+<div id="case-header" class="row">
+  <div class="col-sm-12">
+    <div style="display: inline-flex; align-items: flex-start;">
+      <!-- Case score will remain Angular-rendered for now (qscore-case component) -->
+    </div>
+
+    <div style="display:inline-block;vertical-align:top">
+      <h1 class="">
+        <small class="text-muted">
+          Current case
+          <% if @case.nightly? %>
+            <i class="bi bi-repeat" title="Queries are run on a nightly basis."></i>
+          <% end %>
+        </small>
+        <% if @case.public? %>
+          <span>PUBLIC</span>
+        <% end %>
+        <% if @case.archived? %>
+          <span>ARCHIVED</span>
+        <% end %>
+
+        <br>
+        <span data-controller="inline-edit"
+              data-inline-edit-url-value="<%= api_case_path(case_id: @case.id) %>"
+              data-inline-edit-field-value="case_name"
+              data-inline-edit-wrap-value="case">
+          <span data-inline-edit-target="display"
+                data-action="dblclick->inline-edit#startEdit">
+            <%= @case.case_name %>
+          </span>
+          <span data-inline-edit-target="form" style="display:none">
+            <form class="form-inline" data-action="submit->inline-edit#save">
+              <input style="background:#FFFF99" type="text"
+                     data-inline-edit-target="input"
+                     value="<%= @case.case_name %>" />
+              <input type="submit" class="btn btn-sm btn-primary" value="Rename" />
+              <button type="button" class="btn btn-sm btn-default"
+                      data-action="click->inline-edit#cancel">Cancel</button>
+            </form>
+          </span>
+        </span>
+
+        <small class="text-muted">
+          &mdash;
+          <% if @try.present? %>
+            <%= @try.name.include?("Try #{@try.try_number}") ? @try.name : "#{@try.name} - Try #{@try.try_number}" %>
+          <% end %>
+        </small>
+
+        <small class="text-muted">
+          &mdash;
+          <%= @case.scorer&.name %>
+        </small>
+      </h1>
+    </div>
+  </div>
+</div>
+<% end %>

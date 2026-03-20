@@ -2,78 +2,7 @@
 <div id="main">
   <div class="pane_container" data-controller="resizable-pane">
     <div class="pane_main results-control" data-resizable-pane-target="main">
-      <div id="case-header" class="row">
-        <div class="col-sm-12">
-          <div style="display: inline-flex; align-items: flex-start;">
-            <!-- Current case score -->
-            <qscore-case
-              annotations="annotations"
-              class="case-score"
-              max-score="maxScore || 1";
-              scorable="queries.avgQuery"
-              score-label="getScorer().name"
-              scores="scores"
-            >
-            </qscore-case>
-            
-            <!-- Snapshot case scores -->
-            <qscore-case
-              ng-if="queries.avgQuery.diffs"
-              ng-repeat="searcher in queries.avgQuery.diffs.getSearchers() track by $index"
-              class="case-score diff-score"
-              max-score="maxScore || 1";
-              scorable="searcher"
-              score-label="searcher.name()"
-              scores="[]"
-              annotations="[]"
-            >
-            </qscore-case>
-          </div>
-
-          <div ng-controller="CaseCtrl" style="display:inline-block;vertical-align:top">
-            <h1 class="">
-              <small class="text-muted">Current case <i class="bi bi-repeat" ng-show="caseModel.selectedCase().nightly" uib-tooltip="Queries are run on a nightly basis." tooltip-popup-delay="1000" tooltip-placement="right"></i></small>
-              <span ng-show="caseModel.selectedCase().public">PUBLIC</span>
-              <span ng-show="caseModel.selectedCase().archived">ARCHIVED</span>
-              
-              <br>
-              <span ng-dblclick="caseNameEditModeToggle()">
-                <span ng-hide="caseName.startRename">
-                  {{ caseModel.selectedCase().caseName }}
-                </span>
-                <span ng-show="caseName.startRename">
-                  <form class="form-inline" ng-submit="caseName.rename()">
-                      <input style="background:#FFFF99" type="text" ng-model="caseName.name" />
-                      <input type="submit" class="btn btn-sm btn-primary" value="Rename" />
-                      <button class="btn btn-sm btn-default" ng-click="caseName.cancel()">Cancel</button>
-                  </form>
-                </span>
-              </span>
-
-              <small class="text-muted" ng-controller="CurrSettingsCtrl">
-                &mdash;
-                <span ng-dblclick="tryNameEditModeToggle()">
-                  <span ng-hide="tryName.startRename">
-                    {{ currentTry.selectedTry().formattedName() }}
-                  </span>
-                </span>
-                <span ng-show="tryName.startRename">
-                  <form class="form-inline" ng-submit="tryName.rename()">
-                      <input style="background:#FFFF99" type="text" ng-model="tryName.name" />
-                      <input type="submit" class="btn btn-sm btn-primary" value="Rename" />
-                      <button class="btn btn-sm btn-default" ng-click="tryName.cancel()">Cancel</button>
-                  </form>
-                </span>
-              </small>
-
-              <small class="text-muted">
-                &mdash;
-                {{ getScorer().name }}
-              </small>
-            </h1>
-          </div>
-        </div>
-      </div>
+      <!-- Case header is server-rendered in core/_case_header.html.erb, above ng-view -->
 
       <div id="case-actions" class="row" ng-controller="CaseCtrl">
         <div class="col-sm-12" ng-if="caseModel.caseLoaded()">
