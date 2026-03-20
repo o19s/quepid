@@ -38,6 +38,13 @@ class MapperWizardState < ApplicationRecord
   # Concerns
   include MaskableCredential
 
+  # Override api_basic_auth_credential to always return nil
+  # The mapper wizard always proxies requests server-side, so credentials
+  # should never be sent to the browser
+  def api_basic_auth_credential
+    nil
+  end
+
   validates :search_url, length: { maximum: 2000 }
   validates :custom_headers, json_format: { normalize_values: true }, allow_blank: true
   validates :http_method, inclusion: { in: %w[GET POST], allow_blank: true }

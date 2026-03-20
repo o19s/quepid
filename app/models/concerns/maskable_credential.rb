@@ -27,7 +27,6 @@ module MaskableCredential
     basic_auth_credential
   end
 
-
   private
 
   def validate_basic_auth_credential_format

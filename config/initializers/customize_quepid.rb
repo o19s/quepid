@@ -114,9 +114,9 @@ Rails.application.config.active_record.encryption.deterministic_key = ENV.fetch(
 Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT', 'BzPDVAl1jAUquD4p7rM9J40wAwf7CCFh')
 Rails.application.config.active_record.encryption.primary_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY', 'bnYX3NlvUJxHWXwNYBgP33yi8BKlN7Ml')
 
-
 Rails.application.config.after_initialize do
   next if defined?(Rails::Console)
+
   # Run only on server start
 
   # Check for search endpoints that need proxy enabled
@@ -124,15 +124,15 @@ Rails.application.config.after_initialize do
     begin
       endpoints = SearchEndpoint.where.not(basic_auth_credential: nil).where(proxy_requests: false)
       if endpoints.any?
-        Rails.logger.warn "=" * 80
-        Rails.logger.warn "WARNING: REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS is enabled"
-        Rails.logger.warn "The following search endpoints have basic auth credentials but proxy_requests disabled:"
+        Rails.logger.warn '=' * 80
+        Rails.logger.warn 'WARNING: REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS is enabled'
+        Rails.logger.warn 'The following search endpoints have basic auth credentials but proxy_requests disabled:'
         endpoints.each do |endpoint|
           Rails.logger.warn "  - #{endpoint.name} (ID: #{endpoint.id})"
         end
-        Rails.logger.warn "These endpoints will fail validation when edited."
-        Rails.logger.warn "Enable proxy_requests for these endpoints or set REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS=false"
-        Rails.logger.warn "=" * 80
+        Rails.logger.warn 'These endpoints will fail validation when edited.'
+        Rails.logger.warn 'Enable proxy_requests for these endpoints or set REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS=false'
+        Rails.logger.warn '=' * 80
       end
     rescue ActiveRecord::StatementInvalid, ActiveRecord::NoDatabaseError
       # Database might not be set up yet, skip check

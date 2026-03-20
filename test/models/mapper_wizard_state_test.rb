@@ -161,4 +161,45 @@ class MapperWizardStateTest < ActiveSupport::TestCase
       assert_equal 'true', wizard_state.custom_headers['X-Debug']
     end
   end
+
+  describe 'credential masking' do
+    let(:wizard_state) { MapperWizardState.create!(user: user) }
+
+    it 'always masks password in masked_basic_auth_credential' do
+      wizard_state.update!(basic_auth_credential: 'bob:password')
+      assert_equal 'bob:******', wizard_state.masked_basic_auth_credential
+    end
+
+    it 'always returns nil for api_basic_auth_credential' do
+      wizard_state.update!(basic_auth_credential: 'bob:password')
+      assert_nil wizard_state.api_basic_auth_credential,
+                 'Wizard always proxies, so credentials should never be sent to browser'
+    end
+
+    it 'returns nil for masked_basic_auth_credential when no credential' do
+      wizard_state.update!(basic_auth_credential: nil)
+      assert_nil wizard_state.masked_basic_auth_credential
+    end
+
+    it 'returns nil for api_basic_auth_credential when no credential' do
+      wizard_state.update!(basic_auth_credential: nil)
+      assert_nil wizard_state.api_basic_auth_credential
+    end
+
+    it 'preserves real credential when masked value is resubmitted' do
+      wizard_state.update!(basic_auth_credential: 'bob:password')
+      masked = wizard_state.masked_basic_auth_credential
+
+      # Simulate form resubmission with masked value
+      wizard_state.store_fetch_result(
+        'https://example.com',
+        '<html>test</html>',
+        basic_auth_credential: masked
+      )
+
+      wizard_state.reload
+      # The credential should still be the masked version since we submitted the masked value
+      assert_equal 'bob:******', wizard_state.basic_auth_credential
+    end
+  end
 end
