@@ -1,7 +1,5 @@
 # UX Feedback & Discussion Notes
 
-> User observations collected during testing of the `deangularjs-experimental` branch. Some items are addressed by the modern stack (e.g., guided tour work tracked in the parity archive). Many are UX design issues independent of the Angular→Stimulus migration. See [archives/deangularjs_experimental_functionality_gaps_complete.md](archives/deangularjs_experimental_functionality_gaps_complete.md).
-
 ---
 
 - Solr demo server for Quepid appears to be down, OpenSearch works.

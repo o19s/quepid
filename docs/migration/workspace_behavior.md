@@ -1,10 +1,8 @@
-# Workspace Behavior Reference (Legacy Angular)
+# Workspace behavior reference (Angular core workspace)
 
-> **Historical reference:** This document describes the behavior of the **AngularJS** workspace as it existed on `main`. The modern stack has replaced all Angular code with ViewComponents + Stimulus + Turbo. The user flows, keyboard shortcuts, and error handling patterns described below were used as migration requirements and are preserved or improved in the modern stack.
+> **Scope:** On **`main`**, the **core query-tuning workspace** (`/case/:id` and `/case/:id/try/:try_number`, route name `case_core`) is still implemented with **AngularJS** (`app/views/layouts/core.html.erb`, `app/views/core/index.html.erb`, `app/assets/javascripts/routes.js`, `MainCtrl`, etc.). Sections 1–4 document that implementation. Other surfaces (e.g. books, home) may use Stimulus, Turbo, and Rails views independently. **Replacement plan:** [angularjs_elimination_plan.md](../../angularjs_elimination_plan.md).
 
-> **Current status:** All flows described below have been migrated to the modern stack. See [workspace_state_design.md](workspace_state_design.md) for the current architecture and [workspace_api_usage.md](workspace_api_usage.md) for API usage patterns.
-
-This document describes the behavior of the core query-tuning workspace at `/case/:caseNo/try/:tryNo` (and `/case/:caseNo`) as implemented in AngularJS.
+This document describes the behavior of that workspace. URLs are commonly written as `/case/:caseNo/try/:tryNo`; Rails uses `:id` and `:try_number` for the same segments.
 
 ---
 
@@ -12,8 +10,8 @@ This document describes the behavior of the core query-tuning workspace at `/cas
 
 ### 1.1 Load case
 
-- **Entry:** User navigates to `/case/:caseNo` or `/case/:caseNo/try/:tryNo` (e.g. from home, case dropdown, or clone/export flows).
-- **Route:** `routes.js` maps to `queriesLayout.html` and `MainCtrl`.
+- **Entry:** User navigates to `/case/:id` or `/case/:id/try/:try_number` (e.g. from home, case dropdown, or clone/export flows).
+- **Rails:** `config/routes.rb` → `core#index` (`case_core`). **Angular:** `routes.js` maps the client route to `queriesLayout.html` and `MainCtrl`.
 - **Flow:**
   1. `MainCtrl` reads `caseNo` and `tryNo` from `$routeParams`; if `tryNo` is missing, it is set from the case’s `lastTry` after the case is loaded.
   2. `queriesSvc.reset()` if the case number changed from the previous view.
@@ -54,7 +52,7 @@ This document describes the behavior of the core query-tuning workspace at `/cas
 - **Flow:**
   1. Modal opens; case comes from `caseSvc.getSelectedCase()` or `$scope.theCase` when on cases list.
   2. User picks export type (e.g. general CSV, detailed CSV, snapshot). “General” refetches case with `caseSvc.get(ctrl.theCase.caseNo, false)` then uses `caseCSVSvc.stringify(...)` and triggers download (e.g. `saveAs` blob). “Detailed” uses in-memory case and `queriesSvc.queries`. Snapshot option uses snapshot id and similar CSV/build.
-  3. Modal also exposes **API links** (no JS `$http`) for direct GET of case JSON, queries JSON, annotations, scores, ratings, snapshots, full export (see `workspace_api_usage.md`). User can open/download these URLs in the browser.
+  3. Modal also exposes **API links** (no JS `$http`) for direct GET of case JSON, queries JSON, annotations, scores, ratings, snapshots, full export (see [workspace_api_usage.md](from-deangularjs-experimental/workspace_api_usage.md)). User can open/download these URLs in the browser.
 
 ### 1.5 Clone
 
@@ -92,12 +90,14 @@ When the judgement form is shown (Rails-rendered `app/views/judgements/_form.htm
 
 ## 3. Real-time updates (WebSockets, polling)
 
-- **Core workspace:** The try page does **not** use WebSockets or ActionCable. All updates are request/response:
+- **Core workspace:** The Angular try page does **not** subscribe to WebSockets, ActionCable, or `turbo_stream_from`; its updates are request/response:
   - Load case and queries on route entry.
   - Rating: PUT rating → `rating-changed` event → client-side `updateScores()` (scorer runs in the browser).
   - Add query, clone, export, settings: standard HTTP API calls and then client/navigation updates.
 
-- **ActionCable in the app:** Used elsewhere (e.g. Books, background jobs). `config/cable.yml` uses Solid Cable (e.g. polling adapter in dev). Admin “Websocket Tester” and jobs like `RunJudgeJudyJob` / `RunCaseEvaluationJob` can broadcast progress; the **workspace try view itself does not subscribe** to any channel. So there is no real-time push for “another user changed a rating” or “background job updated this case” on the current try page.
+- **Turbo Streams / notifications:** Pages that include `turbo_stream_from(:notifications)` (e.g. `app/views/home/show.html.erb`, `app/views/books/show.html.erb`) can receive broadcasts. `RunCaseEvaluationJob` uses `Turbo::StreamsChannel.broadcast_render_to(:notifications, …)` with targets `notifications` and `notifications-case-#{case_id}` (see `app/jobs/run_case_evaluation_job.rb`). The **Angular core layout** (`layouts/core.html.erb`) does **not** include `turbo_stream_from`, so the try page does not consume those streams.
+
+- **ActionCable in the app:** Still mounted (`config/routes.rb`); `config/cable.yml` uses Solid Cable (e.g. polling adapter in dev). Admin “Websocket Tester” and jobs like `RunJudgeJudyJob` participate in real-time flows elsewhere. The **workspace try view** still has no subscription that pushes case/query/rating updates from other sessions or jobs into the Angular UI.
 
 - **Polling:** No polling on the try page for case/query/rating updates. User actions (rate, add query, etc.) trigger immediate API calls and client-side score recalculation.
 
@@ -139,14 +139,16 @@ When the judgement form is shown (Rails-rendered `app/views/judgements/_form.htm
 
 ---
 
-## 5. Migration status
+## 5. Relationship to the rest of the app and migration docs
 
-All flows described above have been migrated to the modern stack:
+This section describes **this repository**, not an already-completed Hotwire port of the core workspace.
 
-- **User flows:** Load → add query → rate → score update → export → clone are all functional via ViewComponents + Stimulus. See [deangularjs_experimental_functionality_gaps_complete.md](deangularjs_experimental_functionality_gaps_complete.md) for parity and gap history.
-- **Keyboard:** Rating shortcuts (a/s/d/f/g/h/j/k/l/;) preserved in the Rails-rendered judgement form (`app/views/judgements/_form.html.erb`).
-- **Real-time:** The modern workspace subscribes to `turbo_stream_from(:notifications)` for score update broadcasts from `RunCaseEvaluationJob` (new capability not present in Angular). Score updates broadcast via Turbo Streams to update `qscore-case-#{case_id}` and `query_list_#{case_id}` frames.
-- **Errors:** Flash messages use `window.flash` (from `utils/flash.js`) for client-side feedback and Rails flash for server-side. See [ui_consistency_patterns.md](ui_consistency_patterns.md).
-- **Search:** Now goes through server-side `QuerySearchService` proxy, eliminating CORS/mixed-content issues.
-- **Turbo Frames:** The workspace uses Turbo Frames (`workspace_content`, `query_list_<case_id>`, `results_pane`) for independent region updates. Query selection uses Turbo Frame navigation instead of full-page reload. See [turbo_frame_boundaries.md](turbo_frame_boundaries.md) for frame mapping.
-- **Turbo Streams:** Add/remove queries, rating updates, and score changes use Turbo Streams for live DOM updates without full-page reload. See [turbo_streams_guide.md](turbo_streams_guide.md) for implementation patterns.
+- **Core workspace (this doc §1–4):** Still Angular. Search execution, scoring refresh, and flash for the try page follow the Angular + `angular-flash` patterns above (e.g. `queriesSvc` with optional `proxyRequests` / splainer-oriented options in `app/assets/javascripts/services/queriesSvc.js`). There is no `QuerySearchService` in `app/services` on this branch.
+
+- **Rails judgement form (§2.1):** Shared non-Angular UI; keyboard shortcuts remain in `app/views/judgements/_form.html.erb`.
+
+- **Stimulus:** Controllers under `app/javascript/controllers/` cover other flows (e.g. share case, mapper wizard, books-related UI); they do **not** replace the core case/try workspace layout.
+
+- **`RunCaseEvaluationJob`:** Background case evaluation and progress UI target the notification streams described in §3, not Turbo Frame IDs such as `qscore-case-*` or `query_list_*` (those frame/stream names appear in **migration design** docs as a target architecture, not in the Angular workspace templates in `app/views/core/`).
+
+- **Further reading:** Experimental / target-state Hotwire patterns (frames, streams, parity notes) live alongside this file, e.g. [turbo_frame_boundaries.md](../turbo_frame_boundaries.md), [turbo_streams_guide.md](../turbo_streams_guide.md), [ui_consistency_patterns.md](../ui_consistency_patterns.md), and the repo-level [deangularjs_experimental_review.md](../../deangularjs_experimental_review.md). Treat those as **design and migration references** unless a specific doc states it matches `main`.

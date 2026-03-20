@@ -1,0 +1,24 @@
+---
+description: Frontend migration (Stimulus, Turbo, Rails partials) and patterns
+globs: app/views/**/*.erb, app/javascript/**/*
+alwaysApply: false
+---
+
+# Frontend Migration & Patterns
+
+## Stack
+
+- **Stack**: Stimulus + Turbo (Hotwire) + **Rails partials/ERB** (this migration path does **not** center on ViewComponent).
+- **Start here**: `docs/migration/angularjs_elimination_plan.md` (core port plan); `docs/migration/from-deangularjs-experimental/README.md` (which experimental docs are pattern vs reference-only).
+- **Patterns**: `docs/migration/from-deangularjs-experimental/ui_consistency_patterns.md`, `docs/app_structure.md`.
+
+## UI Consistency
+
+- **Bootstrap 5**: use `data-bs-toggle`, `data-bs-dismiss`, `btn-close` (not Bootstrap 4 `data-toggle`/`data-dismiss`).
+- **Modals**: match `confirm_delete` (generic confirm) or `share_case` (content modal) patterns — see `docs/migration/from-deangularjs-experimental/ui_consistency_patterns.md`.
+- **Flash**: use Rails flash for redirects; `window.flash` for Stimulus feedback where used; Turbo Streams can append to `#flash`.
+
+## New UI
+
+- Use Rails views/partials + Stimulus + Turbo Frames for migrated surfaces.
+- URL/navigation: see `docs/migration/from-deangularjs-experimental/api_client.md` for URL building rules on the modern stack (never hardcode `/`); Angular-era code uses `caseTryNavSvc.getQuepidRootUrl()` per project rules.

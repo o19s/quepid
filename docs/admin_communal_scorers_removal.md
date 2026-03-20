@@ -49,7 +49,7 @@ The separate admin interface for communal scorers was redundant. Administrators 
 **After**: Admins access communal scorers via:
 - Main navigation → "Scorers" or direct URL: `/scorers`
 - Filter by "Communal" type using the filter buttons
-- Edit and delete communal scorers directly in the list
+- Edit communal scorers from the list; delete from the scorer **edit** page (admin only)
 
 ### Functional Changes
 
@@ -58,7 +58,7 @@ The separate admin interface for communal scorers was redundant. Administrators 
 | **View communal scorers** | `/admin/communal_scorers` | `/scorers` (filter by "Communal") |
 | **Create communal scorer** | Admin interface only | Not supported via UI (use console/seeds) |
 | **Edit communal scorer** | `/admin/communal_scorers/:id/edit` | `/scorers/:id/edit` (admin only) |
-| **Delete communal scorer** | Admin interface | `/scorers` list (admin only) |
+| **Delete communal scorer** | Admin interface | `/scorers/:id/edit` — **Delete** in toolbar (admin only) |
 
 ### Creating Communal Scorers
 

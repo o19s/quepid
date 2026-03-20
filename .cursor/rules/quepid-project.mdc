@@ -1,0 +1,34 @@
+---
+description: Core Quepid project setup and conventions
+alwaysApply: true
+---
+
+# Quepid Project Rules
+
+## Environment & Commands
+
+- **Docker-first**: Run Rails and build tasks via Docker. Do not run Rails or asset pipelines locally.
+- **When running Ruby commands locally** (e.g. rails, rake, bundle exec), use **`rv run`** so the correct Ruby version is used: e.g. `rv run bundle exec rails test ...`.
+- **Setup**: `bin/setup_docker`. Start Rails: `bin/docker s`.
+- **Rails/rake**: Prefix with `bin/docker r bundle exec` (e.g. `bin/docker r bundle exec rails console --environment=test`).
+- **Package manager**: Use **yarn**, not npm.
+- **JS tests**: `bin/docker r yarn test`.
+
+## Documentation & Structure
+
+- Put documentation in the **`docs/`** directory (no toplevel `doc/`).
+- Data model: see `docs/data_mapping.md`. App structure: see `docs/app_structure.md`.
+
+## URLs & Navigation
+
+- Never use `$window.location.href = '/'`. Use `caseTryNavSvc.getQuepidRootUrl()` (or equivalent helper) for root navigation.
+- Generated URLs must **not** start with `/`; use relative links for deploy flexibility.
+
+## Styling & Predicates
+
+- Use **`.css`** only; do **not** use `.scss`.
+- In Ruby, use predicate names like `credentials?`, not `has_credentials?`.
+
+## Boolean Params
+
+- In controllers, use the project helper for boolean params: `archived = deserialize_bool_param(params[:archived])` instead of treating true/false as strings.

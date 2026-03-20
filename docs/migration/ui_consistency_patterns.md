@@ -1,30 +1,12 @@
-# UI Consistency Patterns
+# UI consistency patterns
 
-> Guidelines for Bootstrap 5, modals, flash messages, and styling in the Stimulus/Turbo/ViewComponents stack. Use these patterns consistently across migrated pages.
-
-**Related documentation:**
-- [ViewComponent Conventions](view_component_conventions.md) — Component structure, modal patterns in components
-- [Turbo Frame Boundaries](turbo_frame_boundaries.md) — Frame structure and responsibilities
-- [Turbo Streams Guide](turbo_streams_guide.md) — Stream action patterns
-- [CSS Variables](../css_variables.md) — Spacing, colors, borders for consistent styling
-- [API Client](api_client.md) — URL building rules (never hardcode `/`)
+> Guidelines for Bootstrap 5, modals, flash messages, and styling for **Rails + Stimulus + Turbo** surfaces in Quepid.
 
 ---
 
 ## 1. Bootstrap 5
 
-Migrated pages use **Bootstrap 5**. Use Bootstrap 5 attributes and classes consistently.
-
-### Use (Bootstrap 5)
-
-- `data-bs-toggle="modal"` — open modals
-- `data-bs-target="#modalId"` — target modal by ID
-- `data-bs-dismiss="modal"` — close modal
-- `data-bs-dismiss="alert"` — dismiss alert
-- `btn-close` — close button (replaces `close` class)
-- `form-select`, `form-control` — form elements
-- `modal-dialog`, `modal-content`, `modal-header`, `modal-body`, `modal-footer`
-- `list-group`, `list-group-item`, `list-group-item-action`
+Quepid targets **Bootstrap 5**. Use the `data-bs-*` attributes, `btn-close`, and current component classes. For full component markup and options, use the official docs: [Bootstrap 5.3](https://getbootstrap.com/docs/5.3/getting-started/introduction/).
 
 ### Avoid (Bootstrap 4 legacy)
 
@@ -43,6 +25,13 @@ Migrated pages use **Bootstrap 5**. Use Bootstrap 5 attributes and classes consi
 ## 2. Modal Patterns
 
 Four established patterns: **confirm_delete** (generic confirmation), **share_case** (shared content modal), **per-component** (row-specific modals), and **expand_content** (full-screen content display).
+
+### Modals and accessibility
+
+- Give each modal a visible title (`modal-title`) and set `aria-labelledby` on the root `.modal` to that title’s `id`.
+- Use a real `<button type="button">` for dismiss, with `btn-close` / `data-bs-dismiss="modal"`, and an `aria-label` (or visible “Close”) when the control is icon-only.
+- For large bodies (JSON, explain text, long forms), make **`modal-body` scroll** so keyboard and screen-reader users can reach all content without trapping focus away from dismiss actions.
+- Prefer these shared patterns over ad hoc `window.confirm` except where Pattern A documents it as a **last-resort** fallback when Bootstrap is unavailable.
 
 ### Pattern A: confirm_delete (generic confirmation)
 
@@ -68,7 +57,7 @@ For simple confirm/cancel actions (archive, unarchive, remove member, delete).
 - `data-confirm-delete-method-value` — `delete`, `post`, `patch` (default: `delete`)
 - `data-confirm-delete-message-value` — confirmation text (default: "Are you sure?")
 
-**Behavior:** Controller creates a single shared modal (`#confirmDeleteModal`) if absent, shows it, and on confirm submits a hidden form with CSRF token. Falls back to `window.confirm()` if Bootstrap is unavailable.
+**Behavior:** Controller creates a single shared modal (`#confirmDeleteModal`) if absent, shows it, and on confirm submits a hidden form with CSRF token. If Bootstrap is unavailable, it falls back to `window.confirm()`—do **not** rely on that for normal UX; treat it as an edge-case fallback only.
 
 **Examples:** `app/views/cases/index.html.erb`, `app/views/teams/_cases.html.erb`, `app/views/teams/show.html.erb`.
 
@@ -97,30 +86,15 @@ For modals with forms, dropdowns, or dynamic content. Modal is a shared partial;
 <% end %>
 ```
 
-**Modal:** Shared partial (e.g. `shared/_share_case_modal.html.erb`) with `data-controller="share-case"` on the modal element. Bootstrap opens it via `data-bs-toggle`/`data-bs-target`; Stimulus `open` action runs on click to populate data.
+**Modal:** Shared partial (e.g. `shared/_share_case_modal.html.erb`) with `data-controller="share-case"` on the root `.modal`. Bootstrap opens via `data-bs-toggle` / `data-bs-target`; Stimulus `open` runs on click to populate data.
 
-**Structure:**
-
-```erb
-<div class="modal fade" id="shareCaseModal" tabindex="-1" aria-labelledby="shareCaseModalLabel" aria-hidden="true" data-controller="share-case">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="shareCaseModalLabel">Share Case</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">...</div>
-      <div class="modal-footer">...</div>
-    </div>
-  </div>
-</div>
-```
+**Markup:** Standard Bootstrap shell: `modal fade` → `modal-dialog` (e.g. `modal-lg`) → `modal-content` → `modal-header` (title + `btn-close` with `data-bs-dismiss="modal"`) → `modal-body` / `modal-footer`. Keep `tabindex="-1"`, `aria-labelledby` pointing at the title `id`, and `aria-hidden="true"` on the root per [Bootstrap modal accessibility](https://getbootstrap.com/docs/5.3/components/modal/).
 
 ---
 
-### Pattern C: Per-component modal (delete_query style)
+### Pattern C: Per-component modal (per-row / per-item)
 
-For modals that are unique per row/item (e.g. delete query, query options). Wrapper holds both trigger and modal; Stimulus opens via `window.bootstrap.Modal.getOrCreateInstance`.
+For modals that are unique per row or item (e.g. delete query, query options). A wrapper holds both trigger and modal; Stimulus opens via `window.bootstrap.Modal.getOrCreateInstance`.
 
 **Structure:**
 
@@ -147,28 +121,26 @@ if (window.bootstrap && window.bootstrap.Modal) {
 }
 ```
 
-**Examples:** `DeleteQueryComponent`, `QueryOptionsComponent`, `FrogReportComponent`, `DiffComponent`, `ImportRatingsComponent`, `JudgementsComponent`, `MatchesComponent` (debug modal).
+**Finding usages:** Search for Stimulus controllers that open per-row modals (e.g. `getOrCreateInstance` under `app/javascript/controllers/`, or elements with `data-*-target="modal"`). Use the same Stimulus + Bootstrap structure with partials or ViewComponents that render equivalent markup.
 
 ---
 
 ### Pattern D: Expand content (full-screen modal)
 
-For displaying large content (JSON, explain text, etc.) in a full-screen modal. Uses `ExpandContentComponent` which wraps the trigger and modal together.
+For displaying large content (JSON, explain text, etc.) in a full-screen modal. Use a **partial** with a trigger button + `modal-fullscreen` (or `modal-fullscreen-custom`) and a small Stimulus controller. Open with the same `window.bootstrap.Modal.getOrCreateInstance` approach as Pattern C.
 
-**Usage:**
+**Usage (conceptual ERB):**
 
 ```erb
-<%= render ExpandContentComponent.new(
-      id: "explain-modal-1",
-      title: "Relevancy Score: 1.5",
-      body: explain_text_display,
-      trigger_label: "Expand"
-    ) %>
+<div data-controller="expand-content">
+  <button type="button" data-action="click->expand-content#open">Expand</button>
+  <div class="modal fade modal-fullscreen" data-expand-content-target="modal" tabindex="-1">
+    <div class="modal-dialog">...</div>
+  </div>
+</div>
 ```
 
-**Structure:** Component renders a button trigger and a `modal-fullscreen` modal. The `expand_content` controller handles opening via `window.bootstrap.Modal.getOrCreateInstance`.
-
-**Examples:** `MatchesComponent` (explain text expansion), any component needing full-screen content display.
+**Examples:** explain text from search results, large JSON viewers.
 
 **Custom fullscreen variant:** For modals that need a large viewport but with margins (e.g. Debug JSON modal), use `modal-fullscreen-custom` on the `.modal` wrapper. Defined in `core-modals.css`; uses `calc(100% - 100px)` for dialog size.
 
@@ -181,7 +153,7 @@ For displaying large content (JSON, explain text, etc.) in a full-screen modal. 
 | Simple confirm (archive, delete) | confirm_delete |
 | Shared modal, many triggers     | share_case     |
 | Per-row modal (query options)    | Per-component  |
-| Full-screen content display      | ExpandContentComponent |
+| Full-screen content display      | Expand-content Stimulus + fullscreen modal partial |
 
 ---
 
@@ -213,7 +185,7 @@ if (window.flash?.store) window.flash.store("success", "Case cloned successfully
 window.location.href = newCaseUrl
 ```
 
-`utils/flash.js` initializes `window.flash`; messages render into `#flash` with Bootstrap alert classes.
+If `utils/flash.js` is present in the bundle, it initializes `window.flash`; messages render into `#flash` with Bootstrap alert classes. Otherwise use Rails flash and inline Stimulus feedback only.
 
 ### Turbo compatibility
 
@@ -226,7 +198,7 @@ window.location.href = newCaseUrl
 
   The `shared/_flash_alert.html.erb` partial renders a Bootstrap alert with proper classes and dismiss button. Use `type: :success`, `:error`, `:notice`, `:info`, or `:alert`.
 
-- **`turbo_events_controller.js`:** On `turbo:submit-end`, if the response is JSON and indicates failure, it sets `window.flash.error`. It skips flash when the response is HTML (form re-render) so the frame already shows validation errors.
+- **Turbo submit feedback:** A body-level Stimulus controller can listen for `turbo:submit-end`; if the response is JSON and indicates failure, set `window.flash.error`. Skip when the response is HTML so the frame can show validation errors.
 
 ### Flash types
 
@@ -240,13 +212,13 @@ window.location.href = newCaseUrl
 
 **Note:** Both `notice` and `info` map to `alert-info`. Use `notice` for Rails flash (conventional), `info` for client-side when you want explicit info styling.
 
-Defined in `application_helper#bootstrap_class_for` and `utils/flash.js`.
+Defined in `application_helper#bootstrap_class_for` (and `utils/flash.js` when that module is loaded).
 
 ---
 
 ## 4. Styling (CSS Variables)
 
-Use shared CSS custom properties for spacing, colors, and borders so UI stays consistent across components. See [CSS Variables](../css_variables.md) for the full reference.
+Use shared CSS custom properties for spacing, colors, and borders so UI stays consistent across components. **Source of truth:** [`app/assets/stylesheets/variables.css`](../../../app/assets/stylesheets/variables.css) — token names and values; loaded with the app CSS bundles. If you add a long-form reference doc, link it from here or from [`docs/app_structure.md`](../../app_structure.md).
 
 **Prefer in new code:**
 - `var(--quepid-spacing-*)` for padding and margins (step-based scale)
@@ -262,5 +234,3 @@ Use shared CSS custom properties for spacing, colors, and borders so UI stays co
   color: var(--quepid-color-text);
 }
 ```
-
-Variables are defined in `app/assets/stylesheets/variables.css` and loaded in all CSS bundles.

@@ -104,6 +104,60 @@ Each slice should still be **mergeable** (strangler Angular island is OK). Use *
 
 **Exit criteria:** P0 list agreed and written down; API contract table started; DRI sign-off that baseline is sufficient to start slices—not unanimous agreement on every inventory row.
 
+#### P0 Parity Checklist
+
+These are the **critical flows** that must keep working throughout the migration. Every vertical slice must pass these before merging to `main`. P1/P2 features (everything else in `angularjs_ui_inventory.md`) can regress temporarily behind a strangler boundary.
+
+| # | Flow | Steps | Inventory refs |
+|---|------|-------|----------------|
+| **P0-1** | **Open a case** | Navigate to `/case/:id` → case loads, header shows case name + scorer name + try name + case score | SS-01, SS-03 |
+| **P0-2** | **View query list** | Queries render with score badges, result counts, expand/collapse chevrons | SS-04 |
+| **P0-3** | **Add a query** | Type query text → click "Add query" → query appears in list → search executes → results render | SS-04, SS-05 |
+| **P0-4** | **Run search (Solr, via proxy)** | Expand a query → results load from search engine via `/proxy/fetch` → documents display with title, fields, thumbnails | SS-05, SS-28 |
+| **P0-5** | **Rate a document** | Click rating dropdown on a result → select score → rating persists → query score badge updates | SS-06, SS-49 |
+| **P0-6** | **See case score update** | After rating, case-level score recalculates and displays in header | SS-03 |
+| **P0-7** | **Tune relevance (basic)** | Open east pane → edit query params in Query Sandbox tab → click "Rerun My Searches!" → results refresh | SS-07 |
+| **P0-8** | **Create a snapshot** | Action bar → "Create snapshot" → name it → snapshot saves with current scores and docs | SS-12 |
+| **P0-9** | **Delete a query** | Expand query → click Delete → query removed from list | SS-05 |
+| **P0-10** | **Navigate between cases** | Header "Cases" dropdown → select different case → new case loads correctly | SS-02 |
+
+**Stretch P0 (verify if time permits, required before Phase 10):**
+
+| # | Flow | Steps | Inventory refs |
+|---|------|-------|----------------|
+| P0-S1 | Run search with **Elasticsearch/OpenSearch** | Same as P0-4 but with ES/OS engine | SS-09 (engine config) |
+| P0-S2 | Clone a case | Action bar → Clone → options → new case created | SS-17 |
+| P0-S3 | Export case (basic CSV) | Action bar → Export → select format → download file | SS-19 |
+
+#### P0 API Contract Summary
+
+These are the **minimum API endpoints** that P0 flows depend on. Full reference: [`workspace_api_usage.md`](from-deangularjs-experimental/workspace_api_usage.md).
+
+| P0 Flow | Angular Service | Endpoint | Purpose |
+|---------|----------------|----------|---------|
+| P0-1 | `caseSvc` | `GET api/cases/:id` | Load case (name, scorer_id, tries, last_try_number) |
+| P0-1 | `bootstrapSvc` / `userSvc` | `GET api/users/current` | Current user for header + permissions |
+| P0-1 | `configurationSvc` | Inline `<script>` in `core.html.erb` | Feature flags (communal_scorers_only, query_list_sortable) |
+| P0-1 | `scorerSvc` | `GET api/scorers/:id` | Scorer details (name, scale, code) for case header |
+| P0-2 | `queriesSvc` | `GET api/cases/:id/queries?bootstrap=true` | Load all queries with ratings + display_order |
+| P0-3 | `queriesSvc` | `POST api/cases/:id/queries` | Create query; returns query + display_order |
+| P0-4 | `splainer-search` (browser) | `GET proxy/fetch?url=<engine_url>` | Proxy search request to Solr/ES/OS |
+| P0-4 | `settingsSvc` | `GET api/cases/:id/tries` | Try config (query_params, field_spec, search_endpoint) |
+| P0-5 | `ratingsStoreSvc` | `PUT api/cases/:id/queries/:qid/ratings` | Save single doc rating |
+| P0-6 | `caseSvc` | `PUT api/cases/:id/scores` | Persist recalculated case score |
+| P0-6 | `ScorerFactory` | (client-side) | Evaluate scorer JS code against ratings |
+| P0-7 | `settingsSvc` | `POST api/cases/:id/tries` | Create new try with edited params |
+| P0-8 | `querySnapshotSvc` | `POST api/cases/:id/snapshots` | Save snapshot with docs + scores |
+| P0-9 | `queriesSvc` | `DELETE api/cases/:id/queries/:qid` | Delete query |
+| P0-10 | `caseSvc` | `GET api/dropdown/cases` | Cases dropdown list |
+| P0-10 | `caseTryNavSvc` | (client-side) | URL construction for case/try navigation |
+
+**Key dependency:** `splainer-search` runs in the browser and uses `$http` (Angular). The Stimulus port must either:
+- Wrap splainer with native `fetch` (adapter layer), or
+- Keep splainer in a thin Angular island until replaced
+
+This is the **single highest-risk technical item** for P0 flows.
+
 ---
 
 ### Phase 1 — Extract configuration and navigation from Angular
@@ -364,6 +418,7 @@ Use the detailed rows in `angularjs_ui_inventory.md`; this matrix is the **miles
 | 2026-03-19 | Second pass: clarified judgements scope, API path wording, `broadcastSvc`/`paneSvc`, query notes, doc finder, stacked chart/embeds, Frog+Vega, BS3/BS5 risk, extra services for Phase 0, `application_modern` / build cleanup, related doc link. |
 | 2026-03-19 | Added DevTools/`proxy/fetch` parity note: client-side search + `proxy_requests` preserves Network visibility; server-only search would not (likely experimental branch regression). |
 | 2026-03-19 | Integrated pragmatic review: vertical slices, Phase 0 DRI/time box/P0 + optional bundle spike, ScorerFactory with Phase 4, Phase 6 reframed vs Phase 4, Phase 10 Turbo/bundle note, testing/rollback/risks, matrix note for case scores, appendix folded in. |
+| 2026-03-20 | Added P0 Parity Checklist (10 critical flows + 3 stretch) and P0 API Contract Summary (16 endpoint mappings). Phase 0 documentation deliverables substantially complete. |
 
 ---
 

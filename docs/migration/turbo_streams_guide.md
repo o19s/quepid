@@ -1,6 +1,6 @@
-# Turbo Streams Guide
+# Turbo streams guide
 
-> When and how to use Turbo Streams for live updates in the Quepid core workspace.
+> When and how to use Turbo Streams for live updates in the core workspace as Rails replaces legacy client-side DOM updates ([angularjs_elimination_plan.md](../angularjs_elimination_plan.md)).
 
 ---
 
@@ -24,16 +24,16 @@
 
 ---
 
-## 2. Primary Use Cases in the Core Workspace
+## 2. Primary use cases in the core workspace
 
-| Use case | Status | Implementation |
-|----------|--------|----------------|
-| **New query added** | Implemented | `Core::QueriesController#create` → `append` to `query_list_items`, `remove` `query_list_empty_placeholder` when first query. Error handling: `append` to `flash` on validation failure. |
-| **Query removed** | Implemented | `Core::QueriesController#destroy` → `remove` `query_row_<id>`; when deleted query was selected, also `replace` `results_pane` with empty state. If last query deleted, `append` empty placeholder. |
-| **Rating updated** | Implemented | `Api::V1::Queries::RatingsController#update` → `update` `rating-badge-<doc_id>`; `#destroy` → `update` with empty rating. Results pane requests `Accept: text/vnd.turbo-stream.html` and applies via `Turbo.renderStreamMessage`. Error handling: `append` to `flash` on validation failure. |
-| **Rating deleted** | Implemented | `Api::V1::Queries::RatingsController#destroy` → `update` `rating-badge-<doc_id>` with empty rating string. |
-| **Annotation created** | Implemented | `Api::V1::AnnotationsController#create` → `prepend` to `annotations_list` using `AnnotationComponent`. Client requests `Accept: text/vnd.turbo-stream.html` and applies via `Turbo.renderStreamMessage`. |
-| **Score changed** | Implemented | **Immediate:** `Api::V1::Queries::ScoresController#create` broadcasts `replace` for `case-header-score-#{case_id}` when a single query is scored (visual parity with Angular). **Full run:** `RunCaseEvaluationJob` broadcasts `replace` for `qscore-case-#{case_id}`, `case-header-score-#{case_id}`, and `query_list_#{case_id}` when job completes. Core workspace subscribes via `turbo_stream_from(:notifications)`. DocFinder bulk rate/delete triggers run_evaluation so scores refresh. |
+| Use case | Typical server / client pattern |
+|----------|--------------------------------|
+| **New query added** | `append` to `query_list_items`, `remove` `query_list_empty_placeholder` when first query. Error handling: `append` to `flash` on validation failure. |
+| **Query removed** | `remove` `query_row_<id>`; when deleted query was selected, also `replace` `results_pane` with empty state. If last query deleted, `append` empty placeholder. |
+| **Rating updated** | `update` `rating-badge-<doc_id>`; on delete, `update` with empty rating. Client requests `Accept: text/vnd.turbo-stream.html` and applies via `Turbo.renderStreamMessage`. Error handling: `append` to `flash` on validation failure. |
+| **Rating deleted** | `update` `rating-badge-<doc_id>` with empty rating string. |
+| **Annotation created** | `prepend` to `annotations_list` (HTML from component or partial). Client requests `Accept: text/vnd.turbo-stream.html` and applies via `Turbo.renderStreamMessage`. |
+| **Score changed** | **Immediate:** broadcast `replace` for `case-header-score-#{case_id}` when a single query is scored. **Full evaluation run:** job broadcasts `replace` for `qscore-case-#{case_id}`, `case-header-score-#{case_id}`, and `query_list_#{case_id}` when complete. Subscribe via `turbo_stream_from(:notifications)` where score UI lives. Bulk rate/delete flows that trigger re-evaluation should refresh scores consistently. |
 
 **Prefer Turbo Streams** over client-side `fetch` + manual DOM update. When the server can return `text/vnd.turbo-stream.html`, use that so Turbo handles DOM updates consistently.
 
@@ -98,9 +98,9 @@ if (!res.ok) {
 }
 ```
 
-#### Complete example: Using apiFetch helper
+#### Complete example: using `apiFetch`
 
-When using `apiFetch` from `app/javascript/api/fetch.js`, here's a complete example from `app/javascript/controllers/annotations_controller.js`:
+When using a shared fetch helper (e.g. `app/javascript/api/fetch.js`), a controller might look like this:
 
 ```javascript
 async create() {
@@ -130,11 +130,7 @@ async create() {
 }
 ```
 
-**Reference implementations:**
-- `app/javascript/controllers/add_query_controller.js` - Create query with Turbo Stream
-- `app/javascript/controllers/delete_query_controller.js` - Delete query with Turbo Stream
-- `app/javascript/controllers/results_pane_controller.js` - Rating updates with Turbo Stream
-- `app/javascript/controllers/annotations_controller.js` - Create annotation with Turbo Stream
+Look for Stimulus controllers that set `Accept: text/vnd.turbo-stream.html` and call `Turbo.renderStreamMessage` under `app/javascript/controllers/`.
 
 ### Server-side pattern (Rails)
 
@@ -168,12 +164,13 @@ respond_to do |format|
 end
 ```
 
-#### Using ViewComponents
+#### Rendering HTML (partial or component)
 
 ```ruby
 format.turbo_stream do
   html = render_to_string(
-    AnnotationComponent.new(annotation: @annotation, case_id: @case.id)
+    partial: "annotations/annotation",
+    locals: { annotation: @annotation, case: @case }
   )
   render turbo_stream: turbo_stream.prepend("annotations_list", html), status: :created
 end
@@ -257,7 +254,7 @@ Turbo::StreamsChannel.broadcast_replace_to(
 
 ### Use case: Score updates
 
-`RunCaseEvaluationJob` broadcasts score updates when evaluation completes:
+After a full case evaluation completes, a job may broadcast several replacements (header score, query list, etc.):
 
 ```ruby
 Turbo::StreamsChannel.broadcast_replace_to(
@@ -274,11 +271,7 @@ Turbo::StreamsChannel.broadcast_replace_to(
 )
 ```
 
-The core workspace subscribes in `app/views/core/show.html.erb`:
-
-```erb
-<%= turbo_stream_from(:notifications) %>
-```
+Include `turbo_stream_from(:notifications)` (or the channel you broadcast to) in the layout or workspace view that should receive those updates.
 
 ---
 
@@ -293,7 +286,7 @@ streams = [turbo_stream.remove("query_row_#{deleted_id}")]
 if params[:selected_query_id].to_i == deleted_id
   streams << turbo_stream.replace(
     "results_pane",
-    render_to_string(ResultsPaneComponent.new(...))
+    render_to_string(partial: "core/results_pane", locals: { ... })
   )
 end
 streams << turbo_stream.append("query_list_items", partial: "empty_placeholder") if @case.queries.none?
