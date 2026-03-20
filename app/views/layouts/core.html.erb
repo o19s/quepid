@@ -13,7 +13,10 @@
 
 <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
 </head>
-<body ng-app="QuepidApp">
+<body ng-app="QuepidApp"
+      data-quepid-root-url="<%= request.base_url %><%= ENV['RAILS_RELATIVE_URL_ROOT'] %>"
+      data-communal-scorers-only="<%= Rails.application.config.communal_scorers_only %>"
+      data-query-list-sortable="<%= Rails.application.config.query_list_sortable %>">
   <%= render 'layouts/header_core_app' %>
 
   <div id="main-content">
