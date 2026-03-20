@@ -1,5 +1,6 @@
 <% if @case.present? %>
-<div class="results" id="query-list-shell" data-controller="query-list">
+<div class="results" id="query-list-shell" data-controller="query-list"
+     style="background: white; padding: 15px; margin: 10px 0; min-width: 750px;">
   <div class="row">
     <div class="col-sm-12 form-group">
       <div class="pull-left">
@@ -82,7 +83,9 @@
           <li data-query-list-target="queryRow"
               data-query-id="<%= query.id %>"
               data-query-text="<%= query.query_text %>"
-              data-rated="<%= query.ratings.any? %>">
+              data-rated="<%= query.ratings.any? %>"
+              data-controller="query-row"
+              data-query-row-query-id-value="<%= query.id %>">
             <div class="clearfix">
               <div class="result-header">
                 <!-- Score badge will be added when ScorerFactory is ported -->
@@ -96,7 +99,27 @@
                     <%= query.ratings.size %> rated
                   </small>
                 </span>
+
+                <span class="toggleSign glyphicon glyphicon-chevron-down"
+                      data-action="click->query-row#toggle"
+                      data-query-row-target="chevron"></span>
               </div>
+            </div>
+
+            <div class="sub-results container clearfix" style="display:none"
+                 data-query-row-target="expandedContent">
+              <div class="btn-toolbar" role="toolbar">
+                <div class="btn-group">
+                  <button class="btn btn-danger btn-sm"
+                          data-action="click->query-row#deleteQuery">
+                    <i class="glyphicon glyphicon-trash"></i>
+                    Delete Query
+                  </button>
+                </div>
+              </div>
+              <p class="text-muted" style="margin-top: 10px;">
+                Search results will appear here when search execution is ported.
+              </p>
             </div>
           </li>
         <% end %>

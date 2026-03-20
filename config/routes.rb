@@ -342,6 +342,9 @@ Rails.application.routes.draw do
   # Routes handled by angular
   get '/case/:id(/try/:try_number)'   => 'core#index', as: :case_core
   get '/cases/new'                    => 'core#new', as: :case_new
+
+  # New Rails+Stimulus UI (in development, will replace core#index when complete)
+  get '/case/:id(/try/:try_number)/new_ui' => 'core#new_ui', as: :case_core_new_ui
   get '/case'                         => 'core#index'
 
   # Static pages

@@ -23,7 +23,13 @@ export default class extends Controller {
 
   collapseAll(event) {
     event.preventDefault()
-    // Future: collapse expanded query rows
+    // Find all query-row controllers and collapse them
+    this.queryRowTargets.forEach(row => {
+      const controller = this.application.getControllerForElementAndIdentifier(row, "query-row")
+      if (controller && controller.expanded) {
+        controller.toggle()
+      }
+    })
   }
 
   sortBy(event) {
