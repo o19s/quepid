@@ -1,24 +1,107 @@
 <% if @case.present? %>
-<div id="query-list-shell" class="results">
+<div class="results" id="query-list-shell" data-controller="query-list">
   <div class="row">
     <div class="col-sm-12 form-group">
       <div class="pull-left">
-  <form class="form input-append vertically-centered"
-        data-controller="add-query"
-        data-add-query-url-value="<%= api_case_queries_path(case_id: @case.id) %>"
-        data-add-query-bulk-url-value="<%= api_bulk_case_queries_path(case_id: @case.id) %>"
-        data-action="submit->add-query#submit">
-    <input id="add-query"
-           class="form-control"
-           data-add-query-target="input"
-           placeholder="Add a query to this case"
-           type="text" />
-    <input id="add-query-submit"
-           class="btn btn-success"
-           type="submit"
-           value="Add query" />
-  </form>
+        <form class="form input-append vertically-centered"
+              data-controller="add-query"
+              data-action="submit->add-query#submit">
+          <input id="add-query"
+                 class="form-control"
+                 data-add-query-target="input"
+                 placeholder="Add a query to this case"
+                 type="text" />
+          <input id="add-query-submit"
+                 class="btn btn-success"
+                 type="submit"
+                 value="Add query" />
+        </form>
       </div>
+
+      <ul class="list-inline pull-right">
+        <li>
+          <input type="checkbox" class="align-top"
+                 data-action="click->query-list#toggleShowOnlyRated"
+                 data-query-list-target="showOnlyRatedCheckbox" />
+          <a href="#" data-action="click->query-list#toggleShowOnlyRated">Show only rated</a>
+        </li>
+
+        <li class="text-muted"><span class="text-muted"> | </span></li>
+
+        <li>
+          <a href="#" data-action="click->query-list#collapseAll">Collapse all</a>
+        </li>
+
+        <li class="text-muted"><span class="text-muted"> | </span></li>
+
+        <li>
+          <span class="text-muted">Sort &nbsp;</span>
+          <ul class="list-inline" style="display:inline" role="group" aria-label="sort">
+            <% if @query_list_sortable %>
+              <li>
+                <a href="#" class="active"
+                   data-action="click->query-list#sortBy"
+                   data-query-list-target="sortLink"
+                   data-sort="default">
+                  Manual
+                  <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+                </a>
+              </li>
+            <% else %>
+              <li>
+                Manual
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"
+                      title="Manual sorting has been disabled by your administrator."></span>
+              </li>
+            <% end %>
+            <li><a href="#" data-action="click->query-list#sortBy" data-query-list-target="sortLink" data-sort="query">Name</a></li>
+            <li><a href="#" data-action="click->query-list#sortBy" data-query-list-target="sortLink" data-sort="modified">Modified</a></li>
+            <li><a href="#" data-action="click->query-list#sortBy" data-query-list-target="sortLink" data-sort="score">Score</a></li>
+            <li><a href="#" data-action="click->query-list#sortBy" data-query-list-target="sortLink" data-sort="error">Errors</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <div class="clearfix"></div>
+
+      <div class="pull-right p-r-10">
+        Number of Queries: <span data-query-list-target="queryCount"><%= @query_count %></span>
+      </div>
+      <div class="pull-right p-r-10">
+        <input type="search" placeholder="Filter Queries" aria-label="filter queries"
+               class="form-control input-sm" id="queries-filter-new"
+               data-action="input->query-list#filter"
+               data-query-list-target="filterInput" />
+      </div>
+
+      <div class="clearfix"></div>
+
+      <!-- Query rows -->
+      <ul class="results-list-element" data-query-list-target="list">
+        <% @queries.each do |query| %>
+          <li data-query-list-target="queryRow"
+              data-query-id="<%= query.id %>"
+              data-query-text="<%= query.query_text %>"
+              data-rated="<%= query.ratings.any? %>">
+            <div class="clearfix">
+              <div class="result-header">
+                <!-- Score badge will be added when ScorerFactory is ported -->
+
+                <h2 class="results-title">
+                  <span class="query"><%= query.query_text %> &nbsp;</span>
+                </h2>
+
+                <span class="pull-right total-results">
+                  <small class="text-muted">
+                    <%= query.ratings.size %> rated
+                  </small>
+                </span>
+              </div>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+
     </div>
   </div>
 </div>
