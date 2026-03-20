@@ -42,7 +42,17 @@ echo -e "\n== Removing old logs and tempfiles =="
 bin/docker r rails log:clear tmp:clear
 
 echo -e "\n== Setting up stupid simple model to power LLM as a Judge for Development =="
-docker exec ollama ollama pull qwen3:0.6b
+# Use compose project context (supports alternate COMPOSE_PROJECT_NAME e.g. visual parity quepid-vp)
+docker compose up -d ollama
+attempt=0
+while [ "$attempt" -lt 45 ]; do
+  if docker compose exec -T ollama ollama list >/dev/null 2>&1; then
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 1
+done
+docker compose exec -T ollama ollama pull qwen3:0.6b
 
 echo -e "\n== Installing Lefthook git hooks =="
 command -v lefthook >/dev/null && lefthook install || echo "Lefthook not found, skipping git hooks setup"

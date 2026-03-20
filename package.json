@@ -51,6 +51,7 @@
     "vega-lite": "^6.4.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "angular-mocks": "~1.8.3",
     "chokidar": "5.0.0",
     "esbuild": "^0.27.0",

@@ -1,0 +1,2 @@
+web: bundle exec puma -C config/puma.rb -b tcp://0.0.0.0:3000
+worker: bundle exec bin/jobs
