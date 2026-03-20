@@ -28,7 +28,7 @@ class CoreController < ApplicationController
     @query_count = @queries.size
     @query_list_sortable = Rails.application.config.query_list_sortable
 
-    render layout: 'application'
+    render layout: 'core_new_ui'
   end
 
   def new

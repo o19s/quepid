@@ -142,6 +142,16 @@ const PAGES = [
     },
   },
 
+  // Case workspace — New UI (Rails+Stimulus replacement)
+  {
+    name: '04-case-workspace-new-ui',
+    tags: ['workspace', 'new-ui'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}/new_ui` : '/cases';
+    },
+  },
+
   // Case workspace — Tune Relevance pane tabs
   {
     name: '04a1-tune-relevance-query',
