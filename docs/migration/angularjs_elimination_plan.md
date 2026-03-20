@@ -199,6 +199,8 @@ This is the **single highest-risk technical item** for P0 flows.
 
 **Approach (strangler fig):** The new Rails+Stimulus UI is built above Angular's `ng-view` in `core/index.html.erb`. Both UIs coexist during development — the new one on top, Angular below. When the replacement is complete, remove `ng-view` and the Angular template entirely. No surgical replacement of individual pieces inside Angular templates.
 
+**TODO (rename):** The new UI uses prefixed element names (e.g. `new-pane-container` vs `pane_container`) to avoid collisions with the Angular UI during coexistence. When Angular is removed, rename these to match the original CSS class names (or update the CSS to use the new names).
+
 **Exit criteria:** HTML for shell visible with JS disabled partially (static labels); Angular only fills dynamic inner regions OR a flagged smaller root.
 
 ---

@@ -1,7 +1,7 @@
 <!-- queriesCtrl.js is the ng-controller -->
 <div id="main">
-  <div class="pane_container" data-controller="resizable-pane">
-    <div class="pane_main results-control" data-resizable-pane-target="main">
+  <div class="pane_container">
+    <div class="pane_main results-control">
       <!-- Case header is server-rendered in core/_case_header.html.erb, above ng-view -->
 
       <div id="case-actions" class="row" ng-controller="CaseCtrl">
@@ -70,10 +70,10 @@
       <div ng-controller="WizardCtrl"></div>
     </div>
 
-    <div class="east-slider" data-resizable-pane-target="slider" data-action="mousedown->resizable-pane#grabSlider">
+    <div class="east-slider">
     </div>
 
-    <div class="pane_east" data-resizable-pane-target="east">
+    <div class="pane_east">
       <ng-include src="'views/_dev_settings.html'"></ng-include>
     </div>
     <div class="clearfix"></div>

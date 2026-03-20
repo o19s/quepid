@@ -93,8 +93,7 @@ angular.module('QuepidApp')
         }
       });
 
-      // toggleEast listener owned by Stimulus resizable-pane controller
-      // $(document).on('toggleEast', toggleEast);
+      $(document).on('toggleEast', toggleEast);
 
       this.refreshElements = refreshElements;
     }
