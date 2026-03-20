@@ -9,8 +9,15 @@ This document is the **migration plan** for removing AngularJS from Quepid while
 | [angularjs_inventory.md](./angularjs_inventory.md) | File-level map: modules, services, controllers, build pipeline |
 | [angularjs_ui_inventory.md](../angularjs_ui_inventory.md) | Feature-level map tied to screenshots and templates |
 | [app_structure.md](../app_structure.md) | High-level backend / frontend layout |
-| [rails_stimulus_migration_alternative.md](./rails_stimulus_migration_alternative.md) | Prior notes on a Stimulus-based core layout (cross-check for overlap) |
-| [deangularjs_experimental_review.md](./deangularjs_experimental_review.md) | Review of `deangularjs-experimental`: what to reuse (docs, parity tooling, security audit) vs avoid (full stack merge) |
+| [angular_services_responsibilities_mapping.md](./angular_services_responsibilities_mapping.md) | Angular services → server vs client after the port (parity-first; not `deangularjs-experimental` stack) |
+| [workspace_api_usage.md](./workspace_api_usage.md) | JSON API paths used by the core workspace |
+| [workspace_behavior.md](./workspace_behavior.md) | How the Angular core workspace behaves today (flows, flash, realtime) |
+| [rails_stimulus_migration_alternative.md](./rails_stimulus_migration_alternative.md) | Stimulus + Turbo port in detail (default stack alignment with this plan) |
+| [old/react_migration_plan.md](./old/react_migration_plan.md) | React port alternative (same APIs; coexist behind a flag) |
+| [intentional_design_changes.md](./intentional_design_changes.md) | **§1** API hardening / robustness to align with; **§2** experimental-style product ideas — **not** default parity scope |
+| [deangularjs_experimental_review.md](./deangularjs_experimental_review.md) | Review of `deangularjs-experimental`: reuse (parity tooling, security ideas) vs avoid (full stack merge; server search/scoring) |
+
+**Authority:** This file is the single source for **migration scope**, **P0 parity**, **client-side interactive search** (`splainer-search`, `/proxy/fetch`), and **client-side scoring** (`ScorerFactory`). Other docs in `docs/migration/` link here instead of restating those rules; product-only changes belong in [intentional_design_changes.md](./intentional_design_changes.md) §2 with sign-off.
 
 ## Goals
 
@@ -65,7 +72,7 @@ The core case UI is **more stateful** (live search, scoring, drag-sort, many mod
 
 1. **Server-rendered core shell** for a case/try visit: layout, header, query list scaffold, tune-relevance panel scaffold, and result panes as ERB (or Turbo Frame sections where incremental updates help).
 2. **Stimulus controllers** (and plain ES modules where needed) owning: query row interactions, result rating widgets, pane resizing, modal open/close, sortable hooks (Sortable.js or similar **without** `angular-ui-sortable`).
-3. **`fetch` + JSON** continuing to use existing **JSON API routes** where they already back Angular services. Today the Angular `$http` calls use paths like `api/cases/...` (relative to the layout’s `<base href>`); Rails mounts these under `namespace :api` with the v1 module as default (see `config/routes.rb`). No requirement to delete APIs until the UI no longer needs them.
+3. **`fetch` + JSON** continuing to use existing **JSON API routes** where they already back Angular services. **URL paths are not planned to change** for the port—same `api/...` endpoints Rails already exposes (controllers live under `Api::V1` via `scope module: :v1` in `config/routes.rb`; the browser path is still typically `api/cases/...`, not a new namespace). Today Angular’s `$http` uses those paths relative to the layout’s `<base href>`; new code should use the same relative URLs (see [api_client.md](./api_client.md)). Only the **client** mechanism changes (`fetch` vs `$http`). No requirement to delete APIs until the UI no longer needs them.
 4. **Third-party JS** retained without Angular wrappers where possible: ACE (`ace-builds`), Vega/Vega-Lite, D3 for sparklines, `splainer-search` services instantiated from plain JS (adapter layer).
 
 Avoid prescribing React/Vue unless the team explicitly chooses a SPA framework; the existing incremental pattern favors **Hotwire + Stimulus + selective vanilla JS**.
@@ -131,7 +138,7 @@ These are the **critical flows** that must keep working throughout the migration
 
 #### P0 API Contract Summary
 
-These are the **minimum API endpoints** that P0 flows depend on. Full reference: [`workspace_api_usage.md`](from-deangularjs-experimental/workspace_api_usage.md).
+These are the **minimum API endpoints** that P0 flows depend on. Full reference: [`workspace_api_usage.md`](./workspace_api_usage.md).
 
 | P0 Flow | Angular Service | Endpoint | Purpose |
 |---------|----------------|----------|---------|

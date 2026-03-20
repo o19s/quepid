@@ -2,7 +2,7 @@
 
 Replacing the AngularJS core UI with React.
 
-> **Alternative approach:** For a Rails-native perspective using Stimulus and Turbo instead of React, see [Rails-Native Migration: Where to Diverge](rails_stimulus_migration_alternative.md).
+> **Alternative approach:** For a Rails-native perspective using Stimulus and Turbo instead of React, see [Rails-Native Migration: Where to Diverge](../rails_stimulus_migration_alternative.md).
 
 ## Guiding Principles
 

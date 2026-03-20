@@ -1,6 +1,6 @@
 # AngularJS Inventory
 
-Complete inventory of the AngularJS frontend in Quepid, created to guide the React migration.
+Complete inventory of the AngularJS frontend in Quepid. Use it with [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) (parity-first removal on `main`). Optional tracks: [old/react_migration_plan.md](./old/react_migration_plan.md), [rails_stimulus_migration_alternative.md](./rails_stimulus_migration_alternative.md). **`deangularjs-experimental`** is a separate reference—[deangularjs_experimental_review.md](./deangularjs_experimental_review.md).
 
 ## Overview
 

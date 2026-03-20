@@ -1,6 +1,6 @@
 # API client conventions (Stimulus + fetch)
 
-**Scope:** How **new** workspace-facing JS should talk to the server when the core is no longer Angular. Today’s Angular code uses **`caseTryNavSvc.getQuepidRootUrl()`** and **`$http`** instead—see project rules.
+**Scope:** Conventions for **new** workspace-facing `fetch` (CSRF, relative URLs, formats). Legacy Angular uses **`caseTryNavSvc.getQuepidRootUrl()`** and **`$http`** — see project rules. Migration context: [angularjs_elimination_plan.md](./angularjs_elimination_plan.md); React option: [old/react_migration_plan.md](./old/react_migration_plan.md). Not tied to **`deangularjs-experimental`**.
 
 These are **conventions**, not a prescription for one file layout or a fixed set of URL helpers.
 

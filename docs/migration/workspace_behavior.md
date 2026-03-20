@@ -1,6 +1,6 @@
 # Workspace behavior reference (Angular core workspace)
 
-> **Scope:** On **`main`**, the **core query-tuning workspace** (`/case/:id` and `/case/:id/try/:try_number`, route name `case_core`) is still implemented with **AngularJS** (`app/views/layouts/core.html.erb`, `app/views/core/index.html.erb`, `app/assets/javascripts/routes.js`, `MainCtrl`, etc.). Sections 1–4 document that implementation. Other surfaces (e.g. books, home) may use Stimulus, Turbo, and Rails views independently. **Replacement plan:** [angularjs_elimination_plan.md](../../angularjs_elimination_plan.md).
+> **Scope:** On **`main`**, the **core query-tuning workspace** (`/case/:id` and `/case/:id/try/:try_number`, route name `case_core`) is still implemented with **AngularJS** (`app/views/layouts/core.html.erb`, `app/views/core/index.html.erb`, `app/assets/javascripts/routes.js`, `MainCtrl`, etc.). Sections 1–4 document that implementation. Other surfaces (e.g. books, home) may use Stimulus, Turbo, and Rails views independently. **Replacement plan:** [angularjs_elimination_plan.md](./angularjs_elimination_plan.md).
 
 This document describes the behavior of that workspace. URLs are commonly written as `/case/:caseNo/try/:tryNo`; Rails uses `:id` and `:try_number` for the same segments.
 
@@ -52,7 +52,7 @@ This document describes the behavior of that workspace. URLs are commonly writte
 - **Flow:**
   1. Modal opens; case comes from `caseSvc.getSelectedCase()` or `$scope.theCase` when on cases list.
   2. User picks export type (e.g. general CSV, detailed CSV, snapshot). “General” refetches case with `caseSvc.get(ctrl.theCase.caseNo, false)` then uses `caseCSVSvc.stringify(...)` and triggers download (e.g. `saveAs` blob). “Detailed” uses in-memory case and `queriesSvc.queries`. Snapshot option uses snapshot id and similar CSV/build.
-  3. Modal also exposes **API links** (no JS `$http`) for direct GET of case JSON, queries JSON, annotations, scores, ratings, snapshots, full export (see [workspace_api_usage.md](from-deangularjs-experimental/workspace_api_usage.md)). User can open/download these URLs in the browser.
+  3. Modal also exposes **API links** (no JS `$http`) for direct GET of case JSON, queries JSON, annotations, scores, ratings, snapshots, full export (see [workspace_api_usage.md](./workspace_api_usage.md)). User can open/download these URLs in the browser.
 
 ### 1.5 Clone
 
@@ -141,14 +141,10 @@ When the judgement form is shown (Rails-rendered `app/views/judgements/_form.htm
 
 ## 5. Relationship to the rest of the app and migration docs
 
-This section describes **this repository**, not an already-completed Hotwire port of the core workspace.
-
-- **Core workspace (this doc §1–4):** Still Angular. Search execution, scoring refresh, and flash for the try page follow the Angular + `angular-flash` patterns above (e.g. `queriesSvc` with optional `proxyRequests` / splainer-oriented options in `app/assets/javascripts/services/queriesSvc.js`). There is no `QuerySearchService` in `app/services` on this branch.
+- **Core workspace (this doc §1–4):** Still Angular; try-page search, scoring refresh, and flash follow the patterns above (e.g. `angular-flash`, `queriesSvc`). Port target: [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). There is no `QuerySearchService` in `app/services` on `main`.
 
 - **Rails judgement form (§2.1):** Shared non-Angular UI; keyboard shortcuts remain in `app/views/judgements/_form.html.erb`.
 
 - **Stimulus:** Controllers under `app/javascript/controllers/` cover other flows (e.g. share case, mapper wizard, books-related UI); they do **not** replace the core case/try workspace layout.
 
 - **`RunCaseEvaluationJob`:** Background case evaluation and progress UI target the notification streams described in §3, not Turbo Frame IDs such as `qscore-case-*` or `query_list_*` (those frame/stream names appear in **migration design** docs as a target architecture, not in the Angular workspace templates in `app/views/core/`).
-
-- **Further reading:** Experimental / target-state Hotwire patterns (frames, streams, parity notes) live alongside this file, e.g. [turbo_frame_boundaries.md](../turbo_frame_boundaries.md), [turbo_streams_guide.md](../turbo_streams_guide.md), [ui_consistency_patterns.md](../ui_consistency_patterns.md), and the repo-level [deangularjs_experimental_review.md](../../deangularjs_experimental_review.md). Treat those as **design and migration references** unless a specific doc states it matches `main`.

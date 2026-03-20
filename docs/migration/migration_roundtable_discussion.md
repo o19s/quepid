@@ -1,6 +1,8 @@
 # Migration Roundtable: React vs. Rails-Stimulus
 
-A roundtable discussion among six engineering perspectives on the [React Migration Plan](react_migration_plan.md) and the [Rails-Stimulus Migration Alternative](rails_stimulus_migration_alternative.md). Each participant reviews both approaches and recommends how Quepid should proceed.
+**Context:** [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) is authoritative for parity and constraints. This roundtable compares **React vs Stimulus** as implementation paths only; it is **not** an endorsement of **`deangularjs-experimental`** — [deangularjs_experimental_review.md](./deangularjs_experimental_review.md).
+
+A roundtable on the [React migration plan](./old/react_migration_plan.md) and [Rails-Stimulus migration alternative](./rails_stimulus_migration_alternative.md).
 
 ---
 
@@ -91,13 +93,13 @@ So the condition I set earlier—*"the Stimulus migration must be as concrete as
 
 ## Pragmatic Engineer: Main Branch vs React Migration Plan — Does the Calculus Change?
 
-**Purpose of this section:** The roundtable above assumed a codebase where much of the app (or the migration branch) has already been moved to Rails + Stimulus. **Main** has a **lesser** implementation of Stimulus—fewer surfaces migrated, the AngularJS core still dominant. This section asks: **When we compare the main branch (with its thinner Stimulus baseline) against the [React migration plan](react_migration_plan.md), does that change the calculus** between choosing React vs Rails-Stimulus for replacing the core?
+**Purpose of this section:** The roundtable above assumed a codebase where much of the app (or the migration branch) has already been moved to Rails + Stimulus. **Main** has a **lesser** implementation of Stimulus—fewer surfaces migrated, the AngularJS core still dominant. This section asks: **When we compare the main branch (with its thinner Stimulus baseline) against the [React migration plan](./old/react_migration_plan.md), does that change the calculus** between choosing React vs Rails-Stimulus for replacing the core?
 
 **Pragmatic Engineer:** Yes, it does—but not enough to flip the recommendation.
 
 On **main**, the "rest of the app is already Stimulus" and "one stack" arguments are **weaker**. There's less existing Stimulus to "complete" or align with. So we're not deciding "do we finish a mostly-Stimulus app in Stimulus or add React for the last SPA?" We're deciding from an earlier state: "Do we build the replacement core in Stimulus (and grow the Stimulus surface from a thinner base) or in React (and have one React surface while the rest of the app may or may not stay thin on Stimulus)?" That **does** change the tradeoff:
 
-- **React becomes relatively more attractive on main.** On main, React wouldn't be "the only React in an otherwise Stimulus app"—we'd be choosing the core's stack at a point where the rest of the app isn't as heavily Stimulus yet. So the "two paradigms" cost is less glaring. The [React migration plan](react_migration_plan.md) is still a full, detailed path; if we're on main and considering it, we're not fighting an existing Stimulus-heavy codebase.
+- **React becomes relatively more attractive on main.** On main, React wouldn't be "the only React in an otherwise Stimulus app"—we'd be choosing the core's stack at a point where the rest of the app isn't as heavily Stimulus yet. So the "two paradigms" cost is less glaring. The [React migration plan](./old/react_migration_plan.md) is still a full, detailed path; if we're on main and considering it, we're not fighting an existing Stimulus-heavy codebase.
 
 - **Stimulus becomes relatively less attractive on main.** The "one stack" and "reuse existing patterns" benefits are weaker when there are fewer existing Stimulus surfaces. We'd be building more Stimulus from a thinner base, so we get less immediate payoff from consistency and pattern reuse.
 
@@ -156,7 +158,7 @@ Each participant’s recommended path and short rationale.
 
 ### Pragmatic Engineer — **Recommendation: Rails-Stimulus (Phase 0 complete; both plans now equally detailed)**
 
-**Recommendation:** **Assume Phase 0 is complete.** With the [Rails-Stimulus migration plan](rails_stimulus_migration_alternative.md) now as detailed as the [React migration plan](react_migration_plan.md) (phases 0–10, feature modules with artifacts, Angular mapping, timeline), **proceed with the Rails-Stimulus path.**
+**Recommendation:** **Assume Phase 0 is complete.** With the [Rails-Stimulus migration plan](rails_stimulus_migration_alternative.md) now as detailed as the [React migration plan](./old/react_migration_plan.md) (phases 0–10, feature modules with artifacts, Angular mapping, timeline), **proceed with the Rails-Stimulus path.**
 
 **Rationale (unchanged):** One stack, carve-and-replace, no new framework, same API and risks. The **condition** previously set—that the Stimulus plan be as concrete as the React plan—is now met: we have phase checklists, controller/view artifact lists per feature, and a 5–6 month estimate. Execution risk is comparable for both paths; the tie-breaker is long-term cost and team fit. Stimulus keeps one frontend paradigm and avoids maintaining a React bundle and React-specific tests for the core only. If we hit a wall in one area, we can still consider a React island there; no need to pre-commit.
 
@@ -178,6 +180,6 @@ Each participant’s recommended path and short rationale.
 ## Suggested Next Steps
 
 1. **Phase 0:** Implement or wrap splainer-search to use `fetch` and native Promises; optionally spike ScorerFactory. Add feature flag and shared API client. Document findings.
-2. **Decision:** With both the [React](react_migration_plan.md) and [Rails-Stimulus](rails_stimulus_migration_alternative.md) plans equally detailed, choose by team context: one stack (Stimulus) vs. component-centric model (React). Consider “re-evaluate after Phase 2” and “React islands” if choosing Stimulus.
+2. **Decision:** With both the [React](./old/react_migration_plan.md) and [Rails-Stimulus](rails_stimulus_migration_alternative.md) plans equally detailed, choose by team context: one stack (Stimulus) vs. component-centric model (React). Consider “re-evaluate after Phase 2” and “React islands” if choosing Stimulus.
 3. **Execute:** Follow the chosen plan’s phase checklists; both include Phase 0–10, feature modules, and Angular mapping.
 4. **Parity and rollback:** Define “done” per phase and assert parity (e.g. system tests, key user flows); use the feature flag for rollback before removing Angular.

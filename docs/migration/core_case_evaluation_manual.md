@@ -2,6 +2,8 @@
 
 This manual describes the **core case evaluation interface** in Quepid: the main screen where you work with a case, its queries, search results, ratings, and scores. It is the primary workspace for tuning search relevance. Screenshots are referenced throughout; to capture or update them, see [Screenshot Guide for Core Case Evaluation Manual](core_case_evaluation_manual_screenshots.md). Image files live in `docs/images/core_case_evaluation_manual/`.
 
+For **engineering behavior** (bootstrap, flash, APIs) and the **Angular removal plan**, see [workspace_behavior.md](./workspace_behavior.md) and [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). **`deangularjs-experimental`** is documented separately in [deangularjs_experimental_review.md](./deangularjs_experimental_review.md)—not the default target for `main`.
+
 ## Overview
 
 The core case evaluation interface is the AngularJS application loaded when you open a specific case and try. It lets you:

@@ -2,7 +2,9 @@
 
 Replacing the AngularJS core UI with Rails views, Turbo, and Stimulus—using the stack Quepid already uses everywhere else.
 
-> **Alternative approach:** For a React-based migration with the same API and phases, see [React Migration Plan](react_migration_plan.md).
+> **Canonical plan:** [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) — scope, P0 parity, and browser search/scoring model. This doc is **only** Stimulus + Turbo implementation detail for that plan.
+>
+> **React alternative:** [old/react_migration_plan.md](./old/react_migration_plan.md). **`deangularjs-experimental`:** [deangularjs_experimental_review.md](./deangularjs_experimental_review.md).
 
 ## Guiding Principles
 
@@ -269,126 +271,11 @@ Each Angular controller/component maps to Rails views/partials plus one or more 
 |-------|----------|--------|
 | FROG modal partial | `frog_report_controller.js` | Fetch, display |
 
-## Migration Phases
+## Phases, risks, and timeline
 
-### Phase 0: Infrastructure (1–2 weeks)
+**Do not maintain a second phasing checklist in this file.** What to ship, in what order, P0 acceptance, API dependencies, and technical risks (`splainer-search`, `ScorerFactory`, CSRF, URLs/proxy, JSONP) all live in [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) (Phase 0 + Phases 1–10 workstreams, *Expectations* for calendar).
 
-**Goal:** Stimulus-capable core layout and shared API client; no Angular removed yet.
-
-- [ ] Feature flag `use_stimulus_core` (or equivalent) in `CoreController` to select layout/content
-- [ ] Core layout variant that loads Stimulus app + core-specific controllers (no Angular)
-- [ ] Shared API client module: `app/javascript/api/client.js` (fetch + CSRF from meta tag + error handling)
-- [ ] De-risk splainer-search: wrap or fork to use `fetch` and native Promises
-- [ ] Optionally spike ScorerFactory port to `lib/scorer_runner.js` (framework-agnostic)
-- [ ] System tests for current Angular core (critical flows: open case, run query, rate, change settings) to baseline parity
-- [ ] Verify: feature flag can show “Stimulus shell” (e.g. empty three-panel layout) with no Angular
-
-### Phase 1: Header + Case Shell (1–2 weeks)
-
-**Goal:** Stimulus core renders header and case context; workspace panes are placeholders or empty frames.
-
-- [ ] Header partial (adapt `_header_core_app`) with case/book dropdowns and user menu
-- [ ] Stimulus: `header_controller.js` and/or `case_dropdown_controller.js`, `book_dropdown_controller.js`, `user_menu_controller.js`
-- [ ] Case header partial: case name, rename, basic toolbar
-- [ ] Stimulus: `case_header_controller.js`
-- [ ] Core shell view: three-panel layout with Turbo Frame placeholders for query list, results, settings
-- [ ] Bootstrap data (current user, case, config) available to Stimulus via data attributes or meta
-- [ ] Routes: same URLs as Angular core (e.g. `/case/:id/try/:try_no`)
-
-### Phase 2: Query List (2–3 weeks)
-
-**Goal:** Users see queries and scores in the left pane; add/delete/reorder.
-
-- [ ] Query list Turbo Frame + partials (query item: text, score badge, expand/collapse, delete)
-- [ ] Stimulus: `query_list_controller.js` (expand/collapse, delete, reorder via API + frame refresh or DOM update)
-- [ ] Add query form partial + `add_query_form_controller.js`
-- [ ] `api/queries.js`: list, create, update, delete, reorder; integrate splainer-search for search execution
-- [ ] Score display in query item: `lib/score_to_color.js`; `score_display_controller.js` or inline in list
-- [ ] `api/scorers.js` + scorer bootstrap; run scorer for each query (ScorerRunner) and display score
-
-### Phase 3: Search Results + Rating (2–3 weeks)
-
-**Goal:** Core loop: run search, view results, rate documents.
-
-- [ ] Search results frame + result item partials (fields, title, id)
-- [ ] Stimulus: `search_results_controller.js` (run search via splainer-search, render results)
-- [ ] `rating_control_controller.js`: click to rate; call `api/ratings.js`
-- [ ] `bulk_rating_controller.js`: rate all visible
-- [ ] Media embed partial or controller for audio/image/video
-- [ ] Error handling: `lib/error_messages.js` (port searchErrorTranslatorSvc)
-
-### Phase 4: Settings Panel (2 weeks)
-
-**Goal:** Users can change try and edit search configuration.
-
-- [ ] Settings panel Turbo Frame + partials: try selector, try history, query params editor, custom headers, field spec, curator vars
-- [ ] Stimulus: `settings_panel_controller.js`, `try_selector_controller.js`, `query_params_editor_controller.js` (ACE/CodeMirror), `custom_headers_controller.js`, `try_details_controller.js` (rename, delete, clone modals)
-- [ ] `api/tries.js`: get, update, create try, settings
-
-### Phase 5: Scoring Visualization (1–2 weeks)
-
-**Goal:** Score history graph and annotations.
-
-- [ ] Score graph partial; Stimulus: `score_graph_controller.js` (D3 sparkline)
-- [ ] Annotations list partial + optional `annotations_controller.js`
-- [ ] Scorer picker modal + `scorer_picker_controller.js`
-- [ ] Case-level score display + graph
-
-### Phase 6: Snapshots & Diffs (1–2 weeks)
-
-**Goal:** Snapshot results and compare across tries.
-
-- [ ] Snapshot list + create modal; Stimulus: `snapshot_manager_controller.js`
-- [ ] Diff viewer partial + `diff_viewer_controller.js` (side-by-side, snapshot picker)
-- [ ] `api/snapshots.js`: CRUD, diff
-
-### Phase 7: Case Wizard + Actions (2 weeks)
-
-**Goal:** Create new case and case operations.
-
-- [ ] Case wizard: step partials (select engine, configure endpoint, add queries, review) + `case_wizard_controller.js`
-- [ ] Clone, delete, export, import ratings, share, unarchive modals (reuse existing patterns or new Stimulus controllers)
-- [ ] `api/cases.js`, `api/exports.js`, `api/imports.js`
-
-### Phase 8: Document Inspector + Analysis (1–2 weeks)
-
-**Goal:** Document detail, explain, finder, debug matches, FROG report.
-
-- [ ] Detailed doc, doc explain, doc finder, debug matches modals/partials + `document_inspector_controller.js`
-- [ ] FROG report modal + `frog_report_controller.js`
-- [ ] Explain view and stacked chart (D3); JSON explorer partial or small Stimulus helper
-
-### Phase 9: Polish + Parity Testing (1–2 weeks)
-
-**Goal:** Stimulus core matches Angular feature-for-feature.
-
-- [ ] System tests for all critical flows on Stimulus core
-- [ ] Keyboard shortcuts and accessibility
-- [ ] URL handling (deep links, back/forward) via Turbo Drive
-- [ ] HTTPS/HTTP protocol handling (Solr JSONP) ported to shared client or Stimulus
-- [ ] Error states and edge cases; performance and mobile/responsive check
-
-### Phase 10: Cutover (1 week)
-
-**Goal:** Angular removed.
-
-- [ ] Flip feature flag to Stimulus core as default; monitor
-- [ ] Remove Angular bundles, templates, controllers, services, factories, directives, components
-- [ ] Remove Angular npm dependencies and `build:angular-*` scripts
-- [ ] Remove Karma/Jasmine; remove Angular core layout
-- [ ] Update `app_structure.md` and docs
-
-## Key Migration Risks & Mitigations
-
-Same as the React plan; summarized here.
-
-| Risk | Mitigation |
-|------|------------|
-| **splainer-search** depends on Angular `$http`/`$q` | Wrap or fork to use `fetch` and native Promises. De-risk in Phase 0. |
-| **ScorerFactory** (eval, security) | Port to `lib/scorer_runner.js`; consider Web Worker; keep API. |
-| **CSRF** | Shared API client reads meta tag, adds header (Phase 0). |
-| **URLs / deep links** | Rails routes + Turbo; same URLs as today. |
-| **HTTP/HTTPS mixed content** (Solr JSONP) | Port protocol logic to shared client; test with real Solr. |
+Use the **Feature modules**, **Rails integration**, and **directory structure** sections above to translate those plan phases into concrete Stimulus controllers, Turbo Frames, and `app/javascript/api/*` modules.
 
 ## Angular Service to Stimulus/Rails Mapping
 
@@ -413,26 +300,6 @@ Same as the React plan; summarized here.
 | `ScorerFactory` | `lib/scorer_runner.js` | Framework-agnostic |
 | `TryFactory` / `SettingsFactory` / `SnapshotFactory` | Plain objects + API responses | |
 
-## Estimated Timeline
-
-| Phase | Duration | Cumulative |
-|-------|----------|------------|
-| 0: Infrastructure | 1–2 weeks | 2 weeks |
-| 1: Header + Shell | 1–2 weeks | 4 weeks |
-| 2: Query List | 2–3 weeks | 7 weeks |
-| 3: Search Results + Rating | 2–3 weeks | 10 weeks |
-| 4: Settings Panel | 2 weeks | 12 weeks |
-| 5: Scoring Visualization | 1–2 weeks | 14 weeks |
-| 6: Snapshots & Diffs | 1–2 weeks | 16 weeks |
-| 7: Case Wizard + Actions | 2 weeks | 18 weeks |
-| 8: Document Inspector | 1–2 weeks | 20 weeks |
-| 9: Polish + Parity | 1–2 weeks | 22 weeks |
-| 10: Cutover | 1 week | 23 weeks |
-
-**Realistic estimate: 5–6 months** for one developer working consistently. Phases can overlap or parallelize with more developers. Timeline is similar to the React plan; the main variable is how much is server-rendered (faster iteration) vs. client-heavy Stimulus (more JS to write).
-
----
-
 ## Summary: Where This Diverges from the React Plan
 
 | React plan | Rails-Stimulus plan |
@@ -444,4 +311,4 @@ Same as the React plan; summarized here.
 | Feature modules as React components/hooks | Same domains; ERB + Stimulus (+ Turbo Frames) |
 | API, CSRF, URLs, risks | Same approach; no divergence |
 
-The React plan is a valid path. This plan keeps the core in the same stack as the rest of Quepid (Rails + Stimulus + Turbo) with the same API, phases, and risk mitigations, and with an equivalent level of detail for execution.
+The React plan is a valid path. This doc keeps the core on Rails + Stimulus + Turbo; **shared** scope, phases, and risks are defined once in [angularjs_elimination_plan.md](./angularjs_elimination_plan.md).

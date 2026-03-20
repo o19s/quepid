@@ -1,14 +1,18 @@
 # Workspace state design (core case UI)
 
-**Where state lives** when the core case workspace is Rails-driven: server as source of truth, minimal client-only UI state, Turbo only where it reduces full-page churn.
+**Where state lives** when the core case workspace is Rails-driven under the parity plan ([angularjs_elimination_plan.md](./angularjs_elimination_plan.md)).
 
-**Related:** execution and phases in [angularjs_elimination_plan.md](../angularjs_elimination_plan.md) and [rails_stimulus_migration_alternative.md](../rails_stimulus_migration_alternative.md); Angular-era behavior today in [workspace_behavior.md](../workspace_behavior.md). **HTTP surface:** [workspace_api_usage.md](workspace_api_usage.md). **Frame/stream mechanics:** [turbo_frame_boundaries.md](../turbo_frame_boundaries.md), [turbo_streams_guide.md](../turbo_streams_guide.md).
+**Authoritative on the server:** persisted case, try, queries, ratings (via JSON APIs), exports/imports, snapshots metadata — same contracts Angular uses today ([workspace_api_usage.md](./workspace_api_usage.md)).
+
+**Substantial client state (parity):** Ephemeral search hits, doc cache, interactive scoring, query-list UI toggles, optimistic ratings — more than “Stimulus-only micro-state,” not a full DB replica. **Why that split and when it may change:** [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) (including [Browser DevTools / `/proxy/fetch`](./angularjs_elimination_plan.md#browser-devtools-visibility-and-proxyfetch)); signed-off product deltas: [intentional_design_changes.md](./intentional_design_changes.md) §2.
+
+**Turbo Frames/Streams:** optional shell/fragment updates — see [turbo_frame_boundaries.md](./turbo_frame_boundaries.md) and [turbo_streams_guide.md](./turbo_streams_guide.md); not the default stand-in for the in-browser result loop unless scope explicitly changes ([angularjs_elimination_plan.md](./angularjs_elimination_plan.md)).
 
 ---
 
 ## 1. Server state (authoritative)
 
-Domain and persisted data live on the server. The browser shows what Rails (and JSON responses) provide; mutations go through forms, `fetch` to the existing **`api/...`** JSON API, or Turbo responses—not a long-lived client replica.
+Domain **persistence** lives on the server. Mutations go through `fetch` to the existing **`api/...`** JSON API (or forms/Turbo where you introduce them). The browser still holds **ephemeral** search hits, scorer output, and UI caches for parity with the current Angular workspace — see intro above.
 
 | State | Role | See |
 |-------|------|-----|
@@ -26,20 +30,21 @@ Domain and persisted data live on the server. The browser shows what Rails (and 
 
 ---
 
-## 2. Client-only state (minimal)
+## 2. Client state (UI + parity-heavy)
 
-Transient UI only: **Stimulus** (`data-*` values, small controller state). Nothing here should be the only copy of domain data.
+**Stimulus / React / plain modules:** route-driven selection, pane layout, modals, expand/collapse, diff toggles, **and** the splainer/scorer/doc-cache layer that backs results and scores between API round-trips. Persisted ratings and case metadata still **save through the API**; the client may mirror them for responsiveness like Angular does today.
 
 | State | Examples | Handling |
 |-------|----------|----------|
 | **Layout** | Collapsed panels, toolbar sections | Stimulus; optional `localStorage` per case |
 | **Selection** | Selected query driving the results pane | URL param, frame navigation, or Stimulus—**one** strategy per slice so back/forward stays predictable |
 | **Toggles** | Diff mode, “rated only,” snapshot pick | Stimulus and/or URL params; data still from server |
-| **Modals** | Export, clone, share, import | [ui_consistency_patterns.md](../ui_consistency_patterns.md) |
+| **Modals** | Export, clone, share, import | [ui_consistency_patterns.md](./ui_consistency_patterns.md) |
 | **Focus / shortcuts** | Keyboard, focus ring | Browser + Stimulus |
 | **Drafts** | Text before submit | Stimulus until submit commits server-side |
+| **Live search & scores** | Result lists, `ScorerFactory` output, doc cache | Plain JS modules + Stimulus/React glue — **parity** with Angular |
 
-If it must survive sessions for real, it belongs in **server state** or explicit user preferences—not ad hoc caches.
+If it must **survive reloads or sessions** as the only copy, it belongs in **server state** or user preferences — not undocumented `localStorage`.
 
 ---
 
@@ -48,23 +53,25 @@ If it must survive sessions for real, it belongs in **server state** or explicit
 Use **Frames** to carve regions that can load or navigate independently (query list, results pane, lazy regions). Use **Streams** when one action should update **several** DOM targets in one response (e.g. list + header score).
 
 - Each region should have a clear **server owner** (action + partial) that can render that fragment alone.
-- Keep URLs **relative** for deploy flexibility: [api_client.md](../api_client.md).
-- Concrete frame IDs, broadcast channels, and stream-heavy flows: [turbo_frame_boundaries.md](../turbo_frame_boundaries.md) and [turbo_streams_guide.md](../turbo_streams_guide.md).
+- Keep URLs **relative** for deploy flexibility: [api_client.md](./api_client.md).
+- Concrete frame IDs, broadcast channels, and stream-heavy flows: [turbo_frame_boundaries.md](./turbo_frame_boundaries.md) and [turbo_streams_guide.md](./turbo_streams_guide.md).
 
 ---
 
-## 4. Layer sketch
+## 4. Layer sketch (parity)
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  Core workspace (Rails + Stimulus + optional Turbo)          │
+│  Core workspace — Rails shell + Stimulus/React + plain JS     │
 ├──────────────────────────────────────────────────────────────┤
-│  SERVER: case, try, queries, ratings → Rails + api/...       │
+│  SERVER: persisted case / try / queries / ratings → api/...   │
 ├──────────────────────────────────────────────────────────────┤
-│  TURBO (optional): query list │ results │ panels │ modals     │
+│  CLIENT (plain JS): splainer search, ScorerFactory, doc cache   │
 ├──────────────────────────────────────────────────────────────┤
-│  CLIENT (Stimulus): collapse, selection UX, toggles, drafts  │
+│  CLIENT (Stimulus/React): layout, modals, toggles, selection   │
+├──────────────────────────────────────────────────────────────┤
+│  TURBO (optional): fragments, flash, notifications, some lists  │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-Rails hosts persisted state and APIs; Stimulus holds ephemeral UX; Turbo is optional glue where it clearly reduces churn.
+Rails owns **persistence**; the **interactive** search/score loop stays **browser-side** for parity; Turbo is additive where a slice opts in.

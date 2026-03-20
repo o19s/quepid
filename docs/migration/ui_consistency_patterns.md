@@ -1,6 +1,6 @@
 # UI consistency patterns
 
-> Guidelines for Bootstrap 5, modals, flash messages, and styling for **Rails + Stimulus + Turbo** surfaces in Quepid.
+> Guidelines for Bootstrap 5, modals, flash messages, and styling for **Rails + Stimulus + Turbo** surfaces in Quepid when porting the core workspace per [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) (or [rails_stimulus_migration_alternative.md](./rails_stimulus_migration_alternative.md)). Patterns here apply to **`main`**’s migration; **`deangularjs-experimental`** is a separate reference—see [deangularjs_experimental_review.md](./deangularjs_experimental_review.md).
 
 ---
 

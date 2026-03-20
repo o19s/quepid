@@ -350,13 +350,19 @@ Placeholder file referencing the screenshot spec. No additional UI states.
 
 ---
 
+### `docs/migration/README.md`
+
+Index of migration docs (Angular elimination plan, stack options, inventories). No UI states.
+
+---
+
 ### `docs/migration/screenshot_automation.md`
 
 All 16 core screenshots and wizard screenshots documented here are covered. No gaps.
 
 ---
 
-### `docs/migration/react_migration_plan.md`
+### `docs/migration/old/react_migration_plan.md`
 
 **Covered:**
 - All core case evaluation UI states (screenshots 01–31)
@@ -373,7 +379,7 @@ All 16 core screenshots and wizard screenshots documented here are covered. No g
 
 ### `docs/migration/rails_stimulus_migration_alternative.md`
 
-Same UI states as `react_migration_plan.md`. Same coverage and gaps.
+Same UI states as `old/react_migration_plan.md`. Same coverage and gaps.
 
 ---
 

@@ -3,6 +3,8 @@
 This document describes how to automatically capture the screenshots referenced in
 [`core_case_evaluation_manual.md`](core_case_evaluation_manual.md) using Playwright.
 
+**Migration context:** Parity work is guided by [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). Visual/API comparison tooling also supports **Angular vs migrated slice** checks (see [deangularjs_experimental_review.md](./deangularjs_experimental_review.md) and `test/visual_parity/`).
+
 ## Decision Process
 
 ### Why Playwright?

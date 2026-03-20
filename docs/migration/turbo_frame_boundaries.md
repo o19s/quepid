@@ -1,8 +1,8 @@
 # Turbo frame boundaries
 
-> **Scope:** Map of Turbo Frame IDs, where they live in the app, and how they interact with Stimulus and Turbo Streams when building the Rails core workspace. Align names with your actual partials and layouts.
+> **Scope:** Map of Turbo Frame IDs, where they live in the app, and how they interact with Stimulus and Turbo Streams when building the Rails core workspace. Align names with your actual partials and layouts. This is a **design reference** for [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) slices—not a description of the Angular workspace on `main` today.
 >
-> **Related:** [Workspace state design](from-deangularjs-experimental/workspace_state_design.md), [Turbo streams guide](turbo_streams_guide.md). App layout overview: [docs/app_structure.md](../app_structure.md).
+> **Related:** [Workspace state design](./workspace_state_design.md), [Turbo streams guide](turbo_streams_guide.md). App layout overview: [docs/app_structure.md](../app_structure.md).
 
 ---
 
@@ -17,7 +17,7 @@
 **Details:**
 - Wraps both query list and results pane so query selection can use Turbo Frame navigation instead of full-page reload.
 - Query links target this frame; Turbo replaces only the workspace content, keeping header/sidebar intact.
-- Use partials or ViewComponents consistently with the rest of the app.
+- Use Rails partials (or optional ViewComponents if the team adopts them per elimination plan) consistently within each slice.
 
 ---
 
@@ -34,10 +34,8 @@
 - Renders the list of queries with per-row actions (move, options, explain, delete, etc.) as your markup allows.
 - Selection via link to the same page with `?query_id=`; use `data-turbo-frame="workspace_content"` so only the workspace content updates (no full-page reload).
 - **Turbo Streams:** Add/remove queries via Turbo Streams (`append` to `query_list_items`, `remove` `query_row_<id>`). Real-time score updates may `replace` the whole frame when a job completes. See [turbo_streams_guide.md](turbo_streams_guide.md) and §7 below.
-- **Typical client-side behavior** (often a Stimulus controller such as `query_list_controller.js`):
-  - **Pagination:** Client-side pagination with URL state (e.g. `?page=`).
-  - **Filtering:** Text filter and “rated only”–style toggles; may filter client-side DOM visibility.
-  - **Sorting:** Sort options with URL state (e.g. `?sort=`).
+- **Typical client-side behavior** (often a Stimulus controller such as `query_list_controller.js`) — **mirror Angular parity first**, then evolve:
+  - **Pagination / filtering / sorting:** Match today’s query list UX (Angular uses client pagination in places; elimination plan also allows server-driven Pagy for large cases). Do not assume `?page=` on the URL unless your slice intentionally matches that model.
   - **Drag-and-drop reorder:** e.g. SortableJS; persist order via your cases/queries position API.
   - **Expand/collapse all:** Controls to expand or collapse all query rows.
   - **Score refresh:** Listen for custom events (e.g. `query-score:refresh`); fetch lightweight score updates per query without full re-evaluation when that fits your API.
@@ -58,7 +56,7 @@
 - Shows selected query context, notes / information-need form, and placeholder or live search results.
 - **Query notes form** (`query_notes_<query_id>`): may submit via Turbo Frame; server returns HTML with a matching frame to replace the form region without full-page reload. See §7.
 - When no query is selected: show a prompt such as “Select a query from the list”.
-- **Results fetching:** Often `fetch()` with `Accept: text/html` from a Stimulus controller; server renders document cards and matches. Results need not be lazy-loaded via frame `src`; the controller can own fetch lifecycle.
+- **Results fetching (parity):** Same browser search model as [angularjs_elimination_plan.md](./angularjs_elimination_plan.md); optional server-rendered cards only with explicit scope ([intentional_design_changes.md](./intentional_design_changes.md) §2).
 - **Rating updates:** Responses can use Turbo Streams (`update` for `rating-badge-<doc_id>`) when `Accept: text/vnd.turbo-stream.html`. See [turbo_streams_guide.md](turbo_streams_guide.md).
 - **Bulk rating:** Bulk rate/clear via your bulk ratings endpoints; trigger score refresh and re-fetch results as needed.
 - **Diff mode:** May use query params (e.g. `diff_snapshot_ids[]`); server renders diff UI on cards; listen for `diff-snapshots-changed` or equivalent events if you use them.

@@ -1,6 +1,6 @@
 # Turbo streams guide
 
-> When and how to use Turbo Streams for live updates in the core workspace as Rails replaces legacy client-side DOM updates ([angularjs_elimination_plan.md](../angularjs_elimination_plan.md)).
+> When and how to use Turbo Streams as Rails replaces legacy client-side DOM updates. **Parity constraints** (what stays in the browser vs server): [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). Prefer streams for **notifications**, **server-rendered** mutation responses, and **server-owned** HTML fragments — not as the default replacement for the interactive search/score loop unless [intentional_design_changes.md](./intentional_design_changes.md) §2 is explicitly adopted.
 
 ---
 
@@ -26,6 +26,8 @@
 
 ## 2. Primary use cases in the core workspace
 
+> **Parity:** The Angular workspace today updates many of these flows **in the client** (events + `fetch` + DOM updates). The table below describes **one** target shape **if** you implement server-returned Turbo Stream HTML for that action. It is **not** a requirement to use Streams for every row — match [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) slices and preserve UX before adopting Stream-driven markup.
+
 | Use case | Typical server / client pattern |
 |----------|--------------------------------|
 | **New query added** | `append` to `query_list_items`, `remove` `query_list_empty_placeholder` when first query. Error handling: `append` to `flash` on validation failure. |
@@ -35,7 +37,7 @@
 | **Annotation created** | `prepend` to `annotations_list` (HTML from component or partial). Client requests `Accept: text/vnd.turbo-stream.html` and applies via `Turbo.renderStreamMessage`. |
 | **Score changed** | **Immediate:** broadcast `replace` for `case-header-score-#{case_id}` when a single query is scored. **Full evaluation run:** job broadcasts `replace` for `qscore-case-#{case_id}`, `case-header-score-#{case_id}`, and `query_list_#{case_id}` when complete. Subscribe via `turbo_stream_from(:notifications)` where score UI lives. Bulk rate/delete flows that trigger re-evaluation should refresh scores consistently. |
 
-**Prefer Turbo Streams** over client-side `fetch` + manual DOM update. When the server can return `text/vnd.turbo-stream.html`, use that so Turbo handles DOM updates consistently.
+**Prefer Turbo Streams** (over ad hoc `fetch` + manual DOM surgery) for **server-owned** UI fragments: lists, badges, flash, job completion—where Rails already renders the HTML. The live search/result loop: [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). When the server can return `text/vnd.turbo-stream.html`, use that so Turbo applies updates consistently.
 
 ---
 

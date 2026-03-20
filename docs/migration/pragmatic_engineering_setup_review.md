@@ -146,7 +146,7 @@ This document analyzes Quepid’s **current** development setup, testing strateg
 |----------|----------------|--------|
 | **P1** | Fix **`config/ci.rb`** step title for `test:frontend`. | Trivial |
 | **P2** | Add a **“run full local CI”** callout to DEVELOPER_GUIDE: `bin/ci` before push. | Low |
-| **P3** | Link this doc from DEVELOPER_GUIDE or `docs/migration/from-deangularjs-experimental/README.md`. | Trivial |
+| **P3** | Link this doc from DEVELOPER_GUIDE and/or [docs/migration/angularjs_elimination_plan.md](./angularjs_elimination_plan.md) “Related documentation.” | Trivial |
 
 ---
 
@@ -171,7 +171,7 @@ This document analyzes Quepid’s **current** development setup, testing strateg
 ### Current state
 
 - DEVELOPER_GUIDE: setup, Karma, RuboCop, `test:frontend`, debugging
-- Migration notes under `docs/migration/` describe experimental-branch tooling (e.g. Vitest) **as comparison**, not as current `main` fact
+- Migration notes under `docs/migration/` describe the **incremental Angular elimination plan** on `main`; [deangularjs_experimental_review.md](./deangularjs_experimental_review.md) compares against **`deangularjs-experimental`** (Vitest, server search, etc.) where relevant—not as current `main` runtime fact
 
 ### Recommendations
 

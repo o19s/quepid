@@ -1,119 +1,64 @@
-# Intentional design changes from Angular
+# Design notes: parity plan vs optional candidates
 
-This document records **deliberate** differences between the legacy Angular workspace and the Rails + Stimulus target—not regressions. Treat items below as **agreed direction** unless a ticket or ADR explicitly revises them. Revisit quarterly so “target” text still matches what ships.
+**Does not redefine migration scope.** Goals, P0 parity, and the browser search/scoring model are authoritative in [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). Stack options: [rails_stimulus_migration_alternative.md](./rails_stimulus_migration_alternative.md), [old/react_migration_plan.md](./old/react_migration_plan.md).
 
-**Non-goals:** Recreating every Angular shortcut or modal flow when a dedicated page or server-driven flow is clearer; matching legacy behavior when it conflicted with security or maintainability (called out per item).
+This document only lists:
 
----
-
-## 1. Book / judgement sync: automatic, not manual push
-
-**Angular:** Users could explicitly push ratings from the workspace into a Book (including a bulk “populate judgements” style flow).
-
-**Target / migrated:** Ratings flow toward Books **automatically** in the background when users rate in the workspace. No manual “push” step. Pulling aggregated judgements back into the Case can remain an explicit action (e.g. refresh from book).
-
-**Why:** The old two-way model made conflicts hard to reason about when ratings changed after a push. A clearer split: Book as judgement authority, Case as live search workspace; per-rating sync avoids “forgot to push.”
+1. **Items we should align with** as we touch APIs or new UI (security and robustness).
+2. **Product/UX ideas** that came up during **`deangularjs-experimental`** and similar discussions — implement **only** with explicit product sign-off / ADR; several **conflict with parity** if slipped in as “the migration default.”
 
 ---
 
-## 2. Scorer management on a dedicated page
+## 1. Align as you implement (recommended)
 
-**Angular:** Full scorer CRUD lived in workspace modals.
+These fit the parity migration and improve safety or resilience without requiring a product redesign.
 
-**Target / migrated:** **Selection** of a scorer stays in the workspace; **create / edit / clone / delete / share** live on a dedicated scorers area (consistent with scorers living outside the legacy core UI elsewhere in the app).
+### 1.1 Authorization: scope by user (IDOR hardening)
 
-**Why:** Editing shared scorers inside one case’s modal is cramped and misleading. A dedicated page supports testing, previews, and editing without blocking the workspace.
+**Issue:** APIs must resolve cases, teams, books, and related records through **scopes the current user may access**, not unconstrained id lookups.
 
----
+**Action:** Audit and fix as you migrate or refactor controllers; see [deangularjs_experimental_review.md](./deangularjs_experimental_review.md) for a concrete comparison with experimental fixes.
 
-## 3. Case list sort by recency of change, not last opened
+### 1.2 Rating deletion: tolerate “already gone”
 
-**Angular:** Case list could reflect “last viewed” so merely opening a case floated it to the top.
+**Issue:** Deleting a rating that was already removed can error; races (tabs, double clicks) get worse with more async UI.
 
-**Target / migrated:** Prefer sorting by **actual change** (e.g. `updated_at`-style semantics) rather than last-open metadata.
-
-**Why:** Last-viewed sort was confusing — opening a case reordered the list even when nothing substantive changed.
+**Action:** Prefer **no-op success** (or equivalent) for “delete missing rating” so the client can stay optimistic without surfacing 500s.
 
 ---
 
-## 4. Heavy CRUD moved out of workspace modals
+## 2. Consider only with explicit product sign-off (not default migration)
 
-**Angular:** Some team and endpoint workflows lived in workspace modals.
+The following were **directions on `deangularjs-experimental`** or adjacent discussions. They are **not** part of the written parity plan. Adopting them changes behavior vs today’s Angular UI.
 
-**Target / migrated:** Complex flows live on **dedicated pages** (e.g. teams, endpoints) instead of modal cramming. Same principle as **§2** (scorers).
+**Observability gate:** We are **not** planning to move **interactive** search (or, by the same principle, interactive scoring) **server-side** unless we can match **today’s DevTools / Network visibility** for search traffic—see [angularjs_elimination_plan.md § Browser DevTools visibility and `/proxy/fetch`](./angularjs_elimination_plan.md#browser-devtools-visibility-and-proxyfetch). Anything below that would hide per-engine requests behind a single Quepid API call needs an **explicit** ADR covering observability (debug tooling, echoed requests, etc.), not just a product preference.
 
-**Why:** Modals are poor homes for multi-step admin; separate pages scale better for permissions, deep links, and testing.
+| Candidate | What it would change vs Angular today | Parity impact |
+|-----------|----------------------------------------|---------------|
+| **Automatic book / judgement sync** | Legacy workspace uses explicit “populate judgements” / book push flows in places; experimental favored background sync. | **High** — elimination plan keeps judgements modal behavior in scope. |
+| **Scorer CRUD only on `/scorers`** | Today, scorer create/edit/share can live in **workspace modals**. | **High** — would remove or shrink modal flows. |
+| **Case list sort by `updated_at` only** | Today, **last viewed** can affect ordering users expect. | **Medium** — cases list / dropdown behavior changes. |
+| **Heavy team/endpoint CRUD off modals** | Some flows are modal-based today; moving them is a product/IA choice. | **Medium** — depends which modals. |
+| **Query list pagination model** | Angular uses paginated lists in places; experimental used “all queries in DOM + `?page=`” style patterns. | **Medium** — must match chosen parity for list UX. |
+| **Server-primary interactive search** | Browser only calls a Quepid JSON API; Rails/`FetchService` talks to Solr/ES/OS. | **High** — **breaks** today’s Network-tab visibility of engine requests unless an ADR adds an equivalent (see observability gate above). |
+| **Server-primary interactive scoring** | Experimental used API/job + MiniRacer-style paths for scores the workspace shows immediately; parity keeps **browser `ScorerFactory`** for that loop. | **High** — same **observability** expectation as search: not default unless we expose an equivalent transparency story (ADR). |
 
----
-
-## 5. Query list pagination: client-side over full list
-
-**Angular:** Paginated query list (e.g. ~15 per page).
-
-**Target / migrated:** Keep a **client-side** pagination model over the full query set: filter/sort on the full list, then paginate; optionally persist page in the URL. Match product needs for “expand all” vs collapse-heavy workflows for huge cases.
-
-**Why:** Avoids server round-trips for page flips while still not rendering thousands of rows visible at once. Case-level score reconciliation still follows **§6** (background evaluation), not the pagination model alone.
-
----
-
-## 6. Scoring: immediate feedback + background full evaluation
-
-**Angular:** Scoring ran synchronously in the browser against loaded results.
-
-**Target / migrated:** Use a **two-tier** model:
-
-1. **Immediate:** Per-query feedback as soon as the user acts—**server-authoritative** for persisted scores (API response or Turbo Stream updates the UI); avoid relying on the browser as the only source of scored state.
-2. **Background:** A job or async pass reconciles the **whole case** and refreshes aggregate case-level scores; notify the UI when that pass completes (e.g. Turbo Streams).
-
-**Why:** When results are not fully resident in the browser, browser-only scoring does not fit. Users still expect fast per-query feedback and **eventual consistency** for case-level numbers.
+If product wants any row above, document it in an ADR or ticket and reconcile with [angularjs_ui_inventory.md](../angularjs_ui_inventory.md) / P0 checklist — do not treat this table as backlog for the default port.
 
 ---
 
-## 7. Authorization: scope by user (IDOR hardening)
+## 3. Workspace capabilities: parity vs optional improvements
 
-**Angular / risk:** In a SPA, clients can still call APIs with identifiers; historically, some patterns resolved records by id without consistently tying the lookup to **the current user’s** allowed associations.
+Most capabilities **already exist** in the Angular workspace and/or Rails JSON APIs; the port **rehouses** them. **Where today:** flows in [workspace_behavior.md](./workspace_behavior.md), services in [angular_services_responsibilities_mapping.md](./angular_services_responsibilities_mapping.md), endpoints in [workspace_api_usage.md](./workspace_api_usage.md), screenshots in [angularjs_ui_inventory.md](../angularjs_ui_inventory.md).
 
-**Target / migrated:** Load cases, teams, books, and related records through **scopes the user is allowed to see**, not global lookups.
-
-**Why:** The UI may hide other users’ ids, but APIs remain callable; server-side scoping is the backstop.
-
----
-
-## 8. Rating deletion: tolerate “already gone”
-
-**Angular:** Deleting a missing rating could error.
-
-**Target / migrated:** Treat “delete rating that isn’t there” as a **no-op success** (or equivalent soft behavior) so races (tabs, streams, double clicks) do not surface as hard failures.
-
-**Why:** Live updates make duplicate or stale deletes more likely; graceful behavior beats 500s.
-
----
-
-## Workspace capabilities: parity vs optional improvements
-
-Several items were previously labeled “new” or “no Angular equivalent.” **Most already exist** in the legacy Angular UI and/or Rails APIs and jobs. The migration task is usually to **rehouse** them in Rails views, Stimulus, and Turbo—not to invent the feature from scratch.
-
-Prioritize against [angularjs_elimination_plan.md](../angularjs_elimination_plan.md) and the roadmap.
-
-### Already in Quepid today (preserve / port)
-
-Indicative locations only; search the codebase as the source of truth.
-
-| Capability | Where it lives today |
-|------------|----------------------|
-| **Case export** (CSV, detailed, snapshot-linked, TREC, RRE, JSON case dump, information-need template, …) | Angular `export_case` + `caseCSVSvc`; `api/export/...` |
-| **Case import** (CSV hash, RRE, LTR; information-need CSV) | Angular `importRatingsSvc`; `Api::V1::Import::RatingsController`; `Api::V1::Import::Queries::InformationNeedsController` |
-| **Query notes** (and information need on queries) | `Api::V1::Queries::NotesController`; queries API / model (`notes`, `information_need`) |
-| **Snapshots from current results** | `querySnapshotSvc` (`addSnapshot`, …); `Api::V1::SnapshotsController` and related snapshot APIs |
-| **Server-side search execution & engine parsing** | `ProxyController` for proxied search; `Api::V1::Snapshots::SearchController`; `RunCaseEvaluationJob`; `FetchService` (e.g. Solr response shaping)—**browser-side** extractors also exist for some flows (e.g. explain) |
-| **Endpoint configuration & basic validation** | Settings / wizard flows (e.g. JSON validation for ES/OS query DSL); `SearchEndpoint` model validations; mapper wizard save path |
-
-### Optional improvements (consolidation / UX—not required for baseline parity)
+### Optional improvements (not required for “we had it before”)
 
 | Theme | Notes |
-|-------|--------|
-| **Heavier / async export** | Much export today is client-assembled or direct download. Moving large exports to **background jobs with progress** would be an enhancement, not a prerequisite for “we had export before.” |
-| **Unified query & results contract** | Behavior is **split** across proxy, Angular-built search URLs, snapshot search endpoints, and evaluation jobs. Defining **one documented API** for the Rails workspace is **consolidation**, not a brand-new capability. |
-| **Field discovery** | Today, field specs are often **typed or configured** per engine; richer **schema introspection** in the UI may still be roadmap where free-typing remains common. |
-| **Stronger pre-save endpoint checks** | Reachability or smoke-test before save **varies by flow**; tightening this is incremental hardening. |
-| **Dedicated notes-only API** | Notes already have an update path; splitting “notes only” vs generic `PATCH` query is **API ergonomics**, not greenfield functionality. |
+|-------|-------|
+| **Async export with progress** | Enhancement over direct download / client-assembled export. |
+| **Unified documented contract** for query/results | Consolidation across proxy, snapshot search, and jobs — documentation effort. |
+| **Richer field/schema discovery** | Roadmap UX; not a prerequisite for porting. |
+| **Stronger pre-save endpoint checks** | Incremental hardening. |
+| **Notes-only API shape** | Ergonomics; notes already updatable via existing APIs. |
+
+Prioritize porting work against [angularjs_elimination_plan.md](./angularjs_elimination_plan.md).

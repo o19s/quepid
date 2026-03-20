@@ -1,10 +1,10 @@
 # Workspace API usage
 
-Reference for **JSON (and related) HTTP endpoints** the **core case workspace** uses: methods, path patterns, and whether calls mutate state. Paths are **relative to the app root** (no leading `/`). URL rules: [api_client.md](../api_client.md).
+Reference for **JSON (and related) HTTP endpoints** the **core case workspace** uses: methods, path patterns, and whether calls mutate state. Paths are **relative to the app root** (no leading `/`). URL rules: [api_client.md](./api_client.md).
 
-**Search:** The legacy Angular workspace runs live search in the **browser** (e.g. splainer + proxy). A **server-side** execution path also exists: `GET api/cases/:case_id/tries/:try_number/queries/:query_id/search` (optional `q`, `rows`, `start`). Whether the ported workspace uses that as the primary path is a **product/architecture** decision—see [angularjs_elimination_plan.md](../angularjs_elimination_plan.md) and [intentional_design_changes.md](../intentional_design_changes.md).
+**Interactive workspace search:** Where live search runs (browser vs server), proxy/DevTools expectations, and how the server-side `GET api/cases/:case_id/tries/:try_number/queries/:query_id/search` helper fits (jobs, snapshots, tooling) are defined in [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). This page lists **endpoints only**. Product changes to the search model: [intentional_design_changes.md](./intentional_design_changes.md) §2.
 
-**Turbo / Stimulus:** For `Accept: text/vnd.turbo-stream.html`, frames, and broadcasts, see [turbo_streams_guide.md](../turbo_streams_guide.md) and [turbo_frame_boundaries.md](../turbo_frame_boundaries.md). Flash patterns: [ui_consistency_patterns.md](../ui_consistency_patterns.md).
+**Turbo / Stimulus:** For `Accept: text/vnd.turbo-stream.html`, frames, and broadcasts, see [turbo_streams_guide.md](./turbo_streams_guide.md) and [turbo_frame_boundaries.md](./turbo_frame_boundaries.md). Flash patterns: [ui_consistency_patterns.md](./ui_consistency_patterns.md).
 
 ---
 
@@ -30,10 +30,10 @@ Reference for **JSON (and related) HTTP endpoints** the **core case workspace** 
 
 ## Conventions
 
-- **CSRF** and **base URL** (no hardcoded leading `/`): follow [api_client.md](../api_client.md) and existing Rails meta tags.
+- **CSRF** and **base URL** (no hardcoded leading `/`): follow [api_client.md](./api_client.md) and existing Rails meta tags.
 - **JSON** for API bodies; export **GET**s return file bodies (CSV, JSON, text).
 - **snake_case** in JSON from the server; **camelCase** common in legacy JS clients.
-- **Turbo Streams:** mutating endpoints may support `Accept: text/vnd.turbo-stream.html` when the UI is server-rendered—[turbo_streams_guide.md](../turbo_streams_guide.md).
+- **Turbo Streams:** mutating endpoints may support `Accept: text/vnd.turbo-stream.html` when the UI is server-rendered—[turbo_streams_guide.md](./turbo_streams_guide.md).
 - **Snapshot search** (`GET …/snapshots/:id/search`): doc lookup when the engine does not support lookup-by-id (same pattern as legacy workspace).
 
 ---

@@ -7,11 +7,13 @@
 
 `deangularjs-experimental` is a **completed** migration: Angular removed, **Rails + ViewComponents + Stimulus + Turbo Streams**, **server-side search** (`QuerySearchService` → `FetchService`), **two-tier scoring** (API + `MiniRacer` + background job), new layout (`core_modern`), Vitest/ESLint, visual-parity tooling, and a large **`docs/port/`** knowledge base.
 
-**You should not merge the branch wholesale** if the goal is parity with the current [angularjs_elimination_plan](./angularjs_elimination_plan.md) (browser `splainer-search`, `/proxy/fetch` DevTools visibility, incremental vertical slices). The experimental stack **intentionally** trades those for CORS/credential simplicity—documented in its own `intentional_design_changes.md`.
+**You should not merge the branch wholesale** if the goal is parity with [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) (scope, browser search/scoring, incremental slices — the elimination plan explains the tradeoffs). The experimental stack **intentionally** differs; branch rationale lives under `docs/port/intentional_design_changes.md`. On **`main`**: [intentional_design_changes.md](./intentional_design_changes.md) (**§1** hardening, **§2** signed-off-only product ideas).
+
+**Migration docs on `main`:** Several guides that originated on the branch under `docs/port/` now live in **`docs/migration/`** on `main` and are maintained for the **incremental** plan—for example [workspace_api_usage.md](./workspace_api_usage.md), [turbo_streams_guide.md](./turbo_streams_guide.md), [turbo_frame_boundaries.md](./turbo_frame_boundaries.md), [angular_services_responsibilities_mapping.md](./angular_services_responsibilities_mapping.md), [workspace_state_design.md](./workspace_state_design.md), [api_client.md](./api_client.md), [ui_consistency_patterns.md](./ui_consistency_patterns.md). Prefer those when implementing on `main`; the table below still lists **experimental-branch paths** for comparison and for files not copied here (e.g. `main_vs_deangularjs_experimental_comparison.md`).
 
 **High-value pulls (low coupling):**
 
-1. **`docs/port/`** (and related parity docs)—copy or cherry-pick as **reference** on `main`, not as runtime code.
+1. **`docs/port/`** on the branch (and related parity docs)—copy or cherry-pick as **reference** on `main`, not as runtime code. Overlapping topics are increasingly mirrored under `docs/migration/` (see above).
 2. **`test/visual_parity/`**—automation for screenshot/API comparison; adaptable to “Angular vs Stimulus slice” regression.
 3. **Security / authorization commits**—audit `main` against experimental’s `010f3043`-style fixes (see [Security note](#security-note-main-vs-experimental)).
 
@@ -24,7 +26,7 @@
 **Do not expect to reuse as-is:**
 
 - **~60 Stimulus controllers + ~37 ViewComponents**—bound to experimental routes, Turbo frames, and **server search** responses; porting piecemeal costs more than rewriting slices on `main`’s architecture.
-- **`QuerySearchService` / workspace search API**—directly conflicts with client-side proxy observability unless you add a debug/echo layer (see elimination plan DevTools section).
+- **`QuerySearchService` / workspace search API**—conflicts with the browser search/observability model in [angularjs_elimination_plan.md](./angularjs_elimination_plan.md#browser-devtools-visibility-and-proxyfetch) unless you add an explicit parity story.
 
 ---
 
@@ -40,7 +42,7 @@ From **`docs/port/main_vs_deangularjs_experimental_comparison.md`** (on the bran
 | Layout | `core.html.erb` + BS3 modals | `core_modern` + BS5 |
 | Build | Karma, Angular esbuild bundles | Vitest, ESLint, no Angular |
 
-**Intentional product deltas** (from **`docs/port/intentional_design_changes.md`**):
+**Intentional product deltas** (from **`docs/port/intentional_design_changes.md`** on the branch; on `main` the same themes are **§2** in [intentional_design_changes.md](./intentional_design_changes.md) — candidates only, not default migration scope):
 
 - No per-query “tuning knobs” (`DevQueryParamsCtrl`).
 - Case list sort by `updated_at` instead of last-viewed metadata.
@@ -60,7 +62,7 @@ These live under **`docs/port/`** on `deangularjs-experimental` (paths from `git
 | Doc | Why pull (as reference) |
 |-----|-------------------------|
 | `docs/port/main_vs_deangularjs_experimental_comparison.md` | Single best **decision record** (lost/changed features, architecture table). |
-| `docs/port/intentional_design_changes.md` | Explains **why** behavior differs from Angular—useful when support asks “why did X change?” |
+| `docs/port/intentional_design_changes.md` | On the branch: why behavior differs from Angular. On `main`: [intentional_design_changes.md](./intentional_design_changes.md) — **§1** hardening, **§2** signed-off-only product ideas |
 | `docs/port/angular_services_responsibilities_mapping.md` | Maps Angular services → new code paths—helps incremental migration ownership. |
 | `docs/port/workspace_api_usage.md` | API contracts for experimental workspace (search/score Turbo)—compare to your Phase 0 API table. |
 | `docs/port/turbo_streams_guide.md`, `turbo_frame_boundaries.md` | If Turbo streams are in scope for core; otherwise skim for patterns. |
@@ -70,7 +72,7 @@ These live under **`docs/port/`** on `deangularjs-experimental` (paths from `git
 | `docs/port/archives/*` | Historical port notes; optional. |
 | `docs/css_variables.md`, `docs/linting.md` | Tangible DX improvements if you align tooling. |
 
-**Recommendation:** Add a subtree on `main` such as `docs/migration/archive/deangularjs-experimental/` and **copy** these files from the branch (preserve dates/authors in commit message). Avoid rewriting `docs/app_structure.md` from experimental until core actually migrates.
+**Recommendation:** Use **`docs/migration/`** on `main` for living port docs (already populated for many rows above). Optionally add `docs/migration/archive/deangularjs-experimental/` for **unchanged** branch-only files (e.g. `main_vs_deangularjs_experimental_comparison.md`, `view_component_conventions.md`). Avoid rewriting `docs/app_structure.md` from experimental until core actually migrates.
 
 ---
 
