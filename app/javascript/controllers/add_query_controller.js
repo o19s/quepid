@@ -4,6 +4,20 @@ export default class extends Controller {
   static targets = ["input"]
   static values = { url: String, bulkUrl: String }
 
+  get _url() {
+    if (this.hasUrlValue && this.urlValue) return this.urlValue
+    const rootUrl = document.body.dataset.quepidRootUrl || ''
+    const caseId = document.body.dataset.caseId
+    return `${rootUrl}/api/cases/${caseId}/queries`
+  }
+
+  get _bulkUrl() {
+    if (this.hasBulkUrlValue && this.bulkUrlValue) return this.bulkUrlValue
+    const rootUrl = document.body.dataset.quepidRootUrl || ''
+    const caseId = document.body.dataset.caseId
+    return `${rootUrl}/api/bulk/cases/${caseId}/queries`
+  }
+
   submit(event) {
     event.preventDefault()
 
@@ -24,7 +38,7 @@ export default class extends Controller {
 
   async _createSingle(queryText, csrfToken) {
     try {
-      const response = await fetch(this.urlValue, {
+      const response = await fetch(this._url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,8 +49,6 @@ export default class extends Controller {
 
       if (response.ok) {
         this.inputTarget.value = ""
-        // Reload the page to show the new query
-        // (Angular's queriesSvc will pick it up on bootstrap)
         window.location.reload()
       }
     } catch (error) {
@@ -45,9 +57,8 @@ export default class extends Controller {
   }
 
   async _createBulk(queries, csrfToken) {
-    // Bulk endpoint expects { queries: ["q1", "q2", ...] }
     try {
-      const response = await fetch(this.bulkUrlValue, {
+      const response = await fetch(this._bulkUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

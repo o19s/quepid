@@ -2,6 +2,10 @@
 
 This document is the **migration plan** for removing AngularJS from Quepid while **preserving the feature set available on `main`**. It builds on the existing inventories and the patterns established when teams, scorers, and the cases listing moved to Rails + Stimulus ([PR #1642](https://github.com/o19s/quepid/pull/1642)).
 
+### Strangler fig pattern
+
+The work follows the **[strangler fig pattern](https://martinfowler.com/bliki/StranglerFigApplication.html)** (Martin Fowler): grow a new implementation around the legacy system, route traffic or UI through the new path feature-by-feature, and delete the old code only when the replacement owns that behavior end-to-end. For Quepid that means **coexistence** of Angular and Rails/Stimulus during the port (same URLs and JSON APIs where possible), **phased cutovers** per area of the core workspace, and **no requirement** to finish the entire tree before shipping incremental value—consistent with how non-core surfaces already migrated off Angular on `main`.
+
 ## Related documentation
 
 | Document | Purpose |
@@ -193,7 +197,7 @@ This is the **single highest-risk technical item** for P0 flows.
 | Replace **`broadcastSvc` / `$rootScope.$broadcast`** coupling incrementally: map events in `angularjs_inventory.md` (“Event System”) to explicit callbacks, custom DOM events, or a tiny pub/sub | Critical for splitting `MainCtrl` without subtle regressions |
 | Keep **one** Angular island temporarily (e.g. wrap legacy `queries` directive in a single div) if strangling is faster | Strangler pattern |
 
-**TODO (layout):** The case header and add-query form are currently rendered in `core/index.html.erb` above `ng-view`. They should eventually move inside the pane layout (inside `.pane_main`) for correct scroll behavior and visual placement within the white content box. This requires the Angular template `queriesLayout.html` to be replaced with ERB first. Track as part of Phase 3 when the queries layout is fully ported to Rails.
+**Approach (strangler fig):** The new Rails+Stimulus UI is built above Angular's `ng-view` in `core/index.html.erb`. Both UIs coexist during development — the new one on top, Angular below. When the replacement is complete, remove `ng-view` and the Angular template entirely. No surgical replacement of individual pieces inside Angular templates.
 
 **Exit criteria:** HTML for shell visible with JS disabled partially (static labels); Angular only fills dynamic inner regions OR a flagged smaller root.
 
