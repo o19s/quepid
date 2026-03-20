@@ -151,7 +151,7 @@ angular.module('QuepidApp')
             loadQueries();
             loadSnapshots();  // this is here just to set the caseNo in the querySnapshotSvc.
             updateCaseMetadata();
-            // paneSvc.refreshElements(); // Replaced by Stimulus resizable-pane controller
+            paneSvc.refreshElements();
           }).catch(function(error) {            
             // brittle logic, but check if we throw the TLS error or if it's from something else.
             var message = error.message;
@@ -166,7 +166,7 @@ angular.module('QuepidApp')
             }
             //loadSnapshots();
             //updateCaseMetadata();
-            // paneSvc.refreshElements(); // Replaced by Stimulus resizable-pane controller
+            paneSvc.refreshElements();
           });
 
         // Sets up the panes stuff only when needed
