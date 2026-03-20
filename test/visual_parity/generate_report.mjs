@@ -13,6 +13,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -76,6 +77,83 @@ function escapeHtml(str) {
 }
 
 console.log(`\n📊 Generating comparison report: ${BRANCH_A} vs ${BRANCH_B}\n`);
+
+// ---------------------------------------------------------------------------
+// Route groups for ToC organization
+// ---------------------------------------------------------------------------
+const ROUTE_GROUPS = [
+  { label: 'Authentication', prefix: '00-' },
+  { label: 'Home', prefix: '01-' },
+  { label: 'Cases', prefix: ['02-', '03-'] },
+  { label: 'Case Workspace', prefix: '04-case-workspace', exact: true },
+  { label: 'Case Workspace — Tune Relevance', prefix: '04a' },
+  { label: 'Case Workspace — Header Dropdowns', prefix: ['04b', '04c', '04d'] },
+  { label: 'Case Workspace — Action Bar Modals', prefix: '04e' },
+  { label: 'Books', prefix: ['05-', '06-', '07-', '08-', '21-', '22-', '23-', '24-', '25-'] },
+  { label: 'Scorers', prefix: ['09-', '10-'] },
+  { label: 'Search Endpoints', prefix: ['11-', '12-', '13-'] },
+  { label: 'Teams', prefix: ['14-', '15-'] },
+  { label: 'Profile', prefix: '16-' },
+  { label: 'Analytics', prefix: '17-' },
+  { label: 'Admin', prefix: ['18-', '19-', '20-'] },
+];
+
+function getGroup(filename) {
+  for (const group of ROUTE_GROUPS) {
+    const prefixes = Array.isArray(group.prefix) ? group.prefix : [group.prefix];
+    for (const p of prefixes) {
+      if (group.exact) {
+        if (filename === p + '.png') return group.label;
+      } else {
+        if (filename.startsWith(p)) return group.label;
+      }
+    }
+  }
+  return 'Other';
+}
+
+// ---------------------------------------------------------------------------
+// Detect changed files to flag potentially affected screenshots
+// ---------------------------------------------------------------------------
+// Map changed source files to screenshot tags/groups that might be affected
+const FILE_TO_GROUPS = [
+  { pattern: /views\/layouts\/_header_core_app/, groups: ['Case Workspace — Header Dropdowns'] },
+  { pattern: /views\/core\/_case_header/, groups: ['Case Workspace'] },
+  { pattern: /paneSvc\.js|resizable_pane_controller\.js|panes\.css/, groups: ['Case Workspace — Tune Relevance'] },
+  { pattern: /queriesLayout\.html|queriesCtrl\.js/, groups: ['Case Workspace', 'Case Workspace — Action Bar Modals'] },
+  { pattern: /components\/clone_case|components\/delete_case|components\/export_case|components\/import_ratings|components\/share_case|components\/judgements|components\/diff\//, groups: ['Case Workspace — Action Bar Modals'] },
+  { pattern: /views\/books\/|controllers\/books_controller/, groups: ['Books'] },
+  { pattern: /views\/scorers\/|controllers\/scorers_controller/, groups: ['Scorers'] },
+  { pattern: /views\/teams\/|controllers\/teams_controller/, groups: ['Teams'] },
+  { pattern: /views\/search_endpoints\//, groups: ['Search Endpoints'] },
+  { pattern: /views\/admin\/|controllers\/admin\//, groups: ['Admin'] },
+  { pattern: /views\/profiles\//, groups: ['Profile'] },
+  { pattern: /views\/sessions\/|controllers\/sessions_controller/, groups: ['Authentication'] },
+  { pattern: /views\/layouts\/core\.html\.erb/, groups: ['Case Workspace'] },
+  { pattern: /views\/home\/|views\/layouts\/application\.html/, groups: ['Home'] },
+];
+
+let changedGroups = new Set();
+try {
+  // Check for a timestamp file written after the last capture of BRANCH_B
+  const lastCaptureFile = path.join(SCREENSHOTS_DIR, BRANCH_B, '.last_capture');
+  if (fs.existsSync(lastCaptureFile)) {
+    const lastCapture = fs.readFileSync(lastCaptureFile, 'utf-8').trim();
+    const sinceFlag = `--since="${lastCapture}"`;
+    const diffOutput = execSync(`git log ${sinceFlag} --name-only --pretty=format: HEAD 2>/dev/null || echo ""`, { encoding: 'utf-8' });
+    const changedFiles = [...new Set(diffOutput.trim().split('\n').filter(Boolean))];
+    for (const file of changedFiles) {
+      for (const mapping of FILE_TO_GROUPS) {
+        if (mapping.pattern.test(file)) {
+          mapping.groups.forEach(g => changedGroups.add(g));
+        }
+      }
+    }
+  }
+  // If no timestamp file, don't flag anything — we have no baseline to compare against
+} catch {
+  // git log failed, skip change detection
+}
 
 // ---------------------------------------------------------------------------
 // Gather screenshot pairs
@@ -185,11 +263,32 @@ function generateApiSection() {
     </section>`;
 }
 
-const tocLinks = pairs.map(p =>
-  `<li><a href="#${p.name}">${p.name}</a>${!p.hasA || !p.hasB ? ' ⚠️' : ''}</li>`
-).join('\n        ');
+// Group pairs for ToC and sections
+const groupedPairs = new Map();
+for (const pair of pairs) {
+  const group = getGroup(pair.file);
+  if (!groupedPairs.has(group)) groupedPairs.set(group, []);
+  groupedPairs.get(group).push(pair);
+}
 
-const screenshotSections = pairs.map(generateScreenshotRow).join('\n');
+const tocLinks = [...groupedPairs.entries()].map(([group, groupPairs]) => {
+  const isChanged = changedGroups.has(group);
+  const groupId = group.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const changeIndicator = isChanged ? ' 🔄' : '';
+  const items = groupPairs.map(p =>
+    `<li><a href="#${p.name}">${p.name}</a>${!p.hasA || !p.hasB ? ' ⚠️' : ''}</li>`
+  ).join('\n          ');
+  return `<li class="toc-group"><strong><a href="#group-${groupId}">${group}${changeIndicator}</a></strong>
+          <ul>${items}</ul></li>`;
+}).join('\n        ');
+
+const screenshotSections = [...groupedPairs.entries()].map(([group, groupPairs]) => {
+  const isChanged = changedGroups.has(group);
+  const groupId = group.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const changeIndicator = isChanged ? ' <span class="badge changed">changed</span>' : '';
+  const header = `<h2 id="group-${groupId}" class="group-header">${group}${changeIndicator}</h2>`;
+  return header + groupPairs.map(generateScreenshotRow).join('\n');
+}).join('\n');
 const apiSection = generateApiSection();
 
 const html = `<!DOCTYPE html>
@@ -216,10 +315,14 @@ const html = `<!DOCTYPE html>
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     .toc h2 { margin-bottom: 0.5rem; }
-    .toc ul { columns: 3; list-style: none; padding: 0; }
+    .toc > ul { list-style: none; padding: 0; columns: 2; }
     .toc li { padding: 0.2rem 0; }
+    .toc .toc-group { break-inside: avoid; margin-bottom: 0.8rem; }
+    .toc .toc-group > ul { list-style: none; padding-left: 1rem; }
     .toc a { color: #0066cc; text-decoration: none; }
     .toc a:hover { text-decoration: underline; }
+    .group-header { margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #0066cc; }
+    .badge.changed { background: #d4edda; color: #155724; font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 3px; font-weight: normal; }
     .comparison-pair {
       background: white;
       border-radius: 8px;

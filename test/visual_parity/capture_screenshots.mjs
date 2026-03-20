@@ -213,6 +213,125 @@ const PAGES = [
     },
   },
 
+  // Case workspace — action bar modals
+  {
+    name: '04e1-modal-select-scorer',
+    tags: ['workspace', 'action-bar', 'modal'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('#case-actions a', { hasText: 'Select scorer' }).click();
+      await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 500));
+    },
+  },
+  {
+    name: '04e2-modal-judgements',
+    tags: ['workspace', 'action-bar', 'modal'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('#case-actions a', { hasText: 'Judgements' }).click();
+      await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 500));
+    },
+  },
+  {
+    name: '04e3-modal-create-snapshot',
+    tags: ['workspace', 'action-bar', 'modal'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('#case-actions a', { hasText: 'Create snapshot' }).click();
+      await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 500));
+    },
+  },
+  {
+    name: '04e4-modal-compare-snapshots',
+    tags: ['workspace', 'action-bar', 'modal'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('#case-actions a', { hasText: 'Compare snapshots' }).click();
+      await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 500));
+    },
+  },
+  {
+    name: '04e5-modal-import',
+    tags: ['workspace', 'action-bar', 'modal'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('#case-actions a', { hasText: 'Import' }).click();
+      await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 500));
+    },
+  },
+  {
+    name: '04e6-modal-share-case',
+    tags: ['workspace', 'action-bar', 'modal'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('#case-actions a', { hasText: 'Share case' }).click();
+      await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 500));
+    },
+  },
+  {
+    name: '04e7-modal-clone',
+    tags: ['workspace', 'action-bar', 'modal'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('#case-actions a', { hasText: 'Clone' }).click();
+      await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 500));
+    },
+  },
+  {
+    name: '04e8-modal-delete',
+    tags: ['workspace', 'action-bar', 'modal'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('#case-actions a', { hasText: 'Delete' }).click();
+      await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 500));
+    },
+  },
+  {
+    name: '04e9-modal-export',
+    tags: ['workspace', 'action-bar', 'modal'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('#case-actions a', { hasText: 'Export' }).click();
+      await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 500));
+    },
+  },
+
   // Case workspace — header dropdowns open
   {
     name: '04b-case-workspace-cases-dropdown',
@@ -434,6 +553,10 @@ async function main() {
   }
 
   await browser.close();
+
+  // Write timestamp so the report generator can flag changes since last capture
+  fs.writeFileSync(path.join(OUT_DIR, '.last_capture'), new Date().toISOString());
+
   console.log(`\n✅ Done! ${filteredPages.length} screenshots saved to ${OUT_DIR}\n`);
 }
 
