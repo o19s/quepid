@@ -1,0 +1,24 @@
+<% if @case.present? %>
+<div id="query-list-shell" class="results">
+  <div class="row">
+    <div class="col-sm-12 form-group">
+      <div class="pull-left">
+  <form class="form input-append vertically-centered"
+        data-controller="add-query"
+        data-add-query-url-value="<%= api_case_queries_path(case_id: @case.id) %>"
+        data-action="submit->add-query#submit">
+    <input id="add-query"
+           class="form-control"
+           data-add-query-target="input"
+           placeholder="Add a query to this case"
+           type="text" />
+    <input id="add-query-submit"
+           class="btn btn-success"
+           type="submit"
+           value="Add query" />
+  </form>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>

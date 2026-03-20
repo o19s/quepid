@@ -193,7 +193,7 @@ This is the **single highest-risk technical item** for P0 flows.
 | Replace **`broadcastSvc` / `$rootScope.$broadcast`** coupling incrementally: map events in `angularjs_inventory.md` (“Event System”) to explicit callbacks, custom DOM events, or a tiny pub/sub | Critical for splitting `MainCtrl` without subtle regressions |
 | Keep **one** Angular island temporarily (e.g. wrap legacy `queries` directive in a single div) if strangling is faster | Strangler pattern |
 
-**TODO (layout):** The case header is currently rendered in `core/index.html.erb` above `ng-view`. It should eventually move inside the pane layout (inside `.pane_main`) for correct scroll behavior, but this requires the Angular template `queriesLayout.html` to be replaced with ERB first. Track as part of Phase 3+ when the queries layout is ported to Rails.
+**TODO (layout):** The case header and add-query form are currently rendered in `core/index.html.erb` above `ng-view`. They should eventually move inside the pane layout (inside `.pane_main`) for correct scroll behavior and visual placement within the white content box. This requires the Angular template `queriesLayout.html` to be replaced with ERB first. Track as part of Phase 3 when the queries layout is fully ported to Rails.
 
 **Exit criteria:** HTML for shell visible with JS disabled partially (static labels); Angular only fills dynamic inner regions OR a flagged smaller root.
 
