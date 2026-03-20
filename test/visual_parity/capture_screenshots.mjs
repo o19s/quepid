@@ -7,6 +7,17 @@
  *   node test/visual_parity/capture_screenshots.mjs --branch <branch_name>
  *   node test/visual_parity/capture_screenshots.mjs --branch deangularjs --base-url http://localhost:3000
  *   node test/visual_parity/capture_screenshots.mjs --branch deangularjs --email admin@example.com
+ *
+ * Filtering:
+ *   --only <pattern>      Only capture pages whose name or tags match (comma-separated)
+ *   --exclude <pattern>   Skip pages whose name or tags match (comma-separated)
+ *   --list                List all available page names and tags, then exit
+ *
+ * Examples:
+ *   --only header                     Capture only pages tagged "header"
+ *   --only 04-case-workspace          Capture just that one screenshot
+ *   --only header,workspace           Capture pages matching either tag
+ *   --exclude admin,books             Skip admin and books pages
  */
 
 import { chromium } from '@playwright/test';
@@ -31,6 +42,29 @@ const OUT_DIR  = path.join(__dirname, 'screenshots', BRANCH);
 
 const LOGIN_EMAIL    = getArg('email', 'quepid+realisticactivity@o19s.com');
 const LOGIN_PASSWORD = getArg('password', 'password');
+
+const ONLY_FILTER    = getArg('only', '');
+const EXCLUDE_FILTER = getArg('exclude', '');
+const LIST_MODE      = args.includes('--list');
+
+// ---------------------------------------------------------------------------
+// Filtering helpers
+// ---------------------------------------------------------------------------
+function matchesFilter(entry, filterStr) {
+  if (!filterStr) return false;
+  const patterns = filterStr.split(',').map(s => s.trim().toLowerCase());
+  const entryName = entry.name.toLowerCase();
+  const entryTags = (entry.tags || []).map(t => t.toLowerCase());
+  return patterns.some(p =>
+    entryName.includes(p) || entryTags.some(t => t.includes(p))
+  );
+}
+
+function shouldCapture(entry) {
+  if (ONLY_FILTER && !matchesFilter(entry, ONLY_FILTER)) return false;
+  if (EXCLUDE_FILTER && matchesFilter(entry, EXCLUDE_FILTER)) return false;
+  return true;
+}
 
 // ---------------------------------------------------------------------------
 // Helper: fetch JSON from API via the authenticated browser page
@@ -89,36 +123,80 @@ async function getFirstTeamId(page) {
 // ---------------------------------------------------------------------------
 const PAGES = [
   // Unauthenticated
-  { name: '00-login-page', path: '/sessions/new', noAuth: true },
+  { name: '00-login-page', path: '/sessions/new', noAuth: true, tags: ['auth'] },
 
   // Home / dashboard
-  { name: '01-home-dashboard', path: '/' },
+  { name: '01-home-dashboard', path: '/', tags: ['home'] },
 
   // Cases
-  { name: '02-cases-index', path: '/cases' },
-  { name: '03-cases-archived', path: '/cases?archived=true' },
+  { name: '02-cases-index', path: '/cases', tags: ['cases'] },
+  { name: '03-cases-archived', path: '/cases?archived=true', tags: ['cases'] },
 
   // Case workspace
   {
     name: '04-case-workspace',
+    tags: ['workspace'],
     resolve: async (page) => {
       const id = await getFirstCaseId(page);
       return id ? `/case/${id}` : '/cases';
     },
   },
 
+  // Case workspace — header dropdowns open
+  {
+    name: '04b-case-workspace-cases-dropdown',
+    tags: ['workspace', 'header', 'dropdown'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      const toggle = page.locator('.dropdown-toggle', { hasText: 'Relevancy Cases' }).first();
+      await toggle.click();
+      await new Promise(r => setTimeout(r, 1000));
+    },
+  },
+  {
+    name: '04c-case-workspace-books-dropdown',
+    tags: ['workspace', 'header', 'dropdown'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      const toggle = page.locator('.dropdown-toggle', { hasText: 'Books' }).first();
+      await toggle.click();
+      await new Promise(r => setTimeout(r, 1000));
+    },
+  },
+  {
+    name: '04d-case-workspace-user-dropdown',
+    tags: ['workspace', 'header', 'dropdown'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      const toggle = page.locator('.dropdown-toggle [data-display-name]').first();
+      await toggle.click();
+      await new Promise(r => setTimeout(r, 1000));
+    },
+  },
+
   // Books
-  { name: '05-books-index', path: '/books' },
+  { name: '05-books-index', path: '/books', tags: ['books'] },
   {
     name: '06-book-show',
+    tags: ['books'],
     resolve: async (page) => {
       const id = await getFirstBookId(page);
       return id ? `/books/${id}` : '/books';
     },
   },
-  { name: '07-book-new', path: '/books/new' },
+  { name: '07-book-new', path: '/books/new', tags: ['books'] },
   {
     name: '08-book-edit',
+    tags: ['books'],
     resolve: async (page) => {
       const id = await getFirstBookId(page);
       return id ? `/books/${id}/edit` : '/books';
@@ -126,14 +204,15 @@ const PAGES = [
   },
 
   // Scorers
-  { name: '09-scorers-index', path: '/scorers' },
-  { name: '10-scorers-new', path: '/scorers/new' },
+  { name: '09-scorers-index', path: '/scorers', tags: ['scorers'] },
+  { name: '10-scorers-new', path: '/scorers/new', tags: ['scorers'] },
 
   // Search Endpoints
-  { name: '11-search-endpoints-index', path: '/search_endpoints' },
-  { name: '12-search-endpoints-new', path: '/search_endpoints/new' },
+  { name: '11-search-endpoints-index', path: '/search_endpoints', tags: ['endpoints'] },
+  { name: '12-search-endpoints-new', path: '/search_endpoints/new', tags: ['endpoints'] },
   {
     name: '13-search-endpoint-show',
+    tags: ['endpoints'],
     resolve: async (page) => {
       const id = await getFirstSearchEndpointId(page);
       return id ? `/search_endpoints/${id}` : '/search_endpoints';
@@ -141,9 +220,10 @@ const PAGES = [
   },
 
   // Teams
-  { name: '14-teams-index', path: '/teams' },
+  { name: '14-teams-index', path: '/teams', tags: ['teams'] },
   {
     name: '15-team-show',
+    tags: ['teams'],
     resolve: async (page) => {
       const id = await getFirstTeamId(page);
       return id ? `/teams/${id}` : '/teams';
@@ -151,11 +231,12 @@ const PAGES = [
   },
 
   // Profile
-  { name: '16-profile', path: '/profile' },
+  { name: '16-profile', path: '/profile', tags: ['profile'] },
 
-  // Analytics – tries visualization (Rails route: /analytics/tries_visualization/:case_id)
+  // Analytics
   {
     name: '17-analytics-tries',
+    tags: ['analytics'],
     resolve: async (page) => {
       const id = await getFirstCaseId(page);
       return id ? `/analytics/tries_visualization/${id}` : '/cases';
@@ -163,13 +244,14 @@ const PAGES = [
   },
 
   // Admin pages
-  { name: '18-admin-dashboard', path: '/admin' },
-  { name: '19-admin-users', path: '/admin/users' },
-  { name: '20-admin-announcements', path: '/admin/announcements' },
+  { name: '18-admin-dashboard', path: '/admin', tags: ['admin'] },
+  { name: '19-admin-users', path: '/admin/users', tags: ['admin'] },
+  { name: '20-admin-announcements', path: '/admin/announcements', tags: ['admin'] },
 
   // Book sub-pages
   {
     name: '21-query-doc-pairs',
+    tags: ['books'],
     resolve: async (page) => {
       const id = await getFirstBookId(page);
       return id ? `/books/${id}/query_doc_pairs` : '/books';
@@ -177,6 +259,7 @@ const PAGES = [
   },
   {
     name: '22-book-judgements',
+    tags: ['books'],
     resolve: async (page) => {
       const id = await getFirstBookId(page);
       return id ? `/books/${id}/judgements` : '/books';
@@ -184,6 +267,7 @@ const PAGES = [
   },
   {
     name: '23-book-judge',
+    tags: ['books'],
     resolve: async (page) => {
       const id = await getFirstBookId(page);
       return id ? `/books/${id}/judge` : '/books';
@@ -191,6 +275,7 @@ const PAGES = [
   },
   {
     name: '24-book-export',
+    tags: ['books'],
     resolve: async (page) => {
       const id = await getFirstBookId(page);
       return id ? `/books/${id}/export` : '/books';
@@ -198,6 +283,7 @@ const PAGES = [
   },
   {
     name: '25-book-judgement-stats',
+    tags: ['books'],
     resolve: async (page) => {
       const id = await getFirstBookId(page);
       return id ? `/books/${id}/judgement_stats` : '/books';
@@ -209,12 +295,35 @@ const PAGES = [
 // Main
 // ---------------------------------------------------------------------------
 async function main() {
+  // ---- List mode ----
+  if (LIST_MODE) {
+    console.log('\nAvailable screenshots:\n');
+    const allTags = new Set();
+    for (const entry of PAGES) {
+      const tags = (entry.tags || []).join(', ');
+      console.log(`  ${entry.name}${tags ? `  [${tags}]` : ''}`);
+      (entry.tags || []).forEach(t => allTags.add(t));
+    }
+    console.log(`\nAvailable tags: ${[...allTags].sort().join(', ')}\n`);
+    return;
+  }
+
+  const filteredPages = PAGES.filter(shouldCapture);
+  if (filteredPages.length === 0) {
+    console.log('No pages match the filter. Use --list to see available names and tags.');
+    return;
+  }
+
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
-  console.log(`\n📸 Capturing screenshots for branch: ${BRANCH}`);
+  const filterNote = ONLY_FILTER ? ` (only: ${ONLY_FILTER})`
+                   : EXCLUDE_FILTER ? ` (exclude: ${EXCLUDE_FILTER})`
+                   : '';
+  console.log(`\n📸 Capturing screenshots for branch: ${BRANCH}${filterNote}`);
   console.log(`   Base URL: ${BASE_URL}`);
   console.log(`   User:     ${LOGIN_EMAIL}`);
-  console.log(`   Output:   ${OUT_DIR}\n`);
+  console.log(`   Output:   ${OUT_DIR}`);
+  console.log(`   Pages:    ${filteredPages.length} of ${PAGES.length}\n`);
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
@@ -224,7 +333,7 @@ async function main() {
   const page = await context.newPage();
 
   // ---- Capture unauthenticated pages first ----
-  for (const entry of PAGES.filter(p => p.noAuth)) {
+  for (const entry of filteredPages.filter(p => p.noAuth)) {
     await captureScreenshot(page, entry);
   }
 
@@ -249,12 +358,12 @@ async function main() {
   console.log('   ✅ Logged in\n');
 
   // ---- Capture authenticated pages ----
-  for (const entry of PAGES.filter(p => !p.noAuth)) {
+  for (const entry of filteredPages.filter(p => !p.noAuth)) {
     await captureScreenshot(page, entry);
   }
 
   await browser.close();
-  console.log(`\n✅ Done! ${PAGES.length} screenshots saved to ${OUT_DIR}\n`);
+  console.log(`\n✅ Done! ${filteredPages.length} screenshots saved to ${OUT_DIR}\n`);
 }
 
 async function captureScreenshot(page, entry) {
