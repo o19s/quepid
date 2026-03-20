@@ -10,6 +10,7 @@ describe('AddQueryController', () => {
     document.body.innerHTML = `
       <form data-controller="add-query"
             data-add-query-url-value="/api/cases/1/queries"
+            data-add-query-bulk-url-value="/api/bulk/cases/1/queries"
             data-action="submit->add-query#submit">
         <input data-add-query-target="input" type="text" />
         <input type="submit" value="Add query" />
@@ -70,7 +71,7 @@ describe('AddQueryController', () => {
     await new Promise(r => setTimeout(r, 50))
 
     expect(fetchSpy).toHaveBeenCalledWith(
-      expect.stringContaining('/api/bulk/cases/1/queries'),
+      '/api/bulk/cases/1/queries',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({ queries: ['star wars', 'lord of the rings'] }),

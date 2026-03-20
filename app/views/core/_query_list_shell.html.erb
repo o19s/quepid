@@ -6,6 +6,7 @@
   <form class="form input-append vertically-centered"
         data-controller="add-query"
         data-add-query-url-value="<%= api_case_queries_path(case_id: @case.id) %>"
+        data-add-query-bulk-url-value="<%= api_bulk_case_queries_path(case_id: @case.id) %>"
         data-action="submit->add-query#submit">
     <input id="add-query"
            class="form-control"

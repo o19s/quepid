@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["input"]
-  static values = { url: String }
+  static values = { url: String, bulkUrl: String }
 
   submit(event) {
     event.preventDefault()
@@ -46,10 +46,8 @@ export default class extends Controller {
 
   async _createBulk(queries, csrfToken) {
     // Bulk endpoint expects { queries: ["q1", "q2", ...] }
-    const bulkUrl = this.urlValue.replace("/queries", "/queries").replace("/api/cases/", "/api/bulk/cases/")
-
     try {
-      const response = await fetch(bulkUrl, {
+      const response = await fetch(this.bulkUrlValue, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
