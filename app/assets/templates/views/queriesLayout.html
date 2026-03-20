@@ -1,7 +1,7 @@
 <!-- queriesCtrl.js is the ng-controller -->
 <div id="main">
-  <div class="pane_container">
-    <div class="pane_main results-control">
+  <div class="pane_container" data-controller="resizable-pane">
+    <div class="pane_main results-control" data-resizable-pane-target="main">
       <div id="case-header" class="row">
         <div class="col-sm-12">
           <div style="display: inline-flex; align-items: flex-start;">
@@ -141,10 +141,10 @@
       <div ng-controller="WizardCtrl"></div>
     </div>
 
-    <div class="east-slider">
+    <div class="east-slider" data-resizable-pane-target="slider" data-action="mousedown->resizable-pane#grabSlider">
     </div>
 
-    <div class="pane_east">
+    <div class="pane_east" data-resizable-pane-target="east">
       <ng-include src="'views/_dev_settings.html'"></ng-include>
     </div>
     <div class="clearfix"></div>

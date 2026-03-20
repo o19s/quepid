@@ -84,16 +84,9 @@ angular.module('QuepidApp')
         setupPane();
       };
 
-      $(window).on('resize', function() {
-        if (toggled) {
-          moveEastTo(container.offsetWidth - eastPaneWidth);
-        }
-        else {
-          moveEastTo(container.offsetWidth);
-        }
-      });
+      // $(window).on('resize', ...); // Replaced by Stimulus resizable-pane controller
 
-      $(document).on('toggleEast', toggleEast);
+      // $(document).on('toggleEast', toggleEast); // Replaced by Stimulus resizable-pane controller
 
       this.refreshElements = refreshElements;
     }

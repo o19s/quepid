@@ -142,6 +142,77 @@ const PAGES = [
     },
   },
 
+  // Case workspace — Tune Relevance pane tabs
+  {
+    name: '04a1-tune-relevance-query',
+    tags: ['workspace', 'pane', 'tune-relevance'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('a', { hasText: 'Tune Relevance' }).first().click();
+      await new Promise(r => setTimeout(r, 1500));
+      // Query tab is the default when pane opens
+    },
+  },
+  {
+    name: '04a2-tune-relevance-tuning-knobs',
+    tags: ['workspace', 'pane', 'tune-relevance'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('a', { hasText: 'Tune Relevance' }).first().click();
+      await new Promise(r => setTimeout(r, 1000));
+      await page.locator('#curatorTab').click();
+      await new Promise(r => setTimeout(r, 500));
+    },
+  },
+  {
+    name: '04a3-tune-relevance-settings',
+    tags: ['workspace', 'pane', 'tune-relevance'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('a', { hasText: 'Tune Relevance' }).first().click();
+      await new Promise(r => setTimeout(r, 1000));
+      await page.locator('#engineTab').click();
+      await new Promise(r => setTimeout(r, 500));
+    },
+  },
+  {
+    name: '04a4-tune-relevance-history',
+    tags: ['workspace', 'pane', 'tune-relevance'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('a', { hasText: 'Tune Relevance' }).first().click();
+      await new Promise(r => setTimeout(r, 1000));
+      await page.locator('#historyTab').click();
+      await new Promise(r => setTimeout(r, 500));
+    },
+  },
+  {
+    name: '04a5-tune-relevance-annotations',
+    tags: ['workspace', 'pane', 'tune-relevance'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}` : '/cases';
+    },
+    setup: async (page) => {
+      await page.locator('a', { hasText: 'Tune Relevance' }).first().click();
+      await new Promise(r => setTimeout(r, 1000));
+      await page.locator('#annotationsTab').click();
+      await new Promise(r => setTimeout(r, 500));
+    },
+  },
+
   // Case workspace — header dropdowns open
   {
     name: '04b-case-workspace-cases-dropdown',
