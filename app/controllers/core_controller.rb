@@ -8,7 +8,7 @@ class CoreController < ApplicationController
   def index
     Analytics::Tracker.track_user_swapped_protocol current_user, @case, params['protocolToSwitchTo'] if params['protocolToSwitchTo']
 
-    @recent_cases = recent_cases 4
+    @recent_cases = recent_cases(4).includes(tries: :search_endpoint)
     @recent_cases_count = current_user.cases_involved_with.not_archived.count
     @recent_books = recent_books 4
     @recent_books_count = current_user.books_involved_with.count
