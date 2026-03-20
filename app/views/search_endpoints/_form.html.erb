@@ -54,8 +54,8 @@
 
       <div class="mb-3">
         <div class="form-check form-switch">
-          <%= form.label :proxy_requests, class:'form-check-label' %>
           <%= form.check_box :proxy_requests, class:'form-check-input' %>
+          <%= form.label :proxy_requests, class:'form-check-label' %>
         </div>
         <div class="form-text">
           Proxied requests avoids CORS and other browser security issues, however Quepid must be able to reach your Search Endpoint.
@@ -101,8 +101,8 @@
 
       <div class="mb-3">
         <div class="form-check form-switch">
-          <%= form.label :archived, class:'form-check-label' %>
           <%= form.check_box :archived, class:'form-check-input' %>
+          <%= form.label :archived, class:'form-check-label' %>
         </div>
         <div class="form-text">Archived search endpoints can't be selected for use.</div>
       </div>
