@@ -1,18 +1,17 @@
 <% if @case.present? %>
 <div id="case-header" class="row">
   <div class="col-sm-12">
-    <div class="case-score-badge-wrapper" style="display:inline-block;vertical-align:top"
+    <div class="case-score-badge-wrapper"
          data-controller="case-score"
          data-case-score-case-id-value="<%= @case.id %>"
          data-case-score-try-number-value="<%= @try&.try_number %>"
          data-case-score-max-score-value="<%= (@case.scorer&.scale || []).last.to_i %>">
       <div class="case-score-badge"
-           data-case-score-target="badge"
-           style="background-color: #999; color: #fff; display: inline-block; width: 90px; padding: 10px 0; font-size: 22px; text-align: center; border-radius: 5px; margin-right: 10px; vertical-align: middle;">
+           data-case-score-target="badge">
         --
       </div>
     </div>
-    <div style="display:inline-block;vertical-align:top">
+    <div class="case-header-info">
       <h1 class="">
         <small class="text-muted">
           Current case
@@ -36,9 +35,9 @@
                 data-action="dblclick->inline-edit#startEdit">
             <%= @case.case_name %>
           </span>
-          <span data-inline-edit-target="form" style="display:none">
+          <span data-inline-edit-target="form" class="d-none">
             <form class="form-inline" data-action="submit->inline-edit#save">
-              <input style="background:#FFFF99" type="text"
+              <input class="inline-edit-input-highlight" type="text"
                      data-inline-edit-target="input"
                      value="<%= @case.case_name %>" />
               <input type="submit" class="btn btn-sm btn-primary" value="Rename" />

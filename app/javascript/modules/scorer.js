@@ -44,7 +44,7 @@ export function ratingColor(rating, colorMap) {
  * Matches Angular qscoreSvc.scoreToColor().
  */
 export function scoreToColor(score, maxScore) {
-  if (score === null || score === undefined || maxScore === 0) {
+  if (score === null || score === undefined || !maxScore) {
     return "#999"
   }
   const ratio = Math.max(0, Math.min(score / maxScore, 1))

@@ -21,8 +21,8 @@ describe("ResizablePaneController", () => {
     document.body.innerHTML = `
       <div data-controller="resizable-pane" style="width: 1000px; position: relative;">
         <div data-resizable-pane-target="main" style="width: 100%;"></div>
-        <div data-resizable-pane-target="slider" style="display: none; width: 6px;"></div>
-        <div data-resizable-pane-target="east" style="display: none;"></div>
+        <div data-resizable-pane-target="slider" class="d-none" style="width: 6px;"></div>
+        <div data-resizable-pane-target="east" class="d-none"></div>
       </div>
     `
 
@@ -39,8 +39,8 @@ describe("ResizablePaneController", () => {
     const slider = document.querySelector('[data-resizable-pane-target="slider"]')
     const east = document.querySelector('[data-resizable-pane-target="east"]')
 
-    expect(slider.style.display).toBe("none")
-    expect(east.style.display).toBe("none")
+    expect(slider.classList.contains("d-none")).toBe(true)
+    expect(east.classList.contains("d-none")).toBe(true)
   })
 
   it("opens pane on toggleEast event", () => {
@@ -54,8 +54,8 @@ describe("ResizablePaneController", () => {
     )
     controller._onToggle()
 
-    expect(slider.style.display).toBe("block")
-    expect(east.style.display).toBe("block")
+    expect(slider.classList.contains("d-none")).toBe(false)
+    expect(east.classList.contains("d-none")).toBe(false)
   })
 
   it("closes pane on second toggle", () => {
@@ -70,7 +70,7 @@ describe("ResizablePaneController", () => {
     controller._onToggle() // open
     controller._onToggle() // close
 
-    expect(slider.style.display).toBe("none")
-    expect(east.style.display).toBe("none")
+    expect(slider.classList.contains("d-none")).toBe(true)
+    expect(east.classList.contains("d-none")).toBe(true)
   })
 })

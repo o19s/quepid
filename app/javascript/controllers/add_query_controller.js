@@ -3,7 +3,21 @@ import { apiUrl, csrfToken } from "modules/api_url"
 
 export default class extends Controller {
   static targets = ["input"]
-  static values = { url: String, bulkUrl: String }
+  static values = {
+    url: { type: String, default: "" },
+    bulkUrl: { type: String, default: "" },
+  }
+
+  connect() {
+    this.abortController = null
+  }
+
+  disconnect() {
+    if (this.abortController) {
+      this.abortController.abort()
+      this.abortController = null
+    }
+  }
 
   get _url() {
     if (this.hasUrlValue && this.urlValue) return this.urlValue
@@ -39,6 +53,9 @@ export default class extends Controller {
   }
 
   async _createSingle(queryText, token) {
+    if (this.abortController) this.abortController.abort()
+    this.abortController = new AbortController()
+
     try {
       const response = await fetch(this._url, {
         method: "POST",
@@ -47,6 +64,7 @@ export default class extends Controller {
           "X-CSRF-Token": token,
         },
         body: JSON.stringify({ query: { query_text: queryText } }),
+        signal: this.abortController.signal,
       })
 
       if (response.ok) {
@@ -54,11 +72,16 @@ export default class extends Controller {
         window.location.reload()
       }
     } catch (error) {
-      console.error("Failed to add query:", error)
+      if (error.name !== "AbortError") {
+        console.error("Failed to add query:", error)
+      }
     }
   }
 
   async _createBulk(queries, token) {
+    if (this.abortController) this.abortController.abort()
+    this.abortController = new AbortController()
+
     try {
       const response = await fetch(this._bulkUrl, {
         method: "POST",
@@ -67,6 +90,7 @@ export default class extends Controller {
           "X-CSRF-Token": token,
         },
         body: JSON.stringify({ queries: queries }),
+        signal: this.abortController.signal,
       })
 
       if (response.ok) {
@@ -74,7 +98,9 @@ export default class extends Controller {
         window.location.reload()
       }
     } catch (error) {
-      console.error("Failed to add queries:", error)
+      if (error.name !== "AbortError") {
+        console.error("Failed to add queries:", error)
+      }
     }
   }
 }

@@ -49,7 +49,7 @@
 
         <li>
           <span class="text-muted">Sort &nbsp;</span>
-          <ul class="list-inline" style="display:inline" role="group" aria-label="sort">
+          <ul class="list-inline d-inline" role="group" aria-label="sort">
             <% if @query_list_sortable %>
               <li>
                 <a href="#" class="active"
@@ -102,9 +102,8 @@
               data-query-row-ratings-value="<%= query.ratings.each_with_object({}) { |r, h| h[r.doc_id] = r.rating.to_i }.to_json %>">
             <div class="clearfix">
               <div class="result-header">
-                <div class="results-score" style="float:left;">
-                  <div class="overall-rating" data-query-row-target="scoreDisplay"
-                       style="background-color: #999; color: #fff; display: block; float: left; width: 90px; margin: -10px 15px -10px -20px; padding: 10px 0; font-size: 22px; text-align: center; border-top-left-radius: 5px; border-bottom-left-radius: 5px;">
+                <div class="results-score pull-left">
+                  <div class="overall-rating query-score-badge" data-query-row-target="scoreDisplay">
                     --
                   </div>
                 </div>
@@ -125,7 +124,7 @@
               </div>
             </div>
 
-            <div class="sub-results container clearfix" style="display:none"
+            <div class="sub-results container clearfix d-none"
                  data-query-row-target="expandedContent">
               <div class="btn-toolbar" role="toolbar">
                 <div class="btn-group">

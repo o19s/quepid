@@ -15,7 +15,10 @@ export class RatingsStore {
     // Store as { "docId": integerRating }
     this.ratings = {}
     for (const [docId, value] of Object.entries(initialRatings)) {
-      this.ratings[docId] = parseInt(value, 10)
+      const parsed = parseInt(value, 10)
+      if (!isNaN(parsed)) {
+        this.ratings[docId] = parsed
+      }
     }
   }
 

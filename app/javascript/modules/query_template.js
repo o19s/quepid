@@ -23,8 +23,10 @@ function getDescendantProp(obj, desc) {
   while (arr.length && obj !== null) {
     let key = arr.shift()
     let defaultValue = null
-    if (key.indexOf("|") !== -1) {
-      ;[key, defaultValue] = key.split("|")
+    const pipeIdx = key.indexOf("|")
+    if (pipeIdx !== -1) {
+      defaultValue = key.substring(pipeIdx + 1)
+      key = key.substring(0, pipeIdx)
     } else if (/keyword\d+/.test(key)) {
       defaultValue = ""
     }

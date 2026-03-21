@@ -19,15 +19,22 @@ export default class extends Controller {
     window.addEventListener("resize", this._onResize)
 
     // Bridge: Angular's MainCtrl dispatches toggleEast via jQuery .trigger(),
-    // which doesn't fire native DOM events. Listen with jQuery.
-    $(document).on("toggleEast.resizablePane", this._onToggle)
+    // which doesn't fire native DOM events. Listen with jQuery when available,
+    // plus a native CustomEvent listener for post-Angular usage.
+    if (typeof $ !== "undefined") {
+      $(document).on("toggleEast.resizablePane", this._onToggle)
+    }
+    document.addEventListener("toggleEast", this._onToggle)
 
     this._setupPane()
   }
 
   disconnect() {
     window.removeEventListener("resize", this._onResize)
-    $(document).off("toggleEast.resizablePane")
+    if (typeof $ !== "undefined") {
+      $(document).off("toggleEast.resizablePane")
+    }
+    document.removeEventListener("toggleEast", this._onToggle)
     document.removeEventListener("mousemove", this._onMouseMove)
     document.removeEventListener("mouseup", this._onMouseUp)
   }
@@ -41,12 +48,12 @@ export default class extends Controller {
   _setupPane() {
     if (this.toggled) {
       this._moveEastTo(this.element.offsetWidth - this.eastPaneWidth)
-      this.sliderTarget.style.display = "block"
-      this.eastTarget.style.display = "block"
+      this.sliderTarget.classList.remove("d-none")
+      this.eastTarget.classList.remove("d-none")
     } else {
       this._moveEastTo(this.element.offsetWidth)
-      this.sliderTarget.style.display = "none"
-      this.eastTarget.style.display = "none"
+      this.sliderTarget.classList.add("d-none")
+      this.eastTarget.classList.add("d-none")
     }
   }
 
@@ -61,7 +68,7 @@ export default class extends Controller {
   grabSlider(event) {
     event.preventDefault()
     this.dragging = true
-    this.eastTarget.style.display = "block"
+    this.eastTarget.classList.remove("d-none")
     document.addEventListener("mousemove", this._onMouseMove)
     document.addEventListener("mouseup", this._onMouseUp)
   }

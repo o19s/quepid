@@ -105,3 +105,50 @@
   color: #c00;
   border-color: #c00;
 }
+
+/* Score badge styles for case header and query rows */
+.case-score-badge {
+  background-color: #999;
+  color: #fff;
+  display: inline-block;
+  width: 90px;
+  padding: 10px 0;
+  font-size: 22px;
+  text-align: center;
+  border-radius: 5px;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.case-score-badge-wrapper {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.case-header-info {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.query-score-badge {
+  background-color: #999;
+  color: #fff;
+  display: block;
+  float: left;
+  width: 90px;
+  margin: -10px 15px -10px -20px;
+  padding: 10px 0;
+  font-size: 22px;
+  text-align: center;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.inline-edit-input-highlight {
+  background: #FFFF99;
+}
+
+/* Score badge with no score — gray fallback */
+.score-badge-unscored {
+  background-color: #999;
+}

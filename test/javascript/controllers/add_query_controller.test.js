@@ -20,8 +20,8 @@ describe("AddQueryController", () => {
     document.head.innerHTML = '<meta name="csrf-token" content="test-token">'
     document.body.innerHTML = `
       <form data-controller="add-query"
-            data-add-query-url-value="/api/cases/1/queries"
-            data-add-query-bulk-url-value="/api/bulk/cases/1/queries"
+            data-add-query-url-value="api/cases/1/queries"
+            data-add-query-bulk-url-value="api/bulk/cases/1/queries"
             data-action="submit->add-query#submit">
         <input data-add-query-target="input" type="text" />
         <input type="submit" value="Add query" />
@@ -63,7 +63,7 @@ describe("AddQueryController", () => {
     })
 
     expect(fetchSpy).toHaveBeenCalledWith(
-      "/api/cases/1/queries",
+      "api/cases/1/queries",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ query: { query_text: "star wars" } }),
@@ -87,7 +87,7 @@ describe("AddQueryController", () => {
     })
 
     expect(fetchSpy).toHaveBeenCalledWith(
-      "/api/bulk/cases/1/queries",
+      "api/bulk/cases/1/queries",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ queries: ["star wars", "lord of the rings"] }),
