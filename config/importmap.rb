@@ -28,6 +28,7 @@ pin 'modules/api_url', to: 'modules/api_url.js'
 pin 'modules/query_template', to: 'modules/query_template.js'
 pin 'modules/search_executor', to: 'modules/search_executor.js'
 pin 'modules/scorer', to: 'modules/scorer.js'
+pin 'modules/scorer_executor', to: 'modules/scorer_executor.js'
 pin 'modules/ratings_store', to: 'modules/ratings_store.js'
 pin 'codemirror' # @6.0.2
 pin '@codemirror/commands', to: '@codemirror--commands.js' # @6.10.2

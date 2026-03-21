@@ -1,15 +1,31 @@
 import { Controller } from "@hotwired/stimulus"
+import { computeCaseScore } from "modules/scorer_executor"
 
 const MAX_CONCURRENT = 8
 
 export default class extends Controller {
   static targets = ["list", "queryRow", "filterInput", "queryCount",
                      "showOnlyRatedCheckbox", "sortLink"]
-  static outlets = ["query-row"]
+  static outlets = ["query-row", "case-score"]
 
   connect() {
     this.showOnlyRated = false
     this.currentFilter = ""
+    this.queryScores = {} // { queryId: { text, score, maxScore, numFound } }
+  }
+
+  // Handles query-row:scoreChanged events bubbled up from query-row controllers
+  handleScoreChanged(event) {
+    const { queryId, queryText, score, maxScore, numFound } = event.detail
+
+    this.queryScores[queryId] = {
+      text: queryText,
+      score: typeof score === "number" ? score : null,
+      maxScore: maxScore,
+      numFound: numFound,
+    }
+
+    this._updateCaseScore()
   }
 
   filter() {
@@ -59,6 +75,18 @@ export default class extends Controller {
   }
 
   // Private
+
+  _updateCaseScore() {
+    const { score, allRated } = computeCaseScore(this.queryScores)
+
+    if (this.hasCaseScoreOutlet) {
+      this.caseScoreOutlet.updateScore({
+        score,
+        allRated,
+        queryScores: this.queryScores,
+      })
+    }
+  }
 
   _applyVisibility() {
     let visibleCount = 0
