@@ -4,7 +4,9 @@ Complete inventory of the AngularJS frontend in Quepid. Use it with [angularjs_e
 
 ## Overview
 
-The AngularJS app powers the **core case evaluation interface** at `/case/:caseNo/try/:tryNo`. It is bootstrapped via the `core.html.erb` layout with `ng-app="QuepidApp"` and uses ngRoute with HTML5 mode. The module name is `QuepidApp` with 25+ third-party AngularJS dependencies.
+The AngularJS app powers the **core case evaluation interface** at `/case/:caseNo/try/:tryNo`. It is bootstrapped via the `core.html.erb` layout with `ng-app="QuepidApp"` and uses ngRoute with HTML5 mode. The module name is `QuepidApp`; its dependency list in `app/assets/javascripts/app.js` names **22** registered Angular modules (vendor libraries plus `UtilitiesModule`, `templates`, `ngVega`, etc.).
+
+The same layout also loads **`application_modern`** via the importmap (`javascript_importmap_tags`) so Stimulus/Turbo and other modern bundles run alongside the legacy Angular stack on core pages.
 
 Everything outside this core (homepage, cases listing, teams, books, scorers, judgements, admin) has already been migrated to standard Rails views with Stimulus controllers.
 
@@ -21,22 +23,23 @@ core.html.erb (ng-app="QuepidApp")
 ```
 
 **Bootstrap flow:**
-1. `core.html.erb` loads jQuery, Angular vendors, templates, app bundles
-2. Inline `<script>` run block calls `bootstrapSvc.run()` (fetches current user) and `configurationSvc` (sets feature flags from Rails config)
+1. `core.html.erb` loads `jquery_bundle`, `angular_app`, `angular_templates`, `quepid_angular_app`, then the importmap entry **`application_modern`**
+2. Inline `<script>` run block calls `bootstrapSvc.run()` (fetches current user) and `configurationSvc` (sets feature flags from Rails `data-*` attributes on `<body>`)
 3. ngRoute resolves to `MainCtrl` which orchestrates `caseSvc`, `settingsSvc`, `queriesSvc`, `querySnapshotSvc`, `scorerSvc`
 4. `QueriesCtrl` manages the primary query list — the heart of the UI
 
 ## Build System
 
-- **Bundler:** esbuild (not Sprockets, not Webpack)
+- **Vendor / shared JS:** esbuild (not Sprockets, not Webpack)
 - **Entry points:**
-  - `app/javascript/angular_app.js` -> vendor bundle (`angular_app.js`)
-  - `app/javascript/quepid_app.js` -> app bundle (`quepid_angular_app.js`)
-  - `build_templates.js` -> template cache (`angular_templates.js`)
-  - `app/javascript/jquery_bundle.js` -> jQuery bundle
+  - `app/javascript/angular_app.js` → vendor bundle (`angular_app.js`) — Angular core, jQuery UI, splainer-search, Vega, Shepherd, etc.
+  - **`build_angular_app.js`** (Node) → application bundle (`quepid_angular_app.js`) — concatenates, in order: `utilitiesModule.js`, `app.js`, `routes.js`; then component `*_service.js` / `*_directive.js` / `*_controller.js` / other `*.js`; then top-level `controllers/`, `directives/`, `factories/`, `filters/`, `interceptors/`, `services/`, `values/`; then `footer.js`, `tour.js`, `ace_config.js`. Watches those paths when run with `--watch`.
+  - `build_templates.js` → template cache (`angular_templates.js`) — scans **`app/assets/javascripts/components`** and **`app/assets/templates`** (including `.html.erb` sources, registered under the basename without `.erb`).
+  - `app/javascript/jquery_bundle.js` → jQuery bundle (`jquery_bundle.js`)
+- **Legacy file:** `app/javascript/quepid_app.js` (Webpack-style `require.context` imports) is **not** referenced by current `yarn build` scripts; the supported app build is `build_angular_app.js`.
 - **Output:** `app/assets/builds/*.js`
-- **Build commands:** `yarn build:angular-vendor`, `yarn build:angular-app`, `yarn build:angular-templates`
-- **Tests:** Karma + Jasmine 6.0.1, run via `bin/docker r yarn test`
+- **Build commands:** `yarn build:angular-vendor`, `yarn build:angular-app`, `yarn build:angular-templates` (or `yarn build` for full front-end build)
+- **Angular unit tests:** Karma + Jasmine 6.0.1, run via `bin/docker r yarn test` (invokes `rake karma:run`). **Vitest** is also configured for non-Angular/modern JS (`yarn test:vitest`).
 
 ## Third-Party AngularJS Dependencies
 
@@ -101,7 +104,7 @@ core.html.erb (ng-app="QuepidApp")
 
 | Controller | File | Lines | Description |
 |-----------|------|-------|-------------|
-| **QueryParamsCtrl** | `controllers/queryParams.js` | 164 | Try settings: search endpoint URL, query template, field spec validation. |
+| **QueryParamsCtrl** | `controllers/queryParams.js` | 167 | Try settings: search endpoint URL, query template, field spec validation. |
 | **SettingsCtrl** | `controllers/settings.js` | 91 | Try settings with JSON validation for search engine configs. |
 | **CustomHeadersCtrl** | `controllers/customHeaders.js` | 16 | Custom HTTP headers (API keys, etc.) for search endpoints. |
 | **QueryParamsDetailsCtrl** | `controllers/queryParamsDetails.js` | 60 | Modal: try details, rename, delete, clone. |
@@ -112,7 +115,7 @@ core.html.erb (ng-app="QuepidApp")
 | Controller | File | Lines | Description |
 |-----------|------|-------|-------------|
 | **WizardCtrl** | `controllers/wizardCtrl.js` | 52 | Triggers initial case setup wizard. |
-| **WizardModalCtrl** | `controllers/wizardModal.js` | 828 | **Largest controller.** Multi-step wizard: select search engine, configure endpoint, add queries, validate, create case. |
+| **WizardModalCtrl** | `controllers/wizardModal.js` | 831 | **Largest controller.** Multi-step wizard: select search engine, configure endpoint, add queries, validate, create case. |
 
 ### Scoring & Comparison Controllers
 
@@ -133,7 +136,7 @@ core.html.erb (ng-app="QuepidApp")
 | **UnarchiveCaseCtrl** | `controllers/unarchiveCase.js` | 59 | Modal: browse and unarchive cases. |
 | **404Ctrl** | `controllers/404Ctrl.js` | 4 | 404 page (empty). |
 
-**Total: ~3,285 lines across 28 controllers**
+**Total: ~3,291 lines across 28 controllers**
 
 ---
 
@@ -335,11 +338,12 @@ Inter-component communication uses `broadcastSvc` wrapping `$rootScope.$broadcas
 
 ## Tests
 
-- **Framework:** Karma + Jasmine 6.0.1
-- **Location:** `spec/javascripts/**/*_spec.js` (28 test files)
+- **Angular (legacy core):** Karma + Jasmine 6.0.1
+- **Location:** `spec/javascripts/**/*_spec.js` (28 Angular-focused `*_spec.js` files under `spec/javascripts/angular/`)
 - **Mocks:** `spec/karma/mockBackend.js` + `spec/javascripts/mock/`
-- **Config:** `spec/karma/config/unit.js`
-- **Run:** `bin/docker r yarn test`
+- **Config:** `spec/karma/config/unit.js` (loads `app/assets/builds/angular_app.js`, `quepid_angular_app.js`, `angular_templates.js`, then specs)
+- **Run:** `bin/docker r yarn test` (runs `rake karma:run`)
+- **Modern JS:** Vitest (`vitest.config.js`) — `yarn test:vitest` / `yarn test:vitest:watch` for code outside the Karma suite
 
 ---
 
@@ -401,9 +405,9 @@ Migration must either reimplement these or keep a compatibility layer with splai
 ### Tour and supporting entry points
 
 - **Shepherd / tether-shepherd** — In `package.json` and `angular_app.js`. Used by `tour.js` for the in-app product tour (steps for case header, score, add query, etc.). Now listed under Non-Angular JS dependencies above.
-- **tour.js** — Run via `quepid_app.js`; sets up `Shepherd.Tour` and triggers on `[data-trigger-tour]`.
-- **footer.js** — Mutates footer into `.pane_main` when present (MutationObserver). Loaded by `quepid_app.js`.
-- **ace_config.js** — Sets ACE worker/theme paths. Loaded by `quepid_app.js`.
+- **tour.js** — Concatenated into `quepid_angular_app.js` by `build_angular_app.js`; sets up `Shepherd.Tour` and triggers on `[data-trigger-tour]`.
+- **footer.js** — Mutates footer into `.pane_main` when present (MutationObserver). Appended by `build_angular_app.js`.
+- **ace_config.js** — Sets ACE worker/theme paths. Appended by `build_angular_app.js`.
 
 ### Controller count clarification
 
@@ -415,7 +419,7 @@ The "28 controllers" count refers to **main** controllers in `controllers/`. The
 
 ### Template path note
 
-Component templates reference paths like `'import_ratings/import_ratings.html'` and `'views/wizardModal.html'`; the template cache (build_templates.js) serves both `views/` and component paths.
+Component templates reference paths like `'import_ratings/import_ratings.html'` and `'views/wizardModal.html'`; `build_templates.js` registers keys for both `app/assets/templates` (e.g. `views/...`) and `app/assets/javascripts/components` (e.g. `share_case/share_case.html`).
 
 ---
 
@@ -423,12 +427,12 @@ Component templates reference paths like `'import_ratings/import_ratings.html'` 
 
 | Category | Count | Total Size (approx.) |
 |----------|-------|---------------------|
-| Controllers | 28 | ~3,285 lines |
-| Services | 26 | ~175KB |
+| Controllers | 28 | ~3,291 lines |
+| Services | 26 | ~174KB (`app/assets/javascripts/services/`) |
 | Factories | 7 | ~40KB |
 | Directives | 11 | ~15KB |
 | Components | 23 | ~70KB |
 | Filters | 5 | ~3KB |
-| Templates | ~62 | ~50KB |
-| Tests | 28 | ~25KB |
-| **Total** | **~147 JS files** | **~380KB of AngularJS code** |
+| Templates | 62 `.html` / `.html.erb` under `app/assets/templates` + `components/` | ~50KB (pre-bundle) |
+| Tests (Karma) | 28 `*_spec.js` | ~25KB |
+| **Total** | **147 JS files under `app/assets/javascripts/`** | **~380KB of AngularJS application code** (excluding vendor `angular_app.js`) |

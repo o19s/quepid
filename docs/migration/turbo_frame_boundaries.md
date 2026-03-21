@@ -4,6 +4,11 @@
 >
 > **Related:** [Workspace state design](./workspace_state_design.md), [Turbo streams guide](turbo_streams_guide.md). App layout overview: [docs/app_structure.md](../app_structure.md).
 
+**Implementation split**
+
+- **Sections 1–5 and 7–8** describe the **target** Hotwire boundaries for the core case / try workspace. The Stimulus-first shell at `app/views/core/new_ui.html.erb` (partials under `app/views/core/`) does **not** yet wrap that UI in `workspace_content` / `query_list_*` / `results_pane` frames; those IDs are the contract to adopt when you introduce Turbo Frame navigation there.
+- **Section 6** lists frames that **already exist** on `main` (navbar, home dashboard, books/judgements, sparklines route).
+
 ---
 
 ## 1. Workspace Content (Query List + Results Pane)
@@ -33,7 +38,7 @@
 - Wrapped in `turbo_frame_tag "query_list_#{case_id}"` (case-specific for Turbo Stream targeting).
 - Renders the list of queries with per-row actions (move, options, explain, delete, etc.) as your markup allows.
 - Selection via link to the same page with `?query_id=`; use `data-turbo-frame="workspace_content"` so only the workspace content updates (no full-page reload).
-- **Turbo Streams:** Add/remove queries via Turbo Streams (`append` to `query_list_items`, `remove` `query_row_<id>`). Real-time score updates may `replace` the whole frame when a job completes. See [turbo_streams_guide.md](turbo_streams_guide.md) and §7 below.
+- **Turbo Streams:** Add/remove queries via Turbo Streams (`append` to `query_list_items`, `remove` `query_row_<id>`). Real-time score updates may `replace` the whole frame when a job completes. See [turbo_streams_guide.md](turbo_streams_guide.md) and [section 7](#7-turbo-streams--server-responses) below.
 - **Typical client-side behavior** (often a Stimulus controller such as `query_list_controller.js`) — **mirror Angular parity first**, then evolve:
   - **Pagination / filtering / sorting:** Match today’s query list UX (Angular uses client pagination in places; elimination plan also allows server-driven Pagy for large cases). Do not assume `?page=` on the URL unless your slice intentionally matches that model.
   - **Drag-and-drop reorder:** e.g. SortableJS; persist order via your cases/queries position API.
@@ -54,9 +59,9 @@
 **Details:**
 - Wrapped in `turbo_frame_tag "results_pane"`.
 - Shows selected query context, notes / information-need form, and placeholder or live search results.
-- **Query notes form** (`query_notes_<query_id>`): may submit via Turbo Frame; server returns HTML with a matching frame to replace the form region without full-page reload. See §7.
+- **Query notes form** (`query_notes_<query_id>`): may submit via Turbo Frame; server returns HTML with a matching frame to replace the form region without full-page reload. See [section 7](#7-turbo-streams--server-responses).
 - When no query is selected: show a prompt such as “Select a query from the list”.
-- **Results fetching (parity):** Same browser search model as [angularjs_elimination_plan.md](./angularjs_elimination_plan.md); optional server-rendered cards only with explicit scope ([intentional_design_changes.md](./intentional_design_changes.md) §2).
+- **Results fetching (parity):** Same browser search model as [angularjs_elimination_plan.md](./angularjs_elimination_plan.md); optional server-rendered cards only with explicit scope ([intentional_design_changes.md](./intentional_design_changes.md), Section 2).
 - **Rating updates:** Responses can use Turbo Streams (`update` for `rating-badge-<doc_id>`) when `Accept: text/vnd.turbo-stream.html`. See [turbo_streams_guide.md](turbo_streams_guide.md).
 - **Bulk rating:** Bulk rate/clear via your bulk ratings endpoints; trigger score refresh and re-fetch results as needed.
 - **Diff mode:** May use query params (e.g. `diff_snapshot_ids[]`); server renders diff UI on cards; listen for `diff-snapshots-changed` or equivalent events if you use them.
@@ -86,11 +91,11 @@
 | Modal (examples) | Typical stack | Frame strategy | Notes |
 |------------------|---------------|----------------|-------|
 | Clone / export / import / share case, judgements, diff, query actions, annotations, etc. | Partial + Stimulus | In-page Bootstrap modal | Standard pattern |
-| Books / judgements flows | Rails views | `turbo_frame_tag "modal"` | Lazy-loaded where the app already uses this pattern |
+| Books / judgements flows | Rails views | `turbo_frame_tag "modal"` | Empty frame on `books/show` as a target for modal HTML/streams (see `app/views/books/show.html.erb`) |
 
 **Details:**
 - Most modals are **in-page Bootstrap modals** rendered with the page; Stimulus handles open/close.
-- **Turbo Frame modals:** Use `target="_top"` for links/forms that should affect the whole page (e.g. redirect after submit). For lazy-loaded modals, use `turbo_frame_tag "modal"` with `src` (see existing patterns such as `app/views/books/show.html.erb`).
+- **Turbo Frame modals:** Use `target="_top"` for links/forms that should affect the whole page (e.g. redirect after submit). For modals driven by frames, use `turbo_frame_tag "modal"` as the insertion target; add `src` on the frame if you adopt lazy-loaded modal content (the books show page currently declares an empty `modal` frame).
 - **Heavy modals:** Consider lazy-loading via frame `src`. Form submits can return Turbo Streams to close the modal and update parent regions.
 - See [UI Consistency Patterns](ui_consistency_patterns.md) for modal patterns and Bootstrap conventions.
 
@@ -98,28 +103,34 @@
 
 ## 6. Other Frames (Outside Core Workspace)
 
-| Frame ID | Location | Purpose |
-|----------|----------|---------|
-| `dropdown_cases` | `layouts/_header.html.erb` | Lazy-loaded recent cases in navbar dropdown |
-| `dropdown_books` | `layouts/_header.html.erb` | Lazy-loaded recent books in navbar dropdown |
-| `modal` | `books/show.html.erb` | Lazy-loaded modal content for judgements |
-| `book_frame_<id>` | `home/_book_summary.html.erb` | Per-book summary on dashboard |
-| `case_frame_<id>` | `home/_case_summary.html.erb` | Per-case summary on dashboard |
-| `sparklines_tray` | `home/sparklines.html.erb` | Sparklines region |
-| `query_doc_pair_card` | `judgements/edit.html.erb`, `new.html.erb` | Judgement card in book flow |
+These match **current** ERB in the repo (verify with `rg 'turbo-frame|turbo_frame_tag' app/views` after refactors).
 
-### 6.1 Lazy Loading (`loading="lazy"`)
+| Frame ID | Declared in | Response template (matching `id`) | Purpose |
+|----------|-------------|-----------------------------------|---------|
+| `dropdown_cases` | `layouts/_header.html.erb` (`src`: `dropdown_cases_path`) | `dropdown/cases.html.erb` | Recent cases in navbar dropdown |
+| `dropdown_books` | `layouts/_header.html.erb` (`src`: `dropdown_books_path`) | `dropdown/books.html.erb` | Recent books in navbar dropdown |
+| `modal` | `books/show.html.erb` | (streams / responses targeting this id) | Modal host for judgements flows |
+| `book_frame_<id>` | `home/_book_summary.html.erb` (`src`: `home_book_summary_detail_path`) | `home/book_summary_detail.html.erb` | Per-book summary on dashboard |
+| `case_frame_<id>` | `home/_case_summary.html.erb` (`src`: `home_case_prophet_path`) | `home/case_prophet.html.erb` | Per-case summary on dashboard |
+| `sparklines_tray` | `home/sparklines.html.erb` | Same file (full-page `HomeController#sparklines`) | Sparklines tray (`GET home/sparklines`) |
+| `query_doc_pair_card` | `judgements/edit.html.erb`, `new.html.erb` | Same files | Judgement card in book flow |
 
-Turbo Frames that use `src` to fetch content should include `loading="lazy"` so content is deferred until the frame is near the viewport. This improves initial load and reduces work for non-critical regions.
+### 6.1 Lazy vs eager `src` frames
 
-| Frame | Location | Notes |
-|-------|----------|-------|
-| `dropdown_cases` | `layouts/_header.html.erb` | Navbar dropdown; loads when user opens menu |
-| `dropdown_books` | `layouts/_header.html.erb` | Navbar dropdown; loads when user opens menu |
-| `book_frame_<id>` | `home/_book_summary.html.erb` | Per-book summary on dashboard |
-| `case_frame_<id>` | `home/_case_summary.html.erb` | Per-case summary on dashboard |
+Turbo Frames with `src` fetch their content automatically. Use **`loading="lazy"`** when deferring work until the frame is near the viewport (or until the user reveals the region). Use **`loading="eager"`** (or omit, depending on Turbo defaults) when you want the fetch to start immediately—e.g. dashboard cards where book summaries should populate without waiting for scroll.
+
+| Frame | Location | `loading` on `main` | Notes |
+|-------|----------|---------------------|-------|
+| `dropdown_cases` | `layouts/_header.html.erb` | `lazy` | Fetches when the frame is in the dropdown |
+| `dropdown_books` | `layouts/_header.html.erb` | `lazy` | Same |
+| `book_frame_<id>` | `home/_book_summary.html.erb` | **`eager`** | Fetches book detail as soon as the dashboard renders |
+| `case_frame_<id>` | `home/_case_summary.html.erb` | `lazy` | Defers case “prophet” payload until near viewport |
 
 **When adding new lazy-loaded frames:** Use `src="<%= some_path %>" loading="lazy"` (or `turbo_frame_tag "id", src: path, loading: :lazy`). The server response must return HTML containing a matching `<turbo-frame id="...">`.
+
+### 6.2 Turbo frame requests and `request.variant`
+
+`ApplicationController` sets `request.variant = :turbo_frame` when `turbo_frame_request?` is true. Use `show.html+turbo_frame.erb` (or equivalent) to return a minimal layout or partial HTML for frame navigation without duplicating branching logic in every action.
 
 ---
 
@@ -146,7 +157,7 @@ Subscribe with `turbo_stream_from(:notifications)` (or your channel) in the layo
 
 ## 8. Turbo events + Stimulus
 
-A small Stimulus controller on `<body>` (e.g. `turbo_events_controller`) can listen for Turbo lifecycle events:
+Optional pattern: a small Stimulus controller on `<body>` (for example `turbo_events_controller`) can listen for Turbo lifecycle events. The repo may not define this yet; add it when you want global loading chrome for frames and forms.
 
 | Event | Purpose |
 |-------|---------|
@@ -182,4 +193,4 @@ For URL building rules (never hardcode `/`; prefer server-passed URLs and a subp
 | Query list | `query_list_<case_id>` | Turbo Streams for add/remove/reorder; client pagination/filter/sort; `query_row_<id>` |
 | Results pane | `results_pane` | `fetch` + HTML (not necessarily lazy `src`); Turbo Streams for ratings; bulk rating, diff, load more |
 | Side panels | (collapsible) | Stimulus + optional `localStorage` |
-| Modals | Various | Mostly in-page Bootstrap; lazy `modal` frame where the app uses it |
+| Modals | Various | Mostly in-page Bootstrap; `modal` frame on `books/show` as stream/target host |

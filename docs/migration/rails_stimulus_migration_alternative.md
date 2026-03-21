@@ -4,15 +4,30 @@ Replacing the AngularJS core UI with Rails views, Turbo, and Stimulus—using th
 
 > **Canonical plan:** [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) — scope, P0 parity, and browser search/scoring model. This doc is **only** Stimulus + Turbo implementation detail for that plan.
 >
+> **Fetch URLs and CSRF:** [api_client.md](./api_client.md) — how Stimulus builds `api/...` and `proxy/fetch` today (no shared wrapper required yet).
+>
+> **Stimulus implementation rules:** [../stimulus_and_modern_js_conventions.md](../stimulus_and_modern_js_conventions.md) — outlets, `apiUrl()`, escaping, Vitest expectations.
+>
 > **React alternative:** [old/react_migration_plan.md](./old/react_migration_plan.md). **`deangularjs-experimental`:** [deangularjs_experimental_review.md](./deangularjs_experimental_review.md).
 
 ## Guiding Principles
 
 1. **Incremental migration** — Angular and Stimulus core coexist during migration. Replace one pane or area at a time; no big-bang rewrite.
-2. **API stays the same** — The Rails JSON API (`/api/v1/`) is stable and well-tested. Stimulus controllers and Rails views call the same endpoints.
-3. **Rails remains the host** — No client-side router. Rails routes, Turbo Drive for navigation, Turbo Frames for partial updates. Rails handles auth, CSRF, and serves the page.
+2. **API stays the same** — The Rails JSON API (browser paths like `api/cases/...`, same controllers as today) is stable and well-tested. Stimulus controllers and Rails views call the same endpoints Angular’s `$http` already uses.
+3. **Rails remains the host** — No client-side router. Rails routes; **Turbo Drive** where enabled (globally off in `application_modern` today); **Turbo Frames/Streams** or **`fetch`** for partial updates. Rails handles auth, CSRF, and serves the page.
 4. **No feature regression** — Every migrated piece must match existing functionality before we remove the Angular version.
 5. **Prefer the stack you already have** — The rest of Quepid is ERB + Stimulus + Turbo. The core becomes “more of the same” instead of a second frontend paradigm (e.g. React).
+
+## Current implementation (`new_ui` strangler slice)
+
+A **parallel URL** already exercises Rails + Stimulus for part of the core shell (see [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) §*Parallel “new_ui” route*):
+
+- **Route:** `GET /case/:id(/try/:try_number)/new_ui` → `CoreController#new_ui`, layout `core_new_ui` (importmap + Stimulus only; no Angular/jQuery bundles).
+- **Views:** `app/views/core/new_ui.html.erb` composes partials such as `_case_header`, `_action_bar`, `_query_list_shell` — case rename uses **`inline-edit`** Stimulus; query list uses **`query-list`**, **`add-query`**, **`query-row`** (filter, sort, add/delete, expand/collapse; expanded result area is still a placeholder until search/ratings ship here).
+- **JS on disk (representative):** `app/javascript/controllers/query_list_controller.js`, `add_query_controller.js`, `query_row_controller.js`, `inline_edit_controller.js`, `resizable_pane_controller.js`, plus shared modules `modules/api_url.js`, `modules/search_executor.js`, `modules/query_template.js`, `modules/editor.js`.
+- **Turbo:** `application_modern` loads Turbo, but **`Turbo.session.drive` is set to `false`** globally today — plan for targeted frames/streams/visits rather than assuming full Drive navigation on every click.
+
+The sections below still describe the **full** core port (many areas remain Angular-only on the default `/case/...` URL). Names like `add_query_form_controller.js` are **target** filenames from the original sketch; where they differ from files already merged, prefer the names in the repo and fold new work into those controllers or split only when complexity warrants it.
 
 ## Technology Choices
 
@@ -22,22 +37,22 @@ Replacing the AngularJS core UI with Rails views, Turbo, and Stimulus—using th
 | Routing | Rails routes + Turbo Drive | Single source of truth; deep links and back/forward work naturally |
 | Partial updates | Turbo Frames (+ Streams) | In-place frame replacement; optional WebSocket streams for live updates |
 | State | Server + DOM + minimal Stimulus values | Server-rendered HTML and frame content; transient UI state in controllers |
-| HTTP client | fetch (native) | Same as React plan; use shared API client with CSRF |
+| HTTP client | fetch (native) | Use `apiUrl()` + `csrfToken()` from `modules/api_url` for Rails JSON; see [api_client.md](./api_client.md) for proxy/search exceptions |
 | Build | esbuild (existing) | Same Stimulus/JS bundle as rest of app; no JSX, no React |
 | CSS | Existing CSS + Bootstrap 5 | No change |
 | Charts | D3 (existing) | Already bundled; use from Stimulus controllers |
 | Modals | Bootstrap 5 modals + Stimulus | Match existing app patterns |
-| Testing | System tests (Capybara) + optional Vitest/Jest for Stimulus | End-to-end guarantee; unit tests for non-trivial controllers |
+| Testing | System tests (Capybara) + Vitest for Stimulus | New/changed Stimulus controllers get `test/javascript/controllers/<name>_controller.test.js`; `bin/docker r yarn test` runs Karma + Vitest |
 | Heavy deps | splainer-search, ScorerFactory | Framework-agnostic; wrap/port once for use by Stimulus |
 
 ## Rails Integration Approach
 
 ### Layout
 
-Use a single core layout. During migration, use a **feature flag** to choose between:
+Use a single core layout after cutover. **Today:** default core uses `core.html.erb` (Angular + modern importmap); the **`new_ui`** action uses **`core_new_ui.html.erb`** (Stimulus only). During migration, an optional **feature flag** can choose between:
 
 - **Angular core:** existing `core.html.erb` (loads Angular bundles).
-- **Stimulus core:** same or renamed layout (e.g. `core_stimulus.html.erb` or refactored `core.html.erb`) that loads the **Stimulus** application and core-specific controllers. No React bundle.
+- **Stimulus core:** same or renamed layout (e.g. evolve `core_new_ui` or refactored `core.html.erb`) that loads the **Stimulus** application and core-specific controllers. No React bundle.
 
 Bootstrap data (current user, configuration, CSRF token) continues to be passed via meta tags or data attributes as today.
 
@@ -45,8 +60,8 @@ Bootstrap data (current user, configuration, CSRF token) continues to be passed 
 
 Rails routes stay the single source of truth. No React Router.
 
-- Full-page navigations (case list → case core → try N): **Turbo Drive** (or normal navigation). Same URLs: e.g. `/case/:id/try/:try_no`.
-- In-place updates (query list, results, settings panel): **Turbo Frames**. Each frame has a `src` or is targeted by a form/link; the server returns full page or frame-only HTML.
+- Full-page navigations (case list → case core → try N): **normal full loads** or **Turbo visits** where Drive is enabled for that surface. Same URLs: e.g. `/case/:id/try/:try_no`. Today the modern bundle disables Drive globally; re-enabling it for specific layouts is a deliberate follow-up.
+- In-place updates (query list, results, settings panel): **Turbo Frames** (and/or `fetch` + DOM updates, as `new_ui` does today). Each frame can have a `src` or be targeted by a form/link; the server returns full page or frame-only HTML.
 
 Optional: dedicated controller actions that return only a Turbo Frame (e.g. `Case::QueriesController#index` for the query list frame) for clearer boundaries.
 
@@ -65,12 +80,18 @@ Stimulus controllers attach to the DOM inside the layout and inside frames (e.g.
 
 ```
 app/javascript/
+  application_modern.js         # importmap entry; Stimulus + Turbo (drive off by default)
   controllers/
-    application.js              # Stimulus application (existing)
-    # Core-specific controllers (add during migration):
-    query_workspace_controller.js
+    application.js              # Stimulus application registration (existing)
+    index.js                    # controller manifest for importmap
+    # Already present for core-adjacent or new_ui surfaces (non-exhaustive):
     query_list_controller.js
-    add_query_form_controller.js
+    add_query_controller.js
+    query_row_controller.js
+    inline_edit_controller.js
+    resizable_pane_controller.js
+    # Planned / to add as the port advances (names may vary — see Feature Modules):
+    query_workspace_controller.js
     search_results_controller.js
     rating_control_controller.js
     bulk_rating_controller.js
@@ -84,18 +105,16 @@ app/javascript/
     case_wizard_controller.js
     document_inspector_controller.js
     frog_report_controller.js
-    # … (see Feature Modules below)
-  api/
-    client.js                   # fetch + CSRF + error handling (shared)
-    cases.js
-    queries.js
-    ratings.js
-    scorers.js
-    snapshots.js
-    tries.js
-    search_endpoints.js
-    # … (same API modules as React plan, used by Stimulus)
-  lib/
+    # … plus existing non-core controllers (share_case, mapper_wizard, …)
+  modules/
+    api_url.js                  # apiUrl(), csrfToken() — use for Rails JSON fetch URLs
+    search_executor.js          # Browser search + /proxy/fetch when needed
+    query_template.js
+    editor.js
+    # …
+  # Optional future layout (React plan sketch): app/javascript/api/*.js modules
+  # wrapping domain fetch — not required if controllers import api_url + fetch directly.
+  lib/                          # Pure helpers as extracted from Angular services
     score_to_color.js           # Port qscoreSvc
     error_messages.js           # Port searchErrorTranslatorSvc
     curator_vars.js             # Port varExtractorSvc
@@ -105,7 +124,8 @@ app/javascript/
 **Rails views (core):**
 
 ```
-app/views/case/core/
+app/views/core/                 # new_ui slice today: new_ui.html.erb, _case_header, _query_list_shell, …
+app/views/case/core/            # Target layout for unified Stimulus core (illustrative)
   show.html.erb                 # Shell: header + three-panel layout with frame placeholders
   _header.html.erb
   _query_list_frame.html.erb    # Turbo Frame: query list
@@ -121,8 +141,9 @@ Shared partials (modals, dropdowns, etc.) can live under `app/views/shared/` or 
 
 ### Coexistence Strategy
 
-- **Feature flag:** e.g. `Rails.application.config.use_stimulus_core` or `use_react_core` vs Angular. `CoreController#index` (or equivalent) chooses which layout or which content to render.
-- **Same URLs.** Angular and Stimulus cores never run on the same page; the flag selects one or the other. Safe rollback by flipping the flag.
+- **Parallel URL (`new_ui`):** Ship and QA Stimulus slices on `/case/.../new_ui` without switching the default workspace — already in use on `main` (see §*Current implementation* above).
+- **Feature flag (optional):** e.g. config or per-user flag so `CoreController#index` chooses Angular vs Stimulus layout when you are ready to cut the default `/case/...` over. Angular and Stimulus core shells should not both boot on the same document.
+- **Same URLs after cutover.** Until then, `new_ui` is an explicit alternate path. Rollback = revert PR or flip flag, depending on rollout style.
 
 ## Feature Modules
 
@@ -132,18 +153,18 @@ Each Angular controller/component maps to Rails views/partials plus one or more 
 
 **Replaces:** `MainCtrl`, `QueriesCtrl`, `queries` directive, `queriesLayout.html`
 
-- **Rails:** Core shell view with three panels; Turbo Frames for query list, results, settings.
-- **Stimulus:** `query_workspace_controller.js` (pane layout, resize if needed); `query_list_controller.js` (list behavior, expand/collapse); `add_query_form_controller.js` (add, submit).
-- **Views/partials:** `_query_list_frame.html.erb`, query list item partials (query text, score badge, delete, reorder).
+- **Rails:** Core shell view with three panels; Turbo Frames for query list, results, settings (or `fetch` updates as on `new_ui`).
+- **Stimulus:** `query_workspace_controller.js` (pane layout, resize if needed — partial overlap with **`resizable_pane_controller.js`** today); **`query_list_controller.js`**, **`query_row_controller.js`**, **`add_query_controller.js`** (started on `new_ui`); later: dedicated workspace orchestration if needed.
+- **Views/partials:** `_query_list_frame.html.erb` / `_query_list_shell.html.erb`, query list item partials (query text, score badge, delete, reorder).
 
 **Artifacts:**
 
 | Rails | Stimulus | Notes |
 |-------|----------|--------|
-| `Case::CoreController#show`, core layout | `query_workspace_controller.js` | Shell, frame targets |
-| Query list frame partial(s) | `query_list_controller.js` | List, expand/collapse, reorder (e.g. Sortable.js or native) |
-| Add query form partial | `add_query_form_controller.js` | Submit via API or form; refresh frame or update DOM |
-| — | `api/queries.js` + `api/client.js` | CRUD, search execution (splainer-search) |
+| `Case::CoreController#show`, core layout | `query_workspace_controller.js` (planned) | Shell, frame targets |
+| Query list frame partial(s) | `query_list_controller.js`, `query_row_controller.js` | List, expand/collapse, reorder (e.g. Sortable.js or native); **`new_ui` has a first slice** |
+| Add query form partial | `add_query_controller.js` | Submit via API; may reload or patch DOM |
+| — | `apiUrl` + `fetch` + `search_executor.js` | CRUD and search execution (splainer-search / proxy) — see [api_client.md](./api_client.md) |
 
 ### Feature: Search Results
 
@@ -281,7 +302,7 @@ Use the **Feature modules**, **Rails integration**, and **directory structure** 
 
 | Angular Service | Stimulus/Rails Replacement | Notes |
 |-----------------|----------------------------|--------|
-| `queriesSvc` | `api/queries.js` + `query_list_controller.js`, `add_query_form_controller.js` | State in DOM/frame; CRUD via API |
+| `queriesSvc` | `query_list_controller.js`, `add_query_controller.js`, `query_row_controller.js` + `apiUrl`/`fetch` | State in DOM/frame; CRUD via API |
 | `caseSvc` | `api/cases.js` + `case_header_controller.js`, dropdowns | |
 | `settingsSvc` | `api/tries.js` + `settings_panel_controller.js`, try controllers | |
 | `scorerSvc` | `api/scorers.js` + `lib/scorer_runner.js` + `score_display_controller.js` | |
@@ -307,7 +328,7 @@ Use the **Feature modules**, **Rails integration**, and **directory structure** 
 | React 19 + React Router | Stimulus + Turbo (Frames, Streams, Drive); Rails routes |
 | Zustand / TanStack Query | Server + DOM + minimal Stimulus state; Turbo Streams for live |
 | New React bundle + `core_react.html.erb` | Single core layout + existing Stimulus app + core controllers |
-| Vitest + React Testing Library | System tests + optional Stimulus unit tests (Jest/Vitest) |
+| Vitest + React Testing Library | System tests + Vitest for Stimulus (`test/javascript/controllers/`) |
 | Feature modules as React components/hooks | Same domains; ERB + Stimulus (+ Turbo Frames) |
 | API, CSRF, URLs, risks | Same approach; no divergence |
 

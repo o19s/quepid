@@ -1,0 +1,47 @@
+# Stimulus and modern JavaScript conventions
+
+**Authoritative** rules for code under `app/javascript/controllers/` and `app/javascript/modules/` (Rails ERB + Stimulus; no Angular on the new UI shell).
+
+**Related:** [api_client.md](migration/api_client.md) for fetch, CSRF, relative URLs, and `proxy/fetch` behavior. [DEVELOPER_GUIDE.md](../DEVELOPER_GUIDE.md) § *Vitest* and *ESLint and Prettier* for how to run tests and lint.
+
+The parallel **new UI** route is `GET /case/:id(/try/:try_number)/new_ui` (importmap + Stimulus only).
+
+---
+
+## URLs and API calls
+
+Always use `apiUrl()` from `modules/api_url` for building fetch URLs to Rails JSON APIs. Never construct URLs with `${rootUrl}/...` or hardcode a leading `/`. This keeps paths correct with no root prefix and when Quepid is mounted at a subpath.
+
+```js
+import { apiUrl, csrfToken } from "modules/api_url"
+fetch(apiUrl(`api/cases/${caseId}/queries`), { headers: { "X-CSRF-Token": csrfToken() } })
+```
+
+For edge cases (proxy search, server-rendered URLs in `data-*` attributes), see [api_client.md](migration/api_client.md).
+
+---
+
+## Stimulus controller patterns
+
+- **Outlets for inter-controller communication:** Use `static outlets = ["other-controller"]` and call methods on `this.otherControllerOutlets`. Never use `this.application.getControllerForElementAndIdentifier()`.
+- **Lifecycle cleanup:** If a controller starts async work (fetch, timers, observers), implement `disconnect()` to cancel it. Use `AbortController` for fetch requests.
+- **Values syntax:** Use the verbose form with type and default: `static values = { queryId: { type: Number }, queryText: { type: String, default: "" } }`.
+- **Public API:** Methods called by outlets from other controllers should be clearly named (`collapse()`, `expand()`, `rerunSearch()`). Keep `toggle()` as the user-facing action.
+
+---
+
+## CSS and styling
+
+- Never use inline `style="..."` attributes in Stimulus controller JS (`renderResults`, etc.). Define CSS classes in a `.css` file under `app/assets/stylesheets/` and add it to `build_css.js`.
+- Use semantic HTML (`<ol>` for ranked lists, `<li>` for list items, etc.).
+- Escape values for the correct context: `_escapeHtml()` for text content, `_escapeAttr()` for HTML attributes (`src`, `href`).
+
+---
+
+## Testing
+
+- Every Stimulus controller needs a Vitest test file at `test/javascript/controllers/<name>_controller.test.js`.
+- Pure JS modules get tests at `test/javascript/modules/<name>.test.js`.
+- `yarn test` runs both Angular (Karma) and Stimulus (Vitest) test suites (see DEVELOPER_GUIDE for Docker-prefixed commands).
+- New files under `app/javascript/modules/*.js` are picked up automatically as `modules/<name>` aliases in `vitest.config.js`; only non-standard paths need extra config.
+- Rails controller actions serving the new UI need tests in `test/controllers/` using `assert_select` for response assertions (not `assigns` or `assert_template`, which require an extra gem).

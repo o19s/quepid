@@ -1,6 +1,6 @@
 # Angular Services: Responsibilities and Server vs Client Placement
 
-This document maps each Angular service used by the core workspace (`/case/:id/try/:try_number`) to its responsibilities and where that responsibility lives under the **committed** port plan on `main`.
+This document maps each **AngularJS service** (and closely related **factories**) used by the core workspace (`/case/:id/try/:try_number`) to its responsibilities and where that responsibility lives under the **committed** port plan on `main`. Counts align with [angularjs_inventory.md](./angularjs_inventory.md): **26** first-party services under `app/assets/javascripts/services/`, **7** factories under `app/assets/javascripts/factories/`, plus **splainer-search**–provided injectables documented below.
 
 **Plan:** [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) (scope and parity). **Stimulus/Turbo detail:** [rails_stimulus_migration_alternative.md](./rails_stimulus_migration_alternative.md).
 
@@ -17,13 +17,13 @@ This document maps each Angular service used by the core workspace (`/case/:id/t
 
 ## Summary: Server vs Client
 
-| Service | Primary responsibility | This branch | Planned (post-Angular) |
-|--------|------------------------|-------------|-------------------------|
+| Service | Primary responsibility | Current codebase | Planned (post-Angular) |
+|--------|------------------------|------------------|-------------------------|
 | `caseSvc` | Case CRUD, selection, archive | Angular + APIs | **Server:** persistence APIs. **Client:** route/selection state; URL is source of truth |
 | `queriesSvc` | Query CRUD, search, scoring, ordering | CRUD via API; **search + scoring in browser** (splainer + `ScorerFactory`); `proxy/fetch` when configured | **Server:** CRUD/order/ratings API. **Client:** live search + per-query scoring — **same as today** (P0 parity) |
 | `settingsSvc` | Try settings | Angular + tries API | **Server:** try API. **Client:** current try from URL + editors (vanilla ACE per plan) |
 | `scorerSvc` / `ScorerFactory` | Scorer metadata + scoring | CRUD via API; **interactive scoring in browser**; server for jobs | **Server:** CRUD + existing job paths. **Client:** extracted `ScorerFactory` / helpers for immediate feedback |
-| `docCacheSvc` | Doc cache by id | `docCacheSvc.js` + `docResolverSvc` | **Client:** plain JS singleton (Phase 4) |
+| `docCacheSvc` | Doc cache by id | `docCacheSvc.js` + **`docResolverSvc`** (from **splainer-search**) | **Client:** plain JS singleton (Phase 4); keep or replace splainer resolver compatibility |
 | `diffResultsSvc` | Diff state & comparison | Angular | **Client:** build diff like today (parity) |
 | `querySnapshotSvc` / `snapshotSearcherSvc` | Snapshots; snapshot-as-searcher | Angular + snapshot APIs | **Server:** snapshot API. **Client:** searcher-shaped wrapper for UI reuse |
 | `caseTryNavSvc` | URLs, case/try from route | `caseTryNavSvc.js` | **Client:** [api_client.md](./api_client.md) conventions |
@@ -33,17 +33,47 @@ This document maps each Angular service used by the core workspace (`/case/:id/t
 | `annotationsSvc` | Annotations CRUD | Angular + API | **Server:** API. **Client:** list/editor wired to same endpoints |
 | `rateElementSvc` | Rating scale UI | Angular | **Client:** Stimulus or React control |
 | `ratingsStoreSvc` | In-memory ratings + API sync | Angular | **Hybrid:** persist via API; **Client:** in-memory map + optimistic updates (parity with today) |
-| `qscoreSvc` | Score→color for query list | Angular | **Client:** shared helpers |
+| `qscoreSvc` | Score→color for query list | `qscore_service.js` | **Client:** shared helpers |
 | `searchEndpointSvc` | Endpoints for case | Angular + API | **Server:** API. **Client:** selection UX |
 | `caseCSVSvc` | Export / download | Angular + export APIs | **Hybrid:** same APIs; **Client:** trigger download from Stimulus/React |
 | `rateBulkSvc` | Bulk rating UI | Angular | **Client** |
 | `varExtractorSvc` | Curator vars from params | Angular | **Client** |
 | `searchErrorTranslatorSvc` | Search error strings | Angular | **Client** |
-| `bootstrapSvc` | Current user on init | Angular + API | **Server:** API. **Client:** layout bootstrap or fetch |
+| `bootstrapSvc` | Current user on init | Angular + API (`UtilitiesModule`) | **Server:** API. **Client:** layout bootstrap or fetch |
+| `configurationSvc` | Feature flags (communal scorers only, query list sortable) | Seeded from `core.html.erb` inline script + `configurationSvc.js` (`UtilitiesModule`) | **Server:** config in layout or endpoint. **Client:** read `data-*` on `<body>` / Stimulus (duplicate Angular path is a known cleanup — see elimination plan *Current state*) |
 | `teamSvc` | Teams, share case | Angular + API | **Server:** API. **Client:** dropdowns/modals |
-| `userSvc` | User get/update | Angular + API | **Server:** API |
+| `userSvc` | User get/update | Angular + API (`UtilitiesModule`) | **Server:** API |
+| `bookSvc` | Team books list, dropdown, judgements-related book ops | Angular + `api/teams/:id/books` etc.; uses `broadcastSvc` | **Server:** existing book APIs. **Client:** judgements / book picker UX until core modals migrate |
+| `broadcastSvc` | App-wide events (`$rootScope.$broadcast` wrapper) | `factories/broadcastSvc.js` | **Client:** replace with targeted events (custom events, Stimulus, or small bus) per phase plan |
 
-### Consider (optional) — not parity requirements
+## Factories (QuepidApp, `app/assets/javascripts/factories/`)
+
+These are not `$http` “services” but own important client behavior; migration touches the same layers as the rows above.
+
+| Factory | Primary responsibility | Current codebase | Planned (post-Angular) |
+|--------|------------------------|------------------|-------------------------|
+| `ScorerFactory` | Client-side scorer evaluation (user JS), display helpers | Used by query list / ratings flow | **Client:** extract + test early (P0 with ratings); see elimination plan |
+| `SettingsFactory` | Settings aggregate over tries; try list sync | Wraps tries from API | **Client** (+ **Server:** tries API) |
+| `TryFactory` | Try model: API shape, field spec, curator vars | Uses `fieldSpecSvc` (splainer) | **Client** model layer |
+| `SnapshotFactory` | Snapshot model, doc IDs, results access | `docCacheSvc`, `normalDocsSvc` | **Client** |
+| `DocListFactory` | Build doc lists, missing/duplicate ID handling | `normalDocsSvc` | **Client** |
+| `AnnotationFactory` | Annotation data objects | Annotations UI | **Client** |
+
+`broadcastSvc` is also registered as a **factory**; responsibilities are covered in the services table above.
+
+## Injected from splainer-search (not defined in Quepid)
+
+Registered by the **splainer-search** package; Quepid code injects them. See [angularjs_inventory.md](./angularjs_inventory.md) *Services from splainer-search*.
+
+| Injectable | Role in core workspace | Planned (post-Angular) |
+|------------|------------------------|-------------------------|
+| `normalDocsSvc` | Normalize engine docs (`createNormalDoc`, `explainDoc`) — queries, snapshots, doc lists | **Client:** keep splainer or adapter with same contracts |
+| `docResolverSvc` | Batch-resolve doc bodies for cache — `createResolver()` | **Client:** same |
+| `fieldSpecSvc` | Field spec construction — tries, snapshots | **Client:** same |
+| `searchSvc` | `createSearcher()` — live search in `queriesSvc` | **Client:** P0 parity; same interactive search model |
+| `esUrlSvc` | Template URL checks — `QueryParamsCtrl` | **Client:** or equivalent validation |
+
+## Consider (optional) — not parity requirements
 
 | Area | Idea | When to use |
 |------|------|-------------|
@@ -52,4 +82,4 @@ This document maps each Angular service used by the core workspace (`/case/:id/t
 | Annotations / lists | Turbo Streams to push list updates | Only if you adopt stream-driven HTML for that pane |
 | Query list / scores | Turbo Streams for row/header updates instead of client events | Optional pattern from [turbo_streams_guide.md](./turbo_streams_guide.md); parity can stay client-driven like Angular |
 
-**Phase-level tasks** (when to extract `ScorerFactory`, replace `broadcastSvc`, Phase 4 vs 6 scoring, etc.): [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). **Turbo vs client-owned UI:** [intentional_design_changes.md](./intentional_design_changes.md) §2.
+**Phase-level tasks** (when to extract `ScorerFactory`, replace `broadcastSvc`, Phase 4 vs 6 scoring, etc.): [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). **Turbo vs client-owned UI:** [intentional_design_changes.md](./intentional_design_changes.md), section 2.

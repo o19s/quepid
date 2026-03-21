@@ -119,7 +119,7 @@ for the full specification. The script captures:
 | 10 | `10_east_pane_history.png` | East pane, History tab |
 | 11 | `11_east_pane_annotations.png` | East pane, Annotations tab |
 | 12 | `12_snapshot_modal.png` | Create Snapshot modal open |
-| 13 | `13_diff_modal.png` | Diff/Compare modal open |
+| 13 | `13_diff_modal.png` | Compare snapshots modal open |
 | 14 | `14_select_scorer_modal.png` | Select Scorer modal open |
 | 15 | `15_delete_options_modal.png` | Delete Case options modal open |
 | 16 | `16_loading_bootstrapping.png` | Loading/bootstrapping state (optional) |

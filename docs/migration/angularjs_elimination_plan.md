@@ -11,7 +11,7 @@ The work follows the **[strangler fig pattern](https://martinfowler.com/bliki/St
 | Document | Purpose |
 |----------|---------|
 | [angularjs_inventory.md](./angularjs_inventory.md) | File-level map: modules, services, controllers, build pipeline |
-| [angularjs_ui_inventory.md](../angularjs_ui_inventory.md) | Feature-level map tied to screenshots and templates |
+| [angularjs_ui_inventory.md](./angularjs_ui_inventory.md) | Feature-level map tied to screenshots and templates |
 | [app_structure.md](../app_structure.md) | High-level backend / frontend layout |
 | [angular_services_responsibilities_mapping.md](./angular_services_responsibilities_mapping.md) | Angular services → server vs client after the port (parity-first; not `deangularjs-experimental` stack) |
 | [workspace_api_usage.md](./workspace_api_usage.md) | JSON API paths used by the core workspace |
@@ -51,14 +51,36 @@ Similarly, **mapper wizard** (`MapperWizardsController` + Stimulus) and other no
 
 Per `angularjs_inventory.md`: homepage, `/cases`, teams, scorers, books (non-core flows), judgements, admin, auth/profile. These use Rails views, Stimulus, and Turbo where appropriate.
 
+**Core layout app header:** `app/views/layouts/_header_core_app.html.erb` is **server-rendered** (ERB + Bootstrap 5 dropdowns, relative links). It is **not** bound to `HeaderCtrl`; that controller still ships in the Angular bundle but has **no template wiring** on this layout—cleanup is a safe follow-up when trimming the bundle. (The diagram in `angularjs_inventory.md` §Architecture may still say `HeaderCtrl` on the header until that inventory is refreshed.)
+
+**Configuration on the default core page:** `app/views/layouts/core.html.erb` sets `data-quepid-root-url`, `data-case-id`, `data-communal-scorers-only`, and `data-query-list-sortable` on `<body>`, while an inline script still seeds `configurationSvc` for Angular. Stimulus code can read the data attributes; removing the duplicate Angular path is a small Phase 1/10 task.
+
+**Hotwire on core:** The same layout includes `javascript_importmap_tags 'application_modern'` alongside the Angular/jQuery script tags, so Stimulus and Turbo load on `/case/...` as well as on fully modern pages (`application_modern.js` sets `Turbo.session.drive = false` globally).
+
 ### Still on AngularJS
 
-**Single major surface:** the **core case evaluation app** bootstrapped in `app/views/layouts/core.html.erb` (`ng-app="QuepidApp"`), routed by `app/assets/javascripts/routes.js` to `MainCtrl` + `queriesLayout.html` for:
+**Default case workspace URL:** the **core case evaluation app** bootstrapped in `app/views/layouts/core.html.erb` (`ng-app="QuepidApp"`), routed by `app/assets/javascripts/routes.js` to `MainCtrl` + `queriesLayout.html` for:
 
 - `/case/:caseNo/try/:tryNo`
 - `/case/:caseNo` (default try)
 
-Rough scale (from inventory): ~28 top-level controllers, ~26 services, 7 factories, 11 directives, 23 components, ~62 templates, Karma/Jasmine specs under `spec/javascripts/angular/`. Build: `yarn build:angular-*` producing `angular_app.js`, `quepid_angular_app.js`, `angular_templates.js` included from the core layout.
+Case chrome inside `ng-view` (action bar, query list, results, tune relevance, modals) remains Angular. A comment in `queriesLayout.html` referring to a server-rendered `_case_header` describes the **new_ui** path below, not the default `/case/...` view today.
+
+Rough scale (from inventory; counts drift slightly as files change): on the order of **~28** top-level Angular controllers, **~20+** `QuepidApp` services, plus factories, directives, and components, **~62** templates, Karma/Jasmine under `spec/javascripts/angular/`. **Vitest** is also available (`yarn test:vitest`) for newer non-Angular JS tests. Build: `yarn build` runs `build:angular-vendor`, `build:angular-app`, `build:angular-templates` (plus jQuery/CSS/admin/analytics), producing `angular_app.js`, `quepid_angular_app.js`, and `angular_templates.js` consumed from the core layout.
+
+### Parallel “new_ui” route (strangler slice, in development)
+
+**Route:** `GET /case/:id(/try/:try_number)/new_ui` → `CoreController#new_ui`, `as: :case_core_new_ui` (see `config/routes.rb`).
+
+**Layout:** `app/views/layouts/core_new_ui.html.erb` — same global header/footer as core, **no** jQuery or Angular bundles; only `application_modern` (importmap + Stimulus).
+
+**Views:** `app/views/core/new_ui.html.erb` composes:
+
+- `core/_case_header.html.erb` — case/try/scorer labels, badges; **case rename** via Stimulus `inline-edit` + `api_case_path`.
+- `core/_action_bar.html.erb` — **placeholder** links (not yet wired to modals/actions).
+- `core/_query_list_shell.html.erb` — Stimulus **`query-list`**, **`add-query`**, **`query-row`**: filter, sort controls, collapse-all, show-only-rated, add query (API), row expand/collapse, delete query; expanded area still shows a **placeholder** until search execution is ported.
+
+This is a **separate URL** from the production case workspace, not a Rails shell stacked above `ng-view` on the same document—useful for incremental QA and vertical slices until `core#index` switches over.
 
 ### Duplication to resolve late in the migration
 
@@ -148,7 +170,7 @@ These are the **minimum API endpoints** that P0 flows depend on. Full reference:
 |---------|----------------|----------|---------|
 | P0-1 | `caseSvc` | `GET api/cases/:id` | Load case (name, scorer_id, tries, last_try_number) |
 | P0-1 | `bootstrapSvc` / `userSvc` | `GET api/users/current` | Current user for header + permissions |
-| P0-1 | `configurationSvc` | Inline `<script>` in `core.html.erb` | Feature flags (communal_scorers_only, query_list_sortable) |
+| P0-1 | `configurationSvc` | Inline `<script>` in `core.html.erb` (and duplicate `data-*` on `<body>` for Stimulus) | Feature flags (communal_scorers_only, query_list_sortable) |
 | P0-1 | `scorerSvc` | `GET api/scorers/:id` | Scorer details (name, scale, code) for case header |
 | P0-2 | `queriesSvc` | `GET api/cases/:id/queries?bootstrap=true` | Load all queries with ratings + display_order |
 | P0-3 | `queriesSvc` | `POST api/cases/:id/queries` | Create query; returns query + display_order |
@@ -177,11 +199,11 @@ This is the **single highest-risk technical item** for P0 flows.
 
 | Task | Notes |
 |------|--------|
-| Move `configurationSvc` flags (`communal_scorers_only`, `query_list_sortable`) to **data attributes** on `<body>` or a small inline JSON script; read from Stimulus `application` or page-specific controller | Removes need for `configurationSvc` inside Angular; **`bootstrapSvc` / `userSvc`** may still supply current user until Phase 2+ replaces case bootstrapping |
-| Replace or mirror **`caseTryNavSvc`** behavior for header links: ensure all new code uses **relative** URLs (`caseTryNavSvc.getQuepidRootUrl()` equivalent) | Project rule |
-| **Header** (`HeaderCtrl`): reimplement cases/books dropdowns as ERB + Stimulus (fetch dropdown JSON endpoints already used by Angular if needed) | Includes **`<new-case>`** entry point: it opens the wizard modal (`WizardCtrl` / `WizardModalCtrl`)—can stay Angular-backed until Phase 8 |
+| Finish **`configurationSvc` removal:** `data-communal-scorers-only` / `data-query-list-sortable` already exist on `<body>` in `core.html.erb`; stop seeding Angular from the inline run block (or read flags from the DOM inside Angular once) so there is a single source of truth | **`bootstrapSvc` / `userSvc`** may still supply current user until later phases replace case bootstrapping |
+| Replace or mirror **`caseTryNavSvc`** behavior for header links: ensure all new code uses **relative** URLs (`caseTryNavSvc.getQuepidRootUrl()` equivalent) | Project rule; `data-quepid-root-url` on `<body>` supports Stimulus |
+| **Header:** cases/books/user nav is **already** ERB + Bootstrap 5 in `_header_core_app.html.erb`; **remove dead `HeaderCtrl`** from the bundle when convenient | **Create case** in the header is a Rails link (`case_new_path`); wizard after create still flows through Angular redirect + `WizardCtrl` / `WizardModalCtrl` on the default `/case/...` page until Phase 8 |
 
-**Exit criteria:** Core page still Angular for queries/results, but header/navigation works without `HeaderCtrl` OR header is proven behind a partial that loads before ng-view with no duplicate logic.
+**Exit criteria:** **Done for chrome:** header is ERB-only (no `HeaderCtrl` in templates). Remaining: drop duplicate config bootstrapping and remove unused `headerCtrl.js` from the bundle when safe. Core workspace below the header stays Angular until later phases.
 
 ---
 
@@ -191,17 +213,17 @@ This is the **single highest-risk technical item** for P0 flows.
 
 | Task | Notes |
 |------|--------|
-| Render **queries layout chrome** (case title area, action bar slots, tune relevance toggle regions) from Rails using data from `CoreController` (or dedicated presenter) | Data: case, try, scorer name, flags (archived, public, nightly). **`CoreController`** already sets `@case` / `@try` and handles wizard-related params on `index`. |
-| Introduce Stimulus **`core-case` or split controllers** mounting on `data-controller` roots | Replaces `CaseCtrl` / `CurrSettingsCtrl` for display-only first |
-| Plan **east pane / Tune Relevance** layout: today **`paneSvc` + `eastPaneWidth`** (jQuery) resizes the main vs. settings pane—must be reimplemented (CSS grid/flex + Stimulus drag handle or equivalent) | Blocks removing `MainCtrl`/`paneSvc` |
+| Render **queries layout chrome** (case title area, action bar slots, tune relevance toggle regions) from Rails using data from `CoreController` (or dedicated presenter) | Data: case, try, scorer name, flags (archived, public, nightly). **`CoreController`** sets `@case` / `@try`, loads `@queries` / `@query_count` for `new_ui`, and handles wizard-related params on `index`. |
+| Introduce Stimulus **`core-case` or split controllers** mounting on `data-controller` roots | **`new_ui`** uses `inline-edit` on the case name; full replacement of `CaseCtrl` / `CurrSettingsCtrl` (try rename, scorer display in header) remains |
+| Plan **east pane / Tune Relevance** layout: today **`paneSvc` + `eastPaneWidth`** (jQuery) resizes the main vs. settings pane—must be reimplemented (CSS grid/flex + Stimulus drag handle or equivalent) | `resizable_pane_controller.js` exists for other surfaces; core pane may reuse or extend that pattern |
 | Replace **`broadcastSvc` / `$rootScope.$broadcast`** coupling incrementally: map events in `angularjs_inventory.md` (“Event System”) to explicit callbacks, custom DOM events, or a tiny pub/sub | Critical for splitting `MainCtrl` without subtle regressions |
 | Keep **one** Angular island temporarily (e.g. wrap legacy `queries` directive in a single div) if strangling is faster | Strangler pattern |
 
-**Approach (strangler fig):** The new Rails+Stimulus UI is built above Angular's `ng-view` in `core/index.html.erb`. Both UIs coexist during development — the new one on top, Angular below. When the replacement is complete, remove `ng-view` and the Angular template entirely. No surgical replacement of individual pieces inside Angular templates.
+**Approach (strangler fig):** Today’s incremental path includes **`/case/.../new_ui`**: a **separate document** without Angular, using Rails partials + Stimulus (`core_new_ui` layout). An alternative—stacking new chrome above `ng-view` in `core/index.html.erb` on the **same** URL—is still valid if the team merges the slices into `core#index` earlier.
 
-**TODO (rename):** The new UI uses prefixed element names (e.g. `new-pane-container` vs `pane_container`) to avoid collisions with the Angular UI during coexistence. When Angular is removed, rename these to match the original CSS class names (or update the CSS to use the new names).
+**TODO (rename):** If the same DOM hosts both stacks, use prefixed IDs/classes (e.g. `new-pane-container` vs `pane_container`) to avoid collisions until Angular is removed; **`new_ui`** currently uses a distinct layout so collisions are minimal.
 
-**Exit criteria:** HTML for shell visible with JS disabled partially (static labels); Angular only fills dynamic inner regions OR a flagged smaller root.
+**Exit criteria:** HTML for shell visible with JS disabled partially (static labels); Angular only fills dynamic inner regions OR a flagged smaller root. **`new_ui`** is a partial proof point, not production parity.
 
 ---
 
@@ -211,7 +233,7 @@ This is the **single highest-risk technical item** for P0 flows.
 
 | Task | Notes |
 |------|-------|
-| Map each `QueriesCtrl` feature to: server partial vs Stimulus vs API call | See inventory “Query List” |
+| Map each `QueriesCtrl` feature to: server partial vs Stimulus vs API call | See inventory “Query List”; **`new_ui`** already implements a subset via `query_list_controller.js`, `add_query_controller.js`, `query_row_controller.js` (no pagination/run-case/search in pane yet) |
 | Replace `ui.sortable` with **SortableJS** (or HTML5 DnD) + API to persist order | Match `queriesSvc` reorder endpoints |
 | Implement filter/sort/pagination: either **server-driven** (Turbo Frame + GET params) or **client-driven** fetch + DOM updates | Prefer server-driven for large cases if performance requires |
 | Replace **`dir-pagination-controls`** (`angular-utils-pagination` in `queries.html`) | Server Pagy or Stimulus-controlled page links |
@@ -326,7 +348,7 @@ This is the **single highest-risk technical item** for P0 flows.
 
 ### Phase 10 — Decommission Angular
 
-**Bundle / Turbo (decide in Phase 0 or 2):** `application_modern.js` sets **`Turbo.session.drive = false`** for the rest of the app. Core may need a **dedicated `core_*.js` entry** (esbuild) with splainer + case Stimulus, **or** per-layout Turbo defaults, to avoid double-loading or conflicting globals. Document the choice in `DEVELOPER_GUIDE.md` when fixed.
+**Bundle / Turbo (decide in Phase 0 or 2):** `application_modern.js` sets **`Turbo.session.drive = false`** for the rest of the app. **`core.html.erb` already includes `javascript_importmap_tags 'application_modern'` next to the Angular bundles**, so Stimulus runs on the default case page today; Phase 10 is mostly **removing** the Angular/jQuery tags and deciding whether splainer + case-only code moves into a dedicated **`core_*.js`** entry or stays pinned through importmap. Document the choice in `DEVELOPER_GUIDE.md` when fixed.
 
 | Task | Notes |
 |------|-------|
@@ -349,7 +371,7 @@ Use the detailed rows in `angularjs_ui_inventory.md`; this matrix is the **miles
 | Area | Inventory section | Phase (typical) |
 |------|-------------------|-----------------|
 | Layout, flash, loading, 404 | Page Layout & Navigation | 0, 9 |
-| Header dropdowns & user menu | Header Navigation | 1 |
+| Header dropdowns & user menu | Header Navigation | 1 (ERB + BS5 on core layout; bundle cleanup for unused `HeaderCtrl`) |
 | Case header, rename, try name, badges | Case Header & Score Display | 2, 4 (scores with rating), 6 (charts/header polish) |
 | Action bar (scorer, judgements, snapshot, diff, import, share, clone, delete, export, tune) | Case Action Bar | 5–8 (e.g. scorer modal ↔ 8; snapshot/diff ↔ 7; tune ↔ 5) |
 | Query list (add, sort, filter, paginate, frog) | Query List | 3 |
@@ -408,8 +430,9 @@ Use the detailed rows in `angularjs_ui_inventory.md`; this matrix is the **miles
 
 1. **API / model tests** (existing Minitest): keep passing; add tests when new controller endpoints are introduced.
 2. **Karma:** Keep green **while Angular remains**. Prefer **targeted** new tests on extracted pure JS; do not assume a full Karma suite will survive unchanged.
-3. **After Angular removal:** **Unit tests** on extracted modules (scorer eval, splainer bootstrap) + **a small set of system tests** for **P0** flows (aligned with Phase 0). **Full Jest/Vitest port** of all legacy specs is optional—schedule separately if valuable.
-4. **Manual QA:** Run **P0** after every vertical slice; full inventory pass before major releases or Phase 10.
+3. **Vitest:** `yarn test:vitest` is available for **new** non-Angular modules; it does not replace Karma until the team migrates specs explicitly.
+4. **After Angular removal:** **Unit tests** on extracted modules (scorer eval, splainer bootstrap) + **a small set of system tests** for **P0** flows (aligned with Phase 0). **Full Vitest/Jest port** of all legacy Jasmine specs is optional—schedule separately if valuable.
+5. **Manual QA:** Run **P0** after every vertical slice; full inventory pass before major releases or Phase 10.
 
 ## Rollout
 
@@ -434,6 +457,7 @@ Use the detailed rows in `angularjs_ui_inventory.md`; this matrix is the **miles
 | 2026-03-19 | Added DevTools/`proxy/fetch` parity note: client-side search + `proxy_requests` preserves Network visibility; server-only search would not (likely experimental branch regression). |
 | 2026-03-19 | Integrated pragmatic review: vertical slices, Phase 0 DRI/time box/P0 + optional bundle spike, ScorerFactory with Phase 4, Phase 6 reframed vs Phase 4, Phase 10 Turbo/bundle note, testing/rollback/risks, matrix note for case scores, appendix folded in. |
 | 2026-03-20 | Added P0 Parity Checklist (10 critical flows + 3 stretch) and P0 API Contract Summary (16 endpoint mappings). Phase 0 documentation deliverables substantially complete. |
+| 2026-03-21 | Synced with codebase: Rails header on core layout; body `data-*` config + `application_modern` on `core.html.erb`; documented `/case/.../new_ui` + `core_new_ui` + Stimulus query shell; Phase 1/2/3 and P0 config row adjusted; Vitest note in testing strategy. |
 
 ---
 
