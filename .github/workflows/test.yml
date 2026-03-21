@@ -7,5 +7,9 @@ jobs:
       - uses: actions/checkout@v6
       - name: Build the stack
         run: bin/setup_docker
-      - name: Test
+      - name: Style — RuboCop
+        run: bin/docker r bin/rubocop
+      - name: Tests — Rails (Minitest)
         run: bin/docker r rails test
+      - name: Tests — Frontend (Karma, JSHint, Vitest)
+        run: bin/docker r rails test:frontend

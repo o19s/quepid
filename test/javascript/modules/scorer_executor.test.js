@@ -24,7 +24,10 @@ describe("runScorerCode", () => {
     const code = "setScore(avgRating());"
     const docs = [{ id: "doc1" }, { id: "doc2" }, { id: "doc3" }]
     const ratings = { doc1: 3, doc2: 1 }
-    const bestDocs = [{ docId: "doc1", rating: 3 }, { docId: "doc2", rating: 1 }]
+    const bestDocs = [
+      { docId: "doc1", rating: 3 },
+      { docId: "doc2", rating: 1 },
+    ]
 
     const result = runScorerCode(code, scale, docs, ratings, 3, bestDocs)
     expect(result).toBe(2) // (3 + 1) / 2
@@ -65,7 +68,10 @@ describe("runScorerCode", () => {
     `
     const docs = [{ id: "d1" }, { id: "d2" }, { id: "d3" }]
     const ratings = { d1: 2, d3: 3 }
-    const bestDocs = [{ docId: "d3", rating: 3 }, { docId: "d1", rating: 2 }]
+    const bestDocs = [
+      { docId: "d3", rating: 3 },
+      { docId: "d1", rating: 2 },
+    ]
 
     const result = runScorerCode(code, scale, docs, ratings, 3, bestDocs)
     expect(result).toBe(2.5) // (2 + 3) / 2

@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { Application } from '@hotwired/stimulus'
-import InlineEditController from '../../../app/javascript/controllers/inline_edit_controller'
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+import { waitFor } from "@testing-library/dom"
+import { Application } from "@hotwired/stimulus"
+import InlineEditController from "../../../app/javascript/controllers/inline_edit_controller"
+import { waitForController } from "../support/stimulus_helpers"
 
-describe('InlineEditController', () => {
+describe("InlineEditController", () => {
   let application
 
   beforeEach(async () => {
@@ -26,66 +28,71 @@ describe('InlineEditController', () => {
     `
 
     application = Application.start()
-    application.register('inline-edit', InlineEditController)
-    await new Promise(r => setTimeout(r, 50))
+    application.register("inline-edit", InlineEditController)
+    await waitForController(application, '[data-controller="inline-edit"]', "inline-edit")
   })
 
   afterEach(() => {
     application.stop()
   })
 
-  it('shows edit form on double-click', () => {
+  it("shows edit form on double-click", () => {
     const display = document.querySelector('[data-inline-edit-target="display"]')
     const form = document.querySelector('[data-inline-edit-target="form"]')
 
-    display.dispatchEvent(new Event('dblclick', { bubbles: true }))
+    display.dispatchEvent(new Event("dblclick", { bubbles: true }))
 
-    expect(display.style.display).toBe('none')
-    expect(form.style.display).toBe('inline')
+    expect(display.style.display).toBe("none")
+    expect(form.style.display).toBe("inline")
   })
 
-  it('populates input with current display text', () => {
+  it("populates input with current display text", () => {
     const display = document.querySelector('[data-inline-edit-target="display"]')
     const input = document.querySelector('[data-inline-edit-target="input"]')
 
-    display.dispatchEvent(new Event('dblclick', { bubbles: true }))
+    display.dispatchEvent(new Event("dblclick", { bubbles: true }))
 
-    expect(input.value).toBe('Test Case')
+    expect(input.value).toBe("Test Case")
   })
 
-  it('hides edit form on cancel', () => {
+  it("hides edit form on cancel", () => {
     const display = document.querySelector('[data-inline-edit-target="display"]')
     const form = document.querySelector('[data-inline-edit-target="form"]')
     const cancel = document.querySelector('[data-action="click->inline-edit#cancel"]')
 
     // Open edit mode
-    display.dispatchEvent(new Event('dblclick', { bubbles: true }))
+    display.dispatchEvent(new Event("dblclick", { bubbles: true }))
     // Cancel
-    cancel.dispatchEvent(new Event('click', { bubbles: true }))
+    cancel.dispatchEvent(new Event("click", { bubbles: true }))
 
-    expect(form.style.display).toBe('none')
-    expect(display.style.display).toBe('inline')
+    expect(form.style.display).toBe("none")
+    expect(display.style.display).toBe("inline")
   })
 
-  it('sends PUT request with wrapped field on save', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true })
+  it("sends PUT request with wrapped field on save", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({ ok: true })
 
     const display = document.querySelector('[data-inline-edit-target="display"]')
     const input = document.querySelector('[data-inline-edit-target="input"]')
-    const form = document.querySelector('form')
+    const form = document.querySelector("form")
 
-    display.dispatchEvent(new Event('dblclick', { bubbles: true }))
-    input.value = 'Renamed Case'
-    form.dispatchEvent(new Event('submit', { bubbles: true }))
+    display.dispatchEvent(new Event("dblclick", { bubbles: true }))
+    input.value = "Renamed Case"
+    form.dispatchEvent(new Event("submit", { bubbles: true }))
 
-    await new Promise(r => setTimeout(r, 50))
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalled()
+    })
 
-    expect(fetchSpy).toHaveBeenCalledWith('/api/cases/1', expect.objectContaining({
-      method: 'PUT',
-      body: JSON.stringify({ case: { case_name: 'Renamed Case' } }),
-    }))
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "/api/cases/1",
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ case: { case_name: "Renamed Case" } }),
+      }),
+    )
 
-    expect(display.textContent).toBe('Renamed Case')
+    expect(display.textContent).toBe("Renamed Case")
     fetchSpy.mockRestore()
   })
 })

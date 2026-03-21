@@ -30,8 +30,12 @@ export function runScorerCode(code, scale, docs, ratings, numFound, bestDocs, op
     const rating = ratings[docId]
     return {
       doc: doc,
-      getRating() { return rating !== undefined ? parseInt(rating, 10) : undefined },
-      hasRating() { return rating !== undefined },
+      getRating() {
+        return rating !== undefined ? parseInt(rating, 10) : undefined
+      },
+      hasRating() {
+        return rating !== undefined
+      },
     }
   })
 
@@ -39,8 +43,12 @@ export function runScorerCode(code, scale, docs, ratings, numFound, bestDocs, op
   const wrappedBestDocs = bestDocs.map((bd) => ({
     docId: bd.docId,
     rating: parseInt(bd.rating, 10),
-    getRating() { return parseInt(bd.rating, 10) },
-    hasRating() { return true },
+    getRating() {
+      return parseInt(bd.rating, 10)
+    },
+    hasRating() {
+      return true
+    },
   }))
 
   // Build the query object that some scorers reference
@@ -52,7 +60,9 @@ export function runScorerCode(code, scale, docs, ratings, numFound, bestDocs, op
 
   // --- Helper functions available to scorer code ---
 
-  const setScore = (score) => { theScore = score }
+  const setScore = (score) => {
+    theScore = score
+  }
 
   const docAt = (posn) => {
     if (posn >= wrappedDocs.length) return {}
@@ -129,40 +139,94 @@ export function runScorerCode(code, scale, docs, ratings, numFound, bestDocs, op
   const topRatings = (count) => getBestRatings(count, wrappedBestDocs)
 
   const qOption = (key) => {
-    if (options !== undefined && options !== null && Object.prototype.hasOwnProperty.call(options, key)) {
+    if (
+      options !== undefined &&
+      options !== null &&
+      Object.prototype.hasOwnProperty.call(options, key)
+    ) {
       return options[key]
     }
     return null
   }
 
   // pass/fail for unit-test-style scorers
-  const pass = () => { theScore = 100 }
-  const fail = () => { theScore = 0 }
-  const assert = (cond) => { if (!cond) fail() }
-  const assertOrScore = (cond, s) => { if (!cond) { theScore = s } }
+  const pass = () => {
+    theScore = 100
+  }
+  const fail = () => {
+    theScore = 0
+  }
+  const assert = (cond) => {
+    if (!cond) fail()
+  }
+  const assertOrScore = (cond, s) => {
+    if (!cond) {
+      theScore = s
+    }
+  }
 
   // Suppress lint warnings about unused vars — they ARE used by eval'd scorer code
   // Build a function that has all helpers in scope
   const scorerFn = new Function(
-    "setScore", "docAt", "docExistsAt", "ratedDocAt", "ratedDocExistsAt",
-    "hasDocRating", "docRating", "numFound", "numReturned",
-    "baseAvg", "avgRating", "eachDoc", "eachRatedDoc",
-    "eachDocWithRating", "eachDocWithRatingEqualTo",
-    "getBestRatings", "topRatings", "qOption",
-    "pass", "fail", "assert", "assertOrScore",
-    "docs", "bestDocs", "query", "total", "options",
+    "setScore",
+    "docAt",
+    "docExistsAt",
+    "ratedDocAt",
+    "ratedDocExistsAt",
+    "hasDocRating",
+    "docRating",
+    "numFound",
+    "numReturned",
+    "baseAvg",
+    "avgRating",
+    "eachDoc",
+    "eachRatedDoc",
+    "eachDocWithRating",
+    "eachDocWithRatingEqualTo",
+    "getBestRatings",
+    "topRatings",
+    "qOption",
+    "pass",
+    "fail",
+    "assert",
+    "assertOrScore",
+    "docs",
+    "bestDocs",
+    "query",
+    "total",
+    "options",
     code,
   )
 
   try {
     scorerFn(
-      setScore, docAt, docExistsAt, ratedDocAt, ratedDocExistsAt,
-      hasDocRating, docRating, numFoundFn, numReturned,
-      baseAvg, avgRating, eachDoc, eachRatedDoc,
-      eachDocWithRating, eachDocWithRatingEqualTo,
-      getBestRatings, topRatings, qOption,
-      pass, fail, assert, assertOrScore,
-      wrappedDocs, wrappedBestDocs, query, numFound, options,
+      setScore,
+      docAt,
+      docExistsAt,
+      ratedDocAt,
+      ratedDocExistsAt,
+      hasDocRating,
+      docRating,
+      numFoundFn,
+      numReturned,
+      baseAvg,
+      avgRating,
+      eachDoc,
+      eachRatedDoc,
+      eachDocWithRating,
+      eachDocWithRatingEqualTo,
+      getBestRatings,
+      topRatings,
+      qOption,
+      pass,
+      fail,
+      assert,
+      assertOrScore,
+      wrappedDocs,
+      wrappedBestDocs,
+      query,
+      numFound,
+      options,
     )
   } catch (e) {
     console.error("Scorer execution error:", e)
