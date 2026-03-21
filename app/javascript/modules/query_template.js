@@ -16,7 +16,10 @@ function encode(queryPart, config) {
 // Traverse nested properties: "a.b.c" → obj["a"]["b"]["c"]
 // Supports default values via "key|default" syntax
 function getDescendantProp(obj, desc) {
-  const arr = desc.split(".").map((s) => s.trim()).filter((s) => s.length > 0)
+  const arr = desc
+    .split(".")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
   while (arr.length && obj !== null) {
     let key = arr.shift()
     let defaultValue = null

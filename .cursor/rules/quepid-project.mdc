@@ -13,6 +13,7 @@ alwaysApply: true
 - **Rails/rake**: Prefix with `bin/docker r bundle exec` (e.g. `bin/docker r bundle exec rails console --environment=test`).
 - **Package manager**: Use **yarn**, not npm.
 - **JS tests**: `bin/docker r yarn test`.
+- **Modern JS lint/format** (not Angular): `bin/docker r yarn lint:js` / `bin/docker r yarn format:js`.
 
 ## Documentation & Structure
 

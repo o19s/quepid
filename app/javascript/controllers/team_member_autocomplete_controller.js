@@ -2,17 +2,17 @@ import { Controller } from "@hotwired/stimulus"
 
 /**
  * Team Member Autocomplete Controller
- * 
+ *
  * Provides intelligent user suggestions when adding members to a team.
  * Shows avatars, names, and email addresses in a dropdown as the user types.
  * Note: Does not include keyboard navigation support.
- * 
+ *
  * Connects to data-controller="team-member-autocomplete"
- * 
+ *
  * Targets:
  *   - input: The email input field
  *   - suggestions: The dropdown container for suggestions
- * 
+ *
  * Values:
  *   - url: API endpoint for fetching suggestions
  *   - minLength: Minimum characters before showing suggestions (default: 2)
@@ -23,7 +23,7 @@ export default class extends Controller {
   static values = {
     url: String,
     minLength: { type: Number, default: 2 },
-    debounceDelay: { type: Number, default: 300 }
+    debounceDelay: { type: Number, default: 300 },
   }
 
   connect() {
@@ -40,7 +40,7 @@ export default class extends Controller {
    * Handle input changes
    * Debounces the search to avoid excessive API calls
    */
-  search(event) {
+  search(_event) {
     this.clearDebounce()
     const query = this.inputTarget.value.trim()
 
@@ -63,9 +63,9 @@ export default class extends Controller {
     try {
       const response = await fetch(`${this.urlValue}?query=${encodeURIComponent(query)}`, {
         headers: {
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
       })
 
       if (!response.ok) {
@@ -77,7 +77,7 @@ export default class extends Controller {
       this.hideLoading()
       this.showSuggestions(data)
     } catch (error) {
-      console.error('Error fetching suggestions:', error)
+      console.error("Error fetching suggestions:", error)
       this.hideLoading()
       this.hideSuggestions()
     }
@@ -93,14 +93,14 @@ export default class extends Controller {
       return
     }
 
-    this.suggestionsTarget.innerHTML = ''
+    this.suggestionsTarget.innerHTML = ""
 
     users.forEach((user) => {
       const item = this.createSuggestionItem(user)
       this.suggestionsTarget.appendChild(item)
     })
 
-    this.suggestionsTarget.style.display = 'block'
+    this.suggestionsTarget.style.display = "block"
   }
 
   /**
@@ -109,29 +109,29 @@ export default class extends Controller {
    * @returns {HTMLElement} The suggestion item element
    */
   createSuggestionItem(user) {
-    const item = document.createElement('div')
-    item.className = 'autocomplete-item'
+    const item = document.createElement("div")
+    item.className = "autocomplete-item"
     item.dataset.email = user.email
-    item.dataset.action = 'click->team-member-autocomplete#select'
+    item.dataset.action = "click->team-member-autocomplete#select"
 
-    const avatar = document.createElement('img')
+    const avatar = document.createElement("img")
     avatar.src = user.avatar_url
     avatar.alt = user.display_name
-    avatar.className = 'autocomplete-avatar'
+    avatar.className = "autocomplete-avatar"
 
-    const details = document.createElement('div')
-    details.className = 'autocomplete-details'
+    const details = document.createElement("div")
+    details.className = "autocomplete-details"
 
-    const name = document.createElement('div')
-    name.className = 'autocomplete-name'
+    const name = document.createElement("div")
+    name.className = "autocomplete-name"
     name.textContent = user.display_name
 
     details.appendChild(name)
 
     // Only show email if the match was on email, not on name
-    if (user.matched_on === 'email') {
-      const email = document.createElement('div')
-      email.className = 'autocomplete-email'
+    if (user.matched_on === "email") {
+      const email = document.createElement("div")
+      email.className = "autocomplete-email"
       email.textContent = user.email
       details.appendChild(email)
     }
@@ -160,8 +160,8 @@ export default class extends Controller {
    * Hide the suggestions dropdown and clear state
    */
   hideSuggestions() {
-    this.suggestionsTarget.style.display = 'none'
-    this.suggestionsTarget.innerHTML = ''
+    this.suggestionsTarget.style.display = "none"
+    this.suggestionsTarget.innerHTML = ""
     this.suggestions = []
   }
 
@@ -190,7 +190,7 @@ export default class extends Controller {
   showLoading() {
     if (this.hasSpinnerTarget) {
       this.isLoading = true
-      this.spinnerTarget.style.display = 'inline-block'
+      this.spinnerTarget.style.display = "inline-block"
     }
   }
 
@@ -200,7 +200,7 @@ export default class extends Controller {
   hideLoading() {
     if (this.hasSpinnerTarget) {
       this.isLoading = false
-      this.spinnerTarget.style.display = 'none'
+      this.spinnerTarget.style.display = "none"
     }
   }
 }

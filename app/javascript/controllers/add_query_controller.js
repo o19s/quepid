@@ -26,7 +26,10 @@ export default class extends Controller {
     const token = csrfToken()
 
     // Support multiple queries separated by semicolons
-    const queries = queryText.split(";").map(q => q.trim()).filter(Boolean)
+    const queries = queryText
+      .split(";")
+      .map((q) => q.trim())
+      .filter(Boolean)
 
     if (queries.length === 1) {
       this._createSingle(queries[0], token)

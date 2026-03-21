@@ -66,10 +66,16 @@ namespace :test do
   desc 'Run js/karma tests (equivalent of karma:run)'
   task 'js' => 'karma:run'
 
-  desc 'Run all frontend tasks: test:js (Karma), test:jshint, yarn test:vitest'
+  desc 'Run all frontend tasks: test:js (Karma), test:jshint, yarn lint:js, yarn test:vitest'
   task frontend: :environment do
     Rake::Task['test:js'].invoke
     Rake::Task['test:jshint'].invoke
+
+    puts '-' * 100
+    puts 'Starting ESLint + Prettier (Stimulus / Vitest paths only)'.yellow
+    Dir.chdir(Rails.root) { sh 'yarn lint:js' }
+    puts 'ESLint + Prettier passed!'.green
+    puts '-' * 100
 
     puts '-' * 100
     puts 'Starting Vitest tests'.yellow

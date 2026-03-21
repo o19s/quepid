@@ -1,7 +1,16 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner", "preview", "previewContent"]
+  static targets = [
+    "form",
+    "fileInput",
+    "alert",
+    "submitButton",
+    "submitText",
+    "spinner",
+    "preview",
+    "previewContent",
+  ]
 
   connect() {
     console.log("Import snapshot controller connected")
@@ -16,8 +25,8 @@ export default class extends Controller {
     }
 
     // Validate it's a CSV file
-    if (!file.type.match('text/csv') && !file.name.endsWith('.csv')) {
-      this.showAlert('Please select a valid CSV file.', 'danger')
+    if (!file.type.match("text/csv") && !file.name.endsWith(".csv")) {
+      this.showAlert("Please select a valid CSV file.", "danger")
       this.submitButtonTarget.disabled = true
       this.hidePreview()
       return
@@ -27,9 +36,9 @@ export default class extends Controller {
       // Read and validate the file
       const fileContent = await this.readFileAsText(file)
       const validation = this.validateCSV(fileContent)
-      
+
       if (!validation.valid) {
-        this.showAlert(validation.error, 'danger')
+        this.showAlert(validation.error, "danger")
         this.submitButtonTarget.disabled = true
         this.hidePreview()
       } else {
@@ -37,30 +46,35 @@ export default class extends Controller {
         this.showPreview(fileContent)
         this.submitButtonTarget.disabled = false
       }
-    } catch (error) {
-      this.showAlert('Error reading file. Please try again.', 'danger')
+    } catch {
+      this.showAlert("Error reading file. Please try again.", "danger")
       this.submitButtonTarget.disabled = true
       this.hidePreview()
     }
   }
 
   validateCSV(content) {
-    const lines = content.trim().split('\n')
+    const lines = content.trim().split("\n")
     if (lines.length < 2) {
-      return { valid: false, error: 'CSV file is empty or has no data rows.' }
+      return { valid: false, error: "CSV file is empty or has no data rows." }
     }
 
-    const headers = lines[0].split(',').map(h => h.trim())
+    const headers = lines[0].split(",").map((h) => h.trim())
     const expectedHeaders = [
-      'Snapshot Name', 'Snapshot Time', 'Case ID', 'Query Text', 'Doc ID', 'Doc Position'
+      "Snapshot Name",
+      "Snapshot Time",
+      "Case ID",
+      "Query Text",
+      "Doc ID",
+      "Doc Position",
     ]
 
-    const missingHeaders = expectedHeaders.filter(header => !headers.includes(header))
-    
+    const missingHeaders = expectedHeaders.filter((header) => !headers.includes(header))
+
     if (missingHeaders.length > 0) {
       return {
         valid: false,
-        error: `Missing required headers: ${missingHeaders.join(', ')}. Please check spelling and capitalization.`
+        error: `Missing required headers: ${missingHeaders.join(", ")}. Please check spelling and capitalization.`,
       }
     }
 
@@ -69,10 +83,10 @@ export default class extends Controller {
 
   async submit(event) {
     event.preventDefault()
-    
+
     const file = this.fileInputTarget.files[0]
     if (!file) {
-      this.showAlert('Please select a file to import.', 'warning')
+      this.showAlert("Please select a file to import.", "warning")
       return
     }
 
@@ -83,12 +97,12 @@ export default class extends Controller {
     try {
       // Read the file content
       const fileContent = await this.readFileAsText(file)
-      
+
       // Parse CSV to structured data
       const snapshotData = this.parseCSV(fileContent)
-      
+
       if (snapshotData.length === 0) {
-        this.showAlert('No valid data found in CSV file.', 'danger')
+        this.showAlert("No valid data found in CSV file.", "danger")
         this.setLoading(false)
         return
       }
@@ -96,34 +110,35 @@ export default class extends Controller {
       // Group data by case and send to API
       await this.importSnapshots(snapshotData)
 
-      this.showAlert('Snapshots imported successfully! Refreshing...', 'success')
+      this.showAlert("Snapshots imported successfully! Refreshing...", "success")
       setTimeout(() => {
         window.location.reload()
       }, 1500)
     } catch (error) {
-      console.error('Import error:', error)
-      const errorMessage = error.message || 'An error occurred while importing snapshots. Please try again.'
-      this.showAlert(errorMessage, 'danger')
+      console.error("Import error:", error)
+      const errorMessage =
+        error.message || "An error occurred while importing snapshots. Please try again."
+      this.showAlert(errorMessage, "danger")
       this.setLoading(false)
     }
   }
 
   parseCSV(content) {
-    const lines = content.trim().split('\n')
-    const headers = lines[0].split(',').map(h => h.trim())
-    
+    const lines = content.trim().split("\n")
+    const headers = lines[0].split(",").map((h) => h.trim())
+
     const data = []
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim())
+      const values = lines[i].split(",").map((v) => v.trim())
       if (values.length !== headers.length) continue
-      
+
       const row = {}
       headers.forEach((header, index) => {
         row[header] = values[index]
       })
       data.push(row)
     }
-    
+
     return data
   }
 
@@ -131,31 +146,31 @@ export default class extends Controller {
     // Group by case ID and snapshot name
     const cases = {}
 
-    docs.forEach(doc => {
-      const caseId = doc['Case ID']
+    docs.forEach((doc) => {
+      const caseId = doc["Case ID"]
       if (!cases[caseId]) {
         cases[caseId] = { snapshots: {} }
       }
 
-      const snapshotName = doc['Snapshot Name']
+      const snapshotName = doc["Snapshot Name"]
       if (!cases[caseId].snapshots[snapshotName]) {
         cases[caseId].snapshots[snapshotName] = {
           queries: {},
-          created_at: doc['Snapshot Time'],
-          name: snapshotName
+          created_at: doc["Snapshot Time"],
+          name: snapshotName,
         }
       }
 
       const snapshot = cases[caseId].snapshots[snapshotName]
-      const queryText = doc['Query Text']
-      
+      const queryText = doc["Query Text"]
+
       if (!snapshot.queries[queryText]) {
         snapshot.queries[queryText] = { docs: [] }
       }
 
       const docPayload = {
-        id: doc['Doc ID'],
-        position: doc['Doc Position']
+        id: doc["Doc ID"],
+        position: doc["Doc Position"],
       }
 
       snapshot.queries[queryText].docs.push(docPayload)
@@ -163,41 +178,43 @@ export default class extends Controller {
 
     // Convert to API format and send requests
     const promises = []
-    
+
     for (const [caseId, caseData] of Object.entries(cases)) {
-      for (const [snapshotName, snapshot] of Object.entries(caseData.snapshots)) {
+      for (const [, snapshot] of Object.entries(caseData.snapshots)) {
         const snapshotPayload = {
           name: snapshot.name,
           created_at: snapshot.created_at,
           queries: Object.entries(snapshot.queries).map(([queryText, queryData]) => ({
             query_text: queryText,
-            docs: queryData.docs
-          }))
+            docs: queryData.docs,
+          })),
         }
-        
+
         promises.push(this.sendSnapshotToAPI(caseId, snapshotPayload))
       }
     }
 
     const results = await Promise.allSettled(promises)
-    
+
     // Check for failures
-    const failures = results.filter(r => r.status === 'rejected')
+    const failures = results.filter((r) => r.status === "rejected")
     if (failures.length > 0) {
-      throw new Error(`${failures.length} snapshot(s) failed to import. Some may have been imported successfully.`)
+      throw new Error(
+        `${failures.length} snapshot(s) failed to import. Some may have been imported successfully.`,
+      )
     }
   }
 
   async sendSnapshotToAPI(caseId, snapshotData) {
     const url = `/api/cases/${caseId}/snapshots/imports`
-    
+
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        "Content-Type": "application/json",
+        "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content,
       },
-      body: JSON.stringify({ snapshots: [snapshotData] })
+      body: JSON.stringify({ snapshots: [snapshotData] }),
     })
 
     if (!response.ok) {
@@ -220,37 +237,37 @@ export default class extends Controller {
   setLoading(isLoading) {
     this.submitButtonTarget.disabled = isLoading
     if (isLoading) {
-      this.submitTextTarget.textContent = 'Importing...'
-      this.spinnerTarget.classList.remove('d-none')
+      this.submitTextTarget.textContent = "Importing..."
+      this.spinnerTarget.classList.remove("d-none")
     } else {
-      this.submitTextTarget.textContent = 'Import'
-      this.spinnerTarget.classList.add('d-none')
+      this.submitTextTarget.textContent = "Import"
+      this.spinnerTarget.classList.add("d-none")
     }
   }
 
   showAlert(message, type) {
     this.alertTarget.textContent = message
     this.alertTarget.className = `alert alert-${type}`
-    this.alertTarget.classList.remove('d-none')
+    this.alertTarget.classList.remove("d-none")
   }
 
   hideAlert() {
-    this.alertTarget.classList.add('d-none')
+    this.alertTarget.classList.add("d-none")
   }
 
   showPreview(content) {
-    const lines = content.split('\n')
-    const preview = lines.slice(0, 10).join('\n')
+    const lines = content.split("\n")
+    const preview = lines.slice(0, 10).join("\n")
     const remaining = lines.length - 10
-    
+
     this.previewContentTarget.textContent = preview
     if (remaining > 0) {
       this.previewContentTarget.textContent += `\n... (${remaining} more lines)`
     }
-    this.previewTarget.classList.remove('d-none')
+    this.previewTarget.classList.remove("d-none")
   }
 
   hidePreview() {
-    this.previewTarget.classList.add('d-none')
+    this.previewTarget.classList.add("d-none")
   }
 }

@@ -17,9 +17,8 @@ export default class extends Controller {
     const fourPoint = this.textareaTarget.dataset.fourPoint
     const twoPoint = this.textareaTarget.dataset.twoPoint
 
-    const isEmptyOrDefault = currentValue === '' ||
-                              currentValue === fourPoint ||
-                              currentValue === twoPoint
+    const isEmptyOrDefault =
+      currentValue === "" || currentValue === fourPoint || currentValue === twoPoint
 
     if (isEmptyOrDefault) {
       if (scaleLength === 2) {
@@ -28,7 +27,7 @@ export default class extends Controller {
         this.textareaTarget.value = fourPoint
       }
       // For other scale lengths, leave as-is or use four-point as fallback
-      else if (currentValue === '') {
+      else if (currentValue === "") {
         this.textareaTarget.value = fourPoint
       }
     }

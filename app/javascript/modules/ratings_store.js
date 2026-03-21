@@ -46,7 +46,7 @@ export class RatingsStore {
       headers: {
         "Content-Type": "application/json",
         "X-CSRF-Token": csrfToken(),
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({
         rating: { doc_id: docId, rating: rating },
@@ -74,7 +74,7 @@ export class RatingsStore {
       headers: {
         "Content-Type": "application/json",
         "X-CSRF-Token": csrfToken(),
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({
         rating: { doc_id: docId },
