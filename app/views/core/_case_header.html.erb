@@ -41,7 +41,7 @@
         <small class="text-muted">
           &mdash;
           <% if @try.present? %>
-            <%= @try.name.include?("Try #{@try.try_number}") ? @try.name : "#{@try.name} - Try #{@try.try_number}" %>
+            <%= @try.name&.include?("Try #{@try.try_number}") ? @try.name : "#{@try.name} - Try #{@try.try_number}" %>
           <% end %>
         </small>
 

@@ -1,0 +1,57 @@
+/* Search results styles for the new (Stimulus) UI */
+
+.search-results-container {
+  margin-top: 10px;
+}
+
+.search-results-header {
+  margin-bottom: 8px;
+  color: #666;
+  font-size: 13px;
+}
+
+.search-results-raw-link {
+  margin-left: 10px;
+  font-size: 12px;
+}
+
+.search-results-list {
+  padding-left: 30px;
+  margin: 0;
+}
+
+.search-results-list > li::marker {
+  color: #999;
+}
+
+.doc-row {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  overflow: hidden;
+}
+
+.doc-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.doc-title {
+  font-weight: 600;
+}
+
+.doc-id {
+  font-size: 12px;
+  color: #999;
+}
+
+.doc-sub-field {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.doc-thumb {
+  max-width: 80px;
+  max-height: 80px;
+  margin-right: 10px;
+  float: left;
+}

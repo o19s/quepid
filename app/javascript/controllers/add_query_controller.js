@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { apiUrl, csrfToken } from "modules/api_url"
 
 export default class extends Controller {
   static targets = ["input"]
@@ -6,16 +7,14 @@ export default class extends Controller {
 
   get _url() {
     if (this.hasUrlValue && this.urlValue) return this.urlValue
-    const rootUrl = document.body.dataset.quepidRootUrl || ''
     const caseId = document.body.dataset.caseId
-    return `${rootUrl}/api/cases/${caseId}/queries`
+    return apiUrl(`api/cases/${caseId}/queries`)
   }
 
   get _bulkUrl() {
     if (this.hasBulkUrlValue && this.bulkUrlValue) return this.bulkUrlValue
-    const rootUrl = document.body.dataset.quepidRootUrl || ''
     const caseId = document.body.dataset.caseId
-    return `${rootUrl}/api/bulk/cases/${caseId}/queries`
+    return apiUrl(`api/bulk/cases/${caseId}/queries`)
   }
 
   submit(event) {
@@ -24,25 +23,25 @@ export default class extends Controller {
     const queryText = this.inputTarget.value.trim()
     if (!queryText) return
 
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
+    const token = csrfToken()
 
     // Support multiple queries separated by semicolons
     const queries = queryText.split(";").map(q => q.trim()).filter(Boolean)
 
     if (queries.length === 1) {
-      this._createSingle(queries[0], csrfToken)
+      this._createSingle(queries[0], token)
     } else {
-      this._createBulk(queries, csrfToken)
+      this._createBulk(queries, token)
     }
   }
 
-  async _createSingle(queryText, csrfToken) {
+  async _createSingle(queryText, token) {
     try {
       const response = await fetch(this._url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
+          "X-CSRF-Token": token,
         },
         body: JSON.stringify({ query: { query_text: queryText } }),
       })
@@ -56,13 +55,13 @@ export default class extends Controller {
     }
   }
 
-  async _createBulk(queries, csrfToken) {
+  async _createBulk(queries, token) {
     try {
       const response = await fetch(this._bulkUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
+          "X-CSRF-Token": token,
         },
         body: JSON.stringify({ queries: queries }),
       })

@@ -1,42 +1,33 @@
-# EXAMPLE USAGE:
-#
-#   Refer for explanation to following link:
-#   https://lefthook.dev/configuration/
-#
-# pre-push:
-#   jobs:
-#     - name: packages audit
-#       tags:
-#         - frontend
-#         - security
-#       run: yarn audit
-#
-#     - name: gems audit
-#       tags:
-#         - backend
-#         - security
-#       run: bundle audit
-#
-# pre-commit:
-#   parallel: true
-#   jobs:
-#     - run: yarn eslint {staged_files}
-#       glob: "*.{js,ts,jsx,tsx}"
-#
-#     - name: rubocop
-#       glob: "*.rb"
-#       exclude:
-#         - config/application.rb
-#         - config/routes.rb
-#       run: bundle exec rubocop --force-exclusion -- {all_files}
-#
-#     - name: govet
-#       files: git ls-files -m
-#       glob: "*.go"
-#       run: go vet -- {files}
-#
-#     - script: "hello.js"
-#       runner: node
-#
-#     - script: "hello.go"
-#       runner: go run
+pre-commit:
+  parallel: true
+  jobs:
+    - name: no-direct-controller-access
+      glob: "app/javascript/controllers/*.js"
+      run: |
+        if grep -n 'getControllerForElementAndIdentifier' {staged_files}; then
+          echo ""
+          echo "ERROR: Use Stimulus outlets instead of getControllerForElementAndIdentifier()."
+          echo "  Declare: static outlets = [\"other-controller\"]"
+          echo "  Access:  this.otherControllerOutlets"
+          exit 1
+        fi
+
+    - name: no-hardcoded-slash-urls
+      glob: "app/javascript/{controllers,modules}/*.js"
+      run: |
+        if grep -n 'fetch(`/' {staged_files} | grep -v 'node_modules'; then
+          echo ""
+          echo "ERROR: Don't start fetch URLs with /. Use apiUrl() from modules/api_url."
+          echo "  Example: fetch(apiUrl(\`api/cases/\${caseId}/queries\`))"
+          exit 1
+        fi
+
+    - name: no-inline-styles-in-js
+      glob: "app/javascript/controllers/*.js"
+      run: |
+        if grep -n 'style="' {staged_files}; then
+          echo ""
+          echo "ERROR: Don't use inline styles in Stimulus controllers."
+          echo "  Define CSS classes in app/assets/stylesheets/ and add to build_css.js."
+          exit 1
+        fi

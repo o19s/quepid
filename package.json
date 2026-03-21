@@ -80,7 +80,7 @@
     "build:css": "node build_css.js",
     "build:css:watch": "node build_css.js --watch",
     "build": "npm run build:css && npm run build:jquery && npm run build:angular-vendor && npm run build:angular-app && npm run build:angular-templates && npm run build:admin && npm run build:analytics",
-    "test": "rake karma:run",
+    "test": "rake karma:run && vitest run",
     "test:ci": "rake karma:ci",
     "test:vitest": "vitest run",
     "test:vitest:watch": "vitest"

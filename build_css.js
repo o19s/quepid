@@ -129,6 +129,10 @@ function buildCoreCSS() {
     output += '\n';
   }
 
+  // New UI (Stimulus) styles
+  output += readFileIfExists('app/assets/stylesheets/search_results.css');
+  output += '\n';
+
   // Other styles
   output += readFileIfExists('app/assets/stylesheets/misc.css');
   output += '\n';
