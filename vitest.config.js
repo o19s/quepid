@@ -1,18 +1,26 @@
-import { defineConfig } from 'vitest/config'
-import path from 'path'
+import fs from "node:fs"
+import path from "path"
+import { defineConfig } from "vitest/config"
+
+/** Map `modules/foo` imports to `app/javascript/modules/foo.js` (matches importmap pins). */
+function modulesImportAliases(rootDir) {
+  const modulesDir = path.join(rootDir, "app/javascript/modules")
+  const alias = {}
+  if (!fs.existsSync(modulesDir)) return alias
+  for (const file of fs.readdirSync(modulesDir)) {
+    if (!file.endsWith(".js")) continue
+    const name = file.slice(0, -".js".length)
+    alias[`modules/${name}`] = path.join(modulesDir, file)
+  }
+  return alias
+}
 
 export default defineConfig({
   resolve: {
-    alias: {
-      'modules/api_url': path.resolve(__dirname, 'app/javascript/modules/api_url.js'),
-      'modules/query_template': path.resolve(__dirname, 'app/javascript/modules/query_template.js'),
-      'modules/search_executor': path.resolve(__dirname, 'app/javascript/modules/search_executor.js'),
-      'modules/scorer': path.resolve(__dirname, 'app/javascript/modules/scorer.js'),
-      'modules/ratings_store': path.resolve(__dirname, 'app/javascript/modules/ratings_store.js'),
-    },
+    alias: modulesImportAliases(__dirname),
   },
   test: {
-    environment: 'jsdom',
-    include: ['test/javascript/**/*.test.js'],
+    environment: "jsdom",
+    include: ["test/javascript/**/*.test.js"],
   },
 })

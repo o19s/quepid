@@ -4,8 +4,14 @@ import { computeCaseScore } from "modules/scorer_executor"
 const MAX_CONCURRENT = 8
 
 export default class extends Controller {
-  static targets = ["list", "queryRow", "filterInput", "queryCount",
-                     "showOnlyRatedCheckbox", "sortLink"]
+  static targets = [
+    "list",
+    "queryRow",
+    "filterInput",
+    "queryCount",
+    "showOnlyRatedCheckbox",
+    "sortLink",
+  ]
   static outlets = ["query-row", "case-score"]
 
   connect() {
@@ -42,7 +48,7 @@ export default class extends Controller {
 
   collapseAll(event) {
     event.preventDefault()
-    this.queryRowOutlets.forEach(outlet => {
+    this.queryRowOutlets.forEach((outlet) => {
       if (outlet.expanded) {
         outlet.collapse()
       }
@@ -52,14 +58,14 @@ export default class extends Controller {
   async runAllSearches(event) {
     event.preventDefault()
     // Only run searches for visible rows
-    const visibleOutlets = this.queryRowOutlets.filter(outlet =>
-      outlet.element.style.display !== "none"
+    const visibleOutlets = this.queryRowOutlets.filter(
+      (outlet) => outlet.element.style.display !== "none",
     )
 
     // Run in batches of MAX_CONCURRENT — allSettled so one failure doesn't block the rest
     for (let i = 0; i < visibleOutlets.length; i += MAX_CONCURRENT) {
       const batch = visibleOutlets.slice(i, i + MAX_CONCURRENT)
-      await Promise.allSettled(batch.map(outlet => outlet.rerunSearch()))
+      await Promise.allSettled(batch.map((outlet) => outlet.rerunSearch()))
     }
   }
 
@@ -68,7 +74,7 @@ export default class extends Controller {
     const sortKey = event.currentTarget.dataset.sort
 
     // Update active state on sort links
-    this.sortLinkTargets.forEach(link => link.classList.remove("active"))
+    this.sortLinkTargets.forEach((link) => link.classList.remove("active"))
     event.currentTarget.classList.add("active")
 
     this._sortRows(sortKey)
@@ -91,7 +97,7 @@ export default class extends Controller {
   _applyVisibility() {
     let visibleCount = 0
 
-    this.queryRowTargets.forEach(row => {
+    this.queryRowTargets.forEach((row) => {
       const text = (row.dataset.queryText || "").toLowerCase()
       const rated = row.dataset.rated === "true"
 
@@ -122,6 +128,6 @@ export default class extends Controller {
 
     // Re-append in sorted order (stable for "default" since sort returns 0)
     const list = this.listTarget
-    rows.forEach(row => list.appendChild(row))
+    rows.forEach((row) => list.appendChild(row))
   }
 }

@@ -51,12 +51,16 @@
     "vega-lite": "^6.4.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@hotwired/stimulus": "^3.2.2",
     "@playwright/test": "^1.58.2",
     "@testing-library/dom": "^10.4.1",
     "angular-mocks": "~1.8.3",
     "chokidar": "5.0.0",
     "esbuild": "^0.27.0",
+    "eslint": "^10.1.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.4.0",
     "jasmine-core": "6.0.1",
     "jsdom": "^29.0.1",
     "jshint": "2.13.6",
@@ -64,6 +68,7 @@
     "karma-chrome-launcher": "3.2.0",
     "karma-jasmine": "5.1.0",
     "playwright-core": "^1.58.2",
+    "prettier": "^3.8.1",
     "puppeteer": "^24.0.0",
     "vitest": "^4.1.0"
   },
@@ -83,6 +88,10 @@
     "test": "rake karma:run && vitest run",
     "test:ci": "rake karma:ci",
     "test:vitest": "vitest run",
-    "test:vitest:watch": "vitest"
+    "test:vitest:watch": "vitest",
+    "lint:eslint": "eslint .",
+    "lint:prettier": "prettier --check app/javascript/controllers app/javascript/modules app/javascript/application_modern.js app/javascript/application.js app/javascript/admin_users.js app/javascript/analytics.js app/javascript/jquery_bundle.js test/javascript vitest.config.js",
+    "lint:js": "yarn lint:eslint && yarn lint:prettier",
+    "format:js": "prettier --write app/javascript/controllers app/javascript/modules app/javascript/application_modern.js app/javascript/application.js app/javascript/admin_users.js app/javascript/analytics.js app/javascript/jquery_bundle.js test/javascript vitest.config.js && eslint . --fix"
   }
 }

@@ -21,14 +21,16 @@ function fetchScorerConfig() {
   }
 
   scorerConfigPromise = fetch(apiUrl(`api/scorers/${scorerId}`), {
-    headers: { "X-CSRF-Token": csrfToken(), "Accept": "application/json" },
-  }).then((r) => {
-    if (!r.ok) throw new Error(`Failed to load scorer (${r.status})`)
-    return r.json()
-  }).catch((err) => {
-    scorerConfigPromise = null
-    throw err
+    headers: { "X-CSRF-Token": csrfToken(), Accept: "application/json" },
   })
+    .then((r) => {
+      if (!r.ok) throw new Error(`Failed to load scorer (${r.status})`)
+      return r.json()
+    })
+    .catch((err) => {
+      scorerConfigPromise = null
+      throw err
+    })
 
   return scorerConfigPromise
 }
@@ -40,14 +42,16 @@ function fetchTryConfig() {
   const tryNumber = document.body.dataset.tryNumber
 
   tryConfigPromise = fetch(apiUrl(`api/cases/${caseId}/tries/${tryNumber}`), {
-    headers: { "X-CSRF-Token": csrfToken(), "Accept": "application/json" },
-  }).then((r) => {
-    if (!r.ok) throw new Error(`Failed to load try config (${r.status})`)
-    return r.json()
-  }).catch((err) => {
-    tryConfigPromise = null // clear cache so next attempt retries
-    throw err
+    headers: { "X-CSRF-Token": csrfToken(), Accept: "application/json" },
   })
+    .then((r) => {
+      if (!r.ok) throw new Error(`Failed to load try config (${r.status})`)
+      return r.json()
+    })
+    .catch((err) => {
+      tryConfigPromise = null // clear cache so next attempt retries
+      throw err
+    })
 
   return tryConfigPromise
 }
@@ -56,13 +60,19 @@ function fetchTryConfig() {
 function getScorerScale() {
   try {
     return JSON.parse(document.body.dataset.scorerScale || "[]")
-  } catch (e) {
+  } catch {
     return []
   }
 }
 
 export default class extends Controller {
-  static targets = ["expandedContent", "chevron", "resultsContainer", "scoreDisplay", "totalResults"]
+  static targets = [
+    "expandedContent",
+    "chevron",
+    "resultsContainer",
+    "scoreDisplay",
+    "totalResults",
+  ]
   static values = {
     queryId: { type: Number },
     queryText: { type: String, default: "" },
@@ -130,11 +140,16 @@ export default class extends Controller {
     this.abortController = new AbortController()
 
     const container = this.resultsContainerTarget
-    container.innerHTML = '<p class="text-muted"><i class="glyphicon glyphicon-refresh"></i> Searching...</p>'
+    container.innerHTML =
+      '<p class="text-muted"><i class="glyphicon glyphicon-refresh"></i> Searching...</p>'
 
     try {
       const tryConfig = await fetchTryConfig()
-      const result = await executeSearch(tryConfig, this.queryTextValue, this.abortController.signal)
+      const result = await executeSearch(
+        tryConfig,
+        this.queryTextValue,
+        this.abortController.signal,
+      )
 
       this.searchLoaded = true
       this.lastSearchDocs = result.docs || []
@@ -214,24 +229,27 @@ export default class extends Controller {
     // Use a data-safe encoding: base64 avoids all HTML/CSS escaping issues with doc IDs
     const encodedDocId = btoa(unescape(encodeURIComponent(docId)))
 
-    const buttons = this.scorerScale.map((val) => {
-      const numVal = parseInt(val, 10)
-      const isActive = currentRating === numVal
-      const activeClass = isActive ? " rating-btn-active" : ""
-      const colorClass = isActive ? ` rating-color-${numVal}` : ""
-      return `<button type="button"
+    const buttons = this.scorerScale
+      .map((val) => {
+        const numVal = parseInt(val, 10)
+        const isActive = currentRating === numVal
+        const activeClass = isActive ? " rating-btn-active" : ""
+        const colorClass = isActive ? ` rating-color-${numVal}` : ""
+        return `<button type="button"
                 class="rating-btn${activeClass}${colorClass}"
                 data-rating-action="rate"
                 data-encoded-doc-id="${encodedDocId}"
                 data-rating-value="${numVal}">${numVal}</button>`
-    }).join("")
+      })
+      .join("")
 
-    const clearBtn = currentRating !== null
-      ? `<button type="button" class="rating-btn rating-btn-clear"
+    const clearBtn =
+      currentRating !== null
+        ? `<button type="button" class="rating-btn rating-btn-clear"
            data-rating-action="unrate"
            data-encoded-doc-id="${encodedDocId}"
            title="Clear rating">&times;</button>`
-      : ""
+        : ""
 
     return `<div class="doc-rating" data-encoded-doc-id="${encodedDocId}">${buttons}${clearBtn}</div>`
   }
@@ -243,11 +261,13 @@ export default class extends Controller {
   _ensureRatingColorStyles() {
     if (document.getElementById("rating-color-styles")) return
 
-    const rules = this.scorerScale.map((val) => {
-      const numVal = parseInt(val, 10)
-      const color = ratingColor(numVal, this.colorMap)
-      return `.rating-color-${numVal} { background-color: ${color}; color: #fff; }`
-    }).join("\n")
+    const rules = this.scorerScale
+      .map((val) => {
+        const numVal = parseInt(val, 10)
+        const color = ratingColor(numVal, this.colorMap)
+        return `.rating-color-${numVal} { background-color: ${color}; color: #fff; }`
+      })
+      .join("\n")
 
     const style = document.createElement("style")
     style.id = "rating-color-styles"
@@ -386,7 +406,10 @@ export default class extends Controller {
         queryId: this.queryIdValue,
         queryText: this.queryTextValue,
         score: score,
-        maxScore: this.scorerScale.length > 0 ? parseInt(this.scorerScale[this.scorerScale.length - 1], 10) : 0,
+        maxScore:
+          this.scorerScale.length > 0
+            ? parseInt(this.scorerScale[this.scorerScale.length - 1], 10)
+            : 0,
         numFound: this.lastNumFound,
       },
     })
@@ -432,6 +455,11 @@ export default class extends Controller {
   }
 
   _escapeAttr(str) {
-    return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
   }
 }

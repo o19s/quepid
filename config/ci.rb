@@ -12,8 +12,8 @@ CI.run do
   step 'Security: Brakeman code analysis', 'bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error'
 
   step 'Tests: Rails', 'bin/rails test'
-  step 'Tests: Rails', 'bin/rails test:frontend'
-  # step "Tests: System", "bin/rails test:system" We don't have any system tests
+  step 'Tests: Frontend', 'bin/rails test:frontend'
+  # step "Tests: System", "bin/rails test:system" Optional — see test/system/ (e.g. search_endpoints_test.rb); not run here by default
   # step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
 
   # Optional: set a green GitHub commit status to unblock PR merge.

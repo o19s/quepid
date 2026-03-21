@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { Application } from '@hotwired/stimulus'
-import ResizablePaneController from '../../../app/javascript/controllers/resizable_pane_controller'
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+import { Application } from "@hotwired/stimulus"
+import ResizablePaneController from "../../../app/javascript/controllers/resizable_pane_controller"
+import { waitForController } from "../support/stimulus_helpers"
 
-describe('ResizablePaneController', () => {
+describe("ResizablePaneController", () => {
   let application
 
   beforeEach(async () => {
@@ -26,50 +27,50 @@ describe('ResizablePaneController', () => {
     `
 
     application = Application.start()
-    application.register('resizable-pane', ResizablePaneController)
-    await new Promise(r => setTimeout(r, 50))
+    application.register("resizable-pane", ResizablePaneController)
+    await waitForController(application, '[data-controller="resizable-pane"]', "resizable-pane")
   })
 
   afterEach(() => {
     application.stop()
   })
 
-  it('starts with pane closed', () => {
+  it("starts with pane closed", () => {
     const slider = document.querySelector('[data-resizable-pane-target="slider"]')
     const east = document.querySelector('[data-resizable-pane-target="east"]')
 
-    expect(slider.style.display).toBe('none')
-    expect(east.style.display).toBe('none')
+    expect(slider.style.display).toBe("none")
+    expect(east.style.display).toBe("none")
   })
 
-  it('opens pane on toggleEast event', () => {
+  it("opens pane on toggleEast event", () => {
     const slider = document.querySelector('[data-resizable-pane-target="slider"]')
     const east = document.querySelector('[data-resizable-pane-target="east"]')
 
     // Simulate jQuery toggleEast event via the controller's _onToggle
     const controller = application.getControllerForElementAndIdentifier(
       document.querySelector('[data-controller="resizable-pane"]'),
-      'resizable-pane'
+      "resizable-pane",
     )
     controller._onToggle()
 
-    expect(slider.style.display).toBe('block')
-    expect(east.style.display).toBe('block')
+    expect(slider.style.display).toBe("block")
+    expect(east.style.display).toBe("block")
   })
 
-  it('closes pane on second toggle', () => {
+  it("closes pane on second toggle", () => {
     const slider = document.querySelector('[data-resizable-pane-target="slider"]')
     const east = document.querySelector('[data-resizable-pane-target="east"]')
 
     const controller = application.getControllerForElementAndIdentifier(
       document.querySelector('[data-controller="resizable-pane"]'),
-      'resizable-pane'
+      "resizable-pane",
     )
 
     controller._onToggle() // open
     controller._onToggle() // close
 
-    expect(slider.style.display).toBe('none')
-    expect(east.style.display).toBe('none')
+    expect(slider.style.display).toBe("none")
+    expect(east.style.display).toBe("none")
   })
 })
