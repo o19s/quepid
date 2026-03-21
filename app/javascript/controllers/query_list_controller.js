@@ -1,8 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 
+const MAX_CONCURRENT = 8
+
 export default class extends Controller {
   static targets = ["list", "queryRow", "filterInput", "queryCount",
                      "showOnlyRatedCheckbox", "sortLink"]
+  static outlets = ["query-row"]
 
   connect() {
     this.showOnlyRated = false
@@ -23,13 +26,25 @@ export default class extends Controller {
 
   collapseAll(event) {
     event.preventDefault()
-    // Find all query-row controllers and collapse them
-    this.queryRowTargets.forEach(row => {
-      const controller = this.application.getControllerForElementAndIdentifier(row, "query-row")
-      if (controller && controller.expanded) {
-        controller.toggle()
+    this.queryRowOutlets.forEach(outlet => {
+      if (outlet.expanded) {
+        outlet.collapse()
       }
     })
+  }
+
+  async runAllSearches(event) {
+    event.preventDefault()
+    // Only run searches for visible rows
+    const visibleOutlets = this.queryRowOutlets.filter(outlet =>
+      outlet.element.style.display !== "none"
+    )
+
+    // Run in batches of MAX_CONCURRENT — allSettled so one failure doesn't block the rest
+    for (let i = 0; i < visibleOutlets.length; i += MAX_CONCURRENT) {
+      const batch = visibleOutlets.slice(i, i + MAX_CONCURRENT)
+      await Promise.allSettled(batch.map(outlet => outlet.rerunSearch()))
+    }
   }
 
   sortBy(event) {
