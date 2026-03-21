@@ -31,7 +31,7 @@ describe("apiUrl", () => {
 })
 
 describe("csrfToken", () => {
-  it("returns null when no meta tag exists", () => {
+  it("returns undefined when no meta tag exists", () => {
     document.head.innerHTML = ""
     expect(csrfToken()).toBeUndefined()
   })

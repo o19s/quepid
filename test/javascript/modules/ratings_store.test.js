@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest"
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { RatingsStore } from "modules/ratings_store"
 
 // Mock the api_url module
@@ -9,9 +9,15 @@ vi.mock("modules/api_url", () => ({
 
 describe("RatingsStore", () => {
   let store
+  let fetchSpy
 
   beforeEach(() => {
     store = new RatingsStore(1, 42, { "doc-a": 3, "doc-b": "1" })
+    fetchSpy = vi.spyOn(globalThis, "fetch")
+  })
+
+  afterEach(() => {
+    fetchSpy.mockRestore()
   })
 
   describe("constructor", () => {
@@ -62,16 +68,25 @@ describe("RatingsStore", () => {
     })
   })
 
+  describe("constructor edge cases", () => {
+    it("skips NaN values from initial ratings", () => {
+      const store2 = new RatingsStore(1, 42, { "doc-x": null, "doc-y": "not-a-number" })
+      expect(store2.hasRating("doc-x")).toBe(false)
+      expect(store2.hasRating("doc-y")).toBe(false)
+      expect(store2.ratedCount()).toBe(0)
+    })
+  })
+
   describe("rate", () => {
     it("sends PUT and updates local cache", async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      fetchSpy.mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ id: 1, doc_id: "doc-c", rating: 2, query_id: 42 }),
       })
 
       await store.rate("doc-c", 2)
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(fetchSpy).toHaveBeenCalledWith(
         "http://localhost/api/cases/1/queries/42/ratings",
         expect.objectContaining({
           method: "PUT",
@@ -83,7 +98,7 @@ describe("RatingsStore", () => {
     })
 
     it("throws on non-ok response", async () => {
-      global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 422 })
+      fetchSpy.mockResolvedValue({ ok: false, status: 422 })
 
       await expect(store.rate("doc-c", 2)).rejects.toThrow("Failed to save rating (422)")
       expect(store.getRating("doc-c")).toBeNull()
@@ -92,11 +107,11 @@ describe("RatingsStore", () => {
 
   describe("unrate", () => {
     it("sends DELETE and removes from local cache", async () => {
-      global.fetch = vi.fn().mockResolvedValue({ ok: true })
+      fetchSpy.mockResolvedValue({ ok: true })
 
       await store.unrate("doc-a")
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(fetchSpy).toHaveBeenCalledWith(
         "http://localhost/api/cases/1/queries/42/ratings",
         expect.objectContaining({
           method: "DELETE",

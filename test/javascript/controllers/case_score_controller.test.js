@@ -23,7 +23,7 @@ describe("CaseScoreController", () => {
            data-case-score-try-number-value="2"
            data-case-score-max-score-value="100">
         <div data-case-score-target="badge"
-             style="background-color: #999; color: #fff;">--</div>
+             class="case-score-badge">--</div>
       </div>
     `
 
@@ -40,7 +40,7 @@ describe("CaseScoreController", () => {
   it("shows placeholder when score is null after connect", () => {
     const badge = document.querySelector("[data-case-score-target=badge]")
     expect(badge.textContent).toBe("--")
-    expect(badge.style.backgroundColor).toBe("rgb(153, 153, 153)")
+    expect(badge.classList.contains("score-badge-unscored")).toBe(true)
   })
 
   it("updates badge text and color for a numeric score (qscore-case display)", () => {
@@ -55,9 +55,9 @@ describe("CaseScoreController", () => {
 
     const badge = document.querySelector("[data-case-score-target=badge]")
     expect(badge.textContent).toBe("0.76")
-    // Browsers/jsdom normalize hsl() to rgb() for style.backgroundColor
-    expect(badge.style.backgroundColor).not.toBe("rgb(153, 153, 153)")
-    expect(badge.style.backgroundColor).toMatch(/^rgb\(/)
+    expect(badge.classList.contains("score-badge-unscored")).toBe(false)
+    // Dynamic score color is set via inline style (continuous HSL value)
+    expect(badge.style.backgroundColor).toMatch(/^(rgb|hsl)\(/)
   })
 
   it("does not persist when score is null", async () => {

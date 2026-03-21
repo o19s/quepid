@@ -17,7 +17,7 @@ function formatSolrArgs(argsObj) {
     }
   }
   // Escape bare % characters (not already part of percent-encoding)
-  result = result.replace(/%(?!(2|3|4|5))/g, "%25")
+  result = result.replace(/%(?![0-9A-Fa-f]{2})/g, "%25")
   return result.slice(0, -1)
 }
 

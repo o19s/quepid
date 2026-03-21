@@ -5,22 +5,28 @@ import { RatingsStore } from "modules/ratings_store"
 import { scaleToColors, ratingColor, scoreToColor } from "modules/scorer"
 import { runScorerCode } from "modules/scorer_executor"
 
-// Shared try config cache — fetched once, reused across all query rows
-let tryConfigPromise = null
+// Shared config caches — keyed by caseId:tryNumber so navigating to a
+// different case/try fetches fresh config instead of serving stale data.
+let tryConfigCache = { key: null, promise: null }
+let scorerConfigCache = { key: null, promise: null }
 
-// Shared scorer config cache — fetched once
-let scorerConfigPromise = null
+function configCacheKey() {
+  return `${document.body.dataset.caseId}:${document.body.dataset.tryNumber}`
+}
 
 function fetchScorerConfig() {
-  if (scorerConfigPromise) return scorerConfigPromise
+  const key = configCacheKey()
+  if (scorerConfigCache.key === key && scorerConfigCache.promise) {
+    return scorerConfigCache.promise
+  }
 
   const scorerId = document.body.dataset.scorerId
   if (!scorerId) {
-    scorerConfigPromise = Promise.resolve(null)
-    return scorerConfigPromise
+    scorerConfigCache = { key, promise: Promise.resolve(null) }
+    return scorerConfigCache.promise
   }
 
-  scorerConfigPromise = fetch(apiUrl(`api/scorers/${scorerId}`), {
+  const promise = fetch(apiUrl(`api/scorers/${scorerId}`), {
     headers: { "X-CSRF-Token": csrfToken(), Accept: "application/json" },
   })
     .then((r) => {
@@ -28,20 +34,24 @@ function fetchScorerConfig() {
       return r.json()
     })
     .catch((err) => {
-      scorerConfigPromise = null
+      scorerConfigCache = { key: null, promise: null }
       throw err
     })
 
-  return scorerConfigPromise
+  scorerConfigCache = { key, promise }
+  return promise
 }
 
 function fetchTryConfig() {
-  if (tryConfigPromise) return tryConfigPromise
+  const key = configCacheKey()
+  if (tryConfigCache.key === key && tryConfigCache.promise) {
+    return tryConfigCache.promise
+  }
 
   const caseId = document.body.dataset.caseId
   const tryNumber = document.body.dataset.tryNumber
 
-  tryConfigPromise = fetch(apiUrl(`api/cases/${caseId}/tries/${tryNumber}`), {
+  const promise = fetch(apiUrl(`api/cases/${caseId}/tries/${tryNumber}`), {
     headers: { "X-CSRF-Token": csrfToken(), Accept: "application/json" },
   })
     .then((r) => {
@@ -49,11 +59,12 @@ function fetchTryConfig() {
       return r.json()
     })
     .catch((err) => {
-      tryConfigPromise = null // clear cache so next attempt retries
+      tryConfigCache = { key: null, promise: null }
       throw err
     })
 
-  return tryConfigPromise
+  tryConfigCache = { key, promise }
+  return promise
 }
 
 // Parse scorer scale from body data attribute (once, shared)
@@ -110,7 +121,7 @@ export default class extends Controller {
 
   expand() {
     this.expanded = true
-    this.expandedContentTarget.style.display = "block"
+    this.expandedContentTarget.classList.remove("d-none")
     this.chevronTarget.classList.remove("glyphicon-chevron-down")
     this.chevronTarget.classList.add("glyphicon-chevron-up")
 
@@ -121,7 +132,7 @@ export default class extends Controller {
 
   collapse() {
     this.expanded = false
-    this.expandedContentTarget.style.display = "none"
+    this.expandedContentTarget.classList.add("d-none")
     this.chevronTarget.classList.remove("glyphicon-chevron-up")
     this.chevronTarget.classList.add("glyphicon-chevron-down")
   }
@@ -356,7 +367,8 @@ export default class extends Controller {
       if (!scorer || !scorer.code) {
         if (badge) {
           badge.textContent = "--"
-          badge.style.backgroundColor = "#999"
+          badge.style.backgroundColor = ""
+          badge.classList.add("score-badge-unscored")
         }
         this._dispatchScoreChanged(null)
         return
@@ -382,10 +394,12 @@ export default class extends Controller {
         if (typeof score === "number") {
           const rounded = Math.round(score * 100) / 100
           badge.textContent = rounded.toFixed(2)
+          badge.classList.remove("score-badge-unscored")
           badge.style.backgroundColor = scoreToColor(score, maxScaleValue)
         } else {
           badge.textContent = score || "--"
-          badge.style.backgroundColor = "#999"
+          badge.style.backgroundColor = ""
+          badge.classList.add("score-badge-unscored")
         }
       }
 
@@ -394,7 +408,8 @@ export default class extends Controller {
       console.error("Score computation failed:", e)
       if (badge) {
         badge.textContent = "--"
-        badge.style.backgroundColor = "#999"
+        badge.style.backgroundColor = ""
+        badge.classList.add("score-badge-unscored")
       }
       this._dispatchScoreChanged(null)
     }

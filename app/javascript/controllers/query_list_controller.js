@@ -18,6 +18,11 @@ export default class extends Controller {
     this.showOnlyRated = false
     this.currentFilter = ""
     this.queryScores = {} // { queryId: { text, score, maxScore, numFound } }
+
+    // Store original DOM indices so "default" sort can restore server-rendered order
+    this.queryRowTargets.forEach((row, idx) => {
+      row.dataset.originalIndex = idx
+    })
   }
 
   // Handles query-row:scoreChanged events bubbled up from query-row controllers
@@ -59,7 +64,7 @@ export default class extends Controller {
     event.preventDefault()
     // Only run searches for visible rows
     const visibleOutlets = this.queryRowOutlets.filter(
-      (outlet) => outlet.element.style.display !== "none",
+      (outlet) => !outlet.element.classList.contains("d-none"),
     )
 
     // Run in batches of MAX_CONCURRENT — allSettled so one failure doesn't block the rest
@@ -105,7 +110,7 @@ export default class extends Controller {
       const matchesRated = !this.showOnlyRated || rated
 
       const visible = matchesFilter && matchesRated
-      row.style.display = visible ? "" : "none"
+      row.classList.toggle("d-none", !visible)
       if (visible) visibleCount++
     })
 
@@ -121,8 +126,8 @@ export default class extends Controller {
           return (a.dataset.queryText || "").localeCompare(b.dataset.queryText || "")
         case "default":
         default:
-          // Default order is the server-rendered order (DOM order)
-          return 0
+          // Restore original server-rendered order using stored indices
+          return parseInt(a.dataset.originalIndex, 10) - parseInt(b.dataset.originalIndex, 10)
       }
     })
 

@@ -89,10 +89,10 @@ describe("QueryListController", () => {
     list.filterInputTarget.value = ""
     list.filter()
 
-    expect(document.getElementById("row1").style.display).not.toBe("none")
-    expect(document.getElementById("row2").style.display).not.toBe("none")
-    expect(document.getElementById("row3").style.display).not.toBe("none")
-    expect(document.getElementById("row4").style.display).not.toBe("none")
+    expect(document.getElementById("row1").classList.contains("d-none")).toBe(false)
+    expect(document.getElementById("row2").classList.contains("d-none")).toBe(false)
+    expect(document.getElementById("row3").classList.contains("d-none")).toBe(false)
+    expect(document.getElementById("row4").classList.contains("d-none")).toBe(false)
     expect(list.queryCountTarget.textContent).toBe("4")
   })
 
@@ -104,18 +104,18 @@ describe("QueryListController", () => {
 
     list.filterInputTarget.value = "star"
     list.filter()
-    expect(document.getElementById("row1").style.display).not.toBe("none")
-    expect(document.getElementById("row2").style.display).not.toBe("none")
-    expect(document.getElementById("row3").style.display).not.toBe("none")
-    expect(document.getElementById("row4").style.display).toBe("none")
+    expect(document.getElementById("row1").classList.contains("d-none")).toBe(false)
+    expect(document.getElementById("row2").classList.contains("d-none")).toBe(false)
+    expect(document.getElementById("row3").classList.contains("d-none")).toBe(false)
+    expect(document.getElementById("row4").classList.contains("d-none")).toBe(true)
     expect(list.queryCountTarget.textContent).toBe("3")
 
     list.filterInputTarget.value = "boxing"
     list.filter()
-    expect(document.getElementById("row1").style.display).toBe("none")
-    expect(document.getElementById("row2").style.display).toBe("none")
-    expect(document.getElementById("row3").style.display).toBe("none")
-    expect(document.getElementById("row4").style.display).not.toBe("none")
+    expect(document.getElementById("row1").classList.contains("d-none")).toBe(true)
+    expect(document.getElementById("row2").classList.contains("d-none")).toBe(true)
+    expect(document.getElementById("row3").classList.contains("d-none")).toBe(true)
+    expect(document.getElementById("row4").classList.contains("d-none")).toBe(false)
     expect(list.queryCountTarget.textContent).toBe("1")
 
     list.filterInputTarget.value = "Star"
@@ -124,8 +124,8 @@ describe("QueryListController", () => {
 
     list.filterInputTarget.value = "war"
     list.filter()
-    expect(document.getElementById("row1").style.display).not.toBe("none")
-    expect(document.getElementById("row2").style.display).toBe("none")
+    expect(document.getElementById("row1").classList.contains("d-none")).toBe(false)
+    expect(document.getElementById("row2").classList.contains("d-none")).toBe(true)
   })
 
   it("show only rated hides unrated rows", () => {
@@ -140,7 +140,7 @@ describe("QueryListController", () => {
     list.toggleShowOnlyRated(ev)
     expect(ev.preventDefault).toHaveBeenCalled()
     expect(list.showOnlyRatedCheckboxTarget.checked).toBe(true)
-    expect(document.getElementById("row4").style.display).toBe("none")
+    expect(document.getElementById("row4").classList.contains("d-none")).toBe(true)
     expect(list.queryCountTarget.textContent).toBe("3")
   })
 
@@ -206,7 +206,7 @@ describe("QueryListController", () => {
       vi.spyOn(outlet, "rerunSearch").mockResolvedValue(undefined)
     })
 
-    document.getElementById("row1").style.display = "none"
+    document.getElementById("row1").classList.add("d-none")
 
     const ev = { preventDefault: vi.fn() }
     await list.runAllSearches(ev)
@@ -231,5 +231,55 @@ describe("QueryListController", () => {
     )
     expect(texts).toEqual(expectedOrder)
     expect(nameLink.classList.contains("active")).toBe(true)
+  })
+
+  it("sortBy default restores server-rendered row order after sorting by name", () => {
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    const initialIds = [
+      ...list.listTarget.querySelectorAll('[data-query-list-target="queryRow"]'),
+    ].map((r) => r.id)
+
+    const nameLink = [...list.sortLinkTargets].find((a) => a.dataset.sort === "query")
+    list.sortBy({ preventDefault: vi.fn(), currentTarget: nameLink })
+    const afterNameIds = [
+      ...list.listTarget.querySelectorAll('[data-query-list-target="queryRow"]'),
+    ].map((r) => r.id)
+    expect(afterNameIds).not.toEqual(initialIds)
+
+    const defaultLink = [...list.sortLinkTargets].find((a) => a.dataset.sort === "default")
+    list.sortBy({ preventDefault: vi.fn(), currentTarget: defaultLink })
+    const restoredIds = [
+      ...list.listTarget.querySelectorAll('[data-query-list-target="queryRow"]'),
+    ].map((r) => r.id)
+    expect(restoredIds).toEqual(initialIds)
+    expect(defaultLink.classList.contains("active")).toBe(true)
+  })
+
+  it("sortBy score and modified restore manual order until dedicated sort keys exist", () => {
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    const initialIds = [
+      ...list.listTarget.querySelectorAll('[data-query-list-target="queryRow"]'),
+    ].map((r) => r.id)
+
+    const nameLink = [...list.sortLinkTargets].find((a) => a.dataset.sort === "query")
+    list.sortBy({ preventDefault: vi.fn(), currentTarget: nameLink })
+
+    for (const sortKey of ["score", "modified"]) {
+      const link = document.createElement("a")
+      link.href = "#"
+      link.dataset.sort = sortKey
+      link.dataset.queryListTarget = "sortLink"
+      list.sortBy({ preventDefault: vi.fn(), currentTarget: link })
+      const ids = [...list.listTarget.querySelectorAll('[data-query-list-target="queryRow"]')].map(
+        (r) => r.id,
+      )
+      expect(ids).toEqual(initialIds)
+    }
   })
 })

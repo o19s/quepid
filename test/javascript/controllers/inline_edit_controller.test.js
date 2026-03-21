@@ -11,14 +11,14 @@ describe("InlineEditController", () => {
     document.head.innerHTML = '<meta name="csrf-token" content="test-token">'
     document.body.innerHTML = `
       <span data-controller="inline-edit"
-            data-inline-edit-url-value="/api/cases/1"
+            data-inline-edit-url-value="api/cases/1"
             data-inline-edit-field-value="case_name"
             data-inline-edit-wrap-value="case">
         <span data-inline-edit-target="display"
               data-action="dblclick->inline-edit#startEdit">
           Test Case
         </span>
-        <span data-inline-edit-target="form" style="display:none">
+        <span data-inline-edit-target="form" class="d-none">
           <form data-action="submit->inline-edit#save">
             <input data-inline-edit-target="input" value="Test Case" />
             <button type="button" data-action="click->inline-edit#cancel">Cancel</button>
@@ -42,8 +42,9 @@ describe("InlineEditController", () => {
 
     display.dispatchEvent(new Event("dblclick", { bubbles: true }))
 
-    expect(display.style.display).toBe("none")
-    expect(form.style.display).toBe("inline")
+    expect(display.classList.contains("d-none")).toBe(true)
+    expect(form.classList.contains("d-none")).toBe(false)
+    expect(form.classList.contains("d-inline")).toBe(true)
   })
 
   it("populates input with current display text", () => {
@@ -65,8 +66,8 @@ describe("InlineEditController", () => {
     // Cancel
     cancel.dispatchEvent(new Event("click", { bubbles: true }))
 
-    expect(form.style.display).toBe("none")
-    expect(display.style.display).toBe("inline")
+    expect(form.classList.contains("d-none")).toBe(true)
+    expect(display.classList.contains("d-none")).toBe(false)
   })
 
   it("sends PUT request with wrapped field on save", async () => {
@@ -85,7 +86,7 @@ describe("InlineEditController", () => {
     })
 
     expect(fetchSpy).toHaveBeenCalledWith(
-      "/api/cases/1",
+      "api/cases/1",
       expect.objectContaining({
         method: "PUT",
         body: JSON.stringify({ case: { case_name: "Renamed Case" } }),
