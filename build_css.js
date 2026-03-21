@@ -123,7 +123,7 @@ function buildCoreCSS() {
   output += '\n';
 
   // Screen-specific styles
-  const screens = ['cases', 'scorers', 'books', 'search_endpoints', 'teams', 'users', 'docs', 'settings', 'qscore', 'qgraph'];
+  const screens = ['cases', 'docs', 'settings', 'qscore', 'qgraph'];
   for (const screen of screens) {
     output += readFileIfExists(`app/assets/stylesheets/${screen}.css`);
     output += '\n';
@@ -222,7 +222,6 @@ function copyImageFiles() {
   ensureDirectoryExists('app/assets/builds/images');
   
   copyFileIfExists('public/images/querqy-icon.png', 'app/assets/builds/images/querqy-icon.png');
-  copyFileIfExists('public/images/loading.gif', 'app/assets/builds/images/loading.gif');
 }
 
 function buildAllCSS() {

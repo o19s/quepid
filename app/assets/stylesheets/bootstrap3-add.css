@@ -408,7 +408,10 @@ header .dropdown-content li.dropdown-header {
 	line-height: 1;
 	display: inline-block;
 	margin-right: 12px;
-	background: url(../images/loading.gif) center center no-repeat;
+	border: 3px solid lightgray;
+	border-top: 3px solid #007bff;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
 }
 
 .results .delete-query, .results .toggleSign {

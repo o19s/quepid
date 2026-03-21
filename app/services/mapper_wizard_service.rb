@@ -70,7 +70,6 @@ class MapperWizardService
   end
 
   # Test a single mapper function
-  # rubocop:disable Metrics/MethodLength
   def test_mapper mapper_type:, code:, html_content:
     return { success: false, error: 'Code is required', logs: [] } if code.blank?
     return { success: false, error: 'HTML content is required', logs: [] } if html_content.blank?
@@ -106,10 +105,8 @@ class MapperWizardService
   rescue StandardError => e
     { success: false, error: e.message, logs: @v8_executor.logs }
   end
-  # rubocop:enable Metrics/MethodLength
 
   # Refine a mapper function using AI
-  # rubocop:disable Metrics/MethodLength
   def refine_mapper mapper_type:, current_code:, feedback:, html_content:
     return { success: false, error: 'API key required' } if @api_key.blank?
 
@@ -152,7 +149,6 @@ class MapperWizardService
   rescue StandardError => e
     { success: false, error: "AI refinement failed: #{e.message}" }
   end
-  # rubocop:enable Metrics/MethodLength
 
   private
 
@@ -266,7 +262,6 @@ class MapperWizardService
     end
   end
 
-  # rubocop:disable Metrics/MethodLength
   def extract_single_function code, function_name
     # Match function definition pattern
     pattern = /#{function_name}\s*=\s*function\s*\([^)]*\)\s*\{/
@@ -300,5 +295,4 @@ class MapperWizardService
 
     code[start_index..end_index]
   end
-  # rubocop:enable Metrics/MethodLength
 end

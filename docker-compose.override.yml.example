@@ -1,5 +1,17 @@
 # Demonstrate how to load your own local copy of a node package into Quepid.
 # Commonly used when you are developing against an unreleased package.
+#
+# IMPORTANT: After making changes to your local splainer-search files, you MUST rebuild
+# the Angular vendor bundle for changes to take effect:
+#
+#   bin/docker r yarn build:angular-vendor
+#
+# Why? The esbuild watch process monitors changes to app/javascript/angular_app.js,
+# but does NOT automatically watch files inside node_modules/. Your mounted splainer-search
+# files ARE being used, but esbuild won't detect when they change.
+#
+# The mounted files below will be bundled into app/assets/builds/angular_app.js during
+# the build process, so any changes you make locally will be included after rebuilding.
 
 services:
   app:

@@ -1,0 +1,40 @@
+<div class="modal fade" id="shareScorerModal" tabindex="-1" aria-labelledby="shareScorerModalLabel" aria-hidden="true" data-controller="share-scorer">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="shareScorerModalLabel">Share Scorer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <%= form_with url: share_scorers_path, method: :post, local: true, html: { id: 'share-scorer-form', class: 'mb-3' } do %>
+          <%= hidden_field_tag :scorer_id, '', id: 'share-scorer-id' %>
+
+          <p class="h5">Select a team to share this scorer with:</p>
+          <div class="mb-3">
+            <%= select_tag :team_id,
+                           options_for_select([['Select a team', '']]),
+                           class: 'form-select',
+                           id: 'share-scorer-team',
+                           required: true,
+                           data: { action: 'change->share-scorer#toggleSubmit' } %>
+          </div>
+        <% end %>
+
+        <hr>
+        <p class="h5">Already shared with:</p>
+        <div id="share-scorer-shared-list" class="list-group mt-2"></div>
+
+        <%= form_with url: unshare_scorers_path, method: :post, local: true, html: { id: 'unshare-scorer-form', class: 'mt-3' } do %>
+          <%= hidden_field_tag :scorer_id, '', id: 'unshare-scorer-id' %>
+          <%= hidden_field_tag :team_id, '', id: 'unshare-scorer-team' %>
+        <% end %>
+      </div>
+      <div class="modal-footer">
+        <a href="<%= new_team_path %>" class="btn btn-primary me-auto">+ Create a team</a>
+        <button type="submit" form="share-scorer-form" id="share-scorer-submit" class="btn btn-success" disabled>Share with team</button>
+        <button type="submit" form="unshare-scorer-form" id="unshare-scorer-submit" class="btn btn-success" disabled>Unshare from team</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

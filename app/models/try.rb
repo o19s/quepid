@@ -75,7 +75,6 @@ class Try < ApplicationRecord
 
   # merge the search endpoint and case options together,
   # with search endpoint options taking precedence
-  # rubocop:disable Metrics/MethodLength
   def options
     # NOTE: there is weirdness that case options parse as json
     # but search_endpoint options stay strings and we manually parse them
@@ -108,7 +107,6 @@ class Try < ApplicationRecord
     JSON.parse(merged_hash.to_json)
   end
 
-  # rubocop:enable Metrics/MethodLength
   def param
     try_number
   end

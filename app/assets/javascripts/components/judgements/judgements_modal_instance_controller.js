@@ -30,9 +30,8 @@ angular.module('QuepidApp')
      ) {
       var ctrl = this;
 
-      ctrl.refreshOnly = false;
-      ctrl.updateAssociatedBook = false;
-      ctrl.createMissingQueries = false;
+      ctrl.autoPopulateBookPairs = acase.autoPopulateBookPairs || false;
+      ctrl.autoPopulateCaseJudgements    = acase.autoPopulateCaseJudgements !== false;
 
       // why do we do this pattern?
       ctrl.share = {
@@ -61,7 +60,6 @@ angular.module('QuepidApp')
           ctrl.activeBookId = book.id;
           ctrl.activeBookName = book.name;
         }
-        ctrl.updateAssociatedBook = true;
         $log.info('activeBookId is now:', ctrl.activeBookId);
       }
 
@@ -112,117 +110,54 @@ angular.module('QuepidApp')
       ctrl.share.loading = false;
       // And done, hide loading message.
 
-      ctrl.specificActionLabel = function () {
-        var label = '';
-
-        if (ctrl.share.acase.bookId === null && ctrl.activeBookId){
-          label = 'Select Book';
-        }
-        else if (ctrl.share.acase.bookId !== null && ctrl.activeBookId === null){
-          label = 'Unselect Book';
-        }
-        else if (ctrl.share.acase.bookId !== ctrl.activeBookId && ctrl.activeBookId !== null){
-          label = 'Change Book';
-        }
-        else if (ctrl.share.acase.bookId === ctrl.activeBookId){
-          label = '';
-          ctrl.refreshOnly = true;
-        }
-
-        if (ctrl.populateBook){
-          if (!ctrl.updateAssociatedBook){
-            label = 'Update Query/Doc Pairs for Book';
-          }
-          else {
-            label = `${label} and Populate`;
-          }          
-        }
-        return label;
-      };
-
-      ctrl.refreshRatingsFromBook = function () {
-        //$uibModalInstance.close(ctrl.options);
-        $scope.processingPrompt.inProgress = true;
-        
-        // 
-        var processInBackground = ctrl.share.acase.queriesCount >= 50 ? true: false;
-        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, ctrl.createMissingQueries, processInBackground)
-        .then(function(response) {
-          $scope.processingPrompt.inProgress = false;
-          $uibModalInstance.close(true);
-
-          if (processInBackground === true) {
-            flash.success = 'Ratings are being refreshed in the background.';
-          }
-          else {
-            flash.success = 'Ratings have been refreshed.';
-          }
-          
-          // Check if we should redirect to homepage
-          if (response && response.data && processInBackground === true) {
-            // Short delay to ensure flash message is visible
-            setTimeout(function() {
-              $window.location.href = caseTryNavSvc.getQuepidRootUrl();
-            }, 500);
-          }
-        }, function(response) {
-          $scope.processingPrompt.error = response.data.statusText;
-        });
+      ctrl.hasUnsavedChanges = function () {
+        var bookChanged = ctrl.activeBookId !== ctrl.share.acase.bookId;
+        var syncChanged = ctrl.autoPopulateBookPairs !== (acase.autoPopulateBookPairs || false) ||
+                          ctrl.autoPopulateCaseJudgements !== (acase.autoPopulateCaseJudgements !== false);
+        return bookChanged || syncChanged;
       };
 
       ctrl.ok = function () {
         $scope.processingPrompt.inProgress  = true;
         $scope.processingPrompt.error       = null;
 
-        if (ctrl.updateAssociatedBook){
-          // not handling any errors ;-(
-          caseSvc.associateBook(acase, ctrl.activeBookId);
-          
-          // Auto-refresh ratings from the new book if a book is selected
-          if (ctrl.activeBookId) {
-            var processInBackground = ctrl.share.acase.queriesCount >= 50 ? true: false;
-            bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, ctrl.createMissingQueries, processInBackground)
-            .then(function(response) {
-              $scope.processingPrompt.inProgress = false;
-              $uibModalInstance.close(true);
+        var bookChanged = ctrl.activeBookId !== ctrl.share.acase.bookId;
 
-              if (processInBackground === true) {
-                flash.success = 'Book changed and ratings are being refreshed in the background.';
-              }
-              else {
-                flash.success = 'Book changed and ratings have been refreshed.';
-              }
-              
-              // Check if we should redirect to homepage
-              if (response && response.data && processInBackground === true) {
-                // Short delay to ensure flash message is visible
-                setTimeout(function() {
-                  $window.location.href = caseTryNavSvc.getQuepidRootUrl();
-                }, 500);
-              }
-            }, function(response) {
-              $scope.processingPrompt.error = response.data.statusText;
-            });
-            return; // Exit early since we're handling the modal close in the refresh callback
-          }
-        }
-        if (ctrl.populateBook) {
-          bookSvc.updateQueryDocPairs(ctrl.activeBookId,ctrl.share.acase.caseNo, queriesSvc.queryArray())
-          .then(function() {
+        // Save book association and sync settings in a single request
+        caseSvc.saveBookSettings(acase, ctrl.activeBookId, ctrl.autoPopulateBookPairs, ctrl.autoPopulateCaseJudgements);
+
+        // Refresh ratings if auto-populate is enabled and book changed
+        var shouldRefreshRatings = (ctrl.autoPopulateCaseJudgements && bookChanged && ctrl.activeBookId);
+
+        if (shouldRefreshRatings && ctrl.activeBookId) {
+          var processInBackground = ctrl.share.acase.queriesCount >= 50;
+          bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, false, processInBackground)
+          .then(function(response) {
             $scope.processingPrompt.inProgress = false;
-            $uibModalInstance.close(false);
+            $uibModalInstance.close(true);
 
-            flash.success = 'Book of judgements updated.';
+            if (processInBackground) {
+              flash.success = 'Settings saved. Ratings are being refreshed in the background.';
+            }
+            else {
+              flash.success = 'Settings saved. Ratings have been refreshed.';
+            }
+
+            // Check if we should redirect to homepage
+            if (response && response.data && processInBackground) {
+              setTimeout(function() {
+                var url = caseTryNavSvc.getQuepidRootUrl() + '?notice=' + encodeURIComponent('Settings saved. Ratings are being refreshed in the background.');
+                $window.location.href = url;
+              }, 500);
+            }
           }, function(response) {
-            $scope.processingPrompt.inProgress  = false;
-            $scope.processingPrompt.error       = response.data.statusText;
-
-
+            $scope.processingPrompt.error = response.data.statusText;
           });
+          return;
         }
-        else {
-          $uibModalInstance.close(false);
-        }
+
+        flash.success = 'Settings saved.';
+        $uibModalInstance.close(false);
       };
 
       ctrl.cancel = function () {
@@ -231,14 +166,77 @@ angular.module('QuepidApp')
 
       ctrl.goToTeamsPage = function () {
         $uibModalInstance.dismiss('cancel');
-        $location.path('/teams');
+        var url = caseTryNavSvc.getQuepidRootUrl() + '/teams';
+        window.location.href = url;
       };
       
-      ctrl.createNewBookLink = function() {
-        const teamIds = ctrl.share.acase.teams.map(function(team) {
-          return `&team_ids[]=${team.id}`;
+      ctrl.manualPopulateBook = function() {
+        $scope.processingPrompt.inProgress = true;
+        bookSvc.updateQueryDocPairs(ctrl.activeBookId, ctrl.share.acase.caseNo, queriesSvc.queryArray())
+        .then(function() {
+          $scope.processingPrompt.inProgress = false;
+          flash.success = 'Updating Book with Query Doc Pairs.';
+          $uibModalInstance.close(false);
+        }, function(response) {
+          $scope.processingPrompt.inProgress = false;
+          $scope.processingPrompt.error = response.data.statusText;
         });
-        return `books/new?scorer_id=${ctrl.share.acase.scorerId}${teamIds}&origin_case_id=${ctrl.share.acase.caseNo}`;
+      };
+
+      ctrl.manualRefreshRatings = function() {
+        $scope.processingPrompt.inProgress = true;
+        var processInBackground = ctrl.share.acase.queriesCount >= 50;
+        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, false, processInBackground)
+        .then(function() {
+          $scope.processingPrompt.inProgress = false;
+
+          if (processInBackground) {
+            $uibModalInstance.close(true);
+            setTimeout(function() {
+              var url = caseTryNavSvc.getQuepidRootUrl() + '?notice=' + encodeURIComponent('Case ratings are being refreshed from book in the background.');
+              $window.location.href = url;
+            }, 500);
+            return;
+          }
+
+          flash.success = 'Case ratings refreshed from book.';
+          $uibModalInstance.close(true);
+        }, function(response) {
+          $scope.processingPrompt.inProgress = false;
+          $scope.processingPrompt.error = response.data.statusText;
+        });
+      };
+
+      ctrl.manualSyncQueries = function() {
+        $scope.processingPrompt.inProgress = true;
+        var processInBackground = ctrl.share.acase.queriesCount >= 50;
+        bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, true, processInBackground)
+        .then(function(response) {
+          $scope.processingPrompt.inProgress = false;
+
+          if (processInBackground) {
+            flash.success = 'Missing queries are being synced from book in the background.';
+          }
+          else {
+            flash.success = 'Missing queries synced from book.';
+          }
+          $uibModalInstance.close(true);
+
+          // Check if we should redirect to homepage
+          if (response && response.data && processInBackground) {
+            setTimeout(function() {
+              var url = caseTryNavSvc.getQuepidRootUrl() + '?notice=' + encodeURIComponent('Missing queries are being synced from book in the background.');
+              $window.location.href = url;
+            }, 500);
+          }
+        }, function(response) {
+          $scope.processingPrompt.inProgress = false;
+          $scope.processingPrompt.error = response.data.statusText;
+        });
+      };
+
+      ctrl.createNewBookLink = function() {
+        return `books/new?scorer_id=${ctrl.share.acase.scorerId}&origin_case_id=${ctrl.share.acase.caseNo}`;
       };
 
     }

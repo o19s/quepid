@@ -12,13 +12,13 @@ Changes are coming fast and furious!
 We've completely refactored how Quepid handles external HTTP requests by introducing a shiny new `HttpClientService` that consolidates all the scattered HTTP logic that was previously duplicated across `ProxyController`, `DownloadPage`, and `MapperWizardService`. This isn't just about cleaning up code (though we love that!) - it brings some sweet new capabilities too. The Mapper Wizard now supports custom headers and basic authentication credentials, making it much more flexible when fetching search results from different endpoints. Plus, we've made the proxy controller smarter about preserving content types for HTML responses.
 
 ## 📝 Judgment Explanations
-Judges can now add explanations to their individual judgments! This is a simple but powerful addition that lets evaluators provide context about why they rated a particular result the way they did. This is useful for training your LLM as a Judge.
+Judges can now add explanations to their individual judgements! This is a simple but powerful addition that lets evaluators provide context about why they rated a particular result the way they did. This is useful for training your LLM as a Judge.
 
-## 🔄 Case Evaluation API Integration  
+## 🔄 Case Evaluation API Integration
 We've modernized how case evaluations are triggered by now supporting an case evaluation in response to an API call. This triggers a background job that executes all queries in the case against the search endpoint, collects the results, and calculates scores.
 
 ## 🎯 Smarter Rating Calculations
-The way Quepid averages multiple judgments into final ratings got a major upgrade! We've implemented David Fisher's optimistic/pessimistic logic (you can read all about it in the [official docs](https://quepid-docs.dev.o19s.com/2/quepid/63/how-judgements-are-averaged-into-a-rating-in-a-case)). The system now handles edge cases better, especially when you have just one or two judges rating the same result. No more weird averaging artifacts!
+The way Quepid averages multiple judgements into final ratings got a major upgrade! We've implemented David Fisher's optimistic/pessimistic logic (you can read all about it in the [official docs](https://quepid-docs.dev.o19s.com/2/quepid/63/how-judgements-are-averaged-into-a-rating-in-a-case)). The system now handles edge cases better, especially when you have just one or two judges rating the same result. No more weird averaging artifacts!
 
 ## 📚 Customizable Judgement Guidelines for a Book
 Books now support custom judgement guidelines! While we have always had a generic set of guidelines to help a judge in rating, many teams want to provide their own specific flavour.  The guidelines are written in markdown formatting too, so you can make them as detailed and pretty as you want.
@@ -29,7 +29,7 @@ Updated how Custom Search API work to ensure that row limits properly apply to c
 
 ## 8.4.0 -- 2026-01-07
 
-Two big things! And three nice things! 
+Two big things! And three nice things!
 
 1) We introduced a Search API Mapper Wizard that simplifies creating your Javascript "data mapping" functions to convert custom search api responses (including HTML and JSON formats) to those that Quepid expects.  It even has a LLM assist for generating the code if you want.  Thanks @mikehendo for testing this feature.
 
@@ -37,7 +37,7 @@ Two big things! And three nice things!
 
 And the nice things...
 
-1) We revamped how Books are configured so that they are simpler and easier to set up.  No need to pick a "selection strategy" for how many judges you wil have or think about what scale to use in rating anymore.  Plus we cleaned up some data flows between making judgements in a book 
+1) We revamped how Books are configured so that they are simpler and easier to set up.  No need to pick a "selection strategy" for how many judges you wil have or think about what scale to use in rating anymore.  Plus we cleaned up some data flows between making judgements in a book
 
 2) We introduced rate limiting as an attribute of a Search Endpoint.  THis ensures that if you need to constrain how fast you are sending the queires you can, to deal with AP rate limits, or just to reduce load on your search engine if you are testing in a live environment! See a [video walkthrough](https://share.descript.com/view/G0ozoslB2xu).
 
@@ -80,7 +80,7 @@ There were a number of 8.3.x releases as we worked through some debugging.   8.3
 
 ### Features
 
-* Bulk Judging UI added for Books.  Want to quickly judge lots of documents for a set of queries in context of each other?  Bulk Judging UI is here.   You can pick a specific depth, say only results in the top 3.  Or you can search for specific query patterns.  Results are presented in random order to counteract position bias in judging.   You can also provide an explanation. https://github.com/o19s/quepid/pull/1490 by @epugh, thanks Joelle for inspiring this to finally happen. 
+* Bulk Judging UI added for Books.  Want to quickly judge lots of documents for a set of queries in context of each other?  Bulk Judging UI is here.   You can pick a specific depth, say only results in the top 3.  Or you can search for specific query patterns.  Results are presented in random order to counteract position bias in judging.   You can also provide an explanation. https://github.com/o19s/quepid/pull/1490 by @epugh, thanks Joelle for inspiring this to finally happen.
 
 * Added ability to Archive a book, similar to how you can Archive a case.  This lets you hide books that you aren't currently using. https://github.com/o19s/quepid/pull/1487
 
@@ -163,16 +163,16 @@ Lastly, nicer docs on deploying Quepid locally: https://quepid-docs.dev.o19s.com
 
 ## 8.1.0 -- 2025-02-28
 
-We've had lots of folks trying new features of Quepid, and that has led to some nice polish.  
+We've had lots of folks trying new features of Quepid, and that has led to some nice polish.
 This is the release for people who don't want the bleeding edge version ;-).
 
 ### What's Changed
 
-* Special characters like `$` and `@` in Basic Auth passwords are now supported.  Thanks to @atarora for opening https://github.com/o19s/quepid/issues/1245 and the debugging work from @david-fisher.  
-* UX Work.  
+* Special characters like `$` and `@` in Basic Auth passwords are now supported.  Thanks to @atarora for opening https://github.com/o19s/quepid/issues/1245 and the debugging work from @david-fisher.
+* UX Work.
  * We have added filtering and pagination to all of the various screens like Seach Endpoints, Communal Scorers, Users, Judgements etc.   This makes these pages load MUCH faster and you can search for the data you need.
  * Consistency across web pages.  Outside of the core AngularJS app, we had a mish mash of UI's.   Now they all have the same style header, footer, and UX treatment using card layouts.
-* Fixed the nDCG calculation to look at ALL ratings, not just the top k when doing calculation.  
+* Fixed the nDCG calculation to look at ALL ratings, not just the top k when doing calculation.
 * Fixed a goof where the new ERR scorer wasn't added as a communal scorer for everyone.
 * LLM as a Judge is better.  Cleaned up the refine UI for prompt development.
 * Fix a bug where the Judge couldn't be launched from the UI.
@@ -180,7 +180,7 @@ This is the release for people who don't want the bleeding edge version ;-).
 
 ## 8.0.1 -- 2025-02-19
 
-Whelp, that didn't take long!  
+Whelp, that didn't take long!
 
 We broke support for running Quepid on non standard ports like :3000.  https://github.com/o19s/quepid/pull/1229 by @epugh fixes this.
 
@@ -209,7 +209,7 @@ It's Valentine's Day 💘, so it seems appropriate to release the next major ver
 
 **[Expected Reciprocal Rank](https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=7e3cf6492128f915112ca01dcb77c766129e65cb) (ERR)** is now available as a community scorer. This scorer is appropriate for multi-valued judgment ranges when evaluating search journeys like known item search.
 
-**New [User Manual](https://quepid-docs.dev.o19s.com/2/quepid)**.  We've embraced the [Diátaxis](https://diataxis.fr/) framework for writing documentation, and consolidated into a single platform the mix of documentation that has been published in various locations.  
+**New [User Manual](https://quepid-docs.dev.o19s.com/2/quepid)**.  We've embraced the [Diátaxis](https://diataxis.fr/) framework for writing documentation, and consolidated into a single platform the mix of documentation that has been published in various locations.
 
 ### Bugs Addressed
 If you don't have P@10 defined, the migrations blow up. Thanks @frutik for finding the bug. https://github.com/o19s/quepid/pull/1093
@@ -220,8 +220,8 @@ Emoji filled queries like `kfc 🍟➕🍔➕🍗` now can be stored in Quepid! 
 
 ### Other Changes
 
-* Simpler Deployment. We've updated to Rails 8, and no longer need Redis.  We're back to just a server and a MySQL Database ;-).  
-* Nicer import book page. Gave it some UX love. Kudos to @wrigleyDan 
+* Simpler Deployment. We've updated to Rails 8, and no longer need Redis.  We're back to just a server and a MySQL Database ;-).
+* Nicer import book page. Gave it some UX love. Kudos to @wrigleyDan
 * We use the built into Rails health check end point at /healthcheck. Please check your setup.
 * Change tracking of scores to record which scorer produced the score. This is a **breaking change**, as previous versions don't know what scorer generated a score. For historical scores, the current case scorer is assumed to be the only scorer used on that case.  Soon you will be able to run multiple scores and pick one as your "North Star" metric.
 * We thought having really fine grained permissions would be important to Quepid, but what we've seen is that it doesn't matter. Indeed, if anything, the permissions structure is confusing to users. Additionally, we've mostly cared "are you an Admin?" to decide if certain things can be done or not. So it's gone.
@@ -289,8 +289,8 @@ We've been hard at work on Quepid8, however we have two items that demand a poin
 
 ## 7.18.0 - 2024-10-04
 
-Wow!  It's been three months since the last release of Quepid, so it's about time.   
-This release brings Quepid up to Rails 7.2 standard, which gets us ready for some of the interesting things in Rails 8, specifically simplifying what you need to run Quepid.  
+Wow!  It's been three months since the last release of Quepid, so it's about time.
+This release brings Quepid up to Rails 7.2 standard, which gets us ready for some of the interesting things in Rails 8, specifically simplifying what you need to run Quepid.
 There is a good path to removing the dependency on Redis, and maybe even MySQL for small setups!
 
 ### Improvements
@@ -319,7 +319,7 @@ There is a good path to removing the dependency on Redis, and maybe even MySQL f
 
 * Improve the bulk query API to support 1000's of queries.  https://github.com/o19s/quepid/pull/1037 by @epugh.
 
-* Small tweaks to the layout of the Search Endpoints to move the Destroy action away from the edit action.  Thanks @okkeklein for reporting https://github.com/o19s/quepid/issues/900. 
+* Small tweaks to the layout of the Search Endpoints to move the Destroy action away from the edit action.  Thanks @okkeklein for reporting https://github.com/o19s/quepid/issues/900.
 
 ### Bugs
 
@@ -328,19 +328,19 @@ There is a good path to removing the dependency on Redis, and maybe even MySQL f
 ## 7.17.0 - 2024-06-14
 
 This is a big one!   We have broken the tyranny of the web request/response lifecycle by embracing some powerful Rails technologies:
-  
- * ActionCable: We now support two way communication from the backend server to your front end browser via Web Sockets.  This lets us notify not just the person who starts a long running process of updates, but also any OTHER user who is interested in a specific topic.   For example, if someone uploads a Book with many thousands of judgements, then everyone who is part of that team can see the progress for them selves.   
- 
- * ActiveJob: This let's us run background jobs.  Historically we only used it for tracking of events (like you visited a Case), however now we are using it for processing large data sets in the background.  
- 
+
+ * ActionCable: We now support two way communication from the backend server to your front end browser via Web Sockets.  This lets us notify not just the person who starts a long running process of updates, but also any OTHER user who is interested in a specific topic.   For example, if someone uploads a Book with many thousands of judgements, then everyone who is part of that team can see the progress for them selves.
+
+ * ActiveJob: This let's us run background jobs.  Historically we only used it for tracking of events (like you visited a Case), however now we are using it for processing large data sets in the background.
+
  * ActiveStorage: We need to better handle LARGE datasets in Quepid.  ActiveStorage lets us build massive export files and store them in the database as a binary until you decide to download the data.  Likewise, importing large data files that take time to process is now supported by being able to store them in Quepid.
 
- * Hotwire: HTML over the Wire lets us render HTML on the backend using our familiar Rails MVC, but magically stream the updates to the front end.  This lets us add interactivity without requiring us to build out a Single Page Javascript application.  
- 
+ * Hotwire: HTML over the Wire lets us render HTML on the backend using our familiar Rails MVC, but magically stream the updates to the front end.  This lets us add interactivity without requiring us to build out a Single Page Javascript application.
+
  These changes are going to enable a future for Quepid that let's it scale up signficantly and be a richer environment for measuring relevance and working with search!
- 
+
  Okay, now on to our more detailed list of changes:
- 
+
 ### Features
 
 * You can now run your Query Evaluations OUTSIDE of Quepid, and store the scores INSIDE Quepid.  This gives you a place to share this information with folks in your team.   See the example Python scripting here: https://github.com/o19s/quepid/tree/main/docs/examples/external_eval.  We also enhanced the API documentation.  https://github.com/o19s/quepid/pull/1034 by @epugh.
@@ -385,7 +385,7 @@ This is a big one!   We have broken the tyranny of the web request/response life
 
 ### Improvements
 
-* One less query to determine what a user has access to via being an owner or a member of a team while ensuring no duplicate cases/books show up.  https://github.com/o19s/quepid/pull/982 by @epugh with input from @reid-rigo. 
+* One less query to determine what a user has access to via being an owner or a member of a team while ensuring no duplicate cases/books show up.  https://github.com/o19s/quepid/pull/982 by @epugh with input from @reid-rigo.
 
 * Remove extranous faraday logs when running tests.  https://github.com/o19s/quepid/pull/983 by @epugh with input form @reid-rigo fixes https://github.com/o19s/quepid/issues/964.
 
@@ -418,7 +418,7 @@ This is a big one!   We have broken the tyranny of the web request/response life
 
 * Move to using Thor (an existing CLI tool) for loading all our sample data files, and less custom Rake code.  https://github.com/o19s/quepid/pull/966 by @epugh.
 
-* Better UX when working with custom search API's and the mapper code.  https://github.com/o19s/quepid/pull/965 and https://github.com/o19s/quepid/pull/963 by @epugh, fixing https://github.com/o19s/quepid/issues/959, https://github.com/o19s/quepid/issues/960, https://github.com/o19s/quepid/issues/961 by @wrigleyDan and https://github.com/o19s/quepid/issues/950 by @ErikHatcher. 
+* Better UX when working with custom search API's and the mapper code.  https://github.com/o19s/quepid/pull/965 and https://github.com/o19s/quepid/pull/963 by @epugh, fixing https://github.com/o19s/quepid/issues/959, https://github.com/o19s/quepid/issues/960, https://github.com/o19s/quepid/issues/961 by @wrigleyDan and https://github.com/o19s/quepid/issues/950 by @ErikHatcher.
 
 * Proxied Search API requests should follow Redirects.  https://github.com/o19s/quepid/pull/962 by @epugh fixes https://github.com/o19s/quepid/issues/958 by @wrigleyDan.
 
@@ -449,7 +449,7 @@ This is a big one!   We have broken the tyranny of the web request/response life
 
 * SCALING SCALING SCALING.   Now possible, though painful still, to run 5000 queries by moving lots of activities to background processing.   Thanks to my colleagues on the Cville Slack communities #ruby channel for lots of advice and help.  https://github.com/o19s/quepid/pull/916 by @epugh.
 
-* Quepid truncates the document fields in the core display, either via using highlighting to pluck out a section, or just snippeting to 200 characters.  However some days you just want to see the entire field!  Now you can control this in your field specifciation by prepending the field name with `unabridged:` tag.   https://github.com/o19s/quepid/pull/946 by @epugh.  
+* Quepid truncates the document fields in the core display, either via using highlighting to pluck out a section, or just snippeting to 200 characters.  However some days you just want to see the entire field!  Now you can control this in your field specifciation by prepending the field name with `unabridged:` tag.   https://github.com/o19s/quepid/pull/946 by @epugh.
 
 * Need to communicate with your users about a new Scorer or upcoming downtime?  You can now post Annoucements to your users.  https://github.com/o19s/quepid/pull/911 by @mkr and https://github.com/o19s/quepid/pull/941 by @epugh fixes https://github.com/o19s/quepid/issues/848 for @flaxsearch.
 
@@ -490,7 +490,7 @@ A number of changes all wrapped up in one large PR https://github.com/o19s/quepi
 
 * Provide an option to allow queries that exist on a Book to be created in the Case if they are missing.   The default behavior is to NOT create queries in a Case from the Book.  Thanks to @jvia for this suggestion.  https://github.com/o19s/quepid/issues/871.
 
-* Band-aid the awkwardness that Cases have Queries/Ratings while Books have QueryDocPairs + Judgements, and that there are attributes on a Query like `information need`, `notes`, or `options` that don't exist on a QueryDocPair.   So now we preserve them, which facilitates round tripping better.   Upload a Book?  Upload a Case?  It doesn't matter ;-)  Long term we need to merge these two data structures...   
+* Band-aid the awkwardness that Cases have Queries/Ratings while Books have QueryDocPairs + Judgements, and that there are attributes on a Query like `information need`, `notes`, or `options` that don't exist on a QueryDocPair.   So now we preserve them, which facilitates round tripping better.   Upload a Book?  Upload a Case?  It doesn't matter ;-)  Long term we need to merge these two data structures...
 
 * When Books were first added to Quepid, they didn't follow the same permissions/sharing structure that Scores and Cases did.  Now you can share a Book with multiple Teams!  Fixes https://github.com/o19s/quepid/issues/907
 
@@ -533,7 +533,7 @@ A flurry of changes based on feedback from the community.  This is basically a "
 
 * Respect the proxy setting for a search end point in doing a snapshot compare lookup, and in linking to individual docs.  https://github.com/o19s/quepid/pull/893 by @epugh.  Thanks @david-fisher for finding this.
 
-* We now support custom headers for search apis.  Thanks @dacox for the fix in https://github.com/o19s/splainer-search/pull/138.  
+* We now support custom headers for search apis.  Thanks @dacox for the fix in https://github.com/o19s/splainer-search/pull/138.
 
 * Made more robust the adding of queries for a static CSV case.  https://github.com/o19s/quepid/pull/889 by @epugh.  Thanks to @tiagoshin for identifying the issue.
 
@@ -615,7 +615,7 @@ https://github.com/o19s/quepid/pull/819 lets you remap anonymous ratings and jud
 
 ## 7.7.0 - 2023-08-31
 
-We finally have a brand new homepage!  Quepid started as a tool for relevancy engineers only, but today we have human judges using Quepid to rate documents, Search Managers who are keeping an eye on the offline metrics, and of course in more complex setups, networking types who configure the connection between Quepid and the Search Engine.   In the past, regardless of who you were, we dropped you right into a Case.  If you had never created one before, well, you got shoved into the Case creation wizard, whether you wanted it or not.   It made for a unpleasant first experience for anyone other than the hard core relevancy engineer.   
+We finally have a brand new homepage!  Quepid started as a tool for relevancy engineers only, but today we have human judges using Quepid to rate documents, Search Managers who are keeping an eye on the offline metrics, and of course in more complex setups, networking types who configure the connection between Quepid and the Search Engine.   In the past, regardless of who you were, we dropped you right into a Case.  If you had never created one before, well, you got shoved into the Case creation wizard, whether you wanted it or not.   It made for a unpleasant first experience for anyone other than the hard core relevancy engineer.
 
 The new dashboard is an attempt to change that UX.  It's just a first cut, and honestly, it probably doesn't quite make anyone perfectly happy.   I'm hoping that we can get a lot of good feedback and learn from it.   I could imagine in the future that based on what you do, we surface information you care about.  For example, a network engineer would want to know that the Quepid can talk to each Search Engine.   A Search Manager would be more interested in insights and summary progress information.   Human judges want to know "what is my next task to do".   So please share feedback!
 
@@ -639,7 +639,7 @@ The new dashboard is an attempt to change that UX.  It's just a first cut, and h
 
 * Drop a link in Slack to team 3, and you see details about case 3;-).  https://github.com/o19s/quepid/issues/733 by @epugh fixed by https://github.com/o19s/quepid/pull/794 by @epugh to only do unfurling for cases.
 
-* Ace code editor insists on loading two javascript files from specific paths in Quepid.  Despite best effort, couldn't change this.  So https://github.com/o19s/quepid/pull/793 just mounts those javascript where Ace wants it to shut up some very loud error messages in the browser console.  If you can't beat'em, join'em.  
+* Ace code editor insists on loading two javascript files from specific paths in Quepid.  Despite best effort, couldn't change this.  So https://github.com/o19s/quepid/pull/793 just mounts those javascript where Ace wants it to shut up some very loud error messages in the browser console.  If you can't beat'em, join'em.
 
 * When judging ratings using the Book of Judgements, you could sometimes get a situation where you create a judgement, and then tried to create a new one, hitting a constraint.  https://github.com/o19s/quepid/pull/809 by @epugh makes this more robust.
 
@@ -658,9 +658,9 @@ Big overhaul on the human rating side of things.  We now roundtrip ratings that 
 
 Additionally, to encourage your human judges, a progress screen has been added every 20 judgements showing progress and a leaderboard.
 
-* https://github.com/o19s/quepid/pull/778 by @epugh introduces some "fun" into the rating process ;-).  
+* https://github.com/o19s/quepid/pull/778 by @epugh introduces some "fun" into the rating process ;-).
 
-* https://github.com/o19s/quepid/pull/766 introduced the synthesizing of a Book, and fixes https://github.com/o19s/quepid/issues/765, track who rates in the main quepid ui, https://github.com/o19s/quepid/issues/763, link from list of books in judgements to the book itself, and https://github.com/o19s/quepid/issues/761, Combining books loses judgments but still produces scores.  
+* https://github.com/o19s/quepid/pull/766 introduced the synthesizing of a Book, and fixes https://github.com/o19s/quepid/issues/765, track who rates in the main quepid ui, https://github.com/o19s/quepid/issues/763, link from list of books in judgements to the book itself, and https://github.com/o19s/quepid/issues/761, Combining books loses judgements but still produces scores.
 
 * https://github.com/o19s/quepid/pull/760 changes Quepid to use floats for ratings and judgements, which opens the door to implicit judgements.
 
@@ -683,7 +683,7 @@ In support of this, we added new API's for judgements and ratings in https://git
 
 ### Bugs
 
-* Exporting Ratings in CSV format was returning the same rating for every single rater, regardless of what they did!  Fixed in by @epugh with special help from @grahamwren.   I randomly sat next to him on plane flight home and we paired on it ;-).  
+* Exporting Ratings in CSV format was returning the same rating for every single rater, regardless of what they did!  Fixed in by @epugh with special help from @grahamwren.   I randomly sat next to him on plane flight home and we paired on it ;-).
 
 * Looking up the wrong info need for a Query Doc Pair!  Fixed in https://github.com/o19s/quepid/pull/755 by @epugh.
 
@@ -725,7 +725,7 @@ Lots of small things from working with Quepid using templates with OpenSearch.  
 
 ## 7.3.1 - 2023-05-26
 
-* Fixed some additional API paths for use with a nested Quepid context.  https://github.com/o19s/quepid/pull/736 by @epugh.  Follow up to https://github.com/o19s/quepid/pull/719.  
+* Fixed some additional API paths for use with a nested Quepid context.  https://github.com/o19s/quepid/pull/736 by @epugh.  Follow up to https://github.com/o19s/quepid/pull/719.
 
 ## 7.3.0 - 2023-05-23
 
@@ -735,9 +735,9 @@ Lots of small things from working with Quepid using templates with OpenSearch.  
 
 ### Bugs
 
-* OpenSearch and Elasticsearch have a `_source` field that is nested JSON.  Turns out we don't support stringifying a JSON object in detailed exports or Snapshots.  https://github.com/o19s/quepid/pull/732 by @depahelix2021 fixes https://github.com/o19s/quepid/issues/730 by @epugh.  
+* OpenSearch and Elasticsearch have a `_source` field that is nested JSON.  Turns out we don't support stringifying a JSON object in detailed exports or Snapshots.  https://github.com/o19s/quepid/pull/732 by @depahelix2021 fixes https://github.com/o19s/quepid/issues/730 by @epugh.
 
-* With the logic for matching Quepid TLS to the search engine TLS happening only via frontend logic (introduced in https://github.com/o19s/quepid/pull/719), we found the User Experience really rough.  https://github.com/o19s/quepid/pull/731 by @epugh reworks the UX to be clear about when you need to reload your Quepid.  
+* With the logic for matching Quepid TLS to the search engine TLS happening only via frontend logic (introduced in https://github.com/o19s/quepid/pull/719), we found the User Experience really rough.  https://github.com/o19s/quepid/pull/731 by @epugh reworks the UX to be clear about when you need to reload your Quepid.
 
 * We ship Jupyterlite for data manipulation, but maybe you don't have public network access? https://github.com/o19s/quepid/pull/728 by @mkr fixes https://github.com/o19s/quepid/issues/721 by @epugh.
 
@@ -745,7 +745,7 @@ Lots of small things from working with Quepid using templates with OpenSearch.  
 
 ## 7.2.1 - 2023-05-12
 
-Well, that didn't take long...   Wanted to use the "Import Snapshot" function, and discovered that the "Export Snapshot" function was busted.   
+Well, that didn't take long...   Wanted to use the "Import Snapshot" function, and discovered that the "Export Snapshot" function was busted.
 
 ### Features
 
@@ -759,7 +759,7 @@ Well, that didn't take long...   Wanted to use the "Import Snapshot" function, a
 
 ### Features
 
-* Interested in Rank Biased Overlap as a more powerful version of the venerable Jaccard metric?   We have it now as an example Jupter notebook.   Thanks to Tito Sierra at the 2023 US Haystack for introducing me to this metric.  Thanks to @mkr for creating the draft notebook.   
+* Interested in Rank Biased Overlap as a more powerful version of the venerable Jaccard metric?   We have it now as an example Jupter notebook.   Thanks to Tito Sierra at the 2023 US Haystack for introducing me to this metric.  Thanks to @mkr for creating the draft notebook.
 
 * Provide link to Team from Book of Judgements.  https://github.com/o19s/quepid/pull/718 by @epugh.
 
@@ -791,7 +791,7 @@ Some bigger organizations deploying Quepid want to nest it under another domain,
 
 * Generated link to individual OpenSearch (and Elasticsearch) document changed, and didn't render properly.  https://github.com/o19s/splainer-search/pull/117 by @mkr fixes https://github.com/o19s/quepid/issues/701.
 
-* Swapping from one Scorer to another Scorer would lose the labels in the popup window.  https://github.com/o19s/quepid/pull/717 by @epugh fixes https://github.com/o19s/quepid/issues/704 and https://github.com/o19s/quepid/issues/696 by @epugh.  It may also fix https://github.com/o19s/quepid/issues/613 by @atarora ;-).   
+* Swapping from one Scorer to another Scorer would lose the labels in the popup window.  https://github.com/o19s/quepid/pull/717 by @epugh fixes https://github.com/o19s/quepid/issues/704 and https://github.com/o19s/quepid/issues/696 by @epugh.  It may also fix https://github.com/o19s/quepid/issues/613 by @atarora ;-).
 
 
 
@@ -802,8 +802,8 @@ Are you ready to launch a [Human Rating Program](https://haystackconf.com/2019/h
 Since the dawn of Quepid, we've suffered from an _ahem_ sub optimal rating interface for gathering human judgements.
 
 The rating interface failed most best practices for human rating, including suffering from position bias by listing documents in the order the search engine returned them, only supporting a single rating per query/doc pair, requiring lots of mouse movement and clicking.
-All that, and the UI is a combination of features required for a Relevancy Engineer with those of a Human Judge.  
-It's enough to make you weep.  
+All that, and the UI is a combination of features required for a Relevancy Engineer with those of a Human Judge.
+It's enough to make you weep.
 Just to make life harder, the rating interface requires a live connection to your search engine, which often required additional technical hoops to be jumped by your decidedly untechnical subject matter experts.
 
 However that is no longer the case!
@@ -819,7 +819,7 @@ This rating interface features:
  * Supports thumbnails and hero images in the card.
  * There are Scoring Guidelines for your Raters to understand what the scoring scale means.
 
- To make the life of a Relevancy Engineer better, you can now import your queries and ratings from a _Book of Judgments_.
+ To make the life of a Relevancy Engineer better, you can now import your queries and ratings from a _Book of Judgements_.
  Indeed you can roundtrip from a Case with query/doc pairs to a Book of judgements, get them rated, and then import then back into your Case.
 
 This work was inspired by the great work that the folks at the Wikimedia Foundation did on Discernatron, their human rating tool.
@@ -857,7 +857,7 @@ Below are details on some selected PR's.
 
 ### Bugs
 
-* Command line tool `thor import:ratings` didn't handle a csv file with a header row.  Now filters off the header row.  Thanks @wrigleyDan for spotting this problem.  https://github.com/o19s/quepid/issues/581 by @epugh and fixed in https://github.com/o19s/quepid/pull/583.  
+* Command line tool `thor import:ratings` didn't handle a csv file with a header row.  Now filters off the header row.  Thanks @wrigleyDan for spotting this problem.  https://github.com/o19s/quepid/issues/581 by @epugh and fixed in https://github.com/o19s/quepid/pull/583.
 
 ## 6.13.0 - 2022-10-28
 
@@ -893,7 +893,7 @@ There is so much to celebrate in this release, however I have to call out adding
 
 ### Bugs
 
-* Number of results to show is not preserved when cloning a case.  https://github.com/o19s/quepid/pull/578 by @epugh fixes https://github.com/o19s/quepid/issues/565 submitted by @MassimilianoUngheretti-TomTom.  
+* Number of results to show is not preserved when cloning a case.  https://github.com/o19s/quepid/pull/578 by @epugh fixes https://github.com/o19s/quepid/issues/565 submitted by @MassimilianoUngheretti-TomTom.
 
 * Occasionally the Case snapshot isn't successful and there is no snapshot status information displayed to the user.  https://github.com/o19s/quepid/pull/569 by @atarora fixes https://github.com/o19s/quepid/issues/568, also by @atarora.
 
@@ -917,7 +917,7 @@ There is so much to celebrate in this release, however I have to call out adding
 
 * Search box (to find queries).  https://github.com/o19s/quepid/pull/506 and https://github.com/o19s/quepid/pull/512 by @epugh fixes https://github.com/o19s/quepid/issues/493 by  @theaaronposc.  Thanks Aaron!
 
-* You can now generate a new Case through the `thor` command line tools, useful when setting up lots of cases or as part of a script.   https://github.com/o19s/quepid/pull/533 by @epugh.  
+* You can now generate a new Case through the `thor` command line tools, useful when setting up lots of cases or as part of a script.   https://github.com/o19s/quepid/pull/533 by @epugh.
 
 * Surface how many unrated documents you have for a query as an alert bubble.  https://github.com/o19s/quepid/pull/532 by @epugh.
 
@@ -988,7 +988,7 @@ There is so much to celebrate in this release, however I have to call out adding
 
 * Noticed the case level graph isn't useful?  PR https://github.com/o19s/quepid/pull/491 by @worleydl, Save scores less often, fixes stretching of graph, fixes this.
 
-* @thePanz opened a ticket a year ago (https://github.com/o19s/quepid/issues/330) about ratings getting progressively slower in the UI, and a huge amount of updates to the backend.  Thanks to @worleydl and https://github.com/o19s/quepid/pull/490 this _should_ be fixed.   
+* @thePanz opened a ticket a year ago (https://github.com/o19s/quepid/issues/330) about ratings getting progressively slower in the UI, and a huge amount of updates to the backend.  Thanks to @worleydl and https://github.com/o19s/quepid/pull/490 this _should_ be fixed.
 
 
 
@@ -1078,9 +1078,9 @@ introduced into 6.9.0 based on what we've learned in the real world.
 
 ### Features
 
-* Elasticsearch fields computed using script query now work!  Back in February @CGamesPlay contributed a PR (https://github.com/o19s/splainer-search/pull/90) to `splainer-search` to support this, and now it automagically works in Quepid! Thanks @DmitryKey for opening https://github.com/o19s/quepid/issues/327 and supporting this feature.  
+* Elasticsearch fields computed using script query now work!  Back in February @CGamesPlay contributed a PR (https://github.com/o19s/splainer-search/pull/90) to `splainer-search` to support this, and now it automagically works in Quepid! Thanks @DmitryKey for opening https://github.com/o19s/quepid/issues/327 and supporting this feature.
 
-* Elasticsearch templates can now be used in Quepid!  https://github.com/o19s/quepid/pull/400 by @epugh exposes the underlying `splainer-search` functionality in Quepid. Thanks @danielibars for opening https://github.com/o19s/quepid/issues/274 and supporting this feature.  
+* Elasticsearch templates can now be used in Quepid!  https://github.com/o19s/quepid/pull/400 by @epugh exposes the underlying `splainer-search` functionality in Quepid. Thanks @danielibars for opening https://github.com/o19s/quepid/issues/274 and supporting this feature.
 
 * Curious what parameters are being used by Solr to construct the query?  We're now adding a  `echoParams=all` to queries and surfacing them in the _Explain  Query_ modal at the query level in Quepid.  Currently a  Solr only feature.  https://github.com/o19s/quepid/pull/397 by @epugh with inspiration from @mkr.
 
@@ -1110,7 +1110,7 @@ introduced into 6.9.0 based on what we've learned in the real world.
 
 * The nav bar link for Scorers is labeled "Custom Scorers", and takes you to an page called `/advanced`.   Both of the names are rather offputting.   Creating Scorers is a normal common thing to do in Quepid, so lets label it Scorers.  https://github.com/o19s/quepid/pull/392 by @epugh fixes https://github.com/o19s/quepid/issues/351.
 
-* We had, as someone put it "dinosaur" age CSS tags for mozilla and webkit browsers that triggered lots of browser warnings in the console.  https://github.com/o19s/quepid/pull/380 by @epugh cleaned up many of them.   It has also prompted some thinking about migrating to Bootstrap 5 for the non core pages.  If anyone has some CSS skills, please contact @epugh, to help refine the header menu in Bootstrap 5 CSS.  
+* We had, as someone put it "dinosaur" age CSS tags for mozilla and webkit browsers that triggered lots of browser warnings in the console.  https://github.com/o19s/quepid/pull/380 by @epugh cleaned up many of them.   It has also prompted some thinking about migrating to Bootstrap 5 for the non core pages.  If anyone has some CSS skills, please contact @epugh, to help refine the header menu in Bootstrap 5 CSS.
 
 ### Bugs
 
@@ -1214,7 +1214,7 @@ introduced into 6.9.0 based on what we've learned in the real world.
 
 ![favicon](https://raw.githubusercontent.com/o19s/quepid/main/app/assets/images/favicon.ico)
 
-I can sum up this release of Quepid as either the _Hey friend, come join me in improving search_ release or the _so much technical debt has been paid down_ release.   
+I can sum up this release of Quepid as either the _Hey friend, come join me in improving search_ release or the _so much technical debt has been paid down_ release.
 
 For those of you upgrading your Docker based install, there are two new ENV variables you need to add to your `docker-compose.yml` file:
 
@@ -1451,7 +1451,7 @@ Thanks to some feedback from the community, we figured out that the SQL script f
 migrating data from the DefaultScorer table to the Scorers table (and being tagged
 as `communal`) didn't run reliably.  We've pulled it out as `db/release_6_2_0_merge_default_scorer_into_scorer.sql` for folks to look at.
 
-* https://github.com/o19s/quepid/issues/157 identified the issue and fixed by @worleydl.  
+* https://github.com/o19s/quepid/issues/157 identified the issue and fixed by @worleydl.
 * Commits a1fc942d32e3d524836492f745735ce4ec4972ff and 029dd0cafe8caa492095c9483617b623a6a4e437 and 1a3c997f59b144a1cbffa59a04c67cb3e051b32d cover the migration fixes.
 
 ## 6.2.0 - 2020-06-11
@@ -1463,7 +1463,7 @@ The burgeoning suite of open source tools for relevancy all require judgement li
 Ease of development has long been an issue with Quepid.  In this release we've worked on developer happiness by auditing all of the dependencies we include.  We're removed quite a few Ruby gems and Node packages that weren't used, and upgraded the rest (replacing PhantomJS with Puppeteer for headless testing).  `yarn.lock` dropped from 6706 lines to 1525 and `Gemfile.lock` from 448 to 330!  This allowed us to finally move to ECMAScript 6 and Node version 10.  Lastly we have cut the production Quepid Docker image from almost 3 GB down to 2.3 GB.
 
 ### Upgrade Notes
-Follow the steps outlined at https://github.com/o19s/quepid/wiki/Installation-Guide#updating-quepid.   
+Follow the steps outlined at https://github.com/o19s/quepid/wiki/Installation-Guide#updating-quepid.
 
 You will need to run some database migrations to update the database and insert the new classical scorers (NDCG, AP, etc).
 

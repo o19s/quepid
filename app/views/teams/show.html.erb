@@ -1,0 +1,218 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1>Team: <%= @team.name %></h1>
+  <div class="text-end">
+    <small class="text-muted">Members: <strong><%= @members.count %></strong></small>
+    &nbsp;&nbsp;
+    <small class="text-muted">Cases: <strong><%= @cases_count %></strong></small>
+    &nbsp;&nbsp;
+    <small class="text-muted">Books: <strong><%= @books_count %></strong></small>
+    &nbsp;&nbsp;
+    <small class="text-muted">Search Endpoints: <strong><%= @search_endpoints_count %></strong></small>
+    &nbsp;&nbsp;
+    <small class="text-muted">Scorers: <strong><%= @scorers_count %></strong></small>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Add Team Member</h5>
+        <%= form_with url: members_team_path(@team), method: :post, local: true do %>
+          <div class="mb-2 position-relative" 
+               data-controller="team-member-autocomplete" 
+               data-team-member-autocomplete-url-value="<%= suggest_members_team_path(@team) %>"
+               data-action="click@window->team-member-autocomplete#clickOutside">
+            <div class="position-relative">
+              <%= text_field_tag :email, nil, 
+                  class: 'form-control form-control-sm', 
+                  placeholder: 'User email address', 
+                  autocomplete: 'off',
+                  data: { 
+                    team_member_autocomplete_target: 'input',
+                    action: 'input->team-member-autocomplete#search'
+                  } %>
+              <span data-team-member-autocomplete-target="spinner" class="autocomplete-spinner" style="display: none;">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              </span>
+            </div>
+            <div data-team-member-autocomplete-target="suggestions" class="autocomplete-suggestions" style="display: none;"></div>
+          </div>
+          <div>
+            <%= submit_tag 'Add user', class: 'btn btn-success btn-sm' %>
+          </div>
+        <% end %>
+        <p class="text-muted mt-2 small">Start typing a name or email address to add an existing user to this team.</p>
+        
+        <style>
+          .autocomplete-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ced4da;
+            border-top: none;
+            border-radius: 0 0 0.25rem 0.25rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          
+          .autocomplete-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #f0f0f0;
+          }
+          
+          .autocomplete-item:last-child {
+            border-bottom: none;
+          }
+          
+          .autocomplete-item:hover,
+          .autocomplete-item.selected {
+            background-color: #f8f9fa;
+          }
+          
+          .autocomplete-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 3px;
+            flex-shrink: 0;
+          }
+          
+          .autocomplete-details {
+            flex: 1;
+            min-width: 0;
+          }
+          
+          .autocomplete-name {
+            font-weight: 500;
+            color: #212529;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          
+          .autocomplete-email {
+            font-size: 0.85em;
+            color: #6c757d;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          
+          .autocomplete-spinner {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            transition: opacity 0.2s ease-in-out;
+          }
+        </style>
+        <hr>
+        
+        <%= link_to new_team_ai_judge_path(@team), class: 'btn btn-primary btn-sm w-100' do %>
+          <i class="bi bi-robot"></i> Create AI Judge
+        <% end %>
+      </div>
+    </div>
+    
+    <div class="card mt-3">
+      <div class="card-body">
+        <h5 class="card-title">Rename Team</h5>
+        <%= form_with model: @team, url: rename_team_path(@team), method: :post, local: true do |f| %>
+          <div class="mb-2">
+            <%= f.text_field :name, class: 'form-control form-control-sm', placeholder: 'New team name' %>
+          </div>
+          <div>
+            <%= f.submit 'Rename', class: 'btn btn-primary btn-sm' %>
+          </div>
+        <% end %>
+        <p class="text-muted mt-2 small">Change the display name for this team.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Members</h5>
+        <div class="list-group">
+          <% @members.each do |member| %>
+            <div class="list-group-item d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <%= avatar_tag(member, size: :medium, classes: 'me-3') %>
+                <div>
+                  <div>
+                    <strong><%= member.fullname %></strong>
+                    <% if member.pending_invite? %>
+                      <span class="badge bg-primary rounded-pill ms-2">INVITED</span>
+                    <% end %>
+                  </div>
+                  <div class="text-muted"><%= member.email %></div>
+                  <% if member.pending_invite? %>
+                    <div class="text-muted small">Invite link:
+                      <% if member.stored_raw_invitation_token.present? %>
+                        <% invite_link = "#{request.base_url}/users/invitation/accept?invitation_token=#{member.stored_raw_invitation_token}" %>
+                        <button type="button" class="btn btn-outline-secondary btn-sm ms-2" data-controller="invite" data-invite-link-value="<%= invite_link %>" data-action="click->invite#copy">📋</button>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+              <div class="ms-3">
+                
+                <% if member.ai_judge? %>
+                  <%= link_to edit_team_ai_judge_path(@team, member), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                  <% end %>
+                <% end %>
+                <button type="button"
+                        class="btn btn-link text-danger p-0"
+                        title="Remove member"
+                        aria-label="Remove member"
+                        data-controller="confirm-delete"
+                        data-action="click->confirm-delete#open"
+                        data-confirm-delete-url-value="<%= member_team_path(@team, member_id: member.id) %>"
+                        data-confirm-delete-message-value="<%= h("Remove #{member.fullname} from this team?") %>"
+                        data-confirm-delete-method-value="delete">
+                  <i class="bi bi-x-circle" aria-hidden="true"></i>
+                  <span class="visually-hidden">Remove member</span>
+                </button>
+                
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12 mb-3">
+    <%= render partial: 'teams/cases' %>
+  </div>
+
+  <div class="col-12 mb-3">
+    <%= render partial: 'teams/books' %>
+  </div>
+
+  <div class="col-12 mb-3">
+    <%= render partial: 'teams/search_endpoints' %>
+  </div>
+  
+  <div class="col-12 mb-3">
+    <%= render partial: 'teams/scorers' %>
+  </div>
+</div>
+
+  <%= render 'shared/share_case_modal' %>
+  <%= render 'shared/share_book_modal' %>
+  <%= render 'shared/share_scorer_modal' %>
+  <%= render 'shared/share_search_endpoint_modal' %>
