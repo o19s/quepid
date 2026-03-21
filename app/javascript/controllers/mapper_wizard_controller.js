@@ -31,7 +31,7 @@ export default class extends Controller {
     "testDocsButton",
     "refineNumberButton",
     "refineDocsButton",
-    "saveButton"
+    "saveButton",
   ]
 
   static values = {
@@ -40,7 +40,7 @@ export default class extends Controller {
     testUrl: String,
     refineUrl: String,
     saveUrl: String,
-    hasExistingMappers: Boolean
+    hasExistingMappers: Boolean,
   }
 
   connect() {
@@ -57,7 +57,10 @@ export default class extends Controller {
     if (this.hasExistingMappersValue) {
       this.step2Target.style.display = "block"
       this.step3Target.style.display = "block"
-      this.showStatus("Existing mappers loaded. Fetch HTML to test them, or edit and save directly.", "info")
+      this.showStatus(
+        "Existing mappers loaded. Fetch HTML to test them, or edit and save directly.",
+        "info",
+      )
     }
   }
 
@@ -75,17 +78,19 @@ export default class extends Controller {
     if (!this.hasHttpMethodTarget || !this.hasTestQueryHintTarget) return
 
     const method = this.httpMethodTarget.value
-    const isPost = method === 'POST'
+    const isPost = method === "POST"
 
     if (isPost) {
-      this.testQueryHintTarget.innerHTML = 'Enter JSON body for POST request. Saved with endpoint for easy iteration.'
+      this.testQueryHintTarget.innerHTML =
+        "Enter JSON body for POST request. Saved with endpoint for easy iteration."
       if (this.hasTestQueryTarget) {
         this.testQueryTarget.placeholder = '{"query": "test", "size": 10}'
       }
     } else {
-      this.testQueryHintTarget.innerHTML = 'Enter query params (e.g., <code>q=test&rows=10</code>) appended to URL. Saved with endpoint for easy iteration.'
+      this.testQueryHintTarget.innerHTML =
+        "Enter query params (e.g., <code>q=test&rows=10</code>) appended to URL. Saved with endpoint for easy iteration."
       if (this.hasTestQueryTarget) {
-        this.testQueryTarget.placeholder = 'q=shirts&rows=10'
+        this.testQueryTarget.placeholder = "q=shirts&rows=10"
       }
     }
   }
@@ -100,26 +105,28 @@ export default class extends Controller {
       return
     }
 
-    const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
-    const testQuery = this.hasTestQueryTarget ? this.testQueryTarget.value.trim() : ''
-    const customHeaders = this.hasCustomHeadersTarget ? this.customHeadersTarget.value.trim() : ''
-    const basicAuthCredential = this.hasBasicAuthCredentialTarget ? this.basicAuthCredentialTarget.value.trim() : ''
+    const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : "GET"
+    const testQuery = this.hasTestQueryTarget ? this.testQueryTarget.value.trim() : ""
+    const customHeaders = this.hasCustomHeadersTarget ? this.customHeadersTarget.value.trim() : ""
+    const basicAuthCredential = this.hasBasicAuthCredentialTarget
+      ? this.basicAuthCredentialTarget.value.trim()
+      : ""
 
     // Validate custom headers JSON if provided
     if (customHeaders) {
       try {
         JSON.parse(customHeaders)
-      } catch (e) {
+      } catch {
         this.showStatus("Custom headers must be valid JSON", "error")
         return
       }
     }
 
     // Validate test query is valid JSON for POST requests
-    if (httpMethod === 'POST' && testQuery) {
+    if (httpMethod === "POST" && testQuery) {
       try {
         JSON.parse(testQuery)
-      } catch (e) {
+      } catch {
         this.showStatus("Test query must be valid JSON for POST requests", "error")
         return
       }
@@ -133,15 +140,15 @@ export default class extends Controller {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "X-CSRF-Token": this.getCSRFToken(),
         },
         body: JSON.stringify({
           search_url: url,
           http_method: httpMethod,
           test_query: testQuery,
           custom_headers: customHeaders,
-          basic_auth_credential: basicAuthCredential
-        })
+          basic_auth_credential: basicAuthCredential,
+        }),
       })
 
       const data = await response.json()
@@ -149,7 +156,10 @@ export default class extends Controller {
       if (data.success) {
         this.htmlPreviewTarget.textContent = data.html_preview
         this.htmlPreviewContainerTarget.style.display = "block"
-        this.showStatus(`Response fetched successfully (${data.html_length.toLocaleString()} characters)`, "success")
+        this.showStatus(
+          `Response fetched successfully (${data.html_length.toLocaleString()} characters)`,
+          "success",
+        )
         this.step2Target.style.display = "block"
       } else {
         this.showStatus(data.error || "Failed to fetch response", "error")
@@ -179,9 +189,9 @@ export default class extends Controller {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "X-CSRF-Token": this.getCSRFToken(),
         },
-        body: JSON.stringify({ api_key: apiKey })
+        body: JSON.stringify({ api_key: apiKey }),
       })
 
       const data = await response.json()
@@ -219,13 +229,13 @@ export default class extends Controller {
   async testNumberOfResultsMapper(event) {
     event.preventDefault()
     await this.testMapper(
-      'numberOfResultsMapper',
+      "numberOfResultsMapper",
       this.numberOfResultsEditor,
       this.numberOfResultsMapperTarget,
       this.numberOfResultsResultTarget,
       this.testNumberButtonTarget,
       this.numberOfResultsLogsTarget,
-      this.numberOfResultsLogsContainerTarget
+      this.numberOfResultsLogsContainerTarget,
     )
   }
 
@@ -233,17 +243,25 @@ export default class extends Controller {
   async testDocsMapper(event) {
     event.preventDefault()
     await this.testMapper(
-      'docsMapper',
+      "docsMapper",
       this.docsEditor,
       this.docsMapperTarget,
       this.docsResultTarget,
       this.testDocsButtonTarget,
       this.docsLogsTarget,
-      this.docsLogsContainerTarget
+      this.docsLogsContainerTarget,
     )
   }
 
-  async testMapper(mapperType, editor, textarea, resultTarget, button, logsTarget, logsContainerTarget) {
+  async testMapper(
+    mapperType,
+    editor,
+    textarea,
+    resultTarget,
+    button,
+    logsTarget,
+    logsContainerTarget,
+  ) {
     this.captureEditors()
 
     const code = editor ? editor.getValue() : textarea.value
@@ -259,19 +277,19 @@ export default class extends Controller {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "X-CSRF-Token": this.getCSRFToken(),
         },
         body: JSON.stringify({
           mapper_type: mapperType,
-          code: code
-        })
+          code: code,
+        }),
       })
 
       const data = await response.json()
 
       if (data.success) {
         const resultStr = JSON.stringify(data.result, null, 2)
-        resultTarget.innerHTML = `<pre class="text-success mb-0" style="white-space: pre-wrap;">${this.escapeHtml(resultStr)}</pre>`
+        resultTarget.innerHTML = `<pre class="text-success mb-0 mapper-wizard-result-pre">${this.escapeHtml(resultStr)}</pre>`
         this.showStatus(`${mapperType} test successful!`, "success")
       } else {
         resultTarget.innerHTML = `<pre class="text-danger mb-0">${this.escapeHtml(data.error)}</pre>`
@@ -296,15 +314,27 @@ export default class extends Controller {
 
     logsContainerTarget.style.display = "block"
 
-    const logHtml = logs.map(log => {
-      const levelClass = log.level === 'error' ? 'text-danger' :
-                         log.level === 'warn' ? 'text-warning' :
-                         log.level === 'info' ? 'text-info' : 'text-light'
-      const levelIcon = log.level === 'error' ? '[ERROR]' :
-                        log.level === 'warn' ? '[WARN]' :
-                        log.level === 'info' ? '[INFO]' : '[LOG]'
-      return `<div class="${levelClass}">${this.escapeHtml(levelIcon)} ${this.escapeHtml(log.message)}</div>`
-    }).join('')
+    const logHtml = logs
+      .map((log) => {
+        const levelClass =
+          log.level === "error"
+            ? "text-danger"
+            : log.level === "warn"
+              ? "text-warning"
+              : log.level === "info"
+                ? "text-info"
+                : "text-light"
+        const levelIcon =
+          log.level === "error"
+            ? "[ERROR]"
+            : log.level === "warn"
+              ? "[WARN]"
+              : log.level === "info"
+                ? "[INFO]"
+                : "[LOG]"
+        return `<div class="${levelClass}">${this.escapeHtml(levelIcon)} ${this.escapeHtml(log.message)}</div>`
+      })
+      .join("")
 
     logsTarget.innerHTML = logHtml
   }
@@ -312,14 +342,16 @@ export default class extends Controller {
   // Refine numberOfResultsMapper with AI
   async refineNumberOfResultsMapper(event) {
     event.preventDefault()
-    const feedback = prompt("What would you like to improve about the numberOfResultsMapper function?")
+    const feedback = prompt(
+      "What would you like to improve about the numberOfResultsMapper function?",
+    )
     if (feedback) {
       await this.refineMapper(
-        'numberOfResultsMapper',
+        "numberOfResultsMapper",
         this.numberOfResultsEditor,
         this.numberOfResultsMapperTarget,
         feedback,
-        this.refineNumberButtonTarget
+        this.refineNumberButtonTarget,
       )
     }
   }
@@ -330,11 +362,11 @@ export default class extends Controller {
     const feedback = prompt("What would you like to improve about the docsMapper function?")
     if (feedback) {
       await this.refineMapper(
-        'docsMapper',
+        "docsMapper",
         this.docsEditor,
         this.docsMapperTarget,
         feedback,
-        this.refineDocsButtonTarget
+        this.refineDocsButtonTarget,
       )
     }
   }
@@ -357,14 +389,14 @@ export default class extends Controller {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "X-CSRF-Token": this.getCSRFToken(),
         },
         body: JSON.stringify({
           mapper_type: mapperType,
           current_code: currentCode,
           feedback: feedback,
-          api_key: apiKey
-        })
+          api_key: apiKey,
+        }),
       })
 
       const data = await response.json()
@@ -401,9 +433,7 @@ export default class extends Controller {
     const numberOfResultsMapper = this.numberOfResultsEditor
       ? this.numberOfResultsEditor.getValue()
       : this.numberOfResultsMapperTarget.value
-    const docsMapper = this.docsEditor
-      ? this.docsEditor.getValue()
-      : this.docsMapperTarget.value
+    const docsMapper = this.docsEditor ? this.docsEditor.getValue() : this.docsMapperTarget.value
 
     if (!numberOfResultsMapper.trim() || !docsMapper.trim()) {
       this.showStatus("Both mapper functions are required", "error")
@@ -413,14 +443,16 @@ export default class extends Controller {
     this.setButtonLoading(this.saveButtonTarget, true)
     this.showStatus("Saving search endpoint...", "info")
 
-    const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
-    const testQuery = this.hasTestQueryTarget ? this.testQueryTarget.value.trim() : ''
-    const customHeaders = this.hasCustomHeadersTarget ? this.customHeadersTarget.value.trim() : ''
-    const basicAuthCredential = this.hasBasicAuthCredentialTarget ? this.basicAuthCredentialTarget.value.trim() : ''
+    const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : "GET"
+    const testQuery = this.hasTestQueryTarget ? this.testQueryTarget.value.trim() : ""
+    const customHeaders = this.hasCustomHeadersTarget ? this.customHeadersTarget.value.trim() : ""
+    const basicAuthCredential = this.hasBasicAuthCredentialTarget
+      ? this.basicAuthCredentialTarget.value.trim()
+      : ""
 
     // Collect checked team IDs
     const teamIds = this.hasTeamCheckboxTarget
-      ? this.teamCheckboxTargets.filter(cb => cb.checked).map(cb => parseInt(cb.value))
+      ? this.teamCheckboxTargets.filter((cb) => cb.checked).map((cb) => parseInt(cb.value))
       : []
 
     try {
@@ -428,7 +460,7 @@ export default class extends Controller {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "X-CSRF-Token": this.getCSRFToken(),
         },
         body: JSON.stringify({
           name: name,
@@ -440,8 +472,8 @@ export default class extends Controller {
           test_query: testQuery,
           custom_headers: customHeaders,
           basic_auth_credential: basicAuthCredential,
-          team_ids: teamIds
-        })
+          team_ids: teamIds,
+        }),
       })
 
       const data = await response.json()
@@ -461,7 +493,7 @@ export default class extends Controller {
 
   // Toggle HTML preview expansion
   toggleHtmlPreview(event) {
-    const container = this.htmlPreviewContainerTarget.querySelector('.html-preview')
+    const container = this.htmlPreviewContainerTarget.querySelector(".html-preview")
     if (container) {
       const isExpanded = container.classList.toggle("expanded")
       event.currentTarget.textContent = isExpanded ? "Collapse" : "Expand"
@@ -500,11 +532,11 @@ export default class extends Controller {
   showStatus(message, type) {
     if (this.hasStatusTarget) {
       this.statusTarget.textContent = message
-      this.statusTarget.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'}`
+      this.statusTarget.className = `alert alert-${type === "error" ? "danger" : type === "success" ? "success" : "info"}`
       this.statusTarget.style.display = "block"
 
       // Auto-hide success messages after 5 seconds
-      if (type === 'success') {
+      if (type === "success") {
         setTimeout(() => {
           if (this.statusTarget.textContent === message) {
             this.statusTarget.style.display = "none"
@@ -518,7 +550,8 @@ export default class extends Controller {
     if (loading) {
       button.disabled = true
       button.dataset.originalText = button.innerHTML
-      button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
+      button.innerHTML =
+        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
     } else {
       button.disabled = false
       button.innerHTML = button.dataset.originalText || button.innerHTML
@@ -526,7 +559,7 @@ export default class extends Controller {
   }
 
   escapeHtml(text) {
-    const div = document.createElement('div')
+    const div = document.createElement("div")
     div.textContent = text
     return div.innerHTML
   }

@@ -5,13 +5,13 @@ export default class extends Controller {
 
   connect() {
     // Listen for changes on scale preset radio buttons
-    this.element.querySelectorAll('input[name="scale_preset"]').forEach(radio => {
-      radio.addEventListener('change', this.updateScale.bind(this))
+    this.element.querySelectorAll('input[name="scale_preset"]').forEach((radio) => {
+      radio.addEventListener("change", this.updateScale.bind(this))
     })
-    
+
     // Listen for manual changes to scale_list field
     if (this.hasScaleListTarget) {
-      this.scaleListTarget.addEventListener('input', this.handleScaleListInput.bind(this))
+      this.scaleListTarget.addEventListener("input", this.handleScaleListInput.bind(this))
     }
   }
 
@@ -26,18 +26,19 @@ export default class extends Controller {
     const preset = event.target.value
     let scaleValue = ""
 
-    switch(preset) {
-      case 'binary':
+    switch (preset) {
+      case "binary":
         scaleValue = "0,1"
         break
-      case 'graded':
+      case "graded":
         scaleValue = "0,1,2,3"
         break
-      case 'custom':
+      case "custom":
         // Clear the field for custom and update placeholder
         if (this.hasScaleListTarget) {
           this.scaleListTarget.value = ""
-          this.scaleListTarget.placeholder = "Provide a list of comma separated INTEGERS to use for the scoring scale"
+          this.scaleListTarget.placeholder =
+            "Provide a list of comma separated INTEGERS to use for the scoring scale"
         }
         return
     }
@@ -46,7 +47,7 @@ export default class extends Controller {
       this.scaleListTarget.value = scaleValue
       this.scaleListTarget.placeholder = ""
       // Trigger change event to update scale labels if needed
-      this.scaleListTarget.dispatchEvent(new Event('change', { bubbles: true }))
+      this.scaleListTarget.dispatchEvent(new Event("change", { bubbles: true }))
       this.updateScaleLabels(scaleValue)
     }
   }
@@ -54,24 +55,24 @@ export default class extends Controller {
   updateScaleLabels(scaleValue) {
     if (!this.hasScaleLabelsTarget) return
 
-    const values = scaleValue.split(',').map(v => v.trim()).filter(v => v)
+    const values = scaleValue
+      .split(",")
+      .map((v) => v.trim())
+      .filter((v) => v)
     const labelsContainer = this.scaleLabelsTarget
-    
-    labelsContainer.innerHTML = ''
-    
-    values.forEach(value => {
-      const label = document.createElement('label')
-      label.className = 'scale-with-label-element clearfix'
-      label.style.display = 'inline-block'
-      label.style.marginRight = '10px'
+
+    labelsContainer.innerHTML = ""
+
+    values.forEach((value) => {
+      const label = document.createElement("label")
+      label.className = "scale-with-label-element clearfix scorer-scale-with-label"
       label.innerHTML = `
         ${value}:
         <input
-          class="form-control scale-label clearfix"
+          class="form-control scale-label clearfix scorer-scale-label-input"
           type="text"
           name="scorer[scale_with_labels][${value}]"
           value=""
-          style="width: 100px; display: inline-block;"
         />
       `
       labelsContainer.appendChild(label)

@@ -64,6 +64,8 @@ function buildApplicationCSS() {
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
   output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/stimulus_controllers.css');
+  output += '\n';
   output += readFileIfExists('app/assets/stylesheets/signup.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/judgements.css');

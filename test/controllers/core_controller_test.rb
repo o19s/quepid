@@ -49,6 +49,8 @@ class CoreControllerTest < ActionController::TestCase
 
       assert_select '#query-list-shell'
       assert_select '[data-controller="query-list"]'
+      assert_select '[data-controller="case-score"]'
+      assert_select '[data-controller="inline-edit"]'
     end
 
     test 'sets data attributes on body' do
