@@ -96,10 +96,12 @@ export default class extends Controller {
       const data = await response.json()
       this._modal().hide()
 
-      // Navigate to the cloned case
+      // Navigate to the cloned case — stay on new_ui if that's the current route
       const newCaseId = data.case_id
       const lastTry = data.last_try_number || 1
-      window.location.href = apiUrl(`case/${newCaseId}/try/${lastTry}`)
+      const isNewUi = window.location.pathname.endsWith("/new_ui")
+      const suffix = isNewUi ? "/new_ui" : ""
+      window.location.href = apiUrl(`case/${newCaseId}/try/${lastTry}${suffix}`)
     } catch (error) {
       console.error("Clone failed:", error)
       this._showError(error.message)

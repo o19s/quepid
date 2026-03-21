@@ -80,7 +80,7 @@ describe("CloneCaseController", () => {
 
     // Prevent navigation
     delete window.location
-    window.location = { href: "" }
+    window.location = { href: "", pathname: "/case/42/try/1/new_ui" }
 
     await ctrl.submit(new Event("submit", { cancelable: true }))
 
@@ -116,7 +116,7 @@ describe("CloneCaseController", () => {
     )
 
     delete window.location
-    window.location = { href: "" }
+    window.location = { href: "", pathname: "/case/42/try/1/new_ui" }
 
     await ctrl.submit(new Event("submit", { cancelable: true }))
 
@@ -151,10 +151,10 @@ describe("CloneCaseController", () => {
     )
 
     delete window.location
-    window.location = { href: "" }
+    window.location = { href: "", pathname: "/case/42/try/1/new_ui" }
 
     await ctrl.submit(new Event("submit", { cancelable: true }))
 
-    expect(window.location.href).toBe("case/77/try/5")
+    expect(window.location.href).toBe("case/77/try/5/new_ui")
   })
 })

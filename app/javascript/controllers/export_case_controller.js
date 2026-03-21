@@ -38,11 +38,15 @@ export default class extends Controller {
   async submit(event) {
     event.preventDefault()
     if (!this._selectedFormat) return
+    if (this._submitting) return
+    this._submitting = true
 
     const caseId = this.caseIdValue
     const caseName = this.caseNameValue.replace(/[\s:]/g, "_")
     const snapshotId =
-      this.hasSnapshotSelectTarget && !this.snapshotGroupTarget.classList.contains("d-none")
+      this.hasSnapshotGroupTarget &&
+      this.hasSnapshotSelectTarget &&
+      !this.snapshotGroupTarget.classList.contains("d-none")
         ? this.snapshotSelectTarget.value
         : null
 
@@ -99,6 +103,8 @@ export default class extends Controller {
     } catch (error) {
       console.error("Export failed:", error)
       alert(`Export failed: ${error.message}`)
+    } finally {
+      this._submitting = false
     }
   }
 

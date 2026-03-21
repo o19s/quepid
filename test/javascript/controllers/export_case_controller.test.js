@@ -61,10 +61,6 @@ describe("ExportCaseController", () => {
       },
     }
 
-    // Stub URL.createObjectURL and URL.revokeObjectURL
-    global.URL.createObjectURL = vi.fn(() => "blob:test")
-    global.URL.revokeObjectURL = vi.fn()
-
     application = Application.start()
     application.register("export-case", ExportCaseController)
     await waitForController(application, '[data-controller="export-case"]', "export-case")
@@ -77,9 +73,24 @@ describe("ExportCaseController", () => {
     vi.restoreAllMocks()
   })
 
-  it("enables submit button when format is selected", () => {
+  function getCtrl() {
     const el = document.querySelector('[data-controller="export-case"]')
-    const ctrl = application.getControllerForElementAndIdentifier(el, "export-case")
+    return application.getControllerForElementAndIdentifier(el, "export-case")
+  }
+
+  function stubFetchAndDownload(ctrl) {
+    global.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        blob: () => Promise.resolve(new Blob(["data"])),
+      }),
+    )
+    // Stub the download helper to avoid DOM mutation (createElement, appendChild, click)
+    ctrl._downloadBlob = vi.fn()
+  }
+
+  it("enables submit button when format is selected", () => {
+    const ctrl = getCtrl()
 
     expect(ctrl.submitButtonTarget.disabled).toBe(true)
 
@@ -91,8 +102,7 @@ describe("ExportCaseController", () => {
   })
 
   it("shows snapshot group for basic format", () => {
-    const el = document.querySelector('[data-controller="export-case"]')
-    const ctrl = application.getControllerForElementAndIdentifier(el, "export-case")
+    const ctrl = getCtrl()
 
     const basicRadio = document.querySelector('[value="basic"]')
     ctrl.selectFormat({ currentTarget: basicRadio })
@@ -101,8 +111,7 @@ describe("ExportCaseController", () => {
   })
 
   it("hides snapshot group for non-snapshot formats", () => {
-    const el = document.querySelector('[data-controller="export-case"]')
-    const ctrl = application.getControllerForElementAndIdentifier(el, "export-case")
+    const ctrl = getCtrl()
 
     const quepidRadio = document.querySelector('[value="quepid"]')
     ctrl.selectFormat({ currentTarget: quepidRadio })
@@ -111,93 +120,42 @@ describe("ExportCaseController", () => {
   })
 
   it("fetches basic CSV export", async () => {
-    const el = document.querySelector('[data-controller="export-case"]')
-    const ctrl = application.getControllerForElementAndIdentifier(el, "export-case")
+    const ctrl = getCtrl()
+    stubFetchAndDownload(ctrl)
 
     const basicRadio = document.querySelector('[value="basic"]')
     ctrl.selectFormat({ currentTarget: basicRadio })
-
-    global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        blob: () => Promise.resolve(new Blob(["q,d,r"], { type: "text/csv" })),
-      }),
-    )
-
-    // Stub click on created <a> element
-    const clickSpy = vi.fn()
-    vi.spyOn(document, "createElement").mockImplementation((tag) => {
-      if (tag === "a") {
-        const a = { click: clickSpy, href: "", download: "" }
-        // Mock appendChild/removeChild
-        document.body.appendChild = vi.fn()
-        document.body.removeChild = vi.fn()
-        return a
-      }
-      return document.createElement(tag)
-    })
 
     await ctrl.submit(new Event("submit", { cancelable: true }))
 
     expect(global.fetch).toHaveBeenCalledOnce()
     const [url] = global.fetch.mock.calls[0]
     expect(url).toBe("api/export/ratings/42.csv?file_format=basic")
+    expect(ctrl._downloadBlob).toHaveBeenCalledOnce()
+    expect(ctrl._downloadBlob.mock.calls[0][1]).toBe("Test_Case_basic.csv")
   })
 
   it("fetches quepid JSON export with correct URL", async () => {
-    const el = document.querySelector('[data-controller="export-case"]')
-    const ctrl = application.getControllerForElementAndIdentifier(el, "export-case")
+    const ctrl = getCtrl()
+    stubFetchAndDownload(ctrl)
 
     const quepidRadio = document.querySelector('[value="quepid"]')
     ctrl.selectFormat({ currentTarget: quepidRadio })
-
-    global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        blob: () => Promise.resolve(new Blob(["{}"], { type: "application/json" })),
-      }),
-    )
-
-    vi.spyOn(document, "createElement").mockImplementation((tag) => {
-      if (tag === "a") {
-        const a = { click: vi.fn(), href: "", download: "" }
-        document.body.appendChild = vi.fn()
-        document.body.removeChild = vi.fn()
-        return a
-      }
-      return document.createElement(tag)
-    })
 
     await ctrl.submit(new Event("submit", { cancelable: true }))
 
     const [url] = global.fetch.mock.calls[0]
     expect(url).toBe("api/export/cases/42.json")
+    expect(ctrl._downloadBlob.mock.calls[0][1]).toBe("Test_Case_case.json")
   })
 
   it("includes snapshot_id for basic format when selected", async () => {
-    const el = document.querySelector('[data-controller="export-case"]')
-    const ctrl = application.getControllerForElementAndIdentifier(el, "export-case")
+    const ctrl = getCtrl()
+    stubFetchAndDownload(ctrl)
 
     const basicRadio = document.querySelector('[value="basic"]')
     ctrl.selectFormat({ currentTarget: basicRadio })
     ctrl.snapshotSelectTarget.value = "5"
-
-    global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        blob: () => Promise.resolve(new Blob(["q,d,r"])),
-      }),
-    )
-
-    vi.spyOn(document, "createElement").mockImplementation((tag) => {
-      if (tag === "a") {
-        const a = { click: vi.fn(), href: "", download: "" }
-        document.body.appendChild = vi.fn()
-        document.body.removeChild = vi.fn()
-        return a
-      }
-      return document.createElement(tag)
-    })
 
     await ctrl.submit(new Event("submit", { cancelable: true }))
 
