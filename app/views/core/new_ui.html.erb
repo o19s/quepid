@@ -1,10 +1,19 @@
-<div id="main">
-  <div class="results-control">
+<div id="main" class="pane_container"
+     data-controller="resizable-pane">
+  <div class="pane_main results-control" data-resizable-pane-target="main">
     <%= render 'core/case_header' %>
     <%= render 'core/action_bar' %>
 
     <div id="query-container">
       <%= render 'core/query_list_shell' %>
     </div>
+  </div>
+
+  <div class="east-slider d-none"
+       data-resizable-pane-target="slider"
+       data-action="mousedown->resizable-pane#grabSlider"></div>
+
+  <div class="pane_east d-none" data-resizable-pane-target="east">
+    <%= render 'core/settings_panel' %>
   </div>
 </div>

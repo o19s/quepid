@@ -13,3 +13,45 @@
   width: 100px;
   display: inline-block;
 }
+
+/* Settings panel (east pane) — supplements existing #dev-settings styles in bootstrap3-add.css */
+
+.try-history-item {
+  padding: 8px 12px;
+  border-bottom: 1px solid #444;
+}
+
+.try-history-item:hover {
+  background: #444;
+}
+
+.try-history-active {
+  background: #2a5a2a;
+}
+
+.try-history-link {
+  color: #ccc;
+  text-decoration: none;
+  display: block;
+}
+
+.try-history-link:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+.try-number {
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.try-name {
+  margin-right: 12px;
+}
+
+#dev-settings .es-query-params {
+  height: calc(100% - 40px);
+  min-height: 200px;
+  font-family: monospace;
+  font-size: 13px;
+}

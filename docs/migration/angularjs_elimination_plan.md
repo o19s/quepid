@@ -51,11 +51,11 @@ Similarly, **mapper wizard** (`MapperWizardsController` + Stimulus) and other no
 
 Per `angularjs_inventory.md`: homepage, `/cases`, teams, scorers, books (non-core flows), judgements, admin, auth/profile. These use Rails views, Stimulus, and Turbo where appropriate.
 
-**Core layout app header:** `app/views/layouts/_header_core_app.html.erb` is **server-rendered** (ERB + Bootstrap 5 dropdowns, relative links). It is **not** bound to `HeaderCtrl`; that controller still ships in the Angular bundle but has **no template wiring** on this layout—cleanup is a safe follow-up when trimming the bundle. (The diagram in `angularjs_inventory.md` §Architecture may still say `HeaderCtrl` on the header until that inventory is refreshed.)
+**Core layout app header:** ~~`app/views/layouts/_header_core_app.html.erb` is **server-rendered** (ERB + Bootstrap 5 dropdowns, relative links). It is **not** bound to `HeaderCtrl` in templates~~ — `HeaderCtrl` still ships in the Angular bundle with **no wiring on this layout**; removing it from the bundle is a follow-up when trimming Angular. (The diagram in `angularjs_inventory.md` under Architecture may still say `HeaderCtrl` on the header until that inventory is refreshed.)
 
 **Configuration on the default core page:** `app/views/layouts/core.html.erb` sets `data-quepid-root-url`, `data-case-id`, `data-communal-scorers-only`, and `data-query-list-sortable` on `<body>`, while an inline script still seeds `configurationSvc` for Angular. Stimulus code can read the data attributes; removing the duplicate Angular path is a small Phase 1/10 task.
 
-**Hotwire on core:** The same layout includes `javascript_importmap_tags 'application_modern'` alongside the Angular/jQuery script tags, so Stimulus and Turbo load on `/case/...` as well as on fully modern pages (`application_modern.js` sets `Turbo.session.drive = false` globally).
+**Hotwire on core:** ~~The same layout includes `javascript_importmap_tags 'application_modern'` alongside the Angular/jQuery script tags, so Stimulus and Turbo load on `/case/...` as well as on fully modern pages~~ (`application_modern.js` sets `Turbo.session.drive = false` globally).
 
 ### Still on AngularJS
 
@@ -76,9 +76,9 @@ Rough scale (from inventory; counts drift slightly as files change): on the orde
 
 **Views:** `app/views/core/new_ui.html.erb` composes:
 
-- `core/_case_header.html.erb` — case/try/scorer labels, badges; **case rename** via Stimulus `inline-edit` + `api_case_path`.
+- `core/_case_header.html.erb` — case/try/scorer labels; ~~**case rename** (`inline-edit` + `api_case_path`)~~; ~~**case-level score badge** (`case-score`, aggregates query rows)~~. (Try rename / full header parity vs `CurrSettingsCtrl` remains Angular on default core.)
 - `core/_action_bar.html.erb` — **placeholder** links (not yet wired to modals/actions).
-- `core/_query_list_shell.html.erb` — Stimulus **`query-list`**, **`add-query`**, **`query-row`**: filter, sort controls, collapse-all, show-only-rated, add query (API), row expand/collapse, delete query; expanded area still shows a **placeholder** until search execution is ported.
+- `core/_query_list_shell.html.erb` — ~~Stimulus **`query-list`**, **`add-query`**, **`query-row`**: filter, sort, collapse-all, show-only-rated, **Run all**, add query (API), expand/collapse, delete query; expand → **browser search** (`search_executor`, `/proxy/fetch` when configured), **ratings** (`ratings_store`), query/case scores (`scorer_executor`)~~. **Not yet (even on `new_ui`):** pagination, DnD reorder persistence, query notes, bulk actions parity with Angular.
 
 This is a **separate URL** from the production case workspace, not a Rails shell stacked above `ng-view` on the same document—useful for incremental QA and vertical slices until `core#index` switches over.
 
@@ -105,6 +105,8 @@ Avoid prescribing React/Vue unless the team explicitly chooses a SPA framework; 
 
 ## Phased plan — how to read it
 
+**Completed work:** Items shown with ~~strikethrough~~ are **done** for the stated scope—usually the **`/case/:id(/try/:n)/new_ui`** strangler slice (`core_new_ui` + Stimulus + `app/javascript/modules/*`), or **documentation / shared layout** called out inline. The default **`/case/...`** Angular workspace often remains in scope for the same phase until cutover.
+
 **Phases are workstreams, not serial gates.** Phases **3–6** (query list, results/ratings, tune relevance, scores/charts) are **tightly coupled**: shipping “only the list” without run/rate/score is not viable product UX. In practice, deliver **vertical slices**—thin end-to-end paths that merge to `main`—and use phase numbers to **tag** which workstream each task belongs to.
 
 **Example slice (illustrative):** one case, one try, Solr + proxy: open case → list queries → run search → see results → rate a doc → query/case score updates → tune relevance tweak → re-run. That slice touches workstreams 3, 4, 5, and **6** (see below).
@@ -129,36 +131,38 @@ Each slice should still be **mergeable** (strangler Angular island is OK). Use *
 
 | Task | Output |
 |------|--------|
-| Treat `angularjs_ui_inventory.md` as the **acceptance checklist**; add any missing flows discovered by QA | Updated inventory or appendix |
-| Document critical API contracts used by core (at minimum: `queriesSvc`, `settingsSvc`, `caseSvc`, `ratingsStoreSvc`, `querySnapshotSvc`, `importRatingsSvc`, `caseCSVSvc`, `annotationsSvc`, `bookSvc`, `searchEndpointSvc`, `scorerSvc`, `userSvc` / `bootstrapSvc`) | Table in this doc or wiki: endpoint → UI feature |
+| ~~Treat `angularjs_ui_inventory.md` as the **acceptance checklist**; add any missing flows discovered by QA~~ | ~~Updated inventory or appendix~~ |
+| ~~Document critical API contracts used by core (at minimum: `queriesSvc`, `settingsSvc`, `caseSvc`, `ratingsStoreSvc`, `querySnapshotSvc`, `importRatingsSvc`, `caseCSVSvc`, `annotationsSvc`, `bookSvc`, `searchEndpointSvc`, `scorerSvc`, `userSvc` / `bootstrapSvc`)~~ | ~~Table in this doc or wiki: endpoint → UI feature~~ (P0 API Contract Summary + checklist in this doc) |
 | Ensure Karma suite green; note coverage gaps | Baseline for regression |
 | **Strongly recommended:** Playwright (or existing `docs/scripts`) smoke for **P0** paths | Automated guardrail for vertical slices |
 | Optional: **spike** how core will load JS (single bundle vs `core_*.js` + `application_modern.js`, Turbo defaults) | De-risks Phase 10; see **Phase 10** section below |
 
-**Exit criteria:** P0 list agreed and written down; API contract table started; DRI sign-off that baseline is sufficient to start slices—not unanimous agreement on every inventory row.
+**Exit criteria:** P0 list agreed and written down; ~~API contract table started~~ API contract summary in this doc; DRI sign-off that baseline is sufficient to start slices—not unanimous agreement on every inventory row.
 
 #### P0 Parity Checklist
 
 These are the **critical flows** that must keep working throughout the migration. Every vertical slice must pass these before merging to `main`. P1/P2 features (everything else in `angularjs_ui_inventory.md`) can regress temporarily behind a strangler boundary.
 
+Rows with ~~strikethrough~~ are **verified on `…/new_ui`** (not necessarily on default `/case/…`).
+
 | # | Flow | Steps | Inventory refs |
 |---|------|-------|----------------|
-| **P0-1** | **Open a case** | Navigate to `/case/:id` → case loads, header shows case name + scorer name + try name + case score | SS-01, SS-03 |
-| **P0-2** | **View query list** | Queries render with score badges, result counts, expand/collapse chevrons | SS-04 |
-| **P0-3** | **Add a query** | Type query text → click "Add query" → query appears in list → search executes → results render | SS-04, SS-05 |
-| **P0-4** | **Run search (Solr, via proxy)** | Expand a query → results load from search engine via `/proxy/fetch` → documents display with title, fields, thumbnails | SS-05, SS-28 |
-| **P0-5** | **Rate a document** | Click rating dropdown on a result → select score → rating persists → query score badge updates | SS-06, SS-49 |
-| **P0-6** | **See case score update** | After rating, case-level score recalculates and displays in header | SS-03 |
+| ~~**P0-1**~~ | ~~**Open a case**~~ | ~~Navigate to `/case/:id` → case loads, header shows case name + scorer name + try name + case score~~ (use `…/new_ui`) | ~~SS-01, SS-03~~ |
+| ~~**P0-2**~~ | ~~**View query list**~~ | ~~Queries render with score badges, result counts, expand/collapse chevrons~~ | ~~SS-04~~ |
+| ~~**P0-3**~~ | ~~**Add a query**~~ | ~~Type query text → click "Add query" → query appears in list → search executes → results render~~ | ~~SS-04, SS-05~~ |
+| ~~**P0-4**~~ | ~~**Run search (Solr, via proxy)**~~ | ~~Expand a query → results load from search engine via `/proxy/fetch` → documents display with title, fields, thumbnails~~ | ~~SS-05, SS-28~~ |
+| ~~**P0-5**~~ | ~~**Rate a document**~~ | ~~Click rating control on a result → select score → rating persists → query score badge updates~~ | ~~SS-06, SS-49~~ |
+| ~~**P0-6**~~ | ~~**See case score update**~~ | ~~After rating, case-level score recalculates and displays in header~~ | ~~SS-03~~ |
 | **P0-7** | **Tune relevance (basic)** | Open east pane → edit query params in Query Sandbox tab → click "Rerun My Searches!" → results refresh | SS-07 |
 | **P0-8** | **Create a snapshot** | Action bar → "Create snapshot" → name it → snapshot saves with current scores and docs | SS-12 |
-| **P0-9** | **Delete a query** | Expand query → click Delete → query removed from list | SS-05 |
-| **P0-10** | **Navigate between cases** | Header "Cases" dropdown → select different case → new case loads correctly | SS-02 |
+| ~~**P0-9**~~ | ~~**Delete a query**~~ | ~~Expand query → click Delete → query removed from list~~ | ~~SS-05~~ |
+| ~~**P0-10**~~ | ~~**Navigate between cases**~~ | ~~Header "Cases" dropdown → select different case → new case loads correctly~~ | ~~SS-02~~ |
 
 **Stretch P0 (verify if time permits, required before Phase 10):**
 
 | # | Flow | Steps | Inventory refs |
 |---|------|-------|----------------|
-| P0-S1 | Run search with **Elasticsearch/OpenSearch** | Same as P0-4 but with ES/OS engine | SS-09 (engine config) |
+| ~~P0-S1~~ | ~~Run search with **Elasticsearch/OpenSearch**~~ | ~~Same as P0-4 but with ES/OS engine~~ | ~~SS-09 (engine config)~~ |
 | P0-S2 | Clone a case | Action bar → Clone → options → new case created | SS-17 |
 | P0-S3 | Export case (basic CSV) | Action bar → Export → select format → download file | SS-19 |
 
@@ -185,11 +189,7 @@ These are the **minimum API endpoints** that P0 flows depend on. Full reference:
 | P0-10 | `caseSvc` | `GET api/dropdown/cases` | Cases dropdown list |
 | P0-10 | `caseTryNavSvc` | (client-side) | URL construction for case/try navigation |
 
-**Key dependency:** `splainer-search` runs in the browser and uses `$http` (Angular). The Stimulus port must either:
-- Wrap splainer with native `fetch` (adapter layer), or
-- Keep splainer in a thin Angular island until replaced
-
-This is the **single highest-risk technical item** for P0 flows.
+**Key dependency:** On default core, `splainer-search` still runs in the browser with Angular `$http`. ~~The Stimulus port must either wrap splainer with native `fetch` or keep a thin Angular island~~ — **`new_ui` uses native `fetch`** via `app/javascript/modules/search_executor.js` (+ `query_template.js`, `api_url.js`) for Solr and ES/OS, preserving `proxy_requests` / `/proxy/fetch` behavior. **Remaining risk:** cutting **default `/case/...`** over without regressions (reuse those modules or adapter).
 
 ---
 
@@ -199,9 +199,9 @@ This is the **single highest-risk technical item** for P0 flows.
 
 | Task | Notes |
 |------|--------|
-| Finish **`configurationSvc` removal:** `data-communal-scorers-only` / `data-query-list-sortable` already exist on `<body>` in `core.html.erb`; stop seeding Angular from the inline run block (or read flags from the DOM inside Angular once) so there is a single source of truth | **`bootstrapSvc` / `userSvc`** may still supply current user until later phases replace case bootstrapping |
-| Replace or mirror **`caseTryNavSvc`** behavior for header links: ensure all new code uses **relative** URLs (`caseTryNavSvc.getQuepidRootUrl()` equivalent) | Project rule; `data-quepid-root-url` on `<body>` supports Stimulus |
-| **Header:** cases/books/user nav is **already** ERB + Bootstrap 5 in `_header_core_app.html.erb`; **remove dead `HeaderCtrl`** from the bundle when convenient | **Create case** in the header is a Rails link (`case_new_path`); wizard after create still flows through Angular redirect + `WizardCtrl` / `WizardModalCtrl` on the default `/case/...` page until Phase 8 |
+| Finish **`configurationSvc` removal:** ~~`data-communal-scorers-only` / `data-query-list-sortable` already exist on `<body>` in `core.html.erb`~~; stop seeding Angular from the ~~inline run block~~ `core.html.erb` script (or read flags from the DOM inside Angular once) so there is a single source of truth | **`bootstrapSvc` / `userSvc`** may still supply current user until later phases replace case bootstrapping |
+| ~~Replace or mirror **`caseTryNavSvc`** behavior for header links: ensure all new code uses **relative** URLs (`caseTryNavSvc.getQuepidRootUrl()` equivalent)~~ | ~~Project rule; `data-quepid-root-url` on `<body>` supports Stimulus~~ (**`new_ui` + `api_url` module** follow this.) |
+| ~~**Header:** cases/books/user nav is **already** ERB + Bootstrap 5 in `_header_core_app.html.erb`~~; **remove dead `HeaderCtrl`** from the bundle when convenient | **Create case** in the header is a Rails link (`case_new_path`); wizard after create still flows through Angular redirect + `WizardCtrl` / `WizardModalCtrl` on the default `/case/...` page until Phase 8 |
 
 **Exit criteria:** **Done for chrome:** header is ERB-only (no `HeaderCtrl` in templates). Remaining: drop duplicate config bootstrapping and remove unused `headerCtrl.js` from the bundle when safe. Core workspace below the header stays Angular until later phases.
 
@@ -213,8 +213,8 @@ This is the **single highest-risk technical item** for P0 flows.
 
 | Task | Notes |
 |------|--------|
-| Render **queries layout chrome** (case title area, action bar slots, tune relevance toggle regions) from Rails using data from `CoreController` (or dedicated presenter) | Data: case, try, scorer name, flags (archived, public, nightly). **`CoreController`** sets `@case` / `@try`, loads `@queries` / `@query_count` for `new_ui`, and handles wizard-related params on `index`. |
-| Introduce Stimulus **`core-case` or split controllers** mounting on `data-controller` roots | **`new_ui`** uses `inline-edit` on the case name; full replacement of `CaseCtrl` / `CurrSettingsCtrl` (try rename, scorer display in header) remains |
+| ~~Render **queries layout chrome** (case title area, action bar slots, tune relevance toggle regions) from Rails using data from `CoreController` (or dedicated presenter)~~ | ~~Data: case, try, scorer name, flags (archived, public, nightly). **`CoreController`** sets `@case` / `@try`, loads `@queries` / `@query_count` for `new_ui`, and handles wizard-related params on `index`.~~ (**Done for `new_ui`**; default core unchanged.) |
+| ~~Introduce Stimulus **`core-case` or split controllers** mounting on `data-controller` roots~~ | ~~**`new_ui`** uses `inline-edit` on the case name~~; full replacement of `CaseCtrl` / `CurrSettingsCtrl` (try rename from header, full scorer UX) **remains** for default core |
 | Plan **east pane / Tune Relevance** layout: today **`paneSvc` + `eastPaneWidth`** (jQuery) resizes the main vs. settings pane—must be reimplemented (CSS grid/flex + Stimulus drag handle or equivalent) | `resizable_pane_controller.js` exists for other surfaces; core pane may reuse or extend that pattern |
 | Replace **`broadcastSvc` / `$rootScope.$broadcast`** coupling incrementally: map events in `angularjs_inventory.md` (“Event System”) to explicit callbacks, custom DOM events, or a tiny pub/sub | Critical for splitting `MainCtrl` without subtle regressions |
 | Keep **one** Angular island temporarily (e.g. wrap legacy `queries` directive in a single div) if strangling is faster | Strangler pattern |
@@ -250,8 +250,8 @@ This is the **single highest-risk technical item** for P0 flows.
 
 | Task | Notes |
 |------|-------|
-| Build result rows as **partials or client templates** rendered from JSON returned by existing search flow | `queriesSvc` / searcher creation may stay in a thin JS module |
-| **Extract `ScorerFactory` + score/rating display helpers** into plain JS **in the same vertical slice as the first rating UI** | Query/case badges depend on this; do not defer entirely to “Phase 6” on paper |
+| ~~Build result rows as **partials or client templates** rendered from JSON returned by existing search flow~~ | ~~`queriesSvc` / searcher creation may stay in a thin JS module~~ (**`new_ui`:** `query_row_controller.js` renders from JSON; not full Angular result-row parity.) |
+| ~~**Extract `ScorerFactory` + score/rating display helpers** into plain JS **in the same vertical slice as the first rating UI**~~ | ~~Query/case badges depend on this; do not defer entirely to “Phase 6” on paper~~ (**`scorer_executor.js` + `scorer.js`** on `new_ui`; extend for default core / edge scorers.) |
 | Replace rating popovers and bulk rate with Stimulus + Bootstrap 5 popovers/modals | `rateElementSvc` / `rateBulkSvc` logic ported |
 | Explain / doc detail / hot matches: port modals to **Rails partials + Stimulus** or fetch HTML | `DetailedDocCtrl`, `DocExplainCtrl`, **`HotMatchesCtrl`** |
 | **Doc finder / targeted search** (`DocFinderCtrl`, `TargetedSearchCtrl`, `TargetedSearchModalCtrl`) | Same screenshot family as targeted search (SS-24); easy to miss because it sits beside result tooling |

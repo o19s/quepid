@@ -39,10 +39,15 @@ export default class extends Controller {
     document.removeEventListener("mouseup", this._onMouseUp)
   }
 
-  // Called by Angular's MainCtrl via $(document).trigger('toggleEast')
-  _onToggle() {
+  // Public Stimulus action for toggling the east pane
+  toggle() {
     this.toggled = !this.toggled
     this._setupPane()
+  }
+
+  // Called by Angular's MainCtrl via $(document).trigger('toggleEast')
+  _onToggle() {
+    this.toggle()
   }
 
   _setupPane() {
