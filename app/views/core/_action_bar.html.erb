@@ -1,5 +1,7 @@
 <% if @case.present? %>
-<div id="case-actions" class="row">
+<div id="case-actions" class="row"
+     data-controller="snapshot"
+     data-snapshot-query-row-outlet="[data-controller='query-row']">
   <div class="col-sm-12">
     <ul class="list-inline">
       <li>
@@ -12,7 +14,7 @@
       </li>
       <li>
         <span class="glyphicon glyphicon-camera"></span>
-        <a href="#">Create snapshot</a>
+        <a href="#" data-action="click->snapshot#open">Create snapshot</a>
       </li>
       <li>
         <i class="bi bi-bar-chart-fill" aria-hidden="true"></i>
@@ -43,6 +45,41 @@
         <a href="#" onclick="event.preventDefault()" data-action="click->resizable-pane#toggle">Tune Relevance</a>
       </li>
     </ul>
+  </div>
+
+  <!-- Snapshot modal -->
+  <div class="modal fade" tabindex="-1" data-snapshot-target="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form data-action="submit->snapshot#submit">
+          <div class="modal-header">
+            <h5 class="modal-title">Take a Snapshot</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Record the current results and ratings for all queries.
+               Useful for comparing future work against this point in time.</p>
+
+            <label for="snapshot-name" class="form-label">Snapshot Name</label>
+            <input type="text" class="form-control" id="snapshot-name"
+                   data-snapshot-target="nameInput"
+                   placeholder="Name your snapshot" required>
+
+            <div class="text-danger mt-2 d-none" data-snapshot-target="errorMessage"></div>
+            <div class="text-muted mt-2 d-none" data-snapshot-target="progressMessage">
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              Snapshot being created&hellip;
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary" data-snapshot-target="submitButton">
+              Take Snapshot
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 <% end %>
