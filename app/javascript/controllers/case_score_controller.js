@@ -60,7 +60,7 @@ export default class extends Controller {
         headers: {
           "Content-Type": "application/json",
           "X-CSRF-Token": csrfToken(),
-          "Accept": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify(payload),
       })

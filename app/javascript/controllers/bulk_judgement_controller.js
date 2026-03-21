@@ -28,11 +28,11 @@ export default class extends Controller {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "X-CSRF-Token": this.getCSRFToken(),
         },
         body: JSON.stringify({
-          query_doc_pair_id: queryDocPairId
-        })
+          query_doc_pair_id: queryDocPairId,
+        }),
       })
 
       if (response.ok) {
@@ -60,20 +60,22 @@ export default class extends Controller {
   clearRatingUI(queryDocPairId) {
     // Clear radio button selection
     const radios = this.element.querySelectorAll(`input[name="judgement_${queryDocPairId}"]`)
-    radios.forEach(radio => {
+    radios.forEach((radio) => {
       radio.checked = false
     })
 
     // Remove btn-preselected class from all labels for this query_doc_pair
-    const labels = this.element.querySelectorAll(`#qdp_${queryDocPairId} .rating-buttons-container label`)
-    labels.forEach(label => {
-      label.classList.remove('btn-preselected')
+    const labels = this.element.querySelectorAll(
+      `#qdp_${queryDocPairId} .rating-buttons-container label`,
+    )
+    labels.forEach((label) => {
+      label.classList.remove("btn-preselected")
     })
 
     // Clear explanation field
     const explanationField = this.element.querySelector(`#explanation_${queryDocPairId}`)
     if (explanationField) {
-      explanationField.value = ''
+      explanationField.value = ""
     }
   }
 
@@ -102,13 +104,13 @@ export default class extends Controller {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "X-CSRF-Token": this.getCSRFToken(),
         },
         body: JSON.stringify({
           query_doc_pair_id: queryDocPairId,
           rating: rating,
-          explanation: explanation
-        })
+          explanation: explanation,
+        }),
       })
 
       if (response.ok) {
@@ -141,7 +143,7 @@ export default class extends Controller {
     this.saveTimeout = setTimeout(async () => {
       // Get current rating if it exists
       const checkedRating = this.element.querySelector(
-        `input[name="judgement_${queryDocPairId}"]:checked`
+        `input[name="judgement_${queryDocPairId}"]:checked`,
       )
 
       const rating = checkedRating ? checkedRating.value : null
@@ -160,13 +162,13 @@ export default class extends Controller {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-CSRF-Token": this.getCSRFToken()
+            "X-CSRF-Token": this.getCSRFToken(),
           },
           body: JSON.stringify({
             query_doc_pair_id: queryDocPairId,
             rating: rating,
-            explanation: explanation
-          })
+            explanation: explanation,
+          }),
         })
 
         if (response.ok) {
@@ -184,21 +186,23 @@ export default class extends Controller {
   updateRatingButtons(queryDocPairId, selectedRating) {
     // Update radio button state and handle btn-preselected class
     const radios = this.element.querySelectorAll(`input[name="judgement_${queryDocPairId}"]`)
-    const labels = this.element.querySelectorAll(`#qdp_${queryDocPairId} .rating-buttons-container label`)
-    
+    const labels = this.element.querySelectorAll(
+      `#qdp_${queryDocPairId} .rating-buttons-container label`,
+    )
+
     // First remove btn-preselected from all labels
-    labels.forEach(label => {
-      label.classList.remove('btn-preselected')
+    labels.forEach((label) => {
+      label.classList.remove("btn-preselected")
     })
-    
+
     // Then update radio states and add btn-preselected to selected button
-    radios.forEach(radio => {
+    radios.forEach((radio) => {
       if (radio.value === selectedRating) {
         radio.checked = true
         // Find the corresponding label and add btn-preselected class
         const label = this.element.querySelector(`label[for="${radio.id}"]`)
         if (label) {
-          label.classList.add('btn-preselected')
+          label.classList.add("btn-preselected")
         }
       }
     })
@@ -206,18 +210,22 @@ export default class extends Controller {
 
   showResetButton(queryDocPairId) {
     // Check if reset button already exists
-    const existingButton = this.element.querySelector(`button[data-query-doc-pair-id="${queryDocPairId}"][data-action*="resetRating"]`)
+    const existingButton = this.element.querySelector(
+      `button[data-query-doc-pair-id="${queryDocPairId}"][data-action*="resetRating"]`,
+    )
 
     if (!existingButton) {
       // Create reset button dynamically
-      const ratingContainer = this.element.querySelector(`#qdp_${queryDocPairId} .rating-buttons .d-flex`)
+      const ratingContainer = this.element.querySelector(
+        `#qdp_${queryDocPairId} .rating-buttons .d-flex`,
+      )
       if (ratingContainer) {
-        const resetButton = document.createElement('button')
-        resetButton.type = 'button'
-        resetButton.className = 'btn btn-sm btn-outline-secondary ms-3'
-        resetButton.setAttribute('data-action', 'click->bulk-judgement#resetRating')
-        resetButton.setAttribute('data-query-doc-pair-id', queryDocPairId)
-        resetButton.title = 'Clear rating'
+        const resetButton = document.createElement("button")
+        resetButton.type = "button"
+        resetButton.className = "btn btn-sm btn-outline-secondary ms-3"
+        resetButton.setAttribute("data-action", "click->bulk-judgement#resetRating")
+        resetButton.setAttribute("data-query-doc-pair-id", queryDocPairId)
+        resetButton.title = "Clear rating"
         resetButton.innerHTML = '<i class="bi bi-x-circle"></i> Reset'
         ratingContainer.appendChild(resetButton)
       }
@@ -231,7 +239,7 @@ export default class extends Controller {
     // Remove all status classes
     statusElement.classList.remove("text-muted", "text-warning", "text-success", "text-danger")
 
-    switch(status) {
+    switch (status) {
       case "saving":
         statusElement.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Saving...'
         statusElement.classList.add("text-warning")
@@ -242,7 +250,7 @@ export default class extends Controller {
         // Hide success message after 2 seconds
         setTimeout(() => {
           if (statusElement.innerHTML.includes("Saved")) {
-            statusElement.innerHTML = ''
+            statusElement.innerHTML = ""
           }
         }, 2000)
         break
@@ -252,7 +260,7 @@ export default class extends Controller {
         // Hide reset message after 2 seconds
         setTimeout(() => {
           if (statusElement.innerHTML.includes("Reset")) {
-            statusElement.innerHTML = ''
+            statusElement.innerHTML = ""
           }
         }, 2000)
         break
@@ -265,7 +273,7 @@ export default class extends Controller {
         statusElement.classList.add("text-muted")
         break
       default:
-        statusElement.innerHTML = ''
+        statusElement.innerHTML = ""
     }
   }
 

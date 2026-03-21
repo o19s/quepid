@@ -76,7 +76,7 @@ describe("RatingsStore", () => {
         expect.objectContaining({
           method: "PUT",
           body: JSON.stringify({ rating: { doc_id: "doc-c", rating: 2 } }),
-        })
+        }),
       )
       expect(store.getRating("doc-c")).toBe(2)
       expect(store.ratedCount()).toBe(3)
@@ -101,7 +101,7 @@ describe("RatingsStore", () => {
         expect.objectContaining({
           method: "DELETE",
           body: JSON.stringify({ rating: { doc_id: "doc-a" } }),
-        })
+        }),
       )
       expect(store.getRating("doc-a")).toBeNull()
       expect(store.ratedCount()).toBe(1)

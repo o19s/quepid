@@ -5,7 +5,7 @@ export default class extends Controller {
 
   show(event) {
     event.preventDefault()
-    
+
     const link = event.currentTarget
     const documentFields = link.dataset.documentFields
     const queryText = link.dataset.queryText
@@ -17,7 +17,7 @@ export default class extends Controller {
     try {
       const parsed = JSON.parse(documentFields)
       this.contentTarget.textContent = JSON.stringify(parsed, null, 2)
-    } catch (e) {
+    } catch {
       // Fallback: show raw content if JSON parsing fails
       this.contentTarget.textContent = documentFields
     }

@@ -11,5 +11,5 @@ jobs:
         run: bin/docker r bin/rubocop
       - name: Tests — Rails (Minitest)
         run: bin/docker r rails test
-      - name: Tests — Frontend (Karma, JSHint, Vitest)
+      - name: Tests — Frontend (Karma, JSHint, ESLint/Prettier, Vitest)
         run: bin/docker r rails test:frontend

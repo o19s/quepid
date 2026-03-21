@@ -69,11 +69,12 @@ function buildHeaders(tryConfig) {
 
   if (tryConfig.custom_headers) {
     try {
-      const custom = typeof tryConfig.custom_headers === "string"
-        ? JSON.parse(tryConfig.custom_headers)
-        : tryConfig.custom_headers
+      const custom =
+        typeof tryConfig.custom_headers === "string"
+          ? JSON.parse(tryConfig.custom_headers)
+          : tryConfig.custom_headers
       Object.assign(headers, custom)
-    } catch (e) {
+    } catch {
       // ignore malformed custom headers
     }
   }
@@ -177,7 +178,7 @@ async function executeEsSearch(tryConfig, queryText, signal) {
 
   const hits = (data.hits && data.hits.hits) || []
   const total = data.hits && data.hits.total
-  const numFound = typeof total === "object" ? total.value : (total || 0)
+  const numFound = typeof total === "object" ? total.value : total || 0
 
   return {
     docs: hits.map((hit) => normalizeDoc(hit, fieldSpec, "es")),

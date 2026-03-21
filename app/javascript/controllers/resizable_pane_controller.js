@@ -52,9 +52,9 @@ export default class extends Controller {
 
   _moveEastTo(x) {
     this.sliderTarget.style.left = x + "px"
-    this.eastTarget.style.left = (SLIDER_WIDTH + x) + "px"
+    this.eastTarget.style.left = SLIDER_WIDTH + x + "px"
     this.mainTarget.style.width = x + "px"
-    this.eastTarget.style.width = (this.element.offsetWidth - x) + "px"
+    this.eastTarget.style.width = this.element.offsetWidth - x + "px"
   }
 
   // Stimulus action: data-action="mousedown->resizable-pane#grabSlider"

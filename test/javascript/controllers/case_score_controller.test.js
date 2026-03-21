@@ -29,7 +29,7 @@ describe("CaseScoreController", () => {
 
     application = Application.start()
     application.register("case-score", CaseScoreController)
-    await waitForController(application, "[data-controller=\"case-score\"]", "case-score")
+    await waitForController(application, '[data-controller="case-score"]', "case-score")
   })
 
   afterEach(() => {
