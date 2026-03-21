@@ -1,6 +1,8 @@
 # Turbo streams guide
 
-> When and how to use Turbo Streams as Rails replaces legacy client-side DOM updates. **Parity constraints** (what stays in the browser vs server): [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). Prefer streams for **notifications**, **server-rendered** mutation responses, and **server-owned** HTML fragments — not as the default replacement for the interactive search/score loop unless [intentional_design_changes.md](./intentional_design_changes.md) §2 is explicitly adopted.
+> When and how to use Turbo Streams as Rails replaces legacy client-side DOM updates. **Parity constraints** (what stays in the browser vs server): [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). Prefer streams for **notifications**, **server-rendered** mutation responses, and **server-owned** HTML fragments — not as the default replacement for the interactive search/score loop unless [intentional_design_changes.md](./intentional_design_changes.md) Section 2 is explicitly adopted.
+>
+> **Related:** [Turbo frame boundaries](./turbo_frame_boundaries.md) (DOM/frame IDs for the core workspace), [Workspace behavior](./workspace_behavior.md) (what subscribes to streams today vs the Angular try page).
 
 ---
 
@@ -35,7 +37,7 @@
 | **Rating updated** | `update` `rating-badge-<doc_id>`; on delete, `update` with empty rating. Client requests `Accept: text/vnd.turbo-stream.html` and applies via `Turbo.renderStreamMessage`. Error handling: `append` to `flash` on validation failure. |
 | **Rating deleted** | `update` `rating-badge-<doc_id>` with empty rating string. |
 | **Annotation created** | `prepend` to `annotations_list` (HTML from component or partial). Client requests `Accept: text/vnd.turbo-stream.html` and applies via `Turbo.renderStreamMessage`. |
-| **Score changed** | **Immediate:** broadcast `replace` for `case-header-score-#{case_id}` when a single query is scored. **Full evaluation run:** job broadcasts `replace` for `qscore-case-#{case_id}`, `case-header-score-#{case_id}`, and `query_list_#{case_id}` when complete. Subscribe via `turbo_stream_from(:notifications)` where score UI lives. Bulk rate/delete flows that trigger re-evaluation should refresh scores consistently. |
+| **Score changed** | **On main today:** the legacy Angular try page does **not** use `turbo_stream_from`; scores update in the client. **`RunCaseEvaluationJob`** broadcasts to the `:notifications` stream using `Turbo::StreamsChannel.broadcast_render_to` and partials under `admin/run_case/` that **`replace`** elements with ids `notification` (global progress) and `notification-case-#{case_id}` (per-case progress/completion). **`RatingsManager`** uses the same channel and `notification-case-*` with `notification_case_sync` while syncing book judgements to ratings. **Target shape for the new core UI:** when server-owned score/header/query-list markup exists, you might `replace` targets such as `qscore-case-#{case_id}`, `case-header-score-#{case_id}`, and `query_list_#{case_id}` (see [turbo_frame_boundaries.md](./turbo_frame_boundaries.md)); that wiring is not the current production path for the try workspace. |
 
 **Prefer Turbo Streams** (over ad hoc `fetch` + manual DOM surgery) for **server-owned** UI fragments: lists, badges, flash, job completion—where Rails already renders the HTML. The live search/result loop: [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). When the server can return `text/vnd.turbo-stream.html`, use that so Turbo applies updates consistently.
 
@@ -100,39 +102,53 @@ if (!res.ok) {
 }
 ```
 
-#### Complete example: using `apiFetch`
+#### Complete example: `fetch` + `apiUrl` / `csrfToken`
 
-When using a shared fetch helper (e.g. `app/javascript/api/fetch.js`), a controller might look like this:
+Use the same URL rules as the rest of the modern stack (`modules/api_url`):
 
 ```javascript
+import { apiUrl, csrfToken } from "modules/api_url"
+
 async create() {
   const useTurboStream = !!window.Turbo
   const accept = useTurboStream ? "text/vnd.turbo-stream.html" : "application/json"
-  
-  const res = await apiFetch(url, {
+  const url = apiUrl("api/cases/…") // path without a leading slash
+
+  const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: accept },
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken(),
+      Accept: accept
+    },
     body: JSON.stringify(body)
   })
 
+  const ct = res.headers.get("Content-Type") || ""
+
   if (!res.ok) {
+    if (ct.includes("turbo-stream")) {
+      const html = await res.text()
+      if (html?.trim()) window.Turbo.renderStreamMessage(html)
+      return
+    }
     const data = await res.json().catch(() => ({}))
     throw new Error(data.message || data.error || res.statusText)
   }
 
-  if (useTurboStream && res.headers.get("Content-Type")?.includes("turbo-stream")) {
+  if (useTurboStream && ct.includes("turbo-stream")) {
     const html = await res.text()
     if (html?.trim()) window.Turbo.renderStreamMessage(html)
   } else {
     const data = await res.json()
     this._prependAnnotation(data) // Manual DOM update
   }
-  
-  this.messageInputTarget.value = "" // Clear input
+
+  this.messageInputTarget.value = ""
 }
 ```
 
-Look for Stimulus controllers that set `Accept: text/vnd.turbo-stream.html` and call `Turbo.renderStreamMessage` under `app/javascript/controllers/`.
+When you add Stimulus-driven mutations, put controllers under `app/javascript/controllers/`, build URLs with `apiUrl()` from `modules/api_url` (never a leading `/`), and use `csrfToken()` for `X-CSRF-Token`. At the time of writing, core Stimulus code may still be evolving; search the tree for `text/vnd.turbo-stream.html` / `renderStreamMessage` to see live call sites.
 
 ### Server-side pattern (Rails)
 
@@ -232,7 +248,7 @@ respond_to :json, :turbo_stream
 
 ## 4. Broadcasting (Server-Side)
 
-For real-time updates from background jobs or other processes, use Turbo Stream broadcasting:
+For real-time updates from background jobs or other processes, use Turbo Stream broadcasting. Quepid’s recurring pattern is **`Turbo::StreamsChannel.broadcast_render_to`** with a **`.turbo_stream.erb` partial** that emits one or more `turbo_stream.*` actions (often `replace`). That matches `RunCaseEvaluationJob`, `RunJudgeJudyJob`, `ExportBookJob`, `RatingsManager`, and related code.
 
 ### Subscribing in views
 
@@ -240,12 +256,28 @@ For real-time updates from background jobs or other processes, use Turbo Stream 
 <%= turbo_stream_from(:notifications) %>
 ```
 
-This creates a WebSocket subscription to the `:notifications` channel.
+This subscribes the page to the `:notifications` stream (ActionCable). **Note:** `layouts/core.html.erb` does **not** include this today, so the default Angular try page does not receive these pushes; see [workspace_behavior.md](./workspace_behavior.md) Section 3.
 
-### Broadcasting from jobs/controllers
+### Broadcasting from jobs (pattern in this repo)
+
+See `app/jobs/run_case_evaluation_job.rb`: it calls `Turbo::StreamsChannel.broadcast_render_to(:notifications, …)` twice per progress tick (global + per-case), with partials `admin/run_case/notification` and `admin/run_case/notification_case`.
+
+**DOM targets those partials replace** (read the `.turbo_stream.erb` files—this is what must exist in the HTML):
+
+| Partial | Replaced element id |
+|---------|---------------------|
+| `admin/run_case/_notification.turbo_stream.erb` | `notification` |
+| `admin/run_case/_notification_case.turbo_stream.erb` | `notification-case-#{acase.id}` |
+| `admin/run_case/_notification_case_sync.turbo_stream.erb` | `notification-case-#{acase.id}` (book ↔ ratings sync) |
+| `books/_notification.turbo_stream.erb` | `notification-book-#{book.id}` |
+
+Views that should update live include `turbo_stream_from(:notifications)` and markup with those ids (e.g. `app/views/home/show.html.erb`, `app/views/books/index.html.erb` / `show`, admin websocket tester).
+
+### Alternative: `broadcast_replace_to` with a template
+
+You can also use `broadcast_replace_to` (or other `broadcast_*_to` helpers) when you want to target a DOM id directly without a separate `.turbo_stream.erb` wrapper. That style is useful for **future** core workspace targets (e.g. `qscore-case-#{case_id}`) once those elements exist:
 
 ```ruby
-# In a job or controller
 Turbo::StreamsChannel.broadcast_replace_to(
   :notifications,
   target: "qscore-case-#{case_id}",
@@ -254,26 +286,7 @@ Turbo::StreamsChannel.broadcast_replace_to(
 )
 ```
 
-### Use case: Score updates
-
-After a full case evaluation completes, a job may broadcast several replacements (header score, query list, etc.):
-
-```ruby
-Turbo::StreamsChannel.broadcast_replace_to(
-  :notifications,
-  target: "qscore-case-#{case_id}",
-  partial: "cases/qscore",
-  locals: { case: acase }
-)
-Turbo::StreamsChannel.broadcast_replace_to(
-  :notifications,
-  target: "query_list_#{case_id}",
-  partial: "core/queries/query_list",
-  locals: { case: acase, try: try }
-)
-```
-
-Include `turbo_stream_from(:notifications)` (or the channel you broadcast to) in the layout or workspace view that should receive those updates.
+Include `turbo_stream_from(:notifications)` (or the stream name you broadcast to) in any layout or view that should receive those updates.
 
 ---
 
@@ -412,7 +425,7 @@ end
 **Solutions:**
 1. Verify `turbo_stream_from(:channel)` is present in view
 2. Check WebSocket connection is established (browser DevTools → Network → WS)
-3. Ensure channel name matches: `broadcast_replace_to(:notifications, ...)`
+3. Ensure stream name matches on subscribe and broadcast (e.g. `turbo_stream_from(:notifications)` and `broadcast_render_to(:notifications, …)` or `broadcast_replace_to(:notifications, …)`)
 4. Verify ActionCable is configured and running
 5. Check server logs for broadcast errors
 

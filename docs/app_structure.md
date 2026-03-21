@@ -32,6 +32,15 @@ The main entry to the app is through a case page, which is controller by the `ap
 
 This is the basic structure of the app and should get you started.
 
+### Case workspace: strangler route (`new_ui`) and Stimulus
+
+The core case / try workspace is being **incrementally** ported off AngularJS using a [strangler fig](https://martinfowler.com/bliki/StranglerFigApplication.html) pattern. A parallel Rails route serves a **new UI** shell:
+
+- **Route:** `GET /case/:id(/try/:try_number)/new_ui` (try segment optional), handled by `CoreController#new_ui`, using the `core_new_ui` layout and views under `app/views/core/`.
+- **Modern JS:** [Stimulus](https://stimulus.hotwired.dev/) controllers live under `app/javascript/controllers/`; shared modules and importmap pins live under `app/javascript/modules/` (see `config/importmap.rb`). This stack sits **alongside** the legacy Angular bundle until each slice is cut over.
+
+For phased goals, API usage, Turbo notes, and inventories of what still lives in Angular, see **[docs/migration/README.md](migration/README.md)**.
+
 ## Long running/async processes
 
 We have a number of long running processes, like exporting/importing files, running a Case, or judging a Book with a LLM.  In all of these we use ActiveJob, which lets us run processes in the background.   The state is stored in the database via SolidQueue.   Websockets are used to communicate with the front end.

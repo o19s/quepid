@@ -2,9 +2,11 @@
 
 This document specifies the screenshots needed to illustrate `core_case_evaluation_manual.md`. Capture them from a running Quepid instance with at least one case that has queries, ratings, and a try with search results.
 
+**UI stack:** The core case screen is moving from the AngularJS app to **Rails + Stimulus** (`core_new_ui` layout, `app/views/core/*`). Use the case action bar labels from [core_case_evaluation_manual.md](./core_case_evaluation_manual.md) when capturing. Image paths and filenames below stay fixed so existing manual links keep working.
+
 **Where to save screenshots:** `docs/images/core_case_evaluation_manual/`  
 **Naming:** Use the filenames below (PNG recommended).  
-**Tips:** Use a case with 2–3 queries, one expanded; include the header and (optionally) the east pane open where relevant. You can redact or use demo data for sensitive content.
+**Tips:** Use a case with 2–3 queries, one expanded; include the header and (optionally) the east pane open where relevant. You can redact or use demo data for sensitive content. After expanding a query, **run search** (e.g. **Re-run** / **Run All**) so results and ratings UI are visible where your build supports them.
 
 ---
 
@@ -12,7 +14,7 @@ This document specifies the screenshots needed to illustrate `core_case_evaluati
 
 **Filename:** `01_full_layout.png`
 
-**What to capture:** The full core interface with the east pane **closed**: header (Relevancy Cases, Books, etc.), case header (case score, case name, try name, scorer), case actions bar (Select scorer, Judgements, Create snapshot, … Tune Relevance), and the query list with at least one query row visible (collapsed). Optional: one query expanded so the result list is visible.
+**What to capture:** The full core interface with the east pane **closed**: header (Relevancy Cases, Books, etc.), case header (case score, case name, try name, scorer), case actions bar (Select scorer, Judgements, Create snapshot, Compare snapshots, Import, Share case, Clone, Delete, Export, Tune Relevance), and the query list with at least one query row visible (collapsed). Optional: one query expanded so the result list is visible.
 
 **Purpose:** Illustrates the **Layout** and **Overview** — the three main areas (header, main area, no east pane).
 
@@ -32,7 +34,7 @@ This document specifies the screenshots needed to illustrate `core_case_evaluati
 
 **Filename:** `03_case_header_and_actions.png`
 
-**What to capture:** The case header row (case score badge, “Current case”, case name, try name, scorer name) and the full case actions bar (Select scorer, Judgements, Create snapshot, Diff, Import ratings, Share case, Clone case, Delete, Export case, Tune Relevance). No need to show the query list.
+**What to capture:** The case header row (case score badge, “Current case”, case name, try name, scorer name) and the full case actions bar: **Select scorer**, **Judgements**, **Create snapshot**, **Compare snapshots**, **Import**, **Share case**, **Clone**, **Delete**, **Export**, **Tune Relevance**. No need to show the query list.
 
 **Purpose:** Illustrates **Case Header** and **Case Actions Bar**.
 
@@ -42,7 +44,7 @@ This document specifies the screenshots needed to illustrate `core_case_evaluati
 
 **Filename:** `04_query_list_controls.png`
 
-**What to capture:** The query list area: Add query input, “Show only rated”, “Collapse all”, Sort (Manual, Name, Modified, Score, Errors), Filter Queries box, “Number of Queries”, FROG report link, and several **collapsed** query rows (score, query text, result count). Pagination at bottom if visible.
+**What to capture:** The query list area: **Run All** (play icon), **Add query** field (placeholder e.g. “Add a query to this case”) and **Add query** submit button, **Show only rated**, **Collapse all**, **Sort** (Manual, Name, Modified, Score, Errors), **Filter Queries** search box, **Number of Queries**, and several **collapsed** query rows (score strip, query text, rated/result summary as shown). Include the **FROG report** control if your build shows it (common on the legacy Angular query list); the Stimulus shell may omit it until parity. Pagination at the bottom **if** your build shows paging controls.
 
 **Purpose:** Illustrates **Query List** and **List-Level Controls** and **Per-Query Row (Collapsed)**.
 
@@ -52,9 +54,9 @@ This document specifies the screenshots needed to illustrate `core_case_evaluati
 
 **Filename:** `05_query_expanded.png`
 
-**What to capture:** One **expanded** query row: Score All, toolbar (Copy, Toggle Notes, Query Explain, Missing Documents, Query options, Move, Delete Query), and the **search results** list with at least 2–3 documents showing rating control, title, and snippets. Optionally the “Peek at next page” / “Browse on Solr” area at the bottom of the results.
+**What to capture:** One **expanded** query row after searches have run: at minimum **Re-run**, **Delete Query**, and the **search results** list with at least 2–3 documents (rating control, title, snippets) if your build renders them. **Legacy Angular UI:** also capture **Score All** and the full toolbar (Copy, Toggle Notes, Query Explain, Missing Documents, Query options, Move, Delete Query) when present. Optionally the “Peek at next page” / “Browse on Solr” area at the bottom of the results.
 
-**Purpose:** Illustrates **Per-Query Row (Expanded)**, **Search results**, and the **Toolbar**.
+**Purpose:** Illustrates **Per-Query Row (Expanded)**, **Search results**, and the **Toolbar** (full or partial depending on stack).
 
 ---
 
@@ -128,13 +130,13 @@ This document specifies the screenshots needed to illustrate `core_case_evaluati
 
 ---
 
-## 13. Diff modal
+## 13. Compare snapshots modal
 
 **Filename:** `13_diff_modal.png`
 
-**What to capture:** The **Diff** modal open: list of snapshots with checkboxes (one or more selected), and Confirm/Cancel (or equivalent). Optional: “Comparison view” or similar text visible.
+**What to capture:** **Compare Your Search Results** (or equivalent) open after **Compare snapshots** on the case actions bar. Show list of snapshots with checkboxes (one or more selected), and Confirm/Cancel (or equivalent).
 
-**Purpose:** Illustrates **Snapshots and Diffs** (Diff flow).
+**Purpose:** Illustrates **Snapshots** → **Compare snapshots**.
 
 ---
 
@@ -162,7 +164,7 @@ This document specifies the screenshots needed to illustrate `core_case_evaluati
 
 **Filename:** `16_loading_bootstrapping.png`
 
-**What to capture:** Either the initial “Loading...” state or the “Bootstrapping Queries” / “Updating Queries: X / Y” progress message during a run.
+**What to capture:** Either the initial loading state or in-progress query run feedback (e.g. “Bootstrapping Queries” / “Updating Queries: X / Y” on legacy Angular; equivalent messaging on the migrated stack if different).
 
 **Purpose:** Illustrates **Access and URL** loading/progress states.
 
@@ -183,8 +185,8 @@ This document specifies the screenshots needed to illustrate `core_case_evaluati
 | 9 | `09_east_pane_settings.png` | Settings |
 | 10 | `10_east_pane_history.png` | History |
 | 11 | `11_east_pane_annotations.png` | Annotations |
-| 12 | `12_snapshot_modal.png` | Snapshots and Diffs |
-| 13 | `13_diff_modal.png` | Snapshots and Diffs |
+| 12 | `12_snapshot_modal.png` | Snapshots |
+| 13 | `13_diff_modal.png` | Snapshots (Compare snapshots modal) |
 | 14 | `14_select_scorer_modal.png` | Case Actions Bar |
 | 15 | `15_delete_options_modal.png` | Case Actions Bar |
 | 16 | `16_loading_bootstrapping.png` | Access and URL (optional) |

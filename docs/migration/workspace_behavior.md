@@ -1,6 +1,6 @@
-# Workspace behavior reference (Angular core workspace)
+# Workspace behavior reference
 
-> **Scope:** On **`main`**, the **core query-tuning workspace** (`/case/:id` and `/case/:id/try/:try_number`, route name `case_core`) is still implemented with **AngularJS** (`app/views/layouts/core.html.erb`, `app/views/core/index.html.erb`, `app/assets/javascripts/routes.js`, `MainCtrl`, etc.). Sections 1–4 document that implementation. Other surfaces (e.g. books, home) may use Stimulus, Turbo, and Rails views independently. **Replacement plan:** [angularjs_elimination_plan.md](./angularjs_elimination_plan.md).
+> **Scope:** The **production** core query-tuning workspace at **`/case/:id`** and **`/case/:id/try/:try_number`** (route `case_core`) is **AngularJS** (`layouts/core.html.erb`, `core/index.html.erb`, `routes.js`, `MainCtrl`, etc.). **Sections 1–4** describe that stack only. A **parallel Stimulus + importmap** experiment lives at **`/case/:id/try/:try_number/new_ui`** (`core#new_ui`, layout `core_new_ui`)—see **§6** and [workspace_api_usage.md](./workspace_api_usage.md). Other surfaces (books, home, etc.) may use Stimulus/Turbo independently. **Replacement plan:** [angularjs_elimination_plan.md](./angularjs_elimination_plan.md).
 
 This document describes the behavior of that workspace. URLs are commonly written as `/case/:caseNo/try/:tryNo`; Rails uses `:id` and `:try_number` for the same segments.
 
@@ -145,6 +145,20 @@ When the judgement form is shown (Rails-rendered `app/views/judgements/_form.htm
 
 - **Rails judgement form (§2.1):** Shared non-Angular UI; keyboard shortcuts remain in `app/views/judgements/_form.html.erb`.
 
-- **Stimulus:** Controllers under `app/javascript/controllers/` cover other flows (e.g. share case, mapper wizard, books-related UI); they do **not** replace the core case/try workspace layout.
+- **Stimulus:** Besides **`new_ui`** (§6), controllers under `app/javascript/controllers/` cover share case, mapper wizard, books-related UI, imports, etc. None of those **replace** the Angular **`case_core`** page today; **`new_ui`** is an in-repo port target, not the default route.
 
 - **`RunCaseEvaluationJob`:** Background case evaluation and progress UI target the notification streams described in §3, not Turbo Frame IDs such as `qscore-case-*` or `query_list_*` (those frame/stream names appear in **migration design** docs as a target architecture, not in the Angular workspace templates in `app/views/core/`).
+
+---
+
+## 6. Experimental Stimulus workspace (`new_ui`)
+
+**Route:** `GET /case/:id/try/:try_number/new_ui` → `core#new_ui`, layout **`layouts/core_new_ui.html.erb`**, body **`app/views/core/new_ui.html.erb`** (query list via **`core/_query_list_shell.html.erb`**). Loads **`application_modern`** (importmap), not Angular bundles.
+
+**Behavior (high level; parity with §1–4 is incomplete):**
+
+- **Load:** Case and queries are **server-rendered** in the shell; there is no Angular **`bootstrapCase` / `loadQueries`** sequence. Try config for search is fetched client-side when needed (**`GET api/cases/:caseId/tries/:tryNumber`**), then **`modules/search_executor`** talks to Solr/ES/OS (direct or **`proxy/fetch`**)—see [workspace_api_usage.md](./workspace_api_usage.md).
+- **Search:** Results load when a query row is **expanded** (lazy), not automatically for every query on entry like **`queriesSvc.searchAll()`** in §1.1. **Run All** retriggers searches for all rows via the **`query-list`** controller.
+- **Ratings:** **`modules/ratings_store.js`** persists with PUT/DELETE on **`…/ratings`**; local UI updates; there is **no** Angular **`rating-changed`** / in-browser scorer **`scoreAll()`** pipeline—badge display is simplified compared to **`qscore-query`**.
+- **Add query:** **`add-query`** Stimulus controller POSTs single or bulk create; success path may **`window.location.reload()`** (see controller)—unlike §1.2’s in-place Angular refresh.
+- **Flash / realtime:** Layout does not use **`angular-flash`** or **`turbo_stream_from(:notifications)`**; feedback patterns differ from §4 and §3 (see [ui_consistency_patterns.md](./ui_consistency_patterns.md) for Stimulus/Turbo conventions).

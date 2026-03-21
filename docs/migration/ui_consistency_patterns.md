@@ -2,6 +2,8 @@
 
 > Guidelines for Bootstrap 5, modals, flash messages, and styling for **Rails + Stimulus + Turbo** surfaces in Quepid when porting the core workspace per [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) (or [rails_stimulus_migration_alternative.md](./rails_stimulus_migration_alternative.md)). Patterns here apply to **`main`**’s migration; **`deangularjs-experimental`** is a separate reference—see [deangularjs_experimental_review.md](./deangularjs_experimental_review.md).
 
+**See also:** [api_client.md](./api_client.md) (fetch URLs, CSRF, `data-quepid-root-url`), [turbo_streams_guide.md](./turbo_streams_guide.md) and [turbo_frame_boundaries.md](./turbo_frame_boundaries.md) (frames/streams), [../app_structure.md](../app_structure.md) (app layout).
+
 ---
 
 ## 1. Bootstrap 5
@@ -22,7 +24,7 @@ Quepid targets **Bootstrap 5**. Use the `data-bs-*` attributes, `btn-close`, and
 
 ---
 
-## 2. Modal Patterns
+## 2. Modal patterns
 
 Four established patterns: **confirm_delete** (generic confirmation), **share_case** (shared content modal), **per-component** (row-specific modals), and **expand_content** (full-screen content display).
 
@@ -59,7 +61,7 @@ For simple confirm/cancel actions (archive, unarchive, remove member, delete).
 
 **Behavior:** Controller creates a single shared modal (`#confirmDeleteModal`) if absent, shows it, and on confirm submits a hidden form with CSRF token. If Bootstrap is unavailable, it falls back to `window.confirm()`—do **not** rely on that for normal UX; treat it as an edge-case fallback only.
 
-**Examples:** `app/views/cases/index.html.erb`, `app/views/teams/_cases.html.erb`, `app/views/teams/show.html.erb`.
+**Examples:** `app/views/teams/_cases.html.erb`, `app/views/teams/_search_endpoints.html.erb`, and other team/case views using `confirm-delete`.
 
 ---
 
@@ -114,35 +116,35 @@ if (window.bootstrap && window.bootstrap.Modal) {
   // Preferred: reuses existing instance if present
   const modal = window.bootstrap.Modal.getOrCreateInstance(this.modalTarget)
   modal.show()
-  
+
   // Alternative (if instance management is handled elsewhere):
   // const modal = new window.bootstrap.Modal(this.modalTarget)
   // modal.show()
 }
 ```
 
-**Finding usages:** Search for Stimulus controllers that open per-row modals (e.g. `getOrCreateInstance` under `app/javascript/controllers/`, or elements with `data-*-target="modal"`). Use the same Stimulus + Bootstrap structure with partials or ViewComponents that render equivalent markup.
+**Finding usages:** Search for Stimulus controllers that open per-row modals (e.g. `getOrCreateInstance` under `app/javascript/controllers/`, or elements with `data-*-target="modal"`). Use the same Stimulus + Bootstrap structure with partials or ERB that render equivalent markup.
 
 ---
 
 ### Pattern D: Expand content (full-screen modal)
 
-For displaying large content (JSON, explain text, etc.) in a full-screen modal. Use a **partial** with a trigger button + `modal-fullscreen` (or `modal-fullscreen-custom`) and a small Stimulus controller. Open with the same `window.bootstrap.Modal.getOrCreateInstance` approach as Pattern C.
+For displaying large content (JSON, explain text, etc.) in a full-screen modal. Use a **partial** with a trigger button and Bootstrap’s **`modal-fullscreen`** (or **`modal-fullscreen-lg-down`**, etc.) on `modal-dialog` per [Bootstrap fullscreen modals](https://getbootstrap.com/docs/5.3/components/modal/#fullscreen-modal). Add a small Stimulus controller. Open with the same `window.bootstrap.Modal.getOrCreateInstance` approach as Pattern C.
 
 **Usage (conceptual ERB):**
 
 ```erb
 <div data-controller="expand-content">
   <button type="button" data-action="click->expand-content#open">Expand</button>
-  <div class="modal fade modal-fullscreen" data-expand-content-target="modal" tabindex="-1">
-    <div class="modal-dialog">...</div>
+  <div class="modal fade" data-expand-content-target="modal" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen">...</div>
   </div>
 </div>
 ```
 
 **Examples:** explain text from search results, large JSON viewers.
 
-**Custom fullscreen variant:** For modals that need a large viewport but with margins (e.g. Debug JSON modal), use `modal-fullscreen-custom` on the `.modal` wrapper. Defined in `core-modals.css`; uses `calc(100% - 100px)` for dialog size.
+**Custom inset fullscreen:** If you need a near-full viewport with margins (e.g. debug JSON), add scoped classes under [`app/assets/stylesheets/`](../../app/assets/stylesheets/) (`.css` only) and ensure that file is concatenated in [`build_css.js`](../../build_css.js)—do not rely on a fixed filename unless the repo defines one.
 
 ---
 
@@ -153,13 +155,13 @@ For displaying large content (JSON, explain text, etc.) in a full-screen modal. 
 | Simple confirm (archive, delete) | confirm_delete |
 | Shared modal, many triggers     | share_case     |
 | Per-row modal (query options)    | Per-component  |
-| Full-screen content display      | Expand-content Stimulus + fullscreen modal partial |
+| Full-screen content display      | Expand-content Stimulus + fullscreen `modal-dialog` |
 
 ---
 
-## 3. Flash Messages
+## 3. Flash messages
 
-Use Rails flash for server-side messages; use `window.flash` for client-side (Stimulus) feedback. Turbo Stream responses can append flash alerts into `#flash`.
+Use **Rails `flash`** for server-side messages after redirects. The `#flash` container lives in `app/views/layouts/_header.html.erb` and is filled by the `flash_messages` helper.
 
 ### Server-side (Rails)
 
@@ -169,68 +171,71 @@ flash[:alert]  = "Something went wrong."
 redirect_to some_path
 ```
 
-Rendered by `flash_messages` helper in `layouts/_header.html.erb` into `#flash`.
+### Angular workspace (legacy)
 
-### Client-side (Stimulus)
+Components use the **angular-flash** service injected as `flash` (e.g. `flash.success = '…'`), not necessarily `window.flash`. That drives the same `#flash` region via the Angular stack.
 
-```javascript
-if (window.flash) window.flash.success = "Query deleted."
-if (window.flash) window.flash.error = err.message
-```
-
-For redirects (e.g. after clone), store before navigating:
-
-```javascript
-if (window.flash?.store) window.flash.store("success", "Case cloned successfully!")
-window.location.href = newCaseUrl
-```
-
-If `utils/flash.js` is present in the bundle, it initializes `window.flash`; messages render into `#flash` with Bootstrap alert classes. Otherwise use Rails flash and inline Stimulus feedback only.
-
-### Turbo compatibility
+### Stimulus / fetch / Turbo
 
 - **Full-page navigation:** Rails flash works as usual.
-- **Turbo Frame / fetch:** Flash is not in the response. Use `window.flash` in Stimulus for immediate feedback, or have the server return a Turbo Stream that targets `flash`:
+- **Turbo Frame / JSON `fetch`:** The layout flash is not automatically updated. Prefer:
+  - A **Turbo Stream** response that appends an alert into `#flash` (see [turbo_streams_guide.md](./turbo_streams_guide.md)); use a small partial that matches `flash_messages` markup (Bootstrap `alert`, `btn-close`, `data-bs-dismiss="alert"`), or
+  - **Inline** feedback in the frame or controller target (dedicated element), or
+  - **`Turbo.visit`** / full reload when a redirect+flash is simpler.
 
-  ```ruby
-  turbo_stream.append "flash", partial: "shared/flash_alert", locals: { message: "Query deleted.", type: :success }
-  ```
+Example stream (partial name is conventional—add the partial when you implement the stream):
 
-  The `shared/_flash_alert.html.erb` partial renders a Bootstrap alert with proper classes and dismiss button. Use `type: :success`, `:error`, `:notice`, `:info`, or `:alert`.
+```ruby
+turbo_stream.append "flash", partial: "shared/flash_alert", locals: { message: "Query deleted.", type: :success }
+```
 
-- **Turbo submit feedback:** A body-level Stimulus controller can listen for `turbo:submit-end`; if the response is JSON and indicates failure, set `window.flash.error`. Skip when the response is HTML so the frame can show validation errors.
+- **Turbo submit feedback:** A controller can listen for `turbo:submit-end`; on JSON failure, show an error in the form area or append to `#flash` via a stream—avoid double messaging when the response is HTML with inline validation errors.
 
-### Flash types
+### Client-side navigation after an action
 
-| Type    | Bootstrap class  |
-|---------|------------------|
-| success | alert-success    |
-| error   | alert-danger     |
-| notice  | alert-info       |
-| info    | alert-info       |
-| alert   | alert-warning    |
+Do **not** assign `window.location.href = '/'` for app root. Use **server-generated relative URLs**, **`Turbo.visit`**, or root from **`document.body.dataset.quepidRootUrl`** (set on `<body>` in core layouts). Details: [api_client.md](./api_client.md).
 
-**Note:** Both `notice` and `info` map to `alert-info`. Use `notice` for Rails flash (conventional), `info` for client-side when you want explicit info styling.
+If you must stash a message before a client-driven navigation, keep the same URL rules; there is no separate `window.flash` helper in the Stimulus bundle today—prefer streams or Rails flash on the next full response.
 
-Defined in `application_helper#bootstrap_class_for` (and `utils/flash.js` when that module is loaded).
+### Flash types (Rails helper)
+
+`ApplicationHelper#bootstrap_class_for` maps flash keys to Bootstrap alert classes:
+
+| Type (`flash[:x]`) | Bootstrap class  |
+|--------------------|------------------|
+| `success`          | `alert-success`  |
+| `error`            | `alert-danger`   |
+| `notice`           | `alert-info`     |
+| `alert`            | `alert-warning`  |
+
+Other keys fall through to the string form of the type; extend `bootstrap_class_for` if you add a first-class `:info` (or use `:notice` for informational server messages).
 
 ---
 
-## 4. Styling (CSS Variables)
+## 4. Stimulus and new UI conventions
 
-Use shared CSS custom properties for spacing, colors, and borders so UI stays consistent across components. **Source of truth:** [`app/assets/stylesheets/variables.css`](../../../app/assets/stylesheets/variables.css) — token names and values; loaded with the app CSS bundles. If you add a long-form reference doc, link it from here or from [`docs/app_structure.md`](../../app_structure.md).
+For code under `app/javascript/controllers/` and `app/javascript/modules/`:
 
-**Prefer in new code:**
-- `var(--quepid-spacing-*)` for padding and margins (step-based scale)
-- `var(--quepid-color-*)` for text, borders, backgrounds
-- `var(--quepid-border-radius-*)`, `var(--quepid-border-width)` for borders
+- **URLs:** Build fetch targets with **`apiUrl()`** from `modules/api_url` (and **`csrfToken()`** from the same module) so paths work with a relative URL root. Do not hardcode a leading `/` on site-relative paths. See [api_client.md](./api_client.md).
+- **Controller wiring:** Prefer **`static outlets`** for cross-controller calls; implement **`disconnect()`** and **`AbortController`** when starting async work. Use explicit **`static values`** with types (and defaults where needed).
+- **Markup safety:** Escape text for HTML and attributes appropriately in any JS that builds strings.
+- **Styling:** Do not set inline `style="..."` from Stimulus for structural layout; use classes in **`app/assets/stylesheets/*.css`** and register inputs in **`build_css.js`**. Use **`.css` only** (no `.scss`) for new bundles.
 
-**Example:**
+---
+
+## 5. Styling (CSS)
+
+- **Bootstrap:** Rely on Bootstrap 5 utilities and components; the main bundle is assembled in **`build_css.js`** (Bootstrap + app stylesheets).
+- **App-specific:** Add or extend files under [`app/assets/stylesheets/`](../../app/assets/stylesheets/). Feature areas sometimes define **local CSS custom properties** (e.g. spacing tokens in a feature stylesheet)—reuse those patterns when adding a new surface rather than duplicating magic numbers.
+- **Consistency:** Prefer shared tokens (Bootstrap or existing app variables in the same feature) for spacing, borders, and colors so new UI matches adjacent screens.
+
+**Example (using plain CSS and optional custom properties defined nearby):**
+
 ```css
 .my-component {
-  padding: var(--quepid-spacing-5) var(--quepid-spacing-7);
-  border: var(--quepid-border-width) solid var(--quepid-color-border);
-  border-radius: var(--quepid-border-radius-md);
-  color: var(--quepid-color-text);
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: var(--bs-border-radius, 0.375rem);
+  color: var(--bs-body-color);
 }
 ```

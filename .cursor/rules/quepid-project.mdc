@@ -33,3 +33,8 @@ alwaysApply: true
 ## Boolean Params
 
 - In controllers, use the project helper for boolean params: `archived = deserialize_bool_param(params[:archived])` instead of treating true/false as strings.
+
+## Stimulus / modern JS (detailed)
+
+- Controller patterns, `apiUrl()`, escaping, Vitest expectations: **`docs/stimulus_and_modern_js_conventions.md`**
+- Fetch, CSRF, relative roots, proxy: **`docs/migration/api_client.md`**

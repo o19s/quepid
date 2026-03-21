@@ -105,11 +105,11 @@ A horizontal toolbar of actions for the current case.
 | Judgements | `<judgements>` | SS-03 | Action bar — "Judgements" with book icon |
 | Create snapshot | `TakeSnapshotCtrl` | SS-03 | Action bar — "Create snapshot" with camera icon |
 | Compare snapshots | `<diff>` | SS-03 | Action bar — "Compare snapshots" with bar chart icon |
-| Import ratings | `<import-ratings>` | SS-03 | Action bar — "Import" |
+| Import | `<import-ratings>` | SS-03 | Action bar — "Import" |
 | Share case | `<share-case>` | SS-03 | Action bar — "Share case" with arrow icon |
-| Clone case | `<clone-case>` | SS-03 | Action bar — "Clone" with copy icon |
+| Clone | `<clone-case>` | SS-03 | Action bar — "Clone" with copy icon |
 | Delete case | `<delete-case-options>` | SS-03 | Action bar — "Delete" with X icon |
-| Export case | `<export-case>` | SS-03 | Action bar — "Export" with document icon |
+| Export | `<export-case>` | SS-03 | Action bar — "Export" with document icon |
 | Tune Relevance | `ng-click="toggleDevSettings()"` | SS-03 | Action bar — "Tune Relevance" with wrench icon |
 
 ---
@@ -252,7 +252,7 @@ The east pane (toggled by "Tune Relevance") contains a tabbed interface. All tab
 | Modal | Component | Screenshot | What's Visible |
 |-------|-----------|------------|----------------|
 | Snapshot | `TakeSnapshotCtrl` | SS-12 | "Take a Snapshot of all your queries?" — name input, Include Document Fields checkbox, Take Snapshot / Cancel buttons |
-| Compare snapshots (diff) | `<diff>` | SS-13, SS-60 | "Compare Your Search Results" — Snapshot 1 dropdown, "+ Add Snapshot" button, Update Comparison Settings / Clear Comparison View / Cancel buttons |
+| Compare snapshots | `<diff>` | SS-13, SS-60 | "Compare Your Search Results" — Snapshot 1 dropdown, "+ Add Snapshot" button, Update Comparison Settings / Clear Comparison View / Cancel buttons |
 | Select scorer | `ScorerCtrl` | SS-14 | "How would you like to score this case?" — list of scorers (nDCG@10, DCG@10, CG@10, P@10, AP@10 highlighted, RR@10), + Create New Scorer / Select Scorer / Cancel buttons |
 | Delete options | `<delete-case-options>` | SS-15 | "Delete Options for Case" — three toggle buttons (Delete All Queries, Archive Case, Delete Case), Cancel / red Delete button |
 | Clone case | `<clone-case>` | SS-17 | "Clone case: TMDB Movie Search" — new case name input, history toggle (Only specific try / Entire history), try selector dropdown, content checkboxes (Include Queries, Include Ratings), Cancel / Clone buttons |

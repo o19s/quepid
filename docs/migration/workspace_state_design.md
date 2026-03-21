@@ -1,10 +1,12 @@
 # Workspace state design (core case UI)
 
-**Where state lives** when the core case workspace is Rails-driven under the parity plan ([angularjs_elimination_plan.md](./angularjs_elimination_plan.md)).
+**Where state lives** under the **parity plan** for a Rails-first core case workspace ([angularjs_elimination_plan.md](./angularjs_elimination_plan.md)). This page is **target architecture**, not a line-by-line map of every file on `main`.
+
+**Implemented today (two surfaces):** [workspace_behavior.md](./workspace_behavior.md) — **Angular `case_core`** (full client loop: `docCacheSvc`, splainer-search, `ScorerFactory`, `queriesSvc` scoring events) vs **experimental `new_ui`** (smaller client: `modules/search_executor`, shared try-config fetch in `query_row_controller.js`, per-row `modules/ratings_store.js`, `modules/scorer.js` for badge colors only—no case-wide in-browser scorer pipeline yet). See [workspace_behavior.md §6](./workspace_behavior.md#6-experimental-stimulus-workspace-new_ui).
 
 **Authoritative on the server:** persisted case, try, queries, ratings (via JSON APIs), exports/imports, snapshots metadata — same contracts Angular uses today ([workspace_api_usage.md](./workspace_api_usage.md)).
 
-**Substantial client state (parity):** Ephemeral search hits, doc cache, interactive scoring, query-list UI toggles, optimistic ratings — more than “Stimulus-only micro-state,” not a full DB replica. **Why that split and when it may change:** [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) (including [Browser DevTools / `/proxy/fetch`](./angularjs_elimination_plan.md#browser-devtools-visibility-and-proxyfetch)); signed-off product deltas: [intentional_design_changes.md](./intentional_design_changes.md) §2.
+**Substantial client state (full parity target):** Ephemeral search hits, doc cache, interactive scoring, query-list UI toggles, optimistic ratings — more than “Stimulus-only micro-state,” not a full DB replica. **`new_ui` today** covers only part of this row; expand toward the same responsibilities as the Angular workspace as the port proceeds. **Why that split and when it may change:** [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) (including [Browser DevTools / `/proxy/fetch`](./angularjs_elimination_plan.md#browser-devtools-visibility-and-proxyfetch)); signed-off product deltas: [intentional_design_changes.md](./intentional_design_changes.md) §2.
 
 **Turbo Frames/Streams:** optional shell/fragment updates — see [turbo_frame_boundaries.md](./turbo_frame_boundaries.md) and [turbo_streams_guide.md](./turbo_streams_guide.md); not the default stand-in for the in-browser result loop unless scope explicitly changes ([angularjs_elimination_plan.md](./angularjs_elimination_plan.md)).
 
@@ -42,7 +44,7 @@ Domain **persistence** lives on the server. Mutations go through `fetch` to the 
 | **Modals** | Export, clone, share, import | [ui_consistency_patterns.md](./ui_consistency_patterns.md) |
 | **Focus / shortcuts** | Keyboard, focus ring | Browser + Stimulus |
 | **Drafts** | Text before submit | Stimulus until submit commits server-side |
-| **Live search & scores** | Result lists, `ScorerFactory` output, doc cache | Plain JS modules + Stimulus/React glue — **parity** with Angular |
+| **Live search & scores** | Result lists, scorer output, doc cache | Plain JS modules + Stimulus/React glue — **parity** with Angular (`splainer-search` + `ScorerFactory` today); **`new_ui`** uses **`modules/search_executor`** and **`modules/scorer.js`** (display helpers) plus API ratings, not the full Angular scorer graph yet |
 
 If it must **survive reloads or sessions** as the only copy, it belongs in **server state** or user preferences — not undocumented `localStorage`.
 
@@ -66,7 +68,8 @@ Use **Frames** to carve regions that can load or navigate independently (query l
 ├──────────────────────────────────────────────────────────────┤
 │  SERVER: persisted case / try / queries / ratings → api/...   │
 ├──────────────────────────────────────────────────────────────┤
-│  CLIENT (plain JS): splainer search, ScorerFactory, doc cache   │
+│  CLIENT (plain JS): search exec + scorer/doc cache (Angular:     │
+│    splainer + ScorerFactory; new_ui: search_executor + ratings)  │
 ├──────────────────────────────────────────────────────────────┤
 │  CLIENT (Stimulus/React): layout, modals, toggles, selection   │
 ├──────────────────────────────────────────────────────────────┤

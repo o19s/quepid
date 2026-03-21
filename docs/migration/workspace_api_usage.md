@@ -2,7 +2,7 @@
 
 Reference for **JSON (and related) HTTP endpoints** the **core case workspace** uses: methods, path patterns, and whether calls mutate state. Paths are **relative to the app root** (no leading `/`). URL rules: [api_client.md](./api_client.md).
 
-**Interactive workspace search:** Where live search runs (browser vs server), proxy/DevTools expectations, and how the server-side `GET api/cases/:case_id/tries/:try_number/queries/:query_id/search` helper fits (jobs, snapshots, tooling) are defined in [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). This page lists **endpoints only**. Product changes to the search model: [intentional_design_changes.md](./intentional_design_changes.md) §2.
+**Interactive workspace search:** The **Rails+Stimulus** case workspace at `/case/:id/try/:try_number/new_ui` loads try configuration with **`GET api/cases/:caseId/tries/:tryNumber`**, then runs **Solr / Elasticsearch / OpenSearch** requests **from the browser** (template hydration in `modules/search_executor`), optionally via **`proxy/fetch`** when the try is configured to proxy—see [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) and [api_client.md](./api_client.md). **Snapshot** replay uses **`GET api/cases/:caseId/snapshots/:snapshotId/search`**. This page lists **endpoints only**. Product changes to the search model: [intentional_design_changes.md](./intentional_design_changes.md) §2.
 
 **Turbo / Stimulus:** For `Accept: text/vnd.turbo-stream.html`, frames, and broadcasts, see [turbo_streams_guide.md](./turbo_streams_guide.md) and [turbo_frame_boundaries.md](./turbo_frame_boundaries.md). Flash patterns: [ui_consistency_patterns.md](./ui_consistency_patterns.md).
 
@@ -13,8 +13,9 @@ Reference for **JSON (and related) HTTP endpoints** the **core case workspace** 
 | Area | Read-only endpoints | Mutating endpoints |
 |------|---------------------|-------------------|
 | Cases | GET cases, dropdown/cases, cases/:id, cases?archived=true, cases/:id/scores, scores/all, metadata (via GET case) | POST cases, PUT cases/:id, DELETE cases/:id, POST run_evaluation, PUT scorers, PUT metadata, PUT scores, POST clone/cases, DELETE bulk/cases/:id/queries/delete |
-| Tries | GET cases/:id/tries | POST cases/:id/tries, PUT cases/:id/tries/:tryNo, DELETE cases/:id/tries/:tryNo, POST clone/cases/:id/tries/:tryNo |
-| Queries | GET cases/:id/queries (bootstrap), GET …/search (server-side run), GET notes, GET options | POST queries, PUT notes, PUT options, PUT position, DELETE queries/:id, PUT move (other_case_id), POST bulk/cases/:id/queries |
+| Tries | GET cases/:id/tries, GET cases/:id/tries/:tryNo (single try; `new_ui` search config) | POST cases/:id/tries, PUT cases/:id/tries/:tryNo, DELETE cases/:id/tries/:tryNo, POST clone/cases/:id/tries/:tryNo |
+| Queries | GET cases/:id/queries (bootstrap), GET notes, GET options; live engine search is client-side (+ `proxy/fetch`), not a JSON `queries/.../search` route in current Rails API | POST queries, PUT notes, PUT options, PUT position, DELETE queries/:id, PUT move (other_case_id), POST bulk/cases/:id/queries |
+| Proxy | `GET`/`POST` `proxy/fetch?url=…` (outbound to search engine URL) | — |
 | Ratings | (Often embedded in query bootstrap) | PUT ratings, PUT bulk/ratings, DELETE ratings, POST bulk/ratings/delete |
 | Scorers | GET scorers, GET scorers/:id, GET cases/:id/scorers | POST scorers, PUT scorers/:id, DELETE scorers/:id |
 | Snapshots | GET cases/:id/snapshots?shallow=true, GET …/snapshots/:sid?shallow=true, GET …/snapshots/:sid/search | POST cases/:id/snapshots, DELETE snapshots/:id, POST cases/:id/snapshots/imports |
@@ -31,10 +32,32 @@ Reference for **JSON (and related) HTTP endpoints** the **core case workspace** 
 ## Conventions
 
 - **CSRF** and **base URL** (no hardcoded leading `/`): follow [api_client.md](./api_client.md) and existing Rails meta tags.
+- **Stimulus / ES modules:** build paths with **`apiUrl()`** and **`csrfToken()`** from **`app/javascript/modules/api_url.js`** (importmap pin **`modules/api_url`**) so URLs work under a relative app root—see [api_client.md](./api_client.md). **`proxy/fetch`** intentionally omits CSRF (per `ProxyController`).
 - **JSON** for API bodies; export **GET**s return file bodies (CSV, JSON, text).
 - **snake_case** in JSON from the server; **camelCase** common in legacy JS clients.
 - **Turbo Streams:** mutating endpoints may support `Accept: text/vnd.turbo-stream.html` when the UI is server-rendered—[turbo_streams_guide.md](./turbo_streams_guide.md).
-- **Snapshot search** (`GET …/snapshots/:id/search`): doc lookup when the engine does not support lookup-by-id (same pattern as legacy workspace).
+- **Snapshot search** (`GET …/snapshots/:id/search`): server-side search-shaped results for snapshot content.
+
+---
+
+## Stimulus `new_ui` callers (non-exhaustive)
+
+| Module / controller | Endpoints used |
+|---------------------|----------------|
+| `app/javascript/controllers/query_row_controller.js` | `GET api/cases/:caseId/tries/:tryNumber` (shared cache); `DELETE api/cases/:caseId/queries/:queryId`; ratings via `RatingsStore` |
+| `app/javascript/modules/search_executor.js` | Search engine URL directly, or `GET`/`POST` **`proxy/fetch?url=…`** (via `apiUrl`) when the try proxies |
+| `app/javascript/modules/ratings_store.js` | `PUT` / `DELETE` **`api/cases/:caseId/queries/:queryId/ratings`** (JSON body with `rating: { doc_id, rating }` / delete payload) |
+| `app/javascript/controllers/add_query_controller.js` | `POST api/cases/:caseId/queries`, `POST api/bulk/cases/:caseId/queries` |
+
+Other Stimulus features (mapper wizard, books, imports) use **`fetch`** with server-supplied URLs or path-relative paths—see [api_client.md](./api_client.md).
+
+---
+
+## Proxy (search engine egress)
+
+| Method | Path / pattern | Notes | Mutating? |
+|--------|----------------|-------|-----------|
+| GET, POST | `proxy/fetch?url=…` | Target URL is percent-encoded; used by **`search_executor`** when `proxy_requests` is not false. No Rails CSRF header. | No (Quepid state) |
 
 ---
 
@@ -65,6 +88,7 @@ Reference for **JSON (and related) HTTP endpoints** the **core case workspace** 
 | Method | Path / pattern | Request body/params | Response usage | Mutating? |
 |--------|----------------|---------------------|----------------|-----------|
 | GET | `api/cases/:caseId/tries` | — | `response.data.tries` | No |
+| GET | `api/cases/:caseId/tries/:tryNumber` | — | Single try JSON (search URL, args, `field_spec`, `proxy_requests`, …); used by **`new_ui`** | No |
 | POST | `api/cases/:caseId/tries` | `try`, optional `search_endpoint`, `parent_try_number`, `curator_vars` | New try | Yes |
 | PUT | `api/cases/:caseId/tries/:tryNumber` | Same as POST or `{ name }` rename | — | Yes |
 | DELETE | `api/cases/:caseId/tries/:tryNumber` | — | — | Yes |

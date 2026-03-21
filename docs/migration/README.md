@@ -15,18 +15,20 @@ We are using the **[strangler fig pattern](https://martinfowler.com/bliki/Strang
 
 ## Stack options (same JSON APIs)
 
+Phased scope stays in the elimination plan. React-era reference material lives under [old/](./old/).
+
 | Doc | Role |
 |-----|------|
 | [rails_stimulus_migration_alternative.md](./rails_stimulus_migration_alternative.md) | Stimulus + Turbo artifacts (no duplicate phase checklist — use elimination plan) |
 | [old/react_migration_plan.md](./old/react_migration_plan.md) | React + esbuild alternative (same; phases authoritative in elimination plan) |
-| [migration_roundtable_discussion.md](./migration_roundtable_discussion.md) | Discussion comparing the two paths |
+| [old/migration_roundtable_discussion.md](./old/migration_roundtable_discussion.md) | Archived discussion comparing the two paths |
 
 ## Inventories and behavior
 
 | Doc | Role |
 |-----|------|
 | [angularjs_inventory.md](./angularjs_inventory.md) | File-level Angular map |
-| [angularjs_ui_inventory.md](../angularjs_ui_inventory.md) | Feature / screenshot map |
+| [angularjs_ui_inventory.md](./angularjs_ui_inventory.md) | Feature / screenshot map |
 | [angular_services_responsibilities_mapping.md](./angular_services_responsibilities_mapping.md) | Services → server vs client after port |
 | [workspace_behavior.md](./workspace_behavior.md) | Current Angular workspace flows |
 | [workspace_api_usage.md](./workspace_api_usage.md) | API paths the workspace uses |
@@ -39,13 +41,14 @@ We are using the **[strangler fig pattern](https://martinfowler.com/bliki/Strang
 | [turbo_frame_boundaries.md](./turbo_frame_boundaries.md) | Frame IDs and boundaries (design reference) |
 | [turbo_streams_guide.md](./turbo_streams_guide.md) | Stream actions and use cases |
 | [api_client.md](./api_client.md) | fetch, CSRF, relative URLs |
+| [../stimulus_and_modern_js_conventions.md](../stimulus_and_modern_js_conventions.md) | **Stimulus + module guardrails** (`apiUrl`, outlets, tests) — pairs with api_client |
 | [ui_consistency_patterns.md](./ui_consistency_patterns.md) | Bootstrap 5, modals, flash |
 
 ## Product / security notes (read before “improving” UX)
 
 | Doc | Role |
 |-----|------|
-| [intentional_design_changes.md](./intentional_design_changes.md) | **§1** = recommended API hardening / robustness. **§2** = product ideas from experimental — **not** parity scope unless explicitly signed off |
+| [intentional_design_changes.md](./intentional_design_changes.md) | **Section 1** = recommended API hardening / robustness. **Section 2** = product ideas from experimental — **not** parity scope unless explicitly signed off |
 
 ## Manuals and tooling
 
@@ -54,7 +57,6 @@ We are using the **[strangler fig pattern](https://martinfowler.com/bliki/Strang
 | [core_case_evaluation_manual.md](./core_case_evaluation_manual.md) | User-facing manual |
 | [core_case_evaluation_manual_screenshots.md](./core_case_evaluation_manual_screenshots.md) | Screenshot checklist |
 | [screenshot_automation.md](./screenshot_automation.md) | Playwright capture notes |
-| [markdown_files_inventory.md](./markdown_files_inventory.md) | Repo `.md` inventory |
 
 ## Other
 
@@ -62,4 +64,3 @@ We are using the **[strangler fig pattern](https://martinfowler.com/bliki/Strang
 |-----|------|
 | [pragmatic_engineering_setup_review.md](./pragmatic_engineering_setup_review.md) | CI / tooling review |
 | [code_review_findings.md](./code_review_findings.md) | Security / review notes |
-| [system_notes.md](./system_notes.md), [stuff_to_talk_about.md](./stuff_to_talk_about.md) | Working notes |

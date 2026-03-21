@@ -1,8 +1,8 @@
 # Code review findings
 
-**Date:** February 19, 2026  
+**Date:** March 21, 2026  
 **Reviewer:** AI code review  
-**Scope:** Security and performance notes for **this repository (`main`-line)**. Actionable regardless of the Angular core port; cross-check file paths after large refactors.
+**Scope:** Security and performance notes for **this repository (`main`-line)**. Actionable regardless of the Angular core port. The core UI query list uses Stimulus (`query_row_controller.js`) and `app/javascript/modules/search_executor.js` for live search; those call the same `/proxy/fetch` endpoint when a try has `proxy_requests` enabled. Cross-check file paths after large refactors.
 
 ---
 
@@ -11,9 +11,6 @@
 1. [Security concerns](#security-concerns)
 2. [Performance issues](#performance-issues)
 3. [Proxy usage in production](#proxy-usage-in-production)
-4. [Prioritization summary](#prioritization-summary)
-5. [Notes](#notes)
-6. [Next steps](#next-steps)
 
 ---
 
@@ -44,7 +41,7 @@
 
 **Note:** The proxy controller is documented as a development/testing tool (see comments), but it's accessible in production.
 
-**Pragmatic note:** Proxy is used in production when search endpoints have `proxy_requests: true` (CORS workaround). Unauthenticated + arbitrary URL = SSRF. Require auth or disable in prod until fixed.
+**Pragmatic note:** Proxy is used in production when search endpoints have `proxy_requests: true` (CORS workaround). The Stimulus stack defaults to the proxy when `proxy_requests` is not explicitly false (`search_executor.js`). Unauthenticated + arbitrary URL = SSRF. Require auth or disable in prod until fixed.
 
 ---
 
@@ -96,7 +93,7 @@
 
    Missing `scores` association if scores are accessed in the view.
 
-3. **`app/controllers/api/v1/cases_controller.rb`** (`fetch_full_cases`) — `includes` / `preload` for `:tries`, `:teams`, `:cases_teams` is sound if those match what the response uses; watch for extra associations touched in serializers. The `left_outer_joins(:metadata)` path is called out separately under [Inefficient query in API cases controller](#inefficient-query-in-api-cases-controller--p2).
+3. **`app/controllers/api/v1/cases_controller.rb`** (`fetch_full_cases`, ~`187`–`196`) — `includes(:owner, :book).preload(:tries, :teams, :cases_teams)` is sound if those match what the response uses; watch for extra associations touched in serializers. The `left_outer_joins(:metadata)` path is called out separately under [Inefficient query in API cases controller](#inefficient-query-in-api-cases-controller--p2).
 
 **Impact:** Performance degradation with large datasets.
 
@@ -116,14 +113,15 @@
 
 **Location:** `app/controllers/api/v1/cases_controller.rb:192-195`
 
-**Issue:** The query uses `left_outer_joins(:metadata)` with a comment "this is slow!" and orders by `case_metadata.last_viewed_at`.
+**Issue:** `fetch_full_cases` uses `left_outer_joins(:metadata)` with a comment "this is slow!" and orders by `case_metadata.last_viewed_at`.
 
 **Current code:**
 
 ```ruby
-.left_outer_joins(:metadata) # this is slow!
-.select('cases.*, case_metadata.last_viewed_at')
-.order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
+base_query.includes(:owner, :book).preload(:tries, :teams, :cases_teams)
+  .left_outer_joins(:metadata) # this is slow!
+  .select('cases.*, case_metadata.last_viewed_at')
+  .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
 ```
 
 **Impact:** Performance issues with large datasets.
@@ -142,4 +140,4 @@
 
 ## Proxy usage in production
 
-The proxy (`/proxy/fetch`) is invoked when a search endpoint has `proxy_requests: true` — used to avoid CORS when the frontend can't call Solr/ES directly. This means the proxy is part of the normal search flow in some deployments, not just a dev tool. Treat proxy security (SSRF item above) as production-critical if you use proxy endpoints.
+The proxy (`/proxy/fetch`) is invoked when a search endpoint has `proxy_requests: true` — used to avoid CORS when the frontend can't call Solr/ES directly. In the migrated core UI, `app/javascript/modules/search_executor.js` builds that URL (via `buildProxyUrl`) for Solr and ES/OpenSearch when `tryConfig.proxy_requests !== false`. This means the proxy is part of the normal search flow in some deployments, not just a dev tool. Treat proxy security (SSRF item above) as production-critical if you use proxy endpoints.
