@@ -55,7 +55,26 @@ node test/visual_parity/compare_apis.mjs --diff --branch-a main --branch-b featu
 node test/visual_parity/generate_report.mjs --branch-a main --branch-b feature-x
 ```
 
-Other modes:
+### Route comparison (same branch, different URLs)
+
+Compare Angular `/case/:id` routes vs Stimulus `/case/:id/new_ui` routes on the current branch. Boots Docker once, captures workspace pages twice (default paths and new-ui variant paths), then generates the report:
+
+```bash
+bash test/visual_parity/run_comparison.sh --routes               # labels: "angular" vs "new-ui"
+bash test/visual_parity/run_comparison.sh --routes old-ui new-ui  # custom labels
+```
+
+The capture script supports `--label` (output directory name) and `--variant` (use alternate paths for pages that define variants) for standalone use:
+
+```bash
+node test/visual_parity/capture_screenshots.mjs --branch main --label angular --only workspace --exclude new-ui --base-url http://localhost:3010
+node test/visual_parity/capture_screenshots.mjs --branch main --label new-ui --variant new-ui --base-url http://localhost:3010
+node test/visual_parity/generate_report.mjs --branch-a angular --branch-b new-ui
+```
+
+Use `--list` to see which pages define variants.
+
+### Other modes
 
 ```bash
 bash test/visual_parity/run_comparison.sh --capture <branch>   # single branch; uses this repo if checkout matches
@@ -74,7 +93,7 @@ bash test/visual_parity/run_comparison.sh --remove-worktrees   # remove VP workt
 
 Use this harness as a **smoke detector**, not proof of full UX or API parity.
 
-- **Static pages only** — Scripts take full-page screenshots after load. They do not open modals, use dropdowns, submit forms, or hover. Differences in those layers are invisible unless you extend the capture flow (e.g. Playwright `setup` steps).
+- **Mostly static pages** — Scripts take full-page screenshots after load. Some pages have `setup` steps (e.g. opening modals, clicking dropdown toggles, switching tabs), but most interactive flows (form submission, hover states) are not covered.
 - **Page list is finite** — Which routes run lives in the capture script’s configuration. Many CRUD screens (new/edit/clone, mapper wizard, some admin/auth/account routes, sparklines, etc.) may be omitted unless someone adds them.
 - **API diff is shallow** — Only configured endpoints are compared; structure is inferred from samples (often the first element of a list). **Null vs populated** fields and **empty value encoding** (`""` vs `[]` / `{}`) routinely produce false positives.
 - **Single context** — One seeded user and dataset. Admin vs non-admin, team membership, and “already judged” style states can change what renders without indicating a layout regression.

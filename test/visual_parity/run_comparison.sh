@@ -252,15 +252,10 @@ wait_for_app() {
   return 1
 }
 
-capture_branch() {
-  local branch="$1"
-  local allow_cwd="${2:-}"
-  local branch_root
-  branch_root=$(get_branch_root "$branch" "$allow_cwd")
-
-  log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  log "Processing branch: $branch (root: $branch_root)"
-  log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+# Boot Docker for visual parity: rebuild, build assets, start app + nginx.
+# $1 = branch root directory
+boot_docker() {
+  local branch_root="$1"
 
   if [ -f "$GIT_ROOT/docker-compose.visual-parity.yml" ]; then
     if [ "$branch_root" != "$GIT_ROOT" ]; then
@@ -302,10 +297,35 @@ EOF
   docker compose up --no-deps -d nginx
 
   if ! wait_for_app "$BASE_URL_VP"; then
-    fail "App failed to start for $branch"
+    fail "App failed to start"
     bin/docker d 2>/dev/null || true
     return 1
   fi
+}
+
+# Tear down Docker for visual parity.
+# $1 = branch root directory
+teardown_docker() {
+  local branch_root="$1"
+  cd "$branch_root"
+  log "Tearing down Docker..."
+  bin/docker d 2>/dev/null || true
+  _VP_ACTIVE_BRANCH_ROOT=""
+  ok "Docker torn down"
+  log ""
+}
+
+capture_branch() {
+  local branch="$1"
+  local allow_cwd="${2:-}"
+  local branch_root
+  branch_root=$(get_branch_root "$branch" "$allow_cwd")
+
+  log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  log "Processing branch: $branch (root: $branch_root)"
+  log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+  boot_docker "$branch_root"
 
   cd "$GIT_ROOT"
   log "Capturing screenshots for $branch..."
@@ -318,12 +338,7 @@ EOF
     --email "quepid+realisticactivity@o19s.com" --password "password"
   ok "API structures captured"
 
-  cd "$branch_root"
-  log "Tearing down Docker for $branch..."
-  bin/docker d 2>/dev/null || true
-  _VP_ACTIVE_BRANCH_ROOT=""
-  ok "Docker torn down"
-  log ""
+  teardown_docker "$branch_root"
 }
 
 main() {
@@ -377,6 +392,66 @@ main() {
 }
 
 case "${1:-}" in
+  --routes)
+    # Compare Angular (default) routes vs new-ui variant routes on the SAME branch.
+    # Boots Docker once, captures twice with different labels, generates report.
+    LABEL_A="${2:-angular}"
+    LABEL_B="${3:-new-ui}"
+    current_branch=$(cd "$GIT_ROOT" && git branch --show-current)
+
+    echo ""
+    echo "╔══════════════════════════════════════════════════════╗"
+    echo "║     Route Comparison Mode                             ║"
+    echo "╚══════════════════════════════════════════════════════╝"
+    echo ""
+    echo "  Branch:  $current_branch"
+    echo "  Labels:  $LABEL_A  ↔  $LABEL_B"
+    echo ""
+
+    preflight
+
+    local_start=$SECONDS
+
+    log "Booting Docker for route comparison on $current_branch..."
+    boot_docker "$GIT_ROOT"
+
+    cd "$GIT_ROOT"
+    log "Capturing default (Angular) workspace screenshots as '$LABEL_A'..."
+    node "$GIT_ROOT/test/visual_parity/capture_screenshots.mjs" \
+      --branch "$current_branch" --label "$LABEL_A" \
+      --base-url "$BASE_URL_VP" \
+      --email "quepid+realisticactivity@o19s.com" --password "password" \
+      --only workspace --exclude new-ui
+    ok "Default screenshots captured"
+
+    log "Capturing new-ui variant workspace screenshots as '$LABEL_B'..."
+    node "$GIT_ROOT/test/visual_parity/capture_screenshots.mjs" \
+      --branch "$current_branch" --label "$LABEL_B" --variant new-ui \
+      --base-url "$BASE_URL_VP" \
+      --email "quepid+realisticactivity@o19s.com" --password "password"
+    ok "Variant screenshots captured"
+
+    teardown_docker "$GIT_ROOT"
+
+    log "Generating HTML comparison report..."
+    node "$GIT_ROOT/test/visual_parity/generate_report.mjs" --branch-a "$LABEL_A" --branch-b "$LABEL_B"
+    ok "Report generated"
+
+    local_elapsed=$(( SECONDS - local_start ))
+    local_minutes=$(( local_elapsed / 60 ))
+    local_seconds=$(( local_elapsed % 60 ))
+
+    echo ""
+    echo "╔══════════════════════════════════════════════════════╗"
+    echo "║  ✅ Route comparison complete!                        ║"
+    echo "║                                                      ║"
+    echo "║  Open the report:                                    ║"
+    echo "║  test/visual_parity/report.html                      ║"
+    echo "║                                                      ║"
+    printf "║  Time elapsed: %dm %ds                              ║\n" "$local_minutes" "$local_seconds"
+    echo "╚══════════════════════════════════════════════════════╝"
+    echo ""
+    ;;
   --capture)
     if [ -z "${2:-}" ]; then
       fail "Usage: $0 --capture <branch_name>"
@@ -411,15 +486,17 @@ case "${1:-}" in
     ;;
   --help|-h)
     echo "Usage:"
-    echo "  $0                      Run full comparison (${BRANCHES[*]} by default)"
-    echo "  $0 --capture <branch>   Capture one branch (uses main repo dir if already on that branch)"
-    echo "  $0 --report             Build report from existing screenshots + api_structures"
-    echo "  $0 --remove-worktrees   Remove worktrees created for this tool"
-    echo "  $0 --help               This help"
+    echo "  $0                              Run full branch comparison (${BRANCHES[*]} by default)"
+    echo "  $0 --routes [label-a] [label-b] Compare Angular vs new-ui routes on current branch"
+    echo "                                   (defaults: angular new-ui)"
+    echo "  $0 --capture <branch>           Capture one branch (uses main repo dir if already on that branch)"
+    echo "  $0 --report                     Build report from existing screenshots + api_structures"
+    echo "  $0 --remove-worktrees           Remove worktrees created for this tool"
+    echo "  $0 --help                       This help"
     echo ""
     echo "Environment:"
     echo "  VISUAL_PARITY_BRANCHES=\"a b\"   Two branch names to compare (space-separated)"
-    echo "  VISUAL_PARITY_BASE_URL=...       Default http://localhost:8080 (nginx from VP compose)"
+    echo "  VISUAL_PARITY_BASE_URL=...       Default http://localhost:3010 (app from VP compose)"
     echo "  VISUAL_PARITY_HEALTH_PATH=...    Default /healthcheck (readiness probe path)"
     echo "  PLAYWRIGHT_BROWSERS_PATH=...     Default \$GIT_ROOT/node_modules/.cache/ms-playwright"
     echo "  VP_COMPOSE_PROJECT_NAME           Default quepid-vp"

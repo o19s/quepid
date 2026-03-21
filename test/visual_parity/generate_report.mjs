@@ -86,6 +86,7 @@ const ROUTE_GROUPS = [
   { label: 'Home', prefix: '01-' },
   { label: 'Cases', prefix: ['02-', '03-'] },
   { label: 'Case Workspace', prefix: '04-case-workspace', exact: true },
+  { label: 'Case Workspace — New UI', prefix: '04-case-workspace-new-ui', exact: true },
   { label: 'Case Workspace — Tune Relevance', prefix: '04a' },
   { label: 'Case Workspace — Header Dropdowns', prefix: ['04b', '04c', '04d'] },
   { label: 'Case Workspace — Action Bar Modals', prefix: '04e' },

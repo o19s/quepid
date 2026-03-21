@@ -8,6 +8,11 @@
  *   node test/visual_parity/capture_screenshots.mjs --branch deangularjs --base-url http://localhost:3000
  *   node test/visual_parity/capture_screenshots.mjs --branch deangularjs --email admin@example.com
  *
+ * Route variant comparison (same branch, different URLs):
+ *   --label <name>        Output directory name (defaults to --branch value)
+ *   --variant <name>      Use named variant path/setup for pages that define it;
+ *                          pages without the variant are skipped entirely.
+ *
  * Filtering:
  *   --only <pattern>      Only capture pages whose name or tags match (comma-separated)
  *   --exclude <pattern>   Skip pages whose name or tags match (comma-separated)
@@ -18,6 +23,7 @@
  *   --only 04-case-workspace          Capture just that one screenshot
  *   --only header,workspace           Capture pages matching either tag
  *   --exclude admin,books             Skip admin and books pages
+ *   --label new-ui --variant new-ui   Capture new-ui variant pages into screenshots/new-ui/
  */
 
 import { chromium } from '@playwright/test';
@@ -38,7 +44,9 @@ function getArg(name, fallback) {
 
 const BRANCH   = getArg('branch', 'unknown');
 const BASE_URL = getArg('base-url', 'http://localhost:3000');
-const OUT_DIR  = path.join(__dirname, 'screenshots', BRANCH);
+const LABEL    = getArg('label', BRANCH);
+const VARIANT  = getArg('variant', '');
+const OUT_DIR  = path.join(__dirname, 'screenshots', LABEL);
 
 const LOGIN_EMAIL    = getArg('email', 'quepid+realisticactivity@o19s.com');
 const LOGIN_PASSWORD = getArg('password', 'password');
@@ -119,6 +127,25 @@ async function getFirstTeamId(page) {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers for new-ui variant setup
+// ---------------------------------------------------------------------------
+
+// Resolve to the new_ui variant URL for the first case.
+// Shared by all workspace variant entries to avoid duplication.
+async function resolveNewUiCase(page) {
+  const id = await getFirstCaseId(page);
+  return id ? `/case/${id}/new_ui` : '/cases';
+}
+
+// Open the east pane on the new_ui layout by clicking "Tune Relevance".
+// Waits for the pane to become visible before returning.
+async function openNewUiPane(page) {
+  await page.locator('a', { hasText: 'Tune Relevance' }).first().click();
+  await page.locator('.pane_east').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  await new Promise(r => setTimeout(r, 500));
+}
+
+// ---------------------------------------------------------------------------
 // Page definitions
 // ---------------------------------------------------------------------------
 const PAGES = [
@@ -140,9 +167,13 @@ const PAGES = [
       const id = await getFirstCaseId(page);
       return id ? `/case/${id}` : '/cases';
     },
+    variants: {
+      'new-ui': { resolve: resolveNewUiCase },
+    },
   },
 
   // Case workspace — New UI (Rails+Stimulus replacement)
+  // Used in branch-comparison mode; skipped in --variant mode (variant above covers it)
   {
     name: '04-case-workspace-new-ui',
     tags: ['workspace', 'new-ui'],
@@ -165,6 +196,15 @@ const PAGES = [
       await new Promise(r => setTimeout(r, 1500));
       // Query tab is the default when pane opens
     },
+    variants: {
+      'new-ui': {
+        resolve: resolveNewUiCase,
+        setup: async (page) => {
+          await openNewUiPane(page);
+          // Query tab is the default when pane opens
+        },
+      },
+    },
   },
   {
     name: '04a2-tune-relevance-tuning-knobs',
@@ -179,6 +219,7 @@ const PAGES = [
       await page.locator('#curatorTab').click();
       await new Promise(r => setTimeout(r, 500));
     },
+    // No new-ui variant: new UI has no "Tuning Knobs" tab yet
   },
   {
     name: '04a3-tune-relevance-settings',
@@ -192,6 +233,16 @@ const PAGES = [
       await new Promise(r => setTimeout(r, 1000));
       await page.locator('#engineTab').click();
       await new Promise(r => setTimeout(r, 500));
+    },
+    variants: {
+      'new-ui': {
+        resolve: resolveNewUiCase,
+        setup: async (page) => {
+          await openNewUiPane(page);
+          await page.locator('li[data-tab="settings"]').click();
+          await new Promise(r => setTimeout(r, 500));
+        },
+      },
     },
   },
   {
@@ -207,6 +258,16 @@ const PAGES = [
       await page.locator('#historyTab').click();
       await new Promise(r => setTimeout(r, 500));
     },
+    variants: {
+      'new-ui': {
+        resolve: resolveNewUiCase,
+        setup: async (page) => {
+          await openNewUiPane(page);
+          await page.locator('li[data-tab="history"]').click();
+          await new Promise(r => setTimeout(r, 500));
+        },
+      },
+    },
   },
   {
     name: '04a5-tune-relevance-annotations',
@@ -221,6 +282,7 @@ const PAGES = [
       await page.locator('#annotationsTab').click();
       await new Promise(r => setTimeout(r, 500));
     },
+    // No new-ui variant: new UI has no "Annotations" tab yet
   },
 
   // Case workspace — action bar modals
@@ -355,6 +417,10 @@ const PAGES = [
       await toggle.click();
       await new Promise(r => setTimeout(r, 1000));
     },
+    variants: {
+      // Header is the same shared partial — setup inherited
+      'new-ui': { resolve: resolveNewUiCase },
+    },
   },
   {
     name: '04c-case-workspace-books-dropdown',
@@ -368,6 +434,9 @@ const PAGES = [
       await toggle.click();
       await new Promise(r => setTimeout(r, 1000));
     },
+    variants: {
+      'new-ui': { resolve: resolveNewUiCase },
+    },
   },
   {
     name: '04d-case-workspace-user-dropdown',
@@ -380,6 +449,9 @@ const PAGES = [
       const toggle = page.locator('.dropdown-toggle [data-display-name]').first();
       await toggle.click();
       await new Promise(r => setTimeout(r, 1000));
+    },
+    variants: {
+      'new-ui': { resolve: resolveNewUiCase },
     },
   },
 
@@ -499,28 +571,52 @@ async function main() {
   if (LIST_MODE) {
     console.log('\nAvailable screenshots:\n');
     const allTags = new Set();
+    const allVariants = new Set();
     for (const entry of PAGES) {
       const tags = (entry.tags || []).join(', ');
-      console.log(`  ${entry.name}${tags ? `  [${tags}]` : ''}`);
+      const variantNames = entry.variants ? Object.keys(entry.variants).join(', ') : '';
+      const variantNote = variantNames ? `  variants: ${variantNames}` : '';
+      console.log(`  ${entry.name}${tags ? `  [${tags}]` : ''}${variantNote}`);
       (entry.tags || []).forEach(t => allTags.add(t));
+      if (entry.variants) Object.keys(entry.variants).forEach(v => allVariants.add(v));
     }
-    console.log(`\nAvailable tags: ${[...allTags].sort().join(', ')}\n`);
+    console.log(`\nAvailable tags: ${[...allTags].sort().join(', ')}`);
+    if (allVariants.size > 0) {
+      console.log(`Available variants: ${[...allVariants].sort().join(', ')}`);
+    }
+    console.log('');
     return;
   }
 
-  const filteredPages = PAGES.filter(shouldCapture);
+  let filteredPages = PAGES.filter(shouldCapture);
+
+  if (VARIANT) {
+    // In variant mode, only capture pages that define this variant
+    filteredPages = filteredPages.filter(p => p.variants && p.variants[VARIANT]);
+  }
+
   if (filteredPages.length === 0) {
     console.log('No pages match the filter. Use --list to see available names and tags.');
     return;
   }
 
+  // Clean stale files from previous runs before writing new screenshots
+  if (fs.existsSync(OUT_DIR)) {
+    for (const file of fs.readdirSync(OUT_DIR)) {
+      if (file.endsWith('.png') || file.endsWith('-ERROR.txt')) {
+        fs.unlinkSync(path.join(OUT_DIR, file));
+      }
+    }
+  }
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   const filterNote = ONLY_FILTER ? ` (only: ${ONLY_FILTER})`
                    : EXCLUDE_FILTER ? ` (exclude: ${EXCLUDE_FILTER})`
                    : '';
-  console.log(`\n📸 Capturing screenshots for branch: ${BRANCH}${filterNote}`);
+  const variantNote = VARIANT ? ` (variant: ${VARIANT})` : '';
+  console.log(`\n📸 Capturing screenshots for branch: ${BRANCH}${filterNote}${variantNote}`);
   console.log(`   Base URL: ${BASE_URL}`);
+  console.log(`   Label:    ${LABEL}`);
   console.log(`   User:     ${LOGIN_EMAIL}`);
   console.log(`   Output:   ${OUT_DIR}`);
   console.log(`   Pages:    ${filteredPages.length} of ${PAGES.length}\n`);
@@ -572,12 +668,19 @@ async function main() {
 
 async function captureScreenshot(page, entry) {
   const { name } = entry;
-  let urlPath = entry.path;
+
+  // When running in variant mode, merge variant overrides (resolve, setup, path)
+  // onto the base entry so the variant's URL and interactions are used.
+  const effective = VARIANT && entry.variants?.[VARIANT]
+    ? { ...entry, ...entry.variants[VARIANT] }
+    : entry;
+
+  let urlPath = effective.path;
 
   try {
     // Resolve dynamic paths
-    if (!urlPath && entry.resolve) {
-      urlPath = await entry.resolve(page);
+    if (!urlPath && effective.resolve) {
+      urlPath = await effective.resolve(page);
     }
 
     const fullUrl = `${BASE_URL}${urlPath}`;
@@ -587,14 +690,14 @@ async function captureScreenshot(page, entry) {
     // Wait a bit for JS rendering (avoid deprecated waitForTimeout)
     await new Promise(r => setTimeout(r, 1500));
 
-    // Run optional setup
-    if (entry.setup) {
-      await entry.setup(page);
+    // Run optional setup (uses variant setup if provided, otherwise base entry setup)
+    if (effective.setup) {
+      await effective.setup(page);
     }
 
     // Wait for specific selector if given
-    if (entry.waitFor) {
-      await page.waitForSelector(entry.waitFor, { timeout: 10000 }).catch(() => {});
+    if (effective.waitFor) {
+      await page.waitForSelector(effective.waitFor, { timeout: 10000 }).catch(() => {});
     }
 
     const filePath = path.join(OUT_DIR, `${name}.png`);
