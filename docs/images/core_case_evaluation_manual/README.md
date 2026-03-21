@@ -1,9 +1,11 @@
 # Screenshots for Core Case Evaluation Manual
 
-Place the screenshots for the [Core Case Evaluation Manual](../core_case_evaluation_manual.md) in this directory.
+PNG (and related) assets in this directory illustrate the **core case evaluation workspace** (`/case/:caseNo/try/:tryNo`) and the modals/panels opened from it—primarily the legacy **AngularJS** UI and the migrating **Rails + Stimulus** shell.
 
-**Specification:** See [Core Case Evaluation Manual Screenshots](../core_case_evaluation_manual_screenshots.md) for the list of required screenshots, filenames, and capture instructions.
+## Where the spec lives
 
-**Filenames:** `01_full_layout.png` through `16_loading_bootstrapping.png` (16 optional).
+- **Capture instructions and filenames:** [Screenshot Guide for Core Case Evaluation Manual](../../migration/core_case_evaluation_manual_screenshots.md) — **Part A** (`01`–`16`) is the stable core set; **Part B** lists extended parity figures (`17`–`80` and related) used in the manual.
+- **Narrative manual:** [Core Case Evaluation Interface Manual](../../migration/core_case_evaluation_manual.md)
+- **Full Angular UI catalog** (including login, admin, wizard, and mockup notes): [angularjs_ui_inventory.md](../../migration/angularjs_ui_inventory.md)
 
-Until these images exist, the manual will show broken image links or placeholders where they are referenced.
+Many files are already present here; update or replace them when the UI changes, keeping filenames stable so markdown links keep working.
