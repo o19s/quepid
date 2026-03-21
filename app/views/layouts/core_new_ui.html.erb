@@ -14,7 +14,9 @@
       data-case-id="<%= @case&.id %>"
       data-try-number="<%= @try&.try_number %>"
       data-communal-scorers-only="<%= Rails.application.config.communal_scorers_only %>"
-      data-query-list-sortable="<%= Rails.application.config.query_list_sortable %>">
+      data-query-list-sortable="<%= Rails.application.config.query_list_sortable %>"
+      data-scorer-scale="<%= (@case&.scorer&.scale || []).to_json %>"
+      data-scorer-name="<%= @case&.scorer&.name %>">
   <%= render 'layouts/header_core_app' %>
 
   <div id="main-content">

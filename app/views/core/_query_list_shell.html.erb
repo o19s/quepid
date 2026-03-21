@@ -96,7 +96,8 @@
               data-rated="<%= query.ratings.any? %>"
               data-controller="query-row"
               data-query-row-query-id-value="<%= query.id %>"
-              data-query-row-query-text-value="<%= query.query_text %>">
+              data-query-row-query-text-value="<%= query.query_text %>"
+              data-query-row-ratings-value="<%= query.ratings.each_with_object({}) { |r, h| h[r.doc_id] = r.rating.to_i }.to_json %>">
             <div class="clearfix">
               <div class="result-header">
                 <div class="results-score" style="float:left;">

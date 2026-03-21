@@ -25,6 +25,9 @@
 }
 
 .doc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   padding: 8px 0;
   border-bottom: 1px solid #eee;
   overflow: hidden;
@@ -53,5 +56,52 @@
   max-width: 80px;
   max-height: 80px;
   margin-right: 10px;
-  float: left;
+}
+
+/* Rating widget — vertical stack of scale buttons on the left of each result */
+.doc-rating {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+  min-width: 28px;
+  padding-top: 2px;
+}
+
+.rating-btn {
+  display: block;
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 22px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.rating-btn:hover {
+  border-color: #888;
+}
+
+.rating-btn-active {
+  border-color: transparent;
+  font-weight: 700;
+}
+
+.rating-btn-clear {
+  background-color: transparent;
+  border-color: #ddd;
+  color: #999;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.rating-btn-clear:hover {
+  background-color: #f5f5f5;
+  color: #c00;
+  border-color: #c00;
 }
