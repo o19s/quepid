@@ -171,7 +171,7 @@ P1/P2 may slip behind a strangler boundary. Items with ~~strikethrough~~ are **v
 - ~~**P0-1–6, 9–10**~~ — open case, list queries, add query, Solr + proxy search, rate document, case score in header, delete query, cases dropdown.
 - ~~**P0-7 — Tune relevance (basic)**~~ (SS-07) — east pane sandbox, rerun searches.
 - ~~**P0-8 — Snapshot**~~ (SS-12) — create from action bar.
-- **Stretch (before Phase 10):** ~~**P0-S1** ES/OS on `new_ui`~~; **P0-S2** clone (SS-17); **P0-S3** export CSV (SS-19).
+- **Stretch (before Phase 10):** ~~**P0-S1** ES/OS on `new_ui`~~; ~~**P0-S2** clone (SS-17)~~; ~~**P0-S3** export CSV (SS-19)~~.
 
 **P0 API surface (short)**
 
