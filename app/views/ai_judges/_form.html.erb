@@ -182,8 +182,8 @@
         help: '<strong>Azure AI Foundry (Anthropic)</strong> &mdash; Claude models via Azure using the native Anthropic Messages API.<br>' +
               '<b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com/anthropic</code><br>' +
               '<b>Model:</b> e.g. <code>claude-3-5-haiku-20241022</code><br>' +
-              '<b>Key:</b> Azure AI services key (sent as <code>api-key</code> header)<br>' +
-              '<b>API Version:</b> Leave blank'
+              '<b>Key:</b> Azure AI services key (sent as <code>x-api-key</code> header)<br>' +
+              '<b>API Version:</b> Leave blank (the <code>anthropic-version</code> header is set automatically)'
       },
       anthropic: {
         llm_service_url: 'https://api.anthropic.com',

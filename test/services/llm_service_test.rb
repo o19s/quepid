@@ -225,7 +225,8 @@ class LlmServiceTest < ActiveSupport::TestCase
       service = LlmService.new 'my-azure-key', opts
       service.get_llm_response(USER_PROMPT_COMPOSED, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
 
-      assert_requested(:post, azure_url)
+      assert_requested(:post, azure_url,
+                       headers: { 'api-key' => 'my-azure-key' })
     end
 
     test 'Azure AI Foundry Anthropic uses x-api-key header, anthropic-version, and Messages API' do
