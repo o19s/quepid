@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest"
-import { parseFieldSpec } from "../../../app/javascript/modules/search_executor"
+import { describe, it, expect, vi, afterEach } from "vitest"
+import { executeSearch, parseFieldSpec } from "../../../app/javascript/modules/search_executor"
 
 describe("parseFieldSpec", () => {
   it("parses a simple title field", () => {
@@ -44,5 +44,78 @@ describe("parseFieldSpec", () => {
     expect(spec.title).toBe("title")
     expect(spec.subs).toContain("overview")
     expect(spec.id).toBe("id")
+  })
+})
+
+describe("executeSearch", () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it("returns an error for unsupported engines without calling fetch", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch")
+    const result = await executeSearch(
+      { search_engine: "unknown", search_url: "http://example.test/" },
+      "q",
+      new AbortController().signal,
+    )
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(result.error).toMatch(/not yet supported/)
+    expect(result.docs).toEqual([])
+    expect(result.numFound).toBe(0)
+  })
+
+  it("runs Solr through proxy/fetch and passes the abort signal", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ response: { docs: [{ id: "a", title: "T1" }], numFound: 7 } }),
+    })
+    const ac = new AbortController()
+    const tryConfig = {
+      search_engine: "solr",
+      search_url: "http://solr.test/select",
+      args: { q: ["#$query##"], rows: [10] },
+      field_spec: "title id",
+      proxy_requests: true,
+    }
+
+    const result = await executeSearch(tryConfig, "coffee", ac.signal)
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    const [url, init] = fetchSpy.mock.calls[0]
+    expect(String(url)).toContain("proxy/fetch")
+    expect(String(url)).toContain(encodeURIComponent("http://solr.test/select"))
+    expect(init.signal).toBe(ac.signal)
+    expect(init.headers).toMatchObject({ "Content-Type": "application/json" })
+    expect(result.numFound).toBe(7)
+    expect(result.docs[0].title).toBe("T1")
+  })
+
+  it("POSTs JSON for ES via proxy and passes the abort signal", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          hits: { hits: [{ _id: "1", _source: { title: "ES Title" } }], total: 2 },
+        }),
+    })
+    const ac = new AbortController()
+    const tryConfig = {
+      search_engine: "es",
+      search_url: "http://es.test/_search",
+      args: { query: { match: { title: "#$query##" } }, pager: { from: 0, size: 5 } },
+      field_spec: "title id",
+      proxy_requests: true,
+    }
+
+    const result = await executeSearch(tryConfig, "needle", ac.signal)
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    const [, init] = fetchSpy.mock.calls[0]
+    expect(init.method).toBe("POST")
+    expect(init.signal).toBe(ac.signal)
+    expect(JSON.parse(init.body).query.match.title).toBe("needle")
+    expect(result.numFound).toBe(2)
+    expect(result.docs[0].title).toBe("ES Title")
   })
 })

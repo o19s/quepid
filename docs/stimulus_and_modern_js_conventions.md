@@ -45,3 +45,5 @@ For edge cases (proxy search, server-rendered URLs in `data-*` attributes), see 
 - `yarn test` runs both Angular (Karma) and Stimulus (Vitest) test suites (see DEVELOPER_GUIDE for Docker-prefixed commands).
 - New files under `app/javascript/modules/*.js` are picked up automatically as `modules/<name>` aliases in `vitest.config.js`; only non-standard paths need extra config.
 - Rails controller actions serving the new UI need tests in `test/controllers/` using `assert_select` for response assertions (not `assigns` or `assert_template`, which require an extra gem).
+- In Stimulus test HTML, use the same URL shape as `apiUrl()` (e.g. `api/cases/1/...`), not a leading `/api/...`, so expectations match production relative paths.
+- Multi-step fetch flows (`query-row` expand → try config + search) and `executeSearch` are covered with mocked `fetch`; keep one happy path per seam rather than duplicating engine-specific edge cases in controller tests.

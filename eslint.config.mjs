@@ -56,7 +56,9 @@ export default [
         jQuery: "readonly",
       },
     },
+    // Merge with recommended — a bare `rules: { … }` would replace all of `recommended.rules`.
     rules: {
+      ...js.configs.recommended.rules,
       "no-unused-vars": [
         "error",
         {
@@ -80,6 +82,7 @@ export default [
       },
     },
     rules: {
+      ...js.configs.recommended.rules,
       "no-unused-vars": [
         "error",
         {

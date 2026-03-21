@@ -1,0 +1,15 @@
+/* Stimulus controllers — avoid inline style="" in JS (see lefthook no-inline-styles-in-js). */
+
+.mapper-wizard-result-pre {
+  white-space: pre-wrap;
+}
+
+.scorer-scale-with-label {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.scorer-scale-label-input {
+  width: 100px;
+  display: inline-block;
+}
