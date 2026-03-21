@@ -7,6 +7,7 @@
 #  auto_populate_book_pairs      :boolean          default(FALSE), not null
 #  auto_populate_case_judgements :boolean          default(TRUE), not null
 #  case_name                     :string(191)
+#  export_job                    :string(255)
 #  last_try_number               :integer
 #  nightly                       :boolean
 #  options                       :json

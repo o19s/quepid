@@ -2,6 +2,10 @@
 
 Docs for removing AngularJS from the **case / try workspace** on `main` while preserving behavior.
 
+## Migration strategy: strangler fig
+
+We are using the **[strangler fig pattern](https://martinfowler.com/bliki/StranglerFigApplication.html)**: new behavior is built at the “edges” (Rails views, Stimulus, Turbo, `fetch` to existing JSON APIs) and wired in **alongside** the legacy Angular core until a slice is complete; then that slice is cut over and the old implementation is removed. The monolithic Angular workspace is replaced **incrementally**, not in a single big-bang rewrite. Surfaces that already left Angular (home, `/cases`, teams, scorers, books, admin, etc.) are earlier strangler milestones; the core case UI is the remaining trunk.
+
 ## Start here
 
 | Doc | Role |
