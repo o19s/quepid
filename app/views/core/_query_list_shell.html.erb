@@ -1,6 +1,8 @@
 <% if @case.present? %>
 <div class="results" id="query-list-shell" data-controller="query-list"
-     data-query-list-query-row-outlet="[data-controller='query-row']">
+     data-query-list-query-row-outlet="[data-controller='query-row']"
+     data-query-list-case-score-outlet="[data-controller='case-score']"
+     data-action="query-row:scoreChanged->query-list#handleScoreChanged">
   <div class="row">
     <div class="col-sm-12 form-group">
       <div class="pull-left">

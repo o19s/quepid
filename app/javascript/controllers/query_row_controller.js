@@ -2,10 +2,36 @@ import { Controller } from "@hotwired/stimulus"
 import { executeSearch } from "modules/search_executor"
 import { apiUrl, csrfToken } from "modules/api_url"
 import { RatingsStore } from "modules/ratings_store"
-import { scaleToColors, ratingColor } from "modules/scorer"
+import { scaleToColors, ratingColor, scoreToColor } from "modules/scorer"
+import { runScorerCode } from "modules/scorer_executor"
 
 // Shared try config cache — fetched once, reused across all query rows
 let tryConfigPromise = null
+
+// Shared scorer config cache — fetched once
+let scorerConfigPromise = null
+
+function fetchScorerConfig() {
+  if (scorerConfigPromise) return scorerConfigPromise
+
+  const scorerId = document.body.dataset.scorerId
+  if (!scorerId) {
+    scorerConfigPromise = Promise.resolve(null)
+    return scorerConfigPromise
+  }
+
+  scorerConfigPromise = fetch(apiUrl(`api/scorers/${scorerId}`), {
+    headers: { "X-CSRF-Token": csrfToken(), "Accept": "application/json" },
+  }).then((r) => {
+    if (!r.ok) throw new Error(`Failed to load scorer (${r.status})`)
+    return r.json()
+  }).catch((err) => {
+    scorerConfigPromise = null
+    throw err
+  })
+
+  return scorerConfigPromise
+}
 
 function fetchTryConfig() {
   if (tryConfigPromise) return tryConfigPromise
@@ -114,6 +140,7 @@ export default class extends Controller {
       this.lastSearchDocs = result.docs || []
       this.lastNumFound = result.numFound || 0
       this.renderResults(result)
+      this._computeAndDisplayScore()
     } catch (error) {
       if (error.name === "AbortError") return
       container.innerHTML = `<div class="alert alert-danger">Search failed: ${this._escapeHtml(error.message)}</div>`
@@ -292,21 +319,77 @@ export default class extends Controller {
   }
 
   _updateScoreBadge() {
-    if (!this.hasScoreDisplayTarget) return
-
-    const ratedCount = this.ratingsStore.ratedCount()
-    const badge = this.scoreDisplayTarget
-
-    // Show "--" until full scorer evaluation is implemented.
-    // The Angular UI shows the computed query score here; we don't have
-    // client-side scorer execution yet, so "--" is honest.
-    badge.textContent = "--"
-    badge.style.backgroundColor = "#999"
-
     // Update the "X found, Y rated" text
     if (this.hasTotalResultsTarget) {
       this.totalResultsTarget.textContent = this._buildTotalResultsText()
     }
+
+    // Compute score asynchronously then update badge and notify parent
+    this._computeAndDisplayScore()
+  }
+
+  async _computeAndDisplayScore() {
+    const badge = this.hasScoreDisplayTarget ? this.scoreDisplayTarget : null
+
+    try {
+      const scorer = await fetchScorerConfig()
+      if (!scorer || !scorer.code) {
+        if (badge) {
+          badge.textContent = "--"
+          badge.style.backgroundColor = "#999"
+        }
+        this._dispatchScoreChanged(null)
+        return
+      }
+
+      const scale = scorer.scale || this.scorerScale
+      const ratings = this.ratingsStore.ratings
+      const bestDocs = this.ratingsStore.bestDocs()
+      const maxScaleValue = scale.length > 0 ? parseInt(scale[scale.length - 1], 10) : 0
+
+      const score = runScorerCode(
+        scorer.code,
+        scale,
+        this.lastSearchDocs,
+        ratings,
+        this.lastNumFound,
+        bestDocs,
+      )
+
+      this.currentScore = score
+
+      if (badge) {
+        if (typeof score === "number") {
+          const rounded = Math.round(score * 100) / 100
+          badge.textContent = rounded.toFixed(2)
+          badge.style.backgroundColor = scoreToColor(score, maxScaleValue)
+        } else {
+          badge.textContent = score || "--"
+          badge.style.backgroundColor = "#999"
+        }
+      }
+
+      this._dispatchScoreChanged(score)
+    } catch (e) {
+      console.error("Score computation failed:", e)
+      if (badge) {
+        badge.textContent = "--"
+        badge.style.backgroundColor = "#999"
+      }
+      this._dispatchScoreChanged(null)
+    }
+  }
+
+  _dispatchScoreChanged(score) {
+    this.dispatch("scoreChanged", {
+      detail: {
+        queryId: this.queryIdValue,
+        queryText: this.queryTextValue,
+        score: score,
+        maxScore: this.scorerScale.length > 0 ? parseInt(this.scorerScale[this.scorerScale.length - 1], 10) : 0,
+        numFound: this.lastNumFound,
+      },
+    })
   }
 
   _buildTotalResultsText() {

@@ -1,7 +1,17 @@
 <% if @case.present? %>
 <div id="case-header" class="row">
   <div class="col-sm-12">
-    <!-- Case score badge will be added when ScorerFactory is ported -->
+    <div class="case-score-badge-wrapper" style="display:inline-block;vertical-align:top"
+         data-controller="case-score"
+         data-case-score-case-id-value="<%= @case.id %>"
+         data-case-score-try-number-value="<%= @try&.try_number %>"
+         data-case-score-max-score-value="<%= (@case.scorer&.scale || []).last.to_i %>">
+      <div class="case-score-badge"
+           data-case-score-target="badge"
+           style="background-color: #999; color: #fff; display: inline-block; width: 90px; padding: 10px 0; font-size: 22px; text-align: center; border-radius: 5px; margin-right: 10px; vertical-align: middle;">
+        --
+      </div>
+    </div>
     <div style="display:inline-block;vertical-align:top">
       <h1 class="">
         <small class="text-muted">
