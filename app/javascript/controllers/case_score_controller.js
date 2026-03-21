@@ -80,7 +80,7 @@ export default class extends Controller {
         signal: this.abortController.signal,
       })
 
-      if (!response.ok && response.status !== 204) {
+      if (!response.ok) {
         console.error("Failed to persist case score:", response.status)
       }
     } catch (e) {

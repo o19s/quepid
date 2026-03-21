@@ -241,7 +241,6 @@ export function runScorerCode(code, scale, docs, ratings, numFound, bestDocs, op
   }
 
   if (typeof theScore === "number") {
-    if (theScore < 0 && theScore === maxScaleValue) return null
     if (theScore < 0) return 0
     if (theScore > maxScaleValue && maxScaleValue > 0) return maxScaleValue
     if (maxScaleValue === 0) return 0

@@ -323,6 +323,7 @@ export default class extends Controller {
       this._updateScoreBadge()
     } catch (error) {
       console.error("Rating failed:", error)
+      alert("Failed to save rating")
     } finally {
       this._ratingsInFlight.delete(docId)
     }
@@ -456,10 +457,14 @@ export default class extends Controller {
       })
 
       if (response.ok) {
+        this.dispatch("queryDeleted", { detail: { queryId: this.queryIdValue } })
         this.element.remove()
+      } else {
+        alert(`Failed to delete query (${response.status})`)
       }
     } catch (error) {
       console.error("Failed to delete query:", error)
+      alert("Failed to delete query: network error")
     }
   }
 

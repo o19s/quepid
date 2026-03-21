@@ -70,10 +70,13 @@ export default class extends Controller {
       if (response.ok) {
         this.inputTarget.value = ""
         window.location.reload()
+      } else {
+        alert(`Failed to add query (${response.status})`)
       }
     } catch (error) {
       if (error.name !== "AbortError") {
         console.error("Failed to add query:", error)
+        alert("Failed to add query: network error")
       }
     }
   }
@@ -96,10 +99,13 @@ export default class extends Controller {
       if (response.ok) {
         this.inputTarget.value = ""
         window.location.reload()
+      } else {
+        alert(`Failed to add queries (${response.status})`)
       }
     } catch (error) {
       if (error.name !== "AbortError") {
         console.error("Failed to add queries:", error)
+        alert("Failed to add queries: network error")
       }
     }
   }

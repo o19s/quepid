@@ -2,7 +2,7 @@
 <div class="results" id="query-list-shell" data-controller="query-list"
      data-query-list-query-row-outlet="[data-controller='query-row']"
      data-query-list-case-score-outlet="[data-controller='case-score']"
-     data-action="query-row:scoreChanged->query-list#handleScoreChanged">
+     data-action="query-row:scoreChanged->query-list#handleScoreChanged query-row:queryDeleted->query-list#handleQueryDeleted">
   <div class="row">
     <div class="col-sm-12 form-group">
       <div class="pull-left">
@@ -95,6 +95,7 @@
           <li data-query-list-target="queryRow"
               data-query-id="<%= query.id %>"
               data-query-text="<%= query.query_text %>"
+              data-modified-at="<%= query.updated_at.iso8601 %>"
               data-rated="<%= query.ratings.any? %>"
               data-controller="query-row"
               data-query-row-query-id-value="<%= query.id %>"

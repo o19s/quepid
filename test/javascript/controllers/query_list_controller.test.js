@@ -182,6 +182,23 @@ describe("QueryListController", () => {
     expect(last.queryScores[2].score).toBe(1.0)
   })
 
+  it("handleQueryDeleted removes score and updates case score", () => {
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    // Pre-populate scores
+    list.queryScores = {
+      1: { score: 0.5, text: "star wars" },
+      2: { score: 1.0, text: "star trek" },
+    }
+
+    list.handleQueryDeleted({ detail: { queryId: 1 } })
+
+    expect(list.queryScores[1]).toBeUndefined()
+    expect(list.queryScores[2]).toBeDefined()
+  })
+
   it("collapseAll calls collapse on expanded query-row outlets", () => {
     const list = application.getControllerForElementAndIdentifier(
       document.querySelector("[data-controller=query-list]"),
@@ -258,28 +275,78 @@ describe("QueryListController", () => {
     expect(defaultLink.classList.contains("active")).toBe(true)
   })
 
-  it("sortBy score and modified restore manual order until dedicated sort keys exist", () => {
+  it("sortBy score sorts rows by computed score (nulls last)", () => {
     const list = application.getControllerForElementAndIdentifier(
       document.querySelector("[data-controller=query-list]"),
       "query-list",
     )
-    const initialIds = [
-      ...list.listTarget.querySelectorAll('[data-query-list-target="queryRow"]'),
-    ].map((r) => r.id)
-
-    const nameLink = [...list.sortLinkTargets].find((a) => a.dataset.sort === "query")
-    list.sortBy({ preventDefault: vi.fn(), currentTarget: nameLink })
-
-    for (const sortKey of ["score", "modified"]) {
-      const link = document.createElement("a")
-      link.href = "#"
-      link.dataset.sort = sortKey
-      link.dataset.queryListTarget = "sortLink"
-      list.sortBy({ preventDefault: vi.fn(), currentTarget: link })
-      const ids = [...list.listTarget.querySelectorAll('[data-query-list-target="queryRow"]')].map(
-        (r) => r.id,
-      )
-      expect(ids).toEqual(initialIds)
+    // Simulate scores: row1 has no score, row2 and row3 have scores
+    document.getElementById("row1").dataset.queryId = "1"
+    document.getElementById("row2").dataset.queryId = "2"
+    document.getElementById("row3").dataset.queryId = "3"
+    document.getElementById("row4").dataset.queryId = "4"
+    list.queryScores = {
+      2: { score: 0.8, text: "star trek" },
+      3: { score: 0.5, text: "STARMAN" },
+      4: { score: 0.9, text: "The Boxing Match" },
     }
+
+    const link = document.createElement("a")
+    link.dataset.sort = "score"
+    list.sortBy({ preventDefault: vi.fn(), currentTarget: link })
+
+    const ids = [...list.listTarget.querySelectorAll('[data-query-list-target="queryRow"]')].map(
+      (r) => r.id,
+    )
+    // Highest score first, null-score row last
+    expect(ids).toEqual(["row4", "row2", "row3", "row1"])
+  })
+
+  it("sortBy modified sorts rows by data-modified-at descending", () => {
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    document.getElementById("row1").dataset.modifiedAt = "2025-01-01T00:00:00Z"
+    document.getElementById("row2").dataset.modifiedAt = "2025-03-01T00:00:00Z"
+    document.getElementById("row3").dataset.modifiedAt = "2025-02-01T00:00:00Z"
+    document.getElementById("row4").dataset.modifiedAt = "2024-12-01T00:00:00Z"
+
+    const link = document.createElement("a")
+    link.dataset.sort = "modified"
+    list.sortBy({ preventDefault: vi.fn(), currentTarget: link })
+
+    const ids = [...list.listTarget.querySelectorAll('[data-query-list-target="queryRow"]')].map(
+      (r) => r.id,
+    )
+    // Most recently modified first
+    expect(ids).toEqual(["row2", "row3", "row1", "row4"])
+  })
+
+  it("sortBy error sorts error rows to the top", () => {
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    document.getElementById("row1").dataset.queryId = "1"
+    document.getElementById("row2").dataset.queryId = "2"
+    document.getElementById("row3").dataset.queryId = "3"
+    document.getElementById("row4").dataset.queryId = "4"
+    list.queryScores = {
+      1: { score: 0.5, text: "star wars" },
+      2: { score: null, text: "star trek" }, // error
+      3: { score: 0.8, text: "STARMAN" },
+      // row4 has no entry — not yet scored, not an error
+    }
+
+    const link = document.createElement("a")
+    link.dataset.sort = "error"
+    list.sortBy({ preventDefault: vi.fn(), currentTarget: link })
+
+    const ids = [...list.listTarget.querySelectorAll('[data-query-list-target="queryRow"]')].map(
+      (r) => r.id,
+    )
+    // row2 (error) should be first
+    expect(ids[0]).toBe("row2")
   })
 })

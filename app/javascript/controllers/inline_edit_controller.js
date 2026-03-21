@@ -51,9 +51,12 @@ export default class extends Controller {
         this.formTarget.classList.add("d-none")
         this.formTarget.classList.remove("d-inline")
         this.displayTarget.classList.remove("d-none")
+      } else {
+        alert(`Rename failed (${response.status})`)
       }
     } catch (error) {
       console.error("Rename failed:", error)
+      alert("Rename failed: network error")
     }
   }
 }

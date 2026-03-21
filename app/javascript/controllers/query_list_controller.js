@@ -25,6 +25,14 @@ export default class extends Controller {
     })
   }
 
+  // Handles query-row:queryDeleted events bubbled up from query-row controllers
+  handleQueryDeleted(event) {
+    const { queryId } = event.detail
+    delete this.queryScores[queryId]
+    this._updateCaseScore()
+    this.queryCountTarget.textContent = this.queryRowTargets.length
+  }
+
   // Handles query-row:scoreChanged events bubbled up from query-row controllers
   handleScoreChanged(event) {
     const { queryId, queryText, score, maxScore, numFound } = event.detail
@@ -124,6 +132,23 @@ export default class extends Controller {
       switch (sortKey) {
         case "query":
           return (a.dataset.queryText || "").localeCompare(b.dataset.queryText || "")
+        case "score": {
+          const sa = this._queryScore(a)
+          const sb = this._queryScore(b)
+          // Nulls sort to the bottom
+          if (sa === null && sb === null) return 0
+          if (sa === null) return 1
+          if (sb === null) return -1
+          return sb - sa
+        }
+        case "modified":
+          return (b.dataset.modifiedAt || "").localeCompare(a.dataset.modifiedAt || "")
+        case "error": {
+          // Rows with errors (null score after search ran) sort to the top
+          const ea = this._hasError(a) ? 0 : 1
+          const eb = this._hasError(b) ? 0 : 1
+          return ea - eb
+        }
         case "default":
         default:
           // Restore original server-rendered order using stored indices
@@ -134,5 +159,18 @@ export default class extends Controller {
     // Re-append in sorted order (stable for "default" since sort returns 0)
     const list = this.listTarget
     rows.forEach((row) => list.appendChild(row))
+  }
+
+  _queryScore(row) {
+    const qId = row.dataset.queryId
+    const qs = this.queryScores[qId]
+    return qs && typeof qs.score === "number" ? qs.score : null
+  }
+
+  _hasError(row) {
+    const qId = row.dataset.queryId
+    const qs = this.queryScores[qId]
+    // A query has an "error" if it was scored but produced a non-numeric result
+    return qs !== undefined && typeof qs.score !== "number"
   }
 }
