@@ -1,0 +1,48 @@
+<% if @case.present? %>
+<div id="case-actions" class="row">
+  <div class="col-sm-12">
+    <ul class="list-inline">
+      <li>
+        <span class="glyphicon glyphicon-tasks"></span>
+        <a href="#">Select scorer</a>
+      </li>
+      <li>
+        <i class="bi bi-book-half" aria-hidden="true"></i>
+        <a href="#">Judgements</a>
+      </li>
+      <li>
+        <span class="glyphicon glyphicon-camera"></span>
+        <a href="#">Create snapshot</a>
+      </li>
+      <li>
+        <i class="bi bi-bar-chart-fill" aria-hidden="true"></i>
+        <a href="#">Compare snapshots</a>
+      </li>
+      <li>
+        <i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i>
+        <a href="#">Import</a>
+      </li>
+      <li>
+        <span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span>
+        <a href="#">Share case</a>
+      </li>
+      <li>
+        <i class="bi bi-copy" aria-hidden="true"></i>
+        <a href="#">Clone</a>
+      </li>
+      <li>
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+        <a href="#">Delete</a>
+      </li>
+      <li>
+        <i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i>
+        <a href="#">Export</a>
+      </li>
+      <li id="tune-relevance-link">
+        <span class="glyphicon glyphicon-wrench"></span>
+        <a href="#">Tune Relevance</a>
+      </li>
+    </ul>
+  </div>
+</div>
+<% end %>

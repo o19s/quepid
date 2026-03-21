@@ -4,30 +4,13 @@
 class CoreController < ApplicationController
   before_action :set_case_or_bootstrap, except: :new
   before_action :populate_from_params, except: [ :new, :new_ui ]
+  before_action :load_shared_data, except: :new
 
   def index
     Analytics::Tracker.track_user_swapped_protocol current_user, @case, params['protocolToSwitchTo'] if params['protocolToSwitchTo']
-
-    @recent_cases = recent_cases(4).includes(tries: :search_endpoint)
-    @recent_cases_count = current_user.cases_involved_with.not_archived.count
-    @recent_books = recent_books 4
-    @recent_books_count = current_user.books_involved_with.count
-
-    @queries = @case&.queries&.includes(:ratings)&.order(:arranged_at) || []
-    @query_count = @queries.size
-    @query_list_sortable = Rails.application.config.query_list_sortable
   end
 
   def new_ui
-    @recent_cases = recent_cases(4).includes(tries: :search_endpoint)
-    @recent_cases_count = current_user.cases_involved_with.not_archived.count
-    @recent_books = recent_books 4
-    @recent_books_count = current_user.books_involved_with.count
-
-    @queries = @case&.queries&.includes(:ratings)&.order(:arranged_at) || []
-    @query_count = @queries.size
-    @query_list_sortable = Rails.application.config.query_list_sortable
-
     render layout: 'core_new_ui'
   end
 
@@ -39,6 +22,17 @@ class CoreController < ApplicationController
   end
 
   private
+
+  def load_shared_data
+    @recent_cases = recent_cases(4).includes(tries: :search_endpoint)
+    @recent_cases_count = current_user.cases_involved_with.not_archived.count
+    @recent_books = recent_books 4
+    @recent_books_count = current_user.books_involved_with.count
+
+    @queries = @case&.queries&.includes(:ratings)&.order(:arranged_at) || []
+    @query_count = @queries.size
+    @query_list_sortable = Rails.application.config.query_list_sortable
+  end
 
   def set_case_or_bootstrap
     @case = if params[:id].present?

@@ -87,7 +87,11 @@
               data-query-row-query-id-value="<%= query.id %>">
             <div class="clearfix">
               <div class="result-header">
-                <!-- Score badge will be added when ScorerFactory is ported -->
+                <div class="results-score" style="float:left;">
+                  <div class="overall-rating" style="background-color: #999; color: #fff; display: block; float: left; width: 90px; margin: -10px 15px -10px -20px; padding: 10px 0; font-size: 22px; text-align: center; border-top-left-radius: 5px; border-bottom-left-radius: 5px;">
+                    --
+                  </div>
+                </div>
 
                 <h2 class="results-title">
                   <span class="query"><%= query.query_text %> &nbsp;</span>
