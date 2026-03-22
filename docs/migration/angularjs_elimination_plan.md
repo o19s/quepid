@@ -85,7 +85,7 @@ Unless explicitly expanded later:
 
 **What already works on `new_ui`**
 
-- **Case header:** ~~inline rename~~; ~~case-level score badge~~ (`case-score`).
+- **Case header:** ~~inline rename~~; ~~case-level score badge~~ (`case-score`); ~~sparkline chart~~ (`sparkline` controller, D3 line graph of last 10 scores + annotation markers).
 - **Query list:** ~~filter, sort, collapse-all, show-only-rated, Run all, add query, delete~~.
 - **After expand:** browser **search** via **`search_executor`** (Solr / ES / OS; **`/proxy/fetch`** when the try is configured to proxy).
 - **Ratings and scores:** **`ratings_store`**, **`scorer_executor`**, **`scorer.js`** (plus **`query_template.js`**, **`api_url.js`**).
@@ -147,7 +147,7 @@ flowchart LR
 - **Phase 3** — Query list: CRUD, sort, filter, pagination, notes, bulk actions.
 - **Phase 4** — Results and rating: rows, popovers, explain, finder, embeds.
 - **Phase 5** — ~~Tune relevance: JSON editor, tries, annotations, endpoint picker, curator vars, validation.~~
-- **Phase 6** — Charts and score polish: sparklines, Vega, filters.
+- **Phase 6** — Charts and score polish: ~~sparklines~~, Vega, filters.
 - **Phase 7** — Snapshots and diffs.
 - **Phase 8** — Lifecycle: wizard, judgements, export/import, frog, delete.
 - **Phase 9** — Tour, flash, loading, 404, footer, ACE config.
@@ -267,7 +267,15 @@ Authoritative listing: **`workspace_api_usage.md`**. In one breath: case + tries
 
 **Purpose:** Sparklines, Vega charts, header polish—not “when scoring starts.”
 
-**`qgraph`** as a standalone function + Stimulus; **`angular-vega`** → **vega-embed** (align **Frog** with **Phase 8**); deepen scorer edge cases; remaining **filters** (`scoreDisplay`, `queryStateClass`, etc.).
+~~**`qgraph`** as a standalone function + Stimulus~~; **`angular-vega`** → **vega-embed** (align **Frog** with **Phase 8**); deepen scorer edge cases; remaining **filters** (`scoreDisplay`, `queryStateClass`, etc.).
+
+**`new_ui` status:**
+
+- ~~**Sparkline chart**~~ — `sparkline_controller.js` ports Angular's `qgraph` D3 line chart to Stimulus. Renders last 10 scores with annotation markers and tooltips. Uses fixed dimensions (150×80) matching the Angular layout. Hidden until score history has >1 entries, then shown via CSS `has-data` class.
+- ~~**Score history fetch**~~ — `case_score_controller.js` fetches score history (`GET api/cases/:id/scores`) and annotations (`GET api/cases/:id/annotations`) on connect, pushes data to sparkline via Stimulus outlet.
+- ~~**Score badge display**~~ — case-level and query-level score badges with `scoreToColor()` HSL mapping (continuous ratio, 0=red → 120°=green). Both `case_score_controller` and `query_row_controller` format scores to 2 decimal places.
+- ~~**CSS sparkline styling**~~ — class-based `.sparkline-chart` selectors (alongside Angular's `qgraph` element selectors). Adjacent sparkline+badge layout with border-radius adjustments.
+- **Still open:** **`angular-vega`** → **vega-embed** (deferred to Phase 8 with Frog); scorer edge cases (exotic scorer return types); `queryStateClass` filter (trivial — just prepends `queryHeader_`).
 
 **Done when:** Header and chart UX match `main` for representative cases; per-query badges were already in motion from rating slices.
 
@@ -388,6 +396,7 @@ Ship to **`main`** via normal PRs. **Revert** is the default rollback. Use **fea
 - **2026-03-20** — P0 flow checklist + compact API summary in this doc.
 - **2026-03-21** — Synced `new_ui` (search_executor, ratings, case-score, Run all, layout `data-*`); strikethrough legend; dedupe pass. **Readable rewrite:** “Start here,” TOC, mermaid slice diagram, consistent phase subheads, grouped related docs. **Lists-only:** no markdown tables (Angular vs `new_ui`, phase overview, risks); subsection **`new_ui` route** for a stable anchor; Phase 3 links there.
 - **2026-03-22** — **Phase 5 complete** (all 6 slices): 5-tab tune relevance pane on `new_ui` — curator variables (tuning knobs), annotations (CRUD), try management (rename/duplicate/delete), search endpoint picker, CodeMirror JSON editor (reused `modules/editor` instead of ACE), query param validation warnings. Visual parity screenshots captured for all 5 tabs. Known gap: annotation score data missing `allRated` and per-query breakdown (TODO in Phase 5). Added `onChange` callback to `fromTextArea()` in `modules/editor.js`. Fixed N+1 in annotations controller (`includes(:user, score: :try)`). Added `try_number` to annotation jbuilder.
+- **2026-03-22** — **Phase 6 sparkline**: ported Angular `qgraph` D3 line chart to `sparkline_controller.js`. Case header now shows sparkline of last 10 scores with annotation markers when score history has >1 entries. `case_score_controller.js` fetches score history + annotations on connect and pushes to sparkline via outlet. Class-based CSS (`.sparkline-chart`) alongside Angular element selectors. Vitest coverage for sparkline rendering, annotation filtering, re-render on data change, tooltip lifecycle. Vega migration deferred to Phase 8 (Frog).
 
 ---
 

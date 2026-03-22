@@ -6,7 +6,15 @@
            data-controller="case-score"
            data-case-score-case-id-value="<%= @case.id %>"
            data-case-score-try-number-value="<%= @try&.try_number %>"
-           data-case-score-max-score-value="<%= (@case.scorer&.scale || []).last.to_i %>">
+           data-case-score-max-score-value="<%= (@case.scorer&.scale || []).last.to_i %>"
+           data-case-score-sparkline-outlet=".sparkline-chart">
+        <div class="sparkline-chart"
+             data-controller="sparkline"
+             data-sparkline-max-value="<%= (@case.scorer&.scale || []).last.to_i %>"
+             data-sparkline-scores-value="[]"
+             data-sparkline-annotations-value="[]">
+          <svg data-sparkline-target="svg"></svg>
+        </div>
         <div class="case-score-badge"
              data-case-score-target="badge">
           --

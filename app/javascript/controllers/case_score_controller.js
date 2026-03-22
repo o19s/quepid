@@ -4,6 +4,7 @@ import { scoreToColor } from "modules/scorer"
 
 export default class extends Controller {
   static targets = ["badge"]
+  static outlets = ["sparkline"]
   static values = {
     caseId: { type: Number },
     tryNumber: { type: Number },
@@ -12,13 +13,21 @@ export default class extends Controller {
 
   connect() {
     this.abortController = null
+    this.historyAbort = new AbortController()
+    this.scoreHistory = []
+    this.annotationsList = []
     this._updateDisplay(null)
+    this._fetchScoreHistory()
   }
 
   disconnect() {
     if (this.abortController) {
       this.abortController.abort()
       this.abortController = null
+    }
+    if (this.historyAbort) {
+      this.historyAbort.abort()
+      this.historyAbort = null
     }
   }
 
@@ -31,7 +40,7 @@ export default class extends Controller {
 
     this._updateDisplay(score)
 
-    // Persist to backend
+    // Persist to backend, then refresh sparkline with the new score point
     if (score !== null) {
       this._persistScore(score, allRated, queryScores)
     }
@@ -52,6 +61,58 @@ export default class extends Controller {
       this.badgeTarget.classList.remove("score-badge-unscored")
       this.badgeTarget.style.backgroundColor = scoreToColor(score, this.maxScoreValue)
     }
+  }
+
+  async _fetchScoreHistory() {
+    if (!this.caseIdValue) return
+
+    try {
+      const signal = this.historyAbort?.signal
+      const [scoresRes, annotationsRes] = await Promise.all([
+        fetch(apiUrl(`api/cases/${this.caseIdValue}/scores/all`), {
+          headers: { "X-CSRF-Token": csrfToken(), Accept: "application/json" },
+          signal,
+        }),
+        fetch(apiUrl(`api/cases/${this.caseIdValue}/annotations`), {
+          headers: { "X-CSRF-Token": csrfToken(), Accept: "application/json" },
+          signal,
+        }),
+      ])
+
+      if (scoresRes.ok) {
+        const scoresData = await scoresRes.json()
+        this.scoreHistory = (scoresData.scores || []).map((s) => ({
+          score: s.score,
+          updated_at: s.updated_at,
+        }))
+      }
+
+      let annotationsList = []
+      if (annotationsRes.ok) {
+        const annotationsData = await annotationsRes.json()
+        annotationsList = (annotationsData.annotations || []).map((a) => ({
+          message: a.message,
+          updated_at: a.updated_at,
+        }))
+      }
+
+      this.annotationsList = annotationsList
+      this._pushToSparkline()
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        console.warn("Failed to load score history:", e)
+      }
+    }
+  }
+
+  _pushToSparkline() {
+    if (!this.hasSparklineOutlet) return
+    if (this.scoreHistory.length <= 1) return
+
+    const sparkline = this.sparklineOutlet
+    sparkline.maxValue = this.maxScoreValue
+    sparkline.scoresValue = this.scoreHistory
+    sparkline.annotationsValue = this.annotationsList
   }
 
   async _persistScore(score, allRated, queryScores) {
@@ -82,6 +143,22 @@ export default class extends Controller {
 
       if (!response.ok) {
         console.error("Failed to persist case score:", response.status)
+        return
+      }
+
+      // After persisting, add the new score to history and refresh sparkline
+      const saved = await response.json()
+      if (saved && saved.score !== undefined) {
+        this.scoreHistory.push({
+          score: saved.score,
+          updated_at: saved.updated_at || new Date().toISOString(),
+        })
+        // Keep only the last 20 entries (sparkline displays 10; extra headroom
+        // avoids thrashing if annotations interleave)
+        if (this.scoreHistory.length > 20) {
+          this.scoreHistory = this.scoreHistory.slice(-20)
+        }
+        this._pushToSparkline()
       }
     } catch (e) {
       if (e.name !== "AbortError") {

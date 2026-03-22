@@ -12,9 +12,39 @@ describe("CaseScoreController", () => {
   let application
   let fetchSpy
 
+  function mockFetchResponses(overrides = {}) {
+    const defaults = {
+      scores: { scores: [] },
+      annotations: { annotations: [] },
+      put: { score: 0.5, updated_at: new Date().toISOString() },
+    }
+    const responses = { ...defaults, ...overrides }
+
+    fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((url, opts) => {
+      // Score history GET (scores/all)
+      if (typeof url === "string" && url.includes("/scores/all")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(responses.scores),
+        })
+      }
+      // Annotations GET
+      if (typeof url === "string" && url.includes("/annotations")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(responses.annotations),
+        })
+      }
+      // Score PUT
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(responses.put),
+      })
+    })
+  }
+
   beforeEach(async () => {
-    // Node's fetch rejects relative URLs; the app uses apiUrl() without a leading slash.
-    fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({ ok: true })
+    mockFetchResponses()
 
     document.head.innerHTML = '<meta name="csrf-token" content="test-csrf">'
     document.body.innerHTML = `
@@ -61,7 +91,12 @@ describe("CaseScoreController", () => {
   })
 
   it("does not persist when score is null", async () => {
+    // Wait for the connect fetch calls to complete
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalled()
+    })
     fetchSpy.mockClear()
+
     const el = document.querySelector("[data-controller=case-score]")
     const ctrl = application.getControllerForElementAndIdentifier(el, "case-score")
 
@@ -72,7 +107,12 @@ describe("CaseScoreController", () => {
   })
 
   it("PUTs case score payload when score is numeric (API parity with Angular trackLastScore flow)", async () => {
+    // Wait for the connect fetch calls to complete
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalled()
+    })
     fetchSpy.mockClear()
+
     const el = document.querySelector("[data-controller=case-score]")
     const ctrl = application.getControllerForElementAndIdentifier(el, "case-score")
 
@@ -109,5 +149,19 @@ describe("CaseScoreController", () => {
         }),
       }),
     )
+  })
+
+  it("fetches score history and annotations on connect", async () => {
+    await waitFor(() => {
+      const scoreCalls = fetchSpy.mock.calls.filter(
+        ([url]) => typeof url === "string" && url.includes("scores/all"),
+      )
+      expect(scoreCalls.length).toBeGreaterThanOrEqual(1)
+    })
+
+    const annotationCalls = fetchSpy.mock.calls.filter(
+      ([url]) => typeof url === "string" && url.includes("annotations"),
+    )
+    expect(annotationCalls.length).toBeGreaterThanOrEqual(1)
   })
 })

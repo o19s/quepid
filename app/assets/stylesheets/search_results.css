@@ -127,13 +127,54 @@
   font-size: 22px;
   text-align: center;
   border-radius: 5px;
-  margin-right: 10px;
   vertical-align: middle;
 }
 
 .case-score-badge-wrapper {
-  display: inline-block;
+  display: inline-flex;
+  align-items: stretch;
   vertical-align: top;
+  margin-right: 10px;
+}
+
+/* Sparkline chart — class-based equivalent of Angular qgraph element selectors */
+.sparkline-chart {
+  display: none;
+  width: 150px;
+  height: 80px;
+}
+
+.sparkline-chart.has-data {
+  display: inline-block;
+}
+
+.sparkline-chart svg {
+  background-color: white;
+  border: 2px solid grey;
+  border-right-style: none;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.sparkline-chart path {
+  stroke: #587;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.sparkline-chart line.marker {
+  stroke: blue;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-opacity: 0.3;
+}
+
+/* When sparkline is showing, remove left border-radius from the badge */
+.sparkline-chart.has-data + .case-score-badge {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-right: 0;
 }
 
 .case-header-info {
