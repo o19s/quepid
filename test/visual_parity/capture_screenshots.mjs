@@ -78,12 +78,12 @@ const FILE_TO_PAGES = [
   { pattern: /queriesLayout\.html|queriesCtrl\.js|queries\.html/, prefixes: ['04-'] },
   { pattern: /query_list_controller\.js|query_row_controller\.js|add_query_controller\.js/, prefixes: ['04-'] },
   { pattern: /inline_edit_controller\.js|resizable_pane_controller\.js|settings_panel_controller\.js/, prefixes: ['04-'] },
-  { pattern: /case_score_controller\.js|snapshot_controller\.js|clone_case_controller\.js|export_case_controller\.js/, prefixes: ['04-'] },
+  { pattern: /case_score_controller\.js|snapshot_controller\.js|clone_case_controller\.js|export_case_controller\.js|delete_case_options_controller\.js/, prefixes: ['04-'] },
   { pattern: /modules\/search_executor\.js|modules\/scorer|modules\/ratings_store|modules\/api_url|modules\/query_template|modules\/explain_parser|modules\/field_renderer/, prefixes: ['04-'] },
   { pattern: /doc_detail_modal_controller\.js|query_explain_modal_controller\.js|doc_finder_controller\.js/, prefixes: ['04-'] },
   { pattern: /paneSvc\.js|panes\.css/, prefixes: ['04-'] },
   { pattern: /components\/clone_case|components\/delete_case|components\/export_case|components\/import_ratings|components\/share_case|components\/judgements|components\/diff\//, prefixes: ['04e'] },
-  { pattern: /search_results\.css|bootstrap3-add\.css|style\.css|base\.css/, prefixes: ['04-'] },
+  { pattern: /search_results\.css|bootstrap3-add\.css|bootstrap5-add\.css|style\.css|base\.css/, prefixes: ['04-'] },
   { pattern: /views\/books\/|controllers\/books_controller/, prefixes: ['05-', '06-', '07-', '08-', '21-', '22-', '23-', '24-', '25-'] },
   { pattern: /views\/scorers\/|controllers\/scorers_controller/, prefixes: ['09-', '10-'] },
   { pattern: /views\/search_endpoints\//, prefixes: ['11-', '12-', '13-'] },
@@ -325,13 +325,15 @@ const PAGES = [
   },
 
   // Case workspace — New UI (Rails+Stimulus replacement)
-  // Used in branch-comparison mode; skipped in --variant mode (variant above covers it)
   {
     name: '04-case-workspace-new-ui',
     tags: ['workspace', 'new-ui'],
     resolve: async (page) => {
       const id = await getFirstCaseId(page);
       return id ? `/case/${id}/new_ui` : '/cases';
+    },
+    variants: {
+      'new-ui': { resolve: resolveNewUiCase },
     },
   },
 
@@ -816,15 +818,14 @@ async function main() {
     console.log(`   Changed prefixes: ${[...changedPrefixes].sort().join(', ')}`);
   }
 
-  // Clean screenshot files that will be recaptured. When change detection is
-  // active, only remove files for pages we're about to recapture so that
-  // unchanged pages keep their prior screenshots in the report.
+  // Clean only screenshot files that will be recaptured, so that unchanged
+  // pages keep their prior screenshots in the report.
   if (fs.existsSync(OUT_DIR)) {
     const pagesToCapture = new Set(filteredPages.map(p => p.name));
     for (const file of fs.readdirSync(OUT_DIR)) {
       if (file.endsWith('.png') || file.endsWith('-ERROR.txt')) {
         const baseName = file.replace(/\.png$/, '').replace(/-ERROR\.txt$/, '');
-        if (changedPrefixes === null || pagesToCapture.has(baseName)) {
+        if (pagesToCapture.has(baseName)) {
           fs.unlinkSync(path.join(OUT_DIR, file));
         }
       }

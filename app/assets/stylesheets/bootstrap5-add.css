@@ -73,12 +73,23 @@ body {
   z-index: 100;
 }
 
-/* BS5 modal/fade compatibility — BS3 uses .fade.in, BS5 JS uses .fade.show */
+/* BS5 modal/fade compatibility — BS3 uses .fade.in, BS5 JS uses .fade.show.
+   BS5 JS also uses .modal.show (not .modal.in) for the visible state.
+   Override BS3 z-index values so BS5 modals layer above all content. */
 .fade.show {
   opacity: 1;
 }
+.modal.show {
+  display: block;
+}
 .modal-backdrop.show {
   opacity: 0.5;
+}
+.modal-backdrop {
+  z-index: 1050;
+}
+.modal {
+  z-index: 1055;
 }
 
 /* Slow down Bootstrap spinner animation */

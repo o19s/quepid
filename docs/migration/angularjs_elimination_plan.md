@@ -93,8 +93,8 @@ Unless explicitly expanded later:
 
 **What is still missing on `new_ui`**
 
-- Action bar links are **placeholders** (no modals wired) except: ~~Create snapshot~~, ~~Compare snapshots~~, ~~Clone~~, ~~Export~~.
-- Query list: ~~pagination~~, ~~drag-and-drop reorder~~, ~~query notes~~, **bulk actions**, full **result row** parity (explain, embeds, etc.) with Angular.
+- Action bar links are **placeholders** (no modals wired) except: ~~Create snapshot~~, ~~Compare snapshots~~, ~~Clone~~, ~~Export~~, ~~Delete (delete all queries / archive / delete case)~~.
+- Query list: ~~pagination~~, ~~drag-and-drop reorder~~, ~~query notes~~, ~~bulk actions~~ (~~Run All~~, ~~Score All per query~~, ~~bulk create via semicolons~~, ~~delete all queries~~), full **result row** parity (explain, embeds, etc.) with Angular.
 - Annotations: per-query score breakdown not captured (see Phase 5 TODOs).
 
 ### Shared with both layouts
@@ -220,7 +220,7 @@ Authoritative listing: **`workspace_api_usage.md`**. In one breath: case + tries
 
 **Purpose:** Query CRUD, sort, filter, pagination, collapse, orchestration.
 
-- **`new_ui`:** major slice is ~~done~~; see [new_ui route](#new_ui-route-stimulus-only) under **Where the code lives today**. ~~pagination~~ (client-side, 15/page), ~~SortableJS + reorder API~~, ~~query notes (SS-29)~~. **Still open:** bulk actions.
+- **`new_ui`:** major slice is ~~done~~; see [new_ui route](#new_ui-route-stimulus-only) under **Where the code lives today**. ~~pagination~~ (client-side, 15/page), ~~SortableJS + reorder API~~, ~~query notes (SS-29)~~, ~~bulk actions~~ (~~Run All button~~, ~~Score All per query~~ via `bulkRateMenu` dropdown, ~~bulk create via semicolons~~ in add-query input, ~~delete all queries~~ via delete-case-options modal).
 - ~~Replace **`dir-pagination-controls`** with Stimulus-driven paging~~ (client-side pagination in `query_list_controller.js`).
 
 **Done when:** “Query List” section of the UI inventory is satisfied and tests cover order / add / filter.
@@ -304,7 +304,7 @@ Snapshot modal (Rails + POST); diff as server page or Stimulus pane (`queryDiffR
 
 ## Phase 8 — Lifecycle modals and wizard
 
-**WizardModalCtrl** → stepped Stimulus or Turbo flows; export/import; **Judgements** + **`bookSvc`**; Frog / debug / explain (**vega** → **vega-embed**); **Unarchive**; **delete-case** vs **delete-case-options**.
+**WizardModalCtrl** → stepped Stimulus or Turbo flows; export/import; **Judgements** + **`bookSvc`**; Frog / debug / explain (**vega** → **vega-embed**); **Unarchive**; ~~**delete-case-options**~~ (done — `delete_case_options_controller.js` with delete-all-queries / archive / delete).
 
 **Done when:** “Modals” and “Case Action Bar” in **`angularjs_ui_inventory.md`** are satisfied.
 
@@ -412,6 +412,7 @@ Ship to **`main`** via normal PRs. **Revert** is the default rollback. Use **fea
 - **2026-03-21** — Synced `new_ui` (search_executor, ratings, case-score, Run all, layout `data-*`); strikethrough legend; dedupe pass. **Readable rewrite:** “Start here,” TOC, mermaid slice diagram, consistent phase subheads, grouped related docs. **Lists-only:** no markdown tables (Angular vs `new_ui`, phase overview, risks); subsection **`new_ui` route** for a stable anchor; Phase 3 links there.
 - **2026-03-22** — **Phase 5 complete** (all 6 slices): 5-tab tune relevance pane on `new_ui` — curator variables (tuning knobs), annotations (CRUD), try management (rename/duplicate/delete), search endpoint picker, CodeMirror JSON editor (reused `modules/editor` instead of ACE), query param validation warnings. Visual parity screenshots captured for all 5 tabs. Known gap: annotation score data missing `allRated` and per-query breakdown (TODO in Phase 5). Added `onChange` callback to `fromTextArea()` in `modules/editor.js`. Fixed N+1 in annotations controller (`includes(:user, score: :try)`). Added `try_number` to annotation jbuilder.
 - **2026-03-22** — **Phase 6 sparkline**: ported Angular `qgraph` D3 line chart to `sparkline_controller.js`. Case header now shows sparkline of last 10 scores with annotation markers when score history has >1 entries. `case_score_controller.js` fetches score history + annotations on connect and pushes to sparkline via outlet. Class-based CSS (`.sparkline-chart`) alongside Angular element selectors. Vitest coverage for sparkline rendering, annotation filtering, re-render on data change, tooltip lifecycle. Vega migration deferred to Phase 8 (Frog).
+- **2026-03-22** — **Phase 3 bulk actions complete**: Added "Run All" button to query list toolbar. Wired action bar "Delete" link to new `delete_case_options_controller.js` BS5 modal with three actions: Delete All Queries (API `DELETE /api/bulk/cases/:id/queries/delete`), Archive Case (`POST /cases/:id/archive`), Delete Case (API `DELETE /api/v1/cases/:id`). Confirmed existing bulk features: Score All per-query dropdown (`bulkRate` in `query_row_controller`), bulk create via semicolons in add-query input. Vitest coverage (7 tests). Phase 3 marked done.
 
 ---
 
