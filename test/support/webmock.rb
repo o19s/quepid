@@ -109,7 +109,7 @@ module ActiveSupport
         )
         .to_return(status: 200, body: mock_statedecoded_body, headers: {})
 
-      stub_request(:get, 'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=id,text&q&rows=10&start=0')
+      stub_request(:get, 'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=id,text&q=&rows=10&start=0')
         .with(
           headers: {
             'Accept'          => '*/*',

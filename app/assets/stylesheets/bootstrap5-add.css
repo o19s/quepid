@@ -73,6 +73,14 @@ body {
   z-index: 100;
 }
 
+/* BS5 modal/fade compatibility — BS3 uses .fade.in, BS5 JS uses .fade.show */
+.fade.show {
+  opacity: 1;
+}
+.modal-backdrop.show {
+  opacity: 0.5;
+}
+
 /* Slow down Bootstrap spinner animation */
 .spinner-border {
   animation-duration: 1.5s;

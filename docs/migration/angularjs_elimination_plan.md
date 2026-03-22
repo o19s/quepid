@@ -85,7 +85,7 @@ Unless explicitly expanded later:
 
 **What already works on `new_ui`**
 
-- **Case header:** ~~inline rename~~; ~~case-level score badge~~ (`case-score`); ~~sparkline chart~~ (`sparkline` controller, D3 line graph of last 10 scores + annotation markers).
+- **Case header:** ~~inline rename~~; ~~case-level score badge~~ (`case-score`); ~~sparkline chart~~ (`sparkline` controller, D3 line graph of last 10 scores + annotation markers); ~~snapshot score badges during comparison~~ (`snapshotScores` target on `case-score`).
 - **Query list:** ~~filter, sort, collapse-all, show-only-rated, Run all, add query, delete~~.
 - **After expand:** browser **search** via **`search_executor`** (Solr / ES / OS; **`/proxy/fetch`** when the try is configured to proxy).
 - **Ratings and scores:** **`ratings_store`**, **`scorer_executor`**, **`scorer.js`** (plus **`query_template.js`**, **`api_url.js`**).
@@ -93,7 +93,7 @@ Unless explicitly expanded later:
 
 **What is still missing on `new_ui`**
 
-- Action bar links are **placeholders** (no modals wired).
+- Action bar links are **placeholders** (no modals wired) except: ~~Create snapshot~~, ~~Compare snapshots~~, ~~Clone~~, ~~Export~~.
 - Query list: ~~pagination~~, ~~drag-and-drop reorder~~, ~~query notes~~, **bulk actions**, full **result row** parity (explain, embeds, etc.) with Angular.
 - Annotations: per-query score breakdown not captured (see Phase 5 TODOs).
 
@@ -148,7 +148,7 @@ flowchart LR
 - **Phase 4** — Results and rating: rows, popovers, explain, finder, embeds.
 - **Phase 5** — ~~Tune relevance: JSON editor, tries, annotations, endpoint picker, curator vars, validation.~~
 - **Phase 6** — Charts and score polish: ~~sparklines~~, Vega, filters.
-- **Phase 7** — Snapshots and diffs.
+- **Phase 7** — Snapshots and diffs: ~~compare modal~~, ~~diff rendering~~, ~~header score badges~~, ~~clear/delete~~.
 - **Phase 8** — Lifecycle: wizard, judgements, export/import, frog, delete.
 - **Phase 9** — Tour, flash, loading, 404, footer, ACE config.
 - **Phase 10** — Remove Angular from core: bundles, Karma, docs.
@@ -284,6 +284,21 @@ Authoritative listing: **`workspace_api_usage.md`**. In one breath: case + tries
 ## Phase 7 — Snapshots and diffs
 
 Snapshot modal (Rails + POST); diff as server page or Stimulus pane (`queryDiffResults.html`); **`snapshotSearcherSvc`** without Angular.
+
+**Done on `new_ui`:**
+
+- ~~**Snapshot creation modal**~~ (`snapshot` controller — Phase pre-7; already wired).
+- ~~**Compare snapshots modal**~~ (`snapshot-comparison` controller): fetches snapshot list (`?shallow=true`), 1–3 dropdown selectors, duplicate/processing validation, delete snapshot from modal. Dispatches `snapshot-comparison:activate`/`deactivate` custom events on `document`.
+- ~~**Side-by-side diff rendering**~~ in query rows (`renderDiffResults()` on `query-row` controller): current results vs snapshot columns using existing `.diff-container`/`.diff-row`/`.diff-column` CSS. Highlight classes: `.different` (yellow — doc moved position), `.missing` (red — doc absent from current results).
+- ~~**Snapshot score badges in case header**~~ (`snapshotScores` target on `case-score` controller): shows average per-query score per snapshot with colored badges during comparison.
+- ~~**Clear comparison**~~ from modal footer reverts all query rows to normal single-column view.
+- ~~**Delete compared snapshot auto-clears**~~ comparison if the deleted snapshot was in active use.
+
+**Still TODO:**
+
+- Snapshot **import** modal (action bar "Import" link).
+- Snapshot detail view / standalone snapshot page.
+- Per-query snapshot scores in collapsed query row header (Angular shows scores inline).
 
 ---
 

@@ -1,6 +1,6 @@
 <% if @case.present? %>
 <div id="case-actions" class="row"
-     data-controller="snapshot clone-case export-case"
+     data-controller="snapshot clone-case export-case snapshot-comparison"
      data-snapshot-query-row-outlet="[data-controller='query-row']"
      data-clone-case-case-id-value="<%= @case.id %>"
      data-clone-case-case-name-value="<%= @case.case_name %>"
@@ -22,7 +22,7 @@
       </li>
       <li>
         <i class="bi bi-bar-chart-fill" aria-hidden="true"></i>
-        <a href="#">Compare snapshots</a>
+        <a href="#" data-action="click->snapshot-comparison#open">Compare snapshots</a>
       </li>
       <li>
         <i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i>
@@ -254,6 +254,46 @@
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+  <!-- Snapshot Comparison modal -->
+  <div class="modal fade" tabindex="-1" data-snapshot-comparison-target="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Compare Snapshots</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div data-snapshot-comparison-target="snapshotList"></div>
+
+          <button type="button" class="btn btn-sm btn-outline-primary mt-2 d-none"
+                  data-snapshot-comparison-target="addButton"
+                  data-action="click->snapshot-comparison#addSnapshot">
+            <i class="bi bi-plus"></i> Add Snapshot
+          </button>
+
+          <div class="alert alert-warning mt-2 d-none" data-snapshot-comparison-target="warningArea"></div>
+
+          <div class="text-center mt-2 d-none" data-snapshot-comparison-target="loadingSpinner">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Loading&hellip;
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary"
+                  data-snapshot-comparison-target="compareButton"
+                  data-action="click->snapshot-comparison#compare" disabled>
+            Compare
+          </button>
+          <button type="button" class="btn btn-outline-secondary d-none"
+                  data-snapshot-comparison-target="clearButton"
+                  data-action="click->snapshot-comparison#clear">
+            Clear Comparison
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
       </div>
     </div>
   </div>

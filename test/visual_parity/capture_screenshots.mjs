@@ -516,9 +516,12 @@ const PAGES = [
       return id ? `/case/${id}` : '/cases';
     },
     setup: async (page) => {
+      // Wait for Stimulus controllers to connect (importmap async loading)
+      await new Promise(r => setTimeout(r, 2000));
       await page.locator('#case-actions a', { hasText: 'Compare snapshots' }).click();
-      await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
-      await new Promise(r => setTimeout(r, 500));
+      await page.locator('.modal.show').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      // Wait for snapshot list to load (API fetch inside the modal)
+      await new Promise(r => setTimeout(r, 2000));
     },
     variants: {
       'new-ui': { resolve: resolveNewUiCase },

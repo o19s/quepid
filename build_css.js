@@ -131,6 +131,10 @@ function buildCoreCSS() {
     output += '\n';
   }
 
+  // BS5 compatibility (new_ui uses BS5 JS with BS3 CSS)
+  output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
+  output += '\n';
+
   // New UI (Stimulus) styles
   output += readFileIfExists('app/assets/stylesheets/search_results.css');
   output += '\n';

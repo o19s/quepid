@@ -3,7 +3,7 @@ import { apiUrl, csrfToken } from "modules/api_url"
 import { scoreToColor } from "modules/scorer"
 
 export default class extends Controller {
-  static targets = ["badge"]
+  static targets = ["badge", "snapshotScores"]
   static outlets = ["sparkline"]
   static values = {
     caseId: { type: Number },
@@ -18,6 +18,12 @@ export default class extends Controller {
     this.annotationsList = []
     this._updateDisplay(null)
     this._fetchScoreHistory()
+
+    // Listen for snapshot comparison events
+    this._onComparisonActivate = (e) => this._showSnapshotScores(e.detail.snapshots)
+    this._onComparisonDeactivate = () => this._clearSnapshotScores()
+    document.addEventListener("snapshot-comparison:activate", this._onComparisonActivate)
+    document.addEventListener("snapshot-comparison:deactivate", this._onComparisonDeactivate)
   }
 
   disconnect() {
@@ -29,6 +35,8 @@ export default class extends Controller {
       this.historyAbort.abort()
       this.historyAbort = null
     }
+    document.removeEventListener("snapshot-comparison:activate", this._onComparisonActivate)
+    document.removeEventListener("snapshot-comparison:deactivate", this._onComparisonDeactivate)
   }
 
   /**
@@ -47,6 +55,53 @@ export default class extends Controller {
   }
 
   // Private
+
+  _showSnapshotScores(snapshots) {
+    if (!this.hasSnapshotScoresTarget) return
+
+    const container = this.snapshotScoresTarget
+    container.innerHTML = ""
+    container.classList.remove("d-none")
+
+    for (const snap of snapshots) {
+      // Compute an average score from the snapshot's scores array
+      const scores = snap.scores || []
+      const validScores = scores.filter((s) => s.score !== null && s.score !== undefined)
+      const avgScore =
+        validScores.length > 0
+          ? validScores.reduce((sum, s) => sum + s.score, 0) / validScores.length
+          : null
+
+      const badge = document.createElement("span")
+      badge.className = "diff-score-display snapshot-score ms-2"
+
+      const inner = document.createElement("span")
+      inner.className = "overall-rating case-score-badge"
+
+      if (avgScore !== null) {
+        const rounded = Math.round(avgScore * 100) / 100
+        inner.textContent = rounded.toFixed(2)
+        inner.style.backgroundColor = scoreToColor(avgScore, this.maxScoreValue)
+      } else {
+        inner.textContent = "--"
+        inner.classList.add("score-badge-unscored")
+      }
+
+      const label = document.createElement("small")
+      label.className = "text-muted ms-1"
+      label.textContent = snap.name
+
+      badge.appendChild(inner)
+      badge.appendChild(label)
+      container.appendChild(badge)
+    }
+  }
+
+  _clearSnapshotScores() {
+    if (!this.hasSnapshotScoresTarget) return
+    this.snapshotScoresTarget.innerHTML = ""
+    this.snapshotScoresTarget.classList.add("d-none")
+  }
 
   _updateDisplay(score) {
     if (!this.hasBadgeTarget) return

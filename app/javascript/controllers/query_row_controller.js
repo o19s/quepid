@@ -108,6 +108,8 @@ export default class extends Controller {
     this.lastNumFound = 0
     this.lastResult = null
     this.debugMode = false
+    this.comparisonSnapshots = null
+    this._comparisonDirty = false
     this._ratingsInFlight = new Set()
     this._notesSavedTimer = null
 
@@ -126,6 +128,26 @@ export default class extends Controller {
         this.bulkRateMenuTarget.appendChild(li)
       }
     }
+
+    // Listen for snapshot comparison events
+    this._onComparisonActivate = (e) => {
+      this.comparisonSnapshots = e.detail.snapshots
+      if (this.expanded && this.searchLoaded) {
+        this.renderDiffResults()
+      } else {
+        this._comparisonDirty = true
+      }
+    }
+    this._onComparisonDeactivate = () => {
+      this.comparisonSnapshots = null
+      if (this.expanded && this.lastResult) {
+        this.renderResults(this.lastResult)
+      } else {
+        this._comparisonDirty = true
+      }
+    }
+    document.addEventListener("snapshot-comparison:activate", this._onComparisonActivate)
+    document.addEventListener("snapshot-comparison:deactivate", this._onComparisonDeactivate)
   }
 
   disconnect() {
@@ -137,6 +159,8 @@ export default class extends Controller {
       clearTimeout(this._notesSavedTimer)
       this._notesSavedTimer = null
     }
+    document.removeEventListener("snapshot-comparison:activate", this._onComparisonActivate)
+    document.removeEventListener("snapshot-comparison:deactivate", this._onComparisonDeactivate)
   }
 
   toggle() {
@@ -155,6 +179,14 @@ export default class extends Controller {
 
     if (!this.searchLoaded) {
       this.runSearch()
+    } else if (this._comparisonDirty) {
+      // Comparison state changed while collapsed — re-render in correct mode
+      this._comparisonDirty = false
+      if (this.comparisonSnapshots) {
+        this.renderDiffResults()
+      } else if (this.lastResult) {
+        this.renderResults(this.lastResult)
+      }
     }
   }
 
@@ -272,7 +304,12 @@ export default class extends Controller {
       this.lastSearchDocs = result.docs || []
       this.lastNumFound = result.numFound || 0
       this.lastResult = result
-      this.renderResults(result)
+
+      if (this.comparisonSnapshots) {
+        this.renderDiffResults()
+      } else {
+        this.renderResults(result)
+      }
       this._computeAndDisplayScore()
     } catch (error) {
       if (error.name === "AbortError") return
@@ -347,6 +384,152 @@ export default class extends Controller {
     // Attach click handlers to rating buttons and doc title links
     this._attachRatingListeners(container)
     this._attachDocTitleListeners(container)
+  }
+
+  renderDiffResults() {
+    const container = this.resultsContainerTarget
+    const snapshots = this.comparisonSnapshots || []
+    const currentDocs = this.lastSearchDocs || []
+    const queryId = String(this.queryIdValue)
+
+    // Update the total results count in the header
+    if (this.hasTotalResultsTarget) {
+      this.totalResultsTarget.textContent = this._buildTotalResultsText()
+    }
+
+    // Header row
+    const headerCols = [`<div class="diff-column"><strong>Current Results</strong></div>`]
+    for (const snap of snapshots) {
+      headerCols.push(
+        `<div class="diff-column"><strong>${this._escapeHtml(snap.name)}</strong></div>`,
+      )
+    }
+    const headerHtml = `<div class="diff-header">${headerCols.join("")}</div>`
+
+    // Gather snapshot docs for this query
+    const snapshotDocs = snapshots.map((snap) => {
+      const docs = snap.docs ? snap.docs[queryId] : null
+      return docs || null // null means query not in snapshot
+    })
+
+    // Determine max rows
+    const maxLen = Math.max(
+      currentDocs.length,
+      ...snapshotDocs.map((d) => (d ? d.length : 0)),
+    )
+
+    if (maxLen === 0) {
+      container.innerHTML = '<p class="text-muted">No results to compare.</p>'
+      return
+    }
+
+    // Build set of current doc IDs for diff highlighting
+    const currentDocIds = new Set(currentDocs.map((d) => String(d.id)))
+
+    const rows = []
+    for (let i = 0; i < maxLen; i++) {
+      const cols = []
+
+      // Current results column
+      if (i < currentDocs.length) {
+        cols.push(`<div class="diff-column">${this._buildDocCell(currentDocs[i], i + 1)}</div>`)
+      } else {
+        cols.push(
+          `<div class="diff-column"><div class="alert alert-secondary py-1 small">No result at position ${i + 1}</div></div>`,
+        )
+      }
+
+      // Snapshot columns
+      for (let s = 0; s < snapshots.length; s++) {
+        const sDocs = snapshotDocs[s]
+        if (sDocs === null) {
+          cols.push(
+            `<div class="diff-column"><div class="alert alert-info py-1 small">Query not in snapshot</div></div>`,
+          )
+        } else if (i < sDocs.length) {
+          const snapDoc = sDocs[i]
+          const snapDocId = String(snapDoc.id)
+          const currentDocAtPos = i < currentDocs.length ? String(currentDocs[i].id) : null
+
+          // Determine highlight class
+          let highlightClass = ""
+          if (!currentDocAtPos) {
+            // Current results are shorter — snapshot has extra docs
+            highlightClass = " missing"
+          } else if (currentDocAtPos !== snapDocId) {
+            // Different doc at same position — check if it moved or disappeared
+            highlightClass = currentDocIds.has(snapDocId) ? " different" : " missing"
+          }
+
+          cols.push(
+            `<div class="diff-column"><div class="search-result${highlightClass}">${this._buildSnapshotDocCell(snapDoc, i + 1)}</div></div>`,
+          )
+        } else {
+          cols.push(
+            `<div class="diff-column"><div class="alert alert-secondary py-1 small">No result at position ${i + 1}</div></div>`,
+          )
+        }
+      }
+
+      rows.push(`<div class="diff-row">${cols.join("")}</div>`)
+    }
+
+    this._ensureRatingColorStyles()
+
+    container.innerHTML = `<div class="diff-container">${headerHtml}${rows.join("")}</div>`
+
+    // Attach rating listeners for current results column
+    this._attachRatingListeners(container)
+    this._attachDocTitleListeners(container)
+  }
+
+  _buildDocCell(doc, rank) {
+    const subsHtml = Object.entries(doc.subs || {})
+      .map(([key, value]) => {
+        const display = Array.isArray(value) ? value.join(", ") : value
+        return `<div class="doc-sub-field"><span class="text-muted">${this._escapeHtml(key)}:</span> ${this._escapeHtml(String(display))}</div>`
+      })
+      .join("")
+
+    const thumbHtml = doc.thumb
+      ? `<img src="${this._escapeAttr(doc.thumb)}" class="doc-thumb" />`
+      : ""
+
+    const ratingHtml = this._buildRatingWidget(doc)
+
+    return `
+      <div class="doc-row">
+        ${ratingHtml}
+        <div class="doc-content">
+          ${thumbHtml}
+          <span class="badge bg-secondary me-1">${rank}</span>
+          <a href="#" class="doc-title-link" data-doc-idx="${rank - 1}">${this._escapeHtml(String(doc.title || doc.id))}</a>
+          <div class="doc-id">ID: ${this._escapeHtml(String(doc.id))}</div>
+          ${subsHtml}
+        </div>
+      </div>`
+  }
+
+  _buildSnapshotDocCell(snapDoc, rank) {
+    // Snapshot docs have { id, fields, explain, rated_only } structure
+    const fieldsHtml = snapDoc.fields
+      ? Object.entries(snapDoc.fields)
+          .map(([key, value]) => {
+            const display =
+              typeof value === "object" && value !== null ? JSON.stringify(value) : String(value)
+            return `<div class="doc-sub-field"><span class="text-muted">${this._escapeHtml(key)}:</span> ${this._escapeHtml(display)}</div>`
+          })
+          .join("")
+      : ""
+
+    return `
+      <div class="doc-row">
+        <div class="doc-content">
+          <span class="badge bg-secondary me-1">${rank}</span>
+          <strong>${this._escapeHtml(String(snapDoc.id))}</strong>
+          ${fieldsHtml}
+        </div>
+      </div>`
   }
 
   // --- Rating widget ---
