@@ -24,16 +24,6 @@
 
       <ul class="list-inline pull-right">
         <li>
-          <button class="btn btn-primary btn-sm"
-                  data-action="click->query-list#runAllSearches">
-            <i class="glyphicon glyphicon-play"></i>
-            Run All
-          </button>
-        </li>
-
-        <li class="text-muted"><span class="text-muted"> | </span></li>
-
-        <li>
           <input type="checkbox" class="align-top"
                  data-action="click->query-list#toggleShowOnlyRated"
                  data-query-list-target="showOnlyRatedCheckbox" />
@@ -50,7 +40,7 @@
 
         <li>
           <span class="text-muted">Sort &nbsp;</span>
-          <ul class="list-inline d-inline" role="group" aria-label="sort">
+          <ul class="list-inline" style="display:inline" role="group" aria-label="sort">
             <% if @query_list_sortable %>
               <li>
                 <a href="#" class="active"

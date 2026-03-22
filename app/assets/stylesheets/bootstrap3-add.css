@@ -1157,3 +1157,14 @@ li.annotation {
 .hidden {
   display: none;
 }
+
+/* Bootstrap 5 utility classes used by Stimulus controllers on the BS3 core layout */
+.d-none {
+  display: none !important;
+}
+.d-inline {
+  display: inline !important;
+}
+.d-block {
+  display: block !important;
+}

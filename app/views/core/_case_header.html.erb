@@ -1,20 +1,22 @@
 <% if @case.present? %>
 <div id="case-header" class="row">
   <div class="col-sm-12">
-    <div class="case-score-badge-wrapper"
-         data-controller="case-score"
-         data-case-score-case-id-value="<%= @case.id %>"
-         data-case-score-try-number-value="<%= @try&.try_number %>"
-         data-case-score-max-score-value="<%= (@case.scorer&.scale || []).last.to_i %>">
-      <div class="case-score-badge"
-           data-case-score-target="badge">
-        --
+    <div style="display: inline-flex; align-items: flex-start;">
+      <div class="case-score-badge-wrapper"
+           data-controller="case-score"
+           data-case-score-case-id-value="<%= @case.id %>"
+           data-case-score-try-number-value="<%= @try&.try_number %>"
+           data-case-score-max-score-value="<%= (@case.scorer&.scale || []).last.to_i %>">
+        <div class="case-score-badge"
+             data-case-score-target="badge">
+          --
+        </div>
       </div>
     </div>
-    <div class="case-header-info">
+
+    <div class="case-header-info" style="display:inline-block;vertical-align:top">
       <h1 class="">
-        <small class="text-muted">
-          Current case
+        <small class="text-muted">Current case
           <% if @case.nightly? %>
             <i class="bi bi-repeat" title="Queries are run on a nightly basis."></i>
           <% end %>
