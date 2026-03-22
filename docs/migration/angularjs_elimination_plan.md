@@ -89,11 +89,13 @@ Unless explicitly expanded later:
 - **Query list:** ~~filter, sort, collapse-all, show-only-rated, Run all, add query, delete~~.
 - **After expand:** browser **search** via **`search_executor`** (Solr / ES / OS; **`/proxy/fetch`** when the try is configured to proxy).
 - **Ratings and scores:** **`ratings_store`**, **`scorer_executor`**, **`scorer.js`** (plus **`query_template.js`**, **`api_url.js`**).
+- **Tune relevance (5-tab pane):** ~~query sandbox~~, ~~curator variables / tuning knobs~~, ~~settings (endpoint picker, fields, rows, escape)~~, ~~try history (rename/duplicate/delete)~~, ~~annotations (create/list/delete)~~, ~~CodeMirror JSON editor for non-Solr~~, ~~validation warnings~~.
 
 **What is still missing on `new_ui`**
 
 - Action bar links are **placeholders** (no modals wired).
 - Query list: ~~pagination~~, ~~drag-and-drop reorder~~, ~~query notes~~, **bulk actions**, full **result row** parity (explain, embeds, etc.) with Angular.
+- Annotations: per-query score breakdown not captured (see Phase 5 TODOs).
 
 ### Shared with both layouts
 
@@ -120,7 +122,7 @@ The **core case UI** is heavier (live search, scoring, many modals). The end sta
 1. **Server-rendered shell** — ERB (and optionally Turbo Frames) for layout, header, scaffolds for queries, tune panel, and result regions.
 2. **Stimulus + plain ES modules** — query rows, ratings, pane resizing, modals, **Sortable.js** instead of `angular-ui-sortable`.
 3. **Same JSON APIs** — still `api/cases/...` (`Api::V1`); only the **client** changes from `$http` to **`fetch`**. See **`api_client.md`** for CSRF and relative URLs.
-4. **Libraries without Angular wrappers** where possible — ACE, Vega/Vega-Lite, D3; search via splainer-style code or **`search_executor`**.
+4. **Libraries without Angular wrappers** where possible — CodeMirror 6 (replaces ACE for JSON editing), Vega/Vega-Lite, D3; search via splainer-style code or **`search_executor`**.
 
 Default stack assumption: **Hotwire + Stimulus + targeted vanilla JS**, not a new SPA framework, unless the team decides otherwise.
 
@@ -144,7 +146,7 @@ flowchart LR
 - **Phase 2** — Core shell: ERB chrome, Stimulus roots, east pane plan, events.
 - **Phase 3** — Query list: CRUD, sort, filter, pagination, notes, bulk actions.
 - **Phase 4** — Results and rating: rows, popovers, explain, finder, embeds.
-- **Phase 5** — Tune relevance: ACE, tries, annotations, endpoint picker.
+- **Phase 5** — ~~Tune relevance: JSON editor, tries, annotations, endpoint picker, curator vars, validation.~~
 - **Phase 6** — Charts and score polish: sparklines, Vega, filters.
 - **Phase 7** — Snapshots and diffs.
 - **Phase 8** — Lifecycle: wizard, judgements, export/import, frog, delete.
@@ -169,7 +171,7 @@ flowchart LR
 P1/P2 may slip behind a strangler boundary. Items with ~~strikethrough~~ are **verified on `…/new_ui`** only (screenshot IDs in the UI inventory).
 
 - ~~**P0-1–6, 9–10**~~ — open case, list queries, add query, Solr + proxy search, rate document, case score in header, delete query, cases dropdown.
-- ~~**P0-7 — Tune relevance (basic)**~~ (SS-07) — east pane sandbox, rerun searches.
+- ~~**P0-7 — Tune relevance (full)**~~ (SS-07) — east pane sandbox, rerun searches, ~~curator vars~~, ~~try management~~, ~~endpoint picker~~, ~~annotations~~, ~~JSON editor~~, ~~validation warnings~~.
 - ~~**P0-8 — Snapshot**~~ (SS-12) — create from action bar.
 - **Stretch (before Phase 10):** ~~**P0-S1** ES/OS on `new_ui`~~; ~~**P0-S2** clone (SS-17)~~; ~~**P0-S3** export CSV (SS-19)~~.
 
@@ -238,11 +240,26 @@ Authoritative listing: **`workspace_api_usage.md`**. In one breath: case + tries
 
 ## Phase 5 — Tune relevance (try settings)
 
-**Purpose:** Query params, tries, headers, history, ACE, annotations, endpoint picker.
+**Purpose:** Query params, tries, headers, history, JSON editor, annotations, endpoint picker.
 
-Vanilla **ACE**, Stimulus forms, try history, try-details modals, **annotations**, **search endpoint** typeahead; retire **ui-ace** and **angular-ui-bootstrap** pieces in the sandbox. Route shared widgets: **`json-explorer`** ↔ Phase 4; wizard/tags/csv ↔ Phase 8; countUp/ngclipboard ↔ web APIs.
+~~CodeMirror JSON editor~~ (reused existing `modules/editor`), Stimulus forms, ~~try history~~, ~~try rename/duplicate/delete~~, ~~annotations~~ (create/list/delete), ~~search endpoint picker~~, ~~curator variables~~ (tuning knobs), ~~query param validation warnings~~; retire **ui-ace** and **angular-ui-bootstrap** pieces in the sandbox. Route shared widgets: **`json-explorer`** ↔ Phase 4; wizard/tags/csv ↔ Phase 8; countUp/ngclipboard ↔ web APIs.
+
+**`new_ui` status:** 5-tab pane (Query, Tuning Knobs, Settings, History, Annotations) is ~~functional~~. All 6 slices implemented:
+
+- ~~**Curator Variables (Tuning Knobs)**~~ — extracts `##varName##` from query params, renders numeric inputs, sends `curator_vars` in try creation payload. Filters magic vars (`$query`, `$keyword\d+`).
+- ~~**Annotations**~~ — lazy-loaded list on tab switch, create with current score + message, delete individual annotations. Jbuilder includes `try_number` for display.
+- ~~**Try management**~~ — rename (prompt → PUT), duplicate (POST clone → navigate), delete (with last-try guard + navigate-away if current try deleted).
+- ~~**Search Endpoint picker**~~ — fetches case + user endpoints on Settings tab open, deduplicates, `<select>` dropdown, archived warning.
+- ~~**CodeMirror JSON editor**~~ — reuses existing `modules/editor.js` `fromTextArea()` with new `onChange` callback (via `EditorView.updateListener`). Solr keeps plain textarea. Graceful fallback on init failure.
+- ~~**Query param validation**~~ — Solr `deftype` → `defType` typo check, ES/OS template and `_source` warnings, TLS mismatch warning.
+
+**Still open:** Nightly evaluation toggle + "Run in Background" button (deferred to Phase 8 lifecycle).
 
 **Done when:** Try create/edit, headers, curator vars, history, and details modals work end-to-end.
+
+### TODOs
+
+- [ ] **Annotation score data is incomplete:** `_getCurrentScoreData()` in `settings_panel_controller.js` only reads the aggregate score from the case-score badge text. It always sends `allRated: false` and `queries: []` when creating annotations. The Angular version captured `lastScore.all_rated` and per-query score breakdowns. Fix: have `case_score_controller.js` store the full score payload (score, allRated, queryScores) as data attributes on its element when `updateScore()` is called, then read those in `_getCurrentScoreData()`.
 
 ---
 
@@ -370,6 +387,7 @@ Ship to **`main`** via normal PRs. **Revert** is the default rollback. Use **fea
 - **2026-03-19** — Initial plan; judgements scope; API wording; `broadcastSvc` / `paneSvc`; query notes; doc finder; stacked charts / embeds / Frog+Vega; BS3/BS5; Phase 0 services; `application_modern`; related docs; DevTools/proxy parity; pragmatic review folded in.
 - **2026-03-20** — P0 flow checklist + compact API summary in this doc.
 - **2026-03-21** — Synced `new_ui` (search_executor, ratings, case-score, Run all, layout `data-*`); strikethrough legend; dedupe pass. **Readable rewrite:** “Start here,” TOC, mermaid slice diagram, consistent phase subheads, grouped related docs. **Lists-only:** no markdown tables (Angular vs `new_ui`, phase overview, risks); subsection **`new_ui` route** for a stable anchor; Phase 3 links there.
+- **2026-03-22** — **Phase 5 complete** (all 6 slices): 5-tab tune relevance pane on `new_ui` — curator variables (tuning knobs), annotations (CRUD), try management (rename/duplicate/delete), search endpoint picker, CodeMirror JSON editor (reused `modules/editor` instead of ACE), query param validation warnings. Visual parity screenshots captured for all 5 tabs. Known gap: annotation score data missing `allRated` and per-query breakdown (TODO in Phase 5). Added `onChange` callback to `fromTextArea()` in `modules/editor.js`. Fixed N+1 in annotations controller (`includes(:user, score: :try)`). Added `try_number` to annotation jbuilder.
 
 ---
 

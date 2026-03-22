@@ -8,7 +8,7 @@ module Api
       before_action :set_annotation, only: [ :update, :destroy ]
 
       def index
-        @annotations = @case.annotations.includes(:score)
+        @annotations = @case.annotations.includes(:user, score: :try)
 
         respond_with @annotations
       end

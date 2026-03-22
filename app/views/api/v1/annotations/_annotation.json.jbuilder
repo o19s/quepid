@@ -9,6 +9,7 @@ json.updated_at annotation.updated_at
 
 json.score do
   json.partial! 'api/v1/case_scores/score', score: annotation.score, shallow: true
+  json.try_number annotation.score.try&.try_number
 end
 
 json.user do

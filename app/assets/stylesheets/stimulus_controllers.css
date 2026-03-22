@@ -55,3 +55,76 @@
   font-family: monospace;
   font-size: 13px;
 }
+
+/* Try history — actions and details */
+
+.try-history-main {
+  display: flex;
+  align-items: center;
+}
+
+.try-history-main .try-history-link {
+  flex: 1;
+}
+
+.try-actions-toggle {
+  color: #999;
+  padding: 0 6px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.try-actions-toggle:hover {
+  color: #fff;
+}
+
+.try-actions {
+  padding: 4px 0;
+}
+
+.try-actions .btn {
+  margin-right: 4px;
+}
+
+.try-details {
+  padding: 4px 0 4px 24px;
+}
+
+/* Curator variables */
+
+.curator-var-input label {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+/* Annotations */
+
+.annotation-item {
+  border-bottom: 1px solid #444;
+  padding: 8px 0;
+}
+
+.annotation-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.annotation-header .text-muted {
+  flex: 1;
+}
+
+.annotation-delete {
+  padding: 0 4px;
+  font-size: 16px;
+}
+
+.annotation-message {
+  margin: 4px 0;
+}
+
+/* Validation warnings */
+
+.validation-warnings .alert-sm {
+  font-size: 12px;
+}

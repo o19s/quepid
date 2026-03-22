@@ -268,6 +268,17 @@ export function fromTextArea(textarea, options = {}) {
     extensions.push(EditorView.editable.of(false))
   }
 
+  // Add onChange callback as an EditorView.updateListener
+  if (typeof options.onChange === "function") {
+    extensions.push(
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          options.onChange(update.state.doc.toString())
+        }
+      })
+    )
+  }
+
   const view = new EditorView({
     state: EditorState.create({
       doc: textarea.value,

@@ -371,7 +371,16 @@ const PAGES = [
       await page.locator('#curatorTab').click();
       await new Promise(r => setTimeout(r, 500));
     },
-    // No new-ui variant: new UI has no "Tuning Knobs" tab yet
+    variants: {
+      'new-ui': {
+        resolve: resolveNewUiCase,
+        setup: async (page) => {
+          await openNewUiPane(page);
+          await page.locator('li[data-tab="tuning"]').click();
+          await new Promise(r => setTimeout(r, 500));
+        },
+      },
+    },
   },
   {
     name: '04a3-tune-relevance-settings',
@@ -434,7 +443,16 @@ const PAGES = [
       await page.locator('#annotationsTab').click();
       await new Promise(r => setTimeout(r, 500));
     },
-    // No new-ui variant: new UI has no "Annotations" tab yet
+    variants: {
+      'new-ui': {
+        resolve: resolveNewUiCase,
+        setup: async (page) => {
+          await openNewUiPane(page);
+          await page.locator('li[data-tab="annotations"]').click();
+          await new Promise(r => setTimeout(r, 1500));  // extra time for lazy-loaded annotation fetch
+        },
+      },
+    },
   },
 
   // Case workspace — action bar modals

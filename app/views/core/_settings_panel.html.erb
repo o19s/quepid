@@ -2,17 +2,24 @@
 <div id="dev-settings" data-controller="settings-panel"
      data-settings-panel-case-id-value="<%= @case.id %>"
      data-settings-panel-try-number-value="<%= @try.try_number %>"
+     data-settings-panel-try-id-value="<%= @try.id %>"
      data-settings-panel-search-engine-value="<%= @try.search_endpoint&.search_engine || 'solr' %>"
      data-settings-panel-query-params-value="<%= @try.query_params %>"
      data-settings-panel-field-spec-value="<%= @try.field_spec %>"
      data-settings-panel-number-of-rows-value="<%= @try.number_of_rows %>"
      data-settings-panel-escape-query-value="<%= @try.escape_query %>"
-     data-settings-panel-search-endpoint-id-value="<%= @try.search_endpoint&.id %>">
+     data-settings-panel-search-endpoint-id-value="<%= @try.search_endpoint&.id %>"
+     data-settings-panel-curator-vars-value="<%= @try.curator_vars_map.to_json %>"
+     data-settings-panel-total-tries-value="<%= @case.tries.count %>">
 
   <ul class="nav nav-tabs">
     <li class="tabBoxSelected" data-action="click->settings-panel#switchTab"
         data-settings-panel-target="tab" data-tab="query">
       Query
+    </li>
+    <li data-action="click->settings-panel#switchTab"
+        data-settings-panel-target="tab" data-tab="tuning">
+      Tuning Knobs
     </li>
     <li data-action="click->settings-panel#switchTab"
         data-settings-panel-target="tab" data-tab="settings">
@@ -21,6 +28,10 @@
     <li data-action="click->settings-panel#switchTab"
         data-settings-panel-target="tab" data-tab="history">
       History
+    </li>
+    <li data-action="click->settings-panel#switchTab"
+        data-settings-panel-target="tab" data-tab="annotations">
+      Annotations
     </li>
   </ul>
 
@@ -40,38 +51,60 @@
           <% if engine == 'solr' %>
             <textarea class="form-control" name="queryParams"
                       data-settings-panel-target="queryParamsInput"
-                      data-action="input->settings-panel#markDirty"><%= @try.query_params %></textarea>
+                      data-action="input->settings-panel#markDirty input->settings-panel#extractCuratorVars"><%= @try.query_params %></textarea>
           <% else %>
             <%# ES/OS/Vectara/Algolia/SearchAPI use a taller textarea for JSON %>
             <textarea class="form-control es-query-params" name="queryParams"
                       data-settings-panel-target="queryParamsInput"
-                      data-action="input->settings-panel#markDirty"><%= @try.query_params %></textarea>
+                      data-action="input->settings-panel#markDirty input->settings-panel#extractCuratorVars"><%= @try.query_params %></textarea>
           <% end %>
+
+          <div class="validation-warnings mt-2" data-settings-panel-target="validationWarnings"></div>
         </div>
       <% end %>
+    </div>
+
+    <!-- Tuning Knobs tab (Curator Variables) -->
+    <div class="settings-tab d-none" data-settings-panel-target="tabContent" data-tab="tuning">
+      <div class="rerunnable-settings-tab">
+        <h4>Tuning Knobs</h4>
+        <p class="text-muted" data-settings-panel-target="curatorVarsHelp">
+          Use <code>##variableName##</code> in your query params to create tuning knobs.
+          For example: <code>boost=##titleBoost##</code>
+        </p>
+        <div data-settings-panel-target="curatorVarsContainer"></div>
+      </div>
     </div>
 
     <!-- Settings tab -->
     <div class="settings-tab d-none" data-settings-panel-target="tabContent" data-tab="settings">
       <div class="rerunnable-settings-tab">
-        <!-- Endpoint Details -->
+        <!-- Search Endpoint Picker -->
         <div class="setting-div">
           <div class="dev-header" data-action="click->settings-panel#toggleSection">
-            Endpoint Details
+            Search Endpoint
             <span class="glyphicon glyphicon-minus-sign"></span>
           </div>
           <div class="dev-body">
-            <p>
+            <select class="form-control" data-settings-panel-target="endpointSelect"
+                    data-action="change->settings-panel#selectEndpoint">
               <% if @try.search_endpoint.present? %>
-                Name: <%= @try.search_endpoint.fullname %>
+                <option value="<%= @try.search_endpoint.id %>" selected>
+                  <%= @try.search_endpoint.fullname %>
+                </option>
               <% end %>
-            </p>
-            <p>
-              <% if @try.search_endpoint&.search_engine %>
-                <img src="<%= asset_path("#{@try.search_endpoint.search_engine}-icon.png") %>" width="32px" />
+            </select>
+            <div class="mt-1" data-settings-panel-target="endpointInfo">
+              <% if @try.search_endpoint.present? %>
+                <small>
+                  <% if @try.search_endpoint&.search_engine %>
+                    <img src="<%= asset_path("#{@try.search_endpoint.search_engine}-icon.png") %>" width="20px" />
+                  <% end %>
+                  <%= @try.search_endpoint&.endpoint_url %>
+                </small>
               <% end %>
-              <%= @try.search_endpoint&.endpoint_url %>
-            </p>
+            </div>
+            <div class="alert alert-warning d-none mt-1" data-settings-panel-target="endpointWarning"></div>
           </div>
         </div>
 
@@ -131,17 +164,75 @@
         <p>To switch back to a previous try, click on a listing.</p>
 
         <ul class="list-unstyled" data-settings-panel-target="tryHistory">
-          <% @case.tries.order(try_number: :desc).each do |t| %>
-            <li class="try-history-item <%= 'try-history-active' if t.try_number == @try.try_number %>">
-              <a href="<%= case_core_new_ui_path(@case, t.try_number) %>"
-                 class="try-history-link">
-                <span class="try-number">#<%= t.try_number %></span>
-                <span class="try-name"><%= t.name %></span>
-                <small class="text-muted"><%= t.created_at.strftime('%Y-%m-%d %H:%M') %></small>
-              </a>
+          <% @case.tries.includes(:search_endpoint, :curator_variables).order(try_number: :desc).each do |t| %>
+            <li class="try-history-item <%= 'try-history-active' if t.try_number == @try.try_number %>"
+                data-try-number="<%= t.try_number %>"
+                data-settings-panel-target="tryItem">
+              <div class="try-history-main">
+                <a href="<%= case_core_new_ui_path(@case, t.try_number) %>"
+                   class="try-history-link">
+                  <span class="try-number">#<%= t.try_number %></span>
+                  <span class="try-name" data-settings-panel-target="tryName"><%= t.name %></span>
+                  <small class="text-muted"><%= t.created_at.strftime('%Y-%m-%d %H:%M') %></small>
+                </a>
+                <button type="button" class="btn btn-sm btn-link try-actions-toggle"
+                        data-action="click->settings-panel#toggleTryActions"
+                        title="Actions">
+                  &hellip;
+                </button>
+              </div>
+              <div class="try-actions d-none">
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        data-action="click->settings-panel#renameTry"
+                        data-try-number="<%= t.try_number %>">
+                  Rename
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        data-action="click->settings-panel#duplicateTry"
+                        data-try-number="<%= t.try_number %>">
+                  Duplicate
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                        data-action="click->settings-panel#deleteTry"
+                        data-try-number="<%= t.try_number %>">
+                  Delete
+                </button>
+              </div>
+              <div class="try-details d-none">
+                <small class="text-muted">
+                  <% if t.search_endpoint.present? %>
+                    Endpoint: <%= t.search_endpoint.fullname %><br>
+                  <% end %>
+                  Fields: <%= t.field_spec %><br>
+                  Rows: <%= t.number_of_rows %>
+                  <% if t.curator_variables.any? %>
+                    <br>Vars: <%= t.curator_variables.map { |v| "#{v.name}=#{v.value}" }.join(', ') %>
+                  <% end %>
+                </small>
+              </div>
             </li>
           <% end %>
         </ul>
+      </div>
+    </div>
+
+    <!-- Annotations tab -->
+    <div class="settings-tab d-none" data-settings-panel-target="tabContent" data-tab="annotations">
+      <div class="container">
+        <h4>Annotations</h4>
+
+        <div class="annotation-create mb-3">
+          <textarea class="form-control mb-2" rows="2" placeholder="Add a note about current results..."
+                    data-settings-panel-target="annotationMessage"></textarea>
+          <button type="button" class="btn btn-sm btn-primary"
+                  data-action="click->settings-panel#createAnnotation">
+            Save Annotation
+          </button>
+        </div>
+
+        <div data-settings-panel-target="annotationsList">
+          <p class="text-muted">Loading annotations...</p>
+        </div>
       </div>
     </div>
   </div>
