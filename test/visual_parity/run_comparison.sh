@@ -435,19 +435,22 @@ case "${1:-}" in
     boot_docker "$GIT_ROOT"
 
     cd "$GIT_ROOT"
+    # Route comparison always uses --all: change detection is branch-oriented
+    # and would incorrectly skip pages when comparing two UI variants on the
+    # same branch.
     log "Capturing default (Angular) workspace screenshots as '$LABEL_A'..."
     node "$GIT_ROOT/test/visual_parity/capture_screenshots.mjs" \
       --branch "$current_branch" --label "$LABEL_A" \
       --base-url "$BASE_URL_VP" \
       --email "quepid+realisticactivity@o19s.com" --password "password" \
-      --only workspace --exclude new-ui ${VP_ALL:+"$VP_ALL"}
+      --only workspace --exclude new-ui --all
     ok "Default screenshots captured"
 
     log "Capturing new-ui variant workspace screenshots as '$LABEL_B'..."
     node "$GIT_ROOT/test/visual_parity/capture_screenshots.mjs" \
       --branch "$current_branch" --label "$LABEL_B" --variant new-ui \
       --base-url "$BASE_URL_VP" \
-      --email "quepid+realisticactivity@o19s.com" --password "password" ${VP_ALL:+"$VP_ALL"}
+      --email "quepid+realisticactivity@o19s.com" --password "password" --all
     ok "Variant screenshots captured"
 
     if [ "${VP_TEARDOWN:-}" = "1" ]; then

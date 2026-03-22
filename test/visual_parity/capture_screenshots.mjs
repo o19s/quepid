@@ -456,6 +456,10 @@ const PAGES = [
   },
 
   // Case workspace — action bar modals
+  // Each modal page defines a new-ui variant so route comparison (--routes)
+  // captures the same modals on both the Angular and Stimulus layouts.
+  // The modal setup logic is identical because the action bar and Angular
+  // modal components are shared between both layouts during the migration.
   {
     name: '04e1-modal-select-scorer',
     tags: ['workspace', 'action-bar', 'modal'],
@@ -467,6 +471,9 @@ const PAGES = [
       await page.locator('#case-actions a', { hasText: 'Select scorer' }).click();
       await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await new Promise(r => setTimeout(r, 500));
+    },
+    variants: {
+      'new-ui': { resolve: resolveNewUiCase },
     },
   },
   {
@@ -481,6 +488,9 @@ const PAGES = [
       await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await new Promise(r => setTimeout(r, 500));
     },
+    variants: {
+      'new-ui': { resolve: resolveNewUiCase },
+    },
   },
   {
     name: '04e3-modal-create-snapshot',
@@ -493,6 +503,9 @@ const PAGES = [
       await page.locator('#case-actions a', { hasText: 'Create snapshot' }).click();
       await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await new Promise(r => setTimeout(r, 500));
+    },
+    variants: {
+      'new-ui': { resolve: resolveNewUiCase },
     },
   },
   {
@@ -507,6 +520,9 @@ const PAGES = [
       await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await new Promise(r => setTimeout(r, 500));
     },
+    variants: {
+      'new-ui': { resolve: resolveNewUiCase },
+    },
   },
   {
     name: '04e5-modal-import',
@@ -519,6 +535,9 @@ const PAGES = [
       await page.locator('#case-actions a', { hasText: 'Import' }).click();
       await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await new Promise(r => setTimeout(r, 500));
+    },
+    variants: {
+      'new-ui': { resolve: resolveNewUiCase },
     },
   },
   {
@@ -533,6 +552,9 @@ const PAGES = [
       await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await new Promise(r => setTimeout(r, 500));
     },
+    variants: {
+      'new-ui': { resolve: resolveNewUiCase },
+    },
   },
   {
     name: '04e7-modal-clone',
@@ -545,6 +567,9 @@ const PAGES = [
       await page.locator('#case-actions a', { hasText: 'Clone' }).click();
       await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await new Promise(r => setTimeout(r, 500));
+    },
+    variants: {
+      'new-ui': { resolve: resolveNewUiCase },
     },
   },
   {
@@ -559,6 +584,9 @@ const PAGES = [
       await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await new Promise(r => setTimeout(r, 500));
     },
+    variants: {
+      'new-ui': { resolve: resolveNewUiCase },
+    },
   },
   {
     name: '04e9-modal-export',
@@ -571,6 +599,9 @@ const PAGES = [
       await page.locator('#case-actions a', { hasText: 'Export' }).click();
       await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await new Promise(r => setTimeout(r, 500));
+    },
+    variants: {
+      'new-ui': { resolve: resolveNewUiCase },
     },
   },
 
