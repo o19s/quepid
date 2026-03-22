@@ -60,9 +60,9 @@ class ProxyController < ApplicationController
   def extract_extra_url_params url_param
     return {} unless url_param.include?('?')
 
-    # Handle URLs like http://myserver.com/search?q=tiger or http://myserver.com/search?q=tiger?
-    extra_query_param = url_param.split('?', 2).last.split('=')
-    { extra_query_param.first => extra_query_param.second }
+    # Parse all query params from the embedded URL (e.g., url=http://example.com/search?q=test&rows=10)
+    query_string = url_param.split('?', 2).last
+    Rack::Utils.parse_query(query_string)
   end
 
   def build_forwarded_headers

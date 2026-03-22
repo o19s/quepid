@@ -25,6 +25,39 @@ function buildProxyUrl(targetUrl) {
   return apiUrl(`proxy/fetch?url=${encodeURIComponent(targetUrl)}`)
 }
 
+// Attempt a direct fetch; if it fails with a network/CORS error, retry via proxy.
+// This preserves DevTools observability when direct access works (e.g., localhost Solr)
+// while falling back to the proxy for cross-origin servers without CORS headers.
+async function fetchWithCorsFallback(directUrl, fetchOptions, tryConfig) {
+  const useProxy = tryConfig.proxy_requests !== false
+  if (useProxy) {
+    return fetch(buildProxyUrl(directUrl), {
+      ...fetchOptions,
+      headers: { ...buildHeaders(tryConfig), ...fetchOptions.headers },
+    })
+  }
+
+  // Direct mode: try fetch, fall back to proxy on network/CORS failure
+  try {
+    return await fetch(directUrl, fetchOptions)
+  } catch (err) {
+    // TypeError is thrown for network errors (CORS blocked, DNS failure, etc.)
+    if (err instanceof TypeError) {
+      // Retry through the proxy — don't forward Content-Type or custom headers
+      // on GET requests; the proxy controller handles headers for the upstream call.
+      const proxyHeaders = {}
+      if (fetchOptions.method && fetchOptions.method !== "GET") {
+        Object.assign(proxyHeaders, buildHeaders(tryConfig), fetchOptions.headers)
+      }
+      return fetch(buildProxyUrl(directUrl), {
+        ...fetchOptions,
+        headers: proxyHeaders,
+      })
+    }
+    throw err
+  }
+}
+
 function parseFieldSpec(fieldSpecStr) {
   if (!fieldSpecStr) return { title: null, id: null, fields: [] }
 
@@ -88,7 +121,7 @@ function buildHeaders(tryConfig) {
 
 // ── Solr search ──────────────────────────────────────────────────────
 
-async function executeSolrSearch(tryConfig, queryText, signal) {
+async function executeSolrSearch(tryConfig, queryText, signal, options = {}) {
   const args = structuredClone(tryConfig.args || {})
   const fieldSpec = parseFieldSpec(tryConfig.field_spec)
 
@@ -101,14 +134,21 @@ async function executeSolrSearch(tryConfig, queryText, signal) {
     args.fl = [fieldSpec.fields.join(" ")]
   }
 
+  // Debug/explain mode — request structured explain from Solr
+  if (options.debug) {
+    args.debug = ["true"]
+    args["debug.explain.structured"] = ["true"]
+    // Ensure score pseudo-field is included in fl
+    if (args.fl && args.fl[0] && !args.fl[0].includes("score")) {
+      args.fl = [args.fl[0] + " score"]
+    }
+  }
+
   const baseUrl = tryConfig.search_url + "?" + formatSolrArgs(args)
   const qOption = tryConfig.options || {}
   const callUrl = hydrate(baseUrl, queryText, { qOption, encodeURI: true, defaultKw: '""' })
 
-  const fetchUrl = tryConfig.proxy_requests !== false ? buildProxyUrl(callUrl) : callUrl
-  const headers = tryConfig.proxy_requests !== false ? buildHeaders(tryConfig) : {}
-
-  const response = await fetch(fetchUrl, { headers, signal })
+  const response = await fetchWithCorsFallback(callUrl, { signal }, tryConfig)
   if (!response.ok) {
     throw new Error(`Solr request failed (${response.status} ${response.statusText})`)
   }
@@ -117,17 +157,43 @@ async function executeSolrSearch(tryConfig, queryText, signal) {
   const docs = (data.response && data.response.docs) || []
   const numFound = (data.response && data.response.numFound) || 0
 
-  return {
-    docs: docs.map((doc) => normalizeDoc(doc, fieldSpec, "solr")),
+  // Extract per-doc explain data and query-level debug info
+  const explainMap = options.debug ? (data.debug && data.debug.explain) || {} : null
+  const normalizedDocs = docs.map((doc) => {
+    const nDoc = normalizeDoc(doc, fieldSpec, "solr")
+    if (options.debug && explainMap) {
+      const docId = doc[fieldSpec.id || "id"] || doc.id || ""
+      nDoc.explain = explainMap[docId] || null
+      nDoc.score =
+        typeof doc.score === "number" ? doc.score : parseFloat(nDoc.explain?.value) || null
+    }
+    return nDoc
+  })
+
+  const result = {
+    docs: normalizedDocs,
     numFound,
     linkUrl: callUrl + "&indent=true",
     error: data.error ? data.error.msg : null,
   }
+
+  if (options.debug && data.debug) {
+    result.queryDetails = data.debug.querystring || null
+    result.parsedQueryDetails = data.debug.parsedquery_toString
+      ? {
+          parsedquery: data.debug.parsedquery,
+          parsedquery_toString: data.debug.parsedquery_toString,
+        }
+      : data.debug.parsedquery || null
+    result.rawDebug = data.debug
+  }
+
+  return result
 }
 
 // ── ES / OpenSearch search ───────────────────────────────────────────
 
-async function executeEsSearch(tryConfig, queryText, signal) {
+async function executeEsSearch(tryConfig, queryText, signal, options = {}) {
   const fieldSpec = parseFieldSpec(tryConfig.field_spec)
   let queryDsl = structuredClone(tryConfig.args || {})
 
@@ -146,6 +212,11 @@ async function executeEsSearch(tryConfig, queryText, signal) {
     queryDsl._source = fieldSpec.fields
   }
 
+  // Debug/explain mode — request explain from ES/OS
+  if (options.debug) {
+    queryDsl.explain = true
+  }
+
   // Paging
   const pagerArgs = queryDsl.pager || {}
   delete queryDsl.pager
@@ -153,15 +224,17 @@ async function executeEsSearch(tryConfig, queryText, signal) {
   queryDsl.size = pagerArgs.size || tryConfig.number_of_rows || 10
 
   const searchUrl = tryConfig.search_url
-  const fetchUrl = tryConfig.proxy_requests !== false ? buildProxyUrl(searchUrl) : searchUrl
-  const headers = buildHeaders(tryConfig)
 
-  const response = await fetch(fetchUrl, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(queryDsl),
-    signal,
-  })
+  const response = await fetchWithCorsFallback(
+    searchUrl,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(queryDsl),
+      signal,
+    },
+    tryConfig,
+  )
   if (!response.ok) {
     throw new Error(`ES/OS request failed (${response.status} ${response.statusText})`)
   }
@@ -180,12 +253,31 @@ async function executeEsSearch(tryConfig, queryText, signal) {
   const total = data.hits && data.hits.total
   const numFound = typeof total === "object" ? total.value : total || 0
 
-  return {
-    docs: hits.map((hit) => normalizeDoc(hit, fieldSpec, "es")),
+  const normalizedDocs = hits.map((hit) => {
+    const nDoc = normalizeDoc(hit, fieldSpec, "es")
+    if (options.debug) {
+      // ES returns _explanation per hit when explain=true
+      nDoc.explain = hit._explanation || null
+      nDoc.score = typeof hit._score === "number" ? hit._score : null
+    }
+    return nDoc
+  })
+
+  const result = {
+    docs: normalizedDocs,
     numFound,
     linkUrl: searchUrl,
     error: null,
   }
+
+  if (options.debug) {
+    // ES doesn't return queryDetails the same way as Solr;
+    // we provide the query DSL that was sent as "queryDetails"
+    result.queryDetails = queryDsl
+    result.parsedQueryDetails = null
+  }
+
+  return result
 }
 
 // ── Normalize a doc for display ──────────────────────────────────────
@@ -220,16 +312,16 @@ function normalizeDoc(rawDoc, fieldSpec, engine) {
 
 // ── Public API ───────────────────────────────────────────────────────
 
-export async function executeSearch(tryConfig, queryText, signal) {
+export async function executeSearch(tryConfig, queryText, signal, options = {}) {
   const engine = (tryConfig.search_engine || "solr").toLowerCase()
 
   switch (engine) {
     case "solr":
     case "static":
-      return executeSolrSearch(tryConfig, queryText, signal)
+      return executeSolrSearch(tryConfig, queryText, signal, options)
     case "es":
     case "os":
-      return executeEsSearch(tryConfig, queryText, signal)
+      return executeEsSearch(tryConfig, queryText, signal, options)
     default:
       return {
         docs: [],

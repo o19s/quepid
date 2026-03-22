@@ -4,6 +4,7 @@ import { apiUrl, csrfToken } from "modules/api_url"
 import { RatingsStore } from "modules/ratings_store"
 import { scaleToColors, ratingColor, scoreToColor } from "modules/scorer"
 import { runScorerCode } from "modules/scorer_executor"
+import { parseExplain, hotMatchesOutOf } from "modules/explain_parser"
 
 // Shared config caches — keyed by caseId:tryNumber so navigating to a
 // different case/try fetches fresh config instead of serving stale data.
@@ -87,6 +88,9 @@ export default class extends Controller {
     "notesInput",
     "informationNeedInput",
     "notesSavedIndicator",
+    "explainToggle",
+    "queryExplainBtn",
+    "bulkRateMenu",
   ]
   static values = {
     queryId: { type: Number },
@@ -102,6 +106,8 @@ export default class extends Controller {
     this.abortController = null
     this.lastSearchDocs = []
     this.lastNumFound = 0
+    this.lastResult = null
+    this.debugMode = false
     this._ratingsInFlight = new Set()
     this._notesSavedTimer = null
 
@@ -109,6 +115,17 @@ export default class extends Controller {
     this.ratingsStore = new RatingsStore(caseId, this.queryIdValue, this.ratingsValue)
     this.scorerScale = getScorerScale()
     this.colorMap = scaleToColors(this.scorerScale)
+
+    // Populate bulk rate dropdown with scale values
+    if (this.hasBulkRateMenuTarget) {
+      for (const val of this.scorerScale) {
+        const li = document.createElement("li")
+        li.innerHTML = `<a class="dropdown-item" href="#"
+          data-action="click->query-row#bulkRate"
+          data-rating-value="${val}">Rate all ${val}</a>`
+        this.bulkRateMenuTarget.appendChild(li)
+      }
+    }
   }
 
   disconnect() {
@@ -154,6 +171,82 @@ export default class extends Controller {
     return this.runSearch()
   }
 
+  // Toggle explain/debug mode — re-runs search with debug data
+  toggleExplain() {
+    this.debugMode = !this.debugMode
+    this.searchLoaded = false
+
+    // Visual feedback on the explain toggle button
+    if (this.hasExplainToggleTarget) {
+      this.explainToggleTarget.classList.toggle("btn-info", this.debugMode)
+      this.explainToggleTarget.classList.toggle("btn-default", !this.debugMode)
+    }
+
+    // Show/hide the Query Explain button
+    if (this.hasQueryExplainBtnTarget) {
+      this.queryExplainBtnTarget.classList.toggle("d-none", !this.debugMode)
+    }
+
+    this.runSearch()
+  }
+
+  // Show the query explain modal with debug data from the last search
+  showQueryExplain() {
+    if (!this.lastResult) return
+
+    document.dispatchEvent(
+      new CustomEvent("show-query-explain", {
+        detail: {
+          queryDetails: this.lastResult.queryDetails || null,
+          parsedQueryDetails: this.lastResult.parsedQueryDetails || null,
+          queryText: this.queryTextValue,
+          renderedTemplate: null,
+        },
+      }),
+    )
+  }
+
+  // Bulk rate all visible docs with the given rating value
+  async bulkRate(event) {
+    event.preventDefault()
+    const value = event.currentTarget.dataset.ratingValue
+    const docIds = this.lastSearchDocs.map((d) => String(d.id))
+    if (docIds.length === 0) return
+
+    try {
+      if (value === "clear") {
+        await this.ratingsStore.unrateBulk(docIds)
+      } else {
+        await this.ratingsStore.rateBulk(docIds, parseInt(value, 10))
+      }
+      // Re-render all rating widgets and update score
+      this._refreshAllRatingWidgets()
+      this._updateScoreBadge()
+    } catch (error) {
+      console.error("Bulk rate failed:", error)
+      alert("Failed to bulk rate")
+    }
+  }
+
+  // Open the doc finder modal for this query
+  openDocFinder() {
+    document.dispatchEvent(
+      new CustomEvent("show-doc-finder", {
+        detail: {
+          queryId: this.queryIdValue,
+          queryText: this.queryTextValue,
+          ratingsStore: this.ratingsStore,
+          scorerScale: this.scorerScale,
+          colorMap: this.colorMap,
+          onRatingChanged: () => {
+            this._refreshAllRatingWidgets()
+            this._updateScoreBadge()
+          },
+        },
+      }),
+    )
+  }
+
   async runSearch() {
     // Cancel any in-flight request
     if (this.abortController) {
@@ -167,15 +260,18 @@ export default class extends Controller {
 
     try {
       const tryConfig = await fetchTryConfig()
+      const searchOptions = this.debugMode ? { debug: true } : {}
       const result = await executeSearch(
         tryConfig,
         this.queryTextValue,
         this.abortController.signal,
+        searchOptions,
       )
 
       this.searchLoaded = true
       this.lastSearchDocs = result.docs || []
       this.lastNumFound = result.numFound || 0
+      this.lastResult = result
       this.renderResults(result)
       this._computeAndDisplayScore()
     } catch (error) {
@@ -202,7 +298,12 @@ export default class extends Controller {
       return
     }
 
-    const rows = result.docs.map((doc) => {
+    // Compute max score across docs for stacked chart percentages
+    const maxDocScore = this.debugMode
+      ? Math.max(...result.docs.map((d) => d.score || 0), 0.001)
+      : 0
+
+    const rows = result.docs.map((doc, docIdx) => {
       const subsHtml = Object.entries(doc.subs)
         .map(([key, value]) => {
           const display = Array.isArray(value) ? value.join(", ") : value
@@ -216,15 +317,19 @@ export default class extends Controller {
 
       const ratingHtml = this._buildRatingWidget(doc)
 
+      const explainHtml =
+        this.debugMode && doc.explain ? this._buildStackedChart(doc, maxDocScore) : ""
+
       return `
         <li class="doc-row">
           ${ratingHtml}
           <div class="doc-content">
             ${thumbHtml}
-            <div class="doc-title">${this._escapeHtml(String(doc.title))}</div>
+            <a href="#" class="doc-title-link" data-doc-idx="${docIdx}">${this._escapeHtml(String(doc.title))}</a>
             <div class="doc-id">ID: ${this._escapeHtml(String(doc.id))}</div>
             ${subsHtml}
           </div>
+          ${explainHtml}
         </li>`
     })
 
@@ -239,8 +344,9 @@ export default class extends Controller {
         ${rows.join("")}
       </ol>`
 
-    // Attach click handlers to rating buttons
+    // Attach click handlers to rating buttons and doc title links
     this._attachRatingListeners(container)
+    this._attachDocTitleListeners(container)
   }
 
   // --- Rating widget ---
@@ -337,6 +443,12 @@ export default class extends Controller {
       alert("Failed to save rating")
     } finally {
       this._ratingsInFlight.delete(docId)
+    }
+  }
+
+  _refreshAllRatingWidgets() {
+    for (const doc of this.lastSearchDocs) {
+      this._refreshRatingWidget(String(doc.id))
     }
   }
 
@@ -529,6 +641,56 @@ export default class extends Controller {
       console.error("Failed to delete query:", error)
       alert("Failed to delete query: network error")
     }
+  }
+
+  _attachDocTitleListeners(container) {
+    container.querySelectorAll(".doc-title-link").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault()
+        const idx = parseInt(link.dataset.docIdx, 10)
+        const doc = this.lastSearchDocs[idx]
+        if (doc) {
+          document.dispatchEvent(new CustomEvent("show-doc-detail", { detail: { doc } }))
+        }
+      })
+    })
+  }
+
+  _buildStackedChart(doc, maxDocScore) {
+    const tree = parseExplain(doc.explain)
+    const matches = hotMatchesOutOf(tree, maxDocScore)
+    const colorClasses = ["explain-red", "explain-orange", "explain-green", "explain-blue"]
+
+    const bars = matches
+      .slice(0, 5)
+      .map((m, i) => {
+        const pct = Math.min(Math.max(m.percentage, 0), 100)
+        const colorClass = colorClasses[i % colorClasses.length]
+        const label = this._truncateExplainLabel(m.description)
+        const bar = document.createElement("div")
+        bar.className = "explain-bar-row"
+        bar.title = m.description
+        bar.innerHTML = `<div class="explain-bar ${colorClass}"></div>
+          <span class="explain-bar-label">${this._escapeHtml(label)}</span>`
+        bar.firstElementChild.style.width = `${pct.toFixed(1)}%`
+        return bar.outerHTML
+      })
+      .join("")
+
+    const scoreText = doc.score != null ? doc.score.toFixed(4) : ""
+
+    return `<div class="explain-stacked-chart">
+      <div class="explain-score">${this._escapeHtml(scoreText)}</div>
+      ${bars}
+    </div>`
+  }
+
+  _truncateExplainLabel(desc) {
+    // Extract the meaningful part from explain descriptions like "weight(title:foo in 123)"
+    const match = desc.match(/^weight\((.+?)\s+in\s+\d+\)/)
+    if (match) return match[1]
+    if (desc.length > 40) return desc.substring(0, 37) + "..."
+    return desc
   }
 
   _escapeHtml(str) {

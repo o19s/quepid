@@ -79,7 +79,8 @@ const FILE_TO_PAGES = [
   { pattern: /query_list_controller\.js|query_row_controller\.js|add_query_controller\.js/, prefixes: ['04-'] },
   { pattern: /inline_edit_controller\.js|resizable_pane_controller\.js|settings_panel_controller\.js/, prefixes: ['04-'] },
   { pattern: /case_score_controller\.js|snapshot_controller\.js|clone_case_controller\.js|export_case_controller\.js/, prefixes: ['04-'] },
-  { pattern: /modules\/search_executor\.js|modules\/scorer|modules\/ratings_store|modules\/api_url|modules\/query_template/, prefixes: ['04-'] },
+  { pattern: /modules\/search_executor\.js|modules\/scorer|modules\/ratings_store|modules\/api_url|modules\/query_template|modules\/explain_parser|modules\/field_renderer/, prefixes: ['04-'] },
+  { pattern: /doc_detail_modal_controller\.js|query_explain_modal_controller\.js|doc_finder_controller\.js/, prefixes: ['04-'] },
   { pattern: /paneSvc\.js|panes\.css/, prefixes: ['04-'] },
   { pattern: /components\/clone_case|components\/delete_case|components\/export_case|components\/import_ratings|components\/share_case|components\/judgements|components\/diff\//, prefixes: ['04e'] },
   { pattern: /search_results\.css|bootstrap3-add\.css|style\.css|base\.css/, prefixes: ['04-'] },
@@ -284,6 +285,42 @@ const PAGES = [
     },
     variants: {
       'new-ui': { resolve: resolveNewUiCase },
+    },
+  },
+
+  // Case workspace with first query expanded showing search results + toolbar
+  // Uses Case 4 ("10s of Queries") which has 20 queries with ratings in the seed data
+  {
+    name: '04-case-workspace-expanded',
+    tags: ['workspace', 'results'],
+    path: '/case/4',
+    setup: async (page) => {
+      // Wait for Angular query list to render
+      await page.waitForLoadState('networkidle');
+      await new Promise(r => setTimeout(r, 3000));
+      // Click the first query chevron to expand it
+      const chevron = page.locator('.toggleSign').first();
+      await chevron.waitFor({ state: 'visible', timeout: 10000 });
+      await chevron.click();
+      // Wait for search results to load from the remote Solr
+      await new Promise(r => setTimeout(r, 5000));
+    },
+    variants: {
+      'new-ui': {
+        path: '/case/4/new_ui',
+        setup: async (page) => {
+          await page.waitForLoadState('networkidle');
+          await new Promise(r => setTimeout(r, 1000));
+          // Click the first query chevron to expand it
+          const chevron = page.locator('.toggleSign').first();
+          await chevron.waitFor({ state: 'visible', timeout: 10000 });
+          await chevron.click();
+          // Wait for search results or error to appear (proxy may fail in VP Docker)
+          await page.locator('.search-results-list, .alert-danger').first()
+            .waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+          await new Promise(r => setTimeout(r, 2000));
+        },
+      },
     },
   },
 

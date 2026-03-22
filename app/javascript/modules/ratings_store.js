@@ -92,6 +92,58 @@ export class RatingsStore {
   }
 
   /**
+   * Bulk-rate multiple documents at once. Persists via PUT to bulk ratings endpoint.
+   */
+  async rateBulk(docIds, rating) {
+    const url = apiUrl(`api/cases/${this.caseId}/queries/${this.queryId}/bulk/ratings`)
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken(),
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ doc_ids: docIds, rating: rating }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to bulk rate (${response.status})`)
+    }
+
+    // Update local cache
+    const ratingInt = parseInt(rating, 10)
+    for (const docId of docIds) {
+      this.ratings[docId] = ratingInt
+    }
+  }
+
+  /**
+   * Bulk-unrate multiple documents. Persists via DELETE (POST with delete route).
+   */
+  async unrateBulk(docIds) {
+    const url = apiUrl(`api/cases/${this.caseId}/queries/${this.queryId}/bulk/ratings/delete`)
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken(),
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ doc_ids: docIds }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to bulk unrate (${response.status})`)
+    }
+
+    for (const docId of docIds) {
+      delete this.ratings[docId]
+    }
+  }
+
+  /**
    * Return all rated docs as an array of { docId, rating } sorted by rating desc.
    * Equivalent to Angular ratingsStoreSvc.bestDocs().
    */

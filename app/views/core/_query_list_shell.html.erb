@@ -152,6 +152,42 @@
                     Notes
                   </button>
                 </div>
+                <div class="btn-group">
+                  <button class="btn btn-default btn-sm"
+                          data-action="click->query-row#toggleExplain"
+                          data-query-row-target="explainToggle">
+                    <i class="glyphicon glyphicon-stats"></i>
+                    Explain
+                  </button>
+                </div>
+                <div class="btn-group">
+                  <button class="btn btn-default btn-sm d-none"
+                          data-action="click->query-row#showQueryExplain"
+                          data-query-row-target="queryExplainBtn">
+                    <i class="glyphicon glyphicon-info-sign"></i>
+                    Query Explain
+                  </button>
+                </div>
+                <div class="btn-group">
+                  <button class="btn btn-default btn-sm dropdown-toggle"
+                          data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="glyphicon glyphicon-check"></i>
+                    Score All
+                  </button>
+                  <ul class="dropdown-menu" data-query-row-target="bulkRateMenu">
+                    <li><a class="dropdown-item" href="#"
+                           data-action="click->query-row#bulkRate"
+                           data-rating-value="clear">Clear All</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                  </ul>
+                </div>
+                <div class="btn-group">
+                  <button class="btn btn-default btn-sm"
+                          data-action="click->query-row#openDocFinder">
+                    <i class="glyphicon glyphicon-search"></i>
+                    Missing Docs
+                  </button>
+                </div>
               </div>
 
               <div class="query-notes-panel d-none" data-query-row-target="notesPanel">
@@ -186,6 +222,102 @@
       </ul>
 
       <div data-query-list-target="paginationContainer" class="query-list-pagination"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Shared doc detail modal -->
+<div class="modal fade" id="doc-detail-modal" tabindex="-1" aria-labelledby="doc-detail-modal-title" aria-hidden="true"
+     data-controller="doc-detail-modal">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="doc-detail-modal-title" data-doc-detail-modal-target="title">Document</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" data-doc-detail-modal-target="body">
+      </div>
+      <div class="modal-footer">
+        <a href="#" target="_blank" rel="noopener" class="btn btn-default d-none"
+           data-doc-detail-modal-target="viewLink">
+          <i class="glyphicon glyphicon-new-window"></i> View Document
+        </a>
+        <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Shared query explain modal -->
+<div class="modal fade" id="query-explain-modal" tabindex="-1" aria-labelledby="query-explain-modal-title" aria-hidden="true"
+     data-controller="query-explain-modal">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="query-explain-modal-title">Explain Query Parsing</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Details returned from the search engine on how it processed the input query.</p>
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#qe-tab-params" type="button" role="tab">Params</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#qe-tab-parsing" type="button" role="tab">Parsing</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#qe-tab-template" type="button" role="tab">Query Template</button>
+          </li>
+        </ul>
+        <div class="tab-content mt-2">
+          <div class="tab-pane fade show active" id="qe-tab-params" role="tabpanel"
+               data-query-explain-modal-target="paramsTab"></div>
+          <div class="tab-pane fade" id="qe-tab-parsing" role="tabpanel"
+               data-query-explain-modal-target="parsingTab"></div>
+          <div class="tab-pane fade" id="qe-tab-template" role="tabpanel"
+               data-query-explain-modal-target="templateTab"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                data-action="click->query-explain-modal#copyActive">
+          <i class="glyphicon glyphicon-copy"></i> Copy
+        </button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Shared doc finder modal -->
+<div class="modal fade" id="doc-finder-modal" tabindex="-1" aria-labelledby="doc-finder-modal-title" aria-hidden="true"
+     data-controller="doc-finder">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="doc-finder-modal-title">Find Missing Documents</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="Search for documents..."
+                 data-doc-finder-target="searchInput"
+                 data-action="keydown.enter->doc-finder#search" />
+          <button class="btn btn-default" type="button"
+                  data-action="click->doc-finder#search">
+            <i class="glyphicon glyphicon-search"></i> Search
+          </button>
+          <button class="btn btn-default" type="button"
+                  data-action="click->doc-finder#showRatedDocs">
+            All Rated Docs
+          </button>
+        </div>
+        <div data-doc-finder-target="resultsContainer"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+      </div>
     </div>
   </div>
 </div>

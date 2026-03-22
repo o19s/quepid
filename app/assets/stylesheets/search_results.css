@@ -42,6 +42,17 @@
   font-weight: 600;
 }
 
+.doc-title-link {
+  font-weight: 600;
+  color: #337ab7;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.doc-title-link:hover {
+  text-decoration: underline;
+}
+
 .doc-id {
   font-size: 12px;
   color: #999;
@@ -204,6 +215,87 @@
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 2px;
+}
+
+/* Explain stacked chart */
+.explain-stacked-chart {
+  flex-shrink: 0;
+  width: 180px;
+  padding: 4px 0 4px 8px;
+  border-left: 1px solid #eee;
+}
+
+.explain-score {
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.explain-bar-row {
+  margin-bottom: 3px;
+}
+
+.explain-bar {
+  height: 7px;
+  border-radius: 2px;
+  min-width: 2px;
+}
+
+.explain-bar-label {
+  font-size: 10px;
+  color: #666;
+  word-wrap: break-word;
+  line-height: 1.2;
+}
+
+.explain-red { background-color: #d9534f; }
+.explain-orange { background-color: #f0ad4e; }
+.explain-green { background-color: #5cb85c; }
+.explain-blue { background-color: #5bc0de; }
+
+/* Doc detail modal field styles */
+.field-table {
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.field-name-cell {
+  font-weight: 600;
+  white-space: nowrap;
+  width: 1%;
+  vertical-align: top;
+  padding-right: 12px;
+}
+
+.field-value-cell {
+  vertical-align: top;
+}
+
+.field-json-details {
+  margin: 2px 0;
+}
+
+.field-json-pre {
+  max-height: 300px;
+  overflow: auto;
+  font-size: 12px;
+  background: #f8f8f8;
+  padding: 8px;
+  border-radius: 3px;
+  border: 1px solid #eee;
+}
+
+.field-media-img {
+  max-width: 300px;
+  max-height: 200px;
+  margin-bottom: 4px;
+}
+
+.field-media-video {
+  max-width: 400px;
+  max-height: 300px;
+  margin-bottom: 4px;
 }
 
 /* Pagination */
