@@ -116,6 +116,66 @@ describe("QueryRowController", () => {
     abortSpy.mockRestore()
   })
 
+  // --- Query notes tests ---
+
+  it("toggleNotes shows and hides the notes panel", async () => {
+    // Add notes panel to DOM
+    const el = document.querySelector("[data-controller=query-row]")
+    const panel = document.createElement("div")
+    panel.className = "d-none"
+    panel.setAttribute("data-query-row-target", "notesPanel")
+    el.appendChild(panel)
+
+    const ctrl = application.getControllerForElementAndIdentifier(el, "query-row")
+    ctrl.toggleNotes()
+    expect(panel.classList.contains("d-none")).toBe(false)
+
+    ctrl.toggleNotes()
+    expect(panel.classList.contains("d-none")).toBe(true)
+  })
+
+  it("saveNotes sends PUT to notes endpoint", async () => {
+    const el = document.querySelector("[data-controller=query-row]")
+
+    // Add notes targets
+    const panel = document.createElement("div")
+    panel.setAttribute("data-query-row-target", "notesPanel")
+    const notesInput = document.createElement("textarea")
+    notesInput.setAttribute("data-query-row-target", "notesInput")
+    notesInput.value = "My test note"
+    const needInput = document.createElement("input")
+    needInput.setAttribute("data-query-row-target", "informationNeedInput")
+    needInput.value = "Find relevant docs"
+    const indicator = document.createElement("span")
+    indicator.className = "d-none"
+    indicator.setAttribute("data-query-row-target", "notesSavedIndicator")
+    panel.appendChild(notesInput)
+    panel.appendChild(needInput)
+    panel.appendChild(indicator)
+    el.appendChild(panel)
+
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({ notes: "My test note", information_need: "Find relevant docs" }),
+    })
+
+    try {
+      const ctrl = application.getControllerForElementAndIdentifier(el, "query-row")
+      await ctrl.saveNotes()
+
+      expect(fetchSpy).toHaveBeenCalledTimes(1)
+      const [url, opts] = fetchSpy.mock.calls[0]
+      expect(String(url)).toContain("api/cases/1/queries/99/notes")
+      expect(opts.method).toBe("PUT")
+      const body = JSON.parse(opts.body)
+      expect(body.query.notes).toBe("My test note")
+      expect(body.query.information_need).toBe("Find relevant docs")
+    } finally {
+      fetchSpy.mockRestore()
+    }
+  })
+
   it("expand fetches try config and Solr via proxy, then renders results", async () => {
     const tryJson = {
       search_engine: "solr",

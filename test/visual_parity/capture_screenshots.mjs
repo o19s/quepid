@@ -17,6 +17,11 @@
  *   --only <pattern>      Only capture pages whose name or tags match (comma-separated)
  *   --exclude <pattern>   Skip pages whose name or tags match (comma-separated)
  *   --list                List all available page names and tags, then exit
+ *   --all                 Capture all pages (skip change detection)
+ *
+ * By default, only pages affected by code changes since the last capture are
+ * recaptured (based on .last_capture timestamp and git log). Use --all to
+ * force a full recapture.
  *
  * Examples:
  *   --only header                     Capture only pages tagged "header"
@@ -24,9 +29,11 @@
  *   --only header,workspace           Capture pages matching either tag
  *   --exclude admin,books             Skip admin and books pages
  *   --label new-ui --variant new-ui   Capture new-ui variant pages into screenshots/new-ui/
+ *   --all                             Force recapture of all pages
  */
 
 import { chromium } from '@playwright/test';
+import { execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -54,6 +61,109 @@ const LOGIN_PASSWORD = getArg('password', 'password');
 const ONLY_FILTER    = getArg('only', '');
 const EXCLUDE_FILTER = getArg('exclude', '');
 const LIST_MODE      = args.includes('--list');
+const ALL_MODE       = args.includes('--all');
+
+// ---------------------------------------------------------------------------
+// File-to-page mapping for change detection
+// ---------------------------------------------------------------------------
+// Maps source file patterns to page name prefixes that should be recaptured.
+// When a file matching a pattern has changed since the last capture, only
+// pages whose name starts with one of the listed prefixes are recaptured.
+const FILE_TO_PAGES = [
+  { pattern: /views\/sessions\/|controllers\/sessions_controller/, prefixes: ['00-'] },
+  { pattern: /views\/home\/|views\/layouts\/application\.html/, prefixes: ['01-'] },
+  { pattern: /views\/cases\/|controllers\/cases_controller/, prefixes: ['02-', '03-'] },
+  { pattern: /views\/core\/|controllers\/core_controller/, prefixes: ['04-'] },
+  { pattern: /views\/layouts\/core|views\/layouts\/_header_core_app|views\/layouts\/_footer_core_app/, prefixes: ['04-'] },
+  { pattern: /queriesLayout\.html|queriesCtrl\.js|queries\.html/, prefixes: ['04-'] },
+  { pattern: /query_list_controller\.js|query_row_controller\.js|add_query_controller\.js/, prefixes: ['04-'] },
+  { pattern: /inline_edit_controller\.js|resizable_pane_controller\.js|settings_panel_controller\.js/, prefixes: ['04-'] },
+  { pattern: /case_score_controller\.js|snapshot_controller\.js|clone_case_controller\.js|export_case_controller\.js/, prefixes: ['04-'] },
+  { pattern: /modules\/search_executor\.js|modules\/scorer|modules\/ratings_store|modules\/api_url|modules\/query_template/, prefixes: ['04-'] },
+  { pattern: /paneSvc\.js|panes\.css/, prefixes: ['04-'] },
+  { pattern: /components\/clone_case|components\/delete_case|components\/export_case|components\/import_ratings|components\/share_case|components\/judgements|components\/diff\//, prefixes: ['04e'] },
+  { pattern: /search_results\.css|bootstrap3-add\.css|style\.css|base\.css/, prefixes: ['04-'] },
+  { pattern: /views\/books\/|controllers\/books_controller/, prefixes: ['05-', '06-', '07-', '08-', '21-', '22-', '23-', '24-', '25-'] },
+  { pattern: /views\/scorers\/|controllers\/scorers_controller/, prefixes: ['09-', '10-'] },
+  { pattern: /views\/search_endpoints\//, prefixes: ['11-', '12-', '13-'] },
+  { pattern: /views\/teams\/|controllers\/teams_controller/, prefixes: ['14-', '15-'] },
+  { pattern: /views\/profiles\//, prefixes: ['16-'] },
+  { pattern: /views\/admin\/|controllers\/admin\//, prefixes: ['18-', '19-', '20-'] },
+  // Tool and config files that don't affect page appearance
+  { pattern: /test\/visual_parity\//, prefixes: [] },
+  { pattern: /vitest\.config|\.eslintrc|\.prettierrc|lefthook\.yml|\.github\/|docs\//, prefixes: [] },
+  { pattern: /test\/javascript\//, prefixes: [] },
+  { pattern: /vendor\/javascript\//, prefixes: [] },
+  { pattern: /config\/importmap\.rb/, prefixes: [] },
+];
+
+/**
+ * Determine which page name prefixes have changed since the last capture.
+ * Returns null if all pages should be captured (no baseline or --all mode).
+ * Returns a Set of prefixes if only some pages need recapturing.
+ */
+function detectChangedPrefixes() {
+  if (ALL_MODE) return null;
+
+  const lastCaptureFile = path.join(OUT_DIR, '.last_capture');
+  if (!fs.existsSync(lastCaptureFile)) return null; // no baseline — capture all
+
+  try {
+    const lastCapture = fs.readFileSync(lastCaptureFile, 'utf-8').trim();
+    // Validate timestamp format before using in shell command
+    if (!/^\d{4}-\d{2}-\d{2}T[\d:.]+Z?$/.test(lastCapture)) {
+      return null; // invalid format — capture all
+    }
+    // Check both committed changes since last capture AND uncommitted changes
+    const committedOutput = execSync(
+      `git log --since="${lastCapture}" --name-only --pretty=format: HEAD 2>/dev/null`,
+      { encoding: 'utf-8' }
+    );
+    const uncommittedOutput = execSync(
+      `git diff --name-only HEAD 2>/dev/null`,
+      { encoding: 'utf-8' }
+    );
+    // Only include uncommitted files whose modification time is after the last capture
+    const lastCaptureTime = new Date(lastCapture).getTime();
+    const uncommittedFiles = uncommittedOutput.trim().split('\n').filter(Boolean).filter(f => {
+      try {
+        const stat = fs.statSync(f);
+        return stat.mtimeMs > lastCaptureTime;
+      } catch {
+        return false; // deleted file — no screenshot impact
+      }
+    });
+    const changedFiles = [...new Set([
+      ...committedOutput.trim().split('\n').filter(Boolean),
+      ...uncommittedFiles,
+    ])];
+
+    if (changedFiles.length === 0) {
+      return new Set(); // nothing changed — skip everything
+    }
+
+    const prefixes = new Set();
+    let unmapped = false;
+    for (const file of changedFiles) {
+      let mapped = false;
+      for (const mapping of FILE_TO_PAGES) {
+        if (mapping.pattern.test(file)) {
+          mapping.prefixes.forEach(p => prefixes.add(p));
+          mapped = true;
+        }
+      }
+      if (!mapped) unmapped = true;
+    }
+
+    // If any changed file doesn't match a known pattern, capture all
+    // to avoid missing something
+    if (unmapped) return null;
+
+    return prefixes;
+  } catch {
+    return null; // git failed — capture all
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Filtering helpers
@@ -68,9 +178,14 @@ function matchesFilter(entry, filterStr) {
   );
 }
 
-function shouldCapture(entry) {
+function shouldCapture(entry, changedPrefixes) {
   if (ONLY_FILTER && !matchesFilter(entry, ONLY_FILTER)) return false;
   if (EXCLUDE_FILTER && matchesFilter(entry, EXCLUDE_FILTER)) return false;
+  // If change detection produced a prefix set, only capture matching pages
+  if (changedPrefixes !== null) {
+    const matchesChange = [...changedPrefixes].some(p => entry.name.startsWith(p));
+    if (!matchesChange) return false;
+  }
   return true;
 }
 
@@ -588,7 +703,11 @@ async function main() {
     return;
   }
 
-  let filteredPages = PAGES.filter(shouldCapture);
+  // Detect which pages need recapturing based on git changes since last run.
+  // Returns null if all pages should be captured, or a Set of name prefixes.
+  const changedPrefixes = detectChangedPrefixes();
+
+  let filteredPages = PAGES.filter(p => shouldCapture(p, changedPrefixes));
 
   if (VARIANT) {
     // In variant mode, only capture pages that define this variant
@@ -596,15 +715,29 @@ async function main() {
   }
 
   if (filteredPages.length === 0) {
-    console.log('No pages match the filter. Use --list to see available names and tags.');
+    if (changedPrefixes !== null && changedPrefixes.size === 0) {
+      console.log('No code changes detected since last capture. Use --all to force recapture.');
+    } else {
+      console.log('No pages match the filter. Use --list to see available names and tags.');
+    }
     return;
   }
 
-  // Clean stale files from previous runs before writing new screenshots
+  if (changedPrefixes !== null && changedPrefixes.size > 0) {
+    console.log(`   Changed prefixes: ${[...changedPrefixes].sort().join(', ')}`);
+  }
+
+  // Clean screenshot files that will be recaptured. When change detection is
+  // active, only remove files for pages we're about to recapture so that
+  // unchanged pages keep their prior screenshots in the report.
   if (fs.existsSync(OUT_DIR)) {
+    const pagesToCapture = new Set(filteredPages.map(p => p.name));
     for (const file of fs.readdirSync(OUT_DIR)) {
       if (file.endsWith('.png') || file.endsWith('-ERROR.txt')) {
-        fs.unlinkSync(path.join(OUT_DIR, file));
+        const baseName = file.replace(/\.png$/, '').replace(/-ERROR\.txt$/, '');
+        if (changedPrefixes === null || pagesToCapture.has(baseName)) {
+          fs.unlinkSync(path.join(OUT_DIR, file));
+        }
       }
     }
   }
@@ -619,7 +752,10 @@ async function main() {
   console.log(`   Label:    ${LABEL}`);
   console.log(`   User:     ${LOGIN_EMAIL}`);
   console.log(`   Output:   ${OUT_DIR}`);
-  console.log(`   Pages:    ${filteredPages.length} of ${PAGES.length}\n`);
+  const changeNote = changedPrefixes !== null
+    ? ` (${changedPrefixes.size > 0 ? 'changed only' : 'none changed'})`
+    : ALL_MODE ? ' (--all)' : '';
+  console.log(`   Pages:    ${filteredPages.length} of ${PAGES.length}${changeNote}\n`);
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({

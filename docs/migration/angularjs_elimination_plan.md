@@ -93,7 +93,7 @@ Unless explicitly expanded later:
 **What is still missing on `new_ui`**
 
 - Action bar links are **placeholders** (no modals wired).
-- Query list: **pagination**, **drag-and-drop reorder**, **query notes**, **bulk actions**, full **result row** parity (explain, embeds, etc.) with Angular.
+- Query list: ~~pagination~~, ~~drag-and-drop reorder~~, ~~query notes~~, **bulk actions**, full **result row** parity (explain, embeds, etc.) with Angular.
 
 ### Shared with both layouts
 
@@ -218,8 +218,8 @@ Authoritative listing: **`workspace_api_usage.md`**. In one breath: case + tries
 
 **Purpose:** Query CRUD, sort, filter, pagination, collapse, orchestration.
 
-- **`new_ui`:** major slice is ~~done~~; see [new_ui route](#new_ui-route-stimulus-only) under **Where the code lives today**. **Still open:** pagination, SortableJS + reorder API, query notes (SS-29), bulk actions.
-- Replace **`dir-pagination-controls`** with Pagy or Stimulus-driven paging.
+- **`new_ui`:** major slice is ~~done~~; see [new_ui route](#new_ui-route-stimulus-only) under **Where the code lives today**. ~~pagination~~ (client-side, 15/page), ~~SortableJS + reorder API~~, ~~query notes (SS-29)~~. **Still open:** bulk actions.
+- ~~Replace **`dir-pagination-controls`** with Stimulus-driven paging~~ (client-side pagination in `query_list_controller.js`).
 
 **Done when:** “Query List” section of the UI inventory is satisfied and tests cover order / add / filter.
 

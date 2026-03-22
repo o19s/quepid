@@ -152,3 +152,65 @@
 .score-badge-unscored {
   background-color: #999;
 }
+
+/* Drag handle for query reordering */
+.drag-handle {
+  cursor: grab;
+  padding: 8px 6px 8px 0;
+  color: #aaa;
+}
+
+.drag-handle-hidden {
+  visibility: hidden;
+}
+
+.drag-handle:hover {
+  color: #666;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* SortableJS drag states */
+.sortable-ghost {
+  opacity: 0.4;
+  background-color: #f0f8ff;
+}
+
+.sortable-chosen {
+  background-color: #fafafa;
+}
+
+/* Query notes */
+.query-notes-indicator {
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.query-notes-panel {
+  background: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 12px;
+  margin: 8px 0;
+}
+
+.query-notes-panel .form-group {
+  margin-bottom: 8px;
+}
+
+.query-notes-panel label {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+/* Pagination */
+.query-list-pagination {
+  margin-top: 10px;
+}
+
+.query-list-pagination .pagination {
+  margin: 0;
+}

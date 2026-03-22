@@ -83,11 +83,17 @@ export default class extends Controller {
     "resultsContainer",
     "scoreDisplay",
     "totalResults",
+    "notesPanel",
+    "notesInput",
+    "informationNeedInput",
+    "notesSavedIndicator",
   ]
   static values = {
     queryId: { type: Number },
     queryText: { type: String, default: "" },
     ratings: { type: Object, default: {} },
+    notes: { type: String, default: "" },
+    informationNeed: { type: String, default: "" },
   }
 
   connect() {
@@ -97,6 +103,7 @@ export default class extends Controller {
     this.lastSearchDocs = []
     this.lastNumFound = 0
     this._ratingsInFlight = new Set()
+    this._notesSavedTimer = null
 
     const caseId = parseInt(document.body.dataset.caseId, 10)
     this.ratingsStore = new RatingsStore(caseId, this.queryIdValue, this.ratingsValue)
@@ -108,6 +115,10 @@ export default class extends Controller {
     if (this.abortController) {
       this.abortController.abort()
       this.abortController = null
+    }
+    if (this._notesSavedTimer) {
+      clearTimeout(this._notesSavedTimer)
+      this._notesSavedTimer = null
     }
   }
 
@@ -441,6 +452,58 @@ export default class extends Controller {
       parts.push(`${ratedCount} rated`)
     }
     return parts.join(", ")
+  }
+
+  toggleNotes() {
+    if (!this.hasNotesPanelTarget) return
+    this.notesPanelTarget.classList.toggle("d-none")
+  }
+
+  async saveNotes() {
+    const caseId = document.body.dataset.caseId
+    const notes = this.hasNotesInputTarget ? this.notesInputTarget.value : ""
+    const informationNeed = this.hasInformationNeedInputTarget
+      ? this.informationNeedInputTarget.value
+      : ""
+
+    try {
+      const response = await fetch(
+        apiUrl(`api/cases/${caseId}/queries/${this.queryIdValue}/notes`),
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken(),
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            query: { notes, information_need: informationNeed },
+          }),
+        },
+      )
+
+      if (response.ok) {
+        this.notesValue = notes
+        this.informationNeedValue = informationNeed
+
+        // Show saved indicator briefly
+        if (this.hasNotesSavedIndicatorTarget) {
+          this.notesSavedIndicatorTarget.classList.remove("d-none")
+          if (this._notesSavedTimer) clearTimeout(this._notesSavedTimer)
+          this._notesSavedTimer = setTimeout(() => {
+            this._notesSavedTimer = null
+            if (this.hasNotesSavedIndicatorTarget) {
+              this.notesSavedIndicatorTarget.classList.add("d-none")
+            }
+          }, 2000)
+        }
+      } else {
+        alert(`Failed to save notes (${response.status})`)
+      }
+    } catch (error) {
+      console.error("Failed to save notes:", error)
+      alert("Failed to save notes: network error")
+    }
   }
 
   async deleteQuery() {

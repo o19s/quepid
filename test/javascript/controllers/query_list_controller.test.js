@@ -63,6 +63,7 @@ describe("QueryListController", () => {
               data-query-text="The Boxing Match"
               data-rated="false"></li>
         </ul>
+        <div data-query-list-target="paginationContainer"></div>
         <div id="case-score-stub" data-controller="case-score"></div>
       </div>
     `
@@ -214,7 +215,7 @@ describe("QueryListController", () => {
     expect(collapseSpy).toHaveBeenCalled()
   })
 
-  it("runAllSearches calls rerunSearch on visible outlets only", async () => {
+  it("runAllSearches calls rerunSearch on filter-matching outlets across all pages", async () => {
     const list = application.getControllerForElementAndIdentifier(
       document.querySelector("[data-controller=query-list]"),
       "query-list",
@@ -223,13 +224,19 @@ describe("QueryListController", () => {
       vi.spyOn(outlet, "rerunSearch").mockResolvedValue(undefined)
     })
 
-    document.getElementById("row1").classList.add("d-none")
+    // Filter to "star" — should run 3 of 4 (star wars, star trek, STARMAN)
+    list.filterInputTarget.value = "star"
+    list.filter()
 
     const ev = { preventDefault: vi.fn() }
     await list.runAllSearches(ev)
     expect(ev.preventDefault).toHaveBeenCalled()
-    expect(list.queryRowOutlets[0].rerunSearch).not.toHaveBeenCalled()
+    // row1 (star wars), row2 (star trek), row3 (STARMAN) should run
+    expect(list.queryRowOutlets[0].rerunSearch).toHaveBeenCalled()
     expect(list.queryRowOutlets[1].rerunSearch).toHaveBeenCalled()
+    expect(list.queryRowOutlets[2].rerunSearch).toHaveBeenCalled()
+    // row4 (The Boxing Match) should not
+    expect(list.queryRowOutlets[3].rerunSearch).not.toHaveBeenCalled()
   })
 
   it("sortBy query reorders rows by query text", () => {
@@ -300,6 +307,125 @@ describe("QueryListController", () => {
     )
     // Highest score first, null-score row last
     expect(ids).toEqual(["row4", "row2", "row3", "row1"])
+  })
+
+  // --- Pagination tests ---
+
+  it("shows only the first PAGE_SIZE rows on connect (pagination)", () => {
+    // The default 4 rows are all visible (< 15 page size)
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    // With only 4 rows, all should be visible (no pagination needed)
+    list._applyVisibility()
+    const visible = list.queryRowTargets.filter((r) => !r.classList.contains("d-none"))
+    expect(visible.length).toBe(4)
+  })
+
+  it("paginates when there are more than PAGE_SIZE rows", () => {
+    // Add enough rows to trigger pagination (15 per page)
+    const ul = document.querySelector('[data-query-list-target="list"]')
+    for (let i = 5; i <= 20; i++) {
+      const li = document.createElement("li")
+      li.className = "stub-query-row"
+      li.id = `row${i}`
+      li.setAttribute("data-controller", "query-row")
+      li.setAttribute("data-query-list-target", "queryRow")
+      li.setAttribute("data-query-text", `query ${i}`)
+      li.setAttribute("data-rated", "true")
+      ul.appendChild(li)
+    }
+
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    list._applyVisibility()
+
+    const visible = list.queryRowTargets.filter((r) => !r.classList.contains("d-none"))
+    expect(visible.length).toBe(15)
+    expect(list.queryCountTarget.textContent).toBe("20")
+  })
+
+  it("goToPage shows the correct page of rows", () => {
+    const ul = document.querySelector('[data-query-list-target="list"]')
+    for (let i = 5; i <= 20; i++) {
+      const li = document.createElement("li")
+      li.className = "stub-query-row"
+      li.id = `row${i}`
+      li.setAttribute("data-controller", "query-row")
+      li.setAttribute("data-query-list-target", "queryRow")
+      li.setAttribute("data-query-text", `query ${i}`)
+      li.setAttribute("data-rated", "true")
+      ul.appendChild(li)
+    }
+
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    list._applyVisibility()
+
+    // Go to page 2
+    list.goToPage({ preventDefault: vi.fn(), currentTarget: { dataset: { page: "2" } } })
+    const visible = list.queryRowTargets.filter((r) => !r.classList.contains("d-none"))
+    expect(visible.length).toBe(5) // 20 total - 15 on page 1 = 5 on page 2
+    expect(list.currentPage).toBe(2)
+  })
+
+  it("nextPage and previousPage navigate correctly", () => {
+    const ul = document.querySelector('[data-query-list-target="list"]')
+    for (let i = 5; i <= 20; i++) {
+      const li = document.createElement("li")
+      li.className = "stub-query-row"
+      li.id = `row${i}`
+      li.setAttribute("data-controller", "query-row")
+      li.setAttribute("data-query-list-target", "queryRow")
+      li.setAttribute("data-query-text", `query ${i}`)
+      li.setAttribute("data-rated", "true")
+      ul.appendChild(li)
+    }
+
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    list._applyVisibility()
+
+    const ev = { preventDefault: vi.fn() }
+
+    list.nextPage(ev)
+    expect(list.currentPage).toBe(2)
+
+    list.previousPage(ev)
+    expect(list.currentPage).toBe(1)
+
+    // previousPage at page 1 should not go below 1
+    list.previousPage(ev)
+    expect(list.currentPage).toBe(1)
+  })
+
+  it("filter resets to page 1", () => {
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    list.currentPage = 3
+    list.filterInputTarget.value = "star"
+    list.filter()
+    expect(list.currentPage).toBe(1)
+  })
+
+  it("sortBy resets to page 1", () => {
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    list.currentPage = 2
+    const nameLink = [...list.sortLinkTargets].find((a) => a.dataset.sort === "query")
+    list.sortBy({ preventDefault: vi.fn(), currentTarget: nameLink })
+    expect(list.currentPage).toBe(1)
   })
 
   it("sortBy modified sorts rows by data-modified-at descending", () => {

@@ -2,6 +2,7 @@
 <div class="results" id="query-list-shell" data-controller="query-list"
      data-query-list-query-row-outlet="[data-controller='query-row']"
      data-query-list-case-score-outlet="[data-controller='case-score']"
+     data-query-list-sortable-value="<%= @query_list_sortable %>"
      data-action="query-row:scoreChanged->query-list#handleScoreChanged query-row:queryDeleted->query-list#handleQueryDeleted">
   <div class="row">
     <div class="col-sm-12 form-group">
@@ -100,9 +101,17 @@
               data-controller="query-row"
               data-query-row-query-id-value="<%= query.id %>"
               data-query-row-query-text-value="<%= query.query_text %>"
-              data-query-row-ratings-value="<%= query.ratings.each_with_object({}) { |r, h| h[r.doc_id] = r.rating.to_i }.to_json %>">
+              data-query-row-ratings-value="<%= query.ratings.each_with_object({}) { |r, h| h[r.doc_id] = r.rating.to_i }.to_json %>"
+              data-query-row-notes-value="<%= query.notes || '' %>"
+              data-query-row-information-need-value="<%= query.information_need || '' %>">
             <div class="clearfix">
               <div class="result-header">
+                <% if @query_list_sortable %>
+                  <span class="drag-handle pull-left" title="Drag to reorder">
+                    <i class="glyphicon glyphicon-menu-hamburger"></i>
+                  </span>
+                <% end %>
+
                 <div class="results-score pull-left">
                   <div class="overall-rating query-score-badge" data-query-row-target="scoreDisplay">
                     --
@@ -111,6 +120,10 @@
 
                 <h2 class="results-title">
                   <span class="query"><%= query.query_text %> &nbsp;</span>
+                  <% if query.notes.present? || query.information_need.present? %>
+                    <span class="glyphicon glyphicon-comment text-muted query-notes-indicator"
+                          title="Has notes"></span>
+                  <% end %>
                 </h2>
 
                 <span class="pull-right total-results">
@@ -142,7 +155,38 @@
                     Re-run
                   </button>
                 </div>
+                <div class="btn-group">
+                  <button class="btn btn-default btn-sm"
+                          data-action="click->query-row#toggleNotes">
+                    <i class="glyphicon glyphicon-comment"></i>
+                    Notes
+                  </button>
+                </div>
               </div>
+
+              <div class="query-notes-panel d-none" data-query-row-target="notesPanel">
+                <div class="form-group">
+                  <label class="control-label">Information Need</label>
+                  <input type="text" class="form-control input-sm"
+                         placeholder="What is the user trying to find?"
+                         data-query-row-target="informationNeedInput"
+                         value="<%= query.information_need %>" />
+                </div>
+                <div class="form-group">
+                  <label class="control-label">Notes</label>
+                  <textarea class="form-control input-sm" rows="3"
+                            placeholder="Add notes about this query..."
+                            data-query-row-target="notesInput"><%= query.notes %></textarea>
+                </div>
+                <button class="btn btn-primary btn-sm"
+                        data-action="click->query-row#saveNotes">
+                  Save Notes
+                </button>
+                <span class="text-success d-none" data-query-row-target="notesSavedIndicator">
+                  Saved!
+                </span>
+              </div>
+
               <div data-query-row-target="resultsContainer" class="search-results-container">
                 <p class="text-muted">Expand to run search.</p>
               </div>
@@ -151,6 +195,7 @@
         <% end %>
       </ul>
 
+      <div data-query-list-target="paginationContainer" class="query-list-pagination"></div>
     </div>
   </div>
 </div>

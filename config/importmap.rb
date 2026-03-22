@@ -50,3 +50,4 @@ pin '@codemirror/lang-javascript', to: '@codemirror--lang-javascript.js' # @6.2.
 pin '@codemirror/autocomplete', to: '@codemirror--autocomplete.js' # @6.20.0
 pin '@lezer/javascript', to: '@lezer--javascript.js' # @1.5.4
 pin 'party-js' # @2.2.0
+pin 'sortablejs' # @1.15.7

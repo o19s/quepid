@@ -17,7 +17,10 @@ function modulesImportAliases(rootDir) {
 
 export default defineConfig({
   resolve: {
-    alias: modulesImportAliases(__dirname),
+    alias: {
+      ...modulesImportAliases(__dirname),
+      sortablejs: path.join(__dirname, "vendor/javascript/sortablejs.js"),
+    },
   },
   test: {
     environment: "jsdom",

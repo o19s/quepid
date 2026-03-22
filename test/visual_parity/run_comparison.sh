@@ -330,7 +330,7 @@ capture_branch() {
   cd "$GIT_ROOT"
   log "Capturing screenshots for $branch..."
   node "$GIT_ROOT/test/visual_parity/capture_screenshots.mjs" --branch "$branch" --base-url "$BASE_URL_VP" \
-    --email "quepid+realisticactivity@o19s.com" --password "password"
+    --email "quepid+realisticactivity@o19s.com" --password "password" ${VP_ALL:+"$VP_ALL"}
   ok "Screenshots captured"
 
   log "Capturing API structures for $branch..."
@@ -338,7 +338,11 @@ capture_branch() {
     --email "quepid+realisticactivity@o19s.com" --password "password"
   ok "API structures captured"
 
-  teardown_docker "$branch_root"
+  if [ "${VP_TEARDOWN:-}" = "1" ]; then
+    teardown_docker "$branch_root"
+  else
+    log "Docker left running (use --teardown to stop after completion)"
+  fi
 }
 
 main() {
@@ -391,6 +395,21 @@ main() {
   echo ""
 }
 
+# Scan args for global flags (can appear anywhere)
+VP_TEARDOWN="${VP_TEARDOWN:-0}"
+VP_ALL=""
+_filtered_args=()
+for _arg in "$@"; do
+  if [ "$_arg" = "--teardown" ]; then
+    VP_TEARDOWN=1
+  elif [ "$_arg" = "--all" ]; then
+    VP_ALL="--all"
+  else
+    _filtered_args+=("$_arg")
+  fi
+done
+set -- "${_filtered_args[@]+"${_filtered_args[@]}"}"
+
 case "${1:-}" in
   --routes)
     # Compare Angular (default) routes vs new-ui variant routes on the SAME branch.
@@ -421,17 +440,21 @@ case "${1:-}" in
       --branch "$current_branch" --label "$LABEL_A" \
       --base-url "$BASE_URL_VP" \
       --email "quepid+realisticactivity@o19s.com" --password "password" \
-      --only workspace --exclude new-ui
+      --only workspace --exclude new-ui ${VP_ALL:+"$VP_ALL"}
     ok "Default screenshots captured"
 
     log "Capturing new-ui variant workspace screenshots as '$LABEL_B'..."
     node "$GIT_ROOT/test/visual_parity/capture_screenshots.mjs" \
       --branch "$current_branch" --label "$LABEL_B" --variant new-ui \
       --base-url "$BASE_URL_VP" \
-      --email "quepid+realisticactivity@o19s.com" --password "password"
+      --email "quepid+realisticactivity@o19s.com" --password "password" ${VP_ALL:+"$VP_ALL"}
     ok "Variant screenshots captured"
 
-    teardown_docker "$GIT_ROOT"
+    if [ "${VP_TEARDOWN:-}" = "1" ]; then
+      teardown_docker "$GIT_ROOT"
+    else
+      log "Docker left running (use --teardown to stop after completion)"
+    fi
 
     log "Generating HTML comparison report..."
     node "$GIT_ROOT/test/visual_parity/generate_report.mjs" --branch-a "$LABEL_A" --branch-b "$LABEL_B"
@@ -492,6 +515,8 @@ case "${1:-}" in
     echo "  $0 --capture <branch>           Capture one branch (uses main repo dir if already on that branch)"
     echo "  $0 --report                     Build report from existing screenshots + api_structures"
     echo "  $0 --remove-worktrees           Remove worktrees created for this tool"
+    echo "  $0 --teardown                  Tear down Docker after completion (default: leave running)"
+    echo "  $0 --all                       Recapture all pages (skip change detection)"
     echo "  $0 --help                       This help"
     echo ""
     echo "Environment:"
