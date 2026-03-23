@@ -119,10 +119,12 @@ function getGroup(filename) {
 // Map changed source files to screenshot tags/groups that might be affected
 const FILE_TO_GROUPS = [
   { pattern: /views\/layouts\/_header_core_app/, groups: ['Case Workspace — Header Dropdowns'] },
-  { pattern: /views\/core\/_case_header/, groups: ['Case Workspace'] },
+  { pattern: /views\/core\/_case_header|controllers\/case_score_controller|controllers\/sparkline_controller/, groups: ['Case Workspace'] },
   { pattern: /paneSvc\.js|resizable_pane_controller\.js|panes\.css/, groups: ['Case Workspace — Tune Relevance'] },
   { pattern: /queriesLayout\.html|queriesCtrl\.js/, groups: ['Case Workspace', 'Case Workspace — Action Bar Modals'] },
   { pattern: /components\/clone_case|components\/delete_case|components\/export_case|components\/import_ratings|components\/share_case|components\/judgements|components\/diff\//, groups: ['Case Workspace — Action Bar Modals'] },
+  { pattern: /controllers\/clone_case_controller|controllers\/delete_case_options_controller|controllers\/export_case_controller|controllers\/import_ratings_controller|controllers\/judgements_controller|controllers\/snapshot_controller|controllers\/snapshot_comparison_controller/, groups: ['Case Workspace — Action Bar Modals'] },
+  { pattern: /views\/core\/_action_bar|views\/core\/_action_bar_modals/, groups: ['Case Workspace', 'Case Workspace — Action Bar Modals'] },
   { pattern: /views\/books\/|controllers\/books_controller/, groups: ['Books'] },
   { pattern: /views\/scorers\/|controllers\/scorers_controller/, groups: ['Scorers'] },
   { pattern: /views\/teams\/|controllers\/teams_controller/, groups: ['Teams'] },
@@ -136,7 +138,7 @@ const FILE_TO_GROUPS = [
 
 let changedGroups = new Set();
 try {
-  // Check for a timestamp file written after the last capture of BRANCH_B
+  // 1. Check committed changes since last capture
   const lastCaptureFile = path.join(SCREENSHOTS_DIR, BRANCH_B, '.last_capture');
   if (fs.existsSync(lastCaptureFile)) {
     const lastCapture = fs.readFileSync(lastCaptureFile, 'utf-8').trim();
@@ -151,9 +153,23 @@ try {
       }
     }
   }
-  // If no timestamp file, don't flag anything — we have no baseline to compare against
+
+  // 2. Also check uncommitted changes (staged, modified, and untracked files)
+  //    These won't appear in git log but may affect screenshots
+  const statusOutput = execSync('git status --porcelain 2>/dev/null || echo ""', { encoding: 'utf-8' });
+  const uncommittedFiles = statusOutput.trim().split('\n')
+    .filter(Boolean)
+    .map(line => line.slice(3)); // strip status prefix (e.g. "?? ", " M ", "A  ")
+  for (const file of uncommittedFiles) {
+    for (const mapping of FILE_TO_GROUPS) {
+      if (mapping.pattern.test(file)) {
+        mapping.groups.forEach(g => changedGroups.add(g));
+      }
+    }
+  }
+  // If no timestamp file AND no uncommitted changes match, don't flag anything
 } catch {
-  // git log failed, skip change detection
+  // git log/status failed, skip change detection
 }
 
 // ---------------------------------------------------------------------------

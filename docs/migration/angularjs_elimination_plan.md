@@ -304,7 +304,20 @@ Snapshot modal (Rails + POST); diff as server page or Stimulus pane (`queryDiffR
 
 ## Phase 8 — Lifecycle modals and wizard
 
-**WizardModalCtrl** → stepped Stimulus or Turbo flows; export/import; **Judgements** + **`bookSvc`**; Frog / debug / explain (**vega** → **vega-embed**); **Unarchive**; ~~**delete-case-options**~~ (done — `delete_case_options_controller.js` with delete-all-queries / archive / delete).
+**WizardModalCtrl** → stepped Stimulus or Turbo flows; ~~export/import~~; ~~**Judgements**~~ + **`bookSvc`**; Frog / debug / explain (**vega** → **vega-embed**); **Unarchive**; ~~**delete-case-options**~~ (done — `delete_case_options_controller.js` with delete-all-queries / archive / delete).
+
+**Done:**
+
+- ~~Import modal~~ — `import_ratings_controller.js` with 3 tabs (Ratings CSV/RRE/LTR, Information Needs, Snapshots).
+- ~~Export modal~~ — `export_case_controller.js` with 6 server-side formats.
+- ~~Judgements modal~~ — `judgements_controller.js` with book selection, auto-sync toggles, manual Populate/Refresh/Sync Queries.
+
+**TODO:**
+
+- **Stale books data in Judgements modal:** Books are server-rendered as a JSON data attribute (`data-judgements-books-value`). If a user creates or shares a new book while the page is open, it won't appear until page reload. Investigate whether to add a lightweight fetch-on-open to refresh the book list, or whether the current behavior is acceptable.
+- **WizardModalCtrl** — stepped Stimulus or Turbo flow for case creation.
+- **Frog / debug / explain** — vega → vega-embed integration.
+- **Unarchive** flow.
 
 **Done when:** “Modals” and “Case Action Bar” in **`angularjs_ui_inventory.md`** are satisfied.
 

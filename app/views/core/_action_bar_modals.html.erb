@@ -3,12 +3,22 @@
     so they are not trapped by its stacking context (position:fixed +
     overflow on .pane_main creates a context that clips BS5 modal z-index). %>
 <% if @case.present? %>
-<div data-controller="snapshot clone-case export-case snapshot-comparison delete-case-options"
+<div data-controller="snapshot clone-case export-case snapshot-comparison delete-case-options import-ratings judgements"
      data-snapshot-query-row-outlet="[data-controller='query-row']"
      data-clone-case-case-id-value="<%= @case.id %>"
      data-clone-case-case-name-value="<%= @case.case_name %>"
      data-export-case-case-id-value="<%= @case.id %>"
-     data-export-case-case-name-value="<%= @case.case_name %>">
+     data-export-case-case-name-value="<%= @case.case_name %>"
+     data-import-ratings-case-id-value="<%= @case.id %>"
+     data-judgements-case-id-value="<%= @case.id %>"
+     data-judgements-book-id-value="<%= @case.book_id || 0 %>"
+     data-judgements-auto-populate-book-pairs-value="<%= @case.auto_populate_book_pairs %>"
+     data-judgements-auto-populate-case-judgements-value="<%= @case.auto_populate_case_judgements %>"
+     data-judgements-scorer-id-value="<%= @case.scorer_id || 0 %>"
+     data-judgements-queries-count-value="<%= @query_count %>"
+     data-judgements-teams-value="<%= @case.teams.map { |t| { id: t.id, name: t.name } }.to_json %>"
+     data-judgements-books-value="<%= @case.teams.includes(:books).flat_map(&:books).uniq.map { |b| { id: b.id, name: b.name } }.to_json %>"
+     data-judgements-query-row-outlet="[data-controller='query-row']">
 
   <%= yield %>
 
@@ -313,6 +323,308 @@
             Clear Comparison
           </button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import modal -->
+  <div class="modal fade" tabindex="-1" data-import-ratings-target="modal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Import into Case: <%= @case.case_name %></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#import-ratings-tab"
+                      data-import-tab="ratings" data-action="click->import-ratings#selectTab"
+                      type="button" role="tab">Ratings</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#import-info-needs-tab"
+                      data-import-tab="information_needs" data-action="click->import-ratings#selectTab"
+                      type="button" role="tab">Information Needs</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#import-snapshots-tab"
+                      data-import-tab="snapshots" data-action="click->import-ratings#selectTab"
+                      type="button" role="tab">Snapshots</button>
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <%# Ratings tab %>
+            <div class="tab-pane fade show active" id="import-ratings-tab" role="tabpanel">
+              <p>Importing ratings is a great way to manage the rating process outside of Quepid.
+                 There are a number of formats for importing this data.</p>
+
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="import-clear-queries"
+                       data-import-ratings-target="clearQueriesCheckbox">
+                <label class="form-check-label" for="import-clear-queries">
+                  Clear existing queries?
+                  <small class="text-muted">Select to clear all existing queries before importing</small>
+                </label>
+              </div>
+
+              <p class="mt-3">Select the file format to import:</p>
+
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="importRatingsFormat" value="csv"
+                       id="import-csv" data-action="change->import-ratings#selectRatingsFormat">
+                <label class="form-check-label" for="import-csv">
+                  <strong>CSV</strong>
+                  <small class="text-muted d-block">Headers: <code>query,docid,rating</code></small>
+                </label>
+              </div>
+
+              <div class="mb-3 d-none">
+                <input type="file" class="form-control" accept=".csv,text/csv"
+                       data-import-ratings-target="ratingsFileInput" data-format="csv"
+                       data-action="change->import-ratings#fileSelected">
+              </div>
+
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="importRatingsFormat" value="rre"
+                       id="import-rre" data-action="change->import-ratings#selectRatingsFormat">
+                <label class="form-check-label" for="import-rre">
+                  <strong>Rated Ranking Evaluator</strong>
+                  <small class="text-muted d-block">JSON: RRE judgement format</small>
+                </label>
+              </div>
+
+              <div class="mb-3 d-none">
+                <input type="file" class="form-control" accept="application/json,.json"
+                       data-import-ratings-target="ratingsFileInput" data-format="rre"
+                       data-action="change->import-ratings#fileSelected">
+              </div>
+
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="importRatingsFormat" value="ltr"
+                       id="import-ltr" data-action="change->import-ratings#selectRatingsFormat">
+                <label class="form-check-label" for="import-ltr">
+                  <strong>Learning to Rank</strong>
+                  <small class="text-muted d-block">TXT: <code>rating qid:queryid # docid query</code></small>
+                </label>
+              </div>
+
+              <div class="mb-3 d-none">
+                <input type="file" class="form-control" accept="text/plain,.txt"
+                       data-import-ratings-target="ratingsFileInput" data-format="ltr"
+                       data-action="change->import-ratings#fileSelected">
+              </div>
+            </div>
+
+            <%# Information Needs tab %>
+            <div class="tab-pane fade" id="import-info-needs-tab" role="tabpanel">
+              <p>Importing information needs is the easiest way to update a lot of queries.
+                 Export the template file first via the Export feature.</p>
+
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="import-create-queries"
+                       data-import-ratings-target="createQueriesCheckbox">
+                <label class="form-check-label" for="import-create-queries">
+                  Create missing queries?
+                  <small class="text-muted">Select to create any missing queries from the CSV</small>
+                </label>
+              </div>
+
+              <p class="mt-2">The CSV file should have the headers: <code>query,information_need</code></p>
+              <pre class="bg-light p-2 rounded small">query,information_need
+star wars,"The original movie"</pre>
+
+              <div class="mb-3">
+                <label class="form-label">Select CSV file to import:</label>
+                <input type="file" class="form-control" accept=".csv,text/csv"
+                       data-import-ratings-target="informationNeedsFileInput"
+                       data-action="change->import-ratings#fileSelected">
+              </div>
+            </div>
+
+            <%# Snapshots tab %>
+            <div class="tab-pane fade" id="import-snapshots-tab" role="tabpanel">
+              <p>Importing snapshots lets you bring in a view of search created externally.
+                 Any missing queries will be created. The Case ID in the CSV is ignored.</p>
+
+              <p>The CSV file should have the headers:</p>
+              <pre class="bg-light p-2 rounded small">Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position
+Legacy Search,10/10/18 18:05,2098,star wars,11,1
+Legacy Search,10/10/18 18:05,2098,star wars,1893,2</pre>
+
+              <div class="mb-3">
+                <label class="form-label">Select CSV file to import:</label>
+                <input type="file" class="form-control" accept=".csv,text/csv"
+                       data-import-ratings-target="snapshotFileInput"
+                       data-action="change->import-ratings#fileSelected">
+              </div>
+            </div>
+          </div>
+
+          <div data-import-ratings-target="alertArea" class="alert d-none mt-3" role="alert"></div>
+
+          <div class="alert alert-warning mt-2 d-none" data-import-ratings-target="warningArea">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span data-import-ratings-target="warningText">This operation may override existing data. Proceed with caution!</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" disabled
+                  data-import-ratings-target="submitButton"
+                  data-action="click->import-ratings#submit">
+            <span data-import-ratings-target="submitText">Import</span>
+            <span data-import-ratings-target="spinner" class="spinner-border spinner-border-sm d-none"
+                  role="status" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Judgements modal -->
+  <div class="modal fade" tabindex="-1" data-judgements-target="modal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Judgements</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Explicit Judgements created by humans and <i class="bi bi-robot"></i> LLMs are a good way
+             to start measuring your search quality.</p>
+          <p>Quepid organizes Judgements in a <strong>Book</strong> that consists of query and document
+             pairs for human evaluation.</p>
+          <p><strong>Select a Book below</strong> and configure how data syncs between your Case and Book.</p>
+
+          <%# No teams message %>
+          <div class="alert alert-info text-center d-none" data-judgements-target="noTeamsMessage">
+            <p>Judgements are meant to be shared with a team, so either
+              <a href="<%= teams_path %>">create a new team</a> or share this case with a team first.</p>
+          </div>
+
+          <%# No books message %>
+          <div class="text-center d-none" data-judgements-target="noBooksMessage">
+            <p>You have not created any Books of Judgements yet, so go ahead and create a new Book!</p>
+            <a class="btn btn-primary btn-lg" data-judgements-target="createBookLink" href="#">
+              <i class="bi bi-plus-lg"></i> Create a book
+            </a>
+          </div>
+
+          <%# Book list (rendered dynamically by the controller) %>
+          <div class="d-none" data-judgements-target="bookList">
+            <label class="form-label">Select a Book of Judgements</label>
+          </div>
+
+          <%# Select-a-book hint %>
+          <div class="alert alert-info mt-3 d-none" data-judgements-target="noBookHint">
+            <i class="bi bi-info-circle"></i> Select a book above to configure sync settings.
+          </div>
+
+          <%# Integration panel (shown when a book is selected) %>
+          <div class="d-none" data-judgements-target="integrationPanel">
+            <hr>
+            <h6>Case Integration</h6>
+
+            <div class="alert alert-info small">
+              <strong>About Book-Case Synchronization:</strong> Books and Cases can share data bi-directionally.
+              Your Case provides query/doc pairs to judge, while Book judgements flow back as ratings.
+            </div>
+
+            <div class="card">
+              <div class="card-body">
+                <div class="row align-items-center mb-3">
+                  <div class="col-sm-8">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="judgements-auto-populate-pairs"
+                             data-judgements-target="autoPopulateBookPairsCheckbox"
+                             data-action="change->judgements#toggleSetting">
+                      <label class="form-check-label" for="judgements-auto-populate-pairs">
+                        Case <i class="bi bi-arrow-right"></i> Book: Query/Doc Pairs
+                      </label>
+                    </div>
+                    <p class="text-muted small mb-0">
+                      <strong>On:</strong> New query/doc pairs automatically added to Book when Case runs.<br>
+                      <strong>Off:</strong> Manually trigger updates to the Book when needed.
+                    </p>
+                  </div>
+                  <div class="col-sm-4 text-end">
+                    <button class="btn btn-outline-secondary btn-sm" disabled
+                            data-judgements-target="populateButton"
+                            data-action="click->judgements#manualPopulate">
+                      <i class="bi bi-box-arrow-up"></i> Populate Now
+                    </button>
+                  </div>
+                </div>
+
+                <hr class="my-2">
+
+                <div class="row align-items-center mb-3">
+                  <div class="col-sm-8">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="judgements-auto-populate-judgements"
+                             data-judgements-target="autoPopulateCaseJudgementsCheckbox"
+                             data-action="change->judgements#toggleSetting">
+                      <label class="form-check-label" for="judgements-auto-populate-judgements">
+                        Case <i class="bi bi-arrow-left"></i> Book: Judgement Ratings
+                      </label>
+                    </div>
+                    <p class="text-muted small mb-0">
+                      <strong>On:</strong> Case ratings update immediately as judgements are made.<br>
+                      <strong>Off:</strong> Manually import judgements when ready to test.
+                    </p>
+                  </div>
+                  <div class="col-sm-4 text-end">
+                    <button class="btn btn-outline-secondary btn-sm" disabled
+                            data-judgements-target="refreshButton"
+                            data-action="click->judgements#manualRefresh">
+                      <i class="bi bi-box-arrow-in-down"></i> Refresh Ratings
+                    </button>
+                  </div>
+                </div>
+
+                <hr class="my-2">
+
+                <div class="row align-items-center">
+                  <div class="col-sm-8">
+                    <label class="form-label mb-0">
+                      Case <i class="bi bi-arrow-left"></i> Book: Sync missing queries
+                    </label>
+                    <p class="text-muted small mb-0">Add queries that exist in Book but not in Case.</p>
+                  </div>
+                  <div class="col-sm-4 text-end">
+                    <button class="btn btn-outline-secondary btn-sm" disabled
+                            data-judgements-target="syncQueriesButton"
+                            data-action="click->judgements#manualSyncQueries">
+                      <i class="bi bi-plus-lg"></i> Sync Queries
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-danger mt-2 d-none" data-judgements-target="errorMessage"></div>
+          <div class="text-muted mt-2 d-none" data-judgements-target="processingMessage">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span></span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <a class="btn btn-primary" data-judgements-target="createBookLink" href="#">
+            <i class="bi bi-plus-lg"></i> Create a book
+          </a>
+          <a class="btn btn-outline-secondary d-none" data-judgements-target="judgeLink" href="#" target="_self">
+            <i class="bi bi-book"></i> Judge Documents!
+          </a>
+          <button class="btn btn-success d-none"
+                  data-judgements-target="saveButton"
+                  data-action="click->judgements#save">
+            Save
+          </button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </div>
     </div>

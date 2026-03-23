@@ -78,7 +78,7 @@ const FILE_TO_PAGES = [
   { pattern: /queriesLayout\.html|queriesCtrl\.js|queries\.html/, prefixes: ['04-'] },
   { pattern: /query_list_controller\.js|query_row_controller\.js|add_query_controller\.js/, prefixes: ['04-'] },
   { pattern: /inline_edit_controller\.js|resizable_pane_controller\.js|settings_panel_controller\.js/, prefixes: ['04-'] },
-  { pattern: /case_score_controller\.js|snapshot_controller\.js|clone_case_controller\.js|export_case_controller\.js|delete_case_options_controller\.js/, prefixes: ['04-'] },
+  { pattern: /case_score_controller\.js|snapshot_controller\.js|clone_case_controller\.js|export_case_controller\.js|delete_case_options_controller\.js|judgements_controller\.js|import_ratings_controller\.js|snapshot_comparison_controller\.js/, prefixes: ['04-'] },
   { pattern: /modules\/search_executor\.js|modules\/scorer|modules\/ratings_store|modules\/api_url|modules\/query_template|modules\/explain_parser|modules\/field_renderer/, prefixes: ['04-'] },
   { pattern: /doc_detail_modal_controller\.js|query_explain_modal_controller\.js|doc_finder_controller\.js/, prefixes: ['04-'] },
   { pattern: /paneSvc\.js|panes\.css/, prefixes: ['04-'] },
@@ -115,7 +115,7 @@ function detectChangedPrefixes() {
     if (!/^\d{4}-\d{2}-\d{2}T[\d:.]+Z?$/.test(lastCapture)) {
       return null; // invalid format — capture all
     }
-    // Check both committed changes since last capture AND uncommitted changes
+    // Check committed changes since last capture, uncommitted tracked changes, AND untracked new files
     const committedOutput = execSync(
       `git log --since="${lastCapture}" --name-only --pretty=format: HEAD 2>/dev/null`,
       { encoding: 'utf-8' }
@@ -124,9 +124,18 @@ function detectChangedPrefixes() {
       `git diff --name-only HEAD 2>/dev/null`,
       { encoding: 'utf-8' }
     );
+    const untrackedOutput = execSync(
+      `git ls-files --others --exclude-standard 2>/dev/null`,
+      { encoding: 'utf-8' }
+    );
     // Only include uncommitted files whose modification time is after the last capture
     const lastCaptureTime = new Date(lastCapture).getTime();
-    const uncommittedFiles = uncommittedOutput.trim().split('\n').filter(Boolean).filter(f => {
+    const localFiles = [
+      ...uncommittedOutput.trim().split('\n').filter(Boolean),
+      ...untrackedOutput.trim().split('\n').filter(Boolean),
+    ];
+    // Only include local files whose modification time is after the last capture
+    const recentLocalFiles = localFiles.filter(f => {
       try {
         const stat = fs.statSync(f);
         return stat.mtimeMs > lastCaptureTime;
@@ -136,7 +145,7 @@ function detectChangedPrefixes() {
     });
     const changedFiles = [...new Set([
       ...committedOutput.trim().split('\n').filter(Boolean),
-      ...uncommittedFiles,
+      ...recentLocalFiles,
     ])];
 
     if (changedFiles.length === 0) {
@@ -486,8 +495,10 @@ const PAGES = [
       return id ? `/case/${id}` : '/cases';
     },
     setup: async (page) => {
+      // Wait for Stimulus controllers to connect (importmap async loading)
+      await new Promise(r => setTimeout(r, 2000));
       await page.locator('#case-actions a', { hasText: 'Judgements' }).click();
-      await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await page.locator('.modal.show').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await new Promise(r => setTimeout(r, 500));
     },
     variants: {
@@ -537,8 +548,10 @@ const PAGES = [
       return id ? `/case/${id}` : '/cases';
     },
     setup: async (page) => {
+      // Wait for Stimulus controllers to connect (importmap async loading)
+      await new Promise(r => setTimeout(r, 2000));
       await page.locator('#case-actions a', { hasText: 'Import' }).click();
-      await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await page.locator('.modal.show').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await new Promise(r => setTimeout(r, 500));
     },
     variants: {
@@ -601,8 +614,10 @@ const PAGES = [
       return id ? `/case/${id}` : '/cases';
     },
     setup: async (page) => {
+      // Wait for Stimulus controllers to connect (importmap async loading)
+      await new Promise(r => setTimeout(r, 2000));
       await page.locator('#case-actions a', { hasText: 'Export' }).click();
-      await page.locator('.modal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await page.locator('.modal.show').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await new Promise(r => setTimeout(r, 500));
     },
     variants: {
