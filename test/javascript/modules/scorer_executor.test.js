@@ -11,13 +11,14 @@ describe("runScorerCode", () => {
     const bestDocs = []
 
     const result = runScorerCode(code, scale, docs, ratings, 2, bestDocs)
-    expect(result).toBe("--")
+    expect(result.score).toBe("--")
+    expect(result.depthOfRating).toBeNull()
   })
 
   it("returns 'zsr' when no docs exist", () => {
     const code = "setScore(avgRating());"
     const result = runScorerCode(code, scale, [], {}, 0, [])
-    expect(result).toBe("zsr")
+    expect(result.score).toBe("zsr")
   })
 
   it("computes a simple average rating", () => {
@@ -30,7 +31,7 @@ describe("runScorerCode", () => {
     ]
 
     const result = runScorerCode(code, scale, docs, ratings, 3, bestDocs)
-    expect(result).toBe(2) // (3 + 1) / 2
+    expect(result.score).toBe(2) // (3 + 1) / 2
   })
 
   it("runs setScore with a literal value", () => {
@@ -41,7 +42,7 @@ describe("runScorerCode", () => {
 
     // 42 > maxScale(3) so it gets clamped
     const result = runScorerCode(code, scale, docs, ratings, 1, bestDocs)
-    expect(result).toBe(3)
+    expect(result.score).toBe(3)
   })
 
   it("clamps negative scores to 0", () => {
@@ -51,7 +52,7 @@ describe("runScorerCode", () => {
     const bestDocs = [{ docId: "doc1", rating: 1 }]
 
     const result = runScorerCode(code, scale, docs, ratings, 1, bestDocs)
-    expect(result).toBe(0)
+    expect(result.score).toBe(0)
   })
 
   it("runs eachDoc and docRating helpers", () => {
@@ -74,7 +75,7 @@ describe("runScorerCode", () => {
     ]
 
     const result = runScorerCode(code, scale, docs, ratings, 3, bestDocs)
-    expect(result).toBe(2.5) // (2 + 3) / 2
+    expect(result.score).toBe(2.5) // (2 + 3) / 2
   })
 
   it("supports eachDocWithRating for bestDocs iteration", () => {
@@ -94,7 +95,7 @@ describe("runScorerCode", () => {
     ]
 
     const result = runScorerCode(code, scale, docs, ratings, 1, bestDocs)
-    expect(result).toBe(2) // d1 (2>0) and d2 (1>0), d3 (0, not >0)
+    expect(result.score).toBe(2) // d1 (2>0) and d2 (1>0), d3 (0, not >0)
   })
 
   it("supports topRatings helper", () => {
@@ -110,7 +111,7 @@ describe("runScorerCode", () => {
     ]
 
     const result = runScorerCode(code, scale, docs, ratings, 1, bestDocs)
-    expect(result).toBe(2)
+    expect(result.score).toBe(2)
   })
 
   it("supports numFound and numReturned", () => {
@@ -120,22 +121,23 @@ describe("runScorerCode", () => {
     const bestDocs = [{ docId: "d1", rating: 1 }]
 
     const result = runScorerCode(code, scale, docs, ratings, 100, bestDocs)
-    expect(result).toBe(1)
+    expect(result.score).toBe(1)
   })
 
-  it("returns null on code error", () => {
+  it("returns null score on code error", () => {
     const code = "throw new Error('bad scorer');"
     const docs = [{ id: "d1" }]
     const ratings = { d1: 1 }
     const bestDocs = [{ docId: "d1", rating: 1 }]
 
     const result = runScorerCode(code, scale, docs, ratings, 1, bestDocs)
-    expect(result).toBeNull()
+    expect(result.score).toBeNull()
+    expect(result.depthOfRating).toBeNull()
   })
 
-  it("returns null for null/undefined code", () => {
-    expect(runScorerCode(null, scale, [], {}, 0, [])).toBeNull()
-    expect(runScorerCode(undefined, scale, [], {}, 0, [])).toBeNull()
+  it("returns null score for null/undefined code", () => {
+    expect(runScorerCode(null, scale, [], {}, 0, []).score).toBeNull()
+    expect(runScorerCode(undefined, scale, [], {}, 0, []).score).toBeNull()
   })
 
   it("supports pass() and fail() for unit-test-style scorers", () => {
@@ -146,7 +148,29 @@ describe("runScorerCode", () => {
 
     // pass() sets score to 100, clamped to max scale (3)
     const result = runScorerCode(code, scale, docs, ratings, 1, bestDocs)
-    expect(result).toBe(3)
+    expect(result.score).toBe(3)
+  })
+
+  it("captures depthOfRating when scorer defines k", () => {
+    const code = "var k = 5; setScore(avgRating(k));"
+    const docs = [{ id: "d1" }]
+    const ratings = { d1: 2 }
+    const bestDocs = [{ docId: "d1", rating: 2 }]
+
+    const result = runScorerCode(code, scale, docs, ratings, 1, bestDocs)
+    expect(result.score).toBe(2)
+    expect(result.depthOfRating).toBe(5)
+  })
+
+  it("returns null depthOfRating when scorer does not define k", () => {
+    const code = "setScore(avgRating());"
+    const docs = [{ id: "d1" }]
+    const ratings = { d1: 2 }
+    const bestDocs = [{ docId: "d1", rating: 2 }]
+
+    const result = runScorerCode(code, scale, docs, ratings, 1, bestDocs)
+    expect(result.score).toBe(2)
+    expect(result.depthOfRating).toBeNull()
   })
 })
 

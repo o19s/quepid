@@ -114,6 +114,7 @@ export default class extends Controller {
     this.lastNumFound = 0
     this.lastResult = null
     this.debugMode = false
+    this.depthOfRating = null
     this.comparisonSnapshots = null
     this._comparisonDirty = false
     this._ratingsInFlight = new Set()
@@ -594,12 +595,13 @@ export default class extends Controller {
 
   _updateFrogIndicator() {
     if (!this.hasFrogIndicatorTarget) return
-    const totalDocs = this.lastSearchDocs.length
-    // Count unrated among *visible* docs only — ratingsStore.ratedCount()
-    // includes docs rated outside the current page which would produce
-    // a negative unrated count.
+    // Use depthOfRating (scorer K) to limit which docs count as missing,
+    // matching Angular's behavior. Falls back to all docs if K not defined.
+    const depth = this.depthOfRating || this.lastSearchDocs.length
+    const docsToCheck = this.lastSearchDocs.slice(0, depth)
+    const totalDocs = docsToCheck.length
     let unratedCount = 0
-    for (const doc of this.lastSearchDocs) {
+    for (const doc of docsToCheck) {
       if (this.ratingsStore.getRating(String(doc.id)) === null) {
         unratedCount++
       }
@@ -909,7 +911,7 @@ export default class extends Controller {
       const bestDocs = this.ratingsStore.bestDocs()
       const maxScaleValue = scale.length > 0 ? parseInt(scale[scale.length - 1], 10) : 0
 
-      const score = runScorerCode(
+      const result = runScorerCode(
         scorer.code,
         scale,
         this.lastSearchDocs,
@@ -917,6 +919,8 @@ export default class extends Controller {
         this.lastNumFound,
         bestDocs,
       )
+      const score = result.score
+      this.depthOfRating = result.depthOfRating
 
       this.currentScore = score
 

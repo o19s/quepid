@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiUrl } from "modules/api_url"
+import { apiUrl, csrfToken } from "modules/api_url"
 
 export default class extends Controller {
   static values = {
@@ -42,11 +42,16 @@ export default class extends Controller {
     this._originalAutoPopulateCaseJudgements = this.autoPopulateCaseJudgementsValue
   }
 
-  open() {
+  async open() {
     this._selectedBookId = this.bookIdValue > 0 ? this.bookIdValue : null
     this._originalBookId = this._selectedBookId
     this._hideError()
     this._hideProcessing()
+
+    // Fetch fresh books from each team on open, matching Angular's behavior
+    // (bookSvc.list(team) per team on modal init)
+    await this._refreshBooks()
+
     this._renderBookList()
     this._updateIntegrationPanel()
     this._updateSaveButton()
@@ -253,6 +258,35 @@ export default class extends Controller {
       throw new Error(data.statusText || "Failed to refresh ratings")
     }
     return response.json()
+  }
+
+  async _refreshBooks() {
+    if (this.teamsValue.length === 0) return
+
+    const seen = new Set()
+    const freshBooks = []
+
+    for (const team of this.teamsValue) {
+      try {
+        const response = await fetch(apiUrl(`api/teams/${team.id}/books`), {
+          headers: { "X-CSRF-Token": csrfToken(), Accept: "application/json" },
+        })
+        if (!response.ok) continue
+
+        const data = await response.json()
+        const books = data.books || data || []
+        for (const book of books) {
+          if (!seen.has(book.id)) {
+            seen.add(book.id)
+            freshBooks.push({ id: book.id, name: book.name })
+          }
+        }
+      } catch (e) {
+        console.warn(`Failed to fetch books for team ${team.id}:`, e)
+      }
+    }
+
+    this.booksValue = freshBooks
   }
 
   _renderBookList() {

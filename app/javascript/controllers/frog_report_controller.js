@@ -109,7 +109,11 @@ export default class extends Controller {
   _collectQueryData() {
     const queryData = []
     for (const qr of this.queryRowOutlets) {
-      const docs = qr.lastSearchDocs || []
+      const allDocs = qr.lastSearchDocs || []
+      // Use depthOfRating (scorer K) to limit which docs count,
+      // matching Angular's behavior where only top-K docs matter.
+      const depth = qr.depthOfRating || allDocs.length
+      const docs = allDocs.slice(0, depth)
       const docsCount = docs.length
       let ratedCount = 0
       for (const doc of docs) {

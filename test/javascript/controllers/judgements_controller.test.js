@@ -74,6 +74,17 @@ describe("JudgementsController", () => {
       },
     }
 
+    // Mock fetch for _refreshBooks — return the same books that were server-rendered
+    globalThis.fetch = vi.fn((url) => {
+      if (String(url).includes("/books")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ books }),
+        })
+      }
+      return Promise.resolve({ ok: false, json: () => Promise.resolve({}) })
+    })
+
     application = Application.start()
     application.register("judgements", JudgementsController)
     await waitForController(application, "[data-controller='judgements']", "judgements")
@@ -82,6 +93,7 @@ describe("JudgementsController", () => {
   afterEach(() => {
     application.stop()
     delete window.bootstrap
+    vi.restoreAllMocks()
   })
 
   it("connects with correct initial values", () => {
@@ -91,9 +103,10 @@ describe("JudgementsController", () => {
     expect(controller._selectedBookId).toBe(1)
   })
 
-  it("opens modal and renders book list with proper ul wrapper", () => {
-    const link = document.querySelector("a[data-action='click->judgements#open']")
-    link.click()
+  it("opens modal and renders book list with proper ul wrapper", async () => {
+    const el = document.querySelector("[data-controller='judgements']")
+    const controller = application.getControllerForElementAndIdentifier(el, "judgements")
+    await controller.open()
 
     const bookList = document.querySelector("[data-judgements-target='bookList']")
     expect(bookList.classList.contains("d-none")).toBe(false)
@@ -107,19 +120,19 @@ describe("JudgementsController", () => {
     expect(items.length).toBe(3)
   })
 
-  it("shows integration panel when book is selected", () => {
+  it("shows integration panel when book is selected", async () => {
     const el = document.querySelector("[data-controller='judgements']")
     const controller = application.getControllerForElementAndIdentifier(el, "judgements")
-    controller.open()
+    await controller.open()
 
     const panel = document.querySelector("[data-judgements-target='integrationPanel']")
     expect(panel.classList.contains("d-none")).toBe(false)
   })
 
-  it("hides integration panel when None is selected", () => {
+  it("hides integration panel when None is selected", async () => {
     const el = document.querySelector("[data-controller='judgements']")
     const controller = application.getControllerForElementAndIdentifier(el, "judgements")
-    controller.open()
+    await controller.open()
 
     // Select "None"
     controller.selectBook({ currentTarget: { dataset: { bookId: "" } } })
@@ -128,10 +141,10 @@ describe("JudgementsController", () => {
     expect(panel.classList.contains("d-none")).toBe(true)
   })
 
-  it("shows save button when book selection changes", () => {
+  it("shows save button when book selection changes", async () => {
     const el = document.querySelector("[data-controller='judgements']")
     const controller = application.getControllerForElementAndIdentifier(el, "judgements")
-    controller.open()
+    await controller.open()
 
     // Select a different book
     controller.selectBook({ currentTarget: { dataset: { bookId: "2" } } })
@@ -140,10 +153,10 @@ describe("JudgementsController", () => {
     expect(saveBtn.classList.contains("d-none")).toBe(false)
   })
 
-  it("hides save button when original book is reselected", () => {
+  it("hides save button when original book is reselected", async () => {
     const el = document.querySelector("[data-controller='judgements']")
     const controller = application.getControllerForElementAndIdentifier(el, "judgements")
-    controller.open()
+    await controller.open()
 
     // Select different then back to original
     controller.selectBook({ currentTarget: { dataset: { bookId: "2" } } })
@@ -153,10 +166,10 @@ describe("JudgementsController", () => {
     expect(saveBtn.classList.contains("d-none")).toBe(true)
   })
 
-  it("updates create book links with correct URL", () => {
+  it("updates create book links with correct URL", async () => {
     const el = document.querySelector("[data-controller='judgements']")
     const controller = application.getControllerForElementAndIdentifier(el, "judgements")
-    controller.open()
+    await controller.open()
 
     const links = document.querySelectorAll("[data-judgements-target='createBookLink']")
     links.forEach(link => {
@@ -182,7 +195,7 @@ describe("JudgementsController", () => {
     const el = document.querySelector("[data-controller='judgements']")
     const controller = application.getControllerForElementAndIdentifier(el, "judgements")
     if (controller) {
-      controller.open()
+      await controller.open()
       const noTeams = document.querySelector("[data-judgements-target='noTeamsMessage']")
       expect(noTeams.classList.contains("d-none")).toBe(false)
     }

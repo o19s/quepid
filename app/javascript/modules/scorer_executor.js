@@ -17,10 +17,11 @@ const DEFAULT_NUM_DOCS = 10
  * @param {number} numFound - Total results from search engine
  * @param {Array} bestDocs - All rated docs as [{ docId, rating }] sorted by rating desc
  * @param {Object} [options] - Optional query-level options
- * @returns {number|string|null} The computed score, or "--" / "zsr" / null
+ * @returns {{ score: number|string|null, depthOfRating: number|null }}
+ *   The computed score, or "--" / "zsr" / null, plus depthOfRating if scorer defines `k`
  */
 export function runScorerCode(code, scale, docs, ratings, numFound, bestDocs, options) {
-  if (!code) return null
+  if (!code) return { score: null, depthOfRating: null }
 
   const maxScaleValue = scale.length > 0 ? parseInt(scale[scale.length - 1], 10) : 0
 
@@ -57,11 +58,16 @@ export function runScorerCode(code, scale, docs, ratings, numFound, bestDocs, op
   }
 
   let theScore = null
+  let theDepthOfRating = null
 
   // --- Helper functions available to scorer code ---
 
   const setScore = (score) => {
     theScore = score
+  }
+
+  const recordDepthOfRanking = (k) => {
+    theDepthOfRating = k
   }
 
   const docAt = (posn) => {
@@ -166,9 +172,14 @@ export function runScorerCode(code, scale, docs, ratings, numFound, bestDocs, op
   }
 
   // Suppress lint warnings about unused vars — they ARE used by eval'd scorer code
-  // Build a function that has all helpers in scope
+  // Build a function that has all helpers in scope.
+  // Append k-detection code matching Angular's ScorerFactory pattern:
+  // if the scorer code defines a variable `k`, capture it as depthOfRating.
+  const codeWithKDetection = code + "\n;if (typeof k !== 'undefined') { recordDepthOfRanking(k); }"
+
   const scorerFn = new Function(
     "setScore",
+    "recordDepthOfRanking",
     "docAt",
     "docExistsAt",
     "ratedDocAt",
@@ -195,12 +206,13 @@ export function runScorerCode(code, scale, docs, ratings, numFound, bestDocs, op
     "query",
     "total",
     "options",
-    code,
+    codeWithKDetection,
   )
 
   try {
     scorerFn(
       setScore,
+      recordDepthOfRanking,
       docAt,
       docExistsAt,
       ratedDocAt,
@@ -230,25 +242,23 @@ export function runScorerCode(code, scale, docs, ratings, numFound, bestDocs, op
     )
   } catch (e) {
     console.error("Scorer execution error:", e)
-    return null
+    return { score: null, depthOfRating: null }
   }
 
   // Post-process the score (matches ScorerFactory.score() logic)
+  let finalScore = null
   if (theScore === null) {
-    if (wrappedDocs.length === 0) return "zsr"
-    if (wrappedBestDocs.length === 0) return "--"
-    return null
+    if (wrappedDocs.length === 0) finalScore = "zsr"
+    else if (wrappedBestDocs.length === 0) finalScore = "--"
+    else finalScore = null
+  } else if (typeof theScore === "number") {
+    if (theScore < 0) finalScore = 0
+    else if (theScore > maxScaleValue && maxScaleValue > 0) finalScore = maxScaleValue
+    else if (maxScaleValue === 0) finalScore = 0
+    else finalScore = theScore
   }
 
-  if (typeof theScore === "number") {
-    if (theScore < 0) return 0
-    if (theScore > maxScaleValue && maxScaleValue > 0) return maxScaleValue
-    if (maxScaleValue === 0) return 0
-    return theScore
-  }
-
-  // Non-numeric score (error string, etc.)
-  return null
+  return { score: finalScore, depthOfRating: theDepthOfRating }
 }
 
 /**
