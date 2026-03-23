@@ -11,6 +11,10 @@ class CoreController < ApplicationController
   end
 
   def new_ui
+    if @case.nil?
+      render 'core/not_found', layout: 'core_new_ui', status: :not_found
+      return
+    end
     render layout: 'core_new_ui'
   end
 
@@ -29,7 +33,7 @@ class CoreController < ApplicationController
     @recent_books = recent_books 4
     @recent_books_count = current_user.books_involved_with.count
 
-    @queries = @case&.queries&.includes(:ratings)&.order(:arranged_at) || []
+    @queries = @case ? @case.queries.includes(:ratings).order(:arranged_at) : []
     @query_count = @queries.size
     @query_list_sortable = Rails.application.config.query_list_sortable
   end

@@ -20,7 +20,10 @@
       data-scorer-id="<%= @case&.scorer&.id %>">
   <%= render 'layouts/header_core_app' %>
 
-  <div id="main-content">
+  <div id="main-content"
+       data-controller="flash"
+       <% if flash.any? %>data-rails-flash="<%= flash.to_hash.to_json %>"<% end %>>
+    <div data-flash-target="container"></div>
     <%= yield %>
   </div>
 

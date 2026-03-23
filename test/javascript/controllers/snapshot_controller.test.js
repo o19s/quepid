@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { Application } from "@hotwired/stimulus"
 import SnapshotController from "../../../app/javascript/controllers/snapshot_controller"
 import QueryRowController from "../../../app/javascript/controllers/query_row_controller"
+import FlashController from "../../../app/javascript/controllers/flash_controller"
 import { waitForController } from "../support/stimulus_helpers"
 
 describe("SnapshotController", () => {
@@ -16,7 +17,8 @@ describe("SnapshotController", () => {
     document.body.setAttribute("data-quepid-root-url", "")
 
     document.body.innerHTML = `
-      <div id="main-content">
+      <div id="main-content" data-controller="flash">
+        <div data-flash-target="container"></div>
         <div data-controller="snapshot"
              data-snapshot-query-row-outlet="[data-controller='query-row']">
 
@@ -62,6 +64,8 @@ describe("SnapshotController", () => {
     application = Application.start()
     application.register("snapshot", SnapshotController)
     application.register("query-row", QueryRowController)
+    application.register("flash", FlashController)
+    await waitForController(application, '[data-controller="flash"]', "flash")
     await waitForController(application, '[data-controller="snapshot"]', "snapshot")
     await waitForController(application, '[data-controller="query-row"]', "query-row")
   })

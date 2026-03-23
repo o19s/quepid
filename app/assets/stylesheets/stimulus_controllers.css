@@ -128,3 +128,11 @@
 .validation-warnings .alert-sm {
   font-size: 12px;
 }
+
+/* Query row loading state */
+
+[data-controller="query-row"].loading .result-header {
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}

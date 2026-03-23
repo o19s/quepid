@@ -1,0 +1,65 @@
+/* Tour (Stimulus) — lightweight replacement for Shepherd.js */
+
+body.tour-active {
+  pointer-events: none !important;
+}
+
+.tour-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 9998;
+  pointer-events: auto;
+}
+
+.tour-highlight {
+  position: relative;
+  box-shadow: 0 0 0 99999px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  pointer-events: auto;
+  transition: box-shadow 0.3s ease;
+}
+
+.tour-tooltip {
+  position: absolute;
+  z-index: 10000;
+  pointer-events: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  max-width: 380px;
+  min-width: 260px;
+  padding: 0;
+  font-size: 14px;
+}
+
+.tour-tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.tour-step-count {
+  font-size: 12px;
+  color: #888;
+}
+
+.tour-tooltip-body {
+  padding: 12px 16px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.tour-tooltip-body a {
+  color: #0d6efd;
+}
+
+.tour-tooltip-footer {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px 12px;
+  border-top: 1px solid #eee;
+  justify-content: flex-end;
+}

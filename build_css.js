@@ -138,6 +138,10 @@ function buildCoreCSS() {
   // New UI (Stimulus) styles
   output += readFileIfExists('app/assets/stylesheets/search_results.css');
   output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/stimulus_controllers.css');
+  output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/tour_modern.css');
+  output += '\n';
 
   // Other styles
   output += readFileIfExists('app/assets/stylesheets/misc.css');

@@ -6,6 +6,7 @@ import { scaleToColors, ratingColor, scoreToColor } from "modules/scorer"
 import { runScorerCode } from "modules/scorer_executor"
 import { parseExplain, hotMatchesOutOf } from "modules/explain_parser"
 import { renderFieldValue } from "modules/field_renderer"
+import { showFlash } from "modules/flash_helper"
 
 // Shared config caches — keyed by caseId:tryNumber so navigating to a
 // different case/try fetches fresh config instead of serving stale data.
@@ -260,7 +261,7 @@ export default class extends Controller {
       this._updateScoreBadge()
     } catch (error) {
       console.error("Bulk rate failed:", error)
-      alert("Failed to bulk rate")
+      showFlash("Failed to bulk rate", "danger")
     }
   }
 
@@ -290,9 +291,12 @@ export default class extends Controller {
     }
     this.abortController = new AbortController()
 
+    // Add loading state to the query row header
+    this.element.classList.add("loading")
+
     const container = this.resultsContainerTarget
     container.innerHTML =
-      '<p class="text-muted"><i class="glyphicon glyphicon-refresh"></i> Searching...</p>'
+      '<p class="text-muted"><span class="spinner"></span> Searching&hellip;</p>'
 
     try {
       const tryConfig = await fetchTryConfig()
@@ -319,6 +323,8 @@ export default class extends Controller {
     } catch (error) {
       if (error.name === "AbortError") return
       container.innerHTML = `<div class="alert alert-danger">Search failed: ${this._escapeHtml(error.message)}</div>`
+    } finally {
+      this.element.classList.remove("loading")
     }
   }
 
@@ -792,7 +798,7 @@ export default class extends Controller {
       this._updateScoreBadge()
     } catch (error) {
       console.error("Rating failed:", error)
-      alert("Failed to save rating")
+      showFlash("Failed to save rating", "danger")
     } finally {
       this._ratingsInFlight.delete(docId)
     }
@@ -965,11 +971,11 @@ export default class extends Controller {
           }, 2000)
         }
       } else {
-        alert(`Failed to save notes (${response.status})`)
+        showFlash(`Failed to save notes (${response.status})`, "danger")
       }
     } catch (error) {
       console.error("Failed to save notes:", error)
-      alert("Failed to save notes: network error")
+      showFlash("Failed to save notes: network error", "danger")
     }
   }
 
@@ -990,11 +996,11 @@ export default class extends Controller {
         this.dispatch("queryDeleted", { detail: { queryId: this.queryIdValue } })
         this.element.remove()
       } else {
-        alert(`Failed to delete query (${response.status})`)
+        showFlash(`Failed to delete query (${response.status})`, "danger")
       }
     } catch (error) {
       console.error("Failed to delete query:", error)
-      alert("Failed to delete query: network error")
+      showFlash("Failed to delete query: network error", "danger")
     }
   }
 

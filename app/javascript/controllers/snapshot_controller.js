@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiUrl, csrfToken } from "modules/api_url"
+import { showFlash } from "modules/flash_helper"
 
 export default class extends Controller {
   static targets = ["modal", "nameInput", "submitButton", "errorMessage", "progressMessage"]
@@ -76,7 +77,7 @@ export default class extends Controller {
       }
 
       this.close()
-      this._showFlash("Snapshot created successfully.")
+      showFlash("Snapshot created successfully.")
     } catch (error) {
       console.error("Snapshot creation failed:", error)
       this._showError(error.message)
@@ -176,31 +177,6 @@ export default class extends Controller {
   _showError(message) {
     this.errorMessageTarget.textContent = message
     this.errorMessageTarget.classList.remove("d-none")
-  }
-
-  _showFlash(message) {
-    // Insert a Bootstrap alert at the top of main content
-    const mainContent = document.getElementById("main-content")
-    if (!mainContent) return
-
-    const alert = document.createElement("div")
-    alert.className = "alert alert-success alert-dismissible fade show"
-    alert.setAttribute("role", "alert")
-    alert.textContent = message
-
-    const closeBtn = document.createElement("button")
-    closeBtn.type = "button"
-    closeBtn.className = "btn-close"
-    closeBtn.setAttribute("data-bs-dismiss", "alert")
-    closeBtn.setAttribute("aria-label", "Close")
-    alert.appendChild(closeBtn)
-
-    mainContent.insertBefore(alert, mainContent.firstChild)
-
-    // Auto-dismiss after 5 seconds
-    setTimeout(() => {
-      if (alert.parentNode) alert.remove()
-    }, 5000)
   }
 
   _modal() {
