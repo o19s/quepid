@@ -85,7 +85,7 @@ Unless explicitly expanded later:
 
 **What already works on `new_ui`**
 
-- **Case header:** ~~inline rename~~; ~~case-level score badge~~ (`case-score`); ~~sparkline chart~~ (`sparkline` controller, D3 line graph of last 10 scores + annotation markers); ~~snapshot score badges during comparison~~ (`snapshotScores` target on `case-score`).
+- **Case header:** ~~case-level score badge~~ (`case-score`); ~~sparkline chart~~ (`sparkline` controller, D3 line graph of last 10 scores + annotation markers); ~~snapshot score badges during comparison~~ (`snapshotScores` target on `case-score`).
 - **Query list:** ~~filter, sort, collapse-all, show-only-rated, Run all, add query, delete~~.
 - **After expand:** browser **search** via **`search_executor`** (Solr / ES / OS; **`/proxy/fetch`** when the try is configured to proxy).
 - **Ratings and scores:** **`ratings_store`**, **`scorer_executor`**, **`scorer.js`** (plus **`query_template.js`**, **`api_url.js`**).
@@ -93,7 +93,7 @@ Unless explicitly expanded later:
 
 **What is still missing on `new_ui`**
 
-- Action bar links are **placeholders** (no modals wired) except: ~~Create snapshot~~, ~~Compare snapshots~~, ~~Clone~~, ~~Export~~, ~~Delete (delete all queries / archive / delete case)~~, ~~Frog Pond Report~~.
+- Action bar links are **placeholders** (no modals wired) except: ~~Create snapshot~~, ~~Compare snapshots~~, ~~Clone~~, ~~Export~~, ~~Import (ratings + snapshots)~~, ~~Delete (delete all queries / archive / delete case)~~, ~~Frog Pond Report~~.
 - Query list: ~~pagination~~, ~~drag-and-drop reorder~~, ~~query notes~~, ~~bulk actions~~ (~~Run All~~, ~~Score All per query~~, ~~bulk create via semicolons~~, ~~delete all queries~~), ~~full **result row** parity~~ (~~explain~~, ~~embeds~~, ~~smart field rendering~~, ~~frog~~, ~~querqy~~, ~~pagination~~, ~~browse link~~, ~~rank~~) with Angular.
 - Annotations: per-query score breakdown not captured (see Phase 5 TODOs).
 
@@ -269,7 +269,7 @@ Authoritative listing: **`workspace_api_usage.md`**. In one breath: case + tries
 
 ### TODOs
 
-- [ ] **Annotation score data is incomplete:** `_getCurrentScoreData()` in `settings_panel_controller.js` only reads the aggregate score from the case-score badge text. It always sends `allRated: false` and `queries: []` when creating annotations. The Angular version captured `lastScore.all_rated` and per-query score breakdowns. Fix: have `case_score_controller.js` store the full score payload (score, allRated, queryScores) as data attributes on its element when `updateScore()` is called, then read those in `_getCurrentScoreData()`.
+- [x] **Annotation score data is incomplete:** ~~`_getCurrentScoreData()` in `settings_panel_controller.js` only reads the aggregate score from the case-score badge text. It always sends `allRated: false` and `queries: []` when creating annotations.~~ Fixed: `case_score_controller.js` now stores full score payload (`lastScore`, `lastAllRated`, `lastQueryScores`) as `data-*` attributes on its element in `updateScore()`. `settings_panel_controller._getCurrentScoreData()` reads those attributes, with fallback to badge text if not yet set.
 
 ---
 
@@ -313,7 +313,7 @@ Snapshot modal (Rails + POST); diff as server page or Stimulus pane (`queryDiffR
 
 **Still TODO:**
 
-- Snapshot **import** modal (action bar "Import" link).
+- ~~Snapshot **import** modal (action bar "Import" link).~~ — Done: `import_snapshot_controller.js` + `_import_snapshot_modal.html.erb`.
 - Snapshot detail view / standalone snapshot page.
 - Per-query snapshot scores in collapsed query row header (Angular shows scores inline).
 
@@ -342,7 +342,7 @@ These items need verification during or after implementation to ensure full feat
 
 - [ ] **TLS protocol switching:** Angular detects when the search endpoint URL uses a different protocol (HTTP vs HTTPS) than Quepid itself, and offers to reload Quepid on the matching protocol (passing wizard state via URL params: `searchEngine`, `searchUrl`, `caseName`, `apiMethod`, `basicAuthCredential`). Verify whether this is still relevant (most deployments are HTTPS now) and replicate if so. The proxy checkbox is the modern workaround, but the Angular wizard offers both options.
 - [ ] **SearchAPI mapper code evaluation:** When validating an existing SearchAPI endpoint in the wizard, Angular evaluates the mapper code with `new Function()` to check that `numberOfResultsMapper()` and `docsMapper()` functions exist before making a test search. The Stimulus wizard must replicate this for the "Use Existing Endpoint" path when the selected endpoint is a SearchAPI engine.
-- [ ] **Static CSV import → snapshot creation:** Angular's static engine path uses `ng-csv-import` for CSV upload, then calls `querySnapshotSvc.importSnapshotsToSpecificCase()` to create a snapshot from the CSV data and generate a special search URL (`/api/cases/:caseNo/snapshots/:snapshotId/search`). The Stimulus wizard needs a vanilla JS CSV parser and the same snapshot import API flow.
+- [x] **Static CSV import → snapshot creation:** ~~Angular's static engine path uses `ng-csv-import` for CSV upload, then calls `querySnapshotSvc.importSnapshotsToSpecificCase()` to create a snapshot from the CSV data and generate a special search URL (`/api/cases/:caseNo/snapshots/:snapshotId/search`).~~ Implemented in `wizard_controller.js` with vanilla JS CSV parsing and snapshot creation API flow.
 - [ ] **Post-wizard tour auto-start:** Angular triggers `setupAndStartTour()` 1500ms after the wizard closes if the user hasn't previously completed the case wizard. The `tour_controller.js` already exists on `new_ui` — verify that dispatching a `tour:start` event or calling `start()` after wizard close produces the same guided-tour experience.
 
 **Done when:** “Modals” and “Case Action Bar” in **`angularjs_ui_inventory.md`** are satisfied.

@@ -48,6 +48,12 @@ export default class extends Controller {
 
     this._updateDisplay(score)
 
+    // Store full score payload as data attributes so sibling controllers
+    // (e.g. settings_panel_controller) can read the latest score state
+    this.element.dataset.lastScore = score !== null ? String(score) : ""
+    this.element.dataset.lastAllRated = allRated ? "true" : "false"
+    this.element.dataset.lastQueryScores = JSON.stringify(queryScores || {})
+
     // Persist to backend, then refresh sparkline with the new score point
     if (score !== null) {
       this._persistScore(score, allRated, queryScores)

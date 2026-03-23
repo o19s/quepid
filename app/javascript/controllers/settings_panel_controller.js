@@ -264,7 +264,7 @@ export default class extends Controller {
         all_rated: scoreData.allRated || false,
         score: scoreData.score || 0,
         try_id: this.tryIdValue,
-        queries: scoreData.queries || [],
+        queries: scoreData.queries || {},
       },
     }
 
@@ -315,7 +315,28 @@ export default class extends Controller {
   }
 
   _getCurrentScoreData() {
-    // Read the current score from the case-score badge element
+    // Read the full score payload from case-score controller's data attributes,
+    // which are set in case_score_controller.updateScore()
+    const caseScoreEl = document.querySelector("[data-controller~='case-score']")
+
+    if (caseScoreEl && caseScoreEl.dataset.lastScore !== undefined && caseScoreEl.dataset.lastScore !== "") {
+      const score = parseFloat(caseScoreEl.dataset.lastScore)
+      const allRated = caseScoreEl.dataset.lastAllRated === "true"
+      let queries = {}
+      try {
+        queries = JSON.parse(caseScoreEl.dataset.lastQueryScores || "{}")
+      } catch (e) {
+        queries = {}
+      }
+
+      return {
+        score: isNaN(score) ? 0 : score,
+        allRated: allRated,
+        queries: queries,
+      }
+    }
+
+    // Fallback: read score from badge text if data attributes not yet set
     const badge = document.querySelector("[data-case-score-target='badge']")
     const scoreText = badge?.textContent?.trim()
     const score = scoreText && scoreText !== "--" ? parseFloat(scoreText) : 0
@@ -323,7 +344,7 @@ export default class extends Controller {
     return {
       score: isNaN(score) ? 0 : score,
       allRated: false,
-      queries: [],
+      queries: {},
     }
   }
 
