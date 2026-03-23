@@ -152,6 +152,30 @@
             </label>
           </div>
         </div>
+
+        <!-- Evaluate Nightly -->
+        <div class="setting-div">
+          <div class="dev-header" data-action="click->settings-panel#toggleSection">
+            Evaluate Nightly?
+            <span class="glyphicon glyphicon-minus-sign"></span>
+          </div>
+          <div class="dev-body">
+            <label>
+              <input type="checkbox" <%= "checked" if @case.nightly %>
+                     data-settings-panel-target="nightlyCheckbox"
+                     data-action="change->settings-panel#toggleNightly" />
+              Evaluate Case Nightly <i class="bi bi-repeat"></i>
+            </label>
+            <p class="text-muted">
+              Run all the queries every night and store the results and the scores as a snapshot.
+            </p>
+            <button type="button" class="btn btn-primary form-control"
+                    data-action="click->settings-panel#runInBackground"
+                    data-settings-panel-target="runBackgroundButton">
+              Rerun My Searches Now in the Background!
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 

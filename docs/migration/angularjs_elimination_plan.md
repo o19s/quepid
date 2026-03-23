@@ -263,7 +263,7 @@ Authoritative listing: **`workspace_api_usage.md`**. In one breath: case + tries
 - ~~**CodeMirror JSON editor**~~ — reuses existing `modules/editor.js` `fromTextArea()` with new `onChange` callback (via `EditorView.updateListener`). Solr keeps plain textarea. Graceful fallback on init failure.
 - ~~**Query param validation**~~ — Solr `deftype` → `defType` typo check, ES/OS template and `_source` warnings, TLS mismatch warning.
 
-**Still open:** Nightly evaluation toggle + "Run in Background" button (deferred to Phase 8 lifecycle).
+~~**Nightly evaluation toggle + "Run in Background" button**~~ — Done: `settings_panel_controller.js` adds `toggleNightly()` (PUT to toggle `case.nightly`) and `runInBackground()` (POST to `run_evaluation`) in the Settings tab. Checkbox and button in `_settings_panel.html.erb`.
 
 **Done when:** Try create/edit, headers, curator vars, history, and details modals work end-to-end.
 

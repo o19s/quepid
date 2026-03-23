@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiUrl, csrfToken } from "modules/api_url"
 import { fromTextArea } from "modules/editor"
+import { showFlash } from "modules/flash_helper"
 
 // Magic variables that should not appear as tuning knobs
 const MAGIC_VAR_PATTERNS = [/^\$query$/, /^\$keyword\d+$/]
@@ -27,6 +28,8 @@ export default class extends Controller {
     "endpointInfo",
     "endpointWarning",
     "validationWarnings",
+    "nightlyCheckbox",
+    "runBackgroundButton",
   ]
   static values = {
     caseId: { type: Number },
@@ -311,6 +314,61 @@ export default class extends Controller {
     } catch (error) {
       console.error("Failed to delete annotation:", error)
       alert("Failed to delete annotation: " + error.message)
+    }
+  }
+
+  // ── Slice 7: Nightly Evaluation ──────────────────────────────────
+
+  async toggleNightly() {
+    if (!this.hasNightlyCheckboxTarget) return
+
+    const nightly = this.nightlyCheckboxTarget.checked
+
+    try {
+      const response = await fetch(apiUrl(`api/cases/${this.caseIdValue}`), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken(),
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ nightly }),
+      })
+
+      if (!response.ok) throw new Error(`Failed to update nightly setting (${response.status})`)
+    } catch (error) {
+      console.error("Failed to toggle nightly:", error)
+      // Revert checkbox on failure
+      this.nightlyCheckboxTarget.checked = !nightly
+      showFlash("Failed to update nightly setting: " + error.message, "danger")
+    }
+  }
+
+  async runInBackground() {
+    if (!this.hasRunBackgroundButtonTarget) return
+
+    const btn = this.runBackgroundButtonTarget
+    btn.disabled = true
+    btn.textContent = "Queuing evaluation job..."
+
+    try {
+      const response = await fetch(apiUrl(`api/cases/${this.caseIdValue}/run_evaluation?try_number=${this.tryNumberValue}`), {
+        method: "POST",
+        headers: {
+          "X-CSRF-Token": csrfToken(),
+          Accept: "application/json",
+        },
+      })
+
+      if (!response.ok) throw new Error(`Failed to queue evaluation (${response.status})`)
+
+      showFlash("Evaluation job queued. Results will appear as a snapshot when complete.", "success")
+    } catch (error) {
+      console.error("Failed to run evaluation:", error)
+      showFlash("Failed to queue evaluation: " + error.message, "danger")
+    } finally {
+      btn.textContent = "Rerun My Searches Now in the Background!"
+      btn.disabled = false
     }
   }
 
