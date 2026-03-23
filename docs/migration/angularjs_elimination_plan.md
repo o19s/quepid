@@ -10,14 +10,14 @@
 
 Read these five points first; everything below expands on them.
 
-1. **Two stacks coexist.** 
-    - Production case pages still use **Angular** (`QuepidApp`, `core.html.erb`). A parallel URL **`…/new_ui`** exercises **Rails + Stimulus + importmap** with **no** Angular bundle—this is the main **strangler** path ([Martin Fowler](https://martinfowler.com/bliki/StranglerFigApplication.html)).
+1. **Two stacks coexist.**
+    - Production case pages still use **Angular** (`QuepidApp`, `core.html.erb`).
+    - A parallel URL **`…/new_ui`** exercises **Rails + Stimulus + importmap** with **no** Angular bundle—this is the main **strangler** path ([Martin Fowler](https://martinfowler.com/bliki/StranglerFigApplication.html)).
 
-2. **~~Strikethrough~~** in phase notes means **done for the scope called out** — almost always the **`new_ui`** slice or shared chrome (header, layout flags). It does **not** mean the default `/case/...` page is finished unless explicitly stated.
+2. **~~Strikethrough~~** in phase notes means **done for the scope called out** — almost always the **`new_ui`** slice or shared chrome (header, layout flags).
+  - It does **not** mean the default `/case/...` page is finished unless explicitly stated.
 
-3. **Phases are tags, not a strict sequence.** Work ships as **vertical slices** (e.g. list + search + rate + score). Phases **3–6** overlap by design.
-
-4. **P0 = “must not break on `main`.”** The detailed flow list and screenshot IDs live in **`angularjs_ui_inventory.md`**. Endpoint names and paths: **`workspace_api_usage.md`**.
+4. The detailed flow list and screenshot IDs live in **`angularjs_ui_inventory.md`**. Endpoint names and paths: **`workspace_api_usage.md`**.
 
 5. **This doc is authoritative** for migration **scope**, **P0 parity**, **browser-side search** (`splainer-search` / `proxy/fetch` today; `search_executor` on `new_ui`), and **client scoring** (`ScorerFactory` / `scorer_executor`). Product-only ideas: **`intentional_design_changes.md`** section 2, with sign-off.
 
@@ -314,8 +314,8 @@ Snapshot modal (Rails + POST); diff as server page or Stimulus pane (`queryDiffR
 **Still TODO:**
 
 - ~~Snapshot **import** modal (action bar "Import" link).~~ — Done: `import_snapshot_controller.js` + `_import_snapshot_modal.html.erb`.
-- Snapshot detail view / standalone snapshot page.
-- Per-query snapshot scores in collapsed query row header (Angular shows scores inline).
+- ~~Snapshot detail view / standalone snapshot page.~~ — N/A: Angular doesn't have this either; snapshots only appear in comparison mode.
+- ~~Per-query snapshot scores in collapsed query row header~~ — Done: `query_row_controller.js` shows colored score badges from each compared snapshot in the query header via `snapshotScores` target, matching Angular's `<qscore-query>` behavior.
 
 ---
 

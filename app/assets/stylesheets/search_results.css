@@ -205,6 +205,37 @@
   background-color: #999;
 }
 
+/* Snapshot per-query score badges shown during comparison */
+.snapshot-query-scores {
+  display: flex;
+  align-items: stretch;
+  float: left;
+}
+
+.snapshot-query-scores .diff-score-badge {
+  width: 70px;
+  margin: -10px 0;
+  padding: 10px 0;
+  font-size: 18px;
+  text-align: center;
+  border-radius: 0;
+  color: #fff;
+}
+
+.snapshot-query-scores .diff-score-badge:last-child {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+/* Remove right radius from main score badge when snapshot badges are visible */
+.results-score:has(+ .snapshot-query-scores:not(.d-none)) .query-score-badge {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  margin-right: 0;
+}
+
 /* Drag handle for query reordering */
 .drag-handle {
   cursor: grab;

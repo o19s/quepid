@@ -96,6 +96,7 @@ export default class extends Controller {
     "frogIndicator",
     "frogCount",
     "querqyIndicator",
+    "snapshotScores",
   ]
   static values = {
     queryId: { type: Number },
@@ -137,6 +138,7 @@ export default class extends Controller {
     // Listen for snapshot comparison events
     this._onComparisonActivate = (e) => {
       this.comparisonSnapshots = e.detail.snapshots
+      this._showSnapshotQueryScores(e.detail.snapshots)
       if (this.expanded && this.searchLoaded) {
         this.renderDiffResults()
       } else {
@@ -145,6 +147,7 @@ export default class extends Controller {
     }
     this._onComparisonDeactivate = () => {
       this.comparisonSnapshots = null
+      this._clearSnapshotQueryScores()
       if (this.expanded && this.lastResult) {
         this.renderResults(this.lastResult)
       } else {
@@ -629,6 +632,48 @@ export default class extends Controller {
     }
 
     this.querqyIndicatorTarget.classList.toggle("d-none", !triggered)
+  }
+
+  // --- Snapshot per-query scores ---
+
+  _showSnapshotQueryScores(snapshots) {
+    if (!this.hasSnapshotScoresTarget) return
+
+    const queryId = this.queryIdValue
+    const caseScoreEl = document.querySelector("[data-controller~='case-score']")
+    const maxScore = parseFloat(caseScoreEl?.dataset.caseScoreMaxScoreValue || "100")
+    const container = this.snapshotScoresTarget
+    container.innerHTML = ""
+
+    for (const snap of snapshots) {
+      const scores = snap.scores || []
+      const queryScore = scores.find((s) => s.query_id === queryId)
+
+      const badge = document.createElement("div")
+      badge.className = "overall-rating query-score-badge diff-score-badge"
+
+      if (queryScore && queryScore.score !== null && queryScore.score !== undefined) {
+        const score = queryScore.score
+        const rounded = Math.round(score * 100) / 100
+        badge.textContent = rounded.toFixed(2)
+        badge.style.backgroundColor = scoreToColor(score, maxScore)
+        badge.title = `${snap.name}: ${rounded.toFixed(2)}`
+      } else {
+        badge.textContent = "--"
+        badge.classList.add("score-badge-unscored")
+        badge.title = `${snap.name}: no score`
+      }
+
+      container.appendChild(badge)
+    }
+
+    container.classList.remove("d-none")
+  }
+
+  _clearSnapshotQueryScores() {
+    if (!this.hasSnapshotScoresTarget) return
+    this.snapshotScoresTarget.innerHTML = ""
+    this.snapshotScoresTarget.classList.add("d-none")
   }
 
   // --- Pagination and browse ---
