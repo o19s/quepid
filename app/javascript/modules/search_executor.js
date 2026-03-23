@@ -59,10 +59,10 @@ async function fetchWithCorsFallback(directUrl, fetchOptions, tryConfig) {
 }
 
 function parseFieldSpec(fieldSpecStr) {
-  if (!fieldSpecStr) return { title: null, id: null, fields: [] }
+  if (!fieldSpecStr) return { title: null, id: null, fields: [], subs: [], media: [], translations: [] }
 
   const specs = fieldSpecStr.split(/[\s,+]+/).filter(Boolean)
-  const result = { title: null, id: null, fields: [], subs: [] }
+  const result = { title: null, id: null, fields: [], subs: [], media: [], translations: [] }
 
   for (const spec of specs) {
     const parts = spec.split(":")
@@ -82,7 +82,9 @@ function parseFieldSpec(fieldSpecStr) {
         if (type === "id") result.id = fieldName
         else if (type === "title") result.title = fieldName
         else if (type === "sub") result.subs.push(fieldName)
-        else if (type === "thumb" || type === "image" || type === "media") result.thumb = fieldName
+        else if (type === "thumb" || type === "image") result.thumb = fieldName
+        else if (type === "media") result.media.push(fieldName)
+        else if (type === "translate") result.translations.push(fieldName)
       }
     }
   }
@@ -129,6 +131,9 @@ async function executeSolrSearch(tryConfig, queryText, signal, options = {}) {
   args.wt = ["json"]
   if (!args.rows) {
     args.rows = [tryConfig.number_of_rows || 10]
+  }
+  if (options.offset) {
+    args.start = [String(options.offset)]
   }
   if (fieldSpec.fields.length > 0) {
     args.fl = [fieldSpec.fields.join(" ")]
@@ -220,7 +225,7 @@ async function executeEsSearch(tryConfig, queryText, signal, options = {}) {
   // Paging
   const pagerArgs = queryDsl.pager || {}
   delete queryDsl.pager
-  queryDsl.from = pagerArgs.from || 0
+  queryDsl.from = options.offset || pagerArgs.from || 0
   queryDsl.size = pagerArgs.size || tryConfig.number_of_rows || 10
 
   const searchUrl = tryConfig.search_url
@@ -307,7 +312,23 @@ function normalizeDoc(rawDoc, fieldSpec, engine) {
     thumb = source[fieldSpec.thumb]
   }
 
-  return { id, title, subs, thumb, _source: source }
+  // Media embeds (media:fieldname in field_spec)
+  const embeds = {}
+  for (const mediaField of fieldSpec.media || []) {
+    if (source[mediaField] !== undefined) {
+      embeds[mediaField] = source[mediaField]
+    }
+  }
+
+  // Translation fields (translate:fieldname in field_spec)
+  const translations = {}
+  for (const transField of fieldSpec.translations || []) {
+    if (source[transField] !== undefined) {
+      translations[transField] = source[transField]
+    }
+  }
+
+  return { id, title, subs, thumb, embeds, translations, _source: source }
 }
 
 // ── Public API ───────────────────────────────────────────────────────

@@ -5,6 +5,7 @@ import { RatingsStore } from "modules/ratings_store"
 import { scaleToColors, ratingColor, scoreToColor } from "modules/scorer"
 import { runScorerCode } from "modules/scorer_executor"
 import { parseExplain, hotMatchesOutOf } from "modules/explain_parser"
+import { renderFieldValue } from "modules/field_renderer"
 
 // Shared config caches — keyed by caseId:tryNumber so navigating to a
 // different case/try fetches fresh config instead of serving stale data.
@@ -91,6 +92,9 @@ export default class extends Controller {
     "explainToggle",
     "queryExplainBtn",
     "bulkRateMenu",
+    "frogIndicator",
+    "frogCount",
+    "querqyIndicator",
   ]
   static values = {
     queryId: { type: Number },
@@ -292,6 +296,7 @@ export default class extends Controller {
 
     try {
       const tryConfig = await fetchTryConfig()
+      this._searchEngine = (tryConfig.search_engine || "solr").toLowerCase()
       const searchOptions = this.debugMode ? { debug: true } : {}
       const result = await executeSearch(
         tryConfig,
@@ -325,6 +330,10 @@ export default class extends Controller {
       this.totalResultsTarget.textContent = this._buildTotalResultsText()
     }
 
+    // Update frog and querqy indicators in the header
+    this._updateFrogIndicator()
+    this._updateQuerqyIndicator(result)
+
     if (result.error) {
       container.innerHTML = `<div class="alert alert-warning">${this._escapeHtml(result.error)}</div>`
       return
@@ -340,37 +349,14 @@ export default class extends Controller {
       ? Math.max(...result.docs.map((d) => d.score || 0), 0.001)
       : 0
 
-    const rows = result.docs.map((doc, docIdx) => {
-      const subsHtml = Object.entries(doc.subs)
-        .map(([key, value]) => {
-          const display = Array.isArray(value) ? value.join(", ") : value
-          return `<div class="doc-sub-field"><span class="text-muted">${this._escapeHtml(key)}:</span> ${this._escapeHtml(String(display))}</div>`
-        })
-        .join("")
-
-      const thumbHtml = doc.thumb
-        ? `<img src="${this._escapeAttr(doc.thumb)}" class="doc-thumb" />`
-        : ""
-
-      const ratingHtml = this._buildRatingWidget(doc)
-
-      const explainHtml =
-        this.debugMode && doc.explain ? this._buildStackedChart(doc, maxDocScore) : ""
-
-      return `
-        <li class="doc-row">
-          ${ratingHtml}
-          <div class="doc-content">
-            ${thumbHtml}
-            <a href="#" class="doc-title-link" data-doc-idx="${docIdx}">${this._escapeHtml(String(doc.title))}</a>
-            <div class="doc-id">ID: ${this._escapeHtml(String(doc.id))}</div>
-            ${subsHtml}
-          </div>
-          ${explainHtml}
-        </li>`
-    })
+    const rows = result.docs.map((doc, docIdx) => this._buildResultRow(doc, docIdx, maxDocScore))
 
     this._ensureRatingColorStyles()
+
+    const searchEngine = this._getSearchEngine()
+    const browseHtml = this._buildBrowseLink(result, searchEngine)
+    const paginateHtml = this._buildPaginateLink(result)
+    const depthNote = this._buildDepthNote()
 
     container.innerHTML = `
       <div class="search-results-header">
@@ -379,11 +365,17 @@ export default class extends Controller {
       </div>
       <ol class="search-results-list">
         ${rows.join("")}
-      </ol>`
+      </ol>
+      <div class="search-results-footer">
+        ${paginateHtml}
+        ${browseHtml}
+        ${depthNote}
+      </div>`
 
-    // Attach click handlers to rating buttons and doc title links
+    // Attach click handlers to rating buttons, doc title links, and pagination
     this._attachRatingListeners(container)
     this._attachDocTitleListeners(container)
+    this._attachPaginateListener(container)
   }
 
   renderDiffResults() {
@@ -483,13 +475,40 @@ export default class extends Controller {
     this._attachDocTitleListeners(container)
   }
 
+  _buildResultRow(doc, docIdx, maxDocScore) {
+    const subsHtml = this._buildSmartSubFields(doc.subs)
+    const embedsHtml = this._buildEmbeds(doc.embeds)
+    const translationsHtml = this._buildTranslations(doc.translations)
+
+    const thumbHtml = doc.thumb
+      ? `<img src="${this._escapeAttr(doc.thumb)}" class="doc-thumb" />`
+      : ""
+
+    const ratingHtml = this._buildRatingWidget(doc)
+
+    const explainHtml =
+      this.debugMode && doc.explain ? this._buildStackedChart(doc, maxDocScore) : ""
+
+    const rank = docIdx + 1
+
+    return `
+      <li class="doc-row">
+        ${ratingHtml}
+        <div class="doc-content">
+          ${thumbHtml}
+          <a href="#" class="doc-title-link" data-doc-idx="${docIdx}">${this._escapeHtml(String(doc.title))}</a>
+          <div class="doc-id">ID: ${this._escapeHtml(String(doc.id))}</div>
+          ${embedsHtml}
+          ${translationsHtml}
+          ${subsHtml}
+          <div class="result-rank text-muted">Rank: #${rank}</div>
+        </div>
+        ${explainHtml}
+      </li>`
+  }
+
   _buildDocCell(doc, rank) {
-    const subsHtml = Object.entries(doc.subs || {})
-      .map(([key, value]) => {
-        const display = Array.isArray(value) ? value.join(", ") : value
-        return `<div class="doc-sub-field"><span class="text-muted">${this._escapeHtml(key)}:</span> ${this._escapeHtml(String(display))}</div>`
-      })
-      .join("")
+    const subsHtml = this._buildSmartSubFields(doc.subs || {})
 
     const thumbHtml = doc.thumb
       ? `<img src="${this._escapeAttr(doc.thumb)}" class="doc-thumb" />`
@@ -512,15 +531,7 @@ export default class extends Controller {
 
   _buildSnapshotDocCell(snapDoc, rank) {
     // Snapshot docs have { id, fields, explain, rated_only } structure
-    const fieldsHtml = snapDoc.fields
-      ? Object.entries(snapDoc.fields)
-          .map(([key, value]) => {
-            const display =
-              typeof value === "object" && value !== null ? JSON.stringify(value) : String(value)
-            return `<div class="doc-sub-field"><span class="text-muted">${this._escapeHtml(key)}:</span> ${this._escapeHtml(display)}</div>`
-          })
-          .join("")
-      : ""
+    const fieldsHtml = snapDoc.fields ? this._buildSmartSubFields(snapDoc.fields) : ""
 
     return `
       <div class="doc-row">
@@ -530,6 +541,164 @@ export default class extends Controller {
           ${fieldsHtml}
         </div>
       </div>`
+  }
+
+  // --- Smart field rendering ---
+
+  _buildSmartSubFields(subs) {
+    if (!subs || typeof subs !== "object") return ""
+    return Object.entries(subs)
+      .map(([key, value]) => {
+        return `<div class="doc-sub-field"><span class="text-muted">${this._escapeHtml(key)}:</span> ${renderFieldValue(value, key)}</div>`
+      })
+      .join("")
+  }
+
+  _buildEmbeds(embeds) {
+    if (!embeds || Object.keys(embeds).length === 0) return ""
+    return Object.entries(embeds)
+      .map(([key, value]) => {
+        return `<div class="doc-sub-field"><span class="text-muted">${this._escapeHtml(key)}:</span> ${renderFieldValue(value, key)}</div>`
+      })
+      .join("")
+  }
+
+  _buildTranslations(translations) {
+    if (!translations || Object.keys(translations).length === 0) return ""
+    const imgSrc = apiUrl("images/google-translate.png")
+    return Object.entries(translations)
+      .map(([key, value]) => {
+        const strVal = String(value)
+        const translateUrl = `https://translate.google.com/?sl=auto&tl=en&text=${encodeURIComponent(strVal)}`
+        return `<div class="doc-sub-field">
+          <span class="text-muted">${this._escapeHtml(key)}:</span>
+          ${this._escapeHtml(strVal)}
+          <a href="${this._escapeAttr(translateUrl)}" target="_blank" rel="noopener" title="Translate with Google">
+            <img src="${this._escapeAttr(imgSrc)}" width="16" height="16" alt="Translate" />
+          </a>
+        </div>`
+      })
+      .join("")
+  }
+
+  // --- Frog (unrated) and Querqy indicators ---
+
+  _updateFrogIndicator() {
+    if (!this.hasFrogIndicatorTarget) return
+    const totalDocs = this.lastSearchDocs.length
+    // Count unrated among *visible* docs only — ratingsStore.ratedCount()
+    // includes docs rated outside the current page which would produce
+    // a negative unrated count.
+    let unratedCount = 0
+    for (const doc of this.lastSearchDocs) {
+      if (this.ratingsStore.getRating(String(doc.id)) === null) {
+        unratedCount++
+      }
+    }
+
+    if (unratedCount > 0 && totalDocs > 0) {
+      this.frogIndicatorTarget.classList.remove("d-none")
+      if (this.hasFrogCountTarget) {
+        this.frogCountTarget.textContent = unratedCount
+      }
+    } else {
+      this.frogIndicatorTarget.classList.add("d-none")
+    }
+  }
+
+  _updateQuerqyIndicator(result) {
+    if (!this.hasQuerqyIndicatorTarget) return
+    let triggered = false
+
+    // Querqy surfaces its data at the top level of Solr's debug output
+    // (rawDebug), not inside parsedQueryDetails. Check both locations
+    // to match what Angular's splainer-search exposes.
+    const debug = result.rawDebug
+    if (debug) {
+      if (debug.querqy?.rewrite !== undefined) {
+        triggered = true
+      } else if (debug["querqy.infoLog"] !== undefined) {
+        triggered = true
+      }
+    }
+
+    this.querqyIndicatorTarget.classList.toggle("d-none", !triggered)
+  }
+
+  // --- Pagination and browse ---
+
+  _buildPaginateLink(result) {
+    const docsShown = this.lastSearchDocs.length
+    if (result.numFound > docsShown) {
+      return `<button type="button" class="btn btn-default btn-sm peek-next-page">
+        Peek at the next page of results
+      </button>`
+    }
+    return ""
+  }
+
+  _buildBrowseLink(result, searchEngine) {
+    if (searchEngine === "solr" && result.linkUrl && !result.error) {
+      const count = result.numFound || 0
+      const label = count === 1 ? "1 Result" : `${count} Results`
+      return `<a href="${this._escapeAttr(result.linkUrl)}" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+        Browse ${label} on Solr
+      </a>`
+    }
+    return ""
+  }
+
+  _buildDepthNote() {
+    // Depth of rating is a scorer setting — show note if scorer uses k/depth
+    // This is informational; the scorer's k value limits which results count
+    return ""
+  }
+
+  _getSearchEngine() {
+    return this._searchEngine || "solr"
+  }
+
+  _attachPaginateListener(container) {
+    const btn = container.querySelector(".peek-next-page")
+    if (!btn) return
+    btn.addEventListener("click", () => this._loadNextPage())
+  }
+
+  async _loadNextPage() {
+    const currentCount = this.lastSearchDocs.length
+    if (currentCount >= this.lastNumFound) return
+
+    // Cancel any in-flight request (including a previous pagination) and
+    // use this.abortController so disconnect() can clean it up.
+    if (this.abortController) {
+      this.abortController.abort()
+    }
+    this.abortController = new AbortController()
+
+    try {
+      const tryConfig = await fetchTryConfig()
+      const searchOptions = this.debugMode ? { debug: true, offset: currentCount } : { offset: currentCount }
+      const result = await executeSearch(
+        tryConfig,
+        this.queryTextValue,
+        this.abortController.signal,
+        searchOptions,
+      )
+
+      if (result.docs && result.docs.length > 0) {
+        this.lastSearchDocs = this.lastSearchDocs.concat(result.docs)
+        const combined = {
+          ...this.lastResult,
+          docs: this.lastSearchDocs,
+        }
+        this.lastResult = combined
+        this.renderResults(combined)
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Pagination failed:", error)
+      }
+    }
   }
 
   // --- Rating widget ---
@@ -661,6 +830,9 @@ export default class extends Controller {
     if (this.hasTotalResultsTarget) {
       this.totalResultsTarget.textContent = this._buildTotalResultsText()
     }
+
+    // Update frog indicator (unrated count changed)
+    this._updateFrogIndicator()
 
     // Compute score asynchronously then update badge and notify parent
     this._computeAndDisplayScore()

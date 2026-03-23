@@ -45,6 +45,29 @@ describe("parseFieldSpec", () => {
     expect(spec.subs).toContain("overview")
     expect(spec.id).toBe("id")
   })
+
+  it("parses media:field for embed fields", () => {
+    const spec = parseFieldSpec("title media:audio_url media:image_url")
+    expect(spec.media).toEqual(["audio_url", "image_url"])
+    expect(spec.fields).toContain("audio_url")
+    expect(spec.fields).toContain("image_url")
+  })
+
+  it("parses translate:field for translation fields", () => {
+    const spec = parseFieldSpec("title translate:description_fr")
+    expect(spec.translations).toEqual(["description_fr"])
+    expect(spec.fields).toContain("description_fr")
+  })
+
+  it("parses mixed spec with media, translate, thumb, and sub", () => {
+    const spec = parseFieldSpec("id:doc_id title sub:author thumb:cover media:preview translate:summary_de")
+    expect(spec.id).toBe("doc_id")
+    expect(spec.title).toBe("title")
+    expect(spec.subs).toEqual(["author"])
+    expect(spec.thumb).toBe("cover")
+    expect(spec.media).toEqual(["preview"])
+    expect(spec.translations).toEqual(["summary_de"])
+  })
 })
 
 describe("executeSearch", () => {

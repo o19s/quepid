@@ -94,7 +94,7 @@ Unless explicitly expanded later:
 **What is still missing on `new_ui`**
 
 - Action bar links are **placeholders** (no modals wired) except: ~~Create snapshot~~, ~~Compare snapshots~~, ~~Clone~~, ~~Export~~, ~~Delete (delete all queries / archive / delete case)~~.
-- Query list: ~~pagination~~, ~~drag-and-drop reorder~~, ~~query notes~~, ~~bulk actions~~ (~~Run All~~, ~~Score All per query~~, ~~bulk create via semicolons~~, ~~delete all queries~~), full **result row** parity (explain, embeds, etc.) with Angular.
+- Query list: ~~pagination~~, ~~drag-and-drop reorder~~, ~~query notes~~, ~~bulk actions~~ (~~Run All~~, ~~Score All per query~~, ~~bulk create via semicolons~~, ~~delete all queries~~), ~~full **result row** parity~~ (~~explain~~, ~~embeds~~, ~~smart field rendering~~, ~~frog~~, ~~querqy~~, ~~pagination~~, ~~browse link~~, ~~rank~~) with Angular.
 - Annotations: per-query score breakdown not captured (see Phase 5 TODOs).
 
 ### Shared with both layouts
@@ -231,8 +231,18 @@ Authoritative listing: **`workspace_api_usage.md`**. In one breath: case + tries
 
 **Purpose:** Result rows, rating UX, and tooling around hits.
 
-- **`new_ui`:** ~~basic JSON rows + rating + scorer helpers~~ — not full Angular parity yet.
-- **Still open:** BS5 popovers/modals for **bulk rate**; explain / doc / hot matches / doc finder / stacked chart / **`json-explorer`** / **quepid-embed** / doc cache patterns.
+- **`new_ui`:** ~~basic JSON rows + rating + scorer helpers~~ — ~~full result row parity~~.
+- ~~**Smart sub-field rendering**~~ — URLs auto-link, objects/arrays render as collapsible JSON (`<details>`), media URLs (images/audio/video) play inline. Uses shared `field_renderer.js` module.
+- ~~**Media embeds**~~ (`media:fieldname` in field_spec) — inline audio/video/image players in result rows.
+- ~~**Google Translate links**~~ (`translate:fieldname` in field_spec) — translation link icon next to field value.
+- ~~**Frog icon**~~ — unrated results indicator with count badge in query header; updates live on rating changes.
+- ~~**Querqy rule indicator**~~ — icon shown when Querqy rewrite or `querqy.infoLog` detected in debug response.
+- ~~**Result pagination**~~ — "Peek at next page" button; appends results via offset re-search (Solr `start` / ES `from`).
+- ~~**Browse on Solr link**~~ — "Browse N Results on Solr" button for Solr engines.
+- ~~**Rank display**~~ — "Rank: #N" label on each result, accounting for pagination offset.
+- ~~**Explain stacked chart**~~ — already done pre-Phase 4.
+- ~~**Doc detail modal / Doc finder / Query explain / Bulk rate**~~ — already done pre-Phase 4.
+- **Still open:** Doc cache patterns (deferred — low priority); BS5 popovers for rating (current vertical buttons work well).
 
 **Done when:** Default core matches `main` for Solr/ES/OS when you cut it over; `new_ui` already exercises rate/unrate for the simple scale UI.
 
@@ -426,6 +436,7 @@ Ship to **`main`** via normal PRs. **Revert** is the default rollback. Use **fea
 - **2026-03-22** — **Phase 5 complete** (all 6 slices): 5-tab tune relevance pane on `new_ui` — curator variables (tuning knobs), annotations (CRUD), try management (rename/duplicate/delete), search endpoint picker, CodeMirror JSON editor (reused `modules/editor` instead of ACE), query param validation warnings. Visual parity screenshots captured for all 5 tabs. Known gap: annotation score data missing `allRated` and per-query breakdown (TODO in Phase 5). Added `onChange` callback to `fromTextArea()` in `modules/editor.js`. Fixed N+1 in annotations controller (`includes(:user, score: :try)`). Added `try_number` to annotation jbuilder.
 - **2026-03-22** — **Phase 6 sparkline**: ported Angular `qgraph` D3 line chart to `sparkline_controller.js`. Case header now shows sparkline of last 10 scores with annotation markers when score history has >1 entries. `case_score_controller.js` fetches score history + annotations on connect and pushes to sparkline via outlet. Class-based CSS (`.sparkline-chart`) alongside Angular element selectors. Vitest coverage for sparkline rendering, annotation filtering, re-render on data change, tooltip lifecycle. Vega migration deferred to Phase 8 (Frog).
 - **2026-03-22** — **Phase 3 bulk actions complete**: Added "Run All" button to query list toolbar. Wired action bar "Delete" link to new `delete_case_options_controller.js` BS5 modal with three actions: Delete All Queries (API `DELETE /api/bulk/cases/:id/queries/delete`), Archive Case (`POST /cases/:id/archive`), Delete Case (API `DELETE /api/v1/cases/:id`). Confirmed existing bulk features: Score All per-query dropdown (`bulkRate` in `query_row_controller`), bulk create via semicolons in add-query input. Vitest coverage (7 tests). Phase 3 marked done.
+- **2026-03-23** — **Phase 4 result row parity**: 7 features added to `new_ui` result rows. (1) Smart sub-field rendering via `field_renderer.js` — URLs auto-link, objects/arrays render as collapsible `<details>` JSON, media URLs play inline. (2) Media embeds — `media:fieldname` in field_spec renders audio/video/image players. (3) Google Translate links — `translate:fieldname` shows translate icon next to field value. (4) Frog icon — unrated results indicator with count badge in query header, updates live on rating changes. (5) Querqy rule indicator — icon shown when Querqy rewrite detected in debug response. (6) Result pagination — "Peek at next page" button appends results via offset re-search (Solr `start` / ES `from`). (7) Browse link — "Browse N Results on Solr" button. Also: rank display ("Rank: #N") per result. Added `media` and `translations` arrays to `parseFieldSpec()` and `normalizeDoc()` in `search_executor.js`. Vitest: 3 new tests for field spec parsing (178 total, all passing). Phase 4 substantially complete.
 
 ---
 

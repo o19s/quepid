@@ -339,6 +339,52 @@
   margin-bottom: 4px;
 }
 
+/* Result rank label */
+.result-rank {
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* Search results footer with pagination and browse links */
+.search-results-footer {
+  margin-top: 10px;
+  padding: 8px 0;
+}
+
+.search-results-footer .btn {
+  margin-right: 8px;
+}
+
+/* Smart field rendering — inline media in sub-fields */
+.doc-sub-field img.field-media-img {
+  max-width: 200px;
+  max-height: 150px;
+}
+
+.doc-sub-field video.field-media-video {
+  max-width: 300px;
+  max-height: 200px;
+}
+
+.doc-sub-field audio {
+  max-width: 250px;
+  height: 32px;
+}
+
+.doc-sub-field a {
+  color: #337ab7;
+  word-break: break-all;
+}
+
+.doc-sub-field .field-json-details {
+  display: inline;
+}
+
+.doc-sub-field .field-json-pre {
+  max-height: 200px;
+  font-size: 11px;
+}
+
 /* Pagination */
 .query-list-pagination {
   margin-top: 10px;

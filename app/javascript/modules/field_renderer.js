@@ -32,6 +32,17 @@ export function renderFieldValue(value, fieldName = "") {
     return '<span class="text-muted">null</span>'
   }
 
+  if (Array.isArray(value)) {
+    // Arrays of simple values (strings, numbers) → comma-separated text.
+    // Common for Solr multi-valued fields like ["fiction", "drama"].
+    // Arrays containing objects/arrays → collapsible JSON.
+    const allPrimitive = value.every((v) => v !== null && typeof v !== "object")
+    if (allPrimitive) {
+      return escapeHtml(value.join(", "))
+    }
+    return renderCollapsibleJson(value, fieldName)
+  }
+
   if (typeof value === "object") {
     return renderCollapsibleJson(value, fieldName)
   }
