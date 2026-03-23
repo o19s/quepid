@@ -34,7 +34,14 @@
           <span>PUBLIC</span>
         <% end %>
         <% if @case.archived? %>
-          <span>ARCHIVED</span>
+          <span data-controller="unarchive">
+            <span class="badge bg-warning text-dark">ARCHIVED</span>
+            <button class="btn btn-sm btn-outline-success ms-1"
+                    data-action="click->unarchive#unarchive"
+                    title="Unarchive this case">
+              <i class="bi bi-folder-check"></i> Unarchive
+            </button>
+          </span>
         <% end %>
 
         <br>

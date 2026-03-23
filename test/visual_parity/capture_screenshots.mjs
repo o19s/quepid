@@ -78,7 +78,8 @@ const FILE_TO_PAGES = [
   { pattern: /queriesLayout\.html|queriesCtrl\.js|queries\.html/, prefixes: ['04-'] },
   { pattern: /query_list_controller\.js|query_row_controller\.js|add_query_controller\.js/, prefixes: ['04-'] },
   { pattern: /inline_edit_controller\.js|resizable_pane_controller\.js|settings_panel_controller\.js/, prefixes: ['04-'] },
-  { pattern: /case_score_controller\.js|snapshot_controller\.js|clone_case_controller\.js|export_case_controller\.js|delete_case_options_controller\.js|judgements_controller\.js|import_ratings_controller\.js|snapshot_comparison_controller\.js/, prefixes: ['04-'] },
+  { pattern: /case_score_controller\.js|snapshot_controller\.js|clone_case_controller\.js|export_case_controller\.js|delete_case_options_controller\.js|judgements_controller\.js|import_ratings_controller\.js|snapshot_comparison_controller\.js|wizard_controller\.js|unarchive_controller\.js/, prefixes: ['04-'] },
+  { pattern: /modules\/wizard_settings\.js|modules\/settings_validator\.js/, prefixes: ['04-'] },
   { pattern: /modules\/search_executor\.js|modules\/scorer|modules\/ratings_store|modules\/api_url|modules\/query_template|modules\/explain_parser|modules\/field_renderer/, prefixes: ['04-'] },
   { pattern: /doc_detail_modal_controller\.js|query_explain_modal_controller\.js|doc_finder_controller\.js/, prefixes: ['04-'] },
   { pattern: /paneSvc\.js|panes\.css/, prefixes: ['04-'] },
@@ -625,6 +626,69 @@ const PAGES = [
     },
   },
 
+  // Case workspace — Wizard modal (new-ui only, triggered by ?showWizard=true)
+  {
+    name: '04e10-modal-wizard',
+    tags: ['workspace', 'action-bar', 'modal', 'new-ui'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}/new_ui?showWizard=true` : '/cases';
+    },
+    setup: async (page) => {
+      // Wait for wizard modal to auto-open (300ms delay + rendering)
+      await page.locator('.modal.show').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 1000));
+    },
+    // Base resolve already points to new_ui; variant inherits it
+    variants: { 'new-ui': {} },
+  },
+
+  // Case workspace — Archived case with unarchive button (new-ui only)
+  {
+    name: '04f-case-workspace-archived',
+    tags: ['workspace', 'new-ui'],
+    resolve: async (page) => {
+      const id = await getFirstCaseId(page);
+      return id ? `/case/${id}/new_ui` : '/cases';
+    },
+    setup: async (page) => {
+      // Archive the case via API, then reload so the page shows the ARCHIVED badge
+      const token = await page.evaluate(() =>
+        document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      );
+      const caseId = await page.evaluate(() => document.body.dataset.caseId);
+      if (caseId && token) {
+        await page.evaluate(async ([id, csrf]) => {
+          await fetch(`/api/cases/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf, Accept: 'application/json' },
+            body: JSON.stringify({ case: { archived: true } }),
+          });
+        }, [caseId, token]);
+        await page.reload({ waitUntil: 'networkidle' });
+        await new Promise(r => setTimeout(r, 1000));
+      }
+    },
+    teardown: async (page) => {
+      // Unarchive the case to restore sample data state
+      const token = await page.evaluate(() =>
+        document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      );
+      const caseId = await page.evaluate(() => document.body.dataset.caseId);
+      if (caseId && token) {
+        await page.evaluate(async ([id, csrf]) => {
+          await fetch(`/api/cases/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf, Accept: 'application/json' },
+            body: JSON.stringify({ case: { archived: false } }),
+          });
+        }, [caseId, token]);
+      }
+    },
+    // Base resolve already points to new_ui; variant inherits it
+    variants: { 'new-ui': {} },
+  },
+
   // Case workspace — header dropdowns open
   {
     name: '04b-case-workspace-cases-dropdown',
@@ -948,6 +1012,16 @@ async function captureScreenshot(page, entry) {
     // Save an error placeholder
     const filePath = path.join(OUT_DIR, `${name}-ERROR.txt`);
     fs.writeFileSync(filePath, `Error capturing ${name}: ${err.message}\n`);
+  } finally {
+    // Always run teardown (e.g., unarchive a case) even if setup/screenshot failed,
+    // so destructive setup steps don't corrupt sample data for subsequent captures.
+    if (effective.teardown) {
+      try {
+        await effective.teardown(page);
+      } catch (teardownErr) {
+        console.error(`  ⚠️  ${name} teardown failed: ${teardownErr.message}`);
+      }
+    }
   }
 }
 

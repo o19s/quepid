@@ -3,8 +3,12 @@
     so they are not trapped by its stacking context (position:fixed +
     overflow on .pane_main creates a context that clips BS5 modal z-index). %>
 <% if @case.present? %>
-<div data-controller="snapshot clone-case export-case snapshot-comparison delete-case-options import-ratings judgements"
+<div data-controller="snapshot clone-case export-case snapshot-comparison delete-case-options import-ratings judgements wizard"
      data-snapshot-query-row-outlet="[data-controller='query-row']"
+     data-wizard-case-id-value="<%= @case.id %>"
+     data-wizard-try-number-value="<%= @try&.try_number %>"
+     data-wizard-case-name-value="<%= @case.case_name %>"
+     data-wizard-show-wizard-value="<%= params[:showWizard] == 'true' %>"
      data-clone-case-case-id-value="<%= @case.id %>"
      data-clone-case-case-name-value="<%= @case.case_name %>"
      data-export-case-case-id-value="<%= @case.id %>"
@@ -625,6 +629,339 @@ Legacy Search,10/10/18 18:05,2098,star wars,1893,2</pre>
             Save
           </button>
           <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wizard modal -->
+  <div class="modal fade" tabindex="-1" data-wizard-target="modal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Case Setup Wizard</h5>
+        </div>
+        <div class="modal-body">
+
+          <%# ── Step 1: Welcome ── %>
+          <div data-wizard-target="step">
+            <h2>Welcome To Quepid!</h2>
+            <img src="/images/doug.jpg" alt="Doug" style="float: left; margin: 20px 30px 100px 20px; width: 100px" />
+            <p>Hi, I'm Doug, creator of Quepid. Let me guide you through setting up your very first Case!</p>
+            <div class="clearfix"></div>
+            <div class="text-end mt-3">
+              <button class="btn btn-primary" data-action="click->wizard#nextStep">Continue</button>
+            </div>
+          </div>
+
+          <%# ── Step 2: Name ── %>
+          <div data-wizard-target="step" class="d-none">
+            <h2>Name Your Case!</h2>
+            <div class="mb-3">
+              <label for="wizard-case-name" class="form-label">New Case Name:</label>
+              <input type="text" class="form-control" id="wizard-case-name"
+                     data-wizard-target="caseNameInput"
+                     value="<%= @case.case_name %>" style="max-width: 350px">
+            </div>
+            <div class="d-flex justify-content-between mt-3">
+              <button class="btn btn-outline-secondary" data-action="click->wizard#prevStep">Back</button>
+              <button class="btn btn-primary" data-action="click->wizard#nextStep">Continue</button>
+            </div>
+          </div>
+
+          <%# ── Step 3: Endpoint ── %>
+          <div data-wizard-target="step" class="d-none">
+            <h2>What Search Endpoint do you want to connect to?</h2>
+
+            <div class="mb-3">
+              <div class="btn-group btn-group-sm mb-3" role="group">
+                <button type="button" class="btn btn-outline-primary active"
+                        data-action="click->wizard#toggleNewEndpoint">Create New</button>
+                <button type="button" class="btn btn-outline-primary"
+                        data-action="click->wizard#toggleExistingEndpoint">Use Existing</button>
+              </div>
+            </div>
+
+            <%# ── Create New Endpoint ── %>
+            <div data-wizard-target="newEndpointSection">
+              <div class="mb-3">
+                <label class="form-label fw-bold">Search Engine:</label>
+                <div class="row g-2">
+                  <% [
+                    ["solr", "solr.png", "Solr", "100px"],
+                    ["es", "es.png", "Elasticsearch", "150px"],
+                    ["os", "os.png", "OpenSearch", "150px"],
+                  ].each do |engine, img, label, width| %>
+                    <div class="col-auto">
+                      <label class="btn btn-outline-secondary p-2">
+                        <input type="radio" name="wizard-search-engine" value="<%= engine %>"
+                               class="d-none" data-wizard-target="searchEngineRadio"
+                               data-action="change->wizard#changeSearchEngine"
+                               <%= 'checked' if engine == 'solr' %>>
+                        <img src="/images/<%= img %>" alt="<%= label %>" width="<%= width %>">
+                      </label>
+                    </div>
+                  <% end %>
+                </div>
+                <div class="row g-2 mt-1">
+                  <% [
+                    ["vectara", "vectara.png", "Vectara", "150px"],
+                    ["static", "static.png", "Static", "100px"],
+                    ["searchapi", "searchapi.png", "Search API", "100px"],
+                  ].each do |engine, img, label, width| %>
+                    <div class="col-auto">
+                      <label class="btn btn-outline-secondary p-2">
+                        <input type="radio" name="wizard-search-engine" value="<%= engine %>"
+                               class="d-none" data-wizard-target="searchEngineRadio"
+                               data-action="change->wizard#changeSearchEngine">
+                        <img src="/images/<%= img %>" alt="<%= label %>" width="<%= width %>">
+                      </label>
+                    </div>
+                  <% end %>
+                </div>
+                <div class="row g-2 mt-1">
+                  <div class="col-auto">
+                    <label class="btn btn-outline-secondary p-2">
+                      <input type="radio" name="wizard-search-engine" value="algolia"
+                             class="d-none" data-wizard-target="searchEngineRadio"
+                             data-action="change->wizard#changeSearchEngine">
+                      <img src="/images/algolia.png" alt="Algolia" width="150px">
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <%# URL input (hidden for static) %>
+              <div class="mb-3">
+                <label for="wizard-search-url" class="form-label">Search URL:</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" id="wizard-search-url"
+                         data-wizard-target="searchUrlInput"
+                         data-action="input->wizard#changeSearchUrl"
+                         placeholder="http(s?)://yourdomain.com:8983/index/select">
+                  <button class="btn btn-outline-primary" type="button"
+                          data-wizard-target="validateButton"
+                          data-action="click->wizard#validate">ping it</button>
+                </div>
+                <small class="text-muted d-none" data-wizard-target="urlFormatHint"></small>
+              </div>
+
+              <%# Solr-specific panel %>
+              <div data-wizard-target="solrPanel">
+                <div class="card card-body bg-light mb-3">
+                  <div class="row align-items-center">
+                    <label class="col-sm-3 form-label mb-0">API Method</label>
+                    <div class="col-sm-9">
+                      <select class="form-select form-select-sm" data-wizard-target="apiMethodSelect"
+                              data-action="change->wizard#changeApiMethod">
+                        <option value="JSONP">JSONP</option>
+                        <option value="GET">GET</option>
+                      </select>
+                      <small class="text-muted">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <%# Static panel %>
+              <div data-wizard-target="staticPanel" class="d-none">
+                <div class="card card-body bg-light mb-3">
+                  <p>A "Static" (or "Offline") search endpoint is a great way to gather human judgements on queries and search results independent from any live search engine.</p>
+                  <p>Create the CSV file with headers: <code>Query Text,Doc ID,Doc Position</code> followed by your document field columns.</p>
+                  <input type="file" class="form-control" accept=".csv,text/csv"
+                         data-wizard-target="staticFileInput"
+                         data-action="change->wizard#uploadStaticCsv">
+                </div>
+              </div>
+
+              <%# SearchAPI panel %>
+              <div data-wizard-target="searchapiPanel" class="d-none">
+                <div class="card card-body bg-light mb-3">
+                  <h6><i class="bi bi-magic"></i> Custom Mapper Required</h6>
+                  <p>Search API endpoints require a custom mapper to translate your API's response format into Quepid's expected format.</p>
+                  <button type="button" class="btn btn-primary"
+                          data-action="click->wizard#goToMapperWizard">
+                    <i class="bi bi-stars"></i> Use Mapper Wizard
+                  </button>
+                </div>
+              </div>
+
+              <%# Advanced panel %>
+              <div data-wizard-target="advancedPanel">
+                <details class="mb-3">
+                  <summary class="btn btn-sm btn-outline-secondary">Advanced</summary>
+                  <div class="card card-body mt-2">
+                    <div class="mb-2">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="wizard-proxy"
+                               data-wizard-target="proxyCheckbox"
+                               data-action="change->wizard#changeProxy">
+                        <label class="form-check-label" for="wizard-proxy">
+                          Proxy Requests
+                        </label>
+                      </div>
+                      <small class="text-muted">Fighting with CORS issues? Proxy your search requests through the Quepid server.</small>
+                    </div>
+
+                    <div class="mb-2">
+                      <label class="form-label">Basic Authentication</label>
+                      <input type="text" class="form-control form-control-sm"
+                             data-wizard-target="basicAuthInput"
+                             placeholder="username:password">
+                      <small class="text-muted">Specify your <code>username:password</code> here.</small>
+                    </div>
+
+                    <div class="mb-2">
+                      <label class="form-label">Custom Headers (JSON)</label>
+                      <textarea class="form-control form-control-sm" rows="3"
+                                data-wizard-target="customHeadersInput"
+                                placeholder='{ "x-api-key": "YOUR_KEY" }'></textarea>
+                    </div>
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <%# ── Use Existing Endpoint ── %>
+            <div data-wizard-target="existingEndpointSection" class="d-none">
+              <div class="mb-3">
+                <label for="wizard-existing-endpoint" class="form-label">Select a Search Endpoint:</label>
+                <select class="form-select" id="wizard-existing-endpoint"
+                        data-wizard-target="existingEndpointSelect"
+                        data-action="change->wizard#changeExistingEndpoint">
+                  <option value="">-- Select a search endpoint --</option>
+                </select>
+                <small class="text-muted">FYI: existing Static File endpoints are NOT shareable across cases.</small>
+              </div>
+
+              <%# Test query for SearchAPI %>
+              <div data-wizard-target="testQuerySection" class="d-none">
+                <div class="card card-body bg-light mb-3">
+                  <label class="form-label">Test Query</label>
+                  <small class="text-muted d-block mb-2">Enter a test query to validate the endpoint works.</small>
+                  <input type="text" class="form-control"
+                         data-wizard-target="testQueryInput"
+                         data-action="input->wizard#changeTestQuery"
+                         placeholder="shirts without stripes">
+                </div>
+              </div>
+
+              <button class="btn btn-outline-primary" type="button"
+                      data-action="click->wizard#validate">ping it</button>
+            </div>
+
+            <%# Validation messages %>
+            <div class="d-none" data-wizard-target="validationMessage" role="alert"></div>
+
+            <div class="d-flex justify-content-between mt-3">
+              <button class="btn btn-outline-secondary" data-action="click->wizard#prevStep">Back</button>
+              <div>
+                <button class="btn btn-danger d-none"
+                        data-wizard-target="skipValidationButton"
+                        data-action="click->wizard#skipValidation">Skip Validation</button>
+                <button class="btn btn-primary" disabled
+                        data-wizard-target="continueStep3Button"
+                        data-action="click->wizard#continueStep3">Continue</button>
+              </div>
+            </div>
+          </div>
+
+          <%# ── Step 4: Fields ── %>
+          <div data-wizard-target="step" class="d-none">
+            <h2>How Should We Display Your Results?</h2>
+
+            <div class="mb-3">
+              <label for="wizard-title-field" class="form-label">Title Field</label>
+              <input type="text" class="form-control" id="wizard-title-field"
+                     data-wizard-target="titleFieldInput"
+                     list="wizard-title-field-list"
+                     placeholder="Begin typing to show suggestions">
+              <datalist id="wizard-title-field-list" data-wizard-target="titleFieldList"></datalist>
+              <small class="text-muted">What field should we treat as the 'title' when displaying results?</small>
+            </div>
+
+            <div class="mb-3">
+              <label for="wizard-id-field" class="form-label">ID Field</label>
+              <input type="text" class="form-control" id="wizard-id-field"
+                     data-wizard-target="idFieldInput"
+                     list="wizard-id-field-list"
+                     placeholder="Begin typing to show suggestions">
+              <datalist id="wizard-id-field-list" data-wizard-target="idFieldList"></datalist>
+              <small class="text-muted">What field is the unique identifier for your search results?</small>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Additional Display Fields</label>
+              <div class="input-group mb-2">
+                <input type="text" class="form-control"
+                       data-wizard-target="additionalFieldInput"
+                       list="wizard-additional-field-list"
+                       placeholder="Add a field (supports media:, thumb:, image: prefixes)"
+                       data-action="keydown.enter->wizard#addAdditionalField">
+                <datalist id="wizard-additional-field-list" data-wizard-target="additionalFieldList"></datalist>
+                <button class="btn btn-outline-secondary" type="button"
+                        data-action="click->wizard#addAdditionalField">Add</button>
+              </div>
+              <div data-wizard-target="additionalFieldsContainer"></div>
+              <small class="text-muted">Would any extra fields be handy to display?</small>
+            </div>
+
+            <div class="text-danger d-none" data-wizard-target="fieldValidationMessage"></div>
+
+            <div class="d-flex justify-content-between mt-3">
+              <button class="btn btn-outline-secondary" data-action="click->wizard#prevStep">Back</button>
+              <button class="btn btn-primary" data-action="click->wizard#validateAndContinueStep4">Continue</button>
+            </div>
+          </div>
+
+          <%# ── Step 5: Queries ── %>
+          <div data-wizard-target="step" class="d-none">
+            <h2>Add Your Search Queries</h2>
+            <p class="text-muted">Start out tuning a couple important search queries:</p>
+
+            <%# Query Pattern for SearchAPI %>
+            <div data-wizard-target="queryPatternSection" class="d-none">
+              <div class="card card-body bg-light mb-3">
+                <label class="form-label fw-bold">Query Pattern</label>
+                <small class="text-muted d-block mb-2">
+                  Modify your query structure to include <code>#$query##</code> where the search text should be substituted.
+                </small>
+                <textarea class="form-control" rows="3"
+                          data-wizard-target="queryPatternInput"
+                          placeholder='{ "query": "#$query##" }'></textarea>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="input-group">
+                <input type="text" class="form-control"
+                       data-wizard-target="queryInput"
+                       placeholder="Enter a search query"
+                       data-action="keydown.enter->wizard#addQuery">
+                <button class="btn btn-success btn-sm" type="button"
+                        data-action="click->wizard#addQuery">Add Query</button>
+              </div>
+            </div>
+
+            <div data-wizard-target="queryTagsContainer" class="mb-3"></div>
+
+            <div class="d-flex justify-content-between mt-3">
+              <button class="btn btn-outline-secondary" data-action="click->wizard#prevStep">Back</button>
+              <button class="btn btn-primary" data-action="click->wizard#continueStep5">Continue</button>
+            </div>
+          </div>
+
+          <%# ── Step 6: Finish ── %>
+          <div data-wizard-target="step" class="d-none">
+            <h2>That's It!</h2>
+            <p class="text-muted">Go to "Tune Relevance" to iterate on your relevance and manipulate searches.</p>
+            <div class="text-end mt-3">
+              <button class="btn btn-lg btn-success"
+                      data-wizard-target="finishButton"
+                      data-action="click->wizard#finish">Finish</button>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

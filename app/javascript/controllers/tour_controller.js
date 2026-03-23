@@ -79,9 +79,14 @@ export default class extends Controller {
     }
     document.addEventListener("keydown", this._onKeydown)
 
-    // Auto-start if ?showWizard=true
+    // Auto-start if ?startTour=true (set by wizard after completion).
+    // Note: ?showWizard=true opens the wizard modal first; the tour starts
+    // after the wizard finishes and reloads the page with ?startTour=true.
     const params = new URLSearchParams(window.location.search)
-    if (params.get("showWizard") === "true") {
+    if (params.get("startTour") === "true" || params.get("showWizard") === "true") {
+      // Don't start the tour if the wizard modal is about to open
+      if (params.get("showWizard") === "true") return
+
       // Small delay to let the page finish rendering
       requestAnimationFrame(() => this.start())
     }

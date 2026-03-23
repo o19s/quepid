@@ -90,6 +90,7 @@ const ROUTE_GROUPS = [
   { label: 'Case Workspace — Tune Relevance', prefix: '04a' },
   { label: 'Case Workspace — Header Dropdowns', prefix: ['04b', '04c', '04d'] },
   { label: 'Case Workspace — Action Bar Modals', prefix: '04e' },
+  { label: 'Case Workspace — Archived State', prefix: '04f' },
   { label: 'Books', prefix: ['05-', '06-', '07-', '08-', '21-', '22-', '23-', '24-', '25-'] },
   { label: 'Scorers', prefix: ['09-', '10-'] },
   { label: 'Search Endpoints', prefix: ['11-', '12-', '13-'] },
@@ -173,22 +174,71 @@ try {
 }
 
 // ---------------------------------------------------------------------------
-// Gather screenshot pairs
+// Gather screenshot pairs (with fallback to other directories)
 // ---------------------------------------------------------------------------
-const filesA = new Set(fs.readdirSync(dirA).filter(f => f.endsWith('.png')));
-const filesB = new Set(fs.readdirSync(dirB).filter(f => f.endsWith('.png')));
+// When a partial recapture is run (e.g. --only workspace), only some pages
+// are re-screenshotted.  The rest still exist in prior full-run directories
+// (e.g. "main", "deangularjs-incremental").  Rather than silently dropping
+// them from the report, we fall back: for every .png found in *any* screenshot
+// directory, include it — preferring the primary dir, then the fallback.
+//
+// Fallback order: explicit --fallback-a / --fallback-b, then any other dirs.
+const fallbackA = getArg('fallback-a', null);
+const fallbackB = getArg('fallback-b', null);
 
-const allFiles = [...new Set([...filesA, ...filesB])].sort();
+function buildFallbackChain(primary, explicitFallback, excludeDir) {
+  const chain = [primary];
+  if (explicitFallback && explicitFallback !== primary) {
+    const fbDir = path.join(SCREENSHOTS_DIR, explicitFallback);
+    if (fs.existsSync(fbDir)) chain.push(fbDir);
+  }
+  // Add all other directories as lower-priority fallbacks,
+  // but never fall back to the *other side's* primary directory —
+  // that would show the same screenshot on both sides.
+  for (const d of shotDirs) {
+    const full = path.join(SCREENSHOTS_DIR, d);
+    if (!chain.includes(full) && full !== excludeDir) chain.push(full);
+  }
+  return chain;
+}
+
+const chainA = buildFallbackChain(dirA, fallbackA, dirB);
+const chainB = buildFallbackChain(dirB, fallbackB, dirA);
+
+function findScreenshot(file, chain) {
+  for (const dir of chain) {
+    const full = path.join(dir, file);
+    if (fs.existsSync(full)) {
+      return { found: true, path: path.relative(__dirname, full).replace(/\\/g, '/'), fromPrimary: dir === chain[0] };
+    }
+  }
+  return { found: false, path: null, fromPrimary: false };
+}
+
+// Collect the union of all .png filenames across every screenshot directory
+const allPngFiles = new Set();
+for (const d of shotDirs) {
+  const dir = path.join(SCREENSHOTS_DIR, d);
+  for (const f of fs.readdirSync(dir)) {
+    if (f.endsWith('.png')) allPngFiles.add(f);
+  }
+}
+
+const allFiles = [...allPngFiles].sort();
 
 const pairs = allFiles.map(file => {
   const name = file.replace('.png', '').replace(/^\d+-/, '');
+  const a = findScreenshot(file, chainA);
+  const b = findScreenshot(file, chainB);
   return {
     name,
     file,
-    hasA: filesA.has(file),
-    hasB: filesB.has(file),
-    pathA: filesA.has(file) ? path.relative(__dirname, path.join(dirA, file)).replace(/\\/g, '/') : null,
-    pathB: filesB.has(file) ? path.relative(__dirname, path.join(dirB, file)).replace(/\\/g, '/') : null,
+    hasA: a.found,
+    hasB: b.found,
+    pathA: a.path,
+    pathB: b.path,
+    fallbackA: a.found && !a.fromPrimary,
+    fallbackB: b.found && !b.fromPrimary,
   };
 });
 
@@ -221,6 +271,9 @@ function generateScreenshotRow(pair) {
       ? '<span class="badge missing">Missing in B</span>'
       : '<span class="badge missing">Missing in A</span>';
 
+  const fallbackBadgeA = pair.fallbackA ? ' <span class="badge fallback">prior run</span>' : '';
+  const fallbackBadgeB = pair.fallbackB ? ' <span class="badge fallback">prior run</span>' : '';
+
   const imgA = pair.hasA
     ? `<img src="${pair.pathA}" alt="${pair.name} (${BRANCH_A})" loading="lazy" />`
     : '<div class="placeholder">No screenshot</div>';
@@ -233,11 +286,11 @@ function generateScreenshotRow(pair) {
       <h3>${pair.name} ${statusBadge}</h3>
       <div class="side-by-side">
         <div class="branch">
-          <h4>${BRANCH_A}</h4>
+          <h4>${BRANCH_A}${fallbackBadgeA}</h4>
           ${imgA}
         </div>
         <div class="branch">
-          <h4>${BRANCH_B}</h4>
+          <h4>${BRANCH_B}${fallbackBadgeB}</h4>
           ${imgB}
         </div>
       </div>
@@ -378,6 +431,7 @@ const html = `<!DOCTYPE html>
       font-weight: normal;
     }
     .badge.missing { background: #fff3cd; color: #856404; }
+    .badge.fallback { background: #e2e3e5; color: #383d41; }
     #api-comparison { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     #api-comparison h2 { margin-bottom: 1rem; }
     table { width: 100%; border-collapse: collapse; }

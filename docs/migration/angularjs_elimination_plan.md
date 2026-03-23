@@ -314,20 +314,29 @@ Snapshot modal (Rails + POST); diff as server page or Stimulus pane (`queryDiffR
 
 ## Phase 8 — Lifecycle modals and wizard
 
-**WizardModalCtrl** → stepped Stimulus or Turbo flows; ~~export/import~~; ~~**Judgements**~~ + **`bookSvc`**; Frog / debug / explain (**vega** → **vega-embed**); **Unarchive**; ~~**delete-case-options**~~ (done — `delete_case_options_controller.js` with delete-all-queries / archive / delete).
+~~**WizardModalCtrl**~~ → stepped Stimulus or Turbo flows; ~~export/import~~; ~~**Judgements**~~ + **`bookSvc`**; Frog / debug / explain (**vega** → **vega-embed**); ~~**Unarchive**~~; ~~**delete-case-options**~~ (done — `delete_case_options_controller.js` with delete-all-queries / archive / delete).
 
 **Done:**
 
 - ~~Import modal~~ — `import_ratings_controller.js` with 3 tabs (Ratings CSV/RRE/LTR, Information Needs, Snapshots).
 - ~~Export modal~~ — `export_case_controller.js` with 6 server-side formats.
 - ~~Judgements modal~~ — `judgements_controller.js` with book selection, auto-sync toggles, manual Populate/Refresh/Sync Queries.
+- ~~WizardModalCtrl~~ — `wizard_controller.js` 6-step BS5 modal. All 7 engine types (Solr/ES/OS/Vectara/Algolia/Static/SearchAPI). `modules/settings_validator.js` for endpoint validation + field discovery. `modules/wizard_settings.js` for engine defaults + TMDB demo detection. Auto-opens on `?showWizard=true`.
+- ~~Unarchive~~ — `unarchive_controller.js` adds button to case header when case is archived. POSTs to existing `/cases/:id/unarchive`.
 
 **TODO:**
 
 - **Stale books data in Judgements modal:** Books are server-rendered as a JSON data attribute (`data-judgements-books-value`). If a user creates or shares a new book while the page is open, it won't appear until page reload. Investigate whether to add a lightweight fetch-on-open to refresh the book list, or whether the current behavior is acceptable.
-- **WizardModalCtrl** — stepped Stimulus or Turbo flow for case creation.
 - **Frog / debug / explain** — vega → vega-embed integration.
-- **Unarchive** flow.
+
+### Parity review items (Wizard + Unarchive)
+
+These items need verification during or after implementation to ensure full feature parity with the Angular wizard:
+
+- [ ] **TLS protocol switching:** Angular detects when the search endpoint URL uses a different protocol (HTTP vs HTTPS) than Quepid itself, and offers to reload Quepid on the matching protocol (passing wizard state via URL params: `searchEngine`, `searchUrl`, `caseName`, `apiMethod`, `basicAuthCredential`). Verify whether this is still relevant (most deployments are HTTPS now) and replicate if so. The proxy checkbox is the modern workaround, but the Angular wizard offers both options.
+- [ ] **SearchAPI mapper code evaluation:** When validating an existing SearchAPI endpoint in the wizard, Angular evaluates the mapper code with `new Function()` to check that `numberOfResultsMapper()` and `docsMapper()` functions exist before making a test search. The Stimulus wizard must replicate this for the "Use Existing Endpoint" path when the selected endpoint is a SearchAPI engine.
+- [ ] **Static CSV import → snapshot creation:** Angular's static engine path uses `ng-csv-import` for CSV upload, then calls `querySnapshotSvc.importSnapshotsToSpecificCase()` to create a snapshot from the CSV data and generate a special search URL (`/api/cases/:caseNo/snapshots/:snapshotId/search`). The Stimulus wizard needs a vanilla JS CSV parser and the same snapshot import API flow.
+- [ ] **Post-wizard tour auto-start:** Angular triggers `setupAndStartTour()` 1500ms after the wizard closes if the user hasn't previously completed the case wizard. The `tour_controller.js` already exists on `new_ui` — verify that dispatching a `tour:start` event or calling `start()` after wizard close produces the same guided-tour experience.
 
 **Done when:** “Modals” and “Case Action Bar” in **`angularjs_ui_inventory.md`** are satisfied.
 
@@ -447,6 +456,7 @@ Ship to **`main`** via normal PRs. **Revert** is the default rollback. Use **fea
 - **2026-03-22** — **Phase 3 bulk actions complete**: Added "Run All" button to query list toolbar. Wired action bar "Delete" link to new `delete_case_options_controller.js` BS5 modal with three actions: Delete All Queries (API `DELETE /api/bulk/cases/:id/queries/delete`), Archive Case (`POST /cases/:id/archive`), Delete Case (API `DELETE /api/v1/cases/:id`). Confirmed existing bulk features: Score All per-query dropdown (`bulkRate` in `query_row_controller`), bulk create via semicolons in add-query input. Vitest coverage (7 tests). Phase 3 marked done.
 - **2026-03-23** — **Phase 9 ancillary features**: (1) Flash messages — centralized `flash_controller.js` + `modules/flash_helper.js` replaces 6+ ad-hoc `_showFlash`/`alert()` patterns; renders Bootstrap 5 alerts on `#main-content`, reads Rails flash on page load. Migrated `snapshot_controller` and `query_row_controller` to use `showFlash()`. (2) Loading states — query rows get `.loading` class during search (opacity dim on header); "Searching…" text replaced with spinner. (3) 404 handling — `CoreController#new_ui` guards nil `@case`, renders `_not_found.html.erb` with 404 status. (4) Tour — lightweight `tour_controller.js` (zero npm deps) replaces Shepherd.js; 9 steps, positioned tooltips with overlay backdrop; auto-starts on `?showWizard=true` or from action bar "Tour" link; `tour_modern.css`. Footer already done (Phase 2). ACE config not needed (CodeMirror in Phase 5). Phase 9 complete.
 - **2026-03-23** — **Phase 4 result row parity**: 7 features added to `new_ui` result rows. (1) Smart sub-field rendering via `field_renderer.js` — URLs auto-link, objects/arrays render as collapsible `<details>` JSON, media URLs play inline. (2) Media embeds — `media:fieldname` in field_spec renders audio/video/image players. (3) Google Translate links — `translate:fieldname` shows translate icon next to field value. (4) Frog icon — unrated results indicator with count badge in query header, updates live on rating changes. (5) Querqy rule indicator — icon shown when Querqy rewrite detected in debug response. (6) Result pagination — "Peek at next page" button appends results via offset re-search (Solr `start` / ES `from`). (7) Browse link — "Browse N Results on Solr" button. Also: rank display ("Rank: #N") per result. Added `media` and `translations` arrays to `parseFieldSpec()` and `normalizeDoc()` in `search_executor.js`. Vitest: 3 new tests for field spec parsing (178 total, all passing). Phase 4 substantially complete.
+- **2026-03-23** — **Phase 8 Wizard + Unarchive**: (1) Case creation wizard — `wizard_controller.js` (6-step BS5 modal) replaces Angular `WizardModalCtrl`. All 7 engine types supported (Solr/ES/OS/Vectara/Algolia/Static/SearchAPI). New `modules/settings_validator.js` replaces `SettingsValidatorFactory` from splainer-search (probe search + field discovery). New `modules/wizard_settings.js` ports `settingsSvc` defaults/TMDB settings. Wizard modal added to `_action_bar_modals.html.erb`. Auto-opens on `?showWizard=true`. Supports: engine radio buttons with logos, URL validation ("ping it"), Advanced panel (proxy/auth/headers), existing endpoint picker, Solr API method, SearchAPI mapper wizard redirect, Static CSV upload with field/query extraction, field autocomplete via `<datalist>`, query tag management, TMDB demo detection with optimized defaults, "Skip Validation" fallback. On finish: updates try via `PUT /api/cases/:id/tries/:tryNo`, renames case, creates queries. (2) Unarchive flow — `unarchive_controller.js` adds "Unarchive" button to case header next to ARCHIVED badge, POSTs to existing `/cases/:id/unarchive` route. Vitest: 33 new tests (211 total, all passing). Parity review items documented in Phase 8 TODO section.
 
 ---
 

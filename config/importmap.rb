@@ -33,6 +33,8 @@ pin 'modules/ratings_store', to: 'modules/ratings_store.js'
 pin 'modules/explain_parser', to: 'modules/explain_parser.js'
 pin 'modules/field_renderer', to: 'modules/field_renderer.js'
 pin 'modules/flash_helper', to: 'modules/flash_helper.js'
+pin 'modules/wizard_settings', to: 'modules/wizard_settings.js'
+pin 'modules/settings_validator', to: 'modules/settings_validator.js'
 pin 'codemirror' # @6.0.2
 pin '@codemirror/commands', to: '@codemirror--commands.js' # @6.10.2
 pin '@codemirror/lint', to: '@codemirror--lint.js' # @6.9.4
