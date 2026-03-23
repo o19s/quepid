@@ -93,7 +93,7 @@ Unless explicitly expanded later:
 
 **What is still missing on `new_ui`**
 
-- Action bar links are **placeholders** (no modals wired) except: ~~Create snapshot~~, ~~Compare snapshots~~, ~~Clone~~, ~~Export~~, ~~Delete (delete all queries / archive / delete case)~~.
+- Action bar links are **placeholders** (no modals wired) except: ~~Create snapshot~~, ~~Compare snapshots~~, ~~Clone~~, ~~Export~~, ~~Delete (delete all queries / archive / delete case)~~, ~~Frog Pond Report~~.
 - Query list: ~~pagination~~, ~~drag-and-drop reorder~~, ~~query notes~~, ~~bulk actions~~ (~~Run All~~, ~~Score All per query~~, ~~bulk create via semicolons~~, ~~delete all queries~~), ~~full **result row** parity~~ (~~explain~~, ~~embeds~~, ~~smart field rendering~~, ~~frog~~, ~~querqy~~, ~~pagination~~, ~~browse link~~, ~~rank~~) with Angular.
 - Annotations: per-query score breakdown not captured (see Phase 5 TODOs).
 
@@ -147,7 +147,7 @@ flowchart LR
 - **Phase 3** — Query list: CRUD, sort, filter, pagination, notes, bulk actions.
 - **Phase 4** — Results and rating: rows, popovers, explain, finder, embeds.
 - **Phase 5** — ~~Tune relevance: JSON editor, tries, annotations, endpoint picker, curator vars, validation.~~
-- **Phase 6** — Charts and score polish: ~~sparklines~~, Vega, filters.
+- **Phase 6** — ~~Charts and score polish: sparklines, Vega (Frog Pond), filters.~~
 - **Phase 7** — Snapshots and diffs: ~~compare modal~~, ~~diff rendering~~, ~~header score badges~~, ~~clear/delete~~.
 - **Phase 8** — Lifecycle: wizard, judgements, export/import, frog, delete.
 - **Phase 9** — Tour, flash, loading, 404, footer, ACE config.
@@ -277,7 +277,7 @@ Authoritative listing: **`workspace_api_usage.md`**. In one breath: case + tries
 
 **Purpose:** Sparklines, Vega charts, header polish—not “when scoring starts.”
 
-~~**`qgraph`** as a standalone function + Stimulus~~; **`angular-vega`** → **vega-embed** (align **Frog** with **Phase 8**); deepen scorer edge cases; remaining **filters** (`scoreDisplay`, `queryStateClass`, etc.).
+~~**`qgraph`** as a standalone function + Stimulus~~; ~~**`angular-vega`** → **vega-embed**~~ (Frog Pond Report modal); ~~deepen scorer edge cases~~; remaining **filters** (`scoreDisplay`, ~~`queryStateClass`~~, etc.).
 
 **`new_ui` status:**
 
@@ -285,7 +285,14 @@ Authoritative listing: **`workspace_api_usage.md`**. In one breath: case + tries
 - ~~**Score history fetch**~~ — `case_score_controller.js` fetches score history (`GET api/cases/:id/scores`) and annotations (`GET api/cases/:id/annotations`) on connect, pushes data to sparkline via Stimulus outlet.
 - ~~**Score badge display**~~ — case-level and query-level score badges with `scoreToColor()` HSL mapping (continuous ratio, 0=red → 120°=green). Both `case_score_controller` and `query_row_controller` format scores to 2 decimal places.
 - ~~**CSS sparkline styling**~~ — class-based `.sparkline-chart` selectors (alongside Angular's `qgraph` element selectors). Adjacent sparkline+badge layout with border-radius adjustments.
-- **Still open:** **`angular-vega`** → **vega-embed** (deferred to Phase 8 with Frog); scorer edge cases (exotic scorer return types); `queryStateClass` filter (trivial — just prepends `queryHeader_`).
+- ~~**Frog Pond Report modal**~~ — `frog_report_controller.js` replaces Angular `FrogReportModalInstanceCtrl`. Aggregates missing-ratings data from query-row outlets, renders Vega v5 bar chart via `vegaEmbed` (from the `vega` gem's asset pipeline). Summary statistics (total ratings needed, missing count, missing rate, queries with/without results). "Refresh ratings from book" button reuses existing `PUT /api/books/:id/cases/:caseId/refresh` endpoint. Exported `computeFrogStatistics()` function tested in Vitest (9 tests).
+- ~~**Scorer edge cases**~~ — already handled in `scorer_executor.js` (null, numeric clamping, `"--"`, `"zsr"` returns).
+- ~~**`queryStateClass` filter**~~ — not needed on `new_ui`; query rows use `.loading` CSS class directly instead of `queryHeader_*` prefix pattern. Angular CSS selectors retained for default core.
+- **Still open:** `scoreDisplay` filter (trivial formatting — low priority for Phase 10 cleanup).
+
+### TODOs
+
+- [ ] **Frog report counts missing ratings across all docs, not scorer top-K:** In Angular, `depthOfRating` comes from the scorer's `k` parameter (e.g., 10 for AP@10) and missing ratings are counted only in `docs.slice(0, depthOfRating)`. The new `frog_report_controller.js` counts unrated docs across all `lastSearchDocs` — same as the per-query frog indicator in `query_row_controller.js`. For cases where the scorer K matches the number of returned results (common), there is no difference. For cases where K < returned results, the new UI will report more missing ratings than Angular did. Review whether this is acceptable or whether scorer K should be threaded through to the frog report and frog indicator.
 
 **Done when:** Header and chart UX match `main` for representative cases; per-query badges were already in motion from rating slices.
 
@@ -457,6 +464,7 @@ Ship to **`main`** via normal PRs. **Revert** is the default rollback. Use **fea
 - **2026-03-23** — **Phase 9 ancillary features**: (1) Flash messages — centralized `flash_controller.js` + `modules/flash_helper.js` replaces 6+ ad-hoc `_showFlash`/`alert()` patterns; renders Bootstrap 5 alerts on `#main-content`, reads Rails flash on page load. Migrated `snapshot_controller` and `query_row_controller` to use `showFlash()`. (2) Loading states — query rows get `.loading` class during search (opacity dim on header); "Searching…" text replaced with spinner. (3) 404 handling — `CoreController#new_ui` guards nil `@case`, renders `_not_found.html.erb` with 404 status. (4) Tour — lightweight `tour_controller.js` (zero npm deps) replaces Shepherd.js; 9 steps, positioned tooltips with overlay backdrop; auto-starts on `?showWizard=true` or from action bar "Tour" link; `tour_modern.css`. Footer already done (Phase 2). ACE config not needed (CodeMirror in Phase 5). Phase 9 complete.
 - **2026-03-23** — **Phase 4 result row parity**: 7 features added to `new_ui` result rows. (1) Smart sub-field rendering via `field_renderer.js` — URLs auto-link, objects/arrays render as collapsible `<details>` JSON, media URLs play inline. (2) Media embeds — `media:fieldname` in field_spec renders audio/video/image players. (3) Google Translate links — `translate:fieldname` shows translate icon next to field value. (4) Frog icon — unrated results indicator with count badge in query header, updates live on rating changes. (5) Querqy rule indicator — icon shown when Querqy rewrite detected in debug response. (6) Result pagination — "Peek at next page" button appends results via offset re-search (Solr `start` / ES `from`). (7) Browse link — "Browse N Results on Solr" button. Also: rank display ("Rank: #N") per result. Added `media` and `translations` arrays to `parseFieldSpec()` and `normalizeDoc()` in `search_executor.js`. Vitest: 3 new tests for field spec parsing (178 total, all passing). Phase 4 substantially complete.
 - **2026-03-23** — **Phase 8 Wizard + Unarchive**: (1) Case creation wizard — `wizard_controller.js` (6-step BS5 modal) replaces Angular `WizardModalCtrl`. All 7 engine types supported (Solr/ES/OS/Vectara/Algolia/Static/SearchAPI). New `modules/settings_validator.js` replaces `SettingsValidatorFactory` from splainer-search (probe search + field discovery). New `modules/wizard_settings.js` ports `settingsSvc` defaults/TMDB settings. Wizard modal added to `_action_bar_modals.html.erb`. Auto-opens on `?showWizard=true`. Supports: engine radio buttons with logos, URL validation ("ping it"), Advanced panel (proxy/auth/headers), existing endpoint picker, Solr API method, SearchAPI mapper wizard redirect, Static CSV upload with field/query extraction, field autocomplete via `<datalist>`, query tag management, TMDB demo detection with optimized defaults, "Skip Validation" fallback. On finish: updates try via `PUT /api/cases/:id/tries/:tryNo`, renames case, creates queries. (2) Unarchive flow — `unarchive_controller.js` adds "Unarchive" button to case header next to ARCHIVED badge, POSTs to existing `/cases/:id/unarchive` route. Vitest: 33 new tests (211 total, all passing). Parity review items documented in Phase 8 TODO section.
+- **2026-03-23** — **Phase 6 complete** (Frog Pond Report + Vega): `frog_report_controller.js` replaces Angular `FrogReportModalInstanceCtrl` + `angular-vega` directive. BS5 modal with summary statistics (total ratings needed, missing count/rate, queries with/without results). Vega v5 bar chart rendered via `vegaEmbed` from the `vega` gem's asset pipeline — distribution of queries grouped by count of missing ratings. "Refresh ratings from book" button reuses existing `PUT /api/books/:id/cases/:caseId/refresh` endpoint. Scorer edge cases already handled in `scorer_executor.js`. `queryStateClass` filter not needed — new UI uses `.loading` CSS class directly. Exported `computeFrogStatistics()` function for testability. Vitest: 9 new tests (220 total, all passing). Phase 6 marked done.
 
 ---
 

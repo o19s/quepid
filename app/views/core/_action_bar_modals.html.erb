@@ -3,8 +3,14 @@
     so they are not trapped by its stacking context (position:fixed +
     overflow on .pane_main creates a context that clips BS5 modal z-index). %>
 <% if @case.present? %>
-<div data-controller="snapshot clone-case export-case snapshot-comparison delete-case-options import-ratings judgements wizard"
+<div data-controller="snapshot clone-case export-case snapshot-comparison delete-case-options import-ratings judgements wizard frog-report"
      data-snapshot-query-row-outlet="[data-controller='query-row']"
+     data-frog-report-query-row-outlet="[data-controller='query-row']"
+     data-frog-report-case-id-value="<%= @case.id %>"
+     data-frog-report-case-name-value="<%= @case.case_name %>"
+     data-frog-report-book-id-value="<%= @case.book_id || 0 %>"
+     data-frog-report-book-name-value="<%= @case.book&.name || '' %>"
+     data-frog-report-queries-count-value="<%= @query_count %>"
      data-wizard-case-id-value="<%= @case.id %>"
      data-wizard-try-number-value="<%= @try&.try_number %>"
      data-wizard-case-name-value="<%= @case.case_name %>"
@@ -966,6 +972,66 @@ Legacy Search,10/10/18 18:05,2098,star wars,1893,2</pre>
       </div>
     </div>
   </div>
+</div>
+
+  <!-- Frog Pond Report modal -->
+  <div class="modal fade" tabindex="-1" data-frog-report-target="modal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">The Frog Pond Report: <span class="text-muted"><%= @case.case_name %></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <p>The accuracy of the scores calculated by Quepid is directly impacted by the number of &#x1f438;'s you have.
+              Chase the frogs into the pond (i.e rate your documents) so that you can have confidence in the changes you are making!</p>
+
+            <h5>Summary</h5>
+            <p>
+              You have <strong data-frog-report-target="queriesCount"></strong> Queries for this case,
+              of which <strong data-frog-report-target="queriesWithResults"></strong> return results,
+              and <span data-frog-report-target="queriesWithoutResults"></span> <strong>zero</strong> results.
+            </p>
+            <p>
+              You need to maintain a total of <strong data-frog-report-target="totalRatingsNeeded"></strong> ratings
+              to eliminate all the &#x1f438;.
+            </p>
+
+            <span data-frog-report-target="allRatedMessage" class="d-none">
+              <p class="text-success fw-bold">All the queries have been fully rated! Congratulations!</p>
+            </span>
+
+            <span data-frog-report-target="missingRatingsMessage" class="d-none">
+              <p>
+                There are currently <strong data-frog-report-target="numberOfMissingRatings"></strong> ratings missing,
+                leading to <strong data-frog-report-target="missingRatingsRate"></strong>% missing rate.
+                We recommend maintaining less than a 5% missing ratings to have confidence in the scores you are calculating.
+              </p>
+              <p data-frog-report-target="hopToItMessage" class="d-none fw-bold">So hop to it!</p>
+            </span>
+
+            <h5 class="mt-4">Distribution of Queries Needing Ratings</h5>
+            <div data-frog-report-target="chartContainer" style="min-height: 250px;"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <% if @case.book.present? %>
+            <button type="button" class="btn btn-outline-secondary"
+                    data-frog-report-target="refreshButton"
+                    data-action="click->frog-report#refreshRatingsFromBook">
+              <span class="spinner-border spinner-border-sm d-none" role="status"
+                    data-frog-report-target="refreshSpinner"></span>
+              Refresh ratings from book <em><%= @case.book.name %></em>
+            </button>
+          <% end %>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+          <div class="text-danger mt-2 w-100 d-none" data-frog-report-target="refreshError"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 <% else %>
   <%= yield %>
