@@ -7,28 +7,14 @@
 
 `deangularjs-experimental` is a **completed** migration: Angular removed, **Rails + ViewComponents + Stimulus + Turbo Streams**, **server-side search** (`QuerySearchService` → `FetchService`), **two-tier scoring** (API + `MiniRacer` + background job), new layout (`core_modern`), Vitest/ESLint, visual-parity tooling, and a large **`docs/port/`** knowledge base.
 
-**You should not merge the branch wholesale** if the goal is parity with [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) (scope, browser search/scoring, incremental slices — the elimination plan explains the tradeoffs). The experimental stack **intentionally** differs; branch rationale lives under `docs/port/intentional_design_changes.md`. On **`main`**: [intentional_design_changes.md](./intentional_design_changes.md) (section 1 hardening, section 2 signed-off-only product ideas).
-
-**Migration docs on `main`:** Several guides that originated on the branch under `docs/port/` now live in **`docs/migration/`** on `main` and are maintained for the **incremental** plan—for example [workspace_api_usage.md](./workspace_api_usage.md), [turbo_streams_guide.md](./turbo_streams_guide.md), [turbo_frame_boundaries.md](./turbo_frame_boundaries.md), [angular_services_responsibilities_mapping.md](./angular_services_responsibilities_mapping.md), [workspace_state_design.md](./workspace_state_design.md), [api_client.md](./api_client.md), [ui_consistency_patterns.md](./ui_consistency_patterns.md). Prefer those when implementing on `main`; the table below still lists **experimental-branch paths** for comparison and for files not copied here (e.g. `main_vs_deangularjs_experimental_comparison.md`).
-
-**Incremental `main` vs experimental (search):** The strangler route `GET /case/:id(/try/:try_number)/new_ui` (`core_new_ui` layout; see [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) *Parallel “new_ui” route*) is growing **Stimulus** controllers for the query list and **plain ES modules** for **browser-side** search execution—`app/javascript/modules/search_executor.js` (Solr / Elasticsearch / OpenSearch, optional `proxy/fetch`), with `query_template.js`, `api_url.js`, and **Vitest** tests under `test/javascript/modules/`. That follows the elimination plan’s **client search + DevTools visibility** model and is **not** the experimental **`QuerySearchService` → `FetchService`** server pipeline.
-
 **High-value pulls (low coupling):**
 
-1. **`docs/port/`** on the branch (and related parity docs)—copy or cherry-pick as **reference** on `main`, not as runtime code. Overlapping topics are increasingly mirrored under `docs/migration/` (see above).
-2. **`test/visual_parity/`**—automation for screenshot/API comparison; adaptable to “Angular vs Stimulus slice” regression.
 3. **Security / authorization commits**—audit `main` against experimental’s `010f3043`-style fixes (see [Security note](#security-note-main-vs-experimental)).
 
 **Medium effort / optional:**
 
-- **Vitest + ESLint/Prettier** (`c0e917ab` area)—aligns with the plan’s “pragmatic test migration”; cherry-pick conflicts with `yarn.lock` and current Karma pipeline.
 - **Tour UX** (`4094bcfe`, `ab7ea23d`)—if `tour.js` structure still matches, small cherry-picks possible.
 - **Vega-Lite for charts** (`8d4285f6`)—ideas for Phase 6, not a drop-in if `main` keeps D3/qgraph longer.
-
-**Do not expect to reuse as-is:**
-
-- **~60 Stimulus controllers + ~37 ViewComponents**—bound to experimental routes, Turbo frames, and **server search** responses; porting piecemeal costs more than rewriting slices on `main`’s architecture.
-- **`QuerySearchService` / workspace search API**—conflicts with the browser search/observability model in [angularjs_elimination_plan.md](./angularjs_elimination_plan.md#browser-devtools-visibility-and-proxyfetch) unless you add an explicit parity story.
 
 ---
 
@@ -55,8 +41,6 @@ From **`docs/port/main_vs_deangularjs_experimental_comparison.md`** (on the bran
 - Team/endpoint archive flows moved to Teams page.
 - Client-side query pagination (all queries in DOM, URL `?page=`).
 
-If `main`’s migration promises **full feature parity**, treat these as **explicit scope decisions**, not bugs, when comparing to experimental.
-
 ---
 
 ## Documentation on experimental worth pulling
@@ -67,34 +51,7 @@ These live under **`docs/port/`** on `deangularjs-experimental` (paths from `git
 |-----|-------------------------|
 | `docs/port/main_vs_deangularjs_experimental_comparison.md` | Single best **decision record** (lost/changed features, architecture table). |
 | `docs/port/intentional_design_changes.md` | On the branch: why behavior differs from Angular. On `main`: [intentional_design_changes.md](./intentional_design_changes.md) — section 1 hardening, section 2 signed-off-only product ideas |
-| `docs/port/angular_services_responsibilities_mapping.md` | Maps Angular services → new code paths—helps incremental migration ownership. |
-| `docs/port/workspace_api_usage.md` | API contracts for experimental workspace (search/score Turbo)—compare to your Phase 0 API table. |
-| `docs/port/turbo_streams_guide.md`, `turbo_frame_boundaries.md` | If Turbo streams are in scope for core; otherwise skim for patterns. |
-| `docs/port/ui_consistency_patterns.md` | UX/CSS conventions for the new workspace. |
-| `docs/port/view_component_conventions.md` | Only if team adopts ViewComponent (optional per elimination plan). |
-| `docs/port/visual_parity.md`, `docs/deangularjs_parity_report.md`, `docs/workspace_parity_plan.md` | Parity methodology and results. |
-| `docs/port/archives/*` | Historical port notes; optional. |
 | `docs/css_variables.md`, `docs/linting.md` | Tangible DX improvements if you align tooling. |
-
-**Recommendation:** Use **`docs/migration/`** on `main` for living port docs (already populated for many rows above). Optionally add `docs/migration/archive/deangularjs-experimental/` for **unchanged** branch-only files (e.g. `main_vs_deangularjs_experimental_comparison.md`, `view_component_conventions.md`). Avoid rewriting `docs/app_structure.md` from experimental until core actually migrates.
-
----
-
-## Tooling worth pulling
-
-### Visual parity (`test/visual_parity/`)
-
-On experimental: Playwright-based **capture**, **API compare**, **report** scripts (`capture_screenshots.mjs`, `compare_apis.mjs`, `generate_report.mjs`, `run_comparison.sh`). Used with `Procfile.vp` / nginx in commits like `30b2741d`.
-
-**Use on `main`:** Run **before/after** each vertical slice (Angular vs new partial) for P0 pages; reuse comparison ideas even if Procfile differs.
-
-### Vitest (`vitest.config.js`, `c0e917ab`)
-
-Unit tests for **extracted pure JS** modules—matches the elimination plan’s testing strategy. On **`main`**, Vitest already backs **port modules** (e.g. `test/javascript/modules/search_executor.test.js`, `query_template.test.js`) alongside Karma for Angular. **Cherry-pick cost** for experimental’s full setup: `yarn.lock` and tooling overlap; still consider experimental’s config as **reference** when expanding ESLint/Prettier or dropping Karma later—not a blind merge.
-
-### ESLint / Prettier (`db1c4e50`)
-
-Same story: valuable directionally; merge as its own PR if desired.
 
 ---
 
@@ -117,22 +74,3 @@ end
 with **no** `cases_involved_with` scope before `archive` / `unarchive`. That is a **likely IDOR** (any authenticated user who can hit the route with another user’s case id). **This should be fixed on `main` independently of the Angular migration**, either by porting the experimental pattern or an equivalent authorization check.
 
 Also compare **`main`** fixes that experimental may lack (e.g. **#1659** proxy 403, **#1677** book/case sync, **#1661** Charlie bugs)—a merge of experimental would need **forward-porting** those commits.
-
----
-
-## Should we build here vs pull code?
-
-| Pull wholesale experimental? | **No**—architectural and product goals diverge from the documented incremental plan. |
-|------------------------------|--------------------------------------------------------------------------------------|
-| Pull **visual parity** tooling? | **Yes**, with adaptation to Docker/Procfile on `main`. |
-| Pull **QuerySearchService** workspace? | **Only** if product explicitly accepts server-side search + DevTools tradeoff; then treat as a **revised** plan, not “incremental parity.” |
-| Pull **Stimulus controllers** one-by-one? | **Rarely**—tightly coupled to experimental HTML and APIs; use as **read-only reference** when implementing the same feature on `main`. |
-| Cherry-pick **security** commits? | **Audit and port** fixes to `main` (see above); do not assume experimental is a superset of `main` security. |
-
----
-
-## Related
-
-- [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) — canonical approach on `main` (vertical slices, client search parity, proxy DevTools).
-- [core_case_evaluation_manual.md](./core_case_evaluation_manual.md) — manual QA checklist for the core workspace and **`new_ui`** slice.
-- Branch tip for further inspection: `deangularjs-experimental` (also `origin/deangularjs-experimental`).

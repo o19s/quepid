@@ -58,7 +58,7 @@ Bootstrap data (current user, configuration, CSRF token) continues to be passed 
 
 ### Routes
 
-Rails routes stay the single source of truth. No React Router.
+Rails routes stay the single source of truth.
 
 - Full-page navigations (case list → case core → try N): **normal full loads** or **Turbo visits** where Drive is enabled for that surface. Same URLs: e.g. `/case/:id/try/:try_no`. Today the modern bundle disables Drive globally; re-enabling it for specific layouts is a deliberate follow-up.
 - In-place updates (query list, results, settings panel): **Turbo Frames** (and/or `fetch` + DOM updates, as `new_ui` does today). Each frame can have a `src` or be targeted by a form/link; the server returns full page or frame-only HTML.

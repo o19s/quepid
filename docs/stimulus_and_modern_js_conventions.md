@@ -47,3 +47,4 @@ For edge cases (proxy search, server-rendered URLs in `data-*` attributes), see 
 - Rails controller actions serving the new UI need tests in `test/controllers/` using `assert_select` for response assertions (not `assigns` or `assert_template`, which require an extra gem).
 - In Stimulus test HTML, use the same URL shape as `apiUrl()` (e.g. `api/cases/1/...`), not a leading `/api/...`, so expectations match production relative paths.
 - Multi-step fetch flows (`query-row` expand → try config + search) and `executeSearch` are covered with mocked `fetch`; keep one happy path per seam rather than duplicating engine-specific edge cases in controller tests.
+- **Workspace parity contract:** [migration/new_ui_capabilities.md](migration/new_ui_capabilities.md) lists Stimulus vs Angular capabilities; add or extend Vitest coverage when you mark a row **parity** for a new feature.

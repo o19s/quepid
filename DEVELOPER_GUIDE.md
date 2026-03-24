@@ -720,6 +720,8 @@ We use Angular 1 for the core interactive application, and as part of that we us
 This package is tied to Bootstrap version 3.  
 We import the Bootstrap 3 CSS directly via the file `bootstrap3.css`.
 
+The Rails+Stimulus **new UI** (`/case/:id/new_ui`, layout `core_new_ui.html.erb`) loads a separate bundle, **`core_new_ui.css`**, built by `build_css.js`: Bootstrap 5 plus shared case layers, **without** Angular-only CSS (Shepherd tour, cases index, etc.). Trimmed duplicates **`qscore_snapshot_diff.css`** and **`animation_new_ui.css`** cover snapshot diff and spinners; Angular still gets the full files via **`core.css`**. The **top navbar** is the same **`layouts/_header`** partial as other logged-in pages (with **`use_new_ui_shell: true`** so recent-case links and **Create a case** target the new-UI flow—see **`DropdownController#cases`** and **`dropdown/cases.html.erb`**).
+
 For the rest of Quepid, we use Bootstrap 5! That is included via the `package.json` using NPM. See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle`.
 
 We currently use Rails Sprockets to compile everything, but do have dreams of moving to Propshaft, and maybe js-bundling.

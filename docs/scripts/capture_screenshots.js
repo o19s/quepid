@@ -2,7 +2,7 @@
  * Screenshot Automation for Core Case Evaluation Manual
  *
  * Captures the 16 screenshots specified in:
- *   docs/core_case_evaluation_manual_screenshots.md
+ *   docs/migration/core_case_evaluation_manual_screenshots.md (Part A)
  *
  * Usage:
  *   node docs/scripts/capture_screenshots.js

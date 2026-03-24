@@ -14,3 +14,7 @@ We run Quepid in Docker primarily, don't run Rails and other build tasks locally
 | Project Rails/URL/style conventions (also in Cursor rules) | [.cursor/rules/quepid-project.mdc](.cursor/rules/quepid-project.mdc) |
 
 Put documentation in **`docs/`**, not a top-level `doc/` directory.
+
+### Git commits
+
+- Do **not** add `Co-Authored-By`, `Made-with`, or any other trailer or line that attributes the commit to an AI tool (Claude, Cursor, Copilot, etc.).

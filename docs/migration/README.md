@@ -31,6 +31,7 @@ Phased scope stays in the elimination plan. React-era reference material lives u
 | [angularjs_ui_inventory.md](./angularjs_ui_inventory.md) | Feature / screenshot map |
 | [angular_services_responsibilities_mapping.md](./angular_services_responsibilities_mapping.md) | Services → server vs client after port |
 | [workspace_behavior.md](./workspace_behavior.md) | Current Angular workspace flows |
+| [new_ui_capabilities.md](./new_ui_capabilities.md) | **Capability contract** — new UI vs Angular (parity / intentional / gap) |
 | [workspace_api_usage.md](./workspace_api_usage.md) | API paths the workspace uses |
 | [workspace_state_design.md](./workspace_state_design.md) | Where state should live post-port |
 

@@ -29,11 +29,13 @@ This guide is essential to keeping the contribution process easy and simple for 
   * Make sure you have setup your editor to add an empty line at the end of each file.
   * Make sure you have setup your editor to use spaces instead of tabs, and indentations of 2 spaces.
 * Run `rubocop` before committing to ensure your changes meet our style guidelines.
+  * Same check as CI: `bin/docker r bin/rubocop` (see [DEVELOPER_GUIDE.md](../DEVELOPER_GUIDE.md)).
   * Even though rubocop allows lines of up to 120 characters, try to keep it under 80.
   * Set your editor to show a wrap-guide line at 80 characters to help you follow this rule.
   * You can disable rubocop rules inline when necessary, but try not to make a habit of it.
   * If you strongly disagree with a rubocop rule, discuss it with the team and we can
     potentially change the configuration.
+* **Git hooks (Lefthook):** After [setup](../DEVELOPER_GUIDE.md), if the `lefthook` CLI is on your `PATH`, `bin/setup_docker` installs hooks. Pre-commit runs **RuboCop on staged** Ruby-related files only (`.rb`, `.rake`, `.gemspec`, `Gemfile`, `Rakefile`) via `bin/docker r bin/rubocop --force-exclusion …`, plus existing Stimulus/JS guardrails (see root `lefthook.yml`). Docker must be available for the RuboCop step. To commit without running hooks—for example Docker is down, or a deliberate WIP commit—use **`git commit --no-verify`**.
 * Make sure your commit messages are in the proper format.
 
 ```git

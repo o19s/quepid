@@ -89,6 +89,51 @@ bash test/visual_parity/run_comparison.sh --remove-worktrees   # remove VP workt
 - Readiness checks **`/healthcheck`** (not `/`), since the root path can respond with **403** in some Docker/nginx setups while the app is up. The probe treats **2xx and 3xx** as success (some environments redirect `/healthcheck`). Override with `VISUAL_PARITY_HEALTH_PATH` if needed.
 - `bin/setup_docker` brings up Ollama with `docker compose up -d ollama` before `ollama pull`, so it works for both the default project and `quepid-vp`.
 
+## Reference: `04-case-workspace-expanded` (Angular vs new-ui)
+
+This page is captured for **both** stacks after the same scripted steps: open **case 4** (“10s of Queries”), wait for the query list, **expand the first query row**, wait for results (or error), then **scroll to the top** (`test/visual_parity/capture_screenshots.mjs`). Outputs land under `test/visual_parity/screenshots/<label>/04-case-workspace-expanded.png` when you run route comparison (`run_comparison.sh --routes`).
+
+The two PNGs are the same **viewport** (1440×900) but are **not** pixel-identical; a raw pixel comparison shows a large diff (on the order of hundreds of thousands of differing pixels), which is expected given layout and component changes.
+
+### Case header and global actions
+
+| Area | Angular (`/case/4`) | New UI (`/case/4/new_ui`) |
+|------|---------------------|---------------------------|
+| Case action strip | Scorer, judgements, snapshots, import/share/clone/delete/export, **Tune Relevance** | Same family of actions plus **Tour**; **Report** is in the query toolbar (not the case strip), matching Angular |
+| Case score / sparkline | Case summary with sparkline and scorer context (e.g. try name + AP@10) | Same role; badge colors use the same decile palette as Angular `qscoreSvc.scoreToColor()` |
+| Branding in top bar | Standard Quepid header | Updated wordmark / header styling in the new layout |
+
+### Query list toolbar (above the list)
+
+| Area | Angular | New UI |
+|------|---------|--------|
+| Run / collapse | **Collapse all**; sort controls (**Manual**, Name, Modified, Score, Errors) | **Run all** and **Collapse all** (with separators); same sort labels |
+| Report | **Report** (frog icon) in this row with filter + query count | Same placement (after filter input, floated with **Number of Queries**) |
+| Filter / counts | “Filter Queries” search; **Number of Queries: 20** | Same ideas; spacing and control chrome differ |
+
+### Expanded query (first row: query **“seven”** in seed data)
+
+| Area | Angular | New UI |
+|------|---------|--------|
+| Row summary | Query score badge, query text, result **count** and expand control | Query score badge and text; summary text includes **found** and **rated** counts (e.g. “237 found, 10 rated”) |
+| Sub-header | (No separate “results found” line in the same form) | Line such as **“237 results found”** plus a **View raw** link |
+| Row actions | **Score All** (label + bulk rating control), then **Copy**, **Toggle Notes**, **Explain Query** + **Missing Documents**, **Set Options**, **Move Query** + **Delete Query** | Same **order** and **labels** (Bootstrap Icons; **Copy** icon-only). One **extra** control after **Missing Documents** — **Match breakdown** (layers icon + label) — turns on **per-document explain** in the grid (Solr/ES debug), matching Angular’s **Matches** column data path. No per-row **Re-run** (use **Run all** or re-expand). |
+
+### Search result rows
+
+| Area | Angular | New UI |
+|------|---------|--------|
+| Rating UI | **Dropdown** trigger (rating + caret) and popover menu for scale + RESET | Same **dropdown** pattern (Stimulus + Bootstrap menu markup) |
+| Document block | Title link, **structure**, **text** snippet, **Rank** | Title link, **ID**, **structure**, **text** snippet, **Rank** |
+| Match / explain | **Matches** area with explanatory text and a **horizontal weight bar** | Less emphasis on the same “Matches + bar” column in the new layout (content may be behind other controls or styled differently) |
+
+### What to treat as parity vs intentional change
+
+- **Capability contract** — For a feature checklist (parity / intentional / gap), not screenshots, see **[new_ui_capabilities.md](migration/new_ui_capabilities.md)** under `docs/migration/`.
+- **Intentional product differences** — List toolbar extras (e.g. **Run all**, **Tour**, **View raw**) and per-doc **Matches** emphasis may still differ from Angular; **Report** placement, expanded-row action **order**, score badge colors, and per-doc **rating dropdown** are aligned with Angular.
+- **Not comparable from screenshots alone** — Exact **numeric** scores and counts depend on timing and ratings state when the capture ran; compare **structure** (what blocks exist and rough layout), not a single number.
+- **Follow-up** — If you need pixel-level regression gates for this page, add a dedicated threshold or mask in the report pipeline; the default full-page diff will stay noisy.
+
 ## Limitations
 
 Use this harness as a **smoke detector**, not proof of full UX or API parity.
@@ -97,6 +142,6 @@ Use this harness as a **smoke detector**, not proof of full UX or API parity.
 - **Page list is finite** — Which routes run lives in the capture script’s configuration. Many CRUD screens (new/edit/clone, mapper wizard, some admin/auth/account routes, sparklines, etc.) may be omitted unless someone adds them.
 - **API diff is shallow** — Only configured endpoints are compared; structure is inferred from samples (often the first element of a list). **Null vs populated** fields and **empty value encoding** (`""` vs `[]` / `{}`) routinely produce false positives.
 - **Single context** — One seeded user and dataset. Admin vs non-admin, team membership, and “already judged” style states can change what renders without indicating a layout regression.
-- **Case workspace** — Usually one initial state (e.g. one try, default panels). Alternate tries, expanded results, and open modals are not systematically covered.
+- **Case workspace** — Default collapsed workspace is captured (`04-case-workspace`); **one** expanded-query state is captured for case 4 (`04-case-workspace-expanded`). Alternate tries, other expanded rows, east pane open, and modals are still not systematically covered.
 
 To extend coverage, add routes or interaction steps in `test/visual_parity/capture_screenshots.mjs` and endpoints in `test/visual_parity/compare_apis.mjs`, then re-run `run_comparison.sh`.

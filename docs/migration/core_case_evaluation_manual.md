@@ -196,21 +196,20 @@ Click the row (or the expand control) to expand.
 
 <a href="../images/core_case_evaluation_manual/05_query_expanded.png" title="Open full-size image"><img src="../images/core_case_evaluation_manual/05_query_expanded.png" alt="Expanded query with results and toolbar" width="640" loading="lazy" /></a>
 
-When expanded, you get at least:
+When expanded, the **Stimulus** shell mirrors the **Angular** row layout and control order:
 
-- **Re-run** – Run the search for this query only (present on the Stimulus shell).
-- **Delete Query** – Remove this query from the case.
-
-On the **legacy Angular** expanded row you also typically get:
-
-- **Score All** – One place to set the rating for this query (e.g. default rating for the whole query). Opens the same rating scale popover as on individual docs.
-- **Toolbar:**
-  - **Copy** – Copy query text.
+- **Score All** – Bulk rating for returned documents (dropdown: clear + one entry per scorer value), shown beside the toolbar like the legacy column.
+- **Toolbar (same sequence as Angular; Bootstrap Icons where shown):**
+  - **Copy** – Copy query text (icon-only).
   - **Toggle Notes** – Show/hide the notes and “Information Need” fields.
-  - **Query Explain** – Open explanation for how the query was executed (e.g. explain API).
-  - **Missing Documents** – Open advanced search (e.g. by doc ID or query) to find and rate documents not in the current result set.
-  - **Query options** – Per‑query overrides (e.g. custom scorer, options).
-  - **Move query** – Move this query to another case.
+  - **Explain Query** – Open the explain modal (runs a one-off debug request if the last search did not include engine explain payload).
+  - **Missing Documents** – Doc finder modal (find/rate documents not in the current result set).
+  - **Match breakdown** (layers icon + label) – Re-runs the search with Solr/ES **debug/explain** so each result row can show the **stacked “Matches”** chart (same data path as legacy **`stacked-chart`** / **HotMatchesCtrl**). **Explain Query** above is only for the **modal** (query-level parsing).
+  - **Set Options** – Edit per-query JSON merged into the search request (`PUT …/queries/:id/options`).
+  - **Move Query** – Move this query to another case.
+  - **Delete Query** – Remove this query from the case.
+
+There is **no** per-row **Re-run** on the migrated shell (Angular did not expose it on the expanded row either); use **Run all** in the query list toolbar or collapse and re-expand the row to refresh one query after options change.
 - **Notes / Information Need** – Editable “Information Need” and “Notes on this Query” (saved on Save).
 - **Comparison view** – When **Compare snapshots** is active, side‑by‑side results for this query vs selected snapshot(s) (e.g. **Current Results** vs snapshot columns).
 - **Search results** – List of documents (or “Rated only” when “Show only rated” is on). For each result:
@@ -413,7 +412,7 @@ For a **line-by-line map** of Angular templates, directives, components, control
 1. **Open a case** (and try) from the header or cases list.
 2. **Confirm or set the scorer** (Select scorer) and **search endpoint** (Tune Relevance → Settings).
 3. **Add or adjust queries** (Add query; edit notes/info need if needed on builds that expose those fields).
-4. **Run searches** – Use **Run All** and/or per-query **Re-run** on the migrated shell, or rely on your build’s auto-run behavior on the legacy UI.
+4. **Run searches** – Use **Run All** on the migrated shell (or expand rows individually), or rely on your build’s auto-run behavior on the legacy UI.
 5. **Rate results** – Expand a query, use the rating popover on each result (or **Score All** for a default on the legacy expanded row).
 6. **Tune** – In Tune Relevance, edit Query sandbox and/or Tuning knobs, then click **Rerun My Searches!** to refresh results and scores.
 7. **Iterate** – Change ratings or settings, rerun, and watch case/query scores. Use **Create snapshot** and **Compare snapshots** to compare configurations.
