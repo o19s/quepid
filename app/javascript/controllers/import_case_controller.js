@@ -64,7 +64,8 @@ export default class extends Controller {
         setTimeout(() => {
           // Redirect to the imported case or refresh the page
           if (result.case_id) {
-            window.location.href = `/case/${result.case_id}`
+            const rootUrl = document.body.dataset.quepidRootUrl || ""
+            window.location.href = `${rootUrl}/case/${result.case_id}`
           } else {
             window.location.reload()
           }

@@ -15,7 +15,6 @@ angular.module('QuepidApp')
     'querySnapshotSvc',
     'caseSvc',
     'scorerSvc',
-    'configurationSvc',
     'annotationsSvc',
     'qscoreSvc',
     function (
@@ -31,14 +30,13 @@ angular.module('QuepidApp')
       querySnapshotSvc,
       caseSvc,
       scorerSvc,
-      configurationSvc,
       annotationsSvc,
       qscoreSvc,
     ) {
       console.log('QueriesCtrl instantiated');
       $scope.queriesSvc = queriesSvc;
       $scope.caseSvc = caseSvc;
-      $scope.queryListSortable = configurationSvc.isQueryListSortable();
+      $scope.queryListSortable = JSON.parse(document.body.dataset.queryListSortable || 'false');
       $scope.annotations = []; // Initialize annotations array
 
       // The scoringCompleteListener is a workaround for the fact that

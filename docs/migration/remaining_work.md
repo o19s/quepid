@@ -4,14 +4,6 @@ The new Stimulus-based UI (`/case/:id/new_ui`) has **feature parity for Phases 0
 
 ---
 
-## 1. Configuration Cleanup (Phase 1) — Small but fiddly
-
-- **Stop double-seeding config** — Feature flags and case metadata are written into both `data-*` attributes on `<body>` *and* Angular's `configurationSvc` via an inline `<script>` in `core.html.erb`. Once Angular is gone, the inline script and `configurationSvc` go with it.
-- **Remove `headerCtrl.js`** from the Angular bundle — the header is already pure ERB (`_header.html.erb`) on the new UI.
-- **Enforce relative URLs** everywhere (new code already uses `apiUrl()`).
-
----
-
 ## 2. Phase 2 Leftovers — Two items
 
 | Item | What's needed |

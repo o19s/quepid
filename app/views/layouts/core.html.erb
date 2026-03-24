@@ -35,11 +35,8 @@
   <script>
     angular.module('QuepidApp')
       .run([
-        'bootstrapSvc', 'configurationSvc',
-        function(bootstrapSvc, configurationSvc) {
-          configurationSvc.setCommunalScorersOnly('<%= Rails.application.config.communal_scorers_only %>');
-          configurationSvc.setQueryListSortable('<%= Rails.application.config.query_list_sortable %>');
-
+        'bootstrapSvc',
+        function(bootstrapSvc) {
           bootstrapSvc.run();
         }
       ]);

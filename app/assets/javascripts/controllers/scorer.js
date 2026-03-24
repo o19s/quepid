@@ -6,11 +6,9 @@ angular.module('QuepidApp')
   .controller('ScorerCtrl', [
     '$scope', '$location', '$uibModalInstance', '$log',
     'parent', 'scorerSvc', 'caseSvc', 'queriesSvc',
-    'configurationSvc',
     function (
       $scope, $location, $uibModalInstance, $log,
-      parent, scorerSvc, caseSvc, queriesSvc,
-      configurationSvc
+      parent, scorerSvc, caseSvc, queriesSvc
     ) {
 
       $scope.activeScorer       = parent.currentScorer || {};
@@ -18,10 +16,10 @@ angular.module('QuepidApp')
       $scope.gotoScorers        = gotoScorers;
       $scope.ok                 = ok;
       $scope.scorers            = [];
-      $scope.communalScorers    = [];     
+      $scope.communalScorers    = [];
       $scope.selectScorer       = selectScorer;
       $scope.usingDefaultScorer = usingDefaultScorer;
-      $scope.communalScorersOnly = configurationSvc.isCommunalScorersOnly();
+      $scope.communalScorersOnly = JSON.parse(document.body.dataset.communalScorersOnly || 'false');
 
       if ($scope.activeScorer.scorerId && ($scope.activeScorer.scorerId !== 'default')) {
         $scope.activeScorer.scorerId = parseInt($scope.activeScorer.scorerId);

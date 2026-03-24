@@ -7,8 +7,8 @@
 // What did I do here, like implement a router on top of my router!?!?
 angular.module('QuepidApp')
   .service('caseTryNavSvc', [
-    'configurationSvc','$location', '$timeout',
-    function caseTryNavSvc(configurationSvc, $location, $timeout) {
+    '$location', '$timeout',
+    function caseTryNavSvc($location, $timeout) {
       var caseNo = 0;
       var tryNo = 0;
 
