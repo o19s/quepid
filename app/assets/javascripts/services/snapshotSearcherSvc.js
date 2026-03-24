@@ -44,7 +44,7 @@ angular.module('QuepidApp')
         var self = this;
         self.docs.length = 0;
         
-        var savedSearchResults = self.snapshot.getSearchResults(self.query.queryId);
+        var savedSearchResults = self.snapshot.getSearchResults(self.query.queryId, self.fieldSpec);
         if (!savedSearchResults) {
           self.numFound = 0;
           return;

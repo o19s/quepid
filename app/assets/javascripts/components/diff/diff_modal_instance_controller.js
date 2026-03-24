@@ -190,7 +190,7 @@ angular.module('QuepidApp')
           // Fetch all selected snapshots
           var fetchPromises = [];
           angular.forEach(validSelections, function(selectionId) {
-            fetchPromises.push(querySnapshotSvc.get(selectionId));
+            fetchPromises.push(querySnapshotSvc.get(selectionId, false));
           });
           
           Promise.all(fetchPromises)

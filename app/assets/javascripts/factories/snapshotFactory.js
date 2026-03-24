@@ -60,7 +60,7 @@
         return Object.keys(docIds);
       }
 
-      function getSearchResults (queryId) {
+      function getSearchResults (queryId, fieldSpec) {
         if (angular.isUndefined(self.docs) || self.docs === null) {
           return;
         }
@@ -70,7 +70,17 @@
         var searchResults = [];
 
         angular.forEach(qDocs, function loopBody(sDoc) {
-          var doc = docCacheSvc.getDoc(sDoc.id);
+          var doc;
+          
+          // Check if fields are saved in the snapshot (for custom search endpoints)
+          if (sDoc.fields) {
+            // Use the saved fields directly - they contain all the field data
+            doc = angular.copy(sDoc.fields);
+            doc.id = sDoc.id;
+          } else {
+            // Fall back to fetching from docCache (for regular Solr/ES endpoints)
+            doc = docCacheSvc.getDoc(sDoc.id);
+          }
 
           if (sDoc === null) {
             $log.debug('sDoc is null, and we do not expect it');
@@ -83,13 +93,22 @@
           // only run this if we have documents, sometimes we don't because of
           // a bad query to the back end.
           if (doc != null) {
+            // Use normalDocsSvc.createNormalDoc to properly create a document with all methods
+            // This handles the full pipeline: NormalDoc creation -> explainDoc -> snippetDoc
+            var explAsJson = angular.fromJson(sDoc.explain);
+            var nDoc;
+            
+            if (fieldSpec) {
+              // Full normalization with fieldSpec (for saved fields or regular docs)
+              nDoc = normalDocsSvc.createNormalDoc(fieldSpec, doc, explAsJson);
+            } else {
+              // Fallback for backward compatibility if fieldSpec not provided
+              nDoc = normalDocsSvc.explainDoc(doc, explAsJson);
+              nDoc = normalDocsSvc.snippetDoc(nDoc);
+            }
+            
             // Apply rated only for filtering
-            doc.explain = sDoc.explain;
-            doc.rated_only = sDoc.rated_only;
-
-            var explAsJson  = angular.fromJson(doc.explain);
-            var nDoc = angular.copy(doc);
-            nDoc = normalDocsSvc.explainDoc(nDoc, explAsJson);
+            nDoc.rated_only = sDoc.rated_only;
 
             searchResults.push(nDoc);
           }

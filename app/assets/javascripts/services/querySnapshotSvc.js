@@ -27,13 +27,13 @@ angular.module('QuepidApp')
       svc.importSnapshotsToSpecificCase = importSnapshotsToSpecificCase;
       svc.get             = get;
       svc.mapFieldSpecToSolrFormat = mapFieldSpecToSolrFormat;
-      
+
       function mapFieldSpecToSolrFormat(fieldSpec) {
         let convertedfieldSpec = fieldSpec.replace(/id:_([^,]+)/, 'id:$1');
         return convertedfieldSpec;
       }
 
-      var addSnapshotResp = function(snapshots) {        
+      var addSnapshotResp = function(snapshots) {
         angular.forEach(snapshots, function(snapshot) {
           // locally store snapshot data
           var snapObj = new SnapshotFactory(snapshot);
@@ -46,29 +46,29 @@ angular.module('QuepidApp')
             settings === null ||
             Object.keys(settings).length === 0)
         ) {
-          
+
           // Some search endpoints let you look up the documents by an id
           // however if that isnt' possible, then we require you to store the doc fields
           // in the snapshot, and we look them up from the Snapshot.  To be clever
-          // we pretend to be a "solr'" endpoint to drive the lookup.          
+          // we pretend to be a "solr'" endpoint to drive the lookup.
           if (snapshots.length > 0 ) {
             if (settingsSvc.supportLookupById(settings.searchEngine) === false){
               var settingsForLookup  = angular.copy(settings);
               settingsForLookup.apiMethod = 'GET';
               settingsForLookup.searchEngine = 'solr';
-  
+
               let solrSpecificFieldSpecStr =  svc.mapFieldSpecToSolrFormat(settingsForLookup.fieldSpec);
               settingsForLookup.fieldSpec = fieldSpecSvc.createFieldSpec(solrSpecificFieldSpecStr);
               settingsForLookup.searchEndpointId = null;
               settingsForLookup.customHeaders = null;
-              
+
               let snapshotId = snapshots[0].id;
               settingsForLookup.searchUrl = `${caseTryNavSvc.getQuepidRootUrl()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
-              
+
               settings = settingsForLookup;
             }
           }
-                    
+
           return docCacheSvc.update(settings);
         } else {
           return $q(function(resolve) {
@@ -93,10 +93,10 @@ angular.module('QuepidApp')
               });
           });
       };
-      
-      // Now that we process snapshots async, we 
+
+      // Now that we process snapshots async, we
       // don't want to cache the data
-      this.getSnapshots = function() {       
+      this.getSnapshots = function() {
         this.snapshots = {};
 
         return $http.get('api/cases/' + caseNo + '/snapshots?shallow=true')
@@ -227,18 +227,18 @@ angular.module('QuepidApp')
           }
 
           var query = snapshot.queries[doc['Query Text']];
-          
+
           var docPayload = { 'id': doc['Doc ID'], 'position': doc['Doc Position'] };
-          
+
           // Remove the properties of the doc that exist elsewhere.
           delete doc['Doc ID'];
           delete doc['Doc Position'];
-          
+
           delete doc['Snapshot Name'];
           delete doc['Snapshot Time'];
           delete doc['Case ID'];
           delete doc['Query Text'];
-          
+
           // map any remaining properties of the doc as fields.
           docPayload['fields'] = doc;
 
@@ -272,8 +272,11 @@ angular.module('QuepidApp')
         return deferred.promise;
       }
 
-      function get(snapshotId) {
-        var url     = 'api/cases/' + caseNo + '/snapshots/' + snapshotId+ '?shallow=true';
+      function get(snapshotId, shallow) {
+        if (shallow === undefined) {
+          shallow = true;
+        }
+        var url = 'api/cases/' + caseNo + '/snapshots/' + snapshotId + '?shallow=' + shallow;
 
         return $http.get(url)
           .then(function(response) {

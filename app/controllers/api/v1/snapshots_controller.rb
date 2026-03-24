@@ -25,7 +25,6 @@ module Api
         @snapshots = @case.snapshots
 
         @shallow = 'true' == params[:shallow]
-        @with_docs = false
 
         respond_with @snapshots
       end
@@ -33,8 +32,7 @@ module Api
       # @parameter id(path) [Integer] The ID of the requested snapshots.  Use `latest` to get the most recent snapshot for the case.
       # @parameter shallow(query) [Boolean] Show detailed snapshot data, defaults to false.
       def show
-        @shallow = params[:shallow] || false
-        @with_docs = true
+        @shallow = params[:shallow] == 'true' || params[:shallow] == true
         respond_with @snapshot
       end
 
@@ -55,7 +53,7 @@ module Api
 
           Analytics::Tracker.track_snapshot_created_event current_user, @snapshot
 
-          @with_docs = false # don't show individual docs in the response
+          @shallow = true # don't show individual docs in the response
           respond_with @snapshot
         else
           render json: @snapshot.errors, status: :bad_request
@@ -72,12 +70,15 @@ module Api
       private
 
       def set_snapshot
+        shallow = deserialize_bool_param(params[:shallow])
+
+        snapshots_query = @case.snapshots
+        snapshots_query = snapshots_query.includes(snapshot_queries: [:query, :snapshot_docs]) unless shallow
+
         @snapshot = if 'latest' == params[:id]
-                      @case.snapshots.order(created_at: :desc).first
+                      snapshots_query.order(created_at: :desc).first
                     else
-                      @case.snapshots
-                        .where(id: params[:id])
-                        .first
+                      snapshots_query.where(id: params[:id]).first
                     end
       end
 

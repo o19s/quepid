@@ -12,7 +12,7 @@ unless shallow
   json.try snapshot.try, partial: 'api/v1/tries/try', as: :try
 end
 
-if with_docs
+unless shallow
   json.docs do
     snapshot.snapshot_queries.each do |snapshot_query|
       docs = snapshot_query.snapshot_docs.map do |doc|
@@ -29,14 +29,14 @@ if with_docs
   end
 end
 
-if with_docs
+unless shallow
   json.queries do
     # filter out deleted queries from the snapshot via the .compact method.
     json.array! snapshot.snapshot_queries.collect(&:query).compact, partial: 'api/v1/queries/query', as: :query
   end
 end
 
-if with_docs
+unless shallow
   json.scores do
     json.array! snapshot.snapshot_queries, partial: 'api/v1/snapshots/snapshot_query', as: :snapshot_query
   end
