@@ -5,6 +5,13 @@ import { computeCaseScore } from "modules/scorer_executor"
 const MAX_CONCURRENT = 8
 const PAGE_SIZE = 15
 
+/** Align string/number IDs from CustomEvents with Stimulus `queryIdValue` (number). */
+function normalizeQueryId(raw) {
+  if (raw === null || raw === undefined) return undefined
+  const n = typeof raw === "number" && !Number.isNaN(raw) ? raw : parseInt(String(raw), 10)
+  return Number.isNaN(n) ? undefined : n
+}
+
 export default class extends Controller {
   static targets = [
     "list",
@@ -33,6 +40,17 @@ export default class extends Controller {
 
     this._applyVisibility()
     this._initSortable()
+
+    this._onQueryMovedAway = (e) => this.handleQueryDeleted(e)
+    document.addEventListener("query-moved-away", this._onQueryMovedAway)
+
+    this._onQueryOptionsSaved = (e) => {
+      const queryId = normalizeQueryId(e.detail?.queryId)
+      if (queryId === undefined) return
+      const outlet = this.queryRowOutlets.find((o) => o.queryIdValue === queryId)
+      if (outlet) void outlet.rerunSearch()
+    }
+    document.addEventListener("query-options-saved", this._onQueryOptionsSaved)
   }
 
   disconnect() {
@@ -40,11 +58,18 @@ export default class extends Controller {
       this.sortableInstance.destroy()
       this.sortableInstance = null
     }
+    if (this._onQueryMovedAway) {
+      document.removeEventListener("query-moved-away", this._onQueryMovedAway)
+    }
+    if (this._onQueryOptionsSaved) {
+      document.removeEventListener("query-options-saved", this._onQueryOptionsSaved)
+    }
   }
 
   // Handles query-row:queryDeleted events bubbled up from query-row controllers
   handleQueryDeleted(event) {
-    const { queryId } = event.detail
+    const queryId = normalizeQueryId(event.detail?.queryId)
+    if (queryId === undefined) return
     delete this.queryScores[queryId]
     this._updateCaseScore()
     this._applyVisibility()
@@ -52,7 +77,9 @@ export default class extends Controller {
 
   // Handles query-row:scoreChanged events bubbled up from query-row controllers
   handleScoreChanged(event) {
-    const { queryId, queryText, score, maxScore, numFound } = event.detail
+    const { queryText, score, maxScore, numFound } = event.detail
+    const queryId = normalizeQueryId(event.detail?.queryId)
+    if (queryId === undefined) return
 
     this.queryScores[queryId] = {
       text: queryText,
@@ -70,10 +97,20 @@ export default class extends Controller {
     this._applyVisibility()
   }
 
+  /** Link next to checkbox (Angular parity: both toggle the same filter). */
   toggleShowOnlyRated(event) {
     event.preventDefault()
-    this.showOnlyRated = !this.showOnlyRated
-    this.showOnlyRatedCheckboxTarget.checked = this.showOnlyRated
+    this.showOnlyRatedCheckboxTarget.checked = !this.showOnlyRatedCheckboxTarget.checked
+    this._syncShowOnlyRatedFromCheckbox()
+  }
+
+  /** Checkbox uses `change` so native toggling works; avoids `click` + preventDefault fighting the control. */
+  showOnlyRatedChanged() {
+    this._syncShowOnlyRatedFromCheckbox()
+  }
+
+  _syncShowOnlyRatedFromCheckbox() {
+    this.showOnlyRated = this.showOnlyRatedCheckboxTarget.checked
     this.currentPage = 1
     this._applyVisibility()
   }

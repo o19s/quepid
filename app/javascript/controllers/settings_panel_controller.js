@@ -102,14 +102,14 @@ export default class extends Controller {
   toggleSection(event) {
     const header = event.currentTarget
     const body = header.nextElementSibling
-    const icon = header.querySelector(".glyphicon")
+    const icon = header.querySelector(".bi")
 
     if (body) {
       body.classList.toggle("d-none")
     }
     if (icon) {
-      icon.classList.toggle("glyphicon-plus-sign")
-      icon.classList.toggle("glyphicon-minus-sign")
+      icon.classList.toggle("bi-plus-lg")
+      icon.classList.toggle("bi-dash-lg")
     }
   }
 
@@ -380,17 +380,17 @@ export default class extends Controller {
     if (caseScoreEl && caseScoreEl.dataset.lastScore !== undefined && caseScoreEl.dataset.lastScore !== "") {
       const score = parseFloat(caseScoreEl.dataset.lastScore)
       const allRated = caseScoreEl.dataset.lastAllRated === "true"
-      let queries = {}
+      let queries
       try {
         queries = JSON.parse(caseScoreEl.dataset.lastQueryScores || "{}")
-      } catch (e) {
+      } catch {
         queries = {}
       }
 
       return {
         score: isNaN(score) ? 0 : score,
-        allRated: allRated,
-        queries: queries,
+        allRated,
+        queries,
       }
     }
 

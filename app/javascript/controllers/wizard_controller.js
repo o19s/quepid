@@ -42,6 +42,7 @@ export default class extends Controller {
     "validateButton",
     "skipValidationButton",
     "continueStep3Button",
+    "tlsWarning",
     // Step 4: Fields
     "titleFieldInput",
     "titleFieldList",
@@ -101,6 +102,9 @@ export default class extends Controller {
       this.searchUrlInputTarget.value = this.searchUrl
     }
 
+    // Restore wizard state from URL params (after TLS protocol switch redirect)
+    this._restoreStateFromUrlParams()
+
     // Auto-open if showWizard flag is set
     if (this.showWizardValue) {
       // Slight delay so the page finishes rendering
@@ -117,8 +121,12 @@ export default class extends Controller {
 
   open(event) {
     if (event) event.preventDefault()
-    this.currentStep = 0
-    this._showStep(0)
+
+    // Resume at a specific step if set (e.g. after TLS redirect)
+    const startStep = this._resumeAtStep || 0
+    this._resumeAtStep = null
+    this.currentStep = startStep
+    this._showStep(startStep)
 
     const modal = window.bootstrap.Modal.getOrCreateInstance(this.modalTarget, {
       backdrop: "static",
@@ -227,6 +235,9 @@ export default class extends Controller {
     // Show/hide engine-specific panels
     this._updateEnginePanels()
 
+    // Check TLS after engine change populates a new default URL
+    this._checkTLS()
+
     // Show URL format hint
     if (this.hasUrlFormatHintTarget && settings.urlFormat) {
       this.urlFormatHintTarget.textContent =
@@ -243,6 +254,7 @@ export default class extends Controller {
       : ""
     this.urlValid = false
     this._clearValidation()
+    this._checkTLS()
   }
 
   changeApiMethod() {
@@ -257,6 +269,7 @@ export default class extends Controller {
       ? this.proxyCheckboxTarget.checked
       : false
     this._clearValidation()
+    this._checkTLS()
   }
 
   toggleNewEndpoint(event) {
@@ -385,8 +398,16 @@ export default class extends Controller {
       return
     }
 
-    // SearchAPI mapper validation
-    if (this.searchEngine === "searchapi" && this.mapperCode) {
+    // SearchAPI mapper validation — applies to both new and existing endpoints
+    if (this.searchEngine === "searchapi") {
+      if (!this.mapperCode) {
+        this._showValidation(
+          "Search API endpoints require mapper code that defines numberOfResultsMapper() and docsMapper() functions. " +
+          "Use the Mapper Wizard to create one.",
+          "danger",
+        )
+        return
+      }
       const result = validateMapperCode(this.mapperCode)
       if (!result.valid) {
         this._showValidation(result.error, "danger")
@@ -729,11 +750,130 @@ export default class extends Controller {
     return ""
   }
 
+  // ── TLS protocol mismatch detection ──────────────────────────────
+
+  _checkTLS() {
+    if (!this.hasTlsWarningTarget) return
+
+    // No mismatch concern when proxying — requests go through Quepid's server
+    if (this.proxyRequests) {
+      this.tlsWarningTarget.classList.add("d-none")
+      return
+    }
+
+    const searchUrl = this.searchUrl
+    if (!searchUrl) {
+      this.tlsWarningTarget.classList.add("d-none")
+      return
+    }
+
+    const quepidIsHttps = window.location.protocol === "https:"
+    const searchIsHttps = searchUrl.startsWith("https:")
+
+    if (quepidIsHttps === searchIsHttps) {
+      this.tlsWarningTarget.classList.add("d-none")
+      return
+    }
+
+    // Protocol mismatch — show warning with redirect link
+    const targetProtocol = searchIsHttps ? "https" : "http"
+    const redirectUrl = this._buildTLSRedirectUrl(targetProtocol)
+
+    this.tlsWarningTarget.innerHTML =
+      `<i class="bi bi-exclamation-triangle-fill"></i> ` +
+      `Your search endpoint uses <strong>${targetProtocol.toUpperCase()}</strong> ` +
+      `but Quepid is running on <strong>${quepidIsHttps ? "HTTPS" : "HTTP"}</strong>. ` +
+      `The browser will block mixed-content requests. ` +
+      `You can either <strong>enable Proxy Requests</strong> under Advanced, or ` +
+      `<a href="${this._escapeHtml(redirectUrl)}">reload Quepid on ${targetProtocol.toUpperCase()}</a> ` +
+      `to match your search engine.`
+    this.tlsWarningTarget.classList.remove("d-none")
+  }
+
+  _buildTLSRedirectUrl(targetProtocol) {
+    const url = new URL(window.location.href)
+
+    // Swap protocol
+    url.protocol = targetProtocol + ":"
+
+    // In development, drop port 3000 when switching to HTTPS
+    if (targetProtocol === "https" && url.port === "3000") {
+      url.port = ""
+    }
+
+    // Carry wizard state so the user doesn't lose progress
+    url.searchParams.set("showWizard", "true")
+    url.searchParams.set("searchEngine", this.searchEngine)
+    url.searchParams.set("searchUrl", this.searchUrl)
+    url.searchParams.set("caseName", this.caseName)
+    url.searchParams.set("apiMethod", this.apiMethod)
+    if (this.basicAuthCredential) {
+      url.searchParams.set("basicAuthCredential", this.basicAuthCredential)
+    }
+
+    return url.toString()
+  }
+
+  _restoreStateFromUrlParams() {
+    const params = new URLSearchParams(window.location.search)
+    if (!params.has("searchEngine")) return
+
+    const engine = params.get("searchEngine")
+    if (engine) {
+      this.searchEngine = engine
+      // Check the correct radio button
+      this.searchEngineRadioTargets.forEach((radio) => {
+        radio.checked = radio.value === engine
+      })
+      this._updateEnginePanels()
+    }
+
+    const searchUrl = params.get("searchUrl")
+    if (searchUrl) {
+      this.searchUrl = searchUrl
+      if (this.hasSearchUrlInputTarget) {
+        this.searchUrlInputTarget.value = searchUrl
+      }
+    }
+
+    const apiMethod = params.get("apiMethod")
+    if (apiMethod) {
+      this.apiMethod = apiMethod
+      if (this.hasApiMethodSelectTarget) {
+        this.apiMethodSelectTarget.value = apiMethod
+      }
+    }
+
+    const basicAuth = params.get("basicAuthCredential")
+    if (basicAuth) {
+      this.basicAuthCredential = basicAuth
+      if (this.hasBasicAuthInputTarget) {
+        this.basicAuthInputTarget.value = basicAuth
+      }
+    }
+
+    const caseName = params.get("caseName")
+    if (caseName && this.hasCaseNameInputTarget) {
+      this.caseNameInputTarget.value = caseName
+    }
+
+    // Clean up URL params so they don't persist on subsequent reloads
+    const cleanUrl = new URL(window.location.href)
+    for (const key of ["searchEngine", "searchUrl", "apiMethod", "basicAuthCredential", "caseName"]) {
+      cleanUrl.searchParams.delete(key)
+    }
+    window.history.replaceState({}, "", cleanUrl.toString())
+
+    // Skip to step 3 (endpoint config) since user already completed steps 1-2
+    // before the TLS redirect
+    this._resumeAtStep = 2
+  }
+
   _showValidation(message, type) {
     if (this.hasValidationMessageTarget) {
       this.validationMessageTarget.textContent = message
+      // className replaces all classes, which also removes d-none
       this.validationMessageTarget.className = `alert alert-${type} mt-2`
-      this.validationMessageTarget.classList.remove("d-none")
     }
   }
 
@@ -1009,7 +1149,7 @@ export default class extends Controller {
       // 3. Rename case if changed
       const newName = this.caseName
       if (newName && newName !== this.caseNameValue) {
-        await fetch(apiUrl(`api/cases/${caseId}`), {
+        const renameResponse = await fetch(apiUrl(`api/cases/${caseId}`), {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -1018,12 +1158,16 @@ export default class extends Controller {
           },
           body: JSON.stringify({ case: { case_name: newName } }),
         })
+        if (!renameResponse.ok) {
+          throw new Error(`Failed to rename case (${renameResponse.status})`)
+        }
       }
 
       // 4. Create queries
+      const failedQueries = []
       for (const q of this.newQueries) {
         if (!q.queryString || !q.queryString.trim()) continue
-        await fetch(apiUrl(`api/cases/${caseId}/queries`), {
+        const qResponse = await fetch(apiUrl(`api/cases/${caseId}/queries`), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -1032,6 +1176,12 @@ export default class extends Controller {
           },
           body: JSON.stringify({ query: { query_text: q.queryString } }),
         })
+        if (!qResponse.ok) {
+          failedQueries.push(q.queryString)
+        }
+      }
+      if (failedQueries.length > 0) {
+        console.warn("Failed to create queries:", failedQueries)
       }
 
       // 5. Close modal and reload (without showWizard param)
@@ -1041,8 +1191,11 @@ export default class extends Controller {
       url.searchParams.delete("showWizard")
       url.searchParams.delete("new")
 
-      // Start the guided tour after the wizard completes
-      url.searchParams.set("startTour", "true")
+      // Start the guided tour after the wizard completes (first-time users only)
+      const completedWizard = document.body.dataset.completedCaseWizard === "true"
+      if (!completedWizard) {
+        url.searchParams.set("startTour", "true")
+      }
 
       window.location.href = url.toString()
     } catch (error) {

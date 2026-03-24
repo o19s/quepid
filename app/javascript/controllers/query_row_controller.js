@@ -90,8 +90,7 @@ export default class extends Controller {
     "notesInput",
     "informationNeedInput",
     "notesSavedIndicator",
-    "explainToggle",
-    "queryExplainBtn",
+    "docExplainToggle",
     "bulkRateMenu",
     "frogIndicator",
     "frogCount",
@@ -157,6 +156,9 @@ export default class extends Controller {
     }
     document.addEventListener("snapshot-comparison:activate", this._onComparisonActivate)
     document.addEventListener("snapshot-comparison:deactivate", this._onComparisonDeactivate)
+
+    this._closeRatingMenusOnOutsideClick = this._closeRatingMenusOnOutsideClick.bind(this)
+    document.addEventListener("click", this._closeRatingMenusOnOutsideClick, true)
   }
 
   disconnect() {
@@ -170,6 +172,10 @@ export default class extends Controller {
     }
     document.removeEventListener("snapshot-comparison:activate", this._onComparisonActivate)
     document.removeEventListener("snapshot-comparison:deactivate", this._onComparisonDeactivate)
+
+    if (this._closeRatingMenusOnOutsideClick) {
+      document.removeEventListener("click", this._closeRatingMenusOnOutsideClick, true)
+    }
   }
 
   toggle() {
@@ -183,8 +189,8 @@ export default class extends Controller {
   expand() {
     this.expanded = true
     this.expandedContentTarget.classList.remove("d-none")
-    this.chevronTarget.classList.remove("glyphicon-chevron-down")
-    this.chevronTarget.classList.add("glyphicon-chevron-up")
+    this.chevronTarget.classList.remove("bi-chevron-down")
+    this.chevronTarget.classList.add("bi-chevron-up")
 
     if (!this.searchLoaded) {
       this.runSearch()
@@ -202,8 +208,8 @@ export default class extends Controller {
   collapse() {
     this.expanded = false
     this.expandedContentTarget.classList.add("d-none")
-    this.chevronTarget.classList.remove("glyphicon-chevron-up")
-    this.chevronTarget.classList.add("glyphicon-chevron-down")
+    this.chevronTarget.classList.remove("bi-chevron-up")
+    this.chevronTarget.classList.add("bi-chevron-down")
   }
 
   // Public method for the query-list outlet to call
@@ -212,34 +218,59 @@ export default class extends Controller {
     return this.runSearch()
   }
 
-  // Toggle explain/debug mode — re-runs search with debug data
-  toggleExplain() {
+  // Solr/ES debug explain on each hit — powers the same "Matches" / stacked-bar column
+  // as Angular's search-result row (see `stackedChart` + HotMatchesCtrl). Separate from
+  // the "Explain Query" modal, which only needs query-level parsing params.
+  toggleDocExplain(event) {
+    event?.preventDefault()
     this.debugMode = !this.debugMode
+    if (this.hasDocExplainToggleTarget) {
+      this.docExplainToggleTarget.classList.toggle("btn-info", this.debugMode)
+      this.docExplainToggleTarget.classList.toggle("btn-default", !this.debugMode)
+      this.docExplainToggleTarget.setAttribute("aria-pressed", this.debugMode ? "true" : "false")
+    }
     this.searchLoaded = false
-
-    // Visual feedback on the explain toggle button
-    if (this.hasExplainToggleTarget) {
-      this.explainToggleTarget.classList.toggle("btn-info", this.debugMode)
-      this.explainToggleTarget.classList.toggle("btn-default", !this.debugMode)
-    }
-
-    // Show/hide the Query Explain button
-    if (this.hasQueryExplainBtnTarget) {
-      this.queryExplainBtnTarget.classList.toggle("d-none", !this.debugMode)
-    }
-
     this.runSearch()
   }
 
-  // Show the query explain modal with debug data from the last search
-  showQueryExplain() {
-    if (!this.lastResult) return
+  // Match Angular's single "Explain Query" control: open the modal, fetching debug
+  // payload once when the last normal search did not include engine explain data.
+  async explainQuery(event) {
+    event?.preventDefault()
+    if (!this.searchLoaded) {
+      showFlash("Expand the query row and wait for the search to finish first.", "warning")
+      return
+    }
+
+    let queryDetails = this.lastResult?.queryDetails
+    let parsedQueryDetails = this.lastResult?.parsedQueryDetails
+
+    if (!queryDetails && !parsedQueryDetails) {
+      const ac = new AbortController()
+      try {
+        const tryConfig = await fetchTryConfig()
+        const debugResult = await executeSearch(
+          tryConfig,
+          this.queryTextValue,
+          ac.signal,
+          { debug: true },
+        )
+        queryDetails = debugResult.queryDetails
+        parsedQueryDetails = debugResult.parsedQueryDetails
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Explain query fetch failed:", error)
+          showFlash("Could not load explain data from the search engine.", "danger")
+        }
+        return
+      }
+    }
 
     document.dispatchEvent(
       new CustomEvent("show-query-explain", {
         detail: {
-          queryDetails: this.lastResult.queryDetails || null,
-          parsedQueryDetails: this.lastResult.parsedQueryDetails || null,
+          queryDetails: queryDetails || null,
+          parsedQueryDetails: parsedQueryDetails || null,
           queryText: this.queryTextValue,
           renderedTemplate: null,
         },
@@ -247,9 +278,30 @@ export default class extends Controller {
     )
   }
 
+  copyQuery(event) {
+    event?.preventDefault()
+    navigator.clipboard.writeText(this.queryTextValue).catch(() => {
+      showFlash("Could not copy to the clipboard.", "danger")
+    })
+  }
+
+  openQueryOptionsModal(event) {
+    event?.preventDefault()
+    document.dispatchEvent(
+      new CustomEvent("open-query-options", { detail: { queryId: this.queryIdValue } }),
+    )
+  }
+
+  openMoveQueryModal(event) {
+    event?.preventDefault()
+    document.dispatchEvent(
+      new CustomEvent("open-move-query", { detail: { queryId: this.queryIdValue } }),
+    )
+  }
+
   // Bulk rate all visible docs with the given rating value
   async bulkRate(event) {
-    event.preventDefault()
+    event?.preventDefault()
     const value = event.currentTarget.dataset.ratingValue
     const docIds = this.lastSearchDocs.map((d) => String(d.id))
     if (docIds.length === 0) return
@@ -270,7 +322,8 @@ export default class extends Controller {
   }
 
   // Open the doc finder modal for this query
-  openDocFinder() {
+  openDocFinder(event) {
+    event?.preventDefault()
     document.dispatchEvent(
       new CustomEvent("show-doc-finder", {
         detail: {
@@ -361,8 +414,6 @@ export default class extends Controller {
 
     const rows = result.docs.map((doc, docIdx) => this._buildResultRow(doc, docIdx, maxDocScore))
 
-    this._ensureRatingColorStyles()
-
     const searchEngine = this._getSearchEngine()
     const browseHtml = this._buildBrowseLink(result, searchEngine)
     const paginateHtml = this._buildPaginateLink(result)
@@ -384,6 +435,7 @@ export default class extends Controller {
 
     // Attach click handlers to rating buttons, doc title links, and pagination
     this._attachRatingListeners(container)
+    this._applyRatingColors(container)
     this._attachDocTitleListeners(container)
     this._attachPaginateListener(container)
   }
@@ -476,12 +528,11 @@ export default class extends Controller {
       rows.push(`<div class="diff-row">${cols.join("")}</div>`)
     }
 
-    this._ensureRatingColorStyles()
-
     container.innerHTML = `<div class="diff-container">${headerHtml}${rows.join("")}</div>`
 
     // Attach rating listeners for current results column
     this._attachRatingListeners(container)
+    this._applyRatingColors(container)
     this._attachDocTitleListeners(container)
   }
 
@@ -762,55 +813,106 @@ export default class extends Controller {
     // Use a data-safe encoding: base64 avoids all HTML/CSS escaping issues with doc IDs
     const encodedDocId = btoa(unescape(encodeURIComponent(docId)))
 
-    const buttons = this.scorerScale
+    const display = currentRating !== null ? String(currentRating) : "--"
+
+    const scaleItems = this.scorerScale
       .map((val) => {
         const numVal = parseInt(val, 10)
-        const isActive = currentRating === numVal
-        const activeClass = isActive ? " rating-btn-active" : ""
-        const colorClass = isActive ? ` rating-color-${numVal}` : ""
-        return `<button type="button"
-                class="rating-btn${activeClass}${colorClass}"
+        return `<li><button type="button" class="dropdown-item doc-rating-scale-item text-white"
                 data-rating-action="rate"
                 data-encoded-doc-id="${encodedDocId}"
-                data-rating-value="${numVal}">${numVal}</button>`
+                data-rating-value="${numVal}">${numVal}</button></li>`
       })
       .join("")
 
-    const clearBtn =
+    const resetBlock =
       currentRating !== null
-        ? `<button type="button" class="rating-btn rating-btn-clear"
-           data-rating-action="unrate"
-           data-encoded-doc-id="${encodedDocId}"
-           title="Clear rating">&times;</button>`
+        ? `<li><hr class="dropdown-divider" /></li>
+           <li><button type="button" class="dropdown-item" data-rating-action="unrate"
+             data-encoded-doc-id="${encodedDocId}">RESET</button></li>`
         : ""
 
-    return `<div class="doc-rating" data-encoded-doc-id="${encodedDocId}">${buttons}${clearBtn}</div>`
+    // Same interaction pattern as Angular searchResult.html: one button + caret, menu lists scale + RESET
+    return `<div class="dropdown doc-rating" data-encoded-doc-id="${encodedDocId}">
+      <button type="button" class="btn btn-sm doc-rating-toggle"
+        data-rating-action="toggle-menu"
+        aria-expanded="false" aria-haspopup="true">
+        ${this._escapeHtml(display)}<span class="doc-rating-caret" aria-hidden="true"></span>
+      </button>
+      <ul class="dropdown-menu doc-rating-menu">
+        ${scaleItems}
+        ${resetBlock}
+      </ul>
+    </div>`
   }
 
-  /**
-   * Inject a <style> block with per-scale-value color classes.
-   * Called once in connect() or lazily on first render. Idempotent.
-   */
-  _ensureRatingColorStyles() {
-    if (document.getElementById("rating-color-styles")) return
+  _closeRatingMenusOnOutsideClick(event) {
+    if (!this.hasResultsContainerTarget) return
+    if (event.target.closest(".doc-rating")) return
+    this._closeAllRatingMenus()
+  }
 
-    const rules = this.scorerScale
-      .map((val) => {
-        const numVal = parseInt(val, 10)
-        const color = ratingColor(numVal, this.colorMap)
-        return `.rating-color-${numVal} { background-color: ${color}; color: #fff; }`
-      })
-      .join("\n")
+  _closeAllRatingMenus() {
+    if (!this.hasResultsContainerTarget) return
+    this.resultsContainerTarget.querySelectorAll(".doc-rating-menu.show").forEach((menu) => {
+      menu.classList.remove("show")
+      const toggle = menu.previousElementSibling
+      if (toggle?.classList?.contains("doc-rating-toggle")) {
+        toggle.setAttribute("aria-expanded", "false")
+      }
+    })
+  }
 
-    const style = document.createElement("style")
-    style.id = "rating-color-styles"
-    style.textContent = rules
-    document.head.appendChild(style)
+  _toggleRatingMenu(button) {
+    const wrap = button.closest(".doc-rating")
+    if (!wrap) return
+    const menu = wrap.querySelector(".doc-rating-menu")
+    if (!menu) return
+    const wasOpen = menu.classList.contains("show")
+    this._closeAllRatingMenus()
+    if (!wasOpen) {
+      menu.classList.add("show")
+      button.setAttribute("aria-expanded", "true")
+    }
+  }
+
+  /** Apply dynamic background colors to rating widgets via the DOM API. */
+  _applyRatingColors(container) {
+    // Trigger buttons: color by current rating
+    container.querySelectorAll(".doc-rating-toggle").forEach((btn) => {
+      const wrap = btn.closest(".doc-rating")
+      if (!wrap) return
+      const encodedDocId = wrap.dataset.encodedDocId
+      if (!encodedDocId) return
+      const docId = decodeURIComponent(escape(atob(encodedDocId)))
+      const rating = this.ratingsStore.getRating(docId)
+      btn.style.backgroundColor =
+        rating !== null && Object.hasOwn(this.colorMap, rating)
+          ? ratingColor(rating, this.colorMap)
+          : "#777"
+    })
+    // Scale menu items: color by their rating value
+    container.querySelectorAll(".doc-rating-scale-item").forEach((btn) => {
+      const val = parseInt(btn.dataset.ratingValue, 10)
+      if (!Number.isNaN(val)) {
+        btn.style.backgroundColor = ratingColor(val, this.colorMap)
+      }
+    })
   }
 
   _attachRatingListeners(container) {
-    container.querySelectorAll("[data-rating-action]").forEach((btn) => {
-      btn.addEventListener("click", (e) => this._handleRatingClick(e))
+    container.querySelectorAll("[data-rating-action]").forEach((el) => {
+      el.addEventListener("click", (e) => {
+        const action = el.dataset.ratingAction
+        if (action === "toggle-menu") {
+          e.preventDefault()
+          e.stopPropagation()
+          this._toggleRatingMenu(el)
+          return
+        }
+        e.preventDefault()
+        this._handleRatingClick(e)
+      })
     })
   }
 
@@ -841,6 +943,7 @@ export default class extends Controller {
 
       // Re-render the rating widget for this doc
       this._refreshRatingWidget(docId)
+      this._closeAllRatingMenus()
       // Update the score badge and total results text
       this._updateScoreBadge()
     } catch (error) {
@@ -874,8 +977,9 @@ export default class extends Controller {
 
     widgetEl.replaceWith(newWidget)
 
-    // Re-attach click handlers on the new widget
+    // Re-attach click handlers and colors on the new widget
     this._attachRatingListeners(newWidget)
+    this._applyRatingColors(newWidget)
   }
 
   _updateScoreBadge() {
@@ -976,7 +1080,8 @@ export default class extends Controller {
     return parts.join(", ")
   }
 
-  toggleNotes() {
+  toggleNotes(event) {
+    event?.preventDefault()
     if (!this.hasNotesPanelTarget) return
     this.notesPanelTarget.classList.toggle("d-none")
   }

@@ -35,7 +35,7 @@ export default class extends Controller {
     if (!searchText) return
 
     this.resultsContainerTarget.innerHTML =
-      '<p class="text-muted"><i class="glyphicon glyphicon-refresh"></i> Searching...</p>'
+      '<p class="text-muted"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Searching...</p>'
 
     try {
       const tryConfig = await this._fetchTryConfig()
@@ -64,7 +64,7 @@ export default class extends Controller {
     }
 
     this.resultsContainerTarget.innerHTML =
-      '<p class="text-muted"><i class="glyphicon glyphicon-refresh"></i> Loading rated docs...</p>'
+      '<p class="text-muted"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Loading rated docs...</p>'
 
     try {
       const tryConfig = await this._fetchTryConfig()
