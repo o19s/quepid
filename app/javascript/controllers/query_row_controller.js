@@ -8,6 +8,17 @@ import { parseExplain, hotMatchesOutOf } from "modules/explain_parser"
 import { renderFieldValue } from "modules/field_renderer"
 import { showFlash } from "modules/flash_helper"
 
+/** Base64-encode a Unicode string (replaces deprecated btoa(unescape(encodeURIComponent()))). */
+function b64Encode(str) {
+  return btoa(String.fromCodePoint(...new TextEncoder().encode(str)))
+}
+
+/** Decode a base64 string back to Unicode (replaces deprecated decodeURIComponent(escape(atob()))). */
+function b64Decode(encoded) {
+  const bytes = Uint8Array.from(atob(encoded), (c) => c.codePointAt(0))
+  return new TextDecoder().decode(bytes)
+}
+
 // Shared config caches — keyed by caseId:tryNumber so navigating to a
 // different case/try fetches fresh config instead of serving stale data.
 let tryConfigCache = { key: null, promise: null }
@@ -811,7 +822,7 @@ export default class extends Controller {
     const docId = String(doc.id)
     const currentRating = this.ratingsStore.getRating(docId)
     // Use a data-safe encoding: base64 avoids all HTML/CSS escaping issues with doc IDs
-    const encodedDocId = btoa(unescape(encodeURIComponent(docId)))
+    const encodedDocId = b64Encode(docId)
 
     const display = currentRating !== null ? String(currentRating) : "--"
 
@@ -884,7 +895,7 @@ export default class extends Controller {
       if (!wrap) return
       const encodedDocId = wrap.dataset.encodedDocId
       if (!encodedDocId) return
-      const docId = decodeURIComponent(escape(atob(encodedDocId)))
+      const docId = b64Decode(encodedDocId)
       const rating = this.ratingsStore.getRating(docId)
       btn.style.backgroundColor =
         rating !== null && Object.hasOwn(this.colorMap, rating)
@@ -918,7 +929,7 @@ export default class extends Controller {
 
   async _handleRatingClick(event) {
     const btn = event.currentTarget
-    const docId = decodeURIComponent(escape(atob(btn.dataset.encodedDocId)))
+    const docId = b64Decode(btn.dataset.encodedDocId)
 
     // Per-doc guard: ignore clicks while this doc's rating is in flight
     if (this._ratingsInFlight.has(docId)) return
@@ -961,7 +972,7 @@ export default class extends Controller {
   }
 
   _refreshRatingWidget(docId) {
-    const encodedDocId = btoa(unescape(encodeURIComponent(docId)))
+    const encodedDocId = b64Encode(docId)
     const container = this.resultsContainerTarget
     const widgetEl = container.querySelector(`[data-encoded-doc-id="${encodedDocId}"].doc-rating`)
     if (!widgetEl) return
