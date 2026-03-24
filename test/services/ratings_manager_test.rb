@@ -85,6 +85,28 @@ class RatingsImporterTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'sync_ratings_for_query_doc_pair respects auto_populate flag' do
+    let(:qdp_with_judgement) { query_doc_pairs(:jbm_qdp1) }
+
+    it 'skips cases with auto_populate_case_judgements disabled' do
+      case_with_ratings.update!(book: book, auto_populate_case_judgements: false)
+
+      assert_no_difference 'case_with_ratings.ratings.count' do
+        service = RatingsManager.new(book)
+        service.sync_ratings_for_query_doc_pair(qdp_with_judgement)
+      end
+    end
+
+    it 'syncs cases with auto_populate_case_judgements enabled' do
+      case_without_ratings.update!(book: book, auto_populate_case_judgements: true)
+
+      assert_difference 'case_without_ratings.ratings.count', 1 do
+        service = RatingsManager.new(book)
+        service.sync_ratings_for_query_doc_pair(qdp_with_judgement)
+      end
+    end
+  end
+
   describe 'calculate_rating_from_judgements (optimistic-pessimistic approach)' do
     let(:star_wars_book) { books(:book_of_star_wars_judgements) }
     let(:service)        { RatingsManager.new(star_wars_book) }

@@ -202,6 +202,9 @@ describe('Service: queriesSvc', function () {
 
 
       mockFieldSpec = fieldSpecSvc.createFieldSpec('field field1');
+
+      // Handle the case data fetch for book sync properties (triggered by changeSettings)
+      $httpBackend.whenGET(/^api\/cases\/\d+$/).respond(200, {book_id: null, auto_populate_book_pairs: false});
     });
   });
 

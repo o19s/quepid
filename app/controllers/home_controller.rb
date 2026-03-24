@@ -11,6 +11,8 @@ class HomeController < ApplicationController
   # @parameter status(query) [Array<String>]   Filter by status. (e.g. status[]=inactive&status[]=deleted).
   # @parameter X-front(header) [String] Header for identify the front.
   def show
+    flash.now[:notice] = params[:notice] if params[:notice].present?
+
     # with_counts adds a `case.queries_count` field, which avoids loading
     # all queries and makes bullet happy.
     # @cases = recent_cases(30)

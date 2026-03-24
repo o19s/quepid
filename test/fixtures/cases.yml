@@ -2,18 +2,20 @@
 #
 # Table name: cases
 #
-#  id              :integer          not null, primary key
-#  archived        :boolean
-#  case_name       :string(191)
-#  last_try_number :integer
-#  nightly         :boolean
-#  options         :json
-#  public          :boolean
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  book_id         :integer
-#  owner_id        :integer
-#  scorer_id       :integer
+#  id                            :integer          not null, primary key
+#  archived                      :boolean
+#  auto_populate_book_pairs      :boolean          default(FALSE), not null
+#  auto_populate_case_judgements :boolean          default(TRUE), not null
+#  case_name                     :string(191)
+#  last_try_number               :integer
+#  nightly                       :boolean
+#  options                       :json
+#  public                        :boolean
+#  created_at                    :datetime         not null
+#  updated_at                    :datetime         not null
+#  book_id                       :integer
+#  owner_id                      :integer
+#  scorer_id                     :integer
 #
 # Indexes
 #

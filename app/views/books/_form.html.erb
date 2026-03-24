@@ -1,11 +1,18 @@
 <%= form_with(model: book) do |form| %>
   <div class="card">
     <div class="card-body">
-      <h5 class="card-title">Settings</h5>    
+      <h5 class="card-title">Settings</h5>
+
+      <% if @origin_case %>
+        <div class="alert alert-primary" role="alert">
+          This book has defaults sourced from <i class="bi bi-briefcase"></i> <%= case_title(@origin_case) %>.
+        </div>
+      <% end %>
+
       <% if book.errors.any? %>
         <div id="error_explanation">
           <h2><%= pluralize(book.errors.count, "error") %> prohibited this book from being saved:</h2>
-    
+
           <ul>
             <% book.errors.each do |error| %>
               <li><%= error.full_message %></li>
@@ -13,13 +20,13 @@
           </ul>
         </div>
       <% end %>
-    
+
       <div class="mb-3">
         <%= form.label :name, class: 'form-label' %>
-        <%= form.text_field :name, required: true, class: 'form-control' %>
-        <div class="form-text">The book's name often reflects the goal for the judgements, like <em>Baseline Measurement</em> or a specific problem.</div>
+        <%= form.text_field :name, required: true, class: 'form-control', placeholder: "Enter book name here" %>
+        <div class="form-text">The book's name often reflects the goal for the judgements, like <em>Baseline Measurement</em> or a specific problem like <em>Handle plural words</em> or a use case like <em>Known Item Search</em>.</div>
       </div>
-    
+
       <div class="mb-3">
         <%= form.label :teams, "Teams to Share this Book With", class: 'form-label' %>
         <% if @current_user.teams.any? %>
@@ -36,19 +43,62 @@
           </div>
         <% end %>
       </div>
-      
+
+
       <% if @origin_case %>
-        <div class="mb-3">
-          <div class="form-check form-switch">
-            <%= form.label :link_the_case, class:'form-check-label' %>
-            <%= form.check_box :link_the_case, class:'form-check-input', checked: true %>
-              <%= @origin_case.case_name %> to this book?
+        <div class="card">
+          <h5 class="card-title">Case Integration</h5>
+          <div class="card-body">
+            <div class="alert alert-info mb-3" role="alert">
+              <i class="bi bi-info-circle"></i>
+              <strong>About Book-Case Synchronization:</strong> Books and Cases can share data bi-directionally.
+              Your Case provides query/doc pairs to judge, while Book judgements flow back as ratings.
+              <a href="https://quepid-docs.dev.o19s.com/2/quepid/64/thinking-about-cases-and-books-of-judgements" target="_out">
+                Learn more <i class="bi bi-arrow-up-right-circle"></i>
+              </a>
+            </div>
+
+            <div class="mb-4">
+              <h6 class="fw-bold">Enable Synchronization</h6>
+              <div class="form-check form-switch">
+                <%= form.label :link_the_case, "Link the Case ", class:'form-check-label' %>
+                <%= form.check_box :link_the_case, class:'form-check-input', checked: true %>
+                <i class="bi bi-briefcase"></i> <%= @origin_case.case_name %> to this book
+              </div>
+              <%= form.hidden_field :origin_case_id, :value => @origin_case.id %>
+              <div class="form-text">Creates the connection needed for automatic data syncing below.</div>
+            </div>
+
+            <div class="mb-4">
+              <h6 class="fw-bold">Case <i class="bi bi-arrow-right"></i> Book: Query/Doc Pairs</h6>
+              <div class="form-check form-switch">
+                <%= form.label :auto_populate_book_pairs, class:'form-check-label' %>
+                <%= form.check_box :auto_populate_book_pairs, class:'form-check-input', checked: false %>
+              </div>
+              <div class="form-text">
+                <strong>On:</strong> New query/doc pairs automatically added to Book when Case runs.
+                <br/>
+                <strong>Off:</strong> Manually trigger updates to the Book when needed.
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <h6 class="fw-bold">Case <i class="bi bi-arrow-left"></i> Book: Judgement Ratings</h6>
+              <div class="form-check form-switch">
+                <%= form.label :auto_populate_case_judgements, "Update case ratings from book judgements automatically", class:'form-check-label' %>
+                <%= form.check_box :auto_populate_case_judgements, class:'form-check-input', checked: true %>
+              </div>
+              <div class="form-text">
+                <strong>On:</strong> Case ratings update immediately as judgements are made.
+                <br/>
+                <strong>Off:</strong> Manually import judgements when ready to test.
+              </div>
+            </div>
           </div>
-          <%= form.hidden_field :origin_case_id, :value => @origin_case.id %>
-          <div class="form-text">A book can be used by none, one, or more Cases. </div>
         </div>
+        <p/>
       <% end %>
-    
+
       <div class="mb-3">
         <i class="bi bi-robot"></i>
         <%= form.label :teams, "AI Judges Assigned to this Book", class: 'form-label' %>
@@ -65,14 +115,14 @@
           <% end %>
         </div>
       </div>
-      
-      
+
+
       <div class="mb-3">
         <%= form.label :show_rank, class: 'form-check-label' %>
         <%= form.check_box :show_rank, class: 'form-check-input' %>
         <div class="form-text">Typically you don't want to convey to the Judge what Rank (or position) a Document was returned at.  If you are comparing across judging to an existing SERP page you may need this info.</div>
-      </div>  
-    
+      </div>
+
       <div class="mb-3">
         <div class="form-check form-switch">
           <%= form.label :support_implicit_judgements, class:'form-check-label' %>
@@ -86,12 +136,18 @@
         <div class="mb-3">
           <%= form.label :scorer_id, "Rating Scale", class: 'form-label' %>
           <%= form.select(:scorer_id, scorer_options_for_select(@current_user),
-                { prompt: "Select a rating scale..." },
-                { class: 'form-control',
+                {
+                  prompt: "Select a rating scale...",
+                  include_blank: true
+                },
+                {
+                  class: 'form-control',
+                  required: true,
                   data: {
                     scoring_guidelines_target: 'scorerSelect',
                     action: 'scoring-guidelines#scaleChanged'
-                  } }) %>
+                  }
+              }) %>
           <div class="form-text">Choose from available rating scale configurations. The scale and labels will be set for this book when you save.</div>
         </div>
 
@@ -112,7 +168,7 @@
           </div>
         </div>
       </div>
-      
+
       <% unless @book.new_record? %>
         <div class="mb-3">
           <div class="form-check">
@@ -120,7 +176,7 @@
             <%= form.label :delete_import_file, "Delete Import File", class: 'form-check-label' %>
             <div class="form-text">If enabled you have an associated file.  Check this to delete it.</div>
           </div>
-        </div>    
+        </div>
         <div class="mb-3">
           <div class="form-check">
             <%= form.check_box :delete_export_file, class: 'form-check-input', checked: false, disabled: !@book.export_file.attached? %>
@@ -129,7 +185,7 @@
           </div>
         </div>
       <% end %>
-      
+
       <div class="actions">
         <%= form.submit class: "btn btn-sm btn-primary" %>
       </div>

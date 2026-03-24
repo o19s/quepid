@@ -34,7 +34,7 @@ angular.module('QuepidApp')
       svc.saveDefaultScorer = saveDefaultScorer;
       svc.renameCase        = renameCase;
       svc.updateNightly     = updateNightly;
-      svc.associateBook     = associateBook;
+      svc.saveBookSettings  = saveBookSettings;
 
       // an individual case, ie
       // a search problem to be solved
@@ -51,6 +51,8 @@ angular.module('QuepidApp')
         theCase.ownerId           = data.owner_id;
         theCase.bookId            = data.book_id;
         theCase.bookName          = data.book_name;
+        theCase.autoPopulateBookPairs = data.auto_populate_book_pairs;
+        theCase.autoPopulateCaseJudgements    = data.auto_populate_case_judgements;
         theCase.queriesCount      = data.queries_count;
         theCase.public            = data.public;
         theCase.archived          = data.archived;
@@ -459,28 +461,27 @@ angular.module('QuepidApp')
       }      
 
       /*
-       * update which book the case is tied to.  This could be refactored into a more
-       * general "update" method.
+       * Save book association and sync settings in a single request.
        */
-      function associateBook(theCase, bookId) {
-
-        // HTTP PUT api/cases/<int:caseId>
+      function saveBookSettings(theCase, bookId, autoPopulateBookPairs, autoPopulateCaseJudgements) {
         var url  = 'api/cases/' + theCase.caseNo;
         var data = {
-          book_id: bookId
+          book_id: bookId,
+          auto_populate_book_pairs: bookId ? autoPopulateBookPairs : false,
+          auto_populate_case_judgements: bookId ? autoPopulateCaseJudgements : false
         };
 
         return $http.put(url, data)
           .then(function(response) {
-
             theCase.bookId = bookId;
-            theCase.bookName = response.book_name;
+            theCase.bookName = response.data ? response.data.book_name : null;
+            theCase.autoPopulateBookPairs = data.auto_populate_book_pairs;
+            theCase.autoPopulateCaseJudgements = data.auto_populate_case_judgements;
             broadcastSvc.send('associateBook', svc.dropdownBooks);
           }, function() {
             caseTryNavSvc.notFound();
           });
       }
-
 
       function get(id, useCache) {
         // http GET api/cases/<int:caseId>
