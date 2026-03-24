@@ -39,6 +39,7 @@ class CoreControllerTest < ActionController::TestCase
 
       # core_new_ui layout loads application_modern importmap, not the Angular bundles
       assert_select 'script[type="importmap"]'
+      assert_select 'link[rel="stylesheet"][href*="core_new_ui"]'
     end
 
     test 'renders case header and query list' do
@@ -61,6 +62,16 @@ class CoreControllerTest < ActionController::TestCase
 
       assert_select "body[data-try-number='#{the_try.try_number}']"
       assert_select "body[data-case-id='#{the_case.id}']"
+    end
+
+    test 'uses application BS5 navbar, not legacy header_core_app' do
+      the_case = cases(:one)
+      the_try = tries(:one)
+
+      get :new_ui, params: { id: the_case.id, try_number: the_try.try_number }
+
+      assert_select 'nav.navbar.navbar-expand-lg.navbar-secondary'
+      assert_select 'header#header.navbar-inverse', count: 0
     end
   end
 end

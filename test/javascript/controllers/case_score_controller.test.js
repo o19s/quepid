@@ -86,7 +86,7 @@ describe("CaseScoreController", () => {
     const badge = document.querySelector("[data-case-score-target=badge]")
     expect(badge.textContent).toBe("0.76")
     expect(badge.classList.contains("score-badge-unscored")).toBe(false)
-    // Dynamic score color is set via inline style (continuous HSL value)
+    // Dynamic score color is set via inline style (Angular qscoreSvc decile palette)
     expect(badge.style.backgroundColor).toMatch(/^(rgb|hsl)\(/)
   })
 

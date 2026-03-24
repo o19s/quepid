@@ -1,6 +1,15 @@
 pre-commit:
   parallel: true
   jobs:
+    # Staged Ruby only (not the whole tree). Requires Docker (`bin/docker`).
+    # Skip when needed: git commit --no-verify
+    - name: rubocop-staged
+      run: |
+        set -e
+        staged=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(rb|rake|gemspec)$|^(Gemfile|Rakefile)$' || true)
+        if [ -z "$staged" ]; then exit 0; fi
+        bin/docker r bin/rubocop --force-exclusion $staged
+
     - name: no-direct-controller-access
       glob: "app/javascript/controllers/*.js"
       run: |

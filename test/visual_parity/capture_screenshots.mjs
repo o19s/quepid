@@ -74,7 +74,7 @@ const FILE_TO_PAGES = [
   { pattern: /views\/home\/|views\/layouts\/application\.html/, prefixes: ['01-'] },
   { pattern: /views\/cases\/|controllers\/cases_controller/, prefixes: ['02-', '03-'] },
   { pattern: /views\/core\/|controllers\/core_controller/, prefixes: ['04-'] },
-  { pattern: /views\/layouts\/core|views\/layouts\/_header_core_app|views\/layouts\/_footer_core_app/, prefixes: ['04-'] },
+  { pattern: /views\/layouts\/core|views\/layouts\/_header_core_app|views\/layouts\/_header\.html|controllers\/dropdown_controller|views\/dropdown\/cases|views\/layouts\/_footer_core_app/, prefixes: ['04-'] },
   { pattern: /queriesLayout\.html|queriesCtrl\.js|queries\.html/, prefixes: ['04-'] },
   { pattern: /query_list_controller\.js|query_row_controller\.js|add_query_controller\.js/, prefixes: ['04-'] },
   { pattern: /inline_edit_controller\.js|resizable_pane_controller\.js|settings_panel_controller\.js/, prefixes: ['04-'] },
@@ -84,7 +84,7 @@ const FILE_TO_PAGES = [
   { pattern: /doc_detail_modal_controller\.js|query_explain_modal_controller\.js|doc_finder_controller\.js/, prefixes: ['04-'] },
   { pattern: /paneSvc\.js|panes\.css/, prefixes: ['04-'] },
   { pattern: /components\/clone_case|components\/delete_case|components\/export_case|components\/import_ratings|components\/share_case|components\/judgements|components\/diff\//, prefixes: ['04e'] },
-  { pattern: /search_results\.css|bootstrap3-add\.css|bootstrap5-add\.css|style\.css|base\.css/, prefixes: ['04-'] },
+  { pattern: /search_results\.css|qscore_snapshot_diff\.css|animation_new_ui\.css|bootstrap3-add\.css|bootstrap5-add\.css|style\.css|base\.css/, prefixes: ['04-'] },
   { pattern: /views\/books\/|controllers\/books_controller/, prefixes: ['05-', '06-', '07-', '08-', '21-', '22-', '23-', '24-', '25-'] },
   { pattern: /views\/scorers\/|controllers\/scorers_controller/, prefixes: ['09-', '10-'] },
   { pattern: /views\/search_endpoints\//, prefixes: ['11-', '12-', '13-'] },
@@ -299,7 +299,10 @@ const PAGES = [
   },
 
   // Case workspace with first query expanded showing search results + toolbar
-  // Uses Case 4 ("10s of Queries") which has 20 queries with ratings in the seed data
+  // Uses Case 4 ("10s of Queries") which has 20 queries with ratings in the seed data.
+  // Both Angular and new-ui setups follow the same sequence so the screenshots are
+  // directly comparable: wait for query list → expand first query → wait for results
+  // (or error) → scroll to top.
   {
     name: '04-case-workspace-expanded',
     tags: ['workspace', 'results'],
@@ -312,23 +315,33 @@ const PAGES = [
       const chevron = page.locator('.toggleSign').first();
       await chevron.waitFor({ state: 'visible', timeout: 10000 });
       await chevron.click();
-      // Wait for search results to load from the remote Solr
-      await new Promise(r => setTimeout(r, 5000));
+      // Wait for search results or error to appear (matches new-ui selector strategy)
+      await page.locator('.sub-results .result, .search-results-list, .alert-danger').first()
+        .waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 2000));
+      // Scroll to top so both variants capture from the same position
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await new Promise(r => setTimeout(r, 500));
     },
     variants: {
       'new-ui': {
         path: '/case/4/new_ui',
         setup: async (page) => {
           await page.waitForLoadState('networkidle');
-          await new Promise(r => setTimeout(r, 1000));
-          // Click the first query chevron to expand it
-          const chevron = page.locator('.toggleSign').first();
-          await chevron.waitFor({ state: 'visible', timeout: 10000 });
+          await new Promise(r => setTimeout(r, 3000));
+          // Scope to visible rows: paginated list marks off-page items with .d-none; unscoped .first() can hit a hidden row.
+          const chevron = page
+            .locator('#query-list-shell li:not(.d-none) [data-query-row-target="chevron"]')
+            .first();
+          await chevron.waitFor({ state: 'visible', timeout: 15000 });
           await chevron.click();
           // Wait for search results or error to appear (proxy may fail in VP Docker)
           await page.locator('.search-results-list, .alert-danger').first()
             .waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
           await new Promise(r => setTimeout(r, 2000));
+          // Scroll to top so both variants capture from the same position
+          await page.evaluate(() => window.scrollTo(0, 0));
+          await new Promise(r => setTimeout(r, 500));
         },
       },
     },

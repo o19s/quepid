@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { waitFor } from "@testing-library/dom"
 import { Application } from "@hotwired/stimulus"
 import QueryRowController from "../../../app/javascript/controllers/query_row_controller"
+import * as searchExecutor from "modules/search_executor"
 import { waitForController } from "../support/stimulus_helpers"
 
 /**
@@ -23,7 +24,7 @@ describe("QueryRowController", () => {
           data-query-row-query-text-value="test query"
           data-query-row-ratings-value="{}">
         <div data-query-row-target="expandedContent" class="d-none"></div>
-        <span data-query-row-target="chevron" class="glyphicon glyphicon-chevron-down"></span>
+        <span data-query-row-target="chevron" class="bi bi-chevron-down"></span>
         <small data-query-row-target="totalResults"></small>
         <div data-query-row-target="scoreDisplay">--</div>
         <div data-query-row-target="resultsContainer"><p>placeholder</p></div>
@@ -48,7 +49,7 @@ describe("QueryRowController", () => {
 
     expect(ctrl.expanded).toBe(true)
     expect(ctrl.expandedContentTarget.classList.contains("d-none")).toBe(false)
-    expect(ctrl.chevronTarget.classList.contains("glyphicon-chevron-up")).toBe(true)
+    expect(ctrl.chevronTarget.classList.contains("bi-chevron-up")).toBe(true)
   })
 
   it("collapse hides content and flips chevron", () => {
@@ -56,14 +57,14 @@ describe("QueryRowController", () => {
     const ctrl = application.getControllerForElementAndIdentifier(el, "query-row")
     ctrl.expanded = true
     ctrl.expandedContentTarget.classList.remove("d-none")
-    ctrl.chevronTarget.classList.remove("glyphicon-chevron-down")
-    ctrl.chevronTarget.classList.add("glyphicon-chevron-up")
+    ctrl.chevronTarget.classList.remove("bi-chevron-down")
+    ctrl.chevronTarget.classList.add("bi-chevron-up")
 
     ctrl.collapse()
 
     expect(ctrl.expanded).toBe(false)
     expect(ctrl.expandedContentTarget.classList.contains("d-none")).toBe(true)
-    expect(ctrl.chevronTarget.classList.contains("glyphicon-chevron-down")).toBe(true)
+    expect(ctrl.chevronTarget.classList.contains("bi-chevron-down")).toBe(true)
   })
 
   it("toggle switches between expanded and collapsed", () => {
@@ -216,6 +217,109 @@ describe("QueryRowController", () => {
       expect(ctrl.lastNumFound).toBe(99)
     } finally {
       fetchSpy.mockRestore()
+    }
+  })
+
+  it("toggleDocExplain toggles debugMode and reruns search", () => {
+    const el = document.querySelector("[data-controller=query-row]")
+    const btn = document.createElement("button")
+    btn.setAttribute("data-query-row-target", "docExplainToggle")
+    el.appendChild(btn)
+
+    const ctrl = application.getControllerForElementAndIdentifier(el, "query-row")
+    const runSpy = vi.spyOn(ctrl, "runSearch").mockResolvedValue(undefined)
+
+    try {
+      ctrl.toggleDocExplain({ preventDefault: vi.fn() })
+      expect(ctrl.debugMode).toBe(true)
+      expect(btn.classList.contains("btn-info")).toBe(true)
+      expect(runSpy).toHaveBeenCalledTimes(1)
+
+      ctrl.toggleDocExplain({ preventDefault: vi.fn() })
+      expect(ctrl.debugMode).toBe(false)
+      expect(btn.classList.contains("btn-default")).toBe(true)
+      expect(runSpy).toHaveBeenCalledTimes(2)
+    } finally {
+      runSpy.mockRestore()
+    }
+  })
+
+  it("explainQuery dispatches show-query-explain without extra search when payload exists", async () => {
+    const el = document.querySelector("[data-controller=query-row]")
+    const ctrl = application.getControllerForElementAndIdentifier(el, "query-row")
+    const execSpy = vi.spyOn(searchExecutor, "executeSearch")
+    const listener = vi.fn()
+    document.addEventListener("show-query-explain", listener)
+
+    try {
+      ctrl.searchLoaded = true
+      ctrl.lastResult = {
+        queryDetails: { foo: "bar" },
+        parsedQueryDetails: { baz: 1 },
+        docs: [],
+        numFound: 0,
+      }
+
+      await ctrl.explainQuery({ preventDefault: vi.fn() })
+
+      expect(execSpy).not.toHaveBeenCalled()
+      expect(listener).toHaveBeenCalledTimes(1)
+      const evt = listener.mock.calls[0][0]
+      expect(evt.detail.queryDetails).toEqual({ foo: "bar" })
+      expect(evt.detail.parsedQueryDetails).toEqual({ baz: 1 })
+    } finally {
+      execSpy.mockRestore()
+      document.removeEventListener("show-query-explain", listener)
+    }
+  })
+
+  it("explainQuery fetches debug search when modal payload missing", async () => {
+    const el = document.querySelector("[data-controller=query-row]")
+    const ctrl = application.getControllerForElementAndIdentifier(el, "query-row")
+
+    const tryJson = {
+      search_engine: "solr",
+      search_url: "http://solr.test/select",
+      args: { q: ["#$query##"], rows: [10] },
+      field_spec: "id",
+      number_of_rows: 10,
+      proxy_requests: true,
+    }
+
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((url) => {
+      if (String(url).includes("api/cases/1/tries/1")) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve(tryJson) })
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    })
+
+    const execSpy = vi.spyOn(searchExecutor, "executeSearch").mockResolvedValue({
+      queryDetails: { q: "parsed" },
+      parsedQueryDetails: { pq: "ok" },
+      docs: [],
+      numFound: 0,
+    })
+
+    const listener = vi.fn()
+    document.addEventListener("show-query-explain", listener)
+
+    try {
+      ctrl.searchLoaded = true
+      ctrl.lastResult = { docs: [], numFound: 0 }
+
+      await ctrl.explainQuery({ preventDefault: vi.fn() })
+
+      expect(execSpy).toHaveBeenCalledTimes(1)
+      const call = execSpy.mock.calls[0]
+      expect(call[1]).toBe("test query")
+      expect(call[3]).toEqual({ debug: true })
+
+      expect(listener).toHaveBeenCalledTimes(1)
+      expect(listener.mock.calls[0][0].detail.queryDetails).toEqual({ q: "parsed" })
+    } finally {
+      fetchSpy.mockRestore()
+      execSpy.mockRestore()
+      document.removeEventListener("show-query-explain", listener)
     }
   })
 })

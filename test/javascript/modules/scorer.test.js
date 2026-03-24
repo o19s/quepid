@@ -52,12 +52,12 @@ describe("ratingColor", () => {
 })
 
 describe("scoreToColor", () => {
-  it("returns green for max score", () => {
-    expect(scoreToColor(100, 100)).toBe("hsl(120, 100%, 50%)")
+  it("matches Angular qscoreSvc decile buckets (max score → bucket 10)", () => {
+    expect(scoreToColor(100, 100)).toBe("hsl(100, 90%, 35%)")
   })
 
-  it("returns red for zero score", () => {
-    expect(scoreToColor(0, 100)).toBe("hsl(0, 100%, 50%)")
+  it("maps zero score to bucket 0", () => {
+    expect(scoreToColor(0, 100)).toBe("hsl(5, 95%, 45%)")
   })
 
   it("returns gray for null score", () => {
@@ -68,8 +68,12 @@ describe("scoreToColor", () => {
     expect(scoreToColor(5, 0)).toBe("#999")
   })
 
-  it("clamps ratio to [0, 1]", () => {
-    expect(scoreToColor(200, 100)).toBe("hsl(120, 100%, 50%)")
-    expect(scoreToColor(-10, 100)).toBe("hsl(0, 100%, 50%)")
+  it("clamps high scores to max then buckets; negative scores use bucket -1", () => {
+    expect(scoreToColor(200, 100)).toBe("hsl(100, 90%, 35%)")
+    expect(scoreToColor(-10, 100)).toBe("hsl(0, 100%, 40%)")
+  })
+
+  it("AP@10-style 0.46 on 0–1 scale matches Angular mid bucket", () => {
+    expect(scoreToColor(0.46, 1)).toBe("hsl(28, 65%, 75%)")
   })
 })

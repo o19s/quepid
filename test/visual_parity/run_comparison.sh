@@ -7,6 +7,7 @@
 # 2. Uses git worktrees for each comparison branch (full run never switches your main checkout)
 # 3. Boots an isolated Compose project (quepid-vp) with non-default ports + nginx on :8080
 # 4. Runs bin/setup_docker + yarn build, then captures screenshots and API structures
+#    (optional --clean-docker runs bin/docker d before each boot; default reuses stack)
 # 5. Generates report.html
 #
 # Usage:
@@ -273,8 +274,14 @@ boot_docker() {
   export COMPOSE_PROJECT_NAME="$VP_COMPOSE_PROJECT_NAME"
   export COMPOSE_FILE="$VP_COMPOSE_FILE"
 
-  log "Rebuilding Docker environment (this may take a while)..."
-  bin/docker d 2>/dev/null || true
+  if [ "${VP_CLEAN_DOCKER:-0}" = "1" ]; then
+    log "Clean Docker: stopping existing VP stack (bin/docker d)..."
+    bin/docker d 2>/dev/null || true
+  else
+    log "Reusing existing VP Docker stack if running (use --clean-docker for docker compose down first)..."
+  fi
+
+  log "Ensuring Docker environment (setup_docker; may take a while on first run)..."
   bin/setup_docker
 
   log "Building frontend assets once for visual parity (no Procfile.dev watchers)..."
@@ -284,7 +291,7 @@ boot_docker() {
     log "Ensuring test database exists (main repo)..."
     bin/docker r bin/rake db:test:prepare
   fi
-  ok "Docker environment rebuilt"
+  ok "Docker environment ready"
 
   # Foreman stops all processes if any proc exits; Procfile.dev watchers are unsafe in detached mode.
   cat > "$branch_root/Procfile.vp" <<'EOF'
@@ -397,11 +404,14 @@ main() {
 
 # Scan args for global flags (can appear anywhere)
 VP_TEARDOWN="${VP_TEARDOWN:-0}"
+VP_CLEAN_DOCKER="${VP_CLEAN_DOCKER:-0}"
 VP_ALL=""
 _filtered_args=()
 for _arg in "$@"; do
   if [ "$_arg" = "--teardown" ]; then
     VP_TEARDOWN=1
+  elif [ "$_arg" = "--clean-docker" ]; then
+    VP_CLEAN_DOCKER=1
   elif [ "$_arg" = "--all" ]; then
     VP_ALL="--all"
   else
@@ -519,6 +529,7 @@ case "${1:-}" in
     echo "  $0 --report                     Build report from existing screenshots + api_structures"
     echo "  $0 --remove-worktrees           Remove worktrees created for this tool"
     echo "  $0 --teardown                  Tear down Docker after completion (default: leave running)"
+    echo "  $0 --clean-docker              docker compose down before each boot (default: reuse stack)"
     echo "  $0 --all                       Recapture all pages (skip change detection)"
     echo "  $0 --help                       This help"
     echo ""
@@ -528,6 +539,7 @@ case "${1:-}" in
     echo "  VISUAL_PARITY_HEALTH_PATH=...    Default /healthcheck (readiness probe path)"
     echo "  PLAYWRIGHT_BROWSERS_PATH=...     Default \$GIT_ROOT/node_modules/.cache/ms-playwright"
     echo "  VP_COMPOSE_PROJECT_NAME           Default quepid-vp"
+    echo "  VP_CLEAN_DOCKER=1               Same as --clean-docker (default 0)"
     echo ""
     echo "Worktrees: ${WT_BASE}/quepid${WT_SUFFIX}-<branch>"
     echo "Requires: docker-compose.visual-parity.yml + nginx.vp.conf at repo root; yarn + @playwright/test."

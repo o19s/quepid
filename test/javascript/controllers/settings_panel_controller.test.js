@@ -217,7 +217,7 @@ describe("SettingsPanelController", () => {
 
     // Create a mock section
     const header = document.createElement("div")
-    header.innerHTML = '<span class="glyphicon glyphicon-minus-sign"></span>'
+    header.innerHTML = '<span class="bi bi-dash-lg"></span>'
     const body = document.createElement("div")
     header.after = () => {} // noop
     // Append to DOM so nextElementSibling works
@@ -228,7 +228,7 @@ describe("SettingsPanelController", () => {
     ctrl.toggleSection({ currentTarget: header })
 
     expect(body.classList.contains("d-none")).toBe(true)
-    expect(header.querySelector(".glyphicon").classList.contains("glyphicon-plus-sign")).toBe(true)
+    expect(header.querySelector(".bi").classList.contains("bi-plus-lg")).toBe(true)
   })
 
   // ── Slice 1: Curator Variables ──────────────────────────────────

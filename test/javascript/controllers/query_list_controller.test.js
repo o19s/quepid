@@ -8,6 +8,10 @@ import { waitForController } from "../support/stimulus_helpers"
  * (query text filter, rated filter) and wiring to case score (qscore-case style).
  */
 class StubQueryRowController extends Controller {
+  static values = {
+    queryId: { type: Number, default: 0 },
+  }
+
   expanded = false
 
   collapse() {
@@ -44,21 +48,25 @@ describe("QueryListController", () => {
         <ul data-query-list-target="list">
           <li class="stub-query-row" id="row1"
               data-controller="query-row"
+              data-query-row-query-id-value="1"
               data-query-list-target="queryRow"
               data-query-text="star wars"
               data-rated="true"></li>
           <li class="stub-query-row" id="row2"
               data-controller="query-row"
+              data-query-row-query-id-value="2"
               data-query-list-target="queryRow"
               data-query-text="star trek"
               data-rated="true"></li>
           <li class="stub-query-row" id="row3"
               data-controller="query-row"
+              data-query-row-query-id-value="3"
               data-query-list-target="queryRow"
               data-query-text="STARMAN"
               data-rated="true"></li>
           <li class="stub-query-row" id="row4"
               data-controller="query-row"
+              data-query-row-query-id-value="4"
               data-query-list-target="queryRow"
               data-query-text="The Boxing Match"
               data-rated="false"></li>
@@ -198,6 +206,61 @@ describe("QueryListController", () => {
 
     expect(list.queryScores[1]).toBeUndefined()
     expect(list.queryScores[2]).toBeDefined()
+  })
+
+  it("query-moved-away document event removes score like handleQueryDeleted", () => {
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    list.queryScores = {
+      1: { score: 0.5, text: "star wars" },
+      2: { score: 1.0, text: "star trek" },
+    }
+
+    document.dispatchEvent(new CustomEvent("query-moved-away", { detail: { queryId: 1 } }))
+
+    expect(list.queryScores[1]).toBeUndefined()
+    expect(list.queryScores[2]).toBeDefined()
+  })
+
+  it("handleScoreChanged normalizes string queryId to match outlet queryIdValue", () => {
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    const row1 = document.getElementById("row1")
+    row1.dispatchEvent(
+      new CustomEvent("query-row:score-changed", {
+        bubbles: true,
+        detail: {
+          queryId: "1",
+          queryText: "star wars",
+          score: 0.5,
+          maxScore: 10,
+          numFound: 100,
+        },
+      }),
+    )
+    expect(list.queryScores[1]).toBeDefined()
+    expect(list.queryScores[1].score).toBe(0.5)
+  })
+
+  it("query-options-saved calls rerunSearch only on the matching query row outlet", async () => {
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    list.queryRowOutlets.forEach((outlet) => {
+      vi.spyOn(outlet, "rerunSearch").mockResolvedValue(undefined)
+    })
+
+    document.dispatchEvent(new CustomEvent("query-options-saved", { detail: { queryId: 2 } }))
+
+    expect(list.queryRowOutlets[0].rerunSearch).not.toHaveBeenCalled()
+    expect(list.queryRowOutlets[1].rerunSearch).toHaveBeenCalledTimes(1)
+    expect(list.queryRowOutlets[2].rerunSearch).not.toHaveBeenCalled()
+    expect(list.queryRowOutlets[3].rerunSearch).not.toHaveBeenCalled()
   })
 
   it("collapseAll calls collapse on expanded query-row outlets", () => {

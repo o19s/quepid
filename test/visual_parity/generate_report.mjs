@@ -119,7 +119,7 @@ function getGroup(filename) {
 // ---------------------------------------------------------------------------
 // Map changed source files to screenshot tags/groups that might be affected
 const FILE_TO_GROUPS = [
-  { pattern: /views\/layouts\/_header_core_app/, groups: ['Case Workspace — Header Dropdowns'] },
+  { pattern: /views\/layouts\/_header_core_app|views\/layouts\/_header\.html|controllers\/dropdown_controller|views\/dropdown\/cases/, groups: ['Case Workspace — Header Dropdowns'] },
   { pattern: /views\/core\/_case_header|controllers\/case_score_controller|controllers\/sparkline_controller/, groups: ['Case Workspace'] },
   { pattern: /paneSvc\.js|resizable_pane_controller\.js|panes\.css/, groups: ['Case Workspace — Tune Relevance'] },
   { pattern: /queriesLayout\.html|queriesCtrl\.js/, groups: ['Case Workspace', 'Case Workspace — Action Bar Modals'] },

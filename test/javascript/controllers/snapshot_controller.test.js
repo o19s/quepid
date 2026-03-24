@@ -43,7 +43,7 @@ describe("SnapshotController", () => {
             data-query-row-query-text-value="shoes"
             data-query-row-ratings-value='{}'>
           <div data-query-row-target="expandedContent" class="d-none"></div>
-          <span data-query-row-target="chevron" class="glyphicon glyphicon-chevron-down"></span>
+          <span data-query-row-target="chevron" class="bi bi-chevron-down"></span>
           <small data-query-row-target="totalResults"></small>
           <div data-query-row-target="scoreDisplay">--</div>
           <div data-query-row-target="resultsContainer"></div>
