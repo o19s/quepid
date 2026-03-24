@@ -5,7 +5,7 @@
 # Table name: mapper_wizard_states
 #
 #  id                       :bigint           not null, primary key
-#  basic_auth_credential    :string(255)
+#  basic_auth_credential    :string(4000)
 #  custom_headers           :text(65535)
 #  docs_mapper              :text(65535)
 #  html_content             :text(16777215)
@@ -32,7 +32,18 @@ class MapperWizardState < ApplicationRecord
   # Serialization
   serialize :custom_headers, coder: JSON
 
+  # Encryption
+  encrypts :basic_auth_credential, deterministic: false
+
   # Concerns
+  include MaskableCredential
+
+  # Override api_basic_auth_credential to always return nil
+  # The mapper wizard always proxies requests server-side, so credentials
+  # should never be sent to the browser
+  def api_basic_auth_credential
+    nil
+  end
 
   validates :search_url, length: { maximum: 2000 }
   validates :custom_headers, json_format: { normalize_values: true }, allow_blank: true

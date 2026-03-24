@@ -54,8 +54,8 @@
 
       <div class="mb-3">
         <div class="form-check form-switch">
-          <%= form.label :proxy_requests, class:'form-check-label' %>
           <%= form.check_box :proxy_requests, class:'form-check-input' %>
+          <%= form.label :proxy_requests, class:'form-check-label' %>
         </div>
         <div class="form-text">
           Proxied requests avoids CORS and other browser security issues, however Quepid must be able to reach your Search Endpoint.
@@ -71,7 +71,10 @@
 
       <div class="mb-3">
         <%= form.label :basic_auth_credential, class: 'form-label' %>
-        <%= form.text_field :basic_auth_credential %>
+        <%= form.text_field :basic_auth_credential, value: search_endpoint.masked_basic_auth_credential %>
+        <% if search_endpoint.basic_auth_credential.present? %>
+          <div class="form-text">Password is hidden. Enter a new value to change it, or leave as-is to keep the current password.</div>
+        <% end %>
       </div>
 
       <div class="mb-3">
@@ -98,8 +101,8 @@
 
       <div class="mb-3">
         <div class="form-check form-switch">
-          <%= form.label :archived, class:'form-check-label' %>
           <%= form.check_box :archived, class:'form-check-input' %>
+          <%= form.label :archived, class:'form-check-label' %>
         </div>
         <div class="form-text">Archived search endpoints can't be selected for use.</div>
       </div>

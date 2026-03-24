@@ -159,7 +159,7 @@ class SampleData < Thor
     # Solr Case
     ######################################
 
-    solr_case = realistic_activity_user.cases.create case_name: 'SOLR CASE'
+    solr_case = realistic_activity_user.cases.find_or_create_by case_name: 'SOLR CASE'
     solr_try = solr_case.tries.latest
     solr_params = {
       field_spec:   'id:id, title:title',
@@ -173,7 +173,7 @@ class SampleData < Thor
     # ES Case
     ######################################
 
-    es_case = realistic_activity_user.cases.create case_name: 'ES CASE'
+    es_case = realistic_activity_user.cases.find_or_create_by case_name: 'ES CASE'
     es_try = es_case.tries.latest
     es_params = {
       field_spec:   'id:_id, title:title',
@@ -187,7 +187,7 @@ class SampleData < Thor
     # Search API Case
     ######################################
 
-    searchapi_case = realistic_activity_user.cases.create case_name: 'SEARCHAPI CASE'
+    searchapi_case = realistic_activity_user.cases.find_or_create_by case_name: 'SEARCHAPI CASE'
     searchapi_try = searchapi_case.tries.latest
     searchapi_params = {
       field_spec:   'id:id, title:title, url',
@@ -204,7 +204,7 @@ class SampleData < Thor
     # Ratings
     print_step 'Seeding ratings................'
 
-    tens_of_queries_case = realistic_activity_user.cases.create case_name: '10s of Queries', nightly: true
+    tens_of_queries_case = realistic_activity_user.cases.find_or_create_by case_name: '10s of Queries', nightly: true
 
     unless tens_of_queries_case.queries.count >= 20
       generator = ::RatingsGenerator.new search_url, { number: 20 }
@@ -271,11 +271,11 @@ class SampleData < Thor
     ######################################
 
     osc = ::Team.where(name: 'OSC').first_or_create
-    osc.members << osc_owner_user
+    osc.members << osc_owner_user unless osc.members.include?(osc_owner_user)
     osc.members << osc_member_user unless osc.members.include?(osc_member_user)
     osc.members << realistic_activity_user unless osc.members.include?(realistic_activity_user)
     osc.members << osc_ai_judge unless osc.members.include?(osc_ai_judge)
-    osc.cases << tens_of_queries_case unless osc.members.include?(tens_of_queries_case)
+    osc.cases << tens_of_queries_case unless osc.cases.include?(tens_of_queries_case)
     osc.search_endpoints << statedecoded_solr_endpoint unless osc.search_endpoints.include?(statedecoded_solr_endpoint)
     print_step 'End of seeding teams................'
 
@@ -288,7 +288,7 @@ class SampleData < Thor
     book.scale_with_labels = Scorer.system_default_scorer.scale_with_labels
 
     book.teams << osc
-    book.ai_judges << osc_ai_judge
+    book.ai_judges << osc_ai_judge unless book.ai_judges.include?(osc_ai_judge)
     book.save
 
     # this code copied from populate_controller.rb and should be in a service...

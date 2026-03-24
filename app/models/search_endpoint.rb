@@ -7,7 +7,7 @@
 #  id                    :bigint           not null, primary key
 #  api_method            :string(255)
 #  archived              :boolean          default(FALSE)
-#  basic_auth_credential :string(255)
+#  basic_auth_credential :string(4000)
 #  custom_headers        :string(6000)
 #  endpoint_url          :string(500)
 #  mapper_code           :text(65535)
@@ -43,9 +43,13 @@ class SearchEndpoint < ApplicationRecord
   serialize :custom_headers, coder: JSON
 
   # Concerns
+  include MaskableCredential
 
   # Scopes
   include ForUserScope
+
+  # Encryption
+  encrypts :basic_auth_credential, deterministic: false
 
   scope :not_archived, -> { where('`search_endpoints`.`archived` = false') }
 
@@ -60,6 +64,7 @@ class SearchEndpoint < ApplicationRecord
   validates :options, json_format: true, allow_blank: true
   validates :custom_headers, json_format: { normalize_values: true }, allow_blank: true
   validate :validate_proxy_requests_api_method
+  validate :validate_proxy_required_for_hidden_credentials
 
   def fullname
     name.presence || middle_truncate("#{search_engine.titleize} #{endpoint_url}")
@@ -86,5 +91,12 @@ class SearchEndpoint < ApplicationRecord
 
   def validate_proxy_requests_api_method
     errors.add(:api_method, 'cannot be JSONP when proxy_request is enabled') if proxy_requests? && 'JSONP' == api_method
+  end
+
+  def validate_proxy_required_for_hidden_credentials
+    return unless Rails.application.config.require_proxy_with_basic_auth_credentials
+    return if basic_auth_credential.blank?
+
+    errors.add(:proxy_requests, 'must be enabled when basic auth credentials are present') unless proxy_requests?
   end
 end

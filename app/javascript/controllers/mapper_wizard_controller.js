@@ -49,6 +49,7 @@ export default class extends Controller {
     // Store references when they become available
     this.numberOfResultsEditor = null
     this.docsEditor = null
+    this.customHeadersEditor = null
 
     // Wait for CodeMirror to initialize the textareas
     setTimeout(() => this.captureEditors(), 500)
@@ -67,6 +68,9 @@ export default class extends Controller {
     }
     if (this.hasDocsMapperTarget && this.docsMapperTarget.editor) {
       this.docsEditor = this.docsMapperTarget.editor
+    }
+    if (this.hasCustomHeadersTarget && this.customHeadersTarget.editor) {
+      this.customHeadersEditor = this.customHeadersTarget.editor
     }
   }
 
@@ -102,7 +106,9 @@ export default class extends Controller {
 
     const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
     const testQuery = this.hasTestQueryTarget ? this.testQueryTarget.value.trim() : ''
-    const customHeaders = this.hasCustomHeadersTarget ? this.customHeadersTarget.value.trim() : ''
+    const customHeaders = this.hasCustomHeadersTarget 
+      ? (this.customHeadersEditor ? this.customHeadersEditor.getValue().trim() : this.customHeadersTarget.value.trim())
+      : ''
     const basicAuthCredential = this.hasBasicAuthCredentialTarget ? this.basicAuthCredentialTarget.value.trim() : ''
 
     // Validate custom headers JSON if provided
@@ -415,7 +421,9 @@ export default class extends Controller {
 
     const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
     const testQuery = this.hasTestQueryTarget ? this.testQueryTarget.value.trim() : ''
-    const customHeaders = this.hasCustomHeadersTarget ? this.customHeadersTarget.value.trim() : ''
+    const customHeaders = this.hasCustomHeadersTarget 
+      ? (this.customHeadersEditor ? this.customHeadersEditor.getValue().trim() : this.customHeadersTarget.value.trim())
+      : ''
     const basicAuthCredential = this.hasBasicAuthCredentialTarget ? this.basicAuthCredentialTarget.value.trim() : ''
 
     // Collect checked team IDs

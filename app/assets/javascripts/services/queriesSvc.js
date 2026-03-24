@@ -141,7 +141,7 @@ angular.module('QuepidApp')
           }
 
           if (passedInSettings.proxyRequests === true) {
-            searcherOptions.proxyUrl = caseTryNavSvc.getQuepidProxyUrl();
+            searcherOptions.proxyUrl = caseTryNavSvc.getQuepidProxyUrl(passedInSettings.searchEndpointId);
           }
 
           if (passedInSettings.searchEngine === 'static'){

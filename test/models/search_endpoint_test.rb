@@ -7,7 +7,7 @@
 #  id                    :bigint           not null, primary key
 #  api_method            :string(255)
 #  archived              :boolean          default(FALSE)
-#  basic_auth_credential :string(255)
+#  basic_auth_credential :string(4000)
 #  custom_headers        :string(6000)
 #  endpoint_url          :string(500)
 #  mapper_code           :text(65535)
@@ -86,6 +86,115 @@ class SearchEndpointTest < ActiveSupport::TestCase
   end
 
   # SearchEndpoint-specific tests
+  describe 'basic_auth_credential format validation' do
+    it 'accepts username:password format' do
+      endpoint = SearchEndpoint.new(
+        name: 'Test', endpoint_url: 'http://test.com', search_engine: 'solr',
+        api_method: 'GET', basic_auth_credential: 'user:pass', proxy_requests: true
+      )
+      assert_predicate endpoint, :valid?
+    end
+
+    it 'rejects value without colon' do
+      endpoint = SearchEndpoint.new(
+        name: 'Test', endpoint_url: 'http://test.com', search_engine: 'solr',
+        api_method: 'GET', basic_auth_credential: 'no-colon-here', proxy_requests: true
+      )
+      assert_not endpoint.valid?
+      assert_includes endpoint.errors[:basic_auth_credential], 'must be in username:password format'
+    end
+
+    it 'allows blank credential' do
+      endpoint = SearchEndpoint.new(
+        name: 'Test', endpoint_url: 'http://test.com', search_engine: 'solr',
+        api_method: 'GET', basic_auth_credential: ''
+      )
+      assert_predicate endpoint, :valid?
+    end
+  end
+
+  describe 'basic_auth_credential encryption' do
+    it 'round-trips through save and reload' do
+      endpoint = SearchEndpoint.create!(
+        name:                  'Auth Endpoint',
+        endpoint_url:          'http://test.example.com',
+        search_engine:         'solr',
+        api_method:            'GET',
+        basic_auth_credential: 'user:pass',
+        proxy_requests:        true
+      )
+      endpoint.reload
+      assert_equal 'user:pass', endpoint.basic_auth_credential
+    end
+  end
+
+  describe 'masked_basic_auth_credential' do
+    it 'always masks password' do
+      endpoint = SearchEndpoint.new(basic_auth_credential: 'bob:password')
+      assert_equal 'bob:******', endpoint.masked_basic_auth_credential
+    end
+
+    it 'returns nil for blank credential' do
+      endpoint = SearchEndpoint.new(basic_auth_credential: nil)
+      assert_nil endpoint.masked_basic_auth_credential
+    end
+  end
+
+  describe 'api_basic_auth_credential' do
+    it 'always returns nil when require_proxy_with_basic_auth_credentials is true' do
+      original = Rails.application.config.require_proxy_with_basic_auth_credentials
+      Rails.application.config.require_proxy_with_basic_auth_credentials = true
+      endpoint = SearchEndpoint.new(basic_auth_credential: 'bob:password')
+      assert_nil endpoint.api_basic_auth_credential
+    ensure
+      Rails.application.config.require_proxy_with_basic_auth_credentials = original
+    end
+
+    it 'returns none nil for blank credential' do
+      original = Rails.application.config.require_proxy_with_basic_auth_credentials
+      Rails.application.config.require_proxy_with_basic_auth_credentials = false
+      endpoint = SearchEndpoint.new(basic_auth_credential: 'bob:password')
+      assert_equal 'bob:password', endpoint.api_basic_auth_credential
+    ensure
+      Rails.application.config.require_proxy_with_basic_auth_credentials = original
+    end
+  end
+
+  describe 'proxy required with basic auth credentials' do
+    it 'requires proxy_requests when require_proxy_with_basic_auth_credentials is true' do
+      original = Rails.application.config.require_proxy_with_basic_auth_credentials
+      Rails.application.config.require_proxy_with_basic_auth_credentials = true
+      endpoint = SearchEndpoint.new(
+        name:                  'Test',
+        endpoint_url:          'http://test.example.com',
+        search_engine:         'solr',
+        api_method:            'GET',
+        basic_auth_credential: 'bob:password',
+        proxy_requests:        false
+      )
+      assert_not endpoint.valid?
+      assert_includes endpoint.errors[:proxy_requests], 'must be enabled when basic auth credentials are present'
+    ensure
+      Rails.application.config.require_proxy_with_basic_auth_credentials = original
+    end
+
+    it 'allows non-proxy when require_proxy_with_basic_auth_credentials is false' do
+      original = Rails.application.config.require_proxy_with_basic_auth_credentials
+      Rails.application.config.require_proxy_with_basic_auth_credentials = false
+      endpoint = SearchEndpoint.new(
+        name:                  'Test',
+        endpoint_url:          'http://test.example.com',
+        search_engine:         'solr',
+        api_method:            'GET',
+        basic_auth_credential: 'bob:password',
+        proxy_requests:        false
+      )
+      assert_predicate endpoint, :valid?
+    ensure
+      Rails.application.config.require_proxy_with_basic_auth_credentials = original
+    end
+  end
+
   describe 'custom_headers persistence' do
     it 'normalizes after saving and reloading' do
       endpoint = SearchEndpoint.create!(
