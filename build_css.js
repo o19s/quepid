@@ -156,6 +156,60 @@ function buildCoreCSS() {
   console.log(`core.css created (${(stats.size / 1024).toFixed(1)}KB)`);
 }
 
+/**
+ * Case workspace styles for Stimulus new-ui: Bootstrap 5 + shared case layers.
+ * Omits Angular-only sheets (Shepherd, cases index, docs explain, settings <query-params>,
+ * full qgraph/qscore/stackedChart) — those stay in buildCoreCSS() for `/case/:id`.
+ * Uses trimmed duplicates: qscore_snapshot_diff.css, animation_new_ui.css.
+ */
+function buildCoreNewUiCSS() {
+  console.log('Building core_new_ui.css...');
+
+  const outputFile = 'app/assets/builds/core_new_ui.css';
+  let output = '/* Core New UI CSS Bundle (Bootstrap 5; see core_new_ui.css manifest) */\n';
+  output += `/* Generated on ${new Date().toISOString()} */\n`;
+  output += '\n';
+
+  output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
+  output += '\n';
+
+  output += readFileIfExists('node_modules/bootstrap-icons/font/bootstrap-icons.css');
+  output += '\n';
+
+  output += readFileIfExists('app/assets/stylesheets/fonts.css');
+  output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
+  output += '\n';
+
+  output += readFileIfExists('app/assets/stylesheets/style.css');
+  output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/base.css');
+  output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/panes.css');
+  output += '\n';
+
+  output += readFileIfExists('app/assets/stylesheets/qscore_snapshot_diff.css');
+  output += '\n';
+
+  output += readFileIfExists('app/assets/stylesheets/search_results.css');
+  output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/query_workspace_new_ui.css');
+  output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/stimulus_controllers.css');
+  output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/tour_modern.css');
+  output += '\n';
+
+  output += readFileIfExists('app/assets/stylesheets/animation_new_ui.css');
+  output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/froggy.css');
+  output += '\n';
+
+  fs.writeFileSync(outputFile, output);
+  const stats = fs.statSync(outputFile);
+  console.log(`core_new_ui.css created (${(stats.size / 1024).toFixed(1)}KB)`);
+}
+
 function buildAdminCSS() {
   console.log('Building admin.css...');
   
@@ -248,6 +302,7 @@ function buildAllCSS() {
     // Build all CSS bundles
     buildApplicationCSS();
     buildCoreCSS();
+    buildCoreNewUiCSS();
     buildAdminCSS();
     buildAdminUsersCSS();
     

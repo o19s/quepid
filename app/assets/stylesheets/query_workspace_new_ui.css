@@ -1,0 +1,633 @@
+/*
+ * Case workspace + query list — new_ui only (build_css.js → core_new_ui.css).
+ *
+ * core_new_ui omits bootstrap3.css / bootstrap3-add.css / misc.css, but the Rails
+ * core partials still use BS3-era classes (pull-*, list-inline, btn-default, etc.)
+ * and expect bootstrap3-add “Main / results” layout (query container chrome, query
+ * rows, sub-results panel). This sheet restores that parity without loading full BS3.
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Bootstrap 3 utility aliases (markup unchanged from Angular-era partials)     */
+/* -------------------------------------------------------------------------- */
+
+.pull-left {
+  float: left !important;
+}
+
+.pull-right {
+  float: right !important;
+}
+
+.clearfix::before,
+.clearfix::after {
+  content: " ";
+  display: table;
+}
+
+.clearfix::after {
+  clear: both;
+}
+
+.list-inline {
+  padding-left: 0;
+  list-style: none;
+  margin-left: -5px;
+}
+
+.list-inline > li {
+  display: inline-block;
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+/* BS3 “default” button — white/gray border (toolbar + modals) */
+.btn-default {
+  color: #333;
+  background-color: #fff;
+  border-color: #ccc;
+}
+
+.btn-default:hover {
+  color: #333;
+  background-color: #e6e6e6;
+  border-color: #adadad;
+}
+
+.btn-default:focus {
+  color: #333;
+  background-color: #e6e6e6;
+  border-color: #adadad;
+}
+
+.align-top {
+  vertical-align: top !important;
+}
+
+.p-r-10 {
+  padding-right: 10px;
+}
+
+.input-append {
+  margin-right: 40px;
+  padding: 0 20px 0 0;
+}
+
+.input-append,
+.input-append input,
+.input-append .btn {
+  display: inline-block;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Inline form row (case rename cancel/submit) */
+.form-inline .form-control {
+  display: inline-block;
+  width: auto;
+  vertical-align: middle;
+}
+
+.form-inline .btn {
+  vertical-align: middle;
+}
+
+.btn-group {
+  z-index: 10;
+}
+
+/* BS3 form labels / small inputs still used in query row partials */
+.control-label {
+  display: inline-block;
+  max-width: 100%;
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+.form-control.input-sm {
+  min-height: calc(1.5em + 0.5rem + 2px);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 0.25rem;
+}
+
+/* Case action strip — match Angular chrome: no default link underlines */
+#case-actions a {
+  text-decoration: none;
+}
+
+#case-actions a:hover,
+#case-actions a:focus {
+  text-decoration: none;
+}
+
+/*
+ * Case actions + query-list toolbar: Angular core used BS3 body (14px) and compact
+ * list-inline gaps; BS5 defaults read smaller/sparser without these overrides.
+ */
+#case-actions,
+#query-list-shell > .row > .col-sm-12.form-group {
+  font-size: 14px;
+  line-height: 1.42857143;
+}
+
+#case-actions .list-inline,
+#query-list-shell > .row > .col-sm-12.form-group > ul.list-inline.pull-right {
+  margin-left: -5px;
+}
+
+#case-actions .list-inline > li,
+#query-list-shell > .row > .col-sm-12.form-group > ul.list-inline.pull-right > li {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#case-actions .list-inline > li > .bi {
+  margin-right: 4px;
+  font-size: 14px;
+  vertical-align: -0.125em;
+}
+
+/* Nested sort controls (inline second list-inline) */
+#query-list-shell ul.list-inline[role="group"] {
+  margin-left: -5px;
+}
+
+#query-list-shell ul.list-inline[role="group"] > li {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+/* “Show only rated”: explicit checkbox size so it reads like BS3/Angular, not a tiny BS5-only control */
+#query-list-shell .query-list-toolbar-rated {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+#query-list-shell .query-list-toolbar-rated input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0 6px 0 0;
+  flex-shrink: 0;
+}
+
+#query-list-shell .query-list-toolbar-rated .show-only-rated-link {
+  text-decoration: none;
+}
+
+#query-list-shell .query-list-toolbar-rated .show-only-rated-link:hover,
+#query-list-shell .query-list-toolbar-rated .show-only-rated-link:focus {
+  text-decoration: underline;
+}
+
+/*
+ * Case header: sparkline + score badge stay to the left of the title (Angular used
+ * inline-flex + inline-block siblings; under Bootstrap 5 grid those often stack vertically).
+ */
+#case-header .case-header-body {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+#case-header .case-score-badge-wrapper {
+  flex-shrink: 0;
+}
+
+#case-header .case-header-info {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Main shell (#main is .pane_container on new_ui)                            */
+/* -------------------------------------------------------------------------- */
+
+#main {
+  padding: 0;
+  position: relative;
+  min-width: 750px;
+}
+
+.dragging {
+  border: 1px dashed #aaa;
+  padding: 5px 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Results workspace — ported from bootstrap3-add.css (Main / results)          */
+/* -------------------------------------------------------------------------- */
+
+.results-control h1 {
+  margin: 15px 0 20px 0;
+  padding-bottom: 10px;
+}
+
+.results-control #query-container {
+  margin: 5px 0 60px;
+  padding: 30px 0 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-width: 1px 0;
+}
+
+.results-control queries {
+  background: #fff;
+}
+
+.results-list-element {
+  list-style: none;
+  display: block;
+  clear: both;
+  margin: 20px 0 0;
+  padding-left: 0;
+}
+
+.results-list-element > li {
+  border: 1px solid #eee;
+  margin: 0 0 5px 0;
+  position: relative;
+  border-radius: 5px;
+}
+
+.result-header {
+  align-items: stretch;
+  overflow: auto;
+  position: relative;
+  padding: 10px 20px;
+}
+
+.result-header:hover {
+  background: #eee;
+}
+
+.case-score {
+  display: block;
+}
+
+.results-title {
+  color: #222;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: normal;
+  line-height: 1.5em;
+  margin: 0;
+  display: block;
+  flex: 2 2 10%;
+  float: left;
+}
+
+.results .unrated-results-text {
+  display: block;
+  clear: both;
+}
+
+.results .total-results {
+  display: block;
+  float: right;
+  line-height: 30px;
+  margin-right: 50px;
+  text-align: right;
+}
+
+.results .total-results.unrated-results {
+  line-height: 1em;
+}
+
+.low-profile {
+  opacity: 0.5;
+  font-size: 60%;
+}
+
+.query-score-label {
+  display: block;
+}
+
+.results .error-warning {
+  display: none;
+}
+
+.results .queryHeader_error .error-warning {
+  display: inline-block;
+  padding-left: 15px;
+  color: #fe5b00;
+}
+
+.results .queryHeader_loading,
+.results .queryHeader_noResults .result-header {
+  opacity: 0.5;
+}
+
+.results .queryHeader_loading h2:hover {
+  cursor: default;
+}
+
+.results .queryHeader_loading .toggleSign {
+  display: none;
+}
+
+.results .queryHeader_loading h2 .loading-query {
+  float: left;
+  width: 32px;
+  height: 32px;
+  line-height: 1;
+  display: inline-block;
+  margin-right: 12px;
+  border: 3px solid lightgray;
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.results .delete-query,
+.results .toggleSign {
+  color: #2872bc;
+  position: absolute;
+  top: 22px;
+  right: 19px;
+  font-weight: bold;
+  border-radius: 3px;
+  font-size: 16px;
+}
+
+.toggleSign {
+  cursor: pointer;
+}
+
+.results .loading .delete-query {
+  display: none;
+}
+
+.results .delete-query:hover {
+  background: #c00;
+  border: 1px solid #900;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Expanded query body */
+.sub-results {
+  clear: both;
+  background: url("sub-results-bg.png") top center no-repeat #f7f7f7;
+  padding: 75px 15px 15px 15px;
+  position: relative;
+  min-width: 650px;
+}
+
+.sub-results td {
+  vertical-align: middle;
+}
+
+.sub-results .btn-toolbar {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.sub-results .btn-toolbar .active {
+  background: #2872bc;
+  color: #fff;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Tune Relevance east pane (#dev-settings) — from bootstrap3-add.css          */
+/* -------------------------------------------------------------------------- */
+
+.ui-layout-east {
+  background: #333;
+}
+
+.show-dev-settings {
+  width: 100%;
+  height: auto;
+  padding: 0 360px 0 18px !important;
+  margin: 0;
+}
+
+#dev-settings {
+  width: 100%;
+  background: #333;
+  color: #f0f0f0;
+  height: 100%;
+  min-height: calc(100% - 70px);
+}
+
+#dev-settings .dev-header {
+  background: #222;
+  background: linear-gradient(to bottom, #282828, #222);
+  color: #f0f0f0;
+  padding: 15px;
+  border-bottom: 1px solid #363636;
+  cursor: pointer;
+}
+
+#dev-settings .dev-header .bi {
+  margin-left: 10px;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+#dev-settings .dev-section,
+#dev-settings .dev-body,
+#dev-settings .dev-setting-attribute {
+  padding: 15px;
+}
+
+#dev-settings .dev-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+}
+
+#dev-settings .dev-section ul li {
+  padding: 5px 10px;
+  border-bottom: 1px solid #444;
+}
+
+#dev-settings .dev-section ul li .btn {
+  float: right;
+}
+
+#dev-settings .dev-section .btn-xs .bi {
+  font-size: 9px;
+}
+
+#dev-settings .dev-section .form-inline select {
+  width: 40%;
+  margin-right: 2.5%;
+}
+
+#dev-settings .dev-section .form-inline .btn {
+  width: 12%;
+}
+
+#dev-settings .dev-section .form-group {
+  margin-bottom: 15px;
+}
+
+#dev-settings .dev-section .nav-tabs {
+  border-bottom: 1px solid #666;
+  font-size: 12px;
+}
+
+#dev-settings .dev-section .nav-tabs li {
+  border: none;
+}
+
+#dev-settings .nav-tabs li {
+  padding: 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #999;
+}
+
+#dev-settings .nav-tabs li:hover {
+  border-color: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+#dev-settings .nav-tabs .tabBoxSelected {
+  background: #666;
+  color: #fff;
+  border: none;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+#dev-settings .btn-submit {
+  width: 260px;
+  margin: 20px 0 20px 40px;
+}
+
+#dev-settings .settings-tab,
+#dev-settings .dev-section {
+  height: 100%;
+  min-height: 300px;
+}
+
+#dev-settings #queryParamsArea {
+  height: calc(100% - 50px);
+  min-height: calc(100% - 50px);
+}
+
+#dev-settings #queryParamsCanvas {
+  height: calc(100% - 10px);
+}
+
+#dev-settings .rerunnable-settings-tab {
+  height: calc(100% - 50px);
+  min-height: 300px;
+  margin-bottom: 20px;
+  overflow: auto;
+}
+
+#queryParamsCanvas textarea {
+  height: calc(100% - 40px);
+}
+
+#queryParamsCanvas .slider-wrap {
+  padding: 10px 0;
+  border-bottom: 1px solid #555;
+  clear: both;
+}
+
+#queryParamsCanvas .slider-wrap input {
+  float: right;
+  color: black;
+}
+
+#dev-settings .settings-tab > .container {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.history-container {
+  height: auto;
+  overflow-y: auto;
+}
+
+.history-list li {
+  background: #666;
+  word-wrap: break-word;
+  position: relative;
+}
+
+.history-list li:hover {
+  background: #555;
+  cursor: pointer;
+  position: relative;
+}
+
+.history-list li:hover .try-details {
+  display: inline;
+}
+
+.history-list li span {
+  display: block;
+  text-align: left;
+  font-weight: bold;
+  font-family: "allerbold_italic", serif;
+  font-size: 16px;
+  color: #ccc;
+  padding: 3px 0 8px 0;
+}
+
+.try-details {
+  position: absolute;
+  display: none;
+  top: 5px;
+  right: 10px;
+  background: #777;
+  cursor: pointer;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Expanded query row toolbar (order matches Angular searchResults.html)      */
+/* -------------------------------------------------------------------------- */
+
+.query-row-expanded-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.query-row-score-all {
+  flex: 0 0 auto;
+}
+
+.query-row-score-all strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.95em;
+}
+
+.query-row-actions-toolbar {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Workspace footer (misc.css padding helpers omitted from core_new_ui)       */
+/* -------------------------------------------------------------------------- */
+
+.p-t-20 {
+  padding-top: 20px;
+}
+
+.p-b-20 {
+  padding-bottom: 20px;
+}
+
+#footer {
+  background: #ccc;
+  padding: 20px 0;
+  box-shadow: inset 0 5px 5px #c0c0c0;
+}
+
+footer {
+  margin-top: 30px;
+}

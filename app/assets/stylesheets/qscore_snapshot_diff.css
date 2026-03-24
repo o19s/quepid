@@ -1,0 +1,125 @@
+/*
+ * Subset of qscore.css for Stimulus new-ui only (snapshot / diff column layout).
+ * Angular core still loads full qscore.css via core.css.
+ * TODO: dedupe into a shared partial once Angular is gone.
+ */
+
+:root {
+  --qscore-spacing-sm: 5px;
+  --qscore-spacing-md: 10px;
+  --qscore-spacing-lg: 15px;
+  --qscore-spacing-xl: 20px;
+  --qscore-border-radius: 5px;
+  --qscore-border-width: 1px;
+  --qscore-border-width-thick: 2px;
+  --qscore-highlight-width: 4px;
+}
+
+.border-radius-left {
+  border-top-left-radius: var(--qscore-border-radius);
+  border-bottom-left-radius: var(--qscore-border-radius);
+}
+
+.border-radius-right {
+  border-top-right-radius: var(--qscore-border-radius);
+  border-bottom-right-radius: var(--qscore-border-radius);
+}
+
+.border-radius-none {
+  border-radius: 0;
+}
+
+.border-radius-full {
+  border-radius: var(--qscore-border-radius);
+}
+
+/* Diff container styles (query_row_controller snapshot comparison) */
+.diff-container {
+  padding: 0;
+  width: 100%;
+}
+
+.diff-header {
+  display: flex;
+  margin-bottom: var(--qscore-spacing-xl);
+  border-bottom: var(--qscore-border-width-thick) solid #eee;
+}
+
+.diff-header .diff-column {
+  padding: 0;
+}
+
+.diff-row {
+  display: flex;
+  min-height: 200px;
+  border-bottom: var(--qscore-border-width) solid #f0f0f0;
+  margin-bottom: var(--qscore-spacing-xl);
+}
+
+.diff-column {
+  flex: 1;
+  border-right: var(--qscore-border-width) solid #eee;
+  padding: 0 var(--qscore-spacing-lg);
+  text-align: left;
+}
+
+.diff-column:last-child {
+  border-right: none;
+}
+
+/* Diff score styling */
+.diff-score-display {
+  display: inline-block;
+  margin: var(--qscore-spacing-md) 0;
+}
+
+.diff-score-display .overall-rating {
+  margin: 0;
+  border-radius: var(--qscore-border-radius);
+}
+
+.diff-score-display.snapshot-score .overall-rating {
+  border-top-left-radius: var(--qscore-border-radius);
+  border-bottom-left-radius: var(--qscore-border-radius);
+}
+
+.score-details {
+  margin-top: var(--qscore-spacing-sm);
+}
+
+.diff-actions {
+  text-align: center;
+  padding-top: var(--qscore-spacing-xl);
+  border-top: var(--qscore-border-width) solid #eee;
+}
+
+/* Search result highlighting (snapshot diff cells) */
+.search-result.different {
+  border-left: var(--qscore-highlight-width) solid #ffc107;
+}
+
+.search-result.missing {
+  border-left: var(--qscore-highlight-width) solid #dc3545;
+}
+
+.search-result.new {
+  border-left: var(--qscore-highlight-width) solid #28a745;
+}
+
+@media (max-width: 768px) {
+  .diff-header,
+  .diff-row {
+    flex-direction: column;
+  }
+
+  .diff-column {
+    border-right: none;
+    border-bottom: var(--qscore-border-width) solid #eee;
+    margin-bottom: var(--qscore-spacing-lg);
+    padding: var(--qscore-spacing-lg) 0;
+  }
+
+  .diff-column:last-child {
+    border-bottom: none;
+  }
+}
