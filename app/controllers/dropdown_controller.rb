@@ -3,6 +3,7 @@
 class DropdownController < ApplicationController
   def cases
     @cases = recent_cases 4
+    @use_new_ui = deserialize_bool_param(params[:new_ui])
     render layout: false
   end
 

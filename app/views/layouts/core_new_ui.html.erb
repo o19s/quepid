@@ -7,7 +7,7 @@
 <meta name="description" content="Tired of irrelevant search results? Use Quepid to help improve the quality and relevancy of your search results.">
 <meta name="viewport" content="width=device-width">
 
-<%= stylesheet_link_tag 'core', media: 'all' %>
+<%= stylesheet_link_tag 'core_new_ui', media: 'all' %>
 <%= csrf_meta_tags %>
 </head>
 <body data-quepid-root-url="<%= request.base_url %><%= ENV['RAILS_RELATIVE_URL_ROOT'] %>"
@@ -17,8 +17,10 @@
       data-query-list-sortable="<%= Rails.application.config.query_list_sortable %>"
       data-scorer-scale="<%= (@case&.scorer&.scale || []).to_json %>"
       data-scorer-name="<%= @case&.scorer&.name %>"
-      data-scorer-id="<%= @case&.scorer&.id %>">
-  <%= render 'layouts/header_core_app' %>
+      data-scorer-id="<%= @case&.scorer&.id %>"
+      data-completed-case-wizard="<%= current_user&.completed_case_wizard %>">
+  <%# Omit flash_messages here: #main-content passes data-rails-flash to flash_controller (duplicate if header also renders flash). %>
+  <%= render 'layouts/header', use_new_ui_shell: true, omit_embedded_flash_messages: true %>
 
   <div id="main-content"
        data-controller="flash"

@@ -2,9 +2,9 @@
 
 # This hosts the main Angular 1 application that runs in the client.
 class CoreController < ApplicationController
-  before_action :set_case_or_bootstrap, except: :new
-  before_action :populate_from_params, except: [ :new, :new_ui ]
-  before_action :load_shared_data, except: :new
+  before_action :set_case_or_bootstrap, except: [ :new, :new_for_new_ui ]
+  before_action :populate_from_params, except: [ :new, :new_for_new_ui, :new_ui ]
+  before_action :load_shared_data, except: [ :new, :new_for_new_ui ]
 
   def index
     Analytics::Tracker.track_user_swapped_protocol current_user, @case, params['protocolToSwitchTo'] if params['protocolToSwitchTo']
@@ -19,13 +19,21 @@ class CoreController < ApplicationController
   end
 
   def new
-    @case = current_user.cases.build case_name: "Case #{current_user.cases.size}"
-    @case.save!
-
+    create_new_case!
     redirect_to case_core_path(@case, @case.tries.first.try_number, params: { showWizard: true })
   end
 
+  def new_for_new_ui
+    create_new_case!
+    redirect_to case_core_new_ui_path(@case, @case.tries.first.try_number, showWizard: true)
+  end
+
   private
+
+  def create_new_case!
+    @case = current_user.cases.build case_name: "Case #{current_user.cases.size}"
+    @case.save!
+  end
 
   def load_shared_data
     @recent_cases = recent_cases(4).includes(tries: :search_endpoint)

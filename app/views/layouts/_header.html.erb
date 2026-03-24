@@ -18,13 +18,19 @@
               </li>
               <li><hr class="dropdown-divider"></li>
               
-              <turbo-frame id="dropdown_cases" src="<%= dropdown_cases_path() %>" loading="lazy">
+              <turbo-frame id="dropdown_cases" src="<%= dropdown_cases_path(**(local_assigns[:use_new_ui_shell] ? { new_ui: true } : {})) %>" loading="lazy">
               </turbo-frame>
             
               <li class="actions">
                 <div class="d-grid gap-2">
                 <%= link_to "View all cases", cases_path, class: "btn btn-outline-secondary", data: { turbo: false } %>
-                <%= link_to 'Create a case', case_new_path, class: 'btn btn-success', data: { turbo: false } %>
+                <% if local_assigns[:use_new_ui_shell] %>
+                  <%= button_to case_new_for_new_ui_path, class: "btn btn-success", form: { data: { turbo: false } } do %>
+                    Create a case
+                  <% end %>
+                <% else %>
+                  <%= link_to 'Create a case', case_new_path, class: 'btn btn-success', data: { turbo: false } %>
+                <% end %>
                 </div>
               </li>              
             </ul>
@@ -105,6 +111,9 @@
       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
   <% end %>
-  
-  <%= flash_messages -%>
+
+  <%# When true, server flash is shown elsewhere (e.g. core_new_ui Stimulus flash_controller via data-rails-flash). %>
+  <% unless local_assigns[:omit_embedded_flash_messages] %>
+    <%= flash_messages -%>
+  <% end %>
 </div>

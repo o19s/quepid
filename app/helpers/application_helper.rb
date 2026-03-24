@@ -107,6 +107,8 @@ module ApplicationHelper
   # Match the link to the core case url with the endpoint_url
   # if we have one.  Avoids a swap in the core application.
   def link_to_core_case name, kase, try_number, options = {}
+    use_new_ui = options.delete(:use_new_ui)
+
     # Ensure options[:data] is set to { turbo_prefetch: false }
     options[:data] ||= {}
     options[:data][:turbo_prefetch] = false
@@ -123,8 +125,11 @@ module ApplicationHelper
       }.compact
     end
 
-    path = case_core_url(kase, try_number, **path_params)
-    # Call the original link_to method with the modified options
+    path = if use_new_ui
+             case_core_new_ui_url(kase, try_number, **path_params)
+           else
+             case_core_url(kase, try_number, **path_params)
+           end
     link_to(name, path, options)
   end
 

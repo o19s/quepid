@@ -344,8 +344,9 @@ Rails.application.routes.draw do
   get '/cases/new'                    => 'core#new', as: :case_new
 
   # New Rails+Stimulus UI (in development, will replace core#index when complete)
+  post '/cases/new_ui' => 'core#new_for_new_ui', as: :case_new_for_new_ui
   get '/case/:id(/try/:try_number)/new_ui' => 'core#new_ui', as: :case_core_new_ui
-  get '/case'                         => 'core#index'
+  get '/case' => 'core#index'
 
   # Static pages
   get '/cookies' => 'pages#show', defaults: { page: 'cookies' }
