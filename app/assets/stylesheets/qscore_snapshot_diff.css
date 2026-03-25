@@ -1,7 +1,5 @@
 /*
- * Subset of qscore.css for Stimulus new-ui only (snapshot / diff column layout).
- * Angular core still loads full qscore.css via core.css.
- * TODO: dedupe into a shared partial once Angular is gone.
+ * Subset of qscore.css for snapshot / diff column layout.
  */
 
 :root {

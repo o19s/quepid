@@ -48,6 +48,7 @@ export default class extends Controller {
     this.queryScores = {} // { queryId: { text, score, maxScore, numFound } }
     this.sortReverse = false
     this.currentSortName = "default"
+    this._autoSearchPending = true
 
     // Store original DOM indices so "default" sort can restore server-rendered order
     this.queryRowTargets.forEach((row, idx) => {
@@ -67,6 +68,9 @@ export default class extends Controller {
       if (outlet) void outlet.rerunSearch()
     }
     document.addEventListener("query-options-saved", this._onQueryOptionsSaved)
+
+    this._onQueriesAdded = () => this._handleQueriesAdded()
+    document.addEventListener("queries-added", this._onQueriesAdded)
   }
 
   disconnect() {
@@ -79,6 +83,32 @@ export default class extends Controller {
     }
     if (this._onQueryOptionsSaved) {
       document.removeEventListener("query-options-saved", this._onQueryOptionsSaved)
+    }
+    if (this._onQueriesAdded) {
+      document.removeEventListener("queries-added", this._onQueriesAdded)
+    }
+  }
+
+  /**
+   * Stimulus lifecycle: called each time a query-row outlet connects.
+   * On initial load, fires once per row — we batch via a microtask so we
+   * run a single auto-search pass after all outlets are wired.
+   * After in-place add, fires for each new row as Stimulus observes it.
+   */
+  queryRowOutletConnected(outlet) {
+    if (this._autoSearchPending) {
+      // Batch: schedule one auto-search after all initial outlets connect
+      if (!this._autoSearchScheduled) {
+        this._autoSearchScheduled = true
+        queueMicrotask(() => {
+          this._autoSearchScheduled = false
+          this._autoSearchPending = false
+          this._autoRunVisibleSearches()
+        })
+      }
+    } else if (!outlet.searchLoaded && !outlet.element.classList.contains("d-none")) {
+      // A new row was added after initial load — search it immediately
+      outlet.rerunSearch()
     }
   }
 
@@ -283,6 +313,11 @@ export default class extends Controller {
 
     this.queryCountTarget.textContent = matchingRows.length
     this._renderPagination(matchingRows.length)
+
+    // Auto-search any newly visible rows that haven't been searched yet
+    if (!this._autoSearchPending) {
+      this._autoRunVisibleSearches()
+    }
   }
 
   _renderPagination(totalItems) {
@@ -443,6 +478,33 @@ export default class extends Controller {
     } catch (error) {
       console.error("Failed to save query position:", error)
       revertDrag()
+    }
+  }
+
+  /** Handle newly added queries: clear filter, jump to last page, re-apply visibility.
+   *  Auto-search is triggered by queryRowOutletConnected when Stimulus wires the new rows. */
+  _handleQueriesAdded() {
+    // Clear any active filter so the new queries are visible
+    this.currentFilter = ""
+    if (this.hasFilterInputTarget) this.filterInputTarget.value = ""
+    this.showOnlyRated = false
+    if (this.hasShowOnlyRatedCheckboxTarget) this.showOnlyRatedCheckboxTarget.checked = false
+
+    const totalRows = this.queryRowTargets.length
+    this.currentPage = Math.max(1, Math.ceil(totalRows / PAGE_SIZE))
+    this._applyVisibility()
+  }
+
+  /** Run searches for query rows visible on the current page (Angular parity: search on load). */
+  async _autoRunVisibleSearches() {
+    const visibleOutlets = this.queryRowOutlets.filter(
+      (outlet) =>
+        !outlet.element.classList.contains("d-none") && !outlet.searchLoaded,
+    )
+
+    for (let i = 0; i < visibleOutlets.length; i += MAX_CONCURRENT) {
+      const batch = visibleOutlets.slice(i, i + MAX_CONCURRENT)
+      await Promise.allSettled(batch.map((outlet) => outlet.rerunSearch()))
     }
   }
 

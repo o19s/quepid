@@ -4,14 +4,26 @@ export default class extends Controller {
   static targets = ["scaleList", "scaleLabels"]
 
   connect() {
+    this._boundUpdateScale = this.updateScale.bind(this)
+    this._boundHandleInput = this.handleScaleListInput.bind(this)
+
     // Listen for changes on scale preset radio buttons
     this.element.querySelectorAll('input[name="scale_preset"]').forEach((radio) => {
-      radio.addEventListener("change", this.updateScale.bind(this))
+      radio.addEventListener("change", this._boundUpdateScale)
     })
 
     // Listen for manual changes to scale_list field
     if (this.hasScaleListTarget) {
-      this.scaleListTarget.addEventListener("input", this.handleScaleListInput.bind(this))
+      this.scaleListTarget.addEventListener("input", this._boundHandleInput)
+    }
+  }
+
+  disconnect() {
+    this.element.querySelectorAll('input[name="scale_preset"]').forEach((radio) => {
+      radio.removeEventListener("change", this._boundUpdateScale)
+    })
+    if (this.hasScaleListTarget) {
+      this.scaleListTarget.removeEventListener("input", this._boundHandleInput)
     }
   }
 

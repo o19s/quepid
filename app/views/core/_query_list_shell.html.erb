@@ -93,7 +93,9 @@
 
       <div class="clearfix"></div>
 
-      <!-- Query rows -->
+      <!-- Query rows — IMPORTANT: the <li> markup is duplicated in
+           app/javascript/controllers/add_query_controller.js (buildQueryRowHtml).
+           Changes here must be mirrored there. -->
       <ul class="results-list-element" data-query-list-target="list">
         <% @queries.each do |query| %>
           <li data-query-list-target="queryRow"
@@ -136,7 +138,7 @@
                   </small>
                 </span>
 
-                <span class="float-end d-none" style="margin-right: 20px;" title="Hop to it! There are unrated results!"
+                <span class="float-end d-none query-row-indicator" title="Hop to it! There are unrated results!"
                       data-query-row-target="frogIndicator">
                   <span class="icon-container">
                     <i class="frog-icon">🐸</i>
@@ -144,7 +146,7 @@
                   </span>
                 </span>
 
-                <span class="float-end d-none" style="margin-right: 20px;" title="Querqy rule triggered"
+                <span class="float-end d-none query-row-indicator" title="Querqy rule triggered"
                       data-query-row-target="querqyIndicator">
                   <i class="querqy-icon"></i>
                 </span>

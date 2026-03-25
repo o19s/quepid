@@ -18,6 +18,14 @@ export default class extends Controller {
     this.snapshots = [] // available snapshots from API
     this.comparisonActive = false
     this._comparedSnapshotIds = [] // IDs of snapshots in active comparison
+    this._onModalHidden = () => {
+      this._comparing = false
+    }
+    this.modalTarget.addEventListener("hidden.bs.modal", this._onModalHidden)
+  }
+
+  disconnect() {
+    this.modalTarget.removeEventListener("hidden.bs.modal", this._onModalHidden)
   }
 
   async open(event) {

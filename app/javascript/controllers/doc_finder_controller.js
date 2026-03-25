@@ -17,6 +17,7 @@ export default class extends Controller {
   }
 
   disconnect() {
+    this._tryConfigPromise = null
     document.removeEventListener("show-doc-finder", this._onShow)
   }
 

@@ -1,25 +1,12 @@
 // Smart field renderer — renders document field values with type-aware display.
 // Objects/arrays → collapsible JSON, URLs → links, media → embeds, text → escaped.
 
+import { escapeHtml, escapeAttr } from "modules/html_escape"
+
 const IMAGE_EXTS = /\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)(\?|$)/i
 const VIDEO_EXTS = /\.(mp4|webm|ogg|mov)(\?|$)/i
 const AUDIO_EXTS = /\.(mp3|wav|ogg|aac|flac|m4a)(\?|$)/i
 const URL_PATTERN = /^https?:\/\//i
-
-function escapeHtml(str) {
-  const div = document.createElement("div")
-  div.textContent = str
-  return div.innerHTML
-}
-
-function escapeAttr(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-}
 
 /**
  * Render a single field value as HTML string.

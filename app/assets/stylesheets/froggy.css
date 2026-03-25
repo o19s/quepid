@@ -27,6 +27,10 @@
 }
 
 
+.query-row-indicator {
+  margin-right: 20px;
+}
+
 .querqy-icon {
     display: inline-block;
     width: 24px;  /* Adjust to match your image width */

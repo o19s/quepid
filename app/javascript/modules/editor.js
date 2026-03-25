@@ -369,7 +369,7 @@ export function fromTextArea(textarea, options = {}) {
       setTimeout(() => editor.formatJSON(), 0)
     } catch {
       // If invalid JSON, don't attempt to format
-      console.log("Initial JSON content is invalid, skipping auto-formatting")
+      console.warn("Initial JSON content is invalid, skipping auto-formatting")
     }
   }
 
