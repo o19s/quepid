@@ -90,83 +90,9 @@ function buildApplicationCSS() {
 
 function buildCoreCSS() {
   console.log('Building core.css...');
-  
+
   const outputFile = 'app/assets/builds/core.css';
-  let output = '/* Core CSS Bundle (Bootstrap 3 for Angular App) */\n';
-  output += `/* Generated on ${new Date().toISOString()} */\n`;
-  output += '\n';
-
-  // Bootstrap 3
-  output += readFileIfExists('app/assets/stylesheets/bootstrap3.css');
-  output += '\n';
-
-  // Bootstrap Icons (shared between both)
-  output += readFileIfExists('node_modules/bootstrap-icons/font/bootstrap-icons.css');
-  output += '\n';
-
-  // Core application styles
-  output += readFileIfExists('app/assets/stylesheets/fonts.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/bootstrap3-add.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/style.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/base.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/panes.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/stackedChart.css');
-  output += '\n';
-
-  // Tour/Guides
-  output += readFileIfExists('node_modules/tether-shepherd/dist/css/shepherd-theme-arrows.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/tour.css');
-  output += '\n';
-
-  // Screen-specific styles
-  const screens = ['cases', 'docs', 'settings', 'qscore', 'qgraph'];
-  for (const screen of screens) {
-    output += readFileIfExists(`app/assets/stylesheets/${screen}.css`);
-    output += '\n';
-  }
-
-  // BS5 compatibility (new_ui uses BS5 JS with BS3 CSS)
-  output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
-  output += '\n';
-
-  // New UI (Stimulus) styles
-  output += readFileIfExists('app/assets/stylesheets/search_results.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/stimulus_controllers.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/tour_modern.css');
-  output += '\n';
-
-  // Other styles
-  output += readFileIfExists('app/assets/stylesheets/misc.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/animation.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/froggy.css');
-  output += '\n';
-
-  fs.writeFileSync(outputFile, output);
-  const stats = fs.statSync(outputFile);
-  console.log(`core.css created (${(stats.size / 1024).toFixed(1)}KB)`);
-}
-
-/**
- * Case workspace styles for Stimulus new-ui: Bootstrap 5 + shared case layers.
- * Omits Angular-only sheets (Shepherd, cases index, docs explain, settings <query-params>,
- * full qgraph/qscore/stackedChart) — those stay in buildCoreCSS() for `/case/:id`.
- * Uses trimmed duplicates: qscore_snapshot_diff.css, animation_new_ui.css.
- */
-function buildCoreNewUiCSS() {
-  console.log('Building core_new_ui.css...');
-
-  const outputFile = 'app/assets/builds/core_new_ui.css';
-  let output = '/* Core New UI CSS Bundle (Bootstrap 5; see core_new_ui.css manifest) */\n';
+  let output = '/* Core CSS Bundle (Bootstrap 5) */\n';
   output += `/* Generated on ${new Date().toISOString()} */\n`;
   output += '\n';
 
@@ -193,21 +119,21 @@ function buildCoreNewUiCSS() {
 
   output += readFileIfExists('app/assets/stylesheets/search_results.css');
   output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/query_workspace_new_ui.css');
+  output += readFileIfExists('app/assets/stylesheets/query_workspace.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/stimulus_controllers.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/tour_modern.css');
   output += '\n';
 
-  output += readFileIfExists('app/assets/stylesheets/animation_new_ui.css');
+  output += readFileIfExists('app/assets/stylesheets/animation.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/froggy.css');
   output += '\n';
 
   fs.writeFileSync(outputFile, output);
   const stats = fs.statSync(outputFile);
-  console.log(`core_new_ui.css created (${(stats.size / 1024).toFixed(1)}KB)`);
+  console.log(`core.css created (${(stats.size / 1024).toFixed(1)}KB)`);
 }
 
 function buildAdminCSS() {
@@ -263,18 +189,6 @@ function buildAdminUsersCSS() {
   console.log(`admin_users.css created (${(stats.size / 1024).toFixed(1)}KB)`);
 }
 
-function copyVendorFiles() {
-  console.log('Copying Angular vendor CSS files...');
-  
-  ensureDirectoryExists('app/assets/builds');
-  
-  // Copy Angular third-party CSS files
-  copyFileIfExists('node_modules/ng-json-explorer/dist/angular-json-explorer.css', 'app/assets/builds/angular-json-explorer.css');
-  copyFileIfExists('node_modules/angular-wizard/dist/angular-wizard.css', 'app/assets/builds/angular-wizard.css');
-  copyFileIfExists('node_modules/ng-tags-input/build/ng-tags-input.min.css', 'app/assets/builds/ng-tags-input.min.css');
-  copyFileIfExists('node_modules/ng-tags-input/build/ng-tags-input.bootstrap.min.css', 'app/assets/builds/ng-tags-input.bootstrap.min.css');
-}
-
 function copyFontFiles() {
   console.log('Copying font files...');
   
@@ -302,12 +216,10 @@ function buildAllCSS() {
     // Build all CSS bundles
     buildApplicationCSS();
     buildCoreCSS();
-    buildCoreNewUiCSS();
     buildAdminCSS();
     buildAdminUsersCSS();
-    
-    // Copy vendor and asset files
-    copyVendorFiles();
+
+    // Copy asset files
     copyFontFiles();
     copyImageFiles();
     

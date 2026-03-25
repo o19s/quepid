@@ -7,7 +7,7 @@ class CoreControllerTest < ActionController::TestCase
     @controller = CoreController.new
   end
 
-  describe 'Basic functionality' do
+  describe 'index' do
     before do
       login_user users(:doug)
     end
@@ -16,37 +16,30 @@ class CoreControllerTest < ActionController::TestCase
       get :index
       assert_response :success
     end
-  end
 
-  describe 'new_ui' do
-    before do
-      login_user users(:doug)
-    end
-
-    test 'should get new_ui with case and try' do
+    test 'should get index with case and try' do
       the_case = cases(:one)
       the_try = tries(:one)
 
-      get :new_ui, params: { id: the_case.id, try_number: the_try.try_number }
+      get :index, params: { id: the_case.id, try_number: the_try.try_number }
       assert_response :success
     end
 
-    test 'uses core_new_ui layout with importmap tags' do
+    test 'uses core layout with importmap tags' do
       the_case = cases(:one)
       the_try = tries(:one)
 
-      get :new_ui, params: { id: the_case.id, try_number: the_try.try_number }
+      get :index, params: { id: the_case.id, try_number: the_try.try_number }
 
-      # core_new_ui layout loads application_modern importmap, not the Angular bundles
       assert_select 'script[type="importmap"]'
-      assert_select 'link[rel="stylesheet"][href*="core_new_ui"]'
+      assert_select 'link[rel="stylesheet"][href*="core"]'
     end
 
     test 'renders case header and query list' do
       the_case = cases(:one)
       the_try = tries(:one)
 
-      get :new_ui, params: { id: the_case.id, try_number: the_try.try_number }
+      get :index, params: { id: the_case.id, try_number: the_try.try_number }
 
       assert_select '#query-list-shell'
       assert_select '[data-controller="query-list"]'
@@ -58,17 +51,17 @@ class CoreControllerTest < ActionController::TestCase
       the_case = cases(:one)
       the_try = tries(:one)
 
-      get :new_ui, params: { id: the_case.id, try_number: the_try.try_number }
+      get :index, params: { id: the_case.id, try_number: the_try.try_number }
 
       assert_select "body[data-try-number='#{the_try.try_number}']"
       assert_select "body[data-case-id='#{the_case.id}']"
     end
 
-    test 'uses application BS5 navbar, not legacy header_core_app' do
+    test 'uses BS5 navbar' do
       the_case = cases(:one)
       the_try = tries(:one)
 
-      get :new_ui, params: { id: the_case.id, try_number: the_try.try_number }
+      get :index, params: { id: the_case.id, try_number: the_try.try_number }
 
       assert_select 'nav.navbar.navbar-expand-lg.navbar-secondary'
       assert_select 'header#header.navbar-inverse', count: 0

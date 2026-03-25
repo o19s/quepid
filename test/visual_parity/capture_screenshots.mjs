@@ -74,7 +74,7 @@ const FILE_TO_PAGES = [
   { pattern: /views\/home\/|views\/layouts\/application\.html/, prefixes: ['01-'] },
   { pattern: /views\/cases\/|controllers\/cases_controller/, prefixes: ['02-', '03-'] },
   { pattern: /views\/core\/|controllers\/core_controller/, prefixes: ['04-'] },
-  { pattern: /views\/layouts\/core|views\/layouts\/_header_core_app|views\/layouts\/_header\.html|controllers\/dropdown_controller|views\/dropdown\/cases|views\/layouts\/_footer_core_app/, prefixes: ['04-'] },
+  { pattern: /views\/layouts\/core|views\/layouts\/views\/layouts\/_header\.html|controllers\/dropdown_controller|views\/dropdown\/cases|views\/layouts\/_footer_core_app/, prefixes: ['04-'] },
   { pattern: /queriesLayout\.html|queriesCtrl\.js|queries\.html/, prefixes: ['04-'] },
   { pattern: /query_list_controller\.js|query_row_controller\.js|add_query_controller\.js/, prefixes: ['04-'] },
   { pattern: /inline_edit_controller\.js|resizable_pane_controller\.js|settings_panel_controller\.js/, prefixes: ['04-'] },
@@ -82,9 +82,9 @@ const FILE_TO_PAGES = [
   { pattern: /modules\/wizard_settings\.js|modules\/settings_validator\.js/, prefixes: ['04-'] },
   { pattern: /modules\/search_executor\.js|modules\/scorer|modules\/ratings_store|modules\/api_url|modules\/query_template|modules\/explain_parser|modules\/field_renderer/, prefixes: ['04-'] },
   { pattern: /doc_detail_modal_controller\.js|query_explain_modal_controller\.js|doc_finder_controller\.js/, prefixes: ['04-'] },
-  { pattern: /paneSvc\.js|panes\.css/, prefixes: ['04-'] },
+  { pattern: /panes\.css/, prefixes: ['04-'] },
   { pattern: /components\/clone_case|components\/delete_case|components\/export_case|components\/import_ratings|components\/share_case|components\/judgements|components\/diff\//, prefixes: ['04e'] },
-  { pattern: /search_results\.css|qscore_snapshot_diff\.css|animation_new_ui\.css|bootstrap3-add\.css|bootstrap5-add\.css|style\.css|base\.css/, prefixes: ['04-'] },
+  { pattern: /search_results\.css|qscore_snapshot_diff\.css|animation\.css|bootstrap3-add\.css|bootstrap5-add\.css|style\.css|base\.css/, prefixes: ['04-'] },
   { pattern: /views\/books\/|controllers\/books_controller/, prefixes: ['05-', '06-', '07-', '08-', '21-', '22-', '23-', '24-', '25-'] },
   { pattern: /views\/scorers\/|controllers\/scorers_controller/, prefixes: ['09-', '10-'] },
   { pattern: /views\/search_endpoints\//, prefixes: ['11-', '12-', '13-'] },
@@ -260,7 +260,7 @@ async function getFirstTeamId(page) {
 // Shared by all workspace variant entries to avoid duplication.
 async function resolveNewUiCase(page) {
   const id = await getFirstCaseId(page);
-  return id ? `/case/${id}/new_ui` : '/cases';
+  return id ? `/case/${id}` : '/cases';
 }
 
 // Open the east pane on the new_ui layout by clicking "Tune Relevance".
@@ -325,7 +325,7 @@ const PAGES = [
     },
     variants: {
       'new-ui': {
-        path: '/case/4/new_ui',
+        path: '/case/4',
         setup: async (page) => {
           await page.waitForLoadState('networkidle');
           await new Promise(r => setTimeout(r, 3000));
@@ -353,7 +353,7 @@ const PAGES = [
     tags: ['workspace', 'new-ui'],
     resolve: async (page) => {
       const id = await getFirstCaseId(page);
-      return id ? `/case/${id}/new_ui` : '/cases';
+      return id ? `/case/${id}` : '/cases';
     },
     variants: {
       'new-ui': { resolve: resolveNewUiCase },
@@ -645,7 +645,7 @@ const PAGES = [
     tags: ['workspace', 'action-bar', 'modal', 'new-ui'],
     resolve: async (page) => {
       const id = await getFirstCaseId(page);
-      return id ? `/case/${id}/new_ui?showWizard=true` : '/cases';
+      return id ? `/case/${id}?showWizard=true` : '/cases';
     },
     setup: async (page) => {
       // Wait for wizard modal to auto-open (300ms delay + rendering)
@@ -662,7 +662,7 @@ const PAGES = [
     tags: ['workspace', 'new-ui'],
     resolve: async (page) => {
       const id = await getFirstCaseId(page);
-      return id ? `/case/${id}/new_ui` : '/cases';
+      return id ? `/case/${id}` : '/cases';
     },
     setup: async (page) => {
       // Archive the case via API, then reload so the page shows the ARCHIVED badge

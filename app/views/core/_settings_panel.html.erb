@@ -193,7 +193,7 @@
                 data-try-number="<%= t.try_number %>"
                 data-settings-panel-target="tryItem">
               <div class="try-history-main">
-                <a href="<%= case_core_new_ui_path(@case, t.try_number) %>"
+                <a href="<%= case_core_path(@case, t.try_number) %>"
                    class="try-history-link">
                   <span class="try-number">#<%= t.try_number %></span>
                   <span class="try-name" data-settings-panel-target="tryName"><%= t.name %></span>

@@ -40,8 +40,7 @@ export function ratingColor(rating, colorMap) {
 
 /**
  * Discrete score badge colors (case + query headers).
- * Must stay aligned with Angular `app/assets/javascripts/services/qscore_service.js`
- * `qscoreSvc.scoreToColor()` — not a smooth HSL gradient.
+ * Discrete HSL buckets — not a smooth gradient.
  */
 const SCORE_TO_COLOR_BUCKETS = {
   "-1": "hsl(0, 100%, 40%)",

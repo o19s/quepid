@@ -23,9 +23,8 @@ This guide provides detailed instructions for developers who want to set up, run
   - [II. Development Log](#ii-development-log)
   - [III. Run Tests](#iii-run-tests)
     - [Minitest](#minitest)
-    - [JS Lint](#js-lint)
-    - [Karma](#karma)
     - [Vitest (Stimulus and ES modules)](#vitest-stimulus-and-es-modules)
+    - [ESLint and Prettier](#eslint-and-prettier)
     - [Rubocop](#rubocop)
     - [All Tests](#all-tests)
     - [Performance Testing](#performance-testing)
@@ -62,10 +61,9 @@ This guide provides detailed instructions for developers who want to set up, run
     - [Migration Errors](#migration-errors)
   - [Frontend Issues](#frontend-issues)
     - [Asset Compilation Errors](#asset-compilation-errors)
-    - [Angular App Not Loading](#angular-app-not-loading)
+    - [App Not Loading](#app-not-loading)
   - [Testing Issues](#testing-issues)
     - [Tests Failing Unexpectedly](#tests-failing-unexpectedly)
-    - [Karma Tests Timeout](#karma-tests-timeout)
 - [QA](#qa)
   - [Seed Data](#seed-data)
 
@@ -220,7 +218,7 @@ tail -f log/development.log
 
 ## III. Run Tests
 
-There are several kinds of automated tests you can run (Ruby, legacy Angular via Karma, modern JS via Vitest, and JS lint):
+There are several kinds of automated tests you can run (Ruby, JS via Vitest, and JS lint):
 
 ### Minitest
 
@@ -256,45 +254,23 @@ and then tail the log file via:
 tail -f log/test.log
 ```
 
-### JS Lint
-
-To check the JS syntax:
-
-```bash
-bin/docker r rails test:jshint
-```
-
-### Karma
-
-Runs tests for the Angular side. There are two modes for the karma tests:
-
-* Single run: `bin/docker r rails karma:run`
-* Continuous/watched run: `bin/docker r bin/rake karma:start`
-
-**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run.
-If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`).
-The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
-
 ### Vitest (Stimulus and ES modules)
 
 [Vitest](https://vitest.dev/) runs unit tests for Stimulus controllers and plain ES modules under `test/javascript/` (for example `test/javascript/controllers/` and `test/javascript/modules/`). `vitest.config.js` builds `modules/*` resolve aliases from `app/javascript/modules/*.js` so imports match the Rails importmap without hand-maintaining each file.
 
-For the new case UI, controller tests intentionally cover the same behaviors as the legacy Angular specs (without duplicating test structure): `query_list_controller.test.js` (query filter and list actions, formerly `QueriesCtrl`), `case_score_controller.test.js` (badge display and `PUT api/cases/:id/scores`, formerly qscore-case plus server-side score tracking), `query_row_controller.test.js` (row expand/collapse and safe result rendering), and `scorer_executor.test.js` (per-query scorer code execution, formerly `ScorerFactory` scoring helpers).
-
-* **Karma + Vitest (full frontend unit suite):** `bin/docker r yarn test` — runs `rake karma:run` then `vitest run` (see `package.json` `"test"` script).
-* **Vitest only (faster when you are not touching Angular):** `bin/docker r yarn test:vitest`
+* **Run all JS tests:** `bin/docker r yarn test`
 * **Vitest watch mode:** `bin/docker r yarn test:vitest:watch`
 
-**Stimulus and new-UI code style:** controller patterns, `apiUrl()`, HTML escaping, and Rails test expectations for the parallel **`new_ui`** shell are documented in [docs/stimulus_and_modern_js_conventions.md](docs/stimulus_and_modern_js_conventions.md) (fetch/URL edge cases: [docs/migration/api_client.md](docs/migration/api_client.md)).
+**Stimulus code style:** controller patterns, `apiUrl()`, HTML escaping, and Rails test expectations are documented in [docs/stimulus_and_modern_js_conventions.md](docs/stimulus_and_modern_js_conventions.md) (fetch/URL edge cases: [docs/migration/api_client.md](docs/migration/api_client.md)).
 
-### ESLint and Prettier (modern JavaScript only)
+### ESLint and Prettier
 
-The Angular tree under `app/assets/javascripts/` remains linted by **JSHint** (`rails test:jshint`). **ESLint** and **Prettier** target Stimulus/modules/Vitest code only: `app/javascript/controllers/`, `app/javascript/modules/`, the non-Angular `app/javascript` entry files listed in `package.json`, `test/javascript/`, and `vitest.config.js`. Configuration lives in `eslint.config.mjs`, `.prettierrc.json`, and `.prettierignore`.
+**ESLint** and **Prettier** target Stimulus/modules/Vitest code: `app/javascript/controllers/`, `app/javascript/modules/`, the `app/javascript` entry files listed in `package.json`, `test/javascript/`, and `vitest.config.js`. Configuration lives in `eslint.config.mjs`, `.prettierrc.json`, and `.prettierignore`.
 
 * **Check:** `bin/docker r yarn lint:js` (ESLint then Prettier `--check`)
 * **Auto-fix / format:** `bin/docker r yarn format:js` (Prettier `--write` then `eslint --fix`)
 
-**Note:** `rails test:frontend` runs **Karma**, **JSHint**, **`yarn lint:js`**, and **`yarn test:vitest`**. For a quick loop on modern JS only, use **`yarn test:vitest`** and **`yarn lint:js`** as needed. `yarn test` runs Karma then Vitest but does **not** run JSHint or ESLint/Prettier.
+**Note:** `rails test:frontend` runs **`yarn lint:js`** and **`yarn test:vitest`**.
 
 ### Rubocop
 
@@ -320,7 +296,7 @@ If there is a new "Cop" as they call their rules that we don't like, you can add
 bin/ci
 ```
 
-That runs `config/ci.rb`: setup (when needed), RuboCop, security steps listed there, `bin/rails test`, and **`bin/rails test:frontend`** (Karma, JSHint, ESLint/Prettier, and Vitest).
+That runs `config/ci.rb`: setup (when needed), RuboCop, security steps listed there, `bin/rails test`, and **`bin/rails test:frontend`** (ESLint/Prettier and Vitest).
 
 **Same checks manually via Docker:**
 
@@ -329,11 +305,7 @@ bin/docker r rails test
 bin/docker r rails test:frontend
 ```
 
-For **Vitest only** (skip Karma, JSHint, and ESLint/Prettier): `bin/docker r yarn test:vitest`.
-
-Alternatively, `bin/docker r yarn test` runs **Karma then Vitest** in one step; it does **not** run JSHint or ESLint/Prettier—use `bin/docker r rails test:jshint` and/or `bin/docker r yarn lint:js` when you need those gates without the full `test:frontend` task.
-
-**Continuous integration:** the **GitHub Actions** workflow `.github/workflows/test.yml` (on every push) runs RuboCop, `rails test`, and `rails test:frontend` (Karma, JSHint, ESLint/Prettier, Vitest) inside Docker after `bin/setup_docker`. It does not yet mirror every `bin/ci` step (for example, optional security tasks depend on local `bin/*` stubs and gems—see `config/ci.rb`).
+**Continuous integration:** the **GitHub Actions** workflow `.github/workflows/test.yml` (on every push) runs RuboCop, `rails test`, and `rails test:frontend` (ESLint/Prettier, Vitest) inside Docker after `bin/setup_docker`. It does not yet mirror every `bin/ci` step (for example, optional security tasks depend on local `bin/*` stubs and gems—see `config/ci.rb`).
 
 ### Performance Testing
 
@@ -402,13 +374,9 @@ config.assets.debug = true
 # config.assets.debug = false
 ```
 
-Because there are too many Angular JS files in this application, and in `debug` mode Rails will try to load every file separately, that slows down the application, and becomes really annoying in development mode to wait for the scripts to load. Which is why it is turned off by default.
+In `debug` mode Rails will try to load every file separately, which can slow down the application in development mode. This is why it is turned off by default.
 
 **PS:** Don't forget to restart the server when you change the config.
-
-Also please note that the files `secure.js`, `application.js`, and `admin.js` are used to load all the
-JavaScript and CSS dependencies via the Rails Asset pipeline. If you are debugging Bootstrap, then
-you will want individual files. So replace `//= require sprockets` with `//= require bootstrap-sprockets`.
 
 ### Debugging Splainer and other NPM packages
 
@@ -426,21 +394,15 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
    bin/docker s
    ```
 
-3. **Rebuild after making changes**: This is the critical step! The esbuild watch process monitors changes to `app/javascript/angular_app.js` but does NOT automatically watch files inside `node_modules/`. Your mounted splainer-search files ARE being used during builds, but changes won't be detected automatically.
+3. **Rebuild after making changes**: Changes to files in `node_modules/` aren't watched by default. Your mounted splainer-search files ARE being used, but you need to trigger a rebuild.
 
    **After making ANY changes to your local splainer-search files, run:**
-   
+
 ```bash
-   bin/docker r yarn build:angular-vendor
+   bin/docker r yarn build
    ```
 
    Then refresh your browser to see the changes.
-
-4. **Why is this rebuild needed?**
-   - Splainer-search gets bundled into `app/assets/builds/angular_app.js` by esbuild
-   - The bundling happens at build time, not runtime
-   - Changes to files in `node_modules/` aren't watched by default
-   - Your local files ARE being used, but you need to trigger a rebuild to bundle them
 
 
 ## Convenience Scripts
@@ -716,15 +678,11 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 
 ## How does the Frontend work?
 
-We use Angular 1 for the core interactive application, and as part of that we use the `angular-ui-bootstrap` package for all our UI components.
-This package is tied to Bootstrap version 3.  
-We import the Bootstrap 3 CSS directly via the file `bootstrap3.css`.
+The case workspace is built with [Stimulus](https://stimulus.hotwired.dev/) controllers and Rails server-rendered ERB templates. Stimulus controllers live under `app/javascript/controllers/` and shared modules under `app/javascript/modules/`, loaded via importmap.
 
-The Rails+Stimulus **new UI** (`/case/:id/new_ui`, layout `core_new_ui.html.erb`) loads a separate bundle, **`core_new_ui.css`**, built by `build_css.js`: Bootstrap 5 plus shared case layers, **without** Angular-only CSS (Shepherd tour, cases index, etc.). Trimmed duplicates **`qscore_snapshot_diff.css`** and **`animation_new_ui.css`** cover snapshot diff and spinners; Angular still gets the full files via **`core.css`**. The **top navbar** is the same **`layouts/_header`** partial as other logged-in pages (with **`use_new_ui_shell: true`** so recent-case links and **Create a case** target the new-UI flow—see **`DropdownController#cases`** and **`dropdown/cases.html.erb`**).
+The **`core.css`** bundle is built by `build_css.js`: Bootstrap 5 plus shared case layers (style, base, panes, search results, etc.). The **top navbar** is the `layouts/_header` partial, shared with other logged-in pages.
 
-For the rest of Quepid, we use Bootstrap 5! That is included via the `package.json` using NPM. See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle`.
-
-We currently use Rails Sprockets to compile everything, but do have dreams of moving to Propshaft, and maybe js-bundling.
+Bootstrap 5 is used throughout Quepid, included via `package.json` using NPM. Assets are built using Propshaft and `jsbundling-rails`.
 
 ## Fonts
 
@@ -843,7 +801,7 @@ This section covers common issues you might encounter during development and how
    bin/docker r yarn -v
    ```
 
-### Angular App Not Loading
+### App Not Loading
 
 **Symptom**: Quepid interface doesn't load properly.
 
@@ -853,6 +811,10 @@ This section covers common issues you might encounter during development and how
 3. Verify that all JS dependencies are installed:
    ```bash
    bin/docker r yarn install
+   ```
+4. Rebuild assets:
+   ```bash
+   bin/docker r yarn build
    ```
 
 ## Testing Issues
@@ -872,19 +834,6 @@ This section covers common issues you might encounter during development and how
    ```bash
    bin/docker r rails test -v
    ```
-
-### Karma Tests Timeout
-
-**Symptom**: Karma tests hang or timeout.
-
-**Solutions**:
-1. Run in single-run mode:
-   ```bash
-   bin/docker r rails karma:run
-   ```
-
-2. Check for browser compatibility issues
-3. Increase the timeout in karma.conf.js
 
 # QA
 

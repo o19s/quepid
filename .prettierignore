@@ -5,18 +5,10 @@ public/
 tmp/
 coverage/
 
-# Angular-era and legacy JS (JSHint covers app/assets/javascripts)
-app/assets/javascripts/
-spec/javascripts/
+# Vendor
 vendor/
 
-# Angular bundle entry points next to modern app/javascript
-app/javascript/angular_app.js
-app/javascript/quepid_app.js
-
 # Node build scripts (CommonJS / not in Prettier scope)
-build_angular_app.js
-build_templates.js
 build_css.js
 
 # Misc

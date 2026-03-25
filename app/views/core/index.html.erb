@@ -1,14 +1,23 @@
-<ng-include src="'views/common/flash.html'"></ng-include>
+<%= render 'core/action_bar_modals' do %>
+  <div id="main" class="pane_container"
+       data-controller="resizable-pane tour">
+    <div class="pane_main results-control" data-resizable-pane-target="main">
+      <%= render 'core/case_header' %>
+      <%= render 'core/action_bar' %>
 
-<div ng-controller="LoadingCtrl">
-  <div ng-show="loading.isLoading()">
-    <div class="row">
-      <div class="col-md-offset-4 col-md-4 text-center loading-app" style="margin-top: 200px;">
-        <i ng-show="loadingUsers" class="big-spinner loading-text">Loading...</i>
+      <div id="query-container">
+        <%= render 'core/query_list_shell' %>
       </div>
+
+      <%= render 'layouts/footer_core_app' %>
+    </div>
+
+    <div class="east-slider d-none"
+         data-resizable-pane-target="slider"
+         data-action="mousedown->resizable-pane#grabSlider"></div>
+
+    <div class="pane_east d-none" data-resizable-pane-target="east">
+      <%= render 'core/settings_panel' %>
     </div>
   </div>
-  <div ng-show="!loading.isLoading()">
-    <div ng-view></div>
-  </div>
-</div>
+<% end %>

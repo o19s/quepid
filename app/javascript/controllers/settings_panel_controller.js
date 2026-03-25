@@ -262,7 +262,7 @@ export default class extends Controller {
     const scoreData = this._getCurrentScoreData()
 
     const payload = {
-      annotation: { message, source: "new_ui" },
+      annotation: { message, source: "web_ui" },
       score: {
         all_rated: scoreData.allRated || false,
         score: scoreData.score || 0,
@@ -762,7 +762,7 @@ export default class extends Controller {
     const root = document.body.dataset.quepidRootUrl || ""
     const caseId = this.caseIdValue
     const base = root ? root.replace(/\/+$/, "") : ""
-    return `${base}/case/${caseId}/try/${tryNumber}/new_ui`
+    return `${base}/case/${caseId}/try/${tryNumber}`
   }
 
   _escapeHtml(str) {

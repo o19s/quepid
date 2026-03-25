@@ -1,10 +1,8 @@
 /*
- * Case workspace + query list — new_ui only (build_css.js → core_new_ui.css).
+ * Case workspace + query list (build_css.js → core.css).
  *
- * core_new_ui omits bootstrap3.css / bootstrap3-add.css / misc.css, but the Rails
- * core partials still use BS3-era classes (pull-*, list-inline, btn-default, etc.)
- * and expect bootstrap3-add “Main / results” layout (query container chrome, query
- * rows, sub-results panel). This sheet restores that parity without loading full BS3.
+ * Provides compatibility styles for BS3-era classes (pull-*, list-inline,
+ * btn-default, etc.) used by Rails core partials, without loading full BS3.
  */
 
 /* -------------------------------------------------------------------------- */

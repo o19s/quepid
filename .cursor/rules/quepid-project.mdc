@@ -13,7 +13,7 @@ alwaysApply: true
 - **Rails/rake**: Prefix with `bin/docker r bundle exec` (e.g. `bin/docker r bundle exec rails console --environment=test`).
 - **Package manager**: Use **yarn**, not npm.
 - **JS tests**: `bin/docker r yarn test`.
-- **Modern JS lint/format** (not Angular): `bin/docker r yarn lint:js` / `bin/docker r yarn format:js`.
+- **JS lint/format**: `bin/docker r yarn lint:js` / `bin/docker r yarn format:js`.
 
 ## Documentation & Structure
 
@@ -22,7 +22,6 @@ alwaysApply: true
 
 ## URLs & Navigation
 
-- Never use `$window.location.href = '/'`. Use `caseTryNavSvc.getQuepidRootUrl()` (or equivalent helper) for root navigation.
 - Generated URLs must **not** start with `/`; use relative links for deploy flexibility.
 
 ## Styling & Predicates
@@ -38,12 +37,7 @@ alwaysApply: true
 
 - Do **not** add `Co-Authored-By`, `Made-with`, or any other trailer attributing the commit to an AI tool (Claude, Cursor, Copilot, etc.).
 
-## Angular Coexistence
-
-- Do **not** remove, replace, or modify Angular code unless explicitly asked. The Angular UI (`/case/:id`) and the new Stimulus UI (`/case/:id/new_ui`) coexist so we can do visual comparisons between them.
-- When adding features to the new UI, build them in Stimulus/ERB — do not touch the Angular controllers, services, or templates.
-
-## Stimulus / modern JS (detailed)
+## Stimulus / JS (detailed)
 
 - Controller patterns, `apiUrl()`, escaping, Vitest expectations: **`docs/stimulus_and_modern_js_conventions.md`**
 - Fetch, CSRF, relative roots, proxy: **`docs/migration/api_client.md`**

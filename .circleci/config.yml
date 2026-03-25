@@ -80,16 +80,12 @@ jobs:
           command: bundle exec rake db:setup --trace
 
       - run:
-          name: Run unit tests (frontend)
-          command: bundle exec rake test:js
-
-      - run:
           name: Run unit tests (backend)
           command: bundle exec rake test
 
       - run:
-          name: Run jshint
-          command: bundle exec rake test:jshint
+          name: Run frontend tests
+          command: bundle exec rake test:frontend
 
       - run:
           name: Run rubocop

@@ -1,10 +1,10 @@
 # Stimulus and modern JavaScript conventions
 
-**Authoritative** rules for code under `app/javascript/controllers/` and `app/javascript/modules/` (Rails ERB + Stimulus; no Angular on the new UI shell).
+**Authoritative** rules for code under `app/javascript/controllers/` and `app/javascript/modules/` (Rails ERB + Stimulus).
 
 **Related:** [api_client.md](migration/api_client.md) for fetch, CSRF, relative URLs, and `proxy/fetch` behavior. [DEVELOPER_GUIDE.md](../DEVELOPER_GUIDE.md) § *Vitest* and *ESLint and Prettier* for how to run tests and lint.
 
-The parallel **new UI** route is `GET /case/:id(/try/:try_number)/new_ui` (importmap + Stimulus only).
+The case workspace route is `GET /case/:id(/try/:try_number)` (importmap + Stimulus).
 
 ---
 
@@ -42,9 +42,9 @@ For edge cases (proxy search, server-rendered URLs in `data-*` attributes), see 
 
 - Every Stimulus controller needs a Vitest test file at `test/javascript/controllers/<name>_controller.test.js`.
 - Pure JS modules get tests at `test/javascript/modules/<name>.test.js`.
-- `yarn test` runs both Angular (Karma) and Stimulus (Vitest) test suites (see DEVELOPER_GUIDE for Docker-prefixed commands).
+- `yarn test` runs the Vitest test suite (see DEVELOPER_GUIDE for Docker-prefixed commands).
 - New files under `app/javascript/modules/*.js` are picked up automatically as `modules/<name>` aliases in `vitest.config.js`; only non-standard paths need extra config.
 - Rails controller actions serving the new UI need tests in `test/controllers/` using `assert_select` for response assertions (not `assigns` or `assert_template`, which require an extra gem).
 - In Stimulus test HTML, use the same URL shape as `apiUrl()` (e.g. `api/cases/1/...`), not a leading `/api/...`, so expectations match production relative paths.
 - Multi-step fetch flows (`query-row` expand → try config + search) and `executeSearch` are covered with mocked `fetch`; keep one happy path per seam rather than duplicating engine-specific edge cases in controller tests.
-- **Workspace parity contract:** [migration/new_ui_capabilities.md](migration/new_ui_capabilities.md) lists Stimulus vs Angular capabilities; add or extend Vitest coverage when you mark a row **parity** for a new feature.
+- Add Vitest coverage for new features and controllers.

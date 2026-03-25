@@ -119,11 +119,9 @@ function getGroup(filename) {
 // ---------------------------------------------------------------------------
 // Map changed source files to screenshot tags/groups that might be affected
 const FILE_TO_GROUPS = [
-  { pattern: /views\/layouts\/_header_core_app|views\/layouts\/_header\.html|controllers\/dropdown_controller|views\/dropdown\/cases/, groups: ['Case Workspace — Header Dropdowns'] },
+  { pattern: /views\/layouts\/_header\.html|controllers\/dropdown_controller|views\/dropdown\/cases/, groups: ['Case Workspace — Header Dropdowns'] },
   { pattern: /views\/core\/_case_header|controllers\/case_score_controller|controllers\/sparkline_controller/, groups: ['Case Workspace'] },
-  { pattern: /paneSvc\.js|resizable_pane_controller\.js|panes\.css/, groups: ['Case Workspace — Tune Relevance'] },
-  { pattern: /queriesLayout\.html|queriesCtrl\.js/, groups: ['Case Workspace', 'Case Workspace — Action Bar Modals'] },
-  { pattern: /components\/clone_case|components\/delete_case|components\/export_case|components\/import_ratings|components\/share_case|components\/judgements|components\/diff\//, groups: ['Case Workspace — Action Bar Modals'] },
+  { pattern: /resizable_pane_controller\.js|panes\.css/, groups: ['Case Workspace — Tune Relevance'] },
   { pattern: /controllers\/clone_case_controller|controllers\/delete_case_options_controller|controllers\/export_case_controller|controllers\/import_ratings_controller|controllers\/judgements_controller|controllers\/snapshot_controller|controllers\/snapshot_comparison_controller/, groups: ['Case Workspace — Action Bar Modals'] },
   { pattern: /views\/core\/_action_bar|views\/core\/_action_bar_modals/, groups: ['Case Workspace', 'Case Workspace — Action Bar Modals'] },
   { pattern: /views\/books\/|controllers\/books_controller/, groups: ['Books'] },

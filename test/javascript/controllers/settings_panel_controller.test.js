@@ -204,7 +204,7 @@ describe("SettingsPanelController", () => {
         body: expect.stringContaining("query_params"),
       }),
     )
-    expect(window.location.href).toContain("/case/42/try/4/new_ui")
+    expect(window.location.href).toContain("/case/42/try/4")
 
     window.location = originalLocation
   })

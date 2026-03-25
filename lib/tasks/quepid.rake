@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'colorize'
-require 'jshint/lint'
 
 # rubocop:disable Metrics/BlockLength
 namespace :test do
@@ -63,16 +62,10 @@ namespace :test do
     end
   end
 
-  desc 'Run js/karma tests (equivalent of karma:run)'
-  task 'js' => 'karma:run'
-
-  desc 'Run all frontend tasks: test:js (Karma), test:jshint, yarn lint:js, yarn test:vitest'
+  desc 'Run all frontend tasks: yarn lint:js, yarn test:vitest'
   task frontend: :environment do
-    Rake::Task['test:js'].invoke
-    Rake::Task['test:jshint'].invoke
-
     puts '-' * 100
-    puts 'Starting ESLint + Prettier (Stimulus / Vitest paths only)'.yellow
+    puts 'Starting ESLint + Prettier'.yellow
     Dir.chdir(Rails.root) { sh 'yarn lint:js' }
     puts 'ESLint + Prettier passed!'.green
     puts '-' * 100
@@ -82,24 +75,6 @@ namespace :test do
     Dir.chdir(Rails.root) { sh 'yarn test:vitest' }
     puts 'Vitest tests passed!'.green
     puts '-' * 100
-  end
-
-  desc 'Run jshint on js files using configuration .jshintrc'
-  task jshint: :environment do
-    puts '-' * 100
-    puts 'Starting JSHint tests'.yellow
-
-    linter = Jshint::Lint.new
-    linter.lint
-
-    if linter.errors?
-      puts 'JSHint tests failed!'.red
-      puts '-' * 100
-      exit false
-    else
-      puts 'JSHint tests passed!'.green
-      puts '-' * 100
-    end
   end
 end
 # rubocop:enable Metrics/BlockLength

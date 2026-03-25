@@ -339,13 +339,9 @@ Rails.application.routes.draw do
   post '/cases/:id/archive' => 'cases#archive', as: :archive_case
   post '/cases/:id/unarchive' => 'cases#unarchive', as: :unarchive_case
 
-  # Routes handled by angular
-  get '/case/:id(/try/:try_number)'   => 'core#index', as: :case_core
-  get '/cases/new'                    => 'core#new', as: :case_new
-
-  # New Rails+Stimulus UI (in development, will replace core#index when complete)
-  post '/cases/new_ui' => 'core#new_for_new_ui', as: :case_new_for_new_ui
-  get '/case/:id(/try/:try_number)/new_ui' => 'core#new_ui', as: :case_core_new_ui
+  # Core case UI (Stimulus-based)
+  get '/case/:id(/try/:try_number)' => 'core#index', as: :case_core
+  match '/cases/new', to: 'core#new', as: :case_new, via: [ :get, :post ]
   get '/case' => 'core#index'
 
   # Static pages

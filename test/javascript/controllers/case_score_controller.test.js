@@ -20,7 +20,7 @@ describe("CaseScoreController", () => {
     }
     const responses = { ...defaults, ...overrides }
 
-    fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((url, opts) => {
+    fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((url, _opts) => {
       // Score history GET (scores/all)
       if (typeof url === "string" && url.includes("/scores/all")) {
         return Promise.resolve({

@@ -17,13 +17,6 @@ export default class extends Controller {
     this._onToggle = this._onToggle.bind(this)
 
     window.addEventListener("resize", this._onResize)
-
-    // Bridge: Angular's MainCtrl dispatches toggleEast via jQuery .trigger(),
-    // which doesn't fire native DOM events. Listen with jQuery when available,
-    // plus a native CustomEvent listener for post-Angular usage.
-    if (typeof $ !== "undefined") {
-      $(document).on("toggleEast.resizablePane", this._onToggle)
-    }
     document.addEventListener("toggleEast", this._onToggle)
 
     this._setupPane()
@@ -31,9 +24,6 @@ export default class extends Controller {
 
   disconnect() {
     window.removeEventListener("resize", this._onResize)
-    if (typeof $ !== "undefined") {
-      $(document).off("toggleEast.resizablePane")
-    }
     document.removeEventListener("toggleEast", this._onToggle)
     document.removeEventListener("mousemove", this._onMouseMove)
     document.removeEventListener("mouseup", this._onMouseUp)
@@ -45,7 +35,6 @@ export default class extends Controller {
     this._setupPane()
   }
 
-  // Called by Angular's MainCtrl via $(document).trigger('toggleEast')
   _onToggle() {
     this.toggle()
   }

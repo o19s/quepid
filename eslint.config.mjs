@@ -1,7 +1,5 @@
 /**
- * ESLint flat config for Stimulus/modules/Vitest only.
- * Angular-era code lives under app/assets/javascripts/ and is intentionally excluded
- * (JSHint remains the gate for that tree via `rails test:jshint`).
+ * ESLint flat config for Stimulus controllers, JS modules, and Vitest tests.
  */
 import js from "@eslint/js"
 import eslintConfigPrettier from "eslint-config-prettier/flat"
@@ -31,12 +29,8 @@ export default [
       "docs/**",
       "db/**",
       "test/fixtures/**",
-      "build_angular_app.js",
-      "build_templates.js",
       "build_css.js",
       "app/views/**/*.js",
-      "app/javascript/angular_app.js",
-      "app/javascript/quepid_app.js",
     ],
   },
   {
@@ -52,6 +46,7 @@ export default [
         CodeMirror: "readonly",
         bootstrap: "readonly",
         CalHeatmap: "readonly",
+        vegaEmbed: "readonly",
         $: "readonly",
         jQuery: "readonly",
       },

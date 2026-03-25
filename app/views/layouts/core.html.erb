@@ -8,39 +8,28 @@
 <meta name="viewport" content="width=device-width">
 
 <%= stylesheet_link_tag 'core', media: 'all' %>
-<%= stylesheet_link_tag 'angular-json-explorer', 'angular-wizard', 'ng-tags-input.min', 'ng-tags-input.bootstrap.min', media: 'all' %>
 <%= csrf_meta_tags %>
-
-<base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
 </head>
-<body ng-app="QuepidApp"
-      data-quepid-root-url="<%= request.base_url %><%= ENV['RAILS_RELATIVE_URL_ROOT'] %>"
+<body data-quepid-root-url="<%= request.base_url %><%= ENV['RAILS_RELATIVE_URL_ROOT'] %>"
       data-case-id="<%= @case&.id %>"
+      data-try-number="<%= @try&.try_number %>"
       data-communal-scorers-only="<%= Rails.application.config.communal_scorers_only %>"
-      data-query-list-sortable="<%= Rails.application.config.query_list_sortable %>">
-  <%= render 'layouts/header_core_app' %>
+      data-query-list-sortable="<%= Rails.application.config.query_list_sortable %>"
+      data-scorer-scale="<%= (@case&.scorer&.scale || []).to_json %>"
+      data-scorer-name="<%= @case&.scorer&.name %>"
+      data-scorer-id="<%= @case&.scorer&.id %>"
+      data-completed-case-wizard="<%= current_user&.completed_case_wizard %>">
+  <%# Omit flash_messages here: #main-content passes data-rails-flash to flash_controller (duplicate if header also renders flash). %>
+  <%= render 'layouts/header', omit_embedded_flash_messages: true %>
 
-  <div id="main-content">
+  <div id="main-content"
+       data-controller="flash"
+       <% if flash.any? %>data-rails-flash="<%= flash.to_hash.to_json %>"<% end %>>
+    <div data-flash-target="container"></div>
     <%= yield %>
   </div>
 
-  <%= render 'layouts/footer_core_app' %>
-
-  <%= javascript_include_tag 'jquery_bundle' %>
-  <%= javascript_include_tag 'angular_app' %>
-  <%= javascript_include_tag 'angular_templates' %>
-  <%= javascript_include_tag 'quepid_angular_app' %>
   <%= javascript_importmap_tags 'application_modern' %>
-
-  <script>
-    angular.module('QuepidApp')
-      .run([
-        'bootstrapSvc',
-        function(bootstrapSvc) {
-          bootstrapSvc.run();
-        }
-      ]);
-  </script>
 
 </body>
 </html>

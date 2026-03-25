@@ -20,26 +20,11 @@ The Frontend is built in two different ways.  Much of the application is standar
 
 ### Core Frontend App
 
-The first place to look would be inside of the `app/assets/javascripts/components` directory. That directory has a bunch of sub-directories, each representing a component.
+The case workspace is a [Stimulus](https://stimulus.hotwired.dev/) application served at `GET /case/:id(/try/:try_number)`, handled by `CoreController#index` using the `core` layout and views under `app/views/core/`.
 
-A component is comprised of a controller file typically ending with `_controller.js`, a directive file typically ending with `_directive.js` and a template file typically ending with `.html`. Some components may have multiple controllers and templates, especially the ones that have a modal associated with it.
-
-If what you're looking for isn't a component (we haven't been able to refactor the entire frontend into components yet), it is then probably setup as a controller in `app/assets/javascripts/controllers` and an HTML template in `app/assets/templates`.
-
-The AngularJS app starts with the `app/assets/javascripts/app.js` file and the `app/assets/javascripts/routes.js` file.
-
-The main entry to the app is through a case page, which is controller by the `app/assets/javascripts/controllers/mainCtrl.js` controller.
-
-This is the basic structure of the app and should get you started.
-
-### Case workspace: strangler route (`new_ui`) and Stimulus
-
-The core case / try workspace is being **incrementally** ported off AngularJS using a [strangler fig](https://martinfowler.com/bliki/StranglerFigApplication.html) pattern. A parallel Rails route serves a **new UI** shell:
-
-- **Route:** `GET /case/:id(/try/:try_number)/new_ui` (try segment optional), handled by `CoreController#new_ui`, using the `core_new_ui` layout and views under `app/views/core/`.
-- **Modern JS:** [Stimulus](https://stimulus.hotwired.dev/) controllers live under `app/javascript/controllers/`; shared modules and importmap pins live under `app/javascript/modules/` (see `config/importmap.rb`). This stack sits **alongside** the legacy Angular bundle until each slice is cut over.
-
-For phased goals, API usage, Turbo notes, and inventories of what still lives in Angular, see **[docs/migration/README.md](migration/README.md)**.
+- **Stimulus controllers** live under `app/javascript/controllers/`
+- **Shared modules** and importmap pins live under `app/javascript/modules/` (see `config/importmap.rb`)
+- **Server-rendered partials** in `app/views/core/` provide the HTML shell that Stimulus controllers enhance
 
 ## Long running/async processes
 

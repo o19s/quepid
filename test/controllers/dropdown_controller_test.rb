@@ -8,15 +8,9 @@ class DropdownControllerTest < ActionController::TestCase
     login_user users(:doug)
   end
 
-  test 'cases frame defaults to angular case links' do
+  test 'cases frame renders case links' do
     get :cases
     assert_response :success
-    assert_not_includes @response.body, '/new_ui'
-  end
-
-  test 'cases frame with new_ui links to new_ui case URLs' do
-    get :cases, params: { new_ui: 'true' }
-    assert_response :success
-    assert_includes @response.body, '/new_ui'
+    assert_includes @response.body, '/case/'
   end
 end
