@@ -275,7 +275,7 @@ export function fromTextArea(textarea, options = {}) {
         if (update.docChanged) {
           options.onChange(update.state.doc.toString())
         }
-      })
+      }),
     )
   }
 

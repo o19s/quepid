@@ -498,8 +498,7 @@ export default class extends Controller {
   /** Run searches for query rows visible on the current page (Angular parity: search on load). */
   async _autoRunVisibleSearches() {
     const visibleOutlets = this.queryRowOutlets.filter(
-      (outlet) =>
-        !outlet.element.classList.contains("d-none") && !outlet.searchLoaded,
+      (outlet) => !outlet.element.classList.contains("d-none") && !outlet.searchLoaded,
     )
 
     for (let i = 0; i < visibleOutlets.length; i += MAX_CONCURRENT) {

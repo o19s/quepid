@@ -29,11 +29,7 @@ describe("SparklineController", () => {
 
     application = Application.start()
     application.register("sparkline", SparklineController)
-    await waitForController(
-      application,
-      '[data-controller="sparkline"]',
-      "sparkline",
-    )
+    await waitForController(application, '[data-controller="sparkline"]', "sparkline")
   })
 
   afterEach(() => {
@@ -183,9 +179,7 @@ describe("SparklineController", () => {
     ctrl.scoresValue = makeScores(3)
 
     await waitFor(() => {
-      expect(
-        document.querySelectorAll(".d3-tip").length,
-      ).toBeGreaterThanOrEqual(1)
+      expect(document.querySelectorAll(".d3-tip").length).toBeGreaterThanOrEqual(1)
     })
 
     // Call disconnect() directly (application.stop() has known jsdom issues

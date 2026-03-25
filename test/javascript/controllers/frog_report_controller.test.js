@@ -105,9 +105,7 @@ describe("computeFrogStatistics", () => {
       { docsCount: 10, ratedCount: 5 },
       { docsCount: 5, ratedCount: 0 },
     ])
-    expect(stats.tableRows).toEqual([
-      { category: "Missing 5", amount: 2 },
-    ])
+    expect(stats.tableRows).toEqual([{ category: "Missing 5", amount: 2 }])
   })
 
   it("sorts table rows by missing count ascending", () => {
@@ -118,11 +116,6 @@ describe("computeFrogStatistics", () => {
       { docsCount: 10, ratedCount: 10 }, // missing 0 → "Fully Rated"
     ])
     const categories = stats.tableRows.map((r) => r.category)
-    expect(categories).toEqual([
-      "Fully Rated",
-      "Missing 2",
-      "Missing 7",
-      "No Ratings",
-    ])
+    expect(categories).toEqual(["Fully Rated", "Missing 2", "Missing 7", "No Ratings"])
   })
 })

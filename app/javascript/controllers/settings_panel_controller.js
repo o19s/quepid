@@ -210,7 +210,8 @@ export default class extends Controller {
       this._renderAnnotations(data.annotations || [])
     } catch (error) {
       console.error("Failed to fetch annotations:", error)
-      this.annotationsListTarget.innerHTML = '<p class="text-danger">Failed to load annotations.</p>'
+      this.annotationsListTarget.innerHTML =
+        '<p class="text-danger">Failed to load annotations.</p>'
     }
   }
 
@@ -242,7 +243,7 @@ export default class extends Controller {
           | Try #${a.score?.try_number || "?"}
         </small>
       </div>
-    `
+    `,
       )
       .join("")
 
@@ -299,12 +300,15 @@ export default class extends Controller {
     if (!confirm("Delete this annotation?")) return
 
     try {
-      const response = await fetch(apiUrl(`api/cases/${this.caseIdValue}/annotations/${annotationId}`), {
-        method: "DELETE",
-        headers: {
-          "X-CSRF-Token": csrfToken(),
+      const response = await fetch(
+        apiUrl(`api/cases/${this.caseIdValue}/annotations/${annotationId}`),
+        {
+          method: "DELETE",
+          headers: {
+            "X-CSRF-Token": csrfToken(),
+          },
         },
-      })
+      )
 
       if (!response.ok) throw new Error(`Failed to delete annotation (${response.status})`)
 
@@ -352,17 +356,23 @@ export default class extends Controller {
     btn.textContent = "Queuing evaluation job..."
 
     try {
-      const response = await fetch(apiUrl(`api/cases/${this.caseIdValue}/run_evaluation?try_number=${this.tryNumberValue}`), {
-        method: "POST",
-        headers: {
-          "X-CSRF-Token": csrfToken(),
-          Accept: "application/json",
+      const response = await fetch(
+        apiUrl(`api/cases/${this.caseIdValue}/run_evaluation?try_number=${this.tryNumberValue}`),
+        {
+          method: "POST",
+          headers: {
+            "X-CSRF-Token": csrfToken(),
+            Accept: "application/json",
+          },
         },
-      })
+      )
 
       if (!response.ok) throw new Error(`Failed to queue evaluation (${response.status})`)
 
-      showFlash("Evaluation job queued. Results will appear as a snapshot when complete.", "success")
+      showFlash(
+        "Evaluation job queued. Results will appear as a snapshot when complete.",
+        "success",
+      )
     } catch (error) {
       console.error("Failed to run evaluation:", error)
       showFlash("Failed to queue evaluation: " + error.message, "danger")
@@ -377,7 +387,11 @@ export default class extends Controller {
     // which are set in case_score_controller.updateScore()
     const caseScoreEl = document.querySelector("[data-controller~='case-score']")
 
-    if (caseScoreEl && caseScoreEl.dataset.lastScore !== undefined && caseScoreEl.dataset.lastScore !== "") {
+    if (
+      caseScoreEl &&
+      caseScoreEl.dataset.lastScore !== undefined &&
+      caseScoreEl.dataset.lastScore !== ""
+    ) {
       const score = parseFloat(caseScoreEl.dataset.lastScore)
       const allRated = caseScoreEl.dataset.lastAllRated === "true"
       let queries
@@ -456,13 +470,16 @@ export default class extends Controller {
     const tryNumber = event.currentTarget.dataset.tryNumber
 
     try {
-      const response = await fetch(apiUrl(`api/clone/cases/${this.caseIdValue}/tries/${tryNumber}`), {
-        method: "POST",
-        headers: {
-          "X-CSRF-Token": csrfToken(),
-          Accept: "application/json",
+      const response = await fetch(
+        apiUrl(`api/clone/cases/${this.caseIdValue}/tries/${tryNumber}`),
+        {
+          method: "POST",
+          headers: {
+            "X-CSRF-Token": csrfToken(),
+            Accept: "application/json",
+          },
         },
-      })
+      )
 
       if (!response.ok) throw new Error(`Failed to duplicate try (${response.status})`)
 
@@ -536,10 +553,7 @@ export default class extends Controller {
       const allData = allResponse.ok ? await allResponse.json() : {}
 
       // API wraps results in { search_endpoints: [...] }
-      this._renderEndpointOptions(
-        caseData.search_endpoints || [],
-        allData.search_endpoints || []
-      )
+      this._renderEndpointOptions(caseData.search_endpoints || [], allData.search_endpoints || [])
     } catch (error) {
       console.error("Failed to fetch endpoints:", error)
     }
@@ -587,7 +601,8 @@ export default class extends Controller {
     const selectedOption = this.endpointSelectTarget.selectedOptions[0]
     if (this.hasEndpointWarningTarget) {
       if (selectedOption && selectedOption.textContent.includes("(archived)")) {
-        this.endpointWarningTarget.textContent = "This endpoint is archived and may not work as expected."
+        this.endpointWarningTarget.textContent =
+          "This endpoint is archived and may not work as expected."
         this.endpointWarningTarget.classList.remove("d-none")
       } else {
         this.endpointWarningTarget.classList.add("d-none")
@@ -632,18 +647,24 @@ export default class extends Controller {
     if (engine === "solr") {
       // Check for common deftype typo
       if (/deftype\s*=/.test(queryParams) && !/defType\s*=/.test(queryParams)) {
-        warnings.push('Did you mean <code>defType</code> (capital T)? Solr uses <code>defType</code>, not <code>deftype</code>.')
+        warnings.push(
+          "Did you mean <code>defType</code> (capital T)? Solr uses <code>defType</code>, not <code>deftype</code>.",
+        )
       }
     }
 
     if (engine === "es" || engine === "os") {
       // Warn about template queries
       if (/"template"/.test(queryParams)) {
-        warnings.push("Template queries require the Search Template API endpoint (/_search/template).")
+        warnings.push(
+          "Template queries require the Search Template API endpoint (/_search/template).",
+        )
       }
       // Warn about _source field filter
       if (/"_source"/.test(queryParams)) {
-        warnings.push('Using <code>_source</code> in the query body? Consider using the Displayed Fields setting instead.')
+        warnings.push(
+          "Using <code>_source</code> in the query body? Consider using the Displayed Fields setting instead.",
+        )
       }
     }
 
@@ -652,7 +673,9 @@ export default class extends Controller {
       const pageProtocol = window.location.protocol
       const endpointInfo = this.hasEndpointInfoTarget ? this.endpointInfoTarget.textContent : ""
       if (pageProtocol === "https:" && endpointInfo.includes("http://")) {
-        warnings.push("Your page is served over HTTPS but the search endpoint uses HTTP. This may cause mixed-content blocking.")
+        warnings.push(
+          "Your page is served over HTTPS but the search endpoint uses HTTP. This may cause mixed-content blocking.",
+        )
       }
     }
 

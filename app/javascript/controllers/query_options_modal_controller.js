@@ -28,7 +28,8 @@ export default class extends Controller {
       })
       if (!response.ok) throw new Error(String(response.status))
       const data = await response.json()
-      this.textareaTarget.value = data.options != null ? JSON.stringify(data.options, null, 2) : "{}"
+      this.textareaTarget.value =
+        data.options != null ? JSON.stringify(data.options, null, 2) : "{}"
       // Only record queryId after a successful load so Save cannot target the wrong query
       // if this open fails or races with another row.
       this.queryId = queryId

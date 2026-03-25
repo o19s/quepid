@@ -134,10 +134,8 @@ export const defaultSettings = {
     additionalFields: ["overview", "cast", "thumb:poster_path"],
     numberOfRows: 10,
     searchEngine: "algolia",
-    searchUrl:
-      "https://OKF83BFQS4-dsn.algolia.net/1/indexes/movies_demo_quepid/query",
-    urlFormat:
-      "https://<APPLICATION-ID>-dsn.algolia.net/1/indexes/<index>/query",
+    searchUrl: "https://OKF83BFQS4-dsn.algolia.net/1/indexes/movies_demo_quepid/query",
+    urlFormat: "https://<APPLICATION-ID>-dsn.algolia.net/1/indexes/<index>/query",
     proxyRequests: true,
     basicAuthCredential: "",
   },

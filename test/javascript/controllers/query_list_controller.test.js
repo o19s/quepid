@@ -314,13 +314,22 @@ describe("QueryListController", () => {
 
   it("parseQueryListSortFromSearch matches Angular QueriesCtrl ?sort= / ?reverse= (unit)", () => {
     expect(parseQueryListSortFromSearch("")).toEqual({ sort: "default", sortReverse: false })
-    expect(parseQueryListSortFromSearch("?sort=query")).toEqual({ sort: "query", sortReverse: false })
+    expect(parseQueryListSortFromSearch("?sort=query")).toEqual({
+      sort: "query",
+      sortReverse: false,
+    })
     expect(parseQueryListSortFromSearch("?sort=query&reverse=true")).toEqual({
       sort: "query",
       sortReverse: true,
     })
-    expect(parseQueryListSortFromSearch("?sort=bogus")).toEqual({ sort: "default", sortReverse: false })
-    expect(parseQueryListSortFromSearch("?reverse=false")).toEqual({ sort: "default", sortReverse: false })
+    expect(parseQueryListSortFromSearch("?sort=bogus")).toEqual({
+      sort: "default",
+      sortReverse: false,
+    })
+    expect(parseQueryListSortFromSearch("?reverse=false")).toEqual({
+      sort: "default",
+      sortReverse: false,
+    })
   })
 
   it("sortBy query reorders rows by query text", () => {
@@ -500,7 +509,9 @@ describe("QueryListController", () => {
     )
     const ul = list.listTarget
     const row4 = document.getElementById("row4")
-    const initialOrder = [...ul.querySelectorAll('[data-query-list-target="queryRow"]')].map((r) => r.id)
+    const initialOrder = [...ul.querySelectorAll('[data-query-list-target="queryRow"]')].map(
+      (r) => r.id,
+    )
 
     ul.insertBefore(row4, ul.firstElementChild)
     expect([...ul.querySelectorAll('[data-query-list-target="queryRow"]')][0].id).toBe("row4")

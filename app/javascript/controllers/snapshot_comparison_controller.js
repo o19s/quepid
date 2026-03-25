@@ -75,7 +75,9 @@ export default class extends Controller {
 
     this._addSelectionRow()
 
-    if (this.snapshotListTarget.querySelectorAll(".snapshot-selection-row").length >= MAX_SNAPSHOTS) {
+    if (
+      this.snapshotListTarget.querySelectorAll(".snapshot-selection-row").length >= MAX_SNAPSHOTS
+    ) {
       this.addButtonTarget.classList.add("d-none")
     }
   }
@@ -87,7 +89,9 @@ export default class extends Controller {
     row.remove()
 
     // Show Add button if below max
-    if (this.snapshotListTarget.querySelectorAll(".snapshot-selection-row").length < MAX_SNAPSHOTS) {
+    if (
+      this.snapshotListTarget.querySelectorAll(".snapshot-selection-row").length < MAX_SNAPSHOTS
+    ) {
       this.addButtonTarget.classList.remove("d-none")
     }
 

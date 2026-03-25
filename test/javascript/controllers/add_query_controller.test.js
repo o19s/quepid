@@ -49,7 +49,15 @@ describe("AddQueryController", () => {
   })
 
   it("sends POST with single query text", async () => {
-    const queryData = { query: { query_id: 42, query_text: "star wars", ratings: {}, notes: "", information_need: "" } }
+    const queryData = {
+      query: {
+        query_id: 42,
+        query_text: "star wars",
+        ratings: {},
+        notes: "",
+        information_need: "",
+      },
+    }
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(mockJsonResponse(queryData))
 
     const input = document.querySelector('[data-add-query-target="input"]')
@@ -119,7 +127,13 @@ describe("AddQueryController", () => {
 
   it("inserts new query row into the list", async () => {
     const queryData = {
-      query: { query_id: 99, query_text: "new query", ratings: {}, notes: "", information_need: "" },
+      query: {
+        query_id: 99,
+        query_text: "new query",
+        ratings: {},
+        notes: "",
+        information_need: "",
+      },
     }
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(mockJsonResponse(queryData))
 
@@ -143,7 +157,13 @@ describe("AddQueryController", () => {
 
   it("does not insert duplicate query rows", async () => {
     const queryData = {
-      query: { query_id: 42, query_text: "star wars", ratings: {}, notes: "", information_need: "" },
+      query: {
+        query_id: 42,
+        query_text: "star wars",
+        ratings: {},
+        notes: "",
+        information_need: "",
+      },
     }
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(mockJsonResponse(queryData))
 
@@ -171,7 +191,13 @@ describe("AddQueryController", () => {
 
   it("shows notes indicator when query has notes", async () => {
     const queryData = {
-      query: { query_id: 50, query_text: "noted query", ratings: {}, notes: "important", information_need: "" },
+      query: {
+        query_id: 50,
+        query_text: "noted query",
+        ratings: {},
+        notes: "important",
+        information_need: "",
+      },
     }
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(mockJsonResponse(queryData))
 

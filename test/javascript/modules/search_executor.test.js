@@ -195,9 +195,7 @@ describe("executeSearch", () => {
           responseSet: [
             {
               resultLength: 250,
-              document: [
-                { document_id: "d1", title: "First", metadata: [] },
-              ],
+              document: [{ document_id: "d1", title: "First", metadata: [] }],
             },
           ],
         }),

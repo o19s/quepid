@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest"
-import {
-  defaultSettings,
-  tmdbSettings,
-  isDemoUrl,
-  pickSettings,
-} from "modules/wizard_settings"
+import { defaultSettings, tmdbSettings, isDemoUrl, pickSettings } from "modules/wizard_settings"
 
 describe("wizard_settings", () => {
   describe("defaultSettings", () => {
@@ -62,15 +57,11 @@ describe("wizard_settings", () => {
 
   describe("isDemoUrl", () => {
     it("returns true for Solr insecure demo URL", () => {
-      expect(
-        isDemoUrl("solr", "http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select"),
-      ).toBe(true)
+      expect(isDemoUrl("solr", "http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select")).toBe(true)
     })
 
     it("returns true for Solr secure demo URL", () => {
-      expect(
-        isDemoUrl("solr", "https://quepid-solr.dev.o19s.com/solr/tmdb/select"),
-      ).toBe(true)
+      expect(isDemoUrl("solr", "https://quepid-solr.dev.o19s.com/solr/tmdb/select")).toBe(true)
     })
 
     it("returns true for Solr with null URL (default)", () => {
@@ -78,15 +69,13 @@ describe("wizard_settings", () => {
     })
 
     it("returns false for custom Solr URL", () => {
-      expect(
-        isDemoUrl("solr", "http://mysolr.example.com/solr/products/select"),
-      ).toBe(false)
+      expect(isDemoUrl("solr", "http://mysolr.example.com/solr/products/select")).toBe(false)
     })
 
     it("returns true for ES demo URL", () => {
-      expect(
-        isDemoUrl("es", "http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search"),
-      ).toBe(true)
+      expect(isDemoUrl("es", "http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search")).toBe(
+        true,
+      )
     })
 
     it("returns false for engines without TMDB settings", () => {
@@ -98,19 +87,13 @@ describe("wizard_settings", () => {
 
   describe("pickSettings", () => {
     it("returns TMDB settings for demo Solr URL", () => {
-      const settings = pickSettings(
-        "solr",
-        "https://quepid-solr.dev.o19s.com/solr/tmdb/select",
-      )
+      const settings = pickSettings("solr", "https://quepid-solr.dev.o19s.com/solr/tmdb/select")
       expect(settings.queryParams).toContain("edismax")
       expect(settings.titleField).toBe("title")
     })
 
     it("returns generic defaults for custom Solr URL", () => {
-      const settings = pickSettings(
-        "solr",
-        "http://mysolr.example.com/solr/products/select",
-      )
+      const settings = pickSettings("solr", "http://mysolr.example.com/solr/products/select")
       expect(settings.queryParams).not.toContain("edismax")
       expect(settings.titleField).toBe("")
     })

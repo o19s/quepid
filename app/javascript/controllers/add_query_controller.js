@@ -305,8 +305,7 @@ export default class extends Controller {
     // Update query count
     const countEl = document.querySelector("[data-query-list-target='queryCount']")
     if (countEl) {
-      countEl.textContent =
-        list.querySelectorAll("[data-query-list-target='queryRow']").length
+      countEl.textContent = list.querySelectorAll("[data-query-list-target='queryRow']").length
     }
 
     // Dispatch a custom event so the query-list controller can re-apply

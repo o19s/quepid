@@ -178,9 +178,7 @@ describe("DeleteCaseOptionsController", () => {
 
     ctrl.selectAction({ preventDefault: () => {}, currentTarget: btn })
 
-    global.fetch = vi.fn(() =>
-      Promise.resolve({ ok: true, redirected: true, url: "/cases" }),
-    )
+    global.fetch = vi.fn(() => Promise.resolve({ ok: true, redirected: true, url: "/cases" }))
 
     delete window.location
     window.location = { href: "" }
@@ -191,7 +189,7 @@ describe("DeleteCaseOptionsController", () => {
     const [url, opts] = global.fetch.mock.calls[0]
     expect(url).toBe("cases/42/archive")
     expect(opts.method).toBe("POST")
-    expect(window.location.href).toBe("/cases")  // redirected URL from server
+    expect(window.location.href).toBe("/cases") // redirected URL from server
   })
 
   it("shows error on API failure", async () => {
