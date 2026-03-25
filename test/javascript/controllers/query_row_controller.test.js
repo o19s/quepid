@@ -237,7 +237,7 @@ describe("QueryRowController", () => {
 
       ctrl.toggleDocExplain({ preventDefault: vi.fn() })
       expect(ctrl.debugMode).toBe(false)
-      expect(btn.classList.contains("btn-default")).toBe(true)
+      expect(btn.classList.contains("btn-outline-secondary")).toBe(true)
       expect(runSpy).toHaveBeenCalledTimes(2)
     } finally {
       runSpy.mockRestore()

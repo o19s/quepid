@@ -1,115 +1,12 @@
 /*
  * Case workspace + query list (build_css.js → core.css).
- *
- * Provides compatibility styles for BS3-era classes (pull-*, list-inline,
- * btn-default, etc.) used by Rails core partials, without loading full BS3.
  */
-
-/* -------------------------------------------------------------------------- */
-/* Bootstrap 3 utility aliases (markup unchanged from Angular-era partials)     */
-/* -------------------------------------------------------------------------- */
-
-.pull-left {
-  float: left !important;
-}
-
-.pull-right {
-  float: right !important;
-}
-
-.clearfix::before,
-.clearfix::after {
-  content: " ";
-  display: table;
-}
-
-.clearfix::after {
-  clear: both;
-}
-
-.list-inline {
-  padding-left: 0;
-  list-style: none;
-  margin-left: -5px;
-}
-
-.list-inline > li {
-  display: inline-block;
-  padding-right: 5px;
-  padding-left: 5px;
-}
-
-/* BS3 “default” button — white/gray border (toolbar + modals) */
-.btn-default {
-  color: #333;
-  background-color: #fff;
-  border-color: #ccc;
-}
-
-.btn-default:hover {
-  color: #333;
-  background-color: #e6e6e6;
-  border-color: #adadad;
-}
-
-.btn-default:focus {
-  color: #333;
-  background-color: #e6e6e6;
-  border-color: #adadad;
-}
-
-.align-top {
-  vertical-align: top !important;
-}
-
-.p-r-10 {
-  padding-right: 10px;
-}
-
-.input-append {
-  margin-right: 40px;
-  padding: 0 20px 0 0;
-}
-
-.input-append,
-.input-append input,
-.input-append .btn {
-  display: inline-block;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-/* Inline form row (case rename cancel/submit) */
-.form-inline .form-control {
-  display: inline-block;
-  width: auto;
-  vertical-align: middle;
-}
-
-.form-inline .btn {
-  vertical-align: middle;
-}
 
 .btn-group {
   z-index: 10;
 }
 
-/* BS3 form labels / small inputs still used in query row partials */
-.control-label {
-  display: inline-block;
-  max-width: 100%;
-  margin-bottom: 5px;
-  font-weight: 700;
-}
-
-.form-control.input-sm {
-  min-height: calc(1.5em + 0.5rem + 2px);
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  border-radius: 0.25rem;
-}
-
-/* Case action strip — match Angular chrome: no default link underlines */
+/* Case action strip — no default link underlines */
 #case-actions a {
   text-decoration: none;
 }
@@ -120,8 +17,8 @@
 }
 
 /*
- * Case actions + query-list toolbar: Angular core used BS3 body (14px) and compact
- * list-inline gaps; BS5 defaults read smaller/sparser without these overrides.
+ * Case actions + query-list toolbar: compact 14px body and tight
+ * list-inline gaps for the action strip and sort controls.
  */
 #case-actions,
 #query-list-shell > .row > .col-sm-12.form-group {
@@ -130,12 +27,12 @@
 }
 
 #case-actions .list-inline,
-#query-list-shell > .row > .col-sm-12.form-group > ul.list-inline.pull-right {
+#query-list-shell > .row > .col-sm-12.form-group > ul.list-inline.float-end {
   margin-left: -5px;
 }
 
 #case-actions .list-inline > li,
-#query-list-shell > .row > .col-sm-12.form-group > ul.list-inline.pull-right > li {
+#query-list-shell > .row > .col-sm-12.form-group > ul.list-inline.float-end > li {
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -156,7 +53,7 @@
   padding-right: 5px;
 }
 
-/* “Show only rated”: explicit checkbox size so it reads like BS3/Angular, not a tiny BS5-only control */
+/* “Show only rated”: explicit checkbox size for readability */
 #query-list-shell .query-list-toolbar-rated {
   display: inline-flex;
   align-items: center;
@@ -180,8 +77,8 @@
 }
 
 /*
- * Case header: sparkline + score badge stay to the left of the title (Angular used
- * inline-flex + inline-block siblings; under Bootstrap 5 grid those often stack vertically).
+ * Case header: sparkline + score badge stay to the left of the title.
+ * Without flex, BS5 grid siblings stack vertically.
  */
 #case-header .case-header-body {
   display: flex;
@@ -199,7 +96,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Main shell (#main is .pane_container on new_ui)                            */
+/* Main shell (#main is .pane_container)                                      */
 /* -------------------------------------------------------------------------- */
 
 #main {
@@ -451,15 +348,6 @@
   font-size: 9px;
 }
 
-#dev-settings .dev-section .form-inline select {
-  width: 40%;
-  margin-right: 2.5%;
-}
-
-#dev-settings .dev-section .form-inline .btn {
-  width: 12%;
-}
-
 #dev-settings .dev-section .form-group {
   margin-bottom: 15px;
 }
@@ -582,7 +470,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Expanded query row toolbar (order matches Angular searchResults.html)      */
+/* Expanded query row toolbar                                                */
 /* -------------------------------------------------------------------------- */
 
 .query-row-expanded-toolbar {
@@ -609,7 +497,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Workspace footer (misc.css padding helpers omitted from core_new_ui)       */
+/* Workspace footer                                                          */
 /* -------------------------------------------------------------------------- */
 
 .p-t-20 {

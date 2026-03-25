@@ -53,12 +53,12 @@
               <%= @case.case_name %>
             </span>
             <span data-inline-edit-target="form" class="d-none">
-              <form class="form-inline" data-action="submit->inline-edit#save">
+              <form class="d-inline-flex align-items-center gap-1" data-action="submit->inline-edit#save">
                 <input class="inline-edit-input-highlight" type="text"
                        data-inline-edit-target="input"
                        value="<%= @case.case_name %>" />
                 <input type="submit" class="btn btn-sm btn-primary" value="Rename" />
-                <button type="button" class="btn btn-sm btn-default"
+                <button type="button" class="btn btn-sm btn-outline-secondary"
                         data-action="click->inline-edit#cancel">Cancel</button>
               </form>
             </span>

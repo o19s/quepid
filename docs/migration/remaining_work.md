@@ -14,15 +14,7 @@ served at `/case/:id`. What remains is minor polish.
 
 ---
 
-## 2. CSS / Visual Polish
-
-- **BS3→BS5 visual pass**: `query_workspace.css` carries BS3 compatibility aliases
-  (`pull-left`, `list-inline`, `btn-default`, etc.) for Rails partials that still use
-  BS3 class names. Audit and migrate partials to BS5 classes, then remove the aliases.
-
----
-
-## 3. Cleanup
+## 2. Cleanup
 
 | Item | Notes |
 |------|-------|

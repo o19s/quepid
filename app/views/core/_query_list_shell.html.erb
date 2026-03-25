@@ -6,8 +6,8 @@
      data-action="query-row:scoreChanged->query-list#handleScoreChanged query-row:queryDeleted->query-list#handleQueryDeleted">
   <div class="row">
     <div class="col-sm-12 form-group">
-      <div class="pull-left">
-        <form class="form input-append vertically-centered"
+      <div class="float-start">
+        <form class="d-flex align-items-center gap-1 me-4"
               data-controller="add-query"
               data-action="submit->add-query#submit">
           <input id="add-query"
@@ -22,8 +22,8 @@
         </form>
       </div>
 
-      <ul class="list-inline pull-right">
-        <li class="query-list-toolbar-rated">
+      <ul class="list-inline float-end">
+        <li class="list-inline-item query-list-toolbar-rated">
           <input type="checkbox"
                  id="show-only-rated-checkbox"
                  class="align-top"
@@ -33,25 +33,25 @@
              data-action="click->query-list#toggleShowOnlyRated">Show only rated</a>
         </li>
 
-        <li class="text-muted"><span class="text-muted"> | </span></li>
+        <li class="list-inline-item text-muted"><span class="text-muted"> | </span></li>
 
-        <li>
+        <li class="list-inline-item">
           <a href="#" data-action="click->query-list#runAllSearches">Run all</a>
         </li>
 
-        <li class="text-muted"><span class="text-muted"> | </span></li>
+        <li class="list-inline-item text-muted"><span class="text-muted"> | </span></li>
 
-        <li>
+        <li class="list-inline-item">
           <a href="#" data-action="click->query-list#collapseAll">Collapse all</a>
         </li>
 
-        <li class="text-muted"><span class="text-muted"> | </span></li>
+        <li class="list-inline-item text-muted"><span class="text-muted"> | </span></li>
 
-        <li>
+        <li class="list-inline-item">
           <span class="text-muted">Sort &nbsp;</span>
           <ul class="list-inline" style="display:inline" role="group" aria-label="sort">
             <% if @query_list_sortable %>
-              <li>
+              <li class="list-inline-item">
                 <a href="#" class="active"
                    data-action="click->query-list#sortBy"
                    data-query-list-target="sortLink"
@@ -61,32 +61,32 @@
                 </a>
               </li>
             <% else %>
-              <li>
+              <li class="list-inline-item">
                 Manual
                 <i class="bi bi-exclamation-triangle text-warning" aria-hidden="true"
                    title="Manual sorting has been disabled by your administrator."></i>
               </li>
             <% end %>
-            <li><a href="#" data-action="click->query-list#sortBy" data-query-list-target="sortLink" data-sort="query">Name</a></li>
-            <li><a href="#" data-action="click->query-list#sortBy" data-query-list-target="sortLink" data-sort="modified">Modified</a></li>
-            <li><a href="#" data-action="click->query-list#sortBy" data-query-list-target="sortLink" data-sort="score">Score</a></li>
-            <li><a href="#" data-action="click->query-list#sortBy" data-query-list-target="sortLink" data-sort="error">Errors</a></li>
+            <li class="list-inline-item"><a href="#" data-action="click->query-list#sortBy" data-query-list-target="sortLink" data-sort="query">Name</a></li>
+            <li class="list-inline-item"><a href="#" data-action="click->query-list#sortBy" data-query-list-target="sortLink" data-sort="modified">Modified</a></li>
+            <li class="list-inline-item"><a href="#" data-action="click->query-list#sortBy" data-query-list-target="sortLink" data-sort="score">Score</a></li>
+            <li class="list-inline-item"><a href="#" data-action="click->query-list#sortBy" data-query-list-target="sortLink" data-sort="error">Errors</a></li>
           </ul>
         </li>
       </ul>
 
       <div class="clearfix"></div>
 
-      <div class="pull-right p-r-10">
+      <div class="float-end pe-2">
         Number of Queries: <span data-query-list-target="queryCount"><%= @query_count %></span>
       </div>
-      <div class="pull-right p-r-10">
+      <div class="float-end pe-2">
         <input type="search" placeholder="Filter Queries" aria-label="filter queries"
-               class="form-control input-sm" id="queries-filter-new"
+               class="form-control form-control-sm" id="queries-filter-new"
                data-action="input->query-list#filter"
                data-query-list-target="filterInput" />
       </div>
-      <div class="pull-right p-r-10">
+      <div class="float-end pe-2">
         <i class="frog-icon" aria-hidden="true">&#x1f438;</i>
         <a href="#" data-action="click->frog-report#open">Report</a>
       </div>
@@ -110,17 +110,17 @@
             <div class="clearfix">
               <div class="result-header">
                 <% if @query_list_sortable %>
-                  <span class="drag-handle pull-left" title="Drag to reorder">
+                  <span class="drag-handle float-start" title="Drag to reorder">
                     <i class="bi bi-list" aria-hidden="true"></i>
                   </span>
                 <% end %>
 
-                <div class="results-score pull-left">
+                <div class="results-score float-start">
                   <div class="overall-rating query-score-badge" data-query-row-target="scoreDisplay">
                     --
                   </div>
                 </div>
-                <span class="snapshot-query-scores pull-left d-none" data-query-row-target="snapshotScores"></span>
+                <span class="snapshot-query-scores float-start d-none" data-query-row-target="snapshotScores"></span>
 
                 <h2 class="results-title">
                   <span class="query"><%= query.query_text %> &nbsp;</span>
@@ -130,13 +130,13 @@
                   <% end %>
                 </h2>
 
-                <span class="pull-right total-results">
+                <span class="float-end total-results">
                   <small class="text-muted" data-query-row-target="totalResults">
                     <%= query.ratings.size %> rated
                   </small>
                 </span>
 
-                <span class="pull-right d-none" style="margin-right: 20px;" title="Hop to it! There are unrated results!"
+                <span class="float-end d-none" style="margin-right: 20px;" title="Hop to it! There are unrated results!"
                       data-query-row-target="frogIndicator">
                   <span class="icon-container">
                     <i class="frog-icon">🐸</i>
@@ -144,7 +144,7 @@
                   </span>
                 </span>
 
-                <span class="pull-right d-none" style="margin-right: 20px;" title="Querqy rule triggered"
+                <span class="float-end d-none" style="margin-right: 20px;" title="Querqy rule triggered"
                       data-query-row-target="querqyIndicator">
                   <i class="querqy-icon"></i>
                 </span>
@@ -163,7 +163,7 @@
                 <div class="query-row-score-all">
                   <strong>Score All</strong>
                   <div class="btn-group">
-                    <button type="button" class="btn btn-default btn-sm dropdown-toggle"
+                    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle"
                             data-bs-toggle="dropdown" aria-expanded="false">
                       <i class="bi bi-check2-square" aria-hidden="true"></i>
                       Score All
@@ -179,7 +179,7 @@
 
                 <div class="btn-toolbar query-row-actions-toolbar" role="toolbar">
                   <div class="btn-group">
-                    <button type="button" class="btn btn-default btn-sm"
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
                             data-action="click->query-row#copyQuery"
                             title="Copy query">
                       <i class="bi bi-clipboard" aria-hidden="true"></i>
@@ -187,7 +187,7 @@
                   </div>
 
                   <div class="btn-group">
-                    <button type="button" class="btn btn-default btn-sm"
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
                             data-action="click->query-row#toggleNotes">
                       <i class="bi bi-chat-left-text" aria-hidden="true"></i>
                       Toggle Notes
@@ -195,17 +195,17 @@
                   </div>
 
                   <div class="btn-group">
-                    <button type="button" class="btn btn-default btn-sm"
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
                             data-action="click->query-row#explainQuery">
                       <i class="bi bi-bar-chart-line" aria-hidden="true"></i>
                       Explain Query
                     </button>
-                    <button type="button" class="btn btn-default btn-sm"
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
                             data-action="click->query-row#openDocFinder">
                       <i class="bi bi-search" aria-hidden="true"></i>
                       Missing Documents
                     </button>
-                    <button type="button" class="btn btn-default btn-sm"
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
                             data-action="click->query-row#toggleDocExplain"
                             data-query-row-target="docExplainToggle"
                             aria-pressed="false"
@@ -216,7 +216,7 @@
                   </div>
 
                   <div class="btn-group">
-                    <button type="button" class="btn btn-default btn-sm"
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
                             data-action="click->query-row#openQueryOptionsModal">
                       <i class="bi bi-sliders" aria-hidden="true"></i>
                       Set Options
@@ -240,15 +240,15 @@
 
               <div class="query-notes-panel d-none" data-query-row-target="notesPanel">
                 <div class="form-group">
-                  <label class="control-label">Information Need</label>
-                  <input type="text" class="form-control input-sm"
+                  <label class="form-label">Information Need</label>
+                  <input type="text" class="form-control form-control-sm"
                          placeholder="What is the user trying to find?"
                          data-query-row-target="informationNeedInput"
                          value="<%= query.information_need %>" />
                 </div>
                 <div class="form-group">
-                  <label class="control-label">Notes</label>
-                  <textarea class="form-control input-sm" rows="3"
+                  <label class="form-label">Notes</label>
+                  <textarea class="form-control form-control-sm" rows="3"
                             placeholder="Add notes about this query..."
                             data-query-row-target="notesInput"><%= query.notes %></textarea>
                 </div>
@@ -286,11 +286,11 @@
       <div class="modal-body" data-doc-detail-modal-target="body">
       </div>
       <div class="modal-footer">
-        <a href="#" target="_blank" rel="noopener" class="btn btn-default d-none"
+        <a href="#" target="_blank" rel="noopener" class="btn btn-outline-secondary d-none"
            data-doc-detail-modal-target="viewLink">
           <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> View Document
         </a>
-        <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -328,7 +328,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default"
+        <button type="button" class="btn btn-outline-secondary"
                 data-action="click->query-explain-modal#copyActive">
           <i class="bi bi-clipboard" aria-hidden="true"></i> Copy
         </button>
@@ -352,11 +352,11 @@
           <input type="text" class="form-control" placeholder="Search for documents..."
                  data-doc-finder-target="searchInput"
                  data-action="keydown.enter->doc-finder#search" />
-          <button class="btn btn-default" type="button"
+          <button class="btn btn-outline-secondary" type="button"
                   data-action="click->doc-finder#search">
             <i class="bi bi-search" aria-hidden="true"></i> Search
           </button>
-          <button class="btn btn-default" type="button"
+          <button class="btn btn-outline-secondary" type="button"
                   data-action="click->doc-finder#showRatedDocs">
             All Rated Docs
           </button>
@@ -364,7 +364,7 @@
         <div data-doc-finder-target="resultsContainer"></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -387,7 +387,7 @@
                   data-query-options-modal-target="textarea"></textarea>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary" data-action="click->query-options-modal#save">Save</button>
       </div>
     </div>
@@ -417,7 +417,7 @@
                 data-action="click->move-query-modal#confirmMove">
           Move to <span data-move-query-modal-target="confirmLabel"></span>
         </button>
-        <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
       </div>
     </div>
   </div>

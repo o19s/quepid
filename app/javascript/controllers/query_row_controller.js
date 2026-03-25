@@ -237,7 +237,7 @@ export default class extends Controller {
     this.debugMode = !this.debugMode
     if (this.hasDocExplainToggleTarget) {
       this.docExplainToggleTarget.classList.toggle("btn-info", this.debugMode)
-      this.docExplainToggleTarget.classList.toggle("btn-default", !this.debugMode)
+      this.docExplainToggleTarget.classList.toggle("btn-outline-secondary", !this.debugMode)
       this.docExplainToggleTarget.setAttribute("aria-pressed", this.debugMode ? "true" : "false")
     }
     this.searchLoaded = false
@@ -745,7 +745,7 @@ export default class extends Controller {
   _buildPaginateLink(result) {
     const docsShown = this.lastSearchDocs.length
     if (result.numFound > docsShown) {
-      return `<button type="button" class="btn btn-default btn-sm peek-next-page">
+      return `<button type="button" class="btn btn-outline-secondary btn-sm peek-next-page">
         Peek at the next page of results
       </button>`
     }
