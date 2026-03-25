@@ -59,7 +59,7 @@ For simple confirm/cancel actions (archive, unarchive, remove member, delete).
 - `data-confirm-delete-method-value` — `delete`, `post`, `patch` (default: `delete`)
 - `data-confirm-delete-message-value` — confirmation text (default: "Are you sure?")
 
-**Behavior:** Controller creates a single shared modal (`#confirmDeleteModal`) if absent, shows it, and on confirm submits a hidden form with CSRF token. If Bootstrap is unavailable, it falls back to `window.confirm()`—do **not** rely on that for normal UX; treat it as an edge-case fallback only.
+**Behavior:** Controller creates a single shared modal (`#confirmDeleteModal`) if absent, shows it, and on confirm submits a hidden form with CSRF token. Many triggers on one page share that modal; the controller stores the pending URL/method in module scope and registers **one** confirm + `hidden.bs.modal` listener on the modal so handlers do not stack per Stimulus instance. If Bootstrap is unavailable, it falls back to `window.confirm()`—do **not** rely on that for normal UX; treat it as an edge-case fallback only.
 
 **Examples:** `app/views/teams/_cases.html.erb`, `app/views/teams/_search_endpoints.html.erb`, and other team/case views using `confirm-delete`.
 
@@ -116,10 +116,6 @@ if (window.bootstrap && window.bootstrap.Modal) {
   // Preferred: reuses existing instance if present
   const modal = window.bootstrap.Modal.getOrCreateInstance(this.modalTarget)
   modal.show()
-
-  // Alternative (if instance management is handled elsewhere):
-  // const modal = new window.bootstrap.Modal(this.modalTarget)
-  // modal.show()
 }
 ```
 
@@ -142,7 +138,7 @@ For displaying large content (JSON, explain text, etc.) in a full-screen modal. 
 </div>
 ```
 
-**Examples:** explain text from search results, large JSON viewers.
+**Examples:** explain text from search results, large JSON viewers. The `document-fields-modal` controller on query doc pair listings uses `getOrCreateInstance` as well; if `window.bootstrap.Modal` is missing, it falls back to a truncated `window.alert` (query, doc id, and body prefix).
 
 **Custom inset fullscreen:** If you need a near-full viewport with margins (e.g. debug JSON), add scoped classes under [`app/assets/stylesheets/`](../../app/assets/stylesheets/) (`.css` only) and ensure that file is concatenated in [`build_css.js`](../../build_css.js)—do not rely on a fixed filename unless the repo defines one.
 
@@ -214,12 +210,7 @@ Other keys fall through to the string form of the type; extend `bootstrap_class_
 
 ## 4. Stimulus and new UI conventions
 
-For code under `app/javascript/controllers/` and `app/javascript/modules/`:
-
-- **URLs:** Build fetch targets with **`apiUrl()`** from `modules/api_url` (and **`csrfToken()`** from the same module) so paths work with a relative URL root. Do not hardcode a leading `/` on site-relative paths. See [api_client.md](./api_client.md).
-- **Controller wiring:** Prefer **`static outlets`** for cross-controller calls; implement **`disconnect()`** and **`AbortController`** when starting async work. Use explicit **`static values`** with types (and defaults where needed).
-- **Markup safety:** Escape text for HTML and attributes appropriately in any JS that builds strings.
-- **Styling:** Do not set inline `style="..."` from Stimulus for structural layout; use classes in **`app/assets/stylesheets/*.css`** and register inputs in **`build_css.js`**. Use **`.css` only** (no `.scss`) for new bundles.
+See [stimulus_and_modern_js_conventions.md](../stimulus_and_modern_js_conventions.md) (authoritative for URLs, outlets, values, testing, and CSS rules).
 
 ---
 

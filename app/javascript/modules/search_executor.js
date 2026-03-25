@@ -1,5 +1,9 @@
-// Search execution module — sends queries to Solr/ES/OS from the browser,
+// Search execution module — browser-side search for all Quepid search_endpoint engines,
 // optionally proxied through /proxy/fetch for CORS.
+//
+// Behavior is aligned with splainer-search (o19s/splainer-search) factories for Solr, ES/OS,
+// Vectara, Algolia, and SearchAPI; see executeSearch() dispatch. JSONP-only Solr setups are
+// not reproduced here (use POST/GET + proxy or CORS-capable Solr).
 
 import { hydrate } from "modules/query_template"
 import { apiUrl } from "modules/api_url"
@@ -199,18 +203,19 @@ async function executeSolrSearch(tryConfig, queryText, signal, options = {}) {
   return result
 }
 
+// Escape backslashes and double-quotes so queryText can be embedded in JSON template strings.
+function escapeQueryForJson(queryText) {
+  if (typeof queryText !== "string") return queryText
+  return queryText.replace(/\\/g, "\\\\").replace(/"/g, '\\"')
+}
+
 // ── ES / OpenSearch search ───────────────────────────────────────────
 
 async function executeEsSearch(tryConfig, queryText, signal, options = {}) {
   const fieldSpec = parseFieldSpec(tryConfig.field_spec)
   let queryDsl = structuredClone(tryConfig.args || {})
 
-  // Escape backslashes and quotes in query text for JSON embedding
-  let escapedQuery = queryText
-  if (typeof escapedQuery === "string") {
-    escapedQuery = escapedQuery.replace(/\\/g, "\\\\")
-    escapedQuery = escapedQuery.replace(/"/g, '\\"')
-  }
+  const escapedQuery = escapeQueryForJson(queryText)
 
   const qOption = tryConfig.options || {}
   queryDsl = hydrate(queryDsl, escapedQuery, { qOption, encodeURI: false, defaultKw: '\\"\\"' })
@@ -293,6 +298,237 @@ async function executeEsSearch(tryConfig, queryText, signal, options = {}) {
   return result
 }
 
+// ── Vectara (POST JSON; splainer: vectaraSearcherFactory) ─────────────
+
+function applyVectaraPaging(queryDsl, offset, pageSize) {
+  const q = structuredClone(queryDsl)
+  const size = pageSize ?? q.query?.[0]?.numResults ?? 10
+  const start = offset ?? 0
+  if (Array.isArray(q.query) && q.query[0] && typeof q.query[0] === "object") {
+    q.query[0].start = start
+    q.query[0].numResults = size
+  }
+  return q
+}
+
+async function executeVectaraSearch(tryConfig, queryText, signal, options = {}) {
+  const fieldSpec = parseFieldSpec(tryConfig.field_spec)
+  let queryDsl = structuredClone(tryConfig.args || {})
+
+  const escapedQuery = escapeQueryForJson(queryText)
+
+  const qOption = tryConfig.options || {}
+  queryDsl = hydrate(queryDsl, escapedQuery, { qOption, encodeURI: false, defaultKw: '\\"\\"' })
+
+  const pageSize = tryConfig.number_of_rows || queryDsl.query?.[0]?.numResults || 10
+  queryDsl = applyVectaraPaging(queryDsl, options.offset || 0, pageSize)
+
+  const searchUrl = tryConfig.search_url
+  const renderedTemplate = JSON.stringify(queryDsl, null, 2)
+
+  const response = await fetchWithCorsFallback(
+    searchUrl,
+    {
+      method: "POST",
+      headers: buildHeaders(tryConfig),
+      body: JSON.stringify(queryDsl),
+      signal,
+    },
+    tryConfig,
+  )
+  if (!response.ok) {
+    throw new Error(`Vectara request failed (${response.status} ${response.statusText})`)
+  }
+  const data = await response.json()
+
+  const responseSet = data.responseSet && data.responseSet.length > 0 ? data.responseSet[0] : {}
+  const documents = responseSet.document || []
+  const numFound =
+    typeof responseSet.resultLength === "number" ? responseSet.resultLength : documents.length
+
+  const normalizedDocs = documents.map((doc) => normalizeDoc(doc, fieldSpec, "vectara"))
+
+  return {
+    docs: normalizedDocs,
+    numFound,
+    linkUrl: searchUrl,
+    renderedTemplate,
+    error: data.message || data.error || null,
+    ...(options.debug ? { queryDetails: queryDsl, parsedQueryDetails: null } : {}),
+  }
+}
+
+// ── Algolia (POST; splainer: algoliaSearchFactory) ────────────────────
+
+async function executeAlgoliaSearch(tryConfig, queryText, signal, options = {}) {
+  const fieldSpec = parseFieldSpec(tryConfig.field_spec)
+  let queryDsl = structuredClone(tryConfig.args || {})
+
+  const escapedQuery = escapeQueryForJson(queryText)
+
+  const qOption = tryConfig.options || {}
+  queryDsl = hydrate(queryDsl, escapedQuery, { qOption, encodeURI: false, defaultKw: '\\"\\"' })
+
+  const pageSize = queryDsl.hitsPerPage || tryConfig.number_of_rows || 10
+  if (options.offset) {
+    queryDsl.page = Math.floor(options.offset / pageSize)
+  }
+
+  const searchUrl = tryConfig.search_url
+  const renderedTemplate = JSON.stringify(queryDsl, null, 2)
+
+  const response = await fetchWithCorsFallback(
+    searchUrl,
+    {
+      method: "POST",
+      headers: buildHeaders(tryConfig),
+      body: JSON.stringify(queryDsl),
+      signal,
+    },
+    tryConfig,
+  )
+  if (!response.ok) {
+    throw new Error(`Algolia request failed (${response.status} ${response.statusText})`)
+  }
+  const data = await response.json()
+
+  const hits = data.hits || []
+  const numFound = typeof data.nbHits === "number" ? data.nbHits : hits.length
+
+  const normalizedDocs = hits.map((hit) => {
+    const flat = { ...hit, id: hit.objectID, objectID: hit.objectID }
+    return normalizeDoc(flat, fieldSpec, "algolia")
+  })
+
+  return {
+    docs: normalizedDocs,
+    numFound,
+    linkUrl: searchUrl,
+    renderedTemplate,
+    error: data.message || null,
+    ...(options.debug ? { queryDetails: queryDsl, parsedQueryDetails: null } : {}),
+  }
+}
+
+// ── SearchAPI (GET or POST + user mappers; splainer: searchApiSearcherFactory) ──
+//
+// SECURITY NOTE: compileSearchApiMappers uses `new Function()` to execute user-provided
+// mapper_code. This mirrors the splainer-search approach. mapper_code is stored per-try
+// and is only editable by users who own the case — treat it as trusted, same-origin script.
+
+function compileSearchApiMappers(mapperCode) {
+  if (!mapperCode || !String(mapperCode).trim()) {
+    throw new Error("SearchAPI requires mapper_code with numberOfResultsMapper and docsMapper")
+  }
+  try {
+    const factory = new Function(
+      `${mapperCode}\nreturn {\n  numberOfResultsMapper: typeof numberOfResultsMapper !== "undefined" ? numberOfResultsMapper : null,\n  docsMapper: typeof docsMapper !== "undefined" ? docsMapper : null,\n};`,
+    )
+    const m = factory()
+    if (typeof m.numberOfResultsMapper !== "function" || typeof m.docsMapper !== "function") {
+      throw new Error("mapper_code must define numberOfResultsMapper and docsMapper functions")
+    }
+    return m
+  } catch (e) {
+    throw new Error(`SearchAPI mapper_code failed: ${e.message}`, { cause: e })
+  }
+}
+
+function appendSearchApiGetParams(baseUrl, queryDsl) {
+  const params = []
+  if (queryDsl && typeof queryDsl === "object" && !Array.isArray(queryDsl)) {
+    for (const [key, value] of Object.entries(queryDsl)) {
+      params.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    }
+  } else if (queryDsl != null && queryDsl !== "") {
+    params.push(String(queryDsl))
+  }
+  const join = params.join("&")
+  if (!join) return baseUrl
+  const hasQuery = baseUrl.includes("?")
+  const endsWithQ = baseUrl.endsWith("?")
+  const sep = hasQuery ? (endsWithQ ? "" : "&") : "?"
+  return baseUrl + sep + join
+}
+
+async function executeSearchApiSearch(tryConfig, queryText, signal, options = {}) {
+  const fieldSpec = parseFieldSpec(tryConfig.field_spec)
+  const mappers = compileSearchApiMappers(tryConfig.mapper_code)
+
+  const escapedQuery = escapeQueryForJson(queryText)
+
+  const qOption = tryConfig.options || {}
+  let queryDsl = hydrate(structuredClone(tryConfig.args || {}), escapedQuery, {
+    qOption,
+    encodeURI: false,
+    defaultKw: '\\"\\"',
+  })
+
+  const apiMethod = (tryConfig.api_method || "POST").toUpperCase()
+  let requestUrl = tryConfig.search_url
+  let renderedTemplate
+  let response
+
+  if (apiMethod === "GET") {
+    requestUrl = appendSearchApiGetParams(requestUrl, queryDsl)
+    renderedTemplate = requestUrl
+    response = await fetchWithCorsFallback(requestUrl, { method: "GET", signal }, tryConfig)
+  } else {
+    renderedTemplate = JSON.stringify(queryDsl, null, 2)
+    response = await fetchWithCorsFallback(
+      tryConfig.search_url,
+      {
+        method: "POST",
+        headers: buildHeaders(tryConfig),
+        body: JSON.stringify(queryDsl),
+        signal,
+      },
+      tryConfig,
+    )
+  }
+
+  if (!response.ok) {
+    throw new Error(`SearchAPI request failed (${response.status} ${response.statusText})`)
+  }
+  const data = await response.json()
+
+  const mapperError = (msg) => ({ docs: [], numFound: 0, linkUrl: requestUrl, renderedTemplate, error: msg })
+
+  let numFound
+  try {
+    numFound = mappers.numberOfResultsMapper(data)
+  } catch (e) {
+    return mapperError(`numberOfResultsMapper failed: ${e.message}`)
+  }
+
+  let mappedDocs
+  try {
+    mappedDocs = mappers.docsMapper(data)
+  } catch (e) {
+    return mapperError(`docsMapper failed: ${e.message}`)
+  }
+
+  if (!Array.isArray(mappedDocs)) {
+    return mapperError("docsMapper must return an array of documents")
+  }
+
+  const maxRows = tryConfig.number_of_rows || 10
+  if (mappedDocs.length > maxRows) {
+    mappedDocs = mappedDocs.slice(0, maxRows)
+  }
+
+  const normalizedDocs = mappedDocs.map((doc) => normalizeDoc(doc, fieldSpec, "searchapi"))
+
+  return {
+    docs: normalizedDocs,
+    numFound,
+    linkUrl: requestUrl,
+    renderedTemplate,
+    error: null,
+    ...(options.debug ? { queryDetails: queryDsl, parsedQueryDetails: null } : {}),
+  }
+}
+
 // ── Normalize a doc for display ──────────────────────────────────────
 
 function normalizeDoc(rawDoc, fieldSpec, engine) {
@@ -301,6 +537,35 @@ function normalizeDoc(rawDoc, fieldSpec, engine) {
   if (engine === "solr") {
     source = rawDoc
     id = rawDoc[fieldSpec.id || "id"] || rawDoc.id || ""
+  } else if (engine === "vectara") {
+    const meta = {}
+    for (const item of rawDoc.metadata || []) {
+      if (!item || item.name == null) continue
+      const v = item.value
+      meta[item.name] = Array.isArray(v) && v.length === 1 ? v[0] : v
+    }
+    source = { ...meta }
+    if (rawDoc.document_id != null) source.document_id = rawDoc.document_id
+    if (rawDoc.title != null) source.title = rawDoc.title
+    id =
+      String(
+        rawDoc.document_id ??
+          meta[fieldSpec.id || "id"] ??
+          meta.id ??
+          rawDoc.id ??
+          source.title ??
+          "",
+      ) || ""
+  } else if (engine === "algolia" || engine === "searchapi") {
+    source = { ...rawDoc }
+    delete source.opts
+    id = String(
+      rawDoc.objectID ??
+        rawDoc.id ??
+        (fieldSpec.id ? rawDoc[fieldSpec.id] : null) ??
+        rawDoc.document_id ??
+        "",
+    )
   } else {
     // ES / OS
     source = rawDoc._source || {}
@@ -351,13 +616,19 @@ export async function executeSearch(tryConfig, queryText, signal, options = {}) 
     case "es":
     case "os":
       return executeEsSearch(tryConfig, queryText, signal, options)
+    case "vectara":
+      return executeVectaraSearch(tryConfig, queryText, signal, options)
+    case "algolia":
+      return executeAlgoliaSearch(tryConfig, queryText, signal, options)
+    case "searchapi":
+      return executeSearchApiSearch(tryConfig, queryText, signal, options)
     default:
       return {
         docs: [],
         numFound: 0,
         linkUrl: "",
         renderedTemplate: null,
-        error: `Search engine "${engine}" is not yet supported in the new UI`,
+        error: `Search engine "${engine}" is not supported`,
       }
   }
 }

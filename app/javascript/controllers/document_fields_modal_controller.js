@@ -8,8 +8,8 @@ export default class extends Controller {
 
     const link = event.currentTarget
     const documentFields = link.dataset.documentFields
-    const queryText = link.dataset.queryText
-    const docId = link.dataset.docId
+    const queryText = link.dataset.queryText ?? ""
+    const docId = link.dataset.docId ?? ""
 
     this.queryTextTarget.textContent = queryText
     this.docIdTarget.textContent = docId
@@ -19,11 +19,9 @@ export default class extends Controller {
       this.contentTarget.textContent = JSON.stringify(parsed, null, 2)
     } catch {
       // Fallback: show raw content if JSON parsing fails
-      this.contentTarget.textContent = documentFields
+      this.contentTarget.textContent = documentFields ?? ""
     }
 
-    // Show the Bootstrap modal using the global bootstrap object
-    const modal = new bootstrap.Modal(this.modalTarget)
-    modal.show()
+    window.bootstrap.Modal.getOrCreateInstance(this.modalTarget).show()
   }
 }

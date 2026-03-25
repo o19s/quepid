@@ -12,7 +12,6 @@ const modernAppGlobs = [
   "app/javascript/application.js",
   "app/javascript/admin_users.js",
   "app/javascript/analytics.js",
-  "app/javascript/jquery_bundle.js",
 ]
 
 export default [
@@ -47,8 +46,6 @@ export default [
         bootstrap: "readonly",
         CalHeatmap: "readonly",
         vegaEmbed: "readonly",
-        $: "readonly",
-        jQuery: "readonly",
       },
     },
     // Merge with recommended — a bare `rules: { … }` would replace all of `recommended.rules`.

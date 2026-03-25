@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiUrl } from "modules/api_url"
+import { apiUrl, csrfToken } from "modules/api_url"
 
 export default class extends Controller {
   static values = { caseId: Number }
@@ -15,7 +15,7 @@ export default class extends Controller {
     "submitText",
     "spinner",
     "warningArea",
-    "warningText"
+    "warningText",
   ]
 
   connect() {
@@ -39,7 +39,7 @@ export default class extends Controller {
     // Track which ratings format: "csv", "rre", "ltr"
     this._activeFormat = event.currentTarget.value
     // Show the appropriate file input
-    this.ratingsFileInputTargets.forEach(el => {
+    this.ratingsFileInputTargets.forEach((el) => {
       el.closest(".mb-3").classList.toggle("d-none", el.dataset.format !== this._activeFormat)
     })
     this._updateSubmitState()
@@ -71,7 +71,9 @@ export default class extends Controller {
   }
 
   async _importRatings() {
-    const fileInput = this.ratingsFileInputTargets.find(el => el.dataset.format === this._activeFormat)
+    const fileInput = this.ratingsFileInputTargets.find(
+      (el) => el.dataset.format === this._activeFormat,
+    )
     const file = fileInput?.files[0]
     if (!file) {
       this._showAlert("Please select a file.", "warning")
@@ -81,8 +83,6 @@ export default class extends Controller {
 
     const content = await this._readFile(file)
     const clearQueries = this.clearQueriesCheckboxTarget.checked
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
-
     let body, contentType
 
     if (this._activeFormat === "csv") {
@@ -117,8 +117,8 @@ export default class extends Controller {
     const url = apiUrl(`api/import/ratings?case_id=${this.caseIdValue}`)
     const response = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": contentType, "X-CSRF-Token": csrfToken },
-      body
+      headers: { "Content-Type": contentType, "X-CSRF-Token": csrfToken() },
+      body,
     })
 
     if (response.ok) {
@@ -149,14 +149,13 @@ export default class extends Controller {
     }
 
     const createQueries = this.createQueriesCheckboxTarget.checked
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
     const url = apiUrl(`api/import/queries/information_needs?case_id=${this.caseIdValue}`)
 
     // The API expects raw CSV text and a create_queries flag
     const response = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
-      body: JSON.stringify({ csv_text: content, create_queries: createQueries })
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken() },
+      body: JSON.stringify({ csv_text: content, create_queries: createQueries }),
     })
 
     if (response.ok) {
@@ -180,8 +179,15 @@ export default class extends Controller {
     const content = await this._readFile(file)
     // Validate headers
     const firstLine = content.split("\n")[0].trim()
-    const requiredHeaders = ["Snapshot Name", "Snapshot Time", "Case ID", "Query Text", "Doc ID", "Doc Position"]
-    const hasHeaders = requiredHeaders.every(h => firstLine.includes(h))
+    const requiredHeaders = [
+      "Snapshot Name",
+      "Snapshot Time",
+      "Case ID",
+      "Query Text",
+      "Doc ID",
+      "Doc Position",
+    ]
+    const hasHeaders = requiredHeaders.every((h) => firstLine.includes(h))
     if (!hasHeaders) {
       this._showAlert(`Headers mismatch! Required: ${requiredHeaders.join(",")}`, "danger")
       this._setLoading(false)
@@ -215,19 +221,18 @@ export default class extends Controller {
     }
 
     // API expects queries as a hash keyed by query text (SnapshotManager.import_queries uses .keys)
-    const snapshotPayloads = Object.values(snapshots).map(snap => ({
+    const snapshotPayloads = Object.values(snapshots).map((snap) => ({
       name: snap.name,
       created_at: snap.created_at,
       queries: snap.queries,
     }))
 
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
     const url = apiUrl(`api/cases/${this.caseIdValue}/snapshots/imports`)
 
     const response = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
-      body: JSON.stringify({ snapshots: snapshotPayloads })
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken() },
+      body: JSON.stringify({ snapshots: snapshotPayloads }),
     })
 
     if (response.ok) {
@@ -272,13 +277,16 @@ export default class extends Controller {
 
   _updateSubmitState() {
     if (!this.hasSubmitButtonTarget) return
-    const hasFile = this._activeTab === "ratings"
-      ? this.ratingsFileInputTargets.some(el => el.dataset.format === this._activeFormat && el.files.length > 0)
-      : this._activeTab === "information_needs"
-        ? this.informationNeedsFileInputTarget.files.length > 0
-        : this._activeTab === "snapshots"
-          ? this.snapshotFileInputTarget.files.length > 0
-          : false
+    const hasFile =
+      this._activeTab === "ratings"
+        ? this.ratingsFileInputTargets.some(
+            (el) => el.dataset.format === this._activeFormat && el.files.length > 0,
+          )
+        : this._activeTab === "information_needs"
+          ? this.informationNeedsFileInputTarget.files.length > 0
+          : this._activeTab === "snapshots"
+            ? this.snapshotFileInputTarget.files.length > 0
+            : false
     this.submitButtonTarget.disabled = !this._activeTab || !hasFile
 
     // Show contextual warning when a file is ready to import
@@ -288,8 +296,10 @@ export default class extends Controller {
       if (showWarning && this.hasWarningTextTarget) {
         const messages = {
           ratings: "This operation WILL override your existing ratings. Proceed with caution!",
-          information_needs: "This operation WILL override your existing information needs. Proceed with caution!",
-          snapshots: "This operation WILL replace any snapshots with the same Snapshot Name in the CSV.",
+          information_needs:
+            "This operation WILL override your existing information needs. Proceed with caution!",
+          snapshots:
+            "This operation WILL replace any snapshots with the same Snapshot Name in the CSV.",
         }
         this.warningTextTarget.textContent = messages[this._activeTab] || ""
       }
@@ -319,7 +329,7 @@ export default class extends Controller {
     // Hide warning from previous session
     if (this.hasWarningAreaTarget) this.warningAreaTarget.classList.add("d-none")
     // Reset all file inputs
-    this.ratingsFileInputTargets.forEach(el => {
+    this.ratingsFileInputTargets.forEach((el) => {
       el.value = ""
       el.closest(".mb-3")?.classList.add("d-none")
     })
@@ -332,8 +342,8 @@ export default class extends Controller {
     const firstTab = this.modalTarget.querySelector('.nav-link[data-import-tab="ratings"]')
     if (firstTab) {
       // Deactivate all tabs/panes, then activate the first
-      this.modalTarget.querySelectorAll(".nav-link").forEach(t => t.classList.remove("active"))
-      this.modalTarget.querySelectorAll(".tab-pane").forEach(p => {
+      this.modalTarget.querySelectorAll(".nav-link").forEach((t) => t.classList.remove("active"))
+      this.modalTarget.querySelectorAll(".tab-pane").forEach((p) => {
         p.classList.remove("show", "active")
       })
       firstTab.classList.add("active")

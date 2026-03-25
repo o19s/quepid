@@ -1,4 +1,70 @@
 import { Controller } from "@hotwired/stimulus"
+import { csrfToken } from "modules/api_url"
+
+// Shared `#confirmDeleteModal` is used by many Stimulus instances on one page.
+// Pending action + one-time listeners avoid stacked per-instance handlers and wrong submits.
+
+/** @type {{ url: string, method: string } | null} */
+let pendingConfirmDelete = null
+
+let confirmDeleteModalEl = null
+let sharedConfirmDeleteHandlersInstalled = false
+
+function submitDeleteForm(url, method) {
+  if (!url) return
+
+  const token = csrfToken()
+
+  const form = document.createElement("form")
+  form.method = "post"
+  form.action = url
+  form.style.display = "none"
+
+  if (token) {
+    const input = document.createElement("input")
+    input.type = "hidden"
+    input.name = "authenticity_token"
+    input.value = token
+    form.appendChild(input)
+  }
+
+  if (method !== "post") {
+    const methodInput = document.createElement("input")
+    methodInput.type = "hidden"
+    methodInput.name = "_method"
+    methodInput.value = method
+    form.appendChild(methodInput)
+  }
+
+  document.body.appendChild(form)
+  form.submit()
+}
+
+function onSharedConfirmDeleteClick(e) {
+  e.preventDefault()
+  if (!pendingConfirmDelete) return
+  const { url, method } = pendingConfirmDelete
+  pendingConfirmDelete = null
+  submitDeleteForm(url, method)
+  window.bootstrap?.Modal?.getInstance(confirmDeleteModalEl)?.hide()
+}
+
+function onSharedConfirmDeleteModalHidden() {
+  pendingConfirmDelete = null
+}
+
+function ensureSharedConfirmDeleteHandlers(modal) {
+  if (sharedConfirmDeleteHandlersInstalled && confirmDeleteModalEl?.isConnected) return
+  sharedConfirmDeleteHandlersInstalled = false
+
+  const confirmBtn = modal.querySelector(".confirm-delete-confirm")
+  if (!confirmBtn) return
+
+  confirmDeleteModalEl = modal
+  confirmBtn.addEventListener("click", onSharedConfirmDeleteClick)
+  modal.addEventListener("hidden.bs.modal", onSharedConfirmDeleteModalHidden)
+  sharedConfirmDeleteHandlersInstalled = true
+}
 
 // Shows a Bootstrap modal confirmation and submits a DELETE (or other) request
 // with the CSRF token when confirmed. Falls back to native confirm() if
@@ -11,7 +77,6 @@ export default class extends Controller {
   }
 
   connect() {
-    // Find or create a single modal element in the document
     this.modal = document.getElementById("confirmDeleteModal")
     if (!this.modal) {
       this._insertModal()
@@ -19,90 +84,35 @@ export default class extends Controller {
     }
 
     this.messageEl = this.modal.querySelector(".confirm-delete-message")
-    this.confirmBtn = this.modal.querySelector(".confirm-delete-confirm")
-    this._onConfirm = this._onConfirm.bind(this)
-    this._onModalHidden = this._onModalHidden.bind(this)
   }
 
   open(event) {
     event.preventDefault()
-    // set message and remember url/method from values (data attrs)
+
     const msg =
       this.messageValue ||
       this.element.dataset.confirmMessage ||
       this.element.getAttribute("aria-label") ||
       "Are you sure?"
-    this.messageEl.textContent = msg
-    this.currentUrl =
+    const url =
       this.urlValue || this.element.dataset.confirmDeleteUrlValue || this.element.dataset.url
-    this.currentMethod = (
+    const method = (
       this.methodValue ||
       this.element.dataset.confirmDeleteMethodValue ||
       "delete"
     ).toLowerCase()
 
-    // Remove any existing listener before adding to prevent accumulation
-    this.confirmBtn.removeEventListener("click", this._onConfirm)
-    this.confirmBtn.addEventListener("click", this._onConfirm)
+    this.messageEl.textContent = msg
 
-    // Try to use Bootstrap modal if available
     if (window.bootstrap && window.bootstrap.Modal) {
-      this._bsModal = new window.bootstrap.Modal(this.modal)
-      // Listen for modal hidden event to clean up listeners
-      this.modal.addEventListener("hidden.bs.modal", this._onModalHidden)
-      this._bsModal.show()
+      pendingConfirmDelete = { url, method }
+      ensureSharedConfirmDeleteHandlers(this.modal)
+      window.bootstrap.Modal.getOrCreateInstance(this.modal).show()
     } else {
-      // fallback to native confirm
+      pendingConfirmDelete = null
       const ok = window.confirm(msg)
-      if (ok) this._submitDeleteForm()
+      if (ok) submitDeleteForm(url, method)
     }
-  }
-
-  _onConfirm(e) {
-    e.preventDefault()
-    this._submitDeleteForm()
-    if (this._bsModal) this._bsModal.hide()
-    this._cleanupListeners()
-  }
-
-  _onModalHidden() {
-    // Clean up listeners when modal is hidden (cancelled or closed)
-    this._cleanupListeners()
-  }
-
-  _cleanupListeners() {
-    this.confirmBtn.removeEventListener("click", this._onConfirm)
-    this.modal.removeEventListener("hidden.bs.modal", this._onModalHidden)
-  }
-
-  _submitDeleteForm() {
-    if (!this.currentUrl) return
-
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-
-    const form = document.createElement("form")
-    form.method = "post"
-    form.action = this.currentUrl
-    form.style.display = "none"
-
-    if (token) {
-      const input = document.createElement("input")
-      input.type = "hidden"
-      input.name = "authenticity_token"
-      input.value = token
-      form.appendChild(input)
-    }
-
-    if (this.currentMethod !== "post") {
-      const methodInput = document.createElement("input")
-      methodInput.type = "hidden"
-      methodInput.name = "_method"
-      methodInput.value = this.currentMethod
-      form.appendChild(methodInput)
-    }
-
-    document.body.appendChild(form)
-    form.submit()
   }
 
   _insertModal() {

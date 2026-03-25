@@ -10,22 +10,14 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.6",
-    "@rails/actioncable": "8.1.200",
-    "@rails/activestorage": "8.1.200",
-    "ace-builds": "^1.43.4",
     "bootstrap": "^5.3.0",
     "bootstrap-icons": "^1.10.3",
     "cal-heatmap": "^4.2.4",
     "clipboard": "^2.0.11",
     "d3": "~7.9.0",
     "d3-tip": "~0.9.1",
-    "file-saver": "^2.0.5",
-    "jquery": "^3.7.1",
-    "jquery-autogrowinput": "^1.0.3",
-    "jquery-ui-dist": "^1.13.3",
     "local-time": "^3.0.0",
     "splainer-search": "^2.35.1",
-    "urijs": "^1.19.11",
     "vega": "^6.0.0",
     "vega-embed": "^7.1.0",
     "vega-lite": "^6.4.1"
@@ -43,23 +35,21 @@
     "jsdom": "^29.0.1",
     "playwright-core": "^1.58.2",
     "prettier": "^3.8.1",
-    "puppeteer": "^24.0.0",
     "vitest": "^4.1.0"
   },
   "resolutions": {},
   "scripts": {
-    "build:jquery": "esbuild app/javascript/jquery_bundle.js --bundle --sourcemap --format=iife --platform=browser --outdir=app/assets/builds --public-path=/assets",
     "build:admin": "esbuild app/javascript/admin_users.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets",
     "build:analytics": "esbuild app/javascript/analytics.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets",
     "build:css": "node build_css.js",
     "build:css:watch": "node build_css.js --watch",
-    "build": "npm run build:css && npm run build:jquery && npm run build:admin && npm run build:analytics",
+    "build": "npm run build:css && npm run build:admin && npm run build:analytics",
     "test": "vitest run",
     "test:vitest": "vitest run",
     "test:vitest:watch": "vitest",
     "lint:eslint": "eslint .",
-    "lint:prettier": "prettier --check app/javascript/controllers app/javascript/modules app/javascript/application_modern.js app/javascript/application.js app/javascript/admin_users.js app/javascript/analytics.js app/javascript/jquery_bundle.js test/javascript vitest.config.js",
+    "lint:prettier": "prettier --check app/javascript/controllers app/javascript/modules app/javascript/application_modern.js app/javascript/application.js app/javascript/admin_users.js app/javascript/analytics.js test/javascript vitest.config.js",
     "lint:js": "yarn lint:eslint && yarn lint:prettier",
-    "format:js": "prettier --write app/javascript/controllers app/javascript/modules app/javascript/application_modern.js app/javascript/application.js app/javascript/admin_users.js app/javascript/analytics.js app/javascript/jquery_bundle.js test/javascript vitest.config.js && eslint . --fix"
+    "format:js": "prettier --write app/javascript/controllers app/javascript/modules app/javascript/application_modern.js app/javascript/application.js app/javascript/admin_users.js app/javascript/analytics.js test/javascript vitest.config.js && eslint . --fix"
   }
 }

@@ -1,4 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
+import { apiUrl } from "modules/api_url"
+import { jsonFetch } from "modules/json_fetch"
 
 export default class extends Controller {
   static targets = [
@@ -202,14 +204,10 @@ export default class extends Controller {
   }
 
   async sendSnapshotToAPI(caseId, snapshotData) {
-    const url = `/api/cases/${caseId}/snapshots/imports`
+    const url = apiUrl(`api/cases/${caseId}/snapshots/imports`)
 
-    const response = await fetch(url, {
+    const response = await jsonFetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content,
-      },
       body: JSON.stringify({ snapshots: [snapshotData] }),
     })
 

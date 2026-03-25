@@ -85,7 +85,7 @@ describe("executeSearch", () => {
       new AbortController().signal,
     )
     expect(fetchSpy).not.toHaveBeenCalled()
-    expect(result.error).toMatch(/not yet supported/)
+    expect(result.error).toMatch(/not supported/)
     expect(result.docs).toEqual([])
     expect(result.numFound).toBe(0)
   })
@@ -146,5 +146,134 @@ describe("executeSearch", () => {
     expect(result.docs[0].title).toBe("ES Title")
     const templateObj = JSON.parse(result.renderedTemplate)
     expect(templateObj.query.match.title).toBe("needle")
+  })
+
+  it("POSTs Vectara query and maps responseSet documents", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          responseSet: [
+            {
+              document: [
+                {
+                  document_id: "d1",
+                  title: "V Title",
+                  metadata: [{ name: "overview", value: ["short"] }],
+                },
+              ],
+            },
+          ],
+        }),
+    })
+    const tryConfig = {
+      search_engine: "vectara",
+      search_url: "https://vectara.test/v1/query",
+      args: { query: [{ query: "#$query##", start: 0, numResults: 10 }] },
+      field_spec: "id:document_id title:title",
+      proxy_requests: true,
+      custom_headers: { "x-api-key": "k" },
+    }
+
+    const result = await executeSearch(tryConfig, "semantic", new AbortController().signal)
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    const [, init] = fetchSpy.mock.calls[0]
+    expect(init.method).toBe("POST")
+    const body = JSON.parse(init.body)
+    expect(body.query[0].query).toBe("semantic")
+    expect(result.docs[0].id).toBe("d1")
+    expect(result.docs[0].title).toBe("V Title")
+    expect(result.numFound).toBe(1)
+  })
+
+  it("uses Vectara resultLength for numFound when present", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          responseSet: [
+            {
+              resultLength: 250,
+              document: [
+                { document_id: "d1", title: "First", metadata: [] },
+              ],
+            },
+          ],
+        }),
+    })
+    const tryConfig = {
+      search_engine: "vectara",
+      search_url: "https://vectara.test/v1/query",
+      args: { query: [{ query: "#$query##", start: 0, numResults: 10 }] },
+      field_spec: "id:document_id title:title",
+      proxy_requests: true,
+    }
+
+    const result = await executeSearch(tryConfig, "test", new AbortController().signal)
+
+    expect(result.numFound).toBe(250)
+    expect(result.docs).toHaveLength(1)
+  })
+
+  it("POSTs Algolia query and maps hits with objectID", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          hits: [{ objectID: "o1", title: "Algolia hit" }],
+          nbHits: 42,
+          nbPages: 5,
+        }),
+    })
+    const tryConfig = {
+      search_engine: "algolia",
+      search_url: "https://app-dsn.algolia.net/1/indexes/movies/query",
+      args: { query: "#$query##", hitsPerPage: 10 },
+      field_spec: "title:title",
+      proxy_requests: true,
+    }
+
+    const result = await executeSearch(tryConfig, "star", new AbortController().signal)
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    const [, init] = fetchSpy.mock.calls[0]
+    const body = JSON.parse(init.body)
+    expect(body.query).toBe("star")
+    expect(result.numFound).toBe(42)
+    expect(result.docs[0].id).toBe("o1")
+    expect(result.docs[0].title).toBe("Algolia hit")
+  })
+
+  it("runs SearchAPI POST with mapper_code", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ items: [{ publication_id: "p1", title: "API Doc" }] }),
+    })
+    const mapperCode = `
+      numberOfResultsMapper = function(data) { return data.items.length; };
+      docsMapper = function(data) {
+        return data.items.map(function(d) {
+          return { id: d.publication_id, title: d.title };
+        });
+      };
+    `
+    const tryConfig = {
+      search_engine: "searchapi",
+      search_url: "https://api.example/search",
+      api_method: "POST",
+      args: { q: "#$query##" },
+      field_spec: "id:id title:title",
+      mapper_code: mapperCode,
+      number_of_rows: 10,
+      proxy_requests: true,
+    }
+
+    const result = await executeSearch(tryConfig, "findme", new AbortController().signal)
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    expect(result.numFound).toBe(1)
+    expect(result.docs[0].id).toBe("p1")
+    expect(result.docs[0].title).toBe("API Doc")
   })
 })

@@ -3,6 +3,7 @@
 require_relative '../lib/analytics'
 
 class ApplicationController < ActionController::Base
+  include DeserializeBoolParam
   include Authentication::CurrentUserManager
   include Authentication::CurrentCaseManager
   include Authentication::CurrentBookManager
@@ -30,10 +31,6 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
 
   private
-
-  def deserialize_bool_param param
-    ActiveRecord::Type::Boolean.new.deserialize(param) || false
-  end
 
   def signup_enabled?
     Rails.application.config.signup_enabled

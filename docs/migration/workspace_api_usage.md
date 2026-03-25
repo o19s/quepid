@@ -2,7 +2,9 @@
 
 Reference for **JSON (and related) HTTP endpoints** the **core case workspace** uses: methods, path patterns, and whether calls mutate state. Paths are **relative to the app root** (no leading `/`). URL rules: [api_client.md](./api_client.md).
 
-**Interactive workspace search:** The **Rails+Stimulus** case workspace at `/case/:id/try/:try_number/new_ui` loads try configuration with **`GET api/cases/:caseId/tries/:tryNumber`**, then runs **Solr / Elasticsearch / OpenSearch** requests **from the browser** (template hydration in `modules/search_executor`), optionally via **`proxy/fetch`** when the try is configured to proxy—see [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) and [api_client.md](./api_client.md). **Snapshot** replay uses **`GET api/cases/:caseId/snapshots/:snapshotId/search`**. This page lists **endpoints only**. Product changes to the search model: [intentional_design_changes.md](./intentional_design_changes.md) §2.
+**Accuracy:** Endpoint shapes below were checked against `config/routes.rb` and `bin/docker r bundle exec rails routes -g '^api'` (and top-level `proxy/fetch`). They are **Rails JSON APIs**, unchanged by Angular removal—the **Stimulus** workspace calls the same paths via `fetch` + `apiUrl()`.
+
+**Interactive workspace search:** The **Rails+Stimulus** case workspace at `/case/:id/try/:try_number/new_ui` loads try configuration with **`GET api/cases/:caseId/tries/:tryNumber`**, then runs **Solr / Elasticsearch / OpenSearch** requests **from the browser** (template hydration in `modules/search_executor`), optionally via **`proxy/fetch`** when the try is configured to proxy—see [old/angularjs_elimination_plan.md](./old/angularjs_elimination_plan.md) and [api_client.md](./api_client.md). **Snapshot** replay uses **`GET api/cases/:caseId/snapshots/:snapshotId/search`**. This page lists **endpoints only**. Product changes to the search model: [intentional_design_changes.md](./intentional_design_changes.md) §2.
 
 **Turbo / Stimulus:** For `Accept: text/vnd.turbo-stream.html`, frames, and broadcasts, see [turbo_streams_guide.md](./turbo_streams_guide.md) and [turbo_frame_boundaries.md](./turbo_frame_boundaries.md). Flash patterns: [ui_consistency_patterns.md](./ui_consistency_patterns.md).
 
@@ -37,6 +39,7 @@ Reference for **JSON (and related) HTTP endpoints** the **core case workspace** 
 - **snake_case** in JSON from the server; **camelCase** common in legacy JS clients.
 - **Turbo Streams:** mutating endpoints may support `Accept: text/vnd.turbo-stream.html` when the UI is server-rendered—[turbo_streams_guide.md](./turbo_streams_guide.md).
 - **Snapshot search** (`GET …/snapshots/:id/search`): server-side search-shaped results for snapshot content.
+- **PATCH vs PUT:** Where the table lists **PUT**, Rails typically also registers **PATCH** to the same path (`rails routes` shows both).
 
 ---
 
@@ -49,7 +52,7 @@ Reference for **JSON (and related) HTTP endpoints** the **core case workspace** 
 | `app/javascript/modules/ratings_store.js` | `PUT` / `DELETE` **`api/cases/:caseId/queries/:queryId/ratings`** (JSON body with `rating: { doc_id, rating }` / delete payload) |
 | `app/javascript/controllers/add_query_controller.js` | `POST api/cases/:caseId/queries`, `POST api/bulk/cases/:caseId/queries` |
 
-Other Stimulus features (mapper wizard, books, imports) use **`fetch`** with server-supplied URLs or path-relative paths—see [api_client.md](./api_client.md).
+Other workspace Stimulus callers (non-exhaustive): `settings_panel_controller.js`, `case_score_controller.js`, `export_case_controller.js`, `move_query_modal_controller.js`, `delete_case_options_controller.js`, `snapshot_comparison_controller.js`, `import_ratings_controller.js`, `query_options_modal_controller.js`, `query_list_controller.js`, `wizard_controller.js`, `doc_finder_controller.js`. Search `app/javascript` for `apiUrl(` calls with `api/` paths to find current `fetch` targets.
 
 ---
 
@@ -98,9 +101,10 @@ Other Stimulus features (mapper wizard, books, imports) use **`fetch`** with ser
 
 ## 3. Queries
 
+There is **no** `api/cases/.../queries/.../search` route in Rails. **Live** try/search results are fetched **in the browser** (engine URL or `proxy/fetch`—see intro and §Proxy). **Server-side** search-shaped JSON for **snapshots** only: **`GET api/cases/:caseId/snapshots/:snapshotId/search`** (§6).
+
 | Method | Path / pattern | Request body/params | Response usage | Mutating? |
 |--------|----------------|---------------------|----------------|-----------|
-| GET | `api/cases/:case_id/tries/:try_number/queries/:query_id/search` | `q`, `rows`, `start` (optional) | `{ docs, num_found, ratings, response_status }` | No |
 | GET | `api/cases/:caseId/queries?bootstrap=true` | — | `{ queries, display_order }` | No |
 | GET | `api/cases/:caseId/queries.json` | `shallow` | Same; `shallow` affects payload | No |
 | POST | `api/cases/:caseId/queries` | `{ query: { query_text } }` | 204 or `{ query, display_order }` | Yes |
@@ -165,7 +169,7 @@ Base: `api/cases/:caseId/queries/:queryId`
 
 ## 8. Books
 
-Confirm exact paths in `config/routes.rb` if adding new callers.
+Nested under `namespace :api` → `resources :books` in `config/routes.rb`.
 
 | Method | Path / pattern | Request body/params | Mutating? |
 |--------|----------------|---------------------|-----------|
@@ -211,13 +215,12 @@ Base: `api/cases/:caseId/annotations`
 
 ## 12. Import
 
+**Case scope:** Stimulus uses **`?case_id=…`** on `import/ratings` and `import/queries/information_needs`. **`file_format`** for ratings is supplied in the **JSON body** (`hash`, `rre`, or `ltr`; CSV uploads are parsed client-side into a `hash` payload).
+
 | Method | Path | Notes | Mutating? |
 |--------|------|--------|-----------|
-| POST | `api/import/ratings?file_format=hash` | `ratings`, `case_id`, `clear_queries` | Yes |
-| POST | `api/import/ratings?file_format=csv` | Client parses CSV → same as hash | Yes |
-| POST | `api/import/ratings?file_format=rre` | `rre_json`, `case_id`, `clear_queries` | Yes |
-| POST | `api/import/ratings?file_format=ltr` | `ltr_text`, `case_id`, `clear_queries` | Yes |
-| POST | `api/import/queries/information_needs` | `case_id`, `csv_text`, `create_queries` | Yes |
+| POST | `api/import/ratings?case_id=…` | Body: `file_format`, `clear_queries`, plus `ratings` (hash), `rre_json` (rre), or `ltr_text` (ltr) | Yes |
+| POST | `api/import/queries/information_needs?case_id=…` | Body: `csv_text`, `create_queries` | Yes |
 
 ---
 
@@ -230,7 +233,7 @@ Common patterns:
 | Method | Path / pattern (examples) | Mutating? |
 |--------|---------------------------|-----------|
 | GET | `api/export/ratings/:caseId.csv` / `.txt` / `.json` with `file_format` (basic, trec, rre, ltr, snapshot variants) | No |
-| GET | `api/export/cases/:caseId`, `…/general.csv`, `…/detailed.csv`, `…/snapshot.csv` | No |
+| GET | `api/export/cases/:caseId.json` | No (full case JSON; used by `export_case_controller` “quepid” format) |
 | GET | `api/export/queries/information_needs/:caseId.csv` | No |
 
 **Power-user links** in export UIs often include direct GETs such as: `api/cases/:caseId.json?shallow=false`, `api/cases/:caseId/queries.json?shallow=false`, `api/cases/:caseId/annotations.json`, `api/cases/:caseId/scores.json`, `api/export/ratings/:caseId.json`, snapshot JSON with `shallow=false`, and full `api/export/cases/:caseId.json`. Optional: `api/docs` for OpenAPI.

@@ -1,12 +1,12 @@
 # Turbo frame boundaries
 
-> **Scope:** Map of Turbo Frame IDs, where they live in the app, and how they interact with Stimulus and Turbo Streams when building the Rails core workspace. Align names with your actual partials and layouts. This is a **design reference** for [angularjs_elimination_plan.md](./angularjs_elimination_plan.md) slices—not a description of the Angular workspace on `main` today.
+> **Scope:** Map of Turbo Frame IDs, where they live in the app, and how they interact with Stimulus and Turbo Streams when extending the Rails core case / try workspace. Align names with your actual partials and layouts. This is a **design reference** tied to the completed migration narrative in [old/angularjs_elimination_plan.md](./old/angularjs_elimination_plan.md)—**sections 1–5 and 7–8 are targets**, not a full description of how the workspace is wired today.
 >
 > **Related:** [Workspace state design](./workspace_state_design.md), [Turbo streams guide](turbo_streams_guide.md). App layout overview: [docs/app_structure.md](../app_structure.md).
 
 **Implementation split**
 
-- **Sections 1–5 and 7–8** describe the **target** Hotwire boundaries for the core case / try workspace. The Stimulus-first shell at `app/views/core/new_ui.html.erb` (partials under `app/views/core/`) does **not** yet wrap that UI in `workspace_content` / `query_list_*` / `results_pane` frames; those IDs are the contract to adopt when you introduce Turbo Frame navigation there.
+- **Sections 1–5 and 7–8** describe **target** Hotwire boundaries for the core workspace. **Today:** the Stimulus case UI is `CoreController#index` → `app/views/core/index.html.erb`, which composes partials under `app/views/core/` (`_case_header`, `_action_bar`, `_query_list_shell`, `_settings_panel`, modals via `_action_bar_modals`, etc.) inside layout `app/views/layouts/core.html.erb` with `application_modern` (Turbo is loaded, but **`Turbo.session.drive` is `false`** in `app/javascript/application_modern.js`—use explicit frames, streams, or `fetch` rather than assuming full Drive navigation). That page does **not** yet wrap the workspace row in `workspace_content` / `query_list_<case_id>` / `results_pane` frames; those IDs are the **contract** when you introduce Turbo Frame navigation there.
 - **Section 6** lists frames that **already exist** on `main` (navbar, home dashboard, books/judgements, sparklines route).
 
 ---
@@ -16,13 +16,13 @@
 | Attribute | Value |
 |-----------|-------|
 | **Frame ID** | `workspace_content` |
-| **Location** | Core workspace template (e.g. `app/views/core/show.html.erb`) |
+| **Location** | Core workspace template (e.g. outer structure in `app/views/core/index.html.erb` once adopted) |
 | **Layout** | Wraps the row containing query list and results pane |
 
 **Details:**
 - Wraps both query list and results pane so query selection can use Turbo Frame navigation instead of full-page reload.
 - Query links target this frame; Turbo replaces only the workspace content, keeping header/sidebar intact.
-- Use Rails partials (or optional ViewComponents if the team adopts them per elimination plan) consistently within each slice.
+- Use Rails partials consistently within each slice.
 
 ---
 
@@ -31,7 +31,7 @@
 | Attribute | Value |
 |-----------|-------|
 | **Frame ID** | `query_list_<case_id>` |
-| **Location** | Query list template (partial or component under `app/views` / `app/components`) |
+| **Location** | Query list template (today: `app/views/core/_query_list_shell.html.erb`; future framed variant under `app/views`) |
 | **Layout** | Narrow column inside `workspace_content` (e.g. `col-md-4 col-lg-3`) |
 
 **Details:**
@@ -39,8 +39,8 @@
 - Renders the list of queries with per-row actions (move, options, explain, delete, etc.) as your markup allows.
 - Selection via link to the same page with `?query_id=`; use `data-turbo-frame="workspace_content"` so only the workspace content updates (no full-page reload).
 - **Turbo Streams:** Add/remove queries via Turbo Streams (`append` to `query_list_items`, `remove` `query_row_<id>`). Real-time score updates may `replace` the whole frame when a job completes. See [turbo_streams_guide.md](turbo_streams_guide.md) and [section 7](#7-turbo-streams--server-responses) below.
-- **Typical client-side behavior** (often a Stimulus controller such as `query_list_controller.js`) — **mirror Angular parity first**, then evolve:
-  - **Pagination / filtering / sorting:** Match today’s query list UX (Angular uses client pagination in places; elimination plan also allows server-driven Pagy for large cases). Do not assume `?page=` on the URL unless your slice intentionally matches that model.
+- **Typical client-side behavior** (Stimulus, e.g. `query_list_controller.js`) — **match current workspace UX**, then evolve:
+  - **Pagination / filtering / sorting:** Match today’s query list UX (client-side paging in `query_list_controller.js` today; [old/angularjs_elimination_plan.md](./old/angularjs_elimination_plan.md) also discussed server-driven Pagy for large cases). Do not assume `?page=` on the URL unless your slice intentionally matches that model.
   - **Drag-and-drop reorder:** e.g. SortableJS; persist order via your cases/queries position API.
   - **Expand/collapse all:** Controls to expand or collapse all query rows.
   - **Score refresh:** Listen for custom events (e.g. `query-score:refresh`); fetch lightweight score updates per query without full re-evaluation when that fits your API.
@@ -61,7 +61,7 @@
 - Shows selected query context, notes / information-need form, and placeholder or live search results.
 - **Query notes form** (`query_notes_<query_id>`): may submit via Turbo Frame; server returns HTML with a matching frame to replace the form region without full-page reload. See [section 7](#7-turbo-streams--server-responses).
 - When no query is selected: show a prompt such as “Select a query from the list”.
-- **Results fetching (parity):** Same browser search model as [angularjs_elimination_plan.md](./angularjs_elimination_plan.md); optional server-rendered cards only with explicit scope ([intentional_design_changes.md](./intentional_design_changes.md), Section 2).
+- **Results fetching (parity):** Same browser search model as documented in [old/angularjs_elimination_plan.md](./old/angularjs_elimination_plan.md); optional server-rendered cards only with explicit scope ([intentional_design_changes.md](./intentional_design_changes.md), Section 2).
 - **Rating updates:** Responses can use Turbo Streams (`update` for `rating-badge-<doc_id>`) when `Accept: text/vnd.turbo-stream.html`. See [turbo_streams_guide.md](turbo_streams_guide.md).
 - **Bulk rating:** Bulk rate/clear via your bulk ratings endpoints; trigger score refresh and re-fetch results as needed.
 - **Diff mode:** May use query params (e.g. `diff_snapshot_ids[]`); server renders diff UI on cards; listen for `diff-snapshots-changed` or equivalent events if you use them.
@@ -81,7 +81,7 @@
 **Details:**
 - **West panel:** Query list. Collapsible; state may persist in `localStorage` per case.
 - **East panel:** Results pane. Collapsible; state may persist in `localStorage` per case.
-- **Legacy Angular** used extra side regions (e.g. tune relevance, dev settings, scorer picker). In a Rails layout, scorer, settings, and chart UI often live in a toolbar (Bootstrap collapse), with query list and results as collapsible side regions. An annotations region may be a collapse below the workspace.
+- **Historically** the old core UI had extra side regions (tune relevance, dev settings, scorer picker). In the current Rails layout, scorer, settings, and chart UI often live in a toolbar (Bootstrap collapse), with query list and results as collapsible side regions. An annotations region may be a collapse below the workspace.
 - **Adding panels:** For heavy or optional regions, consider a dedicated Turbo Frame with `loading="lazy"` and `src` pointing at an endpoint.
 
 ---
@@ -179,7 +179,7 @@ Use `data: { turbo: false }` **only when necessary**:
 - **OAuth / external redirects** — Login, signup, OAuth callbacks (e.g. `sessions/new.html.erb`)
 - **Legacy forms** — Some forms may require full POST (e.g. mixed HTTP/HTTPS; see `application_helper.rb`)
 
-**Do not use** for normal navigation links (navbar brand, “View all cases”, create case). Let Turbo Drive handle them when enabled.
+**Do not use** for normal navigation links (navbar brand, “View all cases”, create case) unless you intentionally need a full document load. Where **Turbo Drive** is enabled for those links, prefer default Turbo behavior; on **`application_modern`** Drive is off globally (see implementation split), so this guideline applies mainly to layouts that enable Drive or to explicit `data-turbo="true"` links.
 
 For URL building rules (never hardcode `/`; prefer server-passed URLs and a subpath-aware root), see [API client conventions](api_client.md).
 

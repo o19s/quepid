@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { Application } from "@hotwired/stimulus"
 import ResizablePaneController from "../../../app/javascript/controllers/resizable_pane_controller"
 import { waitForController } from "../support/stimulus_helpers"
@@ -7,17 +7,6 @@ describe("ResizablePaneController", () => {
   let application
 
   beforeEach(async () => {
-    // Stub jQuery's $().on since resizable_pane_controller uses it
-    globalThis.$ = (selector) => {
-      if (selector === document) {
-        return {
-          on: vi.fn(),
-          off: vi.fn(),
-        }
-      }
-      return { on: vi.fn(), off: vi.fn() }
-    }
-
     document.body.innerHTML = `
       <div data-controller="resizable-pane" style="width: 1000px; position: relative;">
         <div data-resizable-pane-target="main" style="width: 100%;"></div>
@@ -47,28 +36,18 @@ describe("ResizablePaneController", () => {
     const slider = document.querySelector('[data-resizable-pane-target="slider"]')
     const east = document.querySelector('[data-resizable-pane-target="east"]')
 
-    // Simulate jQuery toggleEast event via the controller's _onToggle
-    const controller = application.getControllerForElementAndIdentifier(
-      document.querySelector('[data-controller="resizable-pane"]'),
-      "resizable-pane",
-    )
-    controller._onToggle()
+    document.dispatchEvent(new CustomEvent("toggleEast"))
 
     expect(slider.classList.contains("d-none")).toBe(false)
     expect(east.classList.contains("d-none")).toBe(false)
   })
 
-  it("closes pane on second toggle", () => {
+  it("closes pane on second toggleEast", () => {
     const slider = document.querySelector('[data-resizable-pane-target="slider"]')
     const east = document.querySelector('[data-resizable-pane-target="east"]')
 
-    const controller = application.getControllerForElementAndIdentifier(
-      document.querySelector('[data-controller="resizable-pane"]'),
-      "resizable-pane",
-    )
-
-    controller._onToggle() // open
-    controller._onToggle() // close
+    document.dispatchEvent(new CustomEvent("toggleEast"))
+    document.dispatchEvent(new CustomEvent("toggleEast"))
 
     expect(slider.classList.contains("d-none")).toBe(true)
     expect(east.classList.contains("d-none")).toBe(true)

@@ -1,7 +1,8 @@
 // Manages ratings state for a single query.
 // Mirrors Angular ratingsStoreSvc but as a plain ES module class.
 
-import { apiUrl, csrfToken } from "modules/api_url"
+import { apiUrl } from "modules/api_url"
+import { jsonFetch } from "modules/json_fetch"
 
 export class RatingsStore {
   /**
@@ -44,13 +45,8 @@ export class RatingsStore {
   async rate(docId, rating) {
     const url = apiUrl(`api/cases/${this.caseId}/queries/${this.queryId}/ratings`)
 
-    const response = await fetch(url, {
+    const response = await jsonFetch(url, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": csrfToken(),
-        Accept: "application/json",
-      },
       body: JSON.stringify({
         rating: { doc_id: docId, rating: rating },
       }),
@@ -72,13 +68,8 @@ export class RatingsStore {
   async unrate(docId) {
     const url = apiUrl(`api/cases/${this.caseId}/queries/${this.queryId}/ratings`)
 
-    const response = await fetch(url, {
+    const response = await jsonFetch(url, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": csrfToken(),
-        Accept: "application/json",
-      },
       body: JSON.stringify({
         rating: { doc_id: docId },
       }),
@@ -97,13 +88,8 @@ export class RatingsStore {
   async rateBulk(docIds, rating) {
     const url = apiUrl(`api/cases/${this.caseId}/queries/${this.queryId}/bulk/ratings`)
 
-    const response = await fetch(url, {
+    const response = await jsonFetch(url, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": csrfToken(),
-        Accept: "application/json",
-      },
       body: JSON.stringify({ doc_ids: docIds, rating: rating }),
     })
 
@@ -119,18 +105,13 @@ export class RatingsStore {
   }
 
   /**
-   * Bulk-unrate multiple documents. Persists via DELETE (POST with delete route).
+   * Bulk-unrate multiple documents. Persists via POST to the bulk delete endpoint.
    */
   async unrateBulk(docIds) {
     const url = apiUrl(`api/cases/${this.caseId}/queries/${this.queryId}/bulk/ratings/delete`)
 
-    const response = await fetch(url, {
+    const response = await jsonFetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": csrfToken(),
-        Accept: "application/json",
-      },
       body: JSON.stringify({ doc_ids: docIds }),
     })
 

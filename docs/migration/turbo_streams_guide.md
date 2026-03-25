@@ -2,7 +2,7 @@
 
 > When and how to use Turbo Streams as Rails replaces legacy client-side DOM updates. **Parity constraints** (what stays in the browser vs server): [angularjs_elimination_plan.md](./angularjs_elimination_plan.md). Prefer streams for **notifications**, **server-rendered** mutation responses, and **server-owned** HTML fragments — not as the default replacement for the interactive search/score loop unless [intentional_design_changes.md](./intentional_design_changes.md) Section 2 is explicitly adopted.
 >
-> **Related:** [Turbo frame boundaries](./turbo_frame_boundaries.md) (DOM/frame IDs for the core workspace), [Workspace behavior](./workspace_behavior.md) (what subscribes to streams today vs the Angular try page).
+> **Related:** [Turbo frame boundaries](./turbo_frame_boundaries.md) (DOM/frame IDs for the core workspace), [Workspace behavior](./workspace_behavior.md) (case try layout does not subscribe to notification streams).
 
 ---
 
@@ -148,7 +148,7 @@ async create() {
 }
 ```
 
-When you add Stimulus-driven mutations, put controllers under `app/javascript/controllers/`, build URLs with `apiUrl()` from `modules/api_url` (never a leading `/`), and use `csrfToken()` for `X-CSRF-Token`. At the time of writing, core Stimulus code may still be evolving; search the tree for `text/vnd.turbo-stream.html` / `renderStreamMessage` to see live call sites.
+For URL and CSRF conventions used in examples above, see [stimulus_and_modern_js_conventions.md](../stimulus_and_modern_js_conventions.md) (authoritative). Search the tree for `text/vnd.turbo-stream.html` / `renderStreamMessage` to see live call sites.
 
 ### Server-side pattern (Rails)
 
@@ -256,7 +256,7 @@ For real-time updates from background jobs or other processes, use Turbo Stream 
 <%= turbo_stream_from(:notifications) %>
 ```
 
-This subscribes the page to the `:notifications` stream (ActionCable). **Note:** `layouts/core.html.erb` does **not** include this today, so the default Angular try page does not receive these pushes; see [workspace_behavior.md](./workspace_behavior.md) Section 3.
+This subscribes the page to the `:notifications` stream (ActionCable). **Note:** `layouts/core.html.erb` does **not** include this today, so the case try workspace does not receive these pushes; see [workspace_behavior.md](./workspace_behavior.md).
 
 ### Broadcasting from jobs (pattern in this repo)
 

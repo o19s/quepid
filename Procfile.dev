@@ -1,4 +1,3 @@
 web: bundle exec puma -C config/puma.rb
 worker: bundle exec bin/jobs
-jquery: npm run build:jquery -- --watch
 css: npm run build:css:watch

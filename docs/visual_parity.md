@@ -91,7 +91,7 @@ bash test/visual_parity/run_comparison.sh --remove-worktrees   # remove VP workt
 
 ## Reference: `04-case-workspace-expanded` (Angular vs new-ui)
 
-This page is captured for **both** stacks after the same scripted steps: open **case 4** (“10s of Queries”), wait for the query list, **expand the first query row**, wait for results (or error), then **scroll to the top** (`test/visual_parity/capture_screenshots.mjs`). Outputs land under `test/visual_parity/screenshots/<label>/04-case-workspace-expanded.png` when you run route comparison (`run_comparison.sh --routes`).
+This page is captured for **both** stacks after the same scripted steps: open **case 4** (“10s of Queries”) with **`?sort=default`** (same manual / **`display_order`** semantics as legacy Angular **`QueriesCtrl`**), wait for the query list, **expand the first visible query row’s chevron** (Stimulus paginates with **`d-none`**; Angular uses **`#query-container`**), wait for results (or error), then **scroll to the top** (`test/visual_parity/capture_screenshots.mjs`). Outputs land under `test/visual_parity/screenshots/<label>/04-case-workspace-expanded.png` when you run route comparison (`run_comparison.sh --routes`).
 
 The two PNGs are the same **viewport** (1440×900) but are **not** pixel-identical; a raw pixel comparison shows a large diff (on the order of hundreds of thousands of differing pixels), which is expected given layout and component changes.
 
@@ -111,7 +111,7 @@ The two PNGs are the same **viewport** (1440×900) but are **not** pixel-identic
 | Report | **Report** (frog icon) in this row with filter + query count | Same placement (after filter input, floated with **Number of Queries**) |
 | Filter / counts | “Filter Queries” search; **Number of Queries: 20** | Same ideas; spacing and control chrome differ |
 
-### Expanded query (first row: query **“seven”** in seed data)
+### Expanded query (first row in **manual** order for case 4)
 
 | Area | Angular | New UI |
 |------|---------|--------|

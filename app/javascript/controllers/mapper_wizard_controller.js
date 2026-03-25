@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { csrfToken } from "modules/api_url"
 
 export default class extends Controller {
   static targets = [
@@ -139,7 +140,7 @@ export default class extends Controller {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken(),
+          "X-CSRF-Token": csrfToken(),
         },
         body: JSON.stringify({
           search_url: url,
@@ -188,7 +189,7 @@ export default class extends Controller {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken(),
+          "X-CSRF-Token": csrfToken(),
         },
         body: JSON.stringify({ api_key: apiKey }),
       })
@@ -276,7 +277,7 @@ export default class extends Controller {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken(),
+          "X-CSRF-Token": csrfToken(),
         },
         body: JSON.stringify({
           mapper_type: mapperType,
@@ -388,7 +389,7 @@ export default class extends Controller {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken(),
+          "X-CSRF-Token": csrfToken(),
         },
         body: JSON.stringify({
           mapper_type: mapperType,
@@ -459,7 +460,7 @@ export default class extends Controller {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken(),
+          "X-CSRF-Token": csrfToken(),
         },
         body: JSON.stringify({
           name: name,
@@ -561,9 +562,5 @@ export default class extends Controller {
     const div = document.createElement("div")
     div.textContent = text
     return div.innerHTML
-  }
-
-  getCSRFToken() {
-    return document.querySelector('meta[name="csrf-token"]')?.content
   }
 }

@@ -8,29 +8,28 @@ These are **conventions** plus a snapshot of **what the repo does today** — no
 
 ## What exists in the codebase today
 
-- **No shared `fetch` helper module** yet. Stimulus controllers each read the CSRF meta tag and build `headers` locally (same token source Angular’s interceptor uses: `meta[name="csrf-token"]`).
+- **Shared JSON defaults:** **`jsonFetch()`** and **`railsJsonHeaders()`** in **`modules/json_fetch`** merge **`Accept`**, optional **`Content-Type: application/json`** (when `body` is a string), and **`X-CSRF-Token`** from **`csrfToken()`** in **`modules/api_url`**. They do **not** parse JSON, normalize errors, or retry — callers keep that logic. For CSRF-only or custom `fetch` shapes, still use **`csrfToken()`** directly.
 - **App root for JS URL building:** `document.body.dataset.quepidRootUrl`, populated by **`data-quepid-root-url`** on `<body>` in layouts such as `app/views/layouts/core_new_ui.html.erb` and `app/views/layouts/core.html.erb` (`request.base_url` + `ENV['RAILS_RELATIVE_URL_ROOT']`). Use this (or server-provided URLs) instead of hardcoding `/` or ignoring relative URL roots.
 - **Case workspace context** on the same layouts: e.g. **`data-case-id`**, **`data-try-number`**, plus feature flags (`data-communal-scorers-only`, `data-query-list-sortable`). Controllers read these when constructing API paths.
-- **Pinned modules** (see `config/importmap.rb`): e.g. **`modules/search_executor`**, **`modules/query_template`**. Search from the browser goes through **`search_executor.js`**, which calls **`/proxy/fetch`** (with the same root prefix) when proxying is enabled — see below.
+- **Pinned modules** (see `config/importmap.rb`): e.g. **`modules/search_executor`**, **`modules/query_template`**. Search from the browser goes through **`search_executor.js`**, which implements the same **`search_endpoint.search_engine`** types as legacy splainer-search: **Solr**, **static** (Solr-shaped), **Elasticsearch**, **OpenSearch**, **Vectara**, **Algolia**, and **SearchAPI** (GET/POST + `mapper_code`). It calls **`/proxy/fetch`** (with the same root prefix) when proxying is enabled — see below.
 
 ---
 
 ## CSRF
 
-- **Today:** Read the token from **`csrf_meta_tags`** → `document.querySelector('meta[name="csrf-token"]')` (`.content` or `.getAttribute("content")`) and send **`X-CSRF-Token`** on mutating requests to Rails-backed JSON/HTML endpoints.
-- **Aspirational:** A single small module (e.g. `csrfToken()` + `fetchWithRailsDefaults()`) would avoid duplicating that lookup across controllers.
+- **Today:** Import **`csrfToken()`** from **`modules/api_url`** and send **`X-CSRF-Token: csrfToken()`** on mutating requests to Rails-backed JSON/HTML endpoints (token comes from **`csrf_meta_tags`**). Do not duplicate `document.querySelector('meta[name="csrf-token"]')` in controllers.
+- Use **`jsonFetch`** / **`railsJsonHeaders`** when several call sites in one change need the same header bundle; avoid a heavier global wrapper (magic retries, auto-parsed errors) unless the whole app opts in.
 - **Exception:** Requests to **`ProxyController#fetch`** intentionally skip Rails CSRF verification; proxied search **`fetch`** calls in **`search_executor.js`** do not attach the token. Do not assume every `fetch` in the app should send CSRF — match the target controller.
 
 ---
 
 ## URL rules
 
-- **Typical Rails JSON paths:** prefer **`apiUrl()`** from **`modules/api_url`** (and **`csrfToken()`** from the same module) so subpath deployments stay correct — see [stimulus_and_modern_js_conventions.md](../stimulus_and_modern_js_conventions.md). The bullets below cover **`data-*` URLs**, proxy search, and cases where a shared helper is not used yet.
-- **Never hardcode** a site root of **`/`** for APIs when the app may sit under a **relative URL root**. Prefer **`document.body.dataset.quepidRootUrl`** or URLs supplied from the server.
-- **JSON API** routes used by the new UI are typically under **`${rootUrl}/api/...`** (e.g. cases, tries, queries, bulk queries), matching **`app/controllers/api`**.
+For **`apiUrl()`**, **`csrfToken()`**, and general URL conventions, see [stimulus_and_modern_js_conventions.md](../stimulus_and_modern_js_conventions.md) (authoritative). The notes below cover **edge cases** specific to fetch patterns:
+
 - **When the URL is known at render time**, prefer Stimulus **`values`** (e.g. `data-*-url` from ERB) — see **`mapper_wizard_controller.js`**.
 - **Path-relative `fetch`** (e.g. `books/${id}/...` with no leading slash) is valid when the current page is under that path; it resolves against the browser’s current origin and path prefix. Use consistently with your feature’s routing.
-- **`search_executor.js`** builds **`${rootUrl}/proxy/fetch?url=${encodeURIComponent(targetUrl)}`** for CORS-safe search against Solr / Elasticsearch / OpenSearch when proxying is on.
+- **`search_executor.js`** builds **`${rootUrl}/proxy/fetch?url=${encodeURIComponent(targetUrl)}`** for CORS-safe outbound search when proxying is on (all engines above).
 
 ---
 

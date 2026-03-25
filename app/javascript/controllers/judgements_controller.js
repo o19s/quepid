@@ -1,16 +1,17 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiUrl, csrfToken } from "modules/api_url"
+import { apiUrl } from "modules/api_url"
+import { jsonFetch } from "modules/json_fetch"
 
 export default class extends Controller {
   static values = {
     caseId: Number,
-    bookId: Number,       // currently associated book, 0 if none
-    books: Array,         // [{id, name}, ...] available books from teams
-    teams: Array,         // [{id, name}, ...] teams this case belongs to
+    bookId: Number, // currently associated book, 0 if none
+    books: Array, // [{id, name}, ...] available books from teams
+    teams: Array, // [{id, name}, ...] teams this case belongs to
     autoPopulateBookPairs: Boolean,
     autoPopulateCaseJudgements: Boolean,
     scorerId: Number,
-    queriesCount: Number
+    queriesCount: Number,
   }
 
   static outlets = ["query-row"]
@@ -31,7 +32,7 @@ export default class extends Controller {
     "processingMessage",
     "populateButton",
     "refreshButton",
-    "syncQueriesButton"
+    "syncQueriesButton",
   ]
 
   connect() {
@@ -76,11 +77,8 @@ export default class extends Controller {
     this._showProcessing("Saving settings...")
     this._disableActions(true)
 
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
     const bookId = this._selectedBookId
-    const autoPopulateBookPairs = bookId
-      ? this.autoPopulateBookPairsCheckboxTarget.checked
-      : false
+    const autoPopulateBookPairs = bookId ? this.autoPopulateBookPairsCheckboxTarget.checked : false
     const autoPopulateCaseJudgements = bookId
       ? this.autoPopulateCaseJudgementsCheckboxTarget.checked
       : false
@@ -88,14 +86,13 @@ export default class extends Controller {
     try {
       // Save book settings
       const url = apiUrl(`api/cases/${this.caseIdValue}`)
-      const response = await fetch(url, {
+      const response = await jsonFetch(url, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
         body: JSON.stringify({
           book_id: bookId,
           auto_populate_book_pairs: autoPopulateBookPairs,
-          auto_populate_case_judgements: autoPopulateCaseJudgements
-        })
+          auto_populate_case_judgements: autoPopulateCaseJudgements,
+        }),
       })
 
       if (!response.ok) throw new Error("Failed to save settings")
@@ -143,7 +140,7 @@ export default class extends Controller {
       // Gather query/doc pairs from all query-row outlets that have search results
       const queryDocPairs = []
       if (this.hasQueryRowOutlet) {
-        this.queryRowOutlets.forEach(row => {
+        this.queryRowOutlets.forEach((row) => {
           const docs = row.lastSearchDocs || []
           docs.forEach((doc, idx) => {
             const fields = {}
@@ -173,12 +170,10 @@ export default class extends Controller {
         return
       }
 
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
       const url = apiUrl(`api/books/${this._selectedBookId}/populate?case_id=${this.caseIdValue}`)
-      const response = await fetch(url, {
+      const response = await jsonFetch(url, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
-        body: JSON.stringify({ case_id: this.caseIdValue, query_doc_pairs: queryDocPairs })
+        body: JSON.stringify({ case_id: this.caseIdValue, query_doc_pairs: queryDocPairs }),
       })
 
       if (!response.ok) throw new Error("Failed to populate book")
@@ -244,13 +239,11 @@ export default class extends Controller {
   }
 
   async _refreshRatings(createMissingQueries, processInBackground) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
     const url = apiUrl(
-      `api/books/${this._selectedBookId}/cases/${this.caseIdValue}/refresh?create_missing_queries=${createMissingQueries}&process_in_background=${processInBackground}`
+      `api/books/${this._selectedBookId}/cases/${this.caseIdValue}/refresh?create_missing_queries=${createMissingQueries}&process_in_background=${processInBackground}`,
     )
-    const response = await fetch(url, {
+    const response = await jsonFetch(url, {
       method: "PUT",
-      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken }
     })
 
     if (!response.ok) {
@@ -268,8 +261,8 @@ export default class extends Controller {
 
     for (const team of this.teamsValue) {
       try {
-        const response = await fetch(apiUrl(`api/teams/${team.id}/books`), {
-          headers: { "X-CSRF-Token": csrfToken(), Accept: "application/json" },
+        const response = await jsonFetch(apiUrl(`api/teams/${team.id}/books`), {
+          method: "GET",
         })
         if (!response.ok) continue
 
@@ -348,12 +341,10 @@ export default class extends Controller {
     }
 
     if (hasBook) {
-      this.autoPopulateBookPairsCheckboxTarget.checked = this._selectedBookId === this._originalBookId
-        ? this.autoPopulateBookPairsValue
-        : false
-      this.autoPopulateCaseJudgementsCheckboxTarget.checked = this._selectedBookId === this._originalBookId
-        ? this.autoPopulateCaseJudgementsValue
-        : true
+      this.autoPopulateBookPairsCheckboxTarget.checked =
+        this._selectedBookId === this._originalBookId ? this.autoPopulateBookPairsValue : false
+      this.autoPopulateCaseJudgementsCheckboxTarget.checked =
+        this._selectedBookId === this._originalBookId ? this.autoPopulateCaseJudgementsValue : true
 
       // Update judge link
       const rootUrl = document.body.dataset.quepidRootUrl || ""
@@ -375,8 +366,9 @@ export default class extends Controller {
   _updateSaveButton() {
     const bookChanged = this._selectedBookId !== this._originalBookId
     const settingsChanged = this._selectedBookId
-      ? (this.autoPopulateBookPairsCheckboxTarget.checked !== this._originalAutoPopulateBookPairs ||
-         this.autoPopulateCaseJudgementsCheckboxTarget.checked !== this._originalAutoPopulateCaseJudgements)
+      ? this.autoPopulateBookPairsCheckboxTarget.checked !== this._originalAutoPopulateBookPairs ||
+        this.autoPopulateCaseJudgementsCheckboxTarget.checked !==
+          this._originalAutoPopulateCaseJudgements
       : false
     const hasChanges = bookChanged || settingsChanged
     this.saveButtonTarget.classList.toggle("d-none", !hasChanges)
@@ -385,7 +377,9 @@ export default class extends Controller {
   _updateCreateBookLink() {
     const rootUrl = document.body.dataset.quepidRootUrl || ""
     const href = `${rootUrl}/books/new?scorer_id=${this.scorerIdValue}&origin_case_id=${this.caseIdValue}`
-    this.createBookLinkTargets.forEach(link => { link.href = href })
+    this.createBookLinkTargets.forEach((link) => {
+      link.href = href
+    })
   }
 
   _disableActions(disabled) {

@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { jsonFetch } from "modules/json_fetch"
 
 export default class extends Controller {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner"]
@@ -44,12 +45,8 @@ export default class extends Controller {
       }
 
       // Send to API - wrap in 'case' key as expected by API
-      const response = await fetch(this.formTarget.action, {
+      const response = await jsonFetch(this.formTarget.action, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content,
-        },
         body: JSON.stringify({ case: caseData }),
       })
 

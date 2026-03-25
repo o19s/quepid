@@ -70,6 +70,13 @@ export default class extends Controller {
       const tryConfig = await this._fetchTryConfig()
       const engine = (tryConfig.search_engine || "solr").toLowerCase()
 
+      const docFinderEngines = ["solr", "static", "es", "os"]
+      if (!docFinderEngines.includes(engine)) {
+        this.resultsContainerTarget.innerHTML =
+          `<p class="text-muted">Loading every rated document at once is not supported for the "${engine}" engine. Use the search box above instead.</p>`
+        return
+      }
+
       // Build a filter query to fetch only rated docs
       let filterConfig
       if (engine === "solr" || engine === "static") {

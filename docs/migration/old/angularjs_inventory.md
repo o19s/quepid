@@ -22,11 +22,13 @@ core.html.erb (ng-app="QuepidApp")
           -> otherwise                -> 404.html (404Ctrl)
 ```
 
-**Bootstrap flow:**
-1. `core.html.erb` loads `jquery_bundle`, `angular_app`, `angular_templates`, `quepid_angular_app`, then the importmap entry **`application_modern`**
-2. Inline `<script>` run block calls `bootstrapSvc.run()` (fetches current user) and `configurationSvc` (sets feature flags from Rails `data-*` attributes on `<body>`)
-3. ngRoute resolves to `MainCtrl` which orchestrates `caseSvc`, `settingsSvc`, `queriesSvc`, `querySnapshotSvc`, `scorerSvc`
-4. `QueriesCtrl` manages the primary query list — the heart of the UI
+**Current `core.html.erb` bootstrap:** `javascript_importmap_tags 'application_modern'` only (Turbo, Stimulus, Bootstrap 5, etc.). **jQuery is not a dependency** (the old `jquery_bundle` esbuild entry is gone).
+
+**Historical Angular-era flow (reference):**
+1. The layout once loaded separate script tags (jQuery bundle, Angular vendor/app/template bundles) before **`application_modern`**.
+2. Inline `<script>` run block called `bootstrapSvc.run()` (fetches current user) and `configurationSvc` (sets feature flags from Rails `data-*` attributes on `<body>`)
+3. ngRoute resolved to `MainCtrl` which orchestrated `caseSvc`, `settingsSvc`, `queriesSvc`, `querySnapshotSvc`, `scorerSvc`
+4. `QueriesCtrl` managed the primary query list — the heart of the UI
 
 ## Build System
 
@@ -35,7 +37,6 @@ core.html.erb (ng-app="QuepidApp")
   - `app/javascript/angular_app.js` → vendor bundle (`angular_app.js`) — Angular core, jQuery UI, splainer-search, Vega, Shepherd, etc.
   - **`build_angular_app.js`** (Node) → application bundle (`quepid_angular_app.js`) — concatenates, in order: `utilitiesModule.js`, `app.js`, `routes.js`; then component `*_service.js` / `*_directive.js` / `*_controller.js` / other `*.js`; then top-level `controllers/`, `directives/`, `factories/`, `filters/`, `interceptors/`, `services/`, `values/`; then `footer.js`, `tour.js`, `ace_config.js`. Watches those paths when run with `--watch`.
   - `build_templates.js` → template cache (`angular_templates.js`) — scans **`app/assets/javascripts/components`** and **`app/assets/templates`** (including `.html.erb` sources, registered under the basename without `.erb`).
-  - `app/javascript/jquery_bundle.js` → jQuery bundle (`jquery_bundle.js`)
 - **Legacy file:** `app/javascript/quepid_app.js` (Webpack-style `require.context` imports) is **not** referenced by current `yarn build` scripts; the supported app build is `build_angular_app.js`.
 - **Output:** `app/assets/builds/*.js`
 - **Build commands:** `yarn build:angular-vendor`, `yarn build:angular-app`, `yarn build:angular-templates` (or `yarn build` for full front-end build)
@@ -65,8 +66,8 @@ core.html.erb (ng-app="QuepidApp")
 | angular-countup | ^0.0.1 | Number animation |
 | splainer-search | ^2.35.1 | Search engine abstraction (Solr, ES, OS, etc.) |
 
-**Non-Angular JS dependencies also used in the Angular app:**
-- jQuery ^3.7.1 + jQuery UI
+**Non-Angular JS dependencies also used in the historical Angular app:**
+- jQuery + jQuery UI (via `angular-ui-sortable`); **removed** from the modern stack
 - D3 ~7.9.0 (charts)
 - Vega ^6.0.0 / Vega-Lite / Vega-Embed (visualizations)
 - ACE editor (ace-builds)
