@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { executeSearch } from "modules/search_executor"
+import { hydrate } from "modules/query_template"
 import { apiUrl, csrfToken } from "modules/api_url"
 import { RatingsStore } from "modules/ratings_store"
 import { scaleToColors, ratingColor, scoreToColor } from "modules/scorer"
@@ -277,13 +278,31 @@ export default class extends Controller {
       }
     }
 
+    // Show the hydrated query params with placeholders filled in.
+    let renderedTemplate = null
+    try {
+      const tryConfig = await fetchTryConfig()
+      const engine = (tryConfig.search_engine || "solr").toLowerCase()
+      const args = tryConfig.args || {}
+      const qOption = tryConfig.options || {}
+      const isSolr = engine === "solr" || engine === "static"
+      const hydrated = hydrate(args, this.queryTextValue, {
+        qOption,
+        encodeURI: false,
+        defaultKw: isSolr ? '""' : '\\"\\"',
+      })
+      renderedTemplate = JSON.stringify(hydrated, null, 2)
+    } catch {
+      // Non-critical — template tab will show "not a templated query"
+    }
+
     document.dispatchEvent(
       new CustomEvent("show-query-explain", {
         detail: {
           queryDetails: queryDetails || null,
           parsedQueryDetails: parsedQueryDetails || null,
           queryText: this.queryTextValue,
-          renderedTemplate: null,
+          renderedTemplate,
         },
       }),
     )

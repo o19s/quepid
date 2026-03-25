@@ -9,7 +9,6 @@ export default class UserActivityController extends Controller {
   }
 
   connect() {
-    console.log("UserActivityController connected")
     this.initializeHeatmap()
   }
 

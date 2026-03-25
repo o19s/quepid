@@ -12,10 +12,6 @@ export default class extends Controller {
     "previewContent",
   ]
 
-  connect() {
-    console.log("Import snapshot controller connected")
-  }
-
   async fileSelected(event) {
     const file = event.target.files[0]
     if (!file) {

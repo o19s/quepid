@@ -3,10 +3,6 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["ratingInfo", "loadingSpinner"]
 
-  connect() {
-    console.log("Prompt form controller connected")
-  }
-
   /**
    * Handle form submission - show loading spinner and hide rating info
    * This is triggered by the submit action on the form

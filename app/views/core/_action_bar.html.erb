@@ -24,7 +24,15 @@
       </li>
       <li class="list-inline-item">
         <i class="bi bi-share" aria-hidden="true"></i>
-        <a href="#">Share case</a>
+        <a href="#" onclick="event.preventDefault()"
+           data-controller="share-case"
+           data-action="click->share-case#open"
+           data-bs-toggle="modal"
+           data-bs-target="#shareCaseModal"
+           data-share-case-id-value="<%= @case.id %>"
+           data-share-case-name-value="<%= @case.case_name %>"
+           data-share-case-all-teams-json="<%= current_user.teams.select(:id, :name).order(:name).to_json %>"
+           data-share-case-shared-teams-json="<%= @case.teams.select(:id, :name).to_json %>">Share case</a>
       </li>
       <li class="list-inline-item">
         <i class="bi bi-copy" aria-hidden="true"></i>

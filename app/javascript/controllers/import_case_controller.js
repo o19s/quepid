@@ -3,10 +3,6 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner"]
 
-  connect() {
-    console.log("Import case controller connected")
-  }
-
   fileSelected(event) {
     const file = event.target.files[0]
     if (file) {

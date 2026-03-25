@@ -44,7 +44,6 @@ export default class extends Controller {
   }
 
   connect() {
-    console.log("Mapper Wizard controller connected")
     // Editors will be initialized by the global CodeMirror auto-init
     // Store references when they become available
     this.numberOfResultsEditor = null

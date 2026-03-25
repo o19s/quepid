@@ -51,7 +51,6 @@ export default class extends Controller {
   }
 
   renderSharedTeams(rawJson) {
-    console.log("renderSharedTeams called with:", rawJson)
     if (!this.sharedListEl) return
 
     let teams = []
@@ -64,8 +63,6 @@ export default class extends Controller {
       console.error("Error parsing sharedTeamsJson:", e)
       teams = []
     }
-    console.log("Parsed shared teams:", teams)
-
     this.sharedListEl.innerHTML = ""
 
     if (teams.length === 0) {
