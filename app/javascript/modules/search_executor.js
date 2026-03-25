@@ -154,6 +154,9 @@ async function executeSolrSearch(tryConfig, queryText, signal, options = {}) {
     }
   }
 
+  if (!tryConfig.search_url) {
+    throw new Error("No search URL configured — check your try settings.")
+  }
   const baseUrl = tryConfig.search_url + "?" + formatSolrArgs(args)
   const qOption = tryConfig.options || {}
   const callUrl = hydrate(baseUrl, queryText, { qOption, encodeURI: true, defaultKw: '""' })
@@ -492,7 +495,13 @@ async function executeSearchApiSearch(tryConfig, queryText, signal, options = {}
   }
   const data = await response.json()
 
-  const mapperError = (msg) => ({ docs: [], numFound: 0, linkUrl: requestUrl, renderedTemplate, error: msg })
+  const mapperError = (msg) => ({
+    docs: [],
+    numFound: 0,
+    linkUrl: requestUrl,
+    renderedTemplate,
+    error: msg,
+  })
 
   let numFound
   try {

@@ -70,9 +70,7 @@ export default class extends Controller {
 
     const svg = this.svgTarget
 
-    d3.select(svg)
-      .attr("width", CHART_WIDTH)
-      .attr("height", CHART_HEIGHT)
+    d3.select(svg).attr("width", CHART_WIDTH).attr("height", CHART_HEIGHT)
 
     this.graph = d3
       .select(svg)
@@ -98,9 +96,7 @@ export default class extends Controller {
     }
 
     // Sort by date, take last 10
-    const sorted = scores
-      .slice()
-      .sort((a, b) => d3.ascending(a.updated_at, b.updated_at))
+    const sorted = scores.slice().sort((a, b) => d3.ascending(a.updated_at, b.updated_at))
     const lastTen = sorted.slice(-10)
 
     if (lastTen.length <= 1) {
@@ -160,18 +156,24 @@ export default class extends Controller {
 
     const line = d3
       .line()
-      .x((_d, i) => x(i) + MARGIN.left)
+      .x((_d, i) => x(i))
       .y((d) => y(d.score))
 
     // Draw score line
     this.graph.append("path").attr("d", line(scoreData))
 
-    // Draw annotation markers
+    // Draw annotation markers — position by timestamp relative to score time range
     const tooltip = this.tooltip
-    data.forEach((d, i) => {
+    const t0 = new Date(scoreData[0].updated_at)
+    const t1 = new Date(scoreData[scoreData.length - 1].updated_at)
+    // If all scores share the same timestamp, fall back to centering annotations
+    const xTime =
+      t0.getTime() === t1.getTime()
+        ? () => w / 2
+        : d3.scaleTime().domain([t0, t1]).range([x(0), x(scoreData.length - 1)])
+    data.forEach((d) => {
       if (d.type === "annotation" && d.message) {
-        const xpos =
-          data.length > 1 ? (i / (data.length - 1)) * w + MARGIN.left : MARGIN.left
+        const xpos = xTime(new Date(d.updated_at))
 
         this.graph
           .append("line")

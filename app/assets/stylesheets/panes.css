@@ -13,7 +13,6 @@
 }
  .pane_east {
 	 background: #333;
-	 display: none;
 	 height: calc(100% - 60px);
 	 min-width: 300px;
 	 overflow-y: auto;
@@ -23,7 +22,6 @@
 	 background: none repeat scroll 0% 0% #ddd;
 	 border: 0px solid #bbb;
 	 cursor: col-resize;
-	 display: none;
 	 height: 100%;
 	 position: fixed;
 	 width: 6px;

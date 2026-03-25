@@ -33,7 +33,13 @@ export default class extends Controller {
     queriesCount: { type: Number, default: 0 },
   }
 
+  connect() {
+    this._vegaView = null
+    this._disconnected = false
+  }
+
   disconnect() {
+    this._disconnected = true
     this._finalizeVegaView()
   }
 
@@ -63,7 +69,7 @@ export default class extends Controller {
     try {
       const response = await fetch(
         apiUrl(
-          `api/books/${this.bookIdValue}/cases/${this.caseIdValue}/refresh?create_missing_queries=false&process_in_background=${processInBackground}`
+          `api/books/${this.bookIdValue}/cases/${this.caseIdValue}/refresh?create_missing_queries=false&process_in_background=${processInBackground}`,
         ),
         {
           method: "PUT",
@@ -73,7 +79,7 @@ export default class extends Controller {
             Accept: "application/json",
           },
           body: JSON.stringify({}),
-        }
+        },
       )
 
       if (!response.ok) {
@@ -87,8 +93,7 @@ export default class extends Controller {
       if (processInBackground) {
         showFlash("Ratings are being refreshed in the background.", "success")
         setTimeout(() => {
-          window.location.href =
-            document.body.dataset.quepidRootUrl || "/"
+          window.location.href = document.body.dataset.quepidRootUrl || "/"
         }, 500)
       } else {
         showFlash("Ratings have been refreshed.", "success")
@@ -135,7 +140,7 @@ export default class extends Controller {
     }
     if (this.hasQueriesWithoutResultsTarget) {
       this.queriesWithoutResultsTarget.textContent = this._pluralizeReturns(
-        stats.queriesWithoutResults
+        stats.queriesWithoutResults,
       )
     }
     if (this.hasTotalRatingsNeededTarget) {
@@ -157,7 +162,7 @@ export default class extends Controller {
     if (this.hasHopToItMessageTarget) {
       this.hopToItMessageTarget.classList.toggle(
         "d-none",
-        stats.allRated || stats.missingRatingsRate <= 5
+        stats.allRated || stats.missingRatingsRate <= 5,
       )
     }
   }
@@ -246,10 +251,7 @@ export default class extends Controller {
               },
               y: { scale: "yscale", signal: "tooltip.amount", offset: -2 },
               text: { signal: "tooltip.amount" },
-              fillOpacity: [
-                { test: "datum === tooltip", value: 0 },
-                { value: 1 },
-              ],
+              fillOpacity: [{ test: "datum === tooltip", value: 0 }, { value: 1 }],
             },
           },
         },
@@ -262,12 +264,15 @@ export default class extends Controller {
       this.chartContainerTarget.innerHTML = ""
       vegaEmbed(this.chartContainerTarget, spec, { actions: false })
         .then((result) => {
-          this._vegaView = result.view
+          if (this._disconnected) {
+            result.view.finalize()
+          } else {
+            this._vegaView = result.view
+          }
         })
         .catch((err) => {
           console.error("Vega render failed:", err)
-          this.chartContainerTarget.innerHTML =
-            '<p class="text-danger">Chart rendering failed.</p>'
+          this.chartContainerTarget.innerHTML = '<p class="text-danger">Chart rendering failed.</p>'
         })
     } else {
       this.chartContainerTarget.innerHTML =

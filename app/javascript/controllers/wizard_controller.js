@@ -1,11 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiUrl, csrfToken } from "modules/api_url"
 import { showFlash } from "modules/flash_helper"
-import {
-  defaultSettings,
-  pickSettings,
-  isDemoUrl,
-} from "modules/wizard_settings"
+import { defaultSettings, pickSettings, isDemoUrl } from "modules/wizard_settings"
 import {
   validateEndpoint,
   validateHeaders,
@@ -95,9 +91,7 @@ export default class extends Controller {
 
     // Set default URL based on protocol
     const useSecure = window.location.protocol === "https:"
-    this.searchUrl = useSecure
-      ? solrDefaults.secureSearchUrl
-      : solrDefaults.insecureSearchUrl
+    this.searchUrl = useSecure ? solrDefaults.secureSearchUrl : solrDefaults.insecureSearchUrl
     if (this.hasSearchUrlInputTarget) {
       this.searchUrlInputTarget.value = this.searchUrl
     }
@@ -176,9 +170,7 @@ export default class extends Controller {
   // ── Step 2: Case name ───────────────────────────────────────────────
 
   get caseName() {
-    return this.hasCaseNameInputTarget
-      ? this.caseNameInputTarget.value.trim()
-      : this.caseNameValue
+    return this.hasCaseNameInputTarget ? this.caseNameInputTarget.value.trim() : this.caseNameValue
   }
 
   // ── Step 3: Endpoint configuration ──────────────────────────────────
@@ -205,9 +197,7 @@ export default class extends Controller {
     } else if (settings.insecureSearchUrl) {
       // Solr: pick based on current protocol
       const useSecure = window.location.protocol === "https:"
-      this.searchUrl = useSecure
-        ? settings.secureSearchUrl
-        : settings.insecureSearchUrl
+      this.searchUrl = useSecure ? settings.secureSearchUrl : settings.insecureSearchUrl
       if (this.hasSearchUrlInputTarget) {
         this.searchUrlInputTarget.value = this.searchUrl
       }
@@ -240,8 +230,7 @@ export default class extends Controller {
 
     // Show URL format hint
     if (this.hasUrlFormatHintTarget && settings.urlFormat) {
-      this.urlFormatHintTarget.textContent =
-        "Tip: Your URL should look like " + settings.urlFormat
+      this.urlFormatHintTarget.textContent = "Tip: Your URL should look like " + settings.urlFormat
       this.urlFormatHintTarget.classList.remove("d-none")
     } else if (this.hasUrlFormatHintTarget) {
       this.urlFormatHintTarget.classList.add("d-none")
@@ -249,25 +238,19 @@ export default class extends Controller {
   }
 
   changeSearchUrl() {
-    this.searchUrl = this.hasSearchUrlInputTarget
-      ? this.searchUrlInputTarget.value.trim()
-      : ""
+    this.searchUrl = this.hasSearchUrlInputTarget ? this.searchUrlInputTarget.value.trim() : ""
     this.urlValid = false
     this._clearValidation()
     this._checkTLS()
   }
 
   changeApiMethod() {
-    this.apiMethod = this.hasApiMethodSelectTarget
-      ? this.apiMethodSelectTarget.value
-      : "POST"
+    this.apiMethod = this.hasApiMethodSelectTarget ? this.apiMethodSelectTarget.value : "POST"
     this._clearValidation()
   }
 
   changeProxy() {
-    this.proxyRequests = this.hasProxyCheckboxTarget
-      ? this.proxyCheckboxTarget.checked
-      : false
+    this.proxyRequests = this.hasProxyCheckboxTarget ? this.proxyCheckboxTarget.checked : false
     this._clearValidation()
     this._checkTLS()
   }
@@ -311,10 +294,7 @@ export default class extends Controller {
   changeExistingEndpoint() {
     if (!this.hasExistingEndpointSelectTarget) return
 
-    const selectedId = parseInt(
-      this.existingEndpointSelectTarget.value,
-      10,
-    )
+    const selectedId = parseInt(this.existingEndpointSelectTarget.value, 10)
     const endpoint = this.existingEndpoints.find(
       (ep) => (ep.search_endpoint_id || ep.id) === selectedId,
     )
@@ -333,15 +313,11 @@ export default class extends Controller {
       // (SearchEndpoint model uses `serialize :custom_headers, coder: JSON`).
       // Normalize to string for consistent handling.
       const ch = endpoint.custom_headers
-      this.customHeaders =
-        ch && typeof ch === "object" ? JSON.stringify(ch, null, 2) : ch || ""
+      this.customHeaders = ch && typeof ch === "object" ? JSON.stringify(ch, null, 2) : ch || ""
 
       // Show test query section for SearchAPI
       if (this.hasTestQuerySectionTarget) {
-        this.testQuerySectionTarget.classList.toggle(
-          "d-none",
-          this.searchEngine !== "searchapi",
-        )
+        this.testQuerySectionTarget.classList.toggle("d-none", this.searchEngine !== "searchapi")
       }
       if (this.hasTestQueryInputTarget && this.testQuery) {
         this.testQueryInputTarget.value = this.testQuery
@@ -353,9 +329,7 @@ export default class extends Controller {
   }
 
   changeTestQuery() {
-    this.testQuery = this.hasTestQueryInputTarget
-      ? this.testQueryInputTarget.value.trim()
-      : ""
+    this.testQuery = this.hasTestQueryInputTarget ? this.testQueryInputTarget.value.trim() : ""
   }
 
   // ── Step 3: Validation ──────────────────────────────────────────────
@@ -383,10 +357,7 @@ export default class extends Controller {
 
     // Pre-validation checks
     if (!validateHeaders(this.customHeaders)) {
-      this._showValidation(
-        "Custom headers must be valid JSON.",
-        "danger",
-      )
+      this._showValidation("Custom headers must be valid JSON.", "danger")
       return
     }
 
@@ -403,7 +374,7 @@ export default class extends Controller {
       if (!this.mapperCode) {
         this._showValidation(
           "Search API endpoints require mapper code that defines numberOfResultsMapper() and docsMapper() functions. " +
-          "Use the Mapper Wizard to create one.",
+            "Use the Mapper Wizard to create one.",
           "danger",
         )
         return
@@ -464,9 +435,7 @@ export default class extends Controller {
     } catch (error) {
       this.urlValid = false
       let msg =
-        "Sorry, we're not getting any search results from your " +
-        this._engineDisplayName() +
-        "."
+        "Sorry, we're not getting any search results from your " + this._engineDisplayName() + "."
       msg += " " + error.message
       msg += this._engineTroubleshootingHtml()
       this._showValidation(msg, "danger")
@@ -506,10 +475,7 @@ export default class extends Controller {
   continueStep3(event) {
     if (event) event.preventDefault()
     if (!this.urlValid && this.searchEngine !== "static") {
-      this._showValidation(
-        "Please validate your endpoint first by clicking 'ping it'.",
-        "warning",
-      )
+      this._showValidation("Please validate your endpoint first by clicking 'ping it'.", "warning")
       return
     }
     // Capture any advanced inputs the user may have changed after validation
@@ -588,9 +554,7 @@ export default class extends Controller {
 
     // Set discovered fields from CSV headers
     this.discoveredFields = fieldHeaders
-    this.discoveredIdFields = fieldHeaders.filter((f) =>
-      f.toLowerCase().includes("id"),
-    )
+    this.discoveredIdFields = fieldHeaders.filter((f) => f.toLowerCase().includes("id"))
 
     // Auto-populate queries from CSV
     this.newQueries = this.staticContent.queries.map((q) => ({
@@ -651,13 +615,10 @@ export default class extends Controller {
     if (!this.hasExistingEndpointSelectTarget) return
 
     const select = this.existingEndpointSelectTarget
-    select.innerHTML =
-      '<option value="">-- Select a search endpoint --</option>'
+    select.innerHTML = '<option value="">-- Select a search endpoint --</option>'
 
     // Filter out static endpoints (they're not shareable across cases)
-    const filteredEndpoints = this.existingEndpoints.filter(
-      (ep) => ep.search_engine !== "static",
-    )
+    const filteredEndpoints = this.existingEndpoints.filter((ep) => ep.search_engine !== "static")
 
     if (filteredEndpoints.length === 0) {
       const option = document.createElement("option")
@@ -670,8 +631,7 @@ export default class extends Controller {
     for (const ep of filteredEndpoints) {
       const option = document.createElement("option")
       option.value = ep.search_endpoint_id || ep.id
-      option.textContent =
-        ep.name || ep.fullname || `Endpoint #${option.value}`
+      option.textContent = ep.name || ep.fullname || `Endpoint #${option.value}`
       if (ep.archived) option.textContent += " (archived)"
       select.appendChild(option)
     }
@@ -680,38 +640,25 @@ export default class extends Controller {
   _updateEnginePanels() {
     // Solr-specific panel
     if (this.hasSolrPanelTarget) {
-      this.solrPanelTarget.classList.toggle(
-        "d-none",
-        this.searchEngine !== "solr",
-      )
+      this.solrPanelTarget.classList.toggle("d-none", this.searchEngine !== "solr")
     }
     // Static panel
     if (this.hasStaticPanelTarget) {
-      this.staticPanelTarget.classList.toggle(
-        "d-none",
-        this.searchEngine !== "static",
-      )
+      this.staticPanelTarget.classList.toggle("d-none", this.searchEngine !== "static")
     }
     // SearchAPI panel
     if (this.hasSearchapiPanelTarget) {
-      this.searchapiPanelTarget.classList.toggle(
-        "d-none",
-        this.searchEngine !== "searchapi",
-      )
+      this.searchapiPanelTarget.classList.toggle("d-none", this.searchEngine !== "searchapi")
     }
     // URL input: hidden for static
     if (this.hasSearchUrlInputTarget) {
-      this.searchUrlInputTarget.closest(".mb-3")?.classList.toggle(
-        "d-none",
-        this.searchEngine === "static",
-      )
+      this.searchUrlInputTarget
+        .closest(".mb-3")
+        ?.classList.toggle("d-none", this.searchEngine === "static")
     }
     // Advanced panel: hidden for static
     if (this.hasAdvancedPanelTarget) {
-      this.advancedPanelTarget.classList.toggle(
-        "d-none",
-        this.searchEngine === "static",
-      )
+      this.advancedPanelTarget.classList.toggle("d-none", this.searchEngine === "static")
     }
   }
 
@@ -808,7 +755,11 @@ export default class extends Controller {
     url.searchParams.set("caseName", this.caseName)
     url.searchParams.set("apiMethod", this.apiMethod)
     if (this.basicAuthCredential) {
-      url.searchParams.set("basicAuthCredential", this.basicAuthCredential)
+      try {
+        sessionStorage.setItem("wizardBasicAuthCredential", this.basicAuthCredential)
+      } catch (_e) {
+        // sessionStorage unavailable (private browsing) — credential will be lost
+      }
     }
 
     return url.toString()
@@ -844,12 +795,17 @@ export default class extends Controller {
       }
     }
 
-    const basicAuth = params.get("basicAuthCredential")
-    if (basicAuth) {
-      this.basicAuthCredential = basicAuth
-      if (this.hasBasicAuthInputTarget) {
-        this.basicAuthInputTarget.value = basicAuth
+    try {
+      const basicAuth = sessionStorage.getItem("wizardBasicAuthCredential")
+      if (basicAuth) {
+        this.basicAuthCredential = basicAuth
+        if (this.hasBasicAuthInputTarget) {
+          this.basicAuthInputTarget.value = basicAuth
+        }
+        sessionStorage.removeItem("wizardBasicAuthCredential")
       }
+    } catch (_e) {
+      // sessionStorage unavailable
     }
 
     const caseName = params.get("caseName")
@@ -859,7 +815,12 @@ export default class extends Controller {
 
     // Clean up URL params so they don't persist on subsequent reloads
     const cleanUrl = new URL(window.location.href)
-    for (const key of ["searchEngine", "searchUrl", "apiMethod", "basicAuthCredential", "caseName"]) {
+    for (const key of [
+      "searchEngine",
+      "searchUrl",
+      "apiMethod",
+      "caseName",
+    ]) {
       cleanUrl.searchParams.delete(key)
     }
     window.history.replaceState({}, "", cleanUrl.toString())
@@ -885,8 +846,7 @@ export default class extends Controller {
       this.skipValidationButtonTarget.classList.add("d-none")
     }
     if (this.hasContinueStep3ButtonTarget) {
-      this.continueStep3ButtonTarget.disabled =
-        this.searchEngine !== "static" && !this.urlValid
+      this.continueStep3ButtonTarget.disabled = this.searchEngine !== "static" && !this.urlValid
     }
   }
 
@@ -901,10 +861,7 @@ export default class extends Controller {
       this._fillDatalist(this.idFieldListTarget, this.discoveredIdFields)
     }
     if (this.hasAdditionalFieldListTarget) {
-      this._fillDatalist(
-        this.additionalFieldListTarget,
-        this.discoveredFields,
-      )
+      this._fillDatalist(this.additionalFieldListTarget, this.discoveredFields)
     }
 
     // Pre-fill values from settings or discovery
@@ -963,12 +920,8 @@ export default class extends Controller {
   validateAndContinueStep4(event) {
     if (event) event.preventDefault()
 
-    this.titleField = this.hasTitleFieldInputTarget
-      ? this.titleFieldInputTarget.value.trim()
-      : ""
-    this.idField = this.hasIdFieldInputTarget
-      ? this.idFieldInputTarget.value.trim()
-      : ""
+    this.titleField = this.hasTitleFieldInputTarget ? this.titleFieldInputTarget.value.trim() : ""
+    this.idField = this.hasIdFieldInputTarget ? this.idFieldInputTarget.value.trim() : ""
 
     if (!this.titleField) {
       this._showFieldValidation("Title field is required.")
@@ -980,10 +933,7 @@ export default class extends Controller {
     }
 
     // Check if fields are in the discovered list (warn for custom fields)
-    if (
-      this.discoveredFields.length > 0 &&
-      this.searchEngine !== "searchapi"
-    ) {
+    if (this.discoveredFields.length > 0 && this.searchEngine !== "searchapi") {
       const unknownFields = []
       if (!this.discoveredFields.includes(this.titleField)) {
         unknownFields.push(this.titleField)
@@ -1038,10 +988,7 @@ export default class extends Controller {
   _setupQueryStep() {
     // Show query pattern section only for SearchAPI
     if (this.hasQueryPatternSectionTarget) {
-      this.queryPatternSectionTarget.classList.toggle(
-        "d-none",
-        this.searchEngine !== "searchapi",
-      )
+      this.queryPatternSectionTarget.classList.toggle("d-none", this.searchEngine !== "searchapi")
     }
 
     // Pre-fill query params
@@ -1098,10 +1045,7 @@ export default class extends Controller {
     }
 
     // For SearchAPI, capture query params
-    if (
-      this.hasQueryPatternInputTarget &&
-      this.searchEngine === "searchapi"
-    ) {
+    if (this.hasQueryPatternInputTarget && this.searchEngine === "searchapi") {
       this.queryParams = this.queryPatternInputTarget.value.trim()
     }
 
@@ -1129,18 +1073,15 @@ export default class extends Controller {
       // 2. Create/update try with search endpoint settings
       const tryPayload = this._buildTryPayload(queryParams)
 
-      const tryResponse = await fetch(
-        apiUrl(`api/cases/${caseId}/tries/${tryNumber}`),
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": token,
-            Accept: "application/json",
-          },
-          body: JSON.stringify(tryPayload),
+      const tryResponse = await fetch(apiUrl(`api/cases/${caseId}/tries/${tryNumber}`), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": token,
+          Accept: "application/json",
         },
-      )
+        body: JSON.stringify(tryPayload),
+      })
 
       if (!tryResponse.ok) {
         throw new Error(`Failed to update try (${tryResponse.status})`)

@@ -73,8 +73,7 @@ export default class extends Controller {
 
       const docFinderEngines = ["solr", "static", "es", "os"]
       if (!docFinderEngines.includes(engine)) {
-        this.resultsContainerTarget.innerHTML =
-          `<p class="text-muted">Loading every rated document at once is not supported for the "${engine}" engine. Use the search box above instead.</p>`
+        this.resultsContainerTarget.innerHTML = `<p class="text-muted">Loading every rated document at once is not supported for the "${engine}" engine. Use the search box above instead.</p>`
         return
       }
 
@@ -223,10 +222,14 @@ export default class extends Controller {
   }
 
   async _fetchTryConfig() {
-    if (this._tryConfigPromise) return this._tryConfigPromise
+    const currentTry = document.body.dataset.tryNumber
+    if (this._tryConfigPromise && this._cachedTryNumber === currentTry) {
+      return this._tryConfigPromise
+    }
 
     const caseId = document.body.dataset.caseId
-    const tryNumber = document.body.dataset.tryNumber
+    const tryNumber = currentTry
+    this._cachedTryNumber = tryNumber
     this._tryConfigPromise = fetch(apiUrl(`api/cases/${caseId}/tries/${tryNumber}`), {
       headers: { "X-CSRF-Token": csrfToken(), Accept: "application/json" },
     })

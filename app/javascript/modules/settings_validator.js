@@ -86,10 +86,7 @@ export async function validateEndpoint(config) {
   if (engine === "solr") {
     // Solr: GET with q=*:*  — omit Content-Type (invalid on GET requests)
     const { "Content-Type": _, ...getHeaders } = headers
-    const probeUrl =
-      searchUrl +
-      (searchUrl.includes("?") ? "&" : "?") +
-      "q=*%3A*&rows=10&wt=json"
+    const probeUrl = searchUrl + (searchUrl.includes("?") ? "&" : "?") + "q=*%3A*&rows=10&wt=json"
     response = await proxyFetch(probeUrl, { headers: getHeaders }, useProxy)
   } else if (engine === "es" || engine === "os") {
     // ES/OS: POST with match_all
@@ -97,11 +94,7 @@ export async function validateEndpoint(config) {
       query: { match_all: {} },
       size: 10,
     })
-    response = await proxyFetch(
-      searchUrl,
-      { method: "POST", headers, body },
-      useProxy,
-    )
+    response = await proxyFetch(searchUrl, { method: "POST", headers, body }, useProxy)
   } else if (engine === "vectara") {
     // Vectara: POST with a minimal query
     let queryBody
@@ -120,11 +113,7 @@ export async function validateEndpoint(config) {
   } else if (engine === "algolia") {
     // Algolia: POST with a minimal query
     const body = JSON.stringify({ query: "test", hitsPerPage: 10 })
-    response = await proxyFetch(
-      searchUrl,
-      { method: "POST", headers, body },
-      useProxy,
-    )
+    response = await proxyFetch(searchUrl, { method: "POST", headers, body }, useProxy)
   } else if (engine === "searchapi") {
     // SearchAPI: uses mapper code — need a test query
     const testQuery = config.testQuery || "test"
@@ -179,8 +168,10 @@ export async function validateEndpoint(config) {
     // SearchAPI: run mapper code to extract docs
     if (config.mapperCode) {
       try {
-        const fn = new Function(          config.mapperCode +
-            "\nreturn { numberOfResultsMapper, docsMapper };",
+        const fn = new Function(
+          "var numberOfResultsMapper, docsMapper;\n" +
+            config.mapperCode +
+            "\nreturn { numberOfResultsMapper: numberOfResultsMapper, docsMapper: docsMapper };",
         )
         const mappers = fn()
         docs = mappers.docsMapper(data)
@@ -260,7 +251,8 @@ export function validateMapperCode(mapperCode) {
     // Wrap in an IIFE with local vars to avoid polluting global scope.
     // The mapper code uses implicit global assignment (no var/let/const),
     // so we pre-declare the expected names as local vars.
-    const fn = new Function(      "var numberOfResultsMapper, docsMapper;\n" +
+    const fn = new Function(
+      "var numberOfResultsMapper, docsMapper;\n" +
         mapperCode +
         "\nreturn { numberOfResultsMapper: numberOfResultsMapper, docsMapper: docsMapper };",
     )

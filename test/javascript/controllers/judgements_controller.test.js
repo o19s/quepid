@@ -172,7 +172,7 @@ describe("JudgementsController", () => {
     await controller.open()
 
     const links = document.querySelectorAll("[data-judgements-target='createBookLink']")
-    links.forEach(link => {
+    links.forEach((link) => {
       expect(link.href).toContain("/books/new?scorer_id=5&origin_case_id=42")
     })
   })
@@ -187,17 +187,14 @@ describe("JudgementsController", () => {
     application.stop()
     application = Application.start()
     application.register("judgements", JudgementsController)
-    await waitForController(wrapper.closest("[data-controller]") ? "[data-controller='judgements']" : "[data-controller='judgements']", "judgements").catch(() => {})
-
-    // Wait for reconnection
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await waitForController(application, "[data-controller='judgements']", "judgements")
 
     const el = document.querySelector("[data-controller='judgements']")
     const controller = application.getControllerForElementAndIdentifier(el, "judgements")
-    if (controller) {
-      await controller.open()
-      const noTeams = document.querySelector("[data-judgements-target='noTeamsMessage']")
-      expect(noTeams.classList.contains("d-none")).toBe(false)
-    }
+    expect(controller).not.toBeNull()
+
+    await controller.open()
+    const noTeams = document.querySelector("[data-judgements-target='noTeamsMessage']")
+    expect(noTeams.classList.contains("d-none")).toBe(false)
   })
 })

@@ -44,17 +44,10 @@ export default class extends Controller {
       this._moveEastTo(this.element.offsetWidth - this.eastPaneWidth)
       this.sliderTarget.classList.remove("d-none")
       this.eastTarget.classList.remove("d-none")
-      // The CSS base rules (.pane_east, .east-slider) set display:none,
-      // so removing d-none alone is not enough — override with inline style.
-      this.sliderTarget.style.display = "block"
-      this.eastTarget.style.display = "block"
     } else {
       this._moveEastTo(this.element.offsetWidth)
       this.sliderTarget.classList.add("d-none")
       this.eastTarget.classList.add("d-none")
-      // Clear inline override so the CSS rule takes effect
-      this.sliderTarget.style.display = ""
-      this.eastTarget.style.display = ""
     }
   }
 
@@ -70,7 +63,6 @@ export default class extends Controller {
     event.preventDefault()
     this.dragging = true
     this.eastTarget.classList.remove("d-none")
-    this.eastTarget.style.display = "block"
     document.addEventListener("mousemove", this._onMouseMove)
     document.addEventListener("mouseup", this._onMouseUp)
   }

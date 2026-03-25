@@ -113,8 +113,11 @@ describe("SettingsPanelController", () => {
     await waitForController(application, '[data-controller="settings-panel"]', "settings-panel")
   })
 
+  const originalFetch = global.fetch
+
   afterEach(() => {
     application.stop()
+    global.fetch = originalFetch
   })
 
   it("connects and initializes as not dirty", () => {
@@ -277,7 +280,11 @@ describe("SettingsPanelController", () => {
       "settings-panel",
     )
     const toggleBtn = document.querySelector(".try-actions-toggle")
-    ctrl.toggleTryActions({ currentTarget: toggleBtn, preventDefault: () => {}, stopPropagation: () => {} })
+    ctrl.toggleTryActions({
+      currentTarget: toggleBtn,
+      preventDefault: () => {},
+      stopPropagation: () => {},
+    })
 
     const actions = document.querySelector(".try-actions")
     expect(actions.classList.contains("d-none")).toBe(false)
