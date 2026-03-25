@@ -59,7 +59,8 @@ async function fetchWithCorsFallback(directUrl, fetchOptions, tryConfig) {
 }
 
 function parseFieldSpec(fieldSpecStr) {
-  if (!fieldSpecStr) return { title: null, id: null, fields: [], subs: [], media: [], translations: [] }
+  if (!fieldSpecStr)
+    return { title: null, id: null, fields: [], subs: [], media: [], translations: [] }
 
   const specs = fieldSpecStr.split(/[\s,+]+/).filter(Boolean)
   const result = { title: null, id: null, fields: [], subs: [], media: [], translations: [] }
@@ -179,6 +180,8 @@ async function executeSolrSearch(tryConfig, queryText, signal, options = {}) {
     docs: normalizedDocs,
     numFound,
     linkUrl: callUrl + "&indent=true",
+    // Exact Solr GET URL after template hydration (splainer-style renderTemplate parity)
+    renderedTemplate: callUrl,
     error: data.error ? data.error.msg : null,
   }
 
@@ -230,6 +233,9 @@ async function executeEsSearch(tryConfig, queryText, signal, options = {}) {
 
   const searchUrl = tryConfig.search_url
 
+  // Pretty JSON of the hydrated body actually POSTed (template tab / renderTemplate parity)
+  const renderedTemplate = JSON.stringify(queryDsl, null, 2)
+
   const response = await fetchWithCorsFallback(
     searchUrl,
     {
@@ -250,6 +256,7 @@ async function executeEsSearch(tryConfig, queryText, signal, options = {}) {
       docs: [],
       numFound: 0,
       linkUrl: searchUrl,
+      renderedTemplate,
       error: typeof data.error === "string" ? data.error : JSON.stringify(data.error),
     }
   }
@@ -272,6 +279,7 @@ async function executeEsSearch(tryConfig, queryText, signal, options = {}) {
     docs: normalizedDocs,
     numFound,
     linkUrl: searchUrl,
+    renderedTemplate,
     error: null,
   }
 
@@ -348,6 +356,7 @@ export async function executeSearch(tryConfig, queryText, signal, options = {}) 
         docs: [],
         numFound: 0,
         linkUrl: "",
+        renderedTemplate: null,
         error: `Search engine "${engine}" is not yet supported in the new UI`,
       }
   }

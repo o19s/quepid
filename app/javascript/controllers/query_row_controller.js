@@ -256,19 +256,19 @@ export default class extends Controller {
 
     let queryDetails = this.lastResult?.queryDetails
     let parsedQueryDetails = this.lastResult?.parsedQueryDetails
+    // Prefer the exact request the executor sent (encoded Solr URL or ES/OS JSON body).
+    let renderedTemplate = this.lastResult?.renderedTemplate ?? null
 
     if (!queryDetails && !parsedQueryDetails) {
       const ac = new AbortController()
       try {
         const tryConfig = await fetchTryConfig()
-        const debugResult = await executeSearch(
-          tryConfig,
-          this.queryTextValue,
-          ac.signal,
-          { debug: true },
-        )
+        const debugResult = await executeSearch(tryConfig, this.queryTextValue, ac.signal, {
+          debug: true,
+        })
         queryDetails = debugResult.queryDetails
         parsedQueryDetails = debugResult.parsedQueryDetails
+        renderedTemplate = debugResult.renderedTemplate ?? renderedTemplate
       } catch (error) {
         if (error.name !== "AbortError") {
           console.error("Explain query fetch failed:", error)
@@ -278,22 +278,23 @@ export default class extends Controller {
       }
     }
 
-    // Show the hydrated query params with placeholders filled in.
-    let renderedTemplate = null
-    try {
-      const tryConfig = await fetchTryConfig()
-      const engine = (tryConfig.search_engine || "solr").toLowerCase()
-      const args = tryConfig.args || {}
-      const qOption = tryConfig.options || {}
-      const isSolr = engine === "solr" || engine === "static"
-      const hydrated = hydrate(args, this.queryTextValue, {
-        qOption,
-        encodeURI: false,
-        defaultKw: isSolr ? '""' : '\\"\\"',
-      })
-      renderedTemplate = JSON.stringify(hydrated, null, 2)
-    } catch {
-      // Non-critical — template tab will show "not a templated query"
+    // Fallback: hydrated try args only (no URL encoding) when no search ran through executeSearch.
+    if (!renderedTemplate) {
+      try {
+        const tryConfig = await fetchTryConfig()
+        const engine = (tryConfig.search_engine || "solr").toLowerCase()
+        const args = tryConfig.args || {}
+        const qOption = tryConfig.options || {}
+        const isSolr = engine === "solr" || engine === "static"
+        const hydrated = hydrate(args, this.queryTextValue, {
+          qOption,
+          encodeURI: false,
+          defaultKw: isSolr ? '""' : '\\"\\"',
+        })
+        renderedTemplate = JSON.stringify(hydrated, null, 2)
+      } catch {
+        // Non-critical — template tab will show "not a templated query"
+      }
     }
 
     document.dispatchEvent(
@@ -497,10 +498,7 @@ export default class extends Controller {
     })
 
     // Determine max rows
-    const maxLen = Math.max(
-      currentDocs.length,
-      ...snapshotDocs.map((d) => (d ? d.length : 0)),
-    )
+    const maxLen = Math.max(currentDocs.length, ...snapshotDocs.map((d) => (d ? d.length : 0)))
 
     if (maxLen === 0) {
       container.innerHTML = '<p class="text-muted">No results to compare.</p>'
@@ -811,7 +809,9 @@ export default class extends Controller {
 
     try {
       const tryConfig = await fetchTryConfig()
-      const searchOptions = this.debugMode ? { debug: true, offset: currentCount } : { offset: currentCount }
+      const searchOptions = this.debugMode
+        ? { debug: true, offset: currentCount }
+        : { offset: currentCount }
       const result = await executeSearch(
         tryConfig,
         this.queryTextValue,

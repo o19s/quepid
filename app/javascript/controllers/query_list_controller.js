@@ -12,6 +12,20 @@ function normalizeQueryId(raw) {
   return Number.isNaN(n) ? undefined : n
 }
 
+const SORT_URL_KEYS = new Set(["default", "query", "modified", "score", "error"])
+
+/**
+ * Parse `window.location.search` (or the same string in tests). Exported for unit tests
+ * because jsdom does not always sync `location.search` after `history.replaceState`.
+ */
+export function parseQueryListSortFromSearch(search) {
+  const raw = (search || "").replace(/^\?/, "")
+  const params = new URLSearchParams(raw)
+  let sort = params.get("sort") || "default"
+  if (!SORT_URL_KEYS.has(sort)) sort = "default"
+  return { sort, sortReverse: params.get("reverse") === "true" }
+}
+
 export default class extends Controller {
   static targets = [
     "list",
@@ -32,13 +46,15 @@ export default class extends Controller {
     this.currentFilter = ""
     this.currentPage = 1
     this.queryScores = {} // { queryId: { text, score, maxScore, numFound } }
+    this.sortReverse = false
+    this.currentSortName = "default"
 
     // Store original DOM indices so "default" sort can restore server-rendered order
     this.queryRowTargets.forEach((row, idx) => {
       row.dataset.originalIndex = idx
     })
 
-    this._applyVisibility()
+    this._applyInitialSortFromUrl()
     this._initSortable()
 
     this._onQueryMovedAway = (e) => this.handleQueryDeleted(e)
@@ -118,6 +134,7 @@ export default class extends Controller {
   goToPage(event) {
     event.preventDefault()
     const page = parseInt(event.currentTarget.dataset.page, 10)
+    if (!Number.isFinite(page) || page < 1) return
     // _applyVisibility clamps the page, so just set and let it handle bounds
     this.currentPage = page
     this._applyVisibility()
@@ -169,19 +186,57 @@ export default class extends Controller {
   sortBy(event) {
     event.preventDefault()
     const sortKey = event.currentTarget.dataset.sort
+    if (!sortKey) return
+
+    const prevName = this.currentSortName
+    if (sortKey === prevName) {
+      this.sortReverse = !this.sortReverse
+    } else {
+      this.sortReverse = false
+    }
 
     // Update active state on sort links
     this.sortLinkTargets.forEach((link) => link.classList.remove("active"))
     event.currentTarget.classList.add("active")
 
-    this.currentSort = sortKey
+    this.currentSortName = sortKey
     this.currentPage = 1
     this._sortRows(sortKey)
     this._applyVisibility()
     this._updateSortableState()
+    this._syncSortToUrl()
   }
 
   // Private
+
+  /** Match Angular QueriesCtrl: honor ?sort= / ?reverse= on load without writing defaults back. */
+  _applyInitialSortFromUrl() {
+    const { sort, sortReverse } = parseQueryListSortFromSearch(window.location.search)
+
+    this.sortReverse = sortReverse
+    this.currentSortName = sort
+
+    this._setActiveSortLink(sort)
+    this._sortRows(sort)
+    this._applyVisibility()
+  }
+
+  _setActiveSortLink(sortKey) {
+    this.sortLinkTargets.forEach((link) => {
+      link.classList.toggle("active", link.dataset.sort === sortKey)
+    })
+  }
+
+  /** Updates `?sort=` / `?reverse=` only when the normalized query string would change (fewer history writes). */
+  _syncSortToUrl() {
+    const url = new URL(window.location.href)
+    const next = new URL(url.href)
+    next.searchParams.set("sort", this.currentSortName)
+    if (this.sortReverse) next.searchParams.set("reverse", "true")
+    else next.searchParams.delete("reverse")
+    if (next.search === url.search) return
+    window.history.replaceState({}, "", next)
+  }
 
   _updateCaseScore() {
     const { score, allRated } = computeCaseScore(this.queryScores)
@@ -268,36 +323,40 @@ export default class extends Controller {
 
   _sortRows(sortKey) {
     const rows = [...this.queryRowTargets]
+    const inv = this.sortReverse ? -1 : 1
 
     rows.sort((a, b) => {
+      if (sortKey === "score") {
+        const sa = this._queryScore(a)
+        const sb = this._queryScore(b)
+        // Nulls stay at the bottom regardless of reverse (Angular keeps unscored at end)
+        if (sa === null && sb === null) return 0
+        if (sa === null) return 1
+        if (sb === null) return -1
+        return inv * (sb - sa)
+      }
+
+      let cmp
       switch (sortKey) {
         case "query":
-          return (a.dataset.queryText || "").localeCompare(b.dataset.queryText || "")
-        case "score": {
-          const sa = this._queryScore(a)
-          const sb = this._queryScore(b)
-          // Nulls sort to the bottom
-          if (sa === null && sb === null) return 0
-          if (sa === null) return 1
-          if (sb === null) return -1
-          return sb - sa
-        }
+          cmp = (a.dataset.queryText || "").localeCompare(b.dataset.queryText || "")
+          break
         case "modified":
-          return (b.dataset.modifiedAt || "").localeCompare(a.dataset.modifiedAt || "")
+          cmp = (b.dataset.modifiedAt || "").localeCompare(a.dataset.modifiedAt || "")
+          break
         case "error": {
-          // Rows with errors (null score after search ran) sort to the top
           const ea = this._hasError(a) ? 0 : 1
           const eb = this._hasError(b) ? 0 : 1
-          return ea - eb
+          cmp = ea - eb
+          break
         }
-        case "default":
         default:
-          // Restore original server-rendered order using stored indices
-          return parseInt(a.dataset.originalIndex, 10) - parseInt(b.dataset.originalIndex, 10)
+          cmp = parseInt(a.dataset.originalIndex, 10) - parseInt(b.dataset.originalIndex, 10)
       }
+      return inv * cmp
     })
 
-    // Re-append in sorted order (stable for "default" since sort returns 0)
+    // Re-append in sorted order (JS sort is stable; default sort uses originalIndex)
     const list = this.listTarget
     rows.forEach((row) => list.appendChild(row))
   }
@@ -323,7 +382,7 @@ export default class extends Controller {
 
   _updateSortableState() {
     if (!this.sortableInstance) return
-    const isManualSort = !this.currentSort || this.currentSort === "default"
+    const isManualSort = !this.currentSortName || this.currentSortName === "default"
     this.sortableInstance.option("disabled", !isManualSort)
 
     // Show/hide drag handles via CSS class
@@ -334,6 +393,15 @@ export default class extends Controller {
 
   async _handleDragEnd(evt) {
     if (evt.oldIndex === evt.newIndex) return
+
+    const listEl = this.listTarget
+    const revertDrag = () => {
+      const item = evt.item
+      const { oldIndex } = evt
+      listEl.removeChild(item)
+      const ref = listEl.children[oldIndex] ?? null
+      listEl.insertBefore(item, ref)
+    }
 
     const movedRow = this.queryRowTargets[evt.newIndex]
     const queryId = movedRow.dataset.queryId
@@ -365,14 +433,16 @@ export default class extends Controller {
 
       if (!response.ok) {
         console.error("Failed to save query position:", response.status)
+        revertDrag()
+        return
       }
 
-      // Update original indices to reflect new order
       this.queryRowTargets.forEach((row, idx) => {
         row.dataset.originalIndex = idx
       })
     } catch (error) {
       console.error("Failed to save query position:", error)
+      revertDrag()
     }
   }
 

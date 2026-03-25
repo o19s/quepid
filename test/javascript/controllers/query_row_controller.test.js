@@ -256,6 +256,7 @@ describe("QueryRowController", () => {
       ctrl.lastResult = {
         queryDetails: { foo: "bar" },
         parsedQueryDetails: { baz: 1 },
+        renderedTemplate: "http://example/solr?q=wired",
         docs: [],
         numFound: 0,
       }
@@ -267,6 +268,7 @@ describe("QueryRowController", () => {
       const evt = listener.mock.calls[0][0]
       expect(evt.detail.queryDetails).toEqual({ foo: "bar" })
       expect(evt.detail.parsedQueryDetails).toEqual({ baz: 1 })
+      expect(evt.detail.renderedTemplate).toBe("http://example/solr?q=wired")
     } finally {
       execSpy.mockRestore()
       document.removeEventListener("show-query-explain", listener)
@@ -296,6 +298,7 @@ describe("QueryRowController", () => {
     const execSpy = vi.spyOn(searchExecutor, "executeSearch").mockResolvedValue({
       queryDetails: { q: "parsed" },
       parsedQueryDetails: { pq: "ok" },
+      renderedTemplate: "http://solr.test/select?q=coffee",
       docs: [],
       numFound: 0,
     })
@@ -316,6 +319,9 @@ describe("QueryRowController", () => {
 
       expect(listener).toHaveBeenCalledTimes(1)
       expect(listener.mock.calls[0][0].detail.queryDetails).toEqual({ q: "parsed" })
+      expect(listener.mock.calls[0][0].detail.renderedTemplate).toBe(
+        "http://solr.test/select?q=coffee",
+      )
     } finally {
       fetchSpy.mockRestore()
       execSpy.mockRestore()

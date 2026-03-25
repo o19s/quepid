@@ -60,7 +60,9 @@ describe("parseFieldSpec", () => {
   })
 
   it("parses mixed spec with media, translate, thumb, and sub", () => {
-    const spec = parseFieldSpec("id:doc_id title sub:author thumb:cover media:preview translate:summary_de")
+    const spec = parseFieldSpec(
+      "id:doc_id title sub:author thumb:cover media:preview translate:summary_de",
+    )
     expect(spec.id).toBe("doc_id")
     expect(spec.title).toBe("title")
     expect(spec.subs).toEqual(["author"])
@@ -112,6 +114,8 @@ describe("executeSearch", () => {
     expect(init.headers).toMatchObject({ "Content-Type": "application/json" })
     expect(result.numFound).toBe(7)
     expect(result.docs[0].title).toBe("T1")
+    expect(result.renderedTemplate).toContain(encodeURIComponent("coffee"))
+    expect(result.renderedTemplate).toMatch(/^http:\/\/solr\.test\/select\?/)
   })
 
   it("POSTs JSON for ES via proxy and passes the abort signal", async () => {
@@ -140,5 +144,7 @@ describe("executeSearch", () => {
     expect(JSON.parse(init.body).query.match.title).toBe("needle")
     expect(result.numFound).toBe(2)
     expect(result.docs[0].title).toBe("ES Title")
+    const templateObj = JSON.parse(result.renderedTemplate)
+    expect(templateObj.query.match.title).toBe("needle")
   })
 })

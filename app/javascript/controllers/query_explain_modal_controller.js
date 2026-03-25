@@ -40,9 +40,9 @@ export default class extends Controller {
         '<p class="text-muted">Query parsing details are not available.</p>'
     }
 
-    // Template tab
+    // Template tab — Solr: hydrated request URL; ES/OS: JSON body (from search_executor.renderedTemplate)
     if (renderedTemplate) {
-      this.templateTabTarget.innerHTML = `<p>Populated query template:</p>
+      this.templateTabTarget.innerHTML = `<p>Populated query template (exact request where available):</p>
         <pre class="field-json-pre">${this._escapeHtml(renderedTemplate)}</pre>`
     } else {
       this.templateTabTarget.innerHTML = '<p class="text-muted">This is not a templated query.</p>'

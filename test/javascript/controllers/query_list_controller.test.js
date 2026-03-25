@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { Application, Controller } from "@hotwired/stimulus"
-import QueryListController from "../../../app/javascript/controllers/query_list_controller"
+import QueryListController, {
+  parseQueryListSortFromSearch,
+} from "../../../app/javascript/controllers/query_list_controller"
 import { waitForController } from "../support/stimulus_helpers"
 
 /**
@@ -31,6 +33,10 @@ class StubCaseScoreController extends Controller {
   }
 }
 
+function outletByQueryId(list, queryId) {
+  return list.queryRowOutlets.find((o) => o.queryIdValue === queryId)
+}
+
 describe("QueryListController", () => {
   let application
 
@@ -48,24 +54,28 @@ describe("QueryListController", () => {
         <ul data-query-list-target="list">
           <li class="stub-query-row" id="row1"
               data-controller="query-row"
+              data-query-id="1"
               data-query-row-query-id-value="1"
               data-query-list-target="queryRow"
               data-query-text="star wars"
               data-rated="true"></li>
           <li class="stub-query-row" id="row2"
               data-controller="query-row"
+              data-query-id="2"
               data-query-row-query-id-value="2"
               data-query-list-target="queryRow"
               data-query-text="star trek"
               data-rated="true"></li>
           <li class="stub-query-row" id="row3"
               data-controller="query-row"
+              data-query-id="3"
               data-query-row-query-id-value="3"
               data-query-list-target="queryRow"
               data-query-text="STARMAN"
               data-rated="true"></li>
           <li class="stub-query-row" id="row4"
               data-controller="query-row"
+              data-query-id="4"
               data-query-row-query-id-value="4"
               data-query-list-target="queryRow"
               data-query-text="The Boxing Match"
@@ -78,6 +88,7 @@ describe("QueryListController", () => {
   }
 
   beforeEach(async () => {
+    vi.spyOn(window.history, "replaceState").mockImplementation(() => {})
     mountListHtml()
     application = Application.start()
     application.register("query-list", QueryListController)
@@ -88,6 +99,7 @@ describe("QueryListController", () => {
 
   afterEach(() => {
     application.stop()
+    vi.restoreAllMocks()
   })
 
   it("shows all rows when filter is empty (matches QueriesCtrl: no filter matches everything)", () => {
@@ -257,10 +269,10 @@ describe("QueryListController", () => {
 
     document.dispatchEvent(new CustomEvent("query-options-saved", { detail: { queryId: 2 } }))
 
-    expect(list.queryRowOutlets[0].rerunSearch).not.toHaveBeenCalled()
-    expect(list.queryRowOutlets[1].rerunSearch).toHaveBeenCalledTimes(1)
-    expect(list.queryRowOutlets[2].rerunSearch).not.toHaveBeenCalled()
-    expect(list.queryRowOutlets[3].rerunSearch).not.toHaveBeenCalled()
+    expect(outletByQueryId(list, 1).rerunSearch).not.toHaveBeenCalled()
+    expect(outletByQueryId(list, 2).rerunSearch).toHaveBeenCalledTimes(1)
+    expect(outletByQueryId(list, 3).rerunSearch).not.toHaveBeenCalled()
+    expect(outletByQueryId(list, 4).rerunSearch).not.toHaveBeenCalled()
   })
 
   it("collapseAll calls collapse on expanded query-row outlets", () => {
@@ -294,12 +306,21 @@ describe("QueryListController", () => {
     const ev = { preventDefault: vi.fn() }
     await list.runAllSearches(ev)
     expect(ev.preventDefault).toHaveBeenCalled()
-    // row1 (star wars), row2 (star trek), row3 (STARMAN) should run
-    expect(list.queryRowOutlets[0].rerunSearch).toHaveBeenCalled()
-    expect(list.queryRowOutlets[1].rerunSearch).toHaveBeenCalled()
-    expect(list.queryRowOutlets[2].rerunSearch).toHaveBeenCalled()
-    // row4 (The Boxing Match) should not
-    expect(list.queryRowOutlets[3].rerunSearch).not.toHaveBeenCalled()
+    expect(outletByQueryId(list, 1).rerunSearch).toHaveBeenCalled()
+    expect(outletByQueryId(list, 2).rerunSearch).toHaveBeenCalled()
+    expect(outletByQueryId(list, 3).rerunSearch).toHaveBeenCalled()
+    expect(outletByQueryId(list, 4).rerunSearch).not.toHaveBeenCalled()
+  })
+
+  it("parseQueryListSortFromSearch matches Angular QueriesCtrl ?sort= / ?reverse= (unit)", () => {
+    expect(parseQueryListSortFromSearch("")).toEqual({ sort: "default", sortReverse: false })
+    expect(parseQueryListSortFromSearch("?sort=query")).toEqual({ sort: "query", sortReverse: false })
+    expect(parseQueryListSortFromSearch("?sort=query&reverse=true")).toEqual({
+      sort: "query",
+      sortReverse: true,
+    })
+    expect(parseQueryListSortFromSearch("?sort=bogus")).toEqual({ sort: "default", sortReverse: false })
+    expect(parseQueryListSortFromSearch("?reverse=false")).toEqual({ sort: "default", sortReverse: false })
   })
 
   it("sortBy query reorders rows by query text", () => {
@@ -318,6 +339,24 @@ describe("QueryListController", () => {
     )
     expect(texts).toEqual(expectedOrder)
     expect(nameLink.classList.contains("active")).toBe(true)
+  })
+
+  it("sortBy the same link twice toggles reverse (Angular switchSortOrder parity)", () => {
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    const nameLink = [...list.sortLinkTargets].find((a) => a.dataset.sort === "query")
+    list.sortBy({ preventDefault: vi.fn(), currentTarget: nameLink })
+    const asc = [...list.listTarget.querySelectorAll('[data-query-list-target="queryRow"]')].map(
+      (r) => r.dataset.queryText,
+    )
+    list.sortBy({ preventDefault: vi.fn(), currentTarget: nameLink })
+    const desc = [...list.listTarget.querySelectorAll('[data-query-list-target="queryRow"]')].map(
+      (r) => r.dataset.queryText,
+    )
+    expect(desc).toEqual([...asc].reverse())
+    expect(list.sortReverse).toBe(true)
   })
 
   it("sortBy default restores server-rendered row order after sorting by name", () => {
@@ -435,6 +474,45 @@ describe("QueryListController", () => {
     const visible = list.queryRowTargets.filter((r) => !r.classList.contains("d-none"))
     expect(visible.length).toBe(5) // 20 total - 15 on page 1 = 5 on page 2
     expect(list.currentPage).toBe(2)
+  })
+
+  it("goToPage ignores non-finite or sub-1 page values", () => {
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    list.currentPage = 2
+    list.goToPage({ preventDefault: vi.fn(), currentTarget: { dataset: { page: "bogus" } } })
+    expect(list.currentPage).toBe(2)
+    list.goToPage({ preventDefault: vi.fn(), currentTarget: { dataset: {} } })
+    expect(list.currentPage).toBe(2)
+    list.goToPage({ preventDefault: vi.fn(), currentTarget: { dataset: { page: "0" } } })
+    expect(list.currentPage).toBe(2)
+  })
+
+  it("reverts manual reorder when position save fails", async () => {
+    document.body.dataset.caseId = "42"
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({ ok: false, status: 500 })
+
+    const list = application.getControllerForElementAndIdentifier(
+      document.querySelector("[data-controller=query-list]"),
+      "query-list",
+    )
+    const ul = list.listTarget
+    const row4 = document.getElementById("row4")
+    const initialOrder = [...ul.querySelectorAll('[data-query-list-target="queryRow"]')].map((r) => r.id)
+
+    ul.insertBefore(row4, ul.firstElementChild)
+    expect([...ul.querySelectorAll('[data-query-list-target="queryRow"]')][0].id).toBe("row4")
+
+    await list._handleDragEnd({
+      oldIndex: 3,
+      newIndex: 0,
+      item: row4,
+    })
+
+    const after = [...ul.querySelectorAll('[data-query-list-target="queryRow"]')].map((r) => r.id)
+    expect(after).toEqual(initialOrder)
   })
 
   it("nextPage and previousPage navigate correctly", () => {

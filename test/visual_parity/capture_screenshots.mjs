@@ -300,19 +300,20 @@ const PAGES = [
 
   // Case workspace with first query expanded showing search results + toolbar
   // Uses Case 4 ("10s of Queries") which has 20 queries with ratings in the seed data.
-  // Both Angular and new-ui setups follow the same sequence so the screenshots are
-  // directly comparable: wait for query list → expand first query → wait for results
-  // (or error) → scroll to top.
+  // `sort=default` matches legacy Angular QueriesCtrl URL state (manual / display_order order).
+  // Chevron: Stimulus uses paginated rows (.d-none); Angular lives under #query-container.
   {
     name: '04-case-workspace-expanded',
     tags: ['workspace', 'results'],
-    path: '/case/4',
+    path: '/case/4?sort=default',
     setup: async (page) => {
       // Wait for Angular query list to render
       await page.waitForLoadState('networkidle');
       await new Promise(r => setTimeout(r, 3000));
-      // Click the first query chevron to expand it
-      const chevron = page.locator('.toggleSign').first();
+      const chevron = page
+        .locator('#query-list-shell li:not(.d-none) [data-query-row-target="chevron"]')
+        .or(page.locator('#query-container .toggleSign'))
+        .first();
       await chevron.waitFor({ state: 'visible', timeout: 10000 });
       await chevron.click();
       // Wait for search results or error to appear (matches new-ui selector strategy)
@@ -325,13 +326,13 @@ const PAGES = [
     },
     variants: {
       'new-ui': {
-        path: '/case/4',
+        path: '/case/4?sort=default',
         setup: async (page) => {
           await page.waitForLoadState('networkidle');
           await new Promise(r => setTimeout(r, 3000));
-          // Scope to visible rows: paginated list marks off-page items with .d-none; unscoped .first() can hit a hidden row.
           const chevron = page
             .locator('#query-list-shell li:not(.d-none) [data-query-row-target="chevron"]')
+            .or(page.locator('#query-container .toggleSign'))
             .first();
           await chevron.waitFor({ state: 'visible', timeout: 15000 });
           await chevron.click();
