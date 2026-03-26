@@ -212,14 +212,31 @@ async function fetchApiJson(page, apiPath) {
 // Cache for API lookups to avoid repeated calls
 const apiCache = {};
 
+async function getAllCases(page) {
+  if (apiCache.allCases) return apiCache.allCases;
+  const data = await fetchApiJson(page, '/api/cases');
+  apiCache.allCases = data.all_cases || data.cases || [];
+  return apiCache.allCases;
+}
+
 async function getFirstCaseId(page) {
   if (apiCache.caseId) return apiCache.caseId;
-  const data = await fetchApiJson(page, '/api/cases');
-  const cases = data.all_cases || data.cases || [];
+  const cases = await getAllCases(page);
   if (cases.length > 0) {
     apiCache.caseId = cases[0].case_id || cases[0].id;
   }
   return apiCache.caseId;
+}
+
+async function getCaseIdByName(page, name) {
+  const cacheKey = `caseId:${name}`;
+  if (apiCache[cacheKey]) return apiCache[cacheKey];
+  const cases = await getAllCases(page);
+  const match = cases.find(c => (c.case_name || '').includes(name));
+  if (match) {
+    apiCache[cacheKey] = match.case_id || match.id;
+  }
+  return apiCache[cacheKey] || await getFirstCaseId(page);
 }
 
 async function getFirstBookId(page) {
@@ -299,15 +316,17 @@ const PAGES = [
   },
 
   // Case workspace with first query expanded showing search results + toolbar
-  // Uses Case 4 ("10s of Queries") which has 20 queries with ratings in the seed data.
+  // Uses "10s of Queries" case which has 20 queries with ratings in the seed data.
   // `sort=default` matches legacy Angular QueriesCtrl URL state (manual / display_order order).
   // Chevron: Stimulus uses paginated rows (.d-none); Angular lives under #query-container.
   {
     name: '04-case-workspace-expanded',
     tags: ['workspace', 'results'],
-    path: '/case/4?sort=default',
+    resolve: async (page) => {
+      const id = await getCaseIdByName(page, '10s of Queries');
+      return id ? `/case/${id}?sort=default` : '/cases';
+    },
     setup: async (page) => {
-      // Wait for Angular query list to render
       await page.waitForLoadState('networkidle');
       await new Promise(r => setTimeout(r, 3000));
       const chevron = page
@@ -326,7 +345,10 @@ const PAGES = [
     },
     variants: {
       'new-ui': {
-        path: '/case/4?sort=default',
+        resolve: async (page) => {
+          const id = await getCaseIdByName(page, '10s of Queries');
+          return id ? `/case/${id}?sort=default` : '/cases';
+        },
         setup: async (page) => {
           await page.waitForLoadState('networkidle');
           await new Promise(r => setTimeout(r, 3000));
@@ -394,7 +416,7 @@ const PAGES = [
     setup: async (page) => {
       await page.locator('a', { hasText: 'Tune Relevance' }).first().click();
       await new Promise(r => setTimeout(r, 1000));
-      await page.locator('#curatorTab').click();
+      await page.locator('li[data-tab="tuning"]').click();
       await new Promise(r => setTimeout(r, 500));
     },
     variants: {
@@ -418,7 +440,7 @@ const PAGES = [
     setup: async (page) => {
       await page.locator('a', { hasText: 'Tune Relevance' }).first().click();
       await new Promise(r => setTimeout(r, 1000));
-      await page.locator('#engineTab').click();
+      await page.locator('li[data-tab="settings"]').click();
       await new Promise(r => setTimeout(r, 500));
     },
     variants: {
@@ -442,7 +464,7 @@ const PAGES = [
     setup: async (page) => {
       await page.locator('a', { hasText: 'Tune Relevance' }).first().click();
       await new Promise(r => setTimeout(r, 1000));
-      await page.locator('#historyTab').click();
+      await page.locator('li[data-tab="history"]').click();
       await new Promise(r => setTimeout(r, 500));
     },
     variants: {
@@ -466,7 +488,7 @@ const PAGES = [
     setup: async (page) => {
       await page.locator('a', { hasText: 'Tune Relevance' }).first().click();
       await new Promise(r => setTimeout(r, 1000));
-      await page.locator('#annotationsTab').click();
+      await page.locator('li[data-tab="annotations"]').click();
       await new Promise(r => setTimeout(r, 500));
     },
     variants: {

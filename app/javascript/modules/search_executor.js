@@ -493,7 +493,16 @@ async function executeSearchApiSearch(tryConfig, queryText, signal, options = {}
   if (!response.ok) {
     throw new Error(`SearchAPI request failed (${response.status} ${response.statusText})`)
   }
-  const data = await response.json()
+  // SearchAPI mapper_code may expect any format (HTML, XML, plain text, or JSON),
+  // so read the body as text first and attempt JSON parse only if applicable.
+  const rawText = await response.text()
+  let data
+  try {
+    data = JSON.parse(rawText)
+  } catch {
+    // Not JSON — pass raw text to mapper functions (e.g., HTML scraping mappers)
+    data = rawText
+  }
 
   const mapperError = (msg) => ({
     docs: [],
