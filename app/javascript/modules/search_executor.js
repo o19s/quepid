@@ -7,6 +7,7 @@
 
 import { hydrate } from "modules/query_template"
 import { apiUrl } from "modules/api_url"
+import { createFieldSpec } from "splainer-search"
 
 // Format Solr args object {q: ["*:*"], fq: ["a:1","b:2"]} into URL query string
 function formatSolrArgs(argsObj) {
@@ -62,45 +63,12 @@ async function fetchWithCorsFallback(directUrl, fetchOptions, tryConfig) {
   }
 }
 
+// parseFieldSpec delegates to splainer-search's createFieldSpec.
+// The returned FieldSpec object has: .id, .title, .thumb, .image, .fields (array),
+// .subs (array or '*'), .embeds (array), .translations (array), .highlights (array),
+// .functions (array), .fieldList() method, .forEachField() method.
 function parseFieldSpec(fieldSpecStr) {
-  if (!fieldSpecStr)
-    return { title: null, id: null, fields: [], subs: [], media: [], translations: [] }
-
-  const specs = fieldSpecStr.split(/[\s,+]+/).filter(Boolean)
-  const result = { title: null, id: null, fields: [], subs: [], media: [], translations: [] }
-
-  for (const spec of specs) {
-    const parts = spec.split(":")
-    if (parts.length === 1) {
-      const name = parts[0]
-      result.fields.push(name)
-      if (!result.title) {
-        result.title = name
-      } else {
-        result.subs.push(name)
-      }
-    } else {
-      const fieldName = parts.pop()
-      const types = parts
-      result.fields.push(fieldName)
-      for (const type of types) {
-        if (type === "id") result.id = fieldName
-        else if (type === "title") result.title = fieldName
-        else if (type === "sub") result.subs.push(fieldName)
-        else if (type === "thumb" || type === "image") result.thumb = fieldName
-        else if (type === "media") result.media.push(fieldName)
-        else if (type === "translate") result.translations.push(fieldName)
-      }
-    }
-  }
-
-  // Default id fields
-  if (!result.id) {
-    if (result.fields.includes("id")) result.id = "id"
-    else if (result.fields.includes("_id")) result.id = "_id"
-  }
-
-  return result
+  return createFieldSpec(fieldSpecStr)
 }
 
 // Build headers for a proxied request, including custom headers and basic auth
@@ -140,8 +108,11 @@ async function executeSolrSearch(tryConfig, queryText, signal, options = {}) {
   if (options.offset) {
     args.start = [String(options.offset)]
   }
-  if (fieldSpec.fields.length > 0) {
-    args.fl = [fieldSpec.fields.join(" ")]
+  const fl = fieldSpec.fieldList()
+  if (fl === "*") {
+    args.fl = ["*"]
+  } else if (fl.length > 0) {
+    args.fl = [fl.join(" ")]
   }
 
   // Debug/explain mode — request structured explain from Solr
@@ -224,8 +195,11 @@ async function executeEsSearch(tryConfig, queryText, signal, options = {}) {
   queryDsl = hydrate(queryDsl, escapedQuery, { qOption, encodeURI: false, defaultKw: '\\"\\"' })
 
   // Inject _source fields
-  if (fieldSpec.fields.length > 0) {
-    queryDsl._source = fieldSpec.fields
+  const esFieldList = fieldSpec.fieldList()
+  if (esFieldList === "*") {
+    queryDsl._source = true
+  } else if (esFieldList.length > 0) {
+    queryDsl._source = esFieldList
   }
 
   // Debug/explain mode — request explain from ES/OS
@@ -592,9 +566,19 @@ function normalizeDoc(rawDoc, fieldSpec, engine) {
 
   const title = source[fieldSpec.title] || id
   const subs = {}
-  for (const sub of fieldSpec.subs || []) {
-    if (source[sub] !== undefined) {
-      subs[sub] = source[sub]
+  if (fieldSpec.subs === "*") {
+    // Wildcard: include all source fields except id, title, thumb, image
+    const excluded = new Set([fieldSpec.id, fieldSpec.title, fieldSpec.thumb, fieldSpec.image].filter(Boolean))
+    for (const key of Object.keys(source)) {
+      if (!excluded.has(key)) {
+        subs[key] = source[key]
+      }
+    }
+  } else {
+    for (const sub of fieldSpec.subs || []) {
+      if (source[sub] !== undefined) {
+        subs[sub] = source[sub]
+      }
     }
   }
 
@@ -603,9 +587,9 @@ function normalizeDoc(rawDoc, fieldSpec, engine) {
     thumb = source[fieldSpec.thumb]
   }
 
-  // Media embeds (media:fieldname in field_spec)
+  // Media embeds (media:fieldname in field_spec → fieldSpec.embeds)
   const embeds = {}
-  for (const mediaField of fieldSpec.media || []) {
+  for (const mediaField of fieldSpec.embeds || []) {
     if (source[mediaField] !== undefined) {
       embeds[mediaField] = source[mediaField]
     }

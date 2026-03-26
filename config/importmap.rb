@@ -22,12 +22,16 @@ pin 'js-cookie' # @3.0.5
 pin 'bootstrap', to: 'bootstrap.min.js' # @5.3.3
 pin '@popperjs/core', to: 'popper.min.js' # @2.11.8
 
+# splainer-search — search engine diagnostic library (vendored ESM bundle)
+pin 'splainer-search', to: 'splainer-search.js'
+
 # CodeMirror 6 packages
 pin 'modules/editor', to: 'modules/editor.js'
 pin 'modules/api_url', to: 'modules/api_url.js'
 pin 'modules/json_fetch', to: 'modules/json_fetch.js'
 pin 'modules/query_template', to: 'modules/query_template.js'
 pin 'modules/search_executor', to: 'modules/search_executor.js'
+pin 'modules/searcher_adapter', to: 'modules/searcher_adapter.js'
 pin 'modules/scorer', to: 'modules/scorer.js'
 pin 'modules/scorer_executor', to: 'modules/scorer_executor.js'
 pin 'modules/ratings_store', to: 'modules/ratings_store.js'

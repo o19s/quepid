@@ -34,8 +34,11 @@ require 'es_arg_parser'
 class Try < ApplicationRecord
   has_ancestry orphan_strategy: :adopt
 
-  # Scopes
-  scope :latest, -> { order(id: :desc).first } # The try created the most recently
+  # Returns the most recently created try (single record).
+  # Defined as a class method rather than a scope because it returns a record, not a relation.
+  def self.latest
+    order(id: :desc).first
+  end
 
   # Associations
   belongs_to :case, optional: true # shouldn't be optional, but was in rails 4
