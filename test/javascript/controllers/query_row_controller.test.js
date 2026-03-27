@@ -2,8 +2,49 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { waitFor } from "@testing-library/dom"
 import { Application } from "@hotwired/stimulus"
 import QueryRowController from "../../../app/javascript/controllers/query_row_controller"
-import * as searchExecutor from "modules/search_executor"
 import { waitForController } from "../support/stimulus_helpers"
+
+// Mock splainer-search — createNormalDoc returns a flat doc,
+// createFieldSpec returns a stub, createSearcher returns a mock searcher
+const mockSearcher = {
+  search: vi.fn().mockResolvedValue(undefined),
+  pager: vi.fn(() => null),
+  docs: [],
+  numFound: 0,
+  inError: false,
+  linkUrl: null,
+  callUrl: null,
+  queryDsl: null,
+  queryDetails: null,
+  parsedQueryDetails: null,
+}
+vi.mock("modules/searcher_adapter", () => ({
+  createQuepidSearcher: vi.fn(() => mockSearcher),
+}))
+
+vi.mock("splainer-search", () => ({
+  createNormalDoc: vi.fn((fieldSpec, doc) => ({
+    id: doc.id || doc._id || "unknown",
+    title: doc.title || (doc._source && doc._source.title) || doc.id || "untitled",
+    subs: {},
+    embeds: {},
+    translations: {},
+    thumb: undefined,
+    doc: { origin: () => doc._source || doc },
+    explain: () => null,
+    score: () => null,
+    hotMatchesOutOf: () => [],
+    subSnippets: () => ({}),
+    _url: () => null,
+  })),
+  createFieldSpec: vi.fn(() => ({
+    id: "id",
+    title: "title",
+    fields: ["id", "title"],
+    subs: [],
+    fieldList: () => ["id", "title"],
+  })),
+}))
 
 /**
  * UI behavior for a single query row (expand/collapse, safe HTML rendering).
@@ -30,6 +71,18 @@ describe("QueryRowController", () => {
         <div data-query-row-target="resultsContainer"><p>placeholder</p></div>
       </li>
     `
+
+    // Reset mock searcher state
+    mockSearcher.search.mockResolvedValue(undefined)
+    mockSearcher.pager.mockReturnValue(null)
+    mockSearcher.docs = []
+    mockSearcher.numFound = 0
+    mockSearcher.inError = false
+    mockSearcher.linkUrl = null
+    mockSearcher.callUrl = null
+    mockSearcher.queryDsl = null
+    mockSearcher.queryDetails = null
+    mockSearcher.parsedQueryDetails = null
 
     application = Application.start()
     application.register("query-row", QueryRowController)
@@ -90,6 +143,7 @@ describe("QueryRowController", () => {
           id: "d1",
           title: "<img src=x onerror=alert(1)>",
           subs: { note: "<b>hi</b>" },
+          hotMatchesOutOf: () => [],
         },
       ],
       numFound: 1,
@@ -177,7 +231,7 @@ describe("QueryRowController", () => {
     }
   })
 
-  it("expand fetches try config and Solr via proxy, then renders results", async () => {
+  it("expand fetches try config then uses splainer-search searcher", async () => {
     const tryJson = {
       search_engine: "solr",
       search_url: "http://solr.test/select",
@@ -186,18 +240,16 @@ describe("QueryRowController", () => {
       number_of_rows: 10,
       proxy_requests: true,
     }
-    const solrPayload = {
-      response: { docs: [{ id: "42", title: "Hello Doc" }], numFound: 99 },
-    }
 
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((url, init) => {
+    // Configure mock searcher to return docs
+    mockSearcher.docs = [{ id: "42", title: "Hello Doc", _source: { id: "42", title: "Hello Doc" } }]
+    mockSearcher.numFound = 99
+    mockSearcher.linkUrl = "http://solr.test/select?q=test+query&indent=true"
+
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((url) => {
       const u = String(url)
       if (u.includes("api/cases/1/tries/1")) {
         return Promise.resolve({ ok: true, json: () => Promise.resolve(tryJson) })
-      }
-      if (u.includes("proxy/fetch")) {
-        expect(init?.signal).toBeInstanceOf(AbortSignal)
-        return Promise.resolve({ ok: true, json: () => Promise.resolve(solrPayload) })
       }
       return Promise.reject(new Error(`unexpected fetch: ${u}`))
     })
@@ -244,10 +296,9 @@ describe("QueryRowController", () => {
     }
   })
 
-  it("explainQuery dispatches show-query-explain without extra search when payload exists", async () => {
+  it("explainQuery dispatches show-query-explain with lastResult data", async () => {
     const el = document.querySelector("[data-controller=query-row]")
     const ctrl = application.getControllerForElementAndIdentifier(el, "query-row")
-    const execSpy = vi.spyOn(searchExecutor, "executeSearch")
     const listener = vi.fn()
     document.addEventListener("show-query-explain", listener)
 
@@ -261,70 +312,14 @@ describe("QueryRowController", () => {
         numFound: 0,
       }
 
-      await ctrl.explainQuery({ preventDefault: vi.fn() })
+      ctrl.explainQuery({ preventDefault: vi.fn() })
 
-      expect(execSpy).not.toHaveBeenCalled()
       expect(listener).toHaveBeenCalledTimes(1)
       const evt = listener.mock.calls[0][0]
       expect(evt.detail.queryDetails).toEqual({ foo: "bar" })
       expect(evt.detail.parsedQueryDetails).toEqual({ baz: 1 })
       expect(evt.detail.renderedTemplate).toBe("http://example/solr?q=wired")
     } finally {
-      execSpy.mockRestore()
-      document.removeEventListener("show-query-explain", listener)
-    }
-  })
-
-  it("explainQuery fetches debug search when modal payload missing", async () => {
-    const el = document.querySelector("[data-controller=query-row]")
-    const ctrl = application.getControllerForElementAndIdentifier(el, "query-row")
-
-    const tryJson = {
-      search_engine: "solr",
-      search_url: "http://solr.test/select",
-      args: { q: ["#$query##"], rows: [10] },
-      field_spec: "id",
-      number_of_rows: 10,
-      proxy_requests: true,
-    }
-
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((url) => {
-      if (String(url).includes("api/cases/1/tries/1")) {
-        return Promise.resolve({ ok: true, json: () => Promise.resolve(tryJson) })
-      }
-      return Promise.reject(new Error(`unexpected fetch: ${url}`))
-    })
-
-    const execSpy = vi.spyOn(searchExecutor, "executeSearch").mockResolvedValue({
-      queryDetails: { q: "parsed" },
-      parsedQueryDetails: { pq: "ok" },
-      renderedTemplate: "http://solr.test/select?q=coffee",
-      docs: [],
-      numFound: 0,
-    })
-
-    const listener = vi.fn()
-    document.addEventListener("show-query-explain", listener)
-
-    try {
-      ctrl.searchLoaded = true
-      ctrl.lastResult = { docs: [], numFound: 0 }
-
-      await ctrl.explainQuery({ preventDefault: vi.fn() })
-
-      expect(execSpy).toHaveBeenCalledTimes(1)
-      const call = execSpy.mock.calls[0]
-      expect(call[1]).toBe("test query")
-      expect(call[3]).toEqual({ debug: true })
-
-      expect(listener).toHaveBeenCalledTimes(1)
-      expect(listener.mock.calls[0][0].detail.queryDetails).toEqual({ q: "parsed" })
-      expect(listener.mock.calls[0][0].detail.renderedTemplate).toBe(
-        "http://solr.test/select?q=coffee",
-      )
-    } finally {
-      fetchSpy.mockRestore()
-      execSpy.mockRestore()
       document.removeEventListener("show-query-explain", listener)
     }
   })

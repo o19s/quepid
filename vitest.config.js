@@ -19,6 +19,7 @@ export default defineConfig({
   resolve: {
     alias: {
       ...modulesImportAliases(__dirname),
+      "splainer-search": path.join(__dirname, "vendor/javascript/splainer-search.js"),
       sortablejs: path.join(__dirname, "vendor/javascript/sortablejs.js"),
     },
   },

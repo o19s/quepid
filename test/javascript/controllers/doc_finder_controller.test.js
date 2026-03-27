@@ -3,11 +3,28 @@ import { Application } from "@hotwired/stimulus"
 import DocFinderController from "../../../app/javascript/controllers/doc_finder_controller"
 import { waitForController } from "../support/stimulus_helpers"
 
-// Mock search executor
-vi.mock("modules/search_executor", () => ({
-  executeSearch: vi.fn(),
+// Mock searcher_adapter — createQuepidSearcher returns a mock searcher
+const mockSearcher = {
+  search: vi.fn().mockResolvedValue(undefined),
+  docs: [],
+  numFound: 0,
+  inError: false,
+}
+vi.mock("modules/searcher_adapter", () => ({
+  createQuepidSearcher: vi.fn(() => mockSearcher),
 }))
-import { executeSearch } from "modules/search_executor"
+import { createQuepidSearcher } from "modules/searcher_adapter"
+
+// Mock splainer-search — createNormalDoc returns a simplified doc,
+// createFieldSpec returns a stub fieldSpec
+vi.mock("splainer-search", () => ({
+  createNormalDoc: vi.fn((fieldSpec, doc) => ({
+    id: doc.id || doc._id || "unknown",
+    title: doc.title || doc.id || "untitled",
+    subs: {},
+  })),
+  createFieldSpec: vi.fn(() => ({ id: "id", title: "title", fields: [] })),
+}))
 
 // Mock scorer
 vi.mock("modules/scorer", () => ({
@@ -33,6 +50,12 @@ describe("DocFinderController", () => {
         <div data-doc-finder-target="resultsContainer"></div>
       </div>
     `
+
+    // Reset mock searcher state
+    mockSearcher.search.mockResolvedValue(undefined)
+    mockSearcher.docs = []
+    mockSearcher.numFound = 0
+    mockSearcher.inError = false
 
     application = Application.start()
     application.register("doc-finder", DocFinderController)
@@ -91,7 +114,7 @@ describe("DocFinderController", () => {
   it("search does nothing without context", async () => {
     const ctrl = getController()
     await ctrl.search()
-    expect(executeSearch).not.toHaveBeenCalled()
+    expect(createQuepidSearcher).not.toHaveBeenCalled()
   })
 
   it("search does nothing with empty input", async () => {
@@ -99,10 +122,10 @@ describe("DocFinderController", () => {
     ctrl.open(makeContext())
     ctrl.searchInputTarget.value = "   "
     await ctrl.search()
-    expect(executeSearch).not.toHaveBeenCalled()
+    expect(createQuepidSearcher).not.toHaveBeenCalled()
   })
 
-  it("search renders results from executeSearch", async () => {
+  it("search renders results from searcher", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: () =>
@@ -112,12 +135,11 @@ describe("DocFinderController", () => {
         }),
     })
 
-    executeSearch.mockResolvedValue({
-      docs: [
-        { id: "doc1", title: "Result One" },
-        { id: "doc2", title: "Result Two" },
-      ],
-    })
+    // Configure mock searcher to return docs
+    mockSearcher.docs = [
+      { id: "doc1", title: "Result One" },
+      { id: "doc2", title: "Result Two" },
+    ]
 
     const ctrl = getController()
     ctrl.open(makeContext())
@@ -129,19 +151,18 @@ describe("DocFinderController", () => {
     expect(ctrl.resultsContainerTarget.innerHTML).toContain("Result Two")
   })
 
-  it("search shows error when executeSearch returns error", async () => {
+  it("search shows error when searcher.inError is true", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ search_engine: "solr" }),
     })
-    executeSearch.mockResolvedValue({ error: "Connection refused" })
+    mockSearcher.inError = true
 
     const ctrl = getController()
     ctrl.open(makeContext())
     ctrl.searchInputTarget.value = "test"
     await ctrl.search()
 
-    expect(ctrl.resultsContainerTarget.innerHTML).toContain("Connection refused")
     expect(ctrl.resultsContainerTarget.querySelector(".alert-warning")).not.toBeNull()
   })
 
@@ -150,7 +171,7 @@ describe("DocFinderController", () => {
       ok: true,
       json: () => Promise.resolve({ search_engine: "solr" }),
     })
-    executeSearch.mockResolvedValue({ docs: [{ id: "doc1", title: "A" }] })
+    mockSearcher.docs = [{ id: "doc1", title: "A" }]
 
     const ctrl = getController()
     ctrl.open(makeContext({ scorerScale: [0, 1, 2] }))
@@ -166,7 +187,7 @@ describe("DocFinderController", () => {
       ok: true,
       json: () => Promise.resolve({ search_engine: "solr" }),
     })
-    executeSearch.mockResolvedValue({ docs: [{ id: "doc1", title: "A" }] })
+    mockSearcher.docs = [{ id: "doc1", title: "A" }]
 
     const ctx = makeContext()
     ctx.ratingsStore.getRating = vi.fn(() => 2)
@@ -215,21 +236,6 @@ describe("DocFinderController", () => {
 
     expect(ctx.ratingsStore.unrate).toHaveBeenCalledWith("doc1")
     expect(ctx.onRatingChanged).toHaveBeenCalled()
-  })
-
-  it("_getIdField returns id field from field spec", () => {
-    const ctrl = getController()
-    expect(ctrl._getIdField({ field_spec: "id:myid, title:name" })).toBe("myid")
-  })
-
-  it("_getIdField returns default for Solr when no id in spec", () => {
-    const ctrl = getController()
-    expect(ctrl._getIdField({ field_spec: "title:name", search_engine: "solr" })).toBe("id")
-  })
-
-  it("_getIdField returns _id for ES when no id in spec", () => {
-    const ctrl = getController()
-    expect(ctrl._getIdField({ field_spec: "title:name", search_engine: "es" })).toBe("_id")
   })
 
   it("_fetchTryConfig caches result per try number", async () => {
