@@ -1,13 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
-import { executeSearch } from "modules/search_executor"
 import { createQuepidSearcher } from "modules/searcher_adapter"
 import { createNormalDoc, createFieldSpec } from "splainer-search"
-import { hydrate } from "modules/query_template"
 import { apiUrl, csrfToken } from "modules/api_url"
 import { RatingsStore } from "modules/ratings_store"
 import { scaleToColors, ratingColor, scoreToColor } from "modules/scorer"
 import { runScorerCode } from "modules/scorer_executor"
-import { parseExplain, hotMatchesOutOf } from "modules/explain_parser"
 import { renderFieldValue } from "modules/field_renderer"
 import { showFlash } from "modules/flash_helper"
 
@@ -282,65 +279,22 @@ export default class extends Controller {
     this.runSearch()
   }
 
-  // Match Angular's single "Explain Query" control: open the modal, fetching debug
-  // payload once when the last normal search did not include engine explain data.
-  async explainQuery(event) {
+  // Open the Explain Query modal with query-level debug data from the last search.
+  // splainer-search searchers always request debug/explain, so data is pre-populated.
+  explainQuery(event) {
     event?.preventDefault()
     if (!this.searchLoaded) {
       showFlash("Expand the query row and wait for the search to finish first.", "warning")
       return
     }
 
-    let queryDetails = this.lastResult?.queryDetails
-    let parsedQueryDetails = this.lastResult?.parsedQueryDetails
-    // Prefer the exact request the executor sent (encoded Solr URL or ES/OS JSON body).
-    let renderedTemplate = this.lastResult?.renderedTemplate ?? null
-
-    if (!queryDetails && !parsedQueryDetails) {
-      const ac = new AbortController()
-      try {
-        const tryConfig = await fetchTryConfig()
-        const debugResult = await executeSearch(tryConfig, this.queryTextValue, ac.signal, {
-          debug: true,
-        })
-        queryDetails = debugResult.queryDetails
-        parsedQueryDetails = debugResult.parsedQueryDetails
-        renderedTemplate = debugResult.renderedTemplate ?? renderedTemplate
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error("Explain query fetch failed:", error)
-          showFlash("Could not load explain data from the search engine.", "danger")
-        }
-        return
-      }
-    }
-
-    // Fallback: hydrated try args only (no URL encoding) when no search ran through executeSearch.
-    if (!renderedTemplate) {
-      try {
-        const tryConfig = await fetchTryConfig()
-        const engine = (tryConfig.search_engine || "solr").toLowerCase()
-        const args = tryConfig.args || {}
-        const qOption = tryConfig.options || {}
-        const isSolr = engine === "solr" || engine === "static"
-        const hydrated = hydrate(args, this.queryTextValue, {
-          qOption,
-          encodeURI: false,
-          defaultKw: isSolr ? '""' : '\\"\\"',
-        })
-        renderedTemplate = JSON.stringify(hydrated, null, 2)
-      } catch {
-        // Non-critical — template tab will show "not a templated query"
-      }
-    }
-
     document.dispatchEvent(
       new CustomEvent("show-query-explain", {
         detail: {
-          queryDetails: queryDetails || null,
-          parsedQueryDetails: parsedQueryDetails || null,
+          queryDetails: this.lastResult?.queryDetails || null,
+          parsedQueryDetails: this.lastResult?.parsedQueryDetails || null,
           queryText: this.queryTextValue,
-          renderedTemplate,
+          renderedTemplate: this.lastResult?.renderedTemplate || null,
         },
       }),
     )
@@ -627,7 +581,13 @@ export default class extends Controller {
   }
 
   _buildResultRow(doc, docIdx, maxDocScore) {
-    const subsHtml = this._buildSmartSubFields(doc.subs)
+    // Use highlighted snippets when available, fall back to raw sub fields
+    const snippets = typeof doc.subSnippets === "function"
+      ? doc.subSnippets("<strong>", "</strong>")
+      : null
+    const subsHtml = snippets
+      ? this._buildSnippetSubFields(snippets)
+      : this._buildSmartSubFields(doc.subs)
     const embedsHtml = this._buildEmbeds(doc.embeds)
     const translationsHtml = this._buildTranslations(doc.translations)
 
@@ -701,6 +661,27 @@ export default class extends Controller {
     return Object.entries(subs)
       .map(([key, value]) => {
         return `<div class="doc-sub-field"><span class="text-muted">${this._escapeHtml(key)}:</span> ${renderFieldValue(value, key)}</div>`
+      })
+      .join("")
+  }
+
+  // Render highlighted snippet sub fields — values are pre-escaped HTML from splainer-search
+  // with <strong> tags for highlighting. Objects/arrays are rendered as plain text.
+  _buildSnippetSubFields(snippets) {
+    if (!snippets || typeof snippets !== "object") return ""
+    return Object.entries(snippets)
+      .map(([key, value]) => {
+        let rendered
+        if (Array.isArray(value)) {
+          // Highlight snippets come as arrays of fragment strings
+          rendered = value.join("&hellip;")
+        } else if (typeof value === "object" && value !== null) {
+          rendered = renderFieldValue(value, key)
+        } else {
+          // Already HTML-escaped with <strong> highlight markers
+          rendered = String(value)
+        }
+        return `<div class="doc-sub-field"><span class="text-muted">${this._escapeHtml(key)}:</span> ${rendered}</div>`
       })
       .join("")
   }
@@ -1256,15 +1237,7 @@ export default class extends Controller {
   }
 
   _buildStackedChart(doc, maxDocScore) {
-    // Use splainer-search's hotMatchesOutOf if available (from NormalDoc),
-    // otherwise fall back to the internal explain parser for legacy flat docs.
-    let matches
-    if (typeof doc.hotMatchesOutOf === "function") {
-      matches = doc.hotMatchesOutOf(maxDocScore)
-    } else {
-      const tree = parseExplain(doc.explain)
-      matches = hotMatchesOutOf(tree, maxDocScore)
-    }
+    const matches = doc.hotMatchesOutOf(maxDocScore)
 
     const colorClasses = ["explain-red", "explain-orange", "explain-green", "explain-blue"]
 

@@ -17,7 +17,6 @@
     "d3": "~7.9.0",
     "d3-tip": "~0.9.1",
     "local-time": "^3.0.0",
-    "splainer-search": "^2.35.1",
     "vega": "^6.0.0",
     "vega-embed": "^7.1.0",
     "vega-lite": "^6.4.1"

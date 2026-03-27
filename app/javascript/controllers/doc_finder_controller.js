@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
-import { executeSearch } from "modules/search_executor"
+import { createQuepidSearcher } from "modules/searcher_adapter"
+import { createNormalDoc, createFieldSpec } from "splainer-search"
 import { apiUrl, csrfToken } from "modules/api_url"
 import { ratingColor } from "modules/scorer"
 
@@ -40,14 +41,20 @@ export default class extends Controller {
 
     try {
       const tryConfig = await this._fetchTryConfig()
-      const result = await executeSearch(tryConfig, searchText)
+      const fieldSpec = createFieldSpec(tryConfig.field_spec)
+      const searcher = createQuepidSearcher(tryConfig, searchText)
+      await searcher.search()
 
-      if (result.error) {
-        this.resultsContainerTarget.innerHTML = `<div class="alert alert-warning">${this._escapeHtml(result.error)}</div>`
+      if (searcher.inError) {
+        this.resultsContainerTarget.innerHTML = `<div class="alert alert-warning">Search engine returned an error.</div>`
         return
       }
 
-      this._renderFinderResults(result.docs)
+      const docs = searcher.docs.map((doc) => {
+        const nDoc = createNormalDoc(fieldSpec, doc)
+        return { id: nDoc.id, title: nDoc.title, subs: nDoc.subs || {} }
+      })
+      this._renderFinderResults(docs)
     } catch (error) {
       this.resultsContainerTarget.innerHTML = `<div class="alert alert-danger">Search failed: ${this._escapeHtml(error.message)}</div>`
     }
@@ -69,6 +76,7 @@ export default class extends Controller {
 
     try {
       const tryConfig = await this._fetchTryConfig()
+      const fieldSpec = createFieldSpec(tryConfig.field_spec)
       const engine = (tryConfig.search_engine || "solr").toLowerCase()
 
       const docFinderEngines = ["solr", "static", "es", "os"]
@@ -77,33 +85,37 @@ export default class extends Controller {
         return
       }
 
-      // Build a filter query to fetch only rated docs
-      let filterConfig
+      // Build a filter config to fetch only rated docs
+      // fieldSpec.id defaults to "id", but ES/OS uses "_id" as the doc identifier
+      // when the user hasn't explicitly set id:_id in their field spec.
+      const idField = fieldSpec.id === "id" && (engine === "es" || engine === "os")
+        ? "_id"
+        : fieldSpec.id
+      const filterConfig = structuredClone(tryConfig)
       if (engine === "solr" || engine === "static") {
-        const idField = this._getIdField(tryConfig)
         const idsFilter = ratedDocIds
           .map((id) => `"${id.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`)
           .join(" OR ")
-        filterConfig = structuredClone(tryConfig)
-        // Replace args entirely — the original args may contain template
-        // placeholders (#$query##) in fq, etc. that would be incorrectly hydrated
         filterConfig.args = {
           q: [`${idField}:(${idsFilter})`],
           rows: [String(ratedDocIds.length)],
         }
       } else {
         // ES/OS — use terms query
-        const idField = this._getIdField(tryConfig)
-        filterConfig = structuredClone(tryConfig)
         filterConfig.args = {
           query: { terms: { [idField]: ratedDocIds } },
           size: ratedDocIds.length,
         }
       }
 
-      // Use a dummy query text since we're overriding the query
-      const result = await executeSearch(filterConfig, ratedDocIds[0])
-      this._renderFinderResults(result.docs || [])
+      const searcher = createQuepidSearcher(filterConfig, ratedDocIds[0])
+      await searcher.search()
+
+      const docs = searcher.docs.map((doc) => {
+        const nDoc = createNormalDoc(fieldSpec, doc)
+        return { id: nDoc.id, title: nDoc.title, subs: nDoc.subs || {} }
+      })
+      this._renderFinderResults(docs)
     } catch (error) {
       this.resultsContainerTarget.innerHTML = `<div class="alert alert-danger">Failed to load rated docs: ${this._escapeHtml(error.message)}</div>`
     }
@@ -208,17 +220,6 @@ export default class extends Controller {
     style.id = "rating-color-styles"
     style.textContent = rules
     document.head.appendChild(style)
-  }
-
-  _getIdField(tryConfig) {
-    const fieldSpecStr = tryConfig.field_spec || ""
-    const specs = fieldSpecStr.split(/[\s,+]+/).filter(Boolean)
-    for (const spec of specs) {
-      const parts = spec.split(":")
-      if (parts.length > 1 && parts.includes("id")) return parts[parts.length - 1]
-    }
-    const engine = (tryConfig.search_engine || "solr").toLowerCase()
-    return engine === "solr" || engine === "static" ? "id" : "_id"
   }
 
   async _fetchTryConfig() {

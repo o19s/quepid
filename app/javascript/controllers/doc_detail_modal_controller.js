@@ -1,6 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
 import { renderAllFields } from "modules/field_renderer"
-import { parseExplain, explainToString } from "modules/explain_parser"
 
 // Single shared modal for displaying detailed document information.
 // Listens for "show-doc-detail" events dispatched from query_row_controller.
@@ -34,14 +33,36 @@ export default class extends Controller {
       html += `<div class="mb-2"><strong>Score:</strong> ${this._escapeHtml(String(doc.score))}</div>`
     }
 
-    // Explain if available
+    // Explain if available — use splainer-search's Explain object methods when present
     if (doc.explain) {
-      const parsed = typeof doc.explain === "object" ? parseExplain(doc.explain) : null
-      const explainStr = explainToString(parsed)
+      let explainStr = ""
+      if (typeof doc.explain.toStr === "function") {
+        // splainer-search Explain object
+        explainStr = doc.explain.toStr()
+      } else if (typeof doc.explain === "object") {
+        // Raw explain JSON — format as indented JSON
+        explainStr = JSON.stringify(doc.explain, null, 2)
+      }
+
       if (explainStr) {
         html += `<details class="mb-2">
           <summary><strong>Explain</strong></summary>
           <pre class="field-json-pre">${this._escapeHtml(explainStr)}</pre>
+        </details>`
+      }
+
+      // Raw JSON explain toggle
+      let rawExplainStr = ""
+      if (typeof doc.explain.rawStr === "function") {
+        rawExplainStr = doc.explain.rawStr()
+      } else if (typeof doc.explain === "object") {
+        rawExplainStr = JSON.stringify(doc.explain, null, 2)
+      }
+
+      if (rawExplainStr) {
+        html += `<details class="mb-2">
+          <summary><strong>Raw Explain JSON</strong></summary>
+          <pre class="field-json-pre">${this._escapeHtml(rawExplainStr)}</pre>
         </details>`
       }
     }
@@ -59,9 +80,9 @@ export default class extends Controller {
 
     this.bodyTarget.innerHTML = html
 
-    // View Document link — try to find a URL field in the source
-    const docUrl = this._findDocUrl(doc)
-    if (docUrl) {
+    // View Document link — prefer splainer-search _url, then check source fields
+    const docUrl = doc._url || this._findDocUrl(doc)
+    if (docUrl && docUrl !== "unavailable") {
       this.viewLinkTarget.href = docUrl
       this.viewLinkTarget.classList.remove("d-none")
     } else {

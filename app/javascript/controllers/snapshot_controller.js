@@ -108,10 +108,22 @@ export default class extends Controller {
       }
 
       docs[queryId] = searchDocs.map((doc) => {
+        // Serialize explain: use splainer-search's rawStr() when available,
+        // otherwise fall back to JSON stringifying the explain object.
+        let explainStr = ""
+        if (doc.explain) {
+          if (typeof doc.explain.rawStr === "function") {
+            explainStr = doc.explain.rawStr()
+          } else if (typeof doc.explain === "object") {
+            explainStr = JSON.stringify(doc.explain)
+          } else {
+            explainStr = String(doc.explain)
+          }
+        }
+
         const docPayload = {
           id: String(doc.id),
-          // explain data is not yet available from search_executor (Phase 4/5)
-          explain: doc.explain || "",
+          explain: explainStr,
           rated_only: false,
           fields: this._extractFields(doc),
         }
