@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class MapperWizardsController < ApplicationController
-  before_action :require_admin_if_restricted
   before_action :set_search_endpoint, only: [ :show ]
   before_action :set_wizard_state, only: [ :fetch_html, :generate_mappers, :test_mapper, :refine_mapper, :save ]
 
@@ -39,13 +38,21 @@ class MapperWizardsController < ApplicationController
   def fetch_html
     http_method = params[:http_method] || 'GET'
 
+    # Preserve real credential when masked value is submitted unchanged
+    credential_param = params[:basic_auth_credential]
+    if credential_param.present?
+      current_masked = @wizard_state.masked_basic_auth_credential.presence ||
+                       @search_endpoint&.masked_basic_auth_credential
+      credential_param = @wizard_state.basic_auth_credential if credential_param == current_masked
+    end
+
     # Save wizard state first - Rails serialize handles JSON conversion and validation
     @wizard_state.assign_attributes(
       search_url:            params[:search_url],
       http_method:           http_method,
       test_query:            params[:test_query],
       custom_headers:        params[:custom_headers],
-      basic_auth_credential: params[:basic_auth_credential]
+      basic_auth_credential: credential_param
     )
 
     unless @wizard_state.save
@@ -180,6 +187,12 @@ class MapperWizardsController < ApplicationController
     custom_headers = params[:custom_headers].presence || @wizard_state.custom_headers || @search_endpoint.custom_headers
     basic_auth_credential = params[:basic_auth_credential].presence || @wizard_state.basic_auth_credential || @search_endpoint.basic_auth_credential
 
+    # Preserve real credential when masked value is submitted unchanged
+    if basic_auth_credential.present? && @search_endpoint.persisted? &&
+       basic_auth_credential == @search_endpoint.masked_basic_auth_credential
+      basic_auth_credential = @search_endpoint.basic_auth_credential
+    end
+
     # Rails serialize with JSON coder automatically handles JSON string -> Hash conversion
     # and model validation will catch any invalid JSON
     @search_endpoint.assign_attributes(
@@ -214,13 +227,6 @@ class MapperWizardsController < ApplicationController
   # rubocop:enable Metrics/PerceivedComplexity
 
   private
-
-  def require_admin_if_restricted
-    return unless Rails.application.config.search_endpoint_views_admin_only
-    return if current_user.administrator?
-
-    redirect_to root_path, notice: 'Search Endpoint management is restricted to administrators.'
-  end
 
   def set_search_endpoint
     return if params[:search_endpoint_id].blank? || 'new' == params[:search_endpoint_id]

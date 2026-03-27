@@ -83,7 +83,7 @@
 
       <!-- Advanced Options -->
       <% existing_headers = @wizard_state.try(:custom_headers).presence || @search_endpoint.custom_headers %>
-      <% existing_basic_auth = @wizard_state.try(:basic_auth_credential).presence || @search_endpoint.basic_auth_credential %>
+      <% existing_basic_auth = @wizard_state.try(:masked_basic_auth_credential).presence || @search_endpoint.masked_basic_auth_credential %>
       <% show_advanced = existing_headers.present? || existing_basic_auth.present? %>
       <div class="row g-3 mt-2">
         <div class="col-12">

@@ -21,7 +21,7 @@ angular.module('QuepidApp')
         }
         
         if (settingsSvc.applicableSettings().proxyRequests  === true) {
-          url = caseTryNavSvc.getQuepidProxyUrl() + url;
+          url = caseTryNavSvc.getQuepidProxyUrl(settingsSvc.applicableSettings().searchEndpointId) + url;
         }
                 
         return url;

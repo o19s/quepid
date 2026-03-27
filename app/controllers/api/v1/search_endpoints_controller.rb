@@ -104,6 +104,12 @@ module Api
       # @request_body_example basic Search endpoint [JSON{ "search_endpoint": { "api_method": "GET" }}]
       def update
         update_params = search_endpoint_params
+
+        if update_params[:basic_auth_credential].present? &&
+           update_params[:basic_auth_credential] == @search_endpoint.masked_basic_auth_credential
+          update_params = update_params.except(:basic_auth_credential)
+        end
+
         archived = deserialize_bool_param(params[:archived])
         if archived
           # archiving a case means current user takes it over, that should be better expressed.

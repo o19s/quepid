@@ -101,8 +101,41 @@ Rails.application.config.action_cable.url = "#{ENV.fetch('RAILS_RELATIVE_URL_ROO
 #
 Rails.application.config.search_endpoint_views_admin_only = bool.deserialize(ENV.fetch('SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY', false))
 
+# == Require Proxy with Basic Auth Credentials
+# When enabled, endpoints with basic auth credentials must use proxy_requests.
+# This ensures credentials are handled server-side rather than exposed to the browser.
+# Credentials are always masked in the UI regardless of this setting.
+#
+Rails.application.config.require_proxy_with_basic_auth_credentials = bool.deserialize(ENV.fetch('REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS', false))
+
 # == Set up encryption for Quepid
 # We provide some defaults, but you should set your own keys and NOT lose them.
 Rails.application.config.active_record.encryption.deterministic_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY', 'OItaH6HSftjoxkl9QDejPAmQ8EaFOlwk')
 Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT', 'BzPDVAl1jAUquD4p7rM9J40wAwf7CCFh')
 Rails.application.config.active_record.encryption.primary_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY', 'bnYX3NlvUJxHWXwNYBgP33yi8BKlN7Ml')
+
+Rails.application.config.after_initialize do
+  next if defined?(Rails::Console)
+
+  # Run only on server start
+
+  # Check for search endpoints that need proxy enabled
+  if Rails.application.config.require_proxy_with_basic_auth_credentials
+    begin
+      endpoints = SearchEndpoint.where.not(basic_auth_credential: nil).where(proxy_requests: false)
+      if endpoints.any?
+        Rails.logger.warn '=' * 80
+        Rails.logger.warn 'WARNING: REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS is enabled'
+        Rails.logger.warn 'The following search endpoints have basic auth credentials but proxy_requests disabled:'
+        endpoints.each do |endpoint|
+          Rails.logger.warn "  - #{endpoint.name} (ID: #{endpoint.id})"
+        end
+        Rails.logger.warn 'These endpoints will fail validation when edited.'
+        Rails.logger.warn 'Enable proxy_requests for these endpoints or set REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS=false'
+        Rails.logger.warn '=' * 80
+      end
+    rescue ActiveRecord::StatementInvalid, ActiveRecord::NoDatabaseError
+      # Database might not be set up yet, skip check
+    end
+  end
+end

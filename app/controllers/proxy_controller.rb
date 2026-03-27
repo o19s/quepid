@@ -15,7 +15,9 @@ class ProxyController < ApplicationController
     headers = build_forwarded_headers
     headers['Content-Type'] = 'application/json'
 
-    client = HttpClientService.new(url_param, headers: headers, debug: proxy_debug)
+    credentials = lookup_search_endpoint_credentials
+
+    client = HttpClientService.new(url_param, headers: headers, credentials: credentials, debug: proxy_debug)
 
     response = if request.get?
                  perform_get_request(client, url_param)
@@ -35,7 +37,7 @@ class ProxyController < ApplicationController
   private
 
   def perform_get_request client, url_param
-    excluded_keys = [ :url, :action, :controller, :proxy_debug ]
+    excluded_keys = [ :url, :action, :controller, :proxy_debug, :search_endpoint_id ]
     query_params = request.query_parameters.except(*excluded_keys)
     body_params = request.request_parameters.except(*query_params.keys)
 
@@ -48,7 +50,7 @@ class ProxyController < ApplicationController
   end
 
   def perform_post_request client
-    excluded_keys = [ :url, :action, :controller, :proxy_debug ]
+    excluded_keys = [ :url, :action, :controller, :proxy_debug, :search_endpoint_id ]
     query_params = request.query_parameters.except(*excluded_keys)
     body_params = request.request_parameters.except(*query_params.keys)
 
@@ -85,6 +87,13 @@ class ProxyController < ApplicationController
     end
 
     headers
+  end
+
+  def lookup_search_endpoint_credentials
+    return nil if params[:search_endpoint_id].blank?
+
+    search_endpoint = SearchEndpoint.find_by(id: params[:search_endpoint_id])
+    search_endpoint&.basic_auth_credential
   end
 
   def rack_header? header_name

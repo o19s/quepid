@@ -169,8 +169,13 @@ angular.module('QuepidApp')
         }
       };
       
-      this.getQuepidProxyUrl = function () {
-        return this.getQuepidRootUrl() + '/proxy/fetch?url=';
+      this.getQuepidProxyUrl = function (searchEndpointId) {
+        var base = this.getQuepidRootUrl() + '/proxy/fetch?';
+        if (searchEndpointId) {
+          base += 'search_endpoint_id=' + searchEndpointId + '&';
+        }
+        base += 'url=';
+        return base;
       };
       
       this.createSearchEndpointLink = function (searchEndpointId) {
