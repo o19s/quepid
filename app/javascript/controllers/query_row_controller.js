@@ -1,5 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { executeSearch } from "modules/search_executor"
+import { createQuepidSearcher } from "modules/searcher_adapter"
+import { createNormalDoc, createFieldSpec } from "splainer-search"
 import { hydrate } from "modules/query_template"
 import { apiUrl, csrfToken } from "modules/api_url"
 import { RatingsStore } from "modules/ratings_store"
@@ -82,6 +84,40 @@ function fetchTryConfig() {
   return promise
 }
 
+// Convert a splainer-search NormalDoc to the flat shape the rendering code expects.
+// Preserves the richer splainer-search methods (.explain(), .score(), .hotMatchesOutOf())
+// as properties on the returned object so both old rendering and new explain features work.
+function flattenNormalDoc(nDoc) {
+  // Lazy-cache explain and score — only computed on first access.
+  // Avoids parsing the full explain tree for docs that never display debug info.
+  let _explain, _explainResolved = false
+  let _score, _scoreResolved = false
+
+  const flat = {
+    id: nDoc.id,
+    title: nDoc.title,
+    thumb: nDoc.thumb || null,
+    subs: nDoc.subs || {},
+    embeds: nDoc.embeds || {},
+    translations: nDoc.translations || {},
+    _source: nDoc.doc ? nDoc.doc.origin() : {},
+    // Lazy explain/score — accessed as properties but computed on demand
+    get explain() {
+      if (!_explainResolved) { _explain = nDoc.explain ? nDoc.explain() : null; _explainResolved = true }
+      return _explain
+    },
+    get score() {
+      if (!_scoreResolved) { _score = typeof nDoc.score === "function" ? nDoc.score() : null; _scoreResolved = true }
+      return _score
+    },
+    hotMatchesOutOf: (maxScore) => (nDoc.hotMatchesOutOf ? nDoc.hotMatchesOutOf(maxScore) : []),
+    subSnippets: (pre, post) => (nDoc.subSnippets ? nDoc.subSnippets(pre, post) : {}),
+    _url: nDoc._url ? nDoc._url() : null,
+    _normalDoc: nDoc,
+  }
+  return flat
+}
+
 // Parse scorer scale from body data attribute (once, shared)
 function getScorerScale() {
   try {
@@ -121,6 +157,7 @@ export default class extends Controller {
     this.expanded = false
     this.searchLoaded = false
     this.abortController = null
+    this.currentSearcher = null
     this.lastSearchDocs = []
     this.lastNumFound = 0
     this.lastResult = null
@@ -389,25 +426,50 @@ export default class extends Controller {
     try {
       const tryConfig = await fetchTryConfig()
       this._searchEngine = (tryConfig.search_engine || "solr").toLowerCase()
-      const searchOptions = this.debugMode ? { debug: true } : {}
-      const result = await executeSearch(
-        tryConfig,
-        this.queryTextValue,
-        this.abortController.signal,
-        searchOptions,
-      )
+      this._fieldSpec = createFieldSpec(tryConfig.field_spec)
+
+      // Create a splainer-search searcher and execute
+      const searcher = createQuepidSearcher(tryConfig, this.queryTextValue)
+      await searcher.search()
+      this.currentSearcher = searcher
+
+      // Convert splainer-search docs to the flat shape our rendering expects
+      const docs = searcher.docs.map((doc) => flattenNormalDoc(createNormalDoc(this._fieldSpec, doc)))
 
       this.searchLoaded = true
-      this.lastSearchDocs = result.docs || []
-      this.lastNumFound = result.numFound || 0
-      this.lastResult = result
-
-      if (this.comparisonSnapshots) {
-        this.renderDiffResults()
-      } else {
-        this.renderResults(result)
+      this.lastSearchDocs = docs
+      this.lastNumFound = searcher.numFound || 0
+      // Build renderedTemplate from the searcher's state:
+      // - Solr: callUrl is the hydrated GET URL
+      // - ES/OS: queryDsl is the hydrated POST body
+      // - Others: linkUrl as fallback
+      let renderedTemplate = null
+      if (searcher.callUrl) {
+        renderedTemplate = searcher.callUrl
+      } else if (searcher.queryDsl) {
+        renderedTemplate = JSON.stringify(searcher.queryDsl, null, 2)
       }
-      this._computeAndDisplayScore()
+
+      this.lastResult = {
+        docs,
+        numFound: searcher.numFound || 0,
+        linkUrl: searcher.linkUrl || null,
+        renderedTemplate,
+        error: searcher.inError ? "Search engine returned an error" : null,
+        queryDetails: searcher.queryDetails || null,
+        parsedQueryDetails: searcher.parsedQueryDetails || null,
+      }
+
+      if (searcher.inError) {
+        container.innerHTML = `<div class="alert alert-warning">Search failed. <a href="${this._escapeAttr(searcher.linkUrl || "")}" target="_blank" rel="noopener">View raw response</a></div>`
+      } else {
+        if (this.comparisonSnapshots) {
+          this.renderDiffResults()
+        } else {
+          this.renderResults(this.lastResult)
+        }
+        this._computeAndDisplayScore()
+      }
     } catch (error) {
       if (error.name === "AbortError") return
       container.innerHTML = `<div class="alert alert-danger">Search failed: ${this._escapeHtml(error.message)}</div>`
@@ -576,7 +638,7 @@ export default class extends Controller {
     const ratingHtml = this._buildRatingWidget(doc)
 
     const explainHtml =
-      this.debugMode && doc.explain ? this._buildStackedChart(doc, maxDocScore) : ""
+      this.debugMode && doc.score != null ? this._buildStackedChart(doc, maxDocScore) : ""
 
     const rank = docIdx + 1
 
@@ -800,27 +862,21 @@ export default class extends Controller {
     const currentCount = this.lastSearchDocs.length
     if (currentCount >= this.lastNumFound) return
 
-    // Cancel any in-flight request (including a previous pagination) and
-    // use this.abortController so disconnect() can clean it up.
-    if (this.abortController) {
-      this.abortController.abort()
-    }
-    this.abortController = new AbortController()
+    if (!this.currentSearcher) return
+
+    const nextSearcher = this.currentSearcher.pager()
+    if (!nextSearcher) return // no more pages
 
     try {
-      const tryConfig = await fetchTryConfig()
-      const searchOptions = this.debugMode
-        ? { debug: true, offset: currentCount }
-        : { offset: currentCount }
-      const result = await executeSearch(
-        tryConfig,
-        this.queryTextValue,
-        this.abortController.signal,
-        searchOptions,
+      await nextSearcher.search()
+      this.currentSearcher = nextSearcher
+
+      const newDocs = nextSearcher.docs.map((doc) =>
+        flattenNormalDoc(createNormalDoc(this._fieldSpec, doc)),
       )
 
-      if (result.docs && result.docs.length > 0) {
-        this.lastSearchDocs = this.lastSearchDocs.concat(result.docs)
+      if (newDocs.length > 0) {
+        this.lastSearchDocs = this.lastSearchDocs.concat(newDocs)
         const combined = {
           ...this.lastResult,
           docs: this.lastSearchDocs,
@@ -829,9 +885,7 @@ export default class extends Controller {
         this.renderResults(combined)
       }
     } catch (error) {
-      if (error.name !== "AbortError") {
-        console.error("Pagination failed:", error)
-      }
+      console.error("Pagination failed:", error)
     }
   }
 
@@ -1202,8 +1256,16 @@ export default class extends Controller {
   }
 
   _buildStackedChart(doc, maxDocScore) {
-    const tree = parseExplain(doc.explain)
-    const matches = hotMatchesOutOf(tree, maxDocScore)
+    // Use splainer-search's hotMatchesOutOf if available (from NormalDoc),
+    // otherwise fall back to the internal explain parser for legacy flat docs.
+    let matches
+    if (typeof doc.hotMatchesOutOf === "function") {
+      matches = doc.hotMatchesOutOf(maxDocScore)
+    } else {
+      const tree = parseExplain(doc.explain)
+      matches = hotMatchesOutOf(tree, maxDocScore)
+    }
+
     const colorClasses = ["explain-red", "explain-orange", "explain-green", "explain-blue"]
 
     const bars = matches
@@ -1222,7 +1284,8 @@ export default class extends Controller {
       })
       .join("")
 
-    const scoreText = doc.score != null ? doc.score.toFixed(4) : ""
+    const scoreVal = typeof doc.score === "number" ? doc.score : null
+    const scoreText = scoreVal != null ? scoreVal.toFixed(4) : ""
 
     return `<div class="explain-stacked-chart">
       <div class="explain-score">${this._escapeHtml(scoreText)}</div>
