@@ -3,7 +3,8 @@
     so they are not trapped by its stacking context (position:fixed +
     overflow on .pane_main creates a context that clips BS5 modal z-index). %>
 <% if @case.present? %>
-<div data-controller="snapshot clone-case export-case snapshot-comparison delete-case-options import-ratings judgements wizard frog-report"
+<div data-controller="select-scorer snapshot clone-case export-case snapshot-comparison delete-case-options import-ratings judgements wizard frog-report"
+     data-select-scorer-case-id-value="<%= @case.id %>"
      data-snapshot-query-row-outlet="[data-controller='query-row']"
      data-frog-report-query-row-outlet="[data-controller='query-row']"
      data-frog-report-case-id-value="<%= @case.id %>"
@@ -31,6 +32,32 @@
      data-judgements-query-row-outlet="[data-controller='query-row']">
 
   <%= yield %>
+
+  <!-- Select Scorer modal -->
+  <div class="modal fade" tabindex="-1" data-select-scorer-target="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">How would you like to score this case?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Select from defaults:</p>
+          <div data-select-scorer-target="scorerList"></div>
+          <div class="alert alert-danger mt-2 d-none" data-select-scorer-target="errorMessage"></div>
+        </div>
+        <div class="modal-footer">
+          <a href="<%= scorers_path %>" class="btn btn-success me-auto">
+            <i class="bi bi-plus"></i> Create New Scorer
+          </a>
+          <button type="button" class="btn btn-primary" disabled
+                  data-select-scorer-target="selectButton"
+                  data-action="click->select-scorer#select">Select Scorer</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Snapshot modal -->
   <div class="modal fade" tabindex="-1" data-snapshot-target="modal">
