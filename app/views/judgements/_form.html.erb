@@ -1,3 +1,12 @@
+<% content_for :debug_info do %>
+  <!--
+  BOOK_ID: <%= @book.id %>
+  QUERY_DOC_PAIR_ID: <%= query_doc_pair.id %>
+  JUDGEMENT_ID: <%= judgement.id %>
+  JUDGEMENT USER ID: <%= judgement&.user_id %>
+  CURRENT USER ID: <%= @current_user.id %>
+  -->
+<% end %>
 
 <script>
   function rate(rating, key_name) {
@@ -12,12 +21,12 @@
       keyboard_shortcuts_suffixes.forEach(suffix => {
           const spanElement = document.getElementById("span-for-" + suffix);
           const buttonElement = document.getElementById("button-for-" + suffix);
-          
+
           if (spanElement) {
               spanElement.style.color = "gray";
               spanElement.style.fontWeight = "normal";
           }
-          
+
           if (buttonElement) {
               buttonElement.classList.remove("btn-preselected");
           }
@@ -30,12 +39,12 @@
           if (suffix !== except_suffix) {
               const spanElement = document.getElementById("span-for-" + suffix);
               const buttonElement = document.getElementById("button-for-" + suffix);
-              
+
               if (spanElement) {
                   spanElement.style.color = "gray";
                   spanElement.style.fontWeight = "normal";
               }
-              
+
               if (buttonElement) {
                   buttonElement.classList.remove("btn-preselected");
               }
@@ -47,12 +56,12 @@
       resetStyles();
       const spanElement = document.getElementById("span-for-" + suffix);
       const buttonElement = document.getElementById("button-for-" + suffix);
-      
+
       if (spanElement) {
           spanElement.style.color = "black";
           spanElement.style.fontWeight = "bold";
       }
-      
+
       if (buttonElement) {
           buttonElement.classList.add("btn-preselected");
       }
@@ -91,7 +100,7 @@
       }
 
       const keyCode = e.which || e.keyCode;
-      
+
       if (keyCode == 97 || keyCode == 65) {
           keyPressed("a");
       } else if (keyCode == 115 || keyCode == 83) {
@@ -120,9 +129,9 @@
       if (isExplanationModalOpen() || isTypingInTextField()) {
         return;
       }
-      
+
       const keyCode = e.which || e.keyCode;
-      
+
       if (keyCode == 97 || keyCode == 65) {
           keyDown("a");
       } else if (keyCode == 115 || keyCode == 83) {
@@ -211,7 +220,7 @@
     </div>
 
 
-    <div class="float-end">        
+    <div class="float-end">
       <%= link_to 'I will Judge Later', book_query_doc_pair_judge_later_path(@book, query_doc_pair), class: 'btn btn-info m-1', role: 'button' %>
       <br/>
       <button type="button" class="btn btn-warning m-1" data-bs-toggle="modal" data-bs-target="#explanationModal">
@@ -222,12 +231,12 @@
     <p class="card-text">
       <%= render 'query_doc_pairs/document_fields', document_fields: @document_fields %>
     </p>
-    
+
     <div class="mt-3">
       <label for="judgement_explanation" class="form-label">Explanation (optional)</label>
       <%= form.text_area :explanation, class: 'form-control', rows: 2, placeholder: 'Why did you choose this rating?' %>
     </div>
-    
+
     <% if @book.show_rank? %>
     <p class="card-text">
       <b>Document Rank: </b><%= judgement.query_doc_pair.position %>
@@ -275,7 +284,7 @@
         </tr>
       </table>
     <% end %>
-    
+
 
   </div>
   <% if image_url %>

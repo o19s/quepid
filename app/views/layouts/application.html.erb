@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html>
+<% if content_for?(:debug_info) %>
+  <%= yield :debug_info %>
+<% end %>
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -7,15 +10,15 @@
 	<meta name="mobile-web-app-capable" content="yes">
   <%= action_cable_meta_tag %>
   <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
-  
+
   <%= favicon_link_tag asset_path "favicon.ico" %>
 
 
 <% if flash[:unfurl] %>
   <!-- We have unfurl -->
-  
+
   <title>Quepid: Case <%= flash[:unfurl]["case_name"] %></title>
-  
+
   <!-— facebook open graph tags -->
   <meta property="og:type" content="website" />
   <% if flash[:unfurl]["id"] %>
@@ -24,7 +27,7 @@
   <meta property="og:title" content="Case <%= flash[:unfurl]["case_name"] %>" />
   <meta property="og:description" content="Case <%= flash[:unfurl]["case_name"] %> Description here." />
   <meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
-  
+
   <!-— twitter card tags additive with the og: tags -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@quepid_search">
@@ -38,9 +41,9 @@
     <meta name="twitter:data1" value="<%=Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>" />
   <% end %>
 <% else %>
-  
+
   <title>Quepid -- Relevant Search Solved</title>
-  
+
   <!-— facebook open graph tags -->
   <meta property="og:type" content="website" />
   <meta name="twitter:site" content="@quepid_search">
@@ -48,7 +51,7 @@
   <meta property="og:title" content="Quepid -- Relevant Search Solved" />
   <meta property="og:description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results." />
   <meta property="og:image" content="<%= image_url "quepid-icon.png" %>" />
-  
+
   <!-— twitter card tags additive with the og: tags -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:domain" value="<%= URI.parse(root_url).host %>" />
@@ -65,7 +68,7 @@
 
   <%= stylesheet_link_tag 'application', media: 'all', 'data-turbo-track': 'reload' %>
   <%= csrf_meta_tags %>
-  
+
   <%= javascript_importmap_tags 'application_modern' %>
   <%= debugbar_head  if defined? Debugbar %>
 
@@ -77,17 +80,17 @@
 
 <div class="container-fluid">
   <div class="row">
-    
+
     <% if @current_user  && !(controller_name == 'judgements' and ['new','edit'].any? params[:action]) %>
       <%= render 'layouts/sidebar' %>
     <% end %>
-    
+
     <!-- Begin page content -->
     <main class="col-md-10 ms-sm-auto col-lg-<%= @current_user ? '11' : '12' %> px-md-5">
       <%= yield %>
     </main>
   </div>
 </div>
-<%= debugbar_body if defined? Debugbar %> 
+<%= debugbar_body if defined? Debugbar %>
 </body>
 </html>
