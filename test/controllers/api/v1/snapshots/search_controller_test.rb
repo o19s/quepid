@@ -175,6 +175,17 @@ module Api
 
             assert_equal 'can you compare tesla to ford?', data['responseHeader']['params']['q']
           end
+
+          test 'handles a URL as a query with escaped : and /' do
+            # the front end app escapes : as \: and / as \/ in GET params
+            get :index, params: { case_id: acase.id, snapshot_id: snapshot.id, q: 'http\:\/\/server\/image.jpeg' }
+
+            assert_response :ok
+
+            data = response.parsed_body
+
+            assert_equal 'http://server/image.jpeg', data['responseHeader']['params']['q']
+          end
         end
       end
     end
