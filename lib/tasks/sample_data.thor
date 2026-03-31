@@ -212,7 +212,7 @@ class SampleData < Thor
     static_case = realistic_activity_user.cases.find_or_create_by case_name: 'STATIC CASE'
     static_try = static_case.tries.latest
     static_try.search_endpoint = static_endpoint
-    static_try.update field_spec: 'id:id, title:title, image_url', query_params: 'q=#$query##'
+    static_try.update field_spec: 'id:id, title:title, thumb:image_url', query_params: 'q=#$query##'
 
     duck_query_text = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Bucephala-albeola-010.jpg/250px-Bucephala-albeola-010.jpg'
     static_case.queries.find_or_create_by(query_text: duck_query_text)
@@ -222,16 +222,16 @@ class SampleData < Thor
       duck_docs = {
         duck_query_text => {
           docs: [
-            { id: 'bufflehead-001',    position: 1, fields: { title: 'Bufflehead Duck', image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Bucephala-albeola-010.jpg/250px-Bucephala-albeola-010.jpg' } },
-            { id: 'mallard-001',       position: 2, fields: { title: 'Mallard Duck',              image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Mallard-duck.jpg/250px-Mallard-duck.jpg' } },
-            { id: 'mandarin-001',      position: 3, fields: { title: 'Mandarin Duck',             image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Aix_galericulata.jpg/250px-Aix_galericulata.jpg' } },
-            { id: 'wood-duck-001',     position: 4, fields: { title: 'Wood Duck',                 image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Wood_duck_eclipse.jpg/250px-Wood_duck_eclipse.jpg' } },
-            { id: 'teal-001',          position: 5, fields: { title: 'Green-winged Teal',         image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Anas_crecca_-_Riserva_Naturale_del_Lago_di_Candia.jpg/250px-Anas_crecca_-_Riserva_Naturale_del_Lago_di_Candia.jpg' } },
-            { id: 'mute-swan-001',     position: 6, fields: { title: 'Mute Swan',                 image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Mute_swan_Vrhnika.jpg/250px-Mute_swan_Vrhnika.jpg' } },
-            { id: 'whooper-swan-001',  position: 7, fields: { title: 'Whooper Swan',              image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Cygnus_cygnus_-_Oulanka.jpg/250px-Cygnus_cygnus_-_Oulanka.jpg' } },
-            { id: 'trumpeter-swan-001', position: 8, fields: { title: 'Trumpeter Swan', image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Trumpeter_Swan_Whistling_Wings.jpg/250px-Trumpeter_Swan_Whistling_Wings.jpg' } },
-            { id: 'eider-001',         position: 9, fields: { title: 'Common Eider Duck',         image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Somateria_mollissima_male_female.jpg/250px-Somateria_mollissima_male_female.jpg' } },
-            { id: 'canvasback-001',    position: 10, fields: { title: 'Canvasback Duck',          image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Aythya-valisineria-001.jpg/250px-Aythya-valisineria-001.jpg' } }
+            { id: 'bufflehead-001',     position: 1,  fields: { title: 'Bufflehead Duck', image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Drake_Bufflehead_LBI_%28cropped%29.png/330px-Drake_Bufflehead_LBI_%28cropped%29.png' } },
+            { id: 'mallard-001',        position: 2,  fields: { title: 'Mallard Duck',         image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Anas_platyrhynchos_male_female_quadrat.jpg/330px-Anas_platyrhynchos_male_female_quadrat.jpg' } },
+            { id: 'mandarin-001',       position: 3,  fields: { title: 'Mandarin Duck',        image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Mandarin_duck_%28Aix_galericulata%29.jpg/330px-Mandarin_duck_%28Aix_galericulata%29.jpg' } },
+            { id: 'wood-duck-001',      position: 4,  fields: { title: 'Wood Duck',            image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Wood_Duck_Wissahickon_Creek.png/330px-Wood_Duck_Wissahickon_Creek.png' } },
+            { id: 'teal-001',           position: 5,  fields: { title: 'Green-winged Teal',    image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Green-winged_Teal%2C_Port_Aransas%2C_Texas.jpg/330px-Green-winged_Teal%2C_Port_Aransas%2C_Texas.jpg' } },
+            { id: 'mute-swan-001',      position: 6,  fields: { title: 'Mute Swan',            image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/CygneVaires.jpg/330px-CygneVaires.jpg' } },
+            { id: 'whooper-swan-001',   position: 7,  fields: { title: 'Whooper Swan',         image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Cygnus_cygnus_Singschwan.jpg/330px-Cygnus_cygnus_Singschwan.jpg' } },
+            { id: 'trumpeter-swan-001', position: 8,  fields: { title: 'Trumpeter Swan',       image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Trumpeter_swans_in_winter.jpg/330px-Trumpeter_swans_in_winter.jpg' } },
+            { id: 'eider-001',          position: 9,  fields: { title: 'Common Eider Duck',    image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/%D0%9F%D1%83%D1%85%D1%96%D0%B2%D0%BA%D0%B0_%D0%BD%D0%B0_%D0%9A%D1%96%D0%BD%D0%B1%D1%83%D1%80%D0%BD%D1%81%D1%8C%D0%BA%D0%B8%D0%B9_%D0%BA%D0%BE%D1%81%D1%96.jpg/330px-%D0%9F%D1%83%D1%85%D1%96%D0%B2%D0%BA%D0%B0_%D0%BD%D0%B0_%D0%9A%D1%96%D0%BD%D0%B1%D1%83%D1%80%D0%BD%D1%81%D1%8C%D0%BA%D0%B8%D0%B9_%D0%BA%D0%BE%D1%81%D1%96.jpg' } },
+            { id: 'canvasback-001',     position: 10, fields: { title: 'Canvasback Duck',      image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Aythya_valisineria_at_Las_Gallinas_Wildlife_Ponds.jpg/330px-Aythya_valisineria_at_Las_Gallinas_Wildlife_Ponds.jpg' } }
           ],
         },
       }
