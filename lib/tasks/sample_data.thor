@@ -45,6 +45,10 @@ class SampleData < Thor
                                                              test_query: 'q=mental',
                                                              mapper_code: File.read(Rails.root.join('test/fixtures/files/edinburgh_uni_searchapi_mapper_code.js'))
 
+    static_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :static,
+                                                         name: 'Static Endpoint',
+                                                         endpoint_url: 'TO_BE_UPDATED', api_method: 'GET'
+
     print_step 'End of seeding search endpoints................'
 
     # Users
@@ -102,11 +106,13 @@ class SampleData < Thor
     tmdb_solr_endpoint.owner = realistic_activity_user
     tmdb_es_endpoint.owner = realistic_activity_user
     search_api_endpoint.owner = realistic_activity_user
+    static_endpoint.owner = realistic_activity_user
 
     statedecoded_solr_endpoint.save
     tmdb_solr_endpoint.save
     tmdb_es_endpoint.save
     search_api_endpoint.save
+    static_endpoint.save
 
     ######################################
     # OSC Team Owner
@@ -198,6 +204,44 @@ class SampleData < Thor
 
     searchapi_case.queries.create(query_text: 'student accomodation')
     print_case_info searchapi_case
+
+    ######################################
+    # Static Case
+    ######################################
+
+    static_case = realistic_activity_user.cases.find_or_create_by case_name: 'STATIC CASE'
+    static_try = static_case.tries.latest
+    static_try.search_endpoint = static_endpoint
+    static_try.update field_spec: 'id:id, title:title, image_url', query_params: 'q=#$query##'
+
+    duck_query_text = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Bucephala-albeola-010.jpg/250px-Bucephala-albeola-010.jpg'
+    static_case.queries.find_or_create_by(query_text: duck_query_text)
+
+    if static_case.snapshots.none?
+      snapshot = static_case.snapshots.create(name: 'Duck and Swan Results')
+      duck_docs = {
+        duck_query_text => {
+          docs: [
+            { id: 'bufflehead-001',    position: 1, fields: { title: 'Bufflehead Duck', image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Bucephala-albeola-010.jpg/250px-Bucephala-albeola-010.jpg' } },
+            { id: 'mallard-001',       position: 2, fields: { title: 'Mallard Duck',              image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Mallard-duck.jpg/250px-Mallard-duck.jpg' } },
+            { id: 'mandarin-001',      position: 3, fields: { title: 'Mandarin Duck',             image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Aix_galericulata.jpg/250px-Aix_galericulata.jpg' } },
+            { id: 'wood-duck-001',     position: 4, fields: { title: 'Wood Duck',                 image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Wood_duck_eclipse.jpg/250px-Wood_duck_eclipse.jpg' } },
+            { id: 'teal-001',          position: 5, fields: { title: 'Green-winged Teal',         image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Anas_crecca_-_Riserva_Naturale_del_Lago_di_Candia.jpg/250px-Anas_crecca_-_Riserva_Naturale_del_Lago_di_Candia.jpg' } },
+            { id: 'mute-swan-001',     position: 6, fields: { title: 'Mute Swan',                 image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Mute_swan_Vrhnika.jpg/250px-Mute_swan_Vrhnika.jpg' } },
+            { id: 'whooper-swan-001',  position: 7, fields: { title: 'Whooper Swan',              image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Cygnus_cygnus_-_Oulanka.jpg/250px-Cygnus_cygnus_-_Oulanka.jpg' } },
+            { id: 'trumpeter-swan-001', position: 8, fields: { title: 'Trumpeter Swan', image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Trumpeter_Swan_Whistling_Wings.jpg/250px-Trumpeter_Swan_Whistling_Wings.jpg' } },
+            { id: 'eider-001',         position: 9, fields: { title: 'Common Eider Duck',         image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Somateria_mollissima_male_female.jpg/250px-Somateria_mollissima_male_female.jpg' } },
+            { id: 'canvasback-001',    position: 10, fields: { title: 'Canvasback Duck',          image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Aythya-valisineria-001.jpg/250px-Aythya-valisineria-001.jpg' } }
+          ],
+        },
+      }
+      SnapshotManager.new(snapshot).import_queries(duck_docs)
+    end
+
+    static_endpoint.endpoint_url = "http://localhost:3000/api/cases/#{static_case.id}/snapshots/#{static_case.snapshots.first.id}/search"
+    static_endpoint.save
+
+    print_case_info static_case
 
     print_step 'End of seeding cases................'
 
