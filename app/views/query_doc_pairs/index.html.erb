@@ -3,7 +3,7 @@
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'New Query Doc Pair', new_book_query_doc_pair_path, class: 'btn btn-sm btn-outline-secondary' %>
-      <%= link_to "Back to Book", @book, class: 'btn btn-sm btn-outline-secondary' %>    
+      <%= link_to "Back to Book", @book, class: 'btn btn-sm btn-outline-secondary' %>
     </div>
   </div>
 </div>
@@ -18,7 +18,7 @@
         <div class="input-group" style="max-width: 400px;">
           <%= text_field_tag :q, params[:q],
               class: 'form-control form-control-sm',
-              placeholder: 'Filter by query, doc id, or document field contents',
+              placeholder: 'Filter by id, query, doc id, or document field contents',
               id: 'q'
           %>
           <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
@@ -40,7 +40,7 @@
       </div>
     <% end %>
   </div>
-  
+
   <div class="card-body">
     <table class="table table-hover table-sm">
       <thead>
@@ -55,14 +55,14 @@
           <th>Document fields</th>
         </tr>
       </thead>
-  
-      <tbody>      
+
+      <tbody>
         <% @query_doc_pairs.each do |query_doc_pair| %>
           <tr>
             <td>
               <%= link_to query_doc_pair.id, book_query_doc_pair_path(@book, query_doc_pair) %>
             </td>
-      
+
             <td><%= query_doc_pair.query_text %></td>
             <td><%= query_doc_pair.position %></td>
             <td><%= query_doc_pair.doc_id %></td>
@@ -70,7 +70,7 @@
               <td>
                 <%= link_to_if query_doc_pair.judgements_count>0, query_doc_pair.judgements_count, book_judgements_path(@book, q: "query_doc_pair_id:#{query_doc_pair.id}") %>
               </td>
-            <% end %>            
+            <% end %>
             <td>
               <% if query_doc_pair.document_fields.present? %>
                 <% document_fields_json = query_doc_pair.document_fields.to_json %>
@@ -92,7 +92,7 @@
     </table>
   </div>
   <div class="card-footer d-flex justify-content-center">
-    <%== @pagy.series_nav(:bootstrap) %> 
+    <%== @pagy.series_nav(:bootstrap) %>
   </div>
 
   <!-- Document Fields Modal -->

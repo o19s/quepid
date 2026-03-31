@@ -12,8 +12,8 @@ class QueryDocPairsController < ApplicationController
     query = @book.query_doc_pairs
 
     if params[:q].present?
-      query = query.where('query_text LIKE ? OR doc_id LIKE ? OR document_fields LIKE ?',
-                          "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
+      query = query.where('query_text LIKE ? OR query_doc_pairs.id LIKE ? OR doc_id LIKE ? OR document_fields LIKE ?',
+                          "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%", "%#{params[:q]}%")
     end
 
     # Eager load judgements count to avoid N+1 queries when showing the count
