@@ -536,6 +536,16 @@ header .dropdown-content li.dropdown-header {
 	margin: 20px 80% 0 0;
 }
 
+.query-thumbnail {
+	width: 75px;
+	height: 100%;
+	margin: -10px 0;
+	padding: 0;
+	display: block;
+	line-height: 0;
+	object-fit: contain;
+}
+
 .result-thumbnail {
 	width: 75px;
 	text-align: center;

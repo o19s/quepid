@@ -20,14 +20,14 @@
       scorable="searcher"
     >
     </qscore-query>
-    
+
     <span class="loading-query"></span>
 
     <h2 class="results-title">
       <span class='query' uib-tooltip="Info Need: {{query.informationNeed}}" tooltip-popup-delay="1000" tooltip-placement="right">
-        <img width="120px;" ng-if="query.options && query.options.queryWidget === 'img'"
-     ng-src="{{query.queryText}}" />
-        <span ng-if="!query.options || query.options.queryWidget !== 'img'">
+        <img class="img-thumbnail query-thumbnail" ng-if="query.queryText | isImageUrl"
+             ng-src="{{query.queryText}}" />
+        <span ng-if="!(query.queryText | isImageUrl)">
           {{query.queryText}}&nbsp;
         </span>
       </span>
