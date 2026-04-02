@@ -97,4 +97,4 @@ group :test do
   gem 'selenium-webdriver'
 end
 
-gem 'rubocop-minitest', '~> 0.38.2'
+gem 'rubocop-minitest', '~> 0.39.1'

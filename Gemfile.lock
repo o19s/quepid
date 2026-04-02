@@ -562,7 +562,7 @@ GEM
     rubocop-capybara (2.22.1)
       lint_roller (~> 1.1)
       rubocop (~> 1.72, >= 1.72.1)
-    rubocop-minitest (0.38.2)
+    rubocop-minitest (0.39.1)
       lint_roller (~> 1.1)
       rubocop (>= 1.75.0, < 2.0)
       rubocop-ast (>= 1.38.0, < 2.0)
@@ -732,7 +732,7 @@ DEPENDENCIES
   responders
   rubocop
   rubocop-capybara
-  rubocop-minitest (~> 0.38.2)
+  rubocop-minitest (~> 0.39.1)
   rubocop-rails
   ruby_llm
   rubyzip
