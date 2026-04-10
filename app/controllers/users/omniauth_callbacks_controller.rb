@@ -2,7 +2,7 @@
 
 module Users
   class OmniauthCallbacksController < Devise::OmniauthCallbacksController
-    skip_before_action :require_login, only: [ :keycloakopenid, :google_oauth2, :failure ]
+    skip_before_action :require_login, only: [ :keycloakopenid, :google_oauth2, :failure, :openid_connect ]
 
     def keycloakopenid
       Rails.logger.debug(request.env['omniauth.auth'])
@@ -40,6 +40,30 @@ module Users
       else
         # Removing extra as it can overflow some session stores
         session['devise.google_data'] = request.env['omniauth.auth'].except('extra')
+        redirect_to root_path, alert: @user.errors.full_messages.join("\n") if @user
+      end
+    end
+
+    def openid_connect
+      @user = create_user_from_omniauth(request.env['omniauth.auth'])
+
+      @user.errors.add(:base, "Can't log in a locked user." ) if @user.locked
+      Rails.logger.info "User errors after checking for locked status: #{@user.errors.full_messages.join(', ')}"
+
+      if @user.errors.empty?
+        session[:current_user_id] = @user.id # this populates our session variable.
+
+        # This is added because it is included in the google_oauth2 and keycloakopenid flows, and we want to be
+        # consistent across all OIDC providers. It also ensures that new users get a case created for them, but the
+        # comments on the other flows imply that this is only for new users, which is not the case so it is not entirely
+        # clear what the intent is. If the intent is to only create a case for new users, then we should probably check
+        # if the user is new before creating a case.
+        @user.cases.build case_name: "Case #{@user.cases.size}"
+
+        redirect_to root_path
+      else
+        # Ensure session data is cleared on failed login to prevent issues with subsequent login attempts
+        session['devise.openid_connect_data'] = nil
         redirect_to root_path, alert: @user.errors.full_messages.join("\n") if @user
       end
     end

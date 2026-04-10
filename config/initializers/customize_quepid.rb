@@ -79,12 +79,25 @@ Rails.application.config.email_sender = ENV.fetch('EMAIL_SENDER', '')
 Rails.application.config.query_list_sortable = bool.deserialize(ENV.fetch('QUERY_LIST_SORTABLE', true))
 
 # == OAuth Settings =
-# We currently only support these two OAuth providers.
+# We currently support three authentication providers: Google, Keycloak, and OpenID Connect.
 Rails.application.config.google_client_id = ENV.fetch('GOOGLE_CLIENT_ID', '')
 Rails.application.config.google_client_secret = ENV.fetch('GOOGLE_CLIENT_SECRET', '')
 
 Rails.application.config.keycloak_realm = ENV.fetch('KEYCLOAK_REALM', '')
 Rails.application.config.keycloak_site = ENV.fetch('KEYCLOAK_SITE', '')
+
+# == OpenID Connect Settings =
+# All 4 of these settings are required for OpenID Connect authentication to work properly.
+# OPENID_CONNECT_BASE_URL should be the protocol and domain that Quepid is running under, e.g. https://example.com or http://localhost:3000 . This is not provided by your OpenID Connect provider, but is needed for Quepid to know how to construct the callback URL for OpenID Connect. It should not have a trailing slash.
+Rails.application.config.openid_connect_base_url = ENV.fetch('OPENID_CONNECT_BASE_URL', '')
+# Provided by your OpenID Connect provider when you register your application with them.
+Rails.application.config.openid_connect_client_id = ENV.fetch('OPENID_CONNECT_CLIENT_ID', '')
+# Provided by your OpenID Connect provider when you register your application with them. This should be considered secret and not committed to source control.
+Rails.application.config.openid_connect_client_secret = ENV.fetch('OPENID_CONNECT_CLIENT_SECRET', '')
+# Provided by your OpenID Connect provider when you register your application with them.
+Rails.application.config.openid_connect_issuer = ENV.fetch('OPENID_CONNECT_ISSUER', '')
+# Optional value for your OpenID Connect Signin Button
+Rails.application.config.openid_connect_button_text = ENV.fetch('OPENID_CONNECT_BUTTON_TEXT', 'Sign in with OpenID Connect')
 
 # == Domain Quepid is Running Under
 # Certain features, like sending emails and Google Analytics require you to set the domain that Quepid
