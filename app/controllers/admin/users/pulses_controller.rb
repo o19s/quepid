@@ -56,11 +56,9 @@ module Admin
             .group(:created_at)
             .count
         end
-        # rubocop:disable Style/HashTransformKeys
         @data = @data.to_h do |k, v|
           [ k.to_i, v ]
         end
-        # rubocop:enable Style/HashTransformKeys
       end
       # rubocop:enable Metrics/AbcSize
       # rubocop:enable Metrics/MethodLength
