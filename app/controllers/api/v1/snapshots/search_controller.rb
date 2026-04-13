@@ -17,7 +17,7 @@ module Api
           @q = search_params[:q]
           @snapshot_docs = nil
 
-          @q = @q.gsub('\?', '?') # Since it's a GET, a ? in the query gets special escaping
+          @q = @q.gsub(/\\(.)/, '\1') # Unescape Lucene-escaped special chars (e.g. \: \/ \? \-)
           query = if '*:*' == @q
                     # we have a match all query.
                     @snapshot.snapshot_queries.first.query
