@@ -43,6 +43,8 @@ class DocGenerator
   attr_accessor :target_set, :words, :queries, :docs
 
   def initialize solr_url, options
+    # solr_retries is how many times we *retry* after a failed attempt; if Solr keeps
+    # returning 503/429, you may see up to solr_retries + 1 HTTP requests before we stop.
     solr_defaults = {
       solr_retries:         5,
       solr_retry_max_delay: 30,
@@ -168,6 +170,8 @@ class DocGenerator
   # Performs a Solr GET with exponential backoff on transient failures and configurable
   # connect/read timeouts (defaults are higher than Net::HTTP's to avoid spurious timeouts
   # when the remote Solr is slow or under load).
+  #
+  # See +solr_defaults+ in #initialize for how +solr_retries+ relates to total HTTP attempts.
   def solr_get_response uri
     retries = @options.fetch(:solr_retries, 5)
     max_delay = @options.fetch(:solr_retry_max_delay, 30)
@@ -205,7 +209,13 @@ class DocGenerator
   end
 
   def parse_solr_json_response response
-    raise "Solr request failed: HTTP #{response.code} #{response.message}" unless response.is_a?(Net::HTTPSuccess)
+    raise 'Solr request failed: empty response' if response.nil?
+
+    unless response.is_a?(Net::HTTPSuccess)
+      code = response.respond_to?(:code) ? response.code : '?'
+      message = response.respond_to?(:message) ? response.message : ''
+      raise "Solr request failed: HTTP #{code} #{message}"
+    end
 
     JSON.parse(response.body)
   end

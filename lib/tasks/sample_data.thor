@@ -616,11 +616,13 @@ class SampleData < Thor
 
   private
 
+  # When no mode flag is passed, all options are false and we use :create (same as explicit --create).
   def resolve_large_data_mode options
+    opts = options.to_h.symbolize_keys
     flags = [
-      [ :clean,  options[:clean] ],
-      [ :update, options[:update] ],
-      [ :create, options[:create] ]
+      [ :clean,  opts[:clean] ],
+      [ :update, opts[:update] ],
+      [ :create, opts[:create] ]
     ]
     active = flags.select { |_, v| v }.map(&:first)
     raise Thor::Error, 'Specify at most one of --create, --clean, or --update' if active.size > 1
