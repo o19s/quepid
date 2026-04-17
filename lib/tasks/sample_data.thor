@@ -660,7 +660,7 @@ class SampleData < Thor
     return if remaining <= 0
 
     generator = ::RatingsGenerator.new search_url, {
-      number: remaining,
+      number:        remaining,
       show_progress: true,
     }
     ratings = generator.generate_ratings

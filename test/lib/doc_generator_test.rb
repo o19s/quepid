@@ -6,7 +6,7 @@ require 'doc_generator'
 # Net::HTTPResponse subclasses raise IOError when reading #body outside a real HTTP session
 # in recent Ruby; use duck-typed stand-ins for unit tests.
 class FakeSolrHttpSuccess
-  def initialize(body)
+  def initialize body
     @body = body
   end
 
@@ -20,13 +20,13 @@ class FakeSolrHttpSuccess
     'OK'
   end
 
-  def is_a?(klass)
-    klass == Net::HTTPSuccess ? true : super
+  def is_a? klass
+    Net::HTTPSuccess == klass ? true : super
   end
 end
 
 class FakeSolrHttpFailure
-  def initialize(code, message, body = '')
+  def initialize code, message, body = ''
     @code = code.to_s
     @message = message
     @body = body
@@ -34,8 +34,8 @@ class FakeSolrHttpFailure
 
   attr_reader :code, :message, :body
 
-  def is_a?(klass)
-    klass == Net::HTTPSuccess ? false : super
+  def is_a? klass
+    Net::HTTPSuccess == klass ? false : super
   end
 end
 
@@ -110,12 +110,12 @@ class DocGeneratorTest < ActiveSupport::TestCase
     end
 
     test 'does not treat 4xx other than 429 as retryable' do
-      refute generator.send(:retryable_solr_http_response?, Net::HTTPBadRequest.new('1.1', '400', 'Bad'))
-      refute generator.send(:retryable_solr_http_response?, Net::HTTPNotFound.new('1.1', '404', 'No'))
+      assert_not generator.send(:retryable_solr_http_response?, Net::HTTPBadRequest.new('1.1', '400', 'Bad'))
+      assert_not generator.send(:retryable_solr_http_response?, Net::HTTPNotFound.new('1.1', '404', 'No'))
     end
 
     test 'returns false for nil response' do
-      refute generator.send(:retryable_solr_http_response?, nil)
+      assert_not generator.send(:retryable_solr_http_response?, nil)
     end
   end
 
@@ -166,13 +166,13 @@ class DocGeneratorTest < ActiveSupport::TestCase
       calls = 0
       gen.define_singleton_method(:perform_solr_http_get) do |_u|
         calls += 1
-        if calls == 1
+        if 1 == calls
           Net::HTTPServiceUnavailable.new('1.1', '503', 'Service Unavailable')
         else
           FakeSolrHttpSuccess.new('{"response":{"docs":[]}}')
         end
       end
-      gen.define_singleton_method(:sleep) { |_s| }
+      gen.define_singleton_method(:sleep) { |_s| nil }
 
       result = gen.send(:solr_get_response, uri)
 
@@ -185,11 +185,11 @@ class DocGeneratorTest < ActiveSupport::TestCase
       calls = 0
       gen.define_singleton_method(:perform_solr_http_get) do |_u|
         calls += 1
-        raise Errno::ECONNREFUSED, 'Connection refused' if calls == 1
+        raise Errno::ECONNREFUSED, 'Connection refused' if 1 == calls
 
         FakeSolrHttpSuccess.new('{"response":{"docs":[]}}')
       end
-      gen.define_singleton_method(:sleep) { |_s| }
+      gen.define_singleton_method(:sleep) { |_s| nil }
 
       result = gen.send(:solr_get_response, uri)
 
@@ -204,7 +204,7 @@ class DocGeneratorTest < ActiveSupport::TestCase
         calls += 1
         Net::HTTPServiceUnavailable.new('1.1', '503', 'Service Unavailable')
       end
-      gen.define_singleton_method(:sleep) { |_s| }
+      gen.define_singleton_method(:sleep) { |_s| nil }
 
       result = gen.send(:solr_get_response, uri)
 
@@ -219,7 +219,7 @@ class DocGeneratorTest < ActiveSupport::TestCase
         calls += 1
         raise Errno::ECONNREFUSED, 'Connection refused'
       end
-      gen.define_singleton_method(:sleep) { |_s| }
+      gen.define_singleton_method(:sleep) { |_s| nil }
 
       assert_raises(Errno::ECONNREFUSED) { gen.send(:solr_get_response, uri) }
 
