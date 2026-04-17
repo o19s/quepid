@@ -416,14 +416,34 @@ class SampleData < Thor
   long_desc <<-LONGDESC
   `large_data`
 
+  Modes (pick at most one; default is --create):
+
+  * --create   Always create new "100s of Queries" / "1000s of Queries" cases - can potentially create duplicates.
+  * --clean    Removes cases and starts fresh, no duplication but deletes existing data.
+  * --update   Picks up from where the last run left off.
+
   EXAMPLES:
 
-  $ thor large_data
+  $ thor sample_data:large_data
+  $ thor sample_data:large_data --create
+  $ thor sample_data:large_data --clean
+  $ thor sample_data:large_data --update
   LONGDESC
+
+  method_option :create, type: :boolean, default: false,
+                        desc: 'Create new cases (default when no other mode flag is set)'
+  method_option :clean, type: :boolean, default: false,
+                        desc: 'Delete existing large sample cases for the seed users, then seed'
+  method_option :update, type: :boolean, default: false,
+                         desc: 'Reuse the oldest matching cases and import missing ratings'
+
   def large_data
     load_environment
 
-    print_step 'Seeding large cases...............'
+    mode = resolve_large_data_mode(options)
+    print_step "Seeding large cases (mode: #{mode})..............."
+
+    destroy_large_sample_cases! if :clean == mode
 
     ######################################
     # Defaults
@@ -471,40 +491,19 @@ class SampleData < Thor
     osc.search_endpoints << statedecoded_solr_endpoint
     osc.save!
 
-    hundreds_of_queries_case = hundreds_of_queries_user.cases.create case_name: '100s of Queries'
-    solr_try = hundreds_of_queries_case.tries.latest
-    solr_try.update try_defaults
-    solr_try.search_endpoint = statedecoded_solr_endpoint
+    hundreds_of_queries_case = provision_large_case(
+      hundreds_of_queries_user, '100s of Queries', try_defaults, statedecoded_solr_endpoint, mode
+    )
+    seed_large_case_ratings_if_needed(
+      hundreds_of_queries_case, search_url, target: 400, label: '100s of queries'
+    )
 
-    # was 200
-    unless hundreds_of_queries_case.queries.count > 400
-      generator = ::RatingsGenerator.new search_url, { number: 400, show_progress: true }
-      ratings   = generator.generate_ratings
-
-      options = { format: :hash, show_progress: true }
-      service = ::RatingsImporter.new hundreds_of_queries_case, ratings, options
-
-      service.import
-
-      print_step 'Seeded 100s of queries'
-    end
-
-    thousands_of_queries_case = thousands_of_queries_user.cases.create case_name: '1000s of Queries'
-    solr_try = thousands_of_queries_case.tries.latest
-    solr_try.update try_defaults
-    solr_try.search_endpoint = statedecoded_solr_endpoint
-
-    unless thousands_of_queries_case.queries.count > 5000
-      generator = ::RatingsGenerator.new search_url, { number: 5000, show_progress: true }
-      ratings   = generator.generate_ratings
-
-      options = { format: :hash, show_progress: true }
-      service = ::RatingsImporter.new thousands_of_queries_case, ratings, options
-
-      service.import
-
-      print_step 'Seeded 1000s of queries'
-    end
+    thousands_of_queries_case = provision_large_case(
+      thousands_of_queries_user, '1000s of Queries', try_defaults, statedecoded_solr_endpoint, mode
+    )
+    seed_large_case_ratings_if_needed(
+      thousands_of_queries_case, search_url, target: 5000, label: '1000s of queries'
+    )
   end
 
   desc 'haystack_party', 'load the haystack rating party data'
@@ -616,6 +615,61 @@ class SampleData < Thor
   # rubocop:enable Metrics/PerceivedComplexity
 
   private
+
+  def resolve_large_data_mode options
+    flags = [
+      [ :clean,  options[:clean] ],
+      [ :update, options[:update] ],
+      [ :create, options[:create] ]
+    ]
+    active = flags.select { |_, v| v }.map(&:first)
+    raise Thor::Error, 'Specify at most one of --create, --clean, or --update' if active.size > 1
+
+    return active.first if active.any?
+
+    :create
+  end
+
+  def destroy_large_sample_cases!
+    emails = %w[quepid+100sOfQueries@o19s.com quepid+1000sOfQueries@o19s.com]
+    names  = [ '100s of Queries', '1000s of Queries' ]
+    ::User.where(email: emails.map(&:downcase)).find_each do |user|
+      user.cases.where(case_name: names).find_each(&:destroy)
+    end
+  end
+
+  def provision_large_case user, case_name, try_defaults, endpoint, mode
+    kase = (user.cases.where(case_name: case_name).order(:id).first if :update == mode)
+    kase ||= user.cases.create(case_name: case_name)
+    configure_large_case_try!(kase, try_defaults, endpoint)
+    kase
+  end
+
+  def configure_large_case_try! kase, try_defaults, endpoint
+    solr_try = kase.tries.latest
+    solr_try.update try_defaults
+    solr_try.search_endpoint = endpoint
+    solr_try.save
+    kase
+  end
+
+  def seed_large_case_ratings_if_needed kase, search_url, target:, label:
+    remaining = target - kase.queries.count
+    return if remaining <= 0
+
+    generator = ::RatingsGenerator.new search_url, {
+      number: remaining,
+      show_progress: true,
+    }
+    ratings = generator.generate_ratings
+
+    import_options = { format: :hash, show_progress: true }
+    service = ::RatingsImporter.new kase, ratings, import_options
+
+    service.import
+
+    print_step "Seeded #{label} (added #{remaining} to reach ~#{target})"
+  end
 
   def seed_user hash
     if hash[:email] && ::User.exists?(email: hash[:email].downcase)
