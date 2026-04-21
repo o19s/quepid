@@ -7,9 +7,9 @@
   "schedule": [
     "* 8-20 1 * *"
   ],
-  "prConcurrentLimit": 5,
-  "prHourlyLimit": 5,
-  "stabilityDays": 10,
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 10,
+  "stabilityDays": 3,
   "packageRules": [
     {
       "groupName": "Ruby on Rails packages",
@@ -33,10 +33,10 @@
       ]
     },
     {
-      "updateTypes": [
-        "patch"
-      ],
-      "enabled": false
+      "groupName": "GitHub Actions",
+      "matchManagers": [
+        "github-actions"
+      ]
     }
   ]
 }

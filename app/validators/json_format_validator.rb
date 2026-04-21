@@ -77,7 +77,7 @@ class JsonFormatValidator < ActiveModel::EachValidator
       when Numeric, TrueClass, FalseClass, NilClass
         value.to_s
       when Array
-        value.map(&:to_s).join(', ')
+        value.join(', ')
       else
         record.errors.add(attribute, "values must be strings, numbers, booleans, or arrays (got #{value.class})")
         value.to_s

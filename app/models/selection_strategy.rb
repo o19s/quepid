@@ -73,6 +73,7 @@ module SelectionStrategy
       .group('query_doc_pairs.id')
       .having('COUNT(CASE WHEN judgements.user_id = ? THEN 1 END) = 0', user.id)
       .having('COUNT(judgements.id) < 3')
+      .order(Arel.sql('COUNT(judgements.id)'))
       .order(Arel.sql('-LOG(1.0 - RAND()) * (COALESCE(position, 1000) + 1)'))
       .first
   end

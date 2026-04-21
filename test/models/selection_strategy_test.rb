@@ -155,6 +155,60 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         assert(SelectionStrategy.user_has_judged_all_available_pairs?(book, joe))
       end
 
+      it 'prioritizes unjudged pairs over partially judged pairs' do
+        # Create a scenario where some pairs have 0 judgements and others have 1-2
+        # Matt judges first 2 pairs
+        pairs_with_one_judgement = book.query_doc_pairs.limit(2).to_a
+        pairs_with_one_judgement.each do |qdp|
+          qdp.judgements.create rating: 2.0, user: matt
+        end
+
+        # Joe judges only the first pair (so it now has 2 judgements)
+        pairs_with_two_judgements = [ pairs_with_one_judgement.first ]
+        pairs_with_two_judgements.each do |qdp|
+          qdp.judgements.create rating: 3.0, user: joe
+        end
+
+        # Now we have:
+        # - 1 pair with 2 judgements (first pair)
+        # - 1 pair with 1 judgement (second pair)
+        # - remaining pairs with 0 judgements
+
+        remaining_unjudged_count = book.query_doc_pairs.count - 2
+
+        # Jane should only get unjudged pairs first (not pairs with 1 or 2 judgements)
+        seen_doc_ids = []
+        remaining_unjudged_count.times do
+          qdp = SelectionStrategy.random_query_doc_based_on_strategy(book, jane)
+          assert_not_nil qdp, 'Should find an unjudged pair'
+          assert_empty qdp.judgements, "Expected unjudged pair, but got pair with #{qdp.judgements.count} judgements (doc_id: #{qdp.doc_id})"
+          seen_doc_ids << qdp.doc_id
+          qdp.judgements.create rating: 1.0, user: jane
+        end
+
+        # Verify we didn't get the pairs with existing judgements
+        assert_not_includes seen_doc_ids, pairs_with_one_judgement[0].doc_id,
+                            'Should not have selected pair with 2 judgements while unjudged pairs existed'
+        assert_not_includes seen_doc_ids, pairs_with_one_judgement[1].doc_id,
+                            'Should not have selected pair with 1 judgement while unjudged pairs existed'
+
+        # Now all previously unjudged pairs have 1 judgement from Jane
+        # Jane should now get the pair that had 1 judgement (now it still needs Jane's judgement)
+        qdp = SelectionStrategy.random_query_doc_based_on_strategy(book, jane)
+        assert_not_nil qdp
+        assert_equal pairs_with_one_judgement[1].doc_id, qdp.doc_id,
+                     'Should now get the pair that had 1 judgement'
+        assert_equal 1, qdp.judgements.count
+        qdp.judgements.create rating: 1.0, user: jane
+
+        # Finally, Jane should get the pair with 2 judgements
+        qdp = SelectionStrategy.random_query_doc_based_on_strategy(book, jane)
+        assert_not_nil qdp
+        assert_equal pairs_with_two_judgements.first.doc_id, qdp.doc_id,
+                     'Should finally get the pair that had 2 judgements'
+        assert_equal 2, qdp.judgements.count
+      end
+
       it 'handles nil positions without breaking randomization' do
         # Create a query_doc_pair with nil position
         nil_position_pair = book.query_doc_pairs.create!(
