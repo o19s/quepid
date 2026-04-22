@@ -1,12 +1,12 @@
 <div class="card">
-  <div class="card-header">    
+  <div class="card-header">
     <h5 class="card-title"><i class="bi bi-robot"></i> AI Judge</h5>
   </div>
   <div class="card-body">
     <% if ai_judge.errors.any? %>
       <div style="color: red">
         <h2><%= pluralize(ai_judge.errors.count, "error") %> prohibited this ai_judge from being saved:</h2>
-  
+
         <ul>
           <% ai_judge.errors.each do |error| %>
             <li><%= error.full_message %></li>
@@ -15,25 +15,25 @@
       </div>
     <% end %>
     <p class="card-text">Configure the AI Judge with the information Quepid needs.</p>
-  
+
     <div class="row mb-3">
       <%= form.label :name, class: 'col-sm-2 col-form-label' %>
       <div class="col-sm-4">
         <%= form.text_field :name, class: "form-control" %>
       </div>
     </div>
-  
+
     <div class="row mb-3">
       <%= form.label :llm_key, class: 'col-sm-2 col-form-label' %>
       <div class="col-sm-4">
         <%= form.text_field :llm_key %>
       </div>
       <div class="form-text">
-        This is the key to access your LLM provider's API.  
+        This is the key to access your LLM provider's API.
         It also lets Quepid distingush between AI Judges and regular Users, so you must provide something, even "abc123".
       </div>
     </div>
-    
+
     <ul class="nav nav-underline mb-3" id="pills-tab" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="pills-structured-fields-tab" data-bs-toggle="pill" data-bs-target="#pills-structured-fields" type="button" role="tab" aria-controls="pills-structured-fields" aria-selected="true">Structured Fields</button>
@@ -87,14 +87,14 @@
       </div>
     </div>
 
-    
+
     <div class="row mb-3">
       <%= form.label :system_prompt, class: 'col-sm-2 col-form-label' %>
-      <%= form.textarea :system_prompt, class: "form-control", rows: 6 %>        
+      <%= form.textarea :system_prompt, class: "form-control", rows: 6 %>
     </div>
   </div>
-  
-  <div class="card-footer">    
+
+  <div class="card-footer">
     <%= form.submit 'Save', class: 'btn btn-primary float-start' %>
     <%= link_to 'Back to Team', team_path(@team), class: "btn btn-outline-secondary float-end" %>
   </div>
@@ -105,28 +105,28 @@
     // Get tab elements
     const structuredTab = document.getElementById('pills-structured-fields-tab');
     const jsonTab = document.getElementById('pills-json-tab');
-    
+
     // Get field elements
     const structuredFields = document.querySelectorAll('.structured-field');
     const jsonField = document.querySelector('.json-field');
-    
+
     // Initialize - Structured tab is active by default
     jsonField.disabled = true;
     structuredFields.forEach(field => {
       field.disabled = false;
     });
-    
+
     // Handle tab changes
     structuredTab.addEventListener('click', function() {
       // Enable structured fields
       structuredFields.forEach(field => {
         field.disabled = false;
       });
-      
+
       // Disable JSON field
       jsonField.disabled = true;
     });
-    
+
     jsonTab.addEventListener('click', function() {
       // Enable JSON field
       jsonField.disabled = false;
@@ -208,7 +208,7 @@
         llm_api_version: '',
         help: '<strong>Ollama</strong> &mdash; Local models via the Ollama container.<br>' +
               '<b>URL:</b> <code>http://ollama:11434</code> (Docker) or <code>http://localhost:11434</code> (local)<br>' +
-              '<b>Model:</b> e.g. <code>llama3</code>, <code>mistral</code><br>' +
+              '<b>Model:</b> e.g. <code>qwen3:0.6b</code>, <code>llama3</code><br>' +
               '<b>Key:</b> Any placeholder value (e.g. <code>abc123</code>)<br>' +
               '<b>API Version:</b> Leave blank'
       }
