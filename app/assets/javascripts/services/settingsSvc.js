@@ -324,7 +324,7 @@ angular.module('QuepidApp')
 
       var Settings = SettingsFactory;
       var currSettings = null;
-      
+
       this.supportLookupById = function(searchEngine) {
         let supportLookupById = true;
         if (searchEngine === 'vectara'){
@@ -437,9 +437,11 @@ angular.module('QuepidApp')
 
           settings.escapeQuery = tryToUse.escapeQuery;
           settings.apiMethod = tryToUse.apiMethod;
-          settings.customHeaders = tryToUse.customHeaders && typeof tryToUse.customHeaders === 'object' ?
-            JSON.stringify(tryToUse.customHeaders) :
-            (tryToUse.customHeaders || '');
+          settings.customHeaders = tryToUse.customHeaders || '';
+          // the below should no longer be needed as we fixed it finally properly!
+          //settings.customHeaders = tryToUse.customHeaders && typeof tryToUse.customHeaders === 'object' ?
+          //  JSON.stringify(tryToUse.customHeaders) :
+          //  (tryToUse.customHeaders || '');
           settings.fieldSpec = tryToUse.fieldSpec;
           settings.numberOfRows = tryToUse.numberOfRows;
           settings.queryParams = tryToUse.queryParams;
@@ -455,7 +457,7 @@ angular.module('QuepidApp')
           // See if we have "ApiKey" in our custom headers, which tells us we have an API Key.
           var headersToCheck = settings.customHeaders && typeof settings.customHeaders === 'object' ?
             JSON.stringify(settings.customHeaders) : '';
-          
+
           settings.headerType = headersToCheck.includes('ApiKey') ? 'API Key' :
             headersToCheck.length > 0 ? 'Custom' : 'None';
 
