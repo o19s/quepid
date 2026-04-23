@@ -1,6 +1,6 @@
-plugins: 
+plugins:
   - rubocop-rails
-  - rubocop-capybara  
+  - rubocop-capybara
   - rubocop-minitest
 
 AllCops:
@@ -13,21 +13,24 @@ AllCops:
     - node_modules/**/*
     - config/initializers/content_security_policy.rb
 
+Style/OneClassPerFile:
+  Enabled: false
+
 Minitest/EmptyLineBeforeAssertionMethods:
   Enabled: false
 
 Minitest/MultipleAssertions:
   Enabled: false
-  
+
 Minitest/UselessAssertion:
   Enabled: false
-  
+
 Rails/SkipsModelValidations:
   Enabled: false # we use .insert_all for our bulk imports
-  
+
 Capybara/ClickLinkOrButtonStyle:
   Enabled: false # we aren't running system tests
-  
+
 Rails/I18nLocaleTexts:
   Enabled: false  # we are only english
 
@@ -95,7 +98,7 @@ Layout/SpaceInsidePercentLiteralDelimiters:
 Layout/SpaceInsideParens:
   Enabled: false
 
-Layout/LineLength: 
+Layout/LineLength:
   Enabled: false # our API docs make VERY long lines, so giving up on this one.
   Max: 120
 

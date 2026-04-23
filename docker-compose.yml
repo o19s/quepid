@@ -18,7 +18,7 @@ services:
       - .:/srv/app:cached
       - ./log:/log
     ports:
-      - 3000:3000
+      - 33000:3000
     links:
       - mysql
       - keycloak
@@ -32,7 +32,7 @@ services:
     container_name: quepid_db
     image: mysql:8.4.3
     ports:
-      - 3306:3306
+      - 33306:3306
     environment:
       - MYSQL_ROOT_PASSWORD=password
 
@@ -47,10 +47,10 @@ services:
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
     ports:
-      - 9080:9080
+      - 39080:39080
     environment:
       - KC_HTTP_ENABLED=true
-      - KC_HTTP_PORT=9080
+      - KC_HTTP_PORT=39080
       - KC_HOSTNAME=keycloak
       - KC_HOSTNAME_STRICT=false
       - KC_HOSTNAME_STRICT_HTTPS=false
@@ -59,7 +59,7 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=password
       - DB_VENDOR=h2
     volumes:
-      - ./keycloak/realm-config/quepid-realm.json:/opt/keycloak/data/import/quepid-realm.json:ro    
+      - ./keycloak/realm-config/quepid-realm.json:/opt/keycloak/data/import/quepid-realm.json:ro
 
   # You can remove Ollama (and the links to it from app) if you don't want to use it to power AI judges
   ollama:
@@ -68,12 +68,13 @@ services:
     healthcheck:
       test: ollama --version || exit 1
     ports:
-      - "11430:11434"  # don't conflict with local Ollama.
+      - 31434:31434  # don't conflict with local Ollama.
     volumes:
       - ./volumes/ollama/data:/tmp/data
     environment:
-      OLLAMA_MODELS: "/tmp/data/ollama/models"   
-      
+      OLLAMA_MODELS: "/tmp/data/ollama/models"
+      OLLAMA_HOST: "0.0.0.0:31434"
+
   nginx:
     image: nginx:1.29.3-alpine-slim
     container_name: quepid_nginx

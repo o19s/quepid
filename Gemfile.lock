@@ -81,11 +81,12 @@ GEM
     acts_as_list (1.2.6)
       activerecord (>= 6.1)
       activesupport (>= 6.1)
-    addressable (2.8.8)
+    addressable (2.9.0)
       public_suffix (>= 2.0.2, < 8.0)
     aes_key_wrap (1.1.0)
-    ahoy_matey (5.4.1)
-      activesupport (>= 7.1)
+    ahoy_matey (5.5.0)
+      activesupport (>= 7.2)
+      cgi
       device_detector (>= 1)
       safely_block (>= 0.4)
     ancestry (5.1.0)
@@ -94,16 +95,16 @@ GEM
     annotaterb (4.22.0)
       activerecord (>= 6.0.0)
       activesupport (>= 6.0.0)
-    ansi (1.5.0)
+    ansi (1.6.0)
     ast (2.4.3)
-    async (2.36.0)
+    async (2.39.0)
       console (~> 1.29)
       fiber-annotation
       io-event (~> 1.11)
       metrics (~> 0.12)
       traces (~> 0.18)
     base64 (0.3.0)
-    bcrypt (3.1.21)
+    bcrypt (3.1.22)
     benchmark (0.5.0)
     benchmark-ips (2.14.0)
     bigdecimal (4.1.1)
@@ -130,6 +131,7 @@ GEM
       rack-test (>= 0.6.3)
       regexp_parser (>= 1.5, < 3.0)
       xpath (~> 3.2)
+    cgi (0.5.1)
     chartkick (5.2.1)
     childprocess (5.1.0)
       logger (~> 1.5)
@@ -189,7 +191,7 @@ GEM
       ruby2_keywords
       thor (>= 0.19, < 2)
     device_detector (1.1.3)
-    devise (5.0.2)
+    devise (5.0.3)
       bcrypt (~> 3.0)
       orm_adapter (~> 0.1)
       railties (>= 7.0)
@@ -291,7 +293,7 @@ GEM
       activesupport (>= 6.0.0)
       railties (>= 6.0.0)
     io-console (0.8.2)
-    io-event (1.14.2)
+    io-event (1.15.1)
     irb (1.17.0)
       pp (>= 0.6.0)
       prism (>= 1.3.0)
@@ -443,8 +445,8 @@ GEM
       json
       uri
       yaml
-    parallel (1.27.0)
-    parser (3.3.10.2)
+    parallel (2.0.1)
+    parser (3.3.11.1)
       ast (~> 2.4.1)
       racc
     postmark (1.25.1)
@@ -468,7 +470,7 @@ GEM
     psych (5.3.1)
       date
       stringio
-    public_suffix (7.0.2)
+    public_suffix (7.0.5)
     puma (7.2.0)
       nio4r (~> 2.0)
     raabro (1.4.0)
@@ -537,7 +539,7 @@ GEM
       psych (>= 4.0.0)
       tsort
     redcarpet (3.6.1)
-    regexp_parser (2.11.3)
+    regexp_parser (2.12.0)
     reline (0.6.3)
       io-console (~> 0.5)
     responders (3.2.0)
@@ -546,24 +548,24 @@ GEM
     rexml (3.4.4)
     rover-df (0.5.0)
       numo-narray (>= 0.9.1.9)
-    rubocop (1.84.2)
+    rubocop (1.86.1)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.1.0)
-      parallel (~> 1.10)
+      parallel (>= 1.10)
       parser (>= 3.3.0.2)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 2.9.3, < 3.0)
       rubocop-ast (>= 1.49.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 4.0)
-    rubocop-ast (1.49.0)
+    rubocop-ast (1.49.1)
       parser (>= 3.3.7.2)
       prism (~> 1.7)
     rubocop-capybara (2.22.1)
       lint_roller (~> 1.1)
       rubocop (~> 1.72, >= 1.72.1)
-    rubocop-minitest (0.38.2)
+    rubocop-minitest (0.39.1)
       lint_roller (~> 1.1)
       rubocop (>= 1.75.0, < 2.0)
       rubocop-ast (>= 1.38.0, < 2.0)
@@ -598,7 +600,7 @@ GEM
       zeitwerk (~> 2)
     ruby_llm-schema (0.3.0)
     rubyzip (3.2.2)
-    safely_block (0.5.0)
+    safely_block (1.0.0)
     scout_apm (6.1.1)
       parser
     securerandom (0.4.1)
@@ -733,7 +735,7 @@ DEPENDENCIES
   responders
   rubocop
   rubocop-capybara
-  rubocop-minitest (~> 0.38.2)
+  rubocop-minitest
   rubocop-rails
   ruby_llm
   rubyzip

@@ -98,7 +98,7 @@ module AvatarHelper
       :span,
       content_tag(:i, '', class: 'bi bi-robot'),
       class:        'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-light text-dark border',
-      style:        'font-size:0.65rem;',
+      style:        'font-size:0.90rem;',
       'aria-label': 'AI Judge'
     )
   end
