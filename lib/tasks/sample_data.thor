@@ -151,7 +151,7 @@ class SampleData < Thor
     osc_ai_judge = seed_user user_params
     osc_ai_judge.judge_options = {
       llm_provider:    'ollama',
-      llm_service_url: 'http://ollama:11430',
+      llm_service_url: 'http://ollama:31434',
       llm_model:       'qwen3:0.6b',
       llm_timeout:     60,
       llm_api_version: '',
