@@ -135,7 +135,7 @@ class DocGenerator
     params = {
       q: query,
       start: 0, rows: @options[:rows],
-      fl: @options[:id]
+      fl: '*'
     }
     uri.query = URI.encode_www_form(params)
 
@@ -145,6 +145,6 @@ class DocGenerator
 
     docs = response['response']['docs']
 
-    docs.map { |doc| { query_text: query, doc_id: doc[@options[:id]] } }
+    docs.map { |doc| { query_text: query, doc_id: doc[@options[:id]], doc: doc } }
   end
 end

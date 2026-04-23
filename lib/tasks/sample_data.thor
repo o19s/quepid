@@ -295,9 +295,16 @@ class SampleData < Thor
 
     tens_of_queries_case = realistic_activity_user.cases.find_or_create_by case_name: '10s of Queries', nightly: true
 
+    docs_lookup = {}
     unless tens_of_queries_case.queries.count >= 20
       generator = ::RatingsGenerator.new search_url, { number: 20 }
       ratings   = generator.generate_ratings
+
+      # Create lookup hash for document fields by query_text and doc_id
+      generator.docs.each do |item|
+        key = "#{item[:query_text]}|#{item[:doc_id]}"
+        docs_lookup[key] = item[:doc]
+      end
 
       options = { format: :hash }
       service = ::RatingsImporter.new tens_of_queries_case, ratings, options
@@ -391,6 +398,11 @@ class SampleData < Thor
         query_doc_pair = book.query_doc_pairs.find_or_create_by query_text: query.query_text,
                                                                 doc_id:     rating.doc_id,
                                                                 position:   index
+
+        # Populate document_fields from the docs lookup
+        lookup_key = "#{query.query_text}|#{rating.doc_id}"
+        query_doc_pair.document_fields = docs_lookup[lookup_key].except('id') if docs_lookup[lookup_key]
+
         query_doc_pair.judgements << Judgement.new(rating: rating.rating, user: osc_member_user)
         query_doc_pair.save
       end
