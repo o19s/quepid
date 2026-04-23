@@ -139,7 +139,7 @@ class SampleData < Thor
     print_user_info user_params
 
     ######################################
-    # OSC AI Judge
+    # OSC AI Judge (Ollama)
     ######################################
 
     user_specifics = {
@@ -150,11 +150,56 @@ class SampleData < Thor
     user_params = user_specifics # user_defaults.merge(user_specifics)
     osc_ai_judge = seed_user user_params
     osc_ai_judge.judge_options = {
-      llm_service_url: 'http://ollama:11430',
+      llm_provider:    'ollama',
+      llm_service_url: 'http://ollama:31434',
       llm_model:       'qwen3:0.6b',
       llm_timeout:     60,
+      llm_api_version: '',
     }
+    osc_ai_judge.save!
     print_user_info user_params
+
+    ######################################
+    # Azure OpenAI AI Judge
+    ######################################
+
+    user_specifics = {
+      name:          'Azure OpenAI Judge',
+      llm_key:       'your-azure-openai-key',
+      system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
+    }
+    user_params = user_specifics
+    azure_openai_judge = seed_user user_params
+    azure_openai_judge.judge_options = {
+      llm_provider:    'azure_openai',
+      llm_service_url: 'https://YOUR-RESOURCE.openai.azure.com',
+      llm_model:       'gpt-4.1',
+      llm_timeout:     30,
+      llm_api_version: '2024-12-01-preview',
+    }
+    azure_openai_judge.save!
+    print_step "Seeded AI judge: name: #{user_specifics[:name]}"
+
+    ######################################
+    # Azure AI Foundry Anthropic Judge
+    ######################################
+
+    user_specifics = {
+      name:          'Azure Anthropic Judge',
+      llm_key:       'your-azure-ai-services-key',
+      system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
+    }
+    user_params = user_specifics
+    azure_anthropic_judge = seed_user user_params
+    azure_anthropic_judge.judge_options = {
+      llm_provider:    'azure_ai_foundry_anthropic',
+      llm_service_url: 'https://YOUR-RESOURCE.services.ai.azure.com/anthropic',
+      llm_model:       'claude-3-5-haiku-20241022',
+      llm_timeout:     30,
+      llm_api_version: '',
+    }
+    azure_anthropic_judge.save!
+    print_step "Seeded AI judge: name: #{user_specifics[:name]}"
 
     print_step 'End of seeding users................'
 
@@ -250,9 +295,16 @@ class SampleData < Thor
 
     tens_of_queries_case = realistic_activity_user.cases.find_or_create_by case_name: '10s of Queries', nightly: true
 
+    docs_lookup = {}
     unless tens_of_queries_case.queries.count >= 20
       generator = ::RatingsGenerator.new search_url, { number: 20 }
       ratings   = generator.generate_ratings
+
+      # Create lookup hash for document fields by query_text and doc_id
+      generator.docs.each do |item|
+        key = "#{item[:query_text]}|#{item[:doc_id]}"
+        docs_lookup[key] = item[:doc]
+      end
 
       options = { format: :hash }
       service = ::RatingsImporter.new tens_of_queries_case, ratings, options
@@ -319,7 +371,9 @@ class SampleData < Thor
     osc.members << osc_member_user unless osc.members.include?(osc_member_user)
     osc.members << realistic_activity_user unless osc.members.include?(realistic_activity_user)
     osc.members << osc_ai_judge unless osc.members.include?(osc_ai_judge)
-    osc.cases << tens_of_queries_case unless osc.cases.include?(tens_of_queries_case)
+    osc.members << azure_openai_judge unless osc.members.include?(azure_openai_judge)
+    osc.members << azure_anthropic_judge unless osc.members.include?(azure_anthropic_judge)
+    osc.cases << tens_of_queries_case unless osc.members.include?(tens_of_queries_case)
     osc.search_endpoints << statedecoded_solr_endpoint unless osc.search_endpoints.include?(statedecoded_solr_endpoint)
     print_step 'End of seeding teams................'
 
@@ -332,7 +386,9 @@ class SampleData < Thor
     book.scale_with_labels = Scorer.system_default_scorer.scale_with_labels
 
     book.teams << osc
-    book.ai_judges << osc_ai_judge unless book.ai_judges.include?(osc_ai_judge)
+    book.ai_judges << osc_ai_judge
+    book.ai_judges << azure_openai_judge
+    book.ai_judges << azure_anthropic_judge
     book.save
 
     # this code copied from populate_controller.rb and should be in a service...
@@ -342,6 +398,11 @@ class SampleData < Thor
         query_doc_pair = book.query_doc_pairs.find_or_create_by query_text: query.query_text,
                                                                 doc_id:     rating.doc_id,
                                                                 position:   index
+
+        # Populate document_fields from the docs lookup
+        lookup_key = "#{query.query_text}|#{rating.doc_id}"
+        query_doc_pair.document_fields = docs_lookup[lookup_key].except('id') if docs_lookup[lookup_key]
+
         query_doc_pair.judgements << Judgement.new(rating: rating.rating, user: osc_member_user)
         query_doc_pair.save
       end

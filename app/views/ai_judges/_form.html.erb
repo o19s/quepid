@@ -1,12 +1,12 @@
 <div class="card">
-  <div class="card-header">    
+  <div class="card-header">
     <h5 class="card-title"><i class="bi bi-robot"></i> AI Judge</h5>
   </div>
   <div class="card-body">
     <% if ai_judge.errors.any? %>
       <div style="color: red">
         <h2><%= pluralize(ai_judge.errors.count, "error") %> prohibited this ai_judge from being saved:</h2>
-  
+
         <ul>
           <% ai_judge.errors.each do |error| %>
             <li><%= error.full_message %></li>
@@ -15,25 +15,25 @@
       </div>
     <% end %>
     <p class="card-text">Configure the AI Judge with the information Quepid needs.</p>
-  
+
     <div class="row mb-3">
       <%= form.label :name, class: 'col-sm-2 col-form-label' %>
       <div class="col-sm-4">
         <%= form.text_field :name, class: "form-control" %>
       </div>
     </div>
-  
+
     <div class="row mb-3">
       <%= form.label :llm_key, class: 'col-sm-2 col-form-label' %>
       <div class="col-sm-4">
         <%= form.text_field :llm_key %>
       </div>
       <div class="form-text">
-        This is the key to access your LLM provider's API.  
+        This is the key to access your LLM provider's API.
         It also lets Quepid distingush between AI Judges and regular Users, so you must provide something, even "abc123".
       </div>
     </div>
-    
+
     <ul class="nav nav-underline mb-3" id="pills-tab" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="pills-structured-fields-tab" data-bs-toggle="pill" data-bs-target="#pills-structured-fields" type="button" role="tab" aria-controls="pills-structured-fields" aria-selected="true">Structured Fields</button>
@@ -48,13 +48,32 @@
           <div class="row mb-3">
             <%= label_tag "judge_options[#{key}]", key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
             <div class="col-sm-4">
-              <%= text_field_tag "user[judge_options][#{key}]", value, 
-                id: "judge_options_#{key}",
-                class: 'form-control form-control-sm structured-field'
-              %>
+              <% if key.to_s == 'llm_provider' %>
+                <%= select_tag "user[judge_options][llm_provider]",
+                      options_for_select([
+                        ['OpenAI',                          'openai'],
+                        ['Azure OpenAI',                    'azure_openai'],
+                        ['Azure AI Foundry',                'azure_ai_foundry'],
+                        ['Azure AI Foundry (Serverless)',    'azure_ai_foundry_serverless'],
+                        ['Azure AI Foundry (Anthropic)',     'azure_ai_foundry_anthropic'],
+                        ['Anthropic',                       'anthropic'],
+                        ['Google Gemini',                   'google_gemini'],
+                        ['Ollama',                          'ollama'],
+                      ], value.to_s),
+                      id: 'judge_options_llm_provider',
+                      class: 'form-select form-select-sm structured-field'
+                %>
+              <% else %>
+                <%= text_field_tag "user[judge_options][#{key}]", value,
+                  id: "judge_options_#{key}",
+                  class: 'form-control form-control-sm structured-field'
+                %>
+              <% end %>
             </div>
           </div>
         <% end %>
+        <div id="provider-help" class="alert alert-info mt-3 mb-0 small" style="display:none;">
+        </div>
       </div>
       <div class="tab-pane fade" id="pills-json" role="tabpanel" aria-labelledby="pills-json-tab" tabindex="0">
         <div class="row mb-3">
@@ -68,14 +87,14 @@
       </div>
     </div>
 
-    
+
     <div class="row mb-3">
       <%= form.label :system_prompt, class: 'col-sm-2 col-form-label' %>
-      <%= form.textarea :system_prompt, class: "form-control", rows: 6 %>        
+      <%= form.textarea :system_prompt, class: "form-control", rows: 6 %>
     </div>
   </div>
-  
-  <div class="card-footer">    
+
+  <div class="card-footer">
     <%= form.submit 'Save', class: 'btn btn-primary float-start' %>
     <%= link_to 'Back to Team', team_path(@team), class: "btn btn-outline-secondary float-end" %>
   </div>
@@ -86,37 +105,145 @@
     // Get tab elements
     const structuredTab = document.getElementById('pills-structured-fields-tab');
     const jsonTab = document.getElementById('pills-json-tab');
-    
+
     // Get field elements
     const structuredFields = document.querySelectorAll('.structured-field');
     const jsonField = document.querySelector('.json-field');
-    
+
     // Initialize - Structured tab is active by default
     jsonField.disabled = true;
     structuredFields.forEach(field => {
       field.disabled = false;
     });
-    
+
     // Handle tab changes
     structuredTab.addEventListener('click', function() {
       // Enable structured fields
       structuredFields.forEach(field => {
         field.disabled = false;
       });
-      
+
       // Disable JSON field
       jsonField.disabled = true;
     });
-    
+
     jsonTab.addEventListener('click', function() {
       // Enable JSON field
       jsonField.disabled = false;
-      
+
       // Disable structured fields
       structuredFields.forEach(field => {
         field.disabled = true;
       });
     });
+
+    // Provider presets for auto-filling URL, API version, and help text
+    const PROVIDER_PRESETS = {
+      openai: {
+        llm_service_url: 'https://api.openai.com',
+        llm_api_version: '',
+        help: '<strong>OpenAI</strong> &mdash; Direct API access.<br>' +
+              '<b>URL:</b> <code>https://api.openai.com</code><br>' +
+              '<b>Model:</b> e.g. <code>gpt-4o</code>, <code>gpt-4.1</code><br>' +
+              '<b>Key:</b> Your OpenAI API key (starts with <code>sk-</code>)<br>' +
+              '<b>API Version:</b> Leave blank'
+      },
+      azure_openai: {
+        llm_service_url: 'https://RESOURCE.openai.azure.com',
+        llm_api_version: '',
+        help: '<strong>Azure OpenAI</strong> &mdash; OpenAI models hosted on Azure.<br>' +
+              '<b>URL:</b> <code>https://YOUR-RESOURCE.openai.azure.com</code><br>' +
+              '<b>Model:</b> Your deployment name, e.g. <code>gpt-4.1</code>, <code>gpt-5.1</code><br>' +
+              '<b>Key:</b> Azure resource API key<br>' +
+              '<b>API Version:</b> Set to use deployment-based routing ' +
+              '(e.g. <code>2024-12-01-preview</code>), or leave blank for <code>/openai/v1/</code> path'
+      },
+      azure_ai_foundry: {
+        llm_service_url: 'https://RESOURCE.services.ai.azure.com',
+        llm_api_version: '2025-01-01-preview',
+        help: '<strong>Azure AI Foundry</strong> &mdash; Unified Azure AI endpoint.<br>' +
+              '<b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com</code><br>' +
+              '<b>Model:</b> Model name, e.g. <code>gpt-4o</code><br>' +
+              '<b>Key:</b> Azure AI services key<br>' +
+              '<b>API Version:</b> Defaults to <code>2025-01-01-preview</code>'
+      },
+      azure_ai_foundry_serverless: {
+        llm_service_url: 'https://MODEL-NAME.REGION.models.ai.azure.com',
+        llm_api_version: '',
+        help: '<strong>Azure AI Foundry (Serverless)</strong> &mdash; Models-as-a-Service pay-per-token endpoint.<br>' +
+              '<b>URL:</b> <code>https://MODEL-NAME.REGION.models.ai.azure.com</code><br>' +
+              '<b>Model:</b> Model name from the deployment<br>' +
+              '<b>Key:</b> Serverless endpoint key<br>' +
+              '<b>API Version:</b> Leave blank'
+      },
+      azure_ai_foundry_anthropic: {
+        llm_service_url: 'https://RESOURCE.services.ai.azure.com/anthropic',
+        llm_api_version: '',
+        help: '<strong>Azure AI Foundry (Anthropic)</strong> &mdash; Claude models via Azure using the native Anthropic Messages API.<br>' +
+              '<b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com/anthropic</code><br>' +
+              '<b>Model:</b> e.g. <code>claude-3-5-haiku-20241022</code><br>' +
+              '<b>Key:</b> Azure AI services key (sent as <code>x-api-key</code> header)<br>' +
+              '<b>API Version:</b> Leave blank (the <code>anthropic-version</code> header is set automatically)'
+      },
+      anthropic: {
+        llm_service_url: 'https://api.anthropic.com',
+        llm_api_version: '',
+        help: '<strong>Anthropic</strong> &mdash; Direct Anthropic API access.<br>' +
+              '<b>URL:</b> <code>https://api.anthropic.com</code><br>' +
+              '<b>Model:</b> e.g. <code>claude-opus-4-6</code>, <code>claude-sonnet-4-5-20250514</code><br>' +
+              '<b>Key:</b> Your Anthropic API key (sent as <code>x-api-key</code> header)<br>' +
+              '<b>API Version:</b> Leave blank'
+      },
+      google_gemini: {
+        llm_service_url: 'https://generativelanguage.googleapis.com/v1beta/openai',
+        llm_api_version: '',
+        help: '<strong>Google Gemini</strong> &mdash; Uses the OpenAI-compatible endpoint.<br>' +
+              '<b>URL:</b> <code>https://generativelanguage.googleapis.com/v1beta/openai</code><br>' +
+              '<b>Model:</b> e.g. <code>gemini-2.0-flash</code><br>' +
+              '<b>Key:</b> Your Google AI API key<br>' +
+              '<b>API Version:</b> Leave blank'
+      },
+      ollama: {
+        llm_service_url: 'http://ollama:11434',
+        llm_api_version: '',
+        help: '<strong>Ollama</strong> &mdash; Local models via the Ollama container.<br>' +
+              '<b>URL:</b> <code>http://ollama:11434</code> (Docker) or <code>http://localhost:11434</code> (local)<br>' +
+              '<b>Model:</b> e.g. <code>qwen3:0.6b</code>, <code>llama3</code><br>' +
+              '<b>Key:</b> Any placeholder value (e.g. <code>abc123</code>)<br>' +
+              '<b>API Version:</b> Leave blank'
+      }
+    };
+
+    const providerSelect = document.getElementById('judge_options_llm_provider');
+    const providerHelp = document.getElementById('provider-help');
+
+    function updateProviderHelp(provider) {
+      const preset = PROVIDER_PRESETS[provider];
+      if (preset && preset.help && providerHelp) {
+        providerHelp.innerHTML = preset.help;
+        providerHelp.style.display = 'block';
+      } else if (providerHelp) {
+        providerHelp.style.display = 'none';
+      }
+    }
+
+    if (providerSelect) {
+      // Show help for the initially selected provider
+      updateProviderHelp(providerSelect.value);
+
+      providerSelect.addEventListener('change', function() {
+        const preset = PROVIDER_PRESETS[this.value];
+        if (!preset) return;
+
+        const urlField = document.getElementById('judge_options_llm_service_url');
+        const apiVersionField = document.getElementById('judge_options_llm_api_version');
+
+        if (urlField) urlField.value = preset.llm_service_url;
+        if (apiVersionField) apiVersionField.value = preset.llm_api_version;
+
+        updateProviderHelp(this.value);
+      });
+    }
   });
 </script>
 

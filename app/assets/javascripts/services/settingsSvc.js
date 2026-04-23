@@ -324,7 +324,7 @@ angular.module('QuepidApp')
 
       var Settings = SettingsFactory;
       var currSettings = null;
-      
+
       this.supportLookupById = function(searchEngine) {
         let supportLookupById = true;
         if (searchEngine === 'vectara'){
@@ -438,6 +438,10 @@ angular.module('QuepidApp')
           settings.escapeQuery = tryToUse.escapeQuery;
           settings.apiMethod = tryToUse.apiMethod;
           settings.customHeaders = tryToUse.customHeaders || '';
+          // the below should no longer be needed as we fixed it finally properly!
+          //settings.customHeaders = tryToUse.customHeaders && typeof tryToUse.customHeaders === 'object' ?
+          //  JSON.stringify(tryToUse.customHeaders) :
+          //  (tryToUse.customHeaders || '');
           settings.fieldSpec = tryToUse.fieldSpec;
           settings.numberOfRows = tryToUse.numberOfRows;
           settings.queryParams = tryToUse.queryParams;
@@ -453,7 +457,7 @@ angular.module('QuepidApp')
           // See if we have "ApiKey" in our custom headers, which tells us we have an API Key.
           var headersToCheck = settings.customHeaders && typeof settings.customHeaders === 'object' ?
             JSON.stringify(settings.customHeaders) : '';
-          
+
           settings.headerType = headersToCheck.includes('ApiKey') ? 'API Key' :
             headersToCheck.length > 0 ? 'Custom' : 'None';
 
@@ -502,11 +506,11 @@ angular.module('QuepidApp')
         // probably could be a bit more restful
         // Note that we map between camelCase in JS and snake_case in API here.
 
-        var currCaseNo = caseTryNavSvc.getCaseNo();
+        const currCaseNo = caseTryNavSvc.getCaseNo();
 
-        var payload = {};
-        var payloadTry = {};
-        var payloadSearchEndpoint = {};
+        const payload = {};
+        const payloadTry = {};
+        const payloadSearchEndpoint = {};
         payload.try = payloadTry;
         payload.search_endpoint = payloadSearchEndpoint;
         payload.parent_try_number = settingsToSave.selectedTry.tryNo; // track the parent try for ancestry
@@ -535,14 +539,14 @@ angular.module('QuepidApp')
           payloadSearchEndpoint.proxy_requests = settingsToSave.proxyRequests;
         }
 
-        return $http.post('api/cases/' + currCaseNo + '/tries', payload)
+        return $http.post(`api/cases/${currCaseNo}/tries`, payload)
           .then(function(response) {
-            var tryJson = response.data;
-            var newTry = currSettings.addTry(tryJson);
+            const tryJson = response.data;
+            const newTry = currSettings.addTry(tryJson);
             currSettings.selectTry(newTry.tryNo);
 
             // Broadcast that settings for case have been updated
-            var args = {
+            const args = {
               caseNo: currCaseNo,
               lastTry: newTry
             };
@@ -575,16 +579,16 @@ angular.module('QuepidApp')
         // (4) possibly modified curator vars
         // probably could be a bit more restful
         // Note that we map between camelCase in JS and snake_case in API here.
-        var currCaseNo = caseTryNavSvc.getCaseNo();
-        var currTryNo = caseTryNavSvc.getTryNo();
+        const currCaseNo = caseTryNavSvc.getCaseNo();
+        const currTryNo = caseTryNavSvc.getTryNo();
 
         // because this is only called at the end of the case creation wizard
         // we don't have a sentData.name = settingsToSave.selectedTry.name
         // for completeness we should.   If we enable more edit of existing try
         // tries are odd, cause we pretty much only create new ones!
 
-        var payload = {};
-        var payloadTry = {};
+        const payload = {};
+        const payloadTry = {};
         payload.try = payloadTry;
 
         payload.parent_try_number = settingsToSave.selectedTry.tryNo;
@@ -604,7 +608,7 @@ angular.module('QuepidApp')
         }
         // Or we are creating a new one.
         else {
-          var payloadSearchEndpoint = {};
+          const payloadSearchEndpoint = {};
           payloadSearchEndpoint.search_engine = settingsToSave.searchEngine;
           payloadSearchEndpoint.endpoint_url = settingsToSave.searchUrl;
           payloadSearchEndpoint.api_method = settingsToSave.apiMethod;
@@ -615,11 +619,11 @@ angular.module('QuepidApp')
           payload.search_endpoint = payloadSearchEndpoint;
         }
 
-        return $http.put('api/cases/' + currCaseNo + '/tries/' + currTryNo, payload)
+        return $http.put(`api/cases/${currCaseNo}/tries/${currTryNo}`, payload)
           .then(function() {
 
             // Broadcast that settings for case have been updated
-            var args = {
+            const args = {
               caseNo: currCaseNo,
               lastTry: settingsToSave.selectedTry
             };

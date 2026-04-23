@@ -137,7 +137,7 @@ module ActiveSupport
 
       stub_request(
         :get,
-        'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=id&q=served&rows=1&start=0'
+        'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=*&q=served&rows=1&start=0'
       )
         .with(
           headers: {
