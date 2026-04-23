@@ -66,22 +66,20 @@ class LlmServiceTest < ActiveSupport::TestCase
       user_prompt = USER_PROMPT_COMPOSED
       system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
 
-      error = assert_raises(RuntimeError) do
+      assert_raises(RubyLLM::UnauthorizedError) do
         service.get_llm_response(user_prompt, system_prompt)
       end
-      assert_equal 'LLM API Error: 401 - Unauthorized', error.message
     end
 
     test 'handle and back off a 429 error' do
-      # the Faraday Retry may mean we don't need this
+      # ruby_llm has built-in retry logic; after retries are exhausted it raises RateLimitError.
       service = LlmService.new 'OPENAI_429_ERROR'
       user_prompt = USER_PROMPT_COMPOSED
       system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
 
-      error = assert_raises(RuntimeError) do
+      assert_raises(RubyLLM::RateLimitError) do
         service.get_llm_response(user_prompt, system_prompt)
       end
-      assert_equal 'LLM API Error: 429 - Too Many Requests', error.message
     end
   end
 

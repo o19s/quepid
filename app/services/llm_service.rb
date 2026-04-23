@@ -7,6 +7,19 @@ require 'json'
 class LlmService
   AZURE_PROVIDERS = %w[azure_openai azure_ai_foundry azure_ai_foundry_serverless azure_ai_foundry_anthropic].freeze
   ANTHROPIC_PROVIDERS = %w[anthropic azure_ai_foundry_anthropic].freeze
+  # Providers handled natively by ruby_llm — no hand-rolled Faraday plumbing needed.
+  NATIVE_RUBY_LLM_PROVIDERS = %w[openai anthropic ollama google_gemini].freeze
+
+  # Structured output schema shared across all ruby_llm-backed judgement calls.
+  JUDGMENT_SCHEMA = {
+    type:                 'object',
+    properties:           {
+      explanation: { type: 'string' },
+      judgment:    { type: 'number' },
+    },
+    required:             %w[explanation judgment],
+    additionalProperties: false,
+  }.freeze
 
   def initialize llm_key, opts = {}
     default_options = {
@@ -17,15 +30,22 @@ class LlmService
 
     @llm_key = llm_key
     @options = default_options.merge(opts.deep_symbolize_keys)
-    @conn = build_connection
-    @completions_path = compute_completions_path
-    @auth_headers = compute_auth_headers
+
+    # Only build a Faraday connection for providers not handled by ruby_llm.
+    unless ruby_llm_provider?
+      @conn = build_connection
+      @completions_path = compute_completions_path
+      @auth_headers = compute_auth_headers
+    end
   end
 
   def perform_safe_judgement judgement
     perform_judgement(judgement)
   rescue RuntimeError => e
     judgement.explanation = "BOOM: Runtime Error: #{e.message}"
+    judgement.unrateable = true
+  rescue RubyLLM::Error => e
+    judgement.explanation = "BOOM: API request failed: #{e.message}"
     judgement.unrateable = true
   rescue Faraday::Error => e
     # This will catch all Faraday errors including TimeoutError, ConnectionFailed, etc.
@@ -66,7 +86,9 @@ class LlmService
   end
 
   def get_llm_response user_prompt, system_prompt
-    if anthropic_provider?
+    if ruby_llm_provider?
+      get_ruby_llm_response(user_prompt, system_prompt)
+    elsif anthropic_provider?
       get_anthropic_response(user_prompt, system_prompt)
     else
       get_openai_response(user_prompt, system_prompt)
@@ -74,6 +96,83 @@ class LlmService
   end
 
   private
+
+  # --- ruby_llm-backed path (OpenAI, Anthropic, Ollama, Google Gemini) ---
+
+  def get_ruby_llm_response user_prompt, system_prompt
+    context = build_ruby_llm_context
+    chat = context.chat(
+      model:                @options[:llm_model],
+      provider:             ruby_llm_provider_slug,
+      assume_model_exists:  true
+    )
+    chat.with_instructions(system_prompt, replace: true)
+    chat.with_schema(JUDGMENT_SCHEMA)
+
+    text, image_url = extract_text_and_image(user_prompt)
+
+    response = image_url.present? ?
+      chat.ask(text, with: image_url) :
+      chat.ask(text)
+
+    parse_ruby_llm_content(response)
+  end
+
+  def build_ruby_llm_context
+    provider = @options[:llm_provider].to_s
+    RubyLLM.context do |config|
+      config.request_timeout = @options[:llm_timeout].to_i
+      case provider
+      when 'anthropic'
+        config.anthropic_api_key = @llm_key
+      when 'ollama'
+        config.ollama_api_base = "#{@options[:llm_service_url].to_s.chomp('/')}/v1"
+      else
+        # 'openai', 'google_gemini' (OpenAI-compatible endpoint), or nil/empty
+        config.openai_api_key = @llm_key
+        config.openai_api_base = openai_api_base_url
+      end
+    end
+  end
+
+  def openai_api_base_url
+    "#{@options[:llm_service_url].to_s.chomp('/')}/v1"
+  end
+
+  def ruby_llm_provider_slug
+    case @options[:llm_provider].to_s
+    when 'anthropic' then :anthropic
+    when 'ollama'    then :ollama
+    else                  :openai
+    end
+  end
+
+  def ruby_llm_provider?
+    provider = @options[:llm_provider].to_s
+    NATIVE_RUBY_LLM_PROVIDERS.include?(provider) || provider.empty?
+  end
+
+  def extract_text_and_image user_prompt
+    if user_prompt.is_a?(Array)
+      text = user_prompt.find { |p| p[:type] == 'text' }&.dig(:text)
+      image_url = user_prompt.find { |p| p[:type] == 'image_url' }&.dig(:image_url, :url)
+      [ text, image_url ]
+    else
+      [ user_prompt, nil ]
+    end
+  end
+
+  def parse_ruby_llm_content response
+    content = response.content
+    # ruby_llm with_schema already tries JSON.parse; if the result is a Hash we're done.
+    content = JSON.parse(strip_markdown_code_block(content.to_s)) unless content.is_a?(Hash)
+    {
+      explanation: content['explanation'],
+      judgment:    content['judgment'],
+    }
+  end
+
+  # --- Faraday-backed path (Azure variants) ---
 
   def build_connection
     Faraday.new(url: @options[:llm_service_url]) do |f|
@@ -192,7 +291,7 @@ class LlmService
     when 'azure_ai_foundry'
       api_version ||= '2025-01-01-preview'
       "models/chat/completions?api-version=#{api_version}"
-    when 'azure_ai_foundry_anthropic', 'anthropic'
+    when 'azure_ai_foundry_anthropic'
       'v1/messages'
     else
       'v1/chat/completions'
