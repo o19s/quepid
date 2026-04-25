@@ -416,34 +416,15 @@ class SampleData < Thor
   long_desc <<-LONGDESC
   `large_data`
 
-  Modes (pick at most one; default is --create):
-
-  * --create   Always create new "100s of Queries" / "1000s of Queries" cases - can potentially create duplicates.
-  * --clean    Removes cases and starts fresh, no duplication but deletes existing data.
-  * --update   Picks up from where the last run left off.
-
   EXAMPLES:
 
   $ thor sample_data:large_data
-  $ thor sample_data:large_data --create
-  $ thor sample_data:large_data --clean
-  $ thor sample_data:large_data --update
   LONGDESC
-
-  method_option :create, type: :boolean, default: false,
-                        desc: 'Create new cases (default when no other mode flag is set)'
-  method_option :clean, type: :boolean, default: false,
-                        desc: 'Delete existing large sample cases for the seed users, then seed'
-  method_option :update, type: :boolean, default: false,
-                         desc: 'Reuse the oldest matching cases and import missing ratings'
 
   def large_data
     load_environment
 
-    mode = resolve_large_data_mode(options)
-    print_step "Seeding large cases (mode: #{mode})..............."
-
-    destroy_large_sample_cases! if :clean == mode
+    print_step 'Seeding large cases...............'
 
     ######################################
     # Defaults
@@ -492,17 +473,17 @@ class SampleData < Thor
     osc.save!
 
     hundreds_of_queries_case = provision_large_case(
-      hundreds_of_queries_user, '100s of Queries', try_defaults, statedecoded_solr_endpoint, mode
+      hundreds_of_queries_user, '100s of Queries', try_defaults, statedecoded_solr_endpoint
     )
     seed_large_case_ratings_if_needed(
-      hundreds_of_queries_case, search_url, target: 400, label: '100s of queries'
+      hundreds_of_queries_case, search_url, target: 400, seed_message: 'Seeded 100s of queries'
     )
 
     thousands_of_queries_case = provision_large_case(
-      thousands_of_queries_user, '1000s of Queries', try_defaults, statedecoded_solr_endpoint, mode
+      thousands_of_queries_user, '1000s of Queries', try_defaults, statedecoded_solr_endpoint
     )
     seed_large_case_ratings_if_needed(
-      thousands_of_queries_case, search_url, target: 5000, label: '1000s of queries'
+      thousands_of_queries_case, search_url, target: 5000, seed_message: 'Seeded 1000s of queries'
     )
   end
 
@@ -616,33 +597,8 @@ class SampleData < Thor
 
   private
 
-  # When no mode flag is passed, all options are false and we use :create (same as explicit --create).
-  def resolve_large_data_mode options
-    opts = options.to_h.symbolize_keys
-    flags = [
-      [ :clean,  opts[:clean] ],
-      [ :update, opts[:update] ],
-      [ :create, opts[:create] ]
-    ]
-    active = flags.select { |_, v| v }.map(&:first)
-    raise Thor::Error, 'Specify at most one of --create, --clean, or --update' if active.size > 1
-
-    return active.first if active.any?
-
-    :create
-  end
-
-  def destroy_large_sample_cases!
-    emails = %w[quepid+100sOfQueries@o19s.com quepid+1000sOfQueries@o19s.com]
-    names  = [ '100s of Queries', '1000s of Queries' ]
-    ::User.where(email: emails.map(&:downcase)).find_each do |user|
-      user.cases.where(case_name: names).find_each(&:destroy)
-    end
-  end
-
-  def provision_large_case user, case_name, try_defaults, endpoint, mode
-    kase = (user.cases.where(case_name: case_name).order(:id).first if :update == mode)
-    kase ||= user.cases.create(case_name: case_name)
+  def provision_large_case user, case_name, try_defaults, endpoint
+    kase = user.cases.create(case_name: case_name)
     configure_large_case_try!(kase, try_defaults, endpoint)
     kase
   end
@@ -655,22 +611,18 @@ class SampleData < Thor
     kase
   end
 
-  def seed_large_case_ratings_if_needed kase, search_url, target:, label:
-    remaining = target - kase.queries.count
-    return if remaining <= 0
+  def seed_large_case_ratings_if_needed kase, search_url, target:, seed_message:
+    return if kase.queries.count > target
 
-    generator = ::RatingsGenerator.new search_url, {
-      number:        remaining,
-      show_progress: true,
-    }
-    ratings = generator.generate_ratings
+    generator = ::RatingsGenerator.new search_url, { number: target, show_progress: true }
+    ratings   = generator.generate_ratings
 
     import_options = { format: :hash, show_progress: true }
     service = ::RatingsImporter.new kase, ratings, import_options
 
     service.import
 
-    print_step "Seeded #{label} (added #{remaining} to reach ~#{target})"
+    print_step seed_message
   end
 
   def seed_user hash

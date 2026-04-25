@@ -191,12 +191,6 @@ or
  bundle exec thor sample_data:large_data
 ```
 
-Optional flags (pick at most one; default is `--create`):
-
-- `--create` — Always add new cases named "100s of Queries" and "1000s of Queries" (same as omitting flags).
-- `--clean` — Delete those cases for the seed users and seed again.
-- `--update` — Reuse the oldest `100s` / `1000s` case per user if it exists, or create it; top up the query count to the target (400 or 5000) by generating only the missing ratings. Idempotent — running it again on a full case is a no-op. Other cases with the same name are not modified.
-
 Solr requests are retried with backoff when the remote Solr is slow or returns 5xx/429.
 
 This is useful for stress testing Quepid! Especially the front end application!
