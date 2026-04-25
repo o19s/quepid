@@ -4,6 +4,8 @@
 
 Big upgrade of the core application stack, moving Ruby from 3.4.8 to 4.0.1, Rails from 8.1.1 to 8.1.2, and the Debian base image from Bookworm to Trixie, along with Bundler and numerous gem/Node package updates.
 
+* **splainer-search 3.0.0:** The `splainer-search` npm package is now a vanilla JavaScript (ESM) library rather than an AngularJS module. The Angular app still depends on the `o19s.splainer-search` module name; `app/javascript/splainer_search_adapter.js` wires the new `createWiredServices` API from the package to that module so existing injectors and services keep working.
+
 ## 8.5.0 -- 2026-01-14
 
 Changes are coming fast and furious!
