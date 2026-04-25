@@ -181,8 +181,9 @@ class FetchServiceTest < ActiveSupport::TestCase
       end
 
       fetch_service.delete_extra_web_requests acase
-      assert_not_nil acase.snapshots.first.snapshot_queries.first.web_request
-      assert_nil acase.snapshots.second.snapshot_queries.first.web_request
+      ordered_snapshots = acase.snapshots.order(created_at: :desc)
+      assert_not_nil ordered_snapshots.first.snapshot_queries.first.web_request
+      assert_nil ordered_snapshots.second.snapshot_queries.first.web_request
     end
   end
 
