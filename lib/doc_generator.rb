@@ -4,19 +4,6 @@ require 'json'
 require 'net/http'
 require 'progress_indicator'
 
-# Exceptions from Net::HTTP and the socket stack that are worth retrying when Solr is
-# overloaded or briefly unreachable.
-SOLR_RETRYABLE_EXCEPTIONS = [
-  Net::OpenTimeout,
-  Net::ReadTimeout,
-  Errno::ECONNREFUSED,
-  Errno::ECONNRESET,
-  Errno::ETIMEDOUT,
-  Errno::EHOSTUNREACH,
-  SocketError,
-  IOError
-].freeze
-
 class TargetSetEmpty < StandardError
   def initialize msg = 'Attempting to generate word list before assigning target set. Try calling the `fetch_enough_docs_for_sample_words` beforehand, or settting the attribute manually.'
     super
@@ -37,6 +24,19 @@ end
 
 class DocGenerator
   include ProgressIndicator
+
+  # Exceptions from Net::HTTP and the socket stack that are worth retrying when Solr is
+  # overloaded or briefly unreachable.
+  SOLR_RETRYABLE_EXCEPTIONS = [
+    Net::OpenTimeout,
+    Net::ReadTimeout,
+    Errno::ECONNREFUSED,
+    Errno::ECONNRESET,
+    Errno::ETIMEDOUT,
+    Errno::EHOSTUNREACH,
+    SocketError,
+    IOError
+  ].freeze
 
   attr_reader :logger, :options, :solr_url
 
@@ -232,8 +232,8 @@ class DocGenerator
   end
 
   def solr_retry_log message, attempt, retries, delay
-    return unless show_progress?
-
-    print_step "Solr request failed (#{message}), retrying in #{delay}s (#{attempt}/#{retries})"
+    line = "Solr request failed (#{message}), retrying in #{delay}s (#{attempt}/#{retries})"
+    print_step line if show_progress?
+    @logger&.warn(line)
   end
 end
