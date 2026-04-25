@@ -472,19 +472,42 @@ class SampleData < Thor
     osc.search_endpoints << statedecoded_solr_endpoint
     osc.save!
 
-    hundreds_of_queries_case = provision_large_case(
-      hundreds_of_queries_user, '100s of Queries', try_defaults, statedecoded_solr_endpoint
-    )
-    seed_large_case_ratings_if_needed(
-      hundreds_of_queries_case, search_url, target: 400, seed_message: 'Seeded 100s of queries'
-    )
+    hundreds_of_queries_case = hundreds_of_queries_user.cases.create case_name: '100s of Queries'
+    solr_try = hundreds_of_queries_case.tries.latest
+    solr_try.update try_defaults
+    solr_try.search_endpoint = statedecoded_solr_endpoint
+    solr_try.save
 
-    thousands_of_queries_case = provision_large_case(
-      thousands_of_queries_user, '1000s of Queries', try_defaults, statedecoded_solr_endpoint
-    )
-    seed_large_case_ratings_if_needed(
-      thousands_of_queries_case, search_url, target: 5000, seed_message: 'Seeded 1000s of queries'
-    )
+    # was 200
+    unless hundreds_of_queries_case.queries.count > 400
+      generator = ::RatingsGenerator.new search_url, { number: 400, show_progress: true }
+      ratings   = generator.generate_ratings
+
+      options = { format: :hash, show_progress: true }
+      service = ::RatingsImporter.new hundreds_of_queries_case, ratings, options
+
+      service.import
+
+      print_step 'Seeded 100s of queries'
+    end
+
+    thousands_of_queries_case = thousands_of_queries_user.cases.create case_name: '1000s of Queries'
+    solr_try = thousands_of_queries_case.tries.latest
+    solr_try.update try_defaults
+    solr_try.search_endpoint = statedecoded_solr_endpoint
+    solr_try.save
+
+    unless thousands_of_queries_case.queries.count > 5000
+      generator = ::RatingsGenerator.new search_url, { number: 5000, show_progress: true }
+      ratings   = generator.generate_ratings
+
+      options = { format: :hash, show_progress: true }
+      service = ::RatingsImporter.new thousands_of_queries_case, ratings, options
+
+      service.import
+
+      print_step 'Seeded 1000s of queries'
+    end
   end
 
   desc 'haystack_party', 'load the haystack rating party data'
@@ -596,34 +619,6 @@ class SampleData < Thor
   # rubocop:enable Metrics/PerceivedComplexity
 
   private
-
-  def provision_large_case user, case_name, try_defaults, endpoint
-    kase = user.cases.create(case_name: case_name)
-    configure_large_case_try!(kase, try_defaults, endpoint)
-    kase
-  end
-
-  def configure_large_case_try! kase, try_defaults, endpoint
-    solr_try = kase.tries.latest
-    solr_try.update try_defaults
-    solr_try.search_endpoint = endpoint
-    solr_try.save
-    kase
-  end
-
-  def seed_large_case_ratings_if_needed kase, search_url, target:, seed_message:
-    return if kase.queries.count > target
-
-    generator = ::RatingsGenerator.new search_url, { number: target, show_progress: true }
-    ratings   = generator.generate_ratings
-
-    import_options = { format: :hash, show_progress: true }
-    service = ::RatingsImporter.new kase, ratings, import_options
-
-    service.import
-
-    print_step seed_message
-  end
 
   def seed_user hash
     if hash[:email] && ::User.exists?(email: hash[:email].downcase)
