@@ -191,6 +191,8 @@ or
  bundle exec thor sample_data:large_data
 ```
 
+Solr requests are retried with backoff when the remote Solr is slow or returns 5xx/429.
+
 This is useful for stress testing Quepid! Especially the front end application!
 
 ### Developing Jupyter notebooks
