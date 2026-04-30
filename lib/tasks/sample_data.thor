@@ -693,7 +693,7 @@ class SampleData < Thor
   end
 
   def large_data_cache_dir
-    Rails.root.join('tmp', 'sample_data_cache')
+    Rails.root.join('tmp/sample_data_cache')
   end
 
   def large_data_cache_path row_count
@@ -706,7 +706,7 @@ class SampleData < Thor
     data = JSON.parse(File.read(path))
     meta = data['meta']
     unless meta.is_a?(Hash) &&
-           meta['version'] == LARGE_DATA_CACHE_VERSION &&
+           LARGE_DATA_CACHE_VERSION == meta['version'] &&
            meta['search_url'] == search_url &&
            meta['number'].to_i == row_count
       return nil
@@ -715,7 +715,7 @@ class SampleData < Thor
     ratings = data['ratings']
     return nil unless ratings.is_a?(Array)
 
-    ratings.map { |row| row.symbolize_keys }
+    ratings.map(&:symbolize_keys)
   rescue JSON::ParserError
     nil
   end
@@ -730,7 +730,7 @@ class SampleData < Thor
       }
     end
     payload = {
-      'meta' => {
+      'meta'    => {
         'version'    => LARGE_DATA_CACHE_VERSION,
         'search_url' => search_url,
         'number'     => row_count,
