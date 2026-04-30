@@ -193,6 +193,8 @@ or
 
 Solr requests are retried with backoff when the remote Solr is slow or returns 5xx/429.
 
+Generated ratings are cached under `tmp/sample_data_cache/` (gitignored) so repeat runs skip thousands of Solr requests when the Solr URL, requested row count, and `LARGE_DATA_CACHE_VERSION` constant all match. The cache does **not** detect changes to the underlying Solr corpus — bump `LARGE_DATA_CACHE_VERSION` (or set `LARGE_SAMPLE_DATA_REFRESH=1`, or delete the files) to force a refetch.
+
 This is useful for stress testing Quepid! Especially the front end application!
 
 ### Developing Jupyter notebooks

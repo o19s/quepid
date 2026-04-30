@@ -1,10 +1,15 @@
 # frozen_string_literal: true
 
 require 'colorize'
+require 'fileutils'
+require 'json'
 require 'zip'
 
 # rubocop:disable Style/StringConcatenation
 class SampleData < Thor
+  # Bump when Solr defaults or RatingsGenerator/DocGenerator options used by large_data change.
+  LARGE_DATA_CACHE_VERSION = '1'
+
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/BlockLength
@@ -477,6 +482,9 @@ class SampleData < Thor
   long_desc <<-LONGDESC
   `large_data`
 
+  Caches Solr-derived ratings JSON under tmp/sample_data_cache/ (see LARGE_DATA_CACHE_VERSION).
+  Set LARGE_SAMPLE_DATA_REFRESH=1 to ignore cache and refetch.
+
   EXAMPLES:
 
   $ thor sample_data:large_data
@@ -541,8 +549,7 @@ class SampleData < Thor
 
     # was 200
     unless hundreds_of_queries_case.queries.count > 400
-      generator = ::RatingsGenerator.new search_url, { number: 400, show_progress: true }
-      ratings   = generator.generate_ratings
+      ratings = load_or_generate_large_data_ratings search_url, 400
 
       options = { format: :hash, show_progress: true }
       service = ::RatingsImporter.new hundreds_of_queries_case, ratings, options
@@ -559,8 +566,7 @@ class SampleData < Thor
     solr_try.save
 
     unless thousands_of_queries_case.queries.count > 5000
-      generator = ::RatingsGenerator.new search_url, { number: 5000, show_progress: true }
-      ratings   = generator.generate_ratings
+      ratings = load_or_generate_large_data_ratings search_url, 5000
 
       options = { format: :hash, show_progress: true }
       service = ::RatingsImporter.new thousands_of_queries_case, ratings, options
@@ -680,6 +686,79 @@ class SampleData < Thor
   # rubocop:enable Metrics/PerceivedComplexity
 
   private
+
+  def large_data_cache_force_refresh?
+    value = ENV.fetch('LARGE_SAMPLE_DATA_REFRESH', '').downcase
+    %w[1 true yes].include?(value)
+  end
+
+  def large_data_cache_dir
+    Rails.root.join('tmp', 'sample_data_cache')
+  end
+
+  def large_data_cache_path row_count
+    large_data_cache_dir.join("large_data_v#{LARGE_DATA_CACHE_VERSION}_#{row_count}.json")
+  end
+
+  def load_large_data_ratings_cache path, search_url, row_count
+    return nil unless path.file?
+
+    data = JSON.parse(File.read(path))
+    meta = data['meta']
+    unless meta.is_a?(Hash) &&
+           meta['version'] == LARGE_DATA_CACHE_VERSION &&
+           meta['search_url'] == search_url &&
+           meta['number'].to_i == row_count
+      return nil
+    end
+
+    ratings = data['ratings']
+    return nil unless ratings.is_a?(Array)
+
+    ratings.map { |row| row.symbolize_keys }
+  rescue JSON::ParserError
+    nil
+  end
+
+  def save_large_data_ratings_cache path, search_url, row_count, ratings
+    slim = ratings.map do |row|
+      h = row.deep_symbolize_keys
+      {
+        'query_text' => h[:query_text],
+        'doc_id'     => h[:doc_id],
+        'rating'     => h[:rating],
+      }
+    end
+    payload = {
+      'meta' => {
+        'version'    => LARGE_DATA_CACHE_VERSION,
+        'search_url' => search_url,
+        'number'     => row_count,
+      },
+      'ratings' => slim,
+    }
+    FileUtils.mkdir_p(path.dirname)
+    File.write(path, JSON.generate(payload))
+  end
+
+  def load_or_generate_large_data_ratings search_url, row_count
+    path = large_data_cache_path(row_count)
+    unless large_data_cache_force_refresh?
+      cached = load_large_data_ratings_cache(path, search_url, row_count)
+      if cached
+        rel = path.relative_path_from(Rails.root).to_s
+        print_step "Using cached large sample ratings (#{cached.size} from Solr sample size #{row_count}) at #{rel}"
+        return cached
+      end
+    end
+
+    generator = ::RatingsGenerator.new search_url, { number: row_count, show_progress: true }
+    ratings   = generator.generate_ratings
+    save_large_data_ratings_cache path, search_url, row_count, ratings
+    rel = path.relative_path_from(Rails.root).to_s
+    print_step "Saved #{ratings.size} ratings (Solr sample size #{row_count}) to #{rel}"
+    ratings
+  end
 
   def seed_user hash
     if hash[:email] && ::User.exists?(email: hash[:email].downcase)
