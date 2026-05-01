@@ -200,11 +200,23 @@ function copyVendorFiles() {
   
   ensureDirectoryExists('app/assets/builds');
   
-  // Copy Angular third-party CSS files
-  copyFileIfExists('node_modules/ng-json-explorer/dist/angular-json-explorer.css', 'app/assets/builds/angular-json-explorer.css');
-  copyFileIfExists('node_modules/angular-wizard/dist/angular-wizard.css', 'app/assets/builds/angular-wizard.css');
-  copyFileIfExists('node_modules/ng-tags-input/build/ng-tags-input.min.css', 'app/assets/builds/ng-tags-input.min.css');
-  copyFileIfExists('node_modules/ng-tags-input/build/ng-tags-input.bootstrap.min.css', 'app/assets/builds/ng-tags-input.bootstrap.min.css');
+  // Copy Angular third-party CSS files (sources live in app/javascript/vendor)
+  copyFileIfExists(
+    'app/javascript/vendor/ng-json-explorer/dist/angular-json-explorer.css',
+    'app/assets/builds/angular-json-explorer.css'
+  );
+  copyFileIfExists(
+    'app/javascript/vendor/angular-wizard/angular-wizard.css',
+    'app/assets/builds/angular-wizard.css'
+  );
+  copyFileIfExists(
+    'app/javascript/vendor/ng-tags-input/build/ng-tags-input.min.css',
+    'app/assets/builds/ng-tags-input.min.css'
+  );
+  copyFileIfExists(
+    'app/javascript/vendor/ng-tags-input/build/ng-tags-input.bootstrap.min.css',
+    'app/assets/builds/ng-tags-input.bootstrap.min.css'
+  );
 }
 
 function copyFontFiles() {

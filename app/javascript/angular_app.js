@@ -10,26 +10,26 @@ import 'jquery-autogrowinput';
 import * as d3 from 'd3';
 window.d3 = d3;
 
-// Angular and core dependencies
+// Angular and AngularJS satellite modules (vendored under ./vendor/ except core angular from npm)
 import 'angular';
-import 'angular-resource';
-import 'angular-cookies';
-import 'angular-route';
-import 'angular-sanitize';
-import 'angular-animate';
+import './vendor/angular-resource';
+import './vendor/angular-cookies';
+import './vendor/angular-route';
+import './vendor/angular-sanitize';
+import './vendor/angular-animate';
 
-// Angular third-party modules
-import 'angular-ui-bootstrap';
-import 'angular-wizard';
-import 'angular-ui-sortable';
-import 'angular-utils-pagination';
-import 'angular-timeago';
-import 'angular-csv-import';
-import 'angular-flash/dist/angular-flash';
-import 'angular-countup';
+// Angular third-party modules (vendored sources; see vendor/README.md)
+import './vendor/angular-ui-bootstrap/index.js';
+import './vendor/angular-wizard/angular-wizard.js';
+import './vendor/angular-ui-sortable/src/sortable.js';
+import './vendor/angular-utils-pagination';
+import './vendor/angular-timeago/dist/angular-timeago.js';
+import './vendor/angular-csv-import/lib/angular-csv-import.js';
+import './vendor/angular-flash/angular-flash.js';
+import './vendor/angular-countup/angular-countup.js';
 import 'clipboard';
-import 'ngclipboard';
-import 'ng-tags-input';
+import './vendor/ngclipboard/ngclipboard.js';
+import './vendor/ng-tags-input/build/ng-tags-input.js';
 import 'file-saver';
 
 // ACE editor
@@ -41,13 +41,13 @@ import 'ace-builds/src-min-noconflict/mode-lucene';
 window.ace = ace;
 
 // Angular UI ACE
-import 'angular-ui-ace/src/ui-ace';
+import './vendor/angular-ui-ace/src/ui-ace.js';
 
 // Splainer Search (vanilla-JS 3.x wrapped in a local Angular shim)
 import './splainer_search_adapter';
 
-// ng-json-explorer - use the dist file to avoid gulpfile issues
-import 'ng-json-explorer/dist/angular-json-explorer';
+// ng-json-explorer - use dist build to avoid gulpfile issues
+import './vendor/ng-json-explorer/dist/angular-json-explorer.js';
 
 // Vega for charts
 import * as vega from 'vega';
