@@ -1168,6 +1168,13 @@ li.annotation {
   opacity: .9;
 }
 
+/* Bootstrap 5 dropdown shown-state. BS3 shows menus via `.open > .dropdown-menu`;
+   BS5's bootstrap.Dropdown adds `.show` to the menu instead, so under the BS3
+   stylesheet the menu would stay `display: none` even though BS5 thinks it's open. */
+.dropdown-menu.show {
+  display: block;
+}
+
 .modal-title .modal-case {
 	font-weight: 200;
 	color: #888;
