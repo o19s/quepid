@@ -1,0 +1,80 @@
+.angular-json-explorer .hidden {
+	display: none;
+}
+
+.angular-json-explorer .prop {
+	font-weight: bold;
+}
+
+.angular-json-explorer .null {
+	color: red;
+}
+
+.angular-json-explorer .bool {
+	color: blue;
+}
+
+.angular-json-explorer .num {
+	color: blue;
+}
+
+.angular-json-explorer .string {
+	color: green;
+	white-space: pre-wrap;
+}
+
+.angular-json-explorer .collapser {
+	position: absolute;
+	left: -1em;
+	cursor: pointer;
+	-moz-user-select: none;
+	color: rgb(249, 39, 83);
+	text-decoration: none;
+}
+
+.angular-json-explorer .q {
+	display: inline-block;
+	width: 0px;
+	color: transparent;
+}
+
+.angular-json-explorer li {
+	position: relative;
+}
+
+.angular-json-explorer .error {
+	border-radius: 8px;
+	border: 1px solid #970000;
+	background-color: #F7E8E8;
+	margin: .5em;
+	padding: .5em;
+}
+
+.angular-json-explorer .errormessage {
+	font-family: monospace;
+}
+
+.angular-json-explorer {
+	font-family: monospace;
+	font-size: 1.1em;
+	white-space: pre-wrap;
+}
+
+.angular-json-explorer ul {
+	list-style: none;
+	margin: 0 0 0 2em;
+	padding: 0;
+}
+
+.angular-json-explorer h1 {
+	font-size: 1.2em;
+}
+
+.angular-json-explorer .callback + #json {
+	padding-left: 1em;
+}
+
+.angular-json-explorer .callback {
+	font-family: monospace;
+	color: #A52A2A;
+}
