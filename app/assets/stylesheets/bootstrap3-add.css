@@ -1159,6 +1159,15 @@ li.annotation {
   max-width: 100%
 }
 
+/* Bootstrap 5 tooltip shown-state. BS3 toggles `.in`; BS5 toggles `.show`.
+   The native bootstrap.Tooltip used by `quepid-tooltip` only adds `.show`,
+   so without this rule the tooltip stays at opacity 0. Positioning is
+   handled by Popper-driven inline styles; BS3's existing .tooltip and
+   .tooltip-inner rules cover the rest of the styling. */
+.tooltip.show {
+  opacity: .9;
+}
+
 .modal-title .modal-case {
 	font-weight: 200;
 	color: #888;

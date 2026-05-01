@@ -17,6 +17,15 @@ import './vendor/angular-route';
 import './vendor/angular-sanitize';
 import './vendor/angular-animate';
 
+// Bootstrap 5 JS (Tooltip, Popover, etc.) — exposed as window.bootstrap for
+// use by directives such as quepidTooltip. Pulls @popperjs/core transitively.
+// esbuild resolves `bootstrap` to its ESM build, which exports named symbols
+// but does NOT auto-assign window.bootstrap (unlike the UMD build that the
+// importmap'd application_modern.js gets). Re-pin it here so directives can
+// use the same window.bootstrap.* surface across both bundles.
+import * as bootstrap from 'bootstrap';
+window.bootstrap = bootstrap;
+
 // Angular third-party modules (vendored sources; see vendor/README.md)
 import './vendor/angular-ui-bootstrap/index.js';
 import './vendor/angular-wizard/angular-wizard.js';
