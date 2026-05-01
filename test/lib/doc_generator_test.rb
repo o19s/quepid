@@ -44,7 +44,7 @@ class DocGeneratorTest < ActiveSupport::TestCase
     {
       field:         'text',
       id:            'id',
-      logger:        Logger.new($stdout),
+      logger:        Logger.new(IO::NULL),
       number:        1,
       query:         '*:*',
       rows:          1,
@@ -89,7 +89,7 @@ class DocGeneratorTest < ActiveSupport::TestCase
         'show_progress' => false,
         'field'         => 'text',
         'id'            => 'id',
-        'logger'        => Logger.new($stdout),
+        'logger'        => Logger.new(IO::NULL),
         'query'         => '*:*',
         'rows'          => 1,
         'solr_retries'  => 2,
