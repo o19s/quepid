@@ -1,0 +1,26 @@
+{
+  "name": "angular-countup",
+  "version": "0.0.1",
+  "description": "Lightweight plugin for AngularJS without any dependencies",
+  "main": "angular-countup.js",
+  "scripts": {
+    "build": "gulp build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dmitriy-borisov/angular-countup/"
+  },
+  "keywords": [
+    "angular",
+    "numbers",
+    "countup",
+    "counter"
+  ],
+  "author": "Dmitriy Borisov",
+  "license": "MIT",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^2.0.0"
+  }
+}
