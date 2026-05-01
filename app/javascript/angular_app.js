@@ -12,7 +12,6 @@ window.d3 = d3;
 
 // Angular and AngularJS satellite modules (vendored under ./vendor/ except core angular from npm)
 import 'angular';
-import './vendor/angular-resource';
 import './vendor/angular-cookies';
 import './vendor/angular-route';
 import './vendor/angular-sanitize';
