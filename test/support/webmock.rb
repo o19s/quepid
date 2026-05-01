@@ -219,8 +219,9 @@ module ActiveSupport
       stub_request(:get, 'https://example.com/new-location')
         .to_return(status: 200, body: mock_statedecoded_body)
 
-      # Demonstrate server error
-      stub_request(:get, 'https://localhost:9999/')
+      # Demonstrate server error (uses a public-resolving host so the SSRF
+      # validator doesn't block before the connection attempt).
+      stub_request(:get, 'https://broken.quepidapp.com:9999/')
         .to_raise(Faraday::ConnectionFailed.new('Failed to connect'))
 
       # Testing out handline of café as a non ascii character
