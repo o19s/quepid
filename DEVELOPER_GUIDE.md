@@ -406,6 +406,7 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
 
 4. **Why is this rebuild needed?**
    - Splainer-search ESM modules are inlined into **`app/assets/builds/angular_app.js`** at build time, not runtime
+   - **`angular-ui-bootstrap`** component styles from vendored **`src/**/*.css`** are emitted into **`app/assets/builds/angular_app.css`** (loaded by the core layout next to **`angular_app.js`**); edit sources under **`app/javascript/vendor/angular-ui-bootstrap/src/`** and rebuild the vendor bundle to refresh both outputs
    - Bundlers/watchers tied to **`angular_app.js`** do not reliably watch deep changes under **`node_modules/`**; run **`yarn build:angular-vendor`** so edits are picked up
 
 

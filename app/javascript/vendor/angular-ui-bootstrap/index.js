@@ -1,7 +1,10 @@
 /**
  * Vendored angular-ui-bootstrap 2.5.6 (MIT). See LICENSE and README.md in this directory.
- * Module graph matches dist/ui-bootstrap-tpls.js on npm; *-nocss entries avoid bundling
- * component CSS (Quepid uses bootstrap3.css instead).
+ *
+ * This entry imports the same modular sources as upstream (editable under ./src/). Each component’s
+ * full `index.js` pulls in its small `*.css` files; esbuild emits them into `app/assets/builds/angular_app.css`.
+ * Load that stylesheet next to `angular_app.js` (see `app/views/layouts/core.html.erb`) so behavior matches
+ * npm’s prebuilt `dist/ui-bootstrap-tpls.js`, which injects these rules at runtime.
  */
 
 import './src/collapse';
@@ -9,27 +12,27 @@ import './src/tabindex';
 import './src/accordion';
 import './src/alert';
 import './src/buttons';
-import './src/carousel/index-nocss.js';
+import './src/carousel';
 import './src/dateparser';
 import './src/isClass';
-import './src/datepicker/index-nocss.js';
-import './src/position/index-nocss.js';
-import './src/datepickerPopup/index-nocss.js';
+import './src/datepicker';
+import './src/position';
+import './src/datepickerPopup';
 import './src/debounce';
 import './src/multiMap';
-import './src/dropdown/index-nocss.js';
+import './src/dropdown';
 import './src/stackedMap';
-import './src/modal/index-nocss.js';
+import './src/modal';
 import './src/paging';
 import './src/pager';
 import './src/pagination';
-import './src/tooltip/index-nocss.js';
-import './src/popover/index-nocss.js';
+import './src/tooltip';
+import './src/popover';
 import './src/progressbar';
 import './src/rating';
 import './src/tabs';
-import './src/timepicker/index-nocss.js';
-import './src/typeahead/index-nocss.js';
+import './src/timepicker';
+import './src/typeahead';
 
 angular.module('ui.bootstrap.tpls', [
   'uib/template/accordion/accordion-group.html',

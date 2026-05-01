@@ -46,7 +46,7 @@
   "resolutions": {},
   "scripts": {
     "build:jquery": "esbuild app/javascript/jquery_bundle.js --bundle --sourcemap --format=iife --platform=browser --outdir=app/assets/builds --public-path=/assets",
-    "build:angular-vendor": "esbuild app/javascript/angular_app.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets --loader:.png=dataurl --loader:.svg=dataurl --loader:.woff=dataurl --loader:.woff2=dataurl --loader:.ttf=dataurl --loader:.eot=dataurl --external:jquery",
+    "build:angular-vendor": "esbuild app/javascript/angular_app.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets --loader:.css=css --loader:.png=dataurl --loader:.svg=dataurl --loader:.woff=dataurl --loader:.woff2=dataurl --loader:.ttf=dataurl --loader:.eot=dataurl --external:jquery",
     "build:angular-app": "node build_angular_app.js",
     "build:angular-app:watch": "node build_angular_app.js --watch",
     "build:angular-templates": "node build_templates.js",
