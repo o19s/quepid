@@ -14,18 +14,45 @@
   <div ng-if="hots.length <= 3">
     <div ng-click="showDetailed()" class="graph-explain" ng-repeat="match in hots">
       <div class="graph-label">{{match.description}}</div>
-      <uib-progressbar animate="false" value="match.percentage"></uib-progressbar>
+      <div class="progress">
+        <div
+          class="progress-bar"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          ng-attr-aria-valuenow="{{ (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) }}"
+          ng-style="{ width: (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) + '%' }"
+        ></div>
+      </div>
     </div>
   </div>
   <div ng-if="hots.length > 3">
     <div ng-click="showDetailed()" class="graph-explain" ng-repeat="match in hots.slice(0,3)">
       <div class="graph-label">{{match.description}}</div>
-      <uib-progressbar animate="false" value="match.percentage"></uib-progressbar>
+      <div class="progress">
+        <div
+          class="progress-bar"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          ng-attr-aria-valuenow="{{ (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) }}"
+          ng-style="{ width: (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) + '%' }"
+        ></div>
+      </div>
     </div>
     <div uib-collapse="!showAll">
       <div ng-click="showDetailed()" class="graph-explain" ng-repeat="match in hots.slice(3)">
         <div class="graph-label">{{match.description}}</div>
-        <uib-progressbar animate="false" value="match.percentage"></uib-progressbar>
+        <div class="progress">
+          <div
+            class="progress-bar"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            ng-attr-aria-valuenow="{{ (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) }}"
+            ng-style="{ width: (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) + '%' }"
+          ></div>
+        </div>
       </div>
     </div>
 

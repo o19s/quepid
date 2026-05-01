@@ -11,7 +11,7 @@ const api = createWiredServices(
   createFetchClient({ credentials: 'include' }),
 );
 
-var splainerAngular = angular.module('o19s.splainer-search', []);
+const splainerAngular = angular.module('o19s.splainer-search', []);
 
 Object.keys(api).forEach(function (name) {
   splainerAngular.value(name, api[name]);

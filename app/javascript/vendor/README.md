@@ -26,4 +26,6 @@ Angular unit tests load **`angular-mocks`** from `node_modules/` (see Karma conf
 
 Subdirectories retain upstream **`package.json` / license files** for version provenance where applicable.
 
+Imports in `app/javascript/angular_app.js` point at **explicit file paths** rather than directory/package names — they intentionally do **not** go through each upstream `package.json`'s `main` field. This is so the source we ship is the source we edit. For example, `ng-tags-input`'s upstream `main` is the minified `build/ng-tags-input.min.js`; we import `build/ng-tags-input.js` (unminified) so the vendored copy stays readable. Don't "fix" these to bare-name imports.
+
 To **restore a dependency to npm**, add it again in `package.json` and replace the `./vendor/...` import(s) in `app/javascript/angular_app.js` (and Karma or `build_css.js` paths if needed).
