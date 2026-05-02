@@ -35,7 +35,6 @@ class LlmServiceTest < ActiveSupport::TestCase
       user_prompt = USER_PROMPT_COMPOSED
       system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
       result = service.get_llm_response(user_prompt, system_prompt)
-      puts result
 
       assert_kind_of Numeric, result[:judgment]
       assert_not_nil result[:explanation]
@@ -85,22 +84,36 @@ class LlmServiceTest < ActiveSupport::TestCase
     end
   end
 
+  OLLAMA_HOST = 'ollama'
+  OLLAMA_PORT = 31_434
+
+  def ollama_available?
+    Socket.tcp(OLLAMA_HOST, OLLAMA_PORT, connect_timeout: 1) { true }
+  rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH, SocketError, Errno::ETIMEDOUT
+    false
+  end
+
   describe 'using ollama' do
     test 'we can override settings and use Qwen' do
-      skip 'Skipping this test as we do not know if we are running Ollama locally'
-      WebMock.allow_net_connect!
-      opts = {
-        llm_service_url: 'http://ollama:11434',
-        llm_model:       'qwen2.5:0.5b',
-        llm_timeout:     90,
-      }
-      service = LlmService.new 'ollama', opts
+      skip "Skipping: Ollama not reachable at #{OLLAMA_HOST}:#{OLLAMA_PORT}" unless ollama_available?
 
-      user_prompt = USER_PROMPT_COMPOSED
-      system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
-      result = service.get_llm_response(user_prompt, system_prompt)
-      puts result
-      WebMock.disable_net_connect!
+      begin
+        WebMock.allow_net_connect!
+        opts = {
+          llm_service_url: "http://#{OLLAMA_HOST}:#{OLLAMA_PORT}",
+          llm_model:       'qwen3:0.6b',
+          llm_timeout:     90,
+        }
+        service = LlmService.new 'ollama', opts
+
+        user_prompt = [ { type: 'text', text: USER_PROMPT_TEXT } ]
+        system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
+        result = service.get_llm_response(user_prompt, system_prompt)
+
+        assert_kind_of Numeric, result[:judgment]
+      ensure
+        WebMock.disable_net_connect!
+      end
     end
   end
 
