@@ -65,10 +65,6 @@ body {
 }
 
 
-.img-rounded {
-  border-radius: 6px;
-}
-
 .alert {
   z-index: 100;
 }

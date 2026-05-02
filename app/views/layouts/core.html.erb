@@ -34,6 +34,7 @@
         function(bootstrapSvc, configurationSvc) {
           configurationSvc.setCommunalScorersOnly('<%= Rails.application.config.communal_scorers_only %>');
           configurationSvc.setQueryListSortable('<%= Rails.application.config.query_list_sortable %>');
+          configurationSvc.setBs5Enabled('<%= Rails.application.config.core_layout_bs5 %>');
 
           bootstrapSvc.run();
         }

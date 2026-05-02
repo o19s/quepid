@@ -78,6 +78,15 @@ Rails.application.config.email_sender = ENV.fetch('EMAIL_SENDER', '')
 #
 Rails.application.config.query_list_sortable = bool.deserialize(ENV.fetch('QUERY_LIST_SORTABLE', true))
 
+# == Bootstrap 5 Core Layout
+# Feature flag for the BS3 → BS5 migration of the Angular case UI (`core.html.erb`).
+# When false (default), `core.html.erb` loads today's BS3-based `core.css` bundle.
+# When true, it loads the BS5-based `core_bs5.css` bundle. Templates use `configurationSvc.isBs5Enabled()`
+# (via `ng-class`) to toggle BS3↔BS5 class names where the two stylesheets disagree.
+# See `docs/bootstrap3_to_bs5_migration.md`.
+#
+Rails.application.config.core_layout_bs5 = bool.deserialize(ENV.fetch('CORE_LAYOUT_BS5', false))
+
 # == OAuth Settings =
 # We currently only support these two OAuth providers.
 Rails.application.config.google_client_id = ENV.fetch('GOOGLE_CLIENT_ID', '')
