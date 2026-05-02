@@ -140,10 +140,14 @@
               <br />OR<br />
 
               <input type="text" ng-model="selectedItem" placeholder="Select endpoint to use"
-                uib-typeahead="searchEndpoint as searchEndpoint.name for searchEndpoint in searchOptions($viewValue)"
-                typeahead-template-url="views/searchEndpoint_popup.html" class="form-control" typeahead-show-hint="true"
-                typeahead-min-length="0" typeahead-editable="false" typeahead-select-on-exact="false"
-                typeahead-no-results="noResults" typeahead-on-select="onSelectSearchEndpoint($item)"/>
+                quepid-typeahead="searchOptions($viewValue)"
+                quepid-typeahead-label-field="name"
+                quepid-typeahead-template-url="'views/searchEndpoint_popup.html'"
+                quepid-typeahead-min-length="0"
+                quepid-typeahead-editable="false"
+                quepid-typeahead-on-select="onSelectSearchEndpoint($item)"
+                quepid-typeahead-no-results="noResults"
+                class="form-control"/>
               <div ng-if="noResults">
                 No search endpoints found. Check your spelling!
               </div>

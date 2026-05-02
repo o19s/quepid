@@ -587,3 +587,41 @@
 .nav-link:focus-visible {
   box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
 }
+
+/*
+ * quepid-typeahead dropdown (kraaden/autocompleter, replacing uib-typeahead).
+ *
+ * kraaden appends `<div class="autocomplete">` to <body>. We assign an extra
+ * className so we can target our instances without colliding with anything
+ * else that might use the bare `.autocomplete` selector. The library ships
+ * its own CSS (autocomplete.css) but we deliberately don't include it — the
+ * defaults assume a 16px root, and the green hover colour is jarring against
+ * Quepid's chrome. These rules cover the same surface in px.
+ *
+ * z-index sits above BS3/BS5 modals (1050) so the dropdown isn't clipped
+ * when the typeahead lives inside a $uibModal (e.g. wizardModal).
+ */
+.quepid-typeahead-dropdown {
+  position: absolute;
+  z-index: 1080;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.175);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 14px;
+  line-height: 22px;
+}
+.quepid-typeahead-dropdown > div {
+  padding: 4px 12px;
+  cursor: pointer;
+}
+.quepid-typeahead-dropdown > div.selected,
+.quepid-typeahead-dropdown > div:hover {
+  background: #e9ecef;
+}
+.quepid-typeahead-dropdown img {
+  vertical-align: middle;
+  margin-right: 6px;
+}

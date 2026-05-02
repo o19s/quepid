@@ -440,7 +440,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
           <div class="form-group clearfix">
             <label class="col-sm-3 control-label">Title Field</label>
             <div class="col-sm-9">
-              <input type="text" class="form-control" ng-model="pendingWizardSettings.titleField" ng-change="updateDisplayFields('title', pendingWizardSettings.titleField)" typeahead-on-select="updateDisplayFields('title', pendingWizardSettings.titleField)" uib-typeahead="field for field in searchFields | filter:$viewValue | limitTo:8" class="form-control" placeholder="Begin typing to show suggestions">
+              <input type="text" class="form-control" ng-model="pendingWizardSettings.titleField" ng-change="updateDisplayFields('title', pendingWizardSettings.titleField)" quepid-typeahead="searchFields" quepid-typeahead-on-select="updateDisplayFields('title', $item)" placeholder="Begin typing to show suggestions">
               <p class="help-block">What field should we treat as the 'title' when displaying results?</p>
               <p ng-if="titleFieldRequired" class="text-danger">This field is required. Please select a title field.</p>
             </div>
@@ -449,7 +449,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
           <div class="form-group clearfix">
             <label class="col-sm-3 control-label">ID Field</label>
             <div class="col-sm-9">
-              <input type="text" class="form-control" ng-model="pendingWizardSettings.idField" ng-change="updateDisplayFields('id', pendingWizardSettings.idField)" typeahead-on-select="updateDisplayFields('id', pendingWizardSettings.idField)" uib-typeahead="field for field in idFields | filter:$viewValue | limitTo:8" placeholder="Begin typing to show suggestions">
+              <input type="text" class="form-control" ng-model="pendingWizardSettings.idField" ng-change="updateDisplayFields('id', pendingWizardSettings.idField)" quepid-typeahead="idFields" quepid-typeahead-on-select="updateDisplayFields('id', $item)" placeholder="Begin typing to show suggestions">
               <p class="help-block">What field is the unique identifier for your search results?</p>
               <p ng-if="idFieldRequired" class="text-danger">This field is required. Please select an ID field.</p>
             </div>

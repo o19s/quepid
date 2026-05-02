@@ -26,6 +26,12 @@ import './vendor/angular-animate';
 import * as bootstrap from 'bootstrap';
 window.bootstrap = bootstrap;
 
+// kraaden/autocompleter — vanilla replacement for uib-typeahead. Pinned to
+// window so quepidTypeahead can use it without importing into the Angular
+// bundle (matches the bootstrap pattern above).
+import autocomplete from 'autocompleter';
+window.autocompleter = autocomplete;
+
 // Angular third-party modules (vendored sources; see vendor/README.md)
 import './vendor/angular-ui-bootstrap/index.js';
 import './vendor/angular-wizard/angular-wizard.js';
