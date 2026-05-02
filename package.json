@@ -34,6 +34,7 @@
     "vega-lite": "^6.4.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.0",
     "angular-mocks": "~1.8.3",
     "chokidar": "5.0.0",
     "esbuild": "^0.28.0",
@@ -58,6 +59,9 @@
     "build:css:watch": "node build_css.js --watch",
     "build": "npm run build:css && npm run build:jquery && npm run build:angular-vendor && npm run build:angular-app && npm run build:angular-templates && npm run build:admin && npm run build:analytics",
     "test": "rake karma:run",
-    "test:ci": "rake karma:ci"
+    "test:ci": "rake karma:ci",
+    "test:e2e": "playwright test --config test/playwright/playwright.config.ts",
+    "test:e2e:update-baselines": "playwright test --config test/playwright/playwright.config.ts --update-snapshots",
+    "test:e2e:ui": "playwright test --config test/playwright/playwright.config.ts --ui"
   }
 }
