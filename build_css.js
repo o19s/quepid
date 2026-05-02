@@ -109,7 +109,7 @@ function buildCoreCSS() {
   output += '\n';
   // Loaded after BS3 so its `.popover` rules cascade-override BS3's
   // `.popover { display: none }`. See file header for context.
-  output += readFileIfExists('app/assets/stylesheets/bootstrap5-popover-tooltip.css');
+  output += readFileIfExists('app/assets/stylesheets/bootstrap5-compat.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/style.css');
   output += '\n';

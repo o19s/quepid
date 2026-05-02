@@ -29,10 +29,25 @@
     <wz-step title="Endpoint" id="step-three">
       <h2>What Search Endpoint do you want to connect to?</h2>
       <div>
-        <uib-accordion>
-          <div uib-accordion-group class="panel-default" heading="Create a new Search Endpoint" 
-            is-open="shouldCreateNewSearchEndpointDefaultToOpen"
-            ng-click="switchToCreateNewSearchEndpoint()">
+        <div class="accordion" id="wizardEndpointAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button"
+                class="accordion-button"
+                ng-class="{collapsed: !shouldCreateNewSearchEndpointDefaultToOpen}"
+                data-bs-toggle="collapse"
+                data-bs-target="#wizardEndpointAccordionCreate"
+                aria-controls="wizardEndpointAccordionCreate"
+                ng-attr-aria-expanded="{{!!shouldCreateNewSearchEndpointDefaultToOpen}}"
+                ng-click="switchToCreateNewSearchEndpoint()">
+                Create a new Search Endpoint
+              </button>
+            </h2>
+            <div id="wizardEndpointAccordionCreate"
+              class="accordion-collapse collapse"
+              ng-class="{show: shouldCreateNewSearchEndpointDefaultToOpen}"
+              data-bs-parent="#wizardEndpointAccordion">
+              <div class="accordion-body">
           <div style="text-align: center;">
             <label style="margin-right: 25px;">
               <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
@@ -327,8 +342,26 @@ star wars,1921,3, Star Wars: Return of the Jedi
           </form>
 
 
+              </div>
+            </div>
           </div>
-          <div uib-accordion-group class="panel-default" heading="Use an existing Search Endpoint" is-open="shouldExistingSearchEndpointDefaultToOpen">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button"
+                class="accordion-button"
+                ng-class="{collapsed: !shouldExistingSearchEndpointDefaultToOpen}"
+                data-bs-toggle="collapse"
+                data-bs-target="#wizardEndpointAccordionExisting"
+                aria-controls="wizardEndpointAccordionExisting"
+                ng-attr-aria-expanded="{{!!shouldExistingSearchEndpointDefaultToOpen}}">
+                Use an existing Search Endpoint
+              </button>
+            </h2>
+            <div id="wizardEndpointAccordionExisting"
+              class="accordion-collapse collapse"
+              ng-class="{show: shouldExistingSearchEndpointDefaultToOpen}"
+              data-bs-parent="#wizardEndpointAccordion">
+              <div class="accordion-body">
             <div class="row">
               <div class="alert alert-warning" role="alert" ng-if="listSearchEndpoints().length === 0">
                 You do not have any Search Endpoints created yet.
@@ -392,9 +425,10 @@ star wars,1921,3, Star Wars: Return of the Jedi
                 </span>
               </div>
             </div>
+              </div>
+            </div>
           </div>
-          
-        </uib-accordion>
+        </div>
         <br><br><br><br>
       </div>
     </wz-step>

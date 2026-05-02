@@ -42,7 +42,7 @@ In JavaScript, use `const` or `let` instead of `var`. When writing multiline ter
 
 The Angular case UI (`app/views/layouts/core.html.erb`) loads **Bootstrap 3** CSS via `core.css`. The non-Angular UI loads BS5 via `application.css`. They are separate stylesheet worlds. When migrating a uib directive (`uib-popover`, `uib-tooltip`, ...) to native `window.bootstrap.*` — see existing examples in `app/assets/javascripts/directives/quepidPopover.js` and `quepidTooltip.js` — expect these traps:
 
-1. **BS5 component CSS is not loaded.** Port the needed rules from `node_modules/bootstrap/dist/css/bootstrap.css` into `app/assets/stylesheets/bootstrap5-popover-tooltip.css` (rename when it covers more) and include it in `buildCoreCSS()` in `build_css.js` *after* `bootstrap3-add.css` so cascade order favours BS5.
+1. **BS5 component CSS is not loaded.** Port the needed rules from `node_modules/bootstrap/dist/css/bootstrap.css` into `app/assets/stylesheets/bootstrap5-compat.css` and include it in `buildCoreCSS()` in `build_css.js` *after* `bootstrap3-add.css` so cascade order favours BS5. Scope new collapse-style rules (e.g. `.accordion-collapse.collapse:not(.show)`) so they don't clobber BS3's `.collapse.in` ecosystem or `quepid-collapse`.
 
 2. **`html { font-size: 62.5% }`** is set on the Angular UI (1rem = 10px). BS5's rem-based defaults render ~37% smaller than intended. Override the relevant CSS variables (`--bs-popover-font-size: 14px`, `--bs-tooltip-padding-x`, etc.) with **px values** in the compat CSS. Do not change the root font-size — BS3 depends on it.
 
