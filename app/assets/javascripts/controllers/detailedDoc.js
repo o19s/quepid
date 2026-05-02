@@ -2,11 +2,11 @@
 
 angular.module('QuepidApp')
   .controller('DetailedDocCtrl', [
-    '$scope', '$uibModalInstance', '$window',
+    '$scope', '$quepidModalInstance', '$window',
     'settingsSvc','caseTryNavSvc',
     'doc',
     function DetailedDocCtrl(
-      $scope, $uibModalInstance, $window,
+      $scope, $quepidModalInstance, $window,
       settingsSvc, caseTryNavSvc,
       doc) {
       
@@ -44,7 +44,7 @@ angular.module('QuepidApp')
 
 
       $scope.cancel = function() {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
     }
   ]);

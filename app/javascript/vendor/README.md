@@ -8,7 +8,6 @@ Third-party JavaScript that Quepid previously loaded from `package.json` now liv
 |-----------|------|
 | `angular-animate` … `angular-sanitize` | AngularJS satellites: `ngAnimate`, `ngCookies`, `ngRoute`, `ngSanitize` |
 | `angular-countup` | `countUp` module |
-| `angular-ui-bootstrap/` | Bootstrap 3 directives (`ui.bootstrap`; component CSS → `app/assets/builds/angular_app.css`; see subdirectory `README.md`) |
 | `angular-wizard/` | `mgo-angular-wizard` |
 | `angular-ui-sortable/` | `ui.sortable` |
 | `angular-utils-pagination/` | `angularUtils.directives.dirPagination` |

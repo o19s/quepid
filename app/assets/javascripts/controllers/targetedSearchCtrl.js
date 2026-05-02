@@ -2,12 +2,12 @@
 
 angular.module('QuepidApp')
   .controller('TargetedSearchCtrl', [
-    '$scope', '$uibModal',
-    function ($scope, $uibModal) {
+    '$scope', '$quepidModal',
+    function ($scope, $quepidModal) {
       $scope.targetedSearch = {};
       $scope.targetedSearch.triggerModal = function() {
 
-        var modalInstance = $uibModal.open({
+        var modalInstance = $quepidModal.open({
           templateUrl: 'views/targetedSearchModal.html',
           controller: 'TargetedSearchModalCtrl',
           size: 'lg',

@@ -68,7 +68,7 @@ describe('Controller: WizardModalCtrl', function () {
   // Initialize the controller and a mock scope
   beforeEach(function() {
     module(function($provide) {
-      $provide.value('$uibModalInstance', mockModalInstance);
+      $provide.value('$quepidModalInstance', mockModalInstance);
       $provide.value('userSvc', mockUserSvc);
       $provide.value('WizardHandler', mockWizardHandler);
     });

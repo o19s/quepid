@@ -47,7 +47,7 @@
 //                                 ({label, model}) and `query`. Mirrors the
 //                                 uibTypeahead `match`/`query` locals so
 //                                 existing partials (and the
-//                                 uibTypeaheadHighlight filter) keep working.
+//                                 quepidTypeaheadHighlight filter) keep working.
 //   quepid-typeahead-min-length   integer; default 1. Set 0 for "open on
 //                                 focus" behaviour.
 //   quepid-typeahead-editable     "false" rejects input that doesn't match a
@@ -210,7 +210,7 @@
                   const wrap = angular.element('<div>' + templateHtml + '</div>');
                   $compile(wrap)(rowScope);
                   // Trigger a digest so interpolations (and filters like
-                  // uibTypeaheadHighlight) render before kraaden inserts the
+                  // quepidTypeaheadHighlight) render before kraaden inserts the
                   // node. $applyAsync would defer past insertion.
                   rowScope.$digest();
                   div.appendChild(wrap[0]);

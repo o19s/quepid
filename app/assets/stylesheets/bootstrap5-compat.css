@@ -17,7 +17,7 @@
  *
  *   Components covered: popover, tooltip, accordion (+ scoped .collapse
  *   helpers under .accordion-collapse), tabs, dropdown, typeahead
- *   (in-app `quepid-typeahead` directive), and modal (in-app `$uibModal`
+ *   (in-app `quepid-typeahead` directive), and modal (in-app `$quepidModal`
  *   shim service).
  */
 
@@ -601,7 +601,7 @@
  * Quepid's chrome. These rules cover the same surface in px.
  *
  * z-index sits above BS3/BS5 modals (1050) so the dropdown isn't clipped
- * when the typeahead lives inside a $uibModal (e.g. wizardModal).
+ * when the typeahead lives inside a $quepidModal (e.g. wizardModal).
  */
 .quepid-typeahead-dropdown {
   position: absolute;
@@ -629,7 +629,7 @@
 }
 
 /*
- * Modal — bridge for $uibModal shim (services/quepidModalSvc.js).
+ * Modal — bridge for $quepidModal shim (services/quepidModalSvc.js).
  *
  * BS3 already styles .modal, .modal-dialog, .modal-content,
  * .modal-header/body/footer, .modal-sm/.modal-lg, and the .modal-backdrop

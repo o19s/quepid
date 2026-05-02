@@ -3,16 +3,16 @@
 angular.module('QuepidApp')
   .controller('DeleteCaseModalInstanceCtrl', [
     '$rootScope',
-    '$uibModalInstance',
-    function ($rootScope, $uibModalInstance) {
+    '$quepidModalInstance',
+    function ($rootScope, $quepidModalInstance) {
       var ctrl = this;
 
       ctrl.ok = function () {
-        $uibModalInstance.close(true);
+        $quepidModalInstance.close(true);
       };
 
       ctrl.cancel = function () {
-        $uibModalInstance.close(false);
+        $quepidModalInstance.close(false);
       };
 
     }

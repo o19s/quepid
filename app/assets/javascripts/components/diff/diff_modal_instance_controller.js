@@ -5,13 +5,13 @@
 angular.module('QuepidApp')
   .controller('DiffModalInstanceCtrl', [
     '$scope',
-    '$uibModalInstance',
+    '$quepidModalInstance',
     '$log',
     'flash',
     'querySnapshotSvc', 'queryViewSvc', 'queriesSvc', 'initialSelection',
     function(
       $scope,
-      $uibModalInstance,
+      $quepidModalInstance,
       $log,
       flash,
       querySnapshotSvc, queryViewSvc, queriesSvc, initialSelection
@@ -172,7 +172,7 @@ angular.module('QuepidApp')
       function clearComparisonView() {
         queryViewSvc.disableComparisons();
         queriesSvc.refreshAllDiffs();
-        $uibModalInstance.close(null);
+        $quepidModalInstance.close(null);
         flash.success = 'Comparison view has been cleared.';
       }
 
@@ -182,7 +182,7 @@ angular.module('QuepidApp')
           // No valid selections - disable all comparisons (same as Clear Comparison View)
           queryViewSvc.disableComparisons();
           queriesSvc.refreshAllDiffs();
-          $uibModalInstance.close(null);
+          $quepidModalInstance.close(null);
           flash.success = 'Comparison view has been cleared.';
         } else {
           ctrl.inProgress = true;
@@ -197,7 +197,7 @@ angular.module('QuepidApp')
             .then(function() {
               ctrl.inProgress = false;
               // Always return selections as array - let controller handle single vs multi
-              $uibModalInstance.close({
+              $quepidModalInstance.close({
                 selections: validSelections
               });
               
@@ -214,7 +214,7 @@ angular.module('QuepidApp')
       }
 
       function cancel() {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       }
     }
   ]);

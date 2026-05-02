@@ -4,12 +4,12 @@
 
 angular.module('QuepidApp')
   .controller('ShareCaseCtrl', [
-    '$uibModal',
+    '$quepidModal',
     '$log',
     'flash',
     'teamSvc',
     function (
-      $uibModal,
+      $quepidModal,
       $log,
       flash,
       teamSvc
@@ -20,7 +20,7 @@ angular.module('QuepidApp')
       ctrl.prompt = prompt;
 
       function prompt() {
-        var modalInstance = $uibModal.open({
+        var modalInstance = $quepidModal.open({
           templateUrl:  'share_case/_modal.html',
           controller:   'ShareCaseModalInstanceCtrl',
           controllerAs: 'ctrl',

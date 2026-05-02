@@ -4,13 +4,13 @@
 
 angular.module('QuepidApp')
   .controller('DeleteCaseOptionsCtrl', [
-    '$uibModal',
+    '$quepidModal',
     '$log',
     'flash',
     'caseSvc',
     'caseTryNavSvc',
     function (
-      $uibModal,
+      $quepidModal,
       $log,
       flash,
       caseSvc,
@@ -65,7 +65,7 @@ angular.module('QuepidApp')
 
       function prompt() {
 
-        var modalInstance = $uibModal.open({
+        var modalInstance = $quepidModal.open({
           templateUrl:  'delete_case_options/_modal.html',
           controller:   'DeleteCaseOptionsModalInstanceCtrl',
           controllerAs: 'ctrl',

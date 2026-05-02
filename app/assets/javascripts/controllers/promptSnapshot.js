@@ -2,11 +2,11 @@
 
 angular.module('QuepidApp')
   .controller('PromptSnapshotCtrl', [
-    '$scope', '$uibModalInstance',
+    '$scope', '$quepidModalInstance',
     'flash',
     'queriesSvc', 'querySnapshotSvc','settingsSvc',
     function(
-      $scope, $uibModalInstance,
+      $scope, $quepidModalInstance,
       flash,
       queriesSvc, querySnapshotSvc, settingsSvc
     ) {
@@ -29,7 +29,7 @@ angular.module('QuepidApp')
         querySnapshotSvc.addSnapshot($scope.snapPrompt.name, $scope.snapPrompt.recordDocumentFields, queriesSvc.queryArray())
         .then(function() {
           $scope.snapPrompt.inProgress = false;
-          $uibModalInstance.close();
+          $quepidModalInstance.close();
 
           flash.success = 'Snapshot created successfully.';
         }, function(response) {
@@ -39,7 +39,7 @@ angular.module('QuepidApp')
       };
 
       $scope.cancel = function() {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
     }
   ]);

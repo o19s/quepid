@@ -33,7 +33,6 @@ import autocomplete from 'autocompleter';
 window.autocompleter = autocomplete;
 
 // Angular third-party modules (vendored sources; see vendor/README.md)
-import './vendor/angular-ui-bootstrap/index.js';
 import './vendor/angular-wizard/angular-wizard.js';
 import './vendor/angular-ui-sortable/src/sortable.js';
 import './vendor/angular-utils-pagination';

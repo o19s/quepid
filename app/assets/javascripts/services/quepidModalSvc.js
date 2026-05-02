@@ -1,7 +1,7 @@
 'use strict';
 
-// Drop-in replacement for angular-ui-bootstrap's $uibModal, wrapping Bootstrap
-// 5's native bootstrap.Modal. window.bootstrap is pinned in
+// Replacement for angular-ui-bootstrap's $uibModal, wrapping Bootstrap 5's
+// native bootstrap.Modal. window.bootstrap is pinned in
 // app/javascript/angular_app.js so this service can reach Modal the same way
 // quepidPopover/quepidTooltip reach Popover/Tooltip.
 //
@@ -22,13 +22,9 @@
 //   ariaLabelledBy:, ariaDescribedBy:, openedClass:, windowTopClass:,
 //   animation:, instance.opened/.closed/.rendered, the modal.closing veto
 //   event, $uibModalStack/$uibResolve internals.
-//
-// We register as `$uibModal` (and inject `$uibModalInstance` by name) so the
-// 22 openers and 20 instance controllers don't need any edits — see Option A
-// in docs/bootstrap_angular_plugins.md. Rename later if desired.
 
 (function () {
-  angular.module('QuepidApp').factory('$uibModal', [
+  angular.module('QuepidApp').factory('$quepidModal', [
     '$q', '$rootScope', '$controller', '$compile', '$injector',
     '$templateRequest', '$templateCache', '$document',
     function ($q, $rootScope, $controller, $compile, $injector,
@@ -74,10 +70,10 @@
       function open(opts) {
         const Modal = window.bootstrap && window.bootstrap.Modal;
         if (!Modal) {
-          throw new Error('$uibModal shim: window.bootstrap.Modal not available');
+          throw new Error('$quepidModal shim: window.bootstrap.Modal not available');
         }
         if (!opts.template && !opts.templateUrl) {
-          throw new Error('$uibModal shim: template or templateUrl is required');
+          throw new Error('$quepidModal shim: template or templateUrl is required');
         }
 
         const resultDeferred = $q.defer();
@@ -193,7 +189,7 @@
           try {
             const locals = angular.extend({
               $scope:            modalScope,
-              $uibModalInstance: instance
+              $quepidModalInstance: instance
             }, got.resolved);
 
             if (opts.controller) {
@@ -209,7 +205,7 @@
             }
 
             // Re-check after controller construction. If $onInit (or the
-            // constructor) called $uibModalInstance.dismiss() synchronously,
+            // constructor) called $quepidModalInstance.dismiss() synchronously,
             // bsModal.hide() ran on an unshown modal — a no-op that doesn't
             // fire hidden.bs.modal — so without this guard we'd call show()
             // on an already-rejected modal. Same applies if a watcher fires

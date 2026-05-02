@@ -37,12 +37,12 @@ describe('Controller: PromptSnapshotCtrl', function () {
       $provide.value('settingsSvc', settingsSvc);
     });
     /* jshint camelcase: false */
-    inject(function ($controller, $rootScope, _$uibModal_, _querySnapshotSvc_, $injector) {
+    inject(function ($controller, $rootScope, _$quepidModal_, _querySnapshotSvc_, $injector) {
       scope             = $rootScope.$new();
       $httpBackend      = $injector.get('$httpBackend');
       querySnapshotSvc  = _querySnapshotSvc_;
 
-      modalInstance = _$uibModal_.open({
+      modalInstance = _$quepidModal_.open({
         templateUrl: 'views/snapshotModal.html'
       });
 
@@ -50,7 +50,7 @@ describe('Controller: PromptSnapshotCtrl', function () {
 
       Ctrl = $controller('PromptSnapshotCtrl', {
         $scope:         scope,
-        $uibModalInstance: modalInstance,
+        $quepidModalInstance: modalInstance,
       });
 
       $httpBackend.expectGET('api/cases/2/snapshots?shallow=true').respond(200, {'snapshots': {}});

@@ -2,9 +2,9 @@
 
 angular.module('QuepidApp')
   .controller('SearchResultCtrl', [
-    '$scope', '$uibModal',
+    '$scope', '$quepidModal',
     'rateElementSvc',
-    function ($scope, $uibModal, rateElementSvc) {
+    function ($scope, $quepidModal, rateElementSvc) {
 
       var src = {
         'query':  $scope.query,
@@ -67,7 +67,7 @@ angular.module('QuepidApp')
       $scope.snippets = $scope.doc.subSnippets('<strong>', '</strong>');
 
       $scope.showDoc = function() {
-        $uibModal.open({
+        $quepidModal.open({
           templateUrl: 'views/detailedDoc.html',
           controller: 'DetailedDocCtrl',
           resolve: {
@@ -79,7 +79,7 @@ angular.module('QuepidApp')
       };
 
       $scope.showDetailed = function() {
-        $uibModal.open({
+        $quepidModal.open({
           templateUrl: 'views/detailedExplain.html',
           controller: 'DocExplainCtrl',
           //windowClass: 'detailed-explain-modal',

@@ -16,7 +16,6 @@ module.exports = function(config) {
     // Built bundles come from esbuild/npm scripts (no Sprockets tmp/assets)
     files: [
       'app/assets/builds/jquery_bundle.js',
-      'app/assets/builds/angular_app.css',
       'app/assets/builds/angular_app.js',
       'app/assets/builds/quepid_angular_app.js',
       'app/assets/builds/angular_templates.js',
