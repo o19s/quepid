@@ -22,7 +22,6 @@ import './src/debounce';
 import './src/multiMap';
 import './src/dropdown';
 import './src/stackedMap';
-import './src/modal';
 import './src/paging';
 import './src/pager';
 import './src/pagination';
@@ -45,7 +44,6 @@ angular.module('ui.bootstrap.tpls', [
   'uib/template/datepicker/month.html',
   'uib/template/datepicker/year.html',
   'uib/template/datepickerPopup/popup.html',
-  'uib/template/modal/window.html',
   'uib/template/pager/pager.html',
   'uib/template/pagination/pagination.html',
   'uib/template/tooltip/tooltip-html-popup.html',
@@ -82,7 +80,6 @@ angular.module('ui.bootstrap', [
   'ui.bootstrap.multiMap',
   'ui.bootstrap.dropdown',
   'ui.bootstrap.stackedMap',
-  'ui.bootstrap.modal',
   'ui.bootstrap.paging',
   'ui.bootstrap.pager',
   'ui.bootstrap.pagination',

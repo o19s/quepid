@@ -16,7 +16,9 @@
  *   polluting the rest of the BS3-styled UI.
  *
  *   Components covered: popover, tooltip, accordion (+ scoped .collapse
- *   helpers under .accordion-collapse).
+ *   helpers under .accordion-collapse), tabs, dropdown, typeahead
+ *   (in-app `quepid-typeahead` directive), and modal (in-app `$uibModal`
+ *   shim service).
  */
 
 :root {
@@ -624,4 +626,23 @@
 .quepid-typeahead-dropdown img {
   vertical-align: middle;
   margin-right: 6px;
+}
+
+/*
+ * Modal — bridge for $uibModal shim (services/quepidModalSvc.js).
+ *
+ * BS3 already styles .modal, .modal-dialog, .modal-content,
+ * .modal-header/body/footer, .modal-sm/.modal-lg, and the .modal-backdrop
+ * box. The only missing piece is the backdrop opacity: BS3 keys opacity
+ * off `.modal-backdrop.in` (its own .fade/.in animation pair), but BS5's
+ * bootstrap.Modal toggles `.modal-backdrop.show`. Without the rule below
+ * the backdrop renders fully opaque black and hides the page behind the
+ * modal.
+ *
+ * The shim sets `animation: false` (no .fade class on the wrapper) so the
+ * other half of CLAUDE.md gotcha #3 is avoided automatically — we don't
+ * need a .modal.show / .modal-dialog transform rule here.
+ */
+.modal-backdrop.show {
+  opacity: 0.5;
 }
