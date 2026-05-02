@@ -3,16 +3,13 @@
 require 'test_helper'
 
 class ProxyControllerTest < ActionDispatch::IntegrationTest
-  # See webmock.rb for the corresponding mocks.
-  #
   let(:user) { users(:joey) }
 
-  # Hostnames used in webmock stubs that don't resolve via real DNS. The proxy's
+  # Hostnames used in this file's stubs that don't resolve via real DNS. The proxy's
   # SSRF check resolves the host before fetching, so we shim Addrinfo to return
   # a public-routable IP (TEST-NET-2, 198.51.100.0/24) for these.
   PROXY_TEST_HOSTS = %w[
-    solr.quepidapp.com test.com example.com api.openai.com www.google-analytics.com
-    broken.quepidapp.com
+    solr.quepidapp.com example.com broken.quepidapp.com
   ].freeze
 
   setup do
@@ -27,6 +24,8 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
         original.call(host, *args)
       end
     end
+
+    register_proxy_webmock_stubs
   end
 
   teardown do
@@ -285,4 +284,80 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
       assert_not_includes captured_output, 'For the purpose of this chapter'
     end
   end
+
+  private
+
+  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/AbcSize
+  def register_proxy_webmock_stubs
+    body = File.read(Rails.root.join('test/fixtures/files/solr_statedecoded_response.json'))
+
+    faraday_headers = {
+      'Accept'          => '*/*',
+      'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+      'Content-Type'    => 'application/json',
+      'Https'           => 'off',
+      'User-Agent'      => /Faraday/,
+    }
+
+    base = 'http://solr.quepidapp.com:8983/solr/statedecoded/select'
+
+    stub_request(:get, "#{base}?fl=id,text&q=tiger?&rows=10&start=0")
+      .with(headers: faraday_headers).to_return(status: 200, body: body)
+
+    stub_request(:get, "#{base}?fl=id,text&q=can%20I%20own%20a%20tiger&rows=10&start=0")
+      .with(headers: faraday_headers).to_return(status: 200, body: body)
+
+    stub_request(:get, "#{base}?fl=id,text&q=I%20like%20?%20marks,%20do%20you%20like%20?%20marks?&rows=10&start=0")
+      .with(headers: faraday_headers).to_return(status: 200, body: body)
+
+    stub_request(:get, "#{base}?fl=id,text&q&rows=10&start=0")
+      .with(headers: faraday_headers).to_return(status: 200, body: body)
+
+    stub_request(:get, "#{base}?fl=id,text&q=legal&rows=10&start=0")
+      .with(headers: faraday_headers).to_return(status: 200, body: body)
+
+    # Non-ASCII (café) handling.
+    stub_request(:get, "#{base}?fl=id,text&q=At%20dusk,%20the%20caf%C3%A9%20transformed%20into%20an%20impromptu%20stage&rows=10&start=0")
+      .with(headers: faraday_headers).to_return(status: 200, body: '')
+
+    stub_request(:post, base)
+      .with(body: '{"query":"trek","key2":"value2"}', headers: faraday_headers)
+      .to_return(status: 200, body: body)
+
+    # Verifies that Authorization and custom headers are forwarded.
+    stub_request(:post, 'http://solr.quepidapp.com:8983/solr/statedecoded/with_auth')
+      .with(
+        body:    '{"query":"trek"}',
+        headers: {
+          'Authorization'   => 'Basic dGVzdDp0ZXN0', # Base64 of 'test:test'
+          'X-Custom-Header' => 'test-value',
+          'Content-Type'    => 'application/json',
+        }
+      )
+      .to_return(status: 200, body: body)
+
+    # Verifies that the proxy looks up search endpoint credentials by ID.
+    stub_request(:get, 'http://solr.quepidapp.com:8983/solr/statedecoded/with_endpoint_auth?q=test')
+      .with(
+        headers: {
+          'Authorization' => 'Basic dXNlcjpwYXNz', # Base64 of 'user:pass'
+          'Content-Type'  => 'application/json',
+        }
+      )
+      .to_return(status: 200, body: body)
+
+    # Demonstrates following a 302 redirect.
+    stub_request(:get, 'https://example.com/old-url')
+      .to_return(status: 302, headers: { 'Location' => 'https://example.com/new-location' })
+    stub_request(:get, 'https://example.com/new-location')
+      .to_return(status: 200, body: body)
+
+    # Demonstrates server error. Uses a public-resolving host so the SSRF
+    # validator doesn't block before the connection attempt.
+    stub_request(:get, 'https://broken.quepidapp.com:9999/')
+      .to_raise(Faraday::ConnectionFailed.new('Failed to connect'))
+  end
+  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/AbcSize
 end

@@ -54,6 +54,40 @@ class DocGeneratorTest < ActiveSupport::TestCase
   let(:solr_url)  { 'http://solr.quepidapp.com:8983/solr/statedecoded/select' }
   let(:generator) { DocGenerator.new solr_url, default_options }
 
+  setup do
+    body = File.read(Rails.root.join('test/fixtures/files/solr_statedecoded_response.json'))
+
+    ruby_headers = {
+      'Accept'          => '*/*',
+      'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+      'Host'            => 'solr.quepidapp.com:8983',
+      'User-Agent'      => 'Ruby',
+    }
+
+    # DocGenerator's default `*:*` query.
+    stub_request(:get, 'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=id,text&q=*:*&rows=10&start=0')
+      .with(headers: ruby_headers).to_return(status: 200, body: body)
+
+    # `served` is the seed query used by 'generates a list of docs per query'.
+    stub_request(:get, 'http://solr.quepidapp.com:8983/solr/statedecoded/select?fl=*&q=served&rows=1&start=0')
+      .with(headers: ruby_headers)
+      .to_return(status: 200, body: <<~JSON)
+        {
+          "responseHeader":{
+            "zkConnected":true,
+            "status":0,
+            "QTime":1,
+            "params":{
+              "q":"served",
+              "fl":"id",
+              "start":"0",
+              "rows":"1"}},
+          "response":{"numFound":1552,"start":0,"docs":[
+              {"id":"l_13688"}]
+          }}
+      JSON
+  end
+
   describe 'method chaining' do
     test 'handles chaining of methods' do
       assert_respond_to generator.fetch_enough_docs_for_sample_words,
