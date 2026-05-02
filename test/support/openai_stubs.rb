@@ -14,6 +14,7 @@ module ActiveSupport
     #
     # The 200 body has nested JSON inside the assistant's content; do not add
     # newlines to that string.
+    # rubocop:disable Metrics/MethodLength
     def register_default_openai_stubs
       chat_completion_body = <<~TEXT
         {"id": "chatcmpl-Apgkot75TcZxjtOudaRkqzVmpCSBS",
@@ -64,5 +65,6 @@ module ActiveSupport
         .with(headers: { 'Authorization' => "Bearer #{OPENAI_RATE_LIMIT_KEY}" })
         .to_return(status: 429, body: 'Too Many Requests')
     end
+    # rubocop:enable Metrics/MethodLength
   end
 end

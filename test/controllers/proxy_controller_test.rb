@@ -288,7 +288,6 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
   private
 
   # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
   def register_proxy_webmock_stubs
     body = File.read(Rails.root.join('test/fixtures/files/solr_statedecoded_response.json'))
 
@@ -359,5 +358,4 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
       .to_raise(Faraday::ConnectionFailed.new('Failed to connect'))
   end
   # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
 end
