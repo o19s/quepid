@@ -12,10 +12,8 @@ window.d3 = d3;
 
 // Angular and AngularJS satellite modules (vendored under ./vendor/ except core angular from npm)
 import 'angular';
-import './vendor/angular-cookies';
 import './vendor/angular-route';
 import './vendor/angular-sanitize';
-import './vendor/angular-animate';
 
 // Bootstrap 5 JS (Tooltip, Popover, etc.) — exposed as window.bootstrap for
 // use by directives such as quepidTooltip. Pulls @popperjs/core transitively.

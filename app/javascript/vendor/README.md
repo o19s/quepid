@@ -6,7 +6,7 @@ Third-party JavaScript that Quepid previously loaded from `package.json` now liv
 
 | Directory | Role |
 |-----------|------|
-| `angular-animate` … `angular-sanitize` | AngularJS satellites: `ngAnimate`, `ngCookies`, `ngRoute`, `ngSanitize` |
+| `angular-route`, `angular-sanitize` | AngularJS satellites: `ngRoute`, `ngSanitize` |
 | `angular-countup` | `countUp` module |
 | `angular-wizard/` | `mgo-angular-wizard` |
 | `angular-ui-sortable/` | `ui.sortable` |
