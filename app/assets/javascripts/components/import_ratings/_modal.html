@@ -4,8 +4,29 @@
 </div>
 
 <div class="modal-body">
-  <uib-tabset active="active">
-    <uib-tab index="0" heading="Ratings" select="ctrl.clearSelection()">
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link active" id="import-ratings-tab-ratings"
+              data-bs-toggle="tab" data-bs-target="#import-ratings-pane-ratings"
+              role="tab" aria-controls="import-ratings-pane-ratings" aria-selected="true"
+              ng-click="ctrl.clearSelection()">Ratings</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link" id="import-ratings-tab-info-needs"
+              data-bs-toggle="tab" data-bs-target="#import-ratings-pane-info-needs"
+              role="tab" aria-controls="import-ratings-pane-info-needs" aria-selected="false"
+              ng-click="ctrl.clearSelection()">Information Needs</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link" id="import-ratings-tab-snapshots"
+              data-bs-toggle="tab" data-bs-target="#import-ratings-pane-snapshots"
+              role="tab" aria-controls="import-ratings-pane-snapshots" aria-selected="false"
+              ng-click="ctrl.clearSelection()">Snapshots</button>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane active" id="import-ratings-pane-ratings"
+         role="tabpanel" aria-labelledby="import-ratings-tab-ratings">
       <p>
         Importing ratings is a great way to manage the rating process outside of Quepid, for example in your own custom application.
         There are a number of formats for importing this data into Quepid.
@@ -77,8 +98,9 @@ star trek,,</pre>
           accept="text/plain"
           onchange="angular.element(this).scope().pickedLTRFile()"/>
       </div>
-    </uib-tab>
-    <uib-tab index="1" heading="Information Needs" select="ctrl.clearSelection()">
+    </div>
+    <div class="tab-pane" id="import-ratings-pane-info-needs"
+         role="tabpanel" aria-labelledby="import-ratings-tab-info-needs">
       <p>
         Importing information needs is the easiest way to update a lot of queries.  You should export the template file via the 'Export' feature first.
       </p>
@@ -119,8 +141,9 @@ star wars,"The original movie"</pre>
           <div class="content import-content"><pre>{{ ctrl.information_needs.content }}</pre></div>
         </div>
       </div>
-    </uib-tab>
-    <uib-tab index="2" heading="Snapshots" select="ctrl.clearSelection()">
+    </div>
+    <div class="tab-pane" id="import-ratings-pane-snapshots"
+         role="tabpanel" aria-labelledby="import-ratings-tab-snapshots">
       <p>
         Importing snapshots is fun!  Any missing queries will be created.  The Case ID provided in the uploaded CSV file will be replaced so that all rows will be imported into the current case.
       </p>
@@ -161,8 +184,8 @@ Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,1921,3
           </div>
         </div>
       </div>
-    </uib-tab>
-  </uib-tabset>
+    </div>
+  </div>
 
 </div>
 <div class="modal-footer">

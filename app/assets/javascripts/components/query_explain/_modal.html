@@ -6,8 +6,29 @@
 <div class="modal-body">
   <p>These are details returned from the search engine on how it processed the input query</p>
 
-  <uib-tabset active="active">
-    <uib-tab index="0" heading="Params" ng-click="ctrl.togglePanel('queryDetails')">
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link active" id="query-explain-tab-params"
+              data-bs-toggle="tab" data-bs-target="#query-explain-pane-params"
+              role="tab" aria-controls="query-explain-pane-params" aria-selected="true"
+              ng-click="ctrl.togglePanel('queryDetails')">Params</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link" id="query-explain-tab-parsing"
+              data-bs-toggle="tab" data-bs-target="#query-explain-pane-parsing"
+              role="tab" aria-controls="query-explain-pane-parsing" aria-selected="false"
+              ng-click="ctrl.togglePanel('parsedQueryDetails')">Parsing</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link" id="query-explain-tab-template"
+              data-bs-toggle="tab" data-bs-target="#query-explain-pane-template"
+              role="tab" aria-controls="query-explain-pane-template" aria-selected="false"
+              ng-click="ctrl.renderQueryTemplate()">Query Template</button>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane active" id="query-explain-pane-params"
+         role="tabpanel" aria-labelledby="query-explain-tab-params">
       <p class='bg-warning text-warning padded-text' ng-show="ctrl.queryDetailsMessage">
         <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
         {{ctrl.queryDetailsMessage}}
@@ -19,15 +40,17 @@
           collapsed="false">
         </json-explorer>
       </span>
-    </uib-tab>
-    <uib-tab index="1" heading="Parsing" disable="false"  ng-click="ctrl.togglePanel('parsedQueryDetails')">
+    </div>
+    <div class="tab-pane" id="query-explain-pane-parsing"
+         role="tabpanel" aria-labelledby="query-explain-tab-parsing">
       <p>This is how the search engine parsed the query.</p>
       <json-explorer
         json-data="ctrl.parsedQueryDetails"
         collapsed="false">
       </json-explorer>
-    </uib-tab>
-    <uib-tab index="2" heading="Query Template" disable="false"  ng-click="ctrl.renderQueryTemplate()">
+    </div>
+    <div class="tab-pane" id="query-explain-pane-template"
+         role="tabpanel" aria-labelledby="query-explain-tab-template">
       <p ng-hide="ctrl.isTemplatedQuery">This is not a templated query.</p>
       <span ng-show="ctrl.isTemplatedQuery">
         <p>This is what the populated query template looks like</p>
@@ -40,8 +63,8 @@
           }" ng-model="ctrl.renderedQueryTemplate">
         </div>
       </span>
-    </uib-tab>
-  </uib-tabset>
+    </div>
+  </div>
 </div>
 
 <div class="modal-footer">
