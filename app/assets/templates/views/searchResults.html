@@ -65,7 +65,7 @@
     <div class="col-ratings query-rating">
       <strong>Score All</strong>
       <div class="ratings">
-        <div class="single-rating" ng-click="ratings.open()" uib-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
+        <div class="single-rating" ng-click="ratings.open()" quepid-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
           <span class="btn" ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle">{{displayRating()}} <span class="caret"></span></span>
         </div>
       </div>
@@ -147,7 +147,7 @@
       </search-result>
 
       <div class='row'>
-        <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" uib-popover="Close the results pane"></span>
+        <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" quepid-popover="Close the results pane"></span>
         <span ng-if="query.numFound > query.docs.length">
           <a
             class="btn btn-default"
@@ -178,7 +178,7 @@
       </search-result>
 
       <div class='row'>
-        <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" uib-popover="Close the results pane"></span>
+        <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" quepid-popover="Close the results pane"></span>
         <span ng-if="query.getNumFound() > query.ratedDocs.length">
           <a
             ng-show='query.getNumFound() > query.ratedDocs.length'

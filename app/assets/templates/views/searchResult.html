@@ -6,7 +6,7 @@
     <div class="col-ratings">
 
       <div ng-if="doc.error === undefined" class="ratings">
-        <div class="single-rating" uib-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
+        <div class="single-rating" quepid-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
           <span class="btn" ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle">
             {{displayRating()}}
             <span class="caret"></span>

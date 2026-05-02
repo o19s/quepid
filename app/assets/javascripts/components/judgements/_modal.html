@@ -50,7 +50,7 @@
 
   <div ng-show="ctrl.share.books.length > 0 && !ctrl.share.loading">
     <div>
-      <label>Select a Book of Judgements <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="All the Books related to all the Teams this Case has been shared with are listed below.  If you don't see the Book you want, check that you shared the Case with the right Team."></span></label>
+      <label>Select a Book of Judgements <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="All the Books related to all the Teams this Case has been shared with are listed below.  If you don't see the Book you want, check that you shared the Case with the right Team."></span></label>
 
       <ul class="list-group">
         <li class="list-group-item"
@@ -94,7 +94,7 @@
             <label>
               <input type="checkbox" ng-model='ctrl.autoPopulateBookPairs'>
               Case <i class="glyphicon glyphicon-arrow-right"></i> Book: Query/Doc Pairs
-              <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="When enabled, new query/doc pairs are automatically sent to the Book whenever searches run in this Case."></span>
+              <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="When enabled, new query/doc pairs are automatically sent to the Book whenever searches run in this Case."></span>
             </label>
             <p class="text-muted small">
               <strong>On:</strong> New query/doc pairs automatically added to Book when Case runs.<br/>
@@ -115,7 +115,7 @@
             <label>
               <input type="checkbox" ng-model='ctrl.autoPopulateCaseJudgements'>
                 Case <i class="glyphicon glyphicon-arrow-left"></i> Book: Judgement Ratings
-              <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="When enabled, Case ratings are updated as judgements are made in the Book."></span>
+              <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="When enabled, Case ratings are updated as judgements are made in the Book."></span>
             </label>
             <p class="text-muted small">
               <strong>On:</strong> Case ratings update immediately as judgements are made.<br/>
@@ -134,7 +134,7 @@
           <div class="col-sm-8">
             <label>
               Case <i class="glyphicon glyphicon-arrow-left"></i> Book: Sync missing queries from Book to Case
-              <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Create queries in this Case that exist in the Book but don't currently exist in the Case."></span>
+              <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Create queries in this Case that exist in the Book but don't currently exist in the Case."></span>
             </label>
             <p class="text-muted small">Case <i class="glyphicon glyphicon-arrow-left"></i> Book: add queries that exist in Book but not in Case.</p>
           </div>
