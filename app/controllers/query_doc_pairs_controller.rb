@@ -4,6 +4,7 @@ class QueryDocPairsController < ApplicationController
   include Pagy::Method
 
   before_action :set_book
+  before_action :check_book
   before_action :set_query_doc_pair, only: [ :show, :edit, :update, :destroy ]
 
   def index
