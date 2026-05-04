@@ -25,12 +25,12 @@
 
     <div class="row mb-3">
       <%= form.label :llm_key, class: 'col-sm-2 col-form-label' %>
-      <div class="col-sm-4">
-        <%= form.text_field :llm_key %>
-      </div>
-      <div class="form-text">
-        This is the key to access your LLM provider's API.
-        It also lets Quepid distingush between AI Judges and regular Users, so you must provide something, even "abc123".
+      <div class="col-sm-10">
+        <%= form.text_field :llm_key, class: "form-control" %>
+        <div class="form-text">
+          This is the key to access your LLM provider's API.
+          It also lets Quepid distingush between AI Judges and regular Users, so you must provide something, even "abc123".
+        </div>
       </div>
     </div>
 
@@ -44,7 +44,9 @@
     </ul>
     <div class="tab-content" id="pills-tabContent">
       <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
-        <% @ai_judge.judge_options.each do |key, value| %>
+
+        <% sorted_judge_options = @ai_judge.judge_options.sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
+        <% sorted_judge_options.each do |key, value| %>
           <div class="row mb-3">
             <%= label_tag "judge_options[#{key}]", key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
             <div class="col-sm-4">
@@ -81,7 +83,7 @@
             This the raw JSON stored as <code>options</code> for the Judge.
             Make sure you are editing under the <code>judge_options</code> key.
           </div>
-          <%= form.text_area :options, value: JSON.pretty_generate(@ai_judge.options.as_json),
+          <%= form.text_area :options, value: format_json(@ai_judge.options),
             class: 'form-control json-field', rows: 10, disabled: true %>
         </div>
       </div>
@@ -142,6 +144,7 @@
       openai: {
         llm_service_url: 'https://api.openai.com',
         llm_api_version: '',
+        llm_model:       'gpt-4o',
         help: '<strong>OpenAI</strong> &mdash; Direct API access.<br>' +
               '<b>URL:</b> <code>https://api.openai.com</code><br>' +
               '<b>Model:</b> e.g. <code>gpt-4o</code>, <code>gpt-4.1</code><br>' +
@@ -151,6 +154,7 @@
       azure_openai: {
         llm_service_url: 'https://RESOURCE.openai.azure.com',
         llm_api_version: '',
+        llm_model:       'gpt-4.1',
         help: '<strong>Azure OpenAI</strong> &mdash; OpenAI models hosted on Azure.<br>' +
               '<b>URL:</b> <code>https://YOUR-RESOURCE.openai.azure.com</code><br>' +
               '<b>Model:</b> Your deployment name, e.g. <code>gpt-4.1</code>, <code>gpt-5.1</code><br>' +
@@ -161,6 +165,7 @@
       azure_ai_foundry: {
         llm_service_url: 'https://RESOURCE.services.ai.azure.com',
         llm_api_version: '2025-01-01-preview',
+        llm_model:       'gpt-4o',
         help: '<strong>Azure AI Foundry</strong> &mdash; Unified Azure AI endpoint.<br>' +
               '<b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com</code><br>' +
               '<b>Model:</b> Model name, e.g. <code>gpt-4o</code><br>' +
@@ -170,6 +175,7 @@
       azure_ai_foundry_serverless: {
         llm_service_url: 'https://MODEL-NAME.REGION.models.ai.azure.com',
         llm_api_version: '',
+        llm_model:       '',
         help: '<strong>Azure AI Foundry (Serverless)</strong> &mdash; Models-as-a-Service pay-per-token endpoint.<br>' +
               '<b>URL:</b> <code>https://MODEL-NAME.REGION.models.ai.azure.com</code><br>' +
               '<b>Model:</b> Model name from the deployment<br>' +
@@ -179,6 +185,7 @@
       azure_ai_foundry_anthropic: {
         llm_service_url: 'https://RESOURCE.services.ai.azure.com/anthropic',
         llm_api_version: '',
+        llm_model:       'claude-3-5-haiku-20241022',
         help: '<strong>Azure AI Foundry (Anthropic)</strong> &mdash; Claude models via Azure using the native Anthropic Messages API.<br>' +
               '<b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com/anthropic</code><br>' +
               '<b>Model:</b> e.g. <code>claude-3-5-haiku-20241022</code><br>' +
@@ -188,6 +195,7 @@
       anthropic: {
         llm_service_url: 'https://api.anthropic.com',
         llm_api_version: '',
+        llm_model:       'claude-sonnet-4-5-20250514',
         help: '<strong>Anthropic</strong> &mdash; Direct Anthropic API access.<br>' +
               '<b>URL:</b> <code>https://api.anthropic.com</code><br>' +
               '<b>Model:</b> e.g. <code>claude-opus-4-6</code>, <code>claude-sonnet-4-5-20250514</code><br>' +
@@ -197,6 +205,7 @@
       google_gemini: {
         llm_service_url: 'https://generativelanguage.googleapis.com/v1beta/openai',
         llm_api_version: '',
+        llm_model:       'gemini-2.0-flash',
         help: '<strong>Google Gemini</strong> &mdash; Uses the OpenAI-compatible endpoint.<br>' +
               '<b>URL:</b> <code>https://generativelanguage.googleapis.com/v1beta/openai</code><br>' +
               '<b>Model:</b> e.g. <code>gemini-2.0-flash</code><br>' +
@@ -206,6 +215,7 @@
       ollama: {
         llm_service_url: 'http://ollama:11434',
         llm_api_version: '',
+        llm_model:       'qwen3:0.6b',
         help: '<strong>Ollama</strong> &mdash; Local models via the Ollama container.<br>' +
               '<b>URL:</b> <code>http://ollama:11434</code> (Docker) or <code>http://localhost:11434</code> (local)<br>' +
               '<b>Model:</b> e.g. <code>qwen3:0.6b</code>, <code>llama3</code><br>' +
@@ -237,9 +247,11 @@
 
         const urlField = document.getElementById('judge_options_llm_service_url');
         const apiVersionField = document.getElementById('judge_options_llm_api_version');
+        const modelField = document.getElementById('judge_options_llm_model');
 
         if (urlField) urlField.value = preset.llm_service_url;
         if (apiVersionField) apiVersionField.value = preset.llm_api_version;
+        if (modelField) modelField.value = preset.llm_model;
 
         updateProviderHelp(this.value);
       });
