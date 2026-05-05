@@ -57,6 +57,8 @@ class LlmService
       { type: 'text', text: text_prompt }
     ]
 
+    # This is hard coded to `image` and should be any image.
+    # image or thumb ;-(
     if '' != document_fields['image'].to_s.strip
       image_url = document_fields['image']
       prompt << { type: 'image_url', image_url: { url: image_url } }
