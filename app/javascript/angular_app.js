@@ -43,8 +43,8 @@ window.ace = ace;
 // Angular UI ACE
 import 'angular-ui-ace/src/ui-ace';
 
-// Splainer Search
-import 'splainer-search';
+// Splainer Search (vanilla-JS 3.x wrapped in a local Angular shim)
+import './splainer_search_adapter';
 
 // ng-json-explorer - use the dist file to avoid gulpfile issues
 import 'ng-json-explorer/dist/angular-json-explorer';
