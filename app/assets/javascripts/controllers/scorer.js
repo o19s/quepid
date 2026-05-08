@@ -4,13 +4,13 @@
 
 angular.module('QuepidApp')
   .controller('ScorerCtrl', [
-    '$scope', '$location', '$uibModalInstance', '$log',
+    '$scope', '$uibModalInstance', '$log',
     'parent', 'scorerSvc', 'caseSvc', 'queriesSvc',
-    'configurationSvc',
+    'configurationSvc', 'caseTryNavSvc',
     function (
-      $scope, $location, $uibModalInstance, $log,
+      $scope, $uibModalInstance, $log,
       parent, scorerSvc, caseSvc, queriesSvc,
-      configurationSvc
+      configurationSvc, caseTryNavSvc
     ) {
 
       $scope.activeScorer       = parent.currentScorer || {};
@@ -18,7 +18,7 @@ angular.module('QuepidApp')
       $scope.gotoScorers        = gotoScorers;
       $scope.ok                 = ok;
       $scope.scorers            = [];
-      $scope.communalScorers    = [];     
+      $scope.communalScorers    = [];
       $scope.selectScorer       = selectScorer;
       $scope.usingDefaultScorer = usingDefaultScorer;
       $scope.communalScorersOnly = configurationSvc.isCommunalScorersOnly();
@@ -41,7 +41,8 @@ angular.module('QuepidApp')
 
       function gotoScorers() {
         $uibModalInstance.dismiss('cancel');
-        $location.path('/scorers');
+        var url = caseTryNavSvc.getQuepidRootUrl() + '/scorers';
+        window.location.href = url;
       }
 
       function ok() {
@@ -49,10 +50,10 @@ angular.module('QuepidApp')
 
         $uibModalInstance.close($scope.activeScorer);
       }
-      
+
       function scorerAccessible() {
         let scorerAccessible = false;
-        
+
         if ($scope.activeScorer.scorerId) {
           angular.forEach($scope.userScorers.concat($scope.communalScorers), function (scorer){
             if (scorer.scorerId === $scope.activeScorer.scorerId){
@@ -61,8 +62,8 @@ angular.module('QuepidApp')
             }
           });
         }
-        return scorerAccessible;        
-        
+        return scorerAccessible;
+
       }
 
       function selectScorer(scorer) {
