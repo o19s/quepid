@@ -5,10 +5,10 @@ angular.module('QuepidApp')
     function() {
       return function(toggled) {
         if (toggled) {
-          return 'glyphicon-chevron-up';
+          return 'bi-chevron-up';
         }
         else {
-          return 'glyphicon-chevron-down';
+          return 'bi-chevron-down';
         }
       };
     }

@@ -14,7 +14,7 @@
 
   <br>
 
-  <label>Include case history <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Select to include either a single try or all the tries of your case history if you want to evaluate previous attempts."></span></label>
+  <label>Include case history <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Select to include either a single try or all the tries of your case history if you want to evaluate previous attempts."></i></label>
   <div class="btn-group btn-group-justified" role="group">
     <div class="btn-group" role="group">
       <button type="button" class="btn" ng-click="ctrl.options.history=false" ng-class="ctrl.options.history ? 'btn-default' : 'btn-primary'">Only include a specific try</button>
@@ -29,7 +29,7 @@
   <div class="row">
     <div class="col-md-6" ng-show="!ctrl.options.history">
       <div class="form-group">
-        <label for="try">Select try </label> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Select the desired try from your full case history."></span>
+        <label for="try">Select try </label> <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Select the desired try from your full case history."></i>
         <select
           id="try"
           ng-model="ctrl.options.tryId"
@@ -41,7 +41,7 @@
     </div>
     <div class="col-md-6">
       <div class="form-group">
-        <label>Select content <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="When cloning a case, you typically want to include your existing queries. If you want to preserve ratings, select to import them as well."></span></label>
+        <label>Select content <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="When cloning a case, you typically want to include your existing queries. If you want to preserve ratings, select to import them as well."></i></label>
         <div class="checkbox">
           <label>
             <input id="include-queries" type="checkbox" ng-model='ctrl.options.queries' checked> Include Queries

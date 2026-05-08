@@ -23,7 +23,7 @@
         <h4 class="pull-left">Query Sandbox:</h4>
         <p class="pull-right">
           <a href="http://quepidapp.com/docs/#tuning" class="query-help" target="_blank">
-            <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+            <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
           </a>
         </p>
 
@@ -121,9 +121,9 @@
         <!-- Search Engine -->
         <div class="setting-div">
           <div class="dev-header" ng-click="devSettingsSearchEndpoint.toggle = !devSettingsSearchEndpoint.toggle">
-            Search Endpoints <span
-              ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsSearchEndpoint.toggle]"
-              class="glyphicon"></span>
+            Search Endpoints <i
+              ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsSearchEndpoint.toggle]"
+              class="bi"></i>
           </div>
 
 
@@ -159,16 +159,16 @@
         <!-- Search Endpoint -->
         <div class="setting-div">
           <div class="dev-header" ng-click="devSettingsEndpointDetails.toggle = !devSettingsEndpointDetails.toggle">
-            Endpoint Details <span
-              ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsEndpointDetails.toggle]"
-              class="glyphicon"></span>
+            Endpoint Details <i
+              ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsEndpointDetails.toggle]"
+              class="bi"></i>
           </div>
 
 
           <div class="dev-body" ng-show="devSettingsEndpointDetails.toggle">
 
             <p ng-if="settings.selectedTry.endpointArchived" class="alert alert-warning">
-              <span class="glyphicon glyphicon-warning-sign"></span>
+              <i class="bi bi-exclamation-triangle"></i>
               This search endpoint has been archived. Consider switching to an active endpoint.
             </p>
 
@@ -197,9 +197,9 @@
         <!-- Display Fields -->
         <div class="setting-div" ng-init="validateSearchEngineUrl()">
           <div class="dev-header" ng-click="devSettingsFields.toggle = !devSettingsFields.toggle">
-            Displayed Fields <span
-              ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsFields.toggle]"
-              class="glyphicon"></span>
+            Displayed Fields <i
+              ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsFields.toggle]"
+              class="bi"></i>
           </div>
 
           <div class="dev-body" ng-show="devSettingsFields.toggle">
@@ -219,9 +219,9 @@
         <!-- Number of Rows -->
         <div class="setting-div">
           <div class="dev-header" ng-click="devSettingsNumResults.toggle = !devSettingsNumResults.toggle">
-            Number of Results to Show <span
-              ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsNumResults.toggle]"
-              class="glyphicon"></span>
+            Number of Results to Show <i
+              ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsNumResults.toggle]"
+              class="bi"></i>
           </div>
 
           <div class="dev-setting-attribute" ng-show="devSettingsNumResults.toggle">
@@ -234,9 +234,9 @@
         <!-- Nightly Queries -->
         <div class="setting-div">
           <div class="dev-header" ng-click="devSettingsNightly.toggle = !devSettingsNightly.toggle">
-            Evaluate Nightly? <span
-              ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsNightly.toggle]"
-              class="glyphicon"></span>
+            Evaluate Nightly? <i
+              ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsNightly.toggle]"
+              class="bi"></i>
           </div>
 
           <div class="dev-body checkbox" ng-show="devSettingsNightly.toggle" ng-controller="CaseCtrl as ctrl">            
@@ -250,7 +250,7 @@
                   quepid-tooltip="Run all the queries every night and store the results<br/> and the scores as a snapshot."
                   quepid-tooltip-html
                   tooltip-placement="left">
-                  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                  <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
                 </a>
               </span>
             </p>
@@ -268,9 +268,9 @@
         <!-- Escape Queries -->
         <div class="setting-div">
           <div class="dev-header" ng-click="devSettingsEscapeQueries.toggle = !devSettingsEscapeQueries.toggle">
-            Escape Queries <span
-              ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsEscapeQueries.toggle]"
-              class="glyphicon"></span>
+            Escape Queries <i
+              ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsEscapeQueries.toggle]"
+              class="bi"></i>
           </div>
 
           <div class="dev-body checkbox" ng-show="devSettingsEscapeQueries.toggle">
@@ -284,7 +284,7 @@
                   quepid-tooltip="(advanced) -- If your queries use Solr|Elasticsearch|OpenSearch <br/>query syntax (like text:law) then disable this feature"
                   quepid-tooltip-html
                   tooltip-placement="left">
-                  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                  <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
                 </a>
               </span>
             </p>
@@ -322,7 +322,7 @@
 <span ng-show="qp.curTab == 'developer' || qp.curTab == 'engineSettings' || qp.curTab == 'curator'">
   <span ng-show="showTLSChangeWarning">
     <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
-      <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code>
+      <i class="bi bi-arrow-repeat"></i> Reload Quepid in <code>{{protocolToSwitchTo}}</code>
       Protocol
     </a>
   </span>

@@ -30,59 +30,59 @@
             <li ng-if="queryListSortable">
               <a ng-class="{active: sort == 'defaultCaseOrder'}" ng-click="sortBy('default')">
                 Manual
-                <span ng-show="sortName == 'default'"
-                      class="glyphicon"
-                      ng-class="reverse ? 'glyphicon-arrow-up' : 'glyphicon-arrow-down'"
+                <i ng-show="sortName == 'default'"
+                      class="bi"
+                      ng-class="reverse ? 'bi-arrow-up' : 'bi-arrow-down'"
                       aria-hidden="true">
-                </span>
+                </i>
               </a>
             </li>
             <li ng-if="!queryListSortable">
               Manual
-              <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Manual sorting has been disabled by your administrator due to the bug https://github.com/o19s/quepid/issues/272."></span>
+              <i class="bi bi-exclamation-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Manual sorting has been disabled by your administrator due to the bug https://github.com/o19s/quepid/issues/272."></i>
             </li>
 
             <li>
               <a ng-class="{active: sort == 'queryText'}" ng-click="sortBy('query')">
                 Name
-                <span ng-show="sortName == 'query'"
-                  class="glyphicon"
-                  ng-class="reverse ? 'glyphicon-arrow-up' : 'glyphicon-arrow-down'"
+                <i ng-show="sortName == 'query'"
+                  class="bi"
+                  ng-class="reverse ? 'bi-arrow-up' : 'bi-arrow-down'"
                   aria-hidden="true">
-                </span>
+                </i>
               </a>
             </li>
 
             <li>
                <a ng-class="{active: sort == 'modified'}" ng-click="sortBy('modified')">
                  Modified
-                 <span ng-show="sortName == 'modified'"
-                       class="glyphicon"
-                       ng-class="reverse ? 'glyphicon-arrow-up' : 'glyphicon-arrow-down'"
+                 <i ng-show="sortName == 'modified'"
+                       class="bi"
+                       ng-class="reverse ? 'bi-arrow-up' : 'bi-arrow-down'"
                        aria-hidden="true">
-                 </span>
+                 </i>
                </a>
              </li>
 
             <li>
               <a ng-class="{active: sort == 'lastScore'}" ng-click="sortBy('score')">
                 Score
-                <span ng-show="sortName == 'score'"
-                  class="glyphicon"
-                  ng-class="reverse ? 'glyphicon-arrow-up' : 'glyphicon-arrow-down'"
+                <i ng-show="sortName == 'score'"
+                  class="bi"
+                  ng-class="reverse ? 'bi-arrow-up' : 'bi-arrow-down'"
                   aria-hidden="true">
-                </span>
+                </i>
               </a>
             </li>
 
             <li>
               <a ng-class="{active: sort == 'errorText'}" ng-click="sortBy('error')">
                 Errors
-                <span ng-show="sortName == 'error'"
-                  class="glyphicon"
-                  ng-class="reverse ? 'glyphicon-arrow-up' : 'glyphicon-arrow-down'"
+                <i ng-show="sortName == 'error'"
+                  class="bi"
+                  ng-class="reverse ? 'bi-arrow-up' : 'bi-arrow-down'"
                   aria-hidden="true">
-                </span>
+                </i>
               </a>
             </li>
           </ul>
@@ -107,11 +107,11 @@
       <div class="clearfix"></div>
 
       <div ng-show="isBootstrapping()" class="alert alert-info search-feedback" role="alert">
-        <i class="glyphicon glyphicon-refresh spintime"></i> <span ng-if="isBootstrapping()">Bootstrapping Queries</span>
+        <i class="bi bi-arrow-repeat spintime"></i> <span ng-if="isBootstrapping()">Bootstrapping Queries</span>
       </div>
       
       <div ng-show="searching()" class="alert alert-info search-feedback" role="alert">
-        <i class="glyphicon glyphicon-refresh spintime"></i> Updating Queries: {{batchPosition}} / {{batchSize}}
+        <i class="bi bi-arrow-repeat spintime"></i> Updating Queries: {{batchPosition}} / {{batchSize}}
         <small class="text-muted">If the counter stalls, do a hard refresh of Quepid.</small>
       </div>
 

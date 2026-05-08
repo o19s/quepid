@@ -79,7 +79,7 @@
         <div class="col-sm-12" ng-if="caseModel.caseLoaded()">
           <ul class="list-inline">
             <li>
-              <span class="glyphicon glyphicon-tasks"></span>
+              <i class="bi bi-card-list"></i>
               <a name="button" ng-click="pickCaseScorer()">
                 Select scorer
               </a>
@@ -90,7 +90,7 @@
               </judgements>
             </li>
             <li>
-              <span class="glyphicon glyphicon-camera"></span>
+              <i class="bi bi-camera-fill"></i>
               <a ng-controller="TakeSnapshotCtrl" type="button" ng-click="snapshot.prompt()">
                 Create snapshot
               </a>
@@ -126,7 +126,7 @@
               ></export-case>
             </li>
             <li id="tune-relevance-link">
-              <span class="glyphicon glyphicon-wrench"></span>
+              <i class="bi bi-wrench-adjustable"></i>
               <a type="button" ng-click="toggleDevSettings()">
                 Tune Relevance
               </a>

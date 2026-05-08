@@ -35,7 +35,7 @@
             ng-keydown="checkIfEnterKeyPressed($event)"></div>
           </div>
           <p ng-if="enterKeyPressed" class="alert alert-danger">
-            <span class="glyphicon glyphicon-alert"></span>
+            <i class="bi bi-exclamation-triangle-fill"></i>
             Please click the "Search" button instead of enter key to avoid scrolling your query out of view!
           </p>
 
@@ -120,7 +120,7 @@
   </span>
 
   <span ng-show="docFinder.paging">
-    <i class="glyphicon glyphicon-refresh spintime"></i>
+    <i class="bi bi-arrow-repeat spintime"></i>
   </span>
 </div>
 <div class="modal-footer">

@@ -7,7 +7,7 @@
   <div ng-show='ctrl.share.loading'>
     <p>
       Loading your teams, this will be quick I promise!
-      <i class='glyphicon glyphicon-refresh spintime'></i>
+      <i class='bi bi-arrow-repeat spintime'></i>
     </p>
   </div>
   <p>
@@ -19,7 +19,7 @@
   <p>
     <strong>Select a Book below</strong> and configure how data syncs between your Case and Book.
     <a href="https://quepid-docs.dev.o19s.com/2/quepid/64/thinking-about-cases-and-books-of-judgements" target="_blank">
-      Learn more <i class="glyphicon glyphicon-new-window"></i>
+      Learn more <i class="bi bi-window-plus"></i>
     </a>
   </p>
 
@@ -50,7 +50,7 @@
 
   <div ng-show="ctrl.share.books.length > 0 && !ctrl.share.loading">
     <div>
-      <label>Select a Book of Judgements <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="All the Books related to all the Teams this Case has been shared with are listed below.  If you don't see the Book you want, check that you shared the Case with the right Team."></span></label>
+      <label>Select a Book of Judgements <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="All the Books related to all the Teams this Case has been shared with are listed below.  If you don't see the Book you want, check that you shared the Case with the right Team."></i></label>
 
       <ul class="list-group">
         <li class="list-group-item"
@@ -64,7 +64,7 @@
           ng-click="selectBook(book)">
           {{book.name}}
           <a ng-href="books/{{book.id}}" target="_self" class="btn btn-default btn-xs pull-right" title="Open this book in a new page">
-            <i class="glyphicon glyphicon-eye-open"></i> View
+            <i class="bi bi-eye-fill"></i> View
           </a>
 
         </li>
@@ -73,7 +73,7 @@
   </div>
 
   <div ng-show="!ctrl.activeBookId && ctrl.share.books.length > 0" class="alert alert-info" style="margin-top: 15px;">
-    <i class="glyphicon glyphicon-info-sign"></i> Select a book above to configure sync settings.
+    <i class="bi bi-info-circle-fill"></i> Select a book above to configure sync settings.
   </div>
 
   <div ng-show="ctrl.activeBookId">
@@ -93,8 +93,8 @@
           <div class="col-sm-8">
             <label>
               <input type="checkbox" ng-model='ctrl.autoPopulateBookPairs'>
-              Case <i class="glyphicon glyphicon-arrow-right"></i> Book: Query/Doc Pairs
-              <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="When enabled, new query/doc pairs are automatically sent to the Book whenever searches run in this Case."></span>
+              Case <i class="bi bi-arrow-right"></i> Book: Query/Doc Pairs
+              <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="When enabled, new query/doc pairs are automatically sent to the Book whenever searches run in this Case."></i>
             </label>
             <p class="text-muted small">
               <strong>On:</strong> New query/doc pairs automatically added to Book when Case runs.<br/>
@@ -103,7 +103,7 @@
           </div>
           <div class="col-sm-4 text-right">
             <button class="btn btn-default btn-sm" ng-click="ctrl.manualPopulateBook()" ng-disabled="processingPrompt.inProgress || !ctrl.activeBookId">
-              <i class="glyphicon glyphicon-export"></i> Populate Now
+              <i class="bi bi-box-arrow-up"></i> Populate Now
             </button>
           </div>
         </div>
@@ -114,8 +114,8 @@
           <div class="col-sm-8">
             <label>
               <input type="checkbox" ng-model='ctrl.autoPopulateCaseJudgements'>
-                Case <i class="glyphicon glyphicon-arrow-left"></i> Book: Judgement Ratings
-              <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="When enabled, Case ratings are updated as judgements are made in the Book."></span>
+                Case <i class="bi bi-arrow-left"></i> Book: Judgement Ratings
+              <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="When enabled, Case ratings are updated as judgements are made in the Book."></i>
             </label>
             <p class="text-muted small">
               <strong>On:</strong> Case ratings update immediately as judgements are made.<br/>
@@ -124,7 +124,7 @@
           </div>
           <div class="col-sm-4 text-right">
             <button class="btn btn-default btn-sm" ng-click="ctrl.manualRefreshRatings()" ng-disabled="processingPrompt.inProgress || !ctrl.activeBookId">
-              <i class="glyphicon glyphicon-import"></i> Refresh Ratings
+              <i class="bi bi-box-arrow-in-down"></i> Refresh Ratings
             </button>
           </div>
         </div>
@@ -133,14 +133,14 @@
         <div class="row">
           <div class="col-sm-8">
             <label>
-              Case <i class="glyphicon glyphicon-arrow-left"></i> Book: Sync missing queries from Book to Case
-              <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Create queries in this Case that exist in the Book but don't currently exist in the Case."></span>
+              Case <i class="bi bi-arrow-left"></i> Book: Sync missing queries from Book to Case
+              <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Create queries in this Case that exist in the Book but don't currently exist in the Case."></i>
             </label>
-            <p class="text-muted small">Case <i class="glyphicon glyphicon-arrow-left"></i> Book: add queries that exist in Book but not in Case.</p>
+            <p class="text-muted small">Case <i class="bi bi-arrow-left"></i> Book: add queries that exist in Book but not in Case.</p>
           </div>
           <div class="col-sm-4 text-right">
             <button class="btn btn-default btn-sm" ng-click="ctrl.manualSyncQueries()" ng-disabled="processingPrompt.inProgress || !ctrl.activeBookId">
-              <i class="glyphicon glyphicon-plus"></i> Sync Queries
+              <i class="bi bi-plus"></i> Sync Queries
             </button>
           </div>
         </div>
@@ -157,12 +157,12 @@
 
 <div class="modal-footer">
   <a class="btn btn-primary pull-left" ng-href="{{ctrl.createNewBookLink()}}" target="_self" ng-disabled="processingPrompt.inProgress">
-    <i class="glyphicon glyphicon-plus" style="color: #FFF"></i>
+    <i class="bi bi-plus" style="color: #FFF"></i>
     Create a book
   </a>
 
   <a class="btn btn-default pull-left" href="books/{{ctrl.activeBookId}}/judge" target="_self" ng-show="ctrl.activeBookId">
-    <i class="glyphicon glyphicon-book"></i>
+    <i class="bi bi-book-fill"></i>
     Judge Documents!
   </a>
   <button

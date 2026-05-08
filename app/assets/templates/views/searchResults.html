@@ -44,7 +44,7 @@
       </small>
     </span>
 
-    <span class="error-warning glyphicon glyphicon-warning-sign"></span>
+    <i class="error-warning bi bi-exclamation-triangle"></i>
 
     <span ng-show="query.isNotAllRated()" class="pull-right" style="margin-right: 20px;" title="Hop to it!  There are unrated results!">
       <div class="icon-container">
@@ -58,7 +58,7 @@
       <i class="querqy-icon"></i>
     </span>
 
-    <span class="toggleSign glyphicon {{query.isToggled() | plusOrMinus}}" ng-hide="isSortingEnabled()" ng-click="query.toggle()"></span>
+    <i class="toggleSign bi {{query.isToggled() | plusOrMinus}}" ng-hide="isSortingEnabled()" ng-click="query.toggle()"></i>
   </div>
 
   <div ng-if="query.isToggled()" class="sub-results container clearfix">
@@ -75,7 +75,7 @@
       <div class="btn-group">
         <button class="btn btn-default btn-sm" ngclipboard data-clipboard-text="{{query.queryText}}">
           <i
-          class="glyphicon glyphicon-copy"
+          class="bi bi-copy"
           aria-hidden="true"
           title="Copy query"
           alt="Copy query"
@@ -147,7 +147,7 @@
       </search-result>
 
       <div class='row'>
-        <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" quepid-popover="Close the results pane"></span>
+        <i class="bi bi-chevron-up text-primary" ng-click="query.toggle()" quepid-popover="Close the results pane"></i>
         <span ng-if="query.numFound > query.docs.length">
           <a
             class="btn btn-default"
@@ -178,7 +178,7 @@
       </search-result>
 
       <div class='row'>
-        <span class="glyphicon glyphicon-chevron-up text-primary" ng-click="query.toggle()" quepid-popover="Close the results pane"></span>
+        <i class="bi bi-chevron-up text-primary" ng-click="query.toggle()" quepid-popover="Close the results pane"></i>
         <span ng-if="query.getNumFound() > query.ratedDocs.length">
           <a
             ng-show='query.getNumFound() > query.ratedDocs.length'
