@@ -7,6 +7,8 @@ class LlmServiceTest < ActiveSupport::TestCase
   let(:service) { LlmService.new '1234asdf5678', {} }
   let(:query_doc_pair) { query_doc_pairs(:starwars_qdp1) }
 
+  setup { register_default_openai_stubs }
+
   # for these tests, we run the query to OpenAI for real first, and then record the request and the response
   # and use that in the webmock.rb file.
   # Use WebMock.allow_net_connect! and WebMock.disable_net_connect! to
