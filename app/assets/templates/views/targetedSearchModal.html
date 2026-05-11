@@ -39,7 +39,7 @@
             Please click the "Search" button instead of enter key to avoid scrolling your query out of view!
           </p>
 
-          <p class="help-block">
+          <p class="help-block form-text">
             Solr:
             Use the simple <a href="https://www.lucenetutorial.com/lucene-query-syntax.html" target="_blank">Lucene query syntax</a> (<code>field:value</code>).<br />
             Example: <code>id:123</code>.<br />
@@ -58,7 +58,7 @@
     </form>
     <form ng-submit="resetToAllRatedDocs()">
       <p>
-        <input type="submit" class="btn btn-default form-control"  ng-disabled="defaultList" value="Reset to All Rated Docs"></input>
+        <input type="submit" class="btn btn-default btn-outline-secondary form-control"  ng-disabled="defaultList" value="Reset to All Rated Docs"></input>
       </p>
     </form>
   </div>
@@ -94,16 +94,16 @@
     </p>
 
 
-    <div class="score-all pull-left">
+    <div class="score-all pull-left float-start">
       <strong>Score All</strong>
       <div class="ratings">
         <div class="single-rating" ng-click="ratings.open()" quepid-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
-          <span class="btn" style="background-color: rgb(119, 119, 119);">- <span class="caret"></span></span>
+          <span class="btn" style="background-color: rgb(119, 119, 119);">- <i class="bi bi-caret-down-fill"></i></span>
         </div>
       </div>
     </div>
 
-    <div class="alert alert-warning pull-left score-all-alert">
+    <div class="alert alert-warning pull-left float-start score-all-alert">
       Changing ratings will affect the query score.
     </div>
 
@@ -114,7 +114,7 @@
 
 <div class='row'>
   <span ng-if="docFinder.numFound > docFinder.docs.length">
-    <a class="btn btn-default" ng-click="paginate()">
+    <a class="btn btn-default btn-outline-secondary" ng-click="paginate()">
       Peek at the next page of results
     </a>
   </span>
@@ -124,5 +124,5 @@
   </span>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default" ng-click="targetedSearchModalModel.closeModal()">Close</button>
+  <button class="btn btn-default btn-outline-secondary" ng-click="targetedSearchModalModel.closeModal()">Close</button>
 </div>
