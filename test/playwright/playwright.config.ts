@@ -1,10 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'node:path';
+import { playwrightBaseURL } from './env';
 
-const baseURL = process.env.QUEPID_BASE_URL ?? 'http://localhost:33000';
+const baseURL = playwrightBaseURL();
 const storageStatePath = path.join(__dirname, '.auth', 'user.json');
 
 export default defineConfig({
+  globalSetup: path.join(__dirname, 'global-setup.ts'),
   testDir: __dirname,
   outputDir: 'test-results/runs',
   snapshotDir: 'baselines',
@@ -46,6 +48,9 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 900 },
         storageState: storageStatePath,
+        // Attach a viewport PNG after each test so the HTML report shows how the UI ended up
+        // (list + screenshot steps). Setup project stays on the root only-on-failure default.
+        screenshot: 'on',
       },
     },
   ],

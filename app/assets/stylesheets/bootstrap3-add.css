@@ -212,6 +212,7 @@ header .navbar-nav > li > a {
 header .dropdown-toggle {
   padding: 15px 20px;
   color: #FFF;
+  text-decoration: none !important;
 }
 
 .toggle-label {
@@ -262,11 +263,6 @@ header .dropdown-link:hover,
 header .dropdown-link:focus {
   text-decoration: underline !important;
   background: none !important;
-}
-
-header .dropdown-toggle {
-  color: #FFF;
-  text-decoration: none !important;
 }
 
 header .dropdown-content li.dropdown-header {
