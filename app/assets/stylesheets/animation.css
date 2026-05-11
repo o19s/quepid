@@ -74,7 +74,7 @@
     margin: 2px;
 }
 
-/* Spin an icon, typically glyphicon-refresh */
+/* Spin an icon */
 .spintime {
     display: inline-block; /* Allow transform */
     animation: spin 1s linear infinite; /* Spin animation */
