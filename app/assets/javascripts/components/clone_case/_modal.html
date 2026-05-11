@@ -28,7 +28,7 @@
 
   <div class="row">
     <div class="col-md-6" ng-show="!ctrl.options.history">
-      <div class="form-group">
+      <div class="form-group mb-3">
         <label for="try">Select try </label> <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Select the desired try from your full case history."></i>
         <select
           id="try"
@@ -40,7 +40,7 @@
       </div>
     </div>
     <div class="col-md-6">
-      <div class="form-group">
+      <div class="form-group mb-3">
         <label>Select content <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="When cloning a case, you typically want to include your existing queries. If you want to preserve ratings, select to import them as well."></i></label>
         <div class="checkbox form-check">
           <label class="form-check-label">
@@ -55,6 +55,6 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default btn-outline-secondary float-left" ng-click="ctrl.cancel()">Cancel</button>
+  <button class="btn btn-default btn-outline-secondary float-left me-auto" ng-click="ctrl.cancel()">Cancel</button>
   <button class="btn btn-primary" ng-click="ctrl.ok()" ng-disabled="ctrl.cannotClone()">Clone</button>
 </div>

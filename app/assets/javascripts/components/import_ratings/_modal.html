@@ -40,7 +40,7 @@
 
       <p>Please select the file format to import:</p>
 
-      <div class="form-group">
+      <div class="form-group mb-3">
         <input type="radio" id="csv" name="importSelection" value="csv" ng-model="ctrl.options.which">
         <label for="csv">CSV</label>
         <span class="help-block form-text">
@@ -73,7 +73,7 @@ star trek,,</pre>
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group mb-3">
         <input type="radio" id="rre" name="importSelection" value="rre" ng-model="ctrl.options.which">
         <label for="rre">Rated Ranking Evaluator</label>
         <span class="help-block form-text">
@@ -86,7 +86,7 @@ star trek,,</pre>
           onchange="angular.element(this).scope().pickedRREFile()"/>
       </div>
 
-      <div class="form-group">
+      <div class="form-group mb-3">
         <input type="radio" id="ltr" name="importSelection" value="ltr" ng-model="ctrl.options.which">
         <label for="ltr">Learning to Rank</label>
         <span class="help-block form-text">
@@ -104,7 +104,7 @@ star trek,,</pre>
       <p>
         Importing information needs is the easiest way to update a lot of queries.  You should export the template file via the 'Export' feature first.
       </p>
-      <div class="form-group">
+      <div class="form-group mb-3">
         <input type="radio" id="information_needs" name="importSelection" value="information_needs" ng-model="ctrl.options.which">
         <label for="information_needs">Information Needs CSV</label>
         <div class="checkbox form-check">
@@ -147,7 +147,7 @@ star wars,"The original movie"</pre>
       <p>
         Importing snapshots is fun!  Any missing queries will be created.  The Case ID provided in the uploaded CSV file will be replaced so that all rows will be imported into the current case.
       </p>
-      <div class="form-group">
+      <div class="form-group mb-3">
         <input type="radio" id="snapshots" name="importSelection" value="snapshots"
                ng-model="ctrl.options.which">
         <label for="snapshots">Snapshot CSV</label>
@@ -205,7 +205,7 @@ Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,1921,3
 
   <i class="bi bi-arrow-repeat spintime" aria-hidden="true" ng-show="ctrl.loading"></i>
 
-  <button class="btn btn-default btn-outline-secondary float-left" ng-click="ctrl.cancel()">Cancel</button>
+  <button class="btn btn-default btn-outline-secondary float-left me-auto" ng-click="ctrl.cancel()">Cancel</button>
   <button class="btn btn-primary" ng-click="ctrl.ok()" ng-disabled="!ctrl.showWarning()">Import</button>
 
 </div>
