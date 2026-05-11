@@ -3,7 +3,7 @@
 // `createWiredServices(...)`.
 import { createFetchClient, createWiredServices, isAbortError } from 'splainer-search/wired.js';
 
-const httpClient = createFetchClient();
+const httpClient = createFetchClient({ credentials: 'include' });
 const api = createWiredServices(httpClient);
 
 const ngModule = angular.module('o19s.splainer-search', []);

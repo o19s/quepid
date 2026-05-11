@@ -19,7 +19,7 @@ Third-party JavaScript that Quepid previously loaded from `package.json` now liv
 | `ng-tags-input/` | Tag input; CSS copied in `build_css.js` from `build/*.min.css` |
 | `ngclipboard/` | Clipboard helper (used with npm `clipboard`) |
 
-**splainer-search** is loaded from npm (see root `package.json`) and bridged onto Angular DI in **`app/javascript/splainer_search_angular_bridge.js`**.
+**splainer-search** is loaded from npm (see root `package.json`) and bridged onto Angular DI in **`app/javascript/splainer_search_adapter.js`**.
 
 Angular unit tests load **`angular-mocks`** from `node_modules/` (see Karma config).
 

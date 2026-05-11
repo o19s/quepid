@@ -394,7 +394,7 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
    bin/docker s
    ```
 
-3. **Rebuild after making changes**: This is the critical step. **splainer-search 3.x** is installed under **`node_modules/splainer-search`** and pulled into the bundle via `app/javascript/angular_app.js` and **`splainer_search_angular_bridge.js`**. After editing that package (directly or by mounting your clone over `node_modules/splainer-search`), reload the vendor bundle:
+3. **Rebuild after making changes**: This is the critical step. **splainer-search 3.x** is installed under **`node_modules/splainer-search`** and pulled into the bundle via `app/javascript/angular_app.js` and **`splainer_search_adapter.js`**. After editing that package (directly or by mounting your clone over `node_modules/splainer-search`), reload the vendor bundle:
 
    **After making ANY changes to your local splainer-search files, run:**
 
@@ -683,7 +683,7 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 
 ## How does the Frontend work?
 
-We use Angular 1 for the core interactive application. **`splainer-search`** is **`3.x` from npm** (see root `package.json`); **`app/javascript/splainer_search_angular_bridge.js`** registers the wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI (`fieldSpecSvc`, `searchSvc`, …) keeps working. Most other AngularJS-era UI libraries (**`angular-ui-bootstrap`**, wizard, pagination, ui-ace, `ng-tags-input`, etc.) remain **under `app/javascript/vendor/`** (see `vendor/README.md`); only **`angular`** and **`splainer-search`** for the core Case UI are npm dependencies besides shared utilities. Esbuild bundles from **`app/javascript/angular_app.js`**.  
+We use Angular 1 for the core interactive application. **`splainer-search`** is **`3.x` from npm** (see root `package.json`); **`app/javascript/splainer_search_adapter.js`** registers the wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI (`fieldSpecSvc`, `searchSvc`, …) keeps working. Most other AngularJS-era UI libraries (**`angular-ui-bootstrap`**, wizard, pagination, ui-ace, `ng-tags-input`, etc.) remain **under `app/javascript/vendor/`** (see `vendor/README.md`); only **`angular`** and **`splainer-search`** for the core Case UI are npm dependencies besides shared utilities. Esbuild bundles from **`app/javascript/angular_app.js`**.  
 We import the Bootstrap 3 CSS directly via the file `bootstrap3.css`.
 
 For the rest of Quepid, we use Bootstrap 5! That is included via the `package.json` using NPM. See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle`.
