@@ -20,8 +20,8 @@
         With a Static search endpoint there are no query settings to play with ;-(.
       </p>
       <div ng-if="settings.searchEngine !== 'static'" class="rerunnable-settings-tab" id='query-params-editor'>
-        <h4 class="pull-left">Query Sandbox:</h4>
-        <p class="pull-right">
+        <h4 class="pull-left float-start">Query Sandbox:</h4>
+        <p class="pull-right float-end">
           <a href="http://quepidapp.com/docs/#tuning" class="query-help" target="_blank">
             <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
           </a>
@@ -98,7 +98,7 @@
 
           <h4>Tuning Knobs</h4>
 
-          <p class="help-block tip">
+          <p class="help-block form-text tip">
             Add and remove knobs from here by editing your query.
           </p>
           <div ng-repeat="curatorVar in settings.selectedTry.curatorVars">
@@ -244,7 +244,7 @@
             <input type="checkbox" ng-model="caseModel.selectedCase().nightly" ng-change="updateNightly()"/> Evaluate Case Nightly <i class="bi bi-repeat"></i>
             </label>
 
-            <p class="pull-right">
+            <p class="pull-right float-end">
               <span class="label label-info">
                 <a href="#"
                   quepid-tooltip="Run all the queries every night and store the results<br/> and the scores as a snapshot."
@@ -278,7 +278,7 @@
               <input type="checkbox" ng-model="settings.escapeQuery"> Escape Queries
             </label>
 
-            <p class="pull-right">
+            <p class="pull-right float-end">
               <span class="label label-info">
                 <a href="#"
                   quepid-tooltip="(advanced) -- If your queries use Solr|Elasticsearch|OpenSearch <br/>query syntax (like text:law) then disable this feature"

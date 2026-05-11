@@ -1,11 +1,11 @@
 <div class="results" id="query-container">
   <div class="row">
-    <div class="col-sm-12 form-group">
-      <div class="pull-left">
+    <div class="col-sm-12 form-group mb-3">
+      <div class="pull-left float-start">
         <add-query></add-query>
       </div>
 
-      <ul class="list-inline pull-right">
+      <ul class="list-inline pull-right float-end">
         <li>
           <input type="checkbox" class="align-top" ng-checked="queriesSvc.showOnlyRated" ng-click="queriesSvc.toggleShowOnlyRated()" />
           <a href="" ng-click="queriesSvc.toggleShowOnlyRated()">Show only rated</a>
@@ -91,13 +91,13 @@
 
       <div class="clearfix"></div>
 
-      <div class="pull-right p-r-10">
+      <div class="pull-right float-end p-r-10">
         Number of Queries: {{ queriesList.length }}
       </div>
-      <div class="pull-right p-r-10">
-        <input type="search" ng-model="queryFilter" placeholder="Filter Queries" aria-label="filter queries" class="form-control input-sm" id='queries-filter' />
+      <div class="pull-right float-end p-r-10">
+        <input type="search" ng-model="queryFilter" placeholder="Filter Queries" aria-label="filter queries" class="form-control input-sm form-control-sm" id='queries-filter' />
       </div>
-      <div class="pull-right p-r-10">
+      <div class="pull-right float-end p-r-10">
         <frog-report
           the-case="caseSvc.selectedCase()"
 
