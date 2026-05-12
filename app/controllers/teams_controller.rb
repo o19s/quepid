@@ -479,7 +479,7 @@ class TeamsController < ApplicationController
   private
 
   def set_team
-    @team = Team.find(params[:id])
+    @team = current_user.teams.find(params[:id])
   end
 
   def team_params

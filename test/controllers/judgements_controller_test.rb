@@ -20,6 +20,11 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'returns not found when the book is missing or not accessible' do
+    get book_judgements_url(book_id: 999_999)
+    assert_response :not_found
+  end
+
   #   test 'should get new' do
   #     get new_judgement_url
   #     assert_response :success

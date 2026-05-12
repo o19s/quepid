@@ -3,8 +3,9 @@
 class JudgementsController < ApplicationController
   include Pagy::Method
 
-  before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book
+  before_action :check_book
+  before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
 
   def index
     # compact checkbox: default to checked
@@ -131,7 +132,7 @@ class JudgementsController < ApplicationController
   private
 
   def set_judgement
-    @judgement = Judgement.find(params[:id])
+    @judgement = @book.judgements.find(params[:id])
   end
 
   def judgement_params

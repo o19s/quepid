@@ -10,6 +10,7 @@ module Api
       let(:case1)                 { cases(:random_case_1) }
       let(:case2)                 { cases(:random_case_2) }
       let(:shared_case)           { cases(:shared_case) }
+      let(:not_shared_case)       { cases(:not_shared) }
       let(:team)                  { teams(:cases_team) }
       let(:other_team)            { teams(:valid) }
       let(:shared_team)           { teams(:another_shared_team) }
@@ -37,6 +38,14 @@ module Api
             post :create, params: { team_id: team.id, id: case1.id }
 
             assert_response :ok
+          end
+        end
+
+        test 'returns a not found error when the user does not have access to the case' do
+          assert_difference 'shared_team.cases.count', 0 do
+            post :create, params: { team_id: shared_team.id, id: not_shared_case.id }
+
+            assert_response :not_found
           end
         end
 
