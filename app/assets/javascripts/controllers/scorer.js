@@ -6,11 +6,11 @@ angular.module('QuepidApp')
   .controller('ScorerCtrl', [
     '$scope', '$location', '$quepidModalInstance', '$log',
     'parent', 'scorerSvc', 'caseSvc', 'queriesSvc',
-    'configurationSvc', 'caseTryNavSvc',
+    'configurationSvc',
     function (
       $scope, $location, $quepidModalInstance, $log,
       parent, scorerSvc, caseSvc, queriesSvc,
-      configurationSvc, caseTryNavSvc
+      configurationSvc
     ) {
 
       $scope.activeScorer       = parent.currentScorer || {};
