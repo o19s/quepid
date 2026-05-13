@@ -69,10 +69,6 @@ a, button, .button {
 	padding: 0 0 0 3px;
 }
 
-.table-striped > tbody > tr:nth-child(odd) > td,
-.table-striped > tbody > tr:nth-child(odd) > th {
-}
-
 .table-striped > tbody > tr > td, .table-striped > tbody > tr > th {
 	border-top: 1px solid #000;
 }
@@ -134,12 +130,6 @@ a, button, .button {
 	font-family: 'alleritalic';
 	font-size: 28px;
 	color: #FFF !important;
-}
-
-.sub-brand {
-	font-size: 13px;
-	color: #999;
-	font-weight: bold;
 }
 
 .navbar-brand .hover {
@@ -213,10 +203,6 @@ header .dropdown-toggle {
   padding: 15px 20px;
   color: #FFF;
   text-decoration: none !important;
-}
-
-.toggle-label {
-	padding: 15px 15px 15px 5px;
 }
 
 header .dropdown:hover, header .dropdown-toggle-active {
@@ -349,21 +335,12 @@ header .dropdown-content li.dropdown-header {
   float:      left;
 }
 
-.results .unrated-results-text {
-  display: block;
-  clear: both;
-}
-
 .results .total-results {
   display:      block;
   float:        right;
   line-height:  30px;
   margin-right: 50px;
   text-align:   right;
-}
-
-.results .total-results.unrated-results {
-  line-height:  1em;
 }
 
 .low-profile {
@@ -468,16 +445,6 @@ header .dropdown-content li.dropdown-header {
 	width: 400px !important;
 }
 
-.sub-results-attributes {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-}
-
-.sub-results-attributes li {
-	padding: 0 0 5px 0;
-}
-
 .sub-results .row {
 	padding: 5px 0;
 }
@@ -492,21 +459,11 @@ header .dropdown-content li.dropdown-header {
 	position: relative;
 }
 
-.sub-results .row-header, .sub-results .img-container {
-	text-align: center;
-	border-bottom: 1px solid #CCC;
-}
-
 .single-rating .btn {
 	width: 60px;
 	box-shadow: inset 0 0 25px rgba(0,0,0,0.25);
 	color: #FFF;
 	text-shadow: 0 0 6px rgba(0,0,0,0.25);
-}
-
-.single-rating .caret {
-	margin-left: 5px;
-	border-top-color: #FFF
 }
 
 .ratingContainer ul {
@@ -522,15 +479,9 @@ header .dropdown-content li.dropdown-header {
 	color: #FFF;
 }
 
-.summary-head, .col-summary {
+.col-summary {
 	text-align: left;
 	margin-left: 70px;
-}
-
-.full-result {
-	width: 20%;
-	clear: both;
-	margin: 20px 80% 0 0;
 }
 
 .query-thumbnail {
@@ -661,17 +612,6 @@ header .dropdown-content li.dropdown-header {
 /*
 	Main - Developer Panel
 */
-
-.ui-layout-east {
-	background: #333;
-}
-
-.show-dev-settings {
-	width: 100%;
-	height: auto;
-	padding: 0 360px 0 18px !important;
-	margin: 0;
-}
 
 #dev-settings {
 	width: 100%;
@@ -868,47 +808,6 @@ footer {
   margin-top: 30px;
 }
 
-/*
-	Homepage
-*/
-
-.navbar-right-home {
-	margin: 8px 0 0 0;
-}
-
-.navbar-right-home-user {
-	margin: 0;
-}
-
-.navbar-right-home-user .navbar-text { color: #FFF; padding-top: 2px; }
-.navbar-right-home-user .ng-link { color: #F0F0F0 !important; }
-.navbar-right-home-user .ng-link:hover { color: #FFF !important; }
-
-.navbar-right-home .btn-default {
-	background-image: -webkit-gradient(
-		linear,
-		left top,
-		left bottom,
-		color-stop(0, #FFF),
-		color-stop(1, #eaeff5)
-	);
-	background-image: -o-linear-gradient(bottom, #FFF 0%, #eaeff5 100%);
-	background-image: -moz-linear-gradient(bottom, #FFF 0%, #eaeff5 100%);
-	background-image: -webkit-linear-gradient(bottom, #FFF 0%, #eaeff5 100%);
-	background-image: -ms-linear-gradient(bottom, #FFF 0%, #eaeff5 100%);
-	background-image: linear-gradient(to bottom, #FFF 0%, #eaeff5 100%);
-	color: #369;
-}
-
-.navbar-right-home .btn-default:hover {
-	background: #FFF;
-	color: #036;
-}
-
-.navbar-right-home ul li {
-	margin-right: 8px;
-}
-
 /*allow popover to size to content*/
 .popover {
     max-width: 800px;
@@ -952,14 +851,6 @@ footer {
 }
 */
 
-.scorer.code .ace_editor {
-  height: 200px;
-}
-
-.queryparams.code .ace_editor {
-  height: 125px;
-}
-
 .customheaders.code .ace_editor {
   height: 125px;
 }
@@ -968,30 +859,10 @@ footer {
   height: 300px;
 }
 
-.scorer .max-score input:disabled {
-  background-color: #EEE;
-}
-
-.doc-desc {
-    font-size: 1.5em;
-    font-family: serif;
-    text-align: right;
-}
-
-.osc_logo {
-    height: 2em;
-}
-
 .footer {
   text-align: center;
   padding-left: 15px;
   padding-right: 15px;
-}
-
-.help-panel {
-  display: block;
-  overflow: auto;
-  margin-bottom: 30px;
 }
 
 .search-feedback {
@@ -1031,10 +902,6 @@ footer {
   font-size: 14px;
 }
 
-.loading-app .loading-spinner {
-  font-size: 4em !important;
-}
-
 .loading-app .loading-text {
   font-size: 0.5em !important;
 }
@@ -1050,16 +917,6 @@ footer {
 
 #profile .avatar {
   margin-right: 20px;
-}
-
-.account-type {
-  font-size:      1.2em;
-  display:        block;
-  border-radius:  0;
-}
-
-.label.pro {
-  background-color: #5cb85c;
 }
 
 .alert-danger h2 {
