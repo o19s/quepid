@@ -26,7 +26,7 @@
             </li>
             
             <li class="actions">
-              <a href="cases" class="btn btn-default btn-block" target="_self">
+              <a href="cases" class="btn btn-default btn-outline-secondary btn-block w-100" target="_self">
                 View all cases
                 <small class="text-muted">
                   ({{ headerScope.casesCount }} active)
@@ -55,7 +55,7 @@
             </li>
 
             <li class="actions">
-              <a href="books" class="btn btn-default btn-block" target="_self">
+              <a href="books" class="btn btn-default btn-outline-secondary btn-block w-100" target="_self">
                 View all books
                 <small class="text-muted">
                   ({{ headerScope.booksCount }} active)
@@ -63,7 +63,7 @@
               </a>
 
               <a
-                class="btn btn-success btn-block"
+                class="btn btn-success btn-block w-100"
                 ng-href="{{headerScope.createNewBookLink()}}"
                 target="_self"
               >
@@ -84,7 +84,7 @@
         <!-- Begin account management dropdown -->
         <li class="dropdown">
           <a href="#" role="button" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            <%= image_tag current_user.avatar_url, size: '24x24', class: 'img-rounded', title: 'Avatar image' %>
+            <%= image_tag current_user.avatar_url, size: '24x24', class: 'img-rounded rounded', title: 'Avatar image' %>
             <span data-display-name><%= current_user.display_name %> </span>
             <i class="bi bi-chevron-down"></i>
           </a>
