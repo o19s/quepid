@@ -43,7 +43,8 @@
     "karma": "^6.4.1",
     "karma-chrome-launcher": "3.2.0",
     "karma-jasmine": "5.1.0",
-    "puppeteer": "^24.0.0"
+    "puppeteer": "^24.0.0",
+    "purgecss": "^8.0.0"
   },
   "resolutions": {},
   "scripts": {
@@ -57,6 +58,7 @@
     "build:analytics": "esbuild app/javascript/analytics.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets",
     "build:css": "node build_css.js",
     "build:css:watch": "node build_css.js --watch",
+    "audit:css": "node audit_css.js",
     "build": "npm run build:css && npm run build:jquery && npm run build:angular-vendor && npm run build:angular-app && npm run build:angular-templates && npm run build:admin && npm run build:analytics",
     "test": "rake karma:run",
     "test:ci": "rake karma:ci",
