@@ -60,6 +60,7 @@
     "build:css": "node build_css.js",
     "build:css:watch": "node build_css.js --watch",
     "audit:css": "node audit_css.js",
+    "audit:css:host": "mkdir -p tmp/css-audit-host && CSS_AUDIT_DIR=tmp/css-audit-host node audit_css.js",
     "build": "npm run build:css && npm run build:jquery && npm run build:angular-vendor && npm run build:angular-app && npm run build:angular-templates && npm run build:admin && npm run build:analytics",
     "test": "rake karma:run",
     "test:ci": "rake karma:ci",

@@ -5,11 +5,12 @@
 // Scans every source file that `buildCoreCSS()` in build_css.js
 // concatenates into core.css, and asks PurgeCSS which selectors are
 // never referenced by any template, helper, or script. Writes a
-// per-source-file report to tmp/css-audit/ so removals can be done
-// one file at a time.
+// per-source-file report (default tmp/css-audit/, override with CSS_AUDIT_DIR).
 //
 // Run inside the project's Docker container:
 //   bin/docker r yarn audit:css
+// Host-only when tmp/css-audit is root-owned from Docker — see yarn audit:css:host.
+// Exits before PurgeCSS if the output directory is not writable.
 //
 // Why per-file rather than per-bundle: the BS3 bundle is built by
 // concatenation, so an unused selector in bootstrap3-add.css is a
@@ -19,6 +20,31 @@
 const fs = require('fs');
 const path = require('path');
 const { PurgeCSS } = require('purgecss');
+
+/** Resolved output root for reports (absolute path). Override with CSS_AUDIT_DIR. */
+const AUDIT_OUTPUT_DIR = path.resolve(
+  process.env.CSS_AUDIT_DIR || path.join('tmp', 'css-audit')
+);
+
+/** Ensure the audit output directory exists and is writable (Docker-as-root reruns often break writes). */
+function ensureWritableOutDir(dir) {
+  fs.mkdirSync(dir, { recursive: true });
+  const probe = path.join(dir, `.write-probe-${process.pid}-${Date.now()}`);
+  try {
+    fs.writeFileSync(probe, '');
+    fs.unlinkSync(probe);
+  } catch (err) {
+    if (err.code === 'EACCES' || err.code === 'EPERM') {
+      console.error(
+        `Cannot write to ${dir} (${err.code}). If Docker created these files as root, fix ownership:\n` +
+        `  sudo chown -R "$(id -u):$(id -g)" ${dir}\n` +
+        `Or remove the directory and rerun. See docs/css_audit_core_triage.md.\n`
+      );
+      process.exit(1);
+    }
+    throw err;
+  }
+}
 
 // Sources that compose core.css (mirrors buildCoreCSS in build_css.js).
 // fonts.css is excluded — it's just @font-face declarations.
@@ -139,16 +165,13 @@ async function auditFile(cssFile) {
 }
 
 function writeReports(report) {
-  const outDir = 'tmp/css-audit';
-  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-
   const basename = path.basename(report.file, '.css');
   fs.writeFileSync(
-    path.join(outDir, `${basename}.dead.txt`),
+    path.join(AUDIT_OUTPUT_DIR, `${basename}.dead.txt`),
     report.rejected.join('\n') + '\n'
   );
   fs.writeFileSync(
-    path.join(outDir, `${basename}.dead.css`),
+    path.join(AUDIT_OUTPUT_DIR, `${basename}.dead.css`),
     `/* Rejected selectors from ${report.file} */\n` +
     `/* ${report.rejected.length} selectors, ~${report.deadBytes} bytes (${report.pct}% of source) */\n\n` +
     report.rejectedCss
@@ -160,6 +183,8 @@ function writeSummary(reports) {
   lines.push('# core.css dead-rule audit');
   lines.push('');
   lines.push(`Generated: ${new Date().toISOString()}`);
+  const relOutDir = path.relative(process.cwd(), AUDIT_OUTPUT_DIR) || '.';
+  lines.push(`Reports directory: ${relOutDir}`);
   lines.push('');
   lines.push('Per-file breakdown of selectors that PurgeCSS could not find a reference for.');
   lines.push('Noisy sources are vendored upstream files where runtime-added classes inflate the count;');
@@ -188,14 +213,17 @@ function writeSummary(reports) {
   lines.push('See `<source>.dead.css` for the full rule bodies (suitable for review/diff).');
   lines.push('See `<source>.dead.txt` for a plain selector list.');
 
-  fs.writeFileSync('tmp/css-audit/SUMMARY.md', lines.join('\n') + '\n');
+  fs.writeFileSync(path.join(AUDIT_OUTPUT_DIR, 'SUMMARY.md'), lines.join('\n') + '\n');
 }
 
 async function main() {
   console.log('Auditing BS3 core.css sources for unreferenced selectors...');
   console.log(`Content globs: ${CONTENT.length} patterns`);
   console.log(`CSS sources: ${SOURCES.length} files`);
+  console.log(`Output directory: ${AUDIT_OUTPUT_DIR}`);
   console.log('');
+
+  ensureWritableOutDir(AUDIT_OUTPUT_DIR);
 
   const reports = [];
   for (const src of SOURCES) {
@@ -217,8 +245,8 @@ async function main() {
 
   writeSummary(reports);
   console.log('');
-  console.log('Reports written to tmp/css-audit/');
-  console.log('Start with tmp/css-audit/SUMMARY.md');
+  console.log(`Reports written to ${AUDIT_OUTPUT_DIR}/`);
+  console.log(`Start with ${path.join(AUDIT_OUTPUT_DIR, 'SUMMARY.md')}`);
 }
 
 main().catch((err) => {

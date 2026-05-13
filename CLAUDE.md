@@ -38,9 +38,9 @@ In Ruby we say `credentials?` versus `has_credentials?` for predicates.
 
 In JavaScript, use `const` or `let` instead of `var`. When writing multiline ternary expressions, keep `?` and `:` at the end of the line, not the start of the next line, to avoid JSHint "misleading line break" errors.
 
-## Migrating angular-ui-bootstrap → native Bootstrap 5
+## Bootstrap 5 JavaScript on Angular `core` (BS3 CSS still loads)
 
-The Angular case UI (`app/views/layouts/core.html.erb`) loads **Bootstrap 3** CSS via `core.css`. The non-Angular UI loads BS5 via `application.css`. They are separate stylesheet worlds. When migrating a uib directive (`uib-popover`, `uib-tooltip`, ...) to native `window.bootstrap.*` — see existing examples in `app/assets/javascripts/directives/quepidPopover.js` and `quepidTooltip.js` — expect these traps:
+The Angular case UI (`app/views/layouts/core.html.erb`) loads **Bootstrap 3** CSS via `core.css`; **`app/javascript/angular_app.js`** pins BS5 **`window.bootstrap`** for popovers, tooltips, dropdowns, accordion, tabs, modals (`$quepidModal`), and similar — angular-ui-bootstrap is not in the tree. The non-Angular UI loads BS5 via `application.css`. The two are separate stylesheet worlds. When you **add or change** BS5-driven UI on `core` (or more rules in `bootstrap5-compat.css`), use `app/assets/javascripts/directives/quepidPopover.js` and `quepidTooltip.js` as patterns and expect these traps:
 
 1. **BS5 component CSS is not loaded.** Port the needed rules from `node_modules/bootstrap/dist/css/bootstrap.css` into `app/assets/stylesheets/bootstrap5-compat.css` and include it in `buildCoreCSS()` in `build_css.js` *after* `bootstrap3-add.css` so cascade order favours BS5. Scope new collapse-style rules (e.g. `.accordion-collapse.collapse:not(.show)`) so they don't clobber BS3's `.collapse.in` ecosystem or `quepid-collapse`.
 
@@ -52,4 +52,4 @@ The Angular case UI (`app/views/layouts/core.html.erb`) loads **Bootstrap 3** CS
 
 5. **Verify visually.** Two of the four traps above produce *invisible-but-present* failures (popover element in DOM, `aria-describedby` set, but nothing visible). Static analysis won't catch them. Use Playwright MCP (or have the user screenshot DevTools' Computed panel for the popover element) and confirm `display`, `opacity`, `font-size`, and `transform` are sensible.
 
-Stylesheet coexistence traps for Angular `core` are in `docs/bootstrap_angular_plugins.md`. Per-component replacement inventory (historical angular-ui-bootstrap features) lives in `docs/archived/bootstrap_angular_plugins_full.md`.
+More detail and markup examples: `docs/bootstrap_angular_plugins.md`. Per-component angular-ui-bootstrap inventory (historical): `docs/archived/bootstrap_angular_plugins_full.md`.
