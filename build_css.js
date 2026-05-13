@@ -90,8 +90,18 @@ function buildCoreCSS() {
   console.log('Building core.css...');
   
   const outputFile = 'app/assets/builds/core.css';
-  let output = '/* Core CSS Bundle (Bootstrap 3 for Angular App) */\n';
+  let output = '/* Core CSS Bundle (BS3 + BS5 coexistence for Angular App) */\n';
   output += `/* Generated on ${new Date().toISOString()} */\n`;
+  output += '\n';
+
+  // Bootstrap 5 — loaded FIRST so BS3 cascades over it for shared selectors
+  // (.btn, .modal, body, html ...), preserving existing BS3 markup. BS5-only
+  // utilities and components (me-auto, card, btn-outline-secondary, form-check,
+  // ...) have no BS3 counterpart, so they render from this file. The compat
+  // shim (loaded below, after BS3) still wins for the specific components we
+  // intentionally migrated to BS5 (popover, tooltip, accordion, modal,
+  // dropdown, tabs, typeahead).
+  output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
   output += '\n';
 
   // Bootstrap 3

@@ -51,6 +51,7 @@ function ensureWritableOutDir(dir) {
 // Vendored bootstrap-icons and shepherd-theme are excluded — those
 // belong to upstream packages.
 const SOURCES = [
+  'node_modules/bootstrap/dist/css/bootstrap.css',
   'app/assets/stylesheets/bootstrap3.css',
   'app/assets/stylesheets/bootstrap3-add.css',
   'app/assets/stylesheets/bootstrap5-compat.css',
@@ -71,6 +72,7 @@ const SOURCES = [
 // Vendored upstream files we report on but expect high false-positive
 // noise from (selectors used only when runtime code adds them).
 const NOISY_SOURCES = new Set([
+  'node_modules/bootstrap/dist/css/bootstrap.css',
   'app/assets/stylesheets/bootstrap3.css',
 ]);
 
