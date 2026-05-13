@@ -35,3 +35,5 @@ Never do $window.location.href= '/', do $window.location.href= caseTryNavSvc.get
 Likewise urls generated should never start with / as we need relative links.
 
 In Ruby we say `credentials?` versus `has_credentials?` for predicates.
+
+In JavaScript, use `const` or `let` instead of `var`. When writing multiline ternary expressions, keep `?` and `:` at the end of the line, not the start of the next line, to avoid JSHint "misleading line break" errors.

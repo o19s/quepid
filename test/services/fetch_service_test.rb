@@ -24,6 +24,37 @@ class FetchServiceTest < ActiveSupport::TestCase
     }
   end
 
+  setup do
+    body = File.read(Rails.root.join('test/fixtures/files/solr_statedecoded_response.json'))
+
+    faraday_headers = {
+      'Accept'          => '*/*',
+      'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+      'Content-Type'    => 'application/json',
+      'User-Agent'      => /Faraday/,
+    }
+
+    # for_case_queries_case try with First Query (default field_spec).
+    stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title&q=First%20Query&rows=10&wt=json')
+      .with(headers: faraday_headers).to_return(status: 200, body: body)
+
+    # for_case_queries_case try with First Query and a custom field_spec.
+    stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title,img_500x500,name,brand,product_type&q=First%20Query&rows=10&wt=json')
+      .with(headers: faraday_headers).to_return(status: 200, body: body)
+
+    # es_try_with_curator_vars try with First Query (Elasticsearch POST body).
+    stub_request(:post, 'http://test.com:9200/tmdb/_search')
+      .with(
+        body:    { 'query' => { 'multi_match' => { 'fields' => 'title, overview', 'query' => 'First Query', 'tie_breaker' => '1' } } },
+        headers: faraday_headers
+      )
+      .to_return(status: 200, body: body)
+
+    # blowup_query returns 404 to exercise the error path.
+    stub_request(:get, 'http://test.com/solr/tmdb/select?debug=true&debug.explain.structured=true&fl=id,title&q=BLOWUP_QUERY&rows=10&wt=json')
+      .with(headers: faraday_headers).to_return(status: 404, body: '')
+  end
+
   describe 'Creating an appropriate search query from Quepid data' do
     let(:acase)         { cases(:queries_case) }
     let(:atry)          { tries(:for_case_queries_case) }
@@ -181,8 +212,9 @@ class FetchServiceTest < ActiveSupport::TestCase
       end
 
       fetch_service.delete_extra_web_requests acase
-      assert_not_nil acase.snapshots.first.snapshot_queries.first.web_request
-      assert_nil acase.snapshots.second.snapshot_queries.first.web_request
+      ordered_snapshots = acase.snapshots.order(created_at: :desc)
+      assert_not_nil ordered_snapshots.first.snapshot_queries.first.web_request
+      assert_nil ordered_snapshots.second.snapshot_queries.first.web_request
     end
   end
 

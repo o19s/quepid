@@ -30,6 +30,12 @@ module AiJudges
       @ai_judge.update(ai_judge_params)
 
       @query_doc_pair = QueryDocPair.new(query_doc_pair_params)
+      # Form posts document_fields/options as JSON strings; .new doesn't run
+      # validations, so the JsonFormatValidator hasn't parsed them into Hashes
+      # yet. Trigger validation so the LLM service sees a proper Hash (otherwise
+      # document_fields['image'] does substring matching on the raw JSON text
+      # and the image branch never fires).
+      @query_doc_pair.valid?
 
       llm_service = LlmService.new(@ai_judge.llm_key, @ai_judge.judge_options)
       @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @ai_judge)

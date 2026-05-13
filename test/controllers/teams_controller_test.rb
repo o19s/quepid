@@ -4,7 +4,7 @@ require 'test_helper'
 
 class TeamsControllerTest < ActionDispatch::IntegrationTest
   before do
-    @user = users(:random)
+    @user = users(:doug)
     @team = teams(:valid)
     login_user_for_integration_test @user
   end
@@ -89,6 +89,27 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
 
       assert_not_nil alice_suggestion
       assert_equal 'Alice Autocomplete', alice_suggestion['display_name']
+    end
+  end
+
+  describe 'authorization' do
+    it 'redirects when the user is not a member of the team' do
+      foreign_team = teams(:another_shared_team)
+      assert_not_includes foreign_team.members, @user
+
+      get team_path(foreign_team)
+
+      assert_redirected_to teams_path
+    end
+
+    it 'does not let a non-member rename a team' do
+      foreign_team = teams(:another_shared_team)
+      original_name = foreign_team.name
+
+      post rename_team_path(foreign_team), params: { team: { name: 'Pwned' } }
+
+      assert_redirected_to teams_path
+      assert_equal original_name, foreign_team.reload.name
     end
   end
 end

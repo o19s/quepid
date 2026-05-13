@@ -6,6 +6,8 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
   let(:book) { books(:james_bond_movies) }
   let(:judge_judy) { users(:judge_judy) }
 
+  setup { register_default_openai_stubs }
+
   describe 'failure scenarios' do
     test 'not authorized to access OpenAI' do
       # Tell webmock to return a 401 by matching the below key.

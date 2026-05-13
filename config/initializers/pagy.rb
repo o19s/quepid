@@ -7,7 +7,7 @@
 # See https://ddnexus.github.io/pagy/toolbox/options/ for details.
 # Add your global options below. They will be applied globally.
 
-Pagy.options[:limit] = 25
+Pagy::OPTIONS[:limit] = 25
 
 ############ JavaScript ####################################################################
 # See https://ddnexus.github.io/pagy/resources/javascript/ for details.

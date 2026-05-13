@@ -40,6 +40,8 @@ class RatingsGenerator
     ratings
   end
 
+  delegate :docs, to: :@generator
+
   private
 
   def rate_docs docs

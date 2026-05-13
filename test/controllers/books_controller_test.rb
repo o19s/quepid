@@ -10,6 +10,8 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   let(:communal_scorer) { scorers(:communal_scorer) }
 
   describe 'running judge judy' do
+    setup { register_default_openai_stubs }
+
     test 'specifying a limit of query/doc pairs' do
       login_user_for_integration_test user
 

@@ -1,12 +1,25 @@
 # frozen_string_literal: true
 
+require 'ipaddr'
+
 class ProxyController < ApplicationController
-  skip_before_action :require_login
+  before_action :require_login
+  before_action :validate_proxy_url!, only: [ :fetch ]
   skip_before_action :verify_authenticity_token, only: [ :fetch ]
 
-  # curl -X GET "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/select&q=*:*"
-  # curl -X POST "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/query" -d '{"query":"star"}'
-  # curl -X GET "http://localhost:3000/proxy/fetch?url=http://quepid-solr.dev.o19s.com:8985/solr/media/select&q=*:*" -u 'solr:SolrRocks'
+  # The proxy requires an authenticated session. To exercise it from curl, first log in
+  # and capture the session cookie, then reuse it on each request:
+  #
+  # curl -c cookies.txt -X POST "http://localhost:3000/users/login" \
+  #   -H "Content-Type: application/json" \
+  #   -d '{"user":{"email":"YOUR@EMAIL","password":"YOUR_PASSWORD"}}'
+  #
+  # curl -b cookies.txt -X GET "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/select&q=*:*"
+  # curl -b cookies.txt -X POST "http://localhost:3000/proxy/fetch?url=https://quepid-solr.dev.o19s.com/solr/tmdb/query" -d '{"query":"star"}'
+  # curl -b cookies.txt -X GET "http://localhost:3000/proxy/fetch?url=http://quepid-solr.dev.o19s.com:8985/solr/media/select&q=*:*" -u 'solr:SolrRocks'
+  #
+  # Note: the target URL must resolve to a public IP. Loopback, link-local, and RFC1918
+  # private ranges are blocked by validate_proxy_url!.
   #
   def fetch
     url_param = proxy_url_params
@@ -89,11 +102,42 @@ class ProxyController < ApplicationController
     headers
   end
 
-  def lookup_search_endpoint_credentials
-    return nil if params[:search_endpoint_id].blank?
+  def validate_proxy_url!
+    uri = Addressable::URI.parse(proxy_url_params)
 
-    search_endpoint = SearchEndpoint.find_by(id: params[:search_endpoint_id])
+    unless %w[http https].include?(uri.scheme) && uri.host.present?
+      render json: { proxy_error: 'Invalid proxy URL' }, status: :bad_request
+      return
+    end
+
+    addresses = Addrinfo.getaddrinfo(uri.host, nil, :UNSPEC, :STREAM).map do |addrinfo|
+      IPAddr.new(addrinfo.ip_address)
+    end
+
+    render json: { proxy_error: 'Proxy URL resolves to a disallowed address' }, status: :bad_request if addresses.any? { |address| blocked_proxy_address?(address) }
+  rescue Addressable::URI::InvalidURIError, SocketError, IPAddr::InvalidAddressError
+    render json: { proxy_error: 'Invalid proxy URL' }, status: :bad_request
+  end
+
+  def lookup_search_endpoint_credentials
+    return nil unless current_user.present? && params[:search_endpoint_id].present?
+
+    search_endpoint = current_user.search_endpoints_involved_with.find_by(id: params[:search_endpoint_id])
     search_endpoint&.basic_auth_credential
+  end
+
+  def blocked_proxy_address? address
+    return true if address.loopback?
+    return true if address.link_local?
+
+    private_ranges = [
+      IPAddr.new('10.0.0.0/8'),
+      IPAddr.new('172.16.0.0/12'),
+      IPAddr.new('192.168.0.0/16'),
+      IPAddr.new('fc00::/7')
+    ]
+
+    private_ranges.any? { |range| range.include?(address) }
   end
 
   def rack_header? header_name

@@ -6,12 +6,14 @@ This document explains how Quepid can be operated and configured.   You may also
 - [Running behind a load balancer](#running-behind-a-load-balancer)
 - [Setting up a Context Path](#setting-up-a-context-path)
 - [Mail](#mail)
-- [OAuth](#OAuth)
+- [Postmark](#postmark)
+- [SMTP](#smtp)
+- [OAuth](#oauth)
+  - [Keycloak Setup Details](#keycloak-setup-details)
 - [Managing Websocket Load](#managing-websocket-load)
-- [Legal Pages & GDPR](#legal-pages-&-gdpr)
-- [User Tracking](#user-tracking)
-- [Heathcheck Endpoint](#healthcheck)
-- [Analytics Settings](#analytics-settings)
+- [Managing Job Queue Polling Frequency](#managing-job-queue-polling-frequency)
+- [Legal Pages \& GDPR](#legal-pages--gdpr)
+- [Healthcheck](#healthcheck)
 - [Troubleshoot Your Deploy](#troubleshoot-your-deploy)
 - [Database Management](#database-management)
 - [Jupyterlite Notebooks](#jupyterlite-notebooks)
@@ -156,12 +158,19 @@ Keycloak 17+ removes the `/auth` portion of the url.  If you are using earlier v
 
 ## Managing Websocket Load
 
-Quepid uses [SolidCable]() to back the websocket messaging that drives some asynchrnous communication. The state is managed in the database.
+Quepid uses [SolidCable](https://github.com/rails/solid_cable) to back the websocket messaging that drives some asynchronous communication. The state is managed in the database.
 
 By default we issue a query every tenth of a second, which can overload your database.
 
 Set `SOLID_CABLE_POLLING` to `1.seconds` or even `5.seconds` to change how often updates are checked for.  The default is `0.1.seconds`.
 
+## Managing Job Queue Polling Frequency
+
+Quepid uses [SolidQueue](https://github.com/rails/solid_queue) to back the job queue. The state is managed in the database.
+
+By default we issue a query every tenth of a second, which can overload your database.
+
+Set `SOLID_QUEUE_POLLING` to `1.seconds` or even `5.seconds` to change how often updates are checked for.  The default is `0.1.seconds`.
 
 ## Legal Pages & GDPR
 
@@ -203,7 +212,7 @@ Confirm the setup by visiting `/api/test_exception` which raises an error and wi
 
 See the details in [](./database.md).
 
-## Jupuyterlite Notebooks
+## Jupyterlite Notebooks
 
 See the details in [](./jupyterlite.md).
 

@@ -45,6 +45,10 @@ class SampleData < Thor
                                                              test_query: 'q=mental',
                                                              mapper_code: File.read(Rails.root.join('test/fixtures/files/edinburgh_uni_searchapi_mapper_code.js'))
 
+    static_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :static,
+                                                         name: 'Static Endpoint',
+                                                         endpoint_url: 'TO_BE_UPDATED', api_method: 'GET'
+
     print_step 'End of seeding search endpoints................'
 
     # Users
@@ -102,11 +106,13 @@ class SampleData < Thor
     tmdb_solr_endpoint.owner = realistic_activity_user
     tmdb_es_endpoint.owner = realistic_activity_user
     search_api_endpoint.owner = realistic_activity_user
+    static_endpoint.owner = realistic_activity_user
 
     statedecoded_solr_endpoint.save
     tmdb_solr_endpoint.save
     tmdb_es_endpoint.save
     search_api_endpoint.save
+    static_endpoint.save
 
     ######################################
     # OSC Team Owner
@@ -133,7 +139,7 @@ class SampleData < Thor
     print_user_info user_params
 
     ######################################
-    # OSC AI Judge
+    # OSC AI Judge (Ollama)
     ######################################
 
     user_specifics = {
@@ -144,11 +150,56 @@ class SampleData < Thor
     user_params = user_specifics # user_defaults.merge(user_specifics)
     osc_ai_judge = seed_user user_params
     osc_ai_judge.judge_options = {
-      llm_service_url: 'http://ollama:11430',
+      llm_provider:    'ollama',
+      llm_service_url: 'http://ollama:31434',
       llm_model:       'qwen3:0.6b',
       llm_timeout:     60,
+      llm_api_version: '',
     }
+    osc_ai_judge.save!
     print_user_info user_params
+
+    ######################################
+    # Azure OpenAI AI Judge
+    ######################################
+
+    user_specifics = {
+      name:          'Azure OpenAI Judge',
+      llm_key:       'your-azure-openai-key',
+      system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
+    }
+    user_params = user_specifics
+    azure_openai_judge = seed_user user_params
+    azure_openai_judge.judge_options = {
+      llm_provider:    'azure_openai',
+      llm_service_url: 'https://YOUR-RESOURCE.openai.azure.com',
+      llm_model:       'gpt-4.1',
+      llm_timeout:     30,
+      llm_api_version: '2024-12-01-preview',
+    }
+    azure_openai_judge.save!
+    print_step "Seeded AI judge: name: #{user_specifics[:name]}"
+
+    ######################################
+    # Azure AI Foundry Anthropic Judge
+    ######################################
+
+    user_specifics = {
+      name:          'Azure Anthropic Judge',
+      llm_key:       'your-azure-ai-services-key',
+      system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
+    }
+    user_params = user_specifics
+    azure_anthropic_judge = seed_user user_params
+    azure_anthropic_judge.judge_options = {
+      llm_provider:    'azure_ai_foundry_anthropic',
+      llm_service_url: 'https://YOUR-RESOURCE.services.ai.azure.com/anthropic',
+      llm_model:       'claude-3-5-haiku-20241022',
+      llm_timeout:     30,
+      llm_api_version: '',
+    }
+    azure_anthropic_judge.save!
+    print_step "Seeded AI judge: name: #{user_specifics[:name]}"
 
     print_step 'End of seeding users................'
 
@@ -199,6 +250,44 @@ class SampleData < Thor
     searchapi_case.queries.create(query_text: 'student accomodation')
     print_case_info searchapi_case
 
+    ######################################
+    # Static Case
+    ######################################
+
+    static_case = realistic_activity_user.cases.find_or_create_by case_name: 'STATIC CASE'
+    static_try = static_case.tries.latest
+    static_try.search_endpoint = static_endpoint
+    static_try.update field_spec: 'id:id, title:title, thumb:image_url', query_params: 'q=#$query##'
+
+    duck_query_text = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Bucephala-albeola-010.jpg/250px-Bucephala-albeola-010.jpg'
+    static_case.queries.find_or_create_by(query_text: duck_query_text)
+
+    if static_case.snapshots.none?
+      snapshot = static_case.snapshots.create(name: 'Duck and Swan Results')
+      duck_docs = {
+        duck_query_text => {
+          docs: [
+            { id: 'bufflehead-001',     position: 1,  fields: { title: 'Bufflehead Duck', image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Drake_Bufflehead_LBI_%28cropped%29.png/330px-Drake_Bufflehead_LBI_%28cropped%29.png' } },
+            { id: 'mallard-001',        position: 2,  fields: { title: 'Mallard Duck',         image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Anas_platyrhynchos_male_female_quadrat.jpg/330px-Anas_platyrhynchos_male_female_quadrat.jpg' } },
+            { id: 'mandarin-001',       position: 3,  fields: { title: 'Mandarin Duck',        image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Mandarin_duck_%28Aix_galericulata%29.jpg/330px-Mandarin_duck_%28Aix_galericulata%29.jpg' } },
+            { id: 'wood-duck-001',      position: 4,  fields: { title: 'Wood Duck',            image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Wood_Duck_Wissahickon_Creek.png/330px-Wood_Duck_Wissahickon_Creek.png' } },
+            { id: 'teal-001',           position: 5,  fields: { title: 'Green-winged Teal',    image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Green-winged_Teal%2C_Port_Aransas%2C_Texas.jpg/330px-Green-winged_Teal%2C_Port_Aransas%2C_Texas.jpg' } },
+            { id: 'mute-swan-001',      position: 6,  fields: { title: 'Mute Swan',            image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/CygneVaires.jpg/330px-CygneVaires.jpg' } },
+            { id: 'whooper-swan-001',   position: 7,  fields: { title: 'Whooper Swan',         image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Cygnus_cygnus_Singschwan.jpg/330px-Cygnus_cygnus_Singschwan.jpg' } },
+            { id: 'trumpeter-swan-001', position: 8,  fields: { title: 'Trumpeter Swan',       image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Trumpeter_swans_in_winter.jpg/330px-Trumpeter_swans_in_winter.jpg' } },
+            { id: 'eider-001',          position: 9,  fields: { title: 'Common Eider Duck',    image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/%D0%9F%D1%83%D1%85%D1%96%D0%B2%D0%BA%D0%B0_%D0%BD%D0%B0_%D0%9A%D1%96%D0%BD%D0%B1%D1%83%D1%80%D0%BD%D1%81%D1%8C%D0%BA%D0%B8%D0%B9_%D0%BA%D0%BE%D1%81%D1%96.jpg/330px-%D0%9F%D1%83%D1%85%D1%96%D0%B2%D0%BA%D0%B0_%D0%BD%D0%B0_%D0%9A%D1%96%D0%BD%D0%B1%D1%83%D1%80%D0%BD%D1%81%D1%8C%D0%BA%D0%B8%D0%B9_%D0%BA%D0%BE%D1%81%D1%96.jpg' } },
+            { id: 'canvasback-001',     position: 10, fields: { title: 'Canvasback Duck',      image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Aythya_valisineria_at_Las_Gallinas_Wildlife_Ponds.jpg/330px-Aythya_valisineria_at_Las_Gallinas_Wildlife_Ponds.jpg' } }
+          ],
+        },
+      }
+      SnapshotManager.new(snapshot).import_queries(duck_docs)
+    end
+
+    static_endpoint.endpoint_url = "http://localhost:3000/api/cases/#{static_case.id}/snapshots/#{static_case.snapshots.first.id}/search"
+    static_endpoint.save
+
+    print_case_info static_case
+
     print_step 'End of seeding cases................'
 
     # Ratings
@@ -206,9 +295,16 @@ class SampleData < Thor
 
     tens_of_queries_case = realistic_activity_user.cases.find_or_create_by case_name: '10s of Queries', nightly: true
 
+    docs_lookup = {}
     unless tens_of_queries_case.queries.count >= 20
       generator = ::RatingsGenerator.new search_url, { number: 20 }
       ratings   = generator.generate_ratings
+
+      # Create lookup hash for document fields by query_text and doc_id
+      generator.docs.each do |item|
+        key = "#{item[:query_text]}|#{item[:doc_id]}"
+        docs_lookup[key] = item[:doc]
+      end
 
       options = { format: :hash }
       service = ::RatingsImporter.new tens_of_queries_case, ratings, options
@@ -275,7 +371,9 @@ class SampleData < Thor
     osc.members << osc_member_user unless osc.members.include?(osc_member_user)
     osc.members << realistic_activity_user unless osc.members.include?(realistic_activity_user)
     osc.members << osc_ai_judge unless osc.members.include?(osc_ai_judge)
-    osc.cases << tens_of_queries_case unless osc.cases.include?(tens_of_queries_case)
+    osc.members << azure_openai_judge unless osc.members.include?(azure_openai_judge)
+    osc.members << azure_anthropic_judge unless osc.members.include?(azure_anthropic_judge)
+    osc.cases << tens_of_queries_case unless osc.members.include?(tens_of_queries_case)
     osc.search_endpoints << statedecoded_solr_endpoint unless osc.search_endpoints.include?(statedecoded_solr_endpoint)
     print_step 'End of seeding teams................'
 
@@ -288,7 +386,9 @@ class SampleData < Thor
     book.scale_with_labels = Scorer.system_default_scorer.scale_with_labels
 
     book.teams << osc
-    book.ai_judges << osc_ai_judge unless book.ai_judges.include?(osc_ai_judge)
+    book.ai_judges << osc_ai_judge
+    book.ai_judges << azure_openai_judge
+    book.ai_judges << azure_anthropic_judge
     book.save
 
     # this code copied from populate_controller.rb and should be in a service...
@@ -298,6 +398,11 @@ class SampleData < Thor
         query_doc_pair = book.query_doc_pairs.find_or_create_by query_text: query.query_text,
                                                                 doc_id:     rating.doc_id,
                                                                 position:   index
+
+        # Populate document_fields from the docs lookup
+        lookup_key = "#{query.query_text}|#{rating.doc_id}"
+        query_doc_pair.document_fields = docs_lookup[lookup_key].except('id') if docs_lookup[lookup_key]
+
         query_doc_pair.judgements << Judgement.new(rating: rating.rating, user: osc_member_user)
         query_doc_pair.save
       end
@@ -374,8 +479,9 @@ class SampleData < Thor
 
   EXAMPLES:
 
-  $ thor large_data
+  $ thor sample_data:large_data
   LONGDESC
+
   def large_data
     load_environment
 
@@ -431,6 +537,7 @@ class SampleData < Thor
     solr_try = hundreds_of_queries_case.tries.latest
     solr_try.update try_defaults
     solr_try.search_endpoint = statedecoded_solr_endpoint
+    solr_try.save
 
     # was 200
     unless hundreds_of_queries_case.queries.count > 400
@@ -449,6 +556,7 @@ class SampleData < Thor
     solr_try = thousands_of_queries_case.tries.latest
     solr_try.update try_defaults
     solr_try.search_endpoint = statedecoded_solr_endpoint
+    solr_try.save
 
     unless thousands_of_queries_case.queries.count > 5000
       generator = ::RatingsGenerator.new search_url, { number: 5000, show_progress: true }
