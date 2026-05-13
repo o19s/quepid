@@ -79,22 +79,6 @@
         const resultDeferred = $q.defer();
         let settled = false;
 
-        const instance = {
-          result: resultDeferred.promise,
-          close: function (value) {
-            if (settled) { return; }
-            settled = true;
-            resultDeferred.resolve(value);
-            bsModal.hide();
-          },
-          dismiss: function (reason) {
-            if (settled) { return; }
-            settled = true;
-            resultDeferred.reject(reason);
-            bsModal.hide();
-          }
-        };
-
         // Build the wrapper up front so BS5 Modal has a real target. The
         // template content is injected (and Angular-compiled) once template +
         // resolves arrive. uib's window.html does the equivalent wrapping —
@@ -114,6 +98,33 @@
         const wrapperEl = wrapper[0];
         const contentEl = wrapperEl.querySelector('.modal-content');
 
+        // No `class="fade"` on the wrapper — BS3's `.fade { opacity: 0 }`
+        // has no `.fade.show` counterpart in core.css (CLAUDE.md gotcha #3),
+        // so an animated modal would render invisible. BS5 reads the class
+        // off the element to decide whether to animate; with no `.fade`,
+        // it skips the transition and the backdrop is shown immediately.
+        const bsModal = new Modal(wrapperEl, {
+          backdrop: opts.backdrop !== undefined ? opts.backdrop : true,
+          keyboard: opts.keyboard !== undefined ? opts.keyboard : true,
+          focus:    true
+        });
+
+        const instance = {
+          result: resultDeferred.promise,
+          close: function (value) {
+            if (settled) { return; }
+            settled = true;
+            resultDeferred.resolve(value);
+            bsModal.hide();
+          },
+          dismiss: function (reason) {
+            if (settled) { return; }
+            settled = true;
+            resultDeferred.reject(reason);
+            bsModal.hide();
+          }
+        };
+
         const modalScope = (opts.scope || $rootScope).$new();
         // uib exposes $close / $dismiss on the modal scope so templates can
         // use ng-click="$close()" without going through controller methods.
@@ -131,33 +142,12 @@
         //      traversal, which trips a `$$nextSibling` null deref because
         //      the scope chain is mid-unwind. Add only with care.
 
-        // No `class="fade"` on the wrapper — BS3's `.fade { opacity: 0 }`
-        // has no `.fade.show` counterpart in core.css (CLAUDE.md gotcha #3),
-        // so an animated modal would render invisible. BS5 reads the class
-        // off the element to decide whether to animate; with no `.fade`,
-        // it skips the transition and the backdrop is shown immediately.
-        const bsModal = new Modal(wrapperEl, {
-          backdrop: opts.backdrop !== undefined ? opts.backdrop : true,
-          keyboard: opts.keyboard !== undefined ? opts.keyboard : true,
-          focus:    true
-        });
-
-        // Tear down DOM + scope + BS5 instance. removeEventListener is a
-        // no-op if onHidden already detached, so calling teardown more than
-        // once is safe.
-        function teardown() {
-          wrapperEl.removeEventListener('hidden.bs.modal', onHidden);
-          modalScope.$destroy();
-          bsModal.dispose();
-          wrapper.remove();
-        }
-
         // BS5 fires hidden.bs.modal for any close (explicit, backdrop, ESC).
         // If neither close() nor dismiss() ran, the user dismissed via
         // backdrop or keyboard — match uib's reason string.
         // Wrapped in $apply because hidden.bs.modal is a raw DOM event,
         // outside any digest, and result.then handlers need a digest to run.
-        const onHidden = function () {
+        function onHidden() {
           safeApply(function () {
             if (!settled) {
               settled = true;
@@ -176,7 +166,18 @@
               document.body.classList.add('modal-open');
             }
           });
-        };
+        }
+
+        // Tear down DOM + scope + BS5 instance. removeEventListener is a
+        // no-op if onHidden already detached, so calling teardown more than
+        // once is safe.
+        function teardown() {
+          wrapperEl.removeEventListener('hidden.bs.modal', onHidden);
+          modalScope.$destroy();
+          bsModal.dispose();
+          wrapper.remove();
+        }
+
         wrapperEl.addEventListener('hidden.bs.modal', onHidden);
 
         $q.all({
