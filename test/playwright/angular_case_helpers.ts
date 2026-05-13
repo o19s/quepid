@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 
 /**
  * Shared navigation and screenshot helpers for the Angular case UI (`core` layout).
- * Used by core_smoke and angular_pages Playwright suites.
+ * Used by core_smoke, angular_pages, angular_pages_narrow_viewport, modal_a11y, and popover_visibility.
  */
 function readCaseId(): number {
   const raw = process.env.QUEPID_E2E_CASE_ID;

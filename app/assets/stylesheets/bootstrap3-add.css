@@ -25,10 +25,6 @@ body {
   background: url('blue_bg.jpg') top center repeat;
 }
 
-button:select {
-	outline: 0;
-}
-
 a, button, .button {
   cursor: pointer;
 }
@@ -730,11 +726,6 @@ footer {
     max-height: 550px;
 }
 
-.popper:hover {
-  cursor:           pointer;
-  text-decoration:  underline;
-}
-
 .matches-popper:hover {
   cursor:           pointer;
   text-decoration:  underline;
@@ -753,12 +744,6 @@ footer {
 .ace_editor {
     height: 400px;
 }
-
-/*
-.ace_unselected {
-
-}
-*/
 
 .customheaders.code .ace_editor {
   height: 125px;
@@ -817,15 +802,6 @@ footer {
 
 .loading-app i {
   background-color: transparent;
-}
-
-#profile {
-  margin-top:     40px;
-  margin-bottom:  40px;
-}
-
-#profile .avatar {
-  margin-right: 20px;
 }
 
 .alert-danger h2 {

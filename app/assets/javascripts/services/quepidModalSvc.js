@@ -13,15 +13,18 @@
 //          windowClass?,   // extra class on the outer .modal
 //          backdrop?,      // true | false | 'static'
 //          keyboard?       // boolean
+//          ariaLabelledBy?, // id of modal title heading (accessible name for role="dialog")
 //        })
 //   → { result: Promise, close(value), dismiss(reason) }
 //
 // Surface intentionally NOT carried over (no caller in app code uses any of
 // these — verified by grep, see docs/archived/bootstrap_angular_plugins_full.md § Modal):
 //   component:, windowTemplateUrl:, appendTo:, backdropClass:,
-//   ariaLabelledBy:, ariaDescribedBy:, openedClass:, windowTopClass:,
+//   ariaDescribedBy:, openedClass:, windowTopClass:,
 //   animation:, instance.opened/.closed/.rendered, the modal.closing veto
-//   event, $uibModalStack/$uibResolve internals.
+//   event, $uibModalStack/$uibResolve internals. (`ariaLabelledBy` from uib maps
+//   to opts.ariaLabelledBy → `aria-labelledby` on the `.modal`; pass the id of
+//   `.modal-title` when modals expose one.)
 
 (function () {
   angular.module('QuepidApp').factory('$quepidModal', [
@@ -93,6 +96,9 @@
           '</div>'
         );
         if (opts.windowClass) { wrapper.addClass(opts.windowClass); }
+        if (opts.ariaLabelledBy) {
+          wrapper.attr('aria-labelledby', opts.ariaLabelledBy);
+        }
         $document.find('body').eq(0).append(wrapper);
 
         const wrapperEl = wrapper[0];

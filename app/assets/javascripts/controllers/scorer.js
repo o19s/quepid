@@ -4,13 +4,13 @@
 
 angular.module('QuepidApp')
   .controller('ScorerCtrl', [
-    '$scope', '$location', '$quepidModalInstance', '$log',
+    '$scope', '$window', '$quepidModalInstance', '$log',
     'parent', 'scorerSvc', 'caseSvc', 'queriesSvc',
-    'configurationSvc',
+    'configurationSvc', 'caseTryNavSvc',
     function (
-      $scope, $location, $quepidModalInstance, $log,
+      $scope, $window, $quepidModalInstance, $log,
       parent, scorerSvc, caseSvc, queriesSvc,
-      configurationSvc
+      configurationSvc, caseTryNavSvc
     ) {
 
       $scope.activeScorer       = parent.currentScorer || {};
@@ -41,7 +41,7 @@ angular.module('QuepidApp')
 
       function gotoScorers() {
         $quepidModalInstance.dismiss('cancel');
-        $location.path('/scorers');
+        $window.location.href = caseTryNavSvc.getQuepidRootUrl() + '/scorers';
       }
 
       function ok() {

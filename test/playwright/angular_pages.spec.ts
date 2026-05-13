@@ -14,6 +14,7 @@ import {
  * BS5 popover/tooltip/modal regressions (see CLAUDE.md trap #5).
  *
  * Baselines: `yarn test:e2e:update-baselines` (Docker: `bin/docker r yarn test:e2e:update-baselines`).
+ * Narrow 768×900 subset: `angular_pages_narrow_viewport.spec.ts` (Playwright project `chromium-narrow`).
  */
 
 test.describe('Angular pages — interaction screenshots', () => {

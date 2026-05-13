@@ -18,8 +18,9 @@ angular.module('QuepidApp')
 
       function prompt() {
         var modalInstance = $quepidModal.open({
-          templateUrl:  'query_explain/_modal.html',
-          controller:   'QueryExplainModalInstanceCtrl',
+          templateUrl:      'query_explain/_modal.html',
+          ariaLabelledBy:   'query-explain-modal-title',
+          controller:       'QueryExplainModalInstanceCtrl',
           controllerAs: 'ctrl',
           size: 'lg',
           resolve: {

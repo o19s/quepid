@@ -1,9 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
+import os from 'node:os';
 import path from 'node:path';
 import { playwrightBaseURL } from './env';
 
 const baseURL = playwrightBaseURL();
 const storageStatePath = path.join(__dirname, '.auth', 'user.json');
+const htmlReportDir = path.join(os.tmpdir(), 'quepid-playwright-html-report');
+
+/** Narrow reflow slice only; desktop tour is `angular_pages.spec.ts`. */
+const narrowViewportSpec = '**/angular_pages_narrow_viewport.spec.ts';
 
 export default defineConfig({
   globalSetup: path.join(__dirname, 'global-setup.ts'),
@@ -18,7 +23,8 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  reporter: [['list'], ['html', { outputFolder: 'test-results/html', open: 'never' }]],
+  // HTML output under OS tmp avoids permission issues if test-results/ is owned by Docker.
+  reporter: [['list'], ['html', { outputFolder: htmlReportDir, open: 'never' }]],
 
   expect: {
     toHaveScreenshot: {
@@ -44,12 +50,24 @@ export default defineConfig({
     {
       name: 'chromium',
       dependencies: ['setup'],
+      testIgnore: [narrowViewportSpec],
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 900 },
         storageState: storageStatePath,
         // Attach a viewport PNG after each test so the HTML report shows how the UI ended up
         // (list + screenshot steps). Setup project stays on the root only-on-failure default.
+        screenshot: 'on',
+      },
+    },
+    {
+      name: 'chromium-narrow',
+      dependencies: ['setup'],
+      testMatch: narrowViewportSpec,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 768, height: 900 },
+        storageState: storageStatePath,
         screenshot: 'on',
       },
     },
