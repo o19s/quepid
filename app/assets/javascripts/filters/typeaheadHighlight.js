@@ -19,9 +19,9 @@ angular.module('QuepidApp')
       if (!isSanitizePresent && containsHtml(matchItem)) {
         $log.warn('Unsafe use of typeahead please use ngSanitize');
       }
-      matchItem = query
-        ? ('' + matchItem).replace(new RegExp(escapeRegexp(query), 'gi'), '<strong>$&</strong>')
-        : matchItem;
+      matchItem = query ?
+        ('' + matchItem).replace(new RegExp(escapeRegexp(query), 'gi'), '<strong>$&</strong>') :
+        matchItem;
       if (!isSanitizePresent) {
         matchItem = $sce.trustAsHtml(matchItem);
       }
