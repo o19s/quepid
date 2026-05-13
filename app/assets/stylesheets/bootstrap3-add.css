@@ -9,9 +9,6 @@ html, body {
   margin:   0;
   overflow: auto; /* when page gets too small */
 }
-#resize-wrap {
-  height: 100%;
-}
 .container {
   width: 100%;
 }
@@ -60,23 +57,6 @@ a, button, .button {
   border-color: #398439;
 }
 
-/* Bootstrap Icons spacing helpers (Angular core bundle) */
-.bi-left {
-	padding: 0 3px 0 0;
-}
-
-.bi-right {
-	padding: 0 0 0 3px;
-}
-
-.table-striped > tbody > tr > td, .table-striped > tbody > tr > th {
-	border-top: 1px solid #000;
-}
-
-.table-striped > thead > tr > th {
-	border: none;
-}
-
 .input-append {
 	margin-right: 40px;
 }
@@ -97,25 +77,6 @@ a, button, .button {
 
 .row {
 	margin: 0;
-}
-
-/*
-	Primary Navbar
-*/
-
-.navbar-primary {
-	background: #FFF;
-	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#FFFFFF), to(#F0F0F0));
-	background: -moz-linear-gradient(top,  #FFFFFF,  #F0F0F0);
-	border: none;
-	border-radius: 0;
-	margin-bottom: 0;
-}
-
-.navbar-primary .nav-label {
-	padding: 18px 18px 18px 0;
-	float: left;
-	color: #666;
 }
 
 /*
@@ -251,11 +212,6 @@ header .dropdown-link:focus {
   background: none !important;
 }
 
-header .dropdown-content li.dropdown-header {
-  border-bottom: 0;
-  font-size:     1.1em;
-}
-
 /*
 	Main
 */
@@ -356,38 +312,6 @@ header .dropdown-content li.dropdown-header {
 	display: none;
 }
 
-.results .queryHeader_error .error-warning {
-	display: inline-block;
-	padding-left: 15px;
-	color: #fe5b00;
-}
-
-.results .queryHeader_loading,
-.results .queryHeader_noResults .result-header {
-	opacity: 0.5;
-}
-
-.results .queryHeader_loading h2:hover {
-	cursor: default;
-}
-
-.results .queryHeader_loading .toggleSign {
-	display: none;
-}
-
-.results .queryHeader_loading h2 .loading-query {
-	float: left;
-	width: 32px;
-	height: 32px;
-	line-height: 1;
-	display: inline-block;
-	margin-right: 12px;
-	border: 3px solid lightgray;
-	border-top: 3px solid #007bff;
-	border-radius: 50%;
-	animation: spin 1s linear infinite;
-}
-
 .results .delete-query, .results .toggleSign {
 	color: #2872bc;
 	position: absolute;
@@ -402,16 +326,6 @@ header .dropdown-content li.dropdown-header {
   cursor: pointer;
 }
 
-.results .loading .delete-query {
-	display: none;
-}
-
-.results .delete-query:hover {
-	background: #C00;
-	border: 1px solid #900;
-	color: #FFF;
-	cursor: pointer;
-}
 
 /*
 	Main - Results - Sub Results
@@ -702,11 +616,6 @@ header .dropdown-content li.dropdown-header {
 	border: none;
 	border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
-}
-
-#dev-settings .btn-submit {
-	width: 260px;
-	margin: 20px 0 20px 40px;
 }
 
 #dev-settings .settings-tab,
