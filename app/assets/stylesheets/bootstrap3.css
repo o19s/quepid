@@ -3391,21 +3391,7 @@ fieldset[disabled] .btn-danger.focus {
   color: #337ab7;
   border-radius: 0;
 }
-.btn-link,
-.btn-link:active,
-.btn-link.active,
-.btn-link[disabled],
-fieldset[disabled] .btn-link {
-  background-color: transparent;
-  -webkit-box-shadow: none;
-          box-shadow: none;
-}
-.btn-link,
-.btn-link:hover,
-.btn-link:focus,
-.btn-link:active {
-  border-color: transparent;
-}
+
 .btn-link:hover,
 .btn-link:focus {
   color: #23527c;

@@ -29,7 +29,6 @@ const SOURCES = [
   'app/assets/stylesheets/bootstrap3-add.css',
   'app/assets/stylesheets/bootstrap5-compat.css',
   'app/assets/stylesheets/style.css',
-  'app/assets/stylesheets/base.css',
   'app/assets/stylesheets/panes.css',
   'app/assets/stylesheets/stackedChart.css',
   'app/assets/stylesheets/tour.css',

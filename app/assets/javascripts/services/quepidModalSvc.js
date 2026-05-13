@@ -17,7 +17,7 @@
 //   → { result: Promise, close(value), dismiss(reason) }
 //
 // Surface intentionally NOT carried over (no caller in app code uses any of
-// these — verified by grep, see docs/bootstrap_angular_plugins.md):
+// these — verified by grep, see docs/archived/bootstrap_angular_plugins_full.md § Modal):
 //   component:, windowTemplateUrl:, appendTo:, backdropClass:,
 //   ariaLabelledBy:, ariaDescribedBy:, openedClass:, windowTopClass:,
 //   animation:, instance.opened/.closed/.rendered, the modal.closing veto

@@ -113,8 +113,6 @@ function buildCoreCSS() {
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/style.css');
   output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/base.css');
-  output += '\n';
   output += readFileIfExists('app/assets/stylesheets/panes.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/stackedChart.css');

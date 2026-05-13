@@ -24,14 +24,4 @@
 	padding: 8px 10px;
 }
 
-.stacked-chart-container .tab-body {
-	padding: 15px;
-	background: #FFF;
-	border-left: 1px solid #DDD;
-	border-right: 1px solid #DDD;
-	border-bottom: 1px solid #DDD;
-}
-
-.detailed-explain-modal { }
-
 small { font-size: 11px; }

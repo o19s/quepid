@@ -166,7 +166,7 @@ header .dropdown-toggle {
   text-decoration: none !important;
 }
 
-header .dropdown:hover, header .dropdown-toggle-active {
+header .dropdown:hover {
   background: rgba(0,0,0,0.25);
 }
 
@@ -312,7 +312,7 @@ header .dropdown-link:focus {
 	display: none;
 }
 
-.results .delete-query, .results .toggleSign {
+.results .toggleSign {
 	color: #2872bc;
 	position: absolute;
 	top: 22px;
@@ -443,7 +443,7 @@ header .dropdown-link:focus {
 	left: 0;
 }
 
-.col-thumbnail, .col-ratings-thumbnail {
+.col-thumbnail {
 	float: left;
 	width: 125px;
 	padding: 0;
@@ -480,7 +480,7 @@ header .dropdown-link:focus {
 	top: 10px;
 	left: 0;
 }
-.col-summary, .col-summary-header {
+.col-summary {
 	padding: 15px;
 }
 

@@ -50,6 +50,6 @@ The Angular case UI (`app/views/layouts/core.html.erb`) loads **Bootstrap 3** CS
 
 4. **BS3 properties leak through where BS5 has no rule on `.popover`/`.tooltip`/etc.** Example: BS3 `.popover { padding: 1px }` wins because BS5 puts padding on `.popover-header` / `.popover-body` instead. Reset bleed-through properties explicitly in the compat CSS.
 
-5. **Verify visually before declaring done.** Two of the four traps above produce *invisible-but-present* failures (popover element in DOM, `aria-describedby` set, but nothing visible). Static analysis won't catch them. Use Playwright MCP (or have the user screenshot DevTools' Computed panel for the popover element) and confirm `display`, `opacity`, `font-size`, and `transform` are sensible.
+5. **Verify visually.** Two of the four traps above produce *invisible-but-present* failures (popover element in DOM, `aria-describedby` set, but nothing visible). Static analysis won't catch them. Use Playwright MCP (or have the user screenshot DevTools' Computed panel for the popover element) and confirm `display`, `opacity`, `font-size`, and `transform` are sensible.
 
-Migration progress and per-component notes live in `docs/bootstrap_angular_plugins.md`.
+Stylesheet coexistence traps for Angular `core` are in `docs/bootstrap_angular_plugins.md`. Per-component replacement inventory (historical angular-ui-bootstrap features) lives in `docs/archived/bootstrap_angular_plugins_full.md`.
