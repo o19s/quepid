@@ -43,7 +43,7 @@
       <div class="form-group mb-3">
         <input type="radio" id="csv" name="importSelection" value="csv" ng-model="ctrl.options.which">
         <label for="csv">CSV</label>
-        <span class="help-block form-text">
+        <span class="form-text">
           The CSV file should have the headers: <code>query,docid,rating</code> and lines similar to:
           <pre>
 query,docid,rating
@@ -76,7 +76,7 @@ star trek,,</pre>
       <div class="form-group mb-3">
         <input type="radio" id="rre" name="importSelection" value="rre" ng-model="ctrl.options.which">
         <label for="rre">Rated Ranking Evaluator</label>
-        <span class="help-block form-text">
+        <span class="form-text">
           Quepid only imports the ratings part of the <a href="https://github.com/SeaseLtd/rated-ranking-evaluator/wiki/What%20We%20Need%20To%20Provide#ratings" target="_blank">RRE judgement</a> file.
         </span>
         <p>Select RRE ratings file to import:</p>
@@ -89,7 +89,7 @@ star trek,,</pre>
       <div class="form-group mb-3">
         <input type="radio" id="ltr" name="importSelection" value="ltr" ng-model="ctrl.options.which">
         <label for="ltr">Learning to Rank</label>
-        <span class="help-block form-text">
+        <span class="form-text">
           LTR uses a rather odd format of <code>rating qid:queryid # docid query</code>, eg <code>3 qid:1 # 1370 star trek</code>.  We ignore the <code>qid:queryid</code> and use the <code>query</code> for matching up to existing queries.
         </span>
         <p>Select LTR ratings file to import:</p>
@@ -114,7 +114,7 @@ star trek,,</pre>
           </label>
         </div>
 
-        <span class="help-block form-text">
+        <span class="form-text">
           The CSV file should have the headers: <code>query,information_need</code> and lines similar to:
           <pre>
 query,information_need
@@ -152,7 +152,7 @@ star wars,"The original movie"</pre>
                ng-model="ctrl.options.which">
         <label for="snapshots">Snapshot CSV</label>
 
-        <span class="help-block form-text">
+        <span class="form-text">
           The CSV file should have the headers: <code>Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position</code> and lines similar to:
           <pre>
 Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,527641,1

@@ -648,6 +648,27 @@
 }
 
 /*
+ * Form help text — keep <span class="form-text"> block-level.
+ *
+ * BS3's `.help-block { display: block }` is what made the Angular UI's
+ * `<span class="help-block form-text">` help paragraphs render as their
+ * own line. BS5's `.form-text` is style-only (margin-top, font-size,
+ * color) and intentionally leaves `display` to the host element — BS5
+ * docs put it on <div> or <small>. The Angular templates use <span>,
+ * so without this shim those spans collapse into inline flow once
+ * `help-block` is stripped.
+ *
+ * Application.css (the BS5-native bundle) uses <div>/<p> for form-text
+ * everywhere, so this rule has no effect there even if it were loaded.
+ *
+ * Remove when the Angular templates migrate their <span class="form-text">
+ * to <div class="form-text"> (canonical BS5).
+ */
+.form-text {
+  display: block;
+}
+
+/*
  * Header navbar — restore BS3's horizontal layout.
  *
  * The header in `_header_core_app.html.erb` uses BS3 navbar markup

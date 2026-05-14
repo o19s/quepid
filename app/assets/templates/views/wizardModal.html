@@ -177,9 +177,9 @@ curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings
               <div class="row">
                 <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
                 <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="float-end text-end"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
-                <p class="help-block form-text">Unsure? <a href="http://quepidapp.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
+                <p class="form-text">Unsure? <a href="http://quepidapp.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
 
-                <p ng-show="pendingWizardSettings.urlFormat" class="help-block form-text tip">
+                <p ng-show="pendingWizardSettings.urlFormat" class="form-text tip">
                   Tip: Your URL should look like this {{pendingWizardSettings.urlFormat}}.
                 </p>
               </div>
@@ -201,7 +201,7 @@ curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings
                     Under the covers we use the Snapshot CSV format, so you can export a snapshot from Quepid and then upload it here to to create Static search endpoint.
                   </p>
 
-                  <span class="help-block form-text">
+                  <span class="form-text">
                     The CSV file should have the headers: <code>Query Text,Doc ID,Doc Position</code>.
                     Then, all the document fields you want displayed follow as columns with the header being the name of the field.
                     <pre>
@@ -252,7 +252,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
                       <option>JSONP</option>
                       <option>GET</option>
                     </select>
-                    <p class="help-block form-text">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
+                    <p class="form-text">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
                   </div>
                 </div>
               </div>
@@ -294,7 +294,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
                   <div class="col-sm-9">
                     <div class="checkbox form-check">
                       <label class="form-check-label">
-                        <p class="help-block form-text"><input id="proxy-requests" type="checkbox" class="form-check-input" ng-model="pendingWizardSettings.proxyRequests" ng-change="changeProxySetting()">Fighting with CORS issues?  Proxy your search requests through Quepid server.</p>
+                        <p class="form-text"><input id="proxy-requests" type="checkbox" class="form-check-input" ng-model="pendingWizardSettings.proxyRequests" ng-change="changeProxySetting()">Fighting with CORS issues?  Proxy your search requests through Quepid server.</p>
                       </label>
                     </div>
                   </div>
@@ -306,7 +306,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
                       ng-change="resetUrlValid()"
                       placeholder="username:password">
 
-                    <p class="help-block form-text">Specify your <code>username:password</code> here to access Basic Auth protected endpoints.</p>
+                    <p class="form-text">Specify your <code>username:password</code> here to access Basic Auth protected endpoints.</p>
                   </div>
                 </div>
               </div>
@@ -376,20 +376,20 @@ star wars,1921,3, Star Wars: Return of the Jedi
               </select>
 
               <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="float-end text-end"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null || showTLSChangeWarning">ping it</button></small>
-              <p class="help-block form-text tip" ng-if="hasStaticEndpoints">
+              <p class="form-text tip" ng-if="hasStaticEndpoints">
                 FYI: your existing Static File endpoints are NOT sharable across cases.
               </p>
             </div>
 
             <!-- Test Query for Search API endpoints -->
             <div ng-if="pendingWizardSettings.searchEndpointId != null && pendingWizardSettings.searchEngine === 'searchapi'" class="bg-light p-2 rounded border" style="margin-top: 15px;">
-              <p class="help-block form-text">
+              <p class="form-text">
                 <strong>Endpoint:</strong> <code>{{ pendingWizardSettings.searchUrl }}</code>
                 <span class="badge bg-secondary">{{ pendingWizardSettings.apiMethod }}</span>
               </p>
 
               <label class="control-label col-form-label">Test Query</label>
-              <p class="help-block form-text">
+              <p class="form-text">
                 Enter a test query to validate the endpoint works. You'll configure the query pattern in a later step.
               </p>
               <input
@@ -441,7 +441,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             <label class="col-sm-3 control-label col-form-label">Title Field</label>
             <div class="col-sm-9">
               <input type="text" class="form-control" ng-model="pendingWizardSettings.titleField" ng-change="updateDisplayFields('title', pendingWizardSettings.titleField)" quepid-typeahead="searchFields" quepid-typeahead-on-select="updateDisplayFields('title', $item)" placeholder="Begin typing to show suggestions">
-              <p class="help-block form-text">What field should we treat as the 'title' when displaying results?</p>
+              <p class="form-text">What field should we treat as the 'title' when displaying results?</p>
               <p ng-if="titleFieldRequired" class="text-danger">This field is required. Please select a title field.</p>
             </div>
           </div>
@@ -450,7 +450,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             <label class="col-sm-3 control-label col-form-label">ID Field</label>
             <div class="col-sm-9">
               <input type="text" class="form-control" ng-model="pendingWizardSettings.idField" ng-change="updateDisplayFields('id', pendingWizardSettings.idField)" quepid-typeahead="idFields" quepid-typeahead-on-select="updateDisplayFields('id', $item)" placeholder="Begin typing to show suggestions">
-              <p class="help-block form-text">What field is the unique identifier for your search results?</p>
+              <p class="form-text">What field is the unique identifier for your search results?</p>
               <p ng-if="idFieldRequired" class="text-danger">This field is required. Please select an ID field.</p>
             </div>
           </div>
@@ -461,7 +461,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
               <tags-input ng-model="pendingWizardSettings.additionalFields" placeholder="Add a field" add-on-enter="true" add-on-space="true" add-on-paste="true" paste-split-pattern="[,\s]" min-length="1">
               <auto-complete source="loadFields($query)" min-length="0" load-on-focus="true" load-on-empty="true"></auto-complete>
               </tags-input>
-              <p class="help-block form-text">Would any extra fields be handy to display?</p>
+              <p class="form-text">Would any extra fields be handy to display?</p>
             </div>
           </div>
 
@@ -479,7 +479,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
       <span ng-if="pendingWizardSettings.searchEngine === 'static'">
         <h2>Search Queries</h2>
         <div>
-          <p class="help-block form-text">All of the queries defined in the static upload will be created.</p>
+          <p class="form-text">All of the queries defined in the static upload will be created.</p>
           <button class="btn btn-primary float-end continue" wz-next ng-click="pendingWizardSettings.addQueryStaticQueries()">Continue</button>
         </div>
         <br><br><br><br><br>
@@ -487,16 +487,16 @@ star wars,1921,3, Star Wars: Return of the Jedi
       <span ng-if="pendingWizardSettings.searchEngine !== 'static'">
       <h2>Add Your Search Queries</h2>
       <div>
-        <p class="help-block form-text">Start out tuning a couple important search queries:</p>
+        <p class="form-text">Start out tuning a couple important search queries:</p>
 
         <!-- Query Pattern for Search API -->
         <div ng-if="pendingWizardSettings.searchEngine === 'searchapi'" class="bg-light p-2 rounded border" style="margin-bottom: 15px;">
           <label class="control-label col-form-label">Query Pattern</label>
-          <p class="help-block form-text">
+          <p class="form-text">
             <strong>Endpoint:</strong> <code>{{ pendingWizardSettings.searchUrl }}</code>
             <span class="badge bg-secondary">{{ pendingWizardSettings.apiMethod }}</span>
           </p>
-          <p class="help-block form-text">
+          <p class="form-text">
             Modify your query structure to include <code>#$query##</code> where the search text should be substituted.
             Quepid will replace <code>#$query##</code> with each query you add below.
           </p>
@@ -543,7 +543,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
     </wz-step>
     <wz-step title="Finish" id="step-six">
       <h1>That's It!</h1>
-      <p class="help-block form-text">Go to "Tune Relevance" to iterate on your relevance and manipulate searches</p>
+      <p class="form-text">Go to "Tune Relevance" to iterate on your relevance and manipulate searches</p>
       
       <button class="btn-lg btn-success float-end finish" wz-next>Finish</button>
       <br><br><br><br><br>
