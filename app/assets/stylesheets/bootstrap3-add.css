@@ -53,22 +53,8 @@ a, button, .button {
   border-color: #398439;
 }
 
-.input-append {
-	margin-right: 40px;
-}
-
-.input-append, .input-append input, .input-append .btn {
-  display: inline-block;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
 .btn-group {
 	z-index: 10;
-}
-
-.input-append {
-	padding: 0 20px 0 0;
 }
 
 .row {
@@ -580,10 +566,6 @@ header .dropdown-link:focus {
 	width: 12%;
 }
 
-#dev-settings .dev-section .form-group {
-	margin-bottom: 15px;
-}
-
 #dev-settings .dev-section .nav-tabs {
 	border-bottom: 1px solid #666;
 	font-size: 12px;
@@ -851,10 +833,6 @@ li.annotation {
   color: #a94442;
 }
 
-.modal-header .close {
-	margin: 5px 5px 0 0;
-}
-
 .modal-body .btn-group .btn-outline-secondary {
 	background: linear-gradient(to bottom right, #EEE, #F8F8F8);
 }
@@ -877,41 +855,11 @@ li.annotation {
 	color: #aaa;
 }
 
-.modal-body .checkbox {
-	margin-top: 0;
-	margin-bottom: 5px;
-	padding: 8px 0;
-}
-
-.modal-body .checkbox label {
-	padding-right: 10px;
-}
-
-.modal-footer .float-left {
-	float: left;
-}
-
 .tooltip-inner {
 	text-align: left;
 	padding: 10px;
   min-width: 100px;
   max-width: 100%
-}
-
-/* Bootstrap 5 tooltip shown-state. BS3 toggles `.in`; BS5 toggles `.show`.
-   The native bootstrap.Tooltip used by `quepid-tooltip` only adds `.show`,
-   so without this rule the tooltip stays at opacity 0. Positioning is
-   handled by Popper-driven inline styles; BS3's existing .tooltip and
-   .tooltip-inner rules cover the rest of the styling. */
-.tooltip.show {
-  opacity: .9;
-}
-
-/* Bootstrap 5 dropdown shown-state. BS3 shows menus via `.open > .dropdown-menu`;
-   BS5's bootstrap.Dropdown adds `.show` to the menu instead, so under the BS3
-   stylesheet the menu would stay `display: none` even though BS5 thinks it's open. */
-.dropdown-menu.show {
-  display: block;
 }
 
 .modal-title .modal-case {

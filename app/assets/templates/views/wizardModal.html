@@ -1,5 +1,5 @@
 <div class="modal-body" id="wizard">
-  <button type="button" class="close btn-core-close" ng-click="cancel()" aria-label="Close"></button>
+  <button type="button" class="btn-core-close" ng-click="cancel()" aria-label="Close"></button>
   <wizard on-finish="pendingWizardSettings.submit()">
     <wz-step title="Welcome" id="step-one">
       <h1>Welcome To Quepid!</h1>
@@ -292,10 +292,9 @@ star wars,1921,3, Star Wars: Return of the Jedi
                 <div class="mb-3 clearfix row">
                   <label class="col-sm-3 control-label col-form-label">Proxy Requests</label>
                   <div class="col-sm-9">
-                    <div class="checkbox form-check">
-                      <label class="form-check-label">
-                        <p class="form-text"><input id="proxy-requests" type="checkbox" class="form-check-input" ng-model="pendingWizardSettings.proxyRequests" ng-change="changeProxySetting()">Fighting with CORS issues?  Proxy your search requests through Quepid server.</p>
-                      </label>
+                    <div class="form-check">
+                      <input id="proxy-requests" type="checkbox" class="form-check-input" ng-model="pendingWizardSettings.proxyRequests" ng-change="changeProxySetting()">
+                      <label class="form-check-label form-text" for="proxy-requests">Fighting with CORS issues?  Proxy your search requests through Quepid server.</label>
                     </div>
                   </div>
 

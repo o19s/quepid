@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
+  <button type="button" class="btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Import into Case: <span class="modal-case">{{ ctrl.theCase.caseName }}</span></h3>
 </div>
 
@@ -31,9 +31,10 @@
         Importing ratings is a great way to manage the rating process outside of Quepid, for example in your own custom application.
         There are a number of formats for importing this data into Quepid.
       </p>
-      <div class="checkbox form-check">
-        <label class="form-check-label">
-          <input id="clear-existing-queries" type="checkbox" class="form-check-input" ng-model='ctrl.clearQueries'> Clear existing queries?
+      <div class="form-check">
+        <input id="clear-existing-queries" type="checkbox" class="form-check-input" ng-model='ctrl.clearQueries'>
+        <label class="form-check-label" for="clear-existing-queries">
+          Clear existing queries?
           <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Select to clear all the existing queries on a case, this is typical when you manage your queries and ratings per case outside Quepid"></i>
         </label>
       </div>
@@ -107,9 +108,10 @@ star trek,,</pre>
       <div class="mb-3">
         <input type="radio" id="information_needs" name="importSelection" value="information_needs" ng-model="ctrl.options.which">
         <label for="information_needs">Information Needs CSV</label>
-        <div class="checkbox form-check">
-          <label class="form-check-label">
-            <input id="clear-existing-queries" type="checkbox" class="form-check-input" ng-model='ctrl.createQueries'> Create missing queries?
+        <div class="form-check">
+          <input id="create-missing-queries" type="checkbox" class="form-check-input" ng-model='ctrl.createQueries'>
+          <label class="form-check-label" for="create-missing-queries">
+            Create missing queries?
             <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Select to create any missing queries, useful when populating a new case with queries with info needs."></i>
           </label>
         </div>

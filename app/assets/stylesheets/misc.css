@@ -81,4 +81,7 @@
   user-select: none;
   opacity: var(--bs-btn-close-disabled-opacity);
 }
+.modal-header .btn-core-close {
+  margin: 5px 5px 0 0;
+}
 /* end close button for modals in core app */
