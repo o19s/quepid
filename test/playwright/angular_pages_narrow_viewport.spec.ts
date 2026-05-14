@@ -29,7 +29,14 @@ test.describe('Angular core — narrow viewport slice (768×900)', () => {
     const nameInput = modal.locator('input[ng-model="pendingWizardSettings.caseName"]');
     await nameInput.evaluate((el: HTMLElement) => el.focus());
     await nameInput.fill('Playwright narrow tour', { force: true });
-    await expect(modal.getByRole('heading', { name: /What Search Endpoint/i })).toBeVisible({ timeout: 15_000 });
+    // angular-wizard sometimes auto-advances on the input event and sometimes doesn't.
+    // If it didn't, click Continue; either way we end up on the Endpoint step.
+    const endpointHeading = modal.getByRole('heading', { name: /What Search Endpoint/i });
+    const visibleContinue = modal.getByRole('button', { name: /^Continue$/i }).filter({ visible: true });
+    if (!(await endpointHeading.isVisible())) {
+      await visibleContinue.click();
+    }
+    await expect(endpointHeading).toBeVisible({ timeout: 15_000 });
     await modal.getByRole('button', { name: 'Create a new Search Endpoint' }).click();
     await expect(page).toHaveScreenshot('narrow-01-wizard-endpoint-accordion.png', expandedCaseScreenshotOpts(page));
 

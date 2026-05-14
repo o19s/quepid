@@ -78,11 +78,12 @@ Rails.application.config.email_sender = ENV.fetch('EMAIL_SENDER', '')
 #
 Rails.application.config.query_list_sortable = bool.deserialize(ENV.fetch('QUERY_LIST_SORTABLE', true))
 
-# == Bootstrap 5 Core Layout
-# Feature flag for the BS3 → BS5 migration of the Angular case UI (`core.html.erb`).
-# When false (default), `core.html.erb` loads today's BS3-based `core.css` bundle.
-# When true, it loads the BS5-based `core_bs5.css` bundle. Templates use `configurationSvc.isBs5Enabled()`
-# (via `ng-class`) to toggle BS3↔BS5 class names where the two stylesheets disagree.
+# == Bootstrap 5 Core Layout (client-only flag)
+# `CORE_LAYOUT_BS5` exposes Bootstrap migration state to the Angular app as
+# `configurationSvc.setBs5Enabled` → `isBs5Enabled()` (see `core.html.erb` boot block).
+# `core.html.erb` always loads `core.css` (see `build_css.js` → `buildCoreCSS()` — BS5
+# then BS3 stack); there is no separate `core_bs5.css` bundle. No template reads
+# `isBs5Enabled()` yet. Planned removal: migration doc Phase 5.
 # See `docs/bootstrap3_to_bs5_migration.md`.
 #
 Rails.application.config.core_layout_bs5 = bool.deserialize(ENV.fetch('CORE_LAYOUT_BS5', false))

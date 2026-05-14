@@ -1,0 +1,451 @@
+/*
+ * Quepid core UI — layout and skin that do not use Bootstrap framework classes
+ * in selectors. See bootstrap3-add.css for `.container`, navbars, dropdowns,
+ * gutters (`.row`), dev-panel tabs/buttons, popovers, modals, flash, etc.
+ *
+ * Loaded by build_css.js between fonts.css and bootstrap3-add.css.
+ */
+
+html, body {
+  width:    100%;
+  height:   100%;
+  padding:  0;
+  margin:   0;
+  overflow: auto; /* when page gets too small */
+}
+
+hr {
+  border-color: rgb(170, 170, 170);
+}
+
+/*
+	Base Styles
+*/
+
+body {
+  background: url('blue_bg.jpg') top center repeat;
+}
+
+a, button, .button {
+  cursor: pointer;
+}
+
+.ng-link:hover {
+	cursor: pointer;
+}
+
+#main {
+	padding: 0;
+	position: relative;
+	min-width: 750px;
+}
+
+/*
+	Main - results
+*/
+.dragging {
+  border: 1px dashed #AAA;
+  padding: 5px 0px;
+}
+.results-control h1 {
+  margin: 15px 0 20px 0;
+  padding-bottom: 10px;
+}
+
+.results-control #query-container {
+  margin: 5px 0 60px;
+  padding: 30px 0 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-width:1px 0;
+}
+
+.results-control queries {
+  background: #fff;
+}
+
+.results-list-element {
+	list-style: none;
+  display: block;
+  clear: both;
+	margin: 20px 0 0;
+  padding-left: 0;
+}
+
+.results-list-element > li {
+  border: 1px solid #eee;
+	margin: 0 0 5px 0;
+	position: relative;
+	border-radius: 5px;
+}
+
+.result-header {
+  align-items: stretch;
+  overflow: auto;
+  position: relative;
+  padding: 10px 20px;
+}
+.result-header:hover {
+  background: #eee;
+}
+
+.case-score {
+  display: block;
+}
+
+.results-title {
+	color:       #222;
+	cursor:      pointer;
+	font-size:   18px;
+	font-weight: normal;
+	line-height: 1.5em;
+	margin:      0;
+  display:    block;
+  flex:       2 2 10%;
+  float:      left;
+}
+
+.results .total-results {
+  display:      block;
+  float:        right;
+  line-height:  30px;
+  margin-right: 50px;
+  text-align:   right;
+}
+
+.low-profile {
+  opacity: 0.5;
+  font-size: 60%;
+}
+
+.query-score-label {
+  display: block;
+}
+
+.results .error-warning {
+	display: none;
+}
+
+.results .toggleSign {
+	color: #2872bc;
+	position: absolute;
+	top: 22px;
+	right: 19px;
+	font-weight: bold;
+	border-radius: 3px;
+	font-size: 16px;
+}
+
+.toggleSign {
+  cursor: pointer;
+}
+
+
+/*
+	Main - Results - Sub Results (structure only; .btn-toolbar / .row lives in bootstrap3-add.css)
+*/
+
+.sub-results {
+	clear: both;
+	background: url('sub-results-bg.png') top center no-repeat #F7F7F7;
+	padding: 75px 15px 15px 15px;
+	position: relative;
+	min-width: 650px;
+}
+
+.sub-results td {
+	vertical-align: middle;
+}
+
+
+/*
+	Main - Results - Sub Results — rating columns and thumbnails
+*/
+
+.ratingContainer ul {
+  padding: 0;
+}
+
+.ratingContainer .ratingNum {
+	box-shadow: inset 0 0 20px rgba(255,255,255,0.75);
+}
+
+.ratingContainer .ratingNum:hover {
+	box-shadow: inset 0 0 15px rgba(0,0,0,0.25);
+	color: #FFF;
+}
+
+.col-summary {
+	text-align: left;
+	margin-left: 70px;
+}
+
+.query-thumbnail {
+	width: 75px;
+	height: 100%;
+	margin: -10px 0;
+	padding: 0;
+	display: block;
+	line-height: 0;
+	object-fit: contain;
+}
+
+.result-thumbnail {
+	width: 75px;
+	text-align: center;
+}
+
+.result-image {
+	width: 250px;
+	text-align: center;
+}
+
+.score-all {
+  margin-left: 15px;
+}
+
+.score-all .ratings {
+  position: relative;
+}
+
+.score-all-alert {
+  margin-left: 20px;
+}
+
+.col-ratings.query-rating {
+  margin-left: 15px;
+  margin-top: -10px;
+}
+
+.col-ratings {
+	width: 75px;
+	padding: 0;
+	position: absolute;
+	top: 15px;
+	left: 0;
+}
+
+.col-thumbnail {
+	float: left;
+	width: 125px;
+	padding: 0;
+	margin-right: 0;
+}
+
+.col-image {
+	float: left;
+	width: 300px;
+	padding: 0;
+	margin-right: 0;
+}
+
+.col-summary-thumb {
+	position: relative;
+	padding-left: 130px !important;
+  min-height: 125px;
+}
+
+.col-summary-image {
+	position: relative;
+	padding-left: 305px !important;
+  min-height: 400px;
+}
+
+.col-summary-thumb .col-thumbnail {
+	position: absolute;
+	top: 10px;
+	left: 0;
+}
+
+.col-summary-image .col-image {
+	position: absolute;
+	top: 10px;
+	left: 0;
+}
+.col-summary {
+	padding: 15px;
+}
+
+.col-summary .subfields {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.col-summary .subfields li {
+	margin: 0 0 10px 0;
+	padding: 0;
+}
+
+.col-summary .subfields li:last-child {
+	margin: 0;
+}
+
+.col-summary .subfields li.subTitle {
+	font-family: 'allerregular';
+	font-size: 18px;
+}
+
+.col-summary .subfields li .subLabel {
+	font-weight: bold;
+}
+
+/*
+  Main - Results - Move query
+*/
+.move-query-cases-list {
+  max-height: 300px;
+  overflow:   scroll;
+}
+
+
+
+.result-rank {
+  font-size:  1em;
+}
+
+
+/*
+	Dev Settings - History (rest of #dev-settings uses Bootstrap selectors — bootstrap3-add.css)
+*/
+
+.history-container {
+	height: auto;
+	overflow-y: auto;
+}
+
+.history-list li {
+	background: #666;
+	word-wrap: break-word;
+    position: relative;
+}
+.history-list li:hover {
+	background: #555;
+	cursor: pointer;
+    position: relative;
+}
+
+.history-list li:hover .try-details {
+  display: inline;
+}
+
+.history-list li span {
+	display: block;
+	text-align: left;
+	font-weight: bold;
+	font-family: 'allerbold_italic';
+	font-size: 16px;
+	color: #CCC;
+	padding: 3px 0 8px 0;
+}
+
+.try-details {
+  position: absolute;
+  display: none;
+  top: 5px;
+  right: 10px;
+  background: #777;
+  cursor: pointer;
+}
+
+/*
+	Footer
+*/
+
+#footer {
+	background: #CCC;
+	padding: 20px 0;
+	box-shadow: inset 0 5px 5px #C0C0C0;
+}
+
+footer {
+  margin-top: 30px;
+}
+
+.matches-popper:hover {
+  cursor:           pointer;
+  text-decoration:  underline;
+}
+
+.btn-circle {
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 12px;
+  line-height: 1.42;
+  border-radius: 15px;
+}
+
+.ace_editor {
+    height: 400px;
+}
+
+.customheaders.code .ace_editor {
+  height: 125px;
+}
+
+.detaileddoc.code .ace_editor {
+  height: 300px;
+}
+
+.footer {
+  text-align: center;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.search-feedback {
+  margin: 20px 0;
+}
+
+#flash-messages {
+  bottom:     0;
+  position:   fixed;
+  width:      100%;
+  z-index:    100;
+}
+
+.loading-app {
+  color: rgb(77, 183, 249);
+  font-size: 14px;
+}
+
+.loading-app .loading-text {
+  font-size: 0.5em !important;
+}
+
+.loading-app i {
+  background-color: transparent;
+}
+
+/* Import */
+.import-content {
+  max-height: 200px;
+  overflow:   scroll;
+}
+
+#annotations {
+  overflow: auto;
+  height:   auto;
+}
+
+li.annotation {
+  border: 1px solid #444;
+}
+
+.annotations-time {
+  font-size: 0.7em;
+}
+
+.annotation-source {
+  font-size: 0.8em;
+}
+
+.annotation {
+  margin: 10px 0;
+}
+
+.annotation > div {
+  margin: 5px 0;
+}

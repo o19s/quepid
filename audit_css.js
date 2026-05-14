@@ -53,6 +53,7 @@ function ensureWritableOutDir(dir) {
 const SOURCES = [
   'node_modules/bootstrap/dist/css/bootstrap.css',
   'app/assets/stylesheets/bootstrap3.css',
+  'app/assets/stylesheets/core-additions.css',
   'app/assets/stylesheets/bootstrap3-add.css',
   'app/assets/stylesheets/bootstrap5-compat.css',
   'app/assets/stylesheets/style.css',

@@ -116,6 +116,8 @@ function buildCoreCSS() {
   // Core application styles
   output += readFileIfExists('app/assets/stylesheets/fonts.css');
   output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/core-additions.css');
+  output += '\n';
   output += readFileIfExists('app/assets/stylesheets/bootstrap3-add.css');
   output += '\n';
   // Loaded after BS3 so its `.popover` rules cascade-override BS3's
