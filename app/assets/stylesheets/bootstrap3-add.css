@@ -837,13 +837,8 @@ li.annotation {
 	background: linear-gradient(to bottom right, #EEE, #F8F8F8);
 }
 
-.btn:focus,.btn:active {
+.btn:active {
    outline: none !important;
-}
-
-.modal-body .btn-primary:focus {
-  background: #337ab7;
-  border-color: #2e6da4;
 }
 
 .modal-body .row .col-md-6 {
@@ -865,8 +860,4 @@ li.annotation {
 .modal-title .modal-case {
 	font-weight: 200;
 	color: #888;
-}
-
-.hidden {
-  display: none;
 }

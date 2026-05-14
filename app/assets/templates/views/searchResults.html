@@ -105,7 +105,7 @@
     </div>
 
     <!-- Query note taker -->
-    <div ng-class="{true: 'notes-box', false: 'hidden'}[displayed.notes]">
+    <div ng-class="{true: 'notes-box', false: 'd-none'}[displayed.notes]">
       <div ng-controller = 'QueryNotesCtrl as ctrl' class="notes-content">
         <form ng-submit="saveNotes()" class="form-horizontal">
           <div class="row mb-3">
