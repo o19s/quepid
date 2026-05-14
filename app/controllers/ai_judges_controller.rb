@@ -71,7 +71,6 @@ class AiJudgesController < ApplicationController
       llm_service_url: 'https://api.openai.com',
       llm_model:       'gpt-4o',
       llm_timeout:     30,
-      llm_api_version: '',
     }
   end
 

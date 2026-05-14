@@ -193,7 +193,7 @@ class MapperWizardService
   end
 
   def ollama_provider?
-    @llm_provider.to_s == 'ollama'
+    'ollama' == @llm_provider.to_s
   end
 
   def generation_prompt

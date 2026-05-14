@@ -1,16 +1,8 @@
 # frozen_string_literal: true
 
-require 'faraday'
-require 'faraday/retry'
 require 'json'
 
 class LlmService
-  AZURE_PROVIDERS = %w[azure_openai azure_ai_foundry azure_ai_foundry_serverless azure_ai_foundry_anthropic].freeze
-  ANTHROPIC_PROVIDERS = %w[anthropic azure_ai_foundry_anthropic].freeze
-  # Providers handled natively by ruby_llm — no hand-rolled Faraday plumbing needed.
-  NATIVE_RUBY_LLM_PROVIDERS = %w[openai anthropic ollama google_gemini].freeze
-
-  # Structured output schema shared across all ruby_llm-backed judgement calls.
   JUDGMENT_SCHEMA = {
     type:                 'object',
     properties:           {
@@ -30,13 +22,6 @@ class LlmService
 
     @llm_key = llm_key
     @options = default_options.merge(opts.deep_symbolize_keys)
-
-    # Only build a Faraday connection for providers not handled by ruby_llm.
-    unless ruby_llm_provider?
-      @conn = build_connection
-      @completions_path = compute_completions_path
-      @auth_headers = compute_auth_headers
-    end
   end
 
   def perform_safe_judgement judgement
@@ -45,10 +30,6 @@ class LlmService
     judgement.explanation = "BOOM: Runtime Error: #{e.message}"
     judgement.unrateable = true
   rescue RubyLLM::Error => e
-    judgement.explanation = "BOOM: API request failed: #{e.message}"
-    judgement.unrateable = true
-  rescue Faraday::Error => e
-    # This will catch all Faraday errors including TimeoutError, ConnectionFailed, etc.
     judgement.explanation = "BOOM: API request failed: #{e.message}"
     judgement.unrateable = true
   end
@@ -86,181 +67,77 @@ class LlmService
   end
 
   def get_llm_response user_prompt, system_prompt
-    if ruby_llm_provider?
-      get_ruby_llm_response(user_prompt, system_prompt)
-    elsif anthropic_provider?
-      get_anthropic_response(user_prompt, system_prompt)
-    else
-      get_openai_response(user_prompt, system_prompt)
-    end
-  end
-
-  private
-
-  # --- ruby_llm-backed path (OpenAI, Anthropic, Ollama, Google Gemini) ---
-
-  def get_ruby_llm_response user_prompt, system_prompt
     context = build_ruby_llm_context
     chat = context.chat(
-      model:                @options[:llm_model],
-      provider:             ruby_llm_provider_slug,
-      assume_model_exists:  true
+      model:               @options[:llm_model],
+      provider:            provider_slug,
+      assume_model_exists: true
     )
     chat.with_instructions(system_prompt, replace: true)
     chat.with_schema(JUDGMENT_SCHEMA)
 
     text, image_url = extract_text_and_image(user_prompt)
 
-    response = image_url.present? ?
-      chat.ask(text, with: image_url) :
-      chat.ask(text)
+    response = if image_url.present?
+                 chat.ask(text, with: image_url)
+               else
+                 chat.ask(text)
+               end
 
-    parse_ruby_llm_content(response)
+    parse_content(response)
   end
+
+  private
 
   def build_ruby_llm_context
     provider = @options[:llm_provider].to_s
+    base_url = @options[:llm_service_url].to_s.chomp('/')
+
     RubyLLM.context do |config|
       config.request_timeout = @options[:llm_timeout].to_i
       case provider
-      when 'anthropic'
+      when 'anthropic', 'azure_ai_foundry_anthropic'
         config.anthropic_api_key = @llm_key
+        config.anthropic_api_base = base_url
+      when 'azure_openai', 'azure_ai_foundry', 'azure_ai_foundry_serverless'
+        config.azure_api_key = @llm_key
+        config.azure_api_base = base_url
       when 'ollama'
-        config.ollama_api_base = "#{@options[:llm_service_url].to_s.chomp('/')}/v1"
+        config.ollama_api_base = "#{base_url}/v1"
       else
         # 'openai', 'google_gemini' (OpenAI-compatible endpoint), or nil/empty
         config.openai_api_key = @llm_key
-        config.openai_api_base = openai_api_base_url
+        config.openai_api_base = "#{base_url}/v1"
       end
     end
   end
 
-  def openai_api_base_url
-    "#{@options[:llm_service_url].to_s.chomp('/')}/v1"
-  end
-
-  def ruby_llm_provider_slug
+  def provider_slug
     case @options[:llm_provider].to_s
-    when 'anthropic' then :anthropic
-    when 'ollama'    then :ollama
-    else                  :openai
+    when 'anthropic', 'azure_ai_foundry_anthropic'                          then :anthropic
+    when 'ollama'                                                           then :ollama
+    when 'azure_openai', 'azure_ai_foundry', 'azure_ai_foundry_serverless'  then :azure
+    else                                                                         :openai
     end
-  end
-
-  def ruby_llm_provider?
-    provider = @options[:llm_provider].to_s
-    NATIVE_RUBY_LLM_PROVIDERS.include?(provider) || provider.empty?
   end
 
   def extract_text_and_image user_prompt
     if user_prompt.is_a?(Array)
-      text = user_prompt.find { |p| p[:type] == 'text' }&.dig(:text)
-      image_url = user_prompt.find { |p| p[:type] == 'image_url' }&.dig(:image_url, :url)
+      text = user_prompt.find { |p| 'text' == p[:type] }&.dig(:text)
+      image_url = user_prompt.find { |p| 'image_url' == p[:type] }&.dig(:image_url, :url)
       [ text, image_url ]
     else
       [ user_prompt, nil ]
     end
   end
 
-  def parse_ruby_llm_content response
+  def parse_content response
     content = response.content
-    # ruby_llm with_schema already tries JSON.parse; if the result is a Hash we're done.
     content = JSON.parse(strip_markdown_code_block(content.to_s)) unless content.is_a?(Hash)
     {
       explanation: content['explanation'],
       judgment:    content['judgment'],
     }
-  end
-
-  # --- Faraday-backed path (Azure variants) ---
-
-  def build_connection
-    Faraday.new(url: @options[:llm_service_url]) do |f|
-      f.request :json
-      f.response :json
-      f.adapter Faraday.default_adapter
-      f.request :retry, {
-        max:                 3,
-        interval:            2,
-        interval_randomness: 0.5,
-        backoff_factor:      2,
-        retry_statuses:      [ 429 ],
-      }
-    end
-  end
-
-  def get_openai_response user_prompt, system_prompt
-    body = {
-      temperature:     0.7,
-      model:           @options[:llm_model],
-      response_format: { type: 'json_object' },
-      messages:        [
-        { role: 'system', content: system_prompt },
-        { role: 'user', content: user_prompt }
-      ],
-    }
-
-    response = post_request(body)
-    parse_response(response) { |body| body.dig('choices', 0, 'message', 'content') }
-  end
-
-  def get_anthropic_response user_prompt, system_prompt
-    # Anthropic Messages API format: system is a top-level param, not a message
-    user_content = user_prompt.is_a?(Array) ? user_prompt.map { |p| anthropic_content_block(p) } : user_prompt
-
-    body = {
-      model:       @options[:llm_model],
-      max_tokens:  1048,
-      temperature: 0.7,
-      system:      system_prompt,
-      messages:    [
-        { role: 'user', content: user_content }
-      ],
-    }
-
-    response = post_request(body) do |req|
-      req.headers['anthropic-version'] = '2023-06-01'
-    end
-
-    parse_response(response) do |body|
-      # Anthropic doesn't support response_format, so the model may wrap JSON in markdown code blocks
-      strip_markdown_code_block(body.dig('content', 0, 'text'))
-    end
-  end
-
-  def post_request body
-    @conn.post(@completions_path) do |req|
-      req.headers.merge!(@auth_headers) if @llm_key.present?
-      req.options.timeout = @options[:llm_timeout].to_i
-      req.body = body
-      yield req if block_given?
-    end
-  end
-
-  def parse_response response
-    raise "LLM API Error: #{response.status} - #{response.body}" unless response.success?
-
-    response_body = response.body
-    response_body = JSON.parse(response_body) if response_body.is_a?(String)
-
-    content = yield response_body
-    parsed_content = JSON.parse(content)
-    {
-      explanation: parsed_content['explanation'],
-      judgment:    parsed_content['judgment'],
-    }
-  end
-
-  def anthropic_content_block part
-    case part[:type]
-    when 'text'
-      { type: 'text', text: part[:text] }
-    when 'image_url'
-      # Anthropic uses a different image format but supports URL sources
-      { type: 'image', source: { type: 'url', url: part.dig(:image_url, :url) } }
-    else
-      part
-    end
   end
 
   def strip_markdown_code_block text
@@ -269,42 +146,5 @@ class LlmService
     text = text.strip
     text = text.sub(/\A```\w*\n?/, '').sub(/\n?```\z/, '') if text.start_with?('```')
     text
-  end
-
-  def anthropic_provider?
-    ANTHROPIC_PROVIDERS.include?(@options[:llm_provider].to_s)
-  end
-
-  def azure_provider?
-    AZURE_PROVIDERS.include?(@options[:llm_provider].to_s)
-  end
-
-  def compute_completions_path
-    api_version = @options[:llm_api_version].presence
-    case @options[:llm_provider].to_s
-    when 'azure_openai'
-      if api_version
-        "openai/deployments/#{@options[:llm_model]}/chat/completions?api-version=#{api_version}"
-      else
-        'openai/v1/chat/completions'
-      end
-    when 'azure_ai_foundry'
-      api_version ||= '2025-01-01-preview'
-      "models/chat/completions?api-version=#{api_version}"
-    when 'azure_ai_foundry_anthropic'
-      'v1/messages'
-    else
-      'v1/chat/completions'
-    end
-  end
-
-  def compute_auth_headers
-    if anthropic_provider?
-      { 'x-api-key' => @llm_key }
-    elsif azure_provider?
-      { 'api-key' => @llm_key }
-    else
-      { 'Authorization' => "Bearer #{@llm_key}" }
-    end
   end
 end

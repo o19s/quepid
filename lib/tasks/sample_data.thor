@@ -154,7 +154,6 @@ class SampleData < Thor
       llm_service_url: 'http://ollama:31434',
       llm_model:       'qwen3:0.6b',
       llm_timeout:     60,
-      llm_api_version: '',
     }
     osc_ai_judge.save!
     print_user_info user_params
@@ -172,10 +171,9 @@ class SampleData < Thor
     azure_openai_judge = seed_user user_params
     azure_openai_judge.judge_options = {
       llm_provider:    'azure_openai',
-      llm_service_url: 'https://YOUR-RESOURCE.openai.azure.com',
+      llm_service_url: 'https://YOUR-RESOURCE.openai.azure.com/openai/v1',
       llm_model:       'gpt-4.1',
       llm_timeout:     30,
-      llm_api_version: '2024-12-01-preview',
     }
     azure_openai_judge.save!
     print_step "Seeded AI judge: name: #{user_specifics[:name]}"
@@ -196,7 +194,6 @@ class SampleData < Thor
       llm_service_url: 'https://YOUR-RESOURCE.services.ai.azure.com/anthropic',
       llm_model:       'claude-3-5-haiku-20241022',
       llm_timeout:     30,
-      llm_api_version: '',
     }
     azure_anthropic_judge.save!
     print_step "Seeded AI judge: name: #{user_specifics[:name]}"

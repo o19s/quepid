@@ -335,7 +335,7 @@ module ActiveSupport
 
       stub_request(:post, 'https://api.openai.com/v1/chat/completions')
         .with(headers: { 'Authorization' => 'Bearer 1234asdf5678' })
-        .to_return(status: 200, body: chat_completion_body, headers: {})
+        .to_return(status: 200, body: chat_completion_body, headers: { 'Content-Type' => 'application/json' })
 
       stub_request(:post, 'https://api.openai.com/v1/chat/completions')
         .with(headers: { 'Authorization' => 'Bearer BAD_OPENAI_KEY' })
