@@ -1,0 +1,227 @@
+/*
+ * ng-tags-input appearance for the Angular core layout.
+ *
+ * Replaces upstream ng-tags-input.bootstrap*.css, which tinted validation and
+ * feedback using Bootstrap 3 (.has-error, .has-success, …). Quepid uses BS5’s
+ * form validation model instead (.is-valid / .is-invalid on an ancestor).
+ *
+ * Load after vendor ng-tags-input.min.css (structure). Uses BS5 CSS variables
+ * from the core stylesheet bundle where available.
+ */
+
+tags-input {
+  display: block;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  /* Align default height with neighbouring .form-control in the wizard */
+  min-height: calc(1.5em + 0.375rem + 2px);
+}
+
+tags-input .host {
+  margin: 0;
+}
+
+tags-input .tags {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--bs-body-bg, #fff);
+  border: var(--bs-border-width, 1px) solid var(--bs-border-color, #ced4da);
+  border-radius: var(--bs-border-radius, 0.375rem);
+  box-shadow: none;
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+}
+
+tags-input .tags .tag-item {
+  color: #fff;
+  background-color: var(--bs-primary, #0d6efd);
+  border: 1px solid var(--bs-primary, #0d6efd);
+  border-radius: var(--bs-border-radius, 0.375rem);
+  /* Avoid gradient remnants from upstream ng-tags-input.min.css */
+  background-image: none;
+}
+
+tags-input .tags .tag-item.selected {
+  color: #fff;
+  background-color: var(--bs-danger, #dc3545);
+  border: 1px solid var(--bs-danger, #c82333);
+  background-image: none;
+}
+
+tags-input .tags .tag-item .remove-button:hover {
+  text-decoration: none;
+}
+
+tags-input .tags.focused {
+  outline: 0;
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+tags-input .autocomplete {
+  border-radius: var(--bs-border-radius, 0.375rem);
+  border-color: var(--bs-border-color-translucent, rgba(0, 0, 0, 0.175));
+}
+
+tags-input .autocomplete .suggestion-item em {
+  color: var(--bs-emphasis-color, #000);
+  background-color: var(--bs-body-bg, #fff);
+}
+
+tags-input .autocomplete .suggestion-item.selected,
+tags-input .autocomplete .suggestion-item.selected em {
+  color: var(--bs-dropdown-link-active-color, #fff);
+  background-color: var(--bs-dropdown-link-active-bg, #0d6efd);
+}
+
+tags-input.ng-invalid .tags {
+  border-color: var(--bs-form-invalid-border-color, #dc3545);
+}
+
+tags-input.ng-invalid .tags.focused {
+  outline: 0;
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+tags-input[disabled] .tags {
+  background-color: var(--bs-secondary-bg, #e9ecef);
+  opacity: 1;
+}
+
+tags-input[disabled] .tags .tag-item {
+  background-color: var(--bs-primary, #0d6efd);
+  opacity: 0.65;
+}
+
+tags-input[disabled] .tags .input {
+  background-color: transparent;
+}
+
+/* -----------------------------------------------------------------------------
+ * Input-group integration (Bootstrap 5: .input-group is flexbox, unlike BS3.)
+ * Mirrors .input-group > .form-control sizing so tags-input behaves as the main field.
+ */
+
+.input-group > tags-input {
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 0;
+  padding: 0;
+}
+
+.input-group tags-input:not(:first-child) .tags {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.input-group tags-input:not(:last-child) .tags {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.input-group-lg tags-input:first-child .tags {
+  border-top-left-radius: var(--bs-border-radius-lg, 0.5rem);
+  border-bottom-left-radius: var(--bs-border-radius-lg, 0.5rem);
+}
+
+.input-group-lg tags-input:last-child .tags {
+  border-top-right-radius: var(--bs-border-radius-lg, 0.5rem);
+  border-bottom-right-radius: var(--bs-border-radius-lg, 0.5rem);
+}
+
+.input-group-sm tags-input:first-child .tags {
+  border-top-left-radius: var(--bs-border-radius-sm, 0.25rem);
+  border-bottom-left-radius: var(--bs-border-radius-sm, 0.25rem);
+}
+
+.input-group-sm tags-input:last-child .tags {
+  border-top-right-radius: var(--bs-border-radius-sm, 0.25rem);
+  border-bottom-right-radius: var(--bs-border-radius-sm, 0.25rem);
+}
+
+.input-group-lg tags-input,
+tags-input.ti-input-lg {
+  min-height: 48px;
+}
+
+.input-group-lg tags-input .tags,
+tags-input.ti-input-lg .tags {
+  border-radius: var(--bs-border-radius-lg, 0.5rem);
+}
+
+.input-group-lg tags-input .tags .tag-item,
+tags-input.ti-input-lg .tags .tag-item {
+  height: 36px;
+  line-height: 34px;
+  font-size: 18px;
+  border-radius: var(--bs-border-radius-lg, 0.5rem);
+}
+
+.input-group-lg tags-input .tags .tag-item .remove-button,
+tags-input.ti-input-lg .tags .tag-item .remove-button {
+  font-size: 20px;
+}
+
+.input-group-lg tags-input .tags .input,
+tags-input.ti-input-lg .tags .input {
+  height: 36px;
+  font-size: 18px;
+}
+
+.input-group-sm tags-input,
+tags-input.ti-input-sm {
+  min-height: 30px;
+}
+
+.input-group-sm tags-input .tags,
+tags-input.ti-input-sm .tags {
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+}
+
+.input-group-sm tags-input .tags .tag-item,
+tags-input.ti-input-sm .tags .tag-item {
+  height: 22px;
+  line-height: 20px;
+  font-size: 12px;
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+}
+
+.input-group-sm tags-input .tags .tag-item .remove-button,
+tags-input.ti-input-sm .tags .tag-item .remove-button {
+  font-size: 16px;
+}
+
+.input-group-sm tags-input .tags .input,
+tags-input.ti-input-sm .tags .input {
+  height: 22px;
+  font-size: 12px;
+}
+
+/* -----------------------------------------------------------------------------
+ * Bootstrap 5 validation wrappers (preferred over legacy .has-error / …)
+ */
+
+.was-validated tags-input.ng-invalid .tags,
+.is-invalid tags-input .tags {
+  border-color: var(--bs-form-invalid-border-color, #dc3545);
+}
+
+.was-validated tags-input.ng-invalid .tags.focused,
+.is-invalid tags-input .tags.focused {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+.was-validated tags-input.ng-valid .tags,
+.is-valid tags-input .tags {
+  border-color: var(--bs-form-valid-border-color, #198754);
+}
+
+.was-validated tags-input.ng-valid .tags.focused,
+.is-valid tags-input .tags.focused {
+  border-color: rgb(13, 110, 44);
+  box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}

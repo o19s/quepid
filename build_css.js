@@ -10,7 +10,8 @@ const path = require('path');
 const WATCH_PATHS = [
   'app/assets/stylesheets',
   'node_modules/bootstrap/dist/css',
-  'node_modules/bootstrap-icons/font'
+  'node_modules/bootstrap-icons/font',
+  'app/javascript/vendor/ng-tags-input/build'
 ];
 
 function ensureDirectoryExists(dirPath) {
@@ -226,8 +227,8 @@ function copyVendorFiles() {
     'app/assets/builds/ng-tags-input.min.css'
   );
   copyFileIfExists(
-    'app/javascript/vendor/ng-tags-input/build/ng-tags-input.bootstrap.min.css',
-    'app/assets/builds/ng-tags-input.bootstrap.min.css'
+    'app/assets/stylesheets/ng-tags-input-theme.css',
+    'app/assets/builds/ng-tags-input.theme.css'
   );
 }
 
