@@ -58,14 +58,20 @@ class LlmService
       { type: 'text', text: text_prompt }
     ]
 
-    # This is hard coded to `image` and should be any image.
-    # image or thumb ;-(
-    if '' != document_fields['image'].to_s.strip
-      image_url = document_fields['image']
-      prompt << { type: 'image_url', image_url: { url: image_url } }
-    end
+    image_url = detect_image_url(document_fields)
+    prompt << { type: 'image_url', image_url: { url: image_url } } if image_url
 
     prompt
+  end
+
+  IMAGE_URL_REGEX = %r{\Ahttps?://\S+\.(?:png|jpe?g|gif|webp|bmp|svg|tiff?)(?:\?\S*)?\z}i
+
+  def detect_image_url document_fields
+    document_fields.each_value do |value|
+      str = value.to_s.strip
+      return str if str.match?(IMAGE_URL_REGEX)
+    end
+    nil
   end
 
   def get_llm_response user_prompt, system_prompt
