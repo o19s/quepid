@@ -21,7 +21,10 @@
           <%= form.textarea :system_prompt, class: "form-control", rows: 20  %>
         </div>
         <div>
-          <p/>
+          <p></p>
+        </div>
+        <div>
+          Model supports vision? <%= yes_no(@supports_vision) %>
         </div>
         <div>
           <%= form.submit 'Run Prompt', class: 'btn btn-default btn-primary' %>
