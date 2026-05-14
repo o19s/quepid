@@ -99,6 +99,7 @@
   <div class="card-footer">
     <%= form.submit 'Save', class: 'btn btn-primary float-start' %>
     <%= link_to 'Back to Team', team_path(@team), class: "btn btn-outline-secondary float-end" %>
+    <%= link_to 'Refine Prompt', edit_ai_judge_prompt_path(@ai_judge), class: "btn btn-outline-secondary float-end" %>
   </div>
 </div>
 
