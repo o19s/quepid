@@ -26,10 +26,10 @@
     <div class="row mb-3">
       <%= form.label :llm_key, class: 'col-sm-2 col-form-label' %>
       <div class="col-sm-10">
-        <%= form.text_field :llm_key, class: "form-control" %>
+        <%= form.text_area :llm_key, class: "form-control", rows: 2 %>
         <div class="form-text">
           This is the key to access your LLM provider's API.
-          It also lets Quepid distingush between AI Judges and regular Users, so you must provide something, even "abc123".
+          It also lets Quepid distingush between AI Judges and regular Users, so you must provide something, even just "abc123".
         </div>
       </div>
     </div>
