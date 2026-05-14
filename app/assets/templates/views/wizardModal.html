@@ -6,7 +6,7 @@
       <div>
         <img ng-src="images/doug.jpg" style="float: left; margin: 20px 30px 100px 20px; width: 100px" />
         <p>Hi, I'm Doug, creator of Quepid. Let me guide you through setting up your very first Case!</p>
-        <button class="btn btn-primary pull-right float-end continue" wz-next>Continue</button>
+        <button class="btn btn-primary float-end continue" wz-next>Continue</button>
         <br><br><br><br><br>
       </div>
     </wz-step>
@@ -20,7 +20,7 @@
             <label>New Case Name:</label>
             <input type="text" ng-model="pendingWizardSettings.caseName" style='width: 250px' />
           </div>
-          <button class="btn btn-primary pull-right float-end continue" wz-next>Continue</button>
+          <button class="btn btn-primary float-end continue" wz-next>Continue</button>
         </form>
 
         <br><br><br><br><br>
@@ -176,7 +176,7 @@ curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings
             <div ng-if="pendingWizardSettings.searchEngine !== 'static'" class="form-group mb-3" style="width: 100%">
               <div class="row">
                 <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
-                <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right float-end text-end"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
+                <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="float-end text-end"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
                 <p class="help-block form-text">Unsure? <a href="http://quepidapp.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
 
                 <p ng-show="pendingWizardSettings.urlFormat" class="help-block form-text tip">
@@ -319,9 +319,9 @@ star wars,1921,3, Star Wars: Return of the Jedi
               <div class="clearfix"></div>
 
               <div class="row" style="margin-top: 50px;">
-                <div class="pull-right float-end text-end">
+                <div class="float-end text-end">
 
-                  <button ng-show="!showTLSChangeWarning" class="btn btn-primary pull-right float-end continue" ng-click="validate()" ng-disabled="!readyToContinue()">
+                  <button ng-show="!showTLSChangeWarning" class="btn btn-primary float-end continue" ng-click="validate()" ng-disabled="!readyToContinue()">
                     <span ng-hide="validating">Continue</span>
                     <span ng-show="validating">Validating...</span>
                   </button>
@@ -375,7 +375,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
               >
               </select>
 
-              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right float-end text-end"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null || showTLSChangeWarning">ping it</button></small>
+              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="float-end text-end"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null || showTLSChangeWarning">ping it</button></small>
               <p class="help-block form-text tip" ng-if="hasStaticEndpoints">
                 FYI: your existing Static File endpoints are NOT sharable across cases.
               </p>
@@ -411,8 +411,8 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
             <div class="row" style="margin-top: 50px;">
 
-              <div class="pull-right float-end text-end">
-                <button class="btn btn-primary pull-right float-end continue" ng-show="!showTLSChangeWarning" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))">Continue</button>
+              <div class="float-end text-end">
+                <button class="btn btn-primary float-end continue" ng-show="!showTLSChangeWarning" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))">Continue</button>
 
                 <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
                   <span ng-hide="validating">Skip Validation</span>
@@ -466,7 +466,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
           </div>
 
           <div class="form-group mb-3">
-            <button class="btn btn-primary pull-right float-end continue" ng-click="validateFieldSpec()" ng-disabled="validating">
+            <button class="btn btn-primary float-end continue" ng-click="validateFieldSpec()" ng-disabled="validating">
               <span ng-hide="validating">Continue</span>
               <span ng-show="validating">Validating...</span>
             </button>
@@ -480,7 +480,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
         <h2>Search Queries</h2>
         <div>
           <p class="help-block form-text">All of the queries defined in the static upload will be created.</p>
-          <button class="btn btn-primary pull-right float-end continue" wz-next ng-click="pendingWizardSettings.addQueryStaticQueries()">Continue</button>
+          <button class="btn btn-primary float-end continue" wz-next ng-click="pendingWizardSettings.addQueryStaticQueries()">Continue</button>
         </div>
         <br><br><br><br><br>
       </span>
@@ -536,7 +536,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
           </div>
         </div>
 
-        <button class="btn btn-primary pull-right float-end continue" wz-next ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)" ng-disabled="pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0)">Continue</button>
+        <button class="btn btn-primary float-end continue" wz-next ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)" ng-disabled="pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0)">Continue</button>
         <br><br><br><br><br>
       </div>
       </span>
@@ -545,7 +545,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
       <h1>That's It!</h1>
       <p class="help-block form-text">Go to "Tune Relevance" to iterate on your relevance and manipulate searches</p>
       
-      <button class="btn-lg btn-success pull-right float-end finish" wz-next>Finish</button>
+      <button class="btn-lg btn-success float-end finish" wz-next>Finish</button>
       <br><br><br><br><br>
     </wz-step>
   </wizard>

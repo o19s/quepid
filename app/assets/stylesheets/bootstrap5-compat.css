@@ -646,3 +646,26 @@
 .modal-backdrop.show {
   opacity: 0.5;
 }
+
+/*
+ * Header navbar — restore BS3's horizontal layout.
+ *
+ * The header in `_header_core_app.html.erb` uses BS3 navbar markup
+ * (.navbar-nav, .navbar-left, .navbar-right) and relies on BS3's
+ * `.navbar-nav > li { float: left }` for horizontal layout. With BS5
+ * loaded under BS3 (cascade-coexistence), BS5's
+ * `.navbar-nav { display: flex; flex-direction: column }` wins for the
+ * `display` properties — BS3 doesn't override `display`. Once the parent
+ * is a flex container, the BS3 float on li children is silently ignored,
+ * and the nav items stack vertically.
+ *
+ * BS5's `.navbar-expand-lg .navbar-nav { flex-direction: row }` rule
+ * would normally restore horizontal layout, but the header markup
+ * doesn't declare `.navbar-expand-*`. Scope this reset to `<header>` so
+ * we don't change other (BS5-native) navbar usages.
+ *
+ * Remove with `bootstrap5-compat.css` once Phase 5 strips BS3.
+ */
+header .navbar-nav {
+  flex-direction: row;
+}

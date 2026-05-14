@@ -63,7 +63,7 @@
           ng-class="{ active: book.id === ctrl.activeBookId }"
           ng-click="selectBook(book)">
           {{book.name}}
-          <a ng-href="books/{{book.id}}" target="_self" class="btn btn-default btn-outline-secondary btn-xs btn-sm pull-right float-end" title="Open this book in a new page">
+          <a ng-href="books/{{book.id}}" target="_self" class="btn btn-default btn-outline-secondary btn-xs btn-sm float-end" title="Open this book in a new page">
             <i class="bi bi-eye-fill"></i> View
           </a>
 
@@ -156,12 +156,12 @@
 </div>
 
 <div class="modal-footer">
-  <a class="btn btn-primary pull-left me-auto" ng-href="{{ctrl.createNewBookLink()}}" target="_self" ng-disabled="processingPrompt.inProgress">
+  <a class="btn btn-primary me-auto" ng-href="{{ctrl.createNewBookLink()}}" target="_self" ng-disabled="processingPrompt.inProgress">
     <i class="bi bi-plus" style="color: #FFF"></i>
     Create a book
   </a>
 
-  <a class="btn btn-default btn-outline-secondary pull-left" href="books/{{ctrl.activeBookId}}/judge" target="_self" ng-show="ctrl.activeBookId">
+  <a class="btn btn-default btn-outline-secondary" href="books/{{ctrl.activeBookId}}/judge" target="_self" ng-show="ctrl.activeBookId">
     <i class="bi bi-book-fill"></i>
     Judge Documents!
   </a>

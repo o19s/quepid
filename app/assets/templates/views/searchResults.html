@@ -33,7 +33,7 @@
       </span>
     </h2>
 
-    <span class='pull-right float-end total-results'>
+    <span class='float-end total-results'>
       <count-up ng-data="query.getNumFound()" ng-model="numFound" steps="5" time="500" />
       <small class="text-muted">
         <ng-pluralize count="query.getNumFound()"
@@ -46,7 +46,7 @@
 
     <i class="error-warning bi bi-exclamation-triangle"></i>
 
-    <span ng-show="query.isNotAllRated()" class="pull-right float-end" style="margin-right: 20px;" title="Hop to it!  There are unrated results!">
+    <span ng-show="query.isNotAllRated()" class="float-end" style="margin-right: 20px;" title="Hop to it!  There are unrated results!">
       <div class="icon-container">
         <i class="frog-icon">🐸</i>
         <div class="notification-bubble">{{ query.currentScore.countMissingRatings }}</div>
@@ -54,7 +54,7 @@
     </span>
 
 
-    <span ng-show="querqyRuleTriggered()" class="pull-right float-end" style="margin-right: 20px;" title="Querqy Strikes Again!">
+    <span ng-show="querqyRuleTriggered()" class="float-end" style="margin-right: 20px;" title="Querqy Strikes Again!">
       <i class="querqy-icon"></i>
     </span>
 
