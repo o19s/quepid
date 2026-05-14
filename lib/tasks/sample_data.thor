@@ -139,11 +139,11 @@ class SampleData < Thor
     print_user_info user_params
 
     ######################################
-    # OSC AI Judge (Ollama)
+    # Qwen (Ollama) AI Judge
     ######################################
 
     user_specifics = {
-      name:          'OSC AI Judge',
+      name:          'Qwen (Ollama) AI Judge',
       llm_key:       'key123456',
       system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
     }
