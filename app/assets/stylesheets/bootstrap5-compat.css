@@ -690,3 +690,45 @@
 header .navbar-nav {
   flex-direction: row;
 }
+
+/*
+ * btn-outline-secondary — BS5 outline button under the BS3 cascade.
+ *
+ * BS5's `.btn-outline-secondary` rules are not loaded on the Angular
+ * `core` bundle, so its color/border defaults fall back to BS3's
+ * `.btn { border: 1px solid transparent }`, leaving the button invisible
+ * (gray text on transparent background, no edge). These rules were
+ * previously masked by the dual-stacked `btn-default` class.
+ *
+ * Port the necessary BS5 styling for the cases we use:
+ *   - resting outline state
+ *   - hover (filled gray)
+ *   - active state used by toggle button-groups
+ *
+ * Remove once the BS3 stylesheet is dropped and BS5 ships its own
+ * `btn-outline-secondary` rules.
+ */
+.btn-outline-secondary {
+  color: #6c757d;
+  border-color: #6c757d;
+  background-color: transparent;
+}
+.btn-outline-secondary:hover {
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+.btn-outline-secondary:focus {
+  box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.5);
+}
+.btn-outline-secondary.active,
+.btn-outline-secondary:active {
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+.btn-outline-secondary:disabled,
+.btn-outline-secondary.disabled {
+  color: #6c757d;
+  background-color: transparent;
+}

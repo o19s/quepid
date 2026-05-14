@@ -8,13 +8,13 @@
 
   <div class="btn-group btn-group-justified" role="group">
     <div class="btn-group" role="group">
-      <button type="button" class="btn" ng-click="ctrl.options.action='delete_all_queries'" ng-class="ctrl.options.action==='delete_all_queries' ? 'btn-primary' : 'btn-default btn-outline-secondary'">Delete All Queries</button>
+      <button type="button" class="btn" ng-click="ctrl.options.action='delete_all_queries'" ng-class="ctrl.options.action==='delete_all_queries' ? 'btn-primary' : 'btn-outline-secondary'">Delete All Queries</button>
     </div>
     <div class="btn-group" role="group">
-      <button type="button" class="btn" ng-click="ctrl.options.action='archive_case'" ng-class="ctrl.options.action==='archive_case' ? 'btn-primary' : 'btn-default btn-outline-secondary'">Archive Case</button>
+      <button type="button" class="btn" ng-click="ctrl.options.action='archive_case'" ng-class="ctrl.options.action==='archive_case' ? 'btn-primary' : 'btn-outline-secondary'">Archive Case</button>
     </div>
     <div class="btn-group" role="group">
-      <button type="button" class="btn" ng-click="ctrl.options.action='delete_case'" ng-class="ctrl.options.action==='delete_case' ? 'btn-primary' : 'btn-default btn-outline-secondary'">Delete Case</button>
+      <button type="button" class="btn" ng-click="ctrl.options.action='delete_case'" ng-class="ctrl.options.action==='delete_case' ? 'btn-primary' : 'btn-outline-secondary'">Delete Case</button>
     </div>
   </div>
 
@@ -39,6 +39,6 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default btn-outline-secondary float-start me-auto" ng-click="ctrl.cancel()">Cancel</button>
+  <button class="btn btn-outline-secondary float-start me-auto" ng-click="ctrl.cancel()">Cancel</button>
   <button class="btn btn-danger" ng-click="ctrl.ok()" ng-disabled="ctrl.cannotDelete()">{{ctrl.buttonName()}}</button>
 </div>

@@ -58,7 +58,7 @@
     </form>
     <form ng-submit="resetToAllRatedDocs()">
       <p>
-        <input type="submit" class="btn btn-default btn-outline-secondary form-control"  ng-disabled="defaultList" value="Reset to All Rated Docs"></input>
+        <input type="submit" class="btn btn-outline-secondary form-control"  ng-disabled="defaultList" value="Reset to All Rated Docs"></input>
       </p>
     </form>
   </div>
@@ -114,7 +114,7 @@
 
 <div class='row'>
   <span ng-if="docFinder.numFound > docFinder.docs.length">
-    <a class="btn btn-default btn-outline-secondary" ng-click="paginate()">
+    <a class="btn btn-outline-secondary" ng-click="paginate()">
       Peek at the next page of results
     </a>
   </span>
@@ -124,5 +124,5 @@
   </span>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default btn-outline-secondary" ng-click="targetedSearchModalModel.closeModal()">Close</button>
+  <button class="btn btn-outline-secondary" ng-click="targetedSearchModalModel.closeModal()">Close</button>
 </div>

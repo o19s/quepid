@@ -855,7 +855,7 @@ li.annotation {
 	margin: 5px 5px 0 0;
 }
 
-.modal-body .btn-group .btn-default {
+.modal-body .btn-group .btn-outline-secondary {
 	background: linear-gradient(to bottom right, #EEE, #F8F8F8);
 }
 

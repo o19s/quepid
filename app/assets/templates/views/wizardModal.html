@@ -191,7 +191,7 @@ curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings
                 A "Static" (or "Offline") search endpoint is a great way to gather human judgements and leverage Quepid's existing evaluation tools without requiring a live connection to a search engine.
               </p>
               <p>
-                <button type="button" class="btn btn-sm btn-default btn-outline-secondary" ng-click="isStaticCollapsed = !isStaticCollapsed">Static Dataset</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="isStaticCollapsed = !isStaticCollapsed">Static Dataset</button>
               </p>
 
               <div quepid-collapse="!isStaticCollapsed">
@@ -241,7 +241,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
             <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
             <p>
-              <button type="button" class="btn btn-sm btn-default btn-outline-secondary" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
             </p>
             <div quepid-collapse="!isSolrCollapsed">
               <div class="bg-light p-2 rounded border">
@@ -285,7 +285,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
             <span ng-if="pendingWizardSettings.searchEngine !== 'static'">
             <p>
-              <button type="button" class="btn btn-sm btn-default btn-outline-secondary" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
             </p>
             <div quepid-collapse="!isHeaderConfigCollapsed">
               <div class="bg-light p-2 rounded border">
