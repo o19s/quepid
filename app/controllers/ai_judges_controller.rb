@@ -2,6 +2,7 @@
 
 class AiJudgesController < ApplicationController
   before_action :set_team
+  before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy ]
 
   DEFAULT_SYSTEM_PROMPT = <<~TEXT
     You are evaluating the results from a search engine. For each query, you will be provided with multiple documents. Your task is to evaluate each document and assign a judgment on a scale of 0 to 3, where:
@@ -59,7 +60,6 @@ class AiJudgesController < ApplicationController
   TEXT
 
   def show
-    @ai_judge = User.find(params[:id])
     render 'edit'
   end
 
@@ -74,9 +74,7 @@ class AiJudgesController < ApplicationController
     }
   end
 
-  def edit
-    @ai_judge = User.find(params[:id])
-  end
+  def edit; end
 
   def create
     @ai_judge = User.new(ai_judge_params)
@@ -91,7 +89,6 @@ class AiJudgesController < ApplicationController
   end
 
   def update
-    @ai_judge = User.find(params[:id])
     if @ai_judge.update(ai_judge_params)
       redirect_to team_path(@team)
     else
@@ -100,7 +97,6 @@ class AiJudgesController < ApplicationController
   end
 
   def destroy
-    @ai_judge = User.find(params[:id])
     @ai_judge.destroy
     redirect_to team_path(@team) # , notice: 'AI Judge was successfully removed.'
   end
@@ -108,7 +104,11 @@ class AiJudgesController < ApplicationController
   private
 
   def set_team
-    @team = Team.find(params.expect(:team_id))
+    @team = current_user.teams.find(params.expect(:team_id))
+  end
+
+  def set_ai_judge
+    @ai_judge = @team.members.only_ai_judges.find(params[:id])
   end
 
   def ai_judge_params

@@ -25,12 +25,12 @@
 
     <div class="row mb-3">
       <%= form.label :llm_key, class: 'col-sm-2 col-form-label' %>
-      <div class="col-sm-4">
-        <%= form.text_field :llm_key %>
-      </div>
-      <div class="form-text">
-        This is the key to access your LLM provider's API.
-        It also lets Quepid distingush between AI Judges and regular Users, so you must provide something, even "abc123".
+      <div class="col-sm-10">
+        <%= form.text_field :llm_key, class: "form-control" %>
+        <div class="form-text">
+          This is the key to access your LLM provider's API.
+          It also lets Quepid distingush between AI Judges and regular Users, so you must provide something, even "abc123".
+        </div>
       </div>
     </div>
 
@@ -44,7 +44,9 @@
     </ul>
     <div class="tab-content" id="pills-tabContent">
       <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
-        <% @ai_judge.judge_options.each do |key, value| %>
+
+        <% sorted_judge_options = @ai_judge.judge_options.sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
+        <% sorted_judge_options.each do |key, value| %>
           <div class="row mb-3">
             <%= label_tag "judge_options[#{key}]", key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
             <div class="col-sm-4">
@@ -81,7 +83,7 @@
             This the raw JSON stored as <code>options</code> for the Judge.
             Make sure you are editing under the <code>judge_options</code> key.
           </div>
-          <%= form.text_area :options, value: JSON.pretty_generate(@ai_judge.options.as_json),
+          <%= form.text_area :options, value: format_json(@ai_judge.options),
             class: 'form-control json-field', rows: 10, disabled: true %>
         </div>
       </div>

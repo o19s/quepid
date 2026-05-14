@@ -476,8 +476,9 @@ class SampleData < Thor
 
   EXAMPLES:
 
-  $ thor large_data
+  $ thor sample_data:large_data
   LONGDESC
+
   def large_data
     load_environment
 
@@ -533,6 +534,7 @@ class SampleData < Thor
     solr_try = hundreds_of_queries_case.tries.latest
     solr_try.update try_defaults
     solr_try.search_endpoint = statedecoded_solr_endpoint
+    solr_try.save
 
     # was 200
     unless hundreds_of_queries_case.queries.count > 400
@@ -551,6 +553,7 @@ class SampleData < Thor
     solr_try = thousands_of_queries_case.tries.latest
     solr_try.update try_defaults
     solr_try.search_endpoint = statedecoded_solr_endpoint
+    solr_try.save
 
     unless thousands_of_queries_case.queries.count > 5000
       generator = ::RatingsGenerator.new search_url, { number: 5000, show_progress: true }

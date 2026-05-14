@@ -21,8 +21,18 @@
         <!-- <a href="https://www.flaticon.com/free-icons/digital" title="digital icons">Digital icons created by Freepik - Flaticon</a> -->
         <p>
           <%= button_to user_keycloakopenid_omniauth_authorize_path, data: { turbo: "false" }, :class=> "btn btn-social btn-openid" do %>
-            <%= image_tag "openid-logo.png", :class => "black-to-white" %> Sign in with OpenId
-            
+            <%= image_tag "openid-logo.png", :class => "black-to-white" %> Sign in with Keycloak
+
+          <% end %>
+        </p>
+        <% end %>
+
+        <% if Rails.application.config.devise.omniauth_providers.include?(:openid_connect) %>
+        <% email_login_only = false %>
+        <!-- <a href="https://www.flaticon.com/free-icons/digital" title="digital icons">Digital icons created by Freepik - Flaticon</a> -->
+        <p>
+          <%= button_to user_openid_connect_omniauth_authorize_path, data: { turbo: "false" }, :class=> "btn btn-social btn-openid" do %>
+            <%= image_tag "openid-logo.png", :class => "black-to-white" %> <%= Rails.application.config.openid_connect_button_text %>
           <% end %>
         </p>
         <% end %>
@@ -36,7 +46,7 @@
         <% if Rails.application.config.email_login_enabled or email_login_only  %>
         <h4>Sign in via email:</h4>
         <% end %>
-        
+
         <% if Rails.application.config.email_login_enabled %>
           <%= form_with model: @user, url: users_login_path, id: 'login', html: { method: :post,  data: {turbo: false} } do |f| %>
             <% if controller.class.to_s.include?("SessionsController") && @user.errors.any? %>
@@ -49,7 +59,7 @@
             <div class="mb-3">
               <%= f.text_field :email, class: 'form-control email', placeholder: 'Email Address' %>
             </div>
-  
+
             <div class="mb-3">
               <%= f.password_field :password, class: 'form-control password', placeholder: 'Password' %>
             </div>
@@ -59,7 +69,7 @@
             <br/>
             <%= f.submit 'Sign in', class: 'btn btn-primary login' %>
             <br/>
-  
+
           <% end %>
         <% end %>
       </div>

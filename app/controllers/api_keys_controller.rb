@@ -35,7 +35,7 @@ class ApiKeysController < ApplicationController
 
   # curl -v -X DELETE http://localhost:3000/api-keys -H 'Authorization: Bearer 2d499887717072dd1a31f3d9be4e295e'
   def destroy
-    @api_key = ApiKey.find(params[:id])
+    @api_key = current_user.api_keys.find(params[:id])
     @api_key.destroy
     redirect_to profile_path
   end

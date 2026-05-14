@@ -10,13 +10,13 @@
       </ul>
     </div>
   <% end %>
-  
+
   <%= hidden_field_tag :book_id, @book.id if @book%>
-  
+
   <div class="row gx-5">
     <div class="col-md-6">
       <h2>Prompt Settings</h2>
-      <div>      
+      <div>
         <div>
           <%= form.textarea :system_prompt, class: "form-control", rows: 20  %>
         </div>
@@ -25,7 +25,7 @@
         </div>
         <div>
           <%= form.submit 'Run Prompt', class: 'btn btn-default btn-primary' %>
-          
+
           <%= link_to 'Back', judgement_stats_book_path(@book), method: :get, class: 'btn btn-block btn-light float-end' if @book %>
           <%= link_to 'Edit Judge', edit_team_ai_judge_path(team_id: @ai_judge.teams.first.id, id: @ai_judge.id), method: :get, class: 'btn btn-block btn-light float-end' %>
         </div>
@@ -40,7 +40,7 @@
           <p class="mt-2">Evaluating with AI Judge...</p>
         </div>
       </div>
-      
+
       <!-- Rating information shown after response -->
       <div data-prompt-form-target="ratingInfo">
         <% if @judgement %>
@@ -57,46 +57,46 @@
     </div>
     <div class="col-md-6">
       <h2>Query Doc Pair to Evaluate</h2>
-      <div>        
+      <div>
         <%= link_to 'Change Query Doc Pair', edit_ai_judge_prompt_path(@ai_judge, book_id: @book.id), class: 'btn btn-block btn-light float-end', role: 'button', method: :get if @book%>
         <%= fields_for :query_doc_pair, query_doc_pair do |query_doc_pair_fields| %>
-            
+
           <div class="field">
             <%= query_doc_pair_fields.label :query_text %>
             <%= query_doc_pair_fields.text_field :query_text %>
           </div>
-        
+
           <div class="field">
             <%= query_doc_pair_fields.label :doc_id, "Doc ID" %>
             <%= query_doc_pair_fields.text_field :doc_id %>
           </div>
-          
+
           <div class="field">
             <%= query_doc_pair_fields.label :information_need, "Information Need" %>
             <%= query_doc_pair_fields.text_field :information_need, size: 80 %>
           </div>
-          
+
           <div class="field">
             <%= query_doc_pair_fields.label :document_fields %> <small>JSON</small><br/>
-            <%= query_doc_pair_fields.text_area :document_fields, data: { codemirror_mode: "json", codemirror_height: 400  } %>
-          </div>          
-          
+            <%= query_doc_pair_fields.text_area :document_fields, value: format_json(query_doc_pair_fields.object.document_fields), data: { codemirror_mode: "json", codemirror_height: 400  } %>
+          </div>
+
           <div class="field">
             <%= query_doc_pair_fields.label :options %> <small>JSON</small><br/>
-            <%= query_doc_pair_fields.text_area :options, data: { codemirror_mode: "json", codemirror_height: 200  } %>
-          </div>  
-          
+            <%= query_doc_pair_fields.text_area :options, value: format_json(query_doc_pair_fields.object.options), data: { codemirror_mode: "json", codemirror_height: 200  } %>
+          </div>
+
           <div class="field">
             <%= query_doc_pair_fields.label :notes %><br/>
             <%= query_doc_pair_fields.text_area :notes, size: "80x8" %>
-          </div>  
-          
+          </div>
+
           <div class="field">
             <%= query_doc_pair_fields.label :position %>
             <%= query_doc_pair_fields.text_field :position %>
           </div>
-        
-   
+
+
         <% end %>
 
 
@@ -104,5 +104,5 @@
     </div>
   </div>
 
- 
+
 <% end %>
