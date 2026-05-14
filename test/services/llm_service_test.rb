@@ -52,6 +52,30 @@ class LlmServiceTest < ActiveSupport::TestCase
       assert_equal user_prompt[1][:image_url][:url], USER_PROMPT_IMAGE_URL
     end
 
+    test 'detects image URL in any document field (e.g. thumb)' do
+      qdp = QueryDocPair.new(
+        query_text:      'cats',
+        document_fields: { 'title' => 'A cat', 'thumb' => 'https://myimage.com/someimage.jpg' }
+      )
+
+      user_prompt = service.make_user_prompt qdp
+
+      assert_equal 'image_url', user_prompt[1][:type]
+      assert_equal 'https://myimage.com/someimage.jpg', user_prompt[1][:image_url][:url]
+    end
+
+    test 'does not add image part when no field looks like an image URL' do
+      qdp = QueryDocPair.new(
+        query_text:      'cats',
+        document_fields: { 'title' => 'A cat', 'homepage' => 'https://example.com/about' }
+      )
+
+      user_prompt = service.make_user_prompt qdp
+
+      assert_equal 1, user_prompt.length
+      assert_equal 'text', user_prompt[0][:type]
+    end
+
     test 'creating a judgement' do
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
       service.perform_judgement judgement
