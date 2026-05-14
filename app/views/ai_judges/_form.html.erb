@@ -26,10 +26,10 @@
     <div class="row mb-3">
       <%= form.label :llm_key, class: 'col-sm-2 col-form-label' %>
       <div class="col-sm-10">
-        <%= form.text_field :llm_key, class: "form-control" %>
+        <%= form.text_area :llm_key, class: "form-control", rows: 2 %>
         <div class="form-text">
           This is the key to access your LLM provider's API.
-          It also lets Quepid distingush between AI Judges and regular Users, so you must provide something, even "abc123".
+          It also lets Quepid distingush between AI Judges and regular Users, so you must provide something, even just "abc123".
         </div>
       </div>
     </div>
@@ -99,6 +99,7 @@
   <div class="card-footer">
     <%= form.submit 'Save', class: 'btn btn-primary float-start' %>
     <%= link_to 'Back to Team', team_path(@team), class: "btn btn-outline-secondary float-end" %>
+    <%= link_to 'Refine Prompt', edit_ai_judge_prompt_path(@ai_judge), class: "btn btn-outline-secondary float-end" %>
   </div>
 </div>
 
@@ -139,88 +140,71 @@
       });
     });
 
-    // Provider presets for auto-filling URL, API version, and help text
+    // Provider presets for auto-filling URL, model, and help text
     const PROVIDER_PRESETS = {
       openai: {
         llm_service_url: 'https://api.openai.com',
-        llm_api_version: '',
         llm_model:       'gpt-4o',
         help: '<strong>OpenAI</strong> &mdash; Direct API access.<br>' +
               '<b>URL:</b> <code>https://api.openai.com</code><br>' +
               '<b>Model:</b> e.g. <code>gpt-4o</code>, <code>gpt-4.1</code><br>' +
-              '<b>Key:</b> Your OpenAI API key (starts with <code>sk-</code>)<br>' +
-              '<b>API Version:</b> Leave blank'
+              '<b>Key:</b> Your OpenAI API key (starts with <code>sk-</code>)'
       },
       azure_openai: {
-        llm_service_url: 'https://RESOURCE.openai.azure.com',
-        llm_api_version: '',
+        llm_service_url: 'https://RESOURCE.openai.azure.com/openai/v1',
         llm_model:       'gpt-4.1',
         help: '<strong>Azure OpenAI</strong> &mdash; OpenAI models hosted on Azure.<br>' +
-              '<b>URL:</b> <code>https://YOUR-RESOURCE.openai.azure.com</code><br>' +
+              '<b>URL:</b> <code>https://YOUR-RESOURCE.openai.azure.com/openai/v1</code><br>' +
               '<b>Model:</b> Your deployment name, e.g. <code>gpt-4.1</code>, <code>gpt-5.1</code><br>' +
-              '<b>Key:</b> Azure resource API key<br>' +
-              '<b>API Version:</b> Set to use deployment-based routing ' +
-              '(e.g. <code>2024-12-01-preview</code>), or leave blank for <code>/openai/v1/</code> path'
+              '<b>Key:</b> Azure resource API key'
       },
       azure_ai_foundry: {
-        llm_service_url: 'https://RESOURCE.services.ai.azure.com',
-        llm_api_version: '2025-01-01-preview',
+        llm_service_url: 'https://RESOURCE.services.ai.azure.com?api-version=2025-01-01-preview',
         llm_model:       'gpt-4o',
         help: '<strong>Azure AI Foundry</strong> &mdash; Unified Azure AI endpoint.<br>' +
-              '<b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com</code><br>' +
+              '<b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com?api-version=2025-01-01-preview</code><br>' +
               '<b>Model:</b> Model name, e.g. <code>gpt-4o</code><br>' +
-              '<b>Key:</b> Azure AI services key<br>' +
-              '<b>API Version:</b> Defaults to <code>2025-01-01-preview</code>'
+              '<b>Key:</b> Azure AI services key'
       },
       azure_ai_foundry_serverless: {
-        llm_service_url: 'https://MODEL-NAME.REGION.models.ai.azure.com',
-        llm_api_version: '',
-        llm_model:       '',
+        llm_service_url: 'https://MODEL-NAME.REGION.models.ai.azure.com/v1/chat/completions',
+        llm_model:       'gpt-4o',
         help: '<strong>Azure AI Foundry (Serverless)</strong> &mdash; Models-as-a-Service pay-per-token endpoint.<br>' +
-              '<b>URL:</b> <code>https://MODEL-NAME.REGION.models.ai.azure.com</code><br>' +
+              '<b>URL:</b> <code>https://MODEL-NAME.REGION.models.ai.azure.com/v1/chat/completions</code><br>' +
               '<b>Model:</b> Model name from the deployment<br>' +
-              '<b>Key:</b> Serverless endpoint key<br>' +
-              '<b>API Version:</b> Leave blank'
+              '<b>Key:</b> Serverless endpoint key'
       },
       azure_ai_foundry_anthropic: {
         llm_service_url: 'https://RESOURCE.services.ai.azure.com/anthropic',
-        llm_api_version: '',
         llm_model:       'claude-3-5-haiku-20241022',
         help: '<strong>Azure AI Foundry (Anthropic)</strong> &mdash; Claude models via Azure using the native Anthropic Messages API.<br>' +
               '<b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com/anthropic</code><br>' +
               '<b>Model:</b> e.g. <code>claude-3-5-haiku-20241022</code><br>' +
-              '<b>Key:</b> Azure AI services key (sent as <code>x-api-key</code> header)<br>' +
-              '<b>API Version:</b> Leave blank (the <code>anthropic-version</code> header is set automatically)'
+              '<b>Key:</b> Azure AI services key (sent as <code>x-api-key</code> header)'
       },
       anthropic: {
         llm_service_url: 'https://api.anthropic.com',
-        llm_api_version: '',
-        llm_model:       'claude-sonnet-4-5-20250514',
+        llm_model:       'claude-opus-4-6',
         help: '<strong>Anthropic</strong> &mdash; Direct Anthropic API access.<br>' +
               '<b>URL:</b> <code>https://api.anthropic.com</code><br>' +
               '<b>Model:</b> e.g. <code>claude-opus-4-6</code>, <code>claude-sonnet-4-5-20250514</code><br>' +
-              '<b>Key:</b> Your Anthropic API key (sent as <code>x-api-key</code> header)<br>' +
-              '<b>API Version:</b> Leave blank'
+              '<b>Key:</b> Your Anthropic API key (sent as <code>x-api-key</code> header)'
       },
       google_gemini: {
         llm_service_url: 'https://generativelanguage.googleapis.com/v1beta/openai',
-        llm_api_version: '',
         llm_model:       'gemini-2.0-flash',
         help: '<strong>Google Gemini</strong> &mdash; Uses the OpenAI-compatible endpoint.<br>' +
               '<b>URL:</b> <code>https://generativelanguage.googleapis.com/v1beta/openai</code><br>' +
               '<b>Model:</b> e.g. <code>gemini-2.0-flash</code><br>' +
-              '<b>Key:</b> Your Google AI API key<br>' +
-              '<b>API Version:</b> Leave blank'
+              '<b>Key:</b> Your Google AI API key'
       },
       ollama: {
         llm_service_url: 'http://ollama:11434',
-        llm_api_version: '',
         llm_model:       'qwen3:0.6b',
         help: '<strong>Ollama</strong> &mdash; Local models via the Ollama container.<br>' +
               '<b>URL:</b> <code>http://ollama:11434</code> (Docker) or <code>http://localhost:11434</code> (local)<br>' +
               '<b>Model:</b> e.g. <code>qwen3:0.6b</code>, <code>llama3</code><br>' +
-              '<b>Key:</b> Any placeholder value (e.g. <code>abc123</code>)<br>' +
-              '<b>API Version:</b> Leave blank'
+              '<b>Key:</b> Any placeholder value (e.g. <code>abc123</code>)'
       }
     };
 
@@ -246,11 +230,9 @@
         if (!preset) return;
 
         const urlField = document.getElementById('judge_options_llm_service_url');
-        const apiVersionField = document.getElementById('judge_options_llm_api_version');
         const modelField = document.getElementById('judge_options_llm_model');
 
         if (urlField) urlField.value = preset.llm_service_url;
-        if (apiVersionField) apiVersionField.value = preset.llm_api_version;
         if (modelField) modelField.value = preset.llm_model;
 
         updateProviderHelp(this.value);

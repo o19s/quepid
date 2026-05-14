@@ -11,6 +11,8 @@ module AiJudges
     def edit
       @ai_judge = User.find(params[:ai_judge_id])
 
+      @supports_vision = RubyLLM.models.find(@ai_judge.judge_options[:llm_model]).supports_vision?
+
       @query_doc_pair = if @book
                           @book.query_doc_pairs.sample
                         else

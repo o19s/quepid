@@ -5,8 +5,11 @@ require 'v8_mapper_executor'
 class MapperWizardService
   class WizardError < StandardError; end
 
-  def initialize api_key: nil
-    @api_key = api_key
+  def initialize api_key: nil, llm_provider: nil, llm_model: nil, llm_key: nil
+    # Support both api_key: (legacy) and llm_key: naming conventions.
+    @api_key = llm_key.presence || api_key
+    @llm_provider = llm_provider
+    @llm_model = llm_model.presence || 'gpt-4o'
     @v8_executor = V8MapperExecutor.new(Rails.root.join('lib/mapper_code_logic.js'))
   end
 
@@ -41,12 +44,10 @@ class MapperWizardService
 
   # Generate mapper functions using RubyLLM
   def generate_mappers html_content
-    return { success: false, error: 'API key required' } if @api_key.blank?
+    return { success: false, error: 'API key required' } if @api_key.blank? && !ollama_provider?
     return { success: false, error: 'HTML content required' } if html_content.blank?
 
-    configure_ruby_llm
-
-    chat = RubyLLM.chat(model: 'gpt-4o')
+    chat = build_ruby_llm_chat
 
     chat.with_instructions(generation_prompt, replace: true)
 
@@ -108,11 +109,9 @@ class MapperWizardService
 
   # Refine a mapper function using AI
   def refine_mapper mapper_type:, current_code:, feedback:, html_content:
-    return { success: false, error: 'API key required' } if @api_key.blank?
+    return { success: false, error: 'API key required' } if @api_key.blank? && !ollama_provider?
 
-    configure_ruby_llm
-
-    chat = RubyLLM.chat(model: 'gpt-4o')
+    chat = build_ruby_llm_chat
 
     truncated_html = html_content.length > 30_000 ? html_content[0...30_000] : html_content
 
@@ -174,10 +173,27 @@ class MapperWizardService
     { success: false, error: e.message }
   end
 
-  def configure_ruby_llm
-    RubyLLM.configure do |config|
-      config.openai_api_key = @api_key
+  def build_ruby_llm_chat
+    context = RubyLLM.context do |config|
+      case @llm_provider.to_s
+      when 'anthropic'
+        config.anthropic_api_key = @api_key
+      when 'ollama'
+        # Ollama does not require an API key by default.
+      else
+        config.openai_api_key = @api_key
+      end
     end
+    provider_slug = case @llm_provider.to_s
+                    when 'anthropic' then :anthropic
+                    when 'ollama'    then :ollama
+                    else                  :openai
+                    end
+    context.chat(model: @llm_model, provider: provider_slug, assume_model_exists: true)
+  end
+
+  def ollama_provider?
+    'ollama' == @llm_provider.to_s
   end
 
   def generation_prompt
