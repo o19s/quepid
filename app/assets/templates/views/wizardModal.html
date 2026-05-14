@@ -195,7 +195,7 @@ curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings
               </p>
 
               <div quepid-collapse="!isStaticCollapsed">
-                <div class="well well-sm bg-light p-2 rounded border">
+                <div class="bg-light p-2 rounded border">
                   <p>
                     Create the CSV file and upload it here.
                     Under the covers we use the Snapshot CSV format, so you can export a snapshot from Quepid and then upload it here to to create Static search endpoint.
@@ -244,7 +244,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
               <button type="button" class="btn btn-sm btn-default btn-outline-secondary" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
             </p>
             <div quepid-collapse="!isSolrCollapsed">
-              <div class="well well-sm bg-light p-2 rounded border">
+              <div class="bg-light p-2 rounded border">
                 <div class="form-group mb-3 clearfix row">
                   <label class="col-sm-3 control-label col-form-label">API Method</label>
                   <div class="col-sm-9">
@@ -260,7 +260,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </span>
 
             <span ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
-              <div class="well well-sm bg-light p-2 rounded border">
+              <div class="bg-light p-2 rounded border">
                 <div class="alert alert-info">
                   <h4><i class="bi bi-magic"></i> Custom Mapper Required</h4>
                   <p>
@@ -288,7 +288,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
               <button type="button" class="btn btn-sm btn-default btn-outline-secondary" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
             </p>
             <div quepid-collapse="!isHeaderConfigCollapsed">
-              <div class="well well-sm bg-light p-2 rounded border">
+              <div class="bg-light p-2 rounded border">
                 <div class="form-group mb-3 clearfix row">
                   <label class="col-sm-3 control-label col-form-label">Proxy Requests</label>
                   <div class="col-sm-9">
@@ -382,7 +382,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
 
             <!-- Test Query for Search API endpoints -->
-            <div ng-if="pendingWizardSettings.searchEndpointId != null && pendingWizardSettings.searchEngine === 'searchapi'" class="well well-sm bg-light p-2 rounded border" style="margin-top: 15px;">
+            <div ng-if="pendingWizardSettings.searchEndpointId != null && pendingWizardSettings.searchEngine === 'searchapi'" class="bg-light p-2 rounded border" style="margin-top: 15px;">
               <p class="help-block form-text">
                 <strong>Endpoint:</strong> <code>{{ pendingWizardSettings.searchUrl }}</code>
                 <span class="label label-default">{{ pendingWizardSettings.apiMethod }}</span>
@@ -490,7 +490,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
         <p class="help-block form-text">Start out tuning a couple important search queries:</p>
 
         <!-- Query Pattern for Search API -->
-        <div ng-if="pendingWizardSettings.searchEngine === 'searchapi'" class="well well-sm bg-light p-2 rounded border" style="margin-bottom: 15px;">
+        <div ng-if="pendingWizardSettings.searchEngine === 'searchapi'" class="bg-light p-2 rounded border" style="margin-bottom: 15px;">
           <label class="control-label col-form-label">Query Pattern</label>
           <p class="help-block form-text">
             <strong>Endpoint:</strong> <code>{{ pendingWizardSettings.searchUrl }}</code>
