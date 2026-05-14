@@ -5,7 +5,7 @@
 <div class="modal-body">
   <p>There are a number of formats for exporting data from Quepid.</p>
 
-  <div class="form-group mb-3">
+  <div class="mb-3">
     <input type="radio" id="information_need" name="exportSelection" value="information_need" ng-model="ctrl.options.which">
     <label for="information_need">Information Need</label>
     <span class="form-text">
@@ -13,7 +13,7 @@
     </span>
   </div>
   </hr>
-  <div class="form-group mb-3">
+  <div class="mb-3">
     <input type="radio" id="general" name="exportSelection" value="general" ng-model="ctrl.options.which">
     <label for="general">General</label>
     <span class="form-text">
@@ -21,7 +21,7 @@
     </span>
   </div>
 
-  <div class="form-group mb-3">
+  <div class="mb-3">
     <input type="radio" id="detailed" name="exportSelection" value="detailed" ng-model="ctrl.options.which">
     <label for="detailed" class="disabled">Detailed</label>
     <p ng-if="ctrl.options.which==='detailed' && !ctrl.supportsDetailedExport" class='bg-warning text-warning padded-text'>
@@ -33,7 +33,7 @@
     </span>
   </div>
 
-  <div class="form-group mb-3">
+  <div class="mb-3">
     <input type="radio" id="snapshot" name="exportSelection" value="snapshot" ng-model="ctrl.options.which">
     <label for="snapshot">Snapshot</label>
     <span class="form-text">
@@ -56,7 +56,7 @@
     </div>
   </div>
   <hr/>
-  <div class="form-group mb-3">
+  <div class="mb-3">
     <input type="radio" id="basic" name="exportSelection" value="basic" ng-model="ctrl.options.which">
     <label for="basic">Basic</label>
     <span class="form-text">
@@ -84,14 +84,14 @@
     </span>
   </div>
   <hr/>
-  <div class="form-group mb-3">
+  <div class="mb-3">
     <input type="radio" id="rre" name="exportSelection" value="rre" ng-model="ctrl.options.which">
     <label for="rre">Rated Ranking Evaluator / RankQuest</label>
     <span class="form-text">
       Using <a href="https://github.com/SeaseLtd/rated-ranking-evaluator" target="_blank">Rated Ranking Evaluator</a> or <a href="https://rankquest.jillesvangurp.com/" target="_blank">RankQuest</a>?  Use the RRE format to export the ratings from Quepid to import into those tools.
     </span>
   </div>
-  <div class="form-group mb-3">
+  <div class="mb-3">
     <input type="radio" id="ltr" name="exportSelection" value="ltr" ng-model="ctrl.options.which">
     <label for="ltr">Learning to Rank</label>
     <span class="form-text">
@@ -99,7 +99,7 @@
     </span>
   </div>
   <hr/>
-  <div class="form-group mb-3">
+  <div class="mb-3">
     <label for="ltr">Quepid API</label>
     <span class="form-text">
       Quepid <a ng-href="api/docs" target="_blank">has an API</a> that you can export data in the JSON format via.  Append the parameter <code>?shallow=true</code> to return a smaller dataset.
@@ -119,7 +119,7 @@
      from API.
   </div>  
   <hr/>
-  <div class="form-group mb-3">
+  <div class="mb-3">
     <input type="radio" id="rre" name="exportSelection" value="quepid" ng-model="ctrl.options.which">
     <label for="quepid">Quepid</label>
     <span class="form-text">

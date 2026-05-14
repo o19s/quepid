@@ -16,7 +16,7 @@
         <p>Give an informative name to the problem you're solving.</p>
 
         <form class="form-inline">
-          <div class="form-group mb-3">
+          <div class="mb-3">
             <label>New Case Name:</label>
             <input type="text" ng-model="pendingWizardSettings.caseName" style='width: 250px' />
           </div>
@@ -173,7 +173,7 @@ curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings
           </div>
 
           <form class="">
-            <div ng-if="pendingWizardSettings.searchEngine !== 'static'" class="form-group mb-3" style="width: 100%">
+            <div ng-if="pendingWizardSettings.searchEngine !== 'static'" class="mb-3" style="width: 100%">
               <div class="row">
                 <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
                 <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="float-end text-end"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
@@ -245,7 +245,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </p>
             <div quepid-collapse="!isSolrCollapsed">
               <div class="bg-light p-2 rounded border">
-                <div class="form-group mb-3 clearfix row">
+                <div class="mb-3 clearfix row">
                   <label class="col-sm-3 control-label col-form-label">API Method</label>
                   <div class="col-sm-9">
                     <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
@@ -289,7 +289,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </p>
             <div quepid-collapse="!isHeaderConfigCollapsed">
               <div class="bg-light p-2 rounded border">
-                <div class="form-group mb-3 clearfix row">
+                <div class="mb-3 clearfix row">
                   <label class="col-sm-3 control-label col-form-label">Proxy Requests</label>
                   <div class="col-sm-9">
                     <div class="checkbox form-check">
@@ -315,7 +315,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
             </span>
 
-            <div ng-if="pendingWizardSettings.searchEngine !== 'searchapi'" class="form-group mb-3" style="width: 100%">
+            <div ng-if="pendingWizardSettings.searchEngine !== 'searchapi'" class="mb-3" style="width: 100%">
               <div class="clearfix"></div>
 
               <div class="row" style="margin-top: 50px;">
@@ -437,7 +437,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
       <div>
 
         <form class="">
-          <div class="form-group mb-3 clearfix row">
+          <div class="mb-3 clearfix row">
             <label class="col-sm-3 control-label col-form-label">Title Field</label>
             <div class="col-sm-9">
               <input type="text" class="form-control" ng-model="pendingWizardSettings.titleField" ng-change="updateDisplayFields('title', pendingWizardSettings.titleField)" quepid-typeahead="searchFields" quepid-typeahead-on-select="updateDisplayFields('title', $item)" placeholder="Begin typing to show suggestions">
@@ -446,7 +446,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
           </div>
 
-          <div class="form-group mb-3 clearfix row">
+          <div class="mb-3 clearfix row">
             <label class="col-sm-3 control-label col-form-label">ID Field</label>
             <div class="col-sm-9">
               <input type="text" class="form-control" ng-model="pendingWizardSettings.idField" ng-change="updateDisplayFields('id', pendingWizardSettings.idField)" quepid-typeahead="idFields" quepid-typeahead-on-select="updateDisplayFields('id', $item)" placeholder="Begin typing to show suggestions">
@@ -455,7 +455,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
           </div>
 
-          <div class="form-group mb-3 clearfix row">
+          <div class="mb-3 clearfix row">
             <label class="col-sm-3 control-label col-form-label">Additional Display Fields</label>
             <div class="col-sm-9">
               <tags-input ng-model="pendingWizardSettings.additionalFields" placeholder="Add a field" add-on-enter="true" add-on-space="true" add-on-paste="true" paste-split-pattern="[,\s]" min-length="1">
@@ -465,7 +465,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
           </div>
 
-          <div class="form-group mb-3">
+          <div class="mb-3">
             <button class="btn btn-primary float-end continue" ng-click="validateFieldSpec()" ng-disabled="validating">
               <span ng-hide="validating">Continue</span>
               <span ng-show="validating">Validating...</span>

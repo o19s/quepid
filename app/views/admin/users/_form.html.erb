@@ -59,13 +59,13 @@
           You can either set the user's password in plain text, or, if you know their encrypted password provide it.
         </p>
         
-        <div class="form-group">
-          <%= f.label :password, class: 'control-label' %>
+        <div class="mb-3">
+          <%= f.label :password, class: 'form-label' %>
           <%= f.password_field :password, class: 'form-control form-control-lg', placeholder: 'New Password' %>
         </div>
-      
-        <div class="form-group">
-          <%= f.label :password_confirmation, class: 'control-label' %>
+
+        <div class="mb-3">
+          <%= f.label :password_confirmation, class: 'form-label' %>
           <%= f.password_field :password_confirmation, class: 'form-control form-control-lg', placeholder: 'Confirm New Password' %>
         </div>
         
@@ -73,8 +73,8 @@
         
         OR
         
-        <div class="form-group">
-          <%= label_tag :password_encrypted, 'Encrypted Password', class: 'col-sm-2 control-label' %>
+        <div class="row mb-3">
+          <%= label_tag :password_encrypted, 'Encrypted Password', class: 'col-sm-2 col-form-label' %>
           <div class="col-sm-10">
             <%= text_field_tag :password_encrypted, nil, class: "form-control" %>
           </div>
@@ -111,14 +111,13 @@
           </div>
         <% end %>
     
-        <div class="form-group">
-          <%= f.label :password, class: 'control-label' %>
+        <div class="mb-3">
+          <%= f.label :password, class: 'form-label' %>
           <%= f.password_field :password, class: 'form-control form-control-lg', placeholder: 'New Password' %>
-    
         </div>
-    
-        <div class="form-group">
-          <%= f.label :password_confirmation, class: 'control-label' %>
+
+        <div class="mb-3">
+          <%= f.label :password_confirmation, class: 'form-label' %>
           <%= f.password_field :password_confirmation, class: 'form-control form-control-lg', placeholder: 'Confirm New Password' %>
         </div>
         
@@ -126,15 +125,15 @@
         
         OR
         
-        <div class="form-group">
-          <%= label_tag :password_encrypted, 'Encrypted Password', class: 'col-sm-2 control-label' %>
+        <div class="row mb-3">
+          <%= label_tag :password_encrypted, 'Encrypted Password', class: 'col-sm-2 col-form-label' %>
           <div class="col-sm-10">
             <%= text_field_tag :password_encrypted, nil, class: "form-control" %>
     
           </div>
         </div>
     
-        <div class="form-group">
+        <div class="mb-3">
           <button type="submit" class="btn btn-primary btn-lg">Update password</button>
         </div>
       <% end %>
