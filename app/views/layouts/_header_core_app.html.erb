@@ -1,4 +1,4 @@
-<header id="header" class="navbar-inverse navbar-secondary clearfix">
+<header id="header" class="navbar-secondary clearfix">
   <div class="container container-home">
     <div class="navbar-header">
       <%= link_to root_path, class: "navbar-brand", target: "_self" do %>
@@ -26,7 +26,7 @@
             </li>
             
             <li class="actions">
-              <a href="cases" class="btn btn-default btn-outline-secondary btn-block w-100" target="_self">
+              <a href="cases" class="btn btn-default btn-outline-secondary w-100" target="_self">
                 View all cases
                 <small class="text-muted">
                   ({{ headerScope.casesCount }} active)
@@ -55,7 +55,7 @@
             </li>
 
             <li class="actions">
-              <a href="books" class="btn btn-default btn-outline-secondary btn-block w-100" target="_self">
+              <a href="books" class="btn btn-default btn-outline-secondary w-100" target="_self">
                 View all books
                 <small class="text-muted">
                   ({{ headerScope.booksCount }} active)
@@ -63,7 +63,7 @@
               </a>
 
               <a
-                class="btn btn-success btn-block w-100"
+                class="btn btn-success w-100"
                 ng-href="{{headerScope.createNewBookLink()}}"
                 target="_self"
               >

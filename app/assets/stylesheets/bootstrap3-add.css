@@ -38,7 +38,7 @@ a, button, .button {
   padding-top: 20px;
 }
 
-.dropdown-menu .actions .btn-block {
+.dropdown-menu .actions .btn {
   margin-bottom: 10px;
   padding: 6px 12px;
 }
@@ -134,17 +134,17 @@ header .navbar-nav > li > a {
 }
 
 
-.navbar-inverse .navbar-nav > li > a, .navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:focus, .navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav > li > a:focus {
+.navbar-secondary .navbar-nav > li > a, .navbar-secondary .navbar-nav > .active > a, .navbar-secondary .navbar-nav > .active > a:focus, .navbar-secondary .navbar-nav > li > a:hover, .navbar-secondary .navbar-nav > li > a:focus {
   background: none;
 }
-.navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav > .active > a:hover {
+.navbar-secondary .navbar-nav > li > a:hover, .navbar-secondary .navbar-nav > .active > a:hover {
 	background: rgba(0,0,0,0.25);
 }
 
-.navbar-inverse .navbar-nav > li > a {
+.navbar-secondary .navbar-nav > li > a {
   color: #fff;
 }
-.navbar-nav li > a:hover, .navbar-secondary .navbar-nav > .open > a, .navbar-inverse .navbar-nav > a:hover, .navbar-inverse .navbar-nav > .open > a:focus {
+.navbar-nav li > a:hover, .navbar-secondary .navbar-nav > .open > a, .navbar-secondary .navbar-nav > a:hover, .navbar-secondary .navbar-nav > .open > a:focus {
 	background: #258;
 }
 

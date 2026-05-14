@@ -385,7 +385,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             <div ng-if="pendingWizardSettings.searchEndpointId != null && pendingWizardSettings.searchEngine === 'searchapi'" class="bg-light p-2 rounded border" style="margin-top: 15px;">
               <p class="help-block form-text">
                 <strong>Endpoint:</strong> <code>{{ pendingWizardSettings.searchUrl }}</code>
-                <span class="label label-default">{{ pendingWizardSettings.apiMethod }}</span>
+                <span class="badge bg-secondary">{{ pendingWizardSettings.apiMethod }}</span>
               </p>
 
               <label class="control-label col-form-label">Test Query</label>
@@ -494,7 +494,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
           <label class="control-label col-form-label">Query Pattern</label>
           <p class="help-block form-text">
             <strong>Endpoint:</strong> <code>{{ pendingWizardSettings.searchUrl }}</code>
-            <span class="label label-default">{{ pendingWizardSettings.apiMethod }}</span>
+            <span class="badge bg-secondary">{{ pendingWizardSettings.apiMethod }}</span>
           </p>
           <p class="help-block form-text">
             Modify your query structure to include <code>#$query##</code> where the search text should be substituted.
