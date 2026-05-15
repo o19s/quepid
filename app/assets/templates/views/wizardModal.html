@@ -245,7 +245,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </p>
             <div quepid-collapse="!isSolrCollapsed">
               <div class="bg-light p-2 rounded border">
-                <div class="mb-3 clearfix row">
+                <div class="mb-3 row">
                   <label class="col-sm-3 control-label col-form-label">API Method</label>
                   <div class="col-sm-9">
                     <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
@@ -289,7 +289,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </p>
             <div quepid-collapse="!isHeaderConfigCollapsed">
               <div class="bg-light p-2 rounded border">
-                <div class="mb-3 clearfix row">
+                <div class="mb-3 row">
                   <label class="col-sm-3 control-label col-form-label">Proxy Requests</label>
                   <div class="col-sm-9">
                     <div class="form-check">
@@ -315,8 +315,6 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </span>
 
             <div ng-if="pendingWizardSettings.searchEngine !== 'searchapi'" class="mb-3" style="width: 100%">
-              <div class="clearfix"></div>
-
               <div class="row" style="margin-top: 50px;">
                 <div class="float-end text-end">
 
@@ -436,7 +434,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
       <div>
 
         <form class="">
-          <div class="mb-3 clearfix row">
+          <div class="mb-3 row">
             <label class="col-sm-3 control-label col-form-label">Title Field</label>
             <div class="col-sm-9">
               <input type="text" class="form-control" ng-model="pendingWizardSettings.titleField" ng-change="updateDisplayFields('title', pendingWizardSettings.titleField)" quepid-typeahead="searchFields" quepid-typeahead-on-select="updateDisplayFields('title', $item)" placeholder="Begin typing to show suggestions">
@@ -445,7 +443,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
           </div>
 
-          <div class="mb-3 clearfix row">
+          <div class="mb-3 row">
             <label class="col-sm-3 control-label col-form-label">ID Field</label>
             <div class="col-sm-9">
               <input type="text" class="form-control" ng-model="pendingWizardSettings.idField" ng-change="updateDisplayFields('id', pendingWizardSettings.idField)" quepid-typeahead="idFields" quepid-typeahead-on-select="updateDisplayFields('id', $item)" placeholder="Begin typing to show suggestions">
@@ -454,7 +452,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
           </div>
 
-          <div class="mb-3 clearfix row">
+          <div class="mb-3 row">
             <label class="col-sm-3 control-label col-form-label">Additional Display Fields</label>
             <div class="col-sm-9">
               <tags-input ng-model="pendingWizardSettings.additionalFields" placeholder="Add a field" add-on-enter="true" add-on-space="true" add-on-paste="true" paste-split-pattern="[,\s]" min-length="1">
