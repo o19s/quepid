@@ -75,10 +75,10 @@ class LlmService
   end
 
   def get_llm_response user_prompt, system_prompt
-    context = build_ruby_llm_context
+    context = LlmContextBuilder.build(@llm_key, @options)
     chat = context.chat(
       model:               @options[:llm_model],
-      provider:            provider_slug,
+      provider:            LlmContextBuilder.provider_slug(@options),
       assume_model_exists: true
     )
     chat.with_instructions(system_prompt, replace: true)
@@ -96,38 +96,6 @@ class LlmService
   end
 
   private
-
-  def build_ruby_llm_context
-    provider = @options[:llm_provider].to_s
-    base_url = @options[:llm_service_url].to_s.chomp('/')
-
-    RubyLLM.context do |config|
-      config.request_timeout = @options[:llm_timeout].to_i
-      case provider
-      when 'anthropic', 'azure_ai_foundry_anthropic'
-        config.anthropic_api_key = @llm_key
-        config.anthropic_api_base = base_url
-      when 'azure_openai', 'azure_ai_foundry', 'azure_ai_foundry_serverless'
-        config.azure_api_key = @llm_key
-        config.azure_api_base = base_url
-      when 'ollama'
-        config.ollama_api_base = "#{base_url}/v1"
-      else
-        # 'openai', 'google_gemini' (OpenAI-compatible endpoint), or nil/empty
-        config.openai_api_key = @llm_key
-        config.openai_api_base = "#{base_url}/v1"
-      end
-    end
-  end
-
-  def provider_slug
-    case @options[:llm_provider].to_s
-    when 'anthropic', 'azure_ai_foundry_anthropic'                          then :anthropic
-    when 'ollama'                                                           then :ollama
-    when 'azure_openai', 'azure_ai_foundry', 'azure_ai_foundry_serverless'  then :azure
-    else                                                                         :openai
-    end
-  end
 
   def extract_text_and_image user_prompt
     if user_prompt.is_a?(Array)

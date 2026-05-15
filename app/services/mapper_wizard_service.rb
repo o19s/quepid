@@ -5,11 +5,14 @@ require 'v8_mapper_executor'
 class MapperWizardService
   class WizardError < StandardError; end
 
-  def initialize api_key: nil, llm_provider: nil, llm_model: nil, llm_key: nil
+  def initialize api_key: nil, llm_provider: nil, llm_model: nil, llm_key: nil,
+                 llm_service_url: nil, llm_timeout: nil
     # Support both api_key: (legacy) and llm_key: naming conventions.
     @api_key = llm_key.presence || api_key
     @llm_provider = llm_provider
     @llm_model = llm_model.presence || 'gpt-4o'
+    @llm_service_url = llm_service_url
+    @llm_timeout = llm_timeout
     @v8_executor = V8MapperExecutor.new(Rails.root.join('lib/mapper_code_logic.js'))
   end
 
@@ -174,22 +177,17 @@ class MapperWizardService
   end
 
   def build_ruby_llm_chat
-    context = RubyLLM.context do |config|
-      case @llm_provider.to_s
-      when 'anthropic'
-        config.anthropic_api_key = @api_key
-      when 'ollama'
-        # Ollama does not require an API key by default.
-      else
-        config.openai_api_key = @api_key
-      end
-    end
-    provider_slug = case @llm_provider.to_s
-                    when 'anthropic' then :anthropic
-                    when 'ollama'    then :ollama
-                    else                  :openai
-                    end
-    context.chat(model: @llm_model, provider: provider_slug, assume_model_exists: true)
+    opts = {
+      llm_provider:    @llm_provider,
+      llm_service_url: @llm_service_url,
+      llm_timeout:     @llm_timeout,
+    }
+    context = LlmContextBuilder.build(@api_key, opts)
+    context.chat(
+      model:               @llm_model,
+      provider:            LlmContextBuilder.provider_slug(opts),
+      assume_model_exists: true
+    )
   end
 
   def ollama_provider?

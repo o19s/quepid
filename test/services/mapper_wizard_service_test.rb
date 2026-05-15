@@ -267,6 +267,44 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     assert_equal 'HTML content required', result[:error]
   end
 
+  test 'generate_mappers parses both functions from an LLM response' do
+    llm_content = <<~MARKDOWN
+      Here are the mappers:
+
+      ```javascript
+      numberOfResultsMapper = function(data) {
+        var match = data.match(/(\\d+)\\s+results/i);
+        return match ? parseInt(match[1]) : 0;
+      }
+      ```
+
+      ```javascript
+      docsMapper = function(data) {
+        return [{ id: '1', title: 'Hello' }];
+      }
+      ```
+    MARKDOWN
+
+    stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+      .with(headers: { 'Authorization' => 'Bearer sk-test' })
+      .to_return(
+        status:  200,
+        body:    {
+          choices: [ { message: { role: 'assistant', content: llm_content } } ],
+        }.to_json,
+        headers: { 'Content-Type' => 'application/json' }
+      )
+
+    service = MapperWizardService.new(api_key: 'sk-test')
+    result = service.generate_mappers('<html>About 42 results</html>')
+
+    assert result[:success], "Expected success, got: #{result[:error]}"
+    assert_includes result[:number_of_results_mapper], 'numberOfResultsMapper'
+    assert_includes result[:number_of_results_mapper], 'parseInt(match[1])'
+    assert_includes result[:docs_mapper], 'docsMapper'
+    assert_includes result[:docs_mapper], "title: 'Hello'"
+  end
+
   test 'refine_mapper requires API key' do
     service = MapperWizardService.new
     result = service.refine_mapper(
