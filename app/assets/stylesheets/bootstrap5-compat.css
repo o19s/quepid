@@ -993,3 +993,85 @@ header .dropdown-toggle .bi {
 	border-bottom-left-radius: 3px;
 	border-bottom-right-radius: 3px;
 }
+
+/*
+ * Dev panel — History tab scroll container (moved from bootstrap3-add.css).
+ * The History tab in `devQueryParams.html` wraps its content in a BS
+ * `.container`; this lets it fill the panel height and scroll.
+ */
+#dev-settings .settings-tab > .container {
+	height: 100%;
+	overflow-y: auto;
+}
+
+/*
+ * Annotation dropdown chrome (moved from bootstrap3-add.css).
+ * Markup: `app/assets/javascripts/components/annotation/annotation.html`
+ * — `<li class="annotation"><div class="dropdown"><a class="dropdown-toggle">…</a>
+ * <ul class="dropdown-menu"><li><a class="dropdown-item">…</a></li>…</ul></div></li>`.
+ */
+.annotation .dropdown > a.dropdown-toggle:hover {
+	color: #888;
+}
+
+.annotation > .dropdown > .dropdown-menu > li {
+	border-bottom: 1px solid #AAA !important;
+}
+
+.annotation .dropdown-menu > li > a.text-danger {
+	color: #a94442;
+}
+
+/*
+ * Modal body / title — Quepid-specific tweaks (moved from bootstrap3-add.css).
+ * `.modal-body .bi` dims and sizes icons inside modal bodies; `.modal-title
+ * .modal-case` lightens the case-name span inside modal headers (see
+ * `delete_case_options/_modal.html`, `clone_case/_modal.html`, etc.).
+ */
+.modal-body .bi {
+	font-size: 16px;
+	color: #aaa;
+}
+
+.modal-title .modal-case {
+	font-weight: 200;
+	color: #888;
+}
+
+/*
+ * Sub-results panel — toolbar position, row spacing, and rating box chrome
+ * (moved from bootstrap3-add.css). Markup: `searchResults.html` wraps the
+ * expanded per-query area in `.sub-results.container`; the toolbar
+ * (`btn-toolbar`) is positioned absolutely top-right of that panel, and
+ * each `<search-result>` (`searchResult.html`) renders a top-level
+ * `<div class="row">` separated by a 1px top border.
+ *
+ * The dead `.sub-results .search-result .container { padding: 0 }` rule
+ * was dropped here — `.container` does not appear in `searchResult.html`.
+ */
+.sub-results .btn-toolbar {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+}
+
+.sub-results .btn-toolbar .active {
+	background: #2872bc;
+	color: #FFF;
+}
+
+.sub-results .row {
+	padding: 5px 0;
+}
+
+.sub-results .search-result .row {
+	border-top: 1px solid #CCC;
+	position: relative;
+}
+
+.single-rating .btn {
+	width: 60px;
+	box-shadow: inset 0 0 25px rgba(0,0,0,0.25);
+	color: #FFF;
+	text-shadow: 0 0 6px rgba(0,0,0,0.25);
+}
