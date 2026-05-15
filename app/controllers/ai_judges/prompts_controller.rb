@@ -10,7 +10,6 @@ module AiJudges
 
     def edit
       @ai_judge = User.find(params[:ai_judge_id])
-
       @supports_vision = RubyLLM.models.find(@ai_judge.judge_options[:llm_model]).supports_vision?
 
       @query_doc_pair = if @book
@@ -29,6 +28,8 @@ module AiJudges
 
     def update
       @ai_judge = User.find(params[:ai_judge_id])
+      @supports_vision = RubyLLM.models.find(@ai_judge.judge_options[:llm_model]).supports_vision?
+
       @ai_judge.update(ai_judge_params)
 
       @query_doc_pair = QueryDocPair.new(query_doc_pair_params)
@@ -54,7 +55,7 @@ module AiJudges
 
     # Only allow a list of trusted parameters through.
     def ai_judge_params
-      params.expect(user: [ :llm_key, :system_prompt ])
+      params.expect(user: [ :system_prompt ])
     end
 
     def query_doc_pair_params

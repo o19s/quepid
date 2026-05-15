@@ -5,8 +5,8 @@ require 'v8_mapper_executor'
 class MapperWizardService
   class WizardError < StandardError; end
 
-  def initialize api_key: nil, llm_provider: nil, llm_model: nil, llm_key: nil,
-                 llm_service_url: nil, llm_timeout: nil
+  def initialize(api_key: nil, llm_provider: nil, llm_model: nil, llm_key: nil,
+                 llm_service_url: nil, llm_timeout: nil)
     # Support both api_key: (legacy) and llm_key: naming conventions.
     @api_key = llm_key.presence || api_key
     @llm_provider = llm_provider
