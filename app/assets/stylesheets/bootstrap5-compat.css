@@ -1,24 +1,10 @@
 /*
- * Bootstrap 5 component CSS, scoped to the Angular UI's core.css bundle.
+ * Quepid overrides for the Angular core bundle, layered on top of the
+ * full BS5 stylesheet that build_css.js concatenates earlier. Each
+ * component block below is just the px / size tuning Quepid wants on
+ * top of BS5; the upstream rules supply structure and behaviour.
  *
- * Why this file exists:
- *   The Angular case UI (`core.html.erb`) loads npm Bootstrap 5 first, then
- *   Quepid layers. Legacy templates and vendor CSS still mix older patterns
- *   (e.g. `.fade.in` / `.collapse.in`, bare `<li>` tab rows) with BS5
- *   components, so popovers, dropdowns, modals, and accordions need explicit
- *   rules and px-tuned `--bs-*` overrides to look correct next to Quepid
- *   chrome.
- *
- *   This file ports the relevant BS5 component rules from
- *   node_modules/bootstrap/dist/css/bootstrap.css, prefixed by a small
- *   :root shim that defines just the parent custom properties they
- *   reference. Using :root keeps variable defaults predictable for this
- *   bundle without affecting the non-Angular `application.css` stack.
- *
- *   Components covered: popover, tooltip, accordion (+ scoped .collapse
- *   helpers under .accordion-collapse), tabs, dropdown, typeahead
- *   (in-app `quepid-typeahead` directive), and modal (in-app `$quepidModal`
- *   shim service).
+ * Parallel brand skin for the non-Angular bundle: bootstrap5-add.css.
  */
 
 :root {
@@ -36,285 +22,25 @@
   --bs-primary-bg-subtle: #cfe2ff;
 }
 
-/*
- * NOTE: BS5's .fade / .fade:not(.show) rules are intentionally NOT ported
- * here. They would clobber BS3's `.fade.in` opacity semantics used by BS3
- * modals/dropdowns. Instead the quepid-popover and quepid-tooltip
- * directives set `animation: false` in their BS5 config so the .fade class
- * is never added in the first place.
- */
-
+/* Tooltip + popover: quepidPopover / quepidTooltip pass `animation: false`
+ * so `.fade` is never added — avoids invisible-but-present popover bugs
+ * from cascade conflicts on opacity (CLAUDE.md trap #3).
+ *
+ * Popover sized for explain / ratings JSON (max-width 800px vs BS5's 276px,
+ * max-height 600px). Tooltip min-width 100px keeps single-word tooltips
+ * from rendering as a sliver. Other px values restate BS5 defaults at
+ * a 16px root for explicitness. */
 .tooltip {
-  --bs-tooltip-zindex: 1080;
-  --bs-tooltip-max-width: 200px;
-  --bs-tooltip-padding-x: 0.5rem;
-  --bs-tooltip-padding-y: 0.25rem;
-  --bs-tooltip-margin: ;
-  --bs-tooltip-font-size: 0.875rem;
-  --bs-tooltip-color: var(--bs-body-bg);
-  --bs-tooltip-bg: var(--bs-emphasis-color);
-  --bs-tooltip-border-radius: var(--bs-border-radius);
-  --bs-tooltip-opacity: 0.9;
-  --bs-tooltip-arrow-width: 0.8rem;
-  --bs-tooltip-arrow-height: 0.4rem;
-  z-index: var(--bs-tooltip-zindex);
-  display: block;
-  margin: var(--bs-tooltip-margin);
-  font-family: var(--bs-font-sans-serif);
-  font-style: normal;
-  font-weight: 400;
-  line-height: 1.5;
-  text-align: left;
-  text-align: start;
-  text-decoration: none;
-  text-shadow: none;
-  text-transform: none;
-  letter-spacing: normal;
-  word-break: normal;
-  white-space: normal;
-  word-spacing: normal;
-  line-break: auto;
-  font-size: var(--bs-tooltip-font-size);
-  word-wrap: break-word;
-  opacity: 0;
+  --bs-tooltip-font-size: 14px;
+  --bs-tooltip-padding-x: 8px;
+  --bs-tooltip-padding-y: 4px;
+  --bs-tooltip-arrow-width: 12px;
+  --bs-tooltip-arrow-height: 6px;
 }
-.tooltip.show {
-  opacity: var(--bs-tooltip-opacity);
-}
-.tooltip .tooltip-arrow {
-  display: block;
-  width: var(--bs-tooltip-arrow-width);
-  height: var(--bs-tooltip-arrow-height);
-}
-.tooltip .tooltip-arrow::before {
-  position: absolute;
-  content: "";
-  border-color: transparent;
-  border-style: solid;
-}
-
-.bs-tooltip-top .tooltip-arrow, .bs-tooltip-auto[data-popper-placement^=top] .tooltip-arrow {
-  bottom: calc(-1 * var(--bs-tooltip-arrow-height));
-}
-.bs-tooltip-top .tooltip-arrow::before, .bs-tooltip-auto[data-popper-placement^=top] .tooltip-arrow::before {
-  top: -1px;
-  border-width: var(--bs-tooltip-arrow-height) calc(var(--bs-tooltip-arrow-width) * 0.5) 0;
-  border-top-color: var(--bs-tooltip-bg);
-}
-
-/* rtl:begin:ignore */
-.bs-tooltip-end .tooltip-arrow, .bs-tooltip-auto[data-popper-placement^=right] .tooltip-arrow {
-  left: calc(-1 * var(--bs-tooltip-arrow-height));
-  width: var(--bs-tooltip-arrow-height);
-  height: var(--bs-tooltip-arrow-width);
-}
-.bs-tooltip-end .tooltip-arrow::before, .bs-tooltip-auto[data-popper-placement^=right] .tooltip-arrow::before {
-  right: -1px;
-  border-width: calc(var(--bs-tooltip-arrow-width) * 0.5) var(--bs-tooltip-arrow-height) calc(var(--bs-tooltip-arrow-width) * 0.5) 0;
-  border-right-color: var(--bs-tooltip-bg);
-}
-
-/* rtl:end:ignore */
-.bs-tooltip-bottom .tooltip-arrow, .bs-tooltip-auto[data-popper-placement^=bottom] .tooltip-arrow {
-  top: calc(-1 * var(--bs-tooltip-arrow-height));
-}
-.bs-tooltip-bottom .tooltip-arrow::before, .bs-tooltip-auto[data-popper-placement^=bottom] .tooltip-arrow::before {
-  bottom: -1px;
-  border-width: 0 calc(var(--bs-tooltip-arrow-width) * 0.5) var(--bs-tooltip-arrow-height);
-  border-bottom-color: var(--bs-tooltip-bg);
-}
-
-/* rtl:begin:ignore */
-.bs-tooltip-start .tooltip-arrow, .bs-tooltip-auto[data-popper-placement^=left] .tooltip-arrow {
-  right: calc(-1 * var(--bs-tooltip-arrow-height));
-  width: var(--bs-tooltip-arrow-height);
-  height: var(--bs-tooltip-arrow-width);
-}
-.bs-tooltip-start .tooltip-arrow::before, .bs-tooltip-auto[data-popper-placement^=left] .tooltip-arrow::before {
-  left: -1px;
-  border-width: calc(var(--bs-tooltip-arrow-width) * 0.5) 0 calc(var(--bs-tooltip-arrow-width) * 0.5) var(--bs-tooltip-arrow-height);
-  border-left-color: var(--bs-tooltip-bg);
-}
-
-/* rtl:end:ignore */
 .tooltip-inner {
-  max-width: var(--bs-tooltip-max-width);
-  padding: var(--bs-tooltip-padding-y) var(--bs-tooltip-padding-x);
-  color: var(--bs-tooltip-color);
-  text-align: center;
-  background-color: var(--bs-tooltip-bg);
-  border-radius: var(--bs-tooltip-border-radius);
+  min-width: 100px;
 }
 
-.popover {
-  --bs-popover-zindex: 1070;
-  --bs-popover-max-width: 276px;
-  --bs-popover-font-size: 0.875rem;
-  --bs-popover-bg: var(--bs-body-bg);
-  --bs-popover-border-width: var(--bs-border-width);
-  --bs-popover-border-color: var(--bs-border-color-translucent);
-  --bs-popover-border-radius: var(--bs-border-radius-lg);
-  --bs-popover-inner-border-radius: calc(var(--bs-border-radius-lg) - var(--bs-border-width));
-  --bs-popover-box-shadow: var(--bs-box-shadow);
-  --bs-popover-header-padding-x: 1rem;
-  --bs-popover-header-padding-y: 0.5rem;
-  --bs-popover-header-font-size: 1rem;
-  --bs-popover-header-color: inherit;
-  --bs-popover-header-bg: var(--bs-secondary-bg);
-  --bs-popover-body-padding-x: 1rem;
-  --bs-popover-body-padding-y: 1rem;
-  --bs-popover-body-color: var(--bs-body-color);
-  --bs-popover-arrow-width: 1rem;
-  --bs-popover-arrow-height: 0.5rem;
-  --bs-popover-arrow-border: var(--bs-popover-border-color);
-  z-index: var(--bs-popover-zindex);
-  display: block;
-  max-width: var(--bs-popover-max-width);
-  font-family: var(--bs-font-sans-serif);
-  font-style: normal;
-  font-weight: 400;
-  line-height: 1.5;
-  text-align: left;
-  text-align: start;
-  text-decoration: none;
-  text-shadow: none;
-  text-transform: none;
-  letter-spacing: normal;
-  word-break: normal;
-  white-space: normal;
-  word-spacing: normal;
-  line-break: auto;
-  font-size: var(--bs-popover-font-size);
-  word-wrap: break-word;
-  background-color: var(--bs-popover-bg);
-  background-clip: padding-box;
-  border: var(--bs-popover-border-width) solid var(--bs-popover-border-color);
-  border-radius: var(--bs-popover-border-radius);
-}
-.popover .popover-arrow {
-  display: block;
-  width: var(--bs-popover-arrow-width);
-  height: var(--bs-popover-arrow-height);
-}
-.popover .popover-arrow::before, .popover .popover-arrow::after {
-  position: absolute;
-  display: block;
-  content: "";
-  border-color: transparent;
-  border-style: solid;
-  border-width: 0;
-}
-
-.bs-popover-top > .popover-arrow, .bs-popover-auto[data-popper-placement^=top] > .popover-arrow {
-  bottom: calc(-1 * (var(--bs-popover-arrow-height)) - var(--bs-popover-border-width));
-}
-.bs-popover-top > .popover-arrow::before, .bs-popover-auto[data-popper-placement^=top] > .popover-arrow::before, .bs-popover-top > .popover-arrow::after, .bs-popover-auto[data-popper-placement^=top] > .popover-arrow::after {
-  border-width: var(--bs-popover-arrow-height) calc(var(--bs-popover-arrow-width) * 0.5) 0;
-}
-.bs-popover-top > .popover-arrow::before, .bs-popover-auto[data-popper-placement^=top] > .popover-arrow::before {
-  bottom: 0;
-  border-top-color: var(--bs-popover-arrow-border);
-}
-.bs-popover-top > .popover-arrow::after, .bs-popover-auto[data-popper-placement^=top] > .popover-arrow::after {
-  bottom: var(--bs-popover-border-width);
-  border-top-color: var(--bs-popover-bg);
-}
-
-/* rtl:begin:ignore */
-.bs-popover-end > .popover-arrow, .bs-popover-auto[data-popper-placement^=right] > .popover-arrow {
-  left: calc(-1 * (var(--bs-popover-arrow-height)) - var(--bs-popover-border-width));
-  width: var(--bs-popover-arrow-height);
-  height: var(--bs-popover-arrow-width);
-}
-.bs-popover-end > .popover-arrow::before, .bs-popover-auto[data-popper-placement^=right] > .popover-arrow::before, .bs-popover-end > .popover-arrow::after, .bs-popover-auto[data-popper-placement^=right] > .popover-arrow::after {
-  border-width: calc(var(--bs-popover-arrow-width) * 0.5) var(--bs-popover-arrow-height) calc(var(--bs-popover-arrow-width) * 0.5) 0;
-}
-.bs-popover-end > .popover-arrow::before, .bs-popover-auto[data-popper-placement^=right] > .popover-arrow::before {
-  left: 0;
-  border-right-color: var(--bs-popover-arrow-border);
-}
-.bs-popover-end > .popover-arrow::after, .bs-popover-auto[data-popper-placement^=right] > .popover-arrow::after {
-  left: var(--bs-popover-border-width);
-  border-right-color: var(--bs-popover-bg);
-}
-
-/* rtl:end:ignore */
-.bs-popover-bottom > .popover-arrow, .bs-popover-auto[data-popper-placement^=bottom] > .popover-arrow {
-  top: calc(-1 * (var(--bs-popover-arrow-height)) - var(--bs-popover-border-width));
-}
-.bs-popover-bottom > .popover-arrow::before, .bs-popover-auto[data-popper-placement^=bottom] > .popover-arrow::before, .bs-popover-bottom > .popover-arrow::after, .bs-popover-auto[data-popper-placement^=bottom] > .popover-arrow::after {
-  border-width: 0 calc(var(--bs-popover-arrow-width) * 0.5) var(--bs-popover-arrow-height);
-}
-.bs-popover-bottom > .popover-arrow::before, .bs-popover-auto[data-popper-placement^=bottom] > .popover-arrow::before {
-  top: 0;
-  border-bottom-color: var(--bs-popover-arrow-border);
-}
-.bs-popover-bottom > .popover-arrow::after, .bs-popover-auto[data-popper-placement^=bottom] > .popover-arrow::after {
-  top: var(--bs-popover-border-width);
-  border-bottom-color: var(--bs-popover-bg);
-}
-.bs-popover-bottom .popover-header::before, .bs-popover-auto[data-popper-placement^=bottom] .popover-header::before {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  display: block;
-  width: var(--bs-popover-arrow-width);
-  margin-left: calc(-0.5 * var(--bs-popover-arrow-width));
-  content: "";
-  border-bottom: var(--bs-popover-border-width) solid var(--bs-popover-header-bg);
-}
-
-/* rtl:begin:ignore */
-.bs-popover-start > .popover-arrow, .bs-popover-auto[data-popper-placement^=left] > .popover-arrow {
-  right: calc(-1 * (var(--bs-popover-arrow-height)) - var(--bs-popover-border-width));
-  width: var(--bs-popover-arrow-height);
-  height: var(--bs-popover-arrow-width);
-}
-.bs-popover-start > .popover-arrow::before, .bs-popover-auto[data-popper-placement^=left] > .popover-arrow::before, .bs-popover-start > .popover-arrow::after, .bs-popover-auto[data-popper-placement^=left] > .popover-arrow::after {
-  border-width: calc(var(--bs-popover-arrow-width) * 0.5) 0 calc(var(--bs-popover-arrow-width) * 0.5) var(--bs-popover-arrow-height);
-}
-.bs-popover-start > .popover-arrow::before, .bs-popover-auto[data-popper-placement^=left] > .popover-arrow::before {
-  right: 0;
-  border-left-color: var(--bs-popover-arrow-border);
-}
-.bs-popover-start > .popover-arrow::after, .bs-popover-auto[data-popper-placement^=left] > .popover-arrow::after {
-  right: var(--bs-popover-border-width);
-  border-left-color: var(--bs-popover-bg);
-}
-
-/* rtl:end:ignore */
-.popover-header {
-  padding: var(--bs-popover-header-padding-y) var(--bs-popover-header-padding-x);
-  margin-bottom: 0;
-  font-size: var(--bs-popover-header-font-size);
-  color: var(--bs-popover-header-color);
-  background-color: var(--bs-popover-header-bg);
-  border-bottom: var(--bs-popover-border-width) solid var(--bs-popover-border-color);
-  border-top-left-radius: var(--bs-popover-inner-border-radius);
-  border-top-right-radius: var(--bs-popover-inner-border-radius);
-}
-.popover-header:empty {
-  display: none;
-}
-
-.popover-body {
-  padding: var(--bs-popover-body-padding-y) var(--bs-popover-body-padding-x);
-  color: var(--bs-popover-body-color);
-}
-
-/*
- * Quepid sizing overrides for the BS3-styled Angular UI.
- *
- * The Angular layout sets `font-size: 62.5%` on <html> (1rem = 10px), a
- * BS3-era convenience hack. BS5 was designed for the standard 16px root
- * and expresses everything in rem, so its defaults render at ~62.5% of the
- * intended size here (popover font 0.875rem → 8.75px instead of 14px).
- *
- * The fix is to override the BS5 popover/tooltip variables with explicit
- * px values, plus reset the `padding` BS3 leaks onto `.popover` (BS5 puts
- * padding on .popover-header / .popover-body, not on .popover itself, so
- * BS3's `.popover { padding: 1px }` wins by default).
- */
 .popover {
   --bs-popover-max-width: 800px;
   --bs-popover-font-size: 14px;
@@ -329,17 +55,6 @@
   --bs-popover-inner-border-radius: 7px;
   max-height: 600px;
   padding: 0;
-}
-
-.tooltip {
-  --bs-tooltip-font-size: 14px;
-  --bs-tooltip-padding-x: 8px;
-  --bs-tooltip-padding-y: 4px;
-  --bs-tooltip-arrow-width: 12px;
-  --bs-tooltip-arrow-height: 6px;
-}
-.tooltip-inner {
-  min-width: 100px;
 }
 
 /* Accordion: only live use is the wizard endpoint picker (wizardModal.html).
@@ -359,91 +74,7 @@
   font-size: 14px;
 }
 
-/*
- * Nav tabs (native BS5, replacing uib-tabset/uib-tab).
- *
- * Ported from node_modules/bootstrap/dist/css/bootstrap.css. We use
- * <button class="nav-link"> markup so BS3's `.nav-tabs > li > a` selectors
- * don't match — only the BS5 rules below paint the tabs. Pane visibility
- * (`.tab-content > .tab-pane { display:none }` + `.tab-content > .active
- * { display:block }`) is identical between BS3 and BS5, so no port needed
- * for that. We deliberately do NOT add `class="fade"` to .tab-pane: BS3's
- * `.fade { opacity:0 }` has no `.fade.show` counterpart in this bundle.
- */
-.nav {
-  --bs-nav-link-padding-x: 1rem;
-  --bs-nav-link-padding-y: 0.5rem;
-  --bs-nav-link-font-weight: ;
-  --bs-nav-link-color: var(--bs-link-color);
-  --bs-nav-link-hover-color: var(--bs-link-hover-color);
-  --bs-nav-link-disabled-color: var(--bs-secondary-color);
-  display: flex;
-  flex-wrap: wrap;
-  padding-left: 0;
-  margin-bottom: 0;
-  list-style: none;
-}
-
-.nav-link {
-  display: block;
-  padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);
-  font-size: var(--bs-nav-link-font-size);
-  font-weight: var(--bs-nav-link-font-weight);
-  color: var(--bs-nav-link-color);
-  text-decoration: none;
-  background: none;
-  border: 0;
-  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
-}
-@media (prefers-reduced-motion: reduce) {
-  .nav-link {
-    transition: none;
-  }
-}
-.nav-link:hover, .nav-link:focus {
-  color: var(--bs-nav-link-hover-color);
-}
-.nav-link:focus-visible {
-  outline: 0;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-}
-.nav-link.disabled, .nav-link:disabled {
-  color: var(--bs-nav-link-disabled-color);
-  pointer-events: none;
-  cursor: default;
-}
-
-.nav-tabs {
-  --bs-nav-tabs-border-width: var(--bs-border-width);
-  --bs-nav-tabs-border-color: var(--bs-border-color);
-  --bs-nav-tabs-border-radius: var(--bs-border-radius);
-  --bs-nav-tabs-link-hover-border-color: var(--bs-secondary-bg) var(--bs-secondary-bg) var(--bs-border-color);
-  --bs-nav-tabs-link-active-color: var(--bs-emphasis-color);
-  --bs-nav-tabs-link-active-bg: var(--bs-body-bg);
-  --bs-nav-tabs-link-active-border-color: var(--bs-border-color) var(--bs-border-color) var(--bs-body-bg);
-  border-bottom: var(--bs-nav-tabs-border-width) solid var(--bs-nav-tabs-border-color);
-}
-.nav-tabs .nav-link {
-  margin-bottom: calc(-1 * var(--bs-nav-tabs-border-width));
-  border: var(--bs-nav-tabs-border-width) solid transparent;
-  border-top-left-radius: var(--bs-nav-tabs-border-radius);
-  border-top-right-radius: var(--bs-nav-tabs-border-radius);
-}
-.nav-tabs .nav-link:hover, .nav-tabs .nav-link:focus {
-  isolation: isolate;
-  border-color: var(--bs-nav-tabs-link-hover-border-color);
-}
-.nav-tabs .nav-link.active,
-.nav-tabs .nav-item.show .nav-link {
-  color: var(--bs-nav-tabs-link-active-color);
-  background-color: var(--bs-nav-tabs-link-active-bg);
-  border-color: var(--bs-nav-tabs-link-active-border-color);
-}
-
-/*
- * Quepid sizing overrides — `font-size: 62.5%` on <html> shrinks BS5's
- * rem-based padding/sizes to ~62.5% of intent. Use px values.
- */
+/* Nav tabs (replaces uib-tabset). Tab strip at 14px (BS5 inherits 16px). */
 .nav {
   --bs-nav-link-padding-x: 16px;
   --bs-nav-link-padding-y: 8px;
@@ -475,32 +106,17 @@
   font-size: 12px;
 }
 
-/*
- * Suppress BS5's `::after` caret on toggles whose markup already carries
- * its own indicator. header_core_app (`<header class="navbar-secondary">`)
- * uses `<i class="bi bi-chevron-down">` and the annotation menu uses
- * `<i class="bi bi-list">` as the trigger glyph; without this, both would
- * render their icon *and* a BS5 triangle. Scoped to navbar-secondary
- * (rather than bare `header`) so a future plain BS5 dropdown placed in
- * some other `<header>` element keeps its native caret.
- */
+/* Header and annotation menus carry their own chevron glyph — suppress
+ * BS5's `::after` triangle so it doesn't double up. */
 header.navbar-secondary .dropdown-toggle::after,
 .annotation .dropdown-toggle::after {
   display: none;
 }
 
 /*
- * quepid-typeahead dropdown (kraaden/autocompleter, replacing uib-typeahead).
- *
- * kraaden appends `<div class="autocomplete">` to <body>. We assign an extra
- * className so we can target our instances without colliding with anything
- * else that might use the bare `.autocomplete` selector. The library ships
- * its own CSS (autocomplete.css) but we deliberately don't include it — the
- * defaults assume a 16px root, and the green hover colour is jarring against
- * Quepid's chrome. These rules cover the same surface in px.
- *
- * z-index sits above BS3/BS5 modals (1050) so the dropdown isn't clipped
- * when the typeahead lives inside a $quepidModal (e.g. wizardModal).
+ * quepid-typeahead dropdown (kraaden/autocompleter). We don't load the
+ * library's CSS — its green hover clashes with Quepid chrome. z-index
+ * 1080 keeps it above modals (1050) so it isn't clipped inside wizardModal.
  */
 .quepid-typeahead-dropdown {
   position: absolute;
@@ -535,64 +151,24 @@ header.navbar-secondary .dropdown-toggle::after,
   max-width: 600px;
 }
 
-/*
- * Wizard host (#wizard inside .modal-body) — reserve space for the
- * angular-wizard breadcrumb so it never visually escapes the modal.
- *
- * angular-wizard.css positions ul.steps-indicator with
- * `position: absolute; bottom: 0; height: 30px`. Its containing block
- * is .modal-body (BS5 default position: relative). When the active
- * wz-step has minimal content — e.g. "Name Your Case!" with just an
- * input and a Continue button — modal-body's intrinsic content is
- * shorter than the breadcrumb's anchor, and the breadcrumb visually
- * sits at the modal bottom edge with no margin or, during step
- * transitions, briefly outside it.
- *
- * Reserve enough padding-bottom that the absolute breadcrumb always
- * sits inside the modal-body's padded region with clearance above the
- * in-flow content.
- */
+/* angular-wizard's breadcrumb is `position: absolute; bottom: 0` against
+ * .modal-body; reserve padding so short steps don't let it sit flush
+ * against the modal edge or briefly escape during transitions. */
 .modal-body#wizard {
   padding-bottom: 50px;
 }
 
-/*
- * Form help text — keep <span class="form-text"> block-level.
- *
- * BS3's `.help-block { display: block }` is what made the Angular UI's
- * `<span class="help-block form-text">` help paragraphs render as their
- * own line. BS5's `.form-text` is style-only (margin-top, font-size,
- * color) and intentionally leaves `display` to the host element — BS5
- * docs put it on <div> or <small>. The Angular templates use <span>,
- * so without this shim those spans collapse into inline flow once
- * `help-block` is stripped.
- *
- * Application.css (the BS5-native bundle) uses <div>/<p> for form-text
- * everywhere, so this rule has no effect there even if it were loaded.
- *
- * Remove when the Angular templates migrate their <span class="form-text">
- * to <div class="form-text"> (canonical BS5).
- */
+/* BS5's .form-text leaves `display` to the host element. Several
+ * Angular templates still use `<span class="form-text">` — without this
+ * they'd collapse to inline. Drop when templates migrate to `<div>`. */
 .form-text {
   display: block;
 }
 
-/*
- * ────────────────────────────────────────────────────────────────────────
- *  Header navbar — Quepid brand skin (Angular core bundle)
- * ────────────────────────────────────────────────────────────────────────
- *
- *  The Angular core layout (`_header_core_app.html.erb`) renders a
- *  two-tier navbar: the Quepid brand strip (`.navbar-brand`) plus a
- *  secondary nav (`.navbar-secondary`) with a brand gradient. Flex,
- *  nowrap, and dropdown-toggle shims for this header follow in this file.
- *
- *  The non-Angular `application.html.erb` bundle has a parallel skin in
- *  `app/assets/stylesheets/bootstrap5-add.css`. Keep the two roughly in
- *  sync when adjusting brand chrome — they target the same DOM classes
- *  on different markup stacks (core uses `<header class="navbar-secondary">`
- *  without `.navbar-expand-*`; the application stack uses
- *  `<nav class="navbar navbar-expand-lg navbar-secondary">`).
+/* ── Header navbar — Quepid brand skin ──────────────────────────────
+ * Two-tier: .navbar-brand + .navbar-secondary (gradient strip). Parallel
+ * skin for the non-Angular bundle lives in bootstrap5-add.css against
+ * a `.navbar-expand-lg` host; keep both in sync when adjusting chrome.
  */
 
 /* Primary navbar — Quepid wordmark, sized to 56px brand strip. */
@@ -618,14 +194,8 @@ header.navbar-secondary .dropdown-toggle::after,
   z-index: 10;
 }
 
-/*
- * Primary nav-link padding — 18px y / 15px x.
- *
- * BS5's `--bs-nav-link-padding-y` default is 0.5rem (8px at the 16px
- * root), which leaves the items vertically off-centre next to the 56px
- * brand strip. Scoped to `header .navbar-nav .nav-link` so tab strips
- * and other nav-link uses inside `core` keep BS5 defaults.
- */
+/* 18px y centres nav items against the 56px brand strip (BS5 default
+ * 8px sits high). Scoped to header so tab strips elsewhere keep BS5. */
 header .navbar-nav .nav-link {
   padding: 18px 15px;
   line-height: 24px;
@@ -638,12 +208,7 @@ header .navbar-nav .nav-link {
   font-family: 'allerregular';
 }
 
-/*
- * `_header_core_app.html.erb` uses `<div class="container container-home">`
- * inside `.navbar-secondary` and arranges its dropdown + breadcrumb as
- * siblings. BS5 fluid-`.container` is block by default; we want them on
- * one row, vertically centred.
- */
+/* Row + center the secondary navbar's dropdown and breadcrumb siblings. */
 .navbar-secondary .container-home {
   display: flex;
   align-items: center;
@@ -659,26 +224,13 @@ header .navbar-nav .nav-link {
   background: rgba(0,0,0,0.25);
 }
 
-/*
- * Header navbar — horizontal item flow.
- *
- * `_header_core_app.html.erb` uses BS5-ish lists (`ul.navbar-nav`) but does
- * not wrap the bar in `.navbar-expand-*`. BS5’s `.navbar-nav` is a flex
- * container with default `flex-direction: column`, so top-level items stack
- * unless something sets row direction (`navbar-expand-*` does that).
- * Scoped to `<header>` so we don’t change other navbar usages.
- */
+/* Header uses `ul.navbar-nav` without a `.navbar-expand-*` ancestor, so
+ * BS5 leaves it as flex-column. Force row here. */
 header .navbar-nav {
   flex-direction: row;
 }
 
-/*
- * Keep multi-word nav labels ("User Manual", "Relevancy Cases") on a single
- * line. BS5 lets `.nav-link` text wrap when the container is tight; with
- * the 16px root the navbar items grow large enough that "User Manual"
- * wrapped at 1280px viewport. Scoped to header so other BS5 .nav-link uses
- * are unaffected.
- */
+/* Stop "User Manual" / "Relevancy Cases" from wrapping at 1280px. */
 header .nav-link {
   white-space: nowrap;
 }
@@ -694,58 +246,15 @@ header .dropdown-toggle .bi {
   color: rgba(255,255,255,0.7);
 }
 
-/*
- * btn-outline-secondary — reinforced for the core stack.
- *
- * `buildCoreCSS()` already concatenates npm `bootstrap.css` (which defines
- * `.btn-outline-secondary`). This block repeats and tightens outline/hover/
- * active/disabled so behaviour stays predictable with Quepid layers and
- * modal-body button-group overrides loaded below. Reconcile with upstream
- * Bootstrap when touching these rules.
- */
-.btn-outline-secondary {
-  color: #6c757d;
-  border-color: #6c757d;
-  background-color: transparent;
-}
-.btn-outline-secondary:hover {
-  color: #fff;
-  background-color: #6c757d;
-  border-color: #6c757d;
-}
-.btn-outline-secondary:focus {
-  box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.5);
-}
-.btn-outline-secondary.active,
-.btn-outline-secondary:active {
-  color: #fff;
-  background-color: #6c757d;
-  border-color: #6c757d;
-}
-.btn-outline-secondary:disabled,
-.btn-outline-secondary.disabled {
-  color: #6c757d;
-  background-color: transparent;
-}
-
+/* Modal-body button group has a subtle paper-like fill — only the
+ * `background` differs from BS5's outline button defaults. */
 .modal-body .btn-group .btn-outline-secondary {
   background: linear-gradient(to bottom right, #EEE, #F8F8F8);
 }
 
-/*
- * Dev panel tabs (#dev-settings .nav-tabs)
- *
- * `devQueryParams.html` uses legacy tab markup (`<ul class="nav nav-tabs"><li
- * ng-class="{tabBoxSelected: ...}">`) — bare `<li>` with click handlers,
- * no `.nav-link` on children. Older Bootstrap shipped `.nav-tabs > li { float: left;
- * margin-bottom: -1px }` to lay tabs horizontally and overlap the tab
- * container's bottom border. BS5 doesn't ship that descendant selector
- * (it expects `.nav-link` on children inside a flex `.nav-tabs`).
- *
- * BS5's `.nav-tabs { display: flex }` keeps children horizontal, but the
- * -1px overlap is gone. The `margin-bottom: -1px` below restores it so the
- * active tab's bottom edge sits flush with the `.nav-tabs` border.
- */
+/* Dev panel tabs. devQueryParams.html uses bare-`<li>` markup (no
+ * .nav-link on children), so BS5's .nav-tabs rules don't reach them.
+ * Delete when devQueryParams.html migrates to `<button class="nav-link">`. */
 #dev-settings .dev-section .nav-tabs {
 	border-bottom: 1px solid #666;
 	font-size: 12px;
@@ -787,12 +296,7 @@ header .dropdown-toggle .bi {
 	overflow-y: auto;
 }
 
-/*
- * Annotation dropdown chrome.
- * Markup: `app/assets/javascripts/components/annotation/annotation.html`
- * — `<li class="annotation"><div class="dropdown"><a class="dropdown-toggle">…</a>
- * <ul class="dropdown-menu"><li><a class="dropdown-item">…</a></li>…</ul></div></li>`.
- */
+/* Annotation dropdown — markup in components/annotation/annotation.html. */
 .annotation .dropdown > a.dropdown-toggle:hover {
 	color: #888;
 }
@@ -805,12 +309,7 @@ header .dropdown-toggle .bi {
 	color: #a94442;
 }
 
-/*
- * Modal body / title — Quepid-specific tweaks.
- * `.modal-body .bi` dims and sizes icons inside modal bodies; `.modal-title
- * .modal-case` lightens the case-name span inside modal headers (see
- * `delete_case_options/_modal.html`, `clone_case/_modal.html`, etc.).
- */
+/* Modal body icons (dimmed) and case-name span in modal titles. */
 .modal-body .bi {
 	font-size: 16px;
 	color: #aaa;
@@ -821,17 +320,8 @@ header .dropdown-toggle .bi {
 	color: #888;
 }
 
-/*
- * Sub-results panel — toolbar position, row spacing, and rating box chrome.
- * Markup: `searchResults.html` wraps the
- * expanded per-query area in `.sub-results.container`; the toolbar
- * (`btn-toolbar`) is positioned absolutely top-right of that panel, and
- * each `<search-result>` (`searchResult.html`) renders a top-level
- * `<div class="row">` separated by a 1px top border.
- *
- * The dead `.sub-results .search-result .container { padding: 0 }` rule
- * was dropped here — `.container` does not appear in `searchResult.html`.
- */
+/* Sub-results panel — toolbar absolutely top-right of the per-query
+ * panel, row borders between <search-result> items. */
 .sub-results .btn-toolbar {
 	position: absolute;
 	top: 20px;
@@ -859,21 +349,8 @@ header .dropdown-toggle .bi {
 	text-shadow: 0 0 6px rgba(0,0,0,0.25);
 }
 
-/*
- * Fluid `.container` width on Angular core.
- *
- * BS5's fluid `.container` uses `width: 100%` with a capped `max-width` at
- * large breakpoints, which recenters content with side margins on wide
- * screens. Quepid's Angular core expects a full-bleed wrapper; `max-width: none`
- * restores that. Covers `.sub-results .container` (per-query results panel),
- * `.settings-tab > .container` in the dev panel History tab,
- * `.container.container-home` in the secondary navbar, and `404.html`.
- * See `docs/bootstrap3_to_bs5_migration.md` Risk #5.
- *
- * `.btn-group { z-index: 10 }` keeps button-group dropdowns above
- * statically-positioned siblings — covers sub-results toolbar dropdowns
- * (`Set Options`, `Move Query`) and modal-footer button groups.
- */
+/* Full-bleed .container — Quepid expects no breakpoint max-width cap.
+ * .btn-group z-index keeps toolbar dropdowns above static siblings. */
 .container {
 	width: 100%;
 	max-width: none;
