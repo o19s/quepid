@@ -6,28 +6,28 @@
       </div>
 
       <ul class="list-inline float-end">
-        <li>
+        <li class="list-inline-item">
           <input type="checkbox" class="align-top" ng-checked="queriesSvc.showOnlyRated" ng-click="queriesSvc.toggleShowOnlyRated()" />
           <a href="" ng-click="queriesSvc.toggleShowOnlyRated()">Show only rated</a>
         </li>
 
-        <li class="text-muted">
+        <li class="list-inline-item text-muted">
           <span class="text-muted"> | </span>
         </li>
 
-        <li>
+        <li class="list-inline-item">
           <a ng-click="collapseAll()" href="">Collapse all</a>
         </li>
 
-        <li class="text-muted">
+        <li class="list-inline-item text-muted">
           <span class="text-muted"> | </span>
         </li>
 
-        <li>
+        <li class="list-inline-item">
           <span class="text-muted">Sort &nbsp;</span>
 
           <ul class="list-inline" style="display:inline" role="group" aria-label="sort">
-            <li ng-if="queryListSortable">
+            <li class="list-inline-item" ng-if="queryListSortable">
               <a ng-class="{active: sort == 'defaultCaseOrder'}" ng-click="sortBy('default')">
                 Manual
                 <i ng-show="sortName == 'default'"
@@ -37,12 +37,12 @@
                 </i>
               </a>
             </li>
-            <li ng-if="!queryListSortable">
+            <li class="list-inline-item" ng-if="!queryListSortable">
               Manual
               <i class="bi bi-exclamation-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Manual sorting has been disabled by your administrator due to the bug https://github.com/o19s/quepid/issues/272."></i>
             </li>
 
-            <li>
+            <li class="list-inline-item">
               <a ng-class="{active: sort == 'queryText'}" ng-click="sortBy('query')">
                 Name
                 <i ng-show="sortName == 'query'"
@@ -53,7 +53,7 @@
               </a>
             </li>
 
-            <li>
+            <li class="list-inline-item">
                <a ng-class="{active: sort == 'modified'}" ng-click="sortBy('modified')">
                  Modified
                  <i ng-show="sortName == 'modified'"
@@ -64,7 +64,7 @@
                </a>
              </li>
 
-            <li>
+            <li class="list-inline-item">
               <a ng-class="{active: sort == 'lastScore'}" ng-click="sortBy('score')">
                 Score
                 <i ng-show="sortName == 'score'"
@@ -75,7 +75,7 @@
               </a>
             </li>
 
-            <li>
+            <li class="list-inline-item">
               <a ng-class="{active: sort == 'errorText'}" ng-click="sortBy('error')">
                 Errors
                 <i ng-show="sortName == 'error'"

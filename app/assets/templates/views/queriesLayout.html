@@ -78,54 +78,54 @@
       <div id="case-actions" class="row" ng-controller="CaseCtrl">
         <div class="col-sm-12" ng-if="caseModel.caseLoaded()">
           <ul class="list-inline">
-            <li>
+            <li class="list-inline-item">
               <i class="bi bi-card-list"></i>
               <a name="button" ng-click="pickCaseScorer()">
                 Select scorer
               </a>
             </li>
-            <li>
+            <li class="list-inline-item">
               <judgements
                 acase="caseModel.selectedCase()"
               </judgements>
             </li>
-            <li>
+            <li class="list-inline-item">
               <i class="bi bi-camera-fill"></i>
               <a ng-controller="TakeSnapshotCtrl" type="button" ng-click="snapshot.prompt()">
                 Create snapshot
               </a>
             </li>
-            <li>
+            <li class="list-inline-item">
               <diff></diff>
             </li>
-            <li>
+            <li class="list-inline-item">
               <import-ratings
                 acase="caseModel.selectedCase()"
               ></import-ratings>
             </li>
-            <li>
+            <li class="list-inline-item">
               <share-case
                 acase="caseModel.selectedCase()"
               ></share-case>
             </li>
-            <li>
+            <li class="list-inline-item">
               <clone-case
                 acase="caseModel.selectedCase()"
               ></clone-case>
             </li>
-            <li>
+            <li class="list-inline-item">
               <delete-case-options
                 acase="caseModel.selectedCase()"
               ></delete-case-options>
             </li>
-            <li>
+            <li class="list-inline-item">
               <export-case
                 icon-only="false"
                 acase="caseModel.selectedCase()"
                 supports-detailed-export="true"
               ></export-case>
             </li>
-            <li id="tune-relevance-link">
+            <li class="list-inline-item" id="tune-relevance-link">
               <i class="bi bi-wrench-adjustable"></i>
               <a type="button" ng-click="toggleDevSettings()">
                 Tune Relevance
