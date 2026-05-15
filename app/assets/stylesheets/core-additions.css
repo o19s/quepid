@@ -424,13 +424,16 @@ header .dropdown-link:focus {
 }
 
 #queryParamsCanvas .slider-wrap {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
 	padding: 10px 0;
 	border-bottom: 1px solid #555;
-	clear: both;
 }
 
 #queryParamsCanvas .slider-wrap input {
-	float: right;
   color: black;
 }
 

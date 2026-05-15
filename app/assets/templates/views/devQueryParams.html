@@ -20,15 +20,14 @@
         With a Static search endpoint there are no query settings to play with ;-(.
       </p>
       <div ng-if="settings.searchEngine !== 'static'" class="rerunnable-settings-tab" id='query-params-editor'>
-        <h4 class="float-start">Query Sandbox:</h4>
-        <p class="float-end">
-          <a href="http://quepidapp.com/docs/#tuning" class="query-help" target="_blank">
-            <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
-          </a>
-        </p>
-
-
-        <div class='clearfix'></div>
+        <div class="d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">Query Sandbox:</h4>
+          <p class="mb-0">
+            <a href="http://quepidapp.com/docs/#tuning" class="query-help" target="_blank">
+              <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
+            </a>
+          </p>
+        </div>
 
         <p ng-show="showQueryParamsWarning" id="query-params-warn" class="alert alert-warning"
           ng-bind-html="queryParamsWarning">{{ queryParamsWarning }}</p>
@@ -102,10 +101,10 @@
             Add and remove knobs from here by editing your query.
           </p>
           <div ng-repeat="curatorVar in settings.selectedTry.curatorVars">
-            <div ng-show="curatorVar.inQueryParams" class="slider-wrap clearfix">
-              <label>{{ curatorVar.name }}:</label>
+            <div ng-show="curatorVar.inQueryParams" class="slider-wrap">
+              <label class="mb-0">{{ curatorVar.name }}:</label>
               <input type="number" class="slider-val" min=0 max=10000000000 ng-model="curatorVar.value" auto-grow />
-              <p ng-show="curatorVar.inQueryParams != true">
+              <p ng-show="curatorVar.inQueryParams != true" class="mb-0">
                 This knob/dial is not currently used by the query!
               </p>
             </div>
