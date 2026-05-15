@@ -1,14 +1,14 @@
 /*
  * Quepid core UI — layout and skin that do not use Bootstrap framework classes
- * in selectors. bootstrap3-add.css is a small navbar slice (`.navbar-brand`,
- * `.navbar-secondary`, header `.nav-link` padding). Bootstrap-class overrides
- * for `.container`, sub-results toolbars, `#dev-settings` tabs, modals, annotations,
- * etc. live in bootstrap5-compat.css. Custom header dropdown panels (`.dropdown-content`,
- * `.dropdown-link`), flash directive chrome (`.flash`), and `#flash-messages`
- * live here; BS5 navbar/dropdown shims (open-state toggles, `header .dropdown-toggle .bi`,
- * `.btn-outline-secondary` baseline and modal gradient) live in bootstrap5-compat.css.
+ * in selectors. All Bootstrap-class overrides for the Angular core bundle —
+ * navbar brand skin (`.navbar-brand`, `.navbar-secondary`, header `.nav-link`),
+ * fluid `.container`, sub-results toolbars, `#dev-settings` tabs, modals,
+ * annotations, dropdown shims, etc. — live in bootstrap5-compat.css.
  *
- * Loaded by build_css.js between fonts.css and bootstrap3-add.css.
+ * Custom header dropdown panels (`.dropdown-content`, `.dropdown-link`), flash
+ * directive chrome (`.flash`), and `#flash-messages` live here.
+ *
+ * Loaded by build_css.js between fonts.css and bootstrap5-compat.css.
  */
 
 html, body {
@@ -189,7 +189,7 @@ header .dropdown-link:focus {
 
 
 /*
-	Main - Results - Sub Results (structure only; .btn-toolbar / .row lives in bootstrap3-add.css)
+	Main - Results - Sub Results (structure only; .btn-toolbar / .row lives in bootstrap5-compat.css)
 */
 
 .sub-results {
@@ -354,8 +354,8 @@ header .dropdown-link:focus {
 
 /*
 	Dev Settings — panel skin (selectors with no Bootstrap classes).
-	BS-related dev-panel rules (.btn / .btn-xs / .form-inline) live in
-	bootstrap3-add.css; `.nav-tabs` rules live in bootstrap5-compat.css.
+	BS-related dev-panel rules (.btn / .btn-xs / .form-inline, `.nav-tabs`,
+	etc.) live in bootstrap5-compat.css.
 */
 
 #dev-settings {
@@ -439,7 +439,7 @@ header .dropdown-link:focus {
 }
 
 /*
-	Dev Settings - History (rest of #dev-settings uses Bootstrap selectors — bootstrap3-add.css)
+	Dev Settings - History (rest of #dev-settings uses Bootstrap selectors — bootstrap5-compat.css)
 */
 
 .history-container {

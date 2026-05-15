@@ -2,7 +2,7 @@
  * Application CSS manifest (used by build_css.sh).
  * Former Sprockets directives converted to plain comments for reference only.
  *
- * We use Bootstrap 5 everywhere except the core app (Bootstrap 3).
+ * We use Bootstrap 5 everywhere.
  * include bootstrap/dist/css/bootstrap
  *
  * We use Bootstrap Icons shared across areas

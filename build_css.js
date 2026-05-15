@@ -110,8 +110,7 @@ function buildCoreCSS() {
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/core-additions.css');
   output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/bootstrap3-add.css');
-  output += '\n';
+  // (bootstrap3-add.css retired — navbar brand skin merged into bootstrap5-compat.css)
   output += readFileIfExists('app/assets/stylesheets/bootstrap5-compat.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/style.css');

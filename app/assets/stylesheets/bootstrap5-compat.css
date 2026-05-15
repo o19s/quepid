@@ -2,18 +2,18 @@
  * Bootstrap 5 component CSS, scoped to the Angular UI's core.css bundle.
  *
  * Why this file exists:
- *   The Angular case UI (core.html.erb layout) loads BS3 styles. As
- *   angular-ui-bootstrap directives are migrated to native BS5 components
- *   (window.bootstrap.Popover, window.bootstrap.Tooltip, native accordion
- *   via data-bs-toggle="collapse", ...), their CSS is no longer in the
- *   bundle and BS3's leftover rules (e.g. `.popover { display: none }`,
- *   `.collapse { display: none }`) hide them.
+ *   The Angular case UI (`core.html.erb`) loads npm Bootstrap 5 first, then
+ *   Quepid layers. Legacy templates and vendor CSS still mix older patterns
+ *   (e.g. `.fade.in` / `.collapse.in`, bare `<li>` tab rows) with BS5
+ *   components, so popovers, dropdowns, modals, and accordions need explicit
+ *   rules and px-tuned `--bs-*` overrides to look correct next to Quepid
+ *   chrome.
  *
  *   This file ports the relevant BS5 component rules from
  *   node_modules/bootstrap/dist/css/bootstrap.css, prefixed by a small
  *   :root shim that defines just the parent custom properties they
- *   reference. Using :root lets BS5 cascade-override BS3 without
- *   polluting the rest of the BS3-styled UI.
+ *   reference. Using :root keeps variable defaults predictable for this
+ *   bundle without affecting the non-Angular `application.css` stack.
  *
  *   Components covered: popover, tooltip, accordion (+ scoped .collapse
  *   helpers under .accordion-collapse), tabs, dropdown, typeahead
@@ -597,14 +597,13 @@
  * Dropdown (native BS5 — window.bootstrap.Dropdown auto-registers a
  * document-level click listener on `[data-bs-toggle="dropdown"]` when the
  * module loads via `import * as bootstrap from 'bootstrap'` in
- * angular_app.js, so the open/close plumbing was already in place. What
- * was missing was the *styling*: BS3's `.dropdown-menu` baseline (loaded
- * after bootstrap.css) cascade-overrides BS5's, so menus render with
- * BS3's box-shadow/padding/font-size. Re-asserting BS5's component CSS
- * here (loaded after BS3) wins the cascade back for plain BS5 dropdowns.
+ * angular_app.js, so the open/close plumbing was already in place. This
+ * block carries the BS5 dropdown-menu / item styling the core bundle needs,
+ * with Quepid-specific px tuning later in the file so menus match the rest
+ * of the UI at the computed root font size.
  *
  * The header_core_app dropdowns keep their distinctive look via
- * `header .dropdown-content li` rules in bootstrap3-add.css — higher
+ * `header .dropdown-content li` rules in core-additions.css — higher
  * specificity (0,1,2) than the BS5 .dropdown-menu rules below, so they
  * intentionally win for those instances.
  *
@@ -876,6 +875,88 @@ header.navbar-secondary .dropdown-toggle::after,
 }
 
 /*
+ * ────────────────────────────────────────────────────────────────────────
+ *  Header navbar — Quepid brand skin (Angular core bundle)
+ * ────────────────────────────────────────────────────────────────────────
+ *
+ *  The Angular core layout (`_header_core_app.html.erb`) renders a
+ *  two-tier navbar: the Quepid brand strip (`.navbar-brand`) plus a
+ *  secondary nav (`.navbar-secondary`) with a brand gradient. Flex,
+ *  nowrap, and dropdown-toggle shims for this header follow in this file.
+ *
+ *  The non-Angular `application.html.erb` bundle has a parallel skin in
+ *  `app/assets/stylesheets/bootstrap5-add.css`. Keep the two roughly in
+ *  sync when adjusting brand chrome — they target the same DOM classes
+ *  on different markup stacks (core uses `<header class="navbar-secondary">`
+ *  without `.navbar-expand-*`; the application stack uses
+ *  `<nav class="navbar navbar-expand-lg navbar-secondary">`).
+ */
+
+/* Primary navbar — Quepid wordmark, sized to 56px brand strip. */
+.navbar-brand {
+  position: relative;
+  height: 56px;
+  min-width: 120px;
+  padding: 16px 15px 0 0;
+  font-family: 'alleritalic';
+  font-size: 28px;
+  color: #FFF !important;
+}
+
+.navbar-brand .hover {
+  display: none;
+}
+
+.navbar-brand:hover .hover {
+  display: block;
+  position: absolute;
+  top: 15px;
+  left: 100px;
+  z-index: 10;
+}
+
+/*
+ * Primary nav-link padding — 18px y / 15px x.
+ *
+ * BS5's `--bs-nav-link-padding-y` default is 0.5rem (8px at the 16px
+ * root), which leaves the items vertically off-centre next to the 56px
+ * brand strip. Scoped to `header .navbar-nav .nav-link` so tab strips
+ * and other nav-link uses inside `core` keep BS5 defaults.
+ */
+header .navbar-nav .nav-link {
+  padding: 18px 15px;
+  line-height: 24px;
+}
+
+/* Secondary navbar — brand gradient strip below the primary nav. */
+.navbar-secondary {
+  background: #369;
+  background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
+  font-family: 'allerregular';
+}
+
+/*
+ * `_header_core_app.html.erb` uses `<div class="container container-home">`
+ * inside `.navbar-secondary` and arranges its dropdown + breadcrumb as
+ * siblings. BS5 fluid-`.container` is block by default; we want them on
+ * one row, vertically centred.
+ */
+.navbar-secondary .container-home {
+  display: flex;
+  align-items: center;
+}
+
+/* Secondary nav-link colours + hover/active emphasis. */
+.navbar-secondary .navbar-nav .nav-link {
+  color: #FFF;
+}
+
+.navbar-secondary .navbar-nav .nav-link:hover,
+.navbar-secondary .navbar-nav .nav-link.active {
+  background: rgba(0,0,0,0.25);
+}
+
+/*
  * Header navbar — horizontal item flow.
  *
  * `_header_core_app.html.erb` uses BS5-ish lists (`ul.navbar-nav`) but does
@@ -899,7 +980,7 @@ header .nav-link {
   white-space: nowrap;
 }
 
-/* Secondary nav — BS5 adds .show / aria-expanded on the toggle (BS3 used .open on parent). */
+/* Secondary nav — open toggle uses .show / aria-expanded="true". */
 .navbar-secondary .navbar-nav .dropdown-toggle.show,
 .navbar-secondary .navbar-nav .dropdown-toggle[aria-expanded="true"] {
   background: #258;
@@ -949,19 +1030,18 @@ header .dropdown-toggle .bi {
 }
 
 /*
- * Dev panel tabs (#dev-settings .nav-tabs) — moved from bootstrap3-add.css
+ * Dev panel tabs (#dev-settings .nav-tabs)
  *
- * `devQueryParams.html` uses BS3 tab markup (`<ul class="nav nav-tabs"><li
+ * `devQueryParams.html` uses legacy tab markup (`<ul class="nav nav-tabs"><li
  * ng-class="{tabBoxSelected: ...}">`) — bare `<li>` with click handlers,
- * no `.nav-link` on children. Today BS3 ships `.nav-tabs > li { float: left;
- * margin-bottom: -1px }` to lay them out horizontally and overlap the tab
+ * no `.nav-link` on children. Older Bootstrap shipped `.nav-tabs > li { float: left;
+ * margin-bottom: -1px }` to lay tabs horizontally and overlap the tab
  * container's bottom border. BS5 doesn't ship that descendant selector
- * (BS5 expects `.nav-link` on children inside a flex `.nav-tabs`).
+ * (it expects `.nav-link` on children inside a flex `.nav-tabs`).
  *
- * Once BS3 leaves the bundle, BS5's `.nav-tabs { display: flex }` still
- * makes the children horizontal, but the -1px overlap is gone. The
- * `margin-bottom: -1px` below restores it so the active tab's bottom
- * edge sits flush with the `.nav-tabs` border.
+ * BS5's `.nav-tabs { display: flex }` keeps children horizontal, but the
+ * -1px overlap is gone. The `margin-bottom: -1px` below restores it so the
+ * active tab's bottom edge sits flush with the `.nav-tabs` border.
  */
 #dev-settings .dev-section .nav-tabs {
 	border-bottom: 1px solid #666;
@@ -995,7 +1075,7 @@ header .dropdown-toggle .bi {
 }
 
 /*
- * Dev panel — History tab scroll container (moved from bootstrap3-add.css).
+ * Dev panel — History tab scroll container.
  * The History tab in `devQueryParams.html` wraps its content in a BS
  * `.container`; this lets it fill the panel height and scroll.
  */
@@ -1005,7 +1085,7 @@ header .dropdown-toggle .bi {
 }
 
 /*
- * Annotation dropdown chrome (moved from bootstrap3-add.css).
+ * Annotation dropdown chrome.
  * Markup: `app/assets/javascripts/components/annotation/annotation.html`
  * — `<li class="annotation"><div class="dropdown"><a class="dropdown-toggle">…</a>
  * <ul class="dropdown-menu"><li><a class="dropdown-item">…</a></li>…</ul></div></li>`.
@@ -1023,7 +1103,7 @@ header .dropdown-toggle .bi {
 }
 
 /*
- * Modal body / title — Quepid-specific tweaks (moved from bootstrap3-add.css).
+ * Modal body / title — Quepid-specific tweaks.
  * `.modal-body .bi` dims and sizes icons inside modal bodies; `.modal-title
  * .modal-case` lightens the case-name span inside modal headers (see
  * `delete_case_options/_modal.html`, `clone_case/_modal.html`, etc.).
@@ -1039,8 +1119,8 @@ header .dropdown-toggle .bi {
 }
 
 /*
- * Sub-results panel — toolbar position, row spacing, and rating box chrome
- * (moved from bootstrap3-add.css). Markup: `searchResults.html` wraps the
+ * Sub-results panel — toolbar position, row spacing, and rating box chrome.
+ * Markup: `searchResults.html` wraps the
  * expanded per-query area in `.sub-results.container`; the toolbar
  * (`btn-toolbar`) is positioned absolutely top-right of that panel, and
  * each `<search-result>` (`searchResult.html`) renders a top-level
@@ -1077,17 +1157,15 @@ header .dropdown-toggle .bi {
 }
 
 /*
- * Fluid `.container` width on Angular core (moved from bootstrap3-add.css).
+ * Fluid `.container` width on Angular core.
  *
- * BS3 used `width: 1170px` (fixed) for `.container` at the lg breakpoint;
- * Quepid's `width: 100%` override turned that into a full-bleed wrapper.
- * BS5 changed the implementation to `width: 100%; max-width: 1320px` (capped
- * fluid), which silently re-introduced a centered-with-margins layout on
- * widescreen after Bootstrap 3 was removed from the bundle. `max-width: none`
- * restores the original BS3-era full-bleed behavior. Covers `.sub-results
- * .container` (per-query results panel), `.settings-tab > .container` in the
- * dev panel History tab, `.container.container-home` in the secondary navbar,
- * and `404.html`. See `docs/bootstrap3_to_bs5_migration.md` Risk #5.
+ * BS5's fluid `.container` uses `width: 100%` with a capped `max-width` at
+ * large breakpoints, which recenters content with side margins on wide
+ * screens. Quepid's Angular core expects a full-bleed wrapper; `max-width: none`
+ * restores that. Covers `.sub-results .container` (per-query results panel),
+ * `.settings-tab > .container` in the dev panel History tab,
+ * `.container.container-home` in the secondary navbar, and `404.html`.
+ * See `docs/bootstrap3_to_bs5_migration.md` Risk #5.
  *
  * `.btn-group { z-index: 10 }` keeps button-group dropdowns above
  * statically-positioned siblings — covers sub-results toolbar dropdowns
