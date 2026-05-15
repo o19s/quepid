@@ -1,7 +1,9 @@
 /*
- * Bootstrap-class selectors and framework-tuned overrides for the Angular core
- * bundle. Quepid layout without Bootstrap selectors lives in core-additions.css
- * (loaded just before this file).
+ * Bootstrap-class selectors and legacy framework-tuned overrides for the
+ * Angular core bundle. Quepid layout without Bootstrap class names in selectors
+ * lives in core-additions.css (loaded just before this file). BS5 component
+ * ports, header flex/nowrap, outline-button baseline, and other migration
+ * shims live in bootstrap5-compat.css (loaded just after this file).
  */
 
 .container {
@@ -95,57 +97,6 @@ header .navbar-nav .nav-link {
 	background: rgba(0,0,0,0.25);
 }
 
-.navbar-secondary .navbar-nav .dropdown-toggle.show,
-.navbar-secondary .navbar-nav .dropdown-toggle[aria-expanded="true"] {
-	background: #258;
-}
-
-/*
-	Secondary Navbar - Dropdowns
-*/
-
-header .dropdown-toggle .bi {
-  font-size: 12px;
-  color: rgba(255,255,255,0.7);
-}
-
-header .dropdown-content {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin: 0;
-  padding: 1px 0 0 0;
-  border-radius: 0px;
-  z-index: 999;
-}
-
-header .dropdown-content li {
-  list-style: none;
-  min-width: 250px;
-  border-bottom: 1px solid #eee;
-  padding: 10px;
-  background: #FFF;
-}
-
-header .dropdown-content li a {
-  padding: 0;
-}
-
-header .dropdown-content li a:hover {
-  background: none;
-}
-
-header .dropdown-link {
-  color: #2A6496 !important;
-  padding: 0 !important;
-}
-
-header .dropdown-link:hover,
-header .dropdown-link:focus {
-  text-decoration: underline !important;
-  background: none !important;
-}
-
 /*
 	Main — .container padding only (#main baseline is core-additions.css)
 */
@@ -225,27 +176,6 @@ header .dropdown-link:focus {
     overflow-y: auto;
 }
 
-.flash {
-  border-radius:  0;
-  display:        none;
-  margin:         0;
-  width:          100%;
-  padding-right:  80px;
-}
-.flash.show {
-  display: block;
-  opacity: 1;
-}
-
-.flash > span {
-  display:      block;
-  margin-left:  20px;
-}
-
-.flash .close {
-  line-height: 17px;
-}
-
 .alert-danger h2 {
   color: #a94442;
 }
@@ -260,10 +190,6 @@ header .dropdown-link:focus {
 
 .annotation .dropdown-menu > li > a.text-danger {
   color: #a94442;
-}
-
-.modal-body .btn-group .btn-outline-secondary {
-	background: linear-gradient(to bottom right, #EEE, #F8F8F8);
 }
 
 .btn:active {

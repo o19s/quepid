@@ -1,7 +1,11 @@
 /*
  * Quepid core UI — layout and skin that do not use Bootstrap framework classes
- * in selectors. See bootstrap3-add.css for `.container`, navbars, dropdowns,
- * gutters (`.row`), dev-panel buttons/tabs, modals, flash, etc.
+ * in selectors. See bootstrap3-add.css for `.container`, navbar chrome that
+ * keys off Bootstrap classes, gutters (`.row`), dev-panel form buttons,
+ * modals, annotation dropdowns, etc. Custom header dropdown panels (`.dropdown-content`,
+ * `.dropdown-link`), flash directive chrome (`.flash`), and `#flash-messages`
+ * live here; BS5 navbar/dropdown shims (open-state toggles, `header .dropdown-toggle .bi`,
+ * `.btn-outline-secondary` baseline and modal gradient) live in bootstrap5-compat.css.
  *
  * Loaded by build_css.js between fonts.css and bootstrap3-add.css.
  */
@@ -38,6 +42,48 @@ a, button, .button {
 	padding: 0;
 	position: relative;
 	min-width: 750px;
+}
+
+/*
+	Header — custom dropdown panel (see _header_core_app.html.erb:
+	.dropdown-menu.dropdown-content). No Bootstrap class names in these selectors.
+*/
+
+header .dropdown-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin: 0;
+  padding: 1px 0 0 0;
+  border-radius: 0px;
+  z-index: 999;
+}
+
+header .dropdown-content li {
+  list-style: none;
+  min-width: 250px;
+  border-bottom: 1px solid #eee;
+  padding: 10px;
+  background: #FFF;
+}
+
+header .dropdown-content li a {
+  padding: 0;
+}
+
+header .dropdown-content li a:hover {
+  background: none;
+}
+
+header .dropdown-link {
+  color: #2A6496 !important;
+  padding: 0 !important;
+}
+
+header .dropdown-link:hover,
+header .dropdown-link:focus {
+  text-decoration: underline !important;
+  background: none !important;
 }
 
 /*
@@ -307,8 +353,8 @@ a, button, .button {
 
 /*
 	Dev Settings — panel skin (selectors with no Bootstrap classes).
-	BS-related dev-panel rules (.btn / .btn-xs / .form-inline / .nav-tabs)
-	live in bootstrap3-add.css.
+	BS-related dev-panel rules (.btn / .btn-xs / .form-inline) live in
+	bootstrap3-add.css; `.nav-tabs` rules live in bootstrap5-compat.css.
 */
 
 #dev-settings {
@@ -487,6 +533,29 @@ footer {
   position:   fixed;
   width:      100%;
   z-index:    100;
+}
+
+/*
+	Flash — directive uses active-class="show alert" on class="flash fade"
+	(templates flash.html / search_flash.html). Dismiss control is
+	.btn-core-close (styled in misc.css), not Bootstrap’s .close.
+*/
+
+.flash {
+  border-radius:  0;
+  display:        none;
+  margin:         0;
+  width:          100%;
+  padding-right:  80px;
+}
+.flash.show {
+  display: block;
+  opacity: 1;
+}
+
+.flash > span {
+  display:      block;
+  margin-left:  20px;
 }
 
 .loading-app {

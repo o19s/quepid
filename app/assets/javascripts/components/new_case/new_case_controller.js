@@ -44,8 +44,9 @@ angular.module('QuepidApp')
 
         var modalInstance = $quepidModal.open({
           templateUrl:  'views/wizardModal.html',
-          controller:   'WizardModalCtrl', 
-          backdrop:     'static'
+          controller:   'WizardModalCtrl',
+          backdrop:     'static',
+          windowClass:  'wizard-modal-window'
         });
 
         if (!$rootScope.currentUser.completedCaseWizard) {

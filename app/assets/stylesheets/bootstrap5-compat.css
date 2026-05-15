@@ -813,6 +813,48 @@ header.navbar-secondary .dropdown-toggle::after,
 }
 
 /*
+ * Wizard modal — wider than BS5 default at narrow viewports.
+ *
+ * BS5 ships .modal-dialog at max-width: 500px from min-width: 576px up,
+ * and only widens to 800px (.modal-lg) at min-width: 992px. The wizard
+ * markup (wizardModal.html) was authored against BS3's 600px default
+ * and packs an endpoint-picker accordion with logos in a 3-column row;
+ * at 500px the row reflows to 2 columns, the second accordion section
+ * falls below the fold, and form controls get cramped. Scope a wider
+ * modal-dialog to the wizard via the `windowClass: 'wizard-modal-window'`
+ * opt passed in new_case_controller.js and wizardCtrl.js.
+ *
+ * .modal-lg can't be used here because it stays at 500px until 992px and
+ * jumps to 800px above that — overflowing 768px viewports we still
+ * support. The 600px target sits between BS5's md/lg and matches the
+ * BS3 baseline the templates were designed against.
+ */
+.wizard-modal-window .modal-dialog {
+  max-width: 600px;
+}
+
+/*
+ * Wizard host (#wizard inside .modal-body) — reserve space for the
+ * angular-wizard breadcrumb so it never visually escapes the modal.
+ *
+ * angular-wizard.css positions ul.steps-indicator with
+ * `position: absolute; bottom: 0; height: 30px`. Its containing block
+ * is .modal-body (BS5 default position: relative). When the active
+ * wz-step has minimal content — e.g. "Name Your Case!" with just an
+ * input and a Continue button — modal-body's intrinsic content is
+ * shorter than the breadcrumb's anchor, and the breadcrumb visually
+ * sits at the modal bottom edge with no margin or, during step
+ * transitions, briefly outside it.
+ *
+ * Reserve enough padding-bottom that the absolute breadcrumb always
+ * sits inside the modal-body's padded region with clearance above the
+ * in-flow content.
+ */
+.modal-body#wizard {
+  padding-bottom: 50px;
+}
+
+/*
  * Form help text — keep <span class="form-text"> block-level.
  *
  * BS3's `.help-block { display: block }` is what made the Angular UI's
@@ -834,23 +876,13 @@ header.navbar-secondary .dropdown-toggle::after,
 }
 
 /*
- * Header navbar — restore BS3's horizontal layout.
+ * Header navbar — horizontal item flow.
  *
- * The header in `_header_core_app.html.erb` uses BS3 navbar markup
- * (.navbar-nav, .navbar-left, .navbar-right) and relies on BS3's
- * `.navbar-nav > li { float: left }` for horizontal layout. With BS5
- * loaded under BS3 (cascade-coexistence), BS5's
- * `.navbar-nav { display: flex; flex-direction: column }` wins for the
- * `display` properties — BS3 doesn't override `display`. Once the parent
- * is a flex container, the BS3 float on li children is silently ignored,
- * and the nav items stack vertically.
- *
- * BS5's `.navbar-expand-lg .navbar-nav { flex-direction: row }` rule
- * would normally restore horizontal layout, but the header markup
- * doesn't declare `.navbar-expand-*`. Scope this reset to `<header>` so
- * we don't change other (BS5-native) navbar usages.
- *
- * Remove with `bootstrap5-compat.css` once Phase 5 strips BS3.
+ * `_header_core_app.html.erb` uses BS5-ish lists (`ul.navbar-nav`) but does
+ * not wrap the bar in `.navbar-expand-*`. BS5’s `.navbar-nav` is a flex
+ * container with default `flex-direction: column`, so top-level items stack
+ * unless something sets row direction (`navbar-expand-*` does that).
+ * Scoped to `<header>` so we don’t change other navbar usages.
  */
 header .navbar-nav {
   flex-direction: row;
@@ -867,22 +899,25 @@ header .nav-link {
   white-space: nowrap;
 }
 
+/* Secondary nav — BS5 adds .show / aria-expanded on the toggle (BS3 used .open on parent). */
+.navbar-secondary .navbar-nav .dropdown-toggle.show,
+.navbar-secondary .navbar-nav .dropdown-toggle[aria-expanded="true"] {
+  background: #258;
+}
+
+header .dropdown-toggle .bi {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+}
+
 /*
- * btn-outline-secondary — BS5 outline button under the BS3 cascade.
+ * btn-outline-secondary — reinforced for the core stack.
  *
- * BS5's `.btn-outline-secondary` rules are not loaded on the Angular
- * `core` bundle, so its color/border defaults fall back to BS3's
- * `.btn { border: 1px solid transparent }`, leaving the button invisible
- * (gray text on transparent background, no edge). These rules were
- * previously masked by the dual-stacked `btn-default` class.
- *
- * Port the necessary BS5 styling for the cases we use:
- *   - resting outline state
- *   - hover (filled gray)
- *   - active state used by toggle button-groups
- *
- * Remove once the BS3 stylesheet is dropped and BS5 ships its own
- * `btn-outline-secondary` rules.
+ * `buildCoreCSS()` already concatenates npm `bootstrap.css` (which defines
+ * `.btn-outline-secondary`). This block repeats and tightens outline/hover/
+ * active/disabled so behaviour stays predictable with Quepid layers and
+ * modal-body button-group overrides loaded below. Reconcile with upstream
+ * Bootstrap when touching these rules.
  */
 .btn-outline-secondary {
   color: #6c757d;
@@ -907,6 +942,10 @@ header .nav-link {
 .btn-outline-secondary.disabled {
   color: #6c757d;
   background-color: transparent;
+}
+
+.modal-body .btn-group .btn-outline-secondary {
+  background: linear-gradient(to bottom right, #EEE, #F8F8F8);
 }
 
 /*

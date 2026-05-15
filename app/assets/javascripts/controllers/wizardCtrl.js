@@ -18,6 +18,7 @@ angular.module('QuepidApp')
           templateUrl: 'views/wizardModal.html',
           controller: 'WizardModalCtrl',
           backdrop: 'static',
+          windowClass: 'wizard-modal-window',
         });
 
         modalInstance.result.then(function() {
