@@ -897,3 +897,49 @@ header .navbar-nav {
   color: #6c757d;
   background-color: transparent;
 }
+
+/*
+ * Dev panel tabs (#dev-settings .nav-tabs) — moved from bootstrap3-add.css
+ *
+ * `devQueryParams.html` uses BS3 tab markup (`<ul class="nav nav-tabs"><li
+ * ng-class="{tabBoxSelected: ...}">`) — bare `<li>` with click handlers,
+ * no `.nav-link` on children. Today BS3 ships `.nav-tabs > li { float: left;
+ * margin-bottom: -1px }` to lay them out horizontally and overlap the tab
+ * container's bottom border. BS5 doesn't ship that descendant selector
+ * (BS5 expects `.nav-link` on children inside a flex `.nav-tabs`).
+ *
+ * Once BS3 leaves the bundle, BS5's `.nav-tabs { display: flex }` still
+ * makes the children horizontal, but the -1px overlap is gone. The
+ * `margin-bottom: -1px` below restores it so the active tab's bottom
+ * edge sits flush with the `.nav-tabs` border.
+ */
+#dev-settings .dev-section .nav-tabs {
+	border-bottom: 1px solid #666;
+	font-size: 12px;
+}
+
+#dev-settings .dev-section .nav-tabs li {
+	border: none;
+}
+
+#dev-settings .nav-tabs li {
+	margin-bottom: -1px;
+	padding: 12px;
+	font-size: 13px;
+	cursor: pointer;
+	color: #999;
+}
+
+#dev-settings .nav-tabs li:hover {
+	border-color: transparent;
+	color: #FFF;
+	cursor: pointer;
+}
+
+#dev-settings .nav-tabs .tabBoxSelected {
+	background: #666;
+	color: #FFF;
+	border: none;
+	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 3px;
+}

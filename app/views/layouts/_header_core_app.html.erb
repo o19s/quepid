@@ -20,7 +20,7 @@
             </li>
 
             <li ng-repeat="case in headerScope.dropdownCases | limitTo:5 track by $index">
-              <a href="#" class="dropdown-link" ng-click="headerScope.goToCase($event, case)">{{ case.caseName }}</a>
+              <a href="#" class="dropdown-link dropdown-item" ng-click="headerScope.goToCase($event, case)">{{ case.caseName }}</a>
             </li>
             
             <li class="actions">
@@ -48,8 +48,8 @@
               <strong>RECENT BOOKS</strong>
             </li>
 
-            <li ng-repeat="book in headerScope.dropdownBooks | limitTo:5 track by $index">              
-              <a ng-href="{{headerScope.createBookLink(book)}}" target="_self" class="dropdown-link">{{ book.name }}</a>              
+            <li ng-repeat="book in headerScope.dropdownBooks | limitTo:5 track by $index">
+              <a ng-href="{{headerScope.createBookLink(book)}}" target="_self" class="dropdown-link dropdown-item">{{ book.name }}</a>
             </li>
 
             <li class="actions">
@@ -101,17 +101,17 @@
           </a>
 
           <ul class="dropdown-menu dropdown-content">
-            <li><%= link_to 'My profile', profile_path, class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'Log out', logout_path, class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'My profile', profile_path, class: 'dropdown-link dropdown-item', target: '_self' %></li>
+            <li><%= link_to 'Log out', logout_path, class: 'dropdown-link dropdown-item', target: '_self' %></li>
             <li role="separator" class=""></li>
-            <li><%= link_to 'API Docs', oas_rails_path, class: 'dropdown-item', target: '_self' %></li>
+            <li><%= link_to 'API Docs', oas_rails_path, class: 'dropdown-link dropdown-item', target: '_self' %></li>
             <% if current_user.administrator? %>
             <li role="separator" class=""></li>
-            <li><%= link_to 'Admin Home', admin_path, class: 'dropdown-link', target: '_self' %></li>
-            <li><%= link_to 'Users', admin_users_path, class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'Admin Home', admin_path, class: 'dropdown-link dropdown-item', target: '_self' %></li>
+            <li><%= link_to 'Users', admin_users_path, class: 'dropdown-link dropdown-item', target: '_self' %></li>
 
-            <li><%= link_to 'Announcements', admin_announcements_path, class: 'dropdown-item', target: '_self' %></li>
-            <li><%= link_to 'Job Manager', mission_control_jobs_path, class: 'dropdown-link', target: '_self' %></li>
+            <li><%= link_to 'Announcements', admin_announcements_path, class: 'dropdown-link dropdown-item', target: '_self' %></li>
+            <li><%= link_to 'Job Manager', mission_control_jobs_path, class: 'dropdown-link dropdown-item', target: '_self' %></li>
             <% end %>
           </ul>
         </li> <!-- End account management -->

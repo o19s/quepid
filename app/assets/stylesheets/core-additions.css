@@ -6,6 +6,29 @@
  * Loaded by build_css.js between fonts.css and bootstrap3-add.css.
  */
 
+/*
+ * Root font-size pin (1rem = 10px), mirroring the `html { font-size: 10px }`
+ * rule shipped in BS3's vendored stylesheet.
+ *
+ * No-op while bootstrap3.css still loads (BS3 sets the same value later in
+ * the cascade). Becomes load-bearing the moment BS3 leaves the bundle:
+ * the entire Angular core UI plus the px overrides in bootstrap5-compat.css
+ * are calibrated against a 10px root, so dropping to the browser default
+ * 16px scales everything up ~37% and word-wraps "User Manual" in the navbar
+ * (dry-run regression #3).
+ *
+ * `--bs-body-font-size: 1.4rem` keeps body text at 14px, matching BS3's
+ * body baseline. Remove both if/when an intentional text-size upgrade is
+ * planned — audit the px overrides in bootstrap5-compat.css in the same PR.
+ */
+html {
+  font-size: 62.5%;
+}
+
+:root {
+  --bs-body-font-size: 1.4rem;
+}
+
 html, body {
   width:    100%;
   height:   100%;
