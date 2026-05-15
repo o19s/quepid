@@ -2,7 +2,7 @@
  * ng-tags-input appearance for the Angular core layout.
  *
  * Replaces upstream ng-tags-input.bootstrap*.css, which tinted validation and
- * feedback using Bootstrap 3 (.has-error, .has-success, …). Quepid uses BS5’s
+ * feedback using legacy classes (.has-error, .has-success, …). Quepid uses BS5’s
  * form validation model instead (.is-valid / .is-invalid on an ancestor).
  *
  * Load after vendor ng-tags-input.min.css (structure). Uses BS5 CSS variables
@@ -101,7 +101,7 @@ tags-input[disabled] .tags .input {
 }
 
 /* -----------------------------------------------------------------------------
- * Input-group integration (Bootstrap 5: .input-group is flexbox, unlike BS3.)
+ * Input-group integration (Bootstrap 5: .input-group is flexbox, unlike older float-based groups.)
  * Mirrors .input-group > .form-control sizing so tags-input behaves as the main field.
  */
 

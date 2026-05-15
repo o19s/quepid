@@ -1,24 +1,12 @@
 /*
- * Bootstrap 5 component CSS, scoped to the Angular UI's core.css bundle.
+ * Quepid overrides for the Angular core bundle, layered on top of the
+ * full BS5 stylesheet that build_css.js concatenates earlier.
  *
- * Why this file exists:
- *   The Angular case UI (`core.html.erb`) loads npm Bootstrap 5 first, then
- *   Quepid layers. Legacy templates and vendor CSS still mix older patterns
- *   (e.g. `.fade.in` / `.collapse.in`, bare `<li>` tab rows) with BS5
- *   components, so popovers, dropdowns, modals, and accordions need explicit
- *   rules and px-tuned `--bs-*` overrides to look correct next to Quepid
- *   chrome.
+ * Many of the widget blocks below (tooltip, popover, accordion, nav-tabs,
+ * dropdown) duplicate upstream BS5 and are deletion candidates — see
+ * docs/bootstrap3_to_bs5_migration.md Phase 4.
  *
- *   This file ports the relevant BS5 component rules from
- *   node_modules/bootstrap/dist/css/bootstrap.css, prefixed by a small
- *   :root shim that defines just the parent custom properties they
- *   reference. Using :root keeps variable defaults predictable for this
- *   bundle without affecting the non-Angular `application.css` stack.
- *
- *   Components covered: popover, tooltip, accordion (+ scoped .collapse
- *   helpers under .accordion-collapse), tabs, dropdown, typeahead
- *   (in-app `quepid-typeahead` directive), and modal (in-app `$quepidModal`
- *   shim service).
+ * Parallel brand skin for the non-Angular bundle: bootstrap5-add.css.
  */
 
 :root {
@@ -37,11 +25,9 @@
 }
 
 /*
- * NOTE: BS5's .fade / .fade:not(.show) rules are intentionally NOT ported
- * here. They would clobber BS3's `.fade.in` opacity semantics used by BS3
- * modals/dropdowns. Instead the quepid-popover and quepid-tooltip
- * directives set `animation: false` in their BS5 config so the .fade class
- * is never added in the first place.
+ * quepidPopover / quepidTooltip pass `animation: false` so `.fade` is
+ * never added. Avoids invisible-but-present popover bugs from cascade
+ * conflicts on opacity — see CLAUDE.md trap #3.
  */
 
 .tooltip {
@@ -303,17 +289,10 @@
 }
 
 /*
- * Quepid sizing overrides for the BS3-styled Angular UI.
- *
- * The Angular layout sets `font-size: 62.5%` on <html> (1rem = 10px), a
- * BS3-era convenience hack. BS5 was designed for the standard 16px root
- * and expresses everything in rem, so its defaults render at ~62.5% of the
- * intended size here (popover font 0.875rem → 8.75px instead of 14px).
- *
- * The fix is to override the BS5 popover/tooltip variables with explicit
- * px values, plus reset the `padding` BS3 leaks onto `.popover` (BS5 puts
- * padding on .popover-header / .popover-body, not on .popover itself, so
- * BS3's `.popover { padding: 1px }` wins by default).
+ * Popover sized for explain / ratings JSON: max-width 800px (BS5: 276px)
+ * and max-height 600px. Tooltip min-width 100px keeps single-word
+ * tooltips from rendering as a sliver. Other px values restate BS5
+ * defaults at a 16px root.
  */
 .popover {
   --bs-popover-max-width: 800px;
@@ -342,20 +321,8 @@
   min-width: 100px;
 }
 
-/*
- * Accordion (native BS5, replacing uib-accordion).
- *
- * Ported from node_modules/bootstrap/dist/css/bootstrap.css.
- *
- * Two compat concerns specific to this Angular UI:
- *  1. BS3's `.collapse { display: none }` would hide the panels even when
- *     BS5's JS adds `.show`. Scope the BS5 collapse helpers to
- *     `.accordion-collapse` so we don't touch the broader `.collapse` /
- *     `.fade.in` ecosystem (BS3 modals/dropdowns, quepid-collapse).
- *  2. `font-size: 62.5%` on <html> shrinks BS5's rem-based padding/sizes
- *     to ~62.5% of intent. Override the `--bs-accordion-*` vars with px
- *     values at the bottom of this section.
- */
+/* Accordion (replaces uib-accordion). Only live use is the wizard
+ * endpoint picker (wizardModal.html). Duplicates upstream BS5. */
 .accordion {
   --bs-accordion-color: var(--bs-body-color);
   --bs-accordion-bg: var(--bs-body-bg);
@@ -461,12 +428,8 @@
   padding: var(--bs-accordion-body-padding-y) var(--bs-accordion-body-padding-x);
 }
 
-/*
- * Scoped collapse helpers. We deliberately do NOT add bare `.collapse:not(.show)`
- * or `.collapsing` rules here — BS3 already defines them, and quepid-collapse
- * straddles both. Limiting to `.accordion-collapse` keeps the BS5 panels
- * working without disturbing the rest of the BS3-styled UI.
- */
+/* Scoped to `.accordion-collapse` so we don't fight `quepidCollapse`,
+ * which manages its own .collapse/.show transitions imperatively. */
 .accordion-collapse.collapse:not(.show) {
   display: none;
 }
@@ -479,11 +442,8 @@
   transition: height 0.35s ease;
 }
 
-/*
- * Quepid sizing overrides — same rationale as the popover/tooltip block
- * above. With `font-size: 62.5%` on <html>, BS5's rem defaults render
- * ~62.5% of intent (1.25rem button padding becomes 12.5px instead of 20px).
- */
+/* Accordion at 14px for a denser feel (BS5 default 1rem); other vars
+ * restate BS5 defaults at 16px root. */
 .accordion {
   --bs-accordion-btn-padding-x: 20px;
   --bs-accordion-btn-padding-y: 16px;
@@ -499,17 +459,7 @@
   font-size: 14px;
 }
 
-/*
- * Nav tabs (native BS5, replacing uib-tabset/uib-tab).
- *
- * Ported from node_modules/bootstrap/dist/css/bootstrap.css. We use
- * <button class="nav-link"> markup so BS3's `.nav-tabs > li > a` selectors
- * don't match — only the BS5 rules below paint the tabs. Pane visibility
- * (`.tab-content > .tab-pane { display:none }` + `.tab-content > .active
- * { display:block }`) is identical between BS3 and BS5, so no port needed
- * for that. We deliberately do NOT add `class="fade"` to .tab-pane: BS3's
- * `.fade { opacity:0 }` has no `.fade.show` counterpart in this bundle.
- */
+/* Nav tabs (replaces uib-tabset). Duplicates upstream BS5. */
 .nav {
   --bs-nav-link-padding-x: 1rem;
   --bs-nav-link-padding-y: 0.5rem;
@@ -580,10 +530,7 @@
   border-color: var(--bs-nav-tabs-link-active-border-color);
 }
 
-/*
- * Quepid sizing overrides — `font-size: 62.5%` on <html> shrinks BS5's
- * rem-based padding/sizes to ~62.5% of intent. Use px values.
- */
+/* Tab strip at 14px (BS5 inherits 16px). */
 .nav {
   --bs-nav-link-padding-x: 16px;
   --bs-nav-link-padding-y: 8px;
@@ -594,22 +541,13 @@
 }
 
 /*
- * Dropdown (native BS5 — window.bootstrap.Dropdown auto-registers a
- * document-level click listener on `[data-bs-toggle="dropdown"]` when the
- * module loads via `import * as bootstrap from 'bootstrap'` in
- * angular_app.js, so the open/close plumbing was already in place. This
- * block carries the BS5 dropdown-menu / item styling the core bundle needs,
- * with Quepid-specific px tuning later in the file so menus match the rest
- * of the UI at the computed root font size.
+ * Dropdown. Open/close plumbing comes from window.bootstrap.Dropdown
+ * (auto-registered in angular_app.js). Rules below duplicate BS5; the
+ * Quepid-specific bits are the `--bs-dropdown-*` px tuning and the
+ * `dropdown-toggle::after` suppression at the end of the section.
  *
- * The header_core_app dropdowns keep their distinctive look via
- * `header .dropdown-content li` rules in core-additions.css — higher
- * specificity (0,1,2) than the BS5 .dropdown-menu rules below, so they
- * intentionally win for those instances.
- *
- * BS5's `.dropdown-toggle::after` triangle is suppressed below for the
- * Angular core's chevron-carrying toggles (header, annotation) where
- * the markup provides its own icon and the BS5 pseudo would double up.
+ * Header dropdowns get their distinct look from `header .dropdown-content`
+ * rules in core-additions.css (higher specificity, wins intentionally).
  */
 .dropdown-menu {
   --bs-dropdown-zindex: 1000;
@@ -719,12 +657,7 @@
   white-space: nowrap;
 }
 
-/*
- * Quepid sizing overrides — `font-size: 62.5%` on <html> shrinks BS5's
- * rem defaults to ~62.5% of intent. Use px values for the font/padding
- * so dropdowns render at the size BS5 designs assume. Arrow sizes
- * (`::after` borders) use em and auto-scale, no override needed.
- */
+/* Dropdowns at 14px / header at 12px (BS5: 16px / ~14px). */
 .dropdown-menu {
   --bs-dropdown-font-size: 14px;
   --bs-dropdown-min-width: 160px;
@@ -740,32 +673,17 @@
   font-size: 12px;
 }
 
-/*
- * Suppress BS5's `::after` caret on toggles whose markup already carries
- * its own indicator. header_core_app (`<header class="navbar-secondary">`)
- * uses `<i class="bi bi-chevron-down">` and the annotation menu uses
- * `<i class="bi bi-list">` as the trigger glyph; without this, both would
- * render their icon *and* a BS5 triangle. Scoped to navbar-secondary
- * (rather than bare `header`) so a future plain BS5 dropdown placed in
- * some other `<header>` element keeps its native caret.
- */
+/* Header and annotation menus carry their own chevron glyph — suppress
+ * BS5's `::after` triangle so it doesn't double up. */
 header.navbar-secondary .dropdown-toggle::after,
 .annotation .dropdown-toggle::after {
   display: none;
 }
 
 /*
- * quepid-typeahead dropdown (kraaden/autocompleter, replacing uib-typeahead).
- *
- * kraaden appends `<div class="autocomplete">` to <body>. We assign an extra
- * className so we can target our instances without colliding with anything
- * else that might use the bare `.autocomplete` selector. The library ships
- * its own CSS (autocomplete.css) but we deliberately don't include it — the
- * defaults assume a 16px root, and the green hover colour is jarring against
- * Quepid's chrome. These rules cover the same surface in px.
- *
- * z-index sits above BS3/BS5 modals (1050) so the dropdown isn't clipped
- * when the typeahead lives inside a $quepidModal (e.g. wizardModal).
+ * quepid-typeahead dropdown (kraaden/autocompleter). We don't load the
+ * library's CSS — its green hover clashes with Quepid chrome. z-index
+ * 1080 keeps it above modals (1050) so it isn't clipped inside wizardModal.
  */
 .quepid-typeahead-dropdown {
   position: absolute;
@@ -792,104 +710,39 @@ header.navbar-secondary .dropdown-toggle::after,
   margin-right: 6px;
 }
 
-/*
- * Modal — bridge for $quepidModal shim (services/quepidModalSvc.js).
- *
- * BS3 already styles .modal, .modal-dialog, .modal-content,
- * .modal-header/body/footer, .modal-sm/.modal-lg, and the .modal-backdrop
- * box. The only missing piece is the backdrop opacity: BS3 keys opacity
- * off `.modal-backdrop.in` (its own .fade/.in animation pair), but BS5's
- * bootstrap.Modal toggles `.modal-backdrop.show`. Without the rule below
- * the backdrop renders fully opaque black and hides the page behind the
- * modal.
- *
- * The shim sets `animation: false` (no .fade class on the wrapper) so the
- * other half of CLAUDE.md gotcha #3 is avoided automatically — we don't
- * need a .modal.show / .modal-dialog transform rule here.
- */
+/* Restate BS5's backdrop opacity defensively — `$quepidModal` runs with
+ * `animation: false` (CLAUDE.md trap #3), and we've been bitten before
+ * by the backdrop rendering opaque black. */
 .modal-backdrop.show {
   opacity: 0.5;
 }
 
-/*
- * Wizard modal — wider than BS5 default at narrow viewports.
- *
- * BS5 ships .modal-dialog at max-width: 500px from min-width: 576px up,
- * and only widens to 800px (.modal-lg) at min-width: 992px. The wizard
- * markup (wizardModal.html) was authored against BS3's 600px default
- * and packs an endpoint-picker accordion with logos in a 3-column row;
- * at 500px the row reflows to 2 columns, the second accordion section
- * falls below the fold, and form controls get cramped. Scope a wider
- * modal-dialog to the wizard via the `windowClass: 'wizard-modal-window'`
- * opt passed in new_case_controller.js and wizardCtrl.js.
- *
- * .modal-lg can't be used here because it stays at 500px until 992px and
- * jumps to 800px above that — overflowing 768px viewports we still
- * support. The 600px target sits between BS5's md/lg and matches the
- * BS3 baseline the templates were designed against.
- */
+/* Wizard dialog at 600px. BS5's default 500px reflows the endpoint
+ * picker's 3-column logo row to 2 columns; .modal-lg jumps to 800px and
+ * overflows the 768px viewports we still support. Applied via
+ * `windowClass: 'wizard-modal-window'` in new_case_controller.js. */
 .wizard-modal-window .modal-dialog {
   max-width: 600px;
 }
 
-/*
- * Wizard host (#wizard inside .modal-body) — reserve space for the
- * angular-wizard breadcrumb so it never visually escapes the modal.
- *
- * angular-wizard.css positions ul.steps-indicator with
- * `position: absolute; bottom: 0; height: 30px`. Its containing block
- * is .modal-body (BS5 default position: relative). When the active
- * wz-step has minimal content — e.g. "Name Your Case!" with just an
- * input and a Continue button — modal-body's intrinsic content is
- * shorter than the breadcrumb's anchor, and the breadcrumb visually
- * sits at the modal bottom edge with no margin or, during step
- * transitions, briefly outside it.
- *
- * Reserve enough padding-bottom that the absolute breadcrumb always
- * sits inside the modal-body's padded region with clearance above the
- * in-flow content.
- */
+/* angular-wizard's breadcrumb is `position: absolute; bottom: 0` against
+ * .modal-body; reserve padding so short steps don't let it sit flush
+ * against the modal edge or briefly escape during transitions. */
 .modal-body#wizard {
   padding-bottom: 50px;
 }
 
-/*
- * Form help text — keep <span class="form-text"> block-level.
- *
- * BS3's `.help-block { display: block }` is what made the Angular UI's
- * `<span class="help-block form-text">` help paragraphs render as their
- * own line. BS5's `.form-text` is style-only (margin-top, font-size,
- * color) and intentionally leaves `display` to the host element — BS5
- * docs put it on <div> or <small>. The Angular templates use <span>,
- * so without this shim those spans collapse into inline flow once
- * `help-block` is stripped.
- *
- * Application.css (the BS5-native bundle) uses <div>/<p> for form-text
- * everywhere, so this rule has no effect there even if it were loaded.
- *
- * Remove when the Angular templates migrate their <span class="form-text">
- * to <div class="form-text"> (canonical BS5).
- */
+/* BS5's .form-text leaves `display` to the host element. Several
+ * Angular templates still use `<span class="form-text">` — without this
+ * they'd collapse to inline. Drop when templates migrate to `<div>`. */
 .form-text {
   display: block;
 }
 
-/*
- * ────────────────────────────────────────────────────────────────────────
- *  Header navbar — Quepid brand skin (Angular core bundle)
- * ────────────────────────────────────────────────────────────────────────
- *
- *  The Angular core layout (`_header_core_app.html.erb`) renders a
- *  two-tier navbar: the Quepid brand strip (`.navbar-brand`) plus a
- *  secondary nav (`.navbar-secondary`) with a brand gradient. Flex,
- *  nowrap, and dropdown-toggle shims for this header follow in this file.
- *
- *  The non-Angular `application.html.erb` bundle has a parallel skin in
- *  `app/assets/stylesheets/bootstrap5-add.css`. Keep the two roughly in
- *  sync when adjusting brand chrome — they target the same DOM classes
- *  on different markup stacks (core uses `<header class="navbar-secondary">`
- *  without `.navbar-expand-*`; the application stack uses
- *  `<nav class="navbar navbar-expand-lg navbar-secondary">`).
+/* ── Header navbar — Quepid brand skin ──────────────────────────────
+ * Two-tier: .navbar-brand + .navbar-secondary (gradient strip). Parallel
+ * skin for the non-Angular bundle lives in bootstrap5-add.css against
+ * a `.navbar-expand-lg` host; keep both in sync when adjusting chrome.
  */
 
 /* Primary navbar — Quepid wordmark, sized to 56px brand strip. */
@@ -915,14 +768,8 @@ header.navbar-secondary .dropdown-toggle::after,
   z-index: 10;
 }
 
-/*
- * Primary nav-link padding — 18px y / 15px x.
- *
- * BS5's `--bs-nav-link-padding-y` default is 0.5rem (8px at the 16px
- * root), which leaves the items vertically off-centre next to the 56px
- * brand strip. Scoped to `header .navbar-nav .nav-link` so tab strips
- * and other nav-link uses inside `core` keep BS5 defaults.
- */
+/* 18px y centres nav items against the 56px brand strip (BS5 default
+ * 8px sits high). Scoped to header so tab strips elsewhere keep BS5. */
 header .navbar-nav .nav-link {
   padding: 18px 15px;
   line-height: 24px;
@@ -935,12 +782,7 @@ header .navbar-nav .nav-link {
   font-family: 'allerregular';
 }
 
-/*
- * `_header_core_app.html.erb` uses `<div class="container container-home">`
- * inside `.navbar-secondary` and arranges its dropdown + breadcrumb as
- * siblings. BS5 fluid-`.container` is block by default; we want them on
- * one row, vertically centred.
- */
+/* Row + center the secondary navbar's dropdown and breadcrumb siblings. */
 .navbar-secondary .container-home {
   display: flex;
   align-items: center;
@@ -956,26 +798,13 @@ header .navbar-nav .nav-link {
   background: rgba(0,0,0,0.25);
 }
 
-/*
- * Header navbar — horizontal item flow.
- *
- * `_header_core_app.html.erb` uses BS5-ish lists (`ul.navbar-nav`) but does
- * not wrap the bar in `.navbar-expand-*`. BS5’s `.navbar-nav` is a flex
- * container with default `flex-direction: column`, so top-level items stack
- * unless something sets row direction (`navbar-expand-*` does that).
- * Scoped to `<header>` so we don’t change other navbar usages.
- */
+/* Header uses `ul.navbar-nav` without a `.navbar-expand-*` ancestor, so
+ * BS5 leaves it as flex-column. Force row here. */
 header .navbar-nav {
   flex-direction: row;
 }
 
-/*
- * Keep multi-word nav labels ("User Manual", "Relevancy Cases") on a single
- * line. BS5 lets `.nav-link` text wrap when the container is tight; with
- * the 16px root the navbar items grow large enough that "User Manual"
- * wrapped at 1280px viewport. Scoped to header so other BS5 .nav-link uses
- * are unaffected.
- */
+/* Stop "User Manual" / "Relevancy Cases" from wrapping at 1280px. */
 header .nav-link {
   white-space: nowrap;
 }
@@ -991,15 +820,8 @@ header .dropdown-toggle .bi {
   color: rgba(255,255,255,0.7);
 }
 
-/*
- * btn-outline-secondary — reinforced for the core stack.
- *
- * `buildCoreCSS()` already concatenates npm `bootstrap.css` (which defines
- * `.btn-outline-secondary`). This block repeats and tightens outline/hover/
- * active/disabled so behaviour stays predictable with Quepid layers and
- * modal-body button-group overrides loaded below. Reconcile with upstream
- * Bootstrap when touching these rules.
- */
+/* Restates BS5's .btn-outline-secondary in case a later Quepid layer
+ * (notably the modal-body gradient below) bleeds through. */
 .btn-outline-secondary {
   color: #6c757d;
   border-color: #6c757d;
@@ -1029,20 +851,9 @@ header .dropdown-toggle .bi {
   background: linear-gradient(to bottom right, #EEE, #F8F8F8);
 }
 
-/*
- * Dev panel tabs (#dev-settings .nav-tabs)
- *
- * `devQueryParams.html` uses legacy tab markup (`<ul class="nav nav-tabs"><li
- * ng-class="{tabBoxSelected: ...}">`) — bare `<li>` with click handlers,
- * no `.nav-link` on children. Older Bootstrap shipped `.nav-tabs > li { float: left;
- * margin-bottom: -1px }` to lay tabs horizontally and overlap the tab
- * container's bottom border. BS5 doesn't ship that descendant selector
- * (it expects `.nav-link` on children inside a flex `.nav-tabs`).
- *
- * BS5's `.nav-tabs { display: flex }` keeps children horizontal, but the
- * -1px overlap is gone. The `margin-bottom: -1px` below restores it so the
- * active tab's bottom edge sits flush with the `.nav-tabs` border.
- */
+/* Dev panel tabs. devQueryParams.html uses bare-`<li>` markup (no
+ * .nav-link on children), so BS5's .nav-tabs rules don't reach them.
+ * Delete when devQueryParams.html migrates to `<button class="nav-link">`. */
 #dev-settings .dev-section .nav-tabs {
 	border-bottom: 1px solid #666;
 	font-size: 12px;
@@ -1084,12 +895,7 @@ header .dropdown-toggle .bi {
 	overflow-y: auto;
 }
 
-/*
- * Annotation dropdown chrome.
- * Markup: `app/assets/javascripts/components/annotation/annotation.html`
- * — `<li class="annotation"><div class="dropdown"><a class="dropdown-toggle">…</a>
- * <ul class="dropdown-menu"><li><a class="dropdown-item">…</a></li>…</ul></div></li>`.
- */
+/* Annotation dropdown — markup in components/annotation/annotation.html. */
 .annotation .dropdown > a.dropdown-toggle:hover {
 	color: #888;
 }
@@ -1102,12 +908,7 @@ header .dropdown-toggle .bi {
 	color: #a94442;
 }
 
-/*
- * Modal body / title — Quepid-specific tweaks.
- * `.modal-body .bi` dims and sizes icons inside modal bodies; `.modal-title
- * .modal-case` lightens the case-name span inside modal headers (see
- * `delete_case_options/_modal.html`, `clone_case/_modal.html`, etc.).
- */
+/* Modal body icons (dimmed) and case-name span in modal titles. */
 .modal-body .bi {
 	font-size: 16px;
 	color: #aaa;
@@ -1118,17 +919,8 @@ header .dropdown-toggle .bi {
 	color: #888;
 }
 
-/*
- * Sub-results panel — toolbar position, row spacing, and rating box chrome.
- * Markup: `searchResults.html` wraps the
- * expanded per-query area in `.sub-results.container`; the toolbar
- * (`btn-toolbar`) is positioned absolutely top-right of that panel, and
- * each `<search-result>` (`searchResult.html`) renders a top-level
- * `<div class="row">` separated by a 1px top border.
- *
- * The dead `.sub-results .search-result .container { padding: 0 }` rule
- * was dropped here — `.container` does not appear in `searchResult.html`.
- */
+/* Sub-results panel — toolbar absolutely top-right of the per-query
+ * panel, row borders between <search-result> items. */
 .sub-results .btn-toolbar {
 	position: absolute;
 	top: 20px;
@@ -1156,21 +948,8 @@ header .dropdown-toggle .bi {
 	text-shadow: 0 0 6px rgba(0,0,0,0.25);
 }
 
-/*
- * Fluid `.container` width on Angular core.
- *
- * BS5's fluid `.container` uses `width: 100%` with a capped `max-width` at
- * large breakpoints, which recenters content with side margins on wide
- * screens. Quepid's Angular core expects a full-bleed wrapper; `max-width: none`
- * restores that. Covers `.sub-results .container` (per-query results panel),
- * `.settings-tab > .container` in the dev panel History tab,
- * `.container.container-home` in the secondary navbar, and `404.html`.
- * See `docs/bootstrap3_to_bs5_migration.md` Risk #5.
- *
- * `.btn-group { z-index: 10 }` keeps button-group dropdowns above
- * statically-positioned siblings — covers sub-results toolbar dropdowns
- * (`Set Options`, `Move Query`) and modal-footer button groups.
- */
+/* Full-bleed .container — Quepid expects no breakpoint max-width cap.
+ * .btn-group z-index keeps toolbar dropdowns above static siblings. */
 .container {
 	width: 100%;
 	max-width: none;

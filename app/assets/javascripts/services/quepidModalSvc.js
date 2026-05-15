@@ -104,11 +104,8 @@
         const wrapperEl = wrapper[0];
         const contentEl = wrapperEl.querySelector('.modal-content');
 
-        // No `class="fade"` on the wrapper — BS3's `.fade { opacity: 0 }`
-        // has no `.fade.show` counterpart in core.css (CLAUDE.md gotcha #3),
-        // so an animated modal would render invisible. BS5 reads the class
-        // off the element to decide whether to animate; with no `.fade`,
-        // it skips the transition and the backdrop is shown immediately.
+        // No `.fade` on the wrapper — BS5 skips the transition, avoiding
+        // the invisible-modal class of bugs in CLAUDE.md trap #3.
         const bsModal = new Modal(wrapperEl, {
           backdrop: opts.backdrop !== undefined ? opts.backdrop : true,
           keyboard: opts.keyboard !== undefined ? opts.keyboard : true,
@@ -223,17 +220,12 @@
             $compile(contentEl)(modalScope);
             if (settled) { teardown(); return; }
 
-            // Stack-aware z-index for nested modals. BS3/BS5 both default
-            // .modal to z-index 1050 and .modal-backdrop to 1040, so two
-            // open modals would tie and the inner backdrop would render
-            // *under* the outer modal — leaving outer-modal buttons
-            // clickable while the inner is open. Quepid does nest modals
-            // (targetedSearchModal and the diff modal embed <search-result>
-            // rows whose info button opens detailedDoc.html), so bump per
-            // already-shown modal. Outer keeps the BS3 defaults; each
-            // additional layer adds 20. Backdrop is created synchronously
-            // by BS5 during show() with animation off, so we can grab the
-            // most-recent .modal-backdrop right after show() returns.
+            // Stack-aware z-index. Quepid nests modals (e.g. detailedDoc
+            // opens from inside targetedSearchModal); without this the
+            // inner backdrop ties with the outer modal and outer buttons
+            // stay clickable. Each layer adds 20 to .modal and .modal-backdrop.
+            // Backdrop is created synchronously with animation off, so
+            // grabbing the last .modal-backdrop after show() is safe.
             const stackIdx = document.querySelectorAll('.modal.show').length;
             if (stackIdx > 0) { wrapperEl.style.zIndex = 1050 + stackIdx * 20; }
             bsModal.show();

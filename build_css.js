@@ -95,9 +95,7 @@ function buildCoreCSS() {
   output += `/* Generated on ${new Date().toISOString()} */\n`;
   output += '\n';
 
-  // Bootstrap 5 base. The compat shim (loaded below) supplies BS5-vs-legacy
-  // resets, px sizing, and Angular-core-specific overrides (popover, header nav,
-  // modals, sub-results toolbar, …).
+  // BS5 base; Quepid overrides layer on top in bootstrap5-compat.css.
   output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
   output += '\n';
 
@@ -110,7 +108,6 @@ function buildCoreCSS() {
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/core-additions.css');
   output += '\n';
-  // (bootstrap3-add.css retired — navbar brand skin merged into bootstrap5-compat.css)
   output += readFileIfExists('app/assets/stylesheets/bootstrap5-compat.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/style.css');
