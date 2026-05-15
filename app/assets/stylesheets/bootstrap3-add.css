@@ -78,19 +78,7 @@ header .navbar-nav > li > a {
 
 .navbar-secondary {
 	background: #369;
-	background-image: -webkit-gradient(
-		linear,
-		left top,
-		left bottom,
-		color-stop(0, #4F8ECC),
-		color-stop(1, #2774C0)
-	);
-	background-image: -o-linear-gradient(bottom, #4F8ECC 0%, #2774C0 100%);
-	background-image: -moz-linear-gradient(bottom, #4F8ECC 0%, #2774C0 100%);
-	background-image: -webkit-linear-gradient(bottom, #4F8ECC 0%, #2774C0 100%);
-	background-image: -ms-linear-gradient(bottom, #4F8ECC 0%, #2774C0 100%);
 	background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
-	/* border-bottom: 1px solid #258; */
 	font-family: 'allerregular';
 }
 
@@ -106,9 +94,6 @@ header .navbar-nav > li > a {
 	background: rgba(0,0,0,0.25);
 }
 
-.navbar-secondary .navbar-nav > li > a {
-  color: #fff;
-}
 .navbar-nav li > a:hover, .navbar-secondary .navbar-nav > .open > a, .navbar-secondary .navbar-nav > a:hover, .navbar-secondary .navbar-nav > .open > a:focus {
 	background: #258;
 }
@@ -231,7 +216,7 @@ header .dropdown-link:focus {
 
 #dev-settings .dev-header {
 	background: #222;
-	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#282828), to(#222222));
+	background: linear-gradient(to bottom, #282828, #222222);
 	color: #F0F0F0;
 	padding: 15px;
 	border-bottom: 1px solid #363636;

@@ -5,9 +5,7 @@
 
 /* Match angular-ui-bootstrap uib-progressbar animate="false" (no width transition). */
 .graph-explain .progress-bar {
-    -webkit-transition: none;
-         -o-transition: none;
-            transition: none;
+    transition: none;
 }
 
 .graph-explain .graph-label {

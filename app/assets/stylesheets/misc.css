@@ -77,7 +77,6 @@
 .btn-core-close:disabled, .btn-core-close.disabled {
   pointer-events: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
   user-select: none;
   opacity: var(--bs-btn-close-disabled-opacity);
 }

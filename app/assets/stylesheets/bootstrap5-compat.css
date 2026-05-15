@@ -591,6 +591,168 @@
 }
 
 /*
+ * Dropdown (native BS5 — window.bootstrap.Dropdown auto-registers a
+ * document-level click listener on `[data-bs-toggle="dropdown"]` when the
+ * module loads via `import * as bootstrap from 'bootstrap'` in
+ * angular_app.js, so the open/close plumbing was already in place. What
+ * was missing was the *styling*: BS3's `.dropdown-menu` baseline (loaded
+ * after bootstrap.css) cascade-overrides BS5's, so menus render with
+ * BS3's box-shadow/padding/font-size. Re-asserting BS5's component CSS
+ * here (loaded after BS3) wins the cascade back for plain BS5 dropdowns.
+ *
+ * The header_core_app dropdowns keep their distinctive look via
+ * `header .dropdown-content li` rules in bootstrap3-add.css — higher
+ * specificity (0,1,2) than the BS5 .dropdown-menu rules below, so they
+ * intentionally win for those instances.
+ *
+ * BS5's `.dropdown-toggle::after` triangle is suppressed below for the
+ * Angular core's chevron-carrying toggles (header, annotation) where
+ * the markup provides its own icon and the BS5 pseudo would double up.
+ */
+.dropdown-menu {
+  --bs-dropdown-zindex: 1000;
+  --bs-dropdown-min-width: 10rem;
+  --bs-dropdown-padding-x: 0;
+  --bs-dropdown-padding-y: 0.5rem;
+  --bs-dropdown-spacer: 0.125rem;
+  --bs-dropdown-font-size: 1rem;
+  --bs-dropdown-color: var(--bs-body-color);
+  --bs-dropdown-bg: var(--bs-body-bg);
+  --bs-dropdown-border-color: var(--bs-border-color-translucent);
+  --bs-dropdown-border-radius: var(--bs-border-radius);
+  --bs-dropdown-border-width: var(--bs-border-width);
+  --bs-dropdown-inner-border-radius: calc(var(--bs-border-radius) - var(--bs-border-width));
+  --bs-dropdown-divider-bg: var(--bs-border-color-translucent);
+  --bs-dropdown-divider-margin-y: 0.5rem;
+  --bs-dropdown-box-shadow: var(--bs-box-shadow);
+  --bs-dropdown-link-color: var(--bs-body-color);
+  --bs-dropdown-link-hover-color: var(--bs-body-color);
+  --bs-dropdown-link-hover-bg: #f8f9fa;
+  --bs-dropdown-link-active-color: #fff;
+  --bs-dropdown-link-active-bg: #0d6efd;
+  --bs-dropdown-link-disabled-color: #6c757d;
+  --bs-dropdown-item-padding-x: 1rem;
+  --bs-dropdown-item-padding-y: 0.25rem;
+  --bs-dropdown-header-color: #6c757d;
+  --bs-dropdown-header-padding-x: 1rem;
+  --bs-dropdown-header-padding-y: 0.5rem;
+  position: absolute;
+  z-index: var(--bs-dropdown-zindex);
+  display: none;
+  min-width: var(--bs-dropdown-min-width);
+  padding: var(--bs-dropdown-padding-y) var(--bs-dropdown-padding-x);
+  margin: 0;
+  font-size: var(--bs-dropdown-font-size);
+  color: var(--bs-dropdown-color);
+  text-align: left;
+  list-style: none;
+  background-color: var(--bs-dropdown-bg);
+  background-clip: padding-box;
+  border: var(--bs-dropdown-border-width) solid var(--bs-dropdown-border-color);
+  border-radius: var(--bs-dropdown-border-radius);
+}
+.dropdown-menu[data-bs-popper] {
+  top: 100%;
+  left: 0;
+  margin-top: var(--bs-dropdown-spacer);
+}
+.dropdown-menu-end[data-bs-popper] {
+  right: 0;
+  left: auto;
+}
+.dropup .dropdown-menu[data-bs-popper] {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: var(--bs-dropdown-spacer);
+}
+
+.dropdown-divider {
+  height: 0;
+  margin: var(--bs-dropdown-divider-margin-y) 0;
+  overflow: hidden;
+  border-top: 1px solid var(--bs-dropdown-divider-bg);
+  opacity: 1;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: var(--bs-dropdown-item-padding-y) var(--bs-dropdown-item-padding-x);
+  clear: both;
+  font-weight: 400;
+  color: var(--bs-dropdown-link-color);
+  text-align: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  background-color: transparent;
+  border: 0;
+  border-radius: var(--bs-dropdown-item-border-radius, 0);
+}
+.dropdown-item:hover, .dropdown-item:focus {
+  color: var(--bs-dropdown-link-hover-color);
+  background-color: var(--bs-dropdown-link-hover-bg);
+}
+.dropdown-item.active, .dropdown-item:active {
+  color: var(--bs-dropdown-link-active-color);
+  text-decoration: none;
+  background-color: var(--bs-dropdown-link-active-bg);
+}
+.dropdown-item.disabled, .dropdown-item:disabled {
+  color: var(--bs-dropdown-link-disabled-color);
+  pointer-events: none;
+  background-color: transparent;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-header {
+  display: block;
+  padding: var(--bs-dropdown-header-padding-y) var(--bs-dropdown-header-padding-x);
+  margin-bottom: 0;
+  font-size: 0.875rem;
+  color: var(--bs-dropdown-header-color);
+  white-space: nowrap;
+}
+
+/*
+ * Quepid sizing overrides — `font-size: 62.5%` on <html> shrinks BS5's
+ * rem defaults to ~62.5% of intent. Use px values for the font/padding
+ * so dropdowns render at the size BS5 designs assume. Arrow sizes
+ * (`::after` borders) use em and auto-scale, no override needed.
+ */
+.dropdown-menu {
+  --bs-dropdown-font-size: 14px;
+  --bs-dropdown-min-width: 160px;
+  --bs-dropdown-padding-y: 8px;
+  --bs-dropdown-spacer: 2px;
+  --bs-dropdown-item-padding-x: 16px;
+  --bs-dropdown-item-padding-y: 4px;
+  --bs-dropdown-header-padding-x: 16px;
+  --bs-dropdown-header-padding-y: 8px;
+  --bs-dropdown-divider-margin-y: 8px;
+}
+.dropdown-header {
+  font-size: 12px;
+}
+
+/*
+ * Suppress BS5's `::after` caret on toggles whose markup already carries
+ * its own indicator. header_core_app (`<header class="navbar-secondary">`)
+ * uses `<i class="bi bi-chevron-down">` and the annotation menu uses
+ * `<i class="bi bi-list">` as the trigger glyph; without this, both would
+ * render their icon *and* a BS5 triangle. Scoped to navbar-secondary
+ * (rather than bare `header`) so a future plain BS5 dropdown placed in
+ * some other `<header>` element keeps its native caret.
+ */
+header.navbar-secondary .dropdown-toggle::after,
+.annotation .dropdown-toggle::after {
+  display: none;
+}
+
+/*
  * quepid-typeahead dropdown (kraaden/autocompleter, replacing uib-typeahead).
  *
  * kraaden appends `<div class="autocomplete">` to <body>. We assign an extra
