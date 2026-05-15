@@ -78,16 +78,6 @@ Rails.application.config.email_sender = ENV.fetch('EMAIL_SENDER', '')
 #
 Rails.application.config.query_list_sortable = bool.deserialize(ENV.fetch('QUERY_LIST_SORTABLE', true))
 
-# == Bootstrap 5 Core Layout (client-only flag)
-# `CORE_LAYOUT_BS5` exposes Bootstrap migration state to the Angular app as
-# `configurationSvc.setBs5Enabled` → `isBs5Enabled()` (see `core.html.erb` boot block).
-# `core.html.erb` always loads `core.css` (see `build_css.js` → `buildCoreCSS()` — BS5
-# then BS3 stack); there is no separate `core_bs5.css` bundle. No template reads
-# `isBs5Enabled()` yet. Planned removal: migration doc Phase 5.
-# See `docs/bootstrap3_to_bs5_migration.md`.
-#
-Rails.application.config.core_layout_bs5 = bool.deserialize(ENV.fetch('CORE_LAYOUT_BS5', false))
-
 # == OAuth Settings =
 # We currently only support these two OAuth providers.
 Rails.application.config.google_client_id = ENV.fetch('GOOGLE_CLIENT_ID', '')

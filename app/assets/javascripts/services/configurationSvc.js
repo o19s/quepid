@@ -5,7 +5,6 @@ angular.module('UtilitiesModule')
     function ConfigurationSvc() {
       var communalScorersOnly;
       var queryListSortable;
-      let bs5Enabled;
 
       this.setCommunalScorersOnly = function(val) {
         communalScorersOnly = JSON.parse(val);
@@ -21,14 +20,6 @@ angular.module('UtilitiesModule')
 
       this.isQueryListSortable = function() {
         return queryListSortable;
-      };
-
-      this.setBs5Enabled = function (val) {
-        bs5Enabled = JSON.parse(val);
-      };
-
-      this.isBs5Enabled = function() {
-        return bs5Enabled;
       };
 
     }
