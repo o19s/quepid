@@ -392,6 +392,28 @@ class UserTest < ActiveSupport::TestCase
         judge_options = joey.judge_options
         assert_equal('gpt-3.5-turbo', judge_options[:model])
       end
+
+      it 'rejects an llm_model that RubyLLM does not recognize' do
+        user = User.new(llm_key: '1234', name: 'Judge Judy')
+        user.judge_options = { llm_model: 'totally-made-up-model-xyz' }
+
+        assert_not user.valid?
+        assert_includes user.errors[:base].join, 'totally-made-up-model-xyz'
+      end
+
+      it 'accepts an llm_model that RubyLLM knows' do
+        user = User.new(llm_key: '1234', name: 'Judge Judy')
+        user.judge_options = { llm_model: 'gpt-4o' }
+
+        assert_predicate user, :valid?
+      end
+
+      # it 'accepts an llm_model that RubyLLM knows via Ollama configuration' do
+      #   user = User.new(llm_key: '1234', name: 'Judge Judy')
+      #   user.judge_options = { llm_model: 'qwen3:0.6b' }
+
+      #   assert_predicate user, :valid?
+      # end
     end
   end
 

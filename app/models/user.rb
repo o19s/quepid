@@ -151,6 +151,8 @@ class User < ApplicationRecord
   validates :llm_key, length: { maximum: 255 }, allow_nil: false, presence: true, if: :ai_judge?
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true, if: :ai_judge?
 
+  validate :llm_model_known_to_ruby_llm, if: :ai_judge?
+
   def terms_and_conditions?
     Rails.application.config.terms_and_conditions_url.present?
   end
@@ -294,6 +296,15 @@ class User < ApplicationRecord
   end
 
   private
+
+  def llm_model_known_to_ruby_llm
+    model_id = judge_options[:llm_model]
+    return if model_id.blank?
+
+    RubyLLM.models.find(model_id)
+  rescue RubyLLM::ModelNotFoundError
+    errors.add(:base, "LLM model \"#{model_id}\" is not recognized by RubyLLM.")
+  end
 
   def set_defaults
     # rubocop:disable Style/RedundantSelf
