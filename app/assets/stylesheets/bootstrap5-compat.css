@@ -338,6 +338,9 @@
   --bs-tooltip-arrow-width: 12px;
   --bs-tooltip-arrow-height: 6px;
 }
+.tooltip-inner {
+  min-width: 100px;
+}
 
 /*
  * Accordion (native BS5, replacing uib-accordion).

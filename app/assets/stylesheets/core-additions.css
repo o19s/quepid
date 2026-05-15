@@ -1,7 +1,7 @@
 /*
  * Quepid core UI — layout and skin that do not use Bootstrap framework classes
  * in selectors. See bootstrap3-add.css for `.container`, navbars, dropdowns,
- * gutters (`.row`), dev-panel tabs/buttons, popovers, modals, flash, etc.
+ * gutters (`.row`), dev-panel buttons/tabs, modals, flash, etc.
  *
  * Loaded by build_css.js between fonts.css and bootstrap3-add.css.
  */
@@ -304,6 +304,89 @@ a, button, .button {
   font-size:  1em;
 }
 
+
+/*
+	Dev Settings — panel skin (selectors with no Bootstrap classes).
+	BS-related dev-panel rules (.btn / .btn-xs / .form-inline / .nav-tabs)
+	live in bootstrap3-add.css.
+*/
+
+#dev-settings {
+	width: 100%;
+	background: #333;
+	color: #F0F0F0;
+    height:100%;
+  min-height: calc(100% - 70px);
+}
+
+#dev-settings .dev-header {
+	background: #222;
+	background: linear-gradient(to bottom, #282828, #222222);
+	color: #F0F0F0;
+	padding: 15px;
+	border-bottom: 1px solid #363636;
+	cursor: pointer;
+}
+
+#dev-settings .dev-header .bi {
+	margin-left: 10px;
+	font-size: 14px;
+	font-weight: normal;
+}
+
+#dev-settings .dev-section,
+#dev-settings .dev-body,
+#dev-settings .dev-setting-attribute {
+	padding: 15px;
+}
+
+#dev-settings .dev-section ul {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 20px 0;
+}
+
+#dev-settings .dev-section ul li {
+	padding: 5px 10px;
+	border-bottom: 1px solid #444;
+}
+
+#dev-settings .settings-tab,
+#dev-settings .dev-section  {
+  height:     100%;
+  min-height: 300px;
+}
+
+#dev-settings #queryParamsArea {
+  height:     calc(100% - 50px);
+  min-height: calc(100% - 50px);
+}
+
+#dev-settings #queryParamsCanvas {
+  height: calc(100% - 10px);
+}
+
+#dev-settings .rerunnable-settings-tab {
+  height:         calc(100% - 50px);
+  min-height:     300px;
+  margin-bottom:  20px;
+  overflow:       auto;
+}
+
+#queryParamsCanvas textarea {
+	height: calc(100% - 40px);
+}
+
+#queryParamsCanvas .slider-wrap {
+	padding: 10px 0;
+	border-bottom: 1px solid #555;
+	clear: both;
+}
+
+#queryParamsCanvas .slider-wrap input {
+	float: right;
+  color: black;
+}
 
 /*
 	Dev Settings - History (rest of #dev-settings uses Bootstrap selectors — bootstrap3-add.css)
