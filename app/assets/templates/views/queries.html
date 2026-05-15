@@ -3,7 +3,7 @@
     <div class="col-sm-12 mb-3">
       <add-query class="d-block mb-2"></add-query>
 
-      <ul class="list-inline float-end">
+      <ul class="list-inline d-flex justify-content-end flex-wrap mb-0">
         <li class="list-inline-item">
           <input type="checkbox" class="align-top" ng-checked="queriesSvc.showOnlyRated" ng-click="queriesSvc.toggleShowOnlyRated()" />
           <a href="" ng-click="queriesSvc.toggleShowOnlyRated()">Show only rated</a>
@@ -87,22 +87,20 @@
         </li>
       </ul>
 
-      <div class="clearfix"></div>
+      <div class="d-flex flex-row-reverse flex-wrap">
+        <div class="p-r-10">
+          Number of Queries: {{ queriesList.length }}
+        </div>
+        <div class="p-r-10">
+          <input type="search" ng-model="queryFilter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id='queries-filter' />
+        </div>
+        <div class="p-r-10">
+          <frog-report
+            the-case="caseSvc.selectedCase()"
 
-      <div class="float-end p-r-10">
-        Number of Queries: {{ queriesList.length }}
+          ></frog-report>
+        </div>
       </div>
-      <div class="float-end p-r-10">
-        <input type="search" ng-model="queryFilter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id='queries-filter' />
-      </div>
-      <div class="float-end p-r-10">
-        <frog-report
-          the-case="caseSvc.selectedCase()"
-
-        ></frog-report>
-      </div>
-
-      <div class="clearfix"></div>
 
       <div ng-show="isBootstrapping()" class="alert alert-info search-feedback" role="alert">
         <i class="bi bi-arrow-repeat spintime"></i> <span ng-if="isBootstrapping()">Bootstrapping Queries</span>
