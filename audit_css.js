@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Dead-rule audit for the BS3 (`core.css`) stylesheet bundle.
+// Dead-rule audit for the Angular `core.css` stylesheet bundle.
 //
 // Scans every source file that `buildCoreCSS()` in build_css.js
 // concatenates into core.css, and asks PurgeCSS which selectors are
@@ -12,10 +12,9 @@
 // Host-only when tmp/css-audit is root-owned from Docker — see yarn audit:css:host.
 // Exits before PurgeCSS if the output directory is not writable.
 //
-// Why per-file rather than per-bundle: the BS3 bundle is built by
-// concatenation, so an unused selector in bootstrap3-add.css is a
-// clean delete while the same selector in vendored bootstrap3.css is
-// a different (and noisier) cleanup. Attribution matters.
+// Why per-file rather than per-bundle: the core CSS bundle is built by
+// concatenation, so an unused selector in bootstrap3-add.css is attributable
+// to that file versus npm Bootstrap noise in node_modules/bootstrap. Attribution matters.
 
 const fs = require('fs');
 const path = require('path');
@@ -52,7 +51,6 @@ function ensureWritableOutDir(dir) {
 // belong to upstream packages.
 const SOURCES = [
   'node_modules/bootstrap/dist/css/bootstrap.css',
-  'app/assets/stylesheets/bootstrap3.css',
   'app/assets/stylesheets/core-additions.css',
   'app/assets/stylesheets/bootstrap3-add.css',
   'app/assets/stylesheets/bootstrap5-compat.css',
@@ -72,10 +70,7 @@ const SOURCES = [
 
 // Vendored upstream files we report on but expect high false-positive
 // noise from (selectors used only when runtime code adds them).
-const NOISY_SOURCES = new Set([
-  'node_modules/bootstrap/dist/css/bootstrap.css',
-  'app/assets/stylesheets/bootstrap3.css',
-]);
+const NOISY_SOURCES = new Set(['node_modules/bootstrap/dist/css/bootstrap.css']);
 
 // Where templates, scripts, and helpers live. PurgeCSS extracts any
 // token that *could* be a class name from these, so anything appearing
