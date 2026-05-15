@@ -15,7 +15,7 @@
       <div>
         <p>Give an informative name to the problem you're solving.</p>
 
-        <form class="form-inline">
+        <form class="d-flex flex-wrap align-items-center gap-2">
           <div class="mb-3">
             <label>New Case Name:</label>
             <input type="text" ng-model="pendingWizardSettings.caseName" style='width: 250px' />
@@ -522,7 +522,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
         <div>
           <form>
             <input type="text" ng-model="pendingWizardSettings.text" style='width: 250px'></input>
-            <input class="btn-xs btn-sm btn-success" type="submit" value="Add Query" ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)"></input>
+            <input class="btn-sm btn-success" type="submit" value="Add Query" ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)"></input>
           </form>
         </div>
 

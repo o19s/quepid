@@ -42,7 +42,7 @@
                   {{ caseModel.selectedCase().caseName }}
                 </span>
                 <span ng-show="caseName.startRename">
-                  <form class="form-inline" ng-submit="caseName.rename()">
+                  <form class="d-flex flex-wrap align-items-center gap-2" ng-submit="caseName.rename()">
                       <input style="background:#FFFF99" type="text" ng-model="caseName.name" />
                       <input type="submit" class="btn btn-sm btn-primary" value="Rename" />
                       <button class="btn btn-sm btn-outline-secondary" ng-click="caseName.cancel()">Cancel</button>
@@ -58,7 +58,7 @@
                   </span>
                 </span>
                 <span ng-show="tryName.startRename">
-                  <form class="form-inline" ng-submit="tryName.rename()">
+                  <form class="d-flex flex-wrap align-items-center gap-2" ng-submit="tryName.rename()">
                       <input style="background:#FFFF99" type="text" ng-model="tryName.name" />
                       <input type="submit" class="btn btn-sm btn-primary" value="Rename" />
                       <button class="btn btn-sm btn-outline-secondary" ng-click="tryName.cancel()">Cancel</button>

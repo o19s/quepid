@@ -1,6 +1,6 @@
 <div class="ratingContainer">
   <ul class="ratingNums">
-    <li class="btn btn-xs btn-sm ratingNum" ng-repeat="(rating, value) in ratings.scale" ng-click="ratings.rate(rating)" ng-style="{ 'background-color': value.color }">
+    <li class="btn btn-sm ratingNum" ng-repeat="(rating, value) in ratings.scale" ng-click="ratings.rate(rating)" ng-style="{ 'background-color': value.color }">
       {{ rating }}
 
       <div ng-if='!angular.isUndefined(value.showScaleLabels) && value.showScaleLabels === true'>
@@ -8,6 +8,6 @@
       </div>
     </li>
 
-    <span class="btn btn-outline-secondary btn-xs btn-sm" class="reset" ng-click="ratings.reset()">RESET</span>
+    <span class="btn btn-outline-secondary btn-sm" class="reset" ng-click="ratings.reset()">RESET</span>
   </ul>
 </div>

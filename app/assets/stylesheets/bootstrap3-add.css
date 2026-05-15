@@ -259,8 +259,9 @@ header .dropdown-link:focus {
   width:          100%;
   padding-right:  80px;
 }
-.flash.in {
+.flash.show {
   display: block;
+  opacity: 1;
 }
 
 .flash > span {

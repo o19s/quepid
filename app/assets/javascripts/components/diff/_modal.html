@@ -22,7 +22,7 @@
         
         <button
           type="button"
-          class="btn btn-xs btn-danger"
+          class="btn btn-sm btn-danger"
           ng-show="ctrl.selections[$index]"
           ng-click="ctrl.removeSelection($index)"
           title="{{ctrl.selections.length > 1 ? 'Remove this snapshot selection' : 'Clear this selection'}}"
@@ -32,7 +32,7 @@
         
         <button
           type="button"
-          class="btn btn-xs btn-danger"
+          class="btn btn-sm btn-danger"
           ng-show="ctrl.selections[$index]"
           ng-click="ctrl.toggleDel(ctrl.selections[$index])"
           title="Delete this snapshot"
@@ -44,7 +44,7 @@
       
       <button
         type="button"
-        class="btn btn-xs btn-success"
+        class="btn btn-sm btn-success"
         ng-show="ctrl.canAddMore()"
         ng-click="ctrl.addSelection()"
         title="Add another snapshot"
