@@ -1,10 +1,10 @@
  <div class="bg-light p-2 rounded border">
-  <div class="col-sm-12 clearfix">
+  <div class="col-sm-12">
     <label class="control-label form-label">Custom Headers</label>
     <p class="form-text">If you need to send headers to authenticate with your search engine you can specify them here.</p>
   </div>
 
-  <div class="mb-3 clearfix customheaders code">
+  <div class="mb-3 customheaders code">
     <div class="col-sm-12">
       <select class="form-control" ng-model="settings.headerType" ng-change="updateHeaders()">
         <option ng-selected="settings.headerType">None</option>

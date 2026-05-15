@@ -1,7 +1,7 @@
 <div
   ng-attr-id="{{ 'query-' + query.queryText }}"
   rank="{{$index + 1}}"
-  class="clearfix" ng-class="query.state() | queryStateClass">
+  ng-class="query.state() | queryStateClass">
   <div class="result-header" ng-class="{'diff-query-display': (displayed.results == displayed.resultsView.diffs && query.diffs)}">
     <!-- Current query score -->
     <qscore-query
@@ -61,7 +61,7 @@
     <i class="toggleSign bi {{query.isToggled() | plusOrMinus}}" ng-hide="isSortingEnabled()" ng-click="query.toggle()"></i>
   </div>
 
-  <div ng-if="query.isToggled()" class="sub-results container clearfix">
+  <div ng-if="query.isToggled()" class="sub-results container">
     <div class="col-ratings query-rating">
       <strong>Score All</strong>
       <div class="ratings">
@@ -166,7 +166,7 @@
           </a>
         </span>
 
-        <span ng-if="query.depthOfRating" class="text-muted text-warning bg-warning clearfix">
+        <span ng-if="query.depthOfRating" class="text-muted text-warning bg-warning">
           <strong>Note:</strong> Only the top {{query.depthOfRating}} results are used in the scoring calculations.
         </span>
       </div>
@@ -198,7 +198,7 @@
           </a>
         </span>
 
-        <span class="text-muted text-warning bg-warning clearfix">
+        <span class="text-muted text-warning bg-warning">
           <strong>Note:</strong> You are only viewing documents that have been rated
         </span>
       </div>
