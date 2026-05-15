@@ -10,7 +10,6 @@
 .bold-and-black { color: black; font-weight: bold; }
 .keyboard-shortcuts-td { padding: 5px; text-align: center; color: #999; }
 .padded { padding:5px; }
-.hidden { visibility: hidden!important; display: none!important; }
 
 .rating-buttons .btn-check:checked + .btn {
   box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.3);

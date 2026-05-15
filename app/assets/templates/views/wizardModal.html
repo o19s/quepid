@@ -246,7 +246,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             <div quepid-collapse="!isSolrCollapsed">
               <div class="bg-light p-2 rounded border">
                 <div class="mb-3 row">
-                  <label class="col-sm-3 control-label col-form-label">API Method</label>
+                  <label class="col-sm-3 col-form-label">API Method</label>
                   <div class="col-sm-9">
                     <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
                       <option>JSONP</option>
@@ -290,7 +290,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             <div quepid-collapse="!isHeaderConfigCollapsed">
               <div class="bg-light p-2 rounded border">
                 <div class="mb-3 row">
-                  <label class="col-sm-3 control-label col-form-label">Proxy Requests</label>
+                  <label class="col-sm-3 col-form-label">Proxy Requests</label>
                   <div class="col-sm-9">
                     <div class="form-check">
                       <input id="proxy-requests" type="checkbox" class="form-check-input" ng-model="pendingWizardSettings.proxyRequests" ng-change="changeProxySetting()">
@@ -298,7 +298,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
                     </div>
                   </div>
 
-                  <label class="col-sm-3 control-label col-form-label">Basic Authentication</label>
+                  <label class="col-sm-3 col-form-label">Basic Authentication</label>
                   <div class="col-sm-9">
                     <input type="text" class="form-control"
                       ng-model="pendingWizardSettings.basicAuthCredential"
@@ -385,7 +385,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
                 <span class="badge bg-secondary">{{ pendingWizardSettings.apiMethod }}</span>
               </p>
 
-              <label class="control-label col-form-label">Test Query</label>
+              <label class="col-form-label">Test Query</label>
               <p class="form-text">
                 Enter a test query to validate the endpoint works. You'll configure the query pattern in a later step.
               </p>
@@ -435,7 +435,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
         <form class="">
           <div class="mb-3 row">
-            <label class="col-sm-3 control-label col-form-label">Title Field</label>
+            <label class="col-sm-3 col-form-label">Title Field</label>
             <div class="col-sm-9">
               <input type="text" class="form-control" ng-model="pendingWizardSettings.titleField" ng-change="updateDisplayFields('title', pendingWizardSettings.titleField)" quepid-typeahead="searchFields" quepid-typeahead-on-select="updateDisplayFields('title', $item)" placeholder="Begin typing to show suggestions">
               <p class="form-text">What field should we treat as the 'title' when displaying results?</p>
@@ -444,7 +444,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
           </div>
 
           <div class="mb-3 row">
-            <label class="col-sm-3 control-label col-form-label">ID Field</label>
+            <label class="col-sm-3 col-form-label">ID Field</label>
             <div class="col-sm-9">
               <input type="text" class="form-control" ng-model="pendingWizardSettings.idField" ng-change="updateDisplayFields('id', pendingWizardSettings.idField)" quepid-typeahead="idFields" quepid-typeahead-on-select="updateDisplayFields('id', $item)" placeholder="Begin typing to show suggestions">
               <p class="form-text">What field is the unique identifier for your search results?</p>
@@ -453,7 +453,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
           </div>
 
           <div class="mb-3 row">
-            <label class="col-sm-3 control-label col-form-label">Additional Display Fields</label>
+            <label class="col-sm-3 col-form-label">Additional Display Fields</label>
             <div class="col-sm-9">
               <tags-input ng-model="pendingWizardSettings.additionalFields" placeholder="Add a field" add-on-enter="true" add-on-space="true" add-on-paste="true" paste-split-pattern="[,\s]" min-length="1">
               <auto-complete source="loadFields($query)" min-length="0" load-on-focus="true" load-on-empty="true"></auto-complete>
@@ -488,7 +488,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
         <!-- Query Pattern for Search API -->
         <div ng-if="pendingWizardSettings.searchEngine === 'searchapi'" class="bg-light p-2 rounded border" style="margin-bottom: 15px;">
-          <label class="control-label col-form-label">Query Pattern</label>
+          <label class="col-form-label">Query Pattern</label>
           <p class="form-text">
             <strong>Endpoint:</strong> <code>{{ pendingWizardSettings.searchUrl }}</code>
             <span class="badge bg-secondary">{{ pendingWizardSettings.apiMethod }}</span>
