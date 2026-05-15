@@ -1,42 +1,11 @@
 /*
- * Bootstrap-class selectors and legacy framework-tuned overrides for the
- * Angular core bundle. Quepid layout without Bootstrap class names in selectors
- * lives in core-additions.css (loaded just before this file). BS5 component
- * ports, header flex/nowrap, outline-button baseline, and other migration
- * shims live in bootstrap5-compat.css (loaded just after this file).
+ * Navbar-only Bootstrap-class skin for the Angular core bundle (primary brand,
+ * secondary bar gradient, header nav-link padding). Quepid layout without
+ * Bootstrap class names in selectors lives in core-additions.css (loaded just
+ * before this file). All other Bootstrap-targeted overrides (`.container`,
+ * sub-results, dev panel, modals, …) live in bootstrap5-compat.css (loaded
+ * just after this file).
  */
-
-.container {
-  width: 100%;
-}
-
-/*
-	Base Styles — dropdown / button clusters
-*/
-
-.dropdown-menu .actions {
-  overflow: auto;
-  padding-top: 20px;
-}
-
-.dropdown-menu .actions .btn {
-  margin-bottom: 10px;
-  padding: 6px 12px;
-}
-
-.dropdown-menu .actions a.btn-success {
-  color: #fff;
-}
-
-.dropdown-menu .actions a:hover.btn-success {
-  color: #fff;
-  background-color: #449d44;
-  border-color: #398439;
-}
-
-.btn-group {
-	z-index: 10;
-}
 
 /*
 	Primary Navbar - branding
@@ -91,13 +60,5 @@ header .navbar-nav .nav-link {
 .navbar-secondary .navbar-nav .nav-link:hover,
 .navbar-secondary .navbar-nav .nav-link.active {
 	background: rgba(0,0,0,0.25);
-}
-
-/*
-	Main — .container padding only (#main baseline is core-additions.css)
-*/
-
-#main > .container {
-	padding: 20px 0;
 }
 

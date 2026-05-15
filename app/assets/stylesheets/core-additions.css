@@ -1,8 +1,9 @@
 /*
  * Quepid core UI — layout and skin that do not use Bootstrap framework classes
- * in selectors. See bootstrap3-add.css for `.container`, navbar chrome that
- * keys off Bootstrap classes, gutters (`.row`), dev-panel form buttons,
- * modals, annotation dropdowns, etc. Custom header dropdown panels (`.dropdown-content`,
+ * in selectors. bootstrap3-add.css is a small navbar slice (`.navbar-brand`,
+ * `.navbar-secondary`, header `.nav-link` padding). Bootstrap-class overrides
+ * for `.container`, sub-results toolbars, `#dev-settings` tabs, modals, annotations,
+ * etc. live in bootstrap5-compat.css. Custom header dropdown panels (`.dropdown-content`,
  * `.dropdown-link`), flash directive chrome (`.flash`), and `#flash-messages`
  * live here; BS5 navbar/dropdown shims (open-state toggles, `header .dropdown-toggle .bi`,
  * `.btn-outline-secondary` baseline and modal gradient) live in bootstrap5-compat.css.

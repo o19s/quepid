@@ -1075,3 +1075,29 @@ header .dropdown-toggle .bi {
 	color: #FFF;
 	text-shadow: 0 0 6px rgba(0,0,0,0.25);
 }
+
+/*
+ * Fluid `.container` width on Angular core (moved from bootstrap3-add.css).
+ *
+ * BS3 used `width: 1170px` (fixed) for `.container` at the lg breakpoint;
+ * Quepid's `width: 100%` override turned that into a full-bleed wrapper.
+ * BS5 changed the implementation to `width: 100%; max-width: 1320px` (capped
+ * fluid), which silently re-introduced a centered-with-margins layout on
+ * widescreen after Bootstrap 3 was removed from the bundle. `max-width: none`
+ * restores the original BS3-era full-bleed behavior. Covers `.sub-results
+ * .container` (per-query results panel), `.settings-tab > .container` in the
+ * dev panel History tab, `.container.container-home` in the secondary navbar,
+ * and `404.html`. See `docs/bootstrap3_to_bs5_migration.md` Risk #5.
+ *
+ * `.btn-group { z-index: 10 }` keeps button-group dropdowns above
+ * statically-positioned siblings — covers sub-results toolbar dropdowns
+ * (`Set Options`, `Move Query`) and modal-footer button groups.
+ */
+.container {
+	width: 100%;
+	max-width: none;
+}
+
+.btn-group {
+	z-index: 10;
+}

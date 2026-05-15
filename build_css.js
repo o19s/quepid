@@ -95,9 +95,9 @@ function buildCoreCSS() {
   output += `/* Generated on ${new Date().toISOString()} */\n`;
   output += '\n';
 
-  // Bootstrap 5 base. The compat shim (loaded below) supplies overrides for
-  // the html { font-size: 62.5% } scaling and any residual Angular-UI quirks
-  // still pending cleanup.
+  // Bootstrap 5 base. The compat shim (loaded below) supplies BS5-vs-legacy
+  // resets, px sizing, and Angular-core-specific overrides (popover, header nav,
+  // modals, sub-results toolbar, …).
   output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
   output += '\n';
 
