@@ -857,6 +857,17 @@ header .navbar-nav {
 }
 
 /*
+ * Keep multi-word nav labels ("User Manual", "Relevancy Cases") on a single
+ * line. BS5 lets `.nav-link` text wrap when the container is tight; with
+ * the 16px root the navbar items grow large enough that "User Manual"
+ * wrapped at 1280px viewport. Scoped to header so other BS5 .nav-link uses
+ * are unaffected.
+ */
+header .nav-link {
+  white-space: nowrap;
+}
+
+/*
  * btn-outline-secondary — BS5 outline button under the BS3 cascade.
  *
  * BS5's `.btn-outline-secondary` rules are not loaded on the Angular

@@ -78,12 +78,7 @@
       delay:     isFinite(delayMs) ? { show: delayMs, hide: 0 } : 0,
       container: 'body',
       title:     ' ',
-      content:   currentBody || ' ',
-      // The Angular UI loads BS3 styles, where `.fade { opacity: 0 }` is
-      // unbalanced by BS3's `.fade.in` (BS5 popovers carry .show, not .in).
-      // Disabling animation skips the .fade class so the popover is visible
-      // without porting BS5's full .fade rules into core.css.
-      animation: false
+      content:   currentBody || ' '
     });
 
     function refreshContent() {

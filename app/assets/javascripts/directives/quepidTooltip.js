@@ -35,11 +35,7 @@ angular.module('QuepidApp')
           html: isHtml,
           trigger: 'hover focus',
           delay: isFinite(delayMs) ? { show: delayMs, hide: 0 } : 0,
-          container: 'body',
-          // BS3's .fade rule (loaded by core.css) lacks BS5's .fade.show
-          // counterpart, which would leave the tooltip stuck at opacity 0.
-          // Disabling animation skips the .fade class entirely.
-          animation: false
+          container: 'body'
         });
 
         attrs.$observe('quepidTooltip', function (val) {

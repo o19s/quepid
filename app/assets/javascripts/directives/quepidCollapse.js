@@ -17,11 +17,9 @@ angular.module('QuepidApp')
           }
         }
 
-        // 'in' is the BS3 shown-toggle class; 'show' is the BS5 equivalent.
-        // Setting both keeps the directive working under either stylesheet.
         function settle(expanded) {
-          element.removeClass('collapsing in show');
-          element.addClass(expanded ? 'collapse in show' : 'collapse');
+          element.removeClass('collapsing show');
+          element.addClass(expanded ? 'collapse show' : 'collapse');
           el.style.height = '';
           element.attr('aria-expanded', expanded ? 'true' : 'false');
           element.attr('aria-hidden', expanded ? 'false' : 'true');
@@ -33,7 +31,7 @@ angular.module('QuepidApp')
             settle(true);
             return;
           }
-          element.removeClass('collapse in show').addClass('collapsing');
+          element.removeClass('collapse show').addClass('collapsing');
           el.style.height = '0px';
           void el.offsetHeight;
           el.style.height = el.scrollHeight + 'px';
@@ -51,7 +49,7 @@ angular.module('QuepidApp')
           }
           el.style.height = el.scrollHeight + 'px';
           void el.offsetHeight;
-          element.removeClass('collapse in show').addClass('collapsing');
+          element.removeClass('collapse show').addClass('collapsing');
           el.style.height = '0px';
           pendingTimer = $timeout(function () {
             pendingTimer = null;
