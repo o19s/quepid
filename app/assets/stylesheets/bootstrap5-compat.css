@@ -158,13 +158,6 @@ header.navbar-secondary .dropdown-toggle::after,
   padding-bottom: 50px;
 }
 
-/* BS5's .form-text leaves `display` to the host element. Several
- * Angular templates still use `<span class="form-text">` — without this
- * they'd collapse to inline. Drop when templates migrate to `<div>`. */
-.form-text {
-  display: block;
-}
-
 /* ── Header navbar — Quepid brand skin ──────────────────────────────
  * Two-tier: .navbar-brand + .navbar-secondary (gradient strip). Parallel
  * skin for the non-Angular bundle lives in bootstrap5-add.css against
@@ -252,36 +245,32 @@ header .dropdown-toggle .bi {
   background: linear-gradient(to bottom right, #EEE, #F8F8F8);
 }
 
-/* Dev panel tabs. devQueryParams.html uses bare-`<li>` markup (no
- * .nav-link on children), so BS5's .nav-tabs rules don't reach them.
- * Delete when devQueryParams.html migrates to `<button class="nav-link">`. */
-#dev-settings .dev-section .nav-tabs {
-	border-bottom: 1px solid #666;
+/* Dev panel tabs (devQueryParams.html). Dark-panel theme override
+ * for BS5 nav-tabs — `#dev-settings { background: #333 }` (core-additions.css)
+ * means BS5's default light-bg active state needs to be inverted. */
+#dev-settings .nav-tabs {
+	--bs-nav-tabs-border-color: #666;
+	--bs-nav-tabs-link-hover-border-color: transparent;
+	--bs-nav-tabs-link-active-border-color: transparent;
 	font-size: 12px;
 }
 
-#dev-settings .dev-section .nav-tabs li {
-	border: none;
-}
-
-#dev-settings .nav-tabs li {
-	margin-bottom: -1px;
+#dev-settings .nav-tabs .nav-link {
 	padding: 12px;
 	font-size: 13px;
-	cursor: pointer;
 	color: #999;
 }
 
-#dev-settings .nav-tabs li:hover {
-	border-color: transparent;
+#dev-settings .nav-tabs .nav-link:hover {
 	color: #FFF;
-	cursor: pointer;
 }
 
-#dev-settings .nav-tabs .tabBoxSelected {
-	background: #666;
+/* Active state needs explicit color/bg because the id-scoped `.nav-link`
+ * rule above (1 id + 2 classes) outranks BS5's `.nav-tabs .nav-link.active`
+ * (3 classes), so `--bs-nav-tabs-link-active-*` would never apply. */
+#dev-settings .nav-tabs .nav-link.active {
 	color: #FFF;
-	border: none;
+	background: #666;
 	border-bottom-left-radius: 3px;
 	border-bottom-right-radius: 3px;
 }
