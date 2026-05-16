@@ -95,7 +95,7 @@ function buildCoreCSS() {
   output += `/* Generated on ${new Date().toISOString()} */\n`;
   output += '\n';
 
-  // BS5 base; Quepid overrides layer on top in bootstrap5-compat.css.
+  // BS5 base; Quepid skin layers on top in core-bootstrap.css.
   output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
   output += '\n';
 
@@ -108,7 +108,7 @@ function buildCoreCSS() {
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/core-additions.css');
   output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/bootstrap5-compat.css');
+  output += readFileIfExists('app/assets/stylesheets/core-bootstrap.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/style.css');
   output += '\n';

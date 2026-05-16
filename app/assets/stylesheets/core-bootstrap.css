@@ -98,12 +98,7 @@
   --bs-dropdown-spacer: 2px;
   --bs-dropdown-item-padding-x: 16px;
   --bs-dropdown-item-padding-y: 4px;
-  --bs-dropdown-header-padding-x: 16px;
-  --bs-dropdown-header-padding-y: 8px;
   --bs-dropdown-divider-margin-y: 8px;
-}
-.dropdown-header {
-  font-size: 12px;
 }
 
 /* Header and annotation menus carry their own chevron glyph — suppress

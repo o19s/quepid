@@ -13,7 +13,7 @@
 // Exits before PurgeCSS if the output directory is not writable.
 //
 // Why per-file rather than per-bundle: the core CSS bundle is built by
-// concatenation, so an unused selector in bootstrap5-compat.css is attributable
+// concatenation, so an unused selector in core-bootstrap.css is attributable
 // to that file versus npm Bootstrap noise in node_modules/bootstrap. Attribution matters.
 
 const fs = require('fs');
@@ -52,7 +52,7 @@ function ensureWritableOutDir(dir) {
 const SOURCES = [
   'node_modules/bootstrap/dist/css/bootstrap.css',
   'app/assets/stylesheets/core-additions.css',
-  'app/assets/stylesheets/bootstrap5-compat.css',
+  'app/assets/stylesheets/core-bootstrap.css',
   'app/assets/stylesheets/style.css',
   'app/assets/stylesheets/panes.css',
   'app/assets/stylesheets/stackedChart.css',

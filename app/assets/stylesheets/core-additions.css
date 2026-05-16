@@ -3,12 +3,12 @@
  * in selectors. All Bootstrap-class overrides for the Angular core bundle —
  * navbar brand skin (`.navbar-brand`, `.navbar-secondary`, header `.nav-link`),
  * fluid `.container`, sub-results toolbars, `#dev-settings` tabs, modals,
- * annotations, dropdown shims, etc. — live in bootstrap5-compat.css.
+ * annotations, dropdown shims, etc. — live in core-bootstrap.css.
  *
  * Custom header dropdown panels (`.dropdown-content`, `.dropdown-link`), flash
  * directive chrome (`.flash`), and `#flash-messages` live here.
  *
- * Loaded by build_css.js between fonts.css and bootstrap5-compat.css.
+ * Loaded by build_css.js between fonts.css and core-bootstrap.css.
  */
 
 html, body {
@@ -185,7 +185,7 @@ header .dropdown-link:focus {
 
 
 /*
-	Main - Results - Sub Results (structure only; .btn-toolbar / .row lives in bootstrap5-compat.css)
+	Main - Results - Sub Results (structure only; .btn-toolbar / .row lives in core-bootstrap.css)
 */
 
 .sub-results {
@@ -317,7 +317,7 @@ header .dropdown-link:focus {
 /*
 	Dev Settings — panel skin (selectors with no Bootstrap classes).
 	BS-related dev-panel rules (`.nav-tabs` dark theme) live in
-	bootstrap5-compat.css.
+	core-bootstrap.css.
 */
 
 #dev-settings {
@@ -401,7 +401,7 @@ header .dropdown-link:focus {
 }
 
 /*
-	Dev Settings - History (rest of #dev-settings uses Bootstrap selectors — bootstrap5-compat.css)
+	Dev Settings - History (rest of #dev-settings uses Bootstrap selectors — core-bootstrap.css)
 */
 
 .history-container {
