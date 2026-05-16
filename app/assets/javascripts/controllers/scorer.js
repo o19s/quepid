@@ -4,11 +4,11 @@
 
 angular.module('QuepidApp')
   .controller('ScorerCtrl', [
-    '$scope', '$uibModalInstance', '$log',
+    '$scope', '$window', '$quepidModalInstance', '$log',
     'parent', 'scorerSvc', 'caseSvc', 'queriesSvc',
     'configurationSvc', 'caseTryNavSvc',
     function (
-      $scope, $uibModalInstance, $log,
+      $scope, $window, $quepidModalInstance, $log,
       parent, scorerSvc, caseSvc, queriesSvc,
       configurationSvc, caseTryNavSvc
     ) {
@@ -36,19 +36,18 @@ angular.module('QuepidApp')
         });
 
       function cancel() {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       }
 
       function gotoScorers() {
-        $uibModalInstance.dismiss('cancel');
-        var url = caseTryNavSvc.getQuepidRootUrl() + '/scorers';
-        window.location.href = url;
+        $quepidModalInstance.dismiss('cancel');
+        $window.location.href = caseTryNavSvc.getQuepidRootUrl() + '/scorers';
       }
 
       function ok() {
         setScorerForCase();
 
-        $uibModalInstance.close($scope.activeScorer);
+        $quepidModalInstance.close($scope.activeScorer);
       }
 
       function scorerAccessible() {

@@ -4,9 +4,9 @@
 
 angular.module('QuepidApp')
   .controller('DebugMatchesCtrl', [
-    '$uibModal',
+    '$quepidModal',
     function (
-      $uibModal
+      $quepidModal
     ) {
       var ctrl = this;
 
@@ -14,7 +14,7 @@ angular.module('QuepidApp')
       ctrl.showDetailed = showDetailed;
 
       function showDetailed() {
-        $uibModal.open({
+        $quepidModal.open({
           templateUrl:  'debug_matches/_modal.html',
           controller:   'DebugMatchesModalInstanceCtrl',
           controllerAs: 'ctrl',

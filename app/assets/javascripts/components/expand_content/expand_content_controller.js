@@ -6,11 +6,11 @@ angular.module('QuepidApp')
   .controller('ExpandContentCtrl', [
     '$scope',
     '$sce',
-    '$uibModal',
+    '$quepidModal',
     function (
       $scope,
       $sce,
-      $uibModal
+      $quepidModal
     ) {
       var ctrl = this;
       ctrl.content = $scope.content;
@@ -20,7 +20,7 @@ angular.module('QuepidApp')
       ctrl.expand = expand;
 
       function expand() {
-        $uibModal.open({
+        $quepidModal.open({
           templateUrl:  'expand_content/_modal.html',
           controller:   'ExpandContentModalInstanceCtrl',
           controllerAs: 'ctrl',

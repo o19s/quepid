@@ -32,7 +32,7 @@
 
           <div ng-controller="CaseCtrl" style="display:inline-block;vertical-align:top">
             <h1 class="">
-              <small class="text-muted">Current case <i class="bi bi-repeat" ng-show="caseModel.selectedCase().nightly" uib-tooltip="Queries are run on a nightly basis." tooltip-popup-delay="1000" tooltip-placement="right"></i></small>
+              <small class="text-muted">Current case <i class="bi bi-repeat" ng-show="caseModel.selectedCase().nightly" quepid-tooltip="Queries are run on a nightly basis." tooltip-popup-delay="1000" tooltip-placement="right"></i></small>
               <span ng-show="caseModel.selectedCase().public">PUBLIC</span>
               <span ng-show="caseModel.selectedCase().archived">ARCHIVED</span>
               
@@ -42,10 +42,10 @@
                   {{ caseModel.selectedCase().caseName }}
                 </span>
                 <span ng-show="caseName.startRename">
-                  <form class="form-inline" ng-submit="caseName.rename()">
+                  <form class="d-flex flex-wrap align-items-center gap-2" ng-submit="caseName.rename()">
                       <input style="background:#FFFF99" type="text" ng-model="caseName.name" />
                       <input type="submit" class="btn btn-sm btn-primary" value="Rename" />
-                      <button class="btn btn-sm btn-default" ng-click="caseName.cancel()">Cancel</button>
+                      <button class="btn btn-sm btn-outline-secondary" ng-click="caseName.cancel()">Cancel</button>
                   </form>
                 </span>
               </span>
@@ -58,10 +58,10 @@
                   </span>
                 </span>
                 <span ng-show="tryName.startRename">
-                  <form class="form-inline" ng-submit="tryName.rename()">
+                  <form class="d-flex flex-wrap align-items-center gap-2" ng-submit="tryName.rename()">
                       <input style="background:#FFFF99" type="text" ng-model="tryName.name" />
                       <input type="submit" class="btn btn-sm btn-primary" value="Rename" />
-                      <button class="btn btn-sm btn-default" ng-click="tryName.cancel()">Cancel</button>
+                      <button class="btn btn-sm btn-outline-secondary" ng-click="tryName.cancel()">Cancel</button>
                   </form>
                 </span>
               </small>
@@ -78,55 +78,55 @@
       <div id="case-actions" class="row" ng-controller="CaseCtrl">
         <div class="col-sm-12" ng-if="caseModel.caseLoaded()">
           <ul class="list-inline">
-            <li>
-              <span class="glyphicon glyphicon-tasks"></span>
+            <li class="list-inline-item">
+              <i class="bi bi-card-list"></i>
               <a name="button" ng-click="pickCaseScorer()">
                 Select scorer
               </a>
             </li>
-            <li>
+            <li class="list-inline-item">
               <judgements
                 acase="caseModel.selectedCase()"
               </judgements>
             </li>
-            <li>
-              <span class="glyphicon glyphicon-camera"></span>
+            <li class="list-inline-item">
+              <i class="bi bi-camera-fill"></i>
               <a ng-controller="TakeSnapshotCtrl" type="button" ng-click="snapshot.prompt()">
                 Create snapshot
               </a>
             </li>
-            <li>
+            <li class="list-inline-item">
               <diff></diff>
             </li>
-            <li>
+            <li class="list-inline-item">
               <import-ratings
                 acase="caseModel.selectedCase()"
               ></import-ratings>
             </li>
-            <li>
+            <li class="list-inline-item">
               <share-case
                 acase="caseModel.selectedCase()"
               ></share-case>
             </li>
-            <li>
+            <li class="list-inline-item">
               <clone-case
                 acase="caseModel.selectedCase()"
               ></clone-case>
             </li>
-            <li>
+            <li class="list-inline-item">
               <delete-case-options
                 acase="caseModel.selectedCase()"
               ></delete-case-options>
             </li>
-            <li>
+            <li class="list-inline-item">
               <export-case
                 icon-only="false"
                 acase="caseModel.selectedCase()"
                 supports-detailed-export="true"
               ></export-case>
             </li>
-            <li id="tune-relevance-link">
-              <span class="glyphicon glyphicon-wrench"></span>
+            <li class="list-inline-item" id="tune-relevance-link">
+              <i class="bi bi-wrench-adjustable"></i>
               <a type="button" ng-click="toggleDevSettings()">
                 Tune Relevance
               </a>
@@ -147,6 +147,5 @@
     <div class="pane_east">
       <ng-include src="'views/_dev_settings.html'"></ng-include>
     </div>
-    <div class="clearfix"></div>
   </div>
 </div>

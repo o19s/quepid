@@ -12,6 +12,7 @@
 #
 # The mounted files below will be bundled into app/assets/builds/angular_app.js during
 # the build process, so any changes you make locally will be included after rebuilding.
+# The same command refreshes app/assets/builds/angular_app.css (angular-ui-bootstrap vendor styles).
 
 services:
   app:

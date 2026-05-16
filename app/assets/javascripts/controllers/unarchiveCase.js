@@ -2,9 +2,9 @@
 
 angular.module('QuepidApp')
   .controller('UnarchiveCaseCtrl', [
-    '$scope', '$uibModalInstance',
+    '$scope', '$quepidModalInstance',
     'caseSvc','currentTeam',
-    function ($scope, $uibModalInstance, caseSvc, currentTeam) {
+    function ($scope, $quepidModalInstance, caseSvc, currentTeam) {
 
       $scope.currentTeam = currentTeam; // can be null if we aren't looking at a current Team
       $scope.loading = true;
@@ -47,12 +47,12 @@ angular.module('QuepidApp')
       $scope.addBackCase = function(aCase) {
         caseSvc.unarchiveCase(aCase)
         .then(function() {
-          $uibModalInstance.dismiss('addBackCase');
+          $quepidModalInstance.dismiss('addBackCase');
         });
       };
 
       $scope.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
 
     }

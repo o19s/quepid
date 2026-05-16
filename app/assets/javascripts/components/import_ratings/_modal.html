@@ -1,28 +1,50 @@
 <div class="modal-header">
-  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
+  <button type="button" class="btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Import into Case: <span class="modal-case">{{ ctrl.theCase.caseName }}</span></h3>
 </div>
 
 <div class="modal-body">
-  <uib-tabset active="active">
-    <uib-tab index="0" heading="Ratings" select="ctrl.clearSelection()">
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link active" id="import-ratings-tab-ratings"
+              data-bs-toggle="tab" data-bs-target="#import-ratings-pane-ratings"
+              role="tab" aria-controls="import-ratings-pane-ratings" aria-selected="true"
+              ng-click="ctrl.clearSelection()">Ratings</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link" id="import-ratings-tab-info-needs"
+              data-bs-toggle="tab" data-bs-target="#import-ratings-pane-info-needs"
+              role="tab" aria-controls="import-ratings-pane-info-needs" aria-selected="false"
+              ng-click="ctrl.clearSelection()">Information Needs</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button type="button" class="nav-link" id="import-ratings-tab-snapshots"
+              data-bs-toggle="tab" data-bs-target="#import-ratings-pane-snapshots"
+              role="tab" aria-controls="import-ratings-pane-snapshots" aria-selected="false"
+              ng-click="ctrl.clearSelection()">Snapshots</button>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane active" id="import-ratings-pane-ratings"
+         role="tabpanel" aria-labelledby="import-ratings-tab-ratings">
       <p>
         Importing ratings is a great way to manage the rating process outside of Quepid, for example in your own custom application.
         There are a number of formats for importing this data into Quepid.
       </p>
-      <div class="checkbox">
-        <label>
-          <input id="clear-existing-queries" type="checkbox" ng-model='ctrl.clearQueries'> Clear existing queries?
-          <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Select to clear all the existing queries on a case, this is typical when you manage your queries and ratings per case outside Quepid"></span>
+      <div class="form-check">
+        <input id="clear-existing-queries" type="checkbox" class="form-check-input" ng-model='ctrl.clearQueries'>
+        <label class="form-check-label" for="clear-existing-queries">
+          Clear existing queries?
+          <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Select to clear all the existing queries on a case, this is typical when you manage your queries and ratings per case outside Quepid"></i>
         </label>
       </div>
 
       <p>Please select the file format to import:</p>
 
-      <div class="form-group">
+      <div class="mb-3">
         <input type="radio" id="csv" name="importSelection" value="csv" ng-model="ctrl.options.which">
         <label for="csv">CSV</label>
-        <span class="help-block">
+        <span class="form-text">
           The CSV file should have the headers: <code>query,docid,rating</code> and lines similar to:
           <pre>
 query,docid,rating
@@ -52,10 +74,10 @@ star trek,,</pre>
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="mb-3">
         <input type="radio" id="rre" name="importSelection" value="rre" ng-model="ctrl.options.which">
         <label for="rre">Rated Ranking Evaluator</label>
-        <span class="help-block">
+        <span class="form-text">
           Quepid only imports the ratings part of the <a href="https://github.com/SeaseLtd/rated-ranking-evaluator/wiki/What%20We%20Need%20To%20Provide#ratings" target="_blank">RRE judgement</a> file.
         </span>
         <p>Select RRE ratings file to import:</p>
@@ -65,10 +87,10 @@ star trek,,</pre>
           onchange="angular.element(this).scope().pickedRREFile()"/>
       </div>
 
-      <div class="form-group">
+      <div class="mb-3">
         <input type="radio" id="ltr" name="importSelection" value="ltr" ng-model="ctrl.options.which">
         <label for="ltr">Learning to Rank</label>
-        <span class="help-block">
+        <span class="form-text">
           LTR uses a rather odd format of <code>rating qid:queryid # docid query</code>, eg <code>3 qid:1 # 1370 star trek</code>.  We ignore the <code>qid:queryid</code> and use the <code>query</code> for matching up to existing queries.
         </span>
         <p>Select LTR ratings file to import:</p>
@@ -77,22 +99,24 @@ star trek,,</pre>
           accept="text/plain"
           onchange="angular.element(this).scope().pickedLTRFile()"/>
       </div>
-    </uib-tab>
-    <uib-tab index="1" heading="Information Needs" select="ctrl.clearSelection()">
+    </div>
+    <div class="tab-pane" id="import-ratings-pane-info-needs"
+         role="tabpanel" aria-labelledby="import-ratings-tab-info-needs">
       <p>
         Importing information needs is the easiest way to update a lot of queries.  You should export the template file via the 'Export' feature first.
       </p>
-      <div class="form-group">
+      <div class="mb-3">
         <input type="radio" id="information_needs" name="importSelection" value="information_needs" ng-model="ctrl.options.which">
         <label for="information_needs">Information Needs CSV</label>
-        <div class="checkbox">
-          <label>
-            <input id="clear-existing-queries" type="checkbox" ng-model='ctrl.createQueries'> Create missing queries?
-            <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Select to create any missing queries, useful when populating a new case with queries with info needs."></span>
+        <div class="form-check">
+          <input id="create-missing-queries" type="checkbox" class="form-check-input" ng-model='ctrl.createQueries'>
+          <label class="form-check-label" for="create-missing-queries">
+            Create missing queries?
+            <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Select to create any missing queries, useful when populating a new case with queries with info needs."></i>
           </label>
         </div>
 
-        <span class="help-block">
+        <span class="form-text">
           The CSV file should have the headers: <code>query,information_need</code> and lines similar to:
           <pre>
 query,information_need
@@ -119,17 +143,18 @@ star wars,"The original movie"</pre>
           <div class="content import-content"><pre>{{ ctrl.information_needs.content }}</pre></div>
         </div>
       </div>
-    </uib-tab>
-    <uib-tab index="2" heading="Snapshots" select="ctrl.clearSelection()">
+    </div>
+    <div class="tab-pane" id="import-ratings-pane-snapshots"
+         role="tabpanel" aria-labelledby="import-ratings-tab-snapshots">
       <p>
         Importing snapshots is fun!  Any missing queries will be created.  The Case ID provided in the uploaded CSV file will be replaced so that all rows will be imported into the current case.
       </p>
-      <div class="form-group">
+      <div class="mb-3">
         <input type="radio" id="snapshots" name="importSelection" value="snapshots"
                ng-model="ctrl.options.which">
         <label for="snapshots">Snapshot CSV</label>
 
-        <span class="help-block">
+        <span class="form-text">
           The CSV file should have the headers: <code>Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position</code> and lines similar to:
           <pre>
 Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,527641,1
@@ -161,8 +186,8 @@ Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,1921,3
           </div>
         </div>
       </div>
-    </uib-tab>
-  </uib-tabset>
+    </div>
+  </div>
 
 </div>
 <div class="modal-footer">
@@ -180,9 +205,9 @@ Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,1921,3
     </span>    
   </p>
 
-  <i class="glyphicon glyphicon-refresh spintime" aria-hidden="true" ng-show="ctrl.loading"></i>
+  <i class="bi bi-arrow-repeat spintime" aria-hidden="true" ng-show="ctrl.loading"></i>
 
-  <button class="btn btn-default float-left" ng-click="ctrl.cancel()">Cancel</button>
+  <button class="btn btn-outline-secondary float-start me-auto" ng-click="ctrl.cancel()">Cancel</button>
   <button class="btn btn-primary" ng-click="ctrl.ok()" ng-disabled="!ctrl.showWarning()">Import</button>
 
 </div>

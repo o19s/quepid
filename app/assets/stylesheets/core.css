@@ -4,14 +4,14 @@
  */
  
  /*
- * Bootstrap 3 is used here (Angular app)
- * include bootstrap3.css
+ * Angular core: Bootstrap 5 from npm plus Quepid sheets (see build_css.js buildCoreCSS()).
  *
  * Shared Bootstrap Icons
  * include bootstrap-icons/font/bootstrap-icons
  *
  * include fonts.css
- * include bootstrap3-add.css
+ * include core-additions.css
+ * include core-bootstrap.css
  *
  * include style.css
  * include base.css

@@ -1,0 +1,342 @@
+/*
+ * Quepid overrides for the Angular core bundle, layered on top of the
+ * full BS5 stylesheet that build_css.js concatenates earlier. Each
+ * component block below is just the px / size tuning Quepid wants on
+ * top of BS5; the upstream rules supply structure and behaviour.
+ *
+ * Parallel brand skin for the non-Angular bundle: bootstrap5-add.css.
+ */
+
+:root {
+  --bs-body-color: #212529;
+  --bs-body-bg: #fff;
+  --bs-secondary-bg: #e9ecef;
+  --bs-emphasis-color: #000;
+  --bs-border-width: 1px;
+  --bs-border-color: #dee2e6;
+  --bs-border-color-translucent: rgba(0, 0, 0, 0.175);
+  --bs-border-radius: 4px;
+  --bs-border-radius-lg: 8px;
+  --bs-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --bs-primary-text-emphasis: #052c65;
+  --bs-primary-bg-subtle: #cfe2ff;
+}
+
+/* Tooltip + popover: quepidPopover / quepidTooltip pass `animation: false`
+ * so `.fade` is never added — avoids invisible-but-present popover bugs
+ * from cascade conflicts on opacity (CLAUDE.md trap #3).
+ *
+ * Popover sized for explain / ratings JSON (max-width 800px vs BS5's 276px,
+ * max-height 600px). Tooltip min-width 100px keeps single-word tooltips
+ * from rendering as a sliver. Other px values restate BS5 defaults at
+ * a 16px root for explicitness. */
+.tooltip {
+  --bs-tooltip-font-size: 14px;
+  --bs-tooltip-padding-x: 8px;
+  --bs-tooltip-padding-y: 4px;
+  --bs-tooltip-arrow-width: 12px;
+  --bs-tooltip-arrow-height: 6px;
+}
+.tooltip-inner {
+  min-width: 100px;
+}
+
+.popover {
+  --bs-popover-max-width: 800px;
+  --bs-popover-font-size: 14px;
+  --bs-popover-header-font-size: 16px;
+  --bs-popover-header-padding-y: 8px;
+  --bs-popover-header-padding-x: 16px;
+  --bs-popover-body-padding-y: 12px;
+  --bs-popover-body-padding-x: 16px;
+  --bs-popover-arrow-width: 16px;
+  --bs-popover-arrow-height: 8px;
+  --bs-popover-border-radius: 8px;
+  --bs-popover-inner-border-radius: 7px;
+  max-height: 600px;
+  padding: 0;
+}
+
+/* Accordion: only live use is the wizard endpoint picker (wizardModal.html).
+ * 14px is the denser look Quepid wants (BS5 default 1rem). */
+.accordion {
+  --bs-accordion-btn-padding-x: 20px;
+  --bs-accordion-btn-padding-y: 16px;
+  --bs-accordion-btn-icon-width: 20px;
+  --bs-accordion-btn-focus-box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
+  --bs-accordion-body-padding-x: 20px;
+  --bs-accordion-body-padding-y: 16px;
+  --bs-accordion-border-radius: 4px;
+  --bs-accordion-inner-border-radius: 3px;
+  font-size: 14px;
+}
+.accordion-button {
+  font-size: 14px;
+}
+
+/* Nav tabs (replaces uib-tabset). Tab strip at 14px (BS5 inherits 16px). */
+.nav {
+  --bs-nav-link-padding-x: 16px;
+  --bs-nav-link-padding-y: 8px;
+  --bs-nav-link-font-size: 14px;
+}
+.nav-link:focus-visible {
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
+}
+
+/* Dropdown: open/close plumbing comes from window.bootstrap.Dropdown
+ * (auto-registered in angular_app.js). 14px / 12px is the denser look
+ * Quepid wants (BS5 default 1rem / 0.875rem); other vars restate BS5
+ * defaults at 16px root for explicitness.
+ *
+ * Header dropdowns get their distinct look from `header .dropdown-content`
+ * rules in core-additions.css (higher specificity, wins intentionally). */
+.dropdown-menu {
+  --bs-dropdown-font-size: 14px;
+  --bs-dropdown-min-width: 160px;
+  --bs-dropdown-padding-y: 8px;
+  --bs-dropdown-spacer: 2px;
+  --bs-dropdown-item-padding-x: 16px;
+  --bs-dropdown-item-padding-y: 4px;
+  --bs-dropdown-divider-margin-y: 8px;
+}
+
+/* Header and annotation menus carry their own chevron glyph — suppress
+ * BS5's `::after` triangle so it doesn't double up. */
+header.navbar-secondary .dropdown-toggle::after,
+.annotation .dropdown-toggle::after {
+  display: none;
+}
+
+/*
+ * quepid-typeahead dropdown (kraaden/autocompleter). We don't load the
+ * library's CSS — its green hover clashes with Quepid chrome. z-index
+ * 1080 keeps it above modals (1050) so it isn't clipped inside wizardModal.
+ */
+.quepid-typeahead-dropdown {
+  position: absolute;
+  z-index: 1080;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.175);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 14px;
+  line-height: 22px;
+}
+.quepid-typeahead-dropdown > div {
+  padding: 4px 12px;
+  cursor: pointer;
+}
+.quepid-typeahead-dropdown > div.selected,
+.quepid-typeahead-dropdown > div:hover {
+  background: #e9ecef;
+}
+.quepid-typeahead-dropdown img {
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+/* Wizard dialog at 600px. BS5's default 500px reflows the endpoint
+ * picker's 3-column logo row to 2 columns; .modal-lg jumps to 800px and
+ * overflows the 768px viewports we still support. Applied via
+ * `windowClass: 'wizard-modal-window'` in new_case_controller.js. */
+.wizard-modal-window .modal-dialog {
+  max-width: 600px;
+}
+
+/* angular-wizard's breadcrumb is `position: absolute; bottom: 0` against
+ * .modal-body; reserve padding so short steps don't let it sit flush
+ * against the modal edge or briefly escape during transitions. */
+.modal-body#wizard {
+  padding-bottom: 50px;
+}
+
+/* ── Header navbar — Quepid brand skin ──────────────────────────────
+ * Two-tier: .navbar-brand + .navbar-secondary (gradient strip). Parallel
+ * skin for the non-Angular bundle lives in bootstrap5-add.css against
+ * a `.navbar-expand-lg` host; keep both in sync when adjusting chrome.
+ */
+
+/* Primary navbar — Quepid wordmark, sized to 56px brand strip. */
+.navbar-brand {
+  position: relative;
+  height: 56px;
+  min-width: 120px;
+  padding: 16px 15px 0 0;
+  font-family: 'alleritalic', sans-serif;
+  font-size: 28px;
+  color: #FFF !important;
+}
+
+.navbar-brand .hover {
+  display: none;
+}
+
+.navbar-brand:hover .hover {
+  display: block;
+  position: absolute;
+  top: 15px;
+  left: 100px;
+  z-index: 10;
+}
+
+/* 18px y centres nav items against the 56px brand strip (BS5 default
+ * 8px sits high). Scoped to `header.navbar-secondary` so the selector
+ * (0,3,1) outranks BS5's `.navbar-expand .navbar-nav .nav-link` (0,3,0),
+ * which sets `padding-right/left` to `--bs-navbar-nav-link-padding-x`
+ * and would otherwise clobber the 15px horizontal padding. */
+header.navbar-secondary .navbar-nav .nav-link {
+  padding: 18px 15px;
+  line-height: 24px;
+}
+
+/* Secondary navbar — brand gradient strip below the primary nav. */
+.navbar-secondary {
+  background: #369;
+  background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
+  font-family: 'allerregular', sans-serif;
+}
+
+/* Row + center the secondary navbar's dropdown and breadcrumb siblings. */
+.navbar-secondary .container-home {
+  display: flex;
+  align-items: center;
+}
+
+/* Secondary nav-link colours + hover/active emphasis. */
+.navbar-secondary .navbar-nav .nav-link {
+  color: #FFF;
+}
+
+.navbar-secondary .navbar-nav .nav-link:hover,
+.navbar-secondary .navbar-nav .nav-link.active {
+  background: rgba(0,0,0,0.25);
+}
+
+/* Stop "User Manual" / "Relevancy Cases" from wrapping at 1280px. */
+header .nav-link {
+  white-space: nowrap;
+}
+
+/* Secondary nav — open toggle uses .show / aria-expanded="true". */
+.navbar-secondary .navbar-nav .dropdown-toggle.show,
+.navbar-secondary .navbar-nav .dropdown-toggle[aria-expanded="true"] {
+  background: #258;
+}
+
+header .dropdown-toggle .bi {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+}
+
+/* Modal-body button group has a subtle paper-like fill — only the
+ * `background` differs from BS5's outline button defaults. */
+.modal-body .btn-group .btn-outline-secondary {
+  background: linear-gradient(to bottom right, #EEE, #F8F8F8);
+}
+
+/* Dev panel tabs (devQueryParams.html). Dark-panel theme override
+ * for BS5 nav-tabs — `#dev-settings { background: #333 }` (core-additions.css)
+ * means BS5's default light-bg active state needs to be inverted. */
+#dev-settings .nav-tabs {
+	--bs-nav-tabs-border-color: #666;
+	--bs-nav-tabs-link-hover-border-color: transparent;
+	--bs-nav-tabs-link-active-border-color: transparent;
+	font-size: 12px;
+}
+
+#dev-settings .nav-tabs .nav-link {
+	padding: 12px;
+	font-size: 13px;
+	color: #999;
+}
+
+#dev-settings .nav-tabs .nav-link:hover {
+	color: #FFF;
+}
+
+/* Active state needs explicit color/bg because the id-scoped `.nav-link`
+ * rule above (1 id + 2 classes) outranks BS5's `.nav-tabs .nav-link.active`
+ * (3 classes), so `--bs-nav-tabs-link-active-*` would never apply. */
+#dev-settings .nav-tabs .nav-link.active {
+	color: #FFF;
+	background: #666;
+	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 3px;
+}
+
+/*
+ * Dev panel — History tab scroll container.
+ * The History tab in `devQueryParams.html` wraps its content in a BS
+ * `.container`; this lets it fill the panel height and scroll.
+ */
+#dev-settings .settings-tab > .container {
+	height: 100%;
+	overflow-y: auto;
+}
+
+/* Annotation dropdown — markup in components/annotation/annotation.html. */
+.annotation .dropdown > a.dropdown-toggle:hover {
+	color: #888;
+}
+
+.annotation > .dropdown > .dropdown-menu > li {
+	border-bottom: 1px solid #AAA !important;
+}
+
+.annotation .dropdown-menu > li > a.text-danger {
+	color: #a94442;
+}
+
+/* Modal body icons (dimmed) and case-name span in modal titles. */
+.modal-body .bi {
+	font-size: 16px;
+	color: #aaa;
+}
+
+.modal-title .modal-case {
+	font-weight: 200;
+	color: #888;
+}
+
+/* Sub-results panel — toolbar absolutely top-right of the per-query
+ * panel, row borders between <search-result> items. */
+.sub-results .btn-toolbar {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+}
+
+.sub-results .btn-toolbar .active {
+	background: #2872bc;
+	color: #FFF;
+}
+
+.sub-results .row {
+	padding: 5px 0;
+}
+
+.sub-results .search-result .row {
+	border-top: 1px solid #CCC;
+	position: relative;
+}
+
+.single-rating .btn {
+	width: 60px;
+	box-shadow: inset 0 0 25px rgba(0,0,0,0.25);
+	color: #FFF;
+	text-shadow: 0 0 6px rgba(0,0,0,0.25);
+}
+
+/* Full-bleed .container — Quepid expects no breakpoint max-width cap.
+ * .btn-group z-index keeps toolbar dropdowns above static siblings. */
+.container {
+	width: 100%;
+	max-width: none;
+}
+
+.btn-group {
+	z-index: 10;
+}

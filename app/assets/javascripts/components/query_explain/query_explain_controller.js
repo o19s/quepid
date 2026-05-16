@@ -4,10 +4,10 @@
 
 angular.module('QuepidApp')
   .controller('QueryExplainCtrl', [
-    '$uibModal',
+    '$quepidModal',
     '$scope',
     function (
-      $uibModal,
+      $quepidModal,
       $scope
     ) {
       var ctrl  = this;
@@ -17,9 +17,10 @@ angular.module('QuepidApp')
       ctrl.prompt = prompt;
 
       function prompt() {
-        var modalInstance = $uibModal.open({
-          templateUrl:  'query_explain/_modal.html',
-          controller:   'QueryExplainModalInstanceCtrl',
+        var modalInstance = $quepidModal.open({
+          templateUrl:      'query_explain/_modal.html',
+          ariaLabelledBy:   'query-explain-modal-title',
+          controller:       'QueryExplainModalInstanceCtrl',
           controllerAs: 'ctrl',
           size: 'lg',
           resolve: {

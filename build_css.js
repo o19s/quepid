@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-// Node.js script to build CSS bundles with proper file watching
-// Replaces build_css.sh with better file watching using chokidar
+// Concatenates per-bundle CSS sources into app/assets/builds/ and copies
+// vendor/font/image assets alongside. Pass --watch to rebuild on changes
+// to any path in WATCH_PATHS (debounced via chokidar).
 
 const fs = require('fs');
 const path = require('path');
@@ -10,7 +11,8 @@ const path = require('path');
 const WATCH_PATHS = [
   'app/assets/stylesheets',
   'node_modules/bootstrap/dist/css',
-  'node_modules/bootstrap-icons/font'
+  'node_modules/bootstrap-icons/font',
+  'app/javascript/vendor/ng-tags-input/build'
 ];
 
 function ensureDirectoryExists(dirPath) {
@@ -90,26 +92,26 @@ function buildCoreCSS() {
   console.log('Building core.css...');
   
   const outputFile = 'app/assets/builds/core.css';
-  let output = '/* Core CSS Bundle (Bootstrap 3 for Angular App) */\n';
+  let output = '/* Core CSS Bundle (Bootstrap 5 for Angular App) */\n';
   output += `/* Generated on ${new Date().toISOString()} */\n`;
   output += '\n';
 
-  // Bootstrap 3
-  output += readFileIfExists('app/assets/stylesheets/bootstrap3.css');
+  // BS5 base; Quepid skin layers on top in core-bootstrap.css.
+  output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
   output += '\n';
 
-  // Bootstrap Icons (shared between both)
+  // Bootstrap Icons
   output += readFileIfExists('node_modules/bootstrap-icons/font/bootstrap-icons.css');
   output += '\n';
 
   // Core application styles
   output += readFileIfExists('app/assets/stylesheets/fonts.css');
   output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/bootstrap3-add.css');
+  output += readFileIfExists('app/assets/stylesheets/core-additions.css');
+  output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/core-bootstrap.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/style.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/base.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/panes.css');
   output += '\n';
@@ -200,11 +202,23 @@ function copyVendorFiles() {
   
   ensureDirectoryExists('app/assets/builds');
   
-  // Copy Angular third-party CSS files
-  copyFileIfExists('node_modules/ng-json-explorer/dist/angular-json-explorer.css', 'app/assets/builds/angular-json-explorer.css');
-  copyFileIfExists('node_modules/angular-wizard/dist/angular-wizard.css', 'app/assets/builds/angular-wizard.css');
-  copyFileIfExists('node_modules/ng-tags-input/build/ng-tags-input.min.css', 'app/assets/builds/ng-tags-input.min.css');
-  copyFileIfExists('node_modules/ng-tags-input/build/ng-tags-input.bootstrap.min.css', 'app/assets/builds/ng-tags-input.bootstrap.min.css');
+  // Copy Angular third-party CSS files (sources live in app/javascript/vendor)
+  copyFileIfExists(
+    'app/javascript/vendor/ng-json-explorer/dist/angular-json-explorer.css',
+    'app/assets/builds/angular-json-explorer.css'
+  );
+  copyFileIfExists(
+    'app/javascript/vendor/angular-wizard/angular-wizard.css',
+    'app/assets/builds/angular-wizard.css'
+  );
+  copyFileIfExists(
+    'app/javascript/vendor/ng-tags-input/build/ng-tags-input.min.css',
+    'app/assets/builds/ng-tags-input.min.css'
+  );
+  copyFileIfExists(
+    'app/assets/stylesheets/ng-tags-input-theme.css',
+    'app/assets/builds/ng-tags-input.theme.css'
+  );
 }
 
 function copyFontFiles() {

@@ -4,7 +4,7 @@
 
 angular.module('QuepidApp')
   .controller('ExportCaseCtrl', [
-    '$uibModal',
+    '$quepidModal',
     '$scope',
     '$log',
     'caseSvc',
@@ -12,7 +12,7 @@ angular.module('QuepidApp')
     'queriesSvc',
     'querySnapshotSvc',
     function (
-      $uibModal,
+      $quepidModal,
       $scope,
       $log,
       caseSvc,
@@ -147,7 +147,7 @@ angular.module('QuepidApp')
       }
 
       function prompt() {
-        var modalInstance = $uibModal.open({
+        var modalInstance = $quepidModal.open({
           templateUrl:  'export_case/_modal.html',
           controller:   'ExportCaseModalInstanceCtrl',
           controllerAs: 'ctrl',

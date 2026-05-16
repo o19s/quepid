@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close btn-core-close" ng-click="targetedSearchModalModel.closeModal()" aria-label="Close"></button>
+  <button type="button" class="btn-core-close" ng-click="targetedSearchModalModel.closeModal()" aria-label="Close"></button>
   <h3 class="modal-title">Find and Rate Missing Documents</h3>
 </div>
 <div class="modal-body" id="targeted-search-modal">
@@ -12,7 +12,7 @@
   <div ng-controller = 'DocFinderCtrl'>
     <form ng-submit="findDocs()">
       <div class="row">
-        <div class="form-group col-sm-6">
+        <div class="mb-3 col-sm-6">
           <div class="form-control">
             <div ui-ace="{
               onLoad : aceLoaded,
@@ -35,11 +35,11 @@
             ng-keydown="checkIfEnterKeyPressed($event)"></div>
           </div>
           <p ng-if="enterKeyPressed" class="alert alert-danger">
-            <span class="glyphicon glyphicon-alert"></span>
+            <i class="bi bi-exclamation-triangle-fill"></i>
             Please click the "Search" button instead of enter key to avoid scrolling your query out of view!
           </p>
 
-          <p class="help-block">
+          <p class="form-text">
             Solr:
             Use the simple <a href="https://www.lucenetutorial.com/lucene-query-syntax.html" target="_blank">Lucene query syntax</a> (<code>field:value</code>).<br />
             Example: <code>id:123</code>.<br />
@@ -58,7 +58,7 @@
     </form>
     <form ng-submit="resetToAllRatedDocs()">
       <p>
-        <input type="submit" class="btn btn-default form-control"  ng-disabled="defaultList" value="Reset to All Rated Docs"></input>
+        <input type="submit" class="btn btn-outline-secondary form-control"  ng-disabled="defaultList" value="Reset to All Rated Docs"></input>
       </p>
     </form>
   </div>
@@ -94,16 +94,16 @@
     </p>
 
 
-    <div class="score-all pull-left">
+    <div class="score-all float-start">
       <strong>Score All</strong>
       <div class="ratings">
-        <div class="single-rating" ng-click="ratings.open()" uib-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
-          <span class="btn" style="background-color: rgb(119, 119, 119);">- <span class="caret"></span></span>
+        <div class="single-rating" ng-click="ratings.open()" quepid-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
+          <span class="btn" style="background-color: rgb(119, 119, 119);">- <i class="bi bi-caret-down-fill"></i></span>
         </div>
       </div>
     </div>
 
-    <div class="alert alert-warning pull-left score-all-alert">
+    <div class="alert alert-warning float-start score-all-alert">
       Changing ratings will affect the query score.
     </div>
 
@@ -114,15 +114,15 @@
 
 <div class='row'>
   <span ng-if="docFinder.numFound > docFinder.docs.length">
-    <a class="btn btn-default" ng-click="paginate()">
+    <a class="btn btn-outline-secondary" ng-click="paginate()">
       Peek at the next page of results
     </a>
   </span>
 
   <span ng-show="docFinder.paging">
-    <i class="glyphicon glyphicon-refresh spintime"></i>
+    <i class="bi bi-arrow-repeat spintime"></i>
   </span>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default" ng-click="targetedSearchModalModel.closeModal()">Close</button>
+  <button class="btn btn-outline-secondary" ng-click="targetedSearchModalModel.closeModal()">Close</button>
 </div>

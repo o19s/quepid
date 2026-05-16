@@ -7,14 +7,14 @@ angular.module('QuepidApp')
     '$rootScope',
     '$scope',
     '$location',
-    '$uibModal',
+    '$quepidModal',
     '$timeout',
     'caseSvc',
     function (
       $rootScope,
       $scope,
       $location,
-      $uibModal,
+      $quepidModal,
       $timeout,
       caseSvc
     ) {
@@ -42,10 +42,11 @@ angular.module('QuepidApp')
         // and return some default values down
         caseSvc.createCase(); //Note createCase() switches to the new case
 
-        var modalInstance = $uibModal.open({
+        var modalInstance = $quepidModal.open({
           templateUrl:  'views/wizardModal.html',
-          controller:   'WizardModalCtrl', 
-          backdrop:     'static'
+          controller:   'WizardModalCtrl',
+          backdrop:     'static',
+          windowClass:  'wizard-modal-window'
         });
 
         if (!$rootScope.currentUser.completedCaseWizard) {

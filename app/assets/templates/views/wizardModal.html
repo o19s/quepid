@@ -1,12 +1,12 @@
 <div class="modal-body" id="wizard">
-  <button type="button" class="close btn-core-close" ng-click="cancel()" aria-label="Close"></button>
+  <button type="button" class="btn-core-close" ng-click="cancel()" aria-label="Close"></button>
   <wizard on-finish="pendingWizardSettings.submit()">
     <wz-step title="Welcome" id="step-one">
       <h1>Welcome To Quepid!</h1>
       <div>
         <img ng-src="images/doug.jpg" style="float: left; margin: 20px 30px 100px 20px; width: 100px" />
         <p>Hi, I'm Doug, creator of Quepid. Let me guide you through setting up your very first Case!</p>
-        <button class="btn btn-primary pull-right continue" wz-next>Continue</button>
+        <button class="btn btn-primary float-end continue" wz-next>Continue</button>
         <br><br><br><br><br>
       </div>
     </wz-step>
@@ -15,12 +15,12 @@
       <div>
         <p>Give an informative name to the problem you're solving.</p>
 
-        <form class="form-inline">
-          <div class="form-group">
+        <form class="d-flex flex-wrap align-items-center gap-2">
+          <div class="mb-3">
             <label>New Case Name:</label>
             <input type="text" ng-model="pendingWizardSettings.caseName" style='width: 250px' />
           </div>
-          <button class="btn btn-primary pull-right continue" wz-next>Continue</button>
+          <button class="btn btn-primary float-end continue" wz-next>Continue</button>
         </form>
 
         <br><br><br><br><br>
@@ -29,10 +29,25 @@
     <wz-step title="Endpoint" id="step-three">
       <h2>What Search Endpoint do you want to connect to?</h2>
       <div>
-        <uib-accordion>
-          <div uib-accordion-group class="panel-default" heading="Create a new Search Endpoint" 
-            is-open="shouldCreateNewSearchEndpointDefaultToOpen"
-            ng-click="switchToCreateNewSearchEndpoint()">
+        <div class="accordion" id="wizardEndpointAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button"
+                class="accordion-button"
+                ng-class="{collapsed: !shouldCreateNewSearchEndpointDefaultToOpen}"
+                data-bs-toggle="collapse"
+                data-bs-target="#wizardEndpointAccordionCreate"
+                aria-controls="wizardEndpointAccordionCreate"
+                ng-attr-aria-expanded="{{!!shouldCreateNewSearchEndpointDefaultToOpen}}"
+                ng-click="switchToCreateNewSearchEndpoint()">
+                Create a new Search Endpoint
+              </button>
+            </h2>
+            <div id="wizardEndpointAccordionCreate"
+              class="accordion-collapse collapse"
+              ng-class="{show: shouldCreateNewSearchEndpointDefaultToOpen}"
+              data-bs-parent="#wizardEndpointAccordion">
+              <div class="accordion-body">
           <div style="text-align: center;">
             <label style="margin-right: 25px;">
               <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
@@ -158,13 +173,13 @@ curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings
           </div>
 
           <form class="">
-            <div ng-if="pendingWizardSettings.searchEngine !== 'static'" class="form-group" style="width: 100%">
+            <div ng-if="pendingWizardSettings.searchEngine !== 'static'" class="mb-3" style="width: 100%">
               <div class="row">
                 <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
-                <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
-                <p class="help-block">Unsure? <a href="http://quepidapp.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
+                <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="float-end text-end"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
+                <p class="form-text">Unsure? <a href="http://quepidapp.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
 
-                <p ng-show="pendingWizardSettings.urlFormat" class="help-block tip">
+                <p ng-show="pendingWizardSettings.urlFormat" class="form-text tip">
                   Tip: Your URL should look like this {{pendingWizardSettings.urlFormat}}.
                 </p>
               </div>
@@ -176,17 +191,17 @@ curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings
                 A "Static" (or "Offline") search endpoint is a great way to gather human judgements and leverage Quepid's existing evaluation tools without requiring a live connection to a search engine.
               </p>
               <p>
-                <button type="button" class="btn btn-sm btn-default" ng-click="isStaticCollapsed = !isStaticCollapsed">Static Dataset</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="isStaticCollapsed = !isStaticCollapsed">Static Dataset</button>
               </p>
 
-              <div uib-collapse="!isStaticCollapsed">
-                <div class="well well-sm">
+              <div quepid-collapse="!isStaticCollapsed">
+                <div class="bg-light p-2 rounded border">
                   <p>
                     Create the CSV file and upload it here.
                     Under the covers we use the Snapshot CSV format, so you can export a snapshot from Quepid and then upload it here to to create Static search endpoint.
                   </p>
 
-                  <span class="help-block">
+                  <div class="form-text">
                     The CSV file should have the headers: <code>Query Text,Doc ID,Doc Position</code>.
                     Then, all the document fields you want displayed follow as columns with the header being the name of the field.
                     <pre>
@@ -196,7 +211,7 @@ star wars,9426,2, Star Wars: The Empire Strikes Back
 star wars,1921,3, Star Wars: Return of the Jedi
                     </pre>
                     Please note that the additional columns that a Snapshot export file contains are ignored when you import them here.
-                  </span>
+                  </div>
 
                   <p>Select CSV file to import:</p>
 
@@ -226,18 +241,18 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
             <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
             <p>
-              <button type="button" class="btn btn-sm btn-default" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
             </p>
-            <div uib-collapse="!isSolrCollapsed">
-              <div class="well well-sm">
-                <div class="form-group clearfix">
-                  <label class="col-sm-3 control-label">API Method</label>
+            <div quepid-collapse="!isSolrCollapsed">
+              <div class="bg-light p-2 rounded border">
+                <div class="mb-3 row">
+                  <label class="col-sm-3 col-form-label">API Method</label>
                   <div class="col-sm-9">
                     <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
                       <option>JSONP</option>
                       <option>GET</option>
                     </select>
-                    <p class="help-block">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
+                    <p class="form-text">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
                   </div>
                 </div>
               </div>
@@ -245,7 +260,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </span>
 
             <span ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
-              <div class="well well-sm">
+              <div class="bg-light p-2 rounded border">
                 <div class="alert alert-info">
                   <h4><i class="bi bi-magic"></i> Custom Mapper Required</h4>
                   <p>
@@ -270,28 +285,27 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
             <span ng-if="pendingWizardSettings.searchEngine !== 'static'">
             <p>
-              <button type="button" class="btn btn-sm btn-default" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
             </p>
-            <div uib-collapse="!isHeaderConfigCollapsed">
-              <div class="well well-sm">
-                <div class="form-group clearfix">
-                  <label class="col-sm-3 control-label">Proxy Requests</label>
+            <div quepid-collapse="!isHeaderConfigCollapsed">
+              <div class="bg-light p-2 rounded border">
+                <div class="mb-3 row">
+                  <label class="col-sm-3 col-form-label">Proxy Requests</label>
                   <div class="col-sm-9">
-                    <div class="checkbox">
-                      <label>
-                        <p class="help-block"><input id="proxy-requests" type="checkbox" ng-model="pendingWizardSettings.proxyRequests" ng-change="changeProxySetting()">Fighting with CORS issues?  Proxy your search requests through Quepid server.</p>
-                      </label>
+                    <div class="form-check">
+                      <input id="proxy-requests" type="checkbox" class="form-check-input" ng-model="pendingWizardSettings.proxyRequests" ng-change="changeProxySetting()">
+                      <label class="form-check-label form-text" for="proxy-requests">Fighting with CORS issues?  Proxy your search requests through Quepid server.</label>
                     </div>
                   </div>
 
-                  <label class="col-sm-3 control-label">Basic Authentication</label>
+                  <label class="col-sm-3 col-form-label">Basic Authentication</label>
                   <div class="col-sm-9">
                     <input type="text" class="form-control"
                       ng-model="pendingWizardSettings.basicAuthCredential"
                       ng-change="resetUrlValid()"
                       placeholder="username:password">
 
-                    <p class="help-block">Specify your <code>username:password</code> here to access Basic Auth protected endpoints.</p>
+                    <p class="form-text">Specify your <code>username:password</code> here to access Basic Auth protected endpoints.</p>
                   </div>
                 </div>
               </div>
@@ -300,13 +314,11 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
             </span>
 
-            <div ng-if="pendingWizardSettings.searchEngine !== 'searchapi'" class="form-group" style="width: 100%">
-              <div class="clearfix"></div>
-
+            <div ng-if="pendingWizardSettings.searchEngine !== 'searchapi'" class="mb-3" style="width: 100%">
               <div class="row" style="margin-top: 50px;">
-                <div class="pull-right">
+                <div class="float-end text-end">
 
-                  <button ng-show="!showTLSChangeWarning" class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="!readyToContinue()">
+                  <button ng-show="!showTLSChangeWarning" class="btn btn-primary float-end continue" ng-click="validate()" ng-disabled="!readyToContinue()">
                     <span ng-hide="validating">Continue</span>
                     <span ng-show="validating">Validating...</span>
                   </button>
@@ -317,7 +329,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
                   <span ng-show="showTLSChangeWarning">
                     <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
-                      <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
+                      <i class="bi bi-arrow-repeat"></i> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
                     </a>
                   </span>
 
@@ -327,8 +339,26 @@ star wars,1921,3, Star Wars: Return of the Jedi
           </form>
 
 
+              </div>
+            </div>
           </div>
-          <div uib-accordion-group class="panel-default" heading="Use an existing Search Endpoint" is-open="shouldExistingSearchEndpointDefaultToOpen">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button"
+                class="accordion-button"
+                ng-class="{collapsed: !shouldExistingSearchEndpointDefaultToOpen}"
+                data-bs-toggle="collapse"
+                data-bs-target="#wizardEndpointAccordionExisting"
+                aria-controls="wizardEndpointAccordionExisting"
+                ng-attr-aria-expanded="{{!!shouldExistingSearchEndpointDefaultToOpen}}">
+                Use an existing Search Endpoint
+              </button>
+            </h2>
+            <div id="wizardEndpointAccordionExisting"
+              class="accordion-collapse collapse"
+              ng-class="{show: shouldExistingSearchEndpointDefaultToOpen}"
+              data-bs-parent="#wizardEndpointAccordion">
+              <div class="accordion-body">
             <div class="row">
               <div class="alert alert-warning" role="alert" ng-if="listSearchEndpoints().length === 0">
                 You do not have any Search Endpoints created yet.
@@ -342,21 +372,21 @@ star wars,1921,3, Star Wars: Return of the Jedi
               >
               </select>
 
-              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null || showTLSChangeWarning">ping it</button></small>
-              <p class="help-block tip" ng-if="hasStaticEndpoints">
+              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="float-end text-end"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null || showTLSChangeWarning">ping it</button></small>
+              <p class="form-text tip" ng-if="hasStaticEndpoints">
                 FYI: your existing Static File endpoints are NOT sharable across cases.
               </p>
             </div>
 
             <!-- Test Query for Search API endpoints -->
-            <div ng-if="pendingWizardSettings.searchEndpointId != null && pendingWizardSettings.searchEngine === 'searchapi'" class="well well-sm" style="margin-top: 15px;">
-              <p class="help-block">
+            <div ng-if="pendingWizardSettings.searchEndpointId != null && pendingWizardSettings.searchEngine === 'searchapi'" class="bg-light p-2 rounded border" style="margin-top: 15px;">
+              <p class="form-text">
                 <strong>Endpoint:</strong> <code>{{ pendingWizardSettings.searchUrl }}</code>
-                <span class="label label-default">{{ pendingWizardSettings.apiMethod }}</span>
+                <span class="badge bg-secondary">{{ pendingWizardSettings.apiMethod }}</span>
               </p>
 
-              <label class="control-label">Test Query</label>
-              <p class="help-block">
+              <label class="col-form-label">Test Query</label>
+              <p class="form-text">
                 Enter a test query to validate the endpoint works. You'll configure the query pattern in a later step.
               </p>
               <input
@@ -378,8 +408,8 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
             <div class="row" style="margin-top: 50px;">
 
-              <div class="pull-right">
-                <button class="btn btn-primary pull-right continue" ng-show="!showTLSChangeWarning" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))">Continue</button>
+              <div class="float-end text-end">
+                <button class="btn btn-primary float-end continue" ng-show="!showTLSChangeWarning" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))">Continue</button>
 
                 <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
                   <span ng-hide="validating">Skip Validation</span>
@@ -387,14 +417,15 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
                 <span ng-show="showTLSChangeWarning">
                   <a href="{{quepidUrlToSwitchTo}}&existingSearchEndpoint=true" class="btn btn-primary form-control">
-                    <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
+                    <i class="bi bi-arrow-repeat"></i> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
                   </a>
                 </span>
               </div>
             </div>
+              </div>
+            </div>
           </div>
-          
-        </uib-accordion>
+        </div>
         <br><br><br><br>
       </div>
     </wz-step>
@@ -403,36 +434,36 @@ star wars,1921,3, Star Wars: Return of the Jedi
       <div>
 
         <form class="">
-          <div class="form-group clearfix">
-            <label class="col-sm-3 control-label">Title Field</label>
+          <div class="mb-3 row">
+            <label class="col-sm-3 col-form-label">Title Field</label>
             <div class="col-sm-9">
-              <input type="text" class="form-control" ng-model="pendingWizardSettings.titleField" ng-change="updateDisplayFields('title', pendingWizardSettings.titleField)" typeahead-on-select="updateDisplayFields('title', pendingWizardSettings.titleField)" uib-typeahead="field for field in searchFields | filter:$viewValue | limitTo:8" class="form-control" placeholder="Begin typing to show suggestions">
-              <p class="help-block">What field should we treat as the 'title' when displaying results?</p>
+              <input type="text" class="form-control" ng-model="pendingWizardSettings.titleField" ng-change="updateDisplayFields('title', pendingWizardSettings.titleField)" quepid-typeahead="searchFields" quepid-typeahead-on-select="updateDisplayFields('title', $item)" placeholder="Begin typing to show suggestions">
+              <p class="form-text">What field should we treat as the 'title' when displaying results?</p>
               <p ng-if="titleFieldRequired" class="text-danger">This field is required. Please select a title field.</p>
             </div>
           </div>
 
-          <div class="form-group clearfix">
-            <label class="col-sm-3 control-label">ID Field</label>
+          <div class="mb-3 row">
+            <label class="col-sm-3 col-form-label">ID Field</label>
             <div class="col-sm-9">
-              <input type="text" class="form-control" ng-model="pendingWizardSettings.idField" ng-change="updateDisplayFields('id', pendingWizardSettings.idField)" typeahead-on-select="updateDisplayFields('id', pendingWizardSettings.idField)" uib-typeahead="field for field in idFields | filter:$viewValue | limitTo:8" placeholder="Begin typing to show suggestions">
-              <p class="help-block">What field is the unique identifier for your search results?</p>
+              <input type="text" class="form-control" ng-model="pendingWizardSettings.idField" ng-change="updateDisplayFields('id', pendingWizardSettings.idField)" quepid-typeahead="idFields" quepid-typeahead-on-select="updateDisplayFields('id', $item)" placeholder="Begin typing to show suggestions">
+              <p class="form-text">What field is the unique identifier for your search results?</p>
               <p ng-if="idFieldRequired" class="text-danger">This field is required. Please select an ID field.</p>
             </div>
           </div>
 
-          <div class="form-group clearfix">
-            <label class="col-sm-3 control-label">Additional Display Fields</label>
+          <div class="mb-3 row">
+            <label class="col-sm-3 col-form-label">Additional Display Fields</label>
             <div class="col-sm-9">
               <tags-input ng-model="pendingWizardSettings.additionalFields" placeholder="Add a field" add-on-enter="true" add-on-space="true" add-on-paste="true" paste-split-pattern="[,\s]" min-length="1">
               <auto-complete source="loadFields($query)" min-length="0" load-on-focus="true" load-on-empty="true"></auto-complete>
               </tags-input>
-              <p class="help-block">Would any extra fields be handy to display?</p>
+              <p class="form-text">Would any extra fields be handy to display?</p>
             </div>
           </div>
 
-          <div class="form-group">
-            <button class="btn btn-primary pull-right continue" ng-click="validateFieldSpec()" ng-disabled="validating">
+          <div class="mb-3">
+            <button class="btn btn-primary float-end continue" ng-click="validateFieldSpec()" ng-disabled="validating">
               <span ng-hide="validating">Continue</span>
               <span ng-show="validating">Validating...</span>
             </button>
@@ -445,24 +476,24 @@ star wars,1921,3, Star Wars: Return of the Jedi
       <span ng-if="pendingWizardSettings.searchEngine === 'static'">
         <h2>Search Queries</h2>
         <div>
-          <p class="help-block">All of the queries defined in the static upload will be created.</p>
-          <button class="btn btn-primary pull-right continue" wz-next ng-click="pendingWizardSettings.addQueryStaticQueries()">Continue</button>
+          <p class="form-text">All of the queries defined in the static upload will be created.</p>
+          <button class="btn btn-primary float-end continue" wz-next ng-click="pendingWizardSettings.addQueryStaticQueries()">Continue</button>
         </div>
         <br><br><br><br><br>
       </span>
       <span ng-if="pendingWizardSettings.searchEngine !== 'static'">
       <h2>Add Your Search Queries</h2>
       <div>
-        <p class="help-block">Start out tuning a couple important search queries:</p>
+        <p class="form-text">Start out tuning a couple important search queries:</p>
 
         <!-- Query Pattern for Search API -->
-        <div ng-if="pendingWizardSettings.searchEngine === 'searchapi'" class="well well-sm" style="margin-bottom: 15px;">
-          <label class="control-label">Query Pattern</label>
-          <p class="help-block">
+        <div ng-if="pendingWizardSettings.searchEngine === 'searchapi'" class="bg-light p-2 rounded border" style="margin-bottom: 15px;">
+          <label class="col-form-label">Query Pattern</label>
+          <p class="form-text">
             <strong>Endpoint:</strong> <code>{{ pendingWizardSettings.searchUrl }}</code>
-            <span class="label label-default">{{ pendingWizardSettings.apiMethod }}</span>
+            <span class="badge bg-secondary">{{ pendingWizardSettings.apiMethod }}</span>
           </p>
-          <p class="help-block">
+          <p class="form-text">
             Modify your query structure to include <code>#$query##</code> where the search text should be substituted.
             Quepid will replace <code>#$query##</code> with each query you add below.
           </p>
@@ -489,7 +520,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
         <div>
           <form>
             <input type="text" ng-model="pendingWizardSettings.text" style='width: 250px'></input>
-            <input class="btn-xs btn-success" type="submit" value="Add Query" ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)"></input>
+            <input class="btn-sm btn-success" type="submit" value="Add Query" ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)"></input>
           </form>
         </div>
 
@@ -502,16 +533,16 @@ star wars,1921,3, Star Wars: Return of the Jedi
           </div>
         </div>
 
-        <button class="btn btn-primary pull-right continue" wz-next ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)" ng-disabled="pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0)">Continue</button>
+        <button class="btn btn-primary float-end continue" wz-next ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)" ng-disabled="pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0)">Continue</button>
         <br><br><br><br><br>
       </div>
       </span>
     </wz-step>
     <wz-step title="Finish" id="step-six">
       <h1>That's It!</h1>
-      <p class="help-block">Go to "Tune Relevance" to iterate on your relevance and manipulate searches</p>
+      <p class="form-text">Go to "Tune Relevance" to iterate on your relevance and manipulate searches</p>
       
-      <button class="btn-lg btn-success pull-right finish" wz-next>Finish</button>
+      <button class="btn-lg btn-success float-end finish" wz-next>Finish</button>
       <br><br><br><br><br>
     </wz-step>
   </wizard>

@@ -4,11 +4,11 @@
 
 angular.module('QuepidApp')
   .controller('JudgementsCtrl', [
-    '$uibModal',
+    '$quepidModal',
     'flash',
     'queriesSvc',
     function (
-      $uibModal,
+      $quepidModal,
       flash,
       queriesSvc
     ) {
@@ -18,7 +18,7 @@ angular.module('QuepidApp')
       ctrl.prompt = prompt;
 
       function prompt() {
-        var modalInstance = $uibModal.open({
+        var modalInstance = $quepidModal.open({
           templateUrl:  'judgements/_modal.html',
           controller:   'JudgementsModalInstanceCtrl',
           controllerAs: 'ctrl',

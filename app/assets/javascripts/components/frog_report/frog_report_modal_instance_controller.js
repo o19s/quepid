@@ -2,9 +2,9 @@
 
 angular.module('QuepidApp')
   .controller('FrogReportModalInstanceCtrl', [
-    '$uibModalInstance', '$scope', 'flash','$window',
+    '$quepidModalInstance', '$scope', 'flash','$window',
     'theCase', 'queriesSvc','bookSvc', 'caseTryNavSvc',
-    function ($uibModalInstance, $scope,flash, $window, theCase, queriesSvc, bookSvc, caseTryNavSvc) {
+    function ($quepidModalInstance, $scope,flash, $window, theCase, queriesSvc, bookSvc, caseTryNavSvc) {
       var ctrl = this;
 
       ctrl.theCase = theCase;
@@ -234,14 +234,14 @@ angular.module('QuepidApp')
       };
       
       ctrl.refreshRatingsFromBook = function () {
-        //$uibModalInstance.close(ctrl.options);
+        //$quepidModalInstance.close(ctrl.options);
         $scope.processingPrompt.inProgress = true;
         
         var processInBackground = ctrl.theCase.queriesCount >= 50 ? true: false;
         bookSvc.refreshCaseRatingsFromBook(ctrl.theCase.caseNo, ctrl.theCase.bookId, false, processInBackground)
         .then(function(response) {
           $scope.processingPrompt.inProgress = false;
-          $uibModalInstance.close(true);
+          $quepidModalInstance.close(true);
 
           if (processInBackground === true) {
             flash.success = 'Ratings are being refreshed in the background.';
@@ -265,11 +265,11 @@ angular.module('QuepidApp')
 
 
       ctrl.ok = function () {
-        $uibModalInstance.close();
+        $quepidModalInstance.close();
       };
 
       ctrl.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
 
       // populate specific data in the specification for the chart.

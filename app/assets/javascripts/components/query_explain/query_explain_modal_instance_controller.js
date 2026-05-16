@@ -2,11 +2,11 @@
 
 angular.module('QuepidApp')
   .controller('QueryExplainModalInstanceCtrl', [
-    '$uibModalInstance',
+    '$quepidModalInstance',
     '$log',
     'query',
     function (
-      $uibModalInstance,
+      $quepidModalInstance,
       $log,
       query
     ) {
@@ -57,7 +57,7 @@ angular.module('QuepidApp')
       };
 
       ctrl.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
     }
   ]);

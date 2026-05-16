@@ -238,7 +238,6 @@
                             <i class="bi bi-x-circle"></i> Reset
                           </button>
                         <% end %>
-                        <span id="status_<%= query_doc_pair.id %>" class="ms-2"></span>
                       </div>
                     </div>
                   </div>
@@ -331,83 +330,3 @@
     <% end %>
   </div>
 </div>
-
-<style>
-  .query-group-card {
-    overflow: visible;
-  }
-
-  .query-sidebar {
-    background-color: #f8f9fa;
-    border-right: 2px solid #dee2e6;
-    min-height: 100%;
-  }
-
-  .sticky-query-label {
-    position: sticky;
-    top: 70px; /* Accounts for navbar height (typically ~56px) plus some padding */
-    padding: 1.5rem;
-  }
-
-  .query-title {
-    color: #6c757d;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
-  }
-
-  .query-text {
-    font-size: 1.1rem;
-    color: #212529;
-    word-break: break-word;
-  }
-
-  .document-card {
-    background-color: white;
-  }
-
-  .document-card:last-child {
-    border-bottom: none !important;
-  }
-
-  .document-header {
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #e9ecef;
-    min-height: 3rem;
-  }
-
-  .rating-buttons .btn-check:checked + .btn {
-    box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.3);
-    border: 2px solid #000;
-    font-weight: bold;
-    transform: scale(1.05);
-  }
-
-  .btn-preselected { 
-    color: black !important; 
-    font-weight: bold !important; 
-    border: 2px solid #000 !important; 
-    box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.3) !important; 
-    transform: scale(1.05) !important; 
-  }
-
-  .sticky-top {
-    z-index: 100;
-  }
-
-  .document-content {
-    max-height: 300px;
-    overflow-y: auto;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  .spin {
-    display: inline-block;
-    animation: spin 1s linear infinite;
-  }
-</style>

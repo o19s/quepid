@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
+  <button type="button" class="btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Clone case: <span class="modal-case">{{ ctrl.theCase.caseName }}</span></h3>
 </div>
 <div class="modal-body">
@@ -14,13 +14,13 @@
 
   <br>
 
-  <label>Include case history <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Select to include either a single try or all the tries of your case history if you want to evaluate previous attempts."></span></label>
+  <label>Include case history <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Select to include either a single try or all the tries of your case history if you want to evaluate previous attempts."></i></label>
   <div class="btn-group btn-group-justified" role="group">
     <div class="btn-group" role="group">
-      <button type="button" class="btn" ng-click="ctrl.options.history=false" ng-class="ctrl.options.history ? 'btn-default' : 'btn-primary'">Only include a specific try</button>
+      <button type="button" class="btn" ng-click="ctrl.options.history=false" ng-class="ctrl.options.history ? 'btn-outline-secondary' : 'btn-primary'">Only include a specific try</button>
     </div>
     <div class="btn-group" role="group">
-      <button type="button" class="btn" ng-click="ctrl.options.history=true" ng-class="ctrl.options.history ? 'btn-primary' : 'btn-default'">Include the entire try history</button>
+      <button type="button" class="btn" ng-click="ctrl.options.history=true" ng-class="ctrl.options.history ? 'btn-primary' : 'btn-outline-secondary'">Include the entire try history</button>
     </div>
   </div>
 
@@ -28,8 +28,8 @@
 
   <div class="row">
     <div class="col-md-6" ng-show="!ctrl.options.history">
-      <div class="form-group">
-        <label for="try">Select try </label> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="Select the desired try from your full case history."></span>
+      <div class="mb-3">
+        <label for="try">Select try </label> <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="Select the desired try from your full case history."></i>
         <select
           id="try"
           ng-model="ctrl.options.tryId"
@@ -40,21 +40,21 @@
       </div>
     </div>
     <div class="col-md-6">
-      <div class="form-group">
-        <label>Select content <span class="glyphicon glyphicon-question-sign" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" uib-popover="When cloning a case, you typically want to include your existing queries. If you want to preserve ratings, select to import them as well."></span></label>
-        <div class="checkbox">
-          <label>
-            <input id="include-queries" type="checkbox" ng-model='ctrl.options.queries' checked> Include Queries
-          </label>
-          <label>
-            <input id="include-ratings" type="checkbox" ng-model='ctrl.options.ratings'> Include Ratings
-          </label>
+      <div class="mb-3">
+        <label>Select content <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="When cloning a case, you typically want to include your existing queries. If you want to preserve ratings, select to import them as well."></i></label>
+        <div class="form-check">
+          <input id="include-queries" type="checkbox" class="form-check-input" ng-model='ctrl.options.queries' checked>
+          <label class="form-check-label" for="include-queries">Include Queries</label>
+        </div>
+        <div class="form-check">
+          <input id="include-ratings" type="checkbox" class="form-check-input" ng-model='ctrl.options.ratings'>
+          <label class="form-check-label" for="include-ratings">Include Ratings</label>
         </div>
       </div>
     </div>
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default float-left" ng-click="ctrl.cancel()">Cancel</button>
+  <button class="btn btn-outline-secondary float-start me-auto" ng-click="ctrl.cancel()">Cancel</button>
   <button class="btn btn-primary" ng-click="ctrl.ok()" ng-disabled="ctrl.cannotClone()">Clone</button>
 </div>

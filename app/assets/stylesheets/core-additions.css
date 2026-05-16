@@ -1,0 +1,557 @@
+/*
+ * Quepid core UI — layout and skin that do not use Bootstrap framework classes
+ * in selectors. All Bootstrap-class overrides for the Angular core bundle —
+ * navbar brand skin (`.navbar-brand`, `.navbar-secondary`, header `.nav-link`),
+ * fluid `.container`, sub-results toolbars, `#dev-settings` tabs, modals,
+ * annotations, dropdown shims, etc. — live in core-bootstrap.css.
+ *
+ * Custom header dropdown panels (`.dropdown-content`, `.dropdown-link`), flash
+ * directive chrome (`.flash`), and `#flash-messages` live here.
+ *
+ * Loaded by build_css.js between fonts.css and core-bootstrap.css.
+ */
+
+html, body {
+  width:    100%;
+  height:   100%;
+  padding:  0;
+  margin:   0;
+  overflow: auto; /* when page gets too small */
+}
+
+hr {
+  border-color: rgb(170, 170, 170);
+}
+
+/*
+	Base Styles
+*/
+
+body {
+  background: url('blue_bg.jpg') top center repeat;
+}
+
+a, button, .button {
+  cursor: pointer;
+}
+
+#main {
+	padding: 0;
+	position: relative;
+	min-width: 750px;
+}
+
+/*
+	Header — custom dropdown panel (see _header_core_app.html.erb:
+	.dropdown-menu.dropdown-content). No Bootstrap class names in these selectors.
+*/
+
+header .dropdown-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin: 0;
+  padding: 1px 0 0 0;
+  border-radius: 0px;
+  z-index: 999;
+}
+
+header .dropdown-content li {
+  list-style: none;
+  min-width: 250px;
+  border-bottom: 1px solid #eee;
+  padding: 10px;
+  background: #FFF;
+}
+
+header .dropdown-content li a {
+  padding: 0;
+}
+
+header .dropdown-content li a:hover {
+  background: none;
+}
+
+header .dropdown-link {
+  color: #2A6496 !important;
+  padding: 0 !important;
+}
+
+header .dropdown-link:hover,
+header .dropdown-link:focus {
+  text-decoration: underline !important;
+  background: none !important;
+}
+
+/*
+	Main - results
+*/
+.dragging {
+  border: 1px dashed #AAA;
+  padding: 5px 0px;
+}
+.results-control h1 {
+  margin: 15px 0 20px 0;
+  padding-bottom: 10px;
+}
+
+.results-control #query-container {
+  margin: 5px 0 60px;
+  padding: 30px 0 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-width:1px 0;
+}
+
+.results-control queries {
+  background: #fff;
+}
+
+.results-list-element {
+	list-style: none;
+  display: block;
+  clear: both;
+	margin: 20px 0 0;
+  padding-left: 0;
+}
+
+.results-list-element > li {
+  border: 1px solid #eee;
+	margin: 0 0 5px 0;
+	position: relative;
+	border-radius: 5px;
+}
+
+.result-header {
+  align-items: stretch;
+  overflow: auto;
+  position: relative;
+  padding: 10px 20px;
+}
+.result-header:hover {
+  background: #eee;
+}
+
+.case-score {
+  display: block;
+}
+
+.results-title {
+	color:       #222;
+	cursor:      pointer;
+	font-size:   18px;
+	font-weight: normal;
+	line-height: 1.5em;
+	margin:      0;
+  display:    block;
+  flex:       2 2 10%;
+  float:      left;
+}
+
+.results .total-results {
+  display:      block;
+  float:        right;
+  line-height:  30px;
+  margin-right: 50px;
+  text-align:   right;
+}
+
+.low-profile {
+  opacity: 0.5;
+  font-size: 60%;
+}
+
+.query-score-label {
+  display: block;
+}
+
+.results .error-warning {
+	display: none;
+}
+
+.results .toggleSign {
+	color: #2872bc;
+	position: absolute;
+	top: 22px;
+	right: 19px;
+	font-weight: bold;
+	border-radius: 3px;
+	font-size: 16px;
+}
+
+.toggleSign {
+  cursor: pointer;
+}
+
+
+/*
+	Main - Results - Sub Results (structure only; .btn-toolbar / .row lives in core-bootstrap.css)
+*/
+
+.sub-results {
+	clear: both;
+	background: url('sub-results-bg.png') top center no-repeat #F7F7F7;
+	padding: 75px 15px 15px 15px;
+	position: relative;
+	min-width: 650px;
+}
+
+.sub-results td {
+	vertical-align: middle;
+}
+
+
+/*
+	Main - Results - Sub Results — rating columns and thumbnails
+*/
+
+.ratingContainer ul {
+  padding: 0;
+}
+
+.ratingContainer .ratingNum {
+	box-shadow: inset 0 0 20px rgba(255,255,255,0.75);
+}
+
+.ratingContainer .ratingNum:hover {
+	box-shadow: inset 0 0 15px rgba(0,0,0,0.25);
+	color: #FFF;
+}
+
+.col-summary {
+	text-align: left;
+	margin-left: 70px;
+	padding: 15px;
+}
+
+.query-thumbnail {
+	width: 75px;
+	height: 100%;
+	margin: -10px 0;
+	padding: 0;
+	display: block;
+	line-height: 0;
+	object-fit: contain;
+}
+
+.result-thumbnail {
+	width: 75px;
+}
+
+.result-image {
+	width: 250px;
+}
+
+.score-all {
+  margin-left: 15px;
+}
+
+.score-all .ratings {
+  position: relative;
+}
+
+.score-all-alert {
+  margin-left: 20px;
+}
+
+.col-ratings.query-rating {
+  margin-left: 15px;
+  margin-top: -10px;
+}
+
+.col-ratings {
+	width: 75px;
+	padding: 0;
+	position: absolute;
+	top: 15px;
+	left: 0;
+}
+
+.result-thumb-col {
+	width: 125px;
+}
+
+.result-image-col {
+	width: 300px;
+}
+
+.col-summary .subfields {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.col-summary .subfields li {
+	margin: 0 0 10px 0;
+	padding: 0;
+}
+
+.col-summary .subfields li:last-child {
+	margin: 0;
+}
+
+.col-summary .subfields li.subTitle {
+	font-family: 'allerregular', sans-serif;
+	font-size: 18px;
+}
+
+.col-summary .subfields li .subLabel {
+	font-weight: bold;
+}
+
+/*
+  Main - Results - Move query
+*/
+.move-query-cases-list {
+  max-height: 300px;
+  overflow:   scroll;
+}
+
+
+
+.result-rank {
+  font-size:  1em;
+}
+
+
+/*
+	Dev Settings — panel skin (selectors with no Bootstrap classes).
+	BS-related dev-panel rules (`.nav-tabs` dark theme) live in
+	core-bootstrap.css.
+*/
+
+#dev-settings {
+	width: 100%;
+	background: #333;
+	color: #F0F0F0;
+    height:100%;
+  min-height: calc(100% - 70px);
+}
+
+#dev-settings .dev-header {
+	background: #222;
+	background: linear-gradient(to bottom, #282828, #222222);
+	color: #F0F0F0;
+	padding: 15px;
+	border-bottom: 1px solid #363636;
+	cursor: pointer;
+}
+
+#dev-settings .dev-header .bi {
+	margin-left: 10px;
+	font-size: 14px;
+	font-weight: normal;
+}
+
+#dev-settings .dev-section,
+#dev-settings .dev-body,
+#dev-settings .dev-setting-attribute {
+	padding: 15px;
+}
+
+#dev-settings .dev-section ul {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 20px 0;
+}
+
+#dev-settings .dev-section ul li {
+	padding: 5px 10px;
+	border-bottom: 1px solid #444;
+}
+
+#dev-settings .settings-tab,
+#dev-settings .dev-section  {
+  height:     100%;
+  min-height: 300px;
+}
+
+#dev-settings #queryParamsArea {
+  height:     calc(100% - 50px);
+  min-height: calc(100% - 50px);
+}
+
+#dev-settings #queryParamsCanvas {
+  height: calc(100% - 10px);
+}
+
+#dev-settings .rerunnable-settings-tab {
+  height:         calc(100% - 50px);
+  min-height:     300px;
+  margin-bottom:  20px;
+  overflow:       auto;
+}
+
+#queryParamsCanvas textarea {
+	height: calc(100% - 40px);
+}
+
+#queryParamsCanvas .slider-wrap {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 0;
+	border-bottom: 1px solid #555;
+}
+
+#queryParamsCanvas .slider-wrap input {
+  color: black;
+}
+
+/*
+	Dev Settings - History (rest of #dev-settings uses Bootstrap selectors — core-bootstrap.css)
+*/
+
+.history-container {
+	height: auto;
+	overflow-y: auto;
+}
+
+.history-list li {
+	background: #666;
+	overflow-wrap: break-word;
+  position: relative;
+}
+.history-list li:hover {
+	background: #555;
+	cursor: pointer;
+  position: relative;
+}
+
+.history-list li:hover .try-details {
+  display: inline;
+}
+
+.history-list li span {
+	display: block;
+	text-align: left;
+	font-weight: bold;
+	font-family: 'allerbold_italic', sans-serif;
+	font-size: 16px;
+	color: #CCC;
+	padding: 3px 0 8px 0;
+}
+
+.try-details {
+  position: absolute;
+  display: none;
+  top: 5px;
+  right: 10px;
+  background: #777;
+  cursor: pointer;
+}
+
+/*
+	Footer
+*/
+
+footer {
+  margin-top: 30px;
+}
+
+.matches-popper:hover {
+  cursor:           pointer;
+  text-decoration:  underline;
+}
+
+.btn-circle {
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 12px;
+  line-height: 1.42;
+  border-radius: 15px;
+}
+
+.ace_editor {
+    height: 400px;
+}
+
+.customheaders.code .ace_editor {
+  height: 125px;
+}
+
+.detaileddoc.code .ace_editor {
+  height: 300px;
+}
+
+.search-feedback {
+  margin: 20px 0;
+}
+
+#flash-messages {
+  bottom:     0;
+  position:   fixed;
+  width:      100%;
+  z-index:    100;
+}
+
+/*
+	Flash — directive uses active-class="show alert" on class="flash fade"
+	(templates flash.html / search_flash.html). Dismiss control is
+	.btn-core-close (styled in misc.css), not Bootstrap’s .close.
+*/
+
+.flash {
+  border-radius:  0;
+  display:        none;
+  margin:         0;
+  width:          100%;
+  padding-right:  80px;
+}
+.flash.show {
+  display: block;
+  opacity: 1;
+}
+
+.flash > span {
+  display:      block;
+  margin-left:  20px;
+}
+
+.loading-app {
+  color: rgb(77, 183, 249);
+  font-size: 14px;
+}
+
+.loading-app .loading-text {
+  font-size: 0.5em !important;
+}
+
+.loading-app i {
+  background-color: transparent;
+}
+
+/* Import */
+.import-content {
+  max-height: 200px;
+  overflow:   scroll;
+}
+
+#annotations {
+  overflow: auto;
+  height:   auto;
+}
+
+li.annotation {
+  border: 1px solid #444;
+}
+
+.annotations-time {
+  font-size: 0.7em;
+}
+
+.annotation-source {
+  font-size: 0.8em;
+}
+
+.annotation {
+  margin: 10px 0;
+}
+
+.annotation > div {
+  margin: 5px 0;
+}

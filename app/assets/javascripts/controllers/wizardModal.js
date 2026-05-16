@@ -4,12 +4,12 @@
 
 angular.module('QuepidApp')
   .controller('WizardModalCtrl', [
-    '$rootScope', '$scope', '$uibModalInstance', '$log', '$window', '$location',
+    '$rootScope', '$scope', '$quepidModalInstance', '$log', '$window', '$location',
     'WizardHandler',
     'settingsSvc', 'SettingsValidatorFactory',
     'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc','searchEndpointSvc','caseCSVSvc','querySnapshotSvc',
     function (
-      $rootScope, $scope, $uibModalInstance, $log, $window, $location,
+      $rootScope, $scope, $quepidModalInstance, $log, $window, $location,
       WizardHandler,
       settingsSvc, SettingsValidatorFactory,
       docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc, searchEndpointSvc, caseCSVSvc, querySnapshotSvc
@@ -20,7 +20,7 @@ angular.module('QuepidApp')
         let confirm = $window.confirm('Are you sure you want to abandon this case?');
         if (confirm) {
           caseSvc.deleteCase(caseSvc.getSelectedCase()).then(function() {
-            $uibModalInstance.dismiss('cancel');
+            $quepidModalInstance.dismiss('cancel');
             $window.location = '/';
           });
 
@@ -29,7 +29,7 @@ angular.module('QuepidApp')
 
       $scope.goToMapperWizard = function () {
         caseSvc.deleteCase(caseSvc.getSelectedCase()).then(function() {
-          $uibModalInstance.dismiss('cancel');
+          $quepidModalInstance.dismiss('cancel');
           $window.location = caseTryNavSvc.getQuepidRootUrl() + '/search_endpoints/mapper_wizard';
         });
       };
@@ -742,13 +742,13 @@ angular.module('QuepidApp')
 
             $rootScope.currentUser.shownIntroWizard();
 
-            $uibModalInstance.close();
+            $quepidModalInstance.close();
           });
         };
       });
 
       $scope.close = function() {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
       
       function createSnapshot() {

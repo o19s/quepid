@@ -9,15 +9,16 @@
 // We track this via just seeing how many cases they are involved with.
 angular.module('QuepidApp')
   .controller('WizardCtrl', [
-    '$rootScope', '$scope', '$uibModal', '$timeout', '$location',
-    function ($rootScope, $scope, $uibModal, $timeout, $location) {
+    '$rootScope', '$scope', '$quepidModal', '$timeout', '$location',
+    function ($rootScope, $scope, $quepidModal, $timeout, $location) {
       $scope.wizard = {};
       $scope.wizard.triggerModal = function() {
 
-        var modalInstance = $uibModal.open({
+        var modalInstance = $quepidModal.open({
           templateUrl: 'views/wizardModal.html',
           controller: 'WizardModalCtrl',
           backdrop: 'static',
+          windowClass: 'wizard-modal-window',
         });
 
         modalInstance.result.then(function() {

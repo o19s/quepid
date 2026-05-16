@@ -66,10 +66,11 @@ namespace :test do
   desc 'Run js/karma tests (equivalent of karma:run)'
   task 'js' => 'karma:run'
 
-  desc 'Run all frontend tasks: test:js, test:jshint'
+  desc 'Run all frontend tasks: test:js, test:jshint, test:stylelint'
   task frontend: :environment do
     Rake::Task['test:js'].invoke
     Rake::Task['test:jshint'].invoke
+    Rake::Task['test:stylelint'].invoke
   end
 
   desc 'Run jshint on js files using configuration .jshintrc'
@@ -88,6 +89,21 @@ namespace :test do
       puts 'JSHint tests passed!'.green
       puts '-' * 100
     end
+  end
+
+  desc 'Run stylelint on app-owned CSS (yarn lint:css)'
+  task stylelint: :environment do
+    puts '-' * 100
+    puts 'Starting Stylelint'.yellow
+
+    unless system({ 'RAILS_ENV' => Rails.env }, 'yarn', 'run', 'lint:css', chdir: Rails.root.to_s)
+      puts 'Stylelint failed!'.red
+      puts '-' * 100
+      exit false
+    end
+
+    puts 'Stylelint passed!'.green
+    puts '-' * 100
   end
 end
 # rubocop:enable Metrics/BlockLength

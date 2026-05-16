@@ -35,18 +35,12 @@ export default class extends Controller {
         })
       })
 
-      if (response.ok) {
-        // Successfully deleted the judgement
-        this.clearRatingUI(queryDocPairId)
-        this.showStatus(queryDocPairId, "reset")
-        button.remove()
-      } else if (response.status === 404) {
-        // No judgement found to delete - this is actually fine for reset
+      // Successfully deleted the judgement or there was no judgement to delete
+      if (response.ok || response.status === 404) {
         this.clearRatingUI(queryDocPairId)
         this.showStatus(queryDocPairId, "reset")
         button.remove()
       } else {
-        // Other error
         this.showStatus(queryDocPairId, "error")
         console.error("Failed to reset judgement:", response.status)
       }
@@ -229,11 +223,19 @@ export default class extends Controller {
     if (!statusElement) return
 
     // Remove all status classes
-    statusElement.classList.remove("text-muted", "text-warning", "text-success", "text-danger")
+    statusElement.classList.remove(
+      "text-muted",
+      "text-warning",
+      "text-success",
+      "text-danger",
+      "text-info"
+    )
 
+    // Transient states (saved/reset) auto-clear after 2s; sticky states (error/typing/saving) don't.
     switch(status) {
       case "saving":
-        statusElement.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Saving...'
+        statusElement.innerHTML =
+          '<span class="spinner-border spinner-border-sm me-1 align-middle" role="status" aria-hidden="true"></span> Saving...'
         statusElement.classList.add("text-warning")
         break
       case "saved":

@@ -6,7 +6,7 @@
   vertical-align: top;
 }
 
-.rating, .ratingNum, .curRating, .removeRating {
+.rating, .ratingNum {
     color: white;
     font-size: .7em;
 }
@@ -17,29 +17,14 @@
     position: absolute;
 }
 
-.rating:hover, .ratingNum:hover, .curRating:hover, .close:hover, #submitbutton {
+.rating:hover, .ratingNum:hover, .close:hover {
     cursor: pointer;
 }
 
-.ratingNum, .curRating {
+.ratingNum {
     margin-right: 2px;
     padding: 3px 5px;
 }
-
-.ratingNums {
-    /* background: white;
-    border: 1px solid #86989B;
-    padding: 3px 5px 6px;
-    z-index: 100; */
-}
-
-/* Maybe not needed with new btn-core-close?
-.close {
-    font-size: .7em;
-    color: gray;
-    padding-left: 5px;
-}
-*/
 
 .notes-box {
     width: 100%;
@@ -48,7 +33,7 @@
 }
 
 .notes-box label {
-    font-family: 'allerregular';
+    font-family: 'allerregular', sans-serif;
     font-size: 20px;
     margin-bottom: 20px;
     color: #222;
@@ -80,7 +65,7 @@
   padding: 8px 12px;
 }
 .wiz_new_query .query_text {
-  font:italic 18px Verdana;
+  font: italic 18px Verdana, sans-serif;
   color:#FFF;
   vertical-align:middle;
   position: inherit;
@@ -92,7 +77,6 @@
   padding: 3px 6px;
   margin: 0 0 0 10px;
   border-radius: 5px;
-  border: none;
   background: #F0F0F0;
   color: #369;
   border: 1px solid #F0F0F0;

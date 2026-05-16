@@ -43,7 +43,7 @@
             </div>
           </div>
 
-          <div class="col-md-5 form-inline">
+          <div class="col-md-5 d-flex flex-wrap align-items-center gap-2">
             <%= form_with url: scorers_path, method: :get, local: true, html: { class: 'd-flex align-items-center' } do %>
               <div class="input-group">
                 <%= search_field_tag :q, @q.presence || params[:q], class: 'form-control form-control-sm', placeholder: 'Filter scorers' %>
@@ -62,8 +62,6 @@
             <% end %>
           </div>
         </div>
-
-        <div class="clearfix"></div>
 
         <div class="row">
           <div class="col-12 mb-3">

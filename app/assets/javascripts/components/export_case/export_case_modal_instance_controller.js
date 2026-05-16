@@ -3,11 +3,11 @@
 angular.module('QuepidApp')
   .controller('ExportCaseModalInstanceCtrl', [
     '$scope',
-    '$uibModalInstance',
+    '$quepidModalInstance',
     'querySnapshotSvc',
     'theCase',
     'supportsDetailedExport',
-    function ($scope, $uibModalInstance, querySnapshotSvc, theCase, supportsDetailedExport) {
+    function ($scope, $quepidModalInstance, querySnapshotSvc, theCase, supportsDetailedExport) {
       var ctrl = this;
 
       ctrl.theCase = theCase;
@@ -41,11 +41,11 @@ angular.module('QuepidApp')
       },true);
 
       ctrl.ok = function () {
-        $uibModalInstance.close(ctrl.options);
+        $quepidModalInstance.close(ctrl.options);
       };
 
       ctrl.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
       
       

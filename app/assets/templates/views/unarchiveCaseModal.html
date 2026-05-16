@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
+  <button type="button" class="btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Archived Cases</h3>
 </div>
 <div class="modal-body">
@@ -10,7 +10,7 @@
   </div>
 
   <p ng-show="loading" class="text-center">
-    <i class="glyphicon glyphicon-refresh spintime"></i>
+    <i class="bi bi-arrow-repeat spintime"></i>
   </p>
 
   <div class="list-group">
@@ -26,5 +26,5 @@
     ng-hide="selectedCase === null" 
   >
    Add Back {{selectedCase.caseName}} </button>
-  <button type="button" ng-click="cancel()"  class="btn btn-default">Cancel</button>
+  <button type="button" ng-click="cancel()"  class="btn btn-outline-secondary">Cancel</button>
 </div>

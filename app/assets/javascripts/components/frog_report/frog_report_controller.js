@@ -4,12 +4,12 @@
 
 angular.module('QuepidApp')
   .controller('FrogReportCtrl', [
-    '$uibModal',
+    '$quepidModal',
     'flash',
     'caseSvc',
     'queriesSvc',
     function (
-      $uibModal,
+      $quepidModal,
       flash,
       caseSvc,
       queriesSvc
@@ -21,7 +21,7 @@ angular.module('QuepidApp')
 
 
       function prompt() {
-        var modalInstance = $uibModal.open({
+        var modalInstance = $quepidModal.open({
           templateUrl:  'frog_report/_modal.html',
           controller:   'FrogReportModalInstanceCtrl',
           controllerAs: 'ctrl',

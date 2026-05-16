@@ -1,0 +1,7 @@
+# Built bundles (concatenated by build_css.js)
+app/assets/builds/
+
+# Third-party
+node_modules/
+vendor/
+app/javascript/vendor/
