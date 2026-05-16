@@ -291,7 +291,7 @@ header .dropdown-link:focus {
 }
 
 .col-summary .subfields li.subTitle {
-	font-family: 'allerregular';
+	font-family: 'allerregular', sans-serif;
 	font-size: 18px;
 }
 
@@ -411,13 +411,13 @@ header .dropdown-link:focus {
 
 .history-list li {
 	background: #666;
-	word-wrap: break-word;
-    position: relative;
+	overflow-wrap: break-word;
+  position: relative;
 }
 .history-list li:hover {
 	background: #555;
 	cursor: pointer;
-    position: relative;
+  position: relative;
 }
 
 .history-list li:hover .try-details {
@@ -428,7 +428,7 @@ header .dropdown-link:focus {
 	display: block;
 	text-align: left;
 	font-weight: bold;
-	font-family: 'allerbold_italic';
+	font-family: 'allerbold_italic', sans-serif;
 	font-size: 16px;
 	color: #CCC;
 	padding: 3px 0 8px 0;

@@ -92,6 +92,10 @@ jobs:
           command: bundle exec rake test:jshint
 
       - run:
+          name: Run stylelint
+          command: yarn lint:css
+
+      - run:
           name: Run rubocop
           command: bundle exec rubocop
 

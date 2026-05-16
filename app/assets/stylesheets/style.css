@@ -33,7 +33,7 @@
 }
 
 .notes-box label {
-    font-family: 'allerregular';
+    font-family: 'allerregular', sans-serif;
     font-size: 20px;
     margin-bottom: 20px;
     color: #222;
@@ -65,7 +65,7 @@
   padding: 8px 12px;
 }
 .wiz_new_query .query_text {
-  font:italic 18px Verdana;
+  font: italic 18px Verdana, sans-serif;
   color:#FFF;
   vertical-align:middle;
   position: inherit;
@@ -77,7 +77,6 @@
   padding: 3px 6px;
   margin: 0 0 0 10px;
   border-radius: 5px;
-  border: none;
   background: #F0F0F0;
   color: #369;
   border: 1px solid #F0F0F0;

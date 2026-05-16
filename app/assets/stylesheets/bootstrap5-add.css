@@ -24,7 +24,7 @@ body {
   height: 56px;
   min-width: 120px;
 	/*padding: 16px 15px 0 0;*/
-	font-family: 'alleritalic';
+	font-family: 'alleritalic', sans-serif;
 	font-size: 28px;
 	color: #FFF !important;
 }
@@ -49,14 +49,14 @@ body {
 	background: #369;
 	background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
 	/* border-bottom: 1px solid #258; */
-	font-family: 'allerregular';
+	font-family: 'allerregular', sans-serif;
   padding: 0px;
 }
 
 
 .navbar-secondary .nav-link {
 	color: #FFF;
-  font-family: 'allerregular';
+  font-family: 'allerregular', sans-serif;
   font-size: 14px;
 }
 

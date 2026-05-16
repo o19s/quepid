@@ -10,7 +10,7 @@
 
 .graph-explain .graph-label {
     font-size: 10px;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .stacked-chart-container {

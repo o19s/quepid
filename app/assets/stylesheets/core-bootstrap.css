@@ -165,7 +165,7 @@ header.navbar-secondary .dropdown-toggle::after,
   height: 56px;
   min-width: 120px;
   padding: 16px 15px 0 0;
-  font-family: 'alleritalic';
+  font-family: 'alleritalic', sans-serif;
   font-size: 28px;
   color: #FFF !important;
 }
@@ -196,7 +196,7 @@ header.navbar-secondary .navbar-nav .nav-link {
 .navbar-secondary {
   background: #369;
   background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
-  font-family: 'allerregular';
+  font-family: 'allerregular', sans-serif;
 }
 
 /* Row + center the secondary navbar's dropdown and breadcrumb siblings. */

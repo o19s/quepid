@@ -52,7 +52,7 @@ qscore-query .overall-rating {
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
   padding: var(--qscore-spacing-md) 0;
   color: #fff;
-  font-family: 'allerbold_italic';
+  font-family: 'allerbold_italic', sans-serif;
   font-size: 22px;
   text-align: center;
   border-top-left-radius: var(--qscore-border-radius);

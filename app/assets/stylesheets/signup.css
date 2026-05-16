@@ -2,7 +2,7 @@
   Hero
 */
 h2 {
-  font-family: 'allerregular';
+  font-family: 'allerregular', sans-serif;
   color: #036;
   margin: 10px 0 20px 0;
   padding: 0;
@@ -10,7 +10,7 @@ h2 {
 }
 
 h3 {
-  font-family: 'allerregular';
+  font-family: 'allerregular', sans-serif;
   font-size: 20px;
   color: #036;
   margin: 10px 0 20px 0;
