@@ -150,6 +150,8 @@
         // backdrop or keyboard — match uib's reason string.
         // Wrapped in $apply because hidden.bs.modal is a raw DOM event,
         // outside any digest, and result.then handlers need a digest to run.
+        // onHidden and teardown reference each other (latedef off for JSHint).
+        /* jshint latedef:false */
         function onHidden() {
           safeApply(function () {
             if (!settled) {
