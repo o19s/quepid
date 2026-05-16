@@ -108,8 +108,8 @@ const SAFELIST = {
     /^ng-/,             // Angular directive states
     /^ui-/,             // jQuery UI
     /^shepherd-/,       // tether-shepherd tour
-    /^tooltip/,         // BS3/BS5 tooltip variants
-    /^popover/,         // BS3/BS5 popover variants
+    /^tooltip/,         // BS5 tooltip variants
+    /^popover/,         // BS5 popover variants
     /^bs-tooltip-/,
     /^bs-popover-/,
     /^tour-/,
@@ -205,7 +205,7 @@ function writeSummary(reports) {
   lines.push('1. Start with non-vendored files (highest signal).');
   lines.push('2. For each candidate selector, grep the codebase one more time before deleting —');
   lines.push('   PurgeCSS can miss class names built from computed strings or stored in YAML/JSON.');
-  lines.push('3. Delete in small batches and verify visually per the CLAUDE.md BS3 screenshot policy.');
+  lines.push('3. Delete in small batches and verify visually per the CLAUDE.md screenshot policy.');
   lines.push('');
   lines.push('See `<source>.dead.css` for the full rule bodies (suitable for review/diff).');
   lines.push('See `<source>.dead.txt` for a plain selector list.');
@@ -214,7 +214,7 @@ function writeSummary(reports) {
 }
 
 async function main() {
-  console.log('Auditing BS3 core.css sources for unreferenced selectors...');
+  console.log('Auditing core.css sources for unreferenced selectors...');
   console.log(`Content globs: ${CONTENT.length} patterns`);
   console.log(`CSS sources: ${SOURCES.length} files`);
   console.log(`Output directory: ${AUDIT_OUTPUT_DIR}`);

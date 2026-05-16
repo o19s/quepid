@@ -2,7 +2,7 @@
 
 angular.module('QuepidApp')
   .directive('quepidCollapse', ['$timeout', function ($timeout) {
-    // Matches the .35s transition baked into both BS3 and BS5 .collapsing rules.
+    // Matches the .35s transition baked into BS5 .collapsing rules.
     const DURATION = 350;
 
     return {
