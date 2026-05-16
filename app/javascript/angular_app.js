@@ -76,6 +76,7 @@ window.URI = URI;
 import 'tether-shepherd/dist/js/tether';
 import 'tether-shepherd/dist/js/shepherd';
 
-// Angular templates will be handled separately via angular-rails-templates
-// The actual application code will be loaded via individual script tags
-// or bundled in a separate step
+// Angular templates are pre-populated into $templateCache by build_templates.js
+// (a local replacement for the angular-rails-templates gem). Controllers,
+// directives, and services under app/assets/javascripts/ are still loaded via
+// the asset pipeline rather than this bundle.

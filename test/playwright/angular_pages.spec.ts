@@ -187,7 +187,7 @@ test.describe('Angular pages — interaction screenshots', () => {
 
     // Wizard body has no standalone popover; close and exercise modal/dropdown/popover/form on the case shell.
     await page.locator('#wizard').getByRole('button', { name: 'Close', exact: true }).click();
-    // Wizard uses BS3-style $quepidModal; dismiss can leave `.modal.show` briefly during hide.
+    // $quepidModal's dismiss can leave `.modal.show` briefly during hide; force a clean state.
     await page.keyboard.press('Escape');
     await expect(page.locator('.modal.show')).toHaveCount(0, { timeout: 10_000 });
 
