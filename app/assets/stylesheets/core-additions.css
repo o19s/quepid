@@ -221,6 +221,7 @@ header .dropdown-link:focus {
 .col-summary {
 	text-align: left;
 	margin-left: 70px;
+	padding: 15px;
 }
 
 .query-thumbnail {
@@ -235,12 +236,10 @@ header .dropdown-link:focus {
 
 .result-thumbnail {
 	width: 75px;
-	text-align: center;
 }
 
 .result-image {
 	width: 250px;
-	text-align: center;
 }
 
 .score-all {
@@ -268,45 +267,12 @@ header .dropdown-link:focus {
 	left: 0;
 }
 
-.col-thumbnail {
-	float: left;
+.result-thumb-col {
 	width: 125px;
-	padding: 0;
-	margin-right: 0;
 }
 
-.col-image {
-	float: left;
+.result-image-col {
 	width: 300px;
-	padding: 0;
-	margin-right: 0;
-}
-
-.col-summary-thumb {
-	position: relative;
-	padding-left: 130px !important;
-  min-height: 125px;
-}
-
-.col-summary-image {
-	position: relative;
-	padding-left: 305px !important;
-  min-height: 400px;
-}
-
-.col-summary-thumb .col-thumbnail {
-	position: absolute;
-	top: 10px;
-	left: 0;
-}
-
-.col-summary-image .col-image {
-	position: absolute;
-	top: 10px;
-	left: 0;
-}
-.col-summary {
-	padding: 15px;
 }
 
 .col-summary .subfields {
