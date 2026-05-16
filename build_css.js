@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-// Node.js script to build CSS bundles with proper file watching
-// Replaces build_css.sh with better file watching using chokidar
+// Concatenates per-bundle CSS sources into app/assets/builds/ and copies
+// vendor/font/image assets alongside. Pass --watch to rebuild on changes
+// to any path in WATCH_PATHS (debounced via chokidar).
 
 const fs = require('fs');
 const path = require('path');

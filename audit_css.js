@@ -37,7 +37,7 @@ function ensureWritableOutDir(dir) {
       console.error(
         `Cannot write to ${dir} (${err.code}). If Docker created these files as root, fix ownership:\n` +
         `  sudo chown -R "$(id -u):$(id -g)" ${dir}\n` +
-        `Or remove the directory and rerun. See docs/css_audit_core_triage.md.\n`
+        `Or remove the directory and rerun.\n`
       );
       process.exit(1);
     }
@@ -91,7 +91,9 @@ const CONTENT = [
 // Tether-Shepherd, etc.).
 const SAFELIST = {
   standard: [
-    // Bootstrap 3 JS-added state classes
+    // JS-added state classes (BS5 + Quepid). `in`/`open` are legacy BS3
+    // holdovers still emitted by older directives; safe to drop only after
+    // grep confirms no callers.
     'in', 'fade', 'show', 'open', 'active', 'disabled', 'loading',
     'collapse', 'collapsing', 'collapsed',
     // Modal sizes from `'modal-' + opts.size` in JS
