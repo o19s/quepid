@@ -188,8 +188,11 @@ header.navbar-secondary .dropdown-toggle::after,
 }
 
 /* 18px y centres nav items against the 56px brand strip (BS5 default
- * 8px sits high). Scoped to header so tab strips elsewhere keep BS5. */
-header .navbar-nav .nav-link {
+ * 8px sits high). Scoped to `header.navbar-secondary` so the selector
+ * (0,3,1) outranks BS5's `.navbar-expand .navbar-nav .nav-link` (0,3,0),
+ * which sets `padding-right/left` to `--bs-navbar-nav-link-padding-x`
+ * and would otherwise clobber the 15px horizontal padding. */
+header.navbar-secondary .navbar-nav .nav-link {
   padding: 18px 15px;
   line-height: 24px;
 }
@@ -215,12 +218,6 @@ header .navbar-nav .nav-link {
 .navbar-secondary .navbar-nav .nav-link:hover,
 .navbar-secondary .navbar-nav .nav-link.active {
   background: rgba(0,0,0,0.25);
-}
-
-/* Header uses `ul.navbar-nav` without a `.navbar-expand-*` ancestor, so
- * BS5 leaves it as flex-column. Force row here. */
-header .navbar-nav {
-  flex-direction: row;
 }
 
 /* Stop "User Manual" / "Relevancy Cases" from wrapping at 1280px. */

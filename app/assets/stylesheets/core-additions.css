@@ -35,10 +35,6 @@ a, button, .button {
   cursor: pointer;
 }
 
-.ng-link:hover {
-	cursor: pointer;
-}
-
 #main {
 	padding: 0;
 	position: relative;
@@ -354,8 +350,8 @@ header .dropdown-link:focus {
 
 /*
 	Dev Settings — panel skin (selectors with no Bootstrap classes).
-	BS-related dev-panel rules (.btn / .btn-xs / .form-inline, `.nav-tabs`,
-	etc.) live in bootstrap5-compat.css.
+	BS-related dev-panel rules (`.nav-tabs` dark theme) live in
+	bootstrap5-compat.css.
 */
 
 #dev-settings {
@@ -485,12 +481,6 @@ header .dropdown-link:focus {
 	Footer
 */
 
-#footer {
-	background: #CCC;
-	padding: 20px 0;
-	box-shadow: inset 0 5px 5px #C0C0C0;
-}
-
 footer {
   margin-top: 30px;
 }
@@ -520,12 +510,6 @@ footer {
 
 .detaileddoc.code .ace_editor {
   height: 300px;
-}
-
-.footer {
-  text-align: center;
-  padding-left: 15px;
-  padding-right: 15px;
 }
 
 .search-feedback {
