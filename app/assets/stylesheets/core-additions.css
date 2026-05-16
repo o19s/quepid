@@ -5,8 +5,9 @@
  * fluid `.container`, sub-results toolbars, `#dev-settings` tabs, modals,
  * annotations, dropdown shims, etc. — live in bootstrap5-compat.css.
  *
- * Custom header dropdown panels (`.dropdown-content`, `.dropdown-link`), flash
- * directive chrome (`.flash`), and `#flash-messages` live here.
+ * Header dropdown skin (scoped overrides on BS5 `.dropdown-menu` /
+ * `.dropdown-item`), flash directive chrome (`.flash`), and
+ * `#flash-messages` live here.
  *
  * Loaded by build_css.js between fonts.css and bootstrap5-compat.css.
  */
@@ -46,45 +47,40 @@ a, button, .button {
 }
 
 /*
-	Header — custom dropdown panel (see _header_core_app.html.erb:
-	.dropdown-menu.dropdown-content). No Bootstrap class names in these selectors.
+	Header dropdown skin — Quepid visual on BS5's .dropdown-menu /
+	.dropdown-item. Markup lives in _header_core_app.html.erb. BS5
+	supplies positioning (Popper.js), open/close plumbing, and the
+	keyboard a11y; we only override spacing, item layout, and the
+	link color/hover treatment.
+
+	Scoped to `header` so other dropdowns (case toolbar, account
+	picker outside the header) stay on BS5 defaults.
 */
 
-header .dropdown-content {
-  position: absolute;
-  top: 100%;
-  left: 0;
+header .dropdown-menu {
   margin: 0;
   padding: 1px 0 0 0;
-  border-radius: 0px;
+  border-radius: 0;
   z-index: 999;
 }
 
-header .dropdown-content li {
-  list-style: none;
+header .dropdown-menu > li {
   min-width: 250px;
-  border-bottom: 1px solid #eee;
   padding: 10px;
-  background: #FFF;
+  border-bottom: 1px solid #eee;
 }
 
-header .dropdown-content li a {
+header .dropdown-item {
   padding: 0;
+  color: var(--q-brand-link);
+  background: transparent;
 }
 
-header .dropdown-content li a:hover {
-  background: none;
-}
-
-header .dropdown-link {
-  color: #2A6496 !important;
-  padding: 0 !important;
-}
-
-header .dropdown-link:hover,
-header .dropdown-link:focus {
-  text-decoration: underline !important;
-  background: none !important;
+header .dropdown-item:hover,
+header .dropdown-item:focus {
+  background: transparent;
+  color: var(--q-brand-link);
+  text-decoration: underline;
 }
 
 /*
@@ -320,22 +316,26 @@ header .dropdown-link:focus {
 
 /*
 	Dev Settings — panel skin (selectors with no Bootstrap classes).
-	BS-related dev-panel rules (.btn / .btn-xs / .form-inline, `.nav-tabs`,
-	etc.) live in bootstrap5-compat.css.
+	Dark theme is delivered via data-bs-theme="dark" on #dev-settings
+	(see _dev_settings.html); BS5 supplies --bs-body-bg / --bs-body-color
+	and the nav-tabs palette. Rules below are brand-specific surface
+	treatments BS5 doesn't cover (the gradient header, the dev-section
+	separators, and panel sizing).
 */
 
 #dev-settings {
 	width: 100%;
-	background: #333;
-	color: #F0F0F0;
-    height:100%;
-  min-height: calc(100% - 70px);
+	height: 100%;
+	min-height: calc(100% - 70px);
+	/* data-bs-theme="dark" sets the --bs-body-* vars; consume them
+	 * explicitly because a plain <div> doesn't get the theme applied
+	 * automatically (only <body> does). */
+	background-color: var(--bs-body-bg);
+	color: var(--bs-body-color);
 }
 
 #dev-settings .dev-header {
-	background: #222;
 	background: linear-gradient(to bottom, #282828, #222222);
-	color: #F0F0F0;
 	padding: 15px;
 	border-bottom: 1px solid #363636;
 	cursor: pointer;
@@ -361,7 +361,7 @@ header .dropdown-link:focus {
 
 #dev-settings .dev-section ul li {
 	padding: 5px 10px;
-	border-bottom: 1px solid #444;
+	border-bottom: 1px solid var(--bs-border-color);
 }
 
 #dev-settings .settings-tab,

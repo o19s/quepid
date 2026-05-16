@@ -56,8 +56,7 @@ body {
 
 .navbar-secondary .nav-link {
 	color: #FFF;
-  font-family: 'allerregular';
-  font-size: 14px;
+  font-family: 'allerregular', sans-serif;
 }
 
 

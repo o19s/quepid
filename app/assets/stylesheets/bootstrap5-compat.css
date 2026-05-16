@@ -58,7 +58,7 @@
 }
 
 /* Accordion: only live use is the wizard endpoint picker (wizardModal.html).
- * 14px is the denser look Quepid wants (BS5 default 1rem). */
+ * Font size inherits BS5's 1rem; only padding/border are Quepid-tuned. */
 .accordion {
   --bs-accordion-btn-padding-x: 20px;
   --bs-accordion-btn-padding-y: 16px;
@@ -68,31 +68,24 @@
   --bs-accordion-body-padding-y: 16px;
   --bs-accordion-border-radius: 4px;
   --bs-accordion-inner-border-radius: 3px;
-  font-size: 14px;
-}
-.accordion-button {
-  font-size: 14px;
 }
 
-/* Nav tabs (replaces uib-tabset). Tab strip at 14px (BS5 inherits 16px). */
+/* Nav tabs (replaces uib-tabset). Font size inherits BS5's 1rem. */
 .nav {
   --bs-nav-link-padding-x: 16px;
   --bs-nav-link-padding-y: 8px;
-  --bs-nav-link-font-size: 14px;
 }
 .nav-link:focus-visible {
   box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
 }
 
 /* Dropdown: open/close plumbing comes from window.bootstrap.Dropdown
- * (auto-registered in angular_app.js). 14px / 12px is the denser look
- * Quepid wants (BS5 default 1rem / 0.875rem); other vars restate BS5
- * defaults at 16px root for explicitness.
+ * (auto-registered in angular_app.js). Font size inherits BS5's 1rem;
+ * other vars restate BS5 defaults at 16px root for explicitness.
  *
- * Header dropdowns get their distinct look from `header .dropdown-content`
- * rules in core-additions.css (higher specificity, wins intentionally). */
+ * Header dropdowns get their distinct look from `header .dropdown-menu`
+ * scoped overrides in core-additions.css. */
 .dropdown-menu {
-  --bs-dropdown-font-size: 14px;
   --bs-dropdown-min-width: 160px;
   --bs-dropdown-padding-y: 8px;
   --bs-dropdown-spacer: 2px;
@@ -245,32 +238,21 @@ header .dropdown-toggle .bi {
   background: linear-gradient(to bottom right, #EEE, #F8F8F8);
 }
 
-/* Dev panel tabs (devQueryParams.html). Dark-panel theme override
- * for BS5 nav-tabs — `#dev-settings { background: #333 }` (core-additions.css)
- * means BS5's default light-bg active state needs to be inverted. */
+/* Dev panel tabs (devQueryParams.html). Most dark-state colors now come
+ * from BS5's data-bs-theme="dark" on #dev-settings — nav-tabs border,
+ * hover/focus, link colors, and active backgrounds inherit from the
+ * dark palette. We only override the density (12/13px) and the active
+ * rounded-bottom corners that aren't BS5 defaults. */
 #dev-settings .nav-tabs {
-	--bs-nav-tabs-border-color: #666;
-	--bs-nav-tabs-link-hover-border-color: transparent;
-	--bs-nav-tabs-link-active-border-color: transparent;
 	font-size: 12px;
 }
 
 #dev-settings .nav-tabs .nav-link {
 	padding: 12px;
 	font-size: 13px;
-	color: #999;
 }
 
-#dev-settings .nav-tabs .nav-link:hover {
-	color: #FFF;
-}
-
-/* Active state needs explicit color/bg because the id-scoped `.nav-link`
- * rule above (1 id + 2 classes) outranks BS5's `.nav-tabs .nav-link.active`
- * (3 classes), so `--bs-nav-tabs-link-active-*` would never apply. */
 #dev-settings .nav-tabs .nav-link.active {
-	color: #FFF;
-	background: #666;
 	border-bottom-left-radius: 3px;
 	border-bottom-right-radius: 3px;
 }
