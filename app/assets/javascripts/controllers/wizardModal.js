@@ -21,7 +21,7 @@ angular.module('QuepidApp')
         if (confirm) {
           caseSvc.deleteCase(caseSvc.getSelectedCase()).then(function() {
             $quepidModalInstance.dismiss('cancel');
-            $window.location = '/';
+            $window.location.href = caseTryNavSvc.getQuepidRootUrl();
           });
 
         }
