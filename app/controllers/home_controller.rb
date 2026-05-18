@@ -91,7 +91,11 @@ class HomeController < ApplicationController
 
         last_changepoint = DateTime.parse(m.changepoints.last.to_s)
         initial = data.find { |h| h['datetime'].all_day.overlaps?(last_changepoint.all_day) }['y']
-        changepoint = 100 * (@final - initial) / initial
+        # Guard the divide-by-zero: when the score at the changepoint is 0
+        # (case had 0.0 then; common for new cases) the percentage delta is
+        # mathematically undefined. Returning 0 means the template just hides
+        # the arrow/badge entirely — better than "↓ NaN%".
+        changepoint = initial.zero? ? 0 : (100 * (@final - initial) / initial)
 
       end
 
