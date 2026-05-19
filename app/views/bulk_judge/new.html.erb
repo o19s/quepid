@@ -145,7 +145,6 @@
                     <div class="document-header mb-3 d-flex align-items-center">
                       <div class="flex-shrink-0 d-flex align-items-center" style="min-width: 150px;">
                         <span class="badge bg-primary">#<%= doc_counter %></span>
-                        <span id="status_<%= query_doc_pair.id %>" class="ms-2 small"></span>
                       </div>
                       <div class="flex-grow-1 text-center mx-4">
                         <strong>Document ID:</strong> <%= query_doc_pair.doc_id %>
@@ -238,6 +237,7 @@
                             <i class="bi bi-x-circle"></i> Reset
                           </button>
                         <% end %>
+                        <span id="status_<%= query_doc_pair.id %>" class="ms-2"></span>
                       </div>
                     </div>
                   </div>

@@ -9,7 +9,7 @@
             <qscore-case
               annotations="annotations"
               class="case-score"
-              max-score="maxScore || 1";
+              max-score="maxScore || 1"
               scorable="queries.avgQuery"
               score-label="getScorer().name"
               scores="scores"
@@ -21,7 +21,7 @@
               ng-if="queries.avgQuery.diffs"
               ng-repeat="searcher in queries.avgQuery.diffs.getSearchers() track by $index"
               class="case-score diff-score"
-              max-score="maxScore || 1";
+              max-score="maxScore || 1"
               scorable="searcher"
               score-label="searcher.name()"
               scores="[]"

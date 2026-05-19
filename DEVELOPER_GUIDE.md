@@ -265,6 +265,15 @@ To check the JS syntax:
 bin/docker r rails test:jshint
 ```
 
+Git commits can run JSHint on staged app JS via [pre-commit](https://pre-commit.com/):
+
+```bash
+pip install pre-commit   # or: pipx install pre-commit
+pre-commit install
+```
+
+The hook lints only staged `*.js` files under `app/assets/javascripts`, `vendor/assets/javascripts`, and `lib/assets/javascripts` (same paths and skips as `rake test:jshint`). Requires `yarn install` on the host so `node_modules/jshint` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
+
 ### Karma
 
 Runs tests for the Angular side. There are two modes for the karma tests:

@@ -77,6 +77,7 @@
       html:      opts.html !== false,
       delay:     isFinite(delayMs) ? { show: delayMs, hide: 0 } : 0,
       container: 'body',
+      animation: false,
       title:     ' ',
       content:   currentBody || ' '
     });

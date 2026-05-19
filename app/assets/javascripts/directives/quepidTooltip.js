@@ -35,7 +35,8 @@ angular.module('QuepidApp')
           html: isHtml,
           trigger: 'hover focus',
           delay: isFinite(delayMs) ? { show: delayMs, hide: 0 } : 0,
-          container: 'body'
+          container: 'body',
+          animation: false
         });
 
         attrs.$observe('quepidTooltip', function (val) {

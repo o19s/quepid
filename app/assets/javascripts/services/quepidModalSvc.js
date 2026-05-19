@@ -80,7 +80,8 @@
         }
 
         const resultDeferred = $q.defer();
-        let settled = false;
+        let settled  = false;
+        let tornDown = false;
 
         // Build the wrapper up front so BS5 Modal has a real target. The
         // template content is injected (and Angular-compiled) once template +
@@ -104,15 +105,11 @@
         const wrapperEl = wrapper[0];
         const contentEl = wrapperEl.querySelector('.modal-content');
 
-        // No `class="fade"` on the wrapper — BS3's `.fade { opacity: 0 }`
-        // has no `.fade.show` counterpart in core.css (CLAUDE.md gotcha #3),
-        // so an animated modal would render invisible. BS5 reads the class
-        // off the element to decide whether to animate; with no `.fade`,
-        // it skips the transition and the backdrop is shown immediately.
         const bsModal = new Modal(wrapperEl, {
-          backdrop: opts.backdrop !== undefined ? opts.backdrop : true,
-          keyboard: opts.keyboard !== undefined ? opts.keyboard : true,
-          focus:    true
+          animation: false,
+          backdrop:  opts.backdrop !== undefined ? opts.backdrop : true,
+          keyboard:  opts.keyboard !== undefined ? opts.keyboard : true,
+          focus:     true
         });
 
         const instance = {
@@ -148,6 +145,15 @@
         //      traversal, which trips a `$$nextSibling` null deref because
         //      the scope chain is mid-unwind. Add only with care.
 
+        // DOM + scope + BS5 instance only (no listener detach).
+        function teardownCore() {
+          if (tornDown) { return; }
+          tornDown = true;
+          modalScope.$destroy();
+          bsModal.dispose();
+          wrapper.remove();
+        }
+
         // BS5 fires hidden.bs.modal for any close (explicit, backdrop, ESC).
         // If neither close() nor dismiss() ran, the user dismissed via
         // backdrop or keyboard — match uib's reason string.
@@ -159,7 +165,7 @@
               settled = true;
               resultDeferred.reject('backdrop click');
             }
-            teardown();
+            teardownCore();
             // BS5's _hideModal unconditionally strips `modal-open` from
             // <body> when any modal closes — it doesn't track a stack.
             // For nested modals (Quepid does this in targetedSearchModal
@@ -174,14 +180,11 @@
           });
         }
 
-        // Tear down DOM + scope + BS5 instance. removeEventListener is a
-        // no-op if onHidden already detached, so calling teardown more than
-        // once is safe.
+        // Tear down listener + DOM + scope + BS5 instance. teardownCore and
+        // removeEventListener are both safe to call more than once.
         function teardown() {
           wrapperEl.removeEventListener('hidden.bs.modal', onHidden);
-          modalScope.$destroy();
-          bsModal.dispose();
-          wrapper.remove();
+          teardownCore();
         }
 
         wrapperEl.addEventListener('hidden.bs.modal', onHidden);
