@@ -9,7 +9,7 @@ const password = process.env.QUEPID_E2E_PASSWORD ?? 'password';
 setup('authenticate', async ({ page }) => {
   fs.mkdirSync(path.dirname(authFile), { recursive: true });
 
-  await page.goto('/sessions/new');
+  await page.goto('sessions/new');
   // The page renders both the sign-in (#login) and sign-up (#new_user) forms,
   // each with a #user_email / #user_password input. Scope to the login form.
   const loginForm = page.locator('form#login');

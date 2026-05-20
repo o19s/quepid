@@ -17,7 +17,7 @@ else
       <span class="h6"><%= field.humanize.titleize %>:</span>
     <% if value.is_a? String %>
       <% if value.starts_with?('http') %>
-        <%= link_to value, value, target: "_blank" %>
+        <%= link_to value, value, target: "_blank", rel: "noopener noreferrer" %>
       <% else if value.length > 110 then %>
         <br/><%= sanitize value %>
       <% else %>

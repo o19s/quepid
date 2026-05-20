@@ -61,14 +61,14 @@
     <label for="basic">Basic</label>
     <span class="form-text">
       Simple CSV file format <code>query,docid,rating</code> that exports only queries that have been rated.
-      Compatible with projects like <a href="https://github.com/tballison/quaerite" target="_blank">Quaerite</a> among others.
+      Compatible with projects like <a href="https://github.com/tballison/quaerite" target="_blank" rel="noopener noreferrer">Quaerite</a> among others.
     </span>
 
     <input type="radio" id="trec" name="exportSelection" value="trec" ng-model="ctrl.options.which">
     <label for="trec">TREC</label>
     <span class="form-text">
       TREC qrel file format <code>query_id 0 docno judgment</code> that exports only queries that have been rated.
-      Used by the <a href="https://trec.nist.gov/" target="_blank">TREC</a> competition.
+      Used by the <a href="https://trec.nist.gov/" target="_blank" rel="noopener noreferrer">TREC</a> competition.
     </span>
 
     <label for="snapshot_choice">Snapshot
@@ -88,7 +88,7 @@
     <input type="radio" id="rre" name="exportSelection" value="rre" ng-model="ctrl.options.which">
     <label for="rre">Rated Ranking Evaluator / RankQuest</label>
     <span class="form-text">
-      Using <a href="https://github.com/SeaseLtd/rated-ranking-evaluator" target="_blank">Rated Ranking Evaluator</a> or <a href="https://rankquest.jillesvangurp.com/" target="_blank">RankQuest</a>?  Use the RRE format to export the ratings from Quepid to import into those tools.
+      Using <a href="https://github.com/SeaseLtd/rated-ranking-evaluator" target="_blank" rel="noopener noreferrer">Rated Ranking Evaluator</a> or <a href="https://rankquest.jillesvangurp.com/" target="_blank" rel="noopener noreferrer">RankQuest</a>?  Use the RRE format to export the ratings from Quepid to import into those tools.
     </span>
   </div>
   <div class="mb-3">
@@ -102,10 +102,10 @@
   <div class="mb-3">
     <label for="ltr">Quepid API</label>
     <span class="form-text">
-      Quepid <a ng-href="api/docs" target="_blank">has an API</a> that you can export data in the JSON format via.  Append the parameter <code>?shallow=true</code> to return a smaller dataset.
+      Quepid <a ng-href="api/docs" target="_blank" rel="noopener noreferrer">has an API</a> that you can export data in the JSON format via.  Append the parameter <code>?shallow=true</code> to return a smaller dataset.
     </span>
 
-    Retrieve the <a ng-href="api/cases/{{ctrl.theCase.caseNo}}.json?shallow=false" target="_blank">Case</a>, <a ng-href="api/cases/{{ctrl.theCase.caseNo}}/queries.json?shallow=false" target="_blank">Queries</a>, <a ng-href="api/cases/{{ctrl.theCase.caseNo}}/annotations.json" target="_blank">Annotations</a>, <a ng-href="api/cases/{{ctrl.theCase.caseNo}}/scores.json" target="_blank">Scores</a>, <a ng-href="api/export/ratings/{{ctrl.theCase.caseNo}}.json" target="_blank">Ratings</a>, or a Snapshot
+    Retrieve the <a ng-href="api/cases/{{ctrl.theCase.caseNo}}.json?shallow=false" target="_blank" rel="noopener noreferrer">Case</a>, <a ng-href="api/cases/{{ctrl.theCase.caseNo}}/queries.json?shallow=false" target="_blank" rel="noopener noreferrer">Queries</a>, <a ng-href="api/cases/{{ctrl.theCase.caseNo}}/annotations.json" target="_blank" rel="noopener noreferrer">Annotations</a>, <a ng-href="api/cases/{{ctrl.theCase.caseNo}}/scores.json" target="_blank" rel="noopener noreferrer">Scores</a>, <a ng-href="api/export/ratings/{{ctrl.theCase.caseNo}}.json" target="_blank" rel="noopener noreferrer">Ratings</a>, or a Snapshot
     <select ng-model="ctrl.options.api_snapshot">
       <option ng-repeat="snapshot in ctrl.snapshots"
               value="{{snapshot.id}}"
@@ -114,7 +114,7 @@
       </option>
     </select>
     <span ng-if="ctrl.options.api_snapshot">
-      <a ng-href="api/cases/{{ctrl.theCase.caseNo}}/snapshots/{{ ctrl.options.api_snapshot }}.json?shallow=false" target="_blank">here</a>
+      <a ng-href="api/cases/{{ctrl.theCase.caseNo}}/snapshots/{{ ctrl.options.api_snapshot }}.json?shallow=false" target="_blank" rel="noopener noreferrer">here</a>
     </span>
      from API.
   </div>  
@@ -127,7 +127,7 @@
       You can also create a new Case outside Quepid and import using this format.
       Use the Import Case function on the Cases Listing page to import it back in as a brand new Case.
     </span>
-    Peek at <a ng-href="api/export/cases/{{ctrl.theCase.caseNo}}.json" target="_blank">the JSON format</a>.
+    Peek at <a ng-href="api/export/cases/{{ctrl.theCase.caseNo}}.json" target="_blank" rel="noopener noreferrer">the JSON format</a>.
   </div>  
 </div>
 <div class="modal-footer">

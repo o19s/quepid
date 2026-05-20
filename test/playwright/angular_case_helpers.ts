@@ -18,7 +18,7 @@ export const CASE_ID = readCaseId();
 
 export async function gotoCase(page: Page, query: string = ''): Promise<void> {
   const suffix = query ? `?${query}` : '';
-  await page.goto(`/case/${CASE_ID}${suffix}`);
+  await page.goto(`case/${CASE_ID}${suffix}`);
   await page.waitForSelector('li.ui-sortable-handle, .modal.show', { timeout: 20_000 });
 }
 

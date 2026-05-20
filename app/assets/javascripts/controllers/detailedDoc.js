@@ -29,7 +29,7 @@ angular.module('QuepidApp')
 
       $scope.openDocument = function() {
         if ($scope.doc._url()) {
-          $window.open($scope.linkToDoc(), '_blank');
+          $window.open($scope.linkToDoc(), '_blank', 'noopener,noreferrer');
         }
       };
       

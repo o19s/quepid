@@ -411,7 +411,7 @@ header .dropdown-item:focus {
 
 .history-list li {
 	background: #666;
-	word-wrap: break-word;
+	overflow-wrap: break-word;
     position: relative;
 }
 .history-list li:hover {

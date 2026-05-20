@@ -34,6 +34,7 @@ export default async function globalSetup(_config: FullConfig): Promise<void> {
       'Default base URL is http://localhost:33000 (docker-compose maps app 3000 -> host 33000).',
       'To use another URL:',
       '  QUEPID_BASE_URL=http://127.0.0.1:PORT yarn test:e2e',
+      '  (with RAILS_RELATIVE_URL_ROOT, include the subpath in QUEPID_BASE_URL, e.g. http://localhost:33000/quepid-app)',
     ].join('\n');
     throw new Error(msg);
   } finally {

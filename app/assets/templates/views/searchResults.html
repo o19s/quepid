@@ -157,7 +157,7 @@
           </a>
         </span>
         <span ng-if="selectedTry.searchEngine == 'solr'">
-          <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank">
+          <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank" rel="noopener noreferrer">
             <ng-pluralize count="query.numFound"
                 when="{'0': 'Browse {} Results on Solr',
                        'one': 'Browse {} Result on Solr',
@@ -189,7 +189,7 @@
           </a>
         </span>
         <span ng-if="selectedTry.searchEngine == 'solr'">
-          <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank">
+          <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank" rel="noopener noreferrer">
             <ng-pluralize count="query.getNumFound()"
                 when="{'0': 'Browse {} Results on Solr',
                        'one': 'Browse {} Result on Solr',

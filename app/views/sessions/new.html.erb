@@ -105,7 +105,7 @@
             <label>
               <%= f.check_box :agreed, class: 'form-check-input' %>
               Agree to
-              <a href="<%= Rails.application.config.terms_and_conditions_url %>" target="_blank">terms &amp; conditions</a>?
+              <a href="<%= Rails.application.config.terms_and_conditions_url %>" target="_blank" rel="noopener noreferrer">terms &amp; conditions</a>?
             </label>
           </div>
           <% end %>

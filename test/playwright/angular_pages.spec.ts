@@ -191,8 +191,7 @@ test.describe('Angular pages — interaction screenshots', () => {
     await page.keyboard.press('Escape');
     await expect(page.locator('.modal.show')).toHaveCount(0, { timeout: 10_000 });
 
-    await page.goto(`/case/${CASE_ID}`);
-    await page.waitForSelector('li.ui-sortable-handle, .modal.show', { timeout: 20_000 });
+    await gotoCase(page);
     await expandFirstQuery(page);
 
     await page.locator('#header').getByRole('button', { name: /Relevancy Cases/i }).click();

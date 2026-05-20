@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Lint staged CSS under app/assets/stylesheets (same scope as `rake test:stylelint`).
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+STYLELINT="$ROOT/node_modules/.bin/stylelint"
+
+if [[ ! -x "$STYLELINT" ]]; then
+  echo "stylelint not found; run: yarn install (or bin/docker r yarn install)" >&2
+  exit 1
+fi
+
+files=()
+for path in "$@"; do
+  case "$path" in
+    app/assets/stylesheets/*.css) files+=("$path") ;;
+  esac
+done
+
+if [[ ${#files[@]} -eq 0 ]]; then
+  exit 0
+fi
+
+cd "$ROOT"
+exec "$STYLELINT" "${files[@]}"

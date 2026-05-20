@@ -18,8 +18,7 @@ import {
  */
 test.describe('Angular core — narrow viewport slice (768×900)', () => {
   test('wizard endpoint accordion + cases list reflow', async ({ page }) => {
-    await page.goto(`/case/${CASE_ID}?showWizard=true`);
-    await page.waitForSelector('li.ui-sortable-handle, .modal.show', { timeout: 20_000 });
+    await gotoCase(page, 'showWizard=true');
     const modal = page.locator('.modal.show').first();
     await expect(modal).toBeVisible();
 

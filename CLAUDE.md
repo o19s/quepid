@@ -36,6 +36,7 @@
 
 - Run JavaScript tests via `bin/docker r yarn test`.
 - Run Rails tests via `bin/docker r rails test`.
+- Lint CSS via `bin/docker r yarn lint:css` or `bin/docker r rails test:stylelint` (config: `.stylelintrc.json`).
 
 
 ## Documentation

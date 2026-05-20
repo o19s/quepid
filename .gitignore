@@ -95,3 +95,5 @@ claude-swarm.log
 
 /node_modules
 *.patch
+
+yarn-error.log

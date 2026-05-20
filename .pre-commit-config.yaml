@@ -9,3 +9,9 @@ repos:
         language: script
         files: \.js$
         pass_filenames: true
+      - id: stylelint-staged
+        name: stylelint
+        entry: bin/stylelint-staged
+        language: script
+        files: app/assets/stylesheets/.*\.css$
+        pass_filenames: true

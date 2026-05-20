@@ -53,7 +53,7 @@
           >
             <!-- Normal display of a snippet -->
           </span>
-          <span><a ng-href="https://translate.google.com/?sl=auto&tl=en&text={{fieldValue}}" target="_blank"><img ng-src="images/google-translate.png" width="16" height="16"/></a></span>
+          <span><a ng-href="https://translate.google.com/?sl=auto&tl=en&text={{fieldValue}}" target="_blank" rel="noopener noreferrer"><img ng-src="images/google-translate.png" width="16" height="16"/></a></span>
         </li>
         
         <!-- Unabridgeds -->
@@ -82,7 +82,7 @@
           <span
             ng-if="isUrl(fieldValue)">
             <!-- Format a HREF link.  Use the original value, not the html escaped snippet. -->
-            <a ng-href="{{ doc.doc[fieldName] }}" target="_blank">{{ doc.doc[fieldName] }}</a>
+            <a ng-href="{{ doc.doc[fieldName] }}" target="_blank" rel="noopener noreferrer">{{ doc.doc[fieldName] }}</a>
           </span>
 
           <span
