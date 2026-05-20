@@ -138,13 +138,7 @@
                 <li>
                   You may need to configure the JSON <code>wt=json</code> to be <code>application/javascript</code> to work with Quepid.
                   You can do this via the below curl command:
-<pre>curl <span ng-bind="pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings.basicAuthCredential + ' ' : ''"></span>-k -X POST -H 'Content-type:application/json' -d '<span ng-non-bindable>{
-  "create-queryresponsewriter": {
-    "name": "json",
-    "class": "solr.JSONResponseWriter",
-    "content-type": "application/javascript; charset=UTF-8"
-  }
-}</span>' <span ng-bind="extractSolrConfigApiUrl(pendingWizardSettings.searchUrl)"></span></pre>
+<pre>curl <span ng-bind="pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings.basicAuthCredential + ' ' : ''"></span>-k -X POST -H 'Content-type:application/json' -d '<span ng-bind="solrQueryResponseWriterCurlJson"></span>' <span ng-bind="extractSolrConfigApiUrl(pendingWizardSettings.searchUrl)"></span></pre>
                   If you get a error message back, change <code>create-queryresponsewriter</code> to <code>update-queryresponsewriter</code> and re-run.
 
                 </li>
@@ -506,7 +500,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             class="form-control"
             rows="3"
             ng-model="pendingWizardSettings.queryParams"
-            placeholder='{ "query": "#$query##" }'></textarea>
+            placeholder="{{ searchApiQueryPatternPlaceholder }}"></textarea>
           <p ng-if="!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0" class="text-danger" style="margin-top: 5px;">
             Query pattern is required.
           </p>

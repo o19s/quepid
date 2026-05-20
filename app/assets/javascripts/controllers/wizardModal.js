@@ -35,6 +35,16 @@ angular.module('QuepidApp')
       };
 
       $scope.isChrome = /Chrome/.test($window.navigator.userAgent);
+      $scope.solrQueryResponseWriterCurlJson = [
+        '{',
+        '  "create-queryresponsewriter": {',
+        '    "name": "json",',
+        '    "class": "solr.JSONResponseWriter",',
+        '    "content-type": "application/javascript; charset=UTF-8"',
+        '  }',
+        '}'
+      ].join('\n');
+      $scope.searchApiQueryPatternPlaceholder = '{ "query": "#$query##" }';
       $scope.shouldCreateNewSearchEndpointDefaultToOpen = false;
       $scope.shouldExistingSearchEndpointDefaultToOpen = false;
       $scope.searchEndpoints = [];
