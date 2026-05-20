@@ -3,7 +3,6 @@
     margin: 2px 0 5px 0;
 }
 
-/* Match angular-ui-bootstrap uib-progressbar animate="false" (no width transition). */
 .graph-explain .progress-bar {
     transition: none;
 }

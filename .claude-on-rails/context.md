@@ -3,8 +3,8 @@
 This project uses ClaudeOnRails with a swarm of specialized agents for Rails development.
 
 ## Project Information
-- **Rails Version**: 8.0.3
-- **Ruby Version**: 3.4.8
+- **Rails Version**: 8.1.3
+- **Ruby Version**: 4.0.1
 - **Project Type**: Full-stack Rails
 - **Test Framework**: Minitest
 - **Turbo/Stimulus**: Enabled

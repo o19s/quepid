@@ -24,7 +24,7 @@
 
 /* Tooltip + popover: quepidPopover / quepidTooltip pass `animation: false`
  * so `.fade` is never added — avoids invisible-but-present popover bugs
- * from cascade conflicts on opacity (CLAUDE.md trap #3).
+ * from cascade conflicts on opacity.
  *
  * Popover sized for explain / ratings JSON (max-width 800px vs BS5's 276px,
  * max-height 600px). Tooltip min-width 100px keeps single-word tooltips

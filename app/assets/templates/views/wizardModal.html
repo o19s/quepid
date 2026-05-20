@@ -84,7 +84,7 @@
           </div>
 
           <br>
-          <p ng-if="!pendingWizardSettings.searchEngine === 'static'">
+          <p ng-if="pendingWizardSettings.searchEngine !== 'static'">
             Paste the URL to the endpoint of your search engine for Quepid to search (you can also just experiment with the demo servers):
           </p>
           <div class="row">
@@ -138,15 +138,13 @@
                 <li>
                   You may need to configure the JSON <code>wt=json</code> to be <code>application/javascript</code> to work with Quepid.
                   You can do this via the below curl command:
-<pre>
-curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings.basicAuthCredential : ''}} -k -X POST -H 'Content-type:application/json' -d '{
+<pre>curl <span ng-bind="pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings.basicAuthCredential + ' ' : ''"></span>-k -X POST -H 'Content-type:application/json' -d '<span ng-non-bindable>{
   "create-queryresponsewriter": {
     "name": "json",
     "class": "solr.JSONResponseWriter",
     "content-type": "application/javascript; charset=UTF-8"
   }
-}' {{ extractSolrConfigApiUrl(pendingWizardSettings.searchUrl) }}
-</pre>
+}</span>' <span ng-bind="extractSolrConfigApiUrl(pendingWizardSettings.searchUrl)"></span></pre>
                   If you get a error message back, change <code>create-queryresponsewriter</code> to <code>update-queryresponsewriter</code> and re-run.
 
                 </li>
@@ -519,8 +517,8 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
         <div>
           <form>
-            <input type="text" ng-model="pendingWizardSettings.text" style='width: 250px'></input>
-            <input class="btn-sm btn-success" type="submit" value="Add Query" ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)"></input>
+            <input type="text" ng-model="pendingWizardSettings.text" style='width: 250px' />
+            <input class="btn-sm btn-success" type="submit" value="Add Query" ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)" />
           </form>
         </div>
 

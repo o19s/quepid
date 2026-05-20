@@ -2,8 +2,7 @@ import { test, expect } from '@playwright/test';
 import { expandFirstQuery, gotoCase } from './angular_case_helpers';
 
 /**
- * CLAUDE.md — Migrating angular-ui-bootstrap → native BS5, trap #5:
- * the popover node can exist in the DOM with `aria-describedby` set while
+ * The popover node can exist in the DOM with `aria-describedby` set while
  * remaining unpainted (e.g. `display: none` / `opacity: 0` from BS3 `.fade`
  * or cascade clashes). Screenshot diffs in an empty region can miss that.
  *

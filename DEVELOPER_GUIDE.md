@@ -695,9 +695,7 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 We use Angular 1 for the core interactive application. **`splainer-search`** is **`3.x` from npm** (see root `package.json`); **`app/javascript/splainer_search_adapter.js`** registers the wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI (`fieldSpecSvc`, `searchSvc`, …) keeps working. Most other AngularJS-era UI libraries (**`angular-ui-bootstrap`**, wizard, pagination, ui-ace, `ng-tags-input`, etc.) remain **under `app/javascript/vendor/`** (see `vendor/README.md`); only **`angular`** and **`splainer-search`** for the core Case UI are npm dependencies besides shared utilities. Esbuild bundles from **`app/javascript/angular_app.js`**.  
 The Angular **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5** plus Quepid sheets (`core-additions.css`, **`bootstrap5-compat.css`**, and screen CSS), wired in **`build_css.js`** (`buildCoreCSS()`). The historical **`bootstrap3-add.css`** navbar slice has been consolidated into **`bootstrap5-compat.css`**.
 
-For the rest of Quepid, we use Bootstrap 5! That is included via the `package.json` using NPM. See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle`.
-
-We currently use Rails Sprockets to compile everything, but do have dreams of moving to Propshaft, and maybe js-bundling.
+For the rest of Quepid, we use Bootstrap 5 via npm; the non-Angular UI loads it through `app/javascript/application_modern.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the Angular core bundle and CSS).
 
 ## Fonts
 
@@ -710,7 +708,7 @@ also sets up the static files in the `./public/notebooks` directory. However, so
 we ignore that directory from Github. At `asset:precompile` time we unpack the `./jupyterlite/notebooks.gz` file instead.
 This works on Heroku and the production Docker image.
 
-To update the version of Jupyterlite edit `Dockerfile.dev` and `Dockerfile.prod` and update the `pip install` version.
+To update the Jupyterlite version, change the release URL in `Dockerfile.prod` or run `./bin/setup_jupyterlite` locally to pull a new release.
 
 Yes, Jupyterlite works in localhost. After running `./bin/setup_jupyterlite`, you can access the notebooks by navigating to http://localhost:3000/notebooks/ when running your local development server. Jupyterlite runs entirely in the browser, so it works the same way in development as it does in production.
 
