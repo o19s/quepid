@@ -6,7 +6,7 @@
 	 display: block;
 	 float: left;
 	 height: calc(100% - 60px);
-	 left: 1px;
+	 left: 0;
 	 overflow-y: auto;
 	 position: fixed;
 	 width: 100%;
