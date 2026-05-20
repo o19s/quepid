@@ -346,6 +346,7 @@ angular.module('QuepidApp')
         // exit early if we have the TLS issue, this really should be part of the below logic.
         // validator.validateTLS().then.validateURL().then....
         if ($scope.showTLSChangeWarning || $scope.invalidHeaders || $scope.invalidProxyApiMethod ){
+          $scope.validating = false;
           return;
         }
         
@@ -401,6 +402,7 @@ angular.module('QuepidApp')
             console.error('Error stack:', evalError.stack);
             $scope.mapperInvalid = true;
             $scope.mapperErrorMessage = 'Mapper code evaluation failed: ' + evalError.message;
+            $scope.validating = false;
             return; // Exit early if eval fails
           }
           
@@ -462,6 +464,9 @@ angular.module('QuepidApp')
               $scope.pendingWizardSettings.searchUrl = settingsForValidation.searchUrl;
               WizardHandler.wizard().next();
             }
+          }
+          else {
+            $scope.validating = false;
           }
         }, function (error) {
           if (error.toString().startsWith('Error: MapperError')){
