@@ -20,6 +20,7 @@
   --bs-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
   --bs-primary-text-emphasis: #052c65;
   --bs-primary-bg-subtle: #cfe2ff;
+  --q-query-error-icon-color: #fe5b00;
 }
 
 /* Tooltip + popover: quepidPopover / quepidTooltip pass `animation: false`
@@ -91,12 +92,7 @@
   --bs-dropdown-spacer: 2px;
   --bs-dropdown-item-padding-x: 16px;
   --bs-dropdown-item-padding-y: 4px;
-  --bs-dropdown-header-padding-x: 16px;
-  --bs-dropdown-header-padding-y: 8px;
   --bs-dropdown-divider-margin-y: 8px;
-}
-.dropdown-header {
-  font-size: 12px;
 }
 
 /* Header and annotation menus carry their own chevron glyph — suppress

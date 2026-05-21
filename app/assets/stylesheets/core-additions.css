@@ -165,11 +165,18 @@ header .dropdown-item:focus {
 	display: none;
 }
 
+.results .queryHeader_error .error-warning {
+	display: inline-block;
+	font-size: 1.25rem;
+	color: var(--q-query-error-icon-color);
+}
+
 .results .toggleSign {
 	color: #2872bc;
 	position: absolute;
-	top: 22px;
+	top: 50%;
 	right: 19px;
+	transform: translateY(-50%);
 	font-weight: bold;
 	border-radius: 3px;
 	font-size: 16px;

@@ -6,7 +6,7 @@
     <!-- Current query score -->
     <qscore-query
       class="results-score"
-      max-score="maxScore || 100";
+      max-score="maxScore || 100"
       scorable="query"
     >
     </qscore-query>
@@ -44,7 +44,10 @@
       </small>
     </span>
 
-    <i class="error-warning bi bi-exclamation-triangle"></i>
+    <i class="error-warning bi bi-exclamation-triangle-fill ms-2"
+       role="img"
+       aria-label="Query failed"
+       title="Query failed"></i>
 
     <span ng-show="query.isNotAllRated()" class="float-end" style="margin-right: 20px;" title="Hop to it!  There are unrated results!">
       <div class="icon-container">
