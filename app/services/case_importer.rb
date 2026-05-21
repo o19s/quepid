@@ -81,7 +81,15 @@ class CaseImporter
       @current_user,
       params_to_use[:try][:search_endpoint]
     )
-    search_endpoint.save! if search_endpoint.new_record?
+    if search_endpoint.new_record? && !search_endpoint.save
+      search_endpoint.errors.messages.each do |attribute, messages|
+        messages.each do |message|
+          @case.errors.add(attribute, message)
+        end
+      end
+
+      return false
+    end
 
     params_to_use[:try][:search_endpoint_id] = search_endpoint.id
     params_to_use[:try][:try_number] = 1
