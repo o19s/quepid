@@ -77,15 +77,11 @@ class CaseImporter
       end
     end
 
-    # find_or_create_by wasn't working, so just doing it in two steps
-    search_endpoint = @current_user.search_endpoints_involved_with.find_by(
+    search_endpoint = SearchEndpoint.find_or_initialize_for_user(
+      @current_user,
       params_to_use[:try][:search_endpoint]
     )
-    if search_endpoint.nil?
-      search_endpoint = SearchEndpoint.new(params_to_use[:try][:search_endpoint])
-      search_endpoint.owner = @current_user
-      search_endpoint.save!
-    end
+    search_endpoint.save! if search_endpoint.new_record?
 
     params_to_use[:try][:search_endpoint_id] = search_endpoint.id
     params_to_use[:try][:try_number] = 1

@@ -36,16 +36,7 @@ module Api
         # then the params[:search_endpoint] will be empty or won't be passed in
         unless params[:search_endpoint] && params[:search_endpoint].empty?
           search_endpoint_params_to_use = search_endpoint_params
-          convert_blank_values_to_nil search_endpoint_params_to_use
-
-          search_endpoint = @current_user.search_endpoints_involved_with.find_by search_endpoint_params_to_use
-          if search_endpoint.nil?
-            search_endpoint = SearchEndpoint.new search_endpoint_params_to_use
-            search_endpoint.owner = @current_user
-            search_endpoint.save!
-          end
-
-          @try.search_endpoint = search_endpoint
+          return unless assign_search_endpoint_to_try(search_endpoint_params_to_use)
         end
 
         try_number = @case.last_try_number + 1
@@ -85,19 +76,8 @@ module Api
       #   }]
       def update
         search_endpoint_params_to_use = search_endpoint_params
-        search_endpoint_params_to_use = convert_blank_values_to_nil search_endpoint_params_to_use
         unless search_endpoint_params_to_use.empty?
-
-          # really should be a search_endpoint_id passed in versus all the properties of one!
-          search_endpoint = @current_user.search_endpoints_involved_with
-            .find_by search_endpoint_params_to_use.except :name
-
-          if search_endpoint.nil?
-            search_endpoint = SearchEndpoint.new search_endpoint_params_to_use
-            search_endpoint.owner = @current_user
-            search_endpoint.save!
-          end
-          @try.search_endpoint = search_endpoint
+          return unless assign_search_endpoint_to_try(search_endpoint_params_to_use)
         end
 
         if @try.update try_params
@@ -114,6 +94,19 @@ module Api
       end
 
       private
+
+      def assign_search_endpoint_to_try(params_hash)
+        convert_blank_values_to_nil params_hash
+
+        search_endpoint = SearchEndpoint.find_or_initialize_for_user(@current_user, params_hash)
+        if search_endpoint.new_record? && !search_endpoint.save
+          render json: search_endpoint.errors, status: :bad_request
+          return false
+        end
+
+        @try.search_endpoint = search_endpoint
+        true
+      end
 
       def convert_blank_values_to_nil hash
         hash.each do |key, value|

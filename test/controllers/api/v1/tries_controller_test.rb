@@ -173,6 +173,60 @@ search_endpoint: es_endpoint.attributes }
           assert_equal 'New field_spec', the_try.field_spec
           assert_equal 'es', the_try.search_endpoint.search_engine
         end
+
+        test 'creates opensearch endpoint with basic auth and proxy on wizard finish' do
+          with_require_proxy_with_basic_auth(true) do
+            put :update,
+                params: {
+                  case_id:    the_case.id,
+                  try_number: the_try.try_number,
+                  try:        {
+                    escape_query:   true,
+                    field_spec:     'id:_id, title:title, overview, cast, thumb:poster_path',
+                    number_of_rows: 10,
+                    query_params:   "{\n  \"query\": {\n    \"multi_match\": {\n      \"query\": \"#$query##\",\n      \"fields\": [\"*\"]\n    }\n  }\n}",
+                  },
+                  search_endpoint: {
+                    search_engine:         'os',
+                    endpoint_url:          'https://quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
+                    api_method:            'POST',
+                    custom_headers:        '',
+                    basic_auth_credential: 'reader:reader',
+                    proxy_requests:        true,
+                  },
+                }
+
+            assert_response :ok
+
+            the_try.reload
+            assert_equal 'os', the_try.search_endpoint.search_engine
+            assert the_try.search_endpoint.proxy_requests?
+            assert_equal 'reader:reader', the_try.search_endpoint.basic_auth_credential
+          end
+        end
+
+        test 'returns bad request when basic auth endpoint omits proxy requests' do
+          with_require_proxy_with_basic_auth(true) do
+            put :update,
+                params: {
+                  case_id:    the_case.id,
+                  try_number: the_try.try_number,
+                  try:        { field_spec: 'id:_id' },
+                  search_endpoint: {
+                    search_engine:         'os',
+                    endpoint_url:          'https://quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
+                    api_method:            'POST',
+                    basic_auth_credential: 'reader:reader',
+                    proxy_requests:        false,
+                  },
+                }
+
+            assert_response :bad_request
+
+            body = response.parsed_body
+            assert_includes body['proxy_requests'], 'must be enabled when basic auth credentials are present'
+          end
+        end
       end
 
       describe 'Creates new case tries' do

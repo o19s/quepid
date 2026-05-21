@@ -160,6 +160,46 @@ class SearchEndpointTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'find_or_initialize_for_user' do
+    let(:joey) { users(:joey) }
+
+    it 'finds by endpoint attributes without querying basic_auth_credential' do
+      existing = search_endpoints(:one)
+      existing.update!(
+        search_engine:         'os',
+        endpoint_url:          'https://example.com/tmdb/_search',
+        api_method:            'POST',
+        basic_auth_credential: 'reader:reader',
+        proxy_requests:        true,
+        owner:                 joey
+      )
+
+      found = SearchEndpoint.find_or_initialize_for_user(
+        joey,
+        search_engine:         'os',
+        endpoint_url:          'https://example.com/tmdb/_search',
+        api_method:            'POST',
+        basic_auth_credential: 'other:creds',
+        proxy_requests:        true
+      )
+
+      assert_equal existing, found
+    end
+
+    it 'builds a new endpoint when no match exists' do
+      endpoint = SearchEndpoint.find_or_initialize_for_user(
+        joey,
+        search_engine:  'os',
+        endpoint_url:   'https://new.example.com/tmdb/_search',
+        api_method:     'POST',
+        proxy_requests: true
+      )
+
+      assert_not endpoint.persisted?
+      assert_equal joey, endpoint.owner
+    end
+  end
+
   describe 'proxy required with basic auth credentials' do
     it 'requires proxy_requests when require_proxy_with_basic_auth_credentials is true' do
       original = Rails.application.config.require_proxy_with_basic_auth_credentials

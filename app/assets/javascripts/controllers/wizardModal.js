@@ -455,18 +455,16 @@ angular.module('QuepidApp')
       
         validator.validateUrl()
         .then(function () {
-          $scope.urlValid     = true;
-          
-          if ( !$scope.mapperInvalid ){
+          $scope.validating = false;
+          $scope.urlValid   = true;
+
+          if (!$scope.mapperInvalid) {
             setupDefaults(validator);
-            
-            if (!justValidate) {      
+
+            if (!justValidate) {
               $scope.pendingWizardSettings.searchUrl = settingsForValidation.searchUrl;
               WizardHandler.wizard().next();
             }
-          }
-          else {
-            $scope.validating = false;
           }
         }, function (error) {
           if (error.toString().startsWith('Error: MapperError')){

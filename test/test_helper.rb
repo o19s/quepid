@@ -49,6 +49,14 @@ module ActiveSupport
       end
     end
 
+    def with_require_proxy_with_basic_auth value
+      original = Rails.application.config.require_proxy_with_basic_auth_credentials
+      Rails.application.config.require_proxy_with_basic_auth_credentials = value
+      yield
+    ensure
+      Rails.application.config.require_proxy_with_basic_auth_credentials = original
+    end
+
     def login_user_for_integration_test user
       # We don't actually want to load up scores...
       Bullet.enable = false
