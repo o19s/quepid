@@ -31,12 +31,14 @@
           </div>
 
           <div ng-controller="CaseCtrl" style="display:inline-block;vertical-align:top">
-            <h1 class="">
-              <small class="text-muted">Current case <i class="bi bi-repeat" ng-show="caseModel.selectedCase().nightly" quepid-tooltip="Queries are run on a nightly basis." tooltip-popup-delay="1000" tooltip-placement="right"></i></small>
-              <span ng-show="caseModel.selectedCase().public">PUBLIC</span>
-              <span ng-show="caseModel.selectedCase().archived">ARCHIVED</span>
-              
-              <br>
+            <h1 class="fs-1 fw-normal lh-sm mb-3">
+              <small class="d-block fs-6 fw-normal text-muted">
+                Current case
+                <i class="bi bi-repeat" ng-show="caseModel.selectedCase().nightly" quepid-tooltip="Queries are run on a nightly basis." tooltip-popup-delay="1000" tooltip-placement="right"></i>
+                <span ng-show="caseModel.selectedCase().public">PUBLIC</span>
+                <span ng-show="caseModel.selectedCase().archived">ARCHIVED</span>
+              </small>
+
               <span ng-dblclick="caseNameEditModeToggle()">
                 <span ng-hide="caseName.startRename">
                   {{ caseModel.selectedCase().caseName }}
@@ -50,7 +52,7 @@
                 </span>
               </span>
 
-              <small class="text-muted" ng-controller="CurrSettingsCtrl">
+              <small class="fs-6 fw-normal text-muted" ng-controller="CurrSettingsCtrl">
                 &mdash;
                 <span ng-dblclick="tryNameEditModeToggle()">
                   <span ng-hide="tryName.startRename">
@@ -66,7 +68,7 @@
                 </span>
               </small>
 
-              <small class="text-muted">
+              <small class="fs-6 fw-normal text-muted">
                 &mdash;
                 {{ getScorer().name }}
               </small>
