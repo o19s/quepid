@@ -88,9 +88,15 @@ class SearchEndpoint < ApplicationRecord
   # encrypted and cannot be queried with find_by.
   def self.find_or_initialize_for_user user, params
     normalized = params.to_h.symbolize_keys
-    lookup_params = normalized.except(:name, :basic_auth_credential)
-    endpoint = user.search_endpoints_involved_with.find_by(lookup_params)
-    return endpoint if endpoint
+    normalized[:proxy_requests] = false if normalized[:proxy_requests].nil?
+
+    lookup_keys = %i[search_engine endpoint_url api_method proxy_requests]
+    lookup_params = normalized.slice(*lookup_keys)
+
+    if lookup_keys.all? { |key| lookup_params.key?(key) }
+      endpoint = user.search_endpoints_involved_with.find_by(lookup_params)
+      return endpoint if endpoint
+    end
 
     endpoint = new(normalized)
     endpoint.owner = user
