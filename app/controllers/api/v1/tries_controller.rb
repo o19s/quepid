@@ -17,8 +17,6 @@ module Api
         respond_with @try
       end
 
-      # rubocop:disable Metrics/MethodLength
-      # rubocop:disable Metrics/AbcSize
       # @request_body Try to be created [Reference:#/components/schemas/Try]
       # @request_body_example try with existing search endpoint [Reference:#/components/examples/TryWithExistingSearchEndpoint]
       # @request_body_example try creating a new search endpoint [Reference:#/components/examples/TryCreatingNewSearchEndpoint]
@@ -35,8 +33,8 @@ module Api
         # if we are creating a new try with an existing search_endpoint_id,
         # then the params[:search_endpoint] will be empty or won't be passed in
         unless params[:search_endpoint] && params[:search_endpoint].empty?
-          search_endpoint_params_to_use = search_endpoint_params
-          return unless assign_search_endpoint_to_try(search_endpoint_params_to_use)
+          assign_search_endpoint_to_try search_endpoint_params
+          return if performed?
         end
 
         try_number = @case.last_try_number + 1
@@ -61,8 +59,6 @@ module Api
           render json: @try.errors.concat(@case.errors), status: :bad_request
         end
       end
-      # rubocop:enable Metrics/MethodLength
-      # rubocop:enable Metrics/AbcSize
 
       # @request_body Try to be updated [Reference:#/components/schemas/Try]
       # @request_body_example updating a try
@@ -75,10 +71,8 @@ module Api
       #     "search_endpoint": {}
       #   }]
       def update
-        search_endpoint_params_to_use = search_endpoint_params
-        unless search_endpoint_params_to_use.empty?
-          return unless assign_search_endpoint_to_try(search_endpoint_params_to_use)
-        end
+        assign_search_endpoint_to_try search_endpoint_params unless search_endpoint_params.empty?
+        return if performed?
 
         if @try.update try_params
           respond_with @try
@@ -95,17 +89,18 @@ module Api
 
       private
 
-      def assign_search_endpoint_to_try(params_hash)
+      # Controller-internal: renders :bad_request on save failure. Callers should
+      # check Rails' `performed?` after invoking and return early if true.
+      def assign_search_endpoint_to_try params_hash
         convert_blank_values_to_nil params_hash
 
-        search_endpoint = SearchEndpoint.find_or_initialize_for_user(@current_user, params_hash)
+        search_endpoint = SearchEndpoint.find_or_initialize_for_user @current_user, params_hash
         if search_endpoint.new_record? && !search_endpoint.save
           render json: search_endpoint.errors, status: :bad_request
-          return false
+          return
         end
 
         @try.search_endpoint = search_endpoint
-        true
       end
 
       def convert_blank_values_to_nil hash

@@ -163,7 +163,10 @@ class SearchEndpointTest < ActiveSupport::TestCase
   describe 'find_or_initialize_for_user' do
     let(:joey) { users(:joey) }
 
-    it 'finds by endpoint attributes without querying basic_auth_credential' do
+    it 'matches an existing endpoint even when basic_auth_credential differs' do
+      # basic_auth_credential is encrypted non-deterministically, so it must be excluded
+      # from the lookup. Passing a *different* credential value here proves the lookup
+      # ignores it — otherwise we'd silently create a duplicate row on every wizard run.
       existing = search_endpoints(:one)
       existing.update!(
         search_engine:         'os',
@@ -184,6 +187,7 @@ class SearchEndpointTest < ActiveSupport::TestCase
       )
 
       assert_equal existing, found
+      assert_predicate found, :persisted?
     end
 
     it 'builds a new endpoint when no match exists' do

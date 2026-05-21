@@ -104,6 +104,48 @@ module Api
             kase.owner = user
           end
 
+          test 'does not duplicate an existing endpoint with basic_auth_credential' do
+            # basic_auth_credential is encrypted non-deterministically, so a naive find_by
+            # that includes it can never match an existing row and would silently create a
+            # duplicate endpoint on every import. This test locks in the lookup behavior.
+            existing = SearchEndpoint.create!(
+              name:                  'Shared OS',
+              endpoint_url:          'https://opensearch.example.com/tmdb/_search',
+              search_engine:         'os',
+              api_method:            'POST',
+              basic_auth_credential: 'reader:reader',
+              proxy_requests:        true,
+              owner:                 user
+            )
+
+            data = {
+              case_name:   'reimport case',
+              owner_email: user.email,
+              scorer:      acase.scorer.as_json(only: [ :name ]),
+              try:         {
+                escape_query:    true,
+                search_endpoint: {
+                  name:                  existing.name,
+                  endpoint_url:          existing.endpoint_url,
+                  search_engine:         existing.search_engine,
+                  api_method:            existing.api_method,
+                  basic_auth_credential: 'reader:reader',
+                  proxy_requests:        true,
+                },
+              },
+              queries:     [],
+            }
+
+            assert_no_difference 'SearchEndpoint.count' do
+              post :create, params: { case: data, format: :json }
+            end
+
+            assert_response :created
+
+            imported = Case.find_by(case_name: 'reimport case')
+            assert_equal existing, imported.tries.first.search_endpoint
+          end
+
           test 'creates a new case' do
             data = {
               case_name:   'test case',
