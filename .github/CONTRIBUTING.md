@@ -28,6 +28,7 @@ This guide is essential to keeping the contribution process easy and simple for 
   * Make sure you have setup your editor to trim ending whitespace.
   * Make sure you have setup your editor to add an empty line at the end of each file.
   * Make sure you have setup your editor to use spaces instead of tabs, and indentations of 2 spaces.
+* Install git pre-commit hooks (`bin/install-git-hooks`) so RuboCop and JSHint run automatically on commit. See [DEVELOPER_GUIDE.md](../DEVELOPER_GUIDE.md#pre-commit-hooks).
 * Run `rubocop` before committing to ensure your changes meet our style guidelines.
   * Even though rubocop allows lines of up to 120 characters, try to keep it under 80.
   * Set your editor to show a wrap-guide line at 80 characters to help you follow this rule.
