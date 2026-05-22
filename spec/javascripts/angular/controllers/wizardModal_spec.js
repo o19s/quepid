@@ -10,7 +10,6 @@ describe('Controller: WizardModalCtrl', function () {
   var settingsSvc;
   var $httpBackend;
 
-  /*global jasmine*/
   var mockModalInstance = {
     close: jasmine.createSpy(),
     dismiss: jasmine.createSpy()
@@ -20,7 +19,7 @@ describe('Controller: WizardModalCtrl', function () {
 
   var mockWizardHandler = {
     wizard: function(){
-      return {goTo: function(){}}
+      return {goTo: function(){}};
     }
   };
 
@@ -54,7 +53,7 @@ describe('Controller: WizardModalCtrl', function () {
     completedCaseWizard:       true,
     introWizardSeen: false,
     shownIntroWizard: function() {
-      self.introWizardSeen=true;
+      mockUser.introWizardSeen = true;
     }
   };
 
@@ -205,14 +204,14 @@ describe('Controller: WizardModalCtrl', function () {
   
   describe('parse url', function() {
     it('blows up on %', function() {
-      var url = "http://username:pass%@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json";
+      var url = 'http://username:pass%@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json';
       expect(function() {
         new URI(url);
       }).toThrowError('URI malformed');
     });
     
     it('Works with %25', function() {
-      var url = "http://username:pass%25@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json";
+      var url = 'http://username:pass%25@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json';
       
       var a = new URI(url);
       expect(a.password()).toBe('pass%');
@@ -220,7 +219,7 @@ describe('Controller: WizardModalCtrl', function () {
     });
     
     it('Works with %25 nested', function() {
-      var url = "http://username:pass%25word@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json";
+      var url = 'http://username:pass%25word@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json';
       
       var a = new URI(url);
       expect(a.password()).toBe('pass%word');

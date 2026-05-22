@@ -25,7 +25,7 @@
 
   wind.MockDocResolverSvc = function($q) {
     this.createResolver = function(ids, settings) {
-      this.mockResolver = new MockResolver(ids, settings, $q);
+      this.mockResolver = new wind.MockResolver(ids, settings, $q);
       return this.mockResolver;
     };
   };

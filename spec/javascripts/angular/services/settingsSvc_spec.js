@@ -1,5 +1,5 @@
 'use strict';
-/*global jasmine*/
+
 describe('Service: settingsSvc', function () {
 
   // load the service's module

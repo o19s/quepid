@@ -35,23 +35,23 @@ describe('Service: annotationsSvc', function () {
     var response = {
       id:         10,
       user_id:    1,
-      message:    "create test",
+      message:    'create test',
       source      :null,
-      created_at: "2016-04-13T20:02:11.784Z",
-      updated_at: "2016-04-13T20:02:11.784Z",
+      created_at: '2016-04-13T20:02:11.784Z',
+      updated_at: '2016-04-13T20:02:11.784Z',
       score: {
         id:         122,
         case_id     :48,
         user_id:    1,
-        email:      "ychaker@o19s.com",
+        email:      'ychaker@o19s.com',
         try_id:     0,
         score:      0.0,
         all_rated:  true,
-        created_at: "2016-04-13T20:02:11.702Z",
+        created_at: '2016-04-13T20:02:11.702Z',
         shallow:    true
       },
       user: {
-        name: "ychaker@o19s.com"
+        name: 'ychaker@o19s.com'
       }
     };
 
@@ -95,23 +95,23 @@ describe('Service: annotationsSvc', function () {
     var response = {
       id:         10,
       user_id:    1,
-      message:    "create test",
+      message:    'create test',
       source      :null,
-      created_at: "2016-04-13T20:02:11.784Z",
-      updated_at: "2016-04-13T20:02:11.784Z",
+      created_at: '2016-04-13T20:02:11.784Z',
+      updated_at: '2016-04-13T20:02:11.784Z',
       score: {
         id:         122,
         case_id     :48,
         user_id:    1,
-        email:      "ychaker@o19s.com",
+        email:      'ychaker@o19s.com',
         try_id:     0,
         score:      0.0,
         all_rated:  true,
-        created_at: "2016-04-13T20:02:11.702Z",
+        created_at: '2016-04-13T20:02:11.702Z',
         shallow:    true
       },
       user: {
-        name: "ychaker@o19s.com"
+        name: 'ychaker@o19s.com'
       }
     };
 

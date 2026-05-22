@@ -1,5 +1,4 @@
 'use strict';
-/*global jasmine */
 
 describe('Service: caseTryNavSvc', function () {
 

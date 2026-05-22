@@ -15,82 +15,82 @@ describe('Service: caseCSVSvc', function () {
 
   describe('stringify', function () {
     var mockScores = {
-      "all_rated": false,
-      "case_id": 8,
-      "created_at": "2015-07-14 16:08:55",
-      "updated_at": "2015-07-14 16:08:55",
-      "queries": {
-        "1": {
-          "score": 30,
-          "text": "dog",
+      'all_rated': false,
+      'case_id': 8,
+      'created_at': '2015-07-14 16:08:55',
+      'updated_at': '2015-07-14 16:08:55',
+      'queries': {
+        '1': {
+          'score': 30,
+          'text': 'dog',
         },
-        "2": {
-          "score": 0,
-          "text": "cat",
+        '2': {
+          'score': 0,
+          'text': 'cat',
         },
-        "3": {
-          "score": '',
-          "text": "foo",
+        '3': {
+          'score': '',
+          'text': 'foo',
         }
       },
-      "score":      54.5,
-      "try_id":     1,
-      "user_id":    2,
-      "email":      "ychaker@example.com"
+      'score':      54.5,
+      'try_id':     1,
+      'user_id':    2,
+      'email':      'ychaker@example.com'
     };
     var mockCase = {
-      "caseName":   'Test Case',
-      "caseNo":     8,
-      "teamName":   'Test Team',
-      "lastScore":  mockScores,
-      "teamNames":  function() { return 'Test Team'; },
+      'caseName':   'Test Case',
+      'caseNo':     8,
+      'teamName':   'Test Team',
+      'lastScore':  mockScores,
+      'teamNames':  function() { return 'Test Team'; },
     };
     var mockQueries =[
       {
-        "queryId":1,
-        "query_text": "dog",
-        "informationNeed":"",
-        "notes": "This dog looks like a great dog.",
-        "options": {}
+        'queryId':1,
+        'query_text': 'dog',
+        'informationNeed':'',
+        'notes': 'This dog looks like a great dog.',
+        'options': {}
         
       },
       {
-        "queryId":2,
-        "query_text": "cat",
-        "informationNeed":"",
-        "notes": 'Is this "really" a "cat"?',
-        "options": {}
+        'queryId':2,
+        'query_text': 'cat',
+        'informationNeed':'',
+        'notes': 'Is this "really" a "cat"?',
+        'options': {}
       },
       {
-        "queryId":3,
-        "query_text": "foo",
-        "informationNeed":"",
-        "notes": "chil'laxin",
-        "options": {}
+        'queryId':3,
+        'query_text': 'foo',
+        'informationNeed':'',
+        'notes': 'chil\'laxin',
+        'options': {}
       }
     ];
     var mockQueriesSvcQueries ={
-      "1": {
-        "queryId":1,
-        "query_text": "dog",
-        "informationNeed":"",
-        "notes": "This dog looks like a great dog.",
-        "options": {}
+      '1': {
+        'queryId':1,
+        'query_text': 'dog',
+        'informationNeed':'',
+        'notes': 'This dog looks like a great dog.',
+        'options': {}
         
       },
-      "2": {
-        "queryId":2,
-        "query_text": "cat",
-        "informationNeed":"",
-        "notes": 'Is this "really" a "cat"?',
-        "options": {}
+      '2': {
+        'queryId':2,
+        'query_text': 'cat',
+        'informationNeed':'',
+        'notes': 'Is this "really" a "cat"?',
+        'options': {}
       },
-      "3": {
-        "queryId":3,
-        "query_text": "foo",
-        "informationNeed":"",
-        "notes": "chil'laxin",
-        "options": {}
+      '3': {
+        'queryId':3,
+        'query_text': 'foo',
+        'informationNeed':'',
+        'notes': 'chil\'laxin',
+        'options': {}
       }
     };  
 
@@ -100,25 +100,25 @@ describe('Service: caseCSVSvc', function () {
       
       var mockResultFromUploadingCSVWithSpaces = [
         {
-        "Query Text ": "star wars",
-        " Movie Title ": "Star Wars",
-        "MovieRating ": "PG"
+        'Query Text ': 'star wars',
+        ' Movie Title ': 'Star Wars',
+        'MovieRating ': 'PG'
         }
       ];
       
       const result = caseCSVSvc.fixObjectKeys(mockResultFromUploadingCSVWithSpaces);
 
       expect(result).toEqual([{
-        "Query Text": "star wars",
-        "Movie Title": "Star Wars",
-        "MovieRating": "PG"
+        'Query Text': 'star wars',
+        'Movie Title': 'Star Wars',
+        'MovieRating': 'PG'
       }]);
     });
     
     it('returns a comma separated string of query scores with the header', function () {
       var result = caseCSVSvc.stringify(mockCase,mockQueriesSvcQueries, true);
 
-      var expectedResult = "Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes,Options\r\nTest Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this \"\"really\"\" a \"\"cat\"\"?,\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin,\r\n";
+      var expectedResult = 'Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes,Options\r\nTest Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -126,7 +126,7 @@ describe('Service: caseCSVSvc', function () {
     it('returns a comma separated string of query scores without the header', function () {
       var result = caseCSVSvc.stringify(mockCase, mockQueriesSvcQueries);
 
-      var expectedResult = "Test Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this \"\"really\"\" a \"\"cat\"\"?,\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin,\r\n";
+      var expectedResult = 'Test Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -203,7 +203,7 @@ describe('Service: caseCSVSvc', function () {
 
       var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
-      var expectedResult = 'Test Team, @Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, @Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, @Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';;
+      var expectedResult = 'Test Team, @Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, @Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, @Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -214,7 +214,7 @@ describe('Service: caseCSVSvc', function () {
 
       var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
-      var expectedResult = 'Test Team, +Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, +Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, +Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';;
+      var expectedResult = 'Test Team, +Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, +Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, +Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
       expect(result).toEqual(expectedResult);
     });
@@ -225,7 +225,7 @@ describe('Service: caseCSVSvc', function () {
 
       var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
 
-      var expectedResult = 'Test Team, -Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, -Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, -Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';;
+      var expectedResult = 'Test Team, -Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, -Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, -Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
 
       expect(result).toEqual(expectedResult);
     });

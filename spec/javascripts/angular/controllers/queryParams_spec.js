@@ -26,7 +26,7 @@ describe('Controller: QueryparamsCtrl', function () {
     scope.settings.searchUrl = 'http://example.com';
     scope.settings.searchEngine = 'solr';
     scope.settings.apiMethod = 'JSONP';
-    scope.settings.fieldSpec = "id:id title:title";
+    scope.settings.fieldSpec = 'id:id title:title';
 
     QueryparamsCtrl = $controller('QueryParamsCtrl', {
       $scope: scope
@@ -93,11 +93,11 @@ describe('Controller: QueryparamsCtrl', function () {
 
   it('handles changing TLS from http to https when you start on http', function () {
     expect(scope.showTLSChangeWarning).toBeFalsy();
-    scope.settings.searchUrl = 'https://example.com'
+    scope.settings.searchUrl = 'https://example.com';
     scope.qp.toggleTab();
     expect(scope.showTLSChangeWarning).toBeTruthy();
-    expect(scope.quepidUrlToSwitchTo).toEqual('https://server/?protocolToSwitchTo=https&searchEngine=solr&searchUrl=https://example.com&showWizard=false&apiMethod=JSONP&fieldSpec=id:id title:title')
-    scope.settings.searchUrl = 'http://example.com'
+    expect(scope.quepidUrlToSwitchTo).toEqual('https://server/?protocolToSwitchTo=https&searchEngine=solr&searchUrl=https://example.com&showWizard=false&apiMethod=JSONP&fieldSpec=id:id title:title');
+    scope.settings.searchUrl = 'http://example.com';
     scope.qp.toggleTab();
     expect(scope.showTLSChangeWarning).toBeFalsy();
     //expect(scope.quepidUrlToSwitchTo).toEqual('http://server/')

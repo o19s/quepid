@@ -29,32 +29,32 @@ describe('Service: rateElementSvc', function () {
     };
 
     var mockScorer = {
-      "scorerId": 1,
-      "name":     "Fake Scorer",
-      "code":     "pass();",
-      "scale":    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-      "ownerId":  1,
-      "error":    false,
+      'scorerId': 1,
+      'name':     'Fake Scorer',
+      'code':     'pass();',
+      'scale':    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      'ownerId':  1,
+      'error':    false,
     };
 
     var mockScorer2 = {
-      "scorerId": 1,
-      "name":     "Fake Scorer",
-      "code":     "pass();",
-      "scale":    [1, 2, 3, 4],
-      "ownerId":  1,
-      "error":    false,
+      'scorerId': 1,
+      'name':     'Fake Scorer',
+      'code':     'pass();',
+      'scale':    [1, 2, 3, 4],
+      'ownerId':  1,
+      'error':    false,
     };
 
     var mockScope = {};
     var mockScopeTemplate = {
-      "query": {
-        "scorer": null,
+      'query': {
+        'scorer': null,
         effectiveScorer: function() {
           return null;
         }
       },
-      "ratings": { }
+      'ratings': { }
     };
 
     beforeEach(inject( function(_$rootScope_, _rateElementSvc_, _scorerSvc_, $q) {
@@ -65,7 +65,7 @@ describe('Service: rateElementSvc', function () {
       // Tests were mucking with the scope so clear it out
       mockScope = angular.copy(mockScopeTemplate);
 
-      spyOn(scorerSvc, "get").and.callFake(function(id) {
+      spyOn(scorerSvc, 'get').and.callFake(function(id) {
         var deferred = $q.defer();
         var scorer;
 
@@ -75,7 +75,7 @@ describe('Service: rateElementSvc', function () {
           scorer = mockScorer2;
         }
 
-        deferred.resolve({ "data": scorer });
+        deferred.resolve({ 'data': scorer });
         return deferred.promise;
       });
     }));
@@ -130,7 +130,7 @@ describe('Service: rateElementSvc', function () {
     var rateElementSvc;
 
     var mockScope = {
-      "ratings": { }
+      'ratings': { }
     };
 
     const mockExtra = { };

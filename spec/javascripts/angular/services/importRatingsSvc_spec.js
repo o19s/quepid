@@ -53,40 +53,40 @@ describe('Service: importRatingsSvc', function () {
     };
 
     var mockRREJson = {
-      "id_field": "id",
-      "index": "Movies Search",
-      "template": "template.json",
-      "queries": [
+      'id_field': 'id',
+      'index': 'Movies Search',
+      'template': 'template.json',
+      'queries': [
         {
-          "placeholders": {
-            "$query": "star trek"
+          'placeholders': {
+            '$query': 'star trek'
           },
-          "relevant_documents": {
-            "1": [
-              "193"
+          'relevant_documents': {
+            '1': [
+              '193'
             ],
-            "2": [
-              "157",
-              "152"
+            '2': [
+              '157',
+              '152'
             ]
           }
         },
         {
-          "placeholders": {
-            "$query": "star wars"
+          'placeholders': {
+            '$query': 'star wars'
           },
-          "relevant_documents": {
-            "1": [
-              "12180"
+          'relevant_documents': {
+            '1': [
+              '12180'
             ],
-            "2": [
-              "13532",
-              "1895"
+            '2': [
+              '13532',
+              '1895'
             ]
           }
         }
       ]
-    }
+    };
 
 
     it('imports ratings multiple queries and multiple docs', function() {
@@ -121,8 +121,8 @@ describe('Service: importRatingsSvc', function () {
       });
     });
 
-    var mockCsv = 'query,information_need\n'
-    mockCsv = mockCsv + 'tatooine in star wars,Any of the star wars movies mentioning tatooine\n'
+    var mockCsv = 'query,information_need\n';
+    mockCsv = mockCsv + 'tatooine in star wars,Any of the star wars movies mentioning tatooine\n';
 
     var mockCase = {
       caseNo: 8

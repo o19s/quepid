@@ -22,9 +22,8 @@ describe('Service: docCacheSvc', function () {
       docCacheSvc     = _docCacheSvc_;
       docResolverSvc  = _docResolverSvc_;
 
-      spyOn(docResolverSvc, "createResolver").and
+      spyOn(docResolverSvc, 'createResolver').and
         .callFake(function(ids, settings) {
-          /*global MockResolver*/
           this.mockResolver = new MockResolver(ids, settings, $q);
           return this.mockResolver;
         });

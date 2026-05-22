@@ -17,7 +17,6 @@ describe('Service: querySnapshotSvc', function () {
 
   beforeEach(function() {
     module(function($provide) {
-      /*global MockSettingsSvc*/
       settingsSvc = new MockSettingsSvc();
       $provide.value('settingsSvc',     settingsSvc);
     });
@@ -32,9 +31,8 @@ describe('Service: querySnapshotSvc', function () {
 
       settingsSvc.setMockFieldSpec(mockFieldSpec);
 
-      spyOn(docResolverSvc, "createResolver").and
+      spyOn(docResolverSvc, 'createResolver').and
         .callFake(function(ids, settings) {
-          /*global MockResolver*/
           this.mockResolver = new MockResolver(ids, settings, $q);
           return this.mockResolver;
         });
@@ -293,7 +291,6 @@ describe('Service: querySnapshotSvc', function () {
       querySnapshotSvc.bootstrap(3);
       $httpBackend.flush();
 
-      var mockResolver = docResolverSvc.mockResolver;
       $rootScope.$apply();
     });
 
@@ -361,7 +358,6 @@ describe('Service: querySnapshotSvc', function () {
       querySnapshotSvc.bootstrap(3);
       $httpBackend.flush();
 
-      var mockResolver = docResolverSvc.mockResolver;
       $rootScope.$apply();
       var snap1 = querySnapshotSvc.snapshots['1'];
 

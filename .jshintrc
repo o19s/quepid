@@ -36,6 +36,14 @@
     "quepidMocks": false,
     "spyOn": false,
     "testTry": false,
+    "jasmine": false,
+    "MockCaseSvc": false,
+    "MockDocResolverSvc": false,
+    "MockResolver": false,
+    "MockScorerSvc": false,
+    "MockSettingsSvc": false,
+    "URI": false,
+    "expectedSolrUrl": false,
     "jQuery": true,
     "$": true
   }

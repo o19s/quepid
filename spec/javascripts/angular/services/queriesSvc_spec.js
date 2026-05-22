@@ -16,7 +16,7 @@ describe('Service: queriesSvc', function () {
   var mockScorerSvc;
   var mockCaseSvc;
   
-  var mockSolrUrl =  "http://example.com:1234/solr/example";
+  var mockSolrUrl =  'http://example.com:1234/solr/example';
 
   var mockTry = {
     args: {
@@ -123,7 +123,7 @@ describe('Service: queriesSvc', function () {
       angular.forEach(promises, function(promise){
         promise.resolve();
       });
-    }
+    };
   };
 
   var MockSearchSvc = function() {
@@ -299,7 +299,7 @@ describe('Service: queriesSvc', function () {
       query.score();
       expect(query.hasBeenScored).toBe(false);
     });
-  })
+  });
 
   describe('information about if queries have been scored', function() {
     beforeEach(function() {

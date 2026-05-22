@@ -20,11 +20,11 @@
       return deferred.promise;
     };
 
-    this.maxScore = function(query, queryText, docs, bestDocs) {
+    this.maxScore = function() {
       return 100;
     };
 
-    this.scoreToColor = function(score, maxScore) {
+    this.scoreToColor = function() {
       return '#008900';
     };
 
@@ -41,7 +41,7 @@
     this.setQ = function(q) {
       $q = q;
       this.defaultScorer = new MockScorer('default-code', $q);
-    }
+    };
 
     this.createScorer = function(scoreCode) {
       return new MockScorer(scoreCode, $q);

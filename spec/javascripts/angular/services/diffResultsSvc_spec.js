@@ -59,9 +59,9 @@ describe('Service: diffResultsSvc', function() {
   };
 
   var mockSnapshotSearcherSvc = {
-    createSearcherFromSnapshot: function(snapshotId, query, settings) {
+    createSearcherFromSnapshot: function(snapshotId) {
       var snapshot = mockQuerySnapshotSvc.snapshots[snapshotId];
-      if (!snapshot) return null;
+      if (!snapshot) { return null; }
       
       return {
         docs: snapshot.getSearchResults().map(function(doc) {
@@ -86,7 +86,6 @@ describe('Service: diffResultsSvc', function() {
 
   beforeEach(function() {
     module(function($provide) {
-      /*global MockSettingsSvc*/
       mockSettingsSvc = new MockSettingsSvc();
 
       $provide.value('settingsSvc', mockSettingsSvc);
@@ -105,9 +104,8 @@ describe('Service: diffResultsSvc', function() {
 
       mockSettingsSvc.setMockFieldSpec(mockFieldSpec);
 
-      spyOn(docResolverSvc, "createResolver").and
+      spyOn(docResolverSvc, 'createResolver').and
         .callFake(function(ids, settings) {
-          /*global MockResolver*/
           this.mockResolver = new MockResolver(ids, settings, $q);
           return this.mockResolver;
         });

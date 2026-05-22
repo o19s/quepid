@@ -115,7 +115,7 @@ describe('Service: caseSvc', function () {
       expect(selectedCase.caseName).toBe('test case 3');
 
       caseSvc.selectCase(4);
-      var selectedCase = caseSvc.getSelectedCase();
+      selectedCase = caseSvc.getSelectedCase();
       expect(selectedCase.caseName).toBe('test case 4');
     });
 
@@ -482,7 +482,7 @@ describe('Service: caseSvc', function () {
     });
 
     it('ignores empty scores', function() {
-      var data = angular.copy(scoreData)
+      var data = angular.copy(scoreData);
       data.score   = 0;
       data.queries = {};
 
@@ -492,7 +492,7 @@ describe('Service: caseSvc', function () {
     });
 
     it('does not ignore 0 scores if query object has data', function() {
-      var data = angular.copy(scoreData)
+      var data = angular.copy(scoreData);
       data.score   = 0;
 
       $httpBackend.expectPUT('api/cases/1/scores').respond(200, '');

@@ -24,7 +24,7 @@ describe('Controller: AddQueryCtrl', function () {
             then: function(success) {
               success();
             }
-          }
+          };
         },
         queryText: text
       };
@@ -44,7 +44,6 @@ describe('Controller: AddQueryCtrl', function () {
     lastPersistPromise: function() {
       return this.persistPromises[this.persistPromises.length - 1];
     },
-    /*global Promise*/
     persistQuery: function(q) {
       var deferred = $q.defer();
 

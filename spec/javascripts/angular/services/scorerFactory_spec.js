@@ -14,7 +14,7 @@ describe('Service: ScorerFactory', function () {
     var mockScorer = {
       'scorerId': 1,
       'name':     'Scorer 1',
-      'code':     "setScore(99)",
+      'code':     'setScore(99)',
       'scale':    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       'owner_id': 1
     };
@@ -84,7 +84,7 @@ describe('Service: ScorerFactory', function () {
 
     //   scorer.checkCode()
     //     .then(function() {
-    //       result = "passed";
+    //       result = 'passed';
     //     }, function(message) {
     //       result = message;
     //     });
@@ -467,13 +467,7 @@ describe('Service: ScorerFactory', function () {
     });
 
     it('does not allow loops', function() {
-      var docs = makeDocs([{rating: 10, doc: {'title': 'boo'}}]);
-      var bestDocs = [{rating: 10}, {rating: 9}, {rating: 9},
-                      {rating: 8}, {rating: 8}, {rating: 7},
-                      {rating: 7}, {rating: 7}, {rating: 6}];
-
       scorer.code = 'while(true) {}; pass()';
-      //scorer.score(100, docs, bestDocs);
       scorer.checkCode();
       $timeout(function() {
         $rootScope.$apply();
@@ -481,7 +475,6 @@ describe('Service: ScorerFactory', function () {
       }, 100, false);
 
       scorer.code = 'while (true) {}; pass()';
-      //scorer.score(100, docs, bestDocs);
       scorer.checkCode();
       $timeout(function() {
         $rootScope.$apply();
@@ -489,7 +482,6 @@ describe('Service: ScorerFactory', function () {
       }, 100, false);
 
       scorer.code = 'for (true) {}; pass()';
-      //scorer.score(100, docs, bestDocs);
       scorer.checkCode();
       $timeout(function() {
         $rootScope.$apply();
@@ -588,7 +580,7 @@ describe('Service: ScorerFactory', function () {
       ];
       scorer.code = 'assert(JSON.stringify(topRatings(2)) === "[10,9]"); pass()';
 
-      checkExpectation(2, docs, bestDocs, 100)
+      checkExpectation(2, docs, bestDocs, 100);
     });
 
     //it('scripted scorer that always passes', function() {
