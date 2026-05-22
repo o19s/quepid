@@ -67,6 +67,7 @@
     "build:angular-vendor": "esbuild app/javascript/angular_app.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets --loader:.png=dataurl --loader:.svg=dataurl --loader:.woff=dataurl --loader:.woff2=dataurl --loader:.ttf=dataurl --loader:.eot=dataurl --external:jquery",
     "build:angular-app": "node build_angular_app.js",
     "build:angular-app:watch": "node build_angular_app.js --watch",
+    "build:angular": "npm run build:angular-vendor && npm run build:angular-app",
     "build:angular-templates": "node build_templates.js",
     "build:angular-templates:watch": "node build_templates.js --watch",
     "build:admin": "esbuild app/javascript/admin_users.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets",
