@@ -92,7 +92,7 @@ class SearchEndpoint < ApplicationRecord
     normalized = params.to_h.symbolize_keys
     normalized[:proxy_requests] = false if normalized[:proxy_requests].nil?
 
-    lookup_keys = %i[search_engine endpoint_url api_method proxy_requests]
+    lookup_keys = [ :search_engine, :endpoint_url, :api_method, :proxy_requests ]
     lookup_params = normalized.slice(*lookup_keys)
 
     if lookup_keys.all? { |key| lookup_params.key?(key) }

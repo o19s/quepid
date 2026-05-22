@@ -121,7 +121,7 @@ module Api
                     proxy_requests:        false,
                   },
                 },
-                queries:     [],
+                queries:   [],
               }
 
               assert_no_difference 'SearchEndpoint.count' do

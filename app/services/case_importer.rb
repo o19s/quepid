@@ -46,6 +46,8 @@ class CaseImporter
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
   def import
     params_to_use = @data_to_process
 
@@ -102,4 +104,6 @@ class CaseImporter
   end
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/PerceivedComplexity
 end
