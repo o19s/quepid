@@ -62,10 +62,7 @@ class CaseImporter
 
     # For some reason we can't do @case.queries.build with out forcing a save.
     # Works fine with book however.
-    unless @case.save
-      render json: @case.errors, status: :bad_request
-      return
-    end
+    return false unless @case.save
 
     params_to_use[:queries]&.each do |query|
       new_query = @case.queries.build(query.except(:ratings))
@@ -81,7 +78,15 @@ class CaseImporter
       @current_user,
       params_to_use[:try][:search_endpoint]
     )
-    search_endpoint.save! if search_endpoint.new_record?
+    if search_endpoint.new_record? && !search_endpoint.save
+      search_endpoint.errors.messages.each do |attribute, messages|
+        messages.each do |message|
+          @case.errors.add(attribute, message)
+        end
+      end
+
+      return false
+    end
 
     params_to_use[:try][:search_endpoint_id] = search_endpoint.id
     params_to_use[:try][:try_number] = 1

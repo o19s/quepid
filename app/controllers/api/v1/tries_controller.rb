@@ -30,9 +30,9 @@ module Api
 
         @try = @case.tries.build try_parameters_to_use # .except(:parent_try_number)
 
-        # if we are creating a new try with an existing search_endpoint_id,
-        # then the params[:search_endpoint] will be empty or won't be passed in
-        unless params[:search_endpoint] && params[:search_endpoint].empty?
+        # Only assign via nested search_endpoint params when they were actually provided.
+        # If an existing search_endpoint_id is being used, search_endpoint may be omitted.
+        if params[:search_endpoint].present?
           assign_search_endpoint_to_try search_endpoint_params
           return if performed?
         end

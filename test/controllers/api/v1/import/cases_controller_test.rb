@@ -91,7 +91,9 @@ module Api
               case_name:   'test case',
               owner_email: 'fakeowner@fake.com',
               scorer:      acase.scorer.as_json(only: [ :name ]),
-              try:         acase.tries.last.as_json,
+              try:         acase.tries.last.as_json.merge(
+                search_endpoint: search_endpoint.as_json(except: [ :id, :owner_id, :created_at, :updated_at ])
+              ),
               queries:     [],
             }
 
@@ -102,6 +104,36 @@ module Api
             kase = Case.find_by(case_name: 'test case')
             assert_not_nil kase
             kase.owner = user
+          end
+
+          test 'returns bad request when search endpoint fails validation on import' do
+            with_require_proxy_with_basic_auth(true) do
+              data = {
+                case_name: 'invalid endpoint case',
+                scorer:    acase.scorer.as_json(only: [ :name ]),
+                try:       {
+                  escape_query:    true,
+                  search_endpoint: {
+                    search_engine:         'os',
+                    endpoint_url:          'https://opensearch.example.com/tmdb/_search',
+                    api_method:            'POST',
+                    basic_auth_credential: 'reader:reader',
+                    proxy_requests:        false,
+                  },
+                },
+                queries:     [],
+              }
+
+              assert_no_difference 'SearchEndpoint.count' do
+                post :create, params: { case: data, format: :json }
+              end
+
+              assert_response :bad_request
+
+              body = response.parsed_body
+              assert_includes body['proxy_requests'],
+                              'must be enabled when basic auth credentials are present'
+            end
           end
 
           test 'does not duplicate an existing endpoint with basic_auth_credential' do

@@ -233,6 +233,50 @@ search_endpoint: es_endpoint.attributes }
         let(:the_case) { cases(:case_with_one_try) }
         let(:solr_endpoint) { search_endpoints(:one) }
 
+        test 'reuses an existing search endpoint when search_endpoint_id is provided without nested params' do
+          try_params = {
+            search_endpoint_id: solr_endpoint.id,
+            field_spec:         'catch_line',
+            query_params:       'q=#$query##',
+          }
+
+          assert_difference 'the_case.tries.count', 1 do
+            assert_no_difference 'SearchEndpoint.count' do
+              post :create, params: { case_id: the_case.id, try: try_params, search_endpoint: {} }
+            end
+
+            assert_response :ok
+          end
+
+          the_case.reload
+          try_response  = response.parsed_body
+          created_try   = the_case.tries.where(try_number: try_response['try_number']).first
+
+          assert_equal solr_endpoint.id, created_try.search_endpoint_id
+        end
+
+        test 'reuses an existing search endpoint when search_endpoint param is omitted' do
+          try_params = {
+            search_endpoint_id: solr_endpoint.id,
+            field_spec:         'catch_line',
+            query_params:       'q=#$query##',
+          }
+
+          assert_difference 'the_case.tries.count', 1 do
+            assert_no_difference 'SearchEndpoint.count' do
+              post :create, params: { case_id: the_case.id, try: try_params }
+            end
+
+            assert_response :ok
+          end
+
+          the_case.reload
+          try_response  = response.parsed_body
+          created_try   = the_case.tries.where(try_number: try_response['try_number']).first
+
+          assert_equal solr_endpoint.id, created_try.search_endpoint_id
+        end
+
         test 'sets attribute successfully and assigns try to case' do
           try_params = {
 
@@ -302,8 +346,9 @@ search_endpoint: es_endpoint.attributes }
           }
 
           search_endpoint_params = {
-            search_url:    'http://solr.quepidapp.com',
+            endpoint_url:  'http://solr.quepidapp.com/solr/tmdb/select',
             search_engine: 'solr',
+            api_method:    'GET',
           }
 
           curator_vars_params = {
