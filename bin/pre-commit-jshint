@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Lint staged JavaScript files with JSHint. Invoked by pre-commit; mirrors CI scope
+# (app/assets/javascripts, excluding known legacy/generated files).
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+if [[ $# -eq 0 ]]; then
+  exit 0
+fi
+
+JSHINT="./node_modules/jshint/bin/jshint"
+files_to_skip=('tour.js' 'mode-json.js')
+status=0
+use_docker=false
+
+if docker info >/dev/null 2>&1; then
+  use_docker=true
+elif [[ ! -x "${ROOT}/node_modules/jshint/bin/jshint" ]]; then
+  echo "jshint not found. Run: yarn install (or bin/setup_docker)" >&2
+  exit 1
+fi
+
+for file in "$@"; do
+  for skip in "${files_to_skip[@]}"; do
+    if [[ "$file" == *"$skip" ]]; then
+      continue 2
+    fi
+  done
+
+  if $use_docker; then
+    if ! bin/docker r "$JSHINT" "$file"; then
+      status=1
+    fi
+  elif ! "${ROOT}/node_modules/jshint/bin/jshint" "$file"; then
+    status=1
+  fi
+done
+
+exit $status

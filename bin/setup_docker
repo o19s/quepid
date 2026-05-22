@@ -46,3 +46,6 @@ docker exec ollama ollama pull qwen3:0.6b
 
 echo -e "\n== Setting up Seed Data for Development =="
 bin/docker r bundle exec thor sample_data:sample_data
+
+echo -e "\n== Installing git pre-commit hooks =="
+bin/install-git-hooks

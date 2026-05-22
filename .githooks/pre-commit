@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Run RuboCop and JSHint on staged files before commit.
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+ruby_files=()
+js_files=()
+
+while IFS= read -r file; do
+  [[ -z "$file" ]] && continue
+
+  case "$file" in
+    *.rb)
+      ruby_files+=("$file")
+      ;;
+    app/assets/javascripts/*.js)
+      js_files+=("$file")
+      ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACM)
+
+if [[ ${#ruby_files[@]} -gt 0 ]]; then
+  bin/pre-commit-rubocop "${ruby_files[@]}"
+fi
+
+if [[ ${#js_files[@]} -gt 0 ]]; then
+  bin/pre-commit-jshint "${js_files[@]}"
+fi

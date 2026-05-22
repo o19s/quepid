@@ -257,6 +257,33 @@ and then tail the log file via:
 tail -f log/test.log
 ```
 
+### Pre-commit hooks
+
+Git commits run RuboCop (Ruby) and JSHint (JavaScript in `app/assets/javascripts/`) via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn/JSHint).
+
+Hooks prefer Docker when it is available (`bin/docker r`), matching the usual Quepid development workflow.
+
+Enable hooks:
+
+```bash
+bin/install-git-hooks
+```
+
+`bin/setup` and `bin/setup_docker` call `bin/install-git-hooks` automatically.
+
+Run the hook manually against staged files:
+
+```bash
+.githooks/pre-commit
+```
+
+Run linters directly:
+
+```bash
+bin/pre-commit-rubocop path/to/file.rb
+bin/pre-commit-jshint path/to/file.js
+```
+
 ### JS Lint
 
 To check the JS syntax:
