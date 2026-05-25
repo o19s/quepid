@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Point git at the version-controlled hooks in .githooks/ (rubocop + jshint).
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+git config core.hooksPath .githooks
+chmod +x .githooks/pre-commit
+echo "Git pre-commit hooks installed (.githooks/pre-commit)."

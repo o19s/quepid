@@ -35,6 +35,7 @@ docker compose up ${build_arg} --no-start --remove-orphans
 bin/docker r bundle config set --local no-document true
 
 bin/docker r yarn
+bin/docker r yarn build
 bin/docker r ./wait-for mysql:3306 --timeout=60 -- bin/rake db:setup
 bin/docker r bin/rake db:migrate
 
@@ -46,3 +47,6 @@ docker exec ollama ollama pull qwen3:0.6b
 
 echo -e "\n== Setting up Seed Data for Development =="
 bin/docker r bundle exec thor sample_data:sample_data
+
+echo -e "\n== Installing git pre-commit hooks =="
+bin/install-git-hooks
