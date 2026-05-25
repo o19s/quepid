@@ -68,6 +68,9 @@
     },
     "GOOGLE_CLIENT_SECRET": {
       "required": false
+    },
+    "PUPPETEER_SKIP_DOWNLOAD": {
+      "required": true
     }
   },
   "formation": {
