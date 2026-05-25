@@ -83,6 +83,28 @@ class SearchEndpoint < ApplicationRecord
     Case.joins(:tries).where(tries: { search_endpoint_id: id }).distinct.count
   end
 
+  # Find an existing endpoint owned by or shared with the user, or build a new one.
+  # basic_auth_credential is excluded from the lookup because it is non-deterministically
+  # encrypted and cannot be queried with find_by.
+  # proxy_requests defaults to false when omitted so lookup matches the DB default; callers
+  # that use a proxied endpoint must pass proxy_requests explicitly.
+  def self.find_or_initialize_for_user user, params
+    normalized = params.to_h.symbolize_keys
+    normalized[:proxy_requests] = false if normalized[:proxy_requests].nil?
+
+    lookup_keys = [ :search_engine, :endpoint_url, :api_method, :proxy_requests ]
+    lookup_params = normalized.slice(*lookup_keys)
+
+    if lookup_keys.all? { |key| lookup_params.key?(key) }
+      endpoint = user.search_endpoints_involved_with.find_by(lookup_params)
+      return endpoint if endpoint
+    end
+
+    endpoint = new(normalized)
+    endpoint.owner = user
+    endpoint
+  end
+
   private
 
   def middle_truncate str, total: 30, lead: 15, trail: 15

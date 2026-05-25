@@ -46,6 +46,8 @@ class CaseImporter
 
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
   def import
     params_to_use = @data_to_process
 
@@ -62,10 +64,7 @@ class CaseImporter
 
     # For some reason we can't do @case.queries.build with out forcing a save.
     # Works fine with book however.
-    unless @case.save
-      render json: @case.errors, status: :bad_request
-      return
-    end
+    return false unless @case.save
 
     params_to_use[:queries]&.each do |query|
       new_query = @case.queries.build(query.except(:ratings))
@@ -77,14 +76,18 @@ class CaseImporter
       end
     end
 
-    # find_or_create_by wasn't working, so just doing it in two steps
-    search_endpoint = @current_user.search_endpoints_involved_with.find_by(
+    search_endpoint = SearchEndpoint.find_or_initialize_for_user(
+      @current_user,
       params_to_use[:try][:search_endpoint]
     )
-    if search_endpoint.nil?
-      search_endpoint = SearchEndpoint.new(params_to_use[:try][:search_endpoint])
-      search_endpoint.owner = @current_user
-      search_endpoint.save!
+    if search_endpoint.new_record? && !search_endpoint.save
+      search_endpoint.errors.messages.each do |attribute, messages|
+        messages.each do |message|
+          @case.errors.add(attribute, message)
+        end
+      end
+
+      return false
     end
 
     params_to_use[:try][:search_endpoint_id] = search_endpoint.id
@@ -101,4 +104,6 @@ class CaseImporter
   end
   # rubocop:enable Metrics/MethodLength
   # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/PerceivedComplexity
 end

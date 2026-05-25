@@ -160,6 +160,50 @@ class SearchEndpointTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'find_or_initialize_for_user' do
+    let(:joey) { users(:joey) }
+
+    it 'matches an existing endpoint even when basic_auth_credential differs' do
+      # basic_auth_credential is encrypted non-deterministically, so it must be excluded
+      # from the lookup. Passing a *different* credential value here proves the lookup
+      # ignores it — otherwise we'd silently create a duplicate row on every wizard run.
+      existing = search_endpoints(:one)
+      existing.update!(
+        search_engine:         'os',
+        endpoint_url:          'https://example.com/tmdb/_search',
+        api_method:            'POST',
+        basic_auth_credential: 'reader:reader',
+        proxy_requests:        true,
+        owner:                 joey
+      )
+
+      found = SearchEndpoint.find_or_initialize_for_user(
+        joey,
+        search_engine:         'os',
+        endpoint_url:          'https://example.com/tmdb/_search',
+        api_method:            'POST',
+        basic_auth_credential: 'other:creds',
+        proxy_requests:        true
+      )
+
+      assert_equal existing, found
+      assert_predicate found, :persisted?
+    end
+
+    it 'builds a new endpoint when no match exists' do
+      endpoint = SearchEndpoint.find_or_initialize_for_user(
+        joey,
+        search_engine:  'os',
+        endpoint_url:   'https://new.example.com/tmdb/_search',
+        api_method:     'POST',
+        proxy_requests: true
+      )
+
+      assert_not endpoint.persisted?
+      assert_equal joey, endpoint.owner
+    end
+  end
+
   describe 'proxy required with basic auth credentials' do
     it 'requires proxy_requests when require_proxy_with_basic_auth_credentials is true' do
       original = Rails.application.config.require_proxy_with_basic_auth_credentials
