@@ -421,21 +421,21 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
    bin/docker s
    ```
 
-3. **Rebuild after making changes**: This is the critical step! The esbuild watch process monitors changes to `app/javascript/angular_app.js` but does NOT automatically watch files inside `node_modules/`. Your mounted splainer-search files ARE being used during builds, but changes won't be detected automatically.
+3. **After splainer changes**: **splainer-search 3.x** is installed under **`node_modules/splainer-search`** and pulled into the bundle via `app/javascript/angular_app.js` and **`splainer_search_adapter.js`**.
 
-   **After making ANY changes to your local splainer-search files, run:**
-   
-```bash
-   bin/docker r yarn build:angular-vendor
+   With **`bin/docker s`**, Foreman rebuilds the AngularJS bundles when you save; **hard-refresh** the case page.
+
+   Manual rebuild only if watchers are not running:
+
+   ```bash
+   bin/docker r yarn build:angular
    ```
 
    Then refresh your browser to see the changes.
 
-4. **Why is this rebuild needed?**
-   - Splainer-search gets bundled into `app/assets/builds/angular_app.js` by esbuild
-   - The bundling happens at build time, not runtime
-   - Changes to files in `node_modules/` aren't watched by default
-   - Your local files ARE being used, but you need to trigger a rebuild to bundle them
+4. **Why bundles work this way**
+   - Splainer-search ESM modules are inlined into **`app/assets/builds/angular_app.js`** at build time, not runtime (`splainer_search_adapter.js` registers wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI keeps working).
+   - With **`bin/docker s`**, Foreman watches the vendor import graph (including **`node_modules/splainer-search`**) and keeps **`angular_app.js`** + **`quepid_angular_app.js`** in sync. Save edits and hard-refresh. Run **`yarn build:angular`** only if watchers are not running (that script runs both bundles).
 
 
 ## Convenience Scripts

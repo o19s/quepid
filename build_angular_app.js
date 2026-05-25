@@ -8,6 +8,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const OUTPUT_FILE = 'app/assets/builds/quepid_angular_app.js';
+const VENDOR_OUTPUT = 'app/assets/builds/angular_app.js';
 
 // Directories and files to watch
 const WATCH_PATHS = [
@@ -183,12 +184,20 @@ function buildAngularApp() {
   }
 }
 
+function rebuildCaseAngularBundles() {
+  console.log('Rebuilding angular_app.js + quepid_angular_app.js...');
+  execSync('npm run build:angular', { stdio: 'inherit', cwd: path.resolve(__dirname) });
+}
+
 // Main execution
 function main() {
   const isWatchMode = process.argv.includes('--watch');
   
-  // Initial build
-  buildAngularApp();
+  if (isWatchMode) {
+    rebuildCaseAngularBundles();
+  } else {
+    buildAngularApp();
+  }
   
   if (isWatchMode) {
     console.log('Watching for Angular app changes...');
@@ -199,8 +208,20 @@ function main() {
       let debounceTimer;
       const DEBOUNCE_DELAY = 300; // Wait 300ms before rebuilding
       
-      const watcher = chokidar.watch(WATCH_PATHS, {
-        ignored: [/(^|[\/\\])\./, 'node_modules', 'app/assets/builds'],
+      const vendorOutputPath = path.resolve(VENDOR_OUTPUT);
+      const watcher = chokidar.watch([...WATCH_PATHS, VENDOR_OUTPUT], {
+        ignored: (filePath) => {
+          if (/node_modules/.test(filePath)) {
+            return true;
+          }
+          if (/(^|[\/\\])\../.test(filePath)) {
+            return true;
+          }
+          if (filePath.includes(`${path.sep}app${path.sep}assets${path.sep}builds${path.sep}`)) {
+            return path.resolve(filePath) !== vendorOutputPath;
+          }
+          return false;
+        },
         persistent: true,
         awaitWriteFinish: {
           stabilityThreshold: 100,
@@ -208,26 +229,30 @@ function main() {
         }
       });
 
-      const debouncedRebuild = () => {
+      const debouncedRebuild = (changedPath) => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
-          console.log('Rebuilding Angular app...');
-          buildAngularApp();
+          if (changedPath && path.resolve(changedPath) === path.resolve(VENDOR_OUTPUT)) {
+            console.log('Vendor bundle updated, rebuilding quepid_angular_app.js...');
+            buildAngularApp();
+          } else {
+            rebuildCaseAngularBundles();
+          }
         }, DEBOUNCE_DELAY);
       };
 
-      watcher.on('change', (path) => {
-        console.log(`Angular file changed: ${path}`);
-        debouncedRebuild();
+      watcher.on('change', (changedPath) => {
+        console.log(`Angular file changed: ${changedPath}`);
+        debouncedRebuild(changedPath);
       });
 
-      watcher.on('add', (path) => {
-        debouncedRebuild();
+      watcher.on('add', (changedPath) => {
+        debouncedRebuild(changedPath);
       });
 
-      watcher.on('unlink', (path) => {
-        console.log(`Angular file removed: ${path}`);
-        debouncedRebuild();
+      watcher.on('unlink', (changedPath) => {
+        console.log(`Angular file removed: ${changedPath}`);
+        debouncedRebuild(changedPath);
       });
 
       watcher.on('error', error => {

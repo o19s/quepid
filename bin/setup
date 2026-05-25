@@ -26,7 +26,8 @@ FileUtils.chdir APP_ROOT do
 
   puts "\n== Instally node packages =="
   system! "yarn"
-  
+  system! "yarn build"
+
   puts "\n== Preparing database =="
   system! "bin/rails db:prepare"
   system! "bin/rails db:reset" if ARGV.include?("--reset")
