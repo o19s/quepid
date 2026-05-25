@@ -5,12 +5,9 @@ import { createFetchClient, createWiredServices, isAbortError } from 'splainer-s
 
 // Route splainer's native fetch promises through Angular's $q so that consumer
 // .then() handlers run inside a digest. Otherwise $scope mutations from those
-// handlers leave the UI stale until another Angular event triggers a digest.
-//
-// createFetchClient currently exposes exactly { get, post, jsonp }. If a
-// splainer-search bump adds new methods (e.g. put/delete/patch), wrap them
-// here too — otherwise they'd bypass the digest and re-introduce the
-// wizard-stuck-spinner class of bug (PR #1704).
+// handlers leave the UI stale until another Angular event triggers a digest
+// (wizard-stuck-spinner class of bug, PR #1704). Wrap every createFetchClient
+// method so future splainer-search HTTP entry points cannot bypass the digest.
 function withAngularDigest(client) {
   let $q;
   const get$q = () => {
@@ -22,11 +19,11 @@ function withAngularDigest(client) {
     return $q;
   };
   const wrap = (method) => (...args) => get$q().when(client[method](...args));
-  return {
-    get: wrap('get'),
-    post: wrap('post'),
-    jsonp: wrap('jsonp'),
-  };
+  return Object.fromEntries(
+    Object.keys(client)
+      .filter((method) => typeof client[method] === 'function')
+      .map((method) => [method, wrap(method)])
+  );
 }
 
 const httpClient = withAngularDigest(createFetchClient({ credentials: 'include' }));
