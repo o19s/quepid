@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Run RuboCop on staged Ruby files. Invoked by pre-commit; prefers Docker when available.
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+if [[ $# -eq 0 ]]; then
+  exit 0
+fi
+
+if docker info >/dev/null 2>&1; then
+  exec bin/docker r bundle exec rubocop "$@"
+fi
+
+exec bin/rubocop "$@"

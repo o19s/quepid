@@ -5,7 +5,7 @@
 Install MysqlDB to get the mysqldump tool ;-) and then use a full path like `/usr/local/mysql/bin/`.
 
 ```
-mysqldump -h OLDHOST -u OLDUSER -pOLDPASS OLDDATABASE  --column-statistics=0 --set-gtid-purged=OFF | zip > quepid_backup_`date +"%Y_%m_%d"`.sql.zip
+mysqldump -h OLDHOST --port 3306 -u OLDUSER -pOLDPASS OLDDATABASE  --column-statistics=0 --set-gtid-purged=OFF | zip > quepid_backup_`date +"%Y_%m_%d"`.sql.zip
 ```
 
 ## Restore a Database
@@ -25,7 +25,7 @@ unzip -p quepid_prod_2021_03_02.sql.zip | /usr/local/mysql/bin/mysql --host=127.
 ## DigitalOcean Notes
 
 DigitalOcean has the setting `sql_require_primary_key` set to true, which conflicts with ActiveRecords `schema_migrations` table.
-To get around this, you need to use the API to make it false when loading the data. 
+To get around this, you need to use the API to make it false when loading the data.
 
 https://www.digitalocean.com/community/questions/how-do-i-disable-the-require-primary-key-when-creating-a-table
 

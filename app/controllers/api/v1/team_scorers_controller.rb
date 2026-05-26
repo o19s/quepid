@@ -12,7 +12,7 @@ module Api
       end
 
       def create
-        @scorer = Scorer.where(id: params[:id]).first
+        @scorer = current_user.scorers_involved_with.where(id: params[:id]).first
 
         unless @scorer
           render json: { error: 'Not Found!' }, status: :not_found

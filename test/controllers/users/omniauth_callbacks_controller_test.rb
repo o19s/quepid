@@ -21,6 +21,67 @@ module Users
       Rails.application.config.signup_enabled = true
     end
 
+    describe 'Logs in via OpenID Connect' do
+      test 'logs in an existing user' do
+        user = users(:random)
+
+        OmniAuth.config.add_mock(:openid_connect, { info: { 'email' => user.email } })
+        @request.env['omniauth.auth'] = OmniAuth.config.mock_auth[:openid_connect]
+
+        assert_nil @controller.ahoy.user
+
+        post :openid_connect
+
+        assert_not_nil @controller.ahoy.user
+        assert_redirected_to root_path
+        assert_nil flash[:alert]
+      end
+
+      test 'prevents logging in an existing locked user' do
+        OmniAuth.config.add_mock(:openid_connect, { info: { 'email' => locked_user.email } })
+        @request.env['omniauth.auth'] = OmniAuth.config.mock_auth[:openid_connect]
+
+        post :openid_connect
+
+        assert_redirected_to root_path
+        assert_equal 'Can\'t log in a locked user.', flash[:alert]
+        assert_nil session[:current_user_id], 'does not set a user'
+      end
+
+      test 'creates a new user when signup is enabled' do
+        new_email = 'brand_new_user@example.com'
+
+        OmniAuth.config.add_mock(:openid_connect, { info: { 'email' => new_email, 'name' => 'New User', 'image' => '' } })
+        @request.env['omniauth.auth'] = OmniAuth.config.mock_auth[:openid_connect]
+
+        assert_difference 'User.count', 1 do
+          post :openid_connect
+        end
+
+        assert_not_nil @controller.ahoy.user
+        assert_redirected_to root_path
+        assert_nil flash[:alert]
+        assert User.find_by(email: new_email), 'new user was created'
+      end
+
+      test 'prevents creating a new user when signup disabled' do
+        Rails.application.config.signup_enabled = false
+
+        OmniAuth.config.add_mock(:openid_connect, { info: { 'email' => 'fake@fake.com' } })
+        @request.env['omniauth.auth'] = OmniAuth.config.mock_auth[:openid_connect]
+
+        assert_no_difference 'User.count' do
+          post :openid_connect
+        end
+
+        assert_nil @controller.ahoy.user
+        assert_redirected_to root_path
+        assert_equal 'You can only sign in with already created users.', flash[:alert]
+        assert_nil session[:current_user_id], 'does not set a user'
+        Rails.application.config.signup_enabled = true
+      end
+    end
+
     describe 'Logs in via Google' do
       test 'logs in an existing user' do
         user = users(:random)

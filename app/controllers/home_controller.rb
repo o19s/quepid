@@ -3,6 +3,7 @@
 class HomeController < ApplicationController
   before_action :set_case, only: [ :case_prophet ]
   before_action :set_book_no_track, only: [ :book_summary_detail ]
+  before_action :check_book, only: [ :book_summary_detail ]
   before_action :check_for_announcement, only: [ :show ]
 
   # @summary Returns a homepage.

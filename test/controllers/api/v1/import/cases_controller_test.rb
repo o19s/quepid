@@ -91,7 +91,9 @@ module Api
               case_name:   'test case',
               owner_email: 'fakeowner@fake.com',
               scorer:      acase.scorer.as_json(only: [ :name ]),
-              try:         acase.tries.last.as_json,
+              try:         acase.tries.last.as_json.merge(
+                search_endpoint: search_endpoint.as_json(except: [ :id, :owner_id, :created_at, :updated_at ])
+              ),
               queries:     [],
             }
 
@@ -102,6 +104,78 @@ module Api
             kase = Case.find_by(case_name: 'test case')
             assert_not_nil kase
             kase.owner = user
+          end
+
+          test 'returns bad request when search endpoint fails validation on import' do
+            with_require_proxy_with_basic_auth(true) do
+              data = {
+                case_name: 'invalid endpoint case',
+                scorer:    acase.scorer.as_json(only: [ :name ]),
+                try:       {
+                  escape_query:    true,
+                  search_endpoint: {
+                    search_engine:         'os',
+                    endpoint_url:          'https://opensearch.example.com/tmdb/_search',
+                    api_method:            'POST',
+                    basic_auth_credential: 'reader:reader',
+                    proxy_requests:        false,
+                  },
+                },
+                queries:   [],
+              }
+
+              assert_no_difference 'SearchEndpoint.count' do
+                post :create, params: { case: data, format: :json }
+              end
+
+              assert_response :bad_request
+
+              body = response.parsed_body
+              assert_includes body['proxy_requests'],
+                              'must be enabled when basic auth credentials are present'
+            end
+          end
+
+          test 'does not duplicate an existing endpoint with basic_auth_credential' do
+            # basic_auth_credential is encrypted non-deterministically, so a naive find_by
+            # that includes it can never match an existing row and would silently create a
+            # duplicate endpoint on every import. This test locks in the lookup behavior.
+            existing = SearchEndpoint.create!(
+              name:                  'Shared OS',
+              endpoint_url:          'https://opensearch.example.com/tmdb/_search',
+              search_engine:         'os',
+              api_method:            'POST',
+              basic_auth_credential: 'reader:reader',
+              proxy_requests:        true,
+              owner:                 user
+            )
+
+            data = {
+              case_name:   'reimport case',
+              owner_email: user.email,
+              scorer:      acase.scorer.as_json(only: [ :name ]),
+              try:         {
+                escape_query:    true,
+                search_endpoint: {
+                  name:                  existing.name,
+                  endpoint_url:          existing.endpoint_url,
+                  search_engine:         existing.search_engine,
+                  api_method:            existing.api_method,
+                  basic_auth_credential: 'reader:reader',
+                  proxy_requests:        true,
+                },
+              },
+              queries:     [],
+            }
+
+            assert_no_difference 'SearchEndpoint.count' do
+              post :create, params: { case: data, format: :json }
+            end
+
+            assert_response :created
+
+            imported = Case.find_by(case_name: 'reimport case')
+            assert_equal existing, imported.tries.first.search_endpoint
           end
 
           test 'creates a new case' do

@@ -15,7 +15,7 @@ module Api
       # @summary Share case with a team
       # @parameter id(query) [!Integer] The id of the case to be shared with the team.
       def create
-        @case = Case.includes( tries: [ :curator_variables ] ).where(id: params[:id]).first
+        @case = current_user.cases_involved_with.includes( tries: [ :curator_variables ] ).where(id: params[:id]).first
 
         unless @case
           render json: { error: 'Not Found!' }, status: :not_found

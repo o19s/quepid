@@ -1,5 +1,7 @@
 'use strict';
 
+/*global URI, expectedSolrUrl, jasmine*/
+
 describe('Controller: WizardModalCtrl', function () {
 
   // load the controller's module
@@ -10,7 +12,6 @@ describe('Controller: WizardModalCtrl', function () {
   var settingsSvc;
   var $httpBackend;
 
-  /*global jasmine*/
   var mockModalInstance = {
     close: jasmine.createSpy(),
     dismiss: jasmine.createSpy()
@@ -20,7 +21,7 @@ describe('Controller: WizardModalCtrl', function () {
 
   var mockWizardHandler = {
     wizard: function(){
-      return {goTo: function(){}}
+      return {goTo: function(){}};
     }
   };
 
@@ -54,7 +55,7 @@ describe('Controller: WizardModalCtrl', function () {
     completedCaseWizard:       true,
     introWizardSeen: false,
     shownIntroWizard: function() {
-      self.introWizardSeen=true;
+      mockUser.introWizardSeen=true;
     }
   };
 
@@ -205,14 +206,14 @@ describe('Controller: WizardModalCtrl', function () {
   
   describe('parse url', function() {
     it('blows up on %', function() {
-      var url = "http://username:pass%@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json";
+      var url = 'http://username:pass%@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json';
       expect(function() {
         new URI(url);
       }).toThrowError('URI malformed');
     });
     
     it('Works with %25', function() {
-      var url = "http://username:pass%25@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json";
+      var url = 'http://username:pass%25@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json';
       
       var a = new URI(url);
       expect(a.password()).toBe('pass%');
@@ -220,12 +221,109 @@ describe('Controller: WizardModalCtrl', function () {
     });
     
     it('Works with %25 nested', function() {
-      var url = "http://username:pass%25word@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json";
+      var url = 'http://username:pass%25word@quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json';
       
       var a = new URI(url);
       expect(a.password()).toBe('pass%word');
       expect(a.username()).toBe('username');
-    });    
+    });
 
+  });
+});
+
+describe('Controller: WizardModalCtrl — validating flag lifecycle', function () {
+
+  beforeEach(module('QuepidTest'));
+
+  var $rootScope, $q, scope;
+  var validatorDeferred;
+  var nextSpy;
+
+  beforeEach(function () {
+    /*global jasmine*/
+    nextSpy = jasmine.createSpy('wizard.next');
+
+    module(function ($provide) {
+      $provide.value('$uibModalInstance', { close: function () {}, dismiss: function () {} });
+      $provide.value('userSvc', { getUser: function () { return { completedCaseWizard: true }; } });
+      $provide.value('WizardHandler', { wizard: function () { return { next: nextSpy, goTo: function () {} }; } });
+
+      $provide.value('SettingsValidatorFactory', function () {
+        this.validateUrl = function () { return validatorDeferred.promise; };
+        this.fieldSpec   = function () { return { fieldList: function () { return []; } }; };
+      });
+    });
+
+    inject(function ($injector, $controller, _$rootScope_, _$q_) {
+      $rootScope = _$rootScope_;
+      $q = _$q_;
+      scope = $rootScope.$new();
+      validatorDeferred = $q.defer();
+
+      var $httpBackend = $injector.get('$httpBackend');
+      $httpBackend.whenGET(/^api\/cases\/\d+$/).respond(200, {});
+      $httpBackend.whenGET(/^api\/search_endpoints/).respond(200, {});
+      $httpBackend.whenGET(/^api\/cases\/\d+\/tries/).respond(200, { tries: [] });
+
+      $controller('WizardModalCtrl', { $scope: scope });
+    });
+  });
+
+  function primeSearchapi(extra) {
+    scope.pendingWizardSettings = angular.extend({
+      searchEngine:   'searchapi',
+      searchUrl:      'http://example.com/search',
+      testQuery:      'foo',
+      queryParams:    '',
+      mapperCode:     'window.numberOfResultsMapper = function(){return 0;};' +
+                      'window.docsMapper = function(){return [];};',
+      proxyRequests:  false,
+      customHeaders:  '',
+    }, extra || {});
+  }
+
+  it('clears validating when validateUrl() resolves and justValidate=true (ping it)', function () {
+    primeSearchapi();
+    scope.validate(true);
+    expect(scope.validating).toBe(true);
+
+    validatorDeferred.resolve();
+    $rootScope.$digest();
+
+    expect(scope.validating).toBe(false);
+    expect(scope.urlValid).toBe(true);
+    expect(nextSpy).not.toHaveBeenCalled();
+  });
+
+  it('clears validating and navigates when validateUrl() resolves and justValidate=false', function () {
+    primeSearchapi();
+    scope.validate(false);
+
+    validatorDeferred.resolve();
+    $rootScope.$digest();
+
+    expect(scope.validating).toBe(false);
+    expect(scope.urlValid).toBe(true);
+    expect(nextSpy).toHaveBeenCalled();
+  });
+
+  it('clears validating when validateUrl() rejects', function () {
+    primeSearchapi();
+    scope.validate(false);
+
+    validatorDeferred.reject('Error: boom');
+    $rootScope.$digest();
+
+    expect(scope.validating).toBe(false);
+    expect(scope.urlInvalid).toBe(true);
+    expect(nextSpy).not.toHaveBeenCalled();
+  });
+
+  it('clears validating on mapper eval failure (early-exit before validateUrl)', function () {
+    primeSearchapi({ mapperCode: 'throw new Error("kaboom");' });
+    scope.validate(false);
+
+    expect(scope.validating).toBe(false);
+    expect(scope.mapperInvalid).toBe(true);
   });
 });

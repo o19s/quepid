@@ -9,6 +9,8 @@ class JudgeJudyFlowTest < ActionDispatch::IntegrationTest
   let(:user) { users(:random) }
   let(:judge_judy) { users(:judge_judy) }
 
+  setup { register_default_openai_stubs }
+
   test 'Demonstrate how to work with Judge Judy' do
     post users_login_url params: { user: { email: user.email, password: 'password' }, format: :json }
 

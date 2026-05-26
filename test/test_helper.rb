@@ -9,6 +9,7 @@ require 'rails/test_help'
 require 'minitest/reporters'
 require 'minitest/spec'
 require 'webmock/minitest'
+WebMock.disable_net_connect!(allow_localhost: true)
 
 Dir[Rails.root.join('test/support/**/*.rb')]
   .each { |f| require f }
@@ -46,6 +47,14 @@ module ActiveSupport
       else
         assert_equal source, target
       end
+    end
+
+    def with_require_proxy_with_basic_auth value
+      original = Rails.application.config.require_proxy_with_basic_auth_credentials
+      Rails.application.config.require_proxy_with_basic_auth_credentials = value
+      yield
+    ensure
+      Rails.application.config.require_proxy_with_basic_auth_credentials = original
     end
 
     def login_user_for_integration_test user

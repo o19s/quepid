@@ -257,6 +257,33 @@ and then tail the log file via:
 tail -f log/test.log
 ```
 
+### Pre-commit hooks
+
+Git commits run RuboCop (Ruby) and JSHint (JavaScript in `app/assets/javascripts/`) via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn/JSHint).
+
+Hooks prefer Docker when it is available (`bin/docker r`), matching the usual Quepid development workflow.
+
+Enable hooks:
+
+```bash
+bin/install-git-hooks
+```
+
+`bin/setup` and `bin/setup_docker` call `bin/install-git-hooks` automatically.
+
+Run the hook manually against staged files:
+
+```bash
+.githooks/pre-commit
+```
+
+Run linters directly:
+
+```bash
+bin/pre-commit-rubocop path/to/file.rb
+bin/pre-commit-jshint path/to/file.js
+```
+
 ### JS Lint
 
 To check the JS syntax:
@@ -423,21 +450,23 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
    bin/docker s
    ```
 
-3. **Rebuild after making changes**: This is the critical step. **splainer-search 3.x** is installed under **`node_modules/splainer-search`** and pulled into the bundle via `app/javascript/angular_app.js` and **`splainer_search_adapter.js`**. After editing that package (directly or by mounting your clone over `node_modules/splainer-search`), reload the vendor bundle:
+3. **After splainer changes**: **splainer-search 3.x** is installed under **`node_modules/splainer-search`** and pulled into the bundle via `app/javascript/angular_app.js` and **`splainer_search_adapter.js`**.
 
-   **After making ANY changes to your local splainer-search files, run:**
+   With **`bin/docker s`**, Foreman rebuilds the AngularJS bundles when you save; **hard-refresh** the case page.
+
+   Manual rebuild only if watchers are not running:
 
    ```bash
-   bin/docker r yarn build:angular-vendor
+   bin/docker r yarn build:angular
    ```
 
    Then refresh your browser to see the changes.
 
-4. **Why is this rebuild needed?**
-   - Splainer-search ESM modules are inlined into **`app/assets/builds/angular_app.js`** at build time, not runtime
+4. **Why bundles work this way**
+   - Splainer-search ESM modules are inlined into **`app/assets/builds/angular_app.js`** at build time, not runtime (`splainer_search_adapter.js` registers wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI keeps working).
    - The vendor bundle also inlines npm **Bootstrap 5** JS (for `quepidPopover`, `quepidTooltip`, `quepidModalSvc`, etc.).
    - Vendored widget CSS (`angular-wizard`, `ng-json-explorer`, `ng-tags-input`) is copied into **`app/assets/builds/`** by **`yarn build:css`** (`build_css.js` → `copyVendorFiles()`), not by **`build:angular-vendor`**
-   - Bundlers/watchers tied to **`angular_app.js`** do not reliably watch deep changes under **`node_modules/`**; run **`yarn build:angular-vendor`** so splainer-search and vendor-bundle edits are picked up
+   - With **`bin/docker s`**, Foreman watches the vendor import graph (including **`node_modules/splainer-search`**) and keeps **`angular_app.js`** + **`quepid_angular_app.js`** in sync. Save edits and hard-refresh. Run **`yarn build:angular`** only if watchers are not running (that script runs both bundles).
 
 
 ## Convenience Scripts

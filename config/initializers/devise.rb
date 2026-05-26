@@ -337,6 +337,22 @@ Devise.setup do |config|
                     client_options: { ssl: { verify: !Rails.env.development? } },
                     strategy_class: OmniAuth::Strategies::GoogleOauth2
   end
+
+  # See https://github.com/omniauth/omniauth_openid_connect for more information on OpenID Connect configuration.
+  if Rails.application.config.openid_connect_client_id.present?
+    config.omniauth :openid_connect, {
+      name:           :openid_connect,
+      issuer:         Rails.application.config.openid_connect_issuer,
+      discovery:      true,
+      response_type:  :code,
+      scope:          %w[openid email],
+      client_options: {
+        identifier:   Rails.application.config.openid_connect_client_id,
+        secret:       Rails.application.config.openid_connect_client_secret,
+        redirect_uri: "#{Rails.application.config.openid_connect_base_url}/users/auth/openid_connect/callback",
+      },
+    }
+  end
 end
 
 Rails.application.config.to_prepare do

@@ -8,6 +8,8 @@ module Books
   class ImportController < ApplicationController
     before_action :set_book,
                   only: [ :edit ]
+    before_action :check_book,
+                  only: [ :edit ]
 
     def new
       @book = Book.new
