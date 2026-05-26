@@ -44,29 +44,41 @@ class CaseImporter
     end
   end
 
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/PerceivedComplexity
   def import
-    params_to_use = @data_to_process
+    import_succeeded = false
 
-    @case.case_name = params_to_use[:case_name]
-    @case.options = params_to_use[:options]
-    @case.public = params_to_use[:public]
-    @case.archived = params_to_use[:archived]
+    ActiveRecord::Base.transaction do
+      assign_case_attributes
+      # For some reason we can't do @case.queries.build with out forcing a save.
+      # Works fine with book however.
+      raise ActiveRecord::Rollback unless @case.save
 
-    scorer_name = params_to_use[:scorer][:name]
-    @case.scorer = Scorer.find_by(name: scorer_name)
+      build_queries_and_ratings
+      attach_search_endpoint
+      update_first_try
 
+      import_succeeded = @case.save
+      raise ActiveRecord::Rollback unless import_succeeded
+    end
+
+    import_succeeded
+  end
+
+  private
+
+  def assign_case_attributes
+    params = @data_to_process
+    @case.case_name = params[:case_name]
+    @case.options = params[:options]
+    @case.public = params[:public]
+    @case.archived = params[:archived]
+    @case.scorer = Scorer.find_by(name: params[:scorer][:name])
     # Force the imported case to be owned by the user doing the importing.  Otherwise you can loose the case!
     @case.owner = User.find_by(email: @current_user.email)
+  end
 
-    # For some reason we can't do @case.queries.build with out forcing a save.
-    # Works fine with book however.
-    return false unless @case.save
-
-    params_to_use[:queries]&.each do |query|
+  def build_queries_and_ratings
+    @data_to_process[:queries]&.each do |query|
       new_query = @case.queries.build(query.except(:ratings))
       next unless query[:ratings]
 
@@ -75,35 +87,31 @@ class CaseImporter
         new_query.ratings.build(rating.except(:user_email))
       end
     end
+  end
 
+  def attach_search_endpoint
     search_endpoint = SearchEndpoint.find_or_initialize_for_user(
       @current_user,
-      params_to_use[:try][:search_endpoint]
+      @data_to_process[:try][:search_endpoint]
     )
     if search_endpoint.new_record? && !search_endpoint.save
       search_endpoint.errors.messages.each do |attribute, messages|
-        messages.each do |message|
-          @case.errors.add(attribute, message)
-        end
+        messages.each { |message| @case.errors.add(attribute, message) }
       end
-
-      return false
+      raise ActiveRecord::Rollback
     end
 
-    params_to_use[:try][:search_endpoint_id] = search_endpoint.id
-    params_to_use[:try][:try_number] = 1
+    @data_to_process[:try][:search_endpoint_id] = search_endpoint.id
+  end
 
-    @case.tries.first.update(params_to_use[:try].except(:curator_variables, :search_endpoint, :id))
+  def update_first_try
+    try_params = @data_to_process[:try]
+    try_params[:try_number] = 1
+    @case.tries.first.update(try_params.except(:curator_variables, :search_endpoint, :id))
 
-    params_to_use[:try][:curator_variables]&.each do |curator_variable|
+    try_params[:curator_variables]&.each do |curator_variable|
       # not sure why curator_variables.build and then the @case.save doesn't cascade down.
       @case.tries.first.curator_variables.create curator_variable
     end
-
-    @case.save
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/PerceivedComplexity
 end

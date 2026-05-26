@@ -96,6 +96,10 @@
       });
     }
 
+    let onShow   = null;
+    let onShown  = null;
+    let onHidden = null;
+
     if (opts.mode === 'text') {
       attrs.$observe('quepidPopover', function (val) {
         currentBody = val || '';
@@ -104,13 +108,14 @@
     } else {
       // Template mode: re-attach compiled element on every show. The element
       // is the same instance across shows, so Angular bindings stay live.
-      el.addEventListener('show.bs.popover', function () {
+      onShow = function () {
         const compiled = opts.getElement();
         if (compiled) {
           currentBody = compiled;
           refreshContent();
         }
-      });
+      };
+      el.addEventListener('show.bs.popover', onShow);
     }
 
     // popover-is-open two-way binding.
@@ -123,11 +128,11 @@
         suppress = false;
       });
 
-      const onShown  = function () {
+      onShown = function () {
         if (suppress || !isOpenSet || isOpenGet(scope) === true) { return; }
         scope.$apply(function () { isOpenSet(scope, true); });
       };
-      const onHidden = function () {
+      onHidden = function () {
         if (suppress || !isOpenSet || isOpenGet(scope) === false) { return; }
         scope.$apply(function () { isOpenSet(scope, false); });
       };
@@ -169,6 +174,9 @@
     scope.$on('$destroy', function () {
       if (docHandler)     { document.removeEventListener('click', docHandler, true); }
       if (elClickHandler) { el.removeEventListener('click', elClickHandler); }
+      if (onShow)         { el.removeEventListener('show.bs.popover', onShow); }
+      if (onShown)        { el.removeEventListener('shown.bs.popover', onShown); }
+      if (onHidden)       { el.removeEventListener('hidden.bs.popover', onHidden); }
       instance.dispose();
     });
   }
