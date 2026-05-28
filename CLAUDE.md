@@ -19,7 +19,7 @@ Use yarn instead of npm for package management.
 Run javascript tests via `bin/docker r yarn test`.
 
 
-Documentation goes in the `docs` directory, not a toplevel `doc` directory.
+Documentation goes in the `docs` directory, not a toplevel `doc` directory. When editing markdown, update only what changed -- avoid rewriting unrelated sections; we want minimal churn so the diff is clear.
 
 To understand the data model used by Quepid, consult `./docs/data_mapping.md`.
 

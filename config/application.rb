@@ -50,9 +50,12 @@ module Quepid
     # place before the active_record.encryption Railtie initializer copies them into
     # ActiveRecord::Encryption.config. We provide defaults, but you should set your
     # own keys via env vars in production and NOT lose them.
-    config.active_record.encryption.primary_key         = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY',         'bnYX3NlvUJxHWXwNYBgP33yi8BKlN7Ml')
-    config.active_record.encryption.deterministic_key   = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY',   'OItaH6HSftjoxkl9QDejPAmQ8EaFOlwk')
-    config.active_record.encryption.key_derivation_salt = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT', 'BzPDVAl1jAUquD4p7rM9J40wAwf7CCFh')
+    config.active_record.encryption.primary_key =
+      ENV['ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'].presence || 'bnYX3NlvUJxHWXwNYBgP33yi8BKlN7Ml'
+    config.active_record.encryption.deterministic_key =
+      ENV['ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY'].presence || 'OItaH6HSftjoxkl9QDejPAmQ8EaFOlwk'
+    config.active_record.encryption.key_derivation_salt =
+      ENV['ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT'].presence || 'BzPDVAl1jAUquD4p7rM9J40wAwf7CCFh'
 
     # == SSL Specific Settings
     # Note, if true then this will allow Quepid to ONLY talk to HTTPS based search engines.

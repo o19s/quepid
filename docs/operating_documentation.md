@@ -310,7 +310,7 @@ Once they see it, they won't see it again.
 
 ## ActiveRecord Encryption Setup
 
-Quepid uses ActiveRecord encryption to protect sensitive data like LLM API keys. For details on how to set up and configure encryption for your Quepid installation, see [ENCRYPTION_SETUP.md](./ENCRYPTION_SETUP.md).
+Quepid uses ActiveRecord encryption to protect sensitive data like LLM API keys and search endpoint basic auth (keys in `config/application.rb`). For details on how to set up and configure encryption for your Quepid installation, see [ENCRYPTION_SETUP.md](./ENCRYPTION_SETUP.md).
 
 ## Integrating External Eval Pipeline
 
