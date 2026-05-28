@@ -213,8 +213,11 @@ class User < ApplicationRecord
   scope :only_ai_judges, -> { where('`users`.`llm_key` IS NOT NULL') }
 
   # Lets get STI in and have actual AiJudge and User objects!
+  # Reads the raw column to avoid triggering Active Record encryption, which
+  # would fail (and break unrelated views) if encryption credentials aren't
+  # configured in this environment.
   def ai_judge?
-    !llm_key.nil?
+    !read_attribute_before_type_cast(:llm_key).nil?
   end
 
   def num_queries
