@@ -202,6 +202,34 @@ describe('Controller: WizardModalCtrl', function () {
       scope.pendingWizardSettings.submit();
       $httpBackend.flush();
     });
+
+    it('shows an error when finish save fails', function() {
+      mockModalInstance.close.calls.reset();
+      $httpBackend.expectPUT('api/cases/0/tries/0').respond(500, { status: 500, error: 'Internal Server Error' });
+
+      scope.pendingWizardSettings.submit();
+      $httpBackend.flush();
+
+      expect(scope.finishSaveError).toBe('Could not save your case settings: Internal Server Error. Please click Finish to try again.');
+      expect(scope.savingFinish).toBe(false);
+      expect(mockModalInstance.close).not.toHaveBeenCalled();
+    });
+
+    it('shows validation errors when finish save fails with bad request', function() {
+      mockModalInstance.close.calls.reset();
+      $httpBackend.expectPUT('api/cases/0/tries/0').respond(400, {
+        proxy_requests: [ 'must be enabled when basic auth credentials are present' ],
+      });
+
+      scope.pendingWizardSettings.submit();
+      $httpBackend.flush();
+
+      expect(scope.finishSaveError).toBe(
+        'Could not save your case settings: proxy_requests must be enabled when basic auth credentials are present. Please click Finish to try again.'
+      );
+      expect(scope.savingFinish).toBe(false);
+      expect(mockModalInstance.close).not.toHaveBeenCalled();
+    });
   });
   
   describe('parse url', function() {
@@ -316,6 +344,7 @@ describe('Controller: WizardModalCtrl — validating flag lifecycle', function (
 
     expect(scope.validating).toBe(false);
     expect(scope.urlInvalid).toBe(true);
+    expect(scope.isHeaderConfigCollapsed).toBe(true);
     expect(nextSpy).not.toHaveBeenCalled();
   });
 
@@ -325,5 +354,40 @@ describe('Controller: WizardModalCtrl — validating flag lifecycle', function (
 
     expect(scope.validating).toBe(false);
     expect(scope.mapperInvalid).toBe(true);
+  });
+
+  it('toggleHeaderConfig flips the flag on the controller scope', function () {
+    scope.isHeaderConfigCollapsed = false;
+
+    scope.toggleHeaderConfig();
+    expect(scope.isHeaderConfigCollapsed).toBe(true);
+
+    scope.toggleHeaderConfig();
+    expect(scope.isHeaderConfigCollapsed).toBe(false);
+  });
+
+  // Regression: the Advanced section lives inside an ng-if, which creates a child
+  // scope. An inline `ng-click="x = !x"` would shadow the primitive on that child,
+  // disconnecting it from the controller so later programmatic opens never reach
+  // uib-collapse. Toggling through the controller function must avoid that.
+  it('reopens the Advanced panel on validation failure even after a manual toggle', function () {
+    primeSearchapi();
+    scope.isHeaderConfigCollapsed = true;
+
+    // The Advanced button toggles on the ng-if child scope, not the controller.
+    var childScope = scope.$new();
+    childScope.toggleHeaderConfig();
+
+    expect(scope.isHeaderConfigCollapsed).toBe(false);
+    expect(childScope.hasOwnProperty('isHeaderConfigCollapsed')).toBe(false); // no shadow created
+
+    // A failed validation reopens the panel programmatically on the controller scope.
+    scope.validate(false);
+    validatorDeferred.reject('Error: boom');
+    $rootScope.$digest();
+
+    // uib-collapse binds against the child scope, so it must see the reopened value.
+    expect(scope.isHeaderConfigCollapsed).toBe(true);
+    expect(childScope.isHeaderConfigCollapsed).toBe(true);
   });
 });

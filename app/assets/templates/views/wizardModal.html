@@ -81,7 +81,8 @@
             <div ng-show="showTLSChangeWarning" class="alert alert-warning">
               <span>
               You have specified a search endpoint url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is running,
-              and this triggers your browser to prevent communciation with the search endpoint.  <br/>Option 1: Reload Quepid to run on the correct protocol
+              and this triggers your browser to prevent communciation with the search endpoint.
+              <br/>Option 1: Reload Quepid to run on the correct protocol.
               <br/>Option 2: Proxy the requests THROUGH the Quepid server.
               </span>
             </div>
@@ -94,32 +95,36 @@
               Sorry, we're not getting any search results from your {{ pendingWizardSettings.searchEngine | searchEngineName }}.
 
               <ul ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
-                <li>Is your Search API behind a firewall or proxy? Try accessing the <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> and see if you get a response</li>
-                <li>Do you need an API Key?  If so, set one up under Advanced pane --> Custom Headers.</li>
+                <li ng-if="!pendingWizardSettings.proxyRequests"><strong>Quick fix:</strong> check <strong>Proxy Requests</strong> below so Quepid's server talks to your Search API instead of your browser.</li>
+                <li ng-if="!pendingWizardSettings.proxyRequests"><strong>Or configure CORS</strong> on your Search API if your team prefers direct browser access.</li>
+                <li>Can you open the <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li>
+                <li>Do you need an API Key?  If so, set one up in <strong>Custom Headers</strong> below.</li>
                 <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
                 <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-SearchAPI-and-Quepid/">Troubleshooting Search API and Quepid</a> wiki page for more help!</li>
               </ul>
 
               <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
-                <li>Is your Elasticsearch behind a firewall or proxy? Try accessing the <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> and see if you get a response</li>
+                <li ng-if="!pendingWizardSettings.proxyRequests"><strong>Quick fix:</strong> check <strong>Proxy Requests</strong> below so Quepid's server talks to Elasticsearch instead of your browser. No cluster changes required.</li>
+                <li ng-if="!pendingWizardSettings.proxyRequests"><strong>Or configure CORS</strong> on Elasticsearch to allow Quepid's domain if your team prefers direct browser access.</li>
+                <li>Can you open the <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li>
                 <li>Does your Elasticsearch accept HTTP POST requests?</li>
-                <li>Is your Elasticsearch setup for CORS to talk to Quepid's web app (http://go.quepidapp.com)?</li>
-                <li>Do you need an API Key?  If so, set one up under Advanced pane --> Custom Headers.</li>
+                <li>Do you need an API Key?  If so, set one up in <strong>Custom Headers</strong> below.</li>
                 <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
                 <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid/">Troubleshooting Elasticsearch and Quepid</a> wiki page for more help!</li>
               </ul>
 
               <ul ng-if="pendingWizardSettings.searchEngine === 'os'">
-                <li>Is your OpenSearch behind a firewall or proxy? Try accessing the <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> and see if you get a response</li>
+                <li ng-if="!pendingWizardSettings.proxyRequests"><strong>Quick fix:</strong> check <strong>Proxy Requests</strong> below so Quepid's server talks to OpenSearch instead of your browser. No cluster changes required.</li>
+                <li ng-if="!pendingWizardSettings.proxyRequests"><strong>Or configure CORS</strong> on OpenSearch to allow Quepid's domain if your team prefers direct browser access.</li>
+                <li>Can you open the <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li>
                 <li>Does your OpenSearch accept HTTP POST requests?</li>
-                <li>Is your OpenSearch setup for CORS to talk to Quepid's web app (http://go.quepidapp.com)?</li>
                 <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
                 <li>See the <a target="_blank" href="https://github.com/o19s/quepid/wiki/Troubleshooting-OpenSearch-and-Quepid/">Troubleshooting OpenSearch and Quepid</a> wiki page for more help!</li>
               </ul>
 
               <ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
-                <li>Do you see any errors when you visit your <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">Solr URL directly?</a></li>
-                <li>Use the Proxy option under <i>Advanced</i>!</li>
+                <li ng-if="!pendingWizardSettings.proxyRequests"><strong>Quick fix:</strong> check <strong>Proxy Requests</strong> below so Quepid's server talks to Solr instead of your browser. No Solr configuration changes required.</li>
+                <li>Do you see any errors when you visit your <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">Solr URL directly?</a> If Solr responds but Quepid still fails, check the browser console for CORS or mixed-content errors.</li>
                 <li>
                   You may need to configure the JSON <code>wt=json</code> to be <code>application/javascript</code> to work with Quepid.
                   You can do this via the below curl command:
@@ -270,7 +275,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
             <span ng-if="pendingWizardSettings.searchEngine !== 'static'">
             <p>
-              <button type="button" class="btn btn-sm btn-default" ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed">Advanced</button>
+              <button type="button" class="btn btn-sm btn-default" ng-click="toggleHeaderConfig()">Advanced</button>
             </p>
             <div uib-collapse="!isHeaderConfigCollapsed">
               <div class="well well-sm">
@@ -279,7 +284,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
                   <div class="col-sm-9">
                     <div class="checkbox">
                       <label>
-                        <p class="help-block"><input id="proxy-requests" type="checkbox" ng-model="pendingWizardSettings.proxyRequests" ng-change="changeProxySetting()">Fighting with CORS issues?  Proxy your search requests through Quepid server.</p>
+                        <p class="help-block"><input id="proxy-requests" type="checkbox" ng-model="pendingWizardSettings.proxyRequests" ng-change="changeProxySetting()">Route search requests through the Quepid server instead of the browser. Useful when CORS, mixed-content, or firewall rules block direct access; check with your operations team if unsure.</p>
                       </label>
                     </div>
                   </div>
@@ -510,8 +515,11 @@ star wars,1921,3, Star Wars: Return of the Jedi
     <wz-step title="Finish" id="step-six">
       <h1>That's It!</h1>
       <p class="help-block">Go to "Tune Relevance" to iterate on your relevance and manipulate searches</p>
+      <div ng-show="finishSaveError" class="alert alert-danger">
+        {{ finishSaveError }}
+      </div>
       
-      <button class="btn-lg btn-success pull-right finish" wz-next>Finish</button>
+      <button class="btn-lg btn-success pull-right finish" wz-next ng-disabled="savingFinish">Finish</button>
       <br><br><br><br><br>
     </wz-step>
   </wizard>

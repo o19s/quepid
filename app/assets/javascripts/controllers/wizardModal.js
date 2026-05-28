@@ -264,6 +264,14 @@ angular.module('QuepidApp')
       $scope.validateHeaders = validateHeaders;
       $scope.validateProxyApiMethod = validateProxyApiMethod;
       $scope.changeProxySetting = changeProxySetting;
+
+      // Toggle via a function so the write lands on the controller scope.
+      // An inline `ng-click="x = !x"` would shadow the primitive on the
+      // ng-if child scope, breaking programmatic opens (showProxyHelpIfNeeded).
+      $scope.toggleHeaderConfig = function () {
+        $scope.isHeaderConfigCollapsed = !$scope.isHeaderConfigCollapsed;
+      };
+
       $scope.searchFields   = [];
       $scope.createSnapshot = createSnapshot;
 
@@ -473,9 +481,20 @@ angular.module('QuepidApp')
           }
           else {
             $scope.urlInvalid = true;
+            showProxyHelpIfNeeded();
           }              
           $scope.validating = false;
         });
+      }
+
+      function showProxyHelpIfNeeded () {
+        if (
+          $scope.urlInvalid &&
+          !$scope.pendingWizardSettings.proxyRequests &&
+          $scope.pendingWizardSettings.searchEngine !== 'static'
+        ) {
+          $scope.isHeaderConfigCollapsed = true;
+        }
       }
 
       function validateHeaders () {
@@ -704,6 +723,10 @@ angular.module('QuepidApp')
 
         // pass pending settings on to be saved
         $scope.pendingWizardSettings.submit = function() {
+          if ($scope.savingFinish) {
+            return;
+          }
+
           $log.debug('Submitting settings (from wizard modal)');
 
           // if we aren't using a demo, then lets finalize our queryParams with our best guess
@@ -717,7 +740,9 @@ angular.module('QuepidApp')
            }
          }
 
-          settingsSvc.update($scope.pendingWizardSettings)
+          $scope.finishSaveError = null;
+          $scope.savingFinish = true;
+          return settingsSvc.update($scope.pendingWizardSettings)
           .then(function() {
             var latestSettings = settingsSvc.editableSettings();
             docCacheSvc.invalidate();
@@ -746,8 +771,43 @@ angular.module('QuepidApp')
             $rootScope.currentUser.shownIntroWizard();
 
             $uibModalInstance.close();
+          })
+          .catch(function(response) {
+            $log.error('Wizard finish save failed', response);
+            $scope.finishSaveError = formatFinishSaveError(response);
+          })
+          .finally(function() {
+            $scope.savingFinish = false;
           });
         };
+
+        function formatFinishSaveError(response) {
+          var data = response && response.data;
+          var detail = '';
+
+          if (angular.isString(data)) {
+            detail = data;
+          } else if (angular.isObject(data)) {
+            if (data.error) {
+              detail = data.error;
+            } else {
+              var messages = [];
+              angular.forEach(data, function(value, key) {
+                if (angular.isArray(value)) {
+                  messages.push(key + ' ' + value.join(', '));
+                } else if (angular.isString(value)) {
+                  messages.push(value);
+                }
+              });
+              detail = messages.join('. ');
+            }
+          }
+
+          if (detail) {
+            return 'Could not save your case settings: ' + detail + '. Please click Finish to try again.';
+          }
+          return 'Could not save your case settings. Please click Finish to try again.';
+        }
       });
 
       $scope.close = function() {
