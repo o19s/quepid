@@ -24,7 +24,7 @@ export ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY="your-deterministic-key"
 export ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT="your-salt"
 ```
 
-If a variable is unset, the default in `application.rb` is used. If it is set to an empty string, encryption will fail—remove the config entry or set a real value.
+If a variable is unset or set to an empty string, the default in `application.rb` is used. Set a non-empty value only when you intend to override the committed default.
 
 ### 2. Development Environment
 
