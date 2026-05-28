@@ -4,9 +4,11 @@ You are working on Quepid, a Rails application. Review the ClaudeOnRails context
 
 We run Quepid in Docker primarily, don't run Rails and other build tasks locally.
 
-Assume Quepid is already up and running. Check first (for example, `docker compose ps` or a request to http://localhost) and only start it if it isn't:
+Assume Quepid is already up and running. Check first (for example, a request to http://localhost:33000 or `docker compose ps`) and only start it if it isn't.
 
-`bin/setup_docker`.
+To start rails:
+
+`bin/docker s`.
 
 To set up the environment use:
 
