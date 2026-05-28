@@ -2,15 +2,15 @@
 
 You are working on Quepid, a Rails application. Review the ClaudeOnRails context file at @.claude-on-rails/context.md
 
-We run Quepid in Docker primarily, don't run Rails and other build tasks locally..
+We run Quepid in Docker primarily, don't run Rails and other build tasks locally.
 
-To set up the envirnoment use:
+Assume Quepid is already up and running. Check first (for example, `docker compose ps` or a request to http://localhost) and only start it if it isn't:
 
 `bin/setup_docker`.
 
-To start rails:
+To set up the environment use:
 
-`bin/docker s`
+`bin/setup_docker`.
 
 Most commands you want to run you can just prefix with `bin/docker r bundle exec` so `rails console --environment=test` becomes `bin/docker r bundle exec rails console --environment=test`
 
