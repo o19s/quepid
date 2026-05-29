@@ -26,7 +26,7 @@ function withAngularDigest(client) {
   );
 }
 
-const httpClient = withAngularDigest(createFetchClient({ credentials: 'include' }));
+const httpClient = withAngularDigest(createFetchClient({ credentials: 'omit' }));
 const api = createWiredServices(httpClient);
 
 const ngModule = angular.module('o19s.splainer-search', []);
