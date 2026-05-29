@@ -2,16 +2,22 @@
 
 This document explains what endpoints Quepid hits on OpenSearch.
 
-Quepid connects to OpenSearch using standard RESTful calls.   
-You need to have CORS set up to allow Quepid on one domain talk to OpenSearch on another domain.
+Quepid connects to OpenSearch in one of two ways:
+
+1. **Direct browser requests** (default) — OpenSearch must allow CORS from Quepid's domain. Many teams prefer this in production because traffic goes directly from the browser to the cluster.
+
+2. **Proxy Requests** — the Quepid server makes the request instead of the browser. This is often the fastest way to get unblocked during Case Setup, but it routes search traffic through Quepid and may need approval from your operations team.
+
 One interesting thing is that if OpenSearch is running on HTTPS, then Quepid needs to run on HTTPS as well, so you may be prompted to reload Quepid using the right security protocol.
 
 
 ## Ping OpenSearch During Case Setup
 
 Quepid checks that that OpenSearch is available and responding during the Case Setup Wizard, and if not
-then Quepid attempts to provide you some workarounds.  You can bypass this check as well, and then
-fix your connectivity setup yourself in the Case Settings window ;-).
+then Quepid opens the **Advanced** section and suggests workarounds.  The quickest unblock is usually
+**Proxy Requests** (no OpenSearch configuration changes).  If your team prefers direct browser access,
+configure CORS on OpenSearch instead.  You can bypass this check as well, and then fix your connectivity
+setup yourself in the Case Settings window ;-).
 
 Request
 ```

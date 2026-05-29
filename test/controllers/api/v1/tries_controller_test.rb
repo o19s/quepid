@@ -205,6 +205,106 @@ search_endpoint: es_endpoint.attributes }
           end
         end
 
+        test 'updates basic auth credentials when reusing an existing search endpoint on wizard finish' do
+          with_require_proxy_with_basic_auth(true) do
+            existing = SearchEndpoint.create!(
+              search_engine:  'os',
+              endpoint_url:   'https://quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
+              api_method:     'POST',
+              proxy_requests: true,
+              owner:          joey
+            )
+
+            put :update,
+                params: {
+                  case_id:         the_case.id,
+                  try_number:      the_try.try_number,
+                  try:             { field_spec: 'id:_id' },
+                  search_endpoint: {
+                    search_engine:         'os',
+                    endpoint_url:          'https://quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
+                    api_method:            'POST',
+                    basic_auth_credential: 'reader:reader',
+                    proxy_requests:        true,
+                  },
+                }
+
+            assert_response :ok
+
+            the_try.reload
+            existing.reload
+            assert_equal existing.id, the_try.search_endpoint_id
+            assert_equal 'reader:reader', the_try.search_endpoint.basic_auth_credential
+          end
+        end
+
+        test 'does not overwrite basic auth when masked credential is submitted on wizard finish' do
+          with_require_proxy_with_basic_auth(false) do
+            existing = SearchEndpoint.create!(
+              search_engine:         'os',
+              endpoint_url:          'https://quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
+              api_method:            'POST',
+              basic_auth_credential: 'reader:secret',
+              proxy_requests:        true,
+              owner:                 joey
+            )
+
+            put :update,
+                params: {
+                  case_id:         the_case.id,
+                  try_number:      the_try.try_number,
+                  try:             { field_spec: 'id:_id' },
+                  search_endpoint: {
+                    search_engine:         'os',
+                    endpoint_url:          'https://quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
+                    api_method:            'POST',
+                    basic_auth_credential: existing.masked_basic_auth_credential,
+                    proxy_requests:        true,
+                  },
+                }
+
+            assert_response :ok
+
+            existing.reload
+            assert_equal 'reader:secret', existing.basic_auth_credential
+          end
+        end
+
+        test 'does not mutate a team-shared search endpoint owned by another user on wizard finish' do
+          with_require_proxy_with_basic_auth(true) do
+            doug = users(:doug)
+            existing = SearchEndpoint.create!(
+              search_engine:  'os',
+              endpoint_url:   'https://shared-opensearch.dev.o19s.com:9000/tmdb/_search',
+              api_method:     'POST',
+              proxy_requests: true,
+              owner:          doug
+            )
+            teams(:case_finder_shared_team).search_endpoints << existing
+
+            put :update,
+                params: {
+                  case_id:         the_case.id,
+                  try_number:      the_try.try_number,
+                  try:             { field_spec: 'id:_id' },
+                  search_endpoint: {
+                    search_engine:         'os',
+                    endpoint_url:          'https://shared-opensearch.dev.o19s.com:9000/tmdb/_search',
+                    api_method:            'POST',
+                    basic_auth_credential: 'reader:reader',
+                    proxy_requests:        true,
+                  },
+                }
+
+            assert_response :ok
+
+            the_try.reload
+            existing.reload
+            assert_equal existing.id, the_try.search_endpoint_id
+            assert_nil existing.basic_auth_credential
+          end
+        end
+
         test 'returns bad request when basic auth endpoint omits proxy requests' do
           with_require_proxy_with_basic_auth(true) do
             put :update,

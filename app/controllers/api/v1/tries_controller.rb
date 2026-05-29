@@ -93,14 +93,39 @@ module Api
       # check Rails' `performed?` after invoking and return early if true.
       def assign_search_endpoint_to_try params_hash
         convert_blank_values_to_nil params_hash
+        return if params_hash.blank?
 
         search_endpoint = SearchEndpoint.find_or_initialize_for_user @current_user, params_hash
-        if search_endpoint.new_record? && !search_endpoint.save
-          render json: search_endpoint.errors, status: :bad_request
-          return
+
+        if search_endpoint.new_record?
+          save_search_endpoint_or_render_errors search_endpoint
+          return if performed?
+        elsif search_endpoint.owner_id == @current_user.id
+          merge_search_endpoint_updates! search_endpoint, params_hash
+          if search_endpoint.changed?
+            save_search_endpoint_or_render_errors search_endpoint
+            return if performed?
+          end
         end
 
         @try.search_endpoint = search_endpoint
+      end
+
+      def merge_search_endpoint_updates! search_endpoint, params_hash
+        credential = params_hash.to_h.symbolize_keys[:basic_auth_credential]
+        return if credential.blank?
+        return if credential == search_endpoint.masked_basic_auth_credential
+
+        search_endpoint.basic_auth_credential = credential
+      end
+
+      def save_search_endpoint_or_render_errors search_endpoint
+        render json: search_endpoint.errors, status: :bad_request unless search_endpoint.save
+      rescue ActiveRecord::Encryption::Errors::Base => e
+        Rails.logger.error("Search endpoint encryption error: #{e.message}")
+        render json: {
+          error: 'Unable to save search endpoint credentials. Check server encryption configuration.',
+        }, status: :internal_server_error
       end
 
       def convert_blank_values_to_nil hash
@@ -135,7 +160,7 @@ module Api
 
       def search_endpoint_params
         # we do not REQUIRE a search_endpoint on a try
-        return {} if params[:search_endpoint].nil?
+        return {} if params[:search_endpoint].blank?
 
         params.expect(
           search_endpoint: [ :name,
