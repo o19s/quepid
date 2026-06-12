@@ -99,7 +99,7 @@ namespace :erd do
     tmp_basename = 'tmp/erd'
     tmp_mmd = "#{tmp_basename}.mmd"
 
-    system "bundle exec erd --filename=#{tmp_basename} --orientation=vertical --inheritance --direct " \
+    system "bundle exec erd --filename=#{tmp_basename} --orientation=horizontal --inheritance --direct " \
            '--attributes=foreign_keys,content,inheritance'
 
     mermaid = File.read(tmp_mmd).strip
