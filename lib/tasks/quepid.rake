@@ -100,7 +100,7 @@ namespace :erd do
     tmp_mmd = "#{tmp_basename}.mmd"
 
     system "bundle exec erd --filename=#{tmp_basename} --orientation=horizontal --inheritance --direct " \
-           '--attributes=foreign_keys,content,inheritance'
+           '--attributes=foreign_keys,inheritance'
 
     mermaid = File.read(tmp_mmd).strip
     File.delete(tmp_mmd)
