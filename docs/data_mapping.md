@@ -50,24 +50,6 @@ Quepid provides scorers that are written by the OSC team for everyone to use, th
 ```mermaid
 erDiagram
 	direction TB
-	"ActiveStorage::Attachment" {
-		integer blob_id FK
-		integer record_id FK
-	}
-	"ActiveStorage::Blob" {
-	}
-	"ActiveStorage::VariantRecord" {
-		integer blob_id FK
-	}
-	"ActiveStorageDB::File" {
-	}
-	"Ahoy::Event" {
-		integer user_id FK
-		integer visit_id FK
-	}
-	"Ahoy::Visit" {
-		integer user_id FK
-	}
 	Annotation {
 		integer user_id FK
 	}
@@ -80,24 +62,6 @@ erDiagram
 	}
 	ApiKey {
 		integer user_id FK
-	}
-	"Blazer::Audit" {
-		integer query_id FK
-		integer user_id FK
-	}
-	"Blazer::Check" {
-		integer creator_id FK
-		integer query_id FK
-	}
-	"Blazer::Dashboard" {
-		integer creator_id FK
-	}
-	"Blazer::DashboardQuery" {
-		integer dashboard_id FK
-		integer query_id FK
-	}
-	"Blazer::Query" {
-		integer creator_id FK
 	}
 	Book {
 		integer owner_id FK
@@ -160,40 +124,6 @@ erDiagram
 		integer query_id FK
 		integer snapshot_id FK
 	}
-	"SolidCable::Message" {
-	}
-	"SolidQueue::BlockedExecution" {
-		integer job_id FK
-	}
-	"SolidQueue::ClaimedExecution" {
-		integer job_id FK
-		integer process_id FK
-	}
-	"SolidQueue::FailedExecution" {
-		integer job_id FK
-	}
-	"SolidQueue::Job" {
-	}
-	"SolidQueue::Pause" {
-	}
-	"SolidQueue::Process" {
-		integer supervisor_id FK
-	}
-	"SolidQueue::ReadyExecution" {
-		integer job_id FK
-	}
-	"SolidQueue::RecurringExecution" {
-		integer job_id FK
-		string task_key FK
-	}
-	"SolidQueue::RecurringTask" {
-	}
-	"SolidQueue::ScheduledExecution" {
-		integer job_id FK
-	}
-	"SolidQueue::Semaphore" {
-		string key FK
-	}
 	Team {
 	}
 	Try {
@@ -207,34 +137,6 @@ erDiagram
 	WebRequest {
 		integer snapshot_query_id FK
 	}
-	User o|--}o "Blazer::Query" : ""
-	"Blazer::Query" ||--}o "Blazer::Check" : ""
-	"Blazer::Query" ||--}o "Blazer::DashboardQuery" : ""
-	"Blazer::Query" o|--}o "Blazer::Audit" : ""
-	"Blazer::Dashboard" ||--}o "Blazer::DashboardQuery" : ""
-	User o|--}o "Blazer::Dashboard" : ""
-	User o|--}o "Blazer::Check" : ""
-	User o|--}o "Blazer::Audit" : ""
-	"SolidQueue::RecurringTask" o|--}o "SolidQueue::RecurringExecution" : ""
-	"SolidQueue::Process" ||--}o "SolidQueue::ClaimedExecution" : ""
-	"SolidQueue::Process" o|--}o "SolidQueue::Process" : ""
-	"SolidQueue::Job" o|--|o "SolidQueue::RecurringExecution" : ""
-	"SolidQueue::Job" o|--|o "SolidQueue::FailedExecution" : ""
-	"SolidQueue::Job" o|--|o "SolidQueue::ScheduledExecution" : ""
-	"SolidQueue::Job" o|--|o "SolidQueue::BlockedExecution" : ""
-	"SolidQueue::Job" o|--|o "SolidQueue::ReadyExecution" : ""
-	"SolidQueue::Job" o|--|o "SolidQueue::ClaimedExecution" : ""
-	"SolidQueue::BlockedExecution" o|--|o "SolidQueue::Semaphore" : ""
-	"ActiveStorage::VariantRecord" ||--}o "ActiveStorage::Blob" : ""
-	Record ||--|o "ActiveStorage::Attachment" : ""
-	"ActiveStorage::Blob" ||--|o "ActiveStorage::Attachment" : ""
-	"ActiveStorage::VariantRecord" ||--|o "ActiveStorage::Attachment" : ""
-	Book ||--|o "ActiveStorage::Attachment" : ""
-	Snapshot ||--|o "ActiveStorage::Attachment" : ""
-	"ActiveStorage::Blob" ||--}o "ActiveStorage::Attachment" : ""
-	"Ahoy::Visit" ||--}o "Ahoy::Event" : ""
-	User o|--}o "Ahoy::Visit" : ""
-	User o|--}o "Ahoy::Event" : ""
 	SnapshotQuery o|--|o WebRequest : ""
 	User ||--}o ApiKey : ""
 	User o|--}o Scorer : ""
