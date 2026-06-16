@@ -48,7 +48,7 @@ People have been sharing how they have used Quepid in various [blog posts](https
 
 The [Data Mapping](docs/data_mapping.md) file provides detailed information about the data structure of the app.
 
-You can rebuild the [ERD](docs/data_mapping.md#entity-relationship-diagram) via `bin/docker r bundle exec rake erd:image`
+You can see the database schema as an [ERD](docs/erd.png) `
 
 # App Structure
 

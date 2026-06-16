@@ -9,7 +9,7 @@ ENV NODE_ENV=development
 # Install all system dependencies first to leverage Docker caching
 RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends \
-    curl wget netcat-traditional chromium \
+    curl wget netcat-traditional graphviz chromium \
     ca-certificates gnupg && \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \

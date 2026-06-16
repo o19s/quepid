@@ -601,6 +601,8 @@ GEM
       rack (>= 1.1)
       rubocop (>= 1.75.0, < 2.0)
       rubocop-ast (>= 1.44.0, < 2.0)
+    ruby-graphviz (1.2.5)
+      rexml
     ruby-mcp-client (0.9.1)
       faraday (~> 2.0)
       faraday-follow_redirects (~> 0.3)
@@ -773,6 +775,7 @@ DEPENDENCIES
   rubocop-capybara
   rubocop-minitest
   rubocop-rails
+  ruby-graphviz
   ruby_llm
   rubyzip
   scout_apm
