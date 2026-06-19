@@ -155,7 +155,7 @@ GEM
     cmdstan (0.5.2)
       csv
     colorize (1.1.0)
-    concurrent-ruby (1.3.6)
+    concurrent-ruby (1.3.7)
     connection_pool (3.0.2)
     console (1.34.3)
       fiber-annotation
@@ -289,7 +289,7 @@ GEM
       logger
     heapy (0.2.0)
       thor
-    i18n (1.14.8)
+    i18n (1.15.1)
       concurrent-ruby (~> 1.0)
     importmap-rails (2.2.3)
       actionpack (>= 6.0.0)
@@ -307,7 +307,7 @@ GEM
       activesupport (>= 7.0.0)
     jsbundling-rails (1.3.1)
       railties (>= 6.0.0)
-    json (2.19.4)
+    json (2.19.9)
     json-jwt (1.17.0)
       activesupport (>= 4.2)
       aes_key_wrap
@@ -357,7 +357,7 @@ GEM
     mini_mime (1.1.5)
     mini_racer (0.21.0)
       libv8-node (~> 24.12.0.1)
-    minitest (6.0.5)
+    minitest (6.0.6)
       drb (~> 2.0)
       prism (~> 1.5)
     minitest-reporters (1.8.0)
@@ -410,7 +410,7 @@ GEM
       deep_merge (~> 1.2, >= 1.2.2)
       method_source (~> 1.0)
       yard (~> 0.9)
-    oas_rails (1.3.5)
+    oas_rails (1.4.0)
       easy_talk_two (~> 1.1.3)
       oas_core (>= 1.1.0)
     oauth2 (2.0.18)
@@ -657,7 +657,7 @@ GEM
       fugit (~> 1.11)
       railties (>= 7.1)
       thor (>= 1.3.1)
-    sorbet-runtime (0.6.13158)
+    sorbet-runtime (0.6.13308)
     stimulus-rails (1.3.4)
       railties (>= 6.0.0)
     stringio (3.2.0)
@@ -708,7 +708,7 @@ GEM
     xpath (3.2.0)
       nokogiri (~> 1.8)
     yaml (0.4.0)
-    yard (0.9.43)
+    yard (0.9.44)
     zeitwerk (2.7.5)
 
 PLATFORMS
