@@ -1,61 +1,57 @@
 ## ADDED Requirements
 
-### Requirement: Provider-aware authentication
-LlmService SHALL use provider-specific authentication headers based on the `llm_provider` option.
+### Requirement: Unified ruby_llm provider routing
+LlmService SHALL route every request through the `ruby_llm` gem, selecting one of three native providers based on the `llm_provider` option.
 
-#### Scenario: Azure OpenAI authentication
-- **WHEN** an AI judge has `llm_provider` set to `azure_openai`
-- **THEN** the LLM request SHALL include the header `api-key: <llm_key>` and SHALL NOT include `Authorization: Bearer`
+#### Scenario: Azure providers route through ruby_llm `:azure`
+- **WHEN** `llm_provider` is `azure_openai`, `azure_ai_foundry`, or `azure_ai_foundry_serverless`
+- **THEN** the service SHALL configure `azure_api_base` from `llm_service_url`, `azure_api_key` from `llm_key`, and dispatch with `provider: :azure`
 
-#### Scenario: Azure AI Foundry authentication
-- **WHEN** an AI judge has `llm_provider` set to `azure_ai_foundry` or `azure_ai_foundry_serverless`
-- **THEN** the LLM request SHALL include the header `api-key: <llm_key>` and SHALL NOT include `Authorization: Bearer`
-
-#### Scenario: Anthropic provider authentication
-- **WHEN** an AI judge has `llm_provider` set to `anthropic` or `azure_ai_foundry_anthropic`
-- **THEN** the LLM request SHALL include the header `x-api-key: <llm_key>` and the `anthropic-version: 2023-06-01` header
-
-#### Scenario: OpenAI-compatible provider authentication
-- **WHEN** an AI judge has `llm_provider` set to `openai`, `google_gemini`, `ollama`, or is unset
-- **THEN** the LLM request SHALL include the header `Authorization: Bearer <llm_key>` (or no auth header if key is blank)
-
-### Requirement: Provider-aware URL routing
-LlmService SHALL construct the completions endpoint path based on the `llm_provider` value.
-
-#### Scenario: Azure OpenAI URL with api-version
-- **WHEN** `llm_provider` is `azure_openai` and `llm_api_version` is set (e.g. `2024-10-21`)
-- **THEN** the POST path SHALL be `openai/deployments/<llm_model>/chat/completions?api-version=<llm_api_version>`
-
-#### Scenario: Azure OpenAI URL without api-version
-- **WHEN** `llm_provider` is `azure_openai` and `llm_api_version` is blank or unset
-- **THEN** the POST path SHALL be `openai/v1/chat/completions`
-
-#### Scenario: Azure AI Foundry URL
-- **WHEN** `llm_provider` is `azure_ai_foundry` and `llm_api_version` is `2025-01-01-preview`
-- **THEN** the POST path SHALL be `models/chat/completions?api-version=2025-01-01-preview`
-
-#### Scenario: Azure AI Foundry default API version
-- **WHEN** `llm_provider` is `azure_ai_foundry` and `llm_api_version` is blank or unset
-- **THEN** the service SHALL default to `2025-01-01-preview`
-
-#### Scenario: Azure AI Foundry Serverless URL
-- **WHEN** `llm_provider` is `azure_ai_foundry_serverless`
-- **THEN** the POST path SHALL be `v1/chat/completions`
-
-#### Scenario: Anthropic provider URL
+#### Scenario: Anthropic providers route through ruby_llm `:anthropic`
 - **WHEN** `llm_provider` is `anthropic` or `azure_ai_foundry_anthropic`
-- **THEN** the POST path SHALL be `v1/messages` and the Anthropic Messages API format SHALL be used
+- **THEN** the service SHALL configure `anthropic_api_base` from `llm_service_url`, `anthropic_api_key` from `llm_key`, and dispatch with `provider: :anthropic`
 
-#### Scenario: Default URL for non-Azure providers
-- **WHEN** `llm_provider` is `openai`, `google_gemini`, `ollama`, or unset
-- **THEN** the POST path SHALL be `v1/chat/completions`
+#### Scenario: OpenAI-compatible providers route through ruby_llm `:openai`
+- **WHEN** `llm_provider` is `openai`, `google_gemini`, or unset
+- **THEN** the service SHALL configure `openai_api_base` to `<llm_service_url>/v1`, `openai_api_key` from `llm_key`, and dispatch with `provider: :openai`
 
-### Requirement: Backward compatibility
-Existing AI judges without a `llm_provider` option SHALL continue to work identically to current behavior.
+#### Scenario: Ollama routes through ruby_llm `:ollama`
+- **WHEN** `llm_provider` is `ollama`
+- **THEN** the service SHALL configure `ollama_api_base` to `<llm_service_url>/v1` and dispatch with `provider: :ollama`
 
-#### Scenario: Legacy judge with no provider set
-- **WHEN** an existing AI judge has no `llm_provider` in its `judge_options`
-- **THEN** the service SHALL use `v1/chat/completions` path and `Authorization: Bearer` auth, matching pre-change behavior
+### Requirement: Stored URL shapes match ruby_llm expectations
+The `llm_service_url` stored in `judge_options` SHALL be the URL ruby_llm needs as its provider base, with any required api-version already embedded as a query string.
+
+#### Scenario: Azure OpenAI stored URL
+- **WHEN** an AI judge has `llm_provider` set to `azure_openai`
+- **THEN** `llm_service_url` SHALL end with `/openai/v1` and ruby_llm SHALL POST to `<llm_service_url>/chat/completions`
+
+#### Scenario: Azure AI Foundry stored URL
+- **WHEN** an AI judge has `llm_provider` set to `azure_ai_foundry`
+- **THEN** `llm_service_url` SHALL include an `?api-version=…` query string and ruby_llm SHALL POST to `<resource>/models/chat/completions?api-version=…`
+
+#### Scenario: Azure AI Foundry Serverless stored URL
+- **WHEN** an AI judge has `llm_provider` set to `azure_ai_foundry_serverless`
+- **THEN** `llm_service_url` SHALL be the full chat-completions URL ending in `/v1/chat/completions` and ruby_llm SHALL POST to it directly
+
+#### Scenario: Azure AI Foundry Anthropic stored URL
+- **WHEN** an AI judge has `llm_provider` set to `azure_ai_foundry_anthropic`
+- **THEN** `llm_service_url` SHALL be the Anthropic-flavored base (e.g. `https://RESOURCE.services.ai.azure.com/anthropic`) and ruby_llm SHALL POST to `<llm_service_url>/v1/messages`
+
+### Requirement: Provider-aware authentication
+LlmService SHALL delegate authentication headers to ruby_llm based on the selected provider.
+
+#### Scenario: Azure providers send api-key header
+- **WHEN** the resolved ruby_llm provider is `:azure`
+- **THEN** the request SHALL include `api-key: <llm_key>` and SHALL NOT include `Authorization: Bearer`
+
+#### Scenario: Anthropic providers send x-api-key and anthropic-version
+- **WHEN** the resolved ruby_llm provider is `:anthropic`
+- **THEN** the request SHALL include `x-api-key: <llm_key>` and `anthropic-version: 2023-06-01`
+
+#### Scenario: OpenAI-compatible providers send Bearer
+- **WHEN** the resolved ruby_llm provider is `:openai` or `:ollama`
+- **THEN** the request SHALL include `Authorization: Bearer <llm_key>` (or no auth header if key is blank)
 
 ### Requirement: Provider dropdown in AI judge form
 The AI judge form SHALL present a dropdown for provider selection with preset defaults.
@@ -64,13 +60,6 @@ The AI judge form SHALL present a dropdown for provider selection with preset de
 - **WHEN** a user creates a new AI judge
 - **THEN** the form SHALL display a dropdown with options: OpenAI, Azure OpenAI, Azure AI Foundry, Azure AI Foundry Serverless, Azure AI Foundry Anthropic, Anthropic, Google Gemini, Ollama
 
-#### Scenario: Provider selection auto-fills defaults
-- **WHEN** a user selects "Azure OpenAI" from the provider dropdown
-- **THEN** the `llm_service_url` field SHALL be pre-filled with `https://RESOURCE.openai.azure.com`
-
-### Requirement: API version configuration
-AI judges for Azure providers SHALL support an `llm_api_version` field in `judge_options`.
-
-#### Scenario: API version stored in judge options
-- **WHEN** a user saves an Azure AI judge with `llm_api_version` set to `2025-04-01-preview`
-- **THEN** the value SHALL be persisted in `judge_options` and used in subsequent LLM requests
+#### Scenario: Provider selection auto-fills URL
+- **WHEN** a user selects a provider from the dropdown
+- **THEN** the `llm_service_url` field SHALL be pre-filled with the ruby_llm-ready URL shape for that provider

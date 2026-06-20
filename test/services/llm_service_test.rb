@@ -52,6 +52,30 @@ class LlmServiceTest < ActiveSupport::TestCase
       assert_equal user_prompt[1][:image_url][:url], USER_PROMPT_IMAGE_URL
     end
 
+    test 'detects image URL in any document field (e.g. thumb)' do
+      qdp = QueryDocPair.new(
+        query_text:      'cats',
+        document_fields: { 'title' => 'A cat', 'thumb' => 'https://myimage.com/someimage.jpg' }
+      )
+
+      user_prompt = service.make_user_prompt qdp
+
+      assert_equal 'image_url', user_prompt[1][:type]
+      assert_equal 'https://myimage.com/someimage.jpg', user_prompt[1][:image_url][:url]
+    end
+
+    test 'does not add image part when no field looks like an image URL' do
+      qdp = QueryDocPair.new(
+        query_text:      'cats',
+        document_fields: { 'title' => 'A cat', 'homepage' => 'https://example.com/about' }
+      )
+
+      user_prompt = service.make_user_prompt qdp
+
+      assert_equal 1, user_prompt.length
+      assert_equal 'text', user_prompt[0][:type]
+    end
+
     test 'creating a judgement' do
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
       service.perform_judgement judgement
@@ -67,22 +91,20 @@ class LlmServiceTest < ActiveSupport::TestCase
       user_prompt = USER_PROMPT_COMPOSED
       system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
 
-      error = assert_raises(RuntimeError) do
+      assert_raises(RubyLLM::UnauthorizedError) do
         service.get_llm_response(user_prompt, system_prompt)
       end
-      assert_equal 'LLM API Error: 401 - Unauthorized', error.message
     end
 
     test 'handle and back off a 429 error' do
-      # the Faraday Retry may mean we don't need this
+      # ruby_llm has built-in retry logic; after retries are exhausted it raises RateLimitError.
       service = LlmService.new 'OPENAI_429_ERROR'
       user_prompt = USER_PROMPT_COMPOSED
       system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
 
-      error = assert_raises(RuntimeError) do
+      assert_raises(RubyLLM::RateLimitError) do
         service.get_llm_response(user_prompt, system_prompt)
       end
-      assert_equal 'LLM API Error: 429 - Too Many Requests', error.message
     end
   end
 
@@ -157,30 +179,29 @@ class LlmServiceTest < ActiveSupport::TestCase
   end
 
   describe 'Azure provider support' do
-    test 'Azure OpenAI with api-version uses deployment path' do
-      azure_url = 'https://myresource.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-10-21'
+    test 'Azure OpenAI posts to openai/v1/chat/completions with api-key header' do
+      azure_url = 'https://myresource.openai.azure.com/openai/v1/chat/completions'
       stub_request(:post, azure_url)
         .with(headers: { 'api-key' => 'my-azure-key' })
         .to_return(
           status:  200,
-          body:    { choices: [ { message: { content: '{"judgment": 2, "explanation": "Good"}' } } ] }.to_json,
+          body:    { choices: [ { message: { content: '{"judgment": 3, "explanation": "Great"}' } } ] }.to_json,
           headers: { 'Content-Type' => 'application/json' }
         )
 
       opts = {
         llm_provider:    'azure_openai',
-        llm_service_url: 'https://myresource.openai.azure.com',
+        llm_service_url: 'https://myresource.openai.azure.com/openai/v1',
         llm_model:       'gpt-4o-mini',
-        llm_api_version: '2024-10-21',
       }
       service = LlmService.new 'my-azure-key', opts
-      result = service.get_llm_response(USER_PROMPT_COMPOSED, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
+      result = service.get_llm_response(USER_PROMPT_TEXT, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
 
-      assert_equal 2, result[:judgment]
-      assert_requested(:post, azure_url)
+      assert_equal 3, result[:judgment]
+      assert_requested(:post, azure_url, headers: { 'api-key' => 'my-azure-key' })
     end
 
-    test 'Azure AI Foundry uses api-key header and correct path' do
+    test 'Azure AI Foundry posts to models/chat/completions with api-version baked into URL' do
       foundry_url = 'https://myresource.services.ai.azure.com/models/chat/completions?api-version=2025-01-01-preview'
       stub_request(:post, foundry_url)
         .with(headers: { 'api-key' => 'my-foundry-key' })
@@ -192,17 +213,16 @@ class LlmServiceTest < ActiveSupport::TestCase
 
       opts = {
         llm_provider:    'azure_ai_foundry',
-        llm_service_url: 'https://myresource.services.ai.azure.com',
-        llm_api_version: '2025-01-01-preview',
+        llm_service_url: 'https://myresource.services.ai.azure.com?api-version=2025-01-01-preview',
       }
       service = LlmService.new 'my-foundry-key', opts
-      result = service.get_llm_response(USER_PROMPT_COMPOSED, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
+      result = service.get_llm_response(USER_PROMPT_TEXT, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
 
       assert_equal 1, result[:judgment]
       assert_requested(:post, foundry_url)
     end
 
-    test 'Azure AI Foundry Serverless uses api-key header and v1 path' do
+    test 'Azure AI Foundry Serverless posts to the full stored URL with api-key header' do
       serverless_url = 'https://haiku-35.eastus.models.ai.azure.com/v1/chat/completions'
       stub_request(:post, serverless_url)
         .with(headers: { 'api-key' => 'my-serverless-key' })
@@ -214,34 +234,14 @@ class LlmServiceTest < ActiveSupport::TestCase
 
       opts = {
         llm_provider:    'azure_ai_foundry_serverless',
-        llm_service_url: 'https://haiku-35.eastus.models.ai.azure.com',
+        llm_service_url: 'https://haiku-35.eastus.models.ai.azure.com/v1/chat/completions',
       }
       service = LlmService.new 'my-serverless-key', opts
-      result = service.get_llm_response(USER_PROMPT_COMPOSED, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
+      result = service.get_llm_response(USER_PROMPT_TEXT, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
 
       assert_equal 2, result[:judgment]
       assert_requested(:post, serverless_url,
                        headers: { 'api-key' => 'my-serverless-key' })
-    end
-
-    test 'Azure OpenAI without api-version uses v1 path' do
-      azure_url = 'https://myresource.openai.azure.com/openai/v1/chat/completions'
-      stub_request(:post, azure_url)
-        .to_return(
-          status:  200,
-          body:    { choices: [ { message: { content: '{"judgment": 3, "explanation": "Great"}' } } ] }.to_json,
-          headers: { 'Content-Type' => 'application/json' }
-        )
-
-      opts = {
-        llm_provider:    'azure_openai',
-        llm_service_url: 'https://myresource.openai.azure.com',
-      }
-      service = LlmService.new 'my-azure-key', opts
-      service.get_llm_response(USER_PROMPT_COMPOSED, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
-
-      assert_requested(:post, azure_url,
-                       headers: { 'api-key' => 'my-azure-key' })
     end
 
     test 'Azure AI Foundry Anthropic uses x-api-key header, anthropic-version, and Messages API' do

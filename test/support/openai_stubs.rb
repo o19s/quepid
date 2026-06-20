@@ -53,9 +53,11 @@ module ActiveSupport
         }
       TEXT
 
+      json_headers = { 'Content-Type' => 'application/json' }
+
       stub_request(:post, 'https://api.openai.com/v1/chat/completions')
         .with(headers: { 'Authorization' => "Bearer #{OPENAI_VALID_KEY}" })
-        .to_return(status: 200, body: chat_completion_body, headers: {})
+        .to_return(status: 200, body: chat_completion_body, headers: json_headers)
 
       stub_request(:post, 'https://api.openai.com/v1/chat/completions')
         .with(headers: { 'Authorization' => "Bearer #{OPENAI_BAD_KEY}" })
