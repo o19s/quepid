@@ -93,10 +93,31 @@ end
 # rubocop:enable Metrics/BlockLength
 
 namespace :erd do
-  desc 'Generate Entity Relationship Diagram'
+  desc 'Generate Entity Relationship Diagram image at docs/erd.png'
   task image: :environment do
-    system 'erd --inheritance --filetype=dot --direct --attributes=foreign_keys,content,inheritance'
-    system 'dot -Tpng erd.dot > docs/erd.png'
-    File.delete('erd.dot')
+    # Framework/infrastructure tables that drown out our actual domain model in the diagram.
+    # Excluding them keeps the Case/Query/Rating/Book story readable. New domain models show up
+    # automatically; only this plumbing needs listing. See rails-erd#460 for the rationale.
+    # NOTE: exclude is exact-name match only (no wildcards yet, see rails-erd#465), so list each one.
+    infrastructure = %w[
+      ActiveStorage::Attachment ActiveStorage::Blob ActiveStorage::VariantRecord
+      ActiveStorageDB::File
+      Ahoy::Event Ahoy::Visit
+      Blazer::Audit Blazer::Check Blazer::Dashboard Blazer::DashboardQuery Blazer::Query
+      SolidCable::Message
+      SolidQueue::BlockedExecution SolidQueue::ClaimedExecution SolidQueue::FailedExecution
+      SolidQueue::Job SolidQueue::Pause SolidQueue::Process SolidQueue::ReadyExecution
+      SolidQueue::RecurringExecution SolidQueue::RecurringTask SolidQueue::ScheduledExecution
+      SolidQueue::Semaphore
+    ]
+
+    # Render a PNG via Graphviz; Mermaid output is unreadably small for a schema this size.
+    # Requires the ruby-graphviz gem and the graphviz system package (the `dot` binary).
+    # docs/data_mapping.md embeds this image, so overwriting it here updates the doc in place.
+    system 'bundle exec erd --generator=graphviz --filename=docs/erd --filetype=png ' \
+           '--inheritance --direct ' \
+           "--attributes=foreign_keys,content,inheritance --exclude=#{infrastructure.join(',')}"
+
+    puts 'Generated ERD diagram at docs/erd.png (embedded in docs/data_mapping.md)'
   end
 end
