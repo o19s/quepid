@@ -13,19 +13,19 @@ gem 'bcrypt'
 gem 'blazer'
 gem 'bootsnap', require: false
 gem 'colorize', require: false
-gem 'devise'
-gem 'devise_invitable'
+gem 'devise', '>= 5.0.4'
+gem 'devise_invitable', '>= 2.0.12'
 gem 'faraday-retry'
 gem 'foreman'
 gem 'importmap-rails'
-gem 'jbuilder'
+gem 'jbuilder', '>= 2.15.0'
 
 gem 'listen'
 gem 'local_time'
 gem 'mini_racer'
 gem 'mission_control-jobs' # git: 'https://github.com/rails/mission_control-jobs.git', branch: 'main'
 gem 'mysql2'
-gem 'oas_rails'
+gem 'oas_rails', '>= 1.3.6'
 gem 'omniauth'
 gem 'omniauth-keycloak'
 gem 'omniauth-google-oauth2'
@@ -45,7 +45,7 @@ gem 'rubyzip'
 gem 'propshaft' # Modern asset pipeline for Rails 8
 gem 'jsbundling-rails' # For bundling the Angular 1 app
 gem 'scout_apm' # using on Heroku to look at memory issues
-gem 'solid_cable'
+gem 'solid_cable', '>= 4.0.0'
 gem 'solid_queue'
 gem 'stimulus-rails'
 gem 'thor'
@@ -56,7 +56,7 @@ group :development, :test do
   gem 'benchmark'
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
-  gem 'bullet'
+  gem 'bullet', '>= 8.1.2'
   gem 'memory_profiler'
   gem 'dotenv' # Enable .env file outside of Docker based environment
   gem 'minitest'
@@ -73,7 +73,7 @@ group :development do
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   # gem 'rack-mini-profiler'
 
-  gem 'database_consistency', require: false
+  gem 'database_consistency', '>= 3.0.4', require: false
 
   # This is useful in working on performance issues, but otherwise puts
   # a lot of noise in logs on startup
@@ -82,7 +82,7 @@ group :development do
   gem 'derailed_benchmarks'
   gem 'letter_opener'
   gem 'rubocop', require: false
-  gem 'rubocop-rails', require: false
+  gem 'rubocop-rails', '>= 2.35.0', require: false
   gem 'rubocop-capybara', require: false
   gem 'rails-erd'
   gem 'ruby-graphviz' # required for rails-erd's Graphviz (PNG) output, used by `rake erd:image`
