@@ -6,67 +6,72 @@ This guide provides detailed instructions for developers who want to set up, run
 
 <!-- MarkdownTOC levels="1,2,3,4" autolink=true bracket=round -->
 
+- [Quepid Developer Guide](#quepid-developer-guide)
+	- [Table of Contents](#table-of-contents)
 - [Development Setup](#development-setup)
-  - [I. System Dependencies](#i-setting-up-quepid-to-do-development)
-    - [Docker Based Setup](#docker-based-setup)
-      - [1. Prerequisites](#1-prerequisites)
-      - [2. Setup your environment](#2-setup-your-environment)
-      - [3. Running the app](#3-running-the-app)
-    - [Local Setup ](#local-setup)
-      - [Prerequisites](#prerequisites)
-      - [Database Setup](#database-setup)
-      - [Application Setup](#application-setup)
-      - [Running the Application](#running-the-application)
-      - [Running Tests](#running-tests)
-    - [Large Sample Data for Quepid](#large-sample-data-for-quepid)
-    - [Developing Jupyter notebook](#developing-jupyter-notebook)
-  - [II. Development Log](#ii-development-log)
-  - [III. Run Tests](#iii-run-tests)
-    - [Minitest](#minitest)
-    - [JS Lint](#js-lint)
-    - [Karma](#karma)
-    - [Rubocop](#rubocop)
-    - [All Tests](#all-tests)
-    - [Performance Testing](#performance-testing)
-    - [Notebook Testing](#notebook-testing)
-  - [IV. Debugging](#iv-debugging)
-    - [Debugging Ruby](#debugging-ruby)
-    - [Debugging JS](#debugging-js)
-    - [Debugging Splainer and other NPM packages](#debugging-splainer-and-other-npm-packages)
-  - [Convenience Scripts](#convenience-scripts)
-    - [Rake](#rake)
-    - [Thor](#thor)
+	- [I. Setting up Quepid to do Development](#i-setting-up-quepid-to-do-development)
+		- [Docker Based Setup](#docker-based-setup)
+			- [1. Prerequisites](#1-prerequisites)
+			- [2. Setup your environment](#2-setup-your-environment)
+			- [3. Initialize the database (First-time setup only)](#3-initialize-the-database-first-time-setup-only)
+			- [4. Running the app](#4-running-the-app)
+		- [Local Setup](#local-setup)
+			- [Prerequisites](#prerequisites)
+			- [Database Setup](#database-setup)
+			- [Application Setup](#application-setup)
+			- [Running the Application](#running-the-application)
+			- [Running Tests](#running-tests)
+		- [Large Sample Data for Quepid](#large-sample-data-for-quepid)
+		- [Developing Jupyter notebooks](#developing-jupyter-notebooks)
+	- [II. Development Log](#ii-development-log)
+	- [III. Run Tests](#iii-run-tests)
+		- [Minitest](#minitest)
+		- [Pre-commit hooks](#pre-commit-hooks)
+		- [JS Lint](#js-lint)
+		- [Karma](#karma)
+		- [Rubocop](#rubocop)
+		- [All Tests](#all-tests)
+		- [Performance Testing](#performance-testing)
+		- [Notebook Testing](#notebook-testing)
+	- [IV. Debugging](#iv-debugging)
+		- [Debugging Ruby](#debugging-ruby)
+		- [Debugging JS](#debugging-js)
+		- [Debugging Splainer and other NPM packages](#debugging-splainer-and-other-npm-packages)
+			- [Working with Local Splainer-Search](#working-with-local-splainer-search)
+	- [Convenience Scripts](#convenience-scripts)
+		- [Rake](#rake)
+		- [Thor](#thor)
 - [Elasticsearch](#elasticsearch)
 - [Dev Errata](#dev-errata)
-  - [What is Claude on Rails?](#what-is-claude-on-rails)
-  - [How to use a new Node module or update an existing one](#how-to-use-a-new-node-module-or-update-an-existing-one)
-  - [How to use a new Ruby Gem or update an existing one](#how-to-use-a-new-ruby-gem-or-update-an-existing-one)
-  - [How to test nesting Quepid under a domain](#how-to-test-nesting-quepid-under-a-domain)
-  - [How to run and test a local production build](#how-to-run-and-test-a-local-production-build)
-  - [How to test SSL](#how-to-test-ssl)
-  - [How to test OpenID Auth](#how-to-test-openid-auth)
-  - [How to use the latest unreleased version via Docker](#how-to-use-the-latest-unreleased-version-via-docker)
-  - [Modifying the database](#modifying-the-database)
-  - [Updating RubyGems](#updating-rubygems)
-  - [How does the Frontend work?](#how-does-the-frontend-work)
-  - [Fonts](#fonts)
-  - [How to develop Jupyterlite](#how-to-develop-jupyterlite)
-  - [How do Personal Access Tokens work?](#how-do-personal-access-tokens-work)
+	- [What is Claude on Rails?](#what-is-claude-on-rails)
+	- [How to use a new Node module or update an existing one](#how-to-use-a-new-node-module-or-update-an-existing-one)
+	- [How to use a new Ruby Gem or update an existing one](#how-to-use-a-new-ruby-gem-or-update-an-existing-one)
+	- [How to test nesting Quepid under a domain](#how-to-test-nesting-quepid-under-a-domain)
+	- [How to run and test a local production build](#how-to-run-and-test-a-local-production-build)
+	- [How to test SSL](#how-to-test-ssl)
+	- [How to test OpenID Auth](#how-to-test-openid-auth)
+	- [How to use the latest unreleased version via Docker](#how-to-use-the-latest-unreleased-version-via-docker)
+	- [Modifying the database](#modifying-the-database)
+	- [Updating RubyGems](#updating-rubygems)
+	- [How does the Frontend work?](#how-does-the-frontend-work)
+	- [Fonts](#fonts)
+	- [How to develop Jupyterlite](#how-to-develop-jupyterlite)
+	- [How do Personal Access Tokens work?](#how-do-personal-access-tokens-work)
 - [Troubleshooting](#troubleshooting)
-  - [Docker Issues](#docker-issues)
-    - [Docker Container Won't Start](#docker-container-wont-start)
-    - [Slow Docker Performance](#slow-docker-performance)
-  - [Database Issues](#database-issues)
-    - [Database Connection Errors](#database-connection-errors)
-    - [Migration Errors](#migration-errors)
-  - [Frontend Issues](#frontend-issues)
-    - [Asset Compilation Errors](#asset-compilation-errors)
-    - [Angular App Not Loading](#angular-app-not-loading)
-  - [Testing Issues](#testing-issues)
-    - [Tests Failing Unexpectedly](#tests-failing-unexpectedly)
-    - [Karma Tests Timeout](#karma-tests-timeout)
+	- [Docker Issues](#docker-issues)
+		- [Docker Container Won't Start](#docker-container-wont-start)
+		- [Slow Docker Performance](#slow-docker-performance)
+	- [Database Issues](#database-issues)
+		- [Database Connection Errors](#database-connection-errors)
+		- [Migration Errors](#migration-errors)
+	- [Frontend Issues](#frontend-issues)
+		- [Asset Compilation Errors](#asset-compilation-errors)
+		- [Angular App Not Loading](#angular-app-not-loading)
+	- [Testing Issues](#testing-issues)
+		- [Tests Failing Unexpectedly](#tests-failing-unexpectedly)
+		- [Karma Tests Timeout](#karma-tests-timeout)
 - [QA](#qa)
-  - [Seed Data](#seed-data)
+	- [Seed Data](#seed-data)
 
 <!-- /MarkdownTOC -->
 
@@ -96,8 +101,22 @@ Run the Bash based setup script to setup your Docker images:
 bin/setup_docker
 ```
 
+#### 3. Initialize the database (First-time setup only)
 
-#### 3. Running the app
+For first-time Docker users, you need to create and seed the initial database structure. Run this command:
+
+```bash
+docker compose run --rm app bin/rails db:setup
+```
+
+#### 4. Running the app
+
+**Note on First Boot:** Docker starts the app and MySQL simultaneously. MySQL takes about 10-15 seconds to initialize its socket. To prevent the background workers from crashing on your very first run, start the database first:
+
+```bash
+docker compose up -d mysql
+# Wait ~15 seconds for MySQL to initialize before running the next command
+```
 
 Now fire up Quepid locally at http://localhost:
 

@@ -18,7 +18,7 @@ services:
       - .:/srv/app:cached
       - ./log:/log
     ports:
-      - 33000:3000
+      - "${APP_PORT:-3000}:3000"
     links:
       - mysql
       - keycloak
