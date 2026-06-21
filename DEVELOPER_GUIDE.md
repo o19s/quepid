@@ -111,13 +111,6 @@ docker compose run --rm app bin/rails db:setup
 
 #### 4. Running the app
 
-**Note on First Boot:** Docker starts the app and MySQL simultaneously. MySQL takes about 10-15 seconds to initialize its socket. To prevent the background workers from crashing on your very first run, start the database first:
-
-```bash
-docker compose up -d mysql
-# Wait ~15 seconds for MySQL to initialize before running the next command
-```
-
 Now fire up Quepid locally at http://localhost:
 
 ```bash

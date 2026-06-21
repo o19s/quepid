@@ -24,9 +24,12 @@ services:
       - keycloak
       - ollama
     depends_on:
-      - mysql
-      - keycloak
-      - ollama
+      mysql:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
 
   mysql:
     container_name: quepid_db
@@ -35,6 +38,12 @@ services:
       - 33306:3306
     environment:
       - MYSQL_ROOT_PASSWORD=password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   keycloak:
     image: chorus-keycloak
