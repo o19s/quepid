@@ -120,7 +120,7 @@ GEM
     bootsnap (1.23.0)
       msgpack (~> 1.2)
     builder (3.3.0)
-    bullet (8.1.1)
+    bullet (8.1.3)
       activesupport (>= 3.0.0)
       uniform_notifier (~> 1.11)
     capybara (3.40.0)
@@ -155,7 +155,7 @@ GEM
     cmdstan (0.5.2)
       csv
     colorize (1.1.0)
-    concurrent-ruby (1.3.6)
+    concurrent-ruby (1.3.7)
     connection_pool (3.0.2)
     console (1.34.3)
       fiber-annotation
