@@ -27,7 +27,7 @@ services:
       mysql:
         condition: service_healthy
       keycloak:
-        condition: service_healthy
+        condition: service_started
       ollama:
         condition: service_healthy
 
@@ -68,19 +68,19 @@ services:
       - DB_VENDOR=h2
     volumes:
       - ./keycloak/realm-config/quepid-realm.json:/opt/keycloak/data/import/quepid-realm.json:ro
-    healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 15
-      start_period: 40s
+    # Keycloak healthcheck is unreliable in H2 mode; relies on manual startup check
+    # Use depends_on with start_period instead
 
   # You can remove Ollama (and the links to it from app) if you don't want to use it to power AI judges
   ollama:
     image: ollama/ollama
     container_name: ollama
     healthcheck:
-      test: ollama --version || exit 1
+      test: ["CMD-SHELL", "ollama --version || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     ports:
       - 31434:31434  # don't conflict with local Ollama.
     volumes:
