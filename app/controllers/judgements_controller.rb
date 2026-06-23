@@ -132,7 +132,7 @@ class JudgementsController < ApplicationController
   private
 
   def set_judgement
-    @judgement = @book.judgements.find(params[:id])
+    @judgement = @book.judgements.find(params.expect(:id))
   end
 
   def judgement_params

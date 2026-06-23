@@ -13,7 +13,7 @@ class TeamsController < ApplicationController
 
   # Remove a case from the team
   def remove_case
-    kase = Case.find(params[:case_id])
+    kase = Case.find(params.expect(:case_id))
 
     if @team.cases.exists?(kase.id)
       @team.cases.delete(kase)
@@ -28,8 +28,8 @@ class TeamsController < ApplicationController
 
   # Share a case with a team (similar to scorer sharing pattern)
   def share_case
-    team = current_user.teams.find(params[:team_id])
-    kase = Case.find(params[:case_id])
+    team = current_user.teams.find(params.expect(:team_id))
+    kase = Case.find(params.expect(:case_id))
 
     # Check if user has access to this case
     unless current_user.cases_involved_with.exists?(id: kase.id)
@@ -49,8 +49,8 @@ class TeamsController < ApplicationController
   end
 
   def unshare_case
-    team = current_user.teams.find(params[:team_id])
-    kase = Case.find(params[:case_id])
+    team = current_user.teams.find(params.expect(:team_id))
+    kase = Case.find(params.expect(:case_id))
 
     # Check if user has access to this case
     unless current_user.cases_involved_with.exists?(id: kase.id)
@@ -70,8 +70,8 @@ class TeamsController < ApplicationController
 
   # Share a book with a team (similar to case sharing pattern)
   def share_book
-    team = current_user.teams.find(params[:team_id])
-    book = Book.find(params[:book_id])
+    team = current_user.teams.find(params.expect(:team_id))
+    book = Book.find(params.expect(:book_id))
 
     # Check if user has access to this book (owner or team member with access)
     unless current_user.books_involved_with.exists?(id: book.id)
@@ -90,8 +90,8 @@ class TeamsController < ApplicationController
   end
 
   def unshare_book
-    team = current_user.teams.find(params[:team_id])
-    book = Book.find(params[:book_id])
+    team = current_user.teams.find(params.expect(:team_id))
+    book = Book.find(params.expect(:book_id))
 
     # Check if user has access to this book
     unless current_user.books_involved_with.exists?(id: book.id)
@@ -111,8 +111,8 @@ class TeamsController < ApplicationController
 
   # Share a search endpoint with a team (similar to case/book sharing pattern)
   def share_search_endpoint
-    team = current_user.teams.find(params[:team_id])
-    search_endpoint = SearchEndpoint.find(params[:search_endpoint_id])
+    team = current_user.teams.find(params.expect(:team_id))
+    search_endpoint = SearchEndpoint.find(params.expect(:search_endpoint_id))
 
     # Check if user has access to this search endpoint
     unless current_user.search_endpoints_involved_with.exists?(id: search_endpoint.id)
@@ -131,8 +131,8 @@ class TeamsController < ApplicationController
   end
 
   def unshare_search_endpoint
-    team = current_user.teams.find(params[:team_id])
-    search_endpoint = SearchEndpoint.find(params[:search_endpoint_id])
+    team = current_user.teams.find(params.expect(:team_id))
+    search_endpoint = SearchEndpoint.find(params.expect(:search_endpoint_id))
 
     # Check if user has access to this search endpoint
     unless current_user.search_endpoints_involved_with.exists?(id: search_endpoint.id)
@@ -152,7 +152,7 @@ class TeamsController < ApplicationController
 
   # Archive a search endpoint
   def archive_search_endpoint
-    search_endpoint = SearchEndpoint.find(params[:search_endpoint_id])
+    search_endpoint = SearchEndpoint.find(params.expect(:search_endpoint_id))
 
     # Only archive if the search endpoint is associated with this team
     if @team.search_endpoints.exists?(search_endpoint.id)
@@ -168,7 +168,7 @@ class TeamsController < ApplicationController
 
   # Unarchive a search endpoint
   def unarchive_search_endpoint
-    search_endpoint = SearchEndpoint.find(params[:search_endpoint_id])
+    search_endpoint = SearchEndpoint.find(params.expect(:search_endpoint_id))
 
     # Only unarchive if the search endpoint is associated with this team
     if @team.search_endpoints.exists?(search_endpoint.id)
@@ -184,7 +184,7 @@ class TeamsController < ApplicationController
 
   # Archive a case (mark archived and set current_user as owner)
   def archive_case
-    kase = Case.find(params[:case_id])
+    kase = Case.find(params.expect(:case_id))
 
     # Only archive if the case is associated with this team
     if @team.cases.exists?(kase.id)
@@ -201,7 +201,7 @@ class TeamsController < ApplicationController
 
   # Unarchive a case
   def unarchive_case
-    kase = Case.find(params[:case_id])
+    kase = Case.find(params.expect(:case_id))
 
     # Only unarchive if the case is associated with this team
     if @team.cases.exists?(kase.id)
@@ -360,7 +360,7 @@ class TeamsController < ApplicationController
   end
 
   def remove_member
-    member = User.find(params[:member_id])
+    member = User.find(params.expect(:member_id))
 
     if @team.members.exists?(member.id)
       @team.members.delete(member)
@@ -479,7 +479,7 @@ class TeamsController < ApplicationController
   private
 
   def set_team
-    @team = current_user.teams.find(params[:id])
+    @team = current_user.teams.find(params.expect(:id))
   end
 
   def team_params

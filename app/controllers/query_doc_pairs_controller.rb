@@ -58,7 +58,7 @@ class QueryDocPairsController < ApplicationController
   private
 
   def set_query_doc_pair
-    @query_doc_pair = @book.query_doc_pairs.find(params[:id])
+    @query_doc_pair = @book.query_doc_pairs.find(params.expect(:id))
   end
 
   def query_doc_pair_params

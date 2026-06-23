@@ -20,7 +20,7 @@ module Admin
     end
 
     def edit
-      @announcement = Announcement.find(params[:id])
+      @announcement = Announcement.find(params.expect(:id))
     end
 
     def create
@@ -35,7 +35,7 @@ module Admin
     end
 
     def update
-      @announcement = Announcement.find(params[:id])
+      @announcement = Announcement.find(params.expect(:id))
 
       @announcement.update(announcement_params)
 
@@ -43,13 +43,13 @@ module Admin
     end
 
     def destroy
-      @announcement = Announcement.find(params[:id])
+      @announcement = Announcement.find(params.expect(:id))
       @announcement.destroy
       redirect_to admin_announcements_path
     end
 
     def publish
-      @announcement = Announcement.find(params[:id])
+      @announcement = Announcement.find(params.expect(:id))
       if @announcement.live?
         @announcement.update(live: false)
         redirect_to admin_announcements_path, notice: "Announcement id #{@announcement.id} is hidden."
