@@ -25,10 +25,12 @@ RUN apt-get update -qq && \
 
 # Set production environment variables and enable jemalloc for reduced memory usage and latency.
 ENV RAILS_ENV="production" \
+    NODE_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development test" \
-    LD_PRELOAD="/usr/local/lib/libjemalloc.so"
+    LD_PRELOAD="/usr/local/lib/libjemalloc.so" \
+    PUPPETEER_SKIP_DOWNLOAD="true"
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build
@@ -56,7 +58,8 @@ RUN bundle install --jobs=4 --retry=3 && \
 
 # Install node modules
 COPY package.json yarn.lock ./
-RUN yarn install --production --frozen-lockfile
+RUN yarn install --frozen-lockfile && \
+    yarn cache clean
 
 # Copy application code
 COPY . .
@@ -80,25 +83,12 @@ FROM base
 
 ENV QUEPID_VERSION=$QUEPID_VERSION_VARIABLE
 
-# Install Node.js and yarn in final image for asset recompilation for nested paths /quepid at runtime
-ARG NODE_VERSION=24.17.0
-ARG YARN_VERSION=1.22.22
-ENV PATH=/usr/local/node/bin:$PATH
-RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \
-    /tmp/node-build-master/bin/node-build "${NODE_VERSION}" /usr/local/node && \
-    npm install -g yarn@$YARN_VERSION && \
-    rm -rf /tmp/node-build-master
-
-# Run and own only the runtime files as a non-root user for security
-# This is commented out because if we want to nest Quepid under a directory we have to redo
-# the assets on disk which requires additional permissions.
-#RUN groupadd --system --gid 1000 rails && \
-#    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash
-#USER 1000:1000
-
 # Copy built artifacts: gems, application
+# Don't copy node_modules; they were only needed for asset precompilation.
 COPY --chown=rails:rails --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --chown=rails:rails --from=build /rails /rails
+# Remove node_modules from the final image to save ~300MB
+RUN rm -rf /rails/node_modules /rails/.yarn /rails/.yarnrc*
 
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
