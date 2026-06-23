@@ -1,7 +1,7 @@
 {
   "name": "quepid",
   "description": "Give your queries some love!",
-  "stack": "heroku-24",
+  "stack": "heroku-26",
   "addons": [
     "jawsdb",
     "logdna"
