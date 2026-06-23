@@ -28,9 +28,6 @@ Minitest/UselessAssertion:
 Rails/SkipsModelValidations:
   Enabled: false # we use .insert_all for our bulk imports
 
-Capybara/ClickLinkOrButtonStyle:
-  Enabled: false # we aren't running system tests
-
 Rails/I18nLocaleTexts:
   Enabled: false  # we are only english
 

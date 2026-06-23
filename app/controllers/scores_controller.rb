@@ -22,6 +22,6 @@ class ScoresController < ApplicationController
   end
 
   def set_score
-    @score = Score.find(params[:id])
+    @score = Score.find(params.expect(:id))
   end
 end

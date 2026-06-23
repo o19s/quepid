@@ -181,14 +181,14 @@ class ScorersController < ApplicationController
 
   def set_scorer
     @scorer = if current_user.administrator?
-                Scorer.for_user(current_user).find(params[:id])
+                Scorer.for_user(current_user).find(params.expect(:id))
               else
-                Scorer.for_user(current_user).where(communal: false).find(params[:id])
+                Scorer.for_user(current_user).where(communal: false).find(params.expect(:id))
               end
   end
 
   def set_source_scorer
-    @source_scorer = Scorer.for_user(current_user).find(params[:id])
+    @source_scorer = Scorer.for_user(current_user).find(params.expect(:id))
   end
 
   def scorer_params

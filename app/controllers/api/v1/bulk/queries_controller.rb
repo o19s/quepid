@@ -23,7 +23,7 @@ module Api
           # This logic is very similar to the ratings_importer.rb logic.
           queries_to_import = []
 
-          unique_queries = params[:queries].uniq
+          unique_queries = params.expect(queries: []).uniq
 
           # b. Fetch all the existing queries
           queries_params = {
