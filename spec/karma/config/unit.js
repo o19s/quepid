@@ -1,9 +1,11 @@
 // Karma configuration
 // Generated on Fri Nov 06 2015 19:55:18 GMT+0000 (UTC)
 
-process.env.CHROME_BIN = require('puppeteer').executablePath()
-
-module.exports = function(config) {
+// Puppeteer >=25 made executablePath() return a Promise. Karma calls the
+// exported config function asynchronously, so resolve the path before
+// config.set() runs.
+module.exports = async function(config) {
+  process.env.CHROME_BIN = await require('puppeteer').executablePath()
   config.set({
 
     // Use project root as base (config is in spec/karma/config/)
