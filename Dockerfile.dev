@@ -17,7 +17,7 @@ RUN apt-get update -qq && \
     echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
     apt-get update -qq && \
     apt-get install --no-install-recommends -y nodejs && \
-    npm install --global yarn && \
+    npm install --global yarn@1.22.22 && \
     apt-get clean all && \
     rm -rf /var/lib/apt/lists/*
 
@@ -27,7 +27,7 @@ WORKDIR /srv/app
 # Install Ruby gems (these can be cached separately from system dependencies)
 COPY Gemfile* ./
 RUN gem install foreman && \
-    gem install bundler:4.0.6 && \
+    gem install bundler:4.0.14 && \
     bundle install
 
 # Application code will be mounted at runtime
