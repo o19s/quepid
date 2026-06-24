@@ -78,20 +78,12 @@
                 Custom Headers must be a valid JSON object
               </span>
             </div>
-            <div ng-show="showTLSChangeWarning" class="alert alert-warning">
-              <span>
-              You have specified a search endpoint url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is running,
-              and this triggers your browser to prevent communication with the search endpoint.
-              <br/>Option 1: Reload Quepid to run on the correct protocol.
-              <br/>Option 2: Proxy the requests THROUGH the Quepid server.
-              </span>
-            </div>
             <div ng-show="invalidProxyApiMethod" class="alert alert-danger">
               <span>
                 You must change from JSONP to another API method when proxying.
               </span>
             </div>
-            <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">
+            <div ng-if="urlInvalid" class="alert alert-danger">
               Sorry, we're not getting any search results from your {{ pendingWizardSettings.searchEngine | searchEngineName }}.
 
               <ul ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
@@ -166,7 +158,7 @@ curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings
             <div ng-if="pendingWizardSettings.searchEngine !== 'static'" class="form-group" style="width: 100%">
               <div class="row">
                 <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
-                <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showTLSChangeWarning">ping it</button></small>
+                <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)">ping it</button></small>
                 <p class="help-block">Unsure? <a href="http://quepidapp.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
 
                 <p ng-show="pendingWizardSettings.urlFormat" class="help-block tip">
@@ -311,20 +303,14 @@ star wars,1921,3, Star Wars: Return of the Jedi
               <div class="row" style="margin-top: 50px;">
                 <div class="pull-right">
 
-                  <button ng-show="!showTLSChangeWarning" class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="!readyToContinue()">
+                  <button class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="!readyToContinue()">
                     <span ng-hide="validating">Continue</span>
                     <span ng-show="validating">Validating...</span>
                   </button>
 
-                  <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
+				  <button class="btn btn-danger" ng-show="urlInvalid" ng-click="skipValidation()" ng-disabled="validating">
                     <span ng-hide="validating">Skip Validation</span>
                   </button>
-
-                  <span ng-show="showTLSChangeWarning">
-                    <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
-                      <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
-                    </a>
-                  </span>
 
                 </div>
               </div>
