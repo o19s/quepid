@@ -80,63 +80,10 @@ angular.module('QuepidApp')
       // to HTTP in order to make calls to a Solr that is running in HTTP as well, otherwise
       // you get this "Mixed Content", which browsers block as a security issue.
       // https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content
-      this.needToRedirectQuepidProtocol = function (searchUrl) {
-        if (searchUrl) {
-          // Figure out if we need to redirect based on our search engine's url.
-          var quepidStartsWithHttps = $location.protocol() === 'https';
-          var searchEngineStartsWithHttps = searchUrl.startsWith('https');
-  
-          return (quepidStartsWithHttps !== searchEngineStartsWithHttps);
-        } else {
-          return false;
-        }
-      };
       
       // Return the tuple [quepidUrlToSwitchTo, protocolToSwitchTo]
-      this.swapQuepidUrlTLS = function () {
-        // Grab just the absolute url without any trailing query parameters
-        var absUrl = $location.absUrl();
-        // In development you might be on port 3000, and for https we need you not on port 3000
-        absUrl = absUrl.replace(':3000', '');
-        var n = absUrl.indexOf('?');
-        
-        var quepidUrlStartsWithHttps = absUrl.startsWith('https');
-        var quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
-        var protocolToSwitchTo = null;
-        if (quepidUrlStartsWithHttps) {
-          protocolToSwitchTo = 'http';
-          quepidUrlToSwitchTo = quepidUrlToSwitchTo.replace('https', 'http');
-        }
-        else {
-          protocolToSwitchTo = 'https';
-          quepidUrlToSwitchTo = quepidUrlToSwitchTo.replace('http', 'https');
-        }
-        
-        let separator = '?';
-        if (quepidUrlToSwitchTo.includes('?')) {
-          separator = '&';
-        }
-        
-        quepidUrlToSwitchTo = quepidUrlToSwitchTo + separator + 'protocolToSwitchTo=' + protocolToSwitchTo;
-        
-        return [quepidUrlToSwitchTo, protocolToSwitchTo];
-      };
       
       // Return the protocol Quepid is on
-      this.getQuepidProtocol = function () {
-        // Grab just the absolute url without any trailing query parameters
-        var absUrl = $location.absUrl();
-        var protocolToSwitchTo = null;
-        if (absUrl.startsWith('https')){
-          protocolToSwitchTo = 'http';
-        }
-        else {
-          protocolToSwitchTo = 'https';
-        }
-        
-        return protocolToSwitchTo;
-      };
-      
       
       
       this.appendQueryParams = function (quepidUrl, params) {

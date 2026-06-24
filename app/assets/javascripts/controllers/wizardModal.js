@@ -259,7 +259,6 @@ angular.module('QuepidApp')
       $scope.submit         = submit;
       $scope.reset          = reset;
       $scope.resetUrlValid  = resetUrlValid;
-      $scope.checkTLSForSearchEngineUrl = checkTLSForSearchEngineUrl;
       $scope.updateSettingsDefaults();
       $scope.validateHeaders = validateHeaders;
       $scope.validateProxyApiMethod = validateProxyApiMethod;
@@ -285,10 +284,8 @@ angular.module('QuepidApp')
         $scope.mapperInvalid = false;
         $scope.mapperErrorMessage = null;
         
-        
-        $scope.showTLSChangeWarning = false; // hope this doesn't cause a flicker.'
         if ($scope.pendingWizardSettings.searchUrl){
-          $scope.checkTLSForSearchEngineUrl();
+
         }
       }
       
@@ -345,15 +342,14 @@ angular.module('QuepidApp')
 
         // This logic maybe should live in Splainer Search if we wanted to support Splainer.io as well?
 
-        $scope.showTLSChangeWarning = false;
 
-        $scope.checkTLSForSearchEngineUrl();
+
         $scope.validateHeaders();
         $scope.validateProxyApiMethod();
 
         // exit early if we have the TLS issue, this really should be part of the below logic.
         // validator.validateTLS().then.validateURL().then....
-        if ($scope.showTLSChangeWarning || $scope.invalidHeaders || $scope.invalidProxyApiMethod ){
+        if ($scope.invalidHeaders || $scope.invalidProxyApiMethod ){
           $scope.validating = false;
           return;
         }
@@ -513,11 +509,7 @@ angular.module('QuepidApp')
       }
       
       function changeProxySetting () {
-        if ($scope.pendingWizardSettings.proxyRequests === true){
-          $scope.showTLSChangeWarning = false;
-        }
-        validateProxyApiMethod();
-        checkTLSForSearchEngineUrl();
+
       }
       
       function validateProxyApiMethod () {
@@ -532,30 +524,6 @@ angular.module('QuepidApp')
         }
       }
 
-
-      function checkTLSForSearchEngineUrl () {
-        if ($scope.pendingWizardSettings.proxyRequests === true){
-          $scope.showTLSChangeWarning = false;
-        }
-        else {
-          $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.pendingWizardSettings.searchUrl);
-          
-          if ($scope.showTLSChangeWarning){         
-            var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
-            
-            $scope.quepidUrlToSwitchTo = resultsTuple[0];
-            $scope.protocolToSwitchTo = resultsTuple[1];
-
-            
-            $scope.quepidUrlToSwitchTo = caseTryNavSvc.appendQueryParams($scope.quepidUrlToSwitchTo, `showWizard=true` +
-              `&searchEngine=${$scope.pendingWizardSettings.searchEngine}` +
-              `&searchUrl=${$scope.pendingWizardSettings.searchUrl}` +
-              `&caseName=${$scope.pendingWizardSettings.caseName}` +
-              `&apiMethod=${$scope.pendingWizardSettings.apiMethod}` +
-              `&basicAuthCredential=${$scope.pendingWizardSettings.basicAuthCredential}`);            
-          }
-        }
-      }
 
 
       function setupDefaults(validator) {

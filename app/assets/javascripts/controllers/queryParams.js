@@ -19,7 +19,7 @@ angular.module('QuepidApp')
 
       $scope.showESTemplateWarning = false;
 
-      $scope.showTLSChangeWarning = false;
+
 
       $scope.runningEvaluation = false;
 
@@ -56,29 +56,20 @@ angular.module('QuepidApp')
               const args = JSON.parse($scope.settings.queryParams);
               $scope.showESTemplateWarning = esUrlSvc.isTemplateCall(args);
             }
-            catch (error){
+            catch (_error){
               // Ignore if we don't have valid JSON in queryParams.
             }
           }
 
           if ($scope.settings.searchEngine !== '' && !angular.isUndefined($scope.settings.searchUrl)){
             if ($scope.settings.proxyRequests === true){
-              $scope.showTLSChangeWarning = false;
+
             }
             else {
-             $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.settings.searchUrl);
+
             }
 
-            if ($scope.showTLSChangeWarning){
-
-              var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
-
-              $scope.quepidUrlToSwitchTo = resultsTuple[0];
-              $scope.protocolToSwitchTo = resultsTuple[1];
-
-              $scope.quepidUrlToSwitchTo = caseTryNavSvc.appendQueryParams($scope.quepidUrlToSwitchTo, 'searchEngine=' + $scope.settings.searchEngine + '&searchUrl=' + $scope.settings.searchUrl + '&showWizard=false&apiMethod=' + $scope.settings.apiMethod);
-              $scope.quepidUrlToSwitchTo = $scope.quepidUrlToSwitchTo + '&fieldSpec=' + $scope.settings.fieldSpec;
-            }
+        
           }
         }
       };

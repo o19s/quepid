@@ -333,7 +333,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
               >
               </select>
 
-              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null || showTLSChangeWarning">ping it</button></small>
+              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null">ping it</button></small>
               <p class="help-block tip" ng-if="hasStaticEndpoints">
                 FYI: your existing Static File endpoints are NOT sharable across cases.
               </p>
@@ -360,7 +360,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
               </p>
             </div>
             <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
-            <div ng-show="showTLSChangeWarning" class="alert alert-warning">
+
               <span>
               You have specified a search endpoint url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is running,
               and this triggers your browser to prevent communciation with the search endpoint.  <br/>Option 1: Reload Quepid to run on the correct protocol
@@ -370,13 +370,13 @@ star wars,1921,3, Star Wars: Return of the Jedi
             <div class="row" style="margin-top: 50px;">
 
               <div class="pull-right">
-                <button class="btn btn-primary pull-right continue" ng-show="!showTLSChangeWarning" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))">Continue</button>
+                <button class="btn btn-primary pull-right continue"  ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))">Continue</button>
 
-                <button class="btn btn-danger" ng-show="urlInvalid && !showTLSChangeWarning" ng-click="skipValidation()" ng-disabled="validating">
+                <button class="btn btn-danger" ng-show="urlInvalid" ng-click="skipValidation()" ng-disabled="validating">
                   <span ng-hide="validating">Skip Validation</span>
                 </button>
 
-                <span ng-show="showTLSChangeWarning">
+				
                   <a href="{{quepidUrlToSwitchTo}}&existingSearchEndpoint=true" class="btn btn-primary form-control">
                     <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
                   </a>
