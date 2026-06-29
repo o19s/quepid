@@ -141,13 +141,9 @@ angular.module('QuepidApp')
             loadSnapshots();  // this is here just to set the caseNo in the querySnapshotSvc.
             updateCaseMetadata();
             paneSvc.refreshElements();
-          }).catch(function(error) {            
-            // brittle logic, but check if we throw the TLS error or if it's from something else.
+			}).catch(function(error) {            
             var message = error.message;
-            if (message.startsWith('Blocked Request')){
-              flash.to('search-error').error = message;
-            }
-            else if (message.startsWith('Could not retrieve case')){
+            if (message.startsWith('Could not retrieve case')){
               flash.to('search-error').error = message;
             }
             else {

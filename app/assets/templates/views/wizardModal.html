@@ -78,12 +78,19 @@
                 Custom Headers must be a valid JSON object
               </span>
             </div>
+           <div ng-show="showProxyRequiredWarning" class="alert alert-warning">
+              <span>
+                <strong>Protocol Mismatch Detected:</strong> Quepid is currently running on <code>{{quepidProtocol}}</code>, but your search endpoint URL uses <code>{{endpointProtocol}}</code>.
+                <br/><br/>
+                Browsers block requests between mixed protocols for security. To resolve this and allow Quepid to communicate with your search engine, please check the <strong>Proxy Requests</strong> option in the Advanced settings below.
+              </span>
+            </div>
             <div ng-show="invalidProxyApiMethod" class="alert alert-danger">
               <span>
                 You must change from JSONP to another API method when proxying.
               </span>
             </div>
-            <div ng-if="urlInvalid" class="alert alert-danger">
+            <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">
               Sorry, we're not getting any search results from your {{ pendingWizardSettings.searchEngine | searchEngineName }}.
 
               <ul ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
@@ -158,7 +165,7 @@ curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings
             <div ng-if="pendingWizardSettings.searchEngine !== 'static'" class="form-group" style="width: 100%">
               <div class="row">
                 <input style="width: 100%" type="text" ng-change="reset()" ng-model="pendingWizardSettings.searchUrl" class="form-control" />
-                <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)">ping it</button></small>
+              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="showProxyRequiredWarning">ping it</button></small>
                 <p class="help-block">Unsure? <a href="http://quepidapp.com/how-quepid-works/" target="_blank">Learn More</a> about Quepid's light touch with your search engine &amp; data.
 
                 <p ng-show="pendingWizardSettings.urlFormat" class="help-block tip">
@@ -303,12 +310,12 @@ star wars,1921,3, Star Wars: Return of the Jedi
               <div class="row" style="margin-top: 50px;">
                 <div class="pull-right">
 
-                  <button class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="!readyToContinue()">
+				<button class="btn btn-primary pull-right continue" ng-click="validate()" ng-disabled="!readyToContinue() || showProxyRequiredWarning">
                     <span ng-hide="validating">Continue</span>
                     <span ng-show="validating">Validating...</span>
                   </button>
 
-				  <button class="btn btn-danger" ng-show="urlInvalid" ng-click="skipValidation()" ng-disabled="validating">
+                  <button class="btn btn-danger" ng-show="urlInvalid" ng-click="skipValidation()" ng-disabled="validating || showProxyRequiredWarning">
                     <span ng-hide="validating">Skip Validation</span>
                   </button>
 
@@ -333,7 +340,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
               >
               </select>
 
-              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null">ping it</button></small>
+              <small title="Manually validates Quepid can get retrieve search results from your URL before continuing" class="pull-right"><button type="button" class="btn btn-link btn-sm" ng-click="validate(true)" ng-disabled="pendingWizardSettings.searchEndpointId == null || showProxyRequiredWarning">ping it</button></small>
               <p class="help-block tip" ng-if="hasStaticEndpoints">
                 FYI: your existing Static File endpoints are NOT sharable across cases.
               </p>
@@ -360,27 +367,21 @@ star wars,1921,3, Star Wars: Return of the Jedi
               </p>
             </div>
             <div ng-if="urlValid" class="alert alert-success">Quepid can search this! Hit 'Continue' to keep working through setup.</div>
-
+            <div ng-show="showProxyRequiredWarning" class="alert alert-warning">
               <span>
-              You have specified a search endpoint url that is on a different protocol ( <code>{{protocolToSwitchTo}}</code> ) than Quepid is running,
-              and this triggers your browser to prevent communciation with the search endpoint.  <br/>Option 1: Reload Quepid to run on the correct protocol
-              <br/>Option 2: Proxy the requests THROUGH the Quepid server.
+                <strong>Protocol Mismatch Detected:</strong> Quepid is currently running on <code>{{quepidProtocol}}</code>, but your search endpoint URL uses <code>{{endpointProtocol}}</code>.
+                <br/><br/>
+                Browsers block requests between mixed protocols for security. To resolve this and allow Quepid to communicate with your search engine, please check the <strong>Proxy Requests</strong> option in the Advanced settings below.
               </span>
             </div>
             <div class="row" style="margin-top: 50px;">
 
               <div class="pull-right">
-                <button class="btn btn-primary pull-right continue"  ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))">Continue</button>
+               <button class="btn btn-primary pull-right continue" ng-show="!showProxyRequiredWarning" ng-click="validate()" ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))">Continue</button>
 
-                <button class="btn btn-danger" ng-show="urlInvalid" ng-click="skipValidation()" ng-disabled="validating">
+                <button class="btn btn-danger" ng-show="urlInvalid && !showProxyRequiredWarning" ng-click="skipValidation()" ng-disabled="validating">
                   <span ng-hide="validating">Skip Validation</span>
                 </button>
-
-				
-                  <a href="{{quepidUrlToSwitchTo}}&existingSearchEndpoint=true" class="btn btn-primary form-control">
-                    <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code> Protocol
-                  </a>
-                </span>
               </div>
             </div>
           </div>

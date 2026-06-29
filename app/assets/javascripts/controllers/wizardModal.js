@@ -186,8 +186,10 @@ angular.module('QuepidApp')
         } else {
           $scope.pendingWizardSettings.queryParams            = settings.queryParams;
         }
+		$scope.pendingWizardSettings.searchUrl = searchEndpointToUse.endpointUrl;
 
-        $scope.reset();
+		$scope.checkProxyRequirement();
+		$scope.reset();
       };
       
       // used when you swap radio buttons for the search engine.
@@ -284,6 +286,11 @@ angular.module('QuepidApp')
         $scope.mapperInvalid = false;
         $scope.mapperErrorMessage = null;
         
+        // Triggers immediately as the user types or selects a dropdown option
+        if (typeof $scope.checkProxyRequirement === 'function') {
+          $scope.checkProxyRequirement();
+        }
+        
         if ($scope.pendingWizardSettings.searchUrl){
 
         }
@@ -332,7 +339,7 @@ angular.module('QuepidApp')
         WizardHandler.wizard().next();
       }
 
-      function validate (justValidate) {
+	  function validate (justValidate) {
         if (angular.isUndefined(justValidate)) {
           justValidate = false;
         }
@@ -346,10 +353,11 @@ angular.module('QuepidApp')
 
         $scope.validateHeaders();
         $scope.validateProxyApiMethod();
+        $scope.checkProxyRequirement();
 
         // exit early if we have the TLS issue, this really should be part of the below logic.
         // validator.validateTLS().then.validateURL().then....
-        if ($scope.invalidHeaders || $scope.invalidProxyApiMethod ){
+        if ($scope.invalidHeaders || $scope.invalidProxyApiMethod || $scope.showProxyRequiredWarning ){
           $scope.validating = false;
           return;
         }
@@ -508,8 +516,22 @@ angular.module('QuepidApp')
 
       }
       
-      function changeProxySetting () {
+      $scope.checkProxyRequirement = function() {
+        if ($scope.pendingWizardSettings.proxyRequests === true){
+          $scope.showProxyRequiredWarning = false;
+        } else {
+          $scope.showProxyRequiredWarning = caseTryNavSvc.specifySearchProxyRequired($scope.pendingWizardSettings.searchUrl);
+        }
 
+        if ($scope.showProxyRequiredWarning) {
+          $scope.quepidProtocol = caseTryNavSvc.getQuepidProtocol();
+          $scope.endpointProtocol = $scope.pendingWizardSettings.searchUrl.startsWith('https') ? 'https' : 'http';
+        }
+      };
+
+      function changeProxySetting () {
+        $scope.validateProxyApiMethod();
+        $scope.checkProxyRequirement();
       }
       
       function validateProxyApiMethod () {
@@ -593,7 +615,7 @@ angular.module('QuepidApp')
 
         var fields = [
           'id:' + $scope.pendingWizardSettings.idField,
-          'title:' + $scope.pendingWizardSettings.titleField,
+          'title:' + $scope.pendingWizardSettings.titleField,	
           additionalFields
         ];
 

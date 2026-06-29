@@ -179,6 +179,13 @@
             <p>
               <a ng-href="{{createSearchEndpointLink(settings.selectedTry.searchEndpointId)}}" target="_self">More</a>
             </p>
+            <p>
+              <div ng-show="showProxyRequiredWarning" class="alert alert-warning" style="margin-top: 15px;">
+                <strong>Protocol Mismatch:</strong> You have specified a search engine URL that is on a different protocol (<code>{{endpointProtocol}}</code>) than Quepid (<code>{{quepidProtocol}}</code>).
+                <br/>
+                Please enable <strong>Proxy Requests</strong> on your search endpoint settings to comply with browser security constraints.
+              </div>
+            </p>
           </div>
         </div>
         <!-- end of Search Endpoint -->
@@ -307,7 +314,12 @@
 </div> <!-- end #queryParamsArea -->
 
 <span ng-show="qp.curTab == 'developer' || qp.curTab == 'engineSettings' || qp.curTab == 'curator'">
-  <span id="query-sandbox-action" ng-click="settings.submit()" class="btn btn-primary form-control">
+  <span ng-show="showProxyRequiredWarning" class="alert alert-warning" style="display: block; margin-bottom: 10px;">
+    Please enable Proxy Requests in Settings to run searches.
+  </span>
+
+  <span ng-show="!showProxyRequiredWarning" id="query-sandbox-action" ng-click="settings.submit()"
+    class="btn btn-primary form-control">
     Rerun My Searches!
   </span>
 </span>

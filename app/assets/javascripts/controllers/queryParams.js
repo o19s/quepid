@@ -49,7 +49,7 @@ angular.module('QuepidApp')
       };
       
 
-      $scope.validateSearchEngineUrl  = function() {
+	  $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){
           if ($scope.settings.searchEngine === 'es' || $scope.settings.searchEngine === 'os'){
             try {
@@ -63,13 +63,16 @@ angular.module('QuepidApp')
 
           if ($scope.settings.searchEngine !== '' && !angular.isUndefined($scope.settings.searchUrl)){
             if ($scope.settings.proxyRequests === true){
-
+               $scope.showProxyRequiredWarning = false;
             }
             else {
-
+               $scope.showProxyRequiredWarning = caseTryNavSvc.specifySearchProxyRequired($scope.settings.searchUrl);
+               
+               if ($scope.showProxyRequiredWarning) {
+                 $scope.quepidProtocol = caseTryNavSvc.getQuepidProtocol();
+                 $scope.endpointProtocol = $scope.settings.searchUrl.startsWith('https') ? 'https' : 'http';
+               }
             }
-
-        
           }
         }
       };
