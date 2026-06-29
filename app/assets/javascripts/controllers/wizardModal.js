@@ -186,7 +186,6 @@ angular.module('QuepidApp')
         } else {
           $scope.pendingWizardSettings.queryParams            = settings.queryParams;
         }
-		$scope.pendingWizardSettings.searchUrl = searchEndpointToUse.endpointUrl;
 
 		$scope.checkProxyRequirement();
 		$scope.reset();
