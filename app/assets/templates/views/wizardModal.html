@@ -109,7 +109,8 @@
 								<ul ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
 									<li ng-if="!pendingWizardSettings.proxyRequests"><strong>Quick fix:</strong> check
 										<strong>Proxy Requests</strong> below so Quepid's server talks to your Search
-										API instead of your browser.</li>
+										API instead of your browser.
+									</li>
 									<li ng-if="!pendingWizardSettings.proxyRequests"><strong>Or configure CORS</strong>
 										on your Search API if your team prefers direct browser access.</li>
 									<li>Can you open the <a target="_blank" ng-href="{{linkToSearchEndpointUrl()}}">URL
@@ -126,7 +127,8 @@
 								<ul ng-if="pendingWizardSettings.searchEngine === 'es'">
 									<li ng-if="!pendingWizardSettings.proxyRequests"><strong>Quick fix:</strong> check
 										<strong>Proxy Requests</strong> below so Quepid's server talks to Elasticsearch
-										instead of your browser. No cluster changes required.</li>
+										instead of your browser. No cluster changes required.
+									</li>
 									<li ng-if="!pendingWizardSettings.proxyRequests"><strong>Or configure CORS</strong>
 										on Elasticsearch to allow Quepid's domain if your team prefers direct browser
 										access.</li>
@@ -145,7 +147,8 @@
 								<ul ng-if="pendingWizardSettings.searchEngine === 'os'">
 									<li ng-if="!pendingWizardSettings.proxyRequests"><strong>Quick fix:</strong> check
 										<strong>Proxy Requests</strong> below so Quepid's server talks to OpenSearch
-										instead of your browser. No cluster changes required.</li>
+										instead of your browser. No cluster changes required.
+									</li>
 									<li ng-if="!pendingWizardSettings.proxyRequests"><strong>Or configure CORS</strong>
 										on OpenSearch to allow Quepid's domain if your team prefers direct browser
 										access.</li>
@@ -162,7 +165,8 @@
 								<ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
 									<li ng-if="!pendingWizardSettings.proxyRequests"><strong>Quick fix:</strong> check
 										<strong>Proxy Requests</strong> below so Quepid's server talks to Solr instead
-										of your browser. No Solr configuration changes required.</li>
+										of your browser. No Solr configuration changes required.
+									</li>
 									<li>Do you see any errors when you visit your <a target="_blank"
 											ng-href="{{linkToSearchEndpointUrl()}}">Solr URL directly?</a> If Solr
 										responds but Quepid still fails, check the browser console for CORS or
@@ -419,6 +423,32 @@ star wars,1921,3, Star Wars: Return of the Jedi
 								ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints() | filter: {searchEngine: '!static'}"
 								ng-change="changeSearchEndpoint()">
 							</select>
+							<div class="row" ng-if="pendingWizardSettings.searchEndpointId != null">
+								<div ng-show="showExistingProxyWarning" class="alert alert-warning"
+									style="margin-top: 15px;">
+									<span>
+										<strong>Protocol Mismatch Detected:</strong> Quepid is currently running on
+										<code>{{quepidProtocol}}</code>, but your search endpoint URL uses
+										<code>{{endpointProtocol}}</code>.
+										<br /><br />
+										Browsers block requests between mixed protocols for security. To resolve this
+										and
+										allow Quepid to communicate with your search engine, please check the
+										<strong>Proxy Requests</strong> option below.
+									</span>
+								</div>
+
+								<div class="well well-sm" style="margin-top: 15px;">
+									<div class="checkbox">
+										<label>
+											<input type="checkbox" ng-model="pendingWizardSettings.proxyRequests"
+												ng-change="changeProxySetting()">
+											<strong>Proxy Requests:</strong> Route search requests through the Quepid
+											server instead of the browser.
+										</label>
+									</div>
+								</div>
+							</div>
 
 							<small
 								title="Manually validates Quepid can get retrieve search results from your URL before continuing"
@@ -597,7 +627,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
 
 					<button class="btn btn-primary pull-right continue" wz-next
 						ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)"
-						ng-disabled="pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0)">Continue</button>
+						ng-disabled="pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0 || showExistingProxyWarning)">Continue</button>
 					<br><br><br><br><br>
 				</div>
 			</span>
