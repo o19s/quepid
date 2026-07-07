@@ -500,7 +500,7 @@ angular.module('QuepidApp')
 							$scope.validating = false;
 						});
 				} catch (e) {
-					console.error("Validation crashed:", e);
+					console.error('Validation crashed:', e);
 					$scope.urlInvalid = true;
 					$scope.validating = false;
 				}
