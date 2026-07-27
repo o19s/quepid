@@ -19,7 +19,7 @@ use_docker=false
 if docker info >/dev/null 2>&1; then
   use_docker=true
 elif [[ ! -x "${ROOT}/node_modules/jshint/bin/jshint" ]]; then
-  echo "jshint not found. Run: yarn install (or bin/setup_docker)" >&2
+  echo "jshint not found. Run: npm install (or bin/setup_docker)" >&2
   exit 1
 fi
 

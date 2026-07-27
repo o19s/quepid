@@ -3,7 +3,7 @@
 #
 # With bin/docker s, Foreman rebuilds the AngularJS bundles just hard-refresh the browser.
 #
-# If watchers are not running: bin/docker r yarn build:angular
+# If watchers are not running: bin/docker r npm run build:angular
 #
 # The mounted files below will be bundled into app/assets/builds/angular_app.js during
 # the build process, so any changes you make locally will be included after rebuilding.
