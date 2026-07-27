@@ -24,9 +24,9 @@ FileUtils.chdir APP_ROOT do
     system "cp .env.example .env"
   end
 
-  puts "\n== Instally node packages =="
-  system! "yarn"
-  system! "yarn build"
+  puts "\n== Installing node packages =="
+  system! "npm install"
+  system! "npm run build"
 
   puts "\n== Preparing database =="
   system! "bin/rails db:prepare"

@@ -141,9 +141,7 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 2. **Node.js**: Install Node.js 22.x or later.
 
-3. **Yarn**: Install Yarn package manager.
-
-4. **MySQL**: Install MySQL 8.0 or later.
+3. **MySQL**: Install MySQL 8.0 or later.
 
 #### Database Setup
 
@@ -166,7 +164,7 @@ bin/setup
 
 We assume a `root` database user with the password `password`.  If your password is different you will need to edit the `.env` file created after running the setup steps.
 
-This will install node and yarn, set up the database, run migrations, and seed initial data and then start Rails.
+This will install node packages, set up the database, run migrations, and seed initial data and then start Rails.
 
 #### Running the Application
 
@@ -271,7 +269,7 @@ tail -f log/test.log
 
 ### Pre-commit hooks
 
-Git commits run RuboCop (Ruby) and JSHint (JavaScript in `app/assets/javascripts/`) via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn/JSHint).
+Git commits run RuboCop (Ruby) and JSHint (JavaScript in `app/assets/javascripts/`) via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and npm/JSHint).
 
 Hooks prefer Docker when it is available (`bin/docker r`), matching the usual Quepid development workflow.
 
@@ -440,14 +438,14 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
    Manual rebuild only if watchers are not running:
 
    ```bash
-   bin/docker r yarn build:angular
+   bin/docker r npm run build:angular
    ```
 
    Then refresh your browser to see the changes.
 
 4. **Why bundles work this way**
    - Splainer-search ESM modules are inlined into **`app/assets/builds/angular_app.js`** at build time, not runtime (`splainer_search_adapter.js` registers wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI keeps working).
-   - With **`bin/docker s`**, Foreman watches the vendor import graph (including **`node_modules/splainer-search`**) and keeps **`angular_app.js`** + **`quepid_angular_app.js`** in sync. Save edits and hard-refresh. Run **`yarn build:angular`** only if watchers are not running (that script runs both bundles).
+   - With **`bin/docker s`**, Foreman watches the vendor import graph (including **`node_modules/splainer-search`**) and keeps **`angular_app.js`** + **`quepid_angular_app.js`** in sync. Save edits and hard-refresh. Run **`npm run build:angular`** only if watchers are not running (that script runs both bundles).
 
 
 ## Convenience Scripts
@@ -531,13 +529,13 @@ To get Claude on Rails to work, you need to do development outside of Docker ;-(
 Typically you would simply do:
 
 ```bash
-bin/docker r yarn add foobar
+bin/docker r npm install foobar
 ```
 
 or
 
 ```bash
-bin/docker r yarn upgrade foobar
+bin/docker r npm install foobar@latest
 ```
 
 which will install/upgrade the Node module, and then save that dependency to `package.json`.

@@ -51,21 +51,21 @@ jobs:
           paths:
             - vendor/bundle
 
-      # Only necessary if app uses webpacker or yarn in some other way
+      # Only necessary if app uses npm or yarn in some other way
       - restore_cache:
           keys:
-            - quepid-yarn-{{ checksum "yarn.lock" }}
-            - quepid-yarn-
+            - quepid-npm-{{ checksum "package-lock.json" }}
+            - quepid-npm-
 
       - run:
-          name: Yarn Install
-          command: yarn install --cache-folder ~/.cache/yarn
+          name: npm Install
+          command: npm ci
 
-      # Store yarn / webpacker cache
+      # Store npm cache
       - save_cache:
-          key: quepid-yarn-{{ checksum "yarn.lock" }}
+          key: quepid-npm-{{ checksum "package-lock.json" }}
           paths:
-            - ~/.cache/yarn
+            - ~/.npm
 
       - run:
           name: Wait for DB

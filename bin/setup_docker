@@ -34,8 +34,8 @@ docker compose up ${build_arg} --no-start --remove-orphans
 
 bin/docker r bundle config set --local no-document true
 
-bin/docker r yarn
-bin/docker r yarn build
+bin/docker r npm install
+bin/docker r npm run build
 bin/docker r ./wait-for mysql:3306 --timeout=60 -- bin/rake db:setup
 bin/docker r bin/rake db:migrate
 

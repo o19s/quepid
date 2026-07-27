@@ -16,9 +16,9 @@ Do not stop (you may restart) the dev server unless the user explicitly asks. Le
 
 Most commands you want to run you can just prefix with `bin/docker r bundle exec` so `rails console --environment=test` becomes `bin/docker r bundle exec rails console --environment=test`
 
-Use yarn instead of npm for package management.
+Use npm instead of yarn for package management.
 
-Run javascript tests via `bin/docker r yarn test`.
+Run javascript tests via `bin/docker r npm test`.
 
 
 Documentation goes in the `docs` directory, not a toplevel `doc` directory.

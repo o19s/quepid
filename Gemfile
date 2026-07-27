@@ -16,7 +16,7 @@ gem 'colorize', require: false
 gem 'devise'
 gem 'devise_invitable'
 gem 'faraday-retry'
-gem 'foreman'
+gem 'foreman', require: false
 gem 'importmap-rails'
 gem 'jbuilder'
 
@@ -57,7 +57,7 @@ group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
   gem 'bullet'
-  gem 'memory_profiler'
+  gem 'memory_profiler', require: false
   gem 'dotenv' # Enable .env file outside of Docker based environment
   gem 'minitest'
 end
@@ -79,13 +79,14 @@ group :development do
   # a lot of noise in logs on startup
   # gem 'debugbar'
 
-  gem 'derailed_benchmarks'
+  gem 'derailed_benchmarks', require: false
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
   gem 'rubocop-capybara', require: false
-  gem 'rails-erd'
-  gem 'ruby-graphviz' # required for rails-erd's Graphviz (PNG) output, used by `rake erd:image`
+  gem 'rubocop-minitest', require: false
+  gem 'rails-erd', require: false
+  gem 'ruby-graphviz', require: false # used by `rake erd:image`
 end
 
 group :test do
@@ -98,5 +99,3 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
-
-gem 'rubocop-minitest'
