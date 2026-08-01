@@ -23,18 +23,6 @@
 #
 #  index_books_owner_id  (owner_id)
 #
-#  id                          :bigint           not null, primary key
-#  archived                    :boolean          default(FALSE), not null
-#  export_job                  :string(255)
-#  import_job                  :string(255)
-#  name                        :string(255)
-#  populate_job                :string(255)
-#  show_rank                   :boolean          default(FALSE)
-#  support_implicit_judgements :boolean
-#  created_at                  :datetime         not null
-#  updated_at                  :datetime         not null
-#  owner_id                    :integer
-#  scorer_id                   :integer
 
 #
 # Indexes
