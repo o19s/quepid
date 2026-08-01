@@ -73,7 +73,7 @@ angular.module('QuepidApp')
           });
       };
 
-      const  loadQueries = function() {
+      const loadQueries = function() {
         const newSettings = settingsSvc.editableSettings();
         if ( caseChanged() || searchEngineChanged() ) {
           if ( caseChanged() ) {
@@ -141,7 +141,7 @@ angular.module('QuepidApp')
             loadSnapshots();  // this is here just to set the caseNo in the querySnapshotSvc.
             updateCaseMetadata();
             paneSvc.refreshElements();
-			}).catch(function(error) {            
+          }).catch(function(error) {
             var message = error.message;
             if (message.startsWith('Could not retrieve case')){
               flash.to('search-error').error = message;

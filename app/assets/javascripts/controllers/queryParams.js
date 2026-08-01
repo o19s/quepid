@@ -47,9 +47,9 @@ angular.module('QuepidApp')
       $scope.createSearchEndpointLink = function(searchEndpointId) {
         return caseTryNavSvc.createSearchEndpointLink(searchEndpointId);
       };
-      
 
-	  $scope.validateSearchEngineUrl  = function() {
+
+      $scope.validateSearchEngineUrl = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){
           if ($scope.settings.searchEngine === 'es' || $scope.settings.searchEngine === 'os'){
             try {

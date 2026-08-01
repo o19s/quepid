@@ -179,12 +179,11 @@
             <p>
               <a ng-href="{{createSearchEndpointLink(settings.selectedTry.searchEndpointId)}}" target="_self">More</a>
             </p>
-            <p>
-              <div ng-show="showProxyRequiredWarning" class="alert alert-warning" style="margin-top: 15px;">
-                <strong>Protocol Mismatch:</strong> You have specified a search engine URL that is on a different protocol (<code>{{endpointProtocol}}</code>) than Quepid (<code>{{quepidProtocol}}</code>).
-                <br/>
-                Please enable <strong>Proxy Requests</strong> on your search endpoint settings to comply with browser security constraints.
-              </div>
+            <div ng-show="showProxyRequiredWarning" class="alert alert-warning" style="margin-top: 15px;">
+              <strong>Protocol Mismatch:</strong> You have specified a search engine URL that is on a different protocol (<code>{{endpointProtocol}}</code>) than Quepid (<code>{{quepidProtocol}}</code>).
+              <br/>
+              Please enable <strong>Proxy Requests</strong> on your search endpoint settings to comply with browser security constraints.
+            </div>
           </div>
         </div>
         <!-- end of Search Endpoint -->
