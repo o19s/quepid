@@ -1,4 +1,4 @@
-FROM ruby:4.0.5-trixie
+FROM ruby:4.0.6-trixie
 
 LABEL maintainer="quepid_admin@opensourceconnections.com"
 
