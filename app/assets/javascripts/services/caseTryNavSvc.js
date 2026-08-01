@@ -78,9 +78,11 @@ angular.module('QuepidApp')
 
 			this.specifySearchProxyRequired = function (searchUrl) {
 				if (searchUrl) {
+					// Browsers only block mixed content when the page is HTTPS and the
+					// request target is HTTP; an HTTP page calling an HTTPS endpoint is fine.
 					var quepidStartsWithHttps = $location.protocol() === 'https';
 					var searchEngineStartsWithHttps = searchUrl.startsWith('https');
-					return (quepidStartsWithHttps !== searchEngineStartsWithHttps);
+					return quepidStartsWithHttps && !searchEngineStartsWithHttps;
 				} else {
 					return false;
 				}

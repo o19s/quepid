@@ -297,10 +297,6 @@ angular.module('QuepidApp')
 				if (typeof $scope.checkProxyRequirement === 'function') {
 					$scope.checkProxyRequirement();
 				}
-
-				if ($scope.pendingWizardSettings.searchUrl) {
-
-				}
 			}
 
 			function linkToSearchEndpointUrl() {
@@ -534,6 +530,10 @@ angular.module('QuepidApp')
 			$scope.checkProxyRequirement = function () {
 
 				if (!$scope.pendingWizardSettings || !$scope.pendingWizardSettings.searchUrl) {
+					$scope.showProxyRequiredWarning = false;
+					$scope.showExistingProxyWarning = false;
+					$scope.quepidProtocol = null;
+					$scope.endpointProtocol = null;
 					return;
 				}
 

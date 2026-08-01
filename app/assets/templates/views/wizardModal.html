@@ -76,7 +76,7 @@
 						</div>
 
 						<br>
-						<p ng-if="!pendingWizardSettings.searchEngine === 'static'">
+						<p ng-if="pendingWizardSettings.searchEngine !== 'static'">
 							Paste the URL to the endpoint of your search engine for Quepid to search (you can also just
 							experiment with the demo servers):
 						</p>
@@ -102,7 +102,7 @@
 									You must change from JSONP to another API method when proxying.
 								</span>
 							</div>
-							<div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">
+							<div ng-if="urlInvalid && !showProxyRequiredWarning && !showExistingProxyWarning" class="alert alert-danger">
 								Sorry, we're not getting any search results from your {{
 								pendingWizardSettings.searchEngine | searchEngineName }}.
 
@@ -454,7 +454,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
 								title="Manually validates Quepid can get retrieve search results from your URL before continuing"
 								class="pull-right"><button type="button" class="btn btn-link btn-sm"
 									ng-click="validate(true)"
-									ng-disabled="pendingWizardSettings.searchEndpointId == null || showProxyRequiredWarning">ping
+									ng-disabled="pendingWizardSettings.searchEndpointId == null || showExistingProxyWarning || showProxyRequiredWarning">ping
 									it</button></small>
 							<p class="help-block tip" ng-if="hasStaticEndpoints">
 								FYI: your existing Static File endpoints are NOT sharable across cases.

@@ -90,25 +90,18 @@ describe('Controller: QueryparamsCtrl', function () {
     expect(scope.settings.selectedTry.curatorVars[0].value).toEqual(10);
     expect(scope.settings.selectedTry.curatorVars[0].inQueryParams).toBeTruthy();
   });
-  it('detects protocol mismatch and requires proxy', function() {
+  it('does not require a proxy when Quepid (http) calls an https search endpoint', function() {
     $httpBackend.expectGET('api/cases/0/search_endpoints').respond(200, {});
-    
+
     expect(scope.showProxyRequiredWarning).toBeFalsy();
-    
-    // Simulate Quepid on http (default test env) and search endpoint on https
+
+    // Quepid running on http (default test env) calling an https search endpoint isn't
+    // mixed content -- browsers only block http calls made from an https page.
     scope.settings.searchUrl = 'https://example.com';
     scope.settings.proxyRequests = false;
-    
+
     scope.qp.toggleTab();
-    
-    expect(scope.showProxyRequiredWarning).toBeTruthy();
-    expect(scope.quepidProtocol).toEqual('http');
-    expect(scope.endpointProtocol).toEqual('https');
-    
-    // Enabling proxy requests resolves the requirement
-    scope.settings.proxyRequests = true;
-    scope.validateSearchEngineUrl();
-    
+
     expect(scope.showProxyRequiredWarning).toBeFalsy();
   });
 
