@@ -24,10 +24,7 @@ pin '@popperjs/core', to: 'popper.min.js' # @2.11.8
 
 # CodeMirror 6 packages
 pin 'modules/editor', to: 'modules/editor.js'
-pin 'codemirror' # @6.0.2
-pin '@codemirror/commands', to: '@codemirror--commands.js' # @6.10.4
 pin '@codemirror/lint', to: '@codemirror--lint.js' # @6.9.7
-pin '@codemirror/search', to: '@codemirror--search.js' # @6.7.1
 pin '@codemirror/lang-json', to: '@codemirror--lang-json.js' # @6.0.2
 pin '@codemirror/language', to: '@codemirror--language.js' # @6.12.4
 pin '@codemirror/state', to: '@codemirror--state.js' # @6.7.1
