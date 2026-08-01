@@ -88,3 +88,4 @@ claude-swarm.log
 
 /node_modules
 *.patch
+/.playwright-mcp

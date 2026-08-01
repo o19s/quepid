@@ -5,6 +5,7 @@
 Big upgrade of the core application stack, moving Ruby from 3.4.8 to 4.0.1, Rails from 8.1.1 to 8.1.2, and the Debian base image from Bookworm to Trixie, along with Bundler and numerous gem/Node package updates.
 
 * **splainer-search 3.0.0:** The `splainer-search` npm package is now a vanilla JavaScript (ESM) library rather than an AngularJS module. The Angular app still depends on the `o19s.splainer-search` module name; `app/javascript/splainer_search_adapter.js` wires the new `createWiredServices` API from the package to that module so existing injectors and services keep working.
+* **omniauth-keycloak switched to the `ifad` fork:** The original `ccrockett/omniauth-keycloak` gem was unmaintained and pinned `omniauth-oauth2` below 1.9, blocking that upgrade. We've moved to the actively-maintained [ifad/omniauth-keycloak](https://github.com/ifad/omniauth-keycloak) fork (via a git source in the Gemfile, since it isn't published to RubyGems), which lets `omniauth-oauth2` move to 1.9.0. This fork also renames the strategy from `KeycloakOpenId`/`keycloak_openid` to `Keycloak`/`keycloak`, so the Keycloak sign-in route changed from `/users/auth/keycloakopenid` to `/users/auth/keycloak` — no action needed for users, but worth knowing if you have anything hardcoded against the old path.
 
 ## 8.5.0 -- 2026-01-14
 

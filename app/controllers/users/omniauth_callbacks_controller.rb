@@ -2,9 +2,9 @@
 
 module Users
   class OmniauthCallbacksController < Devise::OmniauthCallbacksController
-    skip_before_action :require_login, only: [ :keycloakopenid, :google_oauth2, :failure, :openid_connect ]
+    skip_before_action :require_login, only: [ :keycloak, :google_oauth2, :failure, :openid_connect ]
 
-    def keycloakopenid
+    def keycloak
       @user = create_user_from_omniauth(request.env['omniauth.auth'])
 
       @user.errors.add(:base, "Can't log in a locked user." ) if @user.locked
@@ -13,7 +13,7 @@ module Users
 
         redirect_to root_path
       else
-        session['devise.keycloakopenid_data'] = request.env['omniauth.auth']
+        session['devise.keycloak_data'] = request.env['omniauth.auth']
         redirect_to new_session
       end
     end
