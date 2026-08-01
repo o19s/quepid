@@ -90,7 +90,7 @@ services:
       OLLAMA_HOST: "0.0.0.0:31434"
 
   nginx:
-    image: nginx:1.29.3-alpine-slim
+    image: nginx:1.31.3-alpine-slim
     container_name: quepid_nginx
     ports:
       - "443:8443"
