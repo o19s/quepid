@@ -1,6 +1,2695 @@
-// @codemirror/language@6.12.3 downloaded from https://ga.jspm.io/npm:@codemirror/language@6.12.3/dist/index.js
+// @codemirror/language@6.12.4 downloaded from https://cdn.jsdelivr.net/npm/@codemirror/language@6.12.4/dist/index.js
 
-import{NodeProp as e,Tree as t,IterMode as n,TreeFragment as r,Parser as i,NodeType as a,NodeSet as o}from"@lezer/common";import{Facet as s,EditorState as c,StateEffect as l,StateField as u,countColumn as d,RangeSet as f,combineConfig as ee,RangeSetBuilder as p,Prec as m}from"@codemirror/state";import{ViewPlugin as h,logException as te,EditorView as g,Decoration as _,WidgetType as v,GutterMarker as ne,gutter as re,Direction as y}from"@codemirror/view";import{tagHighlighter as ie,highlightTree as ae,tags as b,styleTags as oe}from"@lezer/highlight";import{StyleModule as se}from"style-mod";var ce;const x=/* @__PURE__ */ new e;function S(e){return s.define({combine:e?t=>t.concat(e):void 0})}const le=/* @__PURE__ */ new e;class Language{constructor(e,t,n=[],r=``){this.data=e,this.name=r,c.prototype.hasOwnProperty(`tree`)||Object.defineProperty(c.prototype,`tree`,{get(){return C(this)}}),this.parser=t,this.extension=[E.of(this),c.languageData.of((e,t,n)=>{let r=ue(e,t,n),i=r.type.prop(x);if(!i)return[];let a=e.facet(i),o=r.type.prop(le);if(o){let i=r.resolve(t-r.from,n);for(let t of o)if(t.test(i,e)){let n=e.facet(t.facet);return t.type==`replace`?n:n.concat(a)}}return a})].concat(n)}isActiveAt(e,t,n=-1){return ue(e,t,n).type.prop(x)==this.data}findRegions(n){let r=n.facet(E);if(r?.data==this.data)return[{from:0,to:n.doc.length}];if(!r||!r.allowsNesting)return[];let i=[],a=(n,r)=>{if(n.prop(x)==this.data){i.push({from:r,to:r+n.length});return}let o=n.prop(e.mounted);if(o){if(o.tree.prop(x)==this.data){if(o.overlay)for(let e of o.overlay)i.push({from:e.from+r,to:e.to+r});else i.push({from:r,to:r+n.length});return}else if(o.overlay){let e=i.length;if(a(o.tree,o.overlay[0].from+r),i.length>e)return}}for(let e=0;e<n.children.length;e++){let i=n.children[e];i instanceof t&&a(i,n.positions[e]+r)}};return a(C(n),0),i}get allowsNesting(){return!0}}Language.setState=/* @__PURE__ */ l.define();function ue(e,t,r){let i=e.facet(E),a=C(e).topNode;if(!i||i.allowsNesting)for(let e=a;e;e=e.enter(t,r,n.ExcludeBuffers|n.EnterBracketed))e.type.isTop&&(a=e);return a}class LRLanguage extends Language{constructor(e,t,n){super(e,t,[],n),this.parser=t}static define(e){let t=S(e.languageData);return new LRLanguage(t,e.parser.configure({props:[x.add(e=>e.isTop?t:void 0)]}),e.name)}configure(e,t){return new LRLanguage(this.data,this.parser.configure(e),t||this.name)}get allowsNesting(){return this.parser.hasWrappers()}}function C(e){let n=e.field(Language.state,!1);return n?n.tree:t.empty}function de(e,t,n=50){var r;let i=(r=e.field(Language.state,!1))?.context;if(!i)return null;let a=i.viewport;i.updateViewport({from:0,to:t});let o=i.isDone(t)||i.work(n,t)?i.tree:null;return i.updateViewport(a),o}function fe(e,t=e.doc.length){var n;return(n=e.field(Language.state,!1))?.context.isDone(t)||!1}function pe(e,t=e.viewport.to,n=100){let r=de(e.state,t,n);return r!=C(e.state)&&e.dispatch({}),!!r}function me(e){var t;return(t=e.plugin(_e))?.isWorking()||!1}class DocInput{constructor(e){this.doc=e,this.cursorPos=0,this.string=``,this.cursor=e.iter()}get length(){return this.doc.length}syncTo(e){return this.string=this.cursor.next(e-this.cursorPos).value,this.cursorPos=e+this.string.length,this.cursorPos-this.string.length}chunk(e){return this.syncTo(e),this.string}get lineChunks(){return!0}read(e,t){let n=this.cursorPos-this.string.length;return e<n||t>=this.cursorPos?this.doc.sliceString(e,t):this.string.slice(e-n,t-n)}}let w=null;class ParseContext{constructor(e,t,n=[],r,i,a,o,s){this.parser=e,this.state=t,this.fragments=n,this.tree=r,this.treeLen=i,this.viewport=a,this.skipped=o,this.scheduleOn=s,this.parse=null,this.tempSkipped=[]}static create(e,n,r){return new ParseContext(e,n,[],t.empty,0,r,[],null)}startParse(){return this.parser.startParse(new DocInput(this.state.doc),this.fragments)}work(e,n){return n!=null&&n>=this.state.doc.length&&(n=void 0),this.tree!=t.empty&&this.isDone(n??this.state.doc.length)?(this.takeTree(),!0):this.withContext(()=>{var t;if(typeof e==`number`){let t=Date.now()+e;e=()=>Date.now()>t}for(this.parse||=this.startParse(),n!=null&&(this.parse.stoppedAt==null||this.parse.stoppedAt>n)&&n<this.state.doc.length&&this.parse.stopAt(n);;){let i=this.parse.advance();if(i)if(this.fragments=this.withoutTempSkipped(r.addTree(i,this.fragments,this.parse.stoppedAt!=null)),this.treeLen=(t=this.parse.stoppedAt)??this.state.doc.length,this.tree=i,this.parse=null,this.treeLen<(n??this.state.doc.length))this.parse=this.startParse();else return!0;if(e())return!1}})}takeTree(){let e,t;this.parse&&(e=this.parse.parsedPos)>=this.treeLen&&((this.parse.stoppedAt==null||this.parse.stoppedAt>e)&&this.parse.stopAt(e),this.withContext(()=>{for(;!(t=this.parse.advance()););}),this.treeLen=e,this.tree=t,this.fragments=this.withoutTempSkipped(r.addTree(this.tree,this.fragments,!0)),this.parse=null)}withContext(e){let t=w;w=this;try{return e()}finally{w=t}}withoutTempSkipped(e){for(let t;t=this.tempSkipped.pop();)e=he(e,t.from,t.to);return e}changes(e,n){let{fragments:i,tree:a,treeLen:o,viewport:s,skipped:c}=this;if(this.takeTree(),!e.empty){let n=[];if(e.iterChangedRanges((e,t,r,i)=>n.push({fromA:e,toA:t,fromB:r,toB:i})),i=r.applyChanges(i,n),a=t.empty,o=0,s={from:e.mapPos(s.from,-1),to:e.mapPos(s.to,1)},this.skipped.length){c=[];for(let t of this.skipped){let n=e.mapPos(t.from,1),r=e.mapPos(t.to,-1);n<r&&c.push({from:n,to:r})}}}return new ParseContext(this.parser,n,i,a,o,s,c,this.scheduleOn)}updateViewport(e){if(this.viewport.from==e.from&&this.viewport.to==e.to)return!1;this.viewport=e;let t=this.skipped.length;for(let t=0;t<this.skipped.length;t++){let{from:n,to:r}=this.skipped[t];n<e.to&&r>e.from&&(this.fragments=he(this.fragments,n,r),this.skipped.splice(t--,1))}return this.skipped.length>=t?!1:(this.reset(),!0)}reset(){this.parse&&=(this.takeTree(),null)}skipUntilInView(e,t){this.skipped.push({from:e,to:t})}static getSkippingParser(e){return new class extends i{createParse(n,r,i){let o=i[0].from,s=i[i.length-1].to;return{parsedPos:o,advance(){let n=w;if(n){for(let e of i)n.tempSkipped.push(e);e&&(n.scheduleOn=n.scheduleOn?Promise.all([n.scheduleOn,e]):e)}return this.parsedPos=s,new t(a.none,[],[],s-o)},stoppedAt:null,stopAt(){}}}}}isDone(e){e=Math.min(e,this.state.doc.length);let t=this.fragments;return this.treeLen>=e&&t.length&&t[0].from==0&&t[0].to>=e}static get(){return w}}function he(e,t,n){return r.applyChanges(e,[{fromA:t,toA:n,fromB:t,toB:n}])}class LanguageState{constructor(e){this.context=e,this.tree=e.tree}apply(e){if(!e.docChanged&&this.tree==this.context.tree)return this;let t=this.context.changes(e.changes,e.state),n=this.context.treeLen==e.startState.doc.length?void 0:Math.max(e.changes.mapPos(this.context.treeLen),t.viewport.to);return t.work(20,n)||t.takeTree(),new LanguageState(t)}static init(e){let t=Math.min(3e3,e.doc.length),n=ParseContext.create(e.facet(E).parser,e,{from:0,to:t});return n.work(20,t)||n.takeTree(),new LanguageState(n)}}Language.state=/* @__PURE__ */ u.define({create:LanguageState.init,update(e,t){for(let e of t.effects)if(e.is(Language.setState))return e.value;return t.startState.facet(E)==t.state.facet(E)?e.apply(t):LanguageState.init(t.state)}});let ge=e=>{let t=setTimeout(()=>e(),500);return()=>clearTimeout(t)};typeof requestIdleCallback<`u`&&(ge=e=>{let t=-1,n=setTimeout(()=>{t=requestIdleCallback(e,{timeout:400})},100);return()=>t<0?clearTimeout(n):cancelIdleCallback(t)});const T=typeof navigator<`u`&&(ce=navigator.scheduling)?.isInputPending?()=>navigator.scheduling.isInputPending():null,_e=/* @__PURE__ */ h.fromClass(class ParseWorker{constructor(e){this.view=e,this.working=null,this.workScheduled=0,this.chunkEnd=-1,this.chunkBudget=-1,this.work=this.work.bind(this),this.scheduleWork()}update(e){let t=this.view.state.field(Language.state).context;(t.updateViewport(e.view.viewport)||this.view.viewport.to>t.treeLen)&&this.scheduleWork(),(e.docChanged||e.selectionSet)&&(this.view.hasFocus&&(this.chunkBudget+=50),this.scheduleWork()),this.checkAsyncSchedule(t)}scheduleWork(){if(this.working)return;let{state:e}=this.view,t=e.field(Language.state);(t.tree!=t.context.tree||!t.context.isDone(e.doc.length))&&(this.working=ge(this.work))}work(e){this.working=null;let t=Date.now();if(this.chunkEnd<t&&(this.chunkEnd<0||this.view.hasFocus)&&(this.chunkEnd=t+3e4,this.chunkBudget=3e3),this.chunkBudget<=0)return;let{state:n,viewport:{to:r}}=this.view,i=n.field(Language.state);if(i.tree==i.context.tree&&i.context.isDone(r+1e5))return;let a=Date.now()+Math.min(this.chunkBudget,100,e&&!T?Math.max(25,e.timeRemaining()-5):1e9),o=i.context.treeLen<r&&n.doc.length>r+1e3,s=i.context.work(()=>T&&T()||Date.now()>a,r+(o?0:1e5));this.chunkBudget-=Date.now()-t,(s||this.chunkBudget<=0)&&(i.context.takeTree(),this.view.dispatch({effects:Language.setState.of(new LanguageState(i.context))})),this.chunkBudget>0&&!(s&&!o)&&this.scheduleWork(),this.checkAsyncSchedule(i.context)}checkAsyncSchedule(e){e.scheduleOn&&=(this.workScheduled++,e.scheduleOn.then(()=>this.scheduleWork()).catch(e=>te(this.view.state,e)).then(()=>this.workScheduled--),null)}destroy(){this.working&&this.working()}isWorking(){return!!(this.working||this.workScheduled>0)}},{eventHandlers:{focus(){this.scheduleWork()}}}),E=/* @__PURE__ */ s.define({combine(e){return e.length?e[0]:null},enables:e=>[Language.state,_e,g.contentAttributes.compute([e],t=>{let n=t.facet(e);return n&&n.name?{"data-language":n.name}:{}})]});class LanguageSupport{constructor(e,t=[]){this.language=e,this.support=t,this.extension=[e,t]}}class LanguageDescription{constructor(e,t,n,r,i,a=void 0){this.name=e,this.alias=t,this.extensions=n,this.filename=r,this.loadFunc=i,this.support=a,this.loading=null}load(){return this.loading||=this.loadFunc().then(e=>this.support=e,e=>{throw this.loading=null,e})}static of(e){let{load:t,support:n}=e;if(!t){if(!n)throw RangeError(`Must pass either 'load' or 'support' to LanguageDescription.of`);t=()=>Promise.resolve(n)}return new LanguageDescription(e.name,(e.alias||[]).concat(e.name).map(e=>e.toLowerCase()),e.extensions||[],e.filename,t,n)}static matchFilename(e,t){for(let n of e)if(n.filename&&n.filename.test(t))return n;let n=/\.([^.]+)$/.exec(t);if(n){for(let t of e)if(t.extensions.indexOf(n[1])>-1)return t}return null}static matchLanguageName(e,t,n=!0){t=t.toLowerCase();for(let n of e)if(n.alias.some(e=>e==t))return n;if(n)for(let n of e)for(let e of n.alias){let r=t.indexOf(e);if(r>-1&&(e.length>2||!/\w/.test(t[r-1])&&!/\w/.test(t[r+e.length])))return n}return null}}const ve=/* @__PURE__ */ s.define(),D=/* @__PURE__ */ s.define({combine:e=>{if(!e.length)return`  `;let t=e[0];if(!t||/\S/.test(t)||Array.from(t).some(e=>e!=t[0]))throw Error(`Invalid indent unit: `+JSON.stringify(e[0]));return t}});function O(e){let t=e.facet(D);return t.charCodeAt(0)==9?e.tabSize*t.length:t.length}function k(e,t){let n=``,r=e.tabSize,i=e.facet(D)[0];if(i==`	`){for(;t>=r;)n+=`	`,t-=r;i=` `}for(let e=0;e<t;e++)n+=i;return n}function A(e,t){e instanceof c&&(e=new IndentContext(e));for(let n of e.state.facet(ve)){let r=n(e,t);if(r!==void 0)return r}let n=C(e.state);return n.length>=t?be(e,n,t):null}function ye(e,t,n){let r=Object.create(null),i=new IndentContext(e,{overrideIndentation:e=>{var t;return(t=r[e])??-1}}),a=[];for(let o=t;o<=n;){let t=e.doc.lineAt(o);o=t.to+1;let n=A(i,t.from);if(n==null)continue;/\S/.test(t.text)||(n=0);let s=/^\s*/.exec(t.text)[0],c=k(e,n);s!=c&&(r[t.from]=n,a.push({from:t.from,to:t.from+s.length,insert:c}))}return e.changes(a)}class IndentContext{constructor(e,t={}){this.state=e,this.options=t,this.unit=O(e)}lineAt(e,t=1){let n=this.state.doc.lineAt(e),{simulateBreak:r,simulateDoubleBreak:i}=this.options;return r!=null&&r>=n.from&&r<=n.to?i&&r==e?{text:``,from:e}:(t<0?r<e:r<=e)?{text:n.text.slice(r-n.from),from:r}:{text:n.text.slice(0,r-n.from),from:n.from}:n}textAfterPos(e,t=1){if(this.options.simulateDoubleBreak&&e==this.options.simulateBreak)return``;let{text:n,from:r}=this.lineAt(e,t);return n.slice(e-r,Math.min(n.length,e+100-r))}column(e,t=1){let{text:n,from:r}=this.lineAt(e,t),i=this.countColumn(n,e-r),a=this.options.overrideIndentation?this.options.overrideIndentation(r):-1;return a>-1&&(i+=a-this.countColumn(n,n.search(/\S|$/))),i}countColumn(e,t=e.length){return d(e,this.state.tabSize,t)}lineIndent(e,t=1){let{text:n,from:r}=this.lineAt(e,t),i=this.options.overrideIndentation;if(i){let e=i(r);if(e>-1)return e}return this.countColumn(n,n.search(/\S|$/))}get simulatedBreak(){return this.options.simulateBreak||null}}const j=/* @__PURE__ */ new e;function be(e,t,n){let r=t.resolveStack(n),i=t.resolveInner(n,-1).resolve(n,0).enterUnfinishedNodesBefore(n);if(i!=r.node){let e=[];for(let t=i;t&&!(t.from<r.node.from||t.to>r.node.to||t.from==r.node.from&&t.type==r.node.type);t=t.parent)e.push(t);for(let t=e.length-1;t>=0;t--)r={node:e[t],next:r}}return xe(r,e,n)}function xe(e,t,n){for(let r=e;r;r=r.next){let e=Ce(r.node);if(e)return e(TreeIndentContext.create(t,n,r))}return 0}function Se(e){return e.pos==e.options.simulateBreak&&e.options.simulateDoubleBreak}function Ce(t){let n=t.type.prop(j);if(n)return n;let r=t.firstChild,i;if(r&&(i=r.type.prop(e.closedBy))){let e=t.lastChild,n=e&&i.indexOf(e.name)>-1;return t=>Oe(t,!0,1,void 0,n&&!Se(t)?e.from:void 0)}return t.parent==null?we:null}function we(){return 0}class TreeIndentContext extends IndentContext{constructor(e,t,n){super(e.state,e.options),this.base=e,this.pos=t,this.context=n}get node(){return this.context.node}static create(e,t,n){return new TreeIndentContext(e,t,n)}get textAfter(){return this.textAfterPos(this.pos)}get baseIndent(){return this.baseIndentFor(this.node)}baseIndentFor(e){let t=this.state.doc.lineAt(e.from);for(;;){let n=e.resolve(t.from);for(;n.parent&&n.parent.from==n.from;)n=n.parent;if(Te(n,e))break;t=this.state.doc.lineAt(n.from)}return this.lineIndent(t.from)}continue(){return xe(this.context.next,this.base,this.pos)}}function Te(e,t){for(let n=t;n;n=n.parent)if(e==n)return!0;return!1}function Ee(e){let t=e.node,n=t.childAfter(t.from),r=t.lastChild;if(!n)return null;let i=e.options.simulateBreak,a=e.state.doc.lineAt(n.from),o=i==null||i<=a.from?a.to:Math.min(a.to,i);for(let e=n.to;;){let i=t.childAfter(e);if(!i||i==r)return null;if(!i.type.isSkipped){if(i.from>=o)return null;let e=/^ */.exec(a.text.slice(n.to-a.from))[0].length;return{from:n.from,to:n.to+e}}e=i.to}}function De({closing:e,align:t=!0,units:n=1}){return r=>Oe(r,t,n,e)}function Oe(e,t,n,r,i){let a=e.textAfter,o=a.match(/^\s*/)[0].length,s=r&&a.slice(o,o+r.length)==r||i==e.pos+o,c=t?Ee(e):null;return c?s?e.column(c.from):e.column(c.to):e.baseIndent+(s?0:e.unit*n)}const ke=e=>e.baseIndent;function Ae({except:e,units:t=1}={}){return n=>{let r=e&&e.test(n.textAfter);return n.baseIndent+(r?0:t*n.unit)}}const je=200;function Me(){return c.transactionFilter.of(e=>{if(!e.docChanged||!e.isUserEvent(`input.type`)&&!e.isUserEvent(`input.complete`))return e;let t=e.startState.languageDataAt(`indentOnInput`,e.startState.selection.main.head);if(!t.length)return e;let n=e.newDoc,{head:r}=e.newSelection.main,i=n.lineAt(r);if(r>i.from+200)return e;let a=n.sliceString(i.from,r);if(!t.some(e=>e.test(a)))return e;let{state:o}=e,s=-1,c=[];for(let{head:e}of o.selection.ranges){let t=o.doc.lineAt(e);if(t.from==s)continue;s=t.from;let n=A(o,t.from);if(n==null)continue;let r=/^\s*/.exec(t.text)[0],i=k(o,n);r!=i&&c.push({from:t.from,to:t.from+r.length,insert:i})}return c.length?[e,{changes:c,sequential:!0}]:e})}const Ne=/* @__PURE__ */ s.define(),Pe=/* @__PURE__ */ new e;function Fe(e){let t=e.firstChild,n=e.lastChild;return t&&t.to<n.from?{from:t.to,to:n.type.isError?e.to:n.from}:null}function Ie(e,t,n){let r=C(e);if(r.length<n)return null;let i=r.resolveStack(n,1),a=null;for(let o=i;o;o=o.next){let i=o.node;if(i.to<=n||i.from>n)continue;if(a&&i.from<t)break;let s=i.type.prop(Pe);if(s&&(i.to<r.length-50||r.length==e.doc.length||!Le(i))){let r=s(i,e);r&&r.from<=n&&r.from>=t&&r.to>n&&(a=r)}}return a}function Le(e){let t=e.lastChild;return t&&t.to==e.to&&t.type.isError}function M(e,t,n){for(let r of e.facet(Ne)){let i=r(e,t,n);if(i)return i}return Ie(e,t,n)}function Re(e,t){let n=t.mapPos(e.from,1),r=t.mapPos(e.to,-1);return n>=r?void 0:{from:n,to:r}}const N=/* @__PURE__ */ l.define({map:Re}),P=/* @__PURE__ */ l.define({map:Re});function F(e){let t=[];for(let{head:n}of e.state.selection.ranges)t.some(e=>e.from<=n&&e.to>=n)||t.push(e.lineBlockAt(n));return t}const I=/* @__PURE__ */ u.define({create(){return _.none},update(e,t){t.isUserEvent(`delete`)&&t.changes.iterChangedRanges((t,n)=>e=L(e,t,n)),e=e.map(t.changes);for(let n of t.effects)if(n.is(N)&&!Be(e,n.value.from,n.value.to)){let{preparePlaceholder:r}=t.state.facet(V),i=r?_.replace({widget:new PreparedFoldWidget(r(t.state,n.value))}):Xe;e=e.update({add:[i.range(n.value.from,n.value.to)]})}else n.is(P)&&(e=e.update({filter:(e,t)=>n.value.from!=e||n.value.to!=t,filterFrom:n.value.from,filterTo:n.value.to}));return t.selection&&(e=L(e,t.selection.main.head)),e},provide:e=>g.decorations.from(e),toJSON(e,t){let n=[];return e.between(0,t.doc.length,(e,t)=>{n.push(e,t)}),n},fromJSON(e){if(!Array.isArray(e)||e.length%2)throw RangeError(`Invalid JSON for fold state`);let t=[];for(let n=0;n<e.length;){let r=e[n++],i=e[n++];if(typeof r!=`number`||typeof i!=`number`)throw RangeError(`Invalid JSON for fold state`);t.push(Xe.range(r,i))}return _.set(t,!0)}});function L(e,t,n=t){let r=!1;return e.between(t,n,(e,i)=>{e<n&&i>t&&(r=!0)}),r?e.update({filterFrom:t,filterTo:n,filter:(e,r)=>e>=n||r<=t}):e}function ze(e){return e.field(I,!1)||f.empty}function R(e,t,n){var r;let i=null;return(r=e.field(I,!1))?.between(t,n,(e,t)=>{(!i||i.from>e)&&(i={from:e,to:t})}),i}function Be(e,t,n){let r=!1;return e.between(t,t,(e,i)=>{e==t&&i==n&&(r=!0)}),r}function z(e,t){return e.field(I,!1)?t:t.concat(l.appendConfig.of(H()))}const Ve=e=>{for(let t of F(e)){let n=M(e.state,t.from,t.to);if(n)return e.dispatch({effects:z(e.state,[N.of(n),B(e,n)])}),!0}return!1},He=e=>{if(!e.state.field(I,!1))return!1;let t=[];for(let n of F(e)){let r=R(e.state,n.from,n.to);r&&t.push(P.of(r),B(e,r,!1))}return t.length&&e.dispatch({effects:t}),t.length>0};function B(e,t,n=!0){let r=e.state.doc.lineAt(t.from).number,i=e.state.doc.lineAt(t.to).number;return g.announce.of(`${e.state.phrase(n?`Folded lines`:`Unfolded lines`)} ${r} ${e.state.phrase(`to`)} ${i}.`)}const Ue=e=>{let{state:t}=e,n=[];for(let r=0;r<t.doc.length;){let i=e.lineBlockAt(r),a=M(t,i.from,i.to);a&&n.push(N.of(a)),r=(a?e.lineBlockAt(a.to):i).to+1}return n.length&&e.dispatch({effects:z(e.state,n)}),!!n.length},We=e=>{let t=e.state.field(I,!1);if(!t||!t.size)return!1;let n=[];return t.between(0,e.state.doc.length,(e,t)=>{n.push(P.of({from:e,to:t}))}),e.dispatch({effects:n}),!0};function Ge(e,t){for(let n=t;;){let r=M(e.state,n.from,n.to);if(r&&r.to>t.from)return r;if(!n.from)return null;n=e.lineBlockAt(n.from-1)}}const Ke=e=>{let t=[];for(let n of F(e)){let r=R(e.state,n.from,n.to);if(r)t.push(P.of(r),B(e,r,!1));else{let r=Ge(e,n);r&&t.push(N.of(r),B(e,r))}}return t.length>0&&e.dispatch({effects:z(e.state,t)}),!!t.length},qe=[{key:`Ctrl-Shift-[`,mac:`Cmd-Alt-[`,run:Ve},{key:`Ctrl-Shift-]`,mac:`Cmd-Alt-]`,run:He},{key:`Ctrl-Alt-[`,run:Ue},{key:`Ctrl-Alt-]`,run:We}],Je={placeholderDOM:null,preparePlaceholder:null,placeholderText:`…`},V=/* @__PURE__ */ s.define({combine(e){return ee(e,Je)}});function H(e){let t=[I,$e];return e&&t.push(V.of(e)),t}function Ye(e,t){let{state:n}=e,r=n.facet(V),i=t=>{let n=e.lineBlockAt(e.posAtDOM(t.target)),r=R(e.state,n.from,n.to);r&&e.dispatch({effects:P.of(r)}),t.preventDefault()};if(r.placeholderDOM)return r.placeholderDOM(e,i,t);let a=document.createElement(`span`);return a.textContent=r.placeholderText,a.setAttribute(`aria-label`,n.phrase(`folded code`)),a.title=n.phrase(`unfold`),a.className=`cm-foldPlaceholder`,a.onclick=i,a}const Xe=/* @__PURE__ */ _.replace({widget:/* @__PURE__ */ new class extends v{toDOM(e){return Ye(e,null)}}});class PreparedFoldWidget extends v{constructor(e){super(),this.value=e}eq(e){return this.value==e.value}toDOM(e){return Ye(e,this.value)}}const Ze={openText:`⌄`,closedText:`›`,markerDOM:null,domEventHandlers:{},foldingChanged:()=>!1};class FoldMarker extends ne{constructor(e,t){super(),this.config=e,this.open=t}eq(e){return this.config==e.config&&this.open==e.open}toDOM(e){if(this.config.markerDOM)return this.config.markerDOM(this.open);let t=document.createElement(`span`);return t.textContent=this.open?this.config.openText:this.config.closedText,t.title=e.state.phrase(this.open?`Fold line`:`Unfold line`),t}}function Qe(e={}){let t={...Ze,...e},n=new FoldMarker(t,!0),r=new FoldMarker(t,!1),i=h.fromClass(class{constructor(e){this.from=e.viewport.from,this.markers=this.buildMarkers(e)}update(e){(e.docChanged||e.viewportChanged||e.startState.facet(E)!=e.state.facet(E)||e.startState.field(I,!1)!=e.state.field(I,!1)||C(e.startState)!=C(e.state)||t.foldingChanged(e))&&(this.markers=this.buildMarkers(e.view))}buildMarkers(e){let t=new p;for(let i of e.viewportLineBlocks){let a=R(e.state,i.from,i.to)?r:M(e.state,i.from,i.to)?n:null;a&&t.add(i.from,i.from,a)}return t.finish()}}),{domEventHandlers:a}=t;return[i,re({class:`cm-foldGutter`,markers(e){var t;return(t=e.plugin(i))?.markers||f.empty},initialSpacer(){return new FoldMarker(t,!1)},domEventHandlers:{...a,click:(e,t,n)=>{if(a.click&&a.click(e,t,n))return!0;let r=R(e.state,t.from,t.to);if(r)return e.dispatch({effects:P.of(r)}),!0;let i=M(e.state,t.from,t.to);return i?(e.dispatch({effects:N.of(i)}),!0):!1}}}),H()]}const $e=/* @__PURE__ */ g.baseTheme({".cm-foldPlaceholder":{backgroundColor:`#eee`,border:`1px solid #ddd`,color:`#888`,borderRadius:`.2em`,margin:`0 1px`,padding:`0 1px`,cursor:`pointer`},".cm-foldGutter span":{padding:`0 1px`,cursor:`pointer`}});class HighlightStyle{constructor(e,t){this.specs=e;let n;function r(e){let t=se.newName();return(n||=Object.create(null))[`.`+t]=e,t}let i=typeof t.all==`string`?t.all:t.all?r(t.all):void 0,a=t.scope;this.scope=a instanceof Language?e=>e.prop(x)==a.data:a?e=>e==a:void 0,this.style=ie(e.map(e=>({tag:e.tag,class:e.class||r(Object.assign({},e,{tag:null}))})),{all:i}).style,this.module=n?new se(n):null,this.themeType=t.themeType}static define(e,t){return new HighlightStyle(e,t||{})}}const U=/* @__PURE__ */ s.define(),et=/* @__PURE__ */ s.define({combine(e){return e.length?[e[0]]:null}});function W(e){let t=e.facet(U);return t.length?t:e.facet(et)}function tt(e,t){let n=[rt],r;return e instanceof HighlightStyle&&(e.module&&n.push(g.styleModule.of(e.module)),r=e.themeType),t?.fallback?n.push(et.of(e)):r?n.push(U.computeN([g.darkTheme],t=>t.facet(g.darkTheme)==(r==`dark`)?[e]:[])):n.push(U.of(e)),n}function nt(e,t,n){let r=W(e),i=null;if(r){for(let e of r)if(!e.scope||n&&e.scope(n)){let n=e.style(t);n&&(i=i?i+` `+n:n)}}return i}class TreeHighlighter{constructor(e){this.markCache=Object.create(null),this.tree=C(e.state),this.decorations=this.buildDeco(e,W(e.state)),this.decoratedTo=e.viewport.to}update(e){let t=C(e.state),n=W(e.state),r=n!=W(e.startState),{viewport:i}=e.view,a=e.changes.mapPos(this.decoratedTo,1);t.length<i.to&&!r&&t.type==this.tree.type&&a>=i.to?(this.decorations=this.decorations.map(e.changes),this.decoratedTo=a):(t!=this.tree||e.viewportChanged||r)&&(this.tree=t,this.decorations=this.buildDeco(e.view,n),this.decoratedTo=i.to)}buildDeco(e,t){if(!t||!this.tree.length)return _.none;let n=new p;for(let{from:r,to:i}of e.visibleRanges)ae(this.tree,t,(e,t,r)=>{n.add(e,t,this.markCache[r]||(this.markCache[r]=_.mark({class:r})))},r,i);return n.finish()}}const rt=/* @__PURE__ */ m.high(/* @__PURE__ */ h.fromClass(TreeHighlighter,{decorations:e=>e.decorations})),it=/* @__PURE__ */ HighlightStyle.define([{tag:b.meta,color:`#404740`},{tag:b.link,textDecoration:`underline`},{tag:b.heading,textDecoration:`underline`,fontWeight:`bold`},{tag:b.emphasis,fontStyle:`italic`},{tag:b.strong,fontWeight:`bold`},{tag:b.strikethrough,textDecoration:`line-through`},{tag:b.keyword,color:`#708`},{tag:[b.atom,b.bool,b.url,b.contentSeparator,b.labelName],color:`#219`},{tag:[b.literal,b.inserted],color:`#164`},{tag:[b.string,b.deleted],color:`#a11`},{tag:[b.regexp,b.escape,/* @__PURE__ */ b.special(b.string)],color:`#e40`},{tag:/* @__PURE__ */ b.definition(b.variableName),color:`#00f`},{tag:/* @__PURE__ */ b.local(b.variableName),color:`#30a`},{tag:[b.typeName,b.namespace],color:`#085`},{tag:b.className,color:`#167`},{tag:[/* @__PURE__ */ b.special(b.variableName),b.macroName],color:`#256`},{tag:/* @__PURE__ */ b.definition(b.propertyName),color:`#00c`},{tag:b.comment,color:`#940`},{tag:b.invalid,color:`#f00`}]),at=/* @__PURE__ */ g.baseTheme({"&.cm-focused .cm-matchingBracket":{backgroundColor:`#328c8252`},"&.cm-focused .cm-nonmatchingBracket":{backgroundColor:`#bb555544`}}),ot=1e4,st=`()[]{}`,ct=/* @__PURE__ */ s.define({combine(e){return ee(e,{afterCursor:!0,brackets:st,maxScanDistance:ot,renderMatch:dt})}}),lt=/* @__PURE__ */ _.mark({class:`cm-matchingBracket`}),ut=/* @__PURE__ */ _.mark({class:`cm-nonmatchingBracket`});function dt(e){let t=[],n=e.matched?lt:ut;return t.push(n.range(e.start.from,e.start.to)),e.end&&t.push(n.range(e.end.from,e.end.to)),t}function ft(e){let t=[],n=e.facet(ct);for(let r of e.selection.ranges){if(!r.empty)continue;let i=q(e,r.head,-1,n)||r.head>0&&q(e,r.head-1,1,n)||n.afterCursor&&(q(e,r.head,1,n)||r.head<e.doc.length&&q(e,r.head+1,-1,n));i&&(t=t.concat(n.renderMatch(i,e)))}return _.set(t,!0)}const pt=[/* @__PURE__ */ h.fromClass(class{constructor(e){this.paused=!1,this.decorations=ft(e.state)}update(e){(e.docChanged||e.selectionSet||this.paused)&&(e.view.composing?(this.decorations=this.decorations.map(e.changes),this.paused=!0):(this.decorations=ft(e.state),this.paused=!1))}},{decorations:e=>e.decorations}),at];function mt(e={}){return[ct.of(e),pt]}const ht=/* @__PURE__ */ new e;function G(t,n,r){let i=t.prop(n<0?e.openedBy:e.closedBy);if(i)return i;if(t.name.length==1){let e=r.indexOf(t.name);if(e>-1&&e%2==(n<0?1:0))return[r[e+n]]}return null}function K(e){let t=e.type.prop(ht);return t?t(e.node):e}function q(e,t,n,r={}){let i=r.maxScanDistance||ot,a=r.brackets||st,o=C(e),s=o.resolveInner(t,n);for(let r=s;r;r=r.parent){let i=G(r.type,n,a);if(i&&r.from<r.to){let o=K(r);if(o&&(n>0?t>=o.from&&t<o.to:t>o.from&&t<=o.to))return gt(e,t,n,r,o,i,a)}}return _t(e,t,n,o,s.type,i,a)}function gt(e,t,n,r,i,a,o){let s=r.parent,c={from:i.from,to:i.to},l=0,u=s?.cursor();if(u&&(n<0?u.childBefore(r.from):u.childAfter(r.to)))do if(n<0?u.to<=r.from:u.from>=r.to){if(l==0&&a.indexOf(u.type.name)>-1&&u.from<u.to){let e=K(u);return{start:c,end:e?{from:e.from,to:e.to}:void 0,matched:!0}}else if(G(u.type,n,o))l++;else if(G(u.type,-n,o)){if(l==0){let e=K(u);return{start:c,end:e&&e.from<e.to?{from:e.from,to:e.to}:void 0,matched:!1}}l--}}while(n<0?u.prevSibling():u.nextSibling());return{start:c,matched:!1}}function _t(e,t,n,r,i,a,o){if(n<0?!t:t==e.doc.length)return null;let s=n<0?e.sliceDoc(t-1,t):e.sliceDoc(t,t+1),c=o.indexOf(s);if(c<0||c%2==0!=n>0)return null;let l={from:n<0?t-1:t,to:n>0?t+1:t},u=e.doc.iterRange(t,n>0?e.doc.length:0),d=0;for(let e=0;!u.next().done&&e<=a;){let a=u.value;n<0&&(e+=a.length);let s=t+e*n;for(let e=n>0?0:a.length-1,t=n>0?a.length:-1;e!=t;e+=n){let t=o.indexOf(a[e]);if(!(t<0||r.resolveInner(s+e,1).type!=i))if(t%2==0==n>0)d++;else if(d==1)return{start:l,end:{from:s+e,to:s+e+1},matched:t>>1==c>>1};else d--}n>0&&(e+=a.length)}return u.done?{start:l,matched:!1}:null}function vt(e,t,n,r=0,i=0){t??(t=e.search(/[^\s\u00a0]/),t==-1&&(t=e.length));let a=i;for(let i=r;i<t;i++)e.charCodeAt(i)==9?a+=n-a%n:a++;return a}class StringStream{constructor(e,t,n,r){this.string=e,this.tabSize=t,this.indentUnit=n,this.overrideIndent=r,this.pos=0,this.start=0,this.lastColumnPos=0,this.lastColumnValue=0}eol(){return this.pos>=this.string.length}sol(){return this.pos==0}peek(){return this.string.charAt(this.pos)||void 0}next(){if(this.pos<this.string.length)return this.string.charAt(this.pos++)}eat(e){let t=this.string.charAt(this.pos),n;if(n=typeof e==`string`?t==e:t&&(e instanceof RegExp?e.test(t):e(t)),n)return++this.pos,t}eatWhile(e){let t=this.pos;for(;this.eat(e););return this.pos>t}eatSpace(){let e=this.pos;for(;/[\s\u00a0]/.test(this.string.charAt(this.pos));)++this.pos;return this.pos>e}skipToEnd(){this.pos=this.string.length}skipTo(e){let t=this.string.indexOf(e,this.pos);if(t>-1)return this.pos=t,!0}backUp(e){this.pos-=e}column(){return this.lastColumnPos<this.start&&(this.lastColumnValue=vt(this.string,this.start,this.tabSize,this.lastColumnPos,this.lastColumnValue),this.lastColumnPos=this.start),this.lastColumnValue}indentation(){var e;return(e=this.overrideIndent)??vt(this.string,null,this.tabSize)}match(e,t,n){if(typeof e==`string`){let r=e=>n?e.toLowerCase():e;return r(this.string.substr(this.pos,e.length))==r(e)?(t!==!1&&(this.pos+=e.length),!0):null}else{let n=this.string.slice(this.pos).match(e);return n&&n.index>0?null:(n&&t!==!1&&(this.pos+=n[0].length),n)}}current(){return this.string.slice(this.start,this.pos)}}function yt(e){return{name:e.name||``,token:e.token,blankLine:e.blankLine||(()=>{}),startState:e.startState||(()=>!0),copyState:e.copyState||bt,indent:e.indent||(()=>null),languageData:e.languageData||{},tokenTable:e.tokenTable||Y,mergeTokens:e.mergeTokens!==!1}}function bt(e){if(typeof e!=`object`)return e;let t={};for(let n in e){let r=e[n];t[n]=r instanceof Array?r.slice():r}return t}const xt=/* @__PURE__ */ new WeakMap;class StreamLanguage extends Language{constructor(t){let n=S(t.languageData),r=yt(t),a,o=new class extends i{createParse(e,t,n){return new Parse(a,e,t,n)}};super(n,o,[],t.name),this.topNode=At(n,this),a=this,this.streamParser=r,this.stateAfter=new e({perNode:!0}),this.tokenTable=t.tokenTable?new TokenTable(r.tokenTable):Ot}static define(e){return new StreamLanguage(e)}getIndent(e){let t,{overrideIndentation:n}=e.options;n&&(t=xt.get(e.state),t!=null&&t<e.pos-1e4&&(t=void 0));let r=J(this,e.node.tree,e.node.from,e.node.from,t??e.pos),i,a;if(r?(a=r.state,i=r.pos+1):(a=this.streamParser.startState(e.unit),i=e.node.from),e.pos-i>1e4)return null;for(;i<e.pos;){let t=e.state.doc.lineAt(i),r=Math.min(e.pos,t.to);if(t.length){let i=n?n(t.from):-1,o=new StringStream(t.text,e.state.tabSize,e.unit,i<0?void 0:i);for(;o.pos<r-t.from;)wt(this.streamParser.token,o,a)}else this.streamParser.blankLine(a,e.unit);if(r==e.pos)break;i=t.to+1}let o=e.lineAt(e.pos);return n&&t==null&&xt.set(e.state,o.from),this.streamParser.indent(a,/^\s*(.*)/.exec(o.text)[1],e)}get allowsNesting(){return!1}}function J(e,n,r,i,a){let o=r>=i&&r+n.length<=a&&n.prop(e.stateAfter);if(o)return{state:e.streamParser.copyState(o),pos:r+n.length};for(let o=n.children.length-1;o>=0;o--){let s=n.children[o],c=r+n.positions[o],l=s instanceof t&&c<a&&J(e,s,c,i,a);if(l)return l}return null}function St(e,n,r,i,a){if(a&&r<=0&&i>=n.length)return n;!a&&r==0&&n.type==e.topNode&&(a=!0);for(let o=n.children.length-1;o>=0;o--){let s=n.positions[o],c=n.children[o],l;if(s<i&&c instanceof t){if(!(l=St(e,c,r-s,i-s,a)))break;return a?new t(n.type,n.children.slice(0,o).concat(l),n.positions.slice(0,o+1),s+l.length):l}}return null}function Ct(e,n,r,i,a){for(let t of n){let n=t.from+(t.openStart?25:0),a=t.to-(t.openEnd?25:0),o=n<=r&&a>r&&J(e,t.tree,0-t.offset,r,a),s;if(o&&o.pos<=i&&(s=St(e,t.tree,r+t.offset,o.pos+t.offset,!1)))return{state:o.state,tree:s}}return{state:e.streamParser.startState(a?O(a):4),tree:t.empty}}class Parse{constructor(e,t,n,r){this.lang=e,this.input=t,this.fragments=n,this.ranges=r,this.stoppedAt=null,this.chunks=[],this.chunkPos=[],this.chunk=[],this.chunkReused=void 0,this.rangeIndex=0,this.to=r[r.length-1].to;let i=ParseContext.get(),a=r[0].from,{state:o,tree:s}=Ct(e,n,a,this.to,i?.state);this.state=o,this.parsedPos=this.chunkStart=a+s.length;for(let e=0;e<s.children.length;e++)this.chunks.push(s.children[e]),this.chunkPos.push(s.positions[e]);i&&this.parsedPos<i.viewport.from-1e5&&r.some(e=>e.from<=i.viewport.from&&e.to>=i.viewport.from)&&(this.state=this.lang.streamParser.startState(O(i.state)),i.skipUntilInView(this.parsedPos,i.viewport.from),this.parsedPos=i.viewport.from),this.moveRangeIndex()}advance(){let e=ParseContext.get(),t=this.stoppedAt==null?this.to:Math.min(this.to,this.stoppedAt),n=Math.min(t,this.chunkStart+512);for(e&&(n=Math.min(n,e.viewport.to));this.parsedPos<n;)this.parseLine(e);return this.chunkStart<this.parsedPos&&this.finishChunk(),this.parsedPos>=t?this.finish():e&&this.parsedPos>=e.viewport.to?(e.skipUntilInView(this.parsedPos,t),this.finish()):null}stopAt(e){this.stoppedAt=e}lineAfter(e){let t=this.input.chunk(e);if(this.input.lineChunks)t==`
-`&&(t=``);else{let e=t.indexOf(`
-`);e>-1&&(t=t.slice(0,e))}return e+t.length<=this.to?t:t.slice(0,this.to-e)}nextLine(){let e=this.parsedPos,t=this.lineAfter(e),n=e+t.length;for(let e=this.rangeIndex;;){let r=this.ranges[e].to;if(r>=n||(t=t.slice(0,r-(n-t.length)),e++,e==this.ranges.length))break;let i=this.ranges[e].from,a=this.lineAfter(i);t+=a,n=i+a.length}return{line:t,end:n}}skipGapsTo(e,t,n){for(;;){let r=this.ranges[this.rangeIndex].to,i=e+t;if(n>0?r>i:r>=i)break;let a=this.ranges[++this.rangeIndex].from;t+=a-r}return t}moveRangeIndex(){for(;this.ranges[this.rangeIndex].to<this.parsedPos;)this.rangeIndex++}emitToken(e,t,n,r){let i=4;if(this.ranges.length>1){r=this.skipGapsTo(t,r,1),t+=r;let e=this.chunk.length;r=this.skipGapsTo(n,r,-1),n+=r,i+=this.chunk.length-e}let a=this.chunk.length-4;return this.lang.streamParser.mergeTokens&&i==4&&a>=0&&this.chunk[a]==e&&this.chunk[a+2]==t?this.chunk[a+2]=n:this.chunk.push(e,t,n,i),r}parseLine(e){let{line:t,end:n}=this.nextLine(),r=0,{streamParser:i}=this.lang,a=new StringStream(t,e?e.state.tabSize:4,e?O(e.state):2);if(a.eol())i.blankLine(this.state,a.indentUnit);else for(;!a.eol();){let e=wt(i.token,a,this.state);if(e&&(r=this.emitToken(this.lang.tokenTable.resolve(e),this.parsedPos+a.start,this.parsedPos+a.pos,r)),a.start>1e4)break}this.parsedPos=n,this.moveRangeIndex(),this.parsedPos<this.to&&this.parsedPos++}finishChunk(){let e=t.build({buffer:this.chunk,start:this.chunkStart,length:this.parsedPos-this.chunkStart,nodeSet:Tt,topID:0,maxBufferLength:512,reused:this.chunkReused});e=new t(e.type,e.children,e.positions,e.length,[[this.lang.stateAfter,this.lang.streamParser.copyState(this.state)]]),this.chunks.push(e),this.chunkPos.push(this.chunkStart-this.ranges[0].from),this.chunk=[],this.chunkReused=void 0,this.chunkStart=this.parsedPos}finish(){return new t(this.lang.topNode,this.chunks,this.chunkPos,this.parsedPos-this.ranges[0].from).balance()}}function wt(e,t,n){t.start=t.pos;for(let r=0;r<10;r++){let r=e(t,n);if(t.pos>t.start)return r}throw Error(`Stream parser failed to advance stream.`)}const Y=/* @__PURE__ */ Object.create(null),X=[a.none],Tt=/* @__PURE__ */ new o(X),Et=[],Z=/* @__PURE__ */ Object.create(null),Dt=/* @__PURE__ */ Object.create(null);for(let[e,t]of[[`variable`,`variableName`],[`variable-2`,`variableName.special`],[`string-2`,`string.special`],[`def`,`variableName.definition`],[`tag`,`tagName`],[`attribute`,`attributeName`],[`type`,`typeName`],[`builtin`,`variableName.standard`],[`qualifier`,`modifier`],[`error`,`invalid`],[`header`,`heading`],[`property`,`propertyName`]])Dt[e]=/* @__PURE__ */ kt(Y,t);class TokenTable{constructor(e){this.extra=e,this.table=Object.assign(Object.create(null),Dt)}resolve(e){return e?this.table[e]||(this.table[e]=kt(this.extra,e)):0}}const Ot=/* @__PURE__ */ new TokenTable(Y);function Q(e,t){Et.indexOf(e)>-1||(Et.push(e),console.warn(t))}function kt(e,t){let n=[];for(let r of t.split(` `)){let t=[];for(let n of r.split(`.`)){let r=e[n]||b[n];r?typeof r==`function`?t.length?t=t.map(r):Q(n,`Modifier ${n} used at start of tag`):t.length?Q(n,`Tag ${n} used as modifier`):t=Array.isArray(r)?r:[r]:Q(n,`Unknown highlighting tag ${n}`)}for(let e of t)n.push(e)}if(!n.length)return 0;let r=t.replace(/ /g,`_`),i=r+` `+n.map(e=>e.id),o=Z[i];if(o)return o.id;let s=Z[i]=a.define({id:X.length,name:r,props:[oe({[r]:n})]});return X.push(s),s.id}function At(e,t){let n=a.define({id:X.length,name:`Document`,props:[x.add(()=>e),j.add(()=>e=>t.getIndent(e))],top:!0});return X.push(n),n}function jt(e){return e.length<=4096&&/[\u0590-\u05f4\u0600-\u06ff\u0700-\u08ac\ufb50-\ufdff]/.test(e)}function Mt(e){for(let t=e.iter();!t.next().done;)if(jt(t.value))return!0;return!1}function Nt(e){let t=!1;return e.iterChanges((e,n,r,i,a)=>{!t&&Mt(a)&&(t=!0)}),t}const $=/* @__PURE__ */ s.define({combine:e=>e.some(e=>e)});function Pt(e={}){let t=[Ft];return e.alwaysIsolate&&t.push($.of(!0)),t}const Ft=/* @__PURE__ */ h.fromClass(class{constructor(e){this.always=e.state.facet($)||e.textDirection!=y.LTR||e.state.facet(g.perLineTextDirection),this.hasRTL=!this.always&&Mt(e.state.doc),this.tree=C(e.state),this.decorations=this.always||this.hasRTL?It(e,this.tree,this.always):_.none}update(e){let t=e.state.facet($)||e.view.textDirection!=y.LTR||e.state.facet(g.perLineTextDirection);if(!t&&!this.hasRTL&&Nt(e.changes)&&(this.hasRTL=!0),!t&&!this.hasRTL)return;let n=C(e.state);(t!=this.always||n!=this.tree||e.docChanged||e.viewportChanged)&&(this.tree=n,this.always=t,this.decorations=It(e.view,n,t))}},{provide:e=>{function t(t){var n,r;return(r=(n=t.plugin(e))?.decorations)??_.none}return[g.outerDecorations.of(t),m.lowest(g.bidiIsolatedRanges.of(t))]}});function It(t,n,r){let i=new p,a=t.visibleRanges;r||(a=Lt(a,t.state.doc));for(let{from:t,to:r}of a)n.iterate({enter:t=>{let n=t.type.prop(e.isolate);n&&i.add(t.from,t.to,Rt[n])},from:t,to:r});return i.finish()}function Lt(e,t){let n=t.iter(),r=0,i=[],a=null;for(let{from:t,to:o}of e)if(!(a&&a.to>t&&(t=a.to,t>=o)))for(r+n.value.length<t&&(n.next(t-(r+n.value.length)),r=t);;){let e=r,t=r+n.value.length;if(!n.lineBreak&&jt(n.value)&&(a&&a.to>e-10?a.to=Math.min(o,t):i.push(a={from:e,to:Math.min(o,t)})),t>=o)break;r=t,n.next()}return i}const Rt={rtl:/* @__PURE__ */ _.mark({class:`cm-iso`,inclusive:!0,attributes:{dir:`rtl`},bidiIsolate:y.RTL}),ltr:/* @__PURE__ */ _.mark({class:`cm-iso`,inclusive:!0,attributes:{dir:`ltr`},bidiIsolate:y.LTR}),auto:/* @__PURE__ */ _.mark({class:`cm-iso`,inclusive:!0,attributes:{dir:`auto`},bidiIsolate:null})};export{DocInput,HighlightStyle,IndentContext,LRLanguage,Language,LanguageDescription,LanguageSupport,ParseContext,StreamLanguage,StringStream,TreeIndentContext,Pt as bidiIsolates,mt as bracketMatching,ht as bracketMatchingHandle,H as codeFolding,Ae as continuedIndent,it as defaultHighlightStyle,S as defineLanguageFacet,De as delimitedIndent,de as ensureSyntaxTree,ke as flatIndent,Ue as foldAll,Ve as foldCode,N as foldEffect,Qe as foldGutter,Fe as foldInside,qe as foldKeymap,Pe as foldNodeProp,Ne as foldService,I as foldState,M as foldable,ze as foldedRanges,pe as forceParsing,O as getIndentUnit,A as getIndentation,nt as highlightingFor,j as indentNodeProp,Me as indentOnInput,ye as indentRange,ve as indentService,k as indentString,D as indentUnit,E as language,x as languageDataProp,q as matchBrackets,le as sublanguageProp,tt as syntaxHighlighting,me as syntaxParserRunning,C as syntaxTree,fe as syntaxTreeAvailable,Ke as toggleFold,We as unfoldAll,He as unfoldCode,P as unfoldEffect};
+import { NodeProp, IterMode, Tree, TreeFragment, Parser, NodeType, NodeSet } from '@lezer/common';
+import { StateEffect, StateField, Facet, EditorState, countColumn, combineConfig, RangeSet, RangeSetBuilder, Prec } from '@codemirror/state';
+import { ViewPlugin, logException, EditorView, Decoration, WidgetType, gutter, GutterMarker, Direction } from '@codemirror/view';
+import { tags, tagHighlighter, highlightTree, styleTags } from '@lezer/highlight';
+import { StyleModule } from 'style-mod';
 
+var _a;
+/**
+Node prop stored in a parser's top syntax node to provide the
+facet that stores language-specific data for that language.
+*/
+const languageDataProp = /*@__PURE__*/new NodeProp();
+/**
+Helper function to define a facet (to be added to the top syntax
+node(s) for a language via
+[`languageDataProp`](https://codemirror.net/6/docs/ref/#language.languageDataProp)), that will be
+used to associate language data with the language. You
+probably only need this when subclassing
+[`Language`](https://codemirror.net/6/docs/ref/#language.Language).
+*/
+function defineLanguageFacet(baseData) {
+    return Facet.define({
+        combine: baseData ? values => values.concat(baseData) : undefined
+    });
+}
+/**
+Syntax node prop used to register sublanguages. Should be added to
+the top level node type for the language.
+*/
+const sublanguageProp = /*@__PURE__*/new NodeProp();
+/**
+A language object manages parsing and per-language
+[metadata](https://codemirror.net/6/docs/ref/#state.EditorState.languageDataAt). Parse data is
+managed as a [Lezer](https://lezer.codemirror.net) tree. The class
+can be used directly, via the [`LRLanguage`](https://codemirror.net/6/docs/ref/#language.LRLanguage)
+subclass for [Lezer](https://lezer.codemirror.net/) LR parsers, or
+via the [`StreamLanguage`](https://codemirror.net/6/docs/ref/#language.StreamLanguage) subclass
+for stream parsers.
+*/
+class Language {
+    /**
+    Construct a language object. If you need to invoke this
+    directly, first define a data facet with
+    [`defineLanguageFacet`](https://codemirror.net/6/docs/ref/#language.defineLanguageFacet), and then
+    configure your parser to [attach](https://codemirror.net/6/docs/ref/#language.languageDataProp) it
+    to the language's outer syntax node.
+    */
+    constructor(
+    /**
+    The [language data](https://codemirror.net/6/docs/ref/#state.EditorState.languageDataAt) facet
+    used for this language.
+    */
+    data, parser, extraExtensions = [], 
+    /**
+    A language name.
+    */
+    name = "") {
+        this.data = data;
+        this.name = name;
+        // Kludge to define EditorState.tree as a debugging helper,
+        // without the EditorState package actually knowing about
+        // languages and lezer trees.
+        if (!EditorState.prototype.hasOwnProperty("tree"))
+            Object.defineProperty(EditorState.prototype, "tree", { get() { return syntaxTree(this); } });
+        this.parser = parser;
+        this.extension = [
+            language.of(this),
+            EditorState.languageData.of((state, pos, side) => {
+                let top = topNodeAt(state, pos, side), data = top.type.prop(languageDataProp);
+                if (!data)
+                    return [];
+                let base = state.facet(data), sub = top.type.prop(sublanguageProp);
+                if (sub) {
+                    let innerNode = top.resolve(pos - top.from, side);
+                    for (let sublang of sub)
+                        if (sublang.test(innerNode, state)) {
+                            let data = state.facet(sublang.facet);
+                            return sublang.type == "replace" ? data : data.concat(base);
+                        }
+                }
+                return base;
+            })
+        ].concat(extraExtensions);
+    }
+    /**
+    Query whether this language is active at the given position.
+    */
+    isActiveAt(state, pos, side = -1) {
+        return topNodeAt(state, pos, side).type.prop(languageDataProp) == this.data;
+    }
+    /**
+    Find the document regions that were parsed using this language.
+    The returned regions will _include_ any nested languages rooted
+    in this language, when those exist.
+    */
+    findRegions(state) {
+        let lang = state.facet(language);
+        if ((lang === null || lang === void 0 ? void 0 : lang.data) == this.data)
+            return [{ from: 0, to: state.doc.length }];
+        if (!lang || !lang.allowsNesting)
+            return [];
+        let result = [];
+        let explore = (tree, from) => {
+            if (tree.prop(languageDataProp) == this.data) {
+                result.push({ from, to: from + tree.length });
+                return;
+            }
+            let mount = tree.prop(NodeProp.mounted);
+            if (mount) {
+                if (mount.tree.prop(languageDataProp) == this.data) {
+                    if (mount.overlay)
+                        for (let r of mount.overlay)
+                            result.push({ from: r.from + from, to: r.to + from });
+                    else
+                        result.push({ from: from, to: from + tree.length });
+                    return;
+                }
+                else if (mount.overlay) {
+                    let size = result.length;
+                    explore(mount.tree, mount.overlay[0].from + from);
+                    if (result.length > size)
+                        return;
+                }
+            }
+            for (let i = 0; i < tree.children.length; i++) {
+                let ch = tree.children[i];
+                if (ch instanceof Tree)
+                    explore(ch, tree.positions[i] + from);
+            }
+        };
+        explore(syntaxTree(state), 0);
+        return result;
+    }
+    /**
+    Indicates whether this language allows nested languages. The
+    default implementation returns true.
+    */
+    get allowsNesting() { return true; }
+}
+/**
+@internal
+*/
+Language.setState = /*@__PURE__*/StateEffect.define();
+function topNodeAt(state, pos, side) {
+    let topLang = state.facet(language), tree = syntaxTree(state).topNode;
+    if (!topLang || topLang.allowsNesting) {
+        for (let node = tree; node; node = node.enter(pos, side, IterMode.ExcludeBuffers | IterMode.EnterBracketed))
+            if (node.type.isTop)
+                tree = node;
+    }
+    return tree;
+}
+/**
+A subclass of [`Language`](https://codemirror.net/6/docs/ref/#language.Language) for use with Lezer
+[LR parsers](https://lezer.codemirror.net/docs/ref#lr.LRParser).
+*/
+class LRLanguage extends Language {
+    constructor(data, parser, name) {
+        super(data, parser, [], name);
+        this.parser = parser;
+    }
+    /**
+    Define a language from a parser.
+    */
+    static define(spec) {
+        let data = defineLanguageFacet(spec.languageData);
+        return new LRLanguage(data, spec.parser.configure({
+            props: [languageDataProp.add(type => type.isTop ? data : undefined)]
+        }), spec.name);
+    }
+    /**
+    Create a new instance of this language with a reconfigured
+    version of its parser and optionally a new name.
+    */
+    configure(options, name) {
+        return new LRLanguage(this.data, this.parser.configure(options), name || this.name);
+    }
+    get allowsNesting() { return this.parser.hasWrappers(); }
+}
+/**
+Get the syntax tree for a state, which is the current (possibly
+incomplete) parse tree of the active
+[language](https://codemirror.net/6/docs/ref/#language.Language), or the empty tree if there is no
+language available.
+*/
+function syntaxTree(state) {
+    let field = state.field(Language.state, false);
+    return field ? field.tree : Tree.empty;
+}
+/**
+Try to get a parse tree that spans at least up to `upto`. The
+method will do at most `timeout` milliseconds of work to parse
+up to that point if the tree isn't already available.
+*/
+function ensureSyntaxTree(state, upto, timeout = 50) {
+    var _a;
+    let parse = (_a = state.field(Language.state, false)) === null || _a === void 0 ? void 0 : _a.context;
+    if (!parse)
+        return null;
+    let oldVieport = parse.viewport;
+    parse.updateViewport({ from: 0, to: upto });
+    let result = parse.isDone(upto) || parse.work(timeout, upto) ? parse.tree : null;
+    parse.updateViewport(oldVieport);
+    return result;
+}
+/**
+Queries whether there is a full syntax tree available up to the
+given document position. If there isn't, the background parse
+process _might_ still be working and update the tree further, but
+there is no guarantee of that—the parser will [stop
+working](https://codemirror.net/6/docs/ref/#language.syntaxParserRunning) when it has spent a
+certain amount of time or has moved beyond the visible viewport.
+Always returns false if no language has been enabled.
+*/
+function syntaxTreeAvailable(state, upto = state.doc.length) {
+    var _a;
+    return ((_a = state.field(Language.state, false)) === null || _a === void 0 ? void 0 : _a.context.isDone(upto)) || false;
+}
+/**
+Move parsing forward, and update the editor state afterwards to
+reflect the new tree. Will work for at most `timeout`
+milliseconds. Returns true if the parser managed get to the given
+position in that time.
+*/
+function forceParsing(view, upto = view.viewport.to, timeout = 100) {
+    let success = ensureSyntaxTree(view.state, upto, timeout);
+    if (success != syntaxTree(view.state))
+        view.dispatch({});
+    return !!success;
+}
+/**
+Tells you whether the language parser is planning to do more
+parsing work (in a `requestIdleCallback` pseudo-thread) or has
+stopped running, either because it parsed the entire document,
+because it spent too much time and was cut off, or because there
+is no language parser enabled.
+*/
+function syntaxParserRunning(view) {
+    var _a;
+    return ((_a = view.plugin(parseWorker)) === null || _a === void 0 ? void 0 : _a.isWorking()) || false;
+}
+/**
+Lezer-style
+[`Input`](https://lezer.codemirror.net/docs/ref#common.Input)
+object for a [`Text`](https://codemirror.net/6/docs/ref/#state.Text) object.
+*/
+class DocInput {
+    /**
+    Create an input object for the given document.
+    */
+    constructor(doc) {
+        this.doc = doc;
+        this.cursorPos = 0;
+        this.string = "";
+        this.cursor = doc.iter();
+    }
+    get length() { return this.doc.length; }
+    syncTo(pos) {
+        this.string = this.cursor.next(pos - this.cursorPos).value;
+        this.cursorPos = pos + this.string.length;
+        return this.cursorPos - this.string.length;
+    }
+    chunk(pos) {
+        this.syncTo(pos);
+        return this.string;
+    }
+    get lineChunks() { return true; }
+    read(from, to) {
+        let stringStart = this.cursorPos - this.string.length;
+        if (from < stringStart || to >= this.cursorPos)
+            return this.doc.sliceString(from, to);
+        else
+            return this.string.slice(from - stringStart, to - stringStart);
+    }
+}
+let currentContext = null;
+/**
+A parse context provided to parsers working on the editor content.
+*/
+class ParseContext {
+    constructor(parser, 
+    /**
+    The current editor state.
+    */
+    state, 
+    /**
+    Tree fragments that can be reused by incremental re-parses.
+    */
+    fragments = [], 
+    /**
+    @internal
+    */
+    tree, 
+    /**
+    @internal
+    */
+    treeLen, 
+    /**
+    The current editor viewport (or some overapproximation
+    thereof). Intended to be used for opportunistically avoiding
+    work (in which case
+    [`skipUntilInView`](https://codemirror.net/6/docs/ref/#language.ParseContext.skipUntilInView)
+    should be called to make sure the parser is restarted when the
+    skipped region becomes visible).
+    */
+    viewport, 
+    /**
+    @internal
+    */
+    skipped, 
+    /**
+    This is where skipping parsers can register a promise that,
+    when resolved, will schedule a new parse. It is cleared when
+    the parse worker picks up the promise. @internal
+    */
+    scheduleOn) {
+        this.parser = parser;
+        this.state = state;
+        this.fragments = fragments;
+        this.tree = tree;
+        this.treeLen = treeLen;
+        this.viewport = viewport;
+        this.skipped = skipped;
+        this.scheduleOn = scheduleOn;
+        this.parse = null;
+        /**
+        @internal
+        */
+        this.tempSkipped = [];
+    }
+    /**
+    @internal
+    */
+    static create(parser, state, viewport) {
+        return new ParseContext(parser, state, [], Tree.empty, 0, viewport, [], null);
+    }
+    startParse() {
+        return this.parser.startParse(new DocInput(this.state.doc), this.fragments);
+    }
+    /**
+    @internal
+    */
+    work(until, upto) {
+        if (upto != null && upto >= this.state.doc.length)
+            upto = undefined;
+        if (this.tree != Tree.empty && this.isDone(upto !== null && upto !== void 0 ? upto : this.state.doc.length)) {
+            this.takeTree();
+            return true;
+        }
+        return this.withContext(() => {
+            var _a;
+            if (typeof until == "number") {
+                let endTime = Date.now() + until;
+                until = () => Date.now() > endTime;
+            }
+            if (!this.parse)
+                this.parse = this.startParse();
+            if (upto != null && (this.parse.stoppedAt == null || this.parse.stoppedAt > upto) &&
+                upto < this.state.doc.length)
+                this.parse.stopAt(upto);
+            for (;;) {
+                let done = this.parse.advance();
+                if (done) {
+                    this.fragments = this.withoutTempSkipped(TreeFragment.addTree(done, this.fragments, this.parse.stoppedAt != null));
+                    this.treeLen = (_a = this.parse.stoppedAt) !== null && _a !== void 0 ? _a : this.state.doc.length;
+                    this.tree = done;
+                    this.parse = null;
+                    if (this.treeLen < (upto !== null && upto !== void 0 ? upto : this.state.doc.length))
+                        this.parse = this.startParse();
+                    else
+                        return true;
+                }
+                if (until())
+                    return false;
+            }
+        });
+    }
+    /**
+    @internal
+    */
+    takeTree() {
+        let pos, tree;
+        if (this.parse && (pos = this.parse.parsedPos) >= this.treeLen) {
+            if (this.parse.stoppedAt == null || this.parse.stoppedAt > pos)
+                this.parse.stopAt(pos);
+            this.withContext(() => { while (!(tree = this.parse.advance())) { } });
+            this.treeLen = pos;
+            this.tree = tree;
+            this.fragments = this.withoutTempSkipped(TreeFragment.addTree(this.tree, this.fragments, true));
+            this.parse = null;
+        }
+    }
+    withContext(f) {
+        let prev = currentContext;
+        currentContext = this;
+        try {
+            return f();
+        }
+        finally {
+            currentContext = prev;
+        }
+    }
+    withoutTempSkipped(fragments) {
+        for (let r; r = this.tempSkipped.pop();)
+            fragments = cutFragments(fragments, r.from, r.to);
+        return fragments;
+    }
+    /**
+    @internal
+    */
+    changes(changes, newState) {
+        let { fragments, tree, treeLen, viewport, skipped } = this;
+        this.takeTree();
+        if (!changes.empty) {
+            let ranges = [];
+            changes.iterChangedRanges((fromA, toA, fromB, toB) => ranges.push({ fromA, toA, fromB, toB }));
+            fragments = TreeFragment.applyChanges(fragments, ranges);
+            tree = Tree.empty;
+            treeLen = 0;
+            viewport = { from: changes.mapPos(viewport.from, -1), to: changes.mapPos(viewport.to, 1) };
+            if (this.skipped.length) {
+                skipped = [];
+                for (let r of this.skipped) {
+                    let from = changes.mapPos(r.from, 1), to = changes.mapPos(r.to, -1);
+                    if (from < to)
+                        skipped.push({ from, to });
+                }
+            }
+        }
+        return new ParseContext(this.parser, newState, fragments, tree, treeLen, viewport, skipped, this.scheduleOn);
+    }
+    /**
+    @internal
+    */
+    updateViewport(viewport) {
+        if (this.viewport.from == viewport.from && this.viewport.to == viewport.to)
+            return false;
+        this.viewport = viewport;
+        let startLen = this.skipped.length;
+        for (let i = 0; i < this.skipped.length; i++) {
+            let { from, to } = this.skipped[i];
+            if (from < viewport.to && to > viewport.from) {
+                this.fragments = cutFragments(this.fragments, from, to);
+                this.skipped.splice(i--, 1);
+            }
+        }
+        if (this.skipped.length >= startLen)
+            return false;
+        this.reset();
+        return true;
+    }
+    /**
+    @internal
+    */
+    reset() {
+        if (this.parse) {
+            this.takeTree();
+            this.parse = null;
+        }
+    }
+    /**
+    Notify the parse scheduler that the given region was skipped
+    because it wasn't in view, and the parse should be restarted
+    when it comes into view.
+    */
+    skipUntilInView(from, to) {
+        this.skipped.push({ from, to });
+    }
+    /**
+    Returns a parser intended to be used as placeholder when
+    asynchronously loading a nested parser. It'll skip its input and
+    mark it as not-really-parsed, so that the next update will parse
+    it again.
+    
+    When `until` is given, a reparse will be scheduled when that
+    promise resolves.
+    */
+    static getSkippingParser(until) {
+        return new class extends Parser {
+            createParse(input, fragments, ranges) {
+                let from = ranges[0].from, to = ranges[ranges.length - 1].to;
+                let parser = {
+                    parsedPos: from,
+                    advance() {
+                        let cx = currentContext;
+                        if (cx) {
+                            for (let r of ranges)
+                                cx.tempSkipped.push(r);
+                            if (until)
+                                cx.scheduleOn = cx.scheduleOn ? Promise.all([cx.scheduleOn, until]) : until;
+                        }
+                        this.parsedPos = to;
+                        return new Tree(NodeType.none, [], [], to - from);
+                    },
+                    stoppedAt: null,
+                    stopAt() { }
+                };
+                return parser;
+            }
+        };
+    }
+    /**
+    @internal
+    */
+    isDone(upto) {
+        upto = Math.min(upto, this.state.doc.length);
+        let frags = this.fragments;
+        return this.treeLen >= upto && frags.length && frags[0].from == 0 && frags[0].to >= upto;
+    }
+    /**
+    Get the context for the current parse, or `null` if no editor
+    parse is in progress.
+    */
+    static get() { return currentContext; }
+}
+function cutFragments(fragments, from, to) {
+    return TreeFragment.applyChanges(fragments, [{ fromA: from, toA: to, fromB: from, toB: to }]);
+}
+class LanguageState {
+    constructor(
+    // A mutable parse state that is used to preserve work done during
+    // the lifetime of a state when moving to the next state.
+    context) {
+        this.context = context;
+        this.tree = context.tree;
+    }
+    apply(tr) {
+        if (!tr.docChanged && this.tree == this.context.tree)
+            return this;
+        let newCx = this.context.changes(tr.changes, tr.state);
+        // If the previous parse wasn't done, go forward only up to its
+        // end position or the end of the viewport, to avoid slowing down
+        // state updates with parse work beyond the viewport.
+        let upto = this.context.treeLen == tr.startState.doc.length ? undefined
+            : Math.max(tr.changes.mapPos(this.context.treeLen), newCx.viewport.to);
+        if (!newCx.work(20 /* Work.Apply */, upto))
+            newCx.takeTree();
+        return new LanguageState(newCx);
+    }
+    static init(state) {
+        let vpTo = Math.min(3000 /* Work.InitViewport */, state.doc.length);
+        let parseState = ParseContext.create(state.facet(language).parser, state, { from: 0, to: vpTo });
+        if (!parseState.work(20 /* Work.Apply */, vpTo))
+            parseState.takeTree();
+        return new LanguageState(parseState);
+    }
+}
+Language.state = /*@__PURE__*/StateField.define({
+    create: LanguageState.init,
+    update(value, tr) {
+        for (let e of tr.effects)
+            if (e.is(Language.setState))
+                return e.value;
+        if (tr.startState.facet(language) != tr.state.facet(language))
+            return LanguageState.init(tr.state);
+        return value.apply(tr);
+    }
+});
+let requestIdle = (callback) => {
+    let timeout = setTimeout(() => callback(), 500 /* Work.MaxPause */);
+    return () => clearTimeout(timeout);
+};
+if (typeof requestIdleCallback != "undefined")
+    requestIdle = (callback) => {
+        let idle = -1, timeout = setTimeout(() => {
+            idle = requestIdleCallback(callback, { timeout: 500 /* Work.MaxPause */ - 100 /* Work.MinPause */ });
+        }, 100 /* Work.MinPause */);
+        return () => idle < 0 ? clearTimeout(timeout) : cancelIdleCallback(idle);
+    };
+const isInputPending = typeof navigator != "undefined" && ((_a = navigator.scheduling) === null || _a === void 0 ? void 0 : _a.isInputPending)
+    ? () => navigator.scheduling.isInputPending() : null;
+const parseWorker = /*@__PURE__*/ViewPlugin.fromClass(class ParseWorker {
+    constructor(view) {
+        this.view = view;
+        this.working = null;
+        this.workScheduled = 0;
+        // End of the current time chunk
+        this.chunkEnd = -1;
+        // Milliseconds of budget left for this chunk
+        this.chunkBudget = -1;
+        this.work = this.work.bind(this);
+        this.scheduleWork();
+    }
+    update(update) {
+        let cx = this.view.state.field(Language.state).context;
+        if (cx.updateViewport(update.view.viewport) || this.view.viewport.to > cx.treeLen)
+            this.scheduleWork();
+        if (update.docChanged || update.selectionSet) {
+            if (this.view.hasFocus)
+                this.chunkBudget += 50 /* Work.ChangeBonus */;
+            this.scheduleWork();
+        }
+        this.checkAsyncSchedule(cx);
+    }
+    scheduleWork() {
+        if (this.working)
+            return;
+        let { state } = this.view, field = state.field(Language.state);
+        if (field.tree != field.context.tree || !field.context.isDone(state.doc.length))
+            this.working = requestIdle(this.work);
+    }
+    work(deadline) {
+        this.working = null;
+        let now = Date.now();
+        if (this.chunkEnd < now && (this.chunkEnd < 0 || this.view.hasFocus)) { // Start a new chunk
+            this.chunkEnd = now + 30000 /* Work.ChunkTime */;
+            this.chunkBudget = 3000 /* Work.ChunkBudget */;
+        }
+        if (this.chunkBudget <= 0)
+            return; // No more budget
+        let { state, viewport: { to: vpTo } } = this.view, field = state.field(Language.state);
+        if (field.tree == field.context.tree && field.context.isDone(vpTo + 100000 /* Work.MaxParseAhead */))
+            return;
+        let endTime = Date.now() + Math.min(this.chunkBudget, 100 /* Work.Slice */, deadline && !isInputPending ? Math.max(25 /* Work.MinSlice */, deadline.timeRemaining() - 5) : 1e9);
+        let viewportFirst = field.context.treeLen < vpTo && state.doc.length > vpTo + 1000;
+        let done = field.context.work(() => {
+            return isInputPending && isInputPending() || Date.now() > endTime;
+        }, vpTo + (viewportFirst ? 0 : 100000 /* Work.MaxParseAhead */));
+        this.chunkBudget -= Date.now() - now;
+        if (done || this.chunkBudget <= 0) {
+            field.context.takeTree();
+            this.view.dispatch({ effects: Language.setState.of(new LanguageState(field.context)) });
+        }
+        if (this.chunkBudget > 0 && !(done && !viewportFirst))
+            this.scheduleWork();
+        this.checkAsyncSchedule(field.context);
+    }
+    checkAsyncSchedule(cx) {
+        if (cx.scheduleOn) {
+            this.workScheduled++;
+            cx.scheduleOn
+                .then(() => this.scheduleWork())
+                .catch(err => logException(this.view.state, err))
+                .then(() => this.workScheduled--);
+            cx.scheduleOn = null;
+        }
+    }
+    destroy() {
+        if (this.working)
+            this.working();
+    }
+    isWorking() {
+        return !!(this.working || this.workScheduled > 0);
+    }
+}, {
+    eventHandlers: { focus() { this.scheduleWork(); } }
+});
+/**
+The facet used to associate a language with an editor state. Used
+by `Language` object's `extension` property (so you don't need to
+manually wrap your languages in this). Can be used to access the
+current language on a state.
+*/
+const language = /*@__PURE__*/Facet.define({
+    combine(languages) { return languages.length ? languages[0] : null; },
+    enables: language => [
+        Language.state,
+        parseWorker,
+        EditorView.contentAttributes.compute([language], state => {
+            let lang = state.facet(language);
+            return lang && lang.name ? { "data-language": lang.name } : {};
+        })
+    ]
+});
+/**
+This class bundles a [language](https://codemirror.net/6/docs/ref/#language.Language) with an
+optional set of supporting extensions. Language packages are
+encouraged to export a function that optionally takes a
+configuration object and returns a `LanguageSupport` instance, as
+the main way for client code to use the package.
+*/
+class LanguageSupport {
+    /**
+    Create a language support object.
+    */
+    constructor(
+    /**
+    The language object.
+    */
+    language, 
+    /**
+    An optional set of supporting extensions. When nesting a
+    language in another language, the outer language is encouraged
+    to include the supporting extensions for its inner languages
+    in its own set of support extensions.
+    */
+    support = []) {
+        this.language = language;
+        this.support = support;
+        this.extension = [language, support];
+    }
+}
+/**
+Language descriptions are used to store metadata about languages
+and to dynamically load them. Their main role is finding the
+appropriate language for a filename or dynamically loading nested
+parsers.
+*/
+class LanguageDescription {
+    constructor(
+    /**
+    The name of this language.
+    */
+    name, 
+    /**
+    Alternative names for the mode (lowercased, includes `this.name`).
+    */
+    alias, 
+    /**
+    File extensions associated with this language.
+    */
+    extensions, 
+    /**
+    Optional filename pattern that should be associated with this
+    language.
+    */
+    filename, loadFunc, 
+    /**
+    If the language has been loaded, this will hold its value.
+    */
+    support = undefined) {
+        this.name = name;
+        this.alias = alias;
+        this.extensions = extensions;
+        this.filename = filename;
+        this.loadFunc = loadFunc;
+        this.support = support;
+        this.loading = null;
+    }
+    /**
+    Start loading the the language. Will return a promise that
+    resolves to a [`LanguageSupport`](https://codemirror.net/6/docs/ref/#language.LanguageSupport)
+    object when the language successfully loads.
+    */
+    load() {
+        return this.loading || (this.loading = this.loadFunc().then(support => this.support = support, err => { this.loading = null; throw err; }));
+    }
+    /**
+    Create a language description.
+    */
+    static of(spec) {
+        let { load, support } = spec;
+        if (!load) {
+            if (!support)
+                throw new RangeError("Must pass either 'load' or 'support' to LanguageDescription.of");
+            load = () => Promise.resolve(support);
+        }
+        return new LanguageDescription(spec.name, (spec.alias || []).concat(spec.name).map(s => s.toLowerCase()), spec.extensions || [], spec.filename, load, support);
+    }
+    /**
+    Look for a language in the given array of descriptions that
+    matches the filename. Will first match
+    [`filename`](https://codemirror.net/6/docs/ref/#language.LanguageDescription.filename) patterns,
+    and then [extensions](https://codemirror.net/6/docs/ref/#language.LanguageDescription.extensions),
+    and return the first language that matches.
+    */
+    static matchFilename(descs, filename) {
+        for (let d of descs)
+            if (d.filename && d.filename.test(filename))
+                return d;
+        let ext = /\.([^.]+)$/.exec(filename);
+        if (ext)
+            for (let d of descs)
+                if (d.extensions.indexOf(ext[1]) > -1)
+                    return d;
+        return null;
+    }
+    /**
+    Look for a language whose name or alias matches the the given
+    name (case-insensitively). If `fuzzy` is true, and no direct
+    matchs is found, this'll also search for a language whose name
+    or alias occurs in the string (for names shorter than three
+    characters, only when surrounded by non-word characters).
+    */
+    static matchLanguageName(descs, name, fuzzy = true) {
+        name = name.toLowerCase();
+        for (let d of descs)
+            if (d.alias.some(a => a == name))
+                return d;
+        if (fuzzy)
+            for (let d of descs)
+                for (let a of d.alias) {
+                    let found = name.indexOf(a);
+                    if (found > -1 && (a.length > 2 || !/\w/.test(name[found - 1]) && !/\w/.test(name[found + a.length])))
+                        return d;
+                }
+        return null;
+    }
+}
+
+/**
+Facet that defines a way to provide a function that computes the
+appropriate indentation depth, as a column number (see
+[`indentString`](https://codemirror.net/6/docs/ref/#language.indentString)), at the start of a given
+line. A return value of `null` indicates no indentation can be
+determined, and the line should inherit the indentation of the one
+above it. A return value of `undefined` defers to the next indent
+service.
+*/
+const indentService = /*@__PURE__*/Facet.define();
+/**
+Facet for overriding the unit by which indentation happens. Should
+be a string consisting entirely of the same whitespace character.
+When not set, this defaults to 2 spaces.
+*/
+const indentUnit = /*@__PURE__*/Facet.define({
+    combine: values => {
+        if (!values.length)
+            return "  ";
+        let unit = values[0];
+        if (!unit || /\S/.test(unit) || Array.from(unit).some(e => e != unit[0]))
+            throw new Error("Invalid indent unit: " + JSON.stringify(values[0]));
+        return unit;
+    }
+});
+/**
+Return the _column width_ of an indent unit in the state.
+Determined by the [`indentUnit`](https://codemirror.net/6/docs/ref/#language.indentUnit)
+facet, and [`tabSize`](https://codemirror.net/6/docs/ref/#state.EditorState^tabSize) when that
+contains tabs.
+*/
+function getIndentUnit(state) {
+    let unit = state.facet(indentUnit);
+    return unit.charCodeAt(0) == 9 ? state.tabSize * unit.length : unit.length;
+}
+/**
+Create an indentation string that covers columns 0 to `cols`.
+Will use tabs for as much of the columns as possible when the
+[`indentUnit`](https://codemirror.net/6/docs/ref/#language.indentUnit) facet contains
+tabs.
+*/
+function indentString(state, cols) {
+    let result = "", ts = state.tabSize, ch = state.facet(indentUnit)[0];
+    if (ch == "\t") {
+        while (cols >= ts) {
+            result += "\t";
+            cols -= ts;
+        }
+        ch = " ";
+    }
+    for (let i = 0; i < cols; i++)
+        result += ch;
+    return result;
+}
+/**
+Get the indentation, as a column number, at the given position.
+Will first consult any [indent services](https://codemirror.net/6/docs/ref/#language.indentService)
+that are registered, and if none of those return an indentation,
+this will check the syntax tree for the [indent node
+prop](https://codemirror.net/6/docs/ref/#language.indentNodeProp) and use that if found. Returns a
+number when an indentation could be determined, and null
+otherwise.
+*/
+function getIndentation(context, pos) {
+    if (context instanceof EditorState)
+        context = new IndentContext(context);
+    for (let service of context.state.facet(indentService)) {
+        let result = service(context, pos);
+        if (result !== undefined)
+            return result;
+    }
+    let tree = syntaxTree(context.state);
+    return tree.length >= pos ? syntaxIndentation(context, tree, pos) : null;
+}
+/**
+Create a change set that auto-indents all lines touched by the
+given document range.
+*/
+function indentRange(state, from, to) {
+    let updated = Object.create(null);
+    let context = new IndentContext(state, { overrideIndentation: start => { var _a; return (_a = updated[start]) !== null && _a !== void 0 ? _a : -1; } });
+    let changes = [];
+    for (let pos = from; pos <= to;) {
+        let line = state.doc.lineAt(pos);
+        pos = line.to + 1;
+        let indent = getIndentation(context, line.from);
+        if (indent == null)
+            continue;
+        if (!/\S/.test(line.text))
+            indent = 0;
+        let cur = /^\s*/.exec(line.text)[0];
+        let norm = indentString(state, indent);
+        if (cur != norm) {
+            updated[line.from] = indent;
+            changes.push({ from: line.from, to: line.from + cur.length, insert: norm });
+        }
+    }
+    return state.changes(changes);
+}
+/**
+Indentation contexts are used when calling [indentation
+services](https://codemirror.net/6/docs/ref/#language.indentService). They provide helper utilities
+useful in indentation logic, and can selectively override the
+indentation reported for some lines.
+*/
+class IndentContext {
+    /**
+    Create an indent context.
+    */
+    constructor(
+    /**
+    The editor state.
+    */
+    state, 
+    /**
+    @internal
+    */
+    options = {}) {
+        this.state = state;
+        this.options = options;
+        this.unit = getIndentUnit(state);
+    }
+    /**
+    Get a description of the line at the given position, taking
+    [simulated line
+    breaks](https://codemirror.net/6/docs/ref/#language.IndentContext.constructor^options.simulateBreak)
+    into account. If there is such a break at `pos`, the `bias`
+    argument determines whether the part of the line line before or
+    after the break is used.
+    */
+    lineAt(pos, bias = 1) {
+        let line = this.state.doc.lineAt(pos);
+        let { simulateBreak, simulateDoubleBreak } = this.options;
+        if (simulateBreak != null && simulateBreak >= line.from && simulateBreak <= line.to) {
+            if (simulateDoubleBreak && simulateBreak == pos)
+                return { text: "", from: pos };
+            else if (bias < 0 ? simulateBreak < pos : simulateBreak <= pos)
+                return { text: line.text.slice(simulateBreak - line.from), from: simulateBreak };
+            else
+                return { text: line.text.slice(0, simulateBreak - line.from), from: line.from };
+        }
+        return line;
+    }
+    /**
+    Get the text directly after `pos`, either the entire line
+    or the next 100 characters, whichever is shorter.
+    */
+    textAfterPos(pos, bias = 1) {
+        if (this.options.simulateDoubleBreak && pos == this.options.simulateBreak)
+            return "";
+        let { text, from } = this.lineAt(pos, bias);
+        return text.slice(pos - from, Math.min(text.length, pos + 100 - from));
+    }
+    /**
+    Find the column for the given position.
+    */
+    column(pos, bias = 1) {
+        let { text, from } = this.lineAt(pos, bias);
+        let result = this.countColumn(text, pos - from);
+        let override = this.options.overrideIndentation ? this.options.overrideIndentation(from) : -1;
+        if (override > -1)
+            result += override - this.countColumn(text, text.search(/\S|$/));
+        return result;
+    }
+    /**
+    Find the column position (taking tabs into account) of the given
+    position in the given string.
+    */
+    countColumn(line, pos = line.length) {
+        return countColumn(line, this.state.tabSize, pos);
+    }
+    /**
+    Find the indentation column of the line at the given point.
+    */
+    lineIndent(pos, bias = 1) {
+        let { text, from } = this.lineAt(pos, bias);
+        let override = this.options.overrideIndentation;
+        if (override) {
+            let overriden = override(from);
+            if (overriden > -1)
+                return overriden;
+        }
+        return this.countColumn(text, text.search(/\S|$/));
+    }
+    /**
+    Returns the [simulated line
+    break](https://codemirror.net/6/docs/ref/#language.IndentContext.constructor^options.simulateBreak)
+    for this context, if any.
+    */
+    get simulatedBreak() {
+        return this.options.simulateBreak || null;
+    }
+}
+/**
+A syntax tree node prop used to associate indentation strategies
+with node types. Such a strategy is a function from an indentation
+context to a column number (see also
+[`indentString`](https://codemirror.net/6/docs/ref/#language.indentString)) or null, where null
+indicates that no definitive indentation can be determined.
+*/
+const indentNodeProp = /*@__PURE__*/new NodeProp();
+// Compute the indentation for a given position from the syntax tree.
+function syntaxIndentation(cx, ast, pos) {
+    let stack = ast.resolveStack(pos);
+    let inner = ast.resolveInner(pos, -1).resolve(pos, 0).enterUnfinishedNodesBefore(pos);
+    if (inner != stack.node) {
+        let add = [];
+        for (let cur = inner; cur && !(cur.from < stack.node.from || cur.to > stack.node.to ||
+            cur.from == stack.node.from && cur.type == stack.node.type); cur = cur.parent)
+            add.push(cur);
+        for (let i = add.length - 1; i >= 0; i--)
+            stack = { node: add[i], next: stack };
+    }
+    return indentFor(stack, cx, pos);
+}
+function indentFor(stack, cx, pos) {
+    for (let cur = stack; cur; cur = cur.next) {
+        let strategy = indentStrategy(cur.node);
+        if (strategy)
+            return strategy(TreeIndentContext.create(cx, pos, cur));
+    }
+    return 0;
+}
+function ignoreClosed(cx) {
+    return cx.pos == cx.options.simulateBreak && cx.options.simulateDoubleBreak;
+}
+function indentStrategy(tree) {
+    let strategy = tree.type.prop(indentNodeProp);
+    if (strategy)
+        return strategy;
+    let first = tree.firstChild, close;
+    if (first && (close = first.type.prop(NodeProp.closedBy))) {
+        let last = tree.lastChild, closed = last && close.indexOf(last.name) > -1;
+        return cx => delimitedStrategy(cx, true, 1, undefined, closed && !ignoreClosed(cx) ? last.from : undefined);
+    }
+    return tree.parent == null ? topIndent : null;
+}
+function topIndent() { return 0; }
+/**
+Objects of this type provide context information and helper
+methods to indentation functions registered on syntax nodes.
+*/
+class TreeIndentContext extends IndentContext {
+    constructor(base, 
+    /**
+    The position at which indentation is being computed.
+    */
+    pos, 
+    /**
+    @internal
+    */
+    context) {
+        super(base.state, base.options);
+        this.base = base;
+        this.pos = pos;
+        this.context = context;
+    }
+    /**
+    The syntax tree node to which the indentation strategy
+    applies.
+    */
+    get node() { return this.context.node; }
+    /**
+    @internal
+    */
+    static create(base, pos, context) {
+        return new TreeIndentContext(base, pos, context);
+    }
+    /**
+    Get the text directly after `this.pos`, either the entire line
+    or the next 100 characters, whichever is shorter.
+    */
+    get textAfter() {
+        return this.textAfterPos(this.pos);
+    }
+    /**
+    Get the indentation at the reference line for `this.node`, which
+    is the line on which it starts, unless there is a node that is
+    _not_ a parent of this node covering the start of that line. If
+    so, the line at the start of that node is tried, again skipping
+    on if it is covered by another such node.
+    */
+    get baseIndent() {
+        return this.baseIndentFor(this.node);
+    }
+    /**
+    Get the indentation for the reference line of the given node
+    (see [`baseIndent`](https://codemirror.net/6/docs/ref/#language.TreeIndentContext.baseIndent)).
+    */
+    baseIndentFor(node) {
+        let line = this.state.doc.lineAt(node.from);
+        // Skip line starts that are covered by a sibling (or cousin, etc)
+        for (;;) {
+            let atBreak = node.resolve(line.from);
+            while (atBreak.parent && atBreak.parent.from == atBreak.from)
+                atBreak = atBreak.parent;
+            if (isParent(atBreak, node))
+                break;
+            line = this.state.doc.lineAt(atBreak.from);
+        }
+        return this.lineIndent(line.from);
+    }
+    /**
+    Continue looking for indentations in the node's parent nodes,
+    and return the result of that.
+    */
+    continue() {
+        return indentFor(this.context.next, this.base, this.pos);
+    }
+}
+function isParent(parent, of) {
+    for (let cur = of; cur; cur = cur.parent)
+        if (parent == cur)
+            return true;
+    return false;
+}
+// Check whether a delimited node is aligned (meaning there are
+// non-skipped nodes on the same line as the opening delimiter). And
+// if so, return the opening token.
+function bracketedAligned(context) {
+    let tree = context.node;
+    let openToken = tree.childAfter(tree.from), last = tree.lastChild;
+    if (!openToken)
+        return null;
+    let sim = context.options.simulateBreak;
+    let openLine = context.state.doc.lineAt(openToken.from);
+    let lineEnd = sim == null || sim <= openLine.from ? openLine.to : Math.min(openLine.to, sim);
+    for (let pos = openToken.to;;) {
+        let next = tree.childAfter(pos);
+        if (!next || next == last)
+            return null;
+        if (!next.type.isSkipped) {
+            if (next.from >= lineEnd)
+                return null;
+            let space = /^ */.exec(openLine.text.slice(openToken.to - openLine.from))[0].length;
+            return { from: openToken.from, to: openToken.to + space };
+        }
+        pos = next.to;
+    }
+}
+/**
+An indentation strategy for delimited (usually bracketed) nodes.
+Will, by default, indent one unit more than the parent's base
+indent unless the line starts with a closing token. When `align`
+is true and there are non-skipped nodes on the node's opening
+line, the content of the node will be aligned with the end of the
+opening node, like this:
+
+    foo(bar,
+        baz)
+*/
+function delimitedIndent({ closing, align = true, units = 1 }) {
+    return (context) => delimitedStrategy(context, align, units, closing);
+}
+function delimitedStrategy(context, align, units, closing, closedAt) {
+    let after = context.textAfter, space = after.match(/^\s*/)[0].length;
+    let closed = closing && after.slice(space, space + closing.length) == closing || closedAt == context.pos + space;
+    let aligned = align ? bracketedAligned(context) : null;
+    if (aligned)
+        return closed ? context.column(aligned.from) : context.column(aligned.to);
+    return context.baseIndent + (closed ? 0 : context.unit * units);
+}
+/**
+An indentation strategy that aligns a node's content to its base
+indentation.
+*/
+const flatIndent = (context) => context.baseIndent;
+/**
+Creates an indentation strategy that, by default, indents
+continued lines one unit more than the node's base indentation.
+You can provide `except` to prevent indentation of lines that
+match a pattern (for example `/^else\b/` in `if`/`else`
+constructs), and you can change the amount of units used with the
+`units` option.
+*/
+function continuedIndent({ except, units = 1 } = {}) {
+    return (context) => {
+        let matchExcept = except && except.test(context.textAfter);
+        return context.baseIndent + (matchExcept ? 0 : units * context.unit);
+    };
+}
+const DontIndentBeyond = 200;
+/**
+Enables reindentation on input. When a language defines an
+`indentOnInput` field in its [language
+data](https://codemirror.net/6/docs/ref/#state.EditorState.languageDataAt), which must hold a regular
+expression, the line at the cursor will be reindented whenever new
+text is typed and the input from the start of the line up to the
+cursor matches that regexp.
+
+To avoid unneccesary reindents, it is recommended to start the
+regexp with `^` (usually followed by `\s*`), and end it with `$`.
+For example, `/^\s*\}$/` will reindent when a closing brace is
+added at the start of a line.
+*/
+function indentOnInput() {
+    return EditorState.transactionFilter.of(tr => {
+        if (!tr.docChanged || !tr.isUserEvent("input.type") && !tr.isUserEvent("input.complete"))
+            return tr;
+        let rules = tr.startState.languageDataAt("indentOnInput", tr.startState.selection.main.head);
+        if (!rules.length)
+            return tr;
+        let doc = tr.newDoc, { head } = tr.newSelection.main, line = doc.lineAt(head);
+        if (head > line.from + DontIndentBeyond)
+            return tr;
+        let lineStart = doc.sliceString(line.from, head);
+        if (!rules.some(r => r.test(lineStart)))
+            return tr;
+        let { state } = tr, last = -1, changes = [];
+        for (let { head } of state.selection.ranges) {
+            let line = state.doc.lineAt(head);
+            if (line.from == last)
+                continue;
+            last = line.from;
+            let indent = getIndentation(state, line.from);
+            if (indent == null)
+                continue;
+            let cur = /^\s*/.exec(line.text)[0];
+            let norm = indentString(state, indent);
+            if (cur != norm)
+                changes.push({ from: line.from, to: line.from + cur.length, insert: norm });
+        }
+        return changes.length ? [tr, { changes, sequential: true }] : tr;
+    });
+}
+
+/**
+A facet that registers a code folding service. When called with
+the extent of a line, such a function should return a foldable
+range that starts on that line (but continues beyond it), if one
+can be found.
+*/
+const foldService = /*@__PURE__*/Facet.define();
+/**
+This node prop is used to associate folding information with
+syntax node types. Given a syntax node, it should check whether
+that tree is foldable and return the range that can be collapsed
+when it is.
+*/
+const foldNodeProp = /*@__PURE__*/new NodeProp();
+/**
+[Fold](https://codemirror.net/6/docs/ref/#language.foldNodeProp) function that folds everything but
+the first and the last child of a syntax node. Useful for nodes
+that start and end with delimiters.
+*/
+function foldInside(node) {
+    let first = node.firstChild, last = node.lastChild;
+    return first && first.to < last.from ? { from: first.to, to: last.type.isError ? node.to : last.from } : null;
+}
+function syntaxFolding(state, start, end) {
+    let tree = syntaxTree(state);
+    if (tree.length < end)
+        return null;
+    let stack = tree.resolveStack(end, 1);
+    let found = null;
+    for (let iter = stack; iter; iter = iter.next) {
+        let cur = iter.node;
+        if (cur.to <= end || cur.from > end)
+            continue;
+        if (found && cur.from < start)
+            break;
+        let prop = cur.type.prop(foldNodeProp);
+        if (prop && (cur.to < tree.length - 50 || tree.length == state.doc.length || !isUnfinished(cur))) {
+            let value = prop(cur, state);
+            if (value && value.from <= end && value.from >= start && value.to > end)
+                found = value;
+        }
+    }
+    return found;
+}
+function isUnfinished(node) {
+    let ch = node.lastChild;
+    return ch && ch.to == node.to && ch.type.isError;
+}
+/**
+Check whether the given line is foldable. First asks any fold
+services registered through
+[`foldService`](https://codemirror.net/6/docs/ref/#language.foldService), and if none of them return
+a result, tries to query the [fold node
+prop](https://codemirror.net/6/docs/ref/#language.foldNodeProp) of syntax nodes that cover the end
+of the line.
+*/
+function foldable(state, lineStart, lineEnd) {
+    for (let service of state.facet(foldService)) {
+        let result = service(state, lineStart, lineEnd);
+        if (result)
+            return result;
+    }
+    return syntaxFolding(state, lineStart, lineEnd);
+}
+function mapRange(range, mapping) {
+    let from = mapping.mapPos(range.from, 1), to = mapping.mapPos(range.to, -1);
+    return from >= to ? undefined : { from, to };
+}
+/**
+State effect that can be attached to a transaction to fold the
+given range. (You probably only need this in exceptional
+circumstances—usually you'll just want to let
+[`foldCode`](https://codemirror.net/6/docs/ref/#language.foldCode) and the [fold
+gutter](https://codemirror.net/6/docs/ref/#language.foldGutter) create the transactions.)
+*/
+const foldEffect = /*@__PURE__*/StateEffect.define({ map: mapRange });
+/**
+State effect that unfolds the given range (if it was folded).
+*/
+const unfoldEffect = /*@__PURE__*/StateEffect.define({ map: mapRange });
+function selectedLines(view) {
+    let lines = [];
+    for (let { head } of view.state.selection.ranges) {
+        if (lines.some(l => l.from <= head && l.to >= head))
+            continue;
+        lines.push(view.lineBlockAt(head));
+    }
+    return lines;
+}
+/**
+The state field that stores the folded ranges (as a [decoration
+set](https://codemirror.net/6/docs/ref/#view.DecorationSet)). Can be passed to
+[`EditorState.toJSON`](https://codemirror.net/6/docs/ref/#state.EditorState.toJSON) and
+[`fromJSON`](https://codemirror.net/6/docs/ref/#state.EditorState^fromJSON) to serialize the fold
+state.
+*/
+const foldState = /*@__PURE__*/StateField.define({
+    create() {
+        return Decoration.none;
+    },
+    update(folded, tr) {
+        if (tr.isUserEvent("delete"))
+            tr.changes.iterChangedRanges((fromA, toA) => folded = clearTouchedFolds(folded, fromA, toA));
+        folded = folded.map(tr.changes);
+        let rangesToFold = [];
+        for (let e of tr.effects) {
+            if (e.is(foldEffect) && !foldExists(folded, e.value.from, e.value.to)) {
+                rangesToFold.push(e.value);
+            }
+            else if (e.is(unfoldEffect)) {
+                folded = folded.update({ filter: (from, to) => e.value.from != from || e.value.to != to,
+                    filterFrom: e.value.from, filterTo: e.value.to });
+            }
+        }
+        if (rangesToFold.length) {
+            let { preparePlaceholder } = tr.state.facet(foldConfig);
+            let decorations = rangesToFold.map(value => {
+                let widget = !preparePlaceholder ? foldWidget :
+                    Decoration.replace({ widget: new PreparedFoldWidget(preparePlaceholder(tr.state, value)) });
+                return widget.range(value.from, value.to);
+            });
+            folded = folded.update({ add: decorations });
+        }
+        // Clear folded ranges that cover the selection head
+        if (tr.selection)
+            folded = clearTouchedFolds(folded, tr.selection.main.head);
+        return folded;
+    },
+    provide: f => EditorView.decorations.from(f),
+    toJSON(folded, state) {
+        let ranges = [];
+        folded.between(0, state.doc.length, (from, to) => { ranges.push(from, to); });
+        return ranges;
+    },
+    fromJSON(value) {
+        if (!Array.isArray(value) || value.length % 2)
+            throw new RangeError("Invalid JSON for fold state");
+        let ranges = [];
+        for (let i = 0; i < value.length;) {
+            let from = value[i++], to = value[i++];
+            if (typeof from != "number" || typeof to != "number")
+                throw new RangeError("Invalid JSON for fold state");
+            ranges.push(foldWidget.range(from, to));
+        }
+        return Decoration.set(ranges, true);
+    }
+});
+function clearTouchedFolds(folded, from, to = from) {
+    let touched = false;
+    folded.between(from, to, (a, b) => { if (a < to && b > from)
+        touched = true; });
+    return !touched ? folded : folded.update({
+        filterFrom: from,
+        filterTo: to,
+        filter: (a, b) => a >= to || b <= from
+    });
+}
+/**
+Get a [range set](https://codemirror.net/6/docs/ref/#state.RangeSet) containing the folded ranges
+in the given state.
+*/
+function foldedRanges(state) {
+    return state.field(foldState, false) || RangeSet.empty;
+}
+function findFold(state, from, to) {
+    var _a;
+    let found = null;
+    (_a = state.field(foldState, false)) === null || _a === void 0 ? void 0 : _a.between(from, to, (from, to) => {
+        if (!found || found.from > from)
+            found = { from, to };
+    });
+    return found;
+}
+function foldExists(folded, from, to) {
+    let found = false;
+    folded.between(from, from, (a, b) => { if (a == from && b == to)
+        found = true; });
+    return found;
+}
+function maybeEnable(state, other) {
+    return state.field(foldState, false) ? other : other.concat(StateEffect.appendConfig.of(codeFolding()));
+}
+/**
+Fold the lines that are selected, if possible.
+*/
+const foldCode = view => {
+    for (let line of selectedLines(view)) {
+        let range = foldable(view.state, line.from, line.to);
+        if (range) {
+            view.dispatch({ effects: maybeEnable(view.state, [foldEffect.of(range), announceFold(view, range)]) });
+            return true;
+        }
+    }
+    return false;
+};
+/**
+Unfold folded ranges on selected lines.
+*/
+const unfoldCode = view => {
+    if (!view.state.field(foldState, false))
+        return false;
+    let effects = [];
+    for (let line of selectedLines(view)) {
+        let folded = findFold(view.state, line.from, line.to);
+        if (folded)
+            effects.push(unfoldEffect.of(folded), announceFold(view, folded, false));
+    }
+    if (effects.length)
+        view.dispatch({ effects });
+    return effects.length > 0;
+};
+function announceFold(view, range, fold = true) {
+    let lineFrom = view.state.doc.lineAt(range.from).number, lineTo = view.state.doc.lineAt(range.to).number;
+    return EditorView.announce.of(`${view.state.phrase(fold ? "Folded lines" : "Unfolded lines")} ${lineFrom} ${view.state.phrase("to")} ${lineTo}.`);
+}
+/**
+Fold all top-level foldable ranges. Note that, in most cases,
+folding information will depend on the [syntax
+tree](https://codemirror.net/6/docs/ref/#language.syntaxTree), and folding everything may not work
+reliably when the document hasn't been fully parsed (either
+because the editor state was only just initialized, or because the
+document is so big that the parser decided not to parse it
+entirely).
+*/
+const foldAll = view => {
+    let { state } = view, effects = [];
+    for (let pos = 0; pos < state.doc.length;) {
+        let line = view.lineBlockAt(pos), range = foldable(state, line.from, line.to);
+        if (range)
+            effects.push(foldEffect.of(range));
+        pos = (range ? view.lineBlockAt(range.to) : line).to + 1;
+    }
+    if (effects.length)
+        view.dispatch({ effects: maybeEnable(view.state, effects) });
+    return !!effects.length;
+};
+/**
+Unfold all folded code.
+*/
+const unfoldAll = view => {
+    let field = view.state.field(foldState, false);
+    if (!field || !field.size)
+        return false;
+    let effects = [];
+    field.between(0, view.state.doc.length, (from, to) => { effects.push(unfoldEffect.of({ from, to })); });
+    view.dispatch({ effects });
+    return true;
+};
+// Find the foldable region containing the given line, if one exists
+function foldableContainer(view, lineBlock) {
+    // Look backwards through line blocks until we find a foldable region that
+    // intersects with the line
+    for (let line = lineBlock;;) {
+        let foldableRegion = foldable(view.state, line.from, line.to);
+        if (foldableRegion && foldableRegion.to > lineBlock.from)
+            return foldableRegion;
+        if (!line.from)
+            return null;
+        line = view.lineBlockAt(line.from - 1);
+    }
+}
+/**
+Toggle folding at cursors. Unfolds if there is an existing fold
+starting in that line, tries to find a foldable range around it
+otherwise.
+*/
+const toggleFold = (view) => {
+    let effects = [];
+    for (let line of selectedLines(view)) {
+        let folded = findFold(view.state, line.from, line.to);
+        if (folded) {
+            effects.push(unfoldEffect.of(folded), announceFold(view, folded, false));
+        }
+        else {
+            let foldRange = foldableContainer(view, line);
+            if (foldRange)
+                effects.push(foldEffect.of(foldRange), announceFold(view, foldRange));
+        }
+    }
+    if (effects.length > 0)
+        view.dispatch({ effects: maybeEnable(view.state, effects) });
+    return !!effects.length;
+};
+/**
+Default fold-related key bindings.
+
+ - Ctrl-Shift-[ (Cmd-Alt-[ on macOS): [`foldCode`](https://codemirror.net/6/docs/ref/#language.foldCode).
+ - Ctrl-Shift-] (Cmd-Alt-] on macOS): [`unfoldCode`](https://codemirror.net/6/docs/ref/#language.unfoldCode).
+ - Ctrl-Alt-[: [`foldAll`](https://codemirror.net/6/docs/ref/#language.foldAll).
+ - Ctrl-Alt-]: [`unfoldAll`](https://codemirror.net/6/docs/ref/#language.unfoldAll).
+*/
+const foldKeymap = [
+    { key: "Ctrl-Shift-[", mac: "Cmd-Alt-[", run: foldCode },
+    { key: "Ctrl-Shift-]", mac: "Cmd-Alt-]", run: unfoldCode },
+    { key: "Ctrl-Alt-[", run: foldAll },
+    { key: "Ctrl-Alt-]", run: unfoldAll }
+];
+const defaultConfig = {
+    placeholderDOM: null,
+    preparePlaceholder: null,
+    placeholderText: "…"
+};
+const foldConfig = /*@__PURE__*/Facet.define({
+    combine(values) { return combineConfig(values, defaultConfig); }
+});
+/**
+Create an extension that configures code folding.
+*/
+function codeFolding(config) {
+    let result = [foldState, baseTheme$1];
+    if (config)
+        result.push(foldConfig.of(config));
+    return result;
+}
+function widgetToDOM(view, prepared) {
+    let { state } = view, conf = state.facet(foldConfig);
+    let onclick = (event) => {
+        let line = view.lineBlockAt(view.posAtDOM(event.target));
+        let folded = findFold(view.state, line.from, line.to);
+        if (folded)
+            view.dispatch({ effects: unfoldEffect.of(folded) });
+        event.preventDefault();
+    };
+    if (conf.placeholderDOM)
+        return conf.placeholderDOM(view, onclick, prepared);
+    let element = document.createElement("span");
+    element.textContent = conf.placeholderText;
+    element.setAttribute("aria-label", state.phrase("folded code"));
+    element.title = state.phrase("unfold");
+    element.className = "cm-foldPlaceholder";
+    element.onclick = onclick;
+    return element;
+}
+const foldWidget = /*@__PURE__*/Decoration.replace({ widget: /*@__PURE__*/new class extends WidgetType {
+        toDOM(view) { return widgetToDOM(view, null); }
+    } });
+class PreparedFoldWidget extends WidgetType {
+    constructor(value) {
+        super();
+        this.value = value;
+    }
+    eq(other) { return this.value == other.value; }
+    toDOM(view) { return widgetToDOM(view, this.value); }
+}
+const foldGutterDefaults = {
+    openText: "⌄",
+    closedText: "›",
+    markerDOM: null,
+    domEventHandlers: {},
+    foldingChanged: () => false
+};
+class FoldMarker extends GutterMarker {
+    constructor(config, open) {
+        super();
+        this.config = config;
+        this.open = open;
+    }
+    eq(other) { return this.config == other.config && this.open == other.open; }
+    toDOM(view) {
+        if (this.config.markerDOM)
+            return this.config.markerDOM(this.open);
+        let span = document.createElement("span");
+        span.textContent = this.open ? this.config.openText : this.config.closedText;
+        span.title = view.state.phrase(this.open ? "Fold line" : "Unfold line");
+        return span;
+    }
+}
+/**
+Create an extension that registers a fold gutter, which shows a
+fold status indicator before foldable lines (which can be clicked
+to fold or unfold the line).
+*/
+function foldGutter(config = {}) {
+    let fullConfig = { ...foldGutterDefaults, ...config };
+    let canFold = new FoldMarker(fullConfig, true), canUnfold = new FoldMarker(fullConfig, false);
+    let markers = ViewPlugin.fromClass(class {
+        constructor(view) {
+            this.from = view.viewport.from;
+            this.markers = this.buildMarkers(view);
+        }
+        update(update) {
+            if (update.docChanged || update.viewportChanged ||
+                update.startState.facet(language) != update.state.facet(language) ||
+                update.startState.field(foldState, false) != update.state.field(foldState, false) ||
+                syntaxTree(update.startState) != syntaxTree(update.state) ||
+                fullConfig.foldingChanged(update))
+                this.markers = this.buildMarkers(update.view);
+        }
+        buildMarkers(view) {
+            let builder = new RangeSetBuilder();
+            for (let line of view.viewportLineBlocks) {
+                let mark = findFold(view.state, line.from, line.to) ? canUnfold
+                    : foldable(view.state, line.from, line.to) ? canFold : null;
+                if (mark)
+                    builder.add(line.from, line.from, mark);
+            }
+            return builder.finish();
+        }
+    });
+    let { domEventHandlers } = fullConfig;
+    return [
+        markers,
+        gutter({
+            class: "cm-foldGutter",
+            markers(view) { var _a; return ((_a = view.plugin(markers)) === null || _a === void 0 ? void 0 : _a.markers) || RangeSet.empty; },
+            initialSpacer() {
+                return new FoldMarker(fullConfig, false);
+            },
+            domEventHandlers: {
+                ...domEventHandlers,
+                click: (view, line, event) => {
+                    if (domEventHandlers.click && domEventHandlers.click(view, line, event))
+                        return true;
+                    let folded = findFold(view.state, line.from, line.to);
+                    if (folded) {
+                        view.dispatch({ effects: unfoldEffect.of(folded) });
+                        return true;
+                    }
+                    let range = foldable(view.state, line.from, line.to);
+                    if (range) {
+                        view.dispatch({ effects: foldEffect.of(range) });
+                        return true;
+                    }
+                    return false;
+                }
+            }
+        }),
+        codeFolding()
+    ];
+}
+const baseTheme$1 = /*@__PURE__*/EditorView.baseTheme({
+    ".cm-foldPlaceholder": {
+        backgroundColor: "#eee",
+        border: "1px solid #ddd",
+        color: "#888",
+        borderRadius: ".2em",
+        margin: "0 1px",
+        padding: "0 1px",
+        cursor: "pointer"
+    },
+    ".cm-foldGutter span": {
+        padding: "0 1px",
+        cursor: "pointer"
+    }
+});
+
+/**
+A highlight style associates CSS styles with highlighting
+[tags](https://lezer.codemirror.net/docs/ref#highlight.Tag).
+*/
+class HighlightStyle {
+    constructor(
+    /**
+    The tag styles used to create this highlight style.
+    */
+    specs, options) {
+        this.specs = specs;
+        let modSpec;
+        function def(spec) {
+            let cls = StyleModule.newName();
+            (modSpec || (modSpec = Object.create(null)))["." + cls] = spec;
+            return cls;
+        }
+        const all = typeof options.all == "string" ? options.all : options.all ? def(options.all) : undefined;
+        const scopeOpt = options.scope;
+        this.scope = scopeOpt instanceof Language ? (type) => type.prop(languageDataProp) == scopeOpt.data
+            : scopeOpt ? (type) => type == scopeOpt : undefined;
+        this.style = tagHighlighter(specs.map(style => ({
+            tag: style.tag,
+            class: style.class || def(Object.assign({}, style, { tag: null }))
+        })), {
+            all,
+        }).style;
+        this.module = modSpec ? new StyleModule(modSpec) : null;
+        this.themeType = options.themeType;
+    }
+    /**
+    Create a highlighter style that associates the given styles to
+    the given tags. The specs must be objects that hold a style tag
+    or array of tags in their `tag` property, and either a single
+    `class` property providing a static CSS class (for highlighter
+    that rely on external styling), or a
+    [`style-mod`](https://code.haverbeke.berlin/marijn/style-mod#documentation)-style
+    set of CSS properties (which define the styling for those tags).
+    
+    The CSS rules created for a highlighter will be emitted in the
+    order of the spec's properties. That means that for elements that
+    have multiple tags associated with them, styles defined further
+    down in the list will have a higher CSS precedence than styles
+    defined earlier.
+    */
+    static define(specs, options) {
+        return new HighlightStyle(specs, options || {});
+    }
+}
+const highlighterFacet = /*@__PURE__*/Facet.define();
+const fallbackHighlighter = /*@__PURE__*/Facet.define({
+    combine(values) { return values.length ? [values[0]] : null; }
+});
+function getHighlighters(state) {
+    let main = state.facet(highlighterFacet);
+    return main.length ? main : state.facet(fallbackHighlighter);
+}
+/**
+Wrap a highlighter in an editor extension that uses it to apply
+syntax highlighting to the editor content.
+
+When multiple (non-fallback) styles are provided, the styling
+applied is the union of the classes they emit.
+*/
+function syntaxHighlighting(highlighter, options) {
+    let ext = [treeHighlighter], themeType;
+    if (highlighter instanceof HighlightStyle) {
+        if (highlighter.module)
+            ext.push(EditorView.styleModule.of(highlighter.module));
+        themeType = highlighter.themeType;
+    }
+    if (options === null || options === void 0 ? void 0 : options.fallback)
+        ext.push(fallbackHighlighter.of(highlighter));
+    else if (themeType)
+        ext.push(highlighterFacet.computeN([EditorView.darkTheme], state => {
+            return state.facet(EditorView.darkTheme) == (themeType == "dark") ? [highlighter] : [];
+        }));
+    else
+        ext.push(highlighterFacet.of(highlighter));
+    return ext;
+}
+/**
+Returns the CSS classes (if any) that the highlighters active in
+the state would assign to the given style
+[tags](https://lezer.codemirror.net/docs/ref#highlight.Tag) and
+(optional) language
+[scope](https://codemirror.net/6/docs/ref/#language.HighlightStyle^define^options.scope).
+*/
+function highlightingFor(state, tags, scope) {
+    let highlighters = getHighlighters(state);
+    let result = null;
+    if (highlighters)
+        for (let highlighter of highlighters) {
+            if (!highlighter.scope || scope && highlighter.scope(scope)) {
+                let cls = highlighter.style(tags);
+                if (cls)
+                    result = result ? result + " " + cls : cls;
+            }
+        }
+    return result;
+}
+class TreeHighlighter {
+    constructor(view) {
+        this.markCache = Object.create(null);
+        this.tree = syntaxTree(view.state);
+        this.decorations = this.buildDeco(view, getHighlighters(view.state));
+        this.decoratedTo = view.viewport.to;
+    }
+    update(update) {
+        let tree = syntaxTree(update.state), highlighters = getHighlighters(update.state);
+        let styleChange = highlighters != getHighlighters(update.startState);
+        let { viewport } = update.view, decoratedToMapped = update.changes.mapPos(this.decoratedTo, 1);
+        if (tree.length < viewport.to && !styleChange && tree.type == this.tree.type && decoratedToMapped >= viewport.to) {
+            this.decorations = this.decorations.map(update.changes);
+            this.decoratedTo = decoratedToMapped;
+        }
+        else if (tree != this.tree || update.viewportChanged || styleChange) {
+            this.tree = tree;
+            this.decorations = this.buildDeco(update.view, highlighters);
+            this.decoratedTo = viewport.to;
+        }
+    }
+    buildDeco(view, highlighters) {
+        if (!highlighters || !this.tree.length)
+            return Decoration.none;
+        let builder = new RangeSetBuilder();
+        for (let { from, to } of view.visibleRanges) {
+            highlightTree(this.tree, highlighters, (from, to, style) => {
+                builder.add(from, to, this.markCache[style] || (this.markCache[style] = Decoration.mark({ class: style })));
+            }, from, to);
+        }
+        return builder.finish();
+    }
+}
+const treeHighlighter = /*@__PURE__*/Prec.high(/*@__PURE__*/ViewPlugin.fromClass(TreeHighlighter, {
+    decorations: v => v.decorations
+}));
+/**
+A default highlight style (works well with light themes).
+*/
+const defaultHighlightStyle = /*@__PURE__*/HighlightStyle.define([
+    { tag: tags.meta,
+        color: "#404740" },
+    { tag: tags.link,
+        textDecoration: "underline" },
+    { tag: tags.heading,
+        textDecoration: "underline",
+        fontWeight: "bold" },
+    { tag: tags.emphasis,
+        fontStyle: "italic" },
+    { tag: tags.strong,
+        fontWeight: "bold" },
+    { tag: tags.strikethrough,
+        textDecoration: "line-through" },
+    { tag: tags.keyword,
+        color: "#708" },
+    { tag: [tags.atom, tags.bool, tags.url, tags.contentSeparator, tags.labelName],
+        color: "#219" },
+    { tag: [tags.literal, tags.inserted],
+        color: "#164" },
+    { tag: [tags.string, tags.deleted],
+        color: "#a11" },
+    { tag: [tags.regexp, tags.escape, /*@__PURE__*/tags.special(tags.string)],
+        color: "#e40" },
+    { tag: /*@__PURE__*/tags.definition(tags.variableName),
+        color: "#00f" },
+    { tag: /*@__PURE__*/tags.local(tags.variableName),
+        color: "#30a" },
+    { tag: [tags.typeName, tags.namespace],
+        color: "#085" },
+    { tag: tags.className,
+        color: "#167" },
+    { tag: [/*@__PURE__*/tags.special(tags.variableName), tags.macroName],
+        color: "#256" },
+    { tag: /*@__PURE__*/tags.definition(tags.propertyName),
+        color: "#00c" },
+    { tag: tags.comment,
+        color: "#940" },
+    { tag: tags.invalid,
+        color: "#f00" }
+]);
+
+const baseTheme = /*@__PURE__*/EditorView.baseTheme({
+    "&.cm-focused .cm-matchingBracket": { backgroundColor: "#328c8252" },
+    "&.cm-focused .cm-nonmatchingBracket": { backgroundColor: "#bb555544" }
+});
+const DefaultScanDist = 10000, DefaultBrackets = "()[]{}";
+const bracketMatchingConfig = /*@__PURE__*/Facet.define({
+    combine(configs) {
+        return combineConfig(configs, {
+            afterCursor: true,
+            brackets: DefaultBrackets,
+            maxScanDistance: DefaultScanDist,
+            renderMatch: defaultRenderMatch
+        });
+    }
+});
+const matchingMark = /*@__PURE__*/Decoration.mark({ class: "cm-matchingBracket" }), nonmatchingMark = /*@__PURE__*/Decoration.mark({ class: "cm-nonmatchingBracket" });
+function defaultRenderMatch(match) {
+    let decorations = [];
+    let mark = match.matched ? matchingMark : nonmatchingMark;
+    decorations.push(mark.range(match.start.from, match.start.to));
+    if (match.end)
+        decorations.push(mark.range(match.end.from, match.end.to));
+    return decorations;
+}
+function bracketDeco(state) {
+    let decorations = [];
+    let config = state.facet(bracketMatchingConfig);
+    for (let range of state.selection.ranges) {
+        if (!range.empty)
+            continue;
+        let match = matchBrackets(state, range.head, -1, config)
+            || (range.head > 0 && matchBrackets(state, range.head - 1, 1, config))
+            || (config.afterCursor &&
+                (matchBrackets(state, range.head, 1, config) ||
+                    (range.head < state.doc.length && matchBrackets(state, range.head + 1, -1, config))));
+        if (match)
+            decorations = decorations.concat(config.renderMatch(match, state));
+    }
+    return Decoration.set(decorations, true);
+}
+const bracketMatcher = /*@__PURE__*/ViewPlugin.fromClass(class {
+    constructor(view) {
+        this.paused = false;
+        this.decorations = bracketDeco(view.state);
+    }
+    update(update) {
+        if (update.docChanged || update.selectionSet || this.paused) {
+            if (update.view.composing) {
+                this.decorations = this.decorations.map(update.changes);
+                this.paused = true;
+            }
+            else {
+                this.decorations = bracketDeco(update.state);
+                this.paused = false;
+            }
+        }
+    }
+}, {
+    decorations: v => v.decorations
+});
+const bracketMatchingUnique = [
+    bracketMatcher,
+    baseTheme
+];
+/**
+Create an extension that enables bracket matching. Whenever the
+cursor is next to a bracket, that bracket and the one it matches
+are highlighted. Or, when no matching bracket is found, another
+highlighting style is used to indicate this.
+*/
+function bracketMatching(config = {}) {
+    return [bracketMatchingConfig.of(config), bracketMatchingUnique];
+}
+/**
+When larger syntax nodes, such as HTML tags, are marked as
+opening/closing, it can be a bit messy to treat the whole node as
+a matchable bracket. This node prop allows you to define, for such
+a node, a ‘handle’—the part of the node that is highlighted, and
+that the cursor must be on to activate highlighting in the first
+place.
+*/
+const bracketMatchingHandle = /*@__PURE__*/new NodeProp();
+function matchingNodes(node, dir, brackets) {
+    let byProp = node.prop(dir < 0 ? NodeProp.openedBy : NodeProp.closedBy);
+    if (byProp)
+        return byProp;
+    if (node.name.length == 1) {
+        let index = brackets.indexOf(node.name);
+        if (index > -1 && index % 2 == (dir < 0 ? 1 : 0))
+            return [brackets[index + dir]];
+    }
+    return null;
+}
+function findHandle(node) {
+    let hasHandle = node.type.prop(bracketMatchingHandle);
+    return hasHandle ? hasHandle(node.node) : node;
+}
+/**
+Find the matching bracket for the token at `pos`, scanning
+direction `dir`. Only the `brackets` and `maxScanDistance`
+properties are used from `config`, if given. Returns null if no
+bracket was found at `pos`, or a match result otherwise.
+*/
+function matchBrackets(state, pos, dir, config = {}) {
+    let maxScanDistance = config.maxScanDistance || DefaultScanDist, brackets = config.brackets || DefaultBrackets;
+    let tree = syntaxTree(state), node = tree.resolveInner(pos, dir);
+    for (let cur = node; cur; cur = cur.parent) {
+        let matches = matchingNodes(cur.type, dir, brackets);
+        if (matches && cur.from < cur.to) {
+            let handle = findHandle(cur);
+            if (handle && (dir > 0 ? pos >= handle.from && pos < handle.to : pos > handle.from && pos <= handle.to))
+                return matchMarkedBrackets(state, pos, dir, cur, handle, matches, brackets);
+        }
+    }
+    return matchPlainBrackets(state, pos, dir, tree, node.type, maxScanDistance, brackets);
+}
+function matchMarkedBrackets(_state, _pos, dir, token, handle, matching, brackets) {
+    let parent = token.parent, firstToken = { from: handle.from, to: handle.to };
+    let depth = 0, cursor = parent === null || parent === void 0 ? void 0 : parent.cursor();
+    if (cursor && (dir < 0 ? cursor.childBefore(token.from) : cursor.childAfter(token.to)))
+        do {
+            if (dir < 0 ? cursor.to <= token.from : cursor.from >= token.to) {
+                if (depth == 0 && matching.indexOf(cursor.type.name) > -1 && cursor.from < cursor.to) {
+                    let endHandle = findHandle(cursor);
+                    return { start: firstToken, end: endHandle ? { from: endHandle.from, to: endHandle.to } : undefined, matched: true };
+                }
+                else if (matchingNodes(cursor.type, dir, brackets)) {
+                    depth++;
+                }
+                else if (matchingNodes(cursor.type, -dir, brackets)) {
+                    if (depth == 0) {
+                        let endHandle = findHandle(cursor);
+                        return {
+                            start: firstToken,
+                            end: endHandle && endHandle.from < endHandle.to ? { from: endHandle.from, to: endHandle.to } : undefined,
+                            matched: false
+                        };
+                    }
+                    depth--;
+                }
+            }
+        } while (dir < 0 ? cursor.prevSibling() : cursor.nextSibling());
+    return { start: firstToken, matched: false };
+}
+function matchPlainBrackets(state, pos, dir, tree, tokenType, maxScanDistance, brackets) {
+    if (dir < 0 ? !pos : pos == state.doc.length)
+        return null;
+    let startCh = dir < 0 ? state.sliceDoc(pos - 1, pos) : state.sliceDoc(pos, pos + 1);
+    let bracket = brackets.indexOf(startCh);
+    if (bracket < 0 || (bracket % 2 == 0) != (dir > 0))
+        return null;
+    let startToken = { from: dir < 0 ? pos - 1 : pos, to: dir > 0 ? pos + 1 : pos };
+    let iter = state.doc.iterRange(pos, dir > 0 ? state.doc.length : 0), depth = 0;
+    for (let distance = 0; !(iter.next()).done && distance <= maxScanDistance;) {
+        let text = iter.value;
+        if (dir < 0)
+            distance += text.length;
+        let basePos = pos + distance * dir;
+        for (let pos = dir > 0 ? 0 : text.length - 1, end = dir > 0 ? text.length : -1; pos != end; pos += dir) {
+            let found = brackets.indexOf(text[pos]);
+            if (found < 0 || tree.resolveInner(basePos + pos, 1).type != tokenType)
+                continue;
+            if ((found % 2 == 0) == (dir > 0)) {
+                depth++;
+            }
+            else if (depth == 1) { // Closing
+                return { start: startToken, end: { from: basePos + pos, to: basePos + pos + 1 }, matched: (found >> 1) == (bracket >> 1) };
+            }
+            else {
+                depth--;
+            }
+        }
+        if (dir > 0)
+            distance += text.length;
+    }
+    return iter.done ? { start: startToken, matched: false } : null;
+}
+
+// Counts the column offset in a string, taking tabs into account.
+// Used mostly to find indentation.
+function countCol(string, end, tabSize, startIndex = 0, startValue = 0) {
+    if (end == null) {
+        end = string.search(/[^\s\u00a0]/);
+        if (end == -1)
+            end = string.length;
+    }
+    let n = startValue;
+    for (let i = startIndex; i < end; i++) {
+        if (string.charCodeAt(i) == 9)
+            n += tabSize - (n % tabSize);
+        else
+            n++;
+    }
+    return n;
+}
+/**
+Encapsulates a single line of input. Given to stream syntax code,
+which uses it to tokenize the content.
+*/
+class StringStream {
+    /**
+    Create a stream.
+    */
+    constructor(
+    /**
+    The line.
+    */
+    string, tabSize, 
+    /**
+    The current indent unit size.
+    */
+    indentUnit, overrideIndent) {
+        this.string = string;
+        this.tabSize = tabSize;
+        this.indentUnit = indentUnit;
+        this.overrideIndent = overrideIndent;
+        /**
+        The current position on the line.
+        */
+        this.pos = 0;
+        /**
+        The start position of the current token.
+        */
+        this.start = 0;
+        this.lastColumnPos = 0;
+        this.lastColumnValue = 0;
+    }
+    /**
+    True if we are at the end of the line.
+    */
+    eol() { return this.pos >= this.string.length; }
+    /**
+    True if we are at the start of the line.
+    */
+    sol() { return this.pos == 0; }
+    /**
+    Get the next code unit after the current position, or undefined
+    if we're at the end of the line.
+    */
+    peek() { return this.string.charAt(this.pos) || undefined; }
+    /**
+    Read the next code unit and advance `this.pos`.
+    */
+    next() {
+        if (this.pos < this.string.length)
+            return this.string.charAt(this.pos++);
+    }
+    /**
+    Match the next character against the given string, regular
+    expression, or predicate. Consume and return it if it matches.
+    */
+    eat(match) {
+        let ch = this.string.charAt(this.pos);
+        let ok;
+        if (typeof match == "string")
+            ok = ch == match;
+        else
+            ok = ch && (match instanceof RegExp ? match.test(ch) : match(ch));
+        if (ok) {
+            ++this.pos;
+            return ch;
+        }
+    }
+    /**
+    Continue matching characters that match the given string,
+    regular expression, or predicate function. Return true if any
+    characters were consumed.
+    */
+    eatWhile(match) {
+        let start = this.pos;
+        while (this.eat(match)) { }
+        return this.pos > start;
+    }
+    /**
+    Consume whitespace ahead of `this.pos`. Return true if any was
+    found.
+    */
+    eatSpace() {
+        let start = this.pos;
+        while (/[\s\u00a0]/.test(this.string.charAt(this.pos)))
+            ++this.pos;
+        return this.pos > start;
+    }
+    /**
+    Move to the end of the line.
+    */
+    skipToEnd() { this.pos = this.string.length; }
+    /**
+    Move to directly before the given character, if found on the
+    current line.
+    */
+    skipTo(ch) {
+        let found = this.string.indexOf(ch, this.pos);
+        if (found > -1) {
+            this.pos = found;
+            return true;
+        }
+    }
+    /**
+    Move back `n` characters.
+    */
+    backUp(n) { this.pos -= n; }
+    /**
+    Get the column position at `this.pos`.
+    */
+    column() {
+        if (this.lastColumnPos < this.start) {
+            this.lastColumnValue = countCol(this.string, this.start, this.tabSize, this.lastColumnPos, this.lastColumnValue);
+            this.lastColumnPos = this.start;
+        }
+        return this.lastColumnValue;
+    }
+    /**
+    Get the indentation column of the current line.
+    */
+    indentation() {
+        var _a;
+        return (_a = this.overrideIndent) !== null && _a !== void 0 ? _a : countCol(this.string, null, this.tabSize);
+    }
+    /**
+    Match the input against the given string or regular expression
+    (which should start with a `^`). Return true or the regexp match
+    if it matches.
+    
+    Unless `consume` is set to `false`, this will move `this.pos`
+    past the matched text.
+    
+    When matching a string `caseInsensitive` can be set to true to
+    make the match case-insensitive.
+    */
+    match(pattern, consume, caseInsensitive) {
+        if (typeof pattern == "string") {
+            let cased = (str) => caseInsensitive ? str.toLowerCase() : str;
+            let substr = this.string.substr(this.pos, pattern.length);
+            if (cased(substr) == cased(pattern)) {
+                if (consume !== false)
+                    this.pos += pattern.length;
+                return true;
+            }
+            else
+                return null;
+        }
+        else {
+            let match = this.string.slice(this.pos).match(pattern);
+            if (match && match.index > 0)
+                return null;
+            if (match && consume !== false)
+                this.pos += match[0].length;
+            return match;
+        }
+    }
+    /**
+    Get the current token.
+    */
+    current() { return this.string.slice(this.start, this.pos); }
+}
+
+function fullParser(spec) {
+    return {
+        name: spec.name || "",
+        token: spec.token,
+        blankLine: spec.blankLine || (() => { }),
+        startState: spec.startState || (() => true),
+        copyState: spec.copyState || defaultCopyState,
+        indent: spec.indent || (() => null),
+        languageData: spec.languageData || {},
+        tokenTable: spec.tokenTable || noTokens,
+        mergeTokens: spec.mergeTokens !== false
+    };
+}
+function defaultCopyState(state) {
+    if (typeof state != "object")
+        return state;
+    let newState = {};
+    for (let prop in state) {
+        let val = state[prop];
+        newState[prop] = (val instanceof Array ? val.slice() : val);
+    }
+    return newState;
+}
+const IndentedFrom = /*@__PURE__*/new WeakMap();
+/**
+A [language](https://codemirror.net/6/docs/ref/#language.Language) class based on a CodeMirror
+5-style [streaming parser](https://codemirror.net/6/docs/ref/#language.StreamParser).
+*/
+class StreamLanguage extends Language {
+    constructor(parser) {
+        let data = defineLanguageFacet(parser.languageData);
+        let p = fullParser(parser), self;
+        let impl = new class extends Parser {
+            createParse(input, fragments, ranges) {
+                return new Parse(self, input, fragments, ranges);
+            }
+        };
+        super(data, impl, [], parser.name);
+        this.topNode = docID(data, this);
+        self = this;
+        this.streamParser = p;
+        this.stateAfter = new NodeProp({ perNode: true });
+        this.tokenTable = parser.tokenTable ? new TokenTable(p.tokenTable) : defaultTokenTable;
+    }
+    /**
+    Define a stream language.
+    */
+    static define(spec) { return new StreamLanguage(spec); }
+    /**
+    @internal
+    */
+    getIndent(cx) {
+        let from = undefined;
+        let { overrideIndentation } = cx.options;
+        if (overrideIndentation) {
+            from = IndentedFrom.get(cx.state);
+            if (from != null && from < cx.pos - 1e4)
+                from = undefined;
+        }
+        let start = findState(this, cx.node.tree, cx.node.from, cx.node.from, from !== null && from !== void 0 ? from : cx.pos), statePos, state;
+        if (start) {
+            state = start.state;
+            statePos = start.pos + 1;
+        }
+        else {
+            state = this.streamParser.startState(cx.unit);
+            statePos = cx.node.from;
+        }
+        if (cx.pos - statePos > 10000 /* C.MaxIndentScanDist */)
+            return null;
+        while (statePos < cx.pos) {
+            let line = cx.state.doc.lineAt(statePos), end = Math.min(cx.pos, line.to);
+            if (line.length) {
+                let indentation = overrideIndentation ? overrideIndentation(line.from) : -1;
+                let stream = new StringStream(line.text, cx.state.tabSize, cx.unit, indentation < 0 ? undefined : indentation);
+                while (stream.pos < end - line.from)
+                    readToken(this.streamParser.token, stream, state);
+            }
+            else {
+                this.streamParser.blankLine(state, cx.unit);
+            }
+            if (end == cx.pos)
+                break;
+            statePos = line.to + 1;
+        }
+        let line = cx.lineAt(cx.pos);
+        if (overrideIndentation && from == null)
+            IndentedFrom.set(cx.state, line.from);
+        return this.streamParser.indent(state, /^\s*(.*)/.exec(line.text)[1], cx);
+    }
+    get allowsNesting() { return false; }
+}
+function findState(lang, tree, off, startPos, before) {
+    let state = off >= startPos && off + tree.length <= before && tree.prop(lang.stateAfter);
+    if (state)
+        return { state: lang.streamParser.copyState(state), pos: off + tree.length };
+    for (let i = tree.children.length - 1; i >= 0; i--) {
+        let child = tree.children[i], pos = off + tree.positions[i];
+        let found = child instanceof Tree && pos < before && findState(lang, child, pos, startPos, before);
+        if (found)
+            return found;
+    }
+    return null;
+}
+function cutTree(lang, tree, from, to, inside) {
+    if (inside && from <= 0 && to >= tree.length)
+        return tree;
+    if (!inside && from == 0 && tree.type == lang.topNode)
+        inside = true;
+    for (let i = tree.children.length - 1; i >= 0; i--) {
+        let pos = tree.positions[i], child = tree.children[i], inner;
+        if (pos < to && child instanceof Tree) {
+            if (!(inner = cutTree(lang, child, from - pos, to - pos, inside)))
+                break;
+            return !inside ? inner
+                : new Tree(tree.type, tree.children.slice(0, i).concat(inner), tree.positions.slice(0, i + 1), pos + inner.length);
+        }
+    }
+    return null;
+}
+function findStartInFragments(lang, fragments, startPos, endPos, editorState) {
+    for (let f of fragments) {
+        let from = f.from + (f.openStart ? 25 : 0), to = f.to - (f.openEnd ? 25 : 0);
+        let found = from <= startPos && to > startPos && findState(lang, f.tree, 0 - f.offset, startPos, to), tree;
+        if (found && found.pos <= endPos && (tree = cutTree(lang, f.tree, startPos + f.offset, found.pos + f.offset, false)))
+            return { state: found.state, tree };
+    }
+    return { state: lang.streamParser.startState(editorState ? getIndentUnit(editorState) : 4), tree: Tree.empty };
+}
+class Parse {
+    constructor(lang, input, fragments, ranges) {
+        this.lang = lang;
+        this.input = input;
+        this.fragments = fragments;
+        this.ranges = ranges;
+        this.stoppedAt = null;
+        this.chunks = [];
+        this.chunkPos = [];
+        this.chunk = [];
+        this.chunkReused = undefined;
+        this.rangeIndex = 0;
+        this.to = ranges[ranges.length - 1].to;
+        let context = ParseContext.get(), from = ranges[0].from;
+        let { state, tree } = findStartInFragments(lang, fragments, from, this.to, context === null || context === void 0 ? void 0 : context.state);
+        this.state = state;
+        this.parsedPos = this.chunkStart = from + tree.length;
+        for (let i = 0; i < tree.children.length; i++) {
+            this.chunks.push(tree.children[i]);
+            this.chunkPos.push(tree.positions[i]);
+        }
+        if (context && this.parsedPos < context.viewport.from - 100000 /* C.MaxDistanceBeforeViewport */ &&
+            ranges.some(r => r.from <= context.viewport.from && r.to >= context.viewport.from)) {
+            this.state = this.lang.streamParser.startState(getIndentUnit(context.state));
+            context.skipUntilInView(this.parsedPos, context.viewport.from);
+            this.parsedPos = context.viewport.from;
+        }
+        this.moveRangeIndex();
+    }
+    advance() {
+        let context = ParseContext.get();
+        let parseEnd = this.stoppedAt == null ? this.to : Math.min(this.to, this.stoppedAt);
+        let end = Math.min(parseEnd, this.chunkStart + 512 /* C.ChunkSize */);
+        if (context)
+            end = Math.min(end, context.viewport.to);
+        while (this.parsedPos < end)
+            this.parseLine(context);
+        if (this.chunkStart < this.parsedPos)
+            this.finishChunk();
+        if (this.parsedPos >= parseEnd)
+            return this.finish();
+        if (context && this.parsedPos >= context.viewport.to) {
+            context.skipUntilInView(this.parsedPos, parseEnd);
+            return this.finish();
+        }
+        return null;
+    }
+    stopAt(pos) {
+        this.stoppedAt = pos;
+    }
+    lineAfter(pos) {
+        let chunk = this.input.chunk(pos);
+        if (!this.input.lineChunks) {
+            let eol = chunk.indexOf("\n");
+            if (eol > -1)
+                chunk = chunk.slice(0, eol);
+        }
+        else if (chunk == "\n") {
+            chunk = "";
+        }
+        return pos + chunk.length <= this.to ? chunk : chunk.slice(0, this.to - pos);
+    }
+    nextLine() {
+        let from = this.parsedPos, line = this.lineAfter(from), end = from + line.length;
+        for (let index = this.rangeIndex;;) {
+            let rangeEnd = this.ranges[index].to;
+            if (rangeEnd >= end)
+                break;
+            line = line.slice(0, rangeEnd - (end - line.length));
+            index++;
+            if (index == this.ranges.length)
+                break;
+            let rangeStart = this.ranges[index].from;
+            let after = this.lineAfter(rangeStart);
+            line += after;
+            end = rangeStart + after.length;
+        }
+        return { line, end };
+    }
+    skipGapsTo(pos, offset, side) {
+        for (;;) {
+            let end = this.ranges[this.rangeIndex].to, offPos = pos + offset;
+            if (side > 0 ? end > offPos : end >= offPos)
+                break;
+            let start = this.ranges[++this.rangeIndex].from;
+            offset += start - end;
+        }
+        return offset;
+    }
+    moveRangeIndex() {
+        while (this.ranges[this.rangeIndex].to < this.parsedPos)
+            this.rangeIndex++;
+    }
+    emitToken(id, from, to, offset) {
+        let size = 4;
+        if (this.ranges.length > 1) {
+            offset = this.skipGapsTo(from, offset, 1);
+            from += offset;
+            let len0 = this.chunk.length;
+            offset = this.skipGapsTo(to, offset, -1);
+            to += offset;
+            size += this.chunk.length - len0;
+        }
+        let last = this.chunk.length - 4;
+        if (this.lang.streamParser.mergeTokens && size == 4 && last >= 0 &&
+            this.chunk[last] == id && this.chunk[last + 2] == from)
+            this.chunk[last + 2] = to;
+        else
+            this.chunk.push(id, from, to, size);
+        return offset;
+    }
+    parseLine(context) {
+        let { line, end } = this.nextLine(), offset = 0, { streamParser } = this.lang;
+        let stream = new StringStream(line, context ? context.state.tabSize : 4, context ? getIndentUnit(context.state) : 2);
+        if (stream.eol()) {
+            streamParser.blankLine(this.state, stream.indentUnit);
+        }
+        else {
+            while (!stream.eol()) {
+                let token = readToken(streamParser.token, stream, this.state);
+                if (token)
+                    offset = this.emitToken(this.lang.tokenTable.resolve(token), this.parsedPos + stream.start, this.parsedPos + stream.pos, offset);
+                if (stream.start > 10000 /* C.MaxLineLength */)
+                    break;
+            }
+        }
+        this.parsedPos = end;
+        this.moveRangeIndex();
+        if (this.parsedPos < this.to)
+            this.parsedPos++;
+    }
+    finishChunk() {
+        let tree = Tree.build({
+            buffer: this.chunk,
+            start: this.chunkStart,
+            length: this.parsedPos - this.chunkStart,
+            nodeSet,
+            topID: 0,
+            maxBufferLength: 512 /* C.ChunkSize */,
+            reused: this.chunkReused
+        });
+        tree = new Tree(tree.type, tree.children, tree.positions, tree.length, [[this.lang.stateAfter, this.lang.streamParser.copyState(this.state)]]);
+        this.chunks.push(tree);
+        this.chunkPos.push(this.chunkStart - this.ranges[0].from);
+        this.chunk = [];
+        this.chunkReused = undefined;
+        this.chunkStart = this.parsedPos;
+    }
+    finish() {
+        return new Tree(this.lang.topNode, this.chunks, this.chunkPos, this.parsedPos - this.ranges[0].from).balance();
+    }
+}
+function readToken(token, stream, state) {
+    stream.start = stream.pos;
+    for (let i = 0; i < 10; i++) {
+        let result = token(stream, state);
+        if (stream.pos > stream.start)
+            return result;
+    }
+    throw new Error("Stream parser failed to advance stream.");
+}
+const noTokens = /*@__PURE__*/Object.create(null);
+const typeArray = [NodeType.none];
+const nodeSet = /*@__PURE__*/new NodeSet(typeArray);
+const warned = [];
+// Cache of node types by name and tags
+const byTag = /*@__PURE__*/Object.create(null);
+const defaultTable = /*@__PURE__*/Object.create(null);
+for (let [legacyName, name] of [
+    ["variable", "variableName"],
+    ["variable-2", "variableName.special"],
+    ["string-2", "string.special"],
+    ["def", "variableName.definition"],
+    ["tag", "tagName"],
+    ["attribute", "attributeName"],
+    ["type", "typeName"],
+    ["builtin", "variableName.standard"],
+    ["qualifier", "modifier"],
+    ["error", "invalid"],
+    ["header", "heading"],
+    ["property", "propertyName"]
+])
+    defaultTable[legacyName] = /*@__PURE__*/createTokenType(noTokens, name);
+class TokenTable {
+    constructor(extra) {
+        this.extra = extra;
+        this.table = Object.assign(Object.create(null), defaultTable);
+    }
+    resolve(tag) {
+        return !tag ? 0 : this.table[tag] || (this.table[tag] = createTokenType(this.extra, tag));
+    }
+}
+const defaultTokenTable = /*@__PURE__*/new TokenTable(noTokens);
+function warnForPart(part, msg) {
+    if (warned.indexOf(part) > -1)
+        return;
+    warned.push(part);
+    console.warn(msg);
+}
+function createTokenType(extra, tagStr) {
+    let tags$1 = [];
+    for (let name of tagStr.split(" ")) {
+        let found = [];
+        for (let part of name.split(".")) {
+            let value = (extra[part] || tags[part]);
+            if (!value) {
+                warnForPart(part, `Unknown highlighting tag ${part}`);
+            }
+            else if (typeof value == "function") {
+                if (!found.length)
+                    warnForPart(part, `Modifier ${part} used at start of tag`);
+                else
+                    found = found.map(value);
+            }
+            else {
+                if (found.length)
+                    warnForPart(part, `Tag ${part} used as modifier`);
+                else
+                    found = Array.isArray(value) ? value : [value];
+            }
+        }
+        for (let tag of found)
+            tags$1.push(tag);
+    }
+    if (!tags$1.length)
+        return 0;
+    let name = tagStr.replace(/ /g, "_"), key = name + " " + tags$1.map(t => t.id);
+    let known = byTag[key];
+    if (known)
+        return known.id;
+    let type = byTag[key] = NodeType.define({
+        id: typeArray.length,
+        name,
+        props: [styleTags({ [name]: tags$1 })]
+    });
+    typeArray.push(type);
+    return type.id;
+}
+function docID(data, lang) {
+    let type = NodeType.define({ id: typeArray.length, name: "Document", props: [
+            languageDataProp.add(() => data),
+            indentNodeProp.add(() => cx => lang.getIndent(cx))
+        ], top: true });
+    typeArray.push(type);
+    return type;
+}
+
+function buildForLine(line) {
+    return line.length <= 4096 && /[\u0590-\u05f4\u0600-\u06ff\u0700-\u08ac\ufb50-\ufdff]/.test(line);
+}
+function textHasRTL(text) {
+    for (let i = text.iter(); !i.next().done;)
+        if (buildForLine(i.value))
+            return true;
+    return false;
+}
+function changeAddsRTL(change) {
+    let added = false;
+    change.iterChanges((fA, tA, fB, tB, ins) => {
+        if (!added && textHasRTL(ins))
+            added = true;
+    });
+    return added;
+}
+const alwaysIsolate = /*@__PURE__*/Facet.define({ combine: values => values.some(x => x) });
+/**
+Make sure nodes
+[marked](https://lezer.codemirror.net/docs/ref/#common.NodeProp^isolate)
+as isolating for bidirectional text are rendered in a way that
+isolates them from the surrounding text.
+*/
+function bidiIsolates(options = {}) {
+    let extensions = [isolateMarks];
+    if (options.alwaysIsolate)
+        extensions.push(alwaysIsolate.of(true));
+    return extensions;
+}
+const isolateMarks = /*@__PURE__*/ViewPlugin.fromClass(class {
+    constructor(view) {
+        this.always = view.state.facet(alwaysIsolate) ||
+            view.textDirection != Direction.LTR ||
+            view.state.facet(EditorView.perLineTextDirection);
+        this.hasRTL = !this.always && textHasRTL(view.state.doc);
+        this.tree = syntaxTree(view.state);
+        this.decorations = this.always || this.hasRTL ? buildDeco(view, this.tree, this.always) : Decoration.none;
+    }
+    update(update) {
+        let always = update.state.facet(alwaysIsolate) ||
+            update.view.textDirection != Direction.LTR ||
+            update.state.facet(EditorView.perLineTextDirection);
+        if (!always && !this.hasRTL && changeAddsRTL(update.changes))
+            this.hasRTL = true;
+        if (!always && !this.hasRTL)
+            return;
+        let tree = syntaxTree(update.state);
+        if (always != this.always || tree != this.tree || update.docChanged || update.viewportChanged) {
+            this.tree = tree;
+            this.always = always;
+            this.decorations = buildDeco(update.view, tree, always);
+        }
+    }
+}, {
+    provide: plugin => {
+        function access(view) {
+            var _a, _b;
+            return (_b = (_a = view.plugin(plugin)) === null || _a === void 0 ? void 0 : _a.decorations) !== null && _b !== void 0 ? _b : Decoration.none;
+        }
+        return [EditorView.outerDecorations.of(access),
+            Prec.lowest(EditorView.bidiIsolatedRanges.of(access))];
+    }
+});
+function buildDeco(view, tree, always) {
+    let deco = new RangeSetBuilder();
+    let ranges = view.visibleRanges;
+    if (!always)
+        ranges = clipRTLLines(ranges, view.state.doc);
+    for (let { from, to } of ranges) {
+        tree.iterate({
+            enter: node => {
+                let iso = node.type.prop(NodeProp.isolate);
+                if (iso)
+                    deco.add(node.from, node.to, marks[iso]);
+            },
+            from, to
+        });
+    }
+    return deco.finish();
+}
+function clipRTLLines(ranges, doc) {
+    let cur = doc.iter(), pos = 0, result = [], last = null;
+    for (let { from, to } of ranges) {
+        if (last && last.to > from) {
+            from = last.to;
+            if (from >= to)
+                continue;
+        }
+        if (pos + cur.value.length < from) {
+            cur.next(from - (pos + cur.value.length));
+            pos = from;
+        }
+        for (;;) {
+            let start = pos, end = pos + cur.value.length;
+            if (!cur.lineBreak && buildForLine(cur.value)) {
+                if (last && last.to > start - 10)
+                    last.to = Math.min(to, end);
+                else
+                    result.push(last = { from: start, to: Math.min(to, end) });
+            }
+            if (end >= to)
+                break;
+            pos = end;
+            cur.next();
+        }
+    }
+    return result;
+}
+const marks = {
+    rtl: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "rtl" }, bidiIsolate: Direction.RTL }),
+    ltr: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "ltr" }, bidiIsolate: Direction.LTR }),
+    auto: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "auto" }, bidiIsolate: null })
+};
+
+export { DocInput, HighlightStyle, IndentContext, LRLanguage, Language, LanguageDescription, LanguageSupport, ParseContext, StreamLanguage, StringStream, TreeIndentContext, bidiIsolates, bracketMatching, bracketMatchingHandle, codeFolding, continuedIndent, defaultHighlightStyle, defineLanguageFacet, delimitedIndent, ensureSyntaxTree, flatIndent, foldAll, foldCode, foldEffect, foldGutter, foldInside, foldKeymap, foldNodeProp, foldService, foldState, foldable, foldedRanges, forceParsing, getIndentUnit, getIndentation, highlightingFor, indentNodeProp, indentOnInput, indentRange, indentService, indentString, indentUnit, language, languageDataProp, matchBrackets, sublanguageProp, syntaxHighlighting, syntaxParserRunning, syntaxTree, syntaxTreeAvailable, toggleFold, unfoldAll, unfoldCode, unfoldEffect };

@@ -1,5 +1,1232 @@
-// @codemirror/search@6.7.0 downloaded from https://ga.jspm.io/npm:@codemirror/search@6.7.0/dist/index.js
+// @codemirror/search@6.7.1 downloaded from https://cdn.jsdelivr.net/npm/@codemirror/search@6.7.1/dist/index.js
 
-import{showDialog as e,EditorView as t,ViewPlugin as n,Decoration as r,showPanel as i,getPanel as a,runScopeHandlers as o}from"@codemirror/view";import{codePointAt as s,fromCodePoint as c,codePointSize as l,EditorSelection as u,Facet as d,combineConfig as f,CharCategory as p,StateField as m,Prec as h,EditorState as ee,findClusterBreak as g,StateEffect as _,RangeSetBuilder as te}from"@codemirror/state";import v from"crelt";const y=typeof String.prototype.normalize==`function`?e=>e.normalize(`NFKD`):e=>e;class SearchCursor{constructor(e,t,n=0,r=e.length,i,a){this.test=a,this.value={from:0,to:0,precise:!1},this.done=!1,this.matches=[],this.buffer=``,this.bufferPos=0,this.iter=e.iterRange(n,r),this.bufferStart=n,this.normalize=i?e=>i(y(e)):y,this.query=this.normalize(t)}peek(){if(this.bufferPos==this.buffer.length){if(this.bufferStart+=this.buffer.length,this.iter.next(),this.iter.done)return-1;this.bufferPos=0,this.buffer=this.iter.value}return s(this.buffer,this.bufferPos)}next(){for(;this.matches.length;)this.matches.pop();return this.nextOverlapping()}nextOverlapping(){for(;;){let e=this.peek();if(e<0)return this.done=!0,this;let t=c(e),n=this.bufferStart+this.bufferPos;this.bufferPos+=l(e);let r=this.normalize(t);if(r.length)for(let e=0,i=n,a=!0;;e++){let n=r.charCodeAt(e),o=this.match(n,i,a,this.bufferPos+this.bufferStart,e==r.length-1);if(o)return this.value=o,this;if(e==r.length-1)break;a&&e<t.length&&t.charCodeAt(e)==n?i++:a=!1}}}match(e,t,n,r,i){let a=null;for(let t=0;t<this.matches.length;){let n=this.matches[t],o=!1;this.query.charCodeAt(n.index)==e&&(n.index==this.query.length-1?a={from:n.from,to:r,precise:i&&n.precise}:(n.index++,o=!0)),o?t++:this.matches.splice(t,1)}return this.query.charCodeAt(0)==e&&(this.query.length==1?a={from:t,to:r,precise:n&&i}:this.matches.push({from:t,index:1,precise:n})),a&&this.test&&!this.test(a.from,a.to,this.buffer,this.bufferStart)&&(a=null),a}}typeof Symbol<`u`&&(SearchCursor.prototype[Symbol.iterator]=function(){return this});const b={from:-1,to:-1,match:/* @__PURE__ */ /.*/.exec(``),precise:!0},x=`gm`+(/x/.unicode==null?``:`u`);class RegExpCursor{constructor(e,t,n,r=0,i=e.length){if(this.text=e,this.to=i,this.curLine=``,this.done=!1,this.value=b,/\\[sWDnr]|\n|\r|\[\^/.test(t))return new MultilineRegExpCursor(e,t,n,r,i);this.re=new RegExp(t,x+(n?.ignoreCase?`i`:``)),this.test=n?.test,this.iter=e.iter(),this.curLineStart=e.lineAt(r).from,this.matchPos=C(e,r),this.getLine(this.curLineStart)}getLine(e){this.iter.next(e),this.iter.lineBreak?this.curLine=``:(this.curLine=this.iter.value,this.curLineStart+this.curLine.length>this.to&&(this.curLine=this.curLine.slice(0,this.to-this.curLineStart)),this.iter.next())}nextLine(){this.curLineStart=this.curLineStart+this.curLine.length+1,this.curLineStart>this.to?this.curLine=``:this.getLine(0)}next(){for(let e=this.matchPos-this.curLineStart;;){this.re.lastIndex=e;let t=this.matchPos<=this.to&&this.re.exec(this.curLine);if(t){let n=this.curLineStart+t.index,r=n+t[0].length;if(this.matchPos=C(this.text,r+(n==r?1:0)),n==this.curLineStart+this.curLine.length&&this.nextLine(),(n<r||n>this.value.to)&&(!this.test||this.test(n,r,t)))return this.value={from:n,to:r,precise:!0,match:t},this;e=this.matchPos-this.curLineStart}else if(this.curLineStart+this.curLine.length<this.to)this.nextLine(),e=0;else return this.done=!0,this}}}const S=/* @__PURE__ */ new WeakMap;class FlattenedDoc{constructor(e,t){this.from=e,this.text=t}get to(){return this.from+this.text.length}static get(e,t,n){let r=S.get(e);if(!r||r.from>=n||r.to<=t){let r=new FlattenedDoc(t,e.sliceString(t,n));return S.set(e,r),r}if(r.from==t&&r.to==n)return r;let{text:i,from:a}=r;return a>t&&(i=e.sliceString(t,a)+i,a=t),r.to<n&&(i+=e.sliceString(r.to,n)),S.set(e,new FlattenedDoc(a,i)),new FlattenedDoc(t,i.slice(t-a,n-a))}}class MultilineRegExpCursor{constructor(e,t,n,r,i){this.text=e,this.to=i,this.done=!1,this.value=b,this.matchPos=C(e,r),this.re=new RegExp(t,x+(n?.ignoreCase?`i`:``)),this.test=n?.test,this.flat=FlattenedDoc.get(e,r,this.chunkEnd(r+5e3))}chunkEnd(e){return e>=this.to?this.to:this.text.lineAt(e).to}next(){for(;;){let e=this.re.lastIndex=this.matchPos-this.flat.from,t=this.re.exec(this.flat.text);if(t&&!t[0]&&t.index==e&&(this.re.lastIndex=e+1,t=this.re.exec(this.flat.text)),t){let e=this.flat.from+t.index,n=e+t[0].length;if((this.flat.to>=this.to||t.index+t[0].length<=this.flat.text.length-10)&&(!this.test||this.test(e,n,t)))return this.value={from:e,to:n,precise:!0,match:t},this.matchPos=C(this.text,n+(e==n?1:0)),this}if(this.flat.to==this.to)return this.done=!0,this;this.flat=FlattenedDoc.get(this.text,this.flat.from,this.chunkEnd(this.flat.from+this.flat.text.length*2))}}}typeof Symbol<`u`&&(RegExpCursor.prototype[Symbol.iterator]=MultilineRegExpCursor.prototype[Symbol.iterator]=function(){return this});function ne(e){try{return new RegExp(e,x),!0}catch{return!1}}function C(e,t){if(t>=e.length)return t;let n=e.lineAt(t),r;for(;t<n.to&&(r=n.text.charCodeAt(t-n.from))>=56320&&r<57344;)t++;return t}const w=n=>{let{state:r}=n,i=String(r.doc.lineAt(n.state.selection.main.head).number),{close:a,result:o}=e(n,{label:r.phrase(`Go to line`),input:{type:`text`,name:`line`,value:i},focus:!0,submitLabel:r.phrase(`go`)});return o.then(e=>{let i=e&&/^([+-])?(\d+)?(:\d+)?(%)?$/.exec(e.elements.line.value);if(!i){n.dispatch({effects:a});return}let o=r.doc.lineAt(r.selection.main.head),[,s,c,l,d]=i,f=l?+l.slice(1):0,p=c?+c:o.number;if(c&&d){let e=p/100;s&&(e=e*(s==`-`?-1:1)+o.number/r.doc.lines),p=Math.round(r.doc.lines*e)}else c&&s&&(p=p*(s==`-`?-1:1)+o.number);let m=r.doc.line(Math.max(1,Math.min(r.doc.lines,p))),h=u.cursor(m.from+Math.max(0,Math.min(f,m.length)));n.dispatch({effects:[a,t.scrollIntoView(h.from,{y:`center`})],selection:h})}),!0},re={highlightWordAroundCursor:!1,minSelectionLength:1,maxMatches:100,wholeWords:!1},T=/* @__PURE__ */ d.define({combine(e){return f(e,re,{highlightWordAroundCursor:(e,t)=>e||t,minSelectionLength:Math.min,maxMatches:Math.min})}});function ie(e){let t=[le,ce];return e&&t.push(T.of(e)),t}const ae=/* @__PURE__ */ r.mark({class:`cm-selectionMatch`}),oe=/* @__PURE__ */ r.mark({class:`cm-selectionMatch cm-selectionMatch-main`});function E(e,t,n,r){return(n==0||e(t.sliceDoc(n-1,n))!=p.Word)&&(r==t.doc.length||e(t.sliceDoc(r,r+1))!=p.Word)}function se(e,t,n,r){return e(t.sliceDoc(n,n+1))==p.Word&&e(t.sliceDoc(r-1,r))==p.Word}const ce=/* @__PURE__ */ n.fromClass(class{constructor(e){this.decorations=this.getDeco(e)}update(e){(e.selectionSet||e.docChanged||e.viewportChanged)&&(this.decorations=this.getDeco(e.view))}getDeco(e){let t=e.state.facet(T),{state:n}=e,i=n.selection;if(i.ranges.length>1)return r.none;let a=i.main,o,s=null;if(a.empty){if(!t.highlightWordAroundCursor)return r.none;let e=n.wordAt(a.head);if(!e)return r.none;s=n.charCategorizer(a.head),o=n.sliceDoc(e.from,e.to)}else{let e=a.to-a.from;if(e<t.minSelectionLength||e>200)return r.none;if(t.wholeWords){if(o=n.sliceDoc(a.from,a.to),s=n.charCategorizer(a.head),!(E(s,n,a.from,a.to)&&se(s,n,a.from,a.to)))return r.none}else if(o=n.sliceDoc(a.from,a.to),!o)return r.none}let c=[];for(let i of e.visibleRanges){let e=new SearchCursor(n.doc,o,i.from,i.to);for(;!e.next().done;){let{from:i,to:o}=e.value;if((!s||E(s,n,i,o))&&(a.empty&&i<=a.from&&o>=a.to?c.push(oe.range(i,o)):(i>=a.to||o<=a.from)&&c.push(ae.range(i,o)),c.length>t.maxMatches))return r.none}}return r.set(c)}},{decorations:e=>e.decorations}),le=/* @__PURE__ */ t.baseTheme({".cm-selectionMatch":{backgroundColor:`#99ff7780`},".cm-searchMatch .cm-selectionMatch":{backgroundColor:`transparent`}}),ue=({state:e,dispatch:t})=>{let{selection:n}=e,r=u.create(n.ranges.map(t=>e.wordAt(t.head)||u.cursor(t.head)),n.mainIndex);return r.eq(n)?!1:(t(e.update({selection:r})),!0)};function de(e,t){let{main:n,ranges:r}=e.selection,i=e.wordAt(n.head),a=i&&i.from==n.from&&i.to==n.to;for(let n=!1,i=new SearchCursor(e.doc,t,r[r.length-1].to);;)if(i.next(),i.done){if(n)return null;i=new SearchCursor(e.doc,t,0,Math.max(0,r[r.length-1].from-1)),n=!0}else{if(n&&r.some(e=>e.from==i.value.from))continue;if(a){let t=e.wordAt(i.value.from);if(!t||t.from!=i.value.from||t.to!=i.value.to)continue}return i.value}}const D=({state:e,dispatch:n})=>{let{ranges:r}=e.selection;if(r.some(e=>e.from===e.to))return ue({state:e,dispatch:n});let i=e.sliceDoc(r[0].from,r[0].to);if(e.selection.ranges.some(t=>e.sliceDoc(t.from,t.to)!=i))return!1;let a=de(e,i);return a?(n(e.update({selection:e.selection.addRange(u.range(a.from,a.to),!1),effects:t.scrollIntoView(a.to)})),!0):!1},O=/* @__PURE__ */ d.define({combine(e){return f(e,{top:!1,caseSensitive:!1,literal:!1,regexp:!1,wholeWord:!1,createPanel:e=>new SearchPanel(e),scrollToMatch:e=>t.scrollIntoView(e)})}});function fe(e){return e?[O.of(e),$]:$}class SearchQuery{constructor(e){this.search=e.search,this.caseSensitive=!!e.caseSensitive,this.literal=!!e.literal,this.regexp=!!e.regexp,this.replace=e.replace||``,this.valid=!!this.search&&(!this.regexp||ne(this.search)),this.unquoted=this.unquote(this.search),this.wholeWord=!!e.wholeWord,this.test=e.test}unquote(e){return this.literal?e:e.replace(/\\([nrt\\])/g,(e,t)=>t==`n`?`
-`:t==`r`?`\r`:t==`t`?`	`:`\\`)}eq(e){return this.search==e.search&&this.replace==e.replace&&this.caseSensitive==e.caseSensitive&&this.regexp==e.regexp&&this.wholeWord==e.wholeWord&&this.test==e.test}create(){return this.regexp?new RegExpQuery(this):new StringQuery(this)}getCursor(e,t=0,n){let r=e.doc?e:ee.create({doc:e});return n??=r.doc.length,this.regexp?A(this,r,t,n):k(this,r,t,n)}}class QueryType{constructor(e){this.spec=e}}function pe(e,t,n){return(r,i,a,o)=>n&&!n(r,i,a,o)?!1:e(r>=o&&i<=o+a.length?a.slice(r-o,i-o):t.doc.sliceString(r,i),t,r,i)}function k(e,t,n,r){let i;return e.wholeWord&&(i=me(t.doc,t.charCategorizer(t.selection.main.head))),e.test&&(i=pe(e.test,t,i)),new SearchCursor(t.doc,e.unquoted,n,r,e.caseSensitive?void 0:e=>e.toLowerCase(),i)}function me(e,t){return(n,r,i,a)=>((a>n||a+i.length<r)&&(a=Math.max(0,n-2),i=e.sliceString(a,Math.min(e.length,r+2))),(t(j(i,n-a))!=p.Word||t(M(i,n-a))!=p.Word)&&(t(M(i,r-a))!=p.Word||t(j(i,r-a))!=p.Word))}class StringQuery extends QueryType{constructor(e){super(e)}nextMatch(e,t,n){let r=k(this.spec,e,n,e.doc.length).nextOverlapping();if(r.done){let n=Math.min(e.doc.length,t+this.spec.unquoted.length);r=k(this.spec,e,0,n).nextOverlapping()}return r.done||r.value.from==t&&r.value.to==n?null:r.value}prevMatchInRange(e,t,n){for(let r=n;;){let n=Math.max(t,r-1e4-this.spec.unquoted.length),i=k(this.spec,e,n,r),a=null;for(;!i.nextOverlapping().done;)a=i.value;if(a)return a;if(n==t)return null;r-=1e4}}prevMatch(e,t,n){let r=this.prevMatchInRange(e,0,t);return r||=this.prevMatchInRange(e,Math.max(0,n-this.spec.unquoted.length),e.doc.length),r&&(r.from!=t||r.to!=n)?r:null}getReplacement(e){return this.spec.unquote(this.spec.replace)}matchAll(e,t){let n=k(this.spec,e,0,e.doc.length),r=[];for(;!n.next().done;){if(r.length>=t)return null;r.push(n.value)}return r}highlight(e,t,n,r){let i=k(this.spec,e,Math.max(0,t-this.spec.unquoted.length),Math.min(n+this.spec.unquoted.length,e.doc.length));for(;!i.next().done;)r(i.value.from,i.value.to)}}function he(e,t,n){return(r,i,a)=>(!n||n(r,i,a))&&e(a[0],t,r,i)}function A(e,t,n,r){let i;return e.wholeWord&&(i=ge(t.charCategorizer(t.selection.main.head))),e.test&&(i=he(e.test,t,i)),new RegExpCursor(t.doc,e.search,{ignoreCase:!e.caseSensitive,test:i},n,r)}function j(e,t){return e.slice(g(e,t,!1),t)}function M(e,t){return e.slice(t,g(e,t))}function ge(e){return(t,n,r)=>!r[0].length||(e(j(r.input,r.index))!=p.Word||e(M(r.input,r.index))!=p.Word)&&(e(M(r.input,r.index+r[0].length))!=p.Word||e(j(r.input,r.index+r[0].length))!=p.Word)}class RegExpQuery extends QueryType{nextMatch(e,t,n){let r=A(this.spec,e,n,e.doc.length).next();return r.done&&(r=A(this.spec,e,0,t).next()),r.done?null:r.value}prevMatchInRange(e,t,n){for(let r=1;;r++){let i=Math.max(t,n-r*1e4),a=A(this.spec,e,i,n),o=null;for(;!a.next().done;)o=a.value;if(o&&(i==t||o.from>i+10))return o;if(i==t)return null}}prevMatch(e,t,n){return this.prevMatchInRange(e,0,t)||this.prevMatchInRange(e,n,e.doc.length)}getReplacement(e){return this.spec.unquote(this.spec.replace).replace(/\$([$&]|\d+)/g,(t,n)=>{if(n==`&`)return e.match[0];if(n==`$`)return`$`;for(let t=n.length;t>0;t--){let r=+n.slice(0,t);if(r>0&&r<e.match.length)return e.match[r]+n.slice(t)}return t})}matchAll(e,t){let n=A(this.spec,e,0,e.doc.length),r=[];for(;!n.next().done;){if(r.length>=t)return null;r.push(n.value)}return r}highlight(e,t,n,r){let i=A(this.spec,e,Math.max(0,t-250),Math.min(n+250,e.doc.length));for(;!i.next().done;)r(i.value.from,i.value.to)}}const N=/* @__PURE__ */ _.define(),P=/* @__PURE__ */ _.define(),F=/* @__PURE__ */ m.define({create(e){return new SearchState(G(e).create(),null)},update(e,t){for(let n of t.effects)n.is(N)?e=new SearchState(n.value.create(),e.panel):n.is(P)&&(e=new SearchState(e.query,n.value?W:null));return e},provide:e=>i.from(e,e=>e.panel)});function _e(e){let t=e.field(F,!1);return t?t.query.spec:G(e)}function I(e){var t;return(t=e.field(F,!1))?.panel!=null}class SearchState{constructor(e,t){this.query=e,this.panel=t}}const ve=/* @__PURE__ */ r.mark({class:`cm-searchMatch`}),ye=/* @__PURE__ */ r.mark({class:`cm-searchMatch cm-searchMatch-selected`}),be=/* @__PURE__ */ n.fromClass(class{constructor(e){this.view=e,this.decorations=this.highlight(e.state.field(F))}update(e){let t=e.state.field(F);(t!=e.startState.field(F)||e.docChanged||e.selectionSet||e.viewportChanged)&&(this.decorations=this.highlight(t))}highlight({query:e,panel:t}){if(!t||!e.spec.valid)return r.none;let{view:n}=this,i=new te;for(let t=0,r=n.visibleRanges,a=r.length;t<a;t++){let{from:o,to:s}=r[t];for(;t<a-1&&s>r[t+1].from-500;)s=r[++t].to;e.highlight(n.state,o,s,(e,t)=>{let r=n.state.selection.ranges.some(n=>n.from==e&&n.to==t);i.add(e,t,r?ye:ve)})}return i.finish()}},{decorations:e=>e.decorations});function L(e){return t=>{let n=t.state.field(F,!1);return n&&n.query.spec.valid?e(t,n):J(t)}}const R=/* @__PURE__ */ L((e,{query:t})=>{let{to:n}=e.state.selection.main,r=t.nextMatch(e.state,n,n);if(!r)return!1;let i=u.single(r.from,r.to),a=e.state.facet(O);return e.dispatch({selection:i,effects:[Q(e,r),a.scrollToMatch(i.main,e)],userEvent:`select.search`}),q(e),!0}),z=/* @__PURE__ */ L((e,{query:t})=>{let{state:n}=e,{from:r}=n.selection.main,i=t.prevMatch(n,r,r);if(!i)return!1;let a=u.single(i.from,i.to),o=e.state.facet(O);return e.dispatch({selection:a,effects:[Q(e,i),o.scrollToMatch(a.main,e)],userEvent:`select.search`}),q(e),!0}),B=/* @__PURE__ */ L((e,{query:t})=>{let n=t.matchAll(e.state,1e3);return!n||!n.length?!1:(e.dispatch({selection:u.create(n.map(e=>u.range(e.from,e.to))),userEvent:`select.search.matches`}),!0)}),V=({state:e,dispatch:t})=>{let n=e.selection;if(n.ranges.length>1||n.main.empty)return!1;let{from:r,to:i}=n.main,a=[],o=0;for(let t=new SearchCursor(e.doc,e.sliceDoc(r,i));!t.next().done;){if(a.length>1e3)return!1;t.value.from==r&&(o=a.length),a.push(u.range(t.value.from,t.value.to))}return t(e.update({selection:u.create(a,o),userEvent:`select.search.matches`})),!0},H=/* @__PURE__ */ L((e,{query:n})=>{let{state:r}=e,{from:i,to:a}=r.selection.main;if(r.readOnly)return!1;let o=n.nextMatch(r,i,i);if(!o)return!1;let s=o,c=[],l,d,f=[];s.precise?s.from==i&&s.to==a&&(d=r.toText(n.getReplacement(s)),c.push({from:s.from,to:s.to,insert:d}),f.push(t.announce.of(r.phrase(`replaced match on line $`,r.doc.lineAt(i).number)+`.`))):s=n.nextMatch(r,s.from,s.to);let p=e.state.changes(c);return s&&(l=u.single(s.from,s.to).map(p),f.push(Q(e,s)),f.push(r.facet(O).scrollToMatch(l.main,e))),e.dispatch({changes:p,selection:l,effects:f,userEvent:`input.replace`}),!0}),U=/* @__PURE__ */ L((e,{query:n})=>{if(e.state.readOnly)return!1;let r=[];for(let t of n.matchAll(e.state,1e9)){let{from:e,to:i,precise:a}=t;a&&r.push({from:e,to:i,insert:n.getReplacement(t)})}if(!r.length)return!1;let i=e.state.phrase(`replaced $ matches`,r.length)+`.`;return e.dispatch({changes:r,effects:t.announce.of(i),userEvent:`input.replace.all`}),!0});function W(e){return e.state.facet(O).createPanel(e)}function G(e,t){var n,r,i,a,o;let s=e.selection.main,c=s.empty||s.to>s.from+100?``:e.sliceDoc(s.from,s.to);if(t&&!c)return t;let l=e.facet(O);return new SearchQuery({search:(n=t?.literal)??l.literal?c:c.replace(/\n/g,`\\n`),caseSensitive:(r=t?.caseSensitive)??l.caseSensitive,literal:(i=t?.literal)??l.literal,regexp:(a=t?.regexp)??l.regexp,wholeWord:(o=t?.wholeWord)??l.wholeWord})}function K(e){let t=a(e,W);return t&&t.dom.querySelector(`[main-field]`)}function q(e){let t=K(e);t&&t==e.root.activeElement&&t.select()}const J=e=>{let t=e.state.field(F,!1);if(t&&t.panel){let n=K(e);if(n&&n!=e.root.activeElement){let r=G(e.state,t.query.spec);r.valid&&e.dispatch({effects:N.of(r)}),n.focus(),n.select()}}else e.dispatch({effects:[P.of(!0),t?N.of(G(e.state,t.query.spec)):_.appendConfig.of($)]});return!0},Y=e=>{let t=e.state.field(F,!1);if(!t||!t.panel)return!1;let n=a(e,W);return n&&n.dom.contains(e.root.activeElement)&&e.focus(),e.dispatch({effects:P.of(!1)}),!0},xe=[{key:`Mod-f`,run:J,scope:`editor search-panel`},{key:`F3`,run:R,shift:z,scope:`editor search-panel`,preventDefault:!0},{key:`Mod-g`,run:R,shift:z,scope:`editor search-panel`,preventDefault:!0},{key:`Escape`,run:Y,scope:`editor search-panel`},{key:`Mod-Shift-l`,run:V},{key:`Mod-Alt-g`,run:w},{key:`Mod-d`,run:D,preventDefault:!0}];class SearchPanel{constructor(e){this.view=e;let t=this.query=e.state.field(F).query.spec;this.commit=this.commit.bind(this),this.searchField=v(`input`,{value:t.search,placeholder:X(e,`Find`),"aria-label":X(e,`Find`),class:`cm-textfield`,name:`search`,form:``,"main-field":`true`,onchange:this.commit,onkeyup:this.commit}),this.replaceField=v(`input`,{value:t.replace,placeholder:X(e,`Replace`),"aria-label":X(e,`Replace`),class:`cm-textfield`,name:`replace`,form:``,onchange:this.commit,onkeyup:this.commit}),this.caseField=v(`input`,{type:`checkbox`,name:`case`,form:``,checked:t.caseSensitive,onchange:this.commit}),this.reField=v(`input`,{type:`checkbox`,name:`re`,form:``,checked:t.regexp,onchange:this.commit}),this.wordField=v(`input`,{type:`checkbox`,name:`word`,form:``,checked:t.wholeWord,onchange:this.commit});function n(e,t,n){return v(`button`,{class:`cm-button`,name:e,onclick:t,type:`button`},n)}this.dom=v(`div`,{onkeydown:e=>this.keydown(e),class:`cm-search`},[this.searchField,n(`next`,()=>R(e),[X(e,`next`)]),n(`prev`,()=>z(e),[X(e,`previous`)]),n(`select`,()=>B(e),[X(e,`all`)]),v(`label`,null,[this.caseField,X(e,`match case`)]),v(`label`,null,[this.reField,X(e,`regexp`)]),v(`label`,null,[this.wordField,X(e,`by word`)]),...e.state.readOnly?[]:[v(`br`),this.replaceField,n(`replace`,()=>H(e),[X(e,`replace`)]),n(`replaceAll`,()=>U(e),[X(e,`replace all`)])],v(`button`,{name:`close`,onclick:()=>Y(e),"aria-label":X(e,`close`),type:`button`},[`×`])])}commit(){let e=new SearchQuery({search:this.searchField.value,caseSensitive:this.caseField.checked,regexp:this.reField.checked,wholeWord:this.wordField.checked,replace:this.replaceField.value});e.eq(this.query)||(this.query=e,this.view.dispatch({effects:N.of(e)}))}keydown(e){o(this.view,e,`search-panel`)?e.preventDefault():e.keyCode==13&&e.target==this.searchField?(e.preventDefault(),(e.shiftKey?z:R)(this.view)):e.keyCode==13&&e.target==this.replaceField&&(e.preventDefault(),H(this.view))}update(e){for(let t of e.transactions)for(let e of t.effects)e.is(N)&&!e.value.eq(this.query)&&this.setQuery(e.value)}setQuery(e){this.query=e,this.searchField.value=e.search,this.replaceField.value=e.replace,this.caseField.checked=e.caseSensitive,this.reField.checked=e.regexp,this.wordField.checked=e.wholeWord}mount(){this.searchField.select()}get pos(){return 80}get top(){return this.view.state.facet(O).top}}function X(e,t){return e.state.phrase(t)}const Se=30,Z=/[\s\.,:;?!]/;function Q(e,{from:n,to:r}){let i=e.state.doc.lineAt(n),a=e.state.doc.lineAt(r).to,o=Math.max(i.from,n-30),s=Math.min(a,r+30),c=e.state.sliceDoc(o,s);if(o!=i.from){for(let e=0;e<30;e++)if(!Z.test(c[e+1])&&Z.test(c[e])){c=c.slice(e);break}}if(s!=a){for(let e=c.length-1;e>c.length-30;e--)if(!Z.test(c[e-1])&&Z.test(c[e])){c=c.slice(0,e);break}}return t.announce.of(`${e.state.phrase(`current match`)}. ${c} ${e.state.phrase(`on line`)} ${i.number}.`)}const Ce=/* @__PURE__ */ t.baseTheme({".cm-panel.cm-search":{padding:`2px 6px 4px`,position:`relative`,"& [name=close]":{position:`absolute`,top:`0`,right:`4px`,backgroundColor:`inherit`,border:`none`,font:`inherit`,padding:0,margin:0},"& input, & button, & label":{margin:`.2em .6em .2em 0`},"& input[type=checkbox]":{marginRight:`.2em`},"& label":{fontSize:`80%`,whiteSpace:`pre`}},"&light .cm-searchMatch":{backgroundColor:`#ffff0054`},"&dark .cm-searchMatch":{backgroundColor:`#00ffff8a`},"&light .cm-searchMatch-selected":{backgroundColor:`#ff6a0054`},"&dark .cm-searchMatch-selected":{backgroundColor:`#ff00ff8a`}}),$=[F,/* @__PURE__ */ h.low(be),Ce];export{RegExpCursor,SearchCursor,SearchQuery,Y as closeSearchPanel,R as findNext,z as findPrevious,_e as getSearchQuery,w as gotoLine,ie as highlightSelectionMatches,J as openSearchPanel,U as replaceAll,H as replaceNext,fe as search,xe as searchKeymap,I as searchPanelOpen,B as selectMatches,D as selectNextOccurrence,V as selectSelectionMatches,N as setSearchQuery};
+import { showDialog, EditorView, Decoration, ViewPlugin, showPanel, runScopeHandlers, getPanel } from '@codemirror/view';
+import { codePointAt, fromCodePoint, codePointSize, EditorSelection, Facet, combineConfig, CharCategory, StateEffect, StateField, RangeSetBuilder, Prec, EditorState, findClusterBreak } from '@codemirror/state';
+import elt from 'crelt';
 
+const basicNormalize = typeof String.prototype.normalize == "function"
+    ? x => x.normalize("NFKD") : x => x;
+/**
+A search cursor provides an iterator over text matches in a
+document.
+*/
+class SearchCursor {
+    /**
+    Create a text cursor. The query is the search string, `from` to
+    `to` provides the region to search.
+    
+    When `normalize` is given, it will be called, on both the query
+    string and the content it is matched against, before comparing.
+    You can, for example, create a case-insensitive search by
+    passing `s => s.toLowerCase()`.
+    
+    Text is always normalized with
+    [`.normalize("NFKD")`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize)
+    (when supported).
+    */
+    constructor(text, query, from = 0, to = text.length, normalize, test) {
+        this.test = test;
+        /**
+        The current match (only holds a meaningful value after
+        [`next`](https://codemirror.net/6/docs/ref/#search.SearchCursor.next) has been called and when
+        `done` is false).
+        
+        The `precise` flag will be set to false if the match starts or
+        ends _inside_ a character that, when normalized, expands to
+        multiple characters. It indicates that the `from`-`to` range
+        covers content that isn't part of the actual match.
+        */
+        this.value = { from: 0, to: 0, precise: false };
+        /**
+        Whether the end of the iterated region has been reached.
+        */
+        this.done = false;
+        this.matches = [];
+        this.buffer = "";
+        this.bufferPos = 0;
+        this.iter = text.iterRange(from, to);
+        this.bufferStart = from;
+        this.normalize = normalize ? x => normalize(basicNormalize(x)) : basicNormalize;
+        this.query = this.normalize(query);
+    }
+    peek() {
+        if (this.bufferPos == this.buffer.length) {
+            this.bufferStart += this.buffer.length;
+            this.iter.next();
+            if (this.iter.done)
+                return -1;
+            this.bufferPos = 0;
+            this.buffer = this.iter.value;
+        }
+        return codePointAt(this.buffer, this.bufferPos);
+    }
+    /**
+    Look for the next match. Updates the iterator's
+    [`value`](https://codemirror.net/6/docs/ref/#search.SearchCursor.value) and
+    [`done`](https://codemirror.net/6/docs/ref/#search.SearchCursor.done) properties. Should be called
+    at least once before using the cursor.
+    */
+    next() {
+        while (this.matches.length)
+            this.matches.pop();
+        return this.nextOverlapping();
+    }
+    /**
+    The `next` method will ignore matches that partially overlap a
+    previous match. This method behaves like `next`, but includes
+    such matches.
+    */
+    nextOverlapping() {
+        for (;;) {
+            let next = this.peek();
+            if (next < 0) {
+                this.done = true;
+                return this;
+            }
+            let str = fromCodePoint(next), start = this.bufferStart + this.bufferPos;
+            this.bufferPos += codePointSize(next);
+            let norm = this.normalize(str);
+            if (norm.length)
+                for (let i = 0, pos = start, posPrecise = true;; i++) {
+                    let code = norm.charCodeAt(i);
+                    let match = this.match(code, pos, posPrecise, this.bufferPos + this.bufferStart, i == norm.length - 1);
+                    if (match) {
+                        this.value = match;
+                        return this;
+                    }
+                    if (i == norm.length - 1)
+                        break;
+                    if (posPrecise && i < str.length && str.charCodeAt(i) == code)
+                        pos++;
+                    else
+                        posPrecise = false;
+                }
+        }
+    }
+    match(code, pos, posPrecise, end, endPrecise) {
+        let match = null;
+        for (let i = 0; i < this.matches.length;) {
+            let partial = this.matches[i], keep = false;
+            if (this.query.charCodeAt(partial.index) == code) {
+                if (partial.index == this.query.length - 1) {
+                    match = { from: partial.from, to: end, precise: endPrecise && partial.precise };
+                }
+                else {
+                    partial.index++;
+                    keep = true;
+                }
+            }
+            if (keep)
+                i++;
+            else
+                this.matches.splice(i, 1);
+        }
+        if (this.query.charCodeAt(0) == code) {
+            if (this.query.length == 1)
+                match = { from: pos, to: end, precise: posPrecise && endPrecise };
+            else
+                this.matches.push({ from: pos, index: 1, precise: posPrecise });
+        }
+        if (match && this.test && !this.test(match.from, match.to, this.buffer, this.bufferStart))
+            match = null;
+        return match;
+    }
+}
+if (typeof Symbol != "undefined")
+    SearchCursor.prototype[Symbol.iterator] = function () { return this; };
+
+const empty = { from: -1, to: -1, match: /*@__PURE__*//.*/.exec(""), precise: true };
+const baseFlags = "gm" + (/x/.unicode == null ? "" : "u");
+/**
+This class is similar to [`SearchCursor`](https://codemirror.net/6/docs/ref/#search.SearchCursor)
+but searches for a regular expression pattern instead of a plain
+string.
+*/
+class RegExpCursor {
+    /**
+    Create a cursor that will search the given range in the given
+    document. `query` should be the raw pattern (as you'd pass it to
+    `new RegExp`).
+    */
+    constructor(text, query, options, from = 0, to = text.length) {
+        this.text = text;
+        this.to = to;
+        this.curLine = "";
+        /**
+        Set to `true` when the cursor has reached the end of the search
+        range.
+        */
+        this.done = false;
+        /**
+        Will contain an object with the extent of the match and the
+        match object when [`next`](https://codemirror.net/6/docs/ref/#search.RegExpCursor.next)
+        sucessfully finds a match. The `precise` flag is always true for
+        this type of cursor, and only there to make sure this cursor is
+        a subtype of `SearchCursor`.
+        */
+        this.value = empty;
+        if (/\\[sWDnr]|\n|\r|\[\^/.test(query))
+            return new MultilineRegExpCursor(text, query, options, from, to);
+        this.re = new RegExp(query, baseFlags + ((options === null || options === void 0 ? void 0 : options.ignoreCase) ? "i" : ""));
+        this.test = options === null || options === void 0 ? void 0 : options.test;
+        this.iter = text.iter();
+        let startLine = text.lineAt(from);
+        this.curLineStart = startLine.from;
+        this.matchPos = toCharEnd(text, from);
+        this.getLine(this.curLineStart);
+    }
+    getLine(skip) {
+        this.iter.next(skip);
+        if (this.iter.lineBreak) {
+            this.curLine = "";
+        }
+        else {
+            this.curLine = this.iter.value;
+            if (this.curLineStart + this.curLine.length > this.to)
+                this.curLine = this.curLine.slice(0, this.to - this.curLineStart);
+            this.iter.next();
+        }
+    }
+    nextLine() {
+        this.curLineStart = this.curLineStart + this.curLine.length + 1;
+        if (this.curLineStart > this.to)
+            this.curLine = "";
+        else
+            this.getLine(0);
+    }
+    /**
+    Move to the next match, if there is one.
+    */
+    next() {
+        for (let off = this.matchPos - this.curLineStart;;) {
+            this.re.lastIndex = off;
+            let match = this.matchPos <= this.to && this.re.exec(this.curLine);
+            if (match) {
+                let from = this.curLineStart + match.index, to = from + match[0].length;
+                this.matchPos = toCharEnd(this.text, to + (from == to ? 1 : 0));
+                if (from == this.curLineStart + this.curLine.length)
+                    this.nextLine();
+                if ((from < to || from > this.value.to) && (!this.test || this.test(from, to, match))) {
+                    this.value = { from, to, precise: true, match };
+                    return this;
+                }
+                off = this.matchPos - this.curLineStart;
+            }
+            else if (this.curLineStart + this.curLine.length < this.to) {
+                this.nextLine();
+                off = 0;
+            }
+            else {
+                this.done = true;
+                return this;
+            }
+        }
+    }
+}
+const flattened = /*@__PURE__*/new WeakMap();
+// Reusable (partially) flattened document strings
+class FlattenedDoc {
+    constructor(from, text) {
+        this.from = from;
+        this.text = text;
+    }
+    get to() { return this.from + this.text.length; }
+    static get(doc, from, to) {
+        let cached = flattened.get(doc);
+        if (!cached || cached.from >= to || cached.to <= from) {
+            let flat = new FlattenedDoc(from, doc.sliceString(from, to));
+            flattened.set(doc, flat);
+            return flat;
+        }
+        if (cached.from == from && cached.to == to)
+            return cached;
+        let { text, from: cachedFrom } = cached;
+        if (cachedFrom > from) {
+            text = doc.sliceString(from, cachedFrom) + text;
+            cachedFrom = from;
+        }
+        if (cached.to < to)
+            text += doc.sliceString(cached.to, to);
+        flattened.set(doc, new FlattenedDoc(cachedFrom, text));
+        return new FlattenedDoc(from, text.slice(from - cachedFrom, to - cachedFrom));
+    }
+}
+class MultilineRegExpCursor {
+    constructor(text, query, options, from, to) {
+        this.text = text;
+        this.to = to;
+        this.done = false;
+        this.value = empty;
+        this.matchPos = toCharEnd(text, from);
+        this.re = new RegExp(query, baseFlags + ((options === null || options === void 0 ? void 0 : options.ignoreCase) ? "i" : ""));
+        this.test = options === null || options === void 0 ? void 0 : options.test;
+        this.flat = FlattenedDoc.get(text, from, this.chunkEnd(from + 5000 /* Chunk.Base */));
+    }
+    chunkEnd(pos) {
+        return pos >= this.to ? this.to : this.text.lineAt(pos).to;
+    }
+    next() {
+        for (;;) {
+            let off = this.re.lastIndex = this.matchPos - this.flat.from;
+            let match = this.re.exec(this.flat.text);
+            // Skip empty matches directly after the last match
+            if (match && !match[0] && match.index == off) {
+                this.re.lastIndex = off + 1;
+                match = this.re.exec(this.flat.text);
+            }
+            if (match) {
+                let from = this.flat.from + match.index, to = from + match[0].length;
+                // If a match goes almost to the end of a noncomplete chunk, try
+                // again, since it'll likely be able to match more
+                if ((this.flat.to >= this.to || match.index + match[0].length <= this.flat.text.length - 10) &&
+                    (!this.test || this.test(from, to, match))) {
+                    this.value = { from, to, precise: true, match };
+                    this.matchPos = toCharEnd(this.text, to + (from == to ? 1 : 0));
+                    return this;
+                }
+            }
+            if (this.flat.to == this.to) {
+                this.done = true;
+                return this;
+            }
+            // Grow the flattened doc
+            this.flat = FlattenedDoc.get(this.text, this.flat.from, this.chunkEnd(this.flat.from + this.flat.text.length * 2));
+        }
+    }
+}
+if (typeof Symbol != "undefined") {
+    RegExpCursor.prototype[Symbol.iterator] = MultilineRegExpCursor.prototype[Symbol.iterator] =
+        function () { return this; };
+}
+function validRegExp(source) {
+    try {
+        new RegExp(source, baseFlags);
+        return true;
+    }
+    catch (_a) {
+        return false;
+    }
+}
+function toCharEnd(text, pos) {
+    if (pos >= text.length)
+        return pos;
+    let line = text.lineAt(pos), next;
+    while (pos < line.to && (next = line.text.charCodeAt(pos - line.from)) >= 0xDC00 && next < 0xE000)
+        pos++;
+    return pos;
+}
+
+/**
+Command that shows a dialog asking the user for a line number, and
+when a valid position is provided, moves the cursor to that line.
+
+Supports line numbers, relative line offsets prefixed with `+` or
+`-`, document percentages suffixed with `%`, and an optional
+column position by adding `:` and a second number after the line
+number.
+*/
+const gotoLine = view => {
+    let { state } = view;
+    let line = String(state.doc.lineAt(view.state.selection.main.head).number);
+    let { close, result } = showDialog(view, {
+        label: state.phrase("Go to line"),
+        input: { type: "text", name: "line", value: line },
+        focus: true,
+        submitLabel: state.phrase("go"),
+    });
+    result.then(form => {
+        let match = form && /^([+-])?(\d+)?(:\d+)?(%)?$/.exec(form.elements["line"].value);
+        if (!match) {
+            view.dispatch({ effects: close });
+            return;
+        }
+        let startLine = state.doc.lineAt(state.selection.main.head);
+        let [, sign, ln, cl, percent] = match;
+        let col = cl ? +cl.slice(1) : 0;
+        let line = ln ? +ln : startLine.number;
+        if (ln && percent) {
+            let pc = line / 100;
+            if (sign)
+                pc = pc * (sign == "-" ? -1 : 1) + (startLine.number / state.doc.lines);
+            line = Math.round(state.doc.lines * pc);
+        }
+        else if (ln && sign) {
+            line = line * (sign == "-" ? -1 : 1) + startLine.number;
+        }
+        let docLine = state.doc.line(Math.max(1, Math.min(state.doc.lines, line)));
+        let selection = EditorSelection.cursor(docLine.from + Math.max(0, Math.min(col, docLine.length)));
+        view.dispatch({
+            effects: [close, EditorView.scrollIntoView(selection.from, { y: 'center' })],
+            selection,
+        });
+    });
+    return true;
+};
+
+const defaultHighlightOptions = {
+    highlightWordAroundCursor: false,
+    minSelectionLength: 1,
+    maxMatches: 100,
+    wholeWords: false
+};
+const highlightConfig = /*@__PURE__*/Facet.define({
+    combine(options) {
+        return combineConfig(options, defaultHighlightOptions, {
+            highlightWordAroundCursor: (a, b) => a || b,
+            minSelectionLength: Math.min,
+            maxMatches: Math.min
+        });
+    }
+});
+/**
+This extension highlights text that matches the selection. It uses
+the `"cm-selectionMatch"` class for the highlighting. When
+`highlightWordAroundCursor` is enabled, the word at the cursor
+itself will be highlighted with `"cm-selectionMatch-main"`.
+*/
+function highlightSelectionMatches(options) {
+    let ext = [defaultTheme, matchHighlighter];
+    if (options)
+        ext.push(highlightConfig.of(options));
+    return ext;
+}
+const matchDeco = /*@__PURE__*/Decoration.mark({ class: "cm-selectionMatch" });
+const mainMatchDeco = /*@__PURE__*/Decoration.mark({ class: "cm-selectionMatch cm-selectionMatch-main" });
+// Whether the characters directly outside the given positions are non-word characters
+function insideWordBoundaries(check, state, from, to) {
+    return (from == 0 || check(state.sliceDoc(from - 1, from)) != CharCategory.Word) &&
+        (to == state.doc.length || check(state.sliceDoc(to, to + 1)) != CharCategory.Word);
+}
+// Whether the characters directly at the given positions are word characters
+function insideWord(check, state, from, to) {
+    return check(state.sliceDoc(from, from + 1)) == CharCategory.Word
+        && check(state.sliceDoc(to - 1, to)) == CharCategory.Word;
+}
+const matchHighlighter = /*@__PURE__*/ViewPlugin.fromClass(class {
+    constructor(view) {
+        this.decorations = this.getDeco(view);
+    }
+    update(update) {
+        if (update.selectionSet || update.docChanged || update.viewportChanged)
+            this.decorations = this.getDeco(update.view);
+    }
+    getDeco(view) {
+        let conf = view.state.facet(highlightConfig);
+        let { state } = view, sel = state.selection;
+        if (sel.ranges.length > 1)
+            return Decoration.none;
+        let range = sel.main, query, check = null;
+        if (range.empty) {
+            if (!conf.highlightWordAroundCursor)
+                return Decoration.none;
+            let word = state.wordAt(range.head);
+            if (!word)
+                return Decoration.none;
+            check = state.charCategorizer(range.head);
+            query = state.sliceDoc(word.from, word.to);
+        }
+        else {
+            let len = range.to - range.from;
+            if (len < conf.minSelectionLength || len > 200)
+                return Decoration.none;
+            if (conf.wholeWords) {
+                query = state.sliceDoc(range.from, range.to); // TODO: allow and include leading/trailing space?
+                check = state.charCategorizer(range.head);
+                if (!(insideWordBoundaries(check, state, range.from, range.to) &&
+                    insideWord(check, state, range.from, range.to)))
+                    return Decoration.none;
+            }
+            else {
+                query = state.sliceDoc(range.from, range.to);
+                if (!query)
+                    return Decoration.none;
+            }
+        }
+        let deco = [];
+        for (let part of view.visibleRanges) {
+            let cursor = new SearchCursor(state.doc, query, part.from, part.to);
+            while (!cursor.next().done) {
+                let { from, to } = cursor.value;
+                if (!check || insideWordBoundaries(check, state, from, to)) {
+                    if (range.empty && from <= range.from && to >= range.to)
+                        deco.push(mainMatchDeco.range(from, to));
+                    else if (from >= range.to || to <= range.from)
+                        deco.push(matchDeco.range(from, to));
+                    if (deco.length > conf.maxMatches)
+                        return Decoration.none;
+                }
+            }
+        }
+        return Decoration.set(deco);
+    }
+}, {
+    decorations: v => v.decorations
+});
+const defaultTheme = /*@__PURE__*/EditorView.baseTheme({
+    ".cm-selectionMatch": { backgroundColor: "#99ff7780" },
+    ".cm-searchMatch .cm-selectionMatch": { backgroundColor: "transparent" }
+});
+// Select the words around the cursors.
+const selectWord = ({ state, dispatch }) => {
+    let { selection } = state;
+    let newSel = EditorSelection.create(selection.ranges.map(range => state.wordAt(range.head) || EditorSelection.cursor(range.head)), selection.mainIndex);
+    if (newSel.eq(selection))
+        return false;
+    dispatch(state.update({ selection: newSel }));
+    return true;
+};
+// Find next occurrence of query relative to last cursor. Wrap around
+// the document if there are no more matches.
+function findNextOccurrence(state, query) {
+    let { main, ranges } = state.selection;
+    let word = state.wordAt(main.head), fullWord = word && word.from == main.from && word.to == main.to;
+    for (let cycled = false, cursor = new SearchCursor(state.doc, query, ranges[ranges.length - 1].to);;) {
+        cursor.next();
+        if (cursor.done) {
+            if (cycled)
+                return null;
+            cursor = new SearchCursor(state.doc, query, 0, Math.max(0, ranges[ranges.length - 1].from - 1));
+            cycled = true;
+        }
+        else {
+            if (cycled && ranges.some(r => r.from == cursor.value.from))
+                continue;
+            if (fullWord) {
+                let word = state.wordAt(cursor.value.from);
+                if (!word || word.from != cursor.value.from || word.to != cursor.value.to)
+                    continue;
+            }
+            return cursor.value;
+        }
+    }
+}
+/**
+Select next occurrence of the current selection. Expand selection
+to the surrounding word when the selection is empty.
+*/
+const selectNextOccurrence = ({ state, dispatch }) => {
+    let { ranges } = state.selection;
+    if (ranges.some(sel => sel.from === sel.to))
+        return selectWord({ state, dispatch });
+    let searchedText = state.sliceDoc(ranges[0].from, ranges[0].to);
+    if (state.selection.ranges.some(r => state.sliceDoc(r.from, r.to) != searchedText))
+        return false;
+    let range = findNextOccurrence(state, searchedText);
+    if (!range)
+        return false;
+    dispatch(state.update({
+        selection: state.selection.addRange(EditorSelection.range(range.from, range.to), false),
+        effects: EditorView.scrollIntoView(range.to)
+    }));
+    return true;
+};
+
+const searchConfigFacet = /*@__PURE__*/Facet.define({
+    combine(configs) {
+        return combineConfig(configs, {
+            top: false,
+            caseSensitive: false,
+            literal: false,
+            regexp: false,
+            wholeWord: false,
+            createPanel: view => new SearchPanel(view),
+            scrollToMatch: range => EditorView.scrollIntoView(range)
+        });
+    }
+});
+/**
+Add search state to the editor configuration, and optionally
+configure the search extension.
+([`openSearchPanel`](https://codemirror.net/6/docs/ref/#search.openSearchPanel) will automatically
+enable this if it isn't already on).
+*/
+function search(config) {
+    return config ? [searchConfigFacet.of(config), searchExtensions] : searchExtensions;
+}
+/**
+A search query. Part of the editor's search state.
+*/
+class SearchQuery {
+    /**
+    Create a query object.
+    */
+    constructor(config) {
+        this.search = config.search;
+        this.caseSensitive = !!config.caseSensitive;
+        this.literal = !!config.literal;
+        this.regexp = !!config.regexp;
+        this.replace = config.replace || "";
+        this.valid = !!this.search && (!this.regexp || validRegExp(this.search));
+        this.unquoted = this.unquote(this.search);
+        this.wholeWord = !!config.wholeWord;
+        this.test = config.test;
+    }
+    /**
+    @internal
+    */
+    unquote(text) {
+        return this.literal ? text :
+            text.replace(/\\([nrt\\])/g, (_, ch) => ch == "n" ? "\n" : ch == "r" ? "\r" : ch == "t" ? "\t" : "\\");
+    }
+    /**
+    Compare this query to another query.
+    */
+    eq(other) {
+        return this.search == other.search && this.replace == other.replace &&
+            this.caseSensitive == other.caseSensitive && this.regexp == other.regexp &&
+            this.wholeWord == other.wholeWord && this.test == other.test;
+    }
+    /**
+    @internal
+    */
+    create() {
+        return this.regexp ? new RegExpQuery(this) : new StringQuery(this);
+    }
+    /**
+    Get a search cursor for this query, searching through the given
+    range in the given state.
+    */
+    getCursor(state, from = 0, to) {
+        let st = state.doc ? state : EditorState.create({ doc: state });
+        if (to == null)
+            to = st.doc.length;
+        return this.regexp ? regexpCursor(this, st, from, to) : stringCursor(this, st, from, to);
+    }
+}
+class QueryType {
+    constructor(spec) {
+        this.spec = spec;
+    }
+}
+function wrapStringTest(test, state, inner) {
+    return (from, to, buffer, bufferPos) => {
+        if (inner && !inner(from, to, buffer, bufferPos))
+            return false;
+        let match = from >= bufferPos && to <= bufferPos + buffer.length
+            ? buffer.slice(from - bufferPos, to - bufferPos)
+            : state.doc.sliceString(from, to);
+        return test(match, state, from, to);
+    };
+}
+function stringCursor(spec, state, from, to) {
+    let test;
+    if (spec.wholeWord)
+        test = stringWordTest(state.doc, state.charCategorizer(state.selection.main.head));
+    if (spec.test)
+        test = wrapStringTest(spec.test, state, test);
+    return new SearchCursor(state.doc, spec.unquoted, from, to, spec.caseSensitive ? undefined : x => x.toLowerCase(), test);
+}
+function stringWordTest(doc, categorizer) {
+    return (from, to, buf, bufPos) => {
+        if (bufPos > from || bufPos + buf.length < to) {
+            bufPos = Math.max(0, from - 2);
+            buf = doc.sliceString(bufPos, Math.min(doc.length, to + 2));
+        }
+        return (categorizer(charBefore(buf, from - bufPos)) != CharCategory.Word ||
+            categorizer(charAfter(buf, from - bufPos)) != CharCategory.Word) &&
+            (categorizer(charAfter(buf, to - bufPos)) != CharCategory.Word ||
+                categorizer(charBefore(buf, to - bufPos)) != CharCategory.Word);
+    };
+}
+class StringQuery extends QueryType {
+    constructor(spec) {
+        super(spec);
+    }
+    nextMatch(state, curFrom, curTo) {
+        let cursor = stringCursor(this.spec, state, curTo, state.doc.length).nextOverlapping();
+        if (cursor.done) {
+            let end = Math.min(state.doc.length, curFrom + this.spec.unquoted.length);
+            cursor = stringCursor(this.spec, state, 0, end).nextOverlapping();
+        }
+        return cursor.done || cursor.value.from == curFrom && cursor.value.to == curTo ? null : cursor.value;
+    }
+    // Searching in reverse is, rather than implementing an inverted search
+    // cursor, done by scanning chunk after chunk forward.
+    prevMatchInRange(state, from, to) {
+        for (let pos = to;;) {
+            let start = Math.max(from, pos - 10000 /* FindPrev.ChunkSize */ - this.spec.unquoted.length);
+            let cursor = stringCursor(this.spec, state, start, pos), range = null;
+            while (!cursor.nextOverlapping().done)
+                range = cursor.value;
+            if (range)
+                return range;
+            if (start == from)
+                return null;
+            pos -= 10000 /* FindPrev.ChunkSize */;
+        }
+    }
+    prevMatch(state, curFrom, curTo) {
+        let found = this.prevMatchInRange(state, 0, curFrom);
+        if (!found)
+            found = this.prevMatchInRange(state, Math.max(0, curTo - this.spec.unquoted.length), state.doc.length);
+        return found && (found.from != curFrom || found.to != curTo) ? found : null;
+    }
+    getReplacement(_result) { return this.spec.unquote(this.spec.replace); }
+    matchAll(state, limit) {
+        let cursor = stringCursor(this.spec, state, 0, state.doc.length), ranges = [];
+        while (!cursor.next().done) {
+            if (ranges.length >= limit)
+                return null;
+            ranges.push(cursor.value);
+        }
+        return ranges;
+    }
+    highlight(state, from, to, add) {
+        let cursor = stringCursor(this.spec, state, Math.max(0, from - this.spec.unquoted.length), Math.min(to + this.spec.unquoted.length, state.doc.length));
+        while (!cursor.next().done)
+            add(cursor.value.from, cursor.value.to);
+    }
+}
+function wrapRegexpTest(test, state, inner) {
+    return (from, to, match) => {
+        return (!inner || inner(from, to, match)) && test(match[0], state, from, to);
+    };
+}
+function regexpCursor(spec, state, from, to) {
+    let test;
+    if (spec.wholeWord)
+        test = regexpWordTest(state.charCategorizer(state.selection.main.head));
+    if (spec.test)
+        test = wrapRegexpTest(spec.test, state, test);
+    return new RegExpCursor(state.doc, spec.search, { ignoreCase: !spec.caseSensitive, test }, from, to);
+}
+function charBefore(str, index) {
+    return str.slice(findClusterBreak(str, index, false), index);
+}
+function charAfter(str, index) {
+    return str.slice(index, findClusterBreak(str, index));
+}
+function regexpWordTest(categorizer) {
+    return (_from, _to, match) => !match[0].length ||
+        (categorizer(charBefore(match.input, match.index)) != CharCategory.Word ||
+            categorizer(charAfter(match.input, match.index)) != CharCategory.Word) &&
+            (categorizer(charAfter(match.input, match.index + match[0].length)) != CharCategory.Word ||
+                categorizer(charBefore(match.input, match.index + match[0].length)) != CharCategory.Word);
+}
+class RegExpQuery extends QueryType {
+    nextMatch(state, curFrom, curTo) {
+        let cursor = regexpCursor(this.spec, state, curTo, state.doc.length).next();
+        if (cursor.done)
+            cursor = regexpCursor(this.spec, state, 0, curFrom).next();
+        return cursor.done ? null : cursor.value;
+    }
+    prevMatchInRange(state, from, to) {
+        for (let size = 1;; size++) {
+            let start = Math.max(from, to - size * 10000 /* FindPrev.ChunkSize */);
+            let cursor = regexpCursor(this.spec, state, start, to), range = null;
+            while (!cursor.next().done)
+                range = cursor.value;
+            if (range && (start == from || range.from > start + 10))
+                return range;
+            if (start == from)
+                return null;
+        }
+    }
+    prevMatch(state, curFrom, curTo) {
+        return this.prevMatchInRange(state, 0, curFrom) ||
+            this.prevMatchInRange(state, curTo, state.doc.length);
+    }
+    getReplacement(result) {
+        return this.spec.unquote(this.spec.replace).replace(/\$([$&]|\d+)/g, (m, i) => {
+            if (i == "&")
+                return result.match[0];
+            if (i == "$")
+                return "$";
+            for (let l = i.length; l > 0; l--) {
+                let n = +i.slice(0, l);
+                if (n > 0 && n < result.match.length)
+                    return result.match[n] + i.slice(l);
+            }
+            return m;
+        });
+    }
+    matchAll(state, limit) {
+        let cursor = regexpCursor(this.spec, state, 0, state.doc.length), ranges = [];
+        while (!cursor.next().done) {
+            if (ranges.length >= limit)
+                return null;
+            ranges.push(cursor.value);
+        }
+        return ranges;
+    }
+    highlight(state, from, to, add) {
+        let cursor = regexpCursor(this.spec, state, Math.max(0, from - 250 /* RegExp.HighlightMargin */), Math.min(to + 250 /* RegExp.HighlightMargin */, state.doc.length));
+        while (!cursor.next().done)
+            add(cursor.value.from, cursor.value.to);
+    }
+}
+/**
+A state effect that updates the current search query. Note that
+this only has an effect if the search state has been initialized
+(by including [`search`](https://codemirror.net/6/docs/ref/#search.search) in your configuration or
+by running [`openSearchPanel`](https://codemirror.net/6/docs/ref/#search.openSearchPanel) at least
+once).
+*/
+const setSearchQuery = /*@__PURE__*/StateEffect.define();
+const togglePanel = /*@__PURE__*/StateEffect.define();
+const searchState = /*@__PURE__*/StateField.define({
+    create(state) {
+        return new SearchState(defaultQuery(state).create(), null);
+    },
+    update(value, tr) {
+        for (let effect of tr.effects) {
+            if (effect.is(setSearchQuery))
+                value = new SearchState(effect.value.create(), value.panel);
+            else if (effect.is(togglePanel))
+                value = new SearchState(value.query, effect.value ? createSearchPanel : null);
+        }
+        return value;
+    },
+    provide: f => showPanel.from(f, val => val.panel)
+});
+/**
+Get the current search query from an editor state.
+*/
+function getSearchQuery(state) {
+    let curState = state.field(searchState, false);
+    return curState ? curState.query.spec : defaultQuery(state);
+}
+/**
+Query whether the search panel is open in the given editor state.
+*/
+function searchPanelOpen(state) {
+    var _a;
+    return ((_a = state.field(searchState, false)) === null || _a === void 0 ? void 0 : _a.panel) != null;
+}
+class SearchState {
+    constructor(query, panel) {
+        this.query = query;
+        this.panel = panel;
+    }
+}
+const matchMark = /*@__PURE__*/Decoration.mark({ class: "cm-searchMatch" }), selectedMatchMark = /*@__PURE__*/Decoration.mark({ class: "cm-searchMatch cm-searchMatch-selected" });
+const searchHighlighter = /*@__PURE__*/ViewPlugin.fromClass(class {
+    constructor(view) {
+        this.view = view;
+        this.decorations = this.highlight(view.state.field(searchState));
+    }
+    update(update) {
+        let state = update.state.field(searchState);
+        if (state != update.startState.field(searchState) || update.docChanged || update.selectionSet || update.viewportChanged)
+            this.decorations = this.highlight(state);
+    }
+    highlight({ query, panel }) {
+        if (!panel || !query.spec.valid)
+            return Decoration.none;
+        let { view } = this;
+        let builder = new RangeSetBuilder();
+        for (let i = 0, ranges = view.visibleRanges, l = ranges.length; i < l; i++) {
+            let { from, to } = ranges[i];
+            while (i < l - 1 && to > ranges[i + 1].from - 2 * 250 /* RegExp.HighlightMargin */)
+                to = ranges[++i].to;
+            query.highlight(view.state, from, to, (from, to) => {
+                let selected = view.state.selection.ranges.some(r => r.from == from && r.to == to);
+                builder.add(from, to, selected ? selectedMatchMark : matchMark);
+            });
+        }
+        return builder.finish();
+    }
+}, {
+    decorations: v => v.decorations
+});
+function searchCommand(f) {
+    return view => {
+        let state = view.state.field(searchState, false);
+        return state && state.query.spec.valid ? f(view, state) : openSearchPanel(view);
+    };
+}
+/**
+Open the search panel if it isn't already open, and move the
+selection to the first match after the current main selection.
+Will wrap around to the start of the document when it reaches the
+end.
+*/
+const findNext = /*@__PURE__*/searchCommand((view, { query }) => {
+    let { to } = view.state.selection.main;
+    let next = query.nextMatch(view.state, to, to);
+    if (!next)
+        return false;
+    let selection = EditorSelection.single(next.from, next.to);
+    let config = view.state.facet(searchConfigFacet);
+    view.dispatch({
+        selection,
+        effects: [announceMatch(view, next), config.scrollToMatch(selection.main, view)],
+        userEvent: "select.search"
+    });
+    selectSearchInput(view);
+    return true;
+});
+/**
+Move the selection to the previous instance of the search query,
+before the current main selection. Will wrap past the start
+of the document to start searching at the end again.
+*/
+const findPrevious = /*@__PURE__*/searchCommand((view, { query }) => {
+    let { state } = view, { from } = state.selection.main;
+    let prev = query.prevMatch(state, from, from);
+    if (!prev)
+        return false;
+    let selection = EditorSelection.single(prev.from, prev.to);
+    let config = view.state.facet(searchConfigFacet);
+    view.dispatch({
+        selection,
+        effects: [announceMatch(view, prev), config.scrollToMatch(selection.main, view)],
+        userEvent: "select.search"
+    });
+    selectSearchInput(view);
+    return true;
+});
+/**
+Select all instances of the search query.
+*/
+const selectMatches = /*@__PURE__*/searchCommand((view, { query }) => {
+    let ranges = query.matchAll(view.state, 1000);
+    if (!ranges || !ranges.length)
+        return false;
+    view.dispatch({
+        selection: EditorSelection.create(ranges.map(r => EditorSelection.range(r.from, r.to))),
+        userEvent: "select.search.matches"
+    });
+    return true;
+});
+/**
+Select all instances of the currently selected text.
+*/
+const selectSelectionMatches = ({ state, dispatch }) => {
+    let sel = state.selection;
+    if (sel.ranges.length > 1 || sel.main.empty)
+        return false;
+    let { from, to } = sel.main;
+    let ranges = [], main = 0;
+    for (let cur = new SearchCursor(state.doc, state.sliceDoc(from, to)); !cur.next().done;) {
+        if (ranges.length > 1000)
+            return false;
+        if (cur.value.from == from)
+            main = ranges.length;
+        ranges.push(EditorSelection.range(cur.value.from, cur.value.to));
+    }
+    dispatch(state.update({
+        selection: EditorSelection.create(ranges, main),
+        userEvent: "select.search.matches"
+    }));
+    return true;
+};
+/**
+Replace the current match of the search query.
+*/
+const replaceNext = /*@__PURE__*/searchCommand((view, { query }) => {
+    let { state } = view, { from, to } = state.selection.main;
+    if (state.readOnly)
+        return false;
+    let match = query.nextMatch(state, from, from);
+    if (!match)
+        return false;
+    let next = match;
+    let changes = [], selection, replacement;
+    let effects = [];
+    if (!next.precise) {
+        next = query.nextMatch(state, next.from, next.to);
+    }
+    else if (next.from == from && next.to == to) {
+        replacement = state.toText(query.getReplacement(next));
+        changes.push({ from: next.from, to: next.to, insert: replacement });
+        next = query.nextMatch(state, next.from, next.to);
+        effects.push(EditorView.announce.of(state.phrase("replaced match on line $", state.doc.lineAt(from).number) + "."));
+    }
+    let changeSet = view.state.changes(changes);
+    if (next) {
+        selection = EditorSelection.single(next.from, next.to).map(changeSet);
+        effects.push(announceMatch(view, next));
+        effects.push(state.facet(searchConfigFacet).scrollToMatch(selection.main, view));
+    }
+    view.dispatch({
+        changes: changeSet,
+        selection,
+        effects,
+        userEvent: "input.replace"
+    });
+    return true;
+});
+/**
+Replace all instances of the search query with the given
+replacement.
+*/
+const replaceAll = /*@__PURE__*/searchCommand((view, { query }) => {
+    if (view.state.readOnly)
+        return false;
+    let changes = [];
+    for (let match of query.matchAll(view.state, 1e9)) {
+        let { from, to, precise } = match;
+        if (precise)
+            changes.push({ from, to, insert: query.getReplacement(match) });
+    }
+    if (!changes.length)
+        return false;
+    let announceText = view.state.phrase("replaced $ matches", changes.length) + ".";
+    view.dispatch({
+        changes,
+        effects: EditorView.announce.of(announceText),
+        userEvent: "input.replace.all"
+    });
+    return true;
+});
+function createSearchPanel(view) {
+    return view.state.facet(searchConfigFacet).createPanel(view);
+}
+function defaultQuery(state, fallback) {
+    var _a, _b, _c, _d, _e;
+    let sel = state.selection.main;
+    let selText = sel.empty || sel.to > sel.from + 100 ? "" : state.sliceDoc(sel.from, sel.to);
+    if (fallback && !selText)
+        return fallback;
+    let config = state.facet(searchConfigFacet);
+    return new SearchQuery({
+        search: ((_a = fallback === null || fallback === void 0 ? void 0 : fallback.literal) !== null && _a !== void 0 ? _a : config.literal) ? selText : selText.replace(/\n/g, "\\n"),
+        caseSensitive: (_b = fallback === null || fallback === void 0 ? void 0 : fallback.caseSensitive) !== null && _b !== void 0 ? _b : config.caseSensitive,
+        literal: (_c = fallback === null || fallback === void 0 ? void 0 : fallback.literal) !== null && _c !== void 0 ? _c : config.literal,
+        regexp: (_d = fallback === null || fallback === void 0 ? void 0 : fallback.regexp) !== null && _d !== void 0 ? _d : config.regexp,
+        wholeWord: (_e = fallback === null || fallback === void 0 ? void 0 : fallback.wholeWord) !== null && _e !== void 0 ? _e : config.wholeWord
+    });
+}
+function getSearchInput(view) {
+    let panel = getPanel(view, createSearchPanel);
+    return panel && panel.dom.querySelector("[main-field]");
+}
+function selectSearchInput(view) {
+    let input = getSearchInput(view);
+    if (input && input == view.root.activeElement)
+        input.select();
+}
+/**
+Make sure the search panel is open and focused.
+*/
+const openSearchPanel = view => {
+    let state = view.state.field(searchState, false);
+    if (state && state.panel) {
+        let searchInput = getSearchInput(view);
+        if (searchInput && searchInput != view.root.activeElement) {
+            let query = defaultQuery(view.state, state.query.spec);
+            if (query.valid)
+                view.dispatch({ effects: setSearchQuery.of(query) });
+            searchInput.focus();
+            searchInput.select();
+        }
+    }
+    else {
+        view.dispatch({ effects: [
+                togglePanel.of(true),
+                state ? setSearchQuery.of(defaultQuery(view.state, state.query.spec)) : StateEffect.appendConfig.of(searchExtensions)
+            ] });
+    }
+    return true;
+};
+/**
+Close the search panel.
+*/
+const closeSearchPanel = view => {
+    let state = view.state.field(searchState, false);
+    if (!state || !state.panel)
+        return false;
+    let panel = getPanel(view, createSearchPanel);
+    if (panel && panel.dom.contains(view.root.activeElement))
+        view.focus();
+    view.dispatch({ effects: togglePanel.of(false) });
+    return true;
+};
+/**
+Default search-related key bindings.
+
+ - Mod-f: [`openSearchPanel`](https://codemirror.net/6/docs/ref/#search.openSearchPanel)
+ - F3, Mod-g: [`findNext`](https://codemirror.net/6/docs/ref/#search.findNext)
+ - Shift-F3, Shift-Mod-g: [`findPrevious`](https://codemirror.net/6/docs/ref/#search.findPrevious)
+ - Mod-Alt-g: [`gotoLine`](https://codemirror.net/6/docs/ref/#search.gotoLine)
+ - Mod-d: [`selectNextOccurrence`](https://codemirror.net/6/docs/ref/#search.selectNextOccurrence)
+*/
+const searchKeymap = [
+    { key: "Mod-f", run: openSearchPanel, scope: "editor search-panel" },
+    { key: "F3", run: findNext, shift: findPrevious, scope: "editor search-panel", preventDefault: true },
+    { key: "Mod-g", run: findNext, shift: findPrevious, scope: "editor search-panel", preventDefault: true },
+    { key: "Escape", run: closeSearchPanel, scope: "editor search-panel" },
+    { key: "Mod-Shift-l", run: selectSelectionMatches },
+    { key: "Mod-Alt-g", run: gotoLine },
+    { key: "Mod-d", run: selectNextOccurrence, preventDefault: true },
+];
+class SearchPanel {
+    constructor(view) {
+        this.view = view;
+        let query = this.query = view.state.field(searchState).query.spec;
+        this.commit = this.commit.bind(this);
+        this.searchField = elt("input", {
+            value: query.search,
+            placeholder: phrase(view, "Find"),
+            "aria-label": phrase(view, "Find"),
+            class: "cm-textfield",
+            name: "search",
+            form: "",
+            "main-field": "true",
+            onchange: this.commit,
+            onkeyup: this.commit
+        });
+        this.replaceField = elt("input", {
+            value: query.replace,
+            placeholder: phrase(view, "Replace"),
+            "aria-label": phrase(view, "Replace"),
+            class: "cm-textfield",
+            name: "replace",
+            form: "",
+            onchange: this.commit,
+            onkeyup: this.commit
+        });
+        this.caseField = elt("input", {
+            type: "checkbox",
+            name: "case",
+            form: "",
+            checked: query.caseSensitive,
+            onchange: this.commit
+        });
+        this.reField = elt("input", {
+            type: "checkbox",
+            name: "re",
+            form: "",
+            checked: query.regexp,
+            onchange: this.commit
+        });
+        this.wordField = elt("input", {
+            type: "checkbox",
+            name: "word",
+            form: "",
+            checked: query.wholeWord,
+            onchange: this.commit
+        });
+        function button(name, onclick, content) {
+            return elt("button", { class: "cm-button", name, onclick, type: "button" }, content);
+        }
+        this.dom = elt("div", { onkeydown: (e) => this.keydown(e), class: "cm-search" }, [
+            this.searchField,
+            button("next", () => findNext(view), [phrase(view, "next")]),
+            button("prev", () => findPrevious(view), [phrase(view, "previous")]),
+            button("select", () => selectMatches(view), [phrase(view, "all")]),
+            elt("label", null, [this.caseField, phrase(view, "match case")]),
+            elt("label", null, [this.reField, phrase(view, "regexp")]),
+            elt("label", null, [this.wordField, phrase(view, "by word")]),
+            ...view.state.readOnly ? [] : [
+                elt("br"),
+                this.replaceField,
+                button("replace", () => replaceNext(view), [phrase(view, "replace")]),
+                button("replaceAll", () => replaceAll(view), [phrase(view, "replace all")])
+            ],
+            elt("button", {
+                name: "close",
+                onclick: () => closeSearchPanel(view),
+                "aria-label": phrase(view, "close"),
+                type: "button"
+            }, ["×"])
+        ]);
+    }
+    commit() {
+        let query = new SearchQuery({
+            search: this.searchField.value,
+            caseSensitive: this.caseField.checked,
+            regexp: this.reField.checked,
+            wholeWord: this.wordField.checked,
+            replace: this.replaceField.value,
+        });
+        if (!query.eq(this.query)) {
+            this.query = query;
+            this.view.dispatch({ effects: setSearchQuery.of(query) });
+        }
+    }
+    keydown(e) {
+        if (runScopeHandlers(this.view, e, "search-panel")) {
+            e.preventDefault();
+        }
+        else if (e.keyCode == 13 && e.target == this.searchField) {
+            e.preventDefault();
+            (e.shiftKey ? findPrevious : findNext)(this.view);
+        }
+        else if (e.keyCode == 13 && e.target == this.replaceField) {
+            e.preventDefault();
+            replaceNext(this.view);
+        }
+    }
+    update(update) {
+        for (let tr of update.transactions)
+            for (let effect of tr.effects) {
+                if (effect.is(setSearchQuery) && !effect.value.eq(this.query))
+                    this.setQuery(effect.value);
+            }
+    }
+    setQuery(query) {
+        this.query = query;
+        this.searchField.value = query.search;
+        this.replaceField.value = query.replace;
+        this.caseField.checked = query.caseSensitive;
+        this.reField.checked = query.regexp;
+        this.wordField.checked = query.wholeWord;
+    }
+    mount() {
+        this.searchField.select();
+    }
+    get pos() { return 80; }
+    get top() { return this.view.state.facet(searchConfigFacet).top; }
+}
+function phrase(view, phrase) { return view.state.phrase(phrase); }
+const AnnounceMargin = 30;
+const Break = /[\s\.,:;?!]/;
+function announceMatch(view, { from, to }) {
+    let line = view.state.doc.lineAt(from), lineEnd = view.state.doc.lineAt(to).to;
+    let start = Math.max(line.from, from - AnnounceMargin), end = Math.min(lineEnd, to + AnnounceMargin);
+    let text = view.state.sliceDoc(start, end);
+    if (start != line.from) {
+        for (let i = 0; i < AnnounceMargin; i++)
+            if (!Break.test(text[i + 1]) && Break.test(text[i])) {
+                text = text.slice(i);
+                break;
+            }
+    }
+    if (end != lineEnd) {
+        for (let i = text.length - 1; i > text.length - AnnounceMargin; i--)
+            if (!Break.test(text[i - 1]) && Break.test(text[i])) {
+                text = text.slice(0, i);
+                break;
+            }
+    }
+    return EditorView.announce.of(`${view.state.phrase("current match")}. ${text} ${view.state.phrase("on line")} ${line.number}.`);
+}
+const baseTheme = /*@__PURE__*/EditorView.baseTheme({
+    ".cm-panel.cm-search": {
+        padding: "2px 6px 4px",
+        position: "relative",
+        "& [name=close]": {
+            position: "absolute",
+            top: "0",
+            right: "4px",
+            backgroundColor: "inherit",
+            border: "none",
+            font: "inherit",
+            padding: 0,
+            margin: 0
+        },
+        "& input, & button, & label": {
+            margin: ".2em .6em .2em 0"
+        },
+        "& input[type=checkbox]": {
+            marginRight: ".2em"
+        },
+        "& label": {
+            fontSize: "80%",
+            whiteSpace: "pre"
+        }
+    },
+    "&light .cm-searchMatch": { backgroundColor: "#ffff0054" },
+    "&dark .cm-searchMatch": { backgroundColor: "#00ffff8a" },
+    "&light .cm-searchMatch-selected": { backgroundColor: "#ff6a0054" },
+    "&dark .cm-searchMatch-selected": { backgroundColor: "#ff00ff8a" }
+});
+const searchExtensions = [
+    searchState,
+    /*@__PURE__*/Prec.low(searchHighlighter),
+    baseTheme
+];
+
+export { RegExpCursor, SearchCursor, SearchQuery, closeSearchPanel, findNext, findPrevious, getSearchQuery, gotoLine, highlightSelectionMatches, openSearchPanel, replaceAll, replaceNext, search, searchKeymap, searchPanelOpen, selectMatches, selectNextOccurrence, selectSelectionMatches, setSearchQuery };
