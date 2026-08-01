@@ -43,7 +43,6 @@ This guide provides detailed instructions for developers who want to set up, run
 		- [Thor](#thor)
 - [Elasticsearch](#elasticsearch)
 - [Dev Errata](#dev-errata)
-	- [What is Claude on Rails?](#what-is-claude-on-rails)
 	- [How to use a new Node module or update an existing one](#how-to-use-a-new-node-module-or-update-an-existing-one)
 	- [How to update Quepid's dependencies (Ruby, Gems, Yarn, Importmap)](#how-to-update-quepids-dependencies-ruby-gems-yarn-importmap)
 	- [How to use a new Ruby Gem or update an existing one](#how-to-use-a-new-ruby-gem-or-update-an-existing-one)
@@ -518,14 +517,6 @@ http.cors:
 See more details on the wiki at https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid
 
 # Dev Errata
-
-## What is Claude on Rails?
-
-Claude on Rails is sort of a vibe coder, sorta a dev framework for Rails available from https://github.com/obie/claude-on-rails.
-
-We're experimenting with using it to build Quepid features! It is used during development.
-
-To get Claude on Rails to work, you need to do development outside of Docker ;-(.
 
 ## How to use a new Node module or update an existing one
 

@@ -63,8 +63,6 @@ group :development, :test do
 end
 
 group :development do
-  gem 'claude-on-rails' # Dev acceleration tool
-
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem 'web-console'
   gem 'annotaterb'

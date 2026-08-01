@@ -1,6 +1,6 @@
-## ClaudeOnRails Configuration
+## Development Environment
 
-You are working on Quepid, a Rails application. Review the ClaudeOnRails context file at @.claude-on-rails/context.md
+You are working on Quepid, a Rails application. Also look at @DEVELOPER_GUIDE.md.
 
 We run Quepid in Docker primarily, don't run Rails and other build tasks locally..
 

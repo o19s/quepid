@@ -75,11 +75,6 @@ public/srv/app/tmp/assets
 # Ignore volumes
 volumes
 
-# ClaudeOnRails
-.claude-on-rails/sessions/
-.claude-swarm/
-claude-swarm.log
-
 .tool-versions
 .tool-versions
 
