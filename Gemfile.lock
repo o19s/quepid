@@ -628,7 +628,7 @@ GEM
       ruby_llm-schema (~> 0)
       zeitwerk (~> 2)
     ruby_llm-schema (0.4.0)
-    rubyzip (3.4.0)
+    rubyzip (3.4.1)
     safely_block (1.0.0)
     scout_apm (6.2.0)
       parser
