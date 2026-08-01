@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.6",
-    "@rails/actioncable": "8.1.300",
-    "@rails/activestorage": "8.1.300",
+    "@rails/actioncable": "8.1.301",
+    "@rails/activestorage": "8.1.301",
     "ace-builds": "^1.43.4",
     "angular": "~1.8.3",
     "angular-animate": "^1.8.3",
