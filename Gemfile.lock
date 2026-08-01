@@ -159,7 +159,7 @@ GEM
     cmdstan (0.6.0)
       csv
     colorize (1.1.0)
-    concurrent-ruby (1.3.7)
+    concurrent-ruby (1.3.8)
     connection_pool (3.0.2)
     console (1.36.0)
       fiber-annotation
@@ -170,7 +170,7 @@ GEM
       rexml
     crass (1.0.6)
     csv (3.3.5)
-    database_consistency (3.0.5)
+    database_consistency (3.0.8)
       activerecord (>= 3.2)
     date (3.5.1)
     debug (1.11.1)
