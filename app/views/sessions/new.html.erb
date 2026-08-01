@@ -16,11 +16,11 @@
         </p>
         <% end %>
 
-        <% if Rails.application.config.devise.omniauth_providers.include?(:keycloak_openid) %>
+        <% if Rails.application.config.devise.omniauth_providers.include?(:keycloak) %>
         <% email_login_only = false %>
         <!-- <a href="https://www.flaticon.com/free-icons/digital" title="digital icons">Digital icons created by Freepik - Flaticon</a> -->
         <p>
-          <%= button_to user_keycloakopenid_omniauth_authorize_path, data: { turbo: "false" }, :class=> "btn btn-social btn-openid" do %>
+          <%= button_to user_keycloak_omniauth_authorize_path, data: { turbo: "false" }, :class=> "btn btn-social btn-openid" do %>
             <%= image_tag "openid-logo.png", :class => "black-to-white" %> Sign in with Keycloak
 
           <% end %>

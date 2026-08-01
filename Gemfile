@@ -27,7 +27,10 @@ gem 'mission_control-jobs' # git: 'https://github.com/rails/mission_control-jobs
 gem 'mysql2'
 gem 'oas_rails'
 gem 'omniauth'
-gem 'omniauth-keycloak'
+# Using the ifad fork instead of the unmaintained ccrockett original: it drops the
+# omniauth-oauth2 < 1.9 ceiling that was blocking that gem's update, and renames the
+# strategy from KeycloakOpenId/keycloak_openid to Keycloak/keycloak.
+gem 'omniauth-keycloak', github: 'ifad/omniauth-keycloak', ref: '75978274fe9299b033c74894837a340b6ce333f0'
 gem 'omniauth-google-oauth2'
 gem 'omniauth_openid_connect'
 gem 'omniauth-rails_csrf_protection'

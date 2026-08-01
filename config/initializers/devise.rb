@@ -321,15 +321,15 @@ Devise.setup do |config|
   # config.omniauth_path_prefix = '/my_engine/users/auth'
   # config.omniauth :github, "APP_ID", "APP_SECRET"
   # ==> OmniAuth
-  # config.omniauth_providers: %i[keycloakopenid google_oauth2]
+  # config.omniauth_providers: %i[keycloak google_oauth2]
   if Rails.application.config.keycloak_realm.present?
-    config.omniauth :keycloak_openid, 'quepid', 'example-secret-if-configured',
+    config.omniauth :keycloak, 'quepid', 'example-secret-if-configured',
                     client_options: {
                       site:     Rails.application.config.keycloak_site,
                       realm:    Rails.application.config.keycloak_realm,
                       base_url: '',
                     },
-                    strategy_class: OmniAuth::Strategies::KeycloakOpenId
+                    strategy_class: OmniAuth::Strategies::Keycloak
   end
 
   if Rails.application.config.google_client_id.present?
