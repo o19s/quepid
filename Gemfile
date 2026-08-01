@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '4.0.5'
+ruby '4.0.6'
 
 gem 'active_storage_db'
 gem 'acts_as_list'
@@ -63,8 +63,6 @@ group :development, :test do
 end
 
 group :development do
-  gem 'claude-on-rails' # Dev acceleration tool
-
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem 'web-console'
   gem 'annotaterb'

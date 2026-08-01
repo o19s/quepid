@@ -43,8 +43,8 @@ This guide provides detailed instructions for developers who want to set up, run
 		- [Thor](#thor)
 - [Elasticsearch](#elasticsearch)
 - [Dev Errata](#dev-errata)
-	- [What is Claude on Rails?](#what-is-claude-on-rails)
 	- [How to use a new Node module or update an existing one](#how-to-use-a-new-node-module-or-update-an-existing-one)
+	- [How to update Quepid's dependencies (Ruby, Gems, Yarn, Importmap)](#how-to-update-quepids-dependencies-ruby-gems-yarn-importmap)
 	- [How to use a new Ruby Gem or update an existing one](#how-to-use-a-new-ruby-gem-or-update-an-existing-one)
 	- [How to test nesting Quepid under a domain](#how-to-test-nesting-quepid-under-a-domain)
 	- [How to run and test a local production build](#how-to-run-and-test-a-local-production-build)
@@ -518,14 +518,6 @@ See more details on the wiki at https://github.com/o19s/quepid/wiki/Troubleshoot
 
 # Dev Errata
 
-## What is Claude on Rails?
-
-Claude on Rails is sort of a vibe coder, sorta a dev framework for Rails available from https://github.com/obie/claude-on-rails.
-
-We're experimenting with using it to build Quepid features! It is used during development.
-
-To get Claude on Rails to work, you need to do development outside of Docker ;-(.
-
 ## How to use a new Node module or update an existing one
 
 Typically you would simply do:
@@ -545,6 +537,17 @@ which will install/upgrade the Node module, and then save that dependency to `pa
 Then check in the updated `package.json` and `yarn.lock` files.
 
 Use `bin/docker r yarn outdated` to see what packages you can update!!!!
+
+## How to update Quepid's dependencies (Ruby, Gems, Yarn, Importmap)
+
+Rough checklist for a general dependency-update pass:
+
+1. Bump the Ruby version in `.ruby-version`, `Gemfile`, `.circleci/config.yml`, `Dockerfile.dev`, and `Dockerfile.prod`, then rebuild: `bin/setup_docker` and `bin/docker s`.
+2. Update Ruby gems: `bin/docker r bundle outdated --groups`, then `bin/docker r bundle update <gem>` for what's behind.
+3. Update yarn packages: `bin/docker r yarn outdated`, then `bin/docker r yarn upgrade <package>`.
+4. Update importmap-pinned JS packages: `bin/docker r bundle exec bin/importmap outdated`, then `bin/docker r bundle exec bin/importmap update`.
+5. Sanity-check in a browser (e.g. via Playwright MCP): sign in, check the console for new errors, and exercise anything visibly affected by the bump before committing.
+6. If `renovate.json`'s grouping/custom-manager rules for these dependencies (Ruby version, Rails packages, Docker Node/Yarn ARGs) no longer match, update it too, so future bumps keep arriving as sane grouped PRs.
 
 ## How to use a new Ruby Gem or update an existing one
 

@@ -10,11 +10,92 @@
   "prConcurrentLimit": 10,
   "prHourlyLimit": 10,
   "stabilityDays": 3,
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^Gemfile$/"
+      ],
+      "matchStrings": [
+        "ruby\\s+'(?<currentValue>[^']+)'"
+      ],
+      "depNameTemplate": "ruby",
+      "datasourceTemplate": "ruby-version"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^Dockerfile\\.prod$/"
+      ],
+      "matchStrings": [
+        "ARG NODE_VERSION=(?<currentValue>[\\d.]+)"
+      ],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "node-version"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^Dockerfile\\.prod$/"
+      ],
+      "matchStrings": [
+        "ARG YARN_VERSION=(?<currentValue>[\\d.]+)"
+      ],
+      "depNameTemplate": "yarn",
+      "datasourceTemplate": "npm"
+    }
+  ],
   "packageRules": [
     {
-      "groupName": "Ruby on Rails packages",
+      "enabled": false,
+      "matchPackageNames": [
+        "angular-csv-import",
+        "angular-flash",
+        "angular-ui-ace",
+        "angular-wizard",
+        "ng-json-explorer",
+        "jquery"
+      ]
+    },
+    {
+      "groupName": "Ruby interpreter version",
+      "matchDatasources": [
+        "ruby-version"
+      ]
+    },
+    {
+      "groupName": "Ruby interpreter version",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "ruby",
+        "docker.io/library/ruby"
+      ]
+    },
+    {
+      "groupName": "GitHub Actions",
+      "matchManagers": [
+        "github-actions"
+      ]
+    },
+    {
+      "groupName": "Other Ruby gem updates",
       "matchDatasources": [
         "rubygems"
+      ]
+    },
+    {
+      "groupName": "Other JavaScript dependency updates",
+      "matchDatasources": [
+        "npm"
+      ]
+    },
+    {
+      "groupName": "Rails packages (Ruby + JavaScript)",
+      "matchDatasources": [
+        "rubygems",
+        "npm"
       ],
       "matchPackageNames": [
         "actioncable",
@@ -29,13 +110,13 @@
         "activestorage",
         "activesupport",
         "railties",
-        "rails"
-      ]
-    },
-    {
-      "groupName": "GitHub Actions",
-      "matchManagers": [
-        "github-actions"
+        "rails",
+        "turbo-rails",
+        "stimulus-rails",
+        "importmap-rails",
+        "jsbundling-rails",
+        "@rails/actioncable",
+        "@rails/activestorage"
       ]
     }
   ]
