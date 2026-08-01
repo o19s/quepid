@@ -20,7 +20,7 @@ namespace :karma do
 
   private
 
-  def run_karma(command, *args)
+  def run_karma command, *args
     puts 'Building assets...'.yellow
     system('npm run build') || exit(1)
 
