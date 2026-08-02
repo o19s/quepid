@@ -80,7 +80,10 @@
   user-select: none;
   opacity: var(--bs-btn-close-disabled-opacity);
 }
+/* BS5 pushes .btn-close to the far right of .modal-header via margin-left:
+ * auto on the button itself (not justify-content: space-between on the
+ * header, which our vendored bootstrap.css doesn't set). */
 .modal-header .btn-core-close {
-  margin: 5px 5px 0 0;
+  margin: 5px 5px 0 auto;
 }
 /* end close button for modals in core app */
