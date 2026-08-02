@@ -2,8 +2,8 @@
 
 angular.module('QuepidApp')
   .controller('TargetedSearchCtrl', [
-    '$scope', '$quepidModal',
-    function ($scope, $quepidModal) {
+    '$scope', '$quepidModal', '$log',
+    function ($scope, $quepidModal, $log) {
       $scope.targetedSearch = {};
       $scope.targetedSearch.triggerModal = function() {
 
@@ -18,9 +18,14 @@ angular.module('QuepidApp')
           }
         });
 
-        modalInstance.result.then(function() {
-          //Then anything?
-        });
+        modalInstance.result.then(
+          function() {
+            //Then anything?
+          },
+          function() {
+            $log.info('INFO: Modal dismissed');
+          }
+        );
       };
     }
   ]);
