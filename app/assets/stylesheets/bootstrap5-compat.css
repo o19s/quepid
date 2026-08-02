@@ -23,6 +23,21 @@
   --q-query-error-icon-color: #fe5b00;
 }
 
+/* BS5's Reboot resets color to `inherit` (and drops the underline) for any
+ * `<a>` with neither `href` nor `class` — BS3 always styled these as links.
+ * This app has ~20+ templates using bare `<a ng-click="...">` as an
+ * AngularJS click handler with no href/class, so without this override they
+ * silently lost their blue link styling (e.g. the case-actions toolbar:
+ * "Select scorer", "Judgements", "Import", etc.). */
+a:not([href]):not([class]) {
+  color: var(--bs-link-color);
+  text-decoration: underline;
+}
+
+a:not([href]):not([class]):hover {
+  color: var(--bs-link-hover-color);
+}
+
 /* Tooltip + popover: quepidPopover / quepidTooltip pass `animation: false`
  * so `.fade` is never added — avoids invisible-but-present popover bugs
  * from cascade conflicts on opacity.
