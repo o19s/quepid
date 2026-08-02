@@ -58,6 +58,16 @@
       ]
     },
     {
+      "enabled": false,
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "mysql",
+        "cimg/mysql"
+      ]
+    },
+    {
       "groupName": "Ruby interpreter version",
       "matchDatasources": [
         "ruby-version"
