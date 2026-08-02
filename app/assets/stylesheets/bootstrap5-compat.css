@@ -71,6 +71,9 @@ a:not([href]):not([class]):hover {
   --bs-popover-inner-border-radius: 7px;
   max-height: 600px;
   padding: 0;
+  /* BS5's .popover doesn't ship a box-shadow at all; BS3's did, giving the
+   * popover a "lifted" look instead of blending flat into the page. */
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Accordion: only live use is the wizard endpoint picker (wizardModal.html).
@@ -371,6 +374,10 @@ header .dropdown-toggle .bi {
 	box-shadow: inset 0 0 25px rgba(0,0,0,0.25);
 	color: #FFF;
 	text-shadow: 0 0 6px rgba(0,0,0,0.25);
+}
+
+.single-rating .btn .bi-caret-down-fill {
+	margin-left: 4px;
 }
 
 /* Full-bleed .container — Quepid expects no breakpoint max-width cap.

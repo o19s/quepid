@@ -286,7 +286,11 @@ header .dropdown-item:focus {
 	Main - Results - Sub Results — rating columns and thumbnails
 */
 
+/* BS5 Reboot's `ul { margin-bottom: 1rem }` default is left over here since
+ * nothing else resets it, adding ~14px of unwanted space below the rating
+ * buttons inside the "Score All" popover. */
 .ratingContainer ul {
+  margin: 0;
   padding: 0;
 }
 
@@ -338,6 +342,14 @@ header .dropdown-item:focus {
 .col-ratings.query-rating {
   margin-left: 15px;
   margin-top: -10px;
+}
+
+/* Per-document rating column sits inside a different positioned ancestor
+ * (.col-md-10, 10.5px padding) than the "Score All" column above it
+ * (.sub-results.container, 15px padding), so absolute `left: 0` alone lands
+ * 11px further left. Nudge it right to line up under "Score All". */
+.col-ratings:not(.query-rating) {
+  margin-left: 11px;
 }
 
 .col-ratings {
