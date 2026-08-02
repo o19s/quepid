@@ -53,9 +53,9 @@
       // from a raw DOM event (BS5's hidden.bs.modal) needs a digest so
       // result.then handlers run; from inside an existing digest we'd
       // double-throw, so check $$phase first. Mirrors the $apply uib used
-      // for its keydown handler. Note: this assumes BS5's
-      // executeAfterTransition runs the callback synchronously when
-      // animation is off (true in v5.x; revisit on minor bumps).
+      // for its keydown handler. hidden.bs.modal now fires asynchronously
+      // (after the fade transition completes) rather than synchronously,
+      // but that only delays when this runs — it still always runs.
       function safeApply(fn) {
         if ($rootScope.$$phase) { fn(); }
         else { $rootScope.$apply(fn); }
@@ -81,7 +81,7 @@
         // templates start at .modal-header expecting that hierarchy.
         const sizeClass = opts.size ? ('modal-' + opts.size) : '';
         const wrapper   = angular.element(
-          '<div class="modal" tabindex="-1" role="dialog">' +
+          '<div class="modal fade" tabindex="-1" role="dialog">' +
             '<div class="modal-dialog ' + sizeClass + '" role="document">' +
               '<div class="modal-content"></div>' +
             '</div>' +
@@ -96,8 +96,10 @@
         const wrapperEl = wrapper[0];
         const contentEl = wrapperEl.querySelector('.modal-content');
 
+        // BS5's Modal has no `animation` config key (Default is just
+        // backdrop/focus/keyboard) — animation is controlled purely by the
+        // `.fade` class on the element itself, added above.
         const bsModal = new Modal(wrapperEl, {
-          animation: false,
           backdrop:  opts.backdrop !== undefined ? opts.backdrop : true,
           keyboard:  opts.keyboard !== undefined ? opts.keyboard : true,
           focus:     true
@@ -225,9 +227,10 @@
             // (targetedSearchModal and the diff modal embed <search-result>
             // rows whose info button opens detailedDoc.html), so bump per
             // already-shown modal. Outer keeps the BS3 defaults; each
-            // additional layer adds 20. Backdrop is created synchronously
-            // by BS5 during show() with animation off, so we can grab the
-            // most-recent .modal-backdrop right after show() returns.
+            // additional layer adds 20. BS5's Backdrop appends its element
+            // synchronously inside show() regardless of animation (only the
+            // fade-in itself is async), so we can grab the most-recent
+            // .modal-backdrop right after show() returns.
             const stackIdx = document.querySelectorAll('.modal.show').length;
             if (stackIdx > 0) { wrapperEl.style.zIndex = 1050 + stackIdx * 20; }
             bsModal.show();
