@@ -12,6 +12,17 @@
  * Loaded by build_css.js between fonts.css and bootstrap5-compat.css.
  */
 
+/* BS3's default base font-size was 14px; BS5 defaults to 16px. Rem-based
+ * BS5 spacing/padding/font-sizes throughout core.css scale off the root
+ * font-size, so leaving BS5's 16px default makes the whole case view look
+ * noticeably larger/looser than the old BS3 UI. This restores BS3's density
+ * (14/16 = 87.5%) for every rem-based measurement at once. Scoped to `html`
+ * only — putting it on `body` too would compound (each `%` is relative to
+ * its own parent), shrinking body to 87.5% of 14px instead of 14px. */
+html {
+  font-size: 87.5%;
+}
+
 html, body {
   width:    100%;
   height:   100%;
@@ -91,8 +102,61 @@ header .dropdown-item:focus {
   padding-bottom: 10px;
 }
 
+/* stackedChart.css has an unscoped `small { font-size: 11px; }` leak that
+ * otherwise wins the cascade here and flattens the "Current case" / "Try N"
+ * subtext to a fixed 11px regardless of the heading size. Restore `small`'s
+ * normal size-relative-to-parent behavior so it scales with the case title. */
+.results-control h1 small {
+  font-size: 0.875em;
+}
+
+/* BS3's .text-muted was a flat #777; BS5's is --bs-secondary-color, body
+ * color at 75% opacity (~#585c60 on white) — noticeably darker/heavier than
+ * the old muted gray. BS5's .text-muted sets `color` with !important, so it
+ * has to be steered via the custom property it reads rather than overriding
+ * `color` directly. Restore the softer BS3 tone across the case view (case
+ * header subtext, query-toolbar separators and "Sort" label). */
+/* BS3's link blue was #337ab7 (hover #23527c); BS5 defaults to the much
+ * brighter/more saturated #0d6efd. Restore the muted BS3 blue across the
+ * case view by steering the variables `a`/`a:hover` read from, rather than
+ * overriding `color` directly (keeps the cascade intact for any other rule
+ * that reads these same variables). */
+.results-control {
+  --bs-secondary-color: #777;
+  --bs-link-color: #337ab7;
+  --bs-link-color-rgb: 51, 122, 183;
+  --bs-link-hover-color: #23527c;
+  --bs-link-hover-color-rgb: 35, 82, 124;
+}
+
+/* BS3 never underlined links by default (only on hover/focus); BS5's Reboot
+ * underlines every <a> by default. Restore BS3's convention across the case
+ * view — toolbar links, sort/filter controls, etc. — since the blue link
+ * color alone already signals interactivity throughout the app. */
+.results-control a {
+  text-decoration: none;
+}
+
+.results-control a:hover,
+.results-control a:focus {
+  text-decoration: underline;
+}
+
 .results-control :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6) {
   font-family: 'allerregular', sans-serif;
+}
+
+/* #query-container/#case-header/#case-actions have no side padding, so
+ * BS5's default .row negative margin (bs-gutter-x / -2) bleeds their
+ * children flush to the viewport edge — the old BS3 build zeroed .row's
+ * margin in this results-control area so each .col's own gutter padding
+ * became the only inset, leaving a clean margin instead of edge-to-edge
+ * content (e.g. the case score badge and the case-actions toolbar). */
+.results-control #query-container > .row,
+.results-control #case-header,
+.results-control #case-actions {
+  margin-right: 0;
+  margin-left: 0;
 }
 
 .results-control #query-container {

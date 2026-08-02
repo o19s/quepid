@@ -23,15 +23,15 @@
   --q-query-error-icon-color: #fe5b00;
 }
 
-/* BS5's Reboot resets color to `inherit` (and drops the underline) for any
- * `<a>` with neither `href` nor `class` — BS3 always styled these as links.
- * This app has ~20+ templates using bare `<a ng-click="...">` as an
- * AngularJS click handler with no href/class, so without this override they
- * silently lost their blue link styling (e.g. the case-actions toolbar:
- * "Select scorer", "Judgements", "Import", etc.). */
+/* BS5's Reboot resets color to `inherit` for any `<a>` with neither `href`
+ * nor `class` — BS3 always styled these as links (blue, no underline). This
+ * app has ~20+ templates using bare `<a ng-click="...">` as an AngularJS
+ * click handler with no href/class, so without this override they silently
+ * lost their blue link styling (e.g. the case-actions toolbar: "Select
+ * scorer", "Judgements", "Import", etc.). */
 a:not([href]):not([class]) {
   color: var(--bs-link-color);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 a:not([href]):not([class]):hover {
@@ -168,7 +168,12 @@ header.navbar-secondary .dropdown-toggle::after,
  * a `.navbar-expand-lg` host; keep both in sync when adjusting chrome.
  */
 
-/* Primary navbar — Quepid wordmark, sized to 56px brand strip. */
+/* Primary navbar — Quepid wordmark, sized to 56px brand strip. Explicit
+ * line-height keeps the wordmark centered in the 56px box: without it,
+ * BS5's unitless `line-height: 1.5` on body inherits and recomputes
+ * against this element's own 28px font-size (1.5 * 28 = 42px), overflowing
+ * the fixed-height box below the 16px top padding and pushing the text
+ * down instead of centering it. */
 .navbar-brand {
   position: relative;
   height: 56px;
@@ -176,6 +181,7 @@ header.navbar-secondary .dropdown-toggle::after,
   padding: 16px 15px 0 0;
   font-family: 'alleritalic';
   font-size: 28px;
+  line-height: 20px;
   color: #FFF !important;
 }
 

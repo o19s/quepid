@@ -2,6 +2,10 @@
 .icon-container {
     position: relative;
     display: inline-block;
+    /* The 🐸 emoji glyph sits well above the text baseline, so at default
+       vertical-align the icon renders noticeably higher than the sibling
+       result-count number and the toggle chevron. Nudge down to align. */
+    top: 6px;
 }
 
 .notification-bubble {

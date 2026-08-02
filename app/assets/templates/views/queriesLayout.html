@@ -32,7 +32,7 @@
 
           <div ng-controller="CaseCtrl" style="display:inline-block;vertical-align:top">
             <h1 class="fs-1 fw-normal lh-sm mb-3">
-              <small class="d-block fs-6 fw-normal text-muted">
+              <small class="d-block fw-normal text-muted">
                 Current case
                 <i class="bi bi-repeat" ng-show="caseModel.selectedCase().nightly" quepid-tooltip="Queries are run on a nightly basis." tooltip-popup-delay="1000" tooltip-placement="right"></i>
                 <span ng-show="caseModel.selectedCase().public">PUBLIC</span>
@@ -52,7 +52,7 @@
                 </span>
               </span>
 
-              <small class="fs-6 fw-normal text-muted" ng-controller="CurrSettingsCtrl">
+              <small class="fw-normal text-muted" ng-controller="CurrSettingsCtrl">
                 &mdash;
                 <span ng-dblclick="tryNameEditModeToggle()">
                   <span ng-hide="tryName.startRename">
@@ -68,7 +68,7 @@
                 </span>
               </small>
 
-              <small class="fs-6 fw-normal text-muted">
+              <small class="fw-normal text-muted">
                 &mdash;
                 {{ getScorer().name }}
               </small>
