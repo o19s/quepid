@@ -68,7 +68,10 @@ RUN bundle exec bootsnap precompile -j 1 app/ lib/
 ADD https://github.com/o19s/quepid-jupyterlite/releases/latest/download/jupyter-lite-build.tgz ./notebooks.gz
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+# SKIP_YARN_INSTALL avoids jsbundling-rails re-running a full (non---production) `yarn install`
+# as a prerequisite of assets:precompile, which would otherwise reinstall devDependencies
+# (test tooling like puppeteer/karma/jshint) that this build image doesn't need or support.
+RUN SECRET_KEY_BASE_DUMMY=1 SKIP_YARN_INSTALL=1 ./bin/rails assets:precompile
 
 # Right now we don't relocate via sprockets/propshaft all JS and CSS assets
 # so we need to keep this.
