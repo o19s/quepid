@@ -120,13 +120,23 @@ header .dropdown-item:focus {
  * brighter/more saturated #0d6efd. Restore the muted BS3 blue across the
  * case view by steering the variables `a`/`a:hover` read from, rather than
  * overriding `color` directly (keeps the cascade intact for any other rule
- * that reads these same variables). */
+ * that reads these same variables).
+ *
+ * BS3's body font was "Helvetica Neue", Helvetica, Arial, sans-serif; BS5
+ * defaults to a system-ui stack whose glyphs render noticeably larger/
+ * chunkier at the same declared font-size (e.g. the "0.00" case score).
+ * `font-family` is a normal inherited property (not read per-element via
+ * var() the way .text-muted/`a` are), so it's enough to set it once here —
+ * every descendant that doesn't declare its own font-family inherits it.
+ * `.results-control :is(h1, h2, ...)` below is more specific and still wins
+ * for headings, so the Aller branding font is unaffected. */
 .results-control {
   --bs-secondary-color: #777;
   --bs-link-color: #337ab7;
   --bs-link-color-rgb: 51, 122, 183;
   --bs-link-hover-color: #23527c;
   --bs-link-hover-color-rgb: 35, 82, 124;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 /* BS3 never underlined links by default (only on hover/focus); BS5's Reboot

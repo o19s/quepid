@@ -318,6 +318,45 @@ header .dropdown-toggle .bi {
 	color: #FFF;
 }
 
+/* BS5's .btn-outline-secondary/.btn-warning/.btn-danger hardcode their own
+ * colors as component-level custom properties (not derived from a shared
+ * theme variable), so they can't be steered by overriding a single var —
+ * each needs its own override. Restore BS3's .btn-default (white bg, light
+ * #ccc border) and the softer BS3 warning/danger shades for the query
+ * detail toolbar ("Toggle Notes", "Move Query", "Delete Query", etc.). */
+.sub-results .btn-outline-secondary {
+	--bs-btn-color: #333;
+	--bs-btn-bg: #fff;
+	--bs-btn-border-color: #ccc;
+	--bs-btn-hover-color: #333;
+	--bs-btn-hover-bg: #e6e6e6;
+	--bs-btn-hover-border-color: #adadad;
+	--bs-btn-active-color: #333;
+	--bs-btn-active-bg: #e6e6e6;
+	--bs-btn-active-border-color: #adadad;
+}
+
+.sub-results .btn-warning {
+	--bs-btn-color: #fff;
+	--bs-btn-bg: #f0ad4e;
+	--bs-btn-border-color: #f0ad4e;
+	--bs-btn-hover-color: #fff;
+	--bs-btn-hover-bg: #ec971f;
+	--bs-btn-hover-border-color: #e28a00;
+	--bs-btn-active-color: #fff;
+	--bs-btn-active-bg: #ec971f;
+	--bs-btn-active-border-color: #e28a00;
+}
+
+.sub-results .btn-danger {
+	--bs-btn-bg: #d9534f;
+	--bs-btn-border-color: #d9534f;
+	--bs-btn-hover-bg: #c9302c;
+	--bs-btn-hover-border-color: #ac2925;
+	--bs-btn-active-bg: #c9302c;
+	--bs-btn-active-border-color: #ac2925;
+}
+
 .sub-results .row {
 	padding: 5px 0;
 }
