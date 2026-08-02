@@ -121,11 +121,9 @@ Rails.application.config.search_endpoint_views_admin_only = bool.deserialize(ENV
 #
 Rails.application.config.require_proxy_with_basic_auth_credentials = bool.deserialize(ENV.fetch('REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS', false))
 
-# == Set up encryption for Quepid
+# NOTE: ActiveRecord encryption keys are configured in config/application.rb so
+# they take effect before the active_record.encryption Railtie initializer runs.
 # We provide some defaults, but you should set your own keys and NOT lose them.
-Rails.application.config.active_record.encryption.deterministic_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY', 'OItaH6HSftjoxkl9QDejPAmQ8EaFOlwk')
-Rails.application.config.active_record.encryption.key_derivation_salt = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT', 'BzPDVAl1jAUquD4p7rM9J40wAwf7CCFh')
-Rails.application.config.active_record.encryption.primary_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY', 'bnYX3NlvUJxHWXwNYBgP33yi8BKlN7Ml')
 
 Rails.application.config.after_initialize do
   next if defined?(Rails::Console)

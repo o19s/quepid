@@ -1,11 +1,12 @@
 ## General Configuration / Execution
 
-- You are working on Quepid, a Rails application. Review the ClaudeOnRails context file at @.claude-on-rails/context.md
+- You are working on Quepid, a Rails application. Also look at @DEVELOPER_GUIDE.md.
 - We run Quepid in Docker primarily, don't run Rails and other build tasks locally.
 - To set up the environment use:
     `bin/setup_docker`.
 - To start Quepid use:
     `bin/docker s`
+- Do not stop (you may restart) the dev server unless the user explicitly asks. Leave it running across tasks.
 - Most commands you want to run you can just prefix with `bin/docker r bundle exec` so `rails console --environment=test` becomes `bin/docker r bundle exec rails console --environment=test`
 - After CSS or vendor JS changes make sure you rebuild:
     `bin/docker r yarn build`              # full frontend build
@@ -69,3 +70,14 @@
 - **Root `font-size` and rem-based BS5 defaults.** `bootstrap5-compat.css` comment blocks historically assumed **`html { font-size: 62.5% }`** (1rem = 10px); that rule is **not** set in-repo on `core` today (`core.html.erb` / `core-additions.css`). If **computed** root `font-size` is not 16px, rem-based BS5 defaults may look wrong — override the relevant **`--bs-*`** vars with **px** in compat CSS when tuning widgets, and verify computed styles. Do not change root font-size casually without checking the whole **`core`** stack.
 - **Earlier-layer rules can win on shared selectors** (e.g. `.popover { padding: 1px }` from an old patch while BS5 puts padding on `.popover-header` / `.popover-body`). Reset bleed-through properties explicitly in the compat CSS.
 - **Verify visually.** Some of these traps produce *invisible-but-present* failures (popover element in DOM, `aria-describedby` set, but nothing visible). Static analysis won't catch them. Use Playwright MCP (or have the user screenshot DevTools' Computed panel for the popover element) and confirm `display`, `opacity`, `font-size`, and `transform` are sensible.
+
+
+## UI changes — screenshots via Playwright MCP (`playwright` server)
+
+For any user-visible change, prove the behavior with Playwright MCP screenshots — never substitute prose or memory. App: `http://localhost:33000`; sign in with `quepid+realisticactivity@o19s.com` / `password`.
+
+- **Before & after**: capture the affected flow before editing, then repeat the identical steps after. Capture every relevant state (modal open/closed, accordion expanded, error vs success, etc.). `browser_snapshot` is only for driving clicks; `browser_take_screenshot` is the proof.
+- **Frame big** (my screenshots have come out too small): shoot the **full viewport**, not element crops. Quepid modals scroll *internally*, so `fullPage:true` does NOT reach below their fold — instead `browser_resize` the viewport to roughly match the modal so it fills the frame, then screenshot the viewport. Size to the content: a tall step (e.g. the wizard endpoint step) needs ~`820x2200`; a short step (e.g. wizard Finish) needs ~`900x760` — a tall viewport dwarfs a short modal. Narrower width = modal fills more of the frame.
+- **Force hard-to-reach states** (e.g. a failed save) by intercepting the API with `browser_run_code_unsafe` + `page.route('**/api/...', ...)`.
+    - Gotcha: `setTimeout` is undefined in that context — use `await page.waitForTimeout(ms)` for delays.
+- **Save** under `.playwright-mcp/` (gitignored) with clear `-before`/`-after` (+ state) names, e.g. `behavior-wizard-proxy-after-error.png`.

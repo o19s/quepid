@@ -1,4 +1,174 @@
-// style-mod@4.1.3 downloaded from https://ga.jspm.io/npm:style-mod@4.1.3/src/style-mod.js
+// style-mod@4.1.3 downloaded from https://cdn.jsdelivr.net/npm/style-mod@4.1.3/src/style-mod.js
 
-const e="ͼ";const t=typeof Symbol=="undefined"?"__"+e:Symbol.for(e);const s=typeof Symbol=="undefined"?"__styleSet"+Math.floor(Math.random()*1e8):Symbol("styleSet");const l=typeof globalThis!="undefined"?globalThis:typeof window!="undefined"?window:{};class StyleModule{constructor(e,t){this.rules=[];let{finish:s}=t||{};function l(e){return/^@/.test(e)?[e]:e.split(/,\s*/)}function i(e,t,n,o){let r=[],h=/^@(\w+)\b/.exec(e[0]),u=h&&h[1]=="keyframes";if(h&&t==null)return n.push(e[0]+";");for(let s in t){let o=t[s];if(/&/.test(s))i(s.split(/,\s*/).map((t=>e.map((e=>t.replace(/&/,e))))).reduce(((e,t)=>e.concat(t))),o,n);else if(o&&typeof o=="object"){if(!h)throw new RangeError("The value of a property ("+s+") should be a primitive value.");i(l(s),o,r,u)}else o!=null&&r.push(s.replace(/_.*/,"").replace(/[A-Z]/g,(e=>"-"+e.toLowerCase()))+": "+o+";")}(r.length||u)&&n.push((!s||h||o?e:e.map(s)).join(", ")+" {"+r.join(" ")+"}")}for(let t in e)i(l(t),e[t],this.rules)}getRules(){return this.rules.join("\n")}static newName(){let s=l[t]||1;l[t]=s+1;return e+s.toString(36)}static mount(e,t,l){let i=e[s],n=l&&l.nonce;i?n&&i.setNonce(n):i=new StyleSet(e,n);i.mount(Array.isArray(t)?t:[t],e)}}let i=new Map;class StyleSet{constructor(e,t){let l=e.ownerDocument||e,n=l.defaultView;if(!e.head&&e.adoptedStyleSheets&&n.CSSStyleSheet){let t=i.get(l);if(t)return e[s]=t;this.sheet=new n.CSSStyleSheet;i.set(l,this)}else{this.styleTag=l.createElement("style");t&&this.styleTag.setAttribute("nonce",t)}this.modules=[];e[s]=this}mount(e,t){let s=this.sheet;let l=0,i=0;for(let t=0;t<e.length;t++){let n=e[t],o=this.modules.indexOf(n);if(o<i&&o>-1){this.modules.splice(o,1);i--;o=-1}if(o==-1){this.modules.splice(i++,0,n);if(s)for(let e=0;e<n.rules.length;e++)s.insertRule(n.rules[e],l++)}else{while(i<o)l+=this.modules[i++].rules.length;l+=n.rules.length;i++}}if(s)t.adoptedStyleSheets.indexOf(this.sheet)<0&&(t.adoptedStyleSheets=[this.sheet,...t.adoptedStyleSheets]);else{let e="";for(let t=0;t<this.modules.length;t++)e+=this.modules[t].getRules()+"\n";this.styleTag.textContent=e;let s=t.head||t;this.styleTag.parentNode!=s&&s.insertBefore(this.styleTag,s.firstChild)}}setNonce(e){this.styleTag&&this.styleTag.getAttribute("nonce")!=e&&this.styleTag.setAttribute("nonce",e)}}export{StyleModule};
+const C = "\u037c"
+const COUNT = typeof Symbol == "undefined" ? "__" + C : Symbol.for(C)
+const SET = typeof Symbol == "undefined" ? "__styleSet" + Math.floor(Math.random() * 1e8) : Symbol("styleSet")
+const top = typeof globalThis != "undefined" ? globalThis : typeof window != "undefined" ? window : {}
 
+// :: - Style modules encapsulate a set of CSS rules defined from
+// JavaScript. Their definitions are only available in a given DOM
+// root after it has been _mounted_ there with `StyleModule.mount`.
+//
+// Style modules should be created once and stored somewhere, as
+// opposed to re-creating them every time you need them. The amount of
+// CSS rules generated for a given DOM root is bounded by the amount
+// of style modules that were used. So to avoid leaking rules, don't
+// create these dynamically, but treat them as one-time allocations.
+export class StyleModule {
+  // :: (Object<Style>, ?{finish: ?(string) → string})
+  // Create a style module from the given spec.
+  //
+  // When `finish` is given, it is called on regular (non-`@`)
+  // selectors (after `&` expansion) to compute the final selector.
+  constructor(spec, options) {
+    this.rules = []
+    let {finish} = options || {}
+
+    function splitSelector(selector) {
+      return /^@/.test(selector) ? [selector] : selector.split(/,\s*/)
+    }
+
+    function render(selectors, spec, target, isKeyframes) {
+      let local = [], isAt = /^@(\w+)\b/.exec(selectors[0]), keyframes = isAt && isAt[1] == "keyframes"
+      if (isAt && spec == null) return target.push(selectors[0] + ";")
+      for (let prop in spec) {
+        let value = spec[prop]
+        if (/&/.test(prop)) {
+          render(prop.split(/,\s*/).map(part => selectors.map(sel => part.replace(/&/, sel))).reduce((a, b) => a.concat(b)),
+                 value, target)
+        } else if (value && typeof value == "object") {
+          if (!isAt) throw new RangeError("The value of a property (" + prop + ") should be a primitive value.")
+          render(splitSelector(prop), value, local, keyframes)
+        } else if (value != null) {
+          local.push(prop.replace(/_.*/, "").replace(/[A-Z]/g, l => "-" + l.toLowerCase()) + ": " + value + ";")
+        }
+      }
+      if (local.length || keyframes) {
+        target.push((finish && !isAt && !isKeyframes ? selectors.map(finish) : selectors).join(", ") +
+                    " {" + local.join(" ") + "}")
+      }
+    }
+
+    for (let prop in spec) render(splitSelector(prop), spec[prop], this.rules)
+  }
+
+  // :: () → string
+  // Returns a string containing the module's CSS rules.
+  getRules() { return this.rules.join("\n") }
+
+  // :: () → string
+  // Generate a new unique CSS class name.
+  static newName() {
+    let id = top[COUNT] || 1
+    top[COUNT] = id + 1
+    return C + id.toString(36)
+  }
+
+  // :: (union<Document, ShadowRoot>, union<[StyleModule], StyleModule>, ?{nonce: ?string})
+  //
+  // Mount the given set of modules in the given DOM root, which ensures
+  // that the CSS rules defined by the module are available in that
+  // context.
+  //
+  // Rules are only added to the document once per root.
+  //
+  // Rule order will follow the order of the modules, so that rules from
+  // modules later in the array take precedence of those from earlier
+  // modules. If you call this function multiple times for the same root
+  // in a way that changes the order of already mounted modules, the old
+  // order will be changed.
+  //
+  // If a Content Security Policy nonce is provided, it is added to
+  // the `<style>` tag generated by the library.
+  static mount(root, modules, options) {
+    let set = root[SET], nonce = options && options.nonce
+    if (!set) set = new StyleSet(root, nonce)
+    else if (nonce) set.setNonce(nonce)
+    set.mount(Array.isArray(modules) ? modules : [modules], root)
+  }
+}
+
+let adoptedSet = new Map //<Document, StyleSet>
+
+class StyleSet {
+  constructor(root, nonce) {
+    let doc = root.ownerDocument || root, win = doc.defaultView
+    if (!root.head && root.adoptedStyleSheets && win.CSSStyleSheet) {
+      let adopted = adoptedSet.get(doc)
+      if (adopted) return root[SET] = adopted
+      this.sheet = new win.CSSStyleSheet
+      adoptedSet.set(doc, this)
+    } else {
+      this.styleTag = doc.createElement("style")
+      if (nonce) this.styleTag.setAttribute("nonce", nonce)
+    }
+    this.modules = []
+    root[SET] = this
+  }
+
+  mount(modules, root) {
+    let sheet = this.sheet
+    let pos = 0 /* Current rule offset */, j = 0 /* Index into this.modules */
+    for (let i = 0; i < modules.length; i++) {
+      let mod = modules[i], index = this.modules.indexOf(mod)
+      if (index < j && index > -1) { // Ordering conflict
+        this.modules.splice(index, 1)
+        j--
+        index = -1
+      }
+      if (index == -1) {
+        this.modules.splice(j++, 0, mod)
+        if (sheet) for (let k = 0; k < mod.rules.length; k++)
+          sheet.insertRule(mod.rules[k], pos++)
+      } else {
+        while (j < index) pos += this.modules[j++].rules.length
+        pos += mod.rules.length
+        j++
+      }
+    }
+
+    if (sheet) {
+      if (root.adoptedStyleSheets.indexOf(this.sheet) < 0)
+        root.adoptedStyleSheets = [this.sheet, ...root.adoptedStyleSheets]
+    } else {
+      let text = ""
+      for (let i = 0; i < this.modules.length; i++)
+        text += this.modules[i].getRules() + "\n"
+      this.styleTag.textContent = text
+      let target = root.head || root
+      if (this.styleTag.parentNode != target)
+        target.insertBefore(this.styleTag, target.firstChild)
+    }
+  }
+
+  setNonce(nonce) {
+    if (this.styleTag && this.styleTag.getAttribute("nonce") != nonce)
+      this.styleTag.setAttribute("nonce", nonce)
+  }
+}
+
+// Style::Object<union<Style,string>>
+//
+// A style is an object that, in the simple case, maps CSS property
+// names to strings holding their values, as in `{color: "red",
+// fontWeight: "bold"}`. The property names can be given in
+// camel-case—the library will insert a dash before capital letters
+// when converting them to CSS.
+//
+// If you include an underscore in a property name, it and everything
+// after it will be removed from the output, which can be useful when
+// providing a property multiple times, for browser compatibility
+// reasons.
+//
+// A property in a style object can also be a sub-selector, which
+// extends the current context to add a pseudo-selector or a child
+// selector. Such a property should contain a `&` character, which
+// will be replaced by the current selector. For example `{"&:before":
+// {content: '"hi"'}}`. Sub-selectors and regular properties can
+// freely be mixed in a given object. Any property containing a `&` is
+// assumed to be a sub-selector.
+//
+// Finally, a property can specify an @-block to be wrapped around the
+// styles defined inside the object that's the property's value. For
+// example to create a media query you can do `{"@media screen and
+// (min-width: 400px)": {...}}`.

@@ -1,4 +1,958 @@
-// @codemirror/lint@6.9.4 downloaded from https://ga.jspm.io/npm:@codemirror/lint@6.9.4/dist/index.js
+// @codemirror/lint@6.9.7 downloaded from https://cdn.jsdelivr.net/npm/@codemirror/lint@6.9.7/dist/index.js
 
-import{Decoration as e,EditorView as t,hoverTooltip as i,showPanel as n,getPanel as s,ViewPlugin as o,logException as l,WidgetType as r,GutterMarker as a,gutter as c,showTooltip as d}from"@codemirror/view";import{Facet as f,RangeSetBuilder as u,StateEffect as m,StateField as h,combineConfig as g,RangeSet as p}from"@codemirror/state";import v from"crelt";class SelectedDiagnostic{constructor(e,t,i){this.from=e;this.to=t;this.diagnostic=i}}class LintState{constructor(e,t,i){this.diagnostics=e;this.panel=t;this.selected=i}static init(t,i,n){let s=n.facet($).markerFilter;s&&(t=s(t,n));let o=t.slice().sort(((e,t)=>e.from-t.from||e.to-t.to));let l=new u,r=[],a=0;let c=n.doc.iter(),d=0,f=n.doc.length;for(let t=0;;){let i=t==o.length?null:o[t];if(!i&&!r.length)break;let n,s;if(r.length){n=a;s=r.reduce(((e,t)=>Math.min(e,t.to)),i&&i.from>n?i.from:1e8)}else{n=i.from;if(n>f)break;s=i.to;r.push(i);t++}while(t<o.length){let e=o[t];if(e.from!=n||!(e.to>e.from||e.to==n)){s=Math.min(e.from,s);break}r.push(e);t++;s=Math.min(e.to,s)}s=Math.min(s,f);let u=false;if(r.some((e=>e.from==n&&(e.to==s||s==f)))){u=n==s;if(!u&&s-n<10){let e=n-(d+c.value.length);if(e>0){c.next(e);d=n}for(let e=n;;){if(e>=s){u=true;break}if(!c.lineBreak&&d+c.value.length>e)break;e=d+c.value.length;d+=c.value.length;c.next()}}}let m=Z(r);if(u)l.add(n,n,e.widget({widget:new DiagnosticWidget(m),diagnostics:r.slice()}));else{let t=r.reduce(((e,t)=>t.markClass?e+" "+t.markClass:e),"");l.add(n,s,e.mark({class:"cm-lintRange cm-lintRange-"+m+t,diagnostics:r.slice(),inclusiveEnd:r.some((e=>e.to>s))}))}a=s;if(a==f)break;for(let e=0;e<r.length;e++)r[e].to<=a&&r.splice(e--,1)}let m=l.finish();return new LintState(m,i,w(m))}}function w(e,t=null,i=0){let n=null;e.between(i,1e9,((e,i,{spec:s})=>{if(!(t&&s.diagnostics.indexOf(t)<0))if(n){if(s.diagnostics.indexOf(n.diagnostic)<0)return false;n=new SelectedDiagnostic(n.from,i,n.diagnostic)}else n=new SelectedDiagnostic(e,i,t||s.diagnostics[0])}));return n}function b(e,t){let i=t.pos,n=t.end||i;let s=e.state.facet($).hideOn(e,i,n);if(s!=null)return s;let o=e.startState.doc.lineAt(t.pos);return!!(e.effects.some((e=>e.is(y)))||e.changes.touchesRange(o.from,Math.max(o.to,n)))}function k(e,t){return e.field(S,false)?t:t.concat(m.appendConfig.of(ie))}function x(e,t){return{effects:k(e,[y.of(t)])}}const y=m.define();const C=m.define();const L=m.define();const S=h.define({create(){return new LintState(e.none,null,null)},update(e,t){if(t.docChanged&&e.diagnostics.size){let i=e.diagnostics.map(t.changes),n=null,s=e.panel;if(e.selected){let s=t.changes.mapPos(e.selected.from,1);n=w(i,e.selected.diagnostic,s)||w(i,null,s)}!i.size&&s&&t.state.facet($).autoPanel&&(s=null);e=new LintState(i,s,n)}for(let i of t.effects)if(i.is(y)){let n=t.state.facet($).autoPanel?i.value.length?LintPanel.open:null:e.panel;e=LintState.init(i.value,n,t.state)}else i.is(C)?e=new LintState(e.diagnostics,i.value?LintPanel.open:null,e.selected):i.is(L)&&(e=new LintState(e.diagnostics,e.panel,i.value));return e},provide:e=>[n.from(e,(e=>e.panel)),t.decorations.from(e,(e=>e.diagnostics))]});function T(e){let t=e.field(S,false);return t?t.diagnostics.size:0}const R=e.mark({class:"cm-lintRange cm-lintRange-active"});function P(e,t,i){let{diagnostics:n}=e.state.field(S);let s,o=-1,l=-1;n.between(t-(i<0?1:0),t+(i>0?1:0),((e,n,{spec:r})=>{if(t>=e&&t<=n&&(e==n||(t>e||i>0)&&(t<n||i<0))){s=r.diagnostics;o=e;l=n;return false}}));let r=e.state.facet($).tooltipFilter;s&&r&&(s=r(s,e.state));return s?{pos:o,end:l,above:e.state.doc.lineAt(o).to<l,create(){return{dom:M(e,s)}}}:null}function M(e,t){return v("ul",{class:"cm-tooltip-lint"},t.map((t=>q(e,t,false))))}const I=e=>{let t=e.state.field(S,false);t&&t.panel||e.dispatch({effects:k(e.state,[C.of(true)])});let i=s(e,LintPanel.open);i&&i.dom.querySelector(".cm-panel-lint ul").focus();return true};const A=e=>{let t=e.state.field(S,false);if(!t||!t.panel)return false;e.dispatch({effects:C.of(false)});return true};const D=e=>{let t=e.state.field(S,false);if(!t)return false;let i=e.state.selection.main,n=w(t.diagnostics,null,i.to+1);if(!n){n=w(t.diagnostics,null,0);if(!n||n.from==i.from&&n.to==i.to)return false}e.dispatch({selection:{anchor:n.from,head:n.to},scrollIntoView:true});return true};const B=e=>{let{state:t}=e,i=t.field(S,false);if(!i)return false;let n=t.selection.main;let s,o,l,r;i.diagnostics.between(0,t.doc.length,((e,t)=>{if(t<n.to&&(s==null||s<e)){s=e;o=t}if(l==null||e>l){l=e;r=t}}));if(l==null||s==null&&l==n.from)return false;e.dispatch({selection:{anchor:s!==null&&s!==void 0?s:l,head:o!==null&&o!==void 0?o:r},scrollIntoView:true});return true};const O=[{key:"Mod-Shift-m",run:I,preventDefault:true},{key:"F8",run:D}];const F=o.fromClass(class{constructor(e){this.view=e;this.timeout=-1;this.set=true;let{delay:t}=e.state.facet($);this.lintTime=Date.now()+t;this.run=this.run.bind(this);this.timeout=setTimeout(this.run,t)}run(){clearTimeout(this.timeout);let e=Date.now();if(e<this.lintTime-10)this.timeout=setTimeout(this.run,this.lintTime-e);else{this.set=false;let{state:e}=this.view,{sources:t}=e.facet($);t.length&&z(t.map((e=>Promise.resolve(e(this.view)))),(t=>{this.view.state.doc==e.doc&&this.view.dispatch(x(this.view.state,t.reduce(((e,t)=>e.concat(t)))))}),(e=>{l(this.view.state,e)}))}}update(e){let t=e.state.facet($);if(e.docChanged||t!=e.startState.facet($)||t.needsRefresh&&t.needsRefresh(e)){this.lintTime=Date.now()+t.delay;if(!this.set){this.set=true;this.timeout=setTimeout(this.run,t.delay)}}}force(){if(this.set){this.lintTime=Date.now();this.run()}}destroy(){clearTimeout(this.timeout)}});function z(e,t,i){let n=[],s=-1;for(let o of e)o.then((i=>{n.push(i);clearTimeout(s);n.length==e.length?t(n):s=setTimeout((()=>t(n)),200)}),i)}const $=f.define({combine(e){return{sources:e.map((e=>e.source)).filter((e=>e!=null)),...g(e.map((e=>e.config)),{delay:750,markerFilter:null,tooltipFilter:null,needsRefresh:null,hideOn:()=>null},{delay:Math.max,markerFilter:E,tooltipFilter:E,needsRefresh:(e,t)=>e?t?i=>e(i)||t(i):e:t,hideOn:(e,t)=>e?t?(i,n,s)=>e(i,n,s)||t(i,n,s):e:t,autoPanel:(e,t)=>e||t})}}});function E(e,t){return e?t?(i,n)=>t(e(i,n),n):e:t}function H(e,t={}){return[$.of({source:e,config:t}),F,ie]}function N(e){let t=e.plugin(F);t&&t.force()}function j(e){let t=[];if(e)e:for(let{name:i}of e){for(let e=0;e<i.length;e++){let n=i[e];if(/[a-zA-Z]/.test(n)&&!t.some((e=>e.toLowerCase()==n.toLowerCase()))){t.push(n);continue e}}t.push("")}return t}function q(e,t,i){var n;let s=i?j(t.actions):[];return v("li",{class:"cm-diagnostic cm-diagnostic-"+t.severity},v("span",{class:"cm-diagnosticText"},t.renderMessage?t.renderMessage(e):t.message),(n=t.actions)===null||n===void 0?void 0:n.map(((i,n)=>{let o=false,l=n=>{n.preventDefault();if(o)return;o=true;let s=w(e.state.field(S).diagnostics,t);s&&i.apply(e,s.from,s.to)};let{name:r}=i,a=s[n]?r.indexOf(s[n]):-1;let c=a<0?r:[r.slice(0,a),v("u",r.slice(a,a+1)),r.slice(a+1)];let d=i.markClass?" "+i.markClass:"";return v("button",{type:"button",class:"cm-diagnosticAction"+d,onclick:l,onmousedown:l,"aria-label":` Action: ${r}${a<0?"":` (access key "${s[n]})"`}.`},c)})),t.source&&v("div",{class:"cm-diagnosticSource"},t.source))}class DiagnosticWidget extends r{constructor(e){super();this.sev=e}eq(e){return e.sev==this.sev}toDOM(){return v("span",{class:"cm-lintPoint cm-lintPoint-"+this.sev})}}class PanelItem{constructor(e,t){this.diagnostic=t;this.id="item_"+Math.floor(Math.random()*4294967295).toString(16);this.dom=q(e,t,true);this.dom.id=this.id;this.dom.setAttribute("role","option")}}class LintPanel{constructor(e){this.view=e;this.items=[];let t=t=>{if(!(t.ctrlKey||t.altKey||t.metaKey)){if(t.keyCode==27){A(this.view);this.view.focus()}else if(t.keyCode==38||t.keyCode==33)this.moveSelection((this.selectedIndex-1+this.items.length)%this.items.length);else if(t.keyCode==40||t.keyCode==34)this.moveSelection((this.selectedIndex+1)%this.items.length);else if(t.keyCode==36)this.moveSelection(0);else if(t.keyCode==35)this.moveSelection(this.items.length-1);else if(t.keyCode==13)this.view.focus();else{if(!(t.keyCode>=65&&t.keyCode<=90&&this.selectedIndex>=0))return;{let{diagnostic:i}=this.items[this.selectedIndex],n=j(i.actions);for(let s=0;s<n.length;s++)if(n[s].toUpperCase().charCodeAt(0)==t.keyCode){let t=w(this.view.state.field(S).diagnostics,i);t&&i.actions[s].apply(e,t.from,t.to)}}}t.preventDefault()}};let i=e=>{for(let t=0;t<this.items.length;t++)this.items[t].dom.contains(e.target)&&this.moveSelection(t)};this.list=v("ul",{tabIndex:0,role:"listbox","aria-label":this.view.state.phrase("Diagnostics"),onkeydown:t,onclick:i});this.dom=v("div",{class:"cm-panel-lint"},this.list,v("button",{type:"button",name:"close","aria-label":this.view.state.phrase("close"),onclick:()=>A(this.view)},"×"));this.update()}get selectedIndex(){let e=this.view.state.field(S).selected;if(!e)return-1;for(let t=0;t<this.items.length;t++)if(this.items[t].diagnostic==e.diagnostic)return t;return-1}update(){let{diagnostics:e,selected:t}=this.view.state.field(S);let i=0,n=false,s=null;let o=new Set;e.between(0,this.view.state.doc.length,((e,l,{spec:r})=>{for(let e of r.diagnostics){if(o.has(e))continue;o.add(e);let l,r=-1;for(let t=i;t<this.items.length;t++)if(this.items[t].diagnostic==e){r=t;break}if(r<0){l=new PanelItem(this.view,e);this.items.splice(i,0,l);n=true}else{l=this.items[r];if(r>i){this.items.splice(i,r-i);n=true}}if(t&&l.diagnostic==t.diagnostic){if(!l.dom.hasAttribute("aria-selected")){l.dom.setAttribute("aria-selected","true");s=l}}else l.dom.hasAttribute("aria-selected")&&l.dom.removeAttribute("aria-selected");i++}}));while(i<this.items.length&&!(this.items.length==1&&this.items[0].diagnostic.from<0)){n=true;this.items.pop()}if(this.items.length==0){this.items.push(new PanelItem(this.view,{from:-1,to:-1,severity:"info",message:this.view.state.phrase("No diagnostics")}));n=true}if(s){this.list.setAttribute("aria-activedescendant",s.id);this.view.requestMeasure({key:this,read:()=>({sel:s.dom.getBoundingClientRect(),panel:this.list.getBoundingClientRect()}),write:({sel:e,panel:t})=>{let i=t.height/this.list.offsetHeight;e.top<t.top?this.list.scrollTop-=(t.top-e.top)/i:e.bottom>t.bottom&&(this.list.scrollTop+=(e.bottom-t.bottom)/i)}})}else this.selectedIndex<0&&this.list.removeAttribute("aria-activedescendant");n&&this.sync()}sync(){let e=this.list.firstChild;function t(){let t=e;e=t.nextSibling;t.remove()}for(let i of this.items)if(i.dom.parentNode==this.list){while(e!=i.dom)t();e=i.dom.nextSibling}else this.list.insertBefore(i.dom,e);while(e)t()}moveSelection(e){if(this.selectedIndex<0)return;let t=this.view.state.field(S);let i=w(t.diagnostics,this.items[e].diagnostic);i&&this.view.dispatch({selection:{anchor:i.from,head:i.to},scrollIntoView:true,effects:L.of(i)})}static open(e){return new LintPanel(e)}}function G(e,t='viewBox="0 0 40 40"'){return`url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" ${t}>${encodeURIComponent(e)}</svg>')`}function K(e){return G(`<path d="m0 2.5 l2 -1.5 l1 0 l2 1.5 l1 0" stroke="${e}" fill="none" stroke-width=".7"/>`,'width="6" height="3"')}const V=t.baseTheme({".cm-diagnostic":{padding:"3px 6px 3px 8px",marginLeft:"-1px",display:"block",whiteSpace:"pre-wrap"},".cm-diagnostic-error":{borderLeft:"5px solid #d11"},".cm-diagnostic-warning":{borderLeft:"5px solid orange"},".cm-diagnostic-info":{borderLeft:"5px solid #999"},".cm-diagnostic-hint":{borderLeft:"5px solid #66d"},".cm-diagnosticAction":{font:"inherit",border:"none",padding:"2px 4px",backgroundColor:"#444",color:"white",borderRadius:"3px",marginLeft:"8px",cursor:"pointer"},".cm-diagnosticSource":{fontSize:"70%",opacity:.7},".cm-lintRange":{backgroundPosition:"left bottom",backgroundRepeat:"repeat-x",paddingBottom:"0.7px"},".cm-lintRange-error":{backgroundImage:K("#d11")},".cm-lintRange-warning":{backgroundImage:K("orange")},".cm-lintRange-info":{backgroundImage:K("#999")},".cm-lintRange-hint":{backgroundImage:K("#66d")},".cm-lintRange-active":{backgroundColor:"#ffdd9980"},".cm-tooltip-lint":{padding:0,margin:0},".cm-lintPoint":{position:"relative","&:after":{content:'""',position:"absolute",bottom:0,left:"-2px",borderLeft:"3px solid transparent",borderRight:"3px solid transparent",borderBottom:"4px solid #d11"}},".cm-lintPoint-warning":{"&:after":{borderBottomColor:"orange"}},".cm-lintPoint-info":{"&:after":{borderBottomColor:"#999"}},".cm-lintPoint-hint":{"&:after":{borderBottomColor:"#66d"}},".cm-panel.cm-panel-lint":{position:"relative","& ul":{maxHeight:"100px",overflowY:"auto","& [aria-selected]":{backgroundColor:"#ddd","& u":{textDecoration:"underline"}},"&:focus [aria-selected]":{background_fallback:"#bdf",backgroundColor:"Highlight",color_fallback:"white",color:"HighlightText"},"& u":{textDecoration:"none"},padding:0,margin:0},"& [name=close]":{position:"absolute",top:"0",right:"2px",background:"inherit",border:"none",font:"inherit",padding:0,margin:0}}});function Y(e){return e=="error"?4:e=="warning"?3:e=="info"?2:1}function Z(e){let t="hint",i=1;for(let n of e){let e=Y(n.severity);if(e>i){i=e;t=n.severity}}return t}class LintGutterMarker extends a{constructor(e){super();this.diagnostics=e;this.severity=Z(e)}toDOM(e){let t=document.createElement("div");t.className="cm-lint-marker cm-lint-marker-"+this.severity;let i=this.diagnostics;let n=e.state.facet(ne).tooltipFilter;n&&(i=n(i,e.state));i.length&&(t.onmouseover=()=>U(e,t,i));return t}}function _(e,t){let i=n=>{let s=t.getBoundingClientRect();if(!(n.clientX>s.left-10&&n.clientX<s.right+10&&n.clientY>s.top-10&&n.clientY<s.bottom+10)){for(let e=n.target;e;e=e.parentNode)if(e.nodeType==1&&e.classList.contains("cm-tooltip-lint"))return;window.removeEventListener("mousemove",i);e.state.field(ee)&&e.dispatch({effects:Q.of(null)})}};window.addEventListener("mousemove",i)}function U(e,t,i){function n(){let n=e.elementAtHeight(t.getBoundingClientRect().top+5-e.documentTop);const s=e.coordsAtPos(n.from);s&&e.dispatch({effects:Q.of({pos:n.from,above:false,clip:false,create(){return{dom:M(e,i),getCoords:()=>t.getBoundingClientRect()}}})});t.onmouseout=t.onmousemove=null;_(e,t)}let{hoverTime:s}=e.state.facet(ne);let o=setTimeout(n,s);t.onmouseout=()=>{clearTimeout(o);t.onmouseout=t.onmousemove=null};t.onmousemove=()=>{clearTimeout(o);o=setTimeout(n,s)}}function W(e,t){let i=Object.create(null);for(let n of t){let t=e.lineAt(n.from);(i[t.from]||(i[t.from]=[])).push(n)}let n=[];for(let e in i)n.push(new LintGutterMarker(i[e]).range(+e));return p.of(n,true)}const X=c({class:"cm-gutter-lint",markers:e=>e.state.field(J),widgetMarker:(e,t,i)=>{let n=[];e.state.field(J).between(i.from,i.to,((e,t,s)=>{e>i.from&&e<i.to&&n.push(...s.diagnostics)}));return n.length?new LintGutterMarker(n):null}});const J=h.define({create(){return p.empty},update(e,t){e=e.map(t.changes);let i=t.state.facet(ne).markerFilter;for(let n of t.effects)if(n.is(y)){let s=n.value;i&&(s=i(s||[],t.state));e=W(t.state.doc,s.slice(0))}return e}});const Q=m.define();const ee=h.define({create(){return null},update(e,t){e&&t.docChanged&&(e=b(t,e)?null:{...e,pos:t.changes.mapPos(e.pos)});return t.effects.reduce(((e,t)=>t.is(Q)?t.value:e),e)},provide:e=>d.from(e)});const te=t.baseTheme({".cm-gutter-lint":{width:"1.4em","& .cm-gutterElement":{padding:".2em"}},".cm-lint-marker":{width:"1em",height:"1em"},".cm-lint-marker-info":{content:G('<path fill="#aaf" stroke="#77e" stroke-width="6" stroke-linejoin="round" d="M5 5L35 5L35 35L5 35Z"/>')},".cm-lint-marker-warning":{content:G('<path fill="#fe8" stroke="#fd7" stroke-width="6" stroke-linejoin="round" d="M20 6L37 35L3 35Z"/>')},".cm-lint-marker-error":{content:G('<circle cx="20" cy="20" r="15" fill="#f87" stroke="#f43" stroke-width="6"/>')}});const ie=[S,t.decorations.compute([S],(t=>{let{selected:i,panel:n}=t.field(S);return i&&n&&i.from!=i.to?e.set([R.range(i.from,i.to)]):e.none})),i(P,{hideOn:b}),V];const ne=f.define({combine(e){return g(e,{hoverTime:300,markerFilter:null,tooltipFilter:null})}});function se(e={}){return[ne.of(e),J,X,te,ee]}function oe(e,t){let i=e.field(S,false);if(i&&i.diagnostics.size){let e=[],n=[],s=-1;for(let o=p.iter([i.diagnostics]);;o.next()){for(let i=0;i<e.length;i++)if(!o.value||o.value.spec.diagnostics.indexOf(e[i])<0){t(e[i],n[i],s);e.splice(i,1);n.splice(i--,1)}if(!o.value)break;for(let t of o.value.spec.diagnostics)if(e.indexOf(t)<0){e.push(t);n.push(o.from)}s=o.to}}}export{A as closeLintPanel,T as diagnosticCount,oe as forEachDiagnostic,N as forceLinting,se as lintGutter,O as lintKeymap,H as linter,D as nextDiagnostic,I as openLintPanel,B as previousDiagnostic,x as setDiagnostics,y as setDiagnosticsEffect};
+import { Decoration, showPanel, EditorView, ViewPlugin, gutter, showTooltip, hoverTooltip, getPanel, activateHover, logException, WidgetType, GutterMarker } from '@codemirror/view';
+import { StateEffect, StateField, Facet, combineConfig, RangeSet, RangeSetBuilder } from '@codemirror/state';
+import elt from 'crelt';
 
+class SelectedDiagnostic {
+    constructor(from, to, diagnostic) {
+        this.from = from;
+        this.to = to;
+        this.diagnostic = diagnostic;
+    }
+}
+class LintState {
+    constructor(diagnostics, panel, selected) {
+        this.diagnostics = diagnostics;
+        this.panel = panel;
+        this.selected = selected;
+    }
+    static init(diagnostics, panel, state) {
+        // Filter the list of diagnostics for which to create markers
+        let diagnosticFilter = state.facet(lintConfig).markerFilter;
+        if (diagnosticFilter)
+            diagnostics = diagnosticFilter(diagnostics, state);
+        let sorted = diagnostics.slice().sort((a, b) => a.from - b.from || a.to - b.to);
+        let deco = new RangeSetBuilder(), active = [], pos = 0;
+        let scan = state.doc.iter(), scanPos = 0, docLen = state.doc.length;
+        for (let i = 0;;) {
+            let next = i == sorted.length ? null : sorted[i];
+            if (!next && !active.length)
+                break;
+            let from, to;
+            if (active.length) {
+                from = pos;
+                to = active.reduce((p, d) => Math.min(p, d.to), next && next.from > from ? next.from : 1e8);
+            }
+            else {
+                from = next.from;
+                if (from > docLen)
+                    break;
+                to = next.to;
+                active.push(next);
+                i++;
+            }
+            while (i < sorted.length) {
+                let next = sorted[i];
+                if (next.from == from && (next.to > next.from || next.to == from)) {
+                    active.push(next);
+                    i++;
+                    to = Math.min(next.to, to);
+                }
+                else {
+                    to = Math.min(next.from, to);
+                    break;
+                }
+            }
+            to = Math.min(to, docLen);
+            let widget = false;
+            if (active.some(d => d.from == from && (d.to == to || to == docLen))) {
+                widget = from == to;
+                if (!widget && to - from < 10) {
+                    let behind = from - (scanPos + scan.value.length);
+                    if (behind > 0) {
+                        scan.next(behind);
+                        scanPos = from;
+                    }
+                    for (let check = from;;) {
+                        if (check >= to) {
+                            widget = true;
+                            break;
+                        }
+                        if (!scan.lineBreak && scanPos + scan.value.length > check)
+                            break;
+                        check = scanPos + scan.value.length;
+                        scanPos += scan.value.length;
+                        scan.next();
+                    }
+                }
+            }
+            let sev = maxSeverity(active);
+            if (widget) {
+                deco.add(from, from, Decoration.widget({
+                    widget: new DiagnosticWidget(sev),
+                    diagnostics: active.slice()
+                }));
+            }
+            else {
+                let markClass = active.reduce((c, d) => d.markClass ? c + " " + d.markClass : c, "");
+                deco.add(from, to, Decoration.mark({
+                    class: "cm-lintRange cm-lintRange-" + sev + markClass,
+                    diagnostics: active.slice(),
+                    inclusiveEnd: active.some(a => a.to > to)
+                }));
+            }
+            pos = to;
+            if (pos == docLen)
+                break;
+            for (let i = 0; i < active.length; i++)
+                if (active[i].to <= pos)
+                    active.splice(i--, 1);
+        }
+        let set = deco.finish();
+        return new LintState(set, panel, findDiagnostic(set));
+    }
+}
+function findDiagnostic(diagnostics, diagnostic = null, after = 0) {
+    let found = null;
+    diagnostics.between(after, 1e9, (from, to, { spec }) => {
+        if (diagnostic && spec.diagnostics.indexOf(diagnostic) < 0)
+            return;
+        if (!found)
+            found = new SelectedDiagnostic(from, to, diagnostic || spec.diagnostics[0]);
+        else if (spec.diagnostics.indexOf(found.diagnostic) < 0)
+            return false;
+        else
+            found = new SelectedDiagnostic(found.from, to, found.diagnostic);
+    });
+    return found;
+}
+function hideTooltip(tr, tooltip) {
+    let from = tooltip.pos, to = tooltip.end || from;
+    let result = tr.state.facet(lintConfig).hideOn(tr, from, to);
+    if (result != null)
+        return result;
+    let line = tr.startState.doc.lineAt(tooltip.pos);
+    return !!(tr.effects.some(e => e.is(setDiagnosticsEffect)) || tr.changes.touchesRange(line.from, Math.max(line.to, to)));
+}
+function maybeEnableLint(state, effects) {
+    return state.field(lintState, false) ? effects : effects.concat(StateEffect.appendConfig.of(lintExtensions));
+}
+/**
+Returns a transaction spec which updates the current set of
+diagnostics, and enables the lint extension if if wasn't already
+active.
+*/
+function setDiagnostics(state, diagnostics) {
+    return {
+        effects: maybeEnableLint(state, [setDiagnosticsEffect.of(diagnostics)])
+    };
+}
+/**
+The state effect that updates the set of active diagnostics. Can
+be useful when writing an extension that needs to track these.
+*/
+const setDiagnosticsEffect = /*@__PURE__*/StateEffect.define();
+const togglePanel = /*@__PURE__*/StateEffect.define();
+const movePanelSelection = /*@__PURE__*/StateEffect.define();
+const lintState = /*@__PURE__*/StateField.define({
+    create() {
+        return new LintState(Decoration.none, null, null);
+    },
+    update(value, tr) {
+        if (tr.docChanged && value.diagnostics.size) {
+            let mapped = value.diagnostics.map(tr.changes), selected = null, panel = value.panel;
+            if (value.selected) {
+                let selPos = tr.changes.mapPos(value.selected.from, 1);
+                selected = findDiagnostic(mapped, value.selected.diagnostic, selPos) || findDiagnostic(mapped, null, selPos);
+            }
+            if (!mapped.size && panel && tr.state.facet(lintConfig).autoPanel)
+                panel = null;
+            value = new LintState(mapped, panel, selected);
+        }
+        for (let effect of tr.effects) {
+            if (effect.is(setDiagnosticsEffect)) {
+                let panel = !tr.state.facet(lintConfig).autoPanel ? value.panel : effect.value.length ? LintPanel.open : null;
+                value = LintState.init(effect.value, panel, tr.state);
+            }
+            else if (effect.is(togglePanel)) {
+                value = new LintState(value.diagnostics, effect.value ? LintPanel.open : null, value.selected);
+            }
+            else if (effect.is(movePanelSelection)) {
+                value = new LintState(value.diagnostics, value.panel, effect.value);
+            }
+        }
+        return value;
+    },
+    provide: f => [showPanel.from(f, val => val.panel),
+        EditorView.decorations.from(f, s => s.diagnostics)]
+});
+/**
+Returns the number of active lint diagnostics in the given state.
+*/
+function diagnosticCount(state) {
+    let lint = state.field(lintState, false);
+    return lint ? lint.diagnostics.size : 0;
+}
+const activeMark = /*@__PURE__*/Decoration.mark({ class: "cm-lintRange cm-lintRange-active" });
+function lintTooltip(view, pos, side) {
+    let { diagnostics } = view.state.field(lintState);
+    let found, start = -1, end = -1;
+    diagnostics.between(pos - (side < 0 ? 1 : 0), pos + (side > 0 ? 1 : 0), (from, to, { spec }) => {
+        if (pos >= from && pos <= to &&
+            (from == to || ((pos > from || side > 0) && (pos < to || side < 0)))) {
+            found = spec.diagnostics;
+            start = from;
+            end = to;
+            return false;
+        }
+    });
+    let diagnosticFilter = view.state.facet(lintConfig).tooltipFilter;
+    if (found && diagnosticFilter)
+        found = diagnosticFilter(found, view.state);
+    if (!found)
+        return null;
+    return {
+        pos: start,
+        end: end,
+        above: true,
+        create() {
+            return { dom: diagnosticsTooltip(view, found) };
+        }
+    };
+}
+function diagnosticsTooltip(view, diagnostics) {
+    return elt("ul", { class: "cm-tooltip-lint" }, diagnostics.map(d => renderDiagnostic(view, d, false)));
+}
+/**
+Command to open and focus the lint panel.
+*/
+const openLintPanel = (view) => {
+    let field = view.state.field(lintState, false);
+    if (!field || !field.panel)
+        view.dispatch({ effects: maybeEnableLint(view.state, [togglePanel.of(true)]) });
+    let panel = getPanel(view, LintPanel.open);
+    if (panel)
+        panel.dom.querySelector(".cm-panel-lint ul").focus();
+    return true;
+};
+/**
+Command to close the lint panel, when open.
+*/
+const closeLintPanel = (view) => {
+    let field = view.state.field(lintState, false);
+    if (!field || !field.panel)
+        return false;
+    view.dispatch({ effects: togglePanel.of(false) });
+    return true;
+};
+/**
+Move the selection to the next diagnostic.
+*/
+const nextDiagnostic = (view) => {
+    let field = view.state.field(lintState, false);
+    if (!field)
+        return false;
+    let sel = view.state.selection.main, next = findDiagnostic(field.diagnostics, null, sel.to + 1);
+    if (!next) {
+        next = findDiagnostic(field.diagnostics, null, 0);
+        if (!next || next.from == sel.from && next.to == sel.to)
+            return false;
+    }
+    view.dispatch({ selection: { anchor: next.from, head: next.to }, scrollIntoView: true });
+    activateHover(view, next.from, 1, {
+        tooltip: lintHover,
+        until: tr => tr.docChanged || tr.newSelection.main.head < next.from || tr.newSelection.main.head > next.to
+    });
+    return true;
+};
+/**
+Move the selection to the previous diagnostic.
+*/
+const previousDiagnostic = (view) => {
+    var _a;
+    let { state } = view, field = state.field(lintState, false);
+    if (!field)
+        return false;
+    let sel = state.selection.main;
+    let prevFrom, prevTo, lastFrom, lastTo;
+    field.diagnostics.between(0, state.doc.length, (from, to) => {
+        if (to < sel.to && (prevFrom == null || prevFrom < from)) {
+            prevFrom = from;
+            prevTo = to;
+        }
+        if (lastFrom == null || from > lastFrom) {
+            lastFrom = from;
+            lastTo = to;
+        }
+    });
+    if (lastFrom == null || prevFrom == null && lastFrom == sel.from)
+        return false;
+    let from = prevFrom !== null && prevFrom !== void 0 ? prevFrom : lastFrom, to = (_a = prevTo !== null && prevTo !== void 0 ? prevTo : lastTo) !== null && _a !== void 0 ? _a : from;
+    view.dispatch({ selection: { anchor: from, head: to }, scrollIntoView: true });
+    activateHover(view, from, 1, {
+        tooltip: lintHover,
+        until: tr => tr.docChanged || tr.newSelection.main.head < from || tr.newSelection.main.head > to
+    });
+    return true;
+};
+/**
+A set of default key bindings for the lint functionality.
+
+- Ctrl-Shift-m (Cmd-Shift-m on macOS): [`openLintPanel`](https://codemirror.net/6/docs/ref/#lint.openLintPanel)
+- F8: [`nextDiagnostic`](https://codemirror.net/6/docs/ref/#lint.nextDiagnostic)
+*/
+const lintKeymap = [
+    { key: "Mod-Shift-m", run: openLintPanel, preventDefault: true },
+    { key: "F8", run: nextDiagnostic }
+];
+const lintPlugin = /*@__PURE__*/ViewPlugin.fromClass(class {
+    constructor(view) {
+        this.view = view;
+        this.timeout = -1;
+        this.set = true;
+        let { delay } = view.state.facet(lintConfig);
+        this.lintTime = Date.now() + delay;
+        this.run = this.run.bind(this);
+        this.timeout = setTimeout(this.run, delay);
+    }
+    run() {
+        clearTimeout(this.timeout);
+        let now = Date.now();
+        if (now < this.lintTime - 10) {
+            this.timeout = setTimeout(this.run, this.lintTime - now);
+        }
+        else {
+            this.set = false;
+            let { state } = this.view, { sources } = state.facet(lintConfig);
+            if (sources.length)
+                batchResults(sources.map(s => Promise.resolve(s(this.view))), annotations => {
+                    if (this.view.state.doc == state.doc)
+                        this.view.dispatch(setDiagnostics(this.view.state, annotations.reduce((a, b) => a.concat(b))));
+                }, error => { logException(this.view.state, error); });
+        }
+    }
+    update(update) {
+        let config = update.state.facet(lintConfig);
+        if (update.docChanged || config != update.startState.facet(lintConfig) ||
+            config.needsRefresh && config.needsRefresh(update)) {
+            this.lintTime = Date.now() + config.delay;
+            if (!this.set) {
+                this.set = true;
+                this.timeout = setTimeout(this.run, config.delay);
+            }
+        }
+    }
+    force() {
+        if (this.set) {
+            this.lintTime = Date.now();
+            this.run();
+        }
+    }
+    destroy() {
+        clearTimeout(this.timeout);
+    }
+});
+function batchResults(promises, sink, error) {
+    let collected = [], timeout = -1;
+    for (let p of promises)
+        p.then(value => {
+            collected.push(value);
+            clearTimeout(timeout);
+            if (collected.length == promises.length)
+                sink(collected);
+            else
+                timeout = setTimeout(() => sink(collected), 200);
+        }, error);
+}
+const lintConfig = /*@__PURE__*/Facet.define({
+    combine(input) {
+        return {
+            sources: input.map(i => i.source).filter(x => x != null),
+            ...combineConfig(input.map(i => i.config), {
+                delay: 750,
+                markerFilter: null,
+                tooltipFilter: null,
+                needsRefresh: null,
+                hideOn: () => null,
+            }, {
+                delay: Math.max,
+                markerFilter: combineFilter,
+                tooltipFilter: combineFilter,
+                needsRefresh: (a, b) => !a ? b : !b ? a : u => a(u) || b(u),
+                hideOn: (a, b) => !a ? b : !b ? a : (t, x, y) => a(t, x, y) || b(t, x, y),
+                autoPanel: (a, b) => a || b
+            })
+        };
+    }
+});
+function combineFilter(a, b) {
+    return !a ? b : !b ? a : (d, s) => b(a(d, s), s);
+}
+/**
+Given a diagnostic source, this function returns an extension that
+enables linting with that source. It will be called whenever the
+editor is idle (after its content changed).
+
+Note that settings given here will apply to all linters active in
+the editor. If `null` is given as source, this only configures the
+lint extension.
+*/
+function linter(source, config = {}) {
+    return [
+        lintConfig.of({ source, config }),
+        lintPlugin,
+        lintExtensions
+    ];
+}
+/**
+Forces any linters [configured](https://codemirror.net/6/docs/ref/#lint.linter) to run when the
+editor is idle to run right away.
+*/
+function forceLinting(view) {
+    let plugin = view.plugin(lintPlugin);
+    if (plugin)
+        plugin.force();
+}
+function assignKeys(actions) {
+    let assigned = [];
+    if (actions)
+        actions: for (let { name } of actions) {
+            for (let i = 0; i < name.length; i++) {
+                let ch = name[i];
+                if (/[a-zA-Z]/.test(ch) && !assigned.some(c => c.toLowerCase() == ch.toLowerCase())) {
+                    assigned.push(ch);
+                    continue actions;
+                }
+            }
+            assigned.push("");
+        }
+    return assigned;
+}
+function renderDiagnostic(view, diagnostic, inPanel) {
+    var _a;
+    let keys = inPanel ? assignKeys(diagnostic.actions) : [];
+    return elt("li", { class: "cm-diagnostic cm-diagnostic-" + diagnostic.severity }, elt("span", { class: "cm-diagnosticText" }, diagnostic.renderMessage ? diagnostic.renderMessage(view) : diagnostic.message), (_a = diagnostic.actions) === null || _a === void 0 ? void 0 : _a.map((action, i) => {
+        let fired = false, click = (e) => {
+            e.preventDefault();
+            if (fired)
+                return;
+            fired = true;
+            let found = findDiagnostic(view.state.field(lintState).diagnostics, diagnostic);
+            if (found)
+                action.apply(view, found.from, found.to);
+        };
+        let { name } = action, keyIndex = keys[i] ? name.indexOf(keys[i]) : -1;
+        let nameElt = keyIndex < 0 ? name : [name.slice(0, keyIndex),
+            elt("u", name.slice(keyIndex, keyIndex + 1)),
+            name.slice(keyIndex + 1)];
+        let markClass = action.markClass ? " " + action.markClass : "";
+        return elt("button", {
+            type: "button",
+            class: "cm-diagnosticAction" + markClass,
+            onclick: click,
+            onmousedown: click,
+            "aria-label": ` Action: ${name}${keyIndex < 0 ? "" : ` (access key "${keys[i]})"`}.`
+        }, nameElt);
+    }), diagnostic.source && elt("div", { class: "cm-diagnosticSource" }, diagnostic.source));
+}
+class DiagnosticWidget extends WidgetType {
+    constructor(sev) {
+        super();
+        this.sev = sev;
+    }
+    eq(other) { return other.sev == this.sev; }
+    toDOM() {
+        return elt("span", { class: "cm-lintPoint cm-lintPoint-" + this.sev });
+    }
+}
+class PanelItem {
+    constructor(view, diagnostic) {
+        this.diagnostic = diagnostic;
+        this.id = "item_" + Math.floor(Math.random() * 0xffffffff).toString(16);
+        this.dom = renderDiagnostic(view, diagnostic, true);
+        this.dom.id = this.id;
+        this.dom.setAttribute("role", "option");
+    }
+}
+class LintPanel {
+    constructor(view) {
+        this.view = view;
+        this.items = [];
+        let onkeydown = (event) => {
+            if (event.ctrlKey || event.altKey || event.metaKey)
+                return;
+            if (event.keyCode == 27) { // Escape
+                closeLintPanel(this.view);
+                this.view.focus();
+            }
+            else if (event.keyCode == 38 || event.keyCode == 33) { // ArrowUp, PageUp
+                this.moveSelection((this.selectedIndex - 1 + this.items.length) % this.items.length);
+            }
+            else if (event.keyCode == 40 || event.keyCode == 34) { // ArrowDown, PageDown
+                this.moveSelection((this.selectedIndex + 1) % this.items.length);
+            }
+            else if (event.keyCode == 36) { // Home
+                this.moveSelection(0);
+            }
+            else if (event.keyCode == 35) { // End
+                this.moveSelection(this.items.length - 1);
+            }
+            else if (event.keyCode == 13) { // Enter
+                this.view.focus();
+            }
+            else if (event.keyCode >= 65 && event.keyCode <= 90 && this.selectedIndex >= 0) { // A-Z
+                let { diagnostic } = this.items[this.selectedIndex], keys = assignKeys(diagnostic.actions);
+                for (let i = 0; i < keys.length; i++)
+                    if (keys[i].toUpperCase().charCodeAt(0) == event.keyCode) {
+                        let found = findDiagnostic(this.view.state.field(lintState).diagnostics, diagnostic);
+                        if (found)
+                            diagnostic.actions[i].apply(view, found.from, found.to);
+                    }
+            }
+            else {
+                return;
+            }
+            event.preventDefault();
+        };
+        let onclick = (event) => {
+            for (let i = 0; i < this.items.length; i++) {
+                if (this.items[i].dom.contains(event.target))
+                    this.moveSelection(i);
+            }
+        };
+        this.list = elt("ul", {
+            tabIndex: 0,
+            role: "listbox",
+            "aria-label": this.view.state.phrase("Diagnostics"),
+            onkeydown,
+            onclick
+        });
+        this.dom = elt("div", { class: "cm-panel-lint" }, this.list, elt("button", {
+            type: "button",
+            name: "close",
+            "aria-label": this.view.state.phrase("close"),
+            onclick: () => closeLintPanel(this.view)
+        }, "×"));
+        this.update();
+    }
+    get selectedIndex() {
+        let selected = this.view.state.field(lintState).selected;
+        if (!selected)
+            return -1;
+        for (let i = 0; i < this.items.length; i++)
+            if (this.items[i].diagnostic == selected.diagnostic)
+                return i;
+        return -1;
+    }
+    update() {
+        let { diagnostics, selected } = this.view.state.field(lintState);
+        let i = 0, needsSync = false, newSelectedItem = null;
+        let seen = new Set();
+        diagnostics.between(0, this.view.state.doc.length, (_start, _end, { spec }) => {
+            for (let diagnostic of spec.diagnostics) {
+                if (seen.has(diagnostic))
+                    continue;
+                seen.add(diagnostic);
+                let found = -1, item;
+                for (let j = i; j < this.items.length; j++)
+                    if (this.items[j].diagnostic == diagnostic) {
+                        found = j;
+                        break;
+                    }
+                if (found < 0) {
+                    item = new PanelItem(this.view, diagnostic);
+                    this.items.splice(i, 0, item);
+                    needsSync = true;
+                }
+                else {
+                    item = this.items[found];
+                    if (found > i) {
+                        this.items.splice(i, found - i);
+                        needsSync = true;
+                    }
+                }
+                if (selected && item.diagnostic == selected.diagnostic) {
+                    if (!item.dom.hasAttribute("aria-selected")) {
+                        item.dom.setAttribute("aria-selected", "true");
+                        newSelectedItem = item;
+                    }
+                }
+                else if (item.dom.hasAttribute("aria-selected")) {
+                    item.dom.removeAttribute("aria-selected");
+                }
+                i++;
+            }
+        });
+        while (i < this.items.length && !(this.items.length == 1 && this.items[0].diagnostic.from < 0)) {
+            needsSync = true;
+            this.items.pop();
+        }
+        if (this.items.length == 0) {
+            this.items.push(new PanelItem(this.view, {
+                from: -1, to: -1,
+                severity: "info",
+                message: this.view.state.phrase("No diagnostics")
+            }));
+            needsSync = true;
+        }
+        if (newSelectedItem) {
+            this.list.setAttribute("aria-activedescendant", newSelectedItem.id);
+            this.view.requestMeasure({
+                key: this,
+                read: () => ({ sel: newSelectedItem.dom.getBoundingClientRect(), panel: this.list.getBoundingClientRect() }),
+                write: ({ sel, panel }) => {
+                    let scaleY = panel.height / this.list.offsetHeight;
+                    if (sel.top < panel.top)
+                        this.list.scrollTop -= (panel.top - sel.top) / scaleY;
+                    else if (sel.bottom > panel.bottom)
+                        this.list.scrollTop += (sel.bottom - panel.bottom) / scaleY;
+                }
+            });
+        }
+        else if (this.selectedIndex < 0) {
+            this.list.removeAttribute("aria-activedescendant");
+        }
+        if (needsSync)
+            this.sync();
+    }
+    sync() {
+        let domPos = this.list.firstChild;
+        function rm() {
+            let prev = domPos;
+            domPos = prev.nextSibling;
+            prev.remove();
+        }
+        for (let item of this.items) {
+            if (item.dom.parentNode == this.list) {
+                while (domPos != item.dom)
+                    rm();
+                domPos = item.dom.nextSibling;
+            }
+            else {
+                this.list.insertBefore(item.dom, domPos);
+            }
+        }
+        while (domPos)
+            rm();
+    }
+    moveSelection(selectedIndex) {
+        if (this.selectedIndex < 0)
+            return;
+        let field = this.view.state.field(lintState);
+        let selection = findDiagnostic(field.diagnostics, this.items[selectedIndex].diagnostic);
+        if (!selection)
+            return;
+        this.view.dispatch({
+            selection: { anchor: selection.from, head: selection.to },
+            scrollIntoView: true,
+            effects: movePanelSelection.of(selection)
+        });
+    }
+    static open(view) { return new LintPanel(view); }
+}
+function svg(content, attrs = `viewBox="0 0 40 40"`) {
+    return `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" ${attrs}>${encodeURIComponent(content)}</svg>')`;
+}
+function underline(color) {
+    return svg(`<path d="m0 2.5 l2 -1.5 l1 0 l2 1.5 l1 0" stroke="${color}" fill="none" stroke-width=".7"/>`, `width="6" height="3"`);
+}
+const baseTheme = /*@__PURE__*/EditorView.baseTheme({
+    ".cm-diagnostic": {
+        padding: "3px 6px 3px 8px",
+        marginLeft: "-1px",
+        display: "block",
+        whiteSpace: "pre-wrap"
+    },
+    ".cm-diagnostic-error": { borderLeft: "5px solid #d11" },
+    ".cm-diagnostic-warning": { borderLeft: "5px solid orange" },
+    ".cm-diagnostic-info": { borderLeft: "5px solid #999" },
+    ".cm-diagnostic-hint": { borderLeft: "5px solid #66d" },
+    ".cm-diagnosticAction": {
+        font: "inherit",
+        border: "none",
+        padding: "2px 4px",
+        backgroundColor: "#444",
+        color: "white",
+        borderRadius: "3px",
+        marginLeft: "8px",
+        cursor: "pointer"
+    },
+    ".cm-diagnosticSource": {
+        fontSize: "70%",
+        opacity: .7
+    },
+    ".cm-lintRange": {
+        backgroundPosition: "left bottom",
+        backgroundRepeat: "repeat-x",
+        paddingBottom: "0.7px",
+    },
+    ".cm-lintRange-error": { backgroundImage: /*@__PURE__*/underline("#f11") },
+    ".cm-lintRange-warning": { backgroundImage: /*@__PURE__*/underline("orange") },
+    ".cm-lintRange-info": { backgroundImage: /*@__PURE__*/underline("#999") },
+    ".cm-lintRange-hint": { backgroundImage: /*@__PURE__*/underline("#66d") },
+    ".cm-lintRange-active": { backgroundColor: "#ffdd9980" },
+    ".cm-tooltip-lint": {
+        padding: 0,
+        margin: 0
+    },
+    ".cm-lintPoint": {
+        position: "relative",
+        "&:after": {
+            content: '""',
+            position: "absolute",
+            bottom: 0,
+            left: "-2px",
+            borderLeft: "3px solid transparent",
+            borderRight: "3px solid transparent",
+            borderBottom: "4px solid #d11"
+        }
+    },
+    ".cm-lintPoint-warning": {
+        "&:after": { borderBottomColor: "orange" }
+    },
+    ".cm-lintPoint-info": {
+        "&:after": { borderBottomColor: "#999" }
+    },
+    ".cm-lintPoint-hint": {
+        "&:after": { borderBottomColor: "#66d" }
+    },
+    ".cm-panel.cm-panel-lint": {
+        position: "relative",
+        "& ul": {
+            maxHeight: "100px",
+            overflowY: "auto",
+            "& [aria-selected]": {
+                backgroundColor: "#ddd",
+                "& u": { textDecoration: "underline" }
+            },
+            "&:focus [aria-selected]": {
+                background_fallback: "#bdf",
+                backgroundColor: "Highlight",
+                color_fallback: "white",
+                color: "HighlightText"
+            },
+            "& u": { textDecoration: "none" },
+            padding: 0,
+            margin: 0
+        },
+        "& [name=close]": {
+            position: "absolute",
+            top: "0",
+            right: "2px",
+            background: "inherit",
+            border: "none",
+            font: "inherit",
+            padding: 0,
+            margin: 0
+        }
+    },
+    "&dark .cm-lintRange-active": { backgroundColor: "#86714a80" },
+    "&dark .cm-panel.cm-panel-lint ul": {
+        "& [aria-selected]": {
+            backgroundColor: "#2e343e",
+        },
+    }
+});
+function severityWeight(sev) {
+    return sev == "error" ? 4 : sev == "warning" ? 3 : sev == "info" ? 2 : 1;
+}
+function maxSeverity(diagnostics) {
+    let sev = "hint", weight = 1;
+    for (let d of diagnostics) {
+        let w = severityWeight(d.severity);
+        if (w > weight) {
+            weight = w;
+            sev = d.severity;
+        }
+    }
+    return sev;
+}
+class LintGutterMarker extends GutterMarker {
+    constructor(diagnostics) {
+        super();
+        this.diagnostics = diagnostics;
+        this.severity = maxSeverity(diagnostics);
+    }
+    toDOM(view) {
+        let elt = document.createElement("div");
+        elt.className = "cm-lint-marker cm-lint-marker-" + this.severity;
+        let diagnostics = this.diagnostics;
+        let diagnosticsFilter = view.state.facet(lintGutterConfig).tooltipFilter;
+        if (diagnosticsFilter)
+            diagnostics = diagnosticsFilter(diagnostics, view.state);
+        if (diagnostics.length)
+            elt.onmouseover = () => gutterMarkerMouseOver(view, elt, diagnostics);
+        return elt;
+    }
+}
+function trackHoverOn(view, marker) {
+    let mousemove = (event) => {
+        let rect = marker.getBoundingClientRect();
+        if (event.clientX > rect.left - 10 /* Hover.Margin */ && event.clientX < rect.right + 10 /* Hover.Margin */ &&
+            event.clientY > rect.top - 10 /* Hover.Margin */ && event.clientY < rect.bottom + 10 /* Hover.Margin */)
+            return;
+        for (let target = event.target; target; target = target.parentNode) {
+            if (target.nodeType == 1 && target.classList.contains("cm-tooltip-lint"))
+                return;
+        }
+        window.removeEventListener("mousemove", mousemove);
+        if (view.state.field(lintGutterTooltip))
+            view.dispatch({ effects: setLintGutterTooltip.of(null) });
+    };
+    window.addEventListener("mousemove", mousemove);
+}
+function gutterMarkerMouseOver(view, marker, diagnostics) {
+    function hovered() {
+        let line = view.elementAtHeight(marker.getBoundingClientRect().top + 5 - view.documentTop);
+        const linePos = view.coordsAtPos(line.from);
+        if (linePos) {
+            view.dispatch({ effects: setLintGutterTooltip.of({
+                    pos: line.from,
+                    above: false,
+                    clip: false,
+                    create() {
+                        return {
+                            dom: diagnosticsTooltip(view, diagnostics),
+                            getCoords: () => marker.getBoundingClientRect()
+                        };
+                    }
+                }) });
+        }
+        marker.onmouseout = marker.onmousemove = null;
+        trackHoverOn(view, marker);
+    }
+    let { hoverTime } = view.state.facet(lintGutterConfig);
+    let hoverTimeout = setTimeout(hovered, hoverTime);
+    marker.onmouseout = () => {
+        clearTimeout(hoverTimeout);
+        marker.onmouseout = marker.onmousemove = null;
+    };
+    marker.onmousemove = () => {
+        clearTimeout(hoverTimeout);
+        hoverTimeout = setTimeout(hovered, hoverTime);
+    };
+}
+function markersForDiagnostics(doc, diagnostics) {
+    let byLine = Object.create(null);
+    for (let diagnostic of diagnostics) {
+        let line = doc.lineAt(diagnostic.from);
+        (byLine[line.from] || (byLine[line.from] = [])).push(diagnostic);
+    }
+    let markers = [];
+    for (let line in byLine) {
+        markers.push(new LintGutterMarker(byLine[line]).range(+line));
+    }
+    return RangeSet.of(markers, true);
+}
+const lintGutterExtension = /*@__PURE__*/gutter({
+    class: "cm-gutter-lint",
+    markers: view => view.state.field(lintGutterMarkers),
+    widgetMarker: (view, widget, block) => {
+        let diagnostics = [];
+        view.state.field(lintGutterMarkers).between(block.from, block.to, (from, to, value) => {
+            if (from > block.from && from < block.to)
+                diagnostics.push(...value.diagnostics);
+        });
+        return diagnostics.length ? new LintGutterMarker(diagnostics) : null;
+    }
+});
+const lintGutterMarkers = /*@__PURE__*/StateField.define({
+    create() {
+        return RangeSet.empty;
+    },
+    update(markers, tr) {
+        markers = markers.map(tr.changes);
+        let diagnosticFilter = tr.state.facet(lintGutterConfig).markerFilter;
+        for (let effect of tr.effects) {
+            if (effect.is(setDiagnosticsEffect)) {
+                let diagnostics = effect.value;
+                if (diagnosticFilter)
+                    diagnostics = diagnosticFilter(diagnostics || [], tr.state);
+                markers = markersForDiagnostics(tr.state.doc, diagnostics.slice(0));
+            }
+        }
+        return markers;
+    }
+});
+const setLintGutterTooltip = /*@__PURE__*/StateEffect.define();
+const lintGutterTooltip = /*@__PURE__*/StateField.define({
+    create() { return null; },
+    update(tooltip, tr) {
+        if (tooltip && tr.docChanged)
+            tooltip = hideTooltip(tr, tooltip) ? null : { ...tooltip, pos: tr.changes.mapPos(tooltip.pos) };
+        return tr.effects.reduce((t, e) => e.is(setLintGutterTooltip) ? e.value : t, tooltip);
+    },
+    provide: field => showTooltip.from(field)
+});
+const lintGutterTheme = /*@__PURE__*/EditorView.baseTheme({
+    ".cm-gutter-lint": {
+        width: "1.4em",
+        "& .cm-gutterElement": {
+            padding: ".2em"
+        }
+    },
+    ".cm-lint-marker": {
+        width: "1em",
+        height: "1em"
+    },
+    ".cm-lint-marker-info": {
+        content: /*@__PURE__*/svg(`<path fill="#aaf" stroke="#77e" stroke-width="6" stroke-linejoin="round" d="M5 5L35 5L35 35L5 35Z"/>`)
+    },
+    ".cm-lint-marker-warning": {
+        content: /*@__PURE__*/svg(`<path fill="#fe8" stroke="#fd7" stroke-width="6" stroke-linejoin="round" d="M20 6L37 35L3 35Z"/>`),
+    },
+    ".cm-lint-marker-error": {
+        content: /*@__PURE__*/svg(`<circle cx="20" cy="20" r="15" fill="#f87" stroke="#f43" stroke-width="6"/>`)
+    },
+});
+const lintHover = /*@__PURE__*/hoverTooltip(lintTooltip, { hideOn: hideTooltip });
+const lintExtensions = [
+    lintState,
+    /*@__PURE__*/EditorView.decorations.compute([lintState], state => {
+        let { selected, panel } = state.field(lintState);
+        return !selected || !panel || selected.from == selected.to ? Decoration.none : Decoration.set([
+            activeMark.range(selected.from, selected.to)
+        ]);
+    }),
+    lintHover,
+    baseTheme
+];
+const lintGutterConfig = /*@__PURE__*/Facet.define({
+    combine(configs) {
+        return combineConfig(configs, {
+            hoverTime: 300 /* Hover.Time */,
+            markerFilter: null,
+            tooltipFilter: null
+        });
+    }
+});
+/**
+Returns an extension that installs a gutter showing markers for
+each line that has diagnostics, which can be hovered over to see
+the diagnostics.
+*/
+function lintGutter(config = {}) {
+    return [lintGutterConfig.of(config), lintGutterMarkers, lintGutterExtension, lintGutterTheme, lintGutterTooltip];
+}
+/**
+Iterate over the marked diagnostics for the given editor state,
+calling `f` for each of them. Note that, if the document changed
+since the diagnostics were created, the `Diagnostic` object will
+hold the original outdated position, whereas the `to` and `from`
+arguments hold the diagnostic's current position.
+*/
+function forEachDiagnostic(state, f) {
+    let lState = state.field(lintState, false);
+    if (lState && lState.diagnostics.size) {
+        let pending = [], pendingStart = [], lastEnd = -1;
+        for (let iter = RangeSet.iter([lState.diagnostics]);; iter.next()) {
+            for (let i = 0; i < pending.length; i++)
+                if (!iter.value || iter.value.spec.diagnostics.indexOf(pending[i]) < 0) {
+                    f(pending[i], pendingStart[i], lastEnd);
+                    pending.splice(i, 1);
+                    pendingStart.splice(i--, 1);
+                }
+            if (!iter.value)
+                break;
+            for (let d of iter.value.spec.diagnostics)
+                if (pending.indexOf(d) < 0) {
+                    pending.push(d);
+                    pendingStart.push(iter.from);
+                }
+            lastEnd = iter.to;
+        }
+    }
+}
+
+export { closeLintPanel, diagnosticCount, forEachDiagnostic, forceLinting, lintGutter, lintKeymap, linter, nextDiagnostic, openLintPanel, previousDiagnostic, setDiagnostics, setDiagnosticsEffect };

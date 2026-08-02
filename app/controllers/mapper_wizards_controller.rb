@@ -172,7 +172,7 @@ class MapperWizardsController < ApplicationController
   # rubocop:disable Metrics/PerceivedComplexity
   def save
     @search_endpoint = if params[:search_endpoint_id].present? && 'new' != params[:search_endpoint_id]
-                         current_user.search_endpoints_involved_with.find(params[:search_endpoint_id])
+                         current_user.search_endpoints_involved_with.find(params.expect(:search_endpoint_id))
                        else
                          SearchEndpoint.new(owner: current_user)
                        end

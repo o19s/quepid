@@ -44,6 +44,8 @@ The data modeled by a Book can be imported back into a Case.  We take all the Ju
 
 Quepid provides scorers that are written by the OSC team for everyone to use, those `Scorer`'s are tagged with the `communal` flag as `true`, and the default scorers are created when seeding the db (using `bin/rake db:seed` or `bin/rake db:setup`).
 
-## Entity Resolution Diagram
+## Entity Relationship Diagram
 
-![model diagram](erd.png).
+![Quepid data model](erd.png)
+
+> Regenerate with `bin/docker r bundle exec rake erd:image`.

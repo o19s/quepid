@@ -21,7 +21,7 @@ module Api
       # @summary Pick query doc pair to be judged
       # > Mostly randomly selects a query doc pair that needs to be judged, or none if they have all been judged.
       def to_be_judged
-        judge = User.find(params[:judge_id])
+        judge = User.find(params.expect(:judge_id))
         @query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(@book, judge)
 
         if @query_doc_pair

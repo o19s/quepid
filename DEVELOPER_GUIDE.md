@@ -6,67 +6,72 @@ This guide provides detailed instructions for developers who want to set up, run
 
 <!-- MarkdownTOC levels="1,2,3,4" autolink=true bracket=round -->
 
+- [Quepid Developer Guide](#quepid-developer-guide)
+	- [Table of Contents](#table-of-contents)
 - [Development Setup](#development-setup)
-  - [I. System Dependencies](#i-setting-up-quepid-to-do-development)
-    - [Docker Based Setup](#docker-based-setup)
-      - [1. Prerequisites](#1-prerequisites)
-      - [2. Setup your environment](#2-setup-your-environment)
-      - [3. Running the app](#3-running-the-app)
-    - [Local Setup ](#local-setup)
-      - [Prerequisites](#prerequisites)
-      - [Database Setup](#database-setup)
-      - [Application Setup](#application-setup)
-      - [Running the Application](#running-the-application)
-      - [Running Tests](#running-tests)
-    - [Large Sample Data for Quepid](#large-sample-data-for-quepid)
-    - [Developing Jupyter notebook](#developing-jupyter-notebook)
-  - [II. Development Log](#ii-development-log)
-  - [III. Run Tests](#iii-run-tests)
-    - [Minitest](#minitest)
-    - [JS Lint](#js-lint)
-    - [Karma](#karma)
-    - [Rubocop](#rubocop)
-    - [All Tests](#all-tests)
-    - [Performance Testing](#performance-testing)
-    - [Notebook Testing](#notebook-testing)
-  - [IV. Debugging](#iv-debugging)
-    - [Debugging Ruby](#debugging-ruby)
-    - [Debugging JS](#debugging-js)
-    - [Debugging Splainer and other NPM packages](#debugging-splainer-and-other-npm-packages)
-  - [Convenience Scripts](#convenience-scripts)
-    - [Rake](#rake)
-    - [Thor](#thor)
+	- [I. Setting up Quepid to do Development](#i-setting-up-quepid-to-do-development)
+		- [Docker Based Setup](#docker-based-setup)
+			- [1. Prerequisites](#1-prerequisites)
+			- [2. Setup your environment](#2-setup-your-environment)
+			- [3. Initialize the database (First-time setup only)](#3-initialize-the-database-first-time-setup-only)
+			- [4. Running the app](#4-running-the-app)
+		- [Local Setup](#local-setup)
+			- [Prerequisites](#prerequisites)
+			- [Database Setup](#database-setup)
+			- [Application Setup](#application-setup)
+			- [Running the Application](#running-the-application)
+			- [Running Tests](#running-tests)
+		- [Large Sample Data for Quepid](#large-sample-data-for-quepid)
+		- [Developing Jupyter notebooks](#developing-jupyter-notebooks)
+	- [II. Development Log](#ii-development-log)
+	- [III. Run Tests](#iii-run-tests)
+		- [Minitest](#minitest)
+		- [Pre-commit hooks](#pre-commit-hooks)
+		- [JS Lint](#js-lint)
+		- [Karma](#karma)
+		- [Rubocop](#rubocop)
+		- [All Tests](#all-tests)
+		- [Performance Testing](#performance-testing)
+		- [Notebook Testing](#notebook-testing)
+	- [IV. Debugging](#iv-debugging)
+		- [Debugging Ruby](#debugging-ruby)
+		- [Debugging JS](#debugging-js)
+		- [Debugging Splainer and other NPM packages](#debugging-splainer-and-other-npm-packages)
+			- [Working with Local Splainer-Search](#working-with-local-splainer-search)
+	- [Convenience Scripts](#convenience-scripts)
+		- [Rake](#rake)
+		- [Thor](#thor)
 - [Elasticsearch](#elasticsearch)
 - [Dev Errata](#dev-errata)
-  - [What is Claude on Rails?](#what-is-claude-on-rails)
-  - [How to use a new Node module or update an existing one](#how-to-use-a-new-node-module-or-update-an-existing-one)
-  - [How to use a new Ruby Gem or update an existing one](#how-to-use-a-new-ruby-gem-or-update-an-existing-one)
-  - [How to test nesting Quepid under a domain](#how-to-test-nesting-quepid-under-a-domain)
-  - [How to run and test a local production build](#how-to-run-and-test-a-local-production-build)
-  - [How to test SSL](#how-to-test-ssl)
-  - [How to test OpenID Auth](#how-to-test-openid-auth)
-  - [How to use the latest unreleased version via Docker](#how-to-use-the-latest-unreleased-version-via-docker)
-  - [Modifying the database](#modifying-the-database)
-  - [Updating RubyGems](#updating-rubygems)
-  - [How does the Frontend work?](#how-does-the-frontend-work)
-  - [Fonts](#fonts)
-  - [How to develop Jupyterlite](#how-to-develop-jupyterlite)
-  - [How do Personal Access Tokens work?](#how-do-personal-access-tokens-work)
+	- [How to use a new Node module or update an existing one](#how-to-use-a-new-node-module-or-update-an-existing-one)
+	- [How to update Quepid's dependencies (Ruby, Gems, Yarn, Importmap)](#how-to-update-quepids-dependencies-ruby-gems-yarn-importmap)
+	- [How to use a new Ruby Gem or update an existing one](#how-to-use-a-new-ruby-gem-or-update-an-existing-one)
+	- [How to test nesting Quepid under a domain](#how-to-test-nesting-quepid-under-a-domain)
+	- [How to run and test a local production build](#how-to-run-and-test-a-local-production-build)
+	- [How to test SSL](#how-to-test-ssl)
+	- [How to test OpenID Auth](#how-to-test-openid-auth)
+	- [How to use the latest unreleased version via Docker](#how-to-use-the-latest-unreleased-version-via-docker)
+	- [Modifying the database](#modifying-the-database)
+	- [Updating RubyGems](#updating-rubygems)
+	- [How does the Frontend work?](#how-does-the-frontend-work)
+	- [Fonts](#fonts)
+	- [How to develop Jupyterlite](#how-to-develop-jupyterlite)
+	- [How do Personal Access Tokens work?](#how-do-personal-access-tokens-work)
 - [Troubleshooting](#troubleshooting)
-  - [Docker Issues](#docker-issues)
-    - [Docker Container Won't Start](#docker-container-wont-start)
-    - [Slow Docker Performance](#slow-docker-performance)
-  - [Database Issues](#database-issues)
-    - [Database Connection Errors](#database-connection-errors)
-    - [Migration Errors](#migration-errors)
-  - [Frontend Issues](#frontend-issues)
-    - [Asset Compilation Errors](#asset-compilation-errors)
-    - [Angular App Not Loading](#angular-app-not-loading)
-  - [Testing Issues](#testing-issues)
-    - [Tests Failing Unexpectedly](#tests-failing-unexpectedly)
-    - [Karma Tests Timeout](#karma-tests-timeout)
+	- [Docker Issues](#docker-issues)
+		- [Docker Container Won't Start](#docker-container-wont-start)
+		- [Slow Docker Performance](#slow-docker-performance)
+	- [Database Issues](#database-issues)
+		- [Database Connection Errors](#database-connection-errors)
+		- [Migration Errors](#migration-errors)
+	- [Frontend Issues](#frontend-issues)
+		- [Asset Compilation Errors](#asset-compilation-errors)
+		- [Angular App Not Loading](#angular-app-not-loading)
+	- [Testing Issues](#testing-issues)
+		- [Tests Failing Unexpectedly](#tests-failing-unexpectedly)
+		- [Karma Tests Timeout](#karma-tests-timeout)
 - [QA](#qa)
-  - [Seed Data](#seed-data)
+	- [Seed Data](#seed-data)
 
 <!-- /MarkdownTOC -->
 
@@ -96,8 +101,15 @@ Run the Bash based setup script to setup your Docker images:
 bin/setup_docker
 ```
 
+#### 3. Initialize the database (First-time setup only)
 
-#### 3. Running the app
+For first-time Docker users, you need to create and seed the initial database structure. Run this command:
+
+```bash
+docker compose run --rm app bin/rails db:setup
+```
+
+#### 4. Running the app
 
 Now fire up Quepid locally at http://localhost:
 
@@ -538,14 +550,6 @@ See more details on the wiki at https://github.com/o19s/quepid/wiki/Troubleshoot
 
 # Dev Errata
 
-## What is Claude on Rails?
-
-Claude on Rails is sort of a vibe coder, sorta a dev framework for Rails available from https://github.com/obie/claude-on-rails.
-
-We're experimenting with using it to build Quepid features! It is used during development.
-
-To get Claude on Rails to work, you need to do development outside of Docker ;-(.
-
 ## How to use a new Node module or update an existing one
 
 Typically you would simply do:
@@ -565,6 +569,17 @@ which will install/upgrade the Node module, and then save that dependency to `pa
 Then check in the updated `package.json` and `yarn.lock` files.
 
 Use `bin/docker r yarn outdated` to see what packages you can update!!!!
+
+## How to update Quepid's dependencies (Ruby, Gems, Yarn, Importmap)
+
+Rough checklist for a general dependency-update pass:
+
+1. Bump the Ruby version in `.ruby-version`, `Gemfile`, `.circleci/config.yml`, `Dockerfile.dev`, and `Dockerfile.prod`, then rebuild: `bin/setup_docker` and `bin/docker s`.
+2. Update Ruby gems: `bin/docker r bundle outdated --groups`, then `bin/docker r bundle update <gem>` for what's behind.
+3. Update yarn packages: `bin/docker r yarn outdated`, then `bin/docker r yarn upgrade <package>`.
+4. Update importmap-pinned JS packages: `bin/docker r bundle exec bin/importmap outdated`, then `bin/docker r bundle exec bin/importmap update`.
+5. Sanity-check in a browser (e.g. via Playwright MCP): sign in, check the console for new errors, and exercise anything visibly affected by the bump before committing.
+6. If `renovate.json`'s grouping/custom-manager rules for these dependencies (Ruby version, Rails packages, Docker Node/Yarn ARGs) no longer match, update it too, so future bumps keep arriving as sane grouped PRs.
 
 ## How to use a new Ruby Gem or update an existing one
 
@@ -730,6 +745,9 @@ Followed by `bin/docker r bundle exec rake db:migrate`
 
 You should also update the schema annotation data by running `bin/docker r bundle exec annotations`
 when you change the schema.
+
+You can rebuild the [ERD](docs/erd.png) (embedded in the [Data Mapping](docs/data_mapping.md) doc) via
+`bin/docker r bundle exec rake erd:image`
 
 ## Updating RubyGems
 

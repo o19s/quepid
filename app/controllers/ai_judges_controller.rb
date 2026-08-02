@@ -109,7 +109,7 @@ class AiJudgesController < ApplicationController
   end
 
   def set_ai_judge
-    @ai_judge = @team.members.only_ai_judges.find(params[:id])
+    @ai_judge = @team.members.only_ai_judges.find(params.expect(:id))
   end
 
   def ai_judge_params
