@@ -7,6 +7,18 @@
  * Parallel brand skin for the non-Angular bundle: bootstrap5-add.css.
  */
 
+/* BS3 gave <pre> a boxed look (gray background, border, padding); BS5's
+ * Reboot only sets font styling and leaves the box treatment out entirely.
+ * Restore it so debug/explain JSON blocks (Expand modal, import ratings,
+ * etc.) read as a distinct code block instead of plain text. */
+pre {
+  padding: 9.5px;
+  margin: 0 0 10px;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 :root {
   --bs-body-color: #212529;
   --bs-body-bg: #fff;
@@ -21,6 +33,44 @@
   --bs-primary-text-emphasis: #052c65;
   --bs-primary-bg-subtle: #cfe2ff;
   --q-query-error-icon-color: #fe5b00;
+}
+
+/* Our vendored BS5 build defines --bs-modal-box-shadow but never actually
+ * applies it to .modal-content (upstream gap, not something we introduced) —
+ * so modals render with zero shadow. BS3's modal shadow was
+ * 0 5px 15px rgba(0,0,0,.5); restore it so dialogs read as "lifted" above
+ * the backdrop instead of blending flat into it. */
+.modal-content {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* BS3 used one consistent blue (#337ab7) for both links and .btn-primary;
+ * BS5 defaults .btn-primary to a separate, brighter #0d6efd. Restore BS3's
+ * shared blue so primary buttons (Set Options, wizard Continue, etc.) match
+ * the link color used throughout the case view. */
+.btn-primary {
+  --bs-btn-bg: #337ab7;
+  --bs-btn-border-color: #337ab7;
+  --bs-btn-hover-bg: #2e6da4;
+  --bs-btn-hover-border-color: #2b6496;
+  --bs-btn-active-bg: #2e6da4;
+  --bs-btn-active-border-color: #2b6496;
+  --bs-btn-disabled-bg: #337ab7;
+  --bs-btn-disabled-border-color: #337ab7;
+}
+
+/* BS3's .btn-success was a brighter, more saturated #5cb85c; BS5 defaults
+ * to a darker, more muted #198754. Restore BS3's green for "acceptance"
+ * actions like "Add query". */
+.btn-success {
+  --bs-btn-bg: #5cb85c;
+  --bs-btn-border-color: #4cae4c;
+  --bs-btn-hover-bg: #449d44;
+  --bs-btn-hover-border-color: #398439;
+  --bs-btn-active-bg: #449d44;
+  --bs-btn-active-border-color: #398439;
+  --bs-btn-disabled-bg: #5cb85c;
+  --bs-btn-disabled-border-color: #4cae4c;
 }
 
 /* BS5's Reboot resets color to `inherit` for any `<a>` with neither `href`
@@ -367,6 +417,15 @@ header .dropdown-toggle .bi {
 .sub-results .search-result .row {
 	border-top: 1px solid #CCC;
 	position: relative;
+}
+
+/* In the "Find and Rate Missing Documents" modal, <search-result>'s own
+ * .row collapses to shrink-wrap its columns (~360px) instead of filling the
+ * available width, even though the same <search-result>/.row markup fills
+ * the row correctly on the case page. Forcing an explicit width restores
+ * the normal full-width layout for the "Matches" explain column. */
+#targeted-search-modal .search-result .row {
+	width: 100%;
 }
 
 .single-rating .btn {

@@ -26,6 +26,7 @@ angular.module('QuepidApp')
               return ctrl.maxDocScore;
             }
           },
+          size:         'lg',
           windowClass:  'doc-detailed-explain-modal',
         });
       }

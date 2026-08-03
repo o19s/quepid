@@ -2,14 +2,14 @@
   <h3 class="modal-title">Find and Rate Missing Documents</h3>
   <button type="button" class="btn-core-close" ng-click="targetedSearchModalModel.closeModal()" aria-label="Close"></button>
 </div>
-<div class="modal-body" id="targeted-search-modal">
+<div class="modal-body" id="targeted-search-modal" ng-controller="DocFinderCtrl">
   <p>
     Often you know that a document is a good match for a query, but it doesn't match the current query.
     This lets you find that document and give it a grade, which then influences your scorer.  For example,
     NDCG is based on your global scores, so if your top 10 are all <code>1</code>'s, and you find and rate a document as a <code>3</code>,
     then the score will drop if that <code>3</code> rated document doesn't show up first!
   </p>
-  <div ng-controller = 'DocFinderCtrl'>
+  <div>
     <form ng-submit="findDocs()">
       <div class="row">
         <div class="mb-3 col-sm-6">
@@ -64,7 +64,6 @@
       </p>
     </form>
   </div>
-</div>
 
 <div style="padding-top: 20px">
 </div>
@@ -124,6 +123,7 @@
   <span ng-show="docFinder.paging">
     <i class="bi bi-arrow-repeat spintime"></i>
   </span>
+</div>
 </div>
 <div class="modal-footer">
   <button class="btn btn-outline-secondary" ng-click="targetedSearchModalModel.closeModal()">Close</button>

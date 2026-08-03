@@ -36,6 +36,10 @@
  .full-screen-modal .modal-dialog {
 	 height: calc(100% - 100px);
 	 width: calc(100% - 100px);
+	 /* BS5's .modal-dialog sets max-width: 500px (at the >=576px breakpoint);
+	    without overriding it here too, that cap wins over the width above
+	    and this modal never actually grows past the default small size. */
+	 max-width: calc(100% - 100px);
 }
  .full-screen-modal .modal-content {
 	 height: 100%;
