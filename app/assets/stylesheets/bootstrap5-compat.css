@@ -428,6 +428,23 @@ header .dropdown-toggle .bi {
 	width: 100%;
 }
 
+/* BS5's .row > * sets width:100% so each child fills its own line, since
+ * Bootstrap expects .row children to be .col-* grid columns. This footer
+ * row's children (toggle icon, "peek at next page" link, "Browse on Solr"
+ * button, depth-of-rating note) aren't grid columns, so they should sit
+ * inline and wrap naturally like they did under BS3. */
+.results-pane-footer > * {
+	width: auto;
+}
+
+.results-pane-toggle {
+	color: #2872bc;
+	font-weight: bold;
+	font-size: 16px;
+	margin-right: 8px;
+	cursor: pointer;
+}
+
 .single-rating .btn {
 	width: 60px;
 	box-shadow: inset 0 0 25px rgba(0,0,0,0.25);

@@ -152,8 +152,8 @@
       <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.docs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
       </search-result>
 
-      <div class='row'>
-        <i class="bi bi-chevron-up text-primary" ng-click="query.toggle()" quepid-popover="Close the results pane"></i>
+      <div class='row results-pane-footer'>
+        <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" quepid-popover="Close the results pane"></i>
         <span ng-if="query.numFound > query.docs.length">
           <a
             class="btn btn-outline-secondary"
@@ -172,9 +172,9 @@
           </a>
         </span>
 
-        <span ng-if="query.depthOfRating" class="text-muted text-warning bg-warning">
+        <div ng-if="query.depthOfRating" class="alert alert-warning mb-0" role="alert">
           <strong>Note:</strong> Only the top {{query.depthOfRating}} results are used in the scoring calculations.
-        </span>
+        </div>
       </div>
     </div>
 
@@ -183,8 +183,8 @@
       <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.ratedDocs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
       </search-result>
 
-      <div class='row'>
-        <i class="bi bi-chevron-up text-primary" ng-click="query.toggle()" quepid-popover="Close the results pane"></i>
+      <div class='row results-pane-footer'>
+        <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" quepid-popover="Close the results pane"></i>
         <span ng-if="query.getNumFound() > query.ratedDocs.length">
           <a
             ng-show='query.getNumFound() > query.ratedDocs.length'
@@ -204,9 +204,9 @@
           </a>
         </span>
 
-        <span class="text-muted text-warning bg-warning">
+        <div class="alert alert-warning mb-0" role="alert">
           <strong>Note:</strong> You are only viewing documents that have been rated
-        </span>
+        </div>
       </div>
     </div>
 

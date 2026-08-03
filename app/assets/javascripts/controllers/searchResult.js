@@ -70,6 +70,7 @@ angular.module('QuepidApp')
         $quepidModal.open({
           templateUrl: 'views/detailedDoc.html',
           controller: 'DetailedDocCtrl',
+          size: 'lg',
           resolve: {
             doc: function() {
               return $scope.doc;

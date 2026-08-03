@@ -9,7 +9,7 @@
 //   open({ template? | templateUrl,
 //          controller?, controllerAs?, bindToController?,
 //          resolve?, scope?,
-//          size?           // 'sm' | 'lg' → adds .modal-sm/.modal-lg
+//          size?           // 'sm' | 'lg' | 'xl' → adds .modal-sm/.modal-lg/.modal-xl
 //          windowClass?,   // extra class on the outer .modal
 //          backdrop?,      // true | false | 'static'
 //          keyboard?       // boolean
