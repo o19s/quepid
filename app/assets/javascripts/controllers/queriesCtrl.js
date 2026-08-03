@@ -529,6 +529,7 @@ angular.module('QuepidApp')
         var modalInstance = $quepidModal.open({
           templateUrl: 'views/pick_scorer.html',
           controller:  'ScorerCtrl',
+          windowClass: 'pick-scorer-modal',
           resolve:     {
             parent: function() {
               return {
