@@ -46,6 +46,51 @@
 	 overflow: scroll;
 }
 
+/* BS3's default modal width was 600px; BS5's default is 500px, with no
+   built-in size between default and .modal-lg (800px). Restore the BS3
+   width for the "Select Scorer" modal, which used the plain default size. */
+ .pick-scorer-modal .modal-dialog {
+	 max-width: 600px;
+}
+
+/* BS5's h4 is 1.5rem vs BS3's 1.25x-base (~18px), and BS5's .list-group-item
+   uses looser padding, a lighter border, no border-collapsing margin, and
+   the BS5 primary blue for .active instead of BS3's. Restore the BS3 look
+   for the scorer/custom-scorer lists in this modal. */
+ .pick-scorer-modal h4 {
+	 font-size: 18px;
+	 color: #333;
+}
+
+ .pick-scorer-modal .list-group-item {
+	 padding: 10px 15px;
+	 margin-bottom: -1px;
+	 border-color: #ddd;
+}
+
+ .pick-scorer-modal .list-group-item.active {
+	 background-color: #337ab7;
+	 border-color: #337ab7;
+}
+
+/* This modal uses .row purely as a scrollable wrapper, not a grid — but BS5's
+   .row still applies its negative gutter margin, and .row > * still applies
+   the compensating gutter padding to any direct child that doesn't cancel it
+   itself. .list-group cancels it (padding-left: 0 in its own component
+   style), so the list box ends up flush with .row's pulled-out edge while
+   the <h4> siblings (no such override) stay indented by the gutter, throwing
+   the headings and list boxes out of alignment. Zeroing both here keeps
+   every direct child flush with the modal's own padding. */
+ .pick-scorer-modal .row {
+	 margin-left: 0;
+	 margin-right: 0;
+}
+
+ .pick-scorer-modal .row > * {
+	 padding-left: 0;
+	 padding-right: 0;
+}
+
 /* begin close button for modals in core app */
 /* Stolen from Bootstrap 5 */
 /* originally this was .btn-close, and mapping to .btn-core-close */

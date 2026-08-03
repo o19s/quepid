@@ -17,7 +17,7 @@
       </li>
     </ul>
 
-    <div ng-show="!communalScorersOnly"><h4>Or select from your own custom scorers:</h4></div>
+    <div ng-show="!communalScorersOnly" class="mt-3"><h4>Or select from your own custom scorers:</h4></div>
     <ul class="list-group">
       <li class="list-group-item"
       ng-repeat="scorer in userScorers track by scorer.scorerId"
@@ -26,6 +26,9 @@
         {{scorer.name}}
       </li>
     </ul>
+    <p ng-if="!communalScorersOnly && userScorers.length === 0" class="text-muted">
+      None exist. Use "Create New Scorer" below to make one.
+    </p>
   </div>
 </div>
 
