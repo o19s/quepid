@@ -6,12 +6,12 @@
   <p>Recording the current results of your queries is useful for compare future work against this point in time as well as to use in comparing multiple Cases.  A snapshot
   stores the individual queries in a case, the ratings made, and optionally all the fields returned for the documents.</p>
 
-  <label>Snapshot Name</label>
+  <label class="fw-bold">Snapshot Name</label>
   <input type="text" class="form-control" id="snapshotName" ng-model="snapPrompt.name" placeholder="Name your snapshot" ng-required="true" />
 
   <br/>
 
-  <label>Include Document Fields</label>
+  <label class="fw-bold">Include Document Fields</label>
   <span ng-show="supportLookupById">
   <p>
   To facilitate additional analysis, you may want to record as part of the snapshot all the displayed fields for each document returned.
