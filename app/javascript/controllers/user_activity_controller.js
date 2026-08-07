@@ -36,7 +36,7 @@ export default class UserActivityController extends Controller {
   fillDateRange(startDate, endDate, values) {
     const valueByDate = new Map(values.map(entry => [entry.date, entry.value]))
     const filled = []
-    const current = new Date(startDate)
+    let current = new Date(startDate)
 
     while (current < endDate) {
       const dateStr = this.formatDate(current)
@@ -51,7 +51,10 @@ export default class UserActivityController extends Controller {
         value,
         tooltipDate: current.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
       })
-      current.setDate(current.getDate() + 1)
+
+      const next = new Date(current)
+      next.setDate(next.getDate() + 1)
+      current = next
     }
 
     return filled
