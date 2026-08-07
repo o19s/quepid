@@ -40,7 +40,17 @@ export default class UserActivityController extends Controller {
 
     while (current < endDate) {
       const dateStr = this.formatDate(current)
-      filled.push({ date: dateStr, value: valueByDate.get(dateStr) || 0 })
+      const value = valueByDate.get(dateStr) || 0
+
+      // tooltipDate is a precomputed display string used by the tooltip
+      // signal in buildSpec(), which suppresses the tooltip entirely for
+      // zero-activity days (matching the old cal-heatmap behavior of only
+      // showing a tooltip where there was actual activity).
+      filled.push({
+        date: dateStr,
+        value,
+        tooltipDate: current.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      })
       current.setDate(current.getDate() + 1)
     }
 
@@ -56,27 +66,39 @@ export default class UserActivityController extends Controller {
     return {
       $schema: 'https://vega.github.io/schema/vega-lite/v6.json',
       data: { values: data },
-      width: { step: 15 },
-      height: { step: 15 },
+      width: { step: 17 },
+      height: { step: 17 },
       mark: { type: 'rect', cornerRadius: 2 },
       encoding: {
         x: {
-          timeUnit: 'yearweek',
+          // "date" is a date-only string (e.g. "2026-08-03"), which Vega
+          // always parses as UTC midnight — pairing that with a local
+          // ("yearweek") timeUnit would re-bucket it using the viewer's
+          // own timezone offset, shifting cells by a day for anyone west
+          // of UTC. The utc* timeUnit keeps parsing and bucketing in the
+          // same (UTC) timezone so it's consistent for every viewer.
+          timeUnit: 'utcyearweek',
           field: 'date',
           type: 'ordinal',
           title: null,
           scale: { paddingInner: 0.2 },
           axis: {
-            format: '%b',
+            // One ordinal band per week means "greedy" overlap-avoidance
+            // still leaves multiple non-adjacent bands labeled with the
+            // same month (e.g. "Oct" repeated across every October week).
+            // Only label the band that starts a new month, so each month
+            // name is printed once. utcdate/utcFormat match the utc*
+            // timeUnit above so the label lines up with the actual bucket.
+            labelExpr: "utcdate(datum.value) <= 7 ? utcFormat(datum.value, '%b') : ''",
             labelAngle: 0,
-            labelOverlap: 'greedy',
+            labelOverlap: false,
             ticks: false,
             domain: false,
             grid: false
           }
         },
         y: {
-          timeUnit: 'day',
+          timeUnit: 'utcday',
           field: 'date',
           type: 'ordinal',
           scale: { paddingInner: 0.2 },
@@ -88,10 +110,18 @@ export default class UserActivityController extends Controller {
           legend: null,
           scale: { domain: [0, maxValue], range: ['#ebedf0', '#2872bc'] }
         },
-        tooltip: [
-          { field: 'date', type: 'temporal', title: 'Date', format: '%b %d, %Y' },
-          { field: 'value', type: 'quantitative', title: this.labelValue }
-        ]
+        // A field-array tooltip always renders every listed field, even
+        // when its value is null (as the literal text "null") — there's no
+        // per-field way to omit a row. Returning null for the *whole*
+        // tooltip object via a signal is what actually makes vega-tooltip
+        // hide the tooltip, so zero-activity days show nothing at all. The
+        // signal must be wrapped in `value` — encoding.tooltip's signal form
+        // is a ValueDef (`{value: {signal: ...}}`), not a bare SignalRef.
+        tooltip: {
+          value: {
+            signal: `datum.value > 0 ? {'Date': datum.tooltipDate, ${JSON.stringify(this.labelValue)}: datum.value} : null`
+          }
+        }
       },
       config: { view: { stroke: 'transparent' } }
     }
