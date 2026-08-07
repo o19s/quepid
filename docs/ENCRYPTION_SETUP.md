@@ -1,42 +1,53 @@
-# ActiveRecord Encryption Setup for LLM Keys
+# ActiveRecord Encryption Setup
 
-This document describes the encryption setup for User's `llm_key` field in Quepid.
+Quepid encrypts sensitive attributes at rest using [Active Record Encryption](https://guides.rubyonrails.org/active_record_encryption.html).
 
-## Overview
+## Encrypted fields
 
-The `llm_key` field in the User model is now encrypted using ActiveRecord encryption. This ensures that sensitive API keys are not stored in plaintext in the database.
+| Model | Attribute | Purpose |
+|-------|-----------|---------|
+| `User` | `llm_key` | AI judge API keys |
+| `SearchEndpoint` | `basic_auth_credential` | Search engine HTTP basic auth (`username:password`) |
+| `MapperWizardState` | `basic_auth_credential` | Mapper wizard draft basic auth (same format) |
 
 ## Configuration
 
 ### 1. Encryption Keys
 
-The encryption requires three keys to be configured. You can set these up in one of two ways:
+Encryption keys are set in `config/application.rb` via `ENV[...].presence` with committed defaults.
 
-Set the following environment variables:
+Generate values with `bin/rails db:encryption:init`, then set environment variables (see `.env.example`):
+
 ```bash
-export ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY="your-32-char-key"
-export ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT="your-32-char-salt"
-export ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY="your-32-char-primary-key"
+export ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY="your-primary-key"
+export ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY="your-deterministic-key"
+export ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT="your-salt"
 ```
+
+If a variable is unset or set to an empty string, the default in `application.rb` is used. Set a non-empty value only when you intend to override the committed default.
 
 ### 2. Development Environment
 
-For development and test environments, default keys are automatically used if no credentials or environment variables are set. These should NEVER be used in production.
+For development and test environments, default keys are automatically used if the environment variables are unset. These should NEVER be used in production.
+
+`config.active_record.encryption.support_unencrypted_data = true` in `application.rb` allows reading legacy plaintext rows during migration.
 
 ## Migration
 
-To encrypt existing `llm_key` values in your database:
+To encrypt existing values in your database:
 
 ```bash
 bundle exec rails db:migrate
 ```
 
-The migration `EncryptExistingUserLlmKeys` will:
-1. Find all users with non-null `llm_key` values
-2. Re-save each record to trigger encryption
-3. Process records in batches to handle large datasets efficiently
+- `EncryptExistingUserLlmKeys` — finds users with non-null `llm_key`, re-saves each record to trigger encryption, in batches
+- `EncryptExistingBasicAuthCredentials` — re-saves `SearchEndpoint` and `MapperWizardState` rows that have basic auth credentials
 
-## Usage
+Both require `support_unencrypted_data = true` (already set in `application.rb`).
+
+**Back up the database before migrating.** These migrations are not reversible; ciphertext cannot be turned back into plaintext via `db:rollback`.
+
+## Usage examples
 
 Once configured, encryption happens automatically:
 
@@ -59,8 +70,10 @@ user.llm_key  # => "sk-1234567890"
 ## Testing
 
 Run the encryption tests:
+
 ```bash
 bundle exec rails test test/models/user_llm_key_encryption_test.rb
+bundle exec rails test test/models/search_endpoint_test.rb
 ```
 
 ## Important Notes
@@ -75,7 +88,7 @@ bundle exec rails test test/models/user_llm_key_encryption_test.rb
 
 If you encounter issues:
 
-1. Ensure all three encryption keys are properly configured
-2. Check that the keys are exactly 32 characters long
-3. Verify Rails can access the credentials: `Rails.application.credentials.active_record_encryption`
+1. Ensure all three `ACTIVE_RECORD_ENCRYPTION_*` environment variables are unset or non-empty (blank values fall back to defaults)
+2. Keep the same key values across deploys; changing keys without re-encrypting makes existing data unreadable
+3. For `Missing Active Record encryption credential: active_record_encryption.primary_key` on case API loads, check keys in `application.rb` and basic auth on tries (`app/views/api/v1/tries/_try.json.jbuilder`)
 4. Check logs for any encryption-related errors during migration
