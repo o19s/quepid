@@ -1,7 +1,10 @@
 // Admin Users bundle
-import * as d3 from 'd3';
-import CalHeatmap from 'cal-heatmap';
+// Vega for the "Pulse" activity calendar heatmaps
+import * as vega from 'vega';
+import * as vegaLite from 'vega-lite';
+import vegaEmbed from 'vega-embed';
 
 // Make them available globally
-window.d3 = d3;
-window.CalHeatmap = CalHeatmap;
+window.vega = vega;
+window.vegaLite = vegaLite;
+window.vegaEmbed = vegaEmbed;
