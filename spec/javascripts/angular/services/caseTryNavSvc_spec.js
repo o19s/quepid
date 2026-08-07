@@ -13,7 +13,8 @@ describe('Service: caseTryNavSvc', function () {
     locationMock = {
       path: jasmine.createSpy(),
       search: jasmine.createSpy(),
-      absUrl: jasmine.createSpy().and.returnValue('https://localhost:443/quepid/case/api/52?sort=default')
+      absUrl: jasmine.createSpy().and.returnValue('https://localhost:443/quepid/case/api/52?sort=default'),
+      protocol: jasmine.createSpy().and.returnValue('http')
 
     };
 
@@ -93,6 +94,45 @@ describe('Service: caseTryNavSvc', function () {
   });
 
   it('returns the quepid root url', function() {
-    expect(caseTryNavSvc.getQuepidRootUrl()).toEqual('https://localhost:443/quepid');    
+    expect(caseTryNavSvc.getQuepidRootUrl()).toEqual('https://localhost:443/quepid');
+  });
+
+  describe('specifySearchProxyRequired', function() {
+    it('requires a proxy when Quepid is https and the endpoint is http (mixed content)', function() {
+      locationMock.protocol.and.returnValue('https');
+      expect(caseTryNavSvc.specifySearchProxyRequired('http://example.com')).toBeTruthy();
+    });
+
+    it('does not require a proxy when Quepid is http and the endpoint is https', function() {
+      locationMock.protocol.and.returnValue('http');
+      expect(caseTryNavSvc.specifySearchProxyRequired('https://example.com')).toBeFalsy();
+    });
+
+    it('does not require a proxy when protocols match (both http)', function() {
+      locationMock.protocol.and.returnValue('http');
+      expect(caseTryNavSvc.specifySearchProxyRequired('http://example.com')).toBeFalsy();
+    });
+
+    it('does not require a proxy when protocols match (both https)', function() {
+      locationMock.protocol.and.returnValue('https');
+      expect(caseTryNavSvc.specifySearchProxyRequired('https://example.com')).toBeFalsy();
+    });
+
+    it('does not require a proxy when there is no search url', function() {
+      locationMock.protocol.and.returnValue('https');
+      expect(caseTryNavSvc.specifySearchProxyRequired('')).toBeFalsy();
+    });
+  });
+
+  describe('getQuepidProtocol', function() {
+    it('returns https when Quepid is running on https', function() {
+      locationMock.protocol.and.returnValue('https');
+      expect(caseTryNavSvc.getQuepidProtocol()).toEqual('https');
+    });
+
+    it('returns http when Quepid is running on http', function() {
+      locationMock.protocol.and.returnValue('http');
+      expect(caseTryNavSvc.getQuepidProtocol()).toEqual('http');
+    });
   });
 });

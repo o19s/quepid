@@ -7,7 +7,7 @@
 // What did I do here, like implement a router on top of my router!?!?
 angular.module('QuepidApp')
   .service('caseTryNavSvc', [
-    'configurationSvc','$location', '$timeout',
+    'configurationSvc', '$location', '$timeout',
     function caseTryNavSvc(configurationSvc, $location, $timeout) {
       var caseNo = 0;
       var tryNo = 0;
@@ -75,70 +75,24 @@ angular.module('QuepidApp')
       this.getTryNo = function () {
         return tryNo;
       };
-      
-      // If Quepid is running on HTTPS, like on Heroku, then it needs to switch
-      // to HTTP in order to make calls to a Solr that is running in HTTP as well, otherwise
-      // you get this "Mixed Content", which browsers block as a security issue.
-      // https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content
-      this.needToRedirectQuepidProtocol = function (searchUrl) {
+
+      this.specifySearchProxyRequired = function (searchUrl) {
         if (searchUrl) {
-          // Figure out if we need to redirect based on our search engine's url.
+          // Browsers only block mixed content when the page is HTTPS and the
+          // request target is HTTP; an HTTP page calling an HTTPS endpoint is fine.
           var quepidStartsWithHttps = $location.protocol() === 'https';
           var searchEngineStartsWithHttps = searchUrl.startsWith('https');
-  
-          return (quepidStartsWithHttps !== searchEngineStartsWithHttps);
+          return quepidStartsWithHttps && !searchEngineStartsWithHttps;
         } else {
           return false;
         }
       };
-      
-      // Return the tuple [quepidUrlToSwitchTo, protocolToSwitchTo]
-      this.swapQuepidUrlTLS = function () {
-        // Grab just the absolute url without any trailing query parameters
-        var absUrl = $location.absUrl();
-        // In development you might be on port 3000, and for https we need you not on port 3000
-        absUrl = absUrl.replace(':3000', '');
-        var n = absUrl.indexOf('?');
-        
-        var quepidUrlStartsWithHttps = absUrl.startsWith('https');
-        var quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
-        var protocolToSwitchTo = null;
-        if (quepidUrlStartsWithHttps) {
-          protocolToSwitchTo = 'http';
-          quepidUrlToSwitchTo = quepidUrlToSwitchTo.replace('https', 'http');
-        }
-        else {
-          protocolToSwitchTo = 'https';
-          quepidUrlToSwitchTo = quepidUrlToSwitchTo.replace('http', 'https');
-        }
-        
-        let separator = '?';
-        if (quepidUrlToSwitchTo.includes('?')) {
-          separator = '&';
-        }
-        
-        quepidUrlToSwitchTo = quepidUrlToSwitchTo + separator + 'protocolToSwitchTo=' + protocolToSwitchTo;
-        
-        return [quepidUrlToSwitchTo, protocolToSwitchTo];
-      };
-      
-      // Return the protocol Quepid is on
+
+      // Helper to expose Quepid's current protocol for the UI
       this.getQuepidProtocol = function () {
-        // Grab just the absolute url without any trailing query parameters
-        var absUrl = $location.absUrl();
-        var protocolToSwitchTo = null;
-        if (absUrl.startsWith('https')){
-          protocolToSwitchTo = 'http';
-        }
-        else {
-          protocolToSwitchTo = 'https';
-        }
-        
-        return protocolToSwitchTo;
+        return $location.protocol() === 'https' ? 'https' : 'http';
       };
-      
-      
-      
+
       this.appendQueryParams = function (quepidUrl, params) {
         let seperator = '?';
         if (quepidUrl.includes('?')) {
@@ -146,16 +100,16 @@ angular.module('QuepidApp')
         }
         quepidUrl = quepidUrl + seperator + params;
         return quepidUrl;
-        
+
       };
-      
+
       this.getQuepidRootUrl = function () {
         var absUrl = $location.absUrl();
-       
+
         if (!absUrl.endsWith('/')) {
           absUrl += '/';
         }
-        
+
         // Look for /case/ in url (Angular route)
         var match = absUrl.match(/(.*?)(\/case\/)/);
         if (match && match[1]) {
@@ -168,7 +122,7 @@ angular.module('QuepidApp')
           return urlObj.origin;
         }
       };
-      
+
       this.getQuepidProxyUrl = function (searchEndpointId) {
         var base = this.getQuepidRootUrl() + '/proxy/fetch?';
         if (searchEndpointId) {
@@ -177,11 +131,11 @@ angular.module('QuepidApp')
         base += 'url=';
         return base;
       };
-      
+
       this.createSearchEndpointLink = function (searchEndpointId) {
         let link = this.getQuepidRootUrl() + '/search_endpoints/' + searchEndpointId;
         return link;
       };
-      
+
     }
   ]);

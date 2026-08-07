@@ -90,17 +90,19 @@ describe('Controller: QueryparamsCtrl', function () {
     expect(scope.settings.selectedTry.curatorVars[0].value).toEqual(10);
     expect(scope.settings.selectedTry.curatorVars[0].inQueryParams).toBeTruthy();
   });
+  it('does not require a proxy when Quepid (http) calls an https search endpoint', function() {
+    $httpBackend.expectGET('api/cases/0/search_endpoints').respond(200, {});
 
-  it('handles changing TLS from http to https when you start on http', function () {
-    expect(scope.showTLSChangeWarning).toBeFalsy();
-    scope.settings.searchUrl = 'https://example.com'
+    expect(scope.showProxyRequiredWarning).toBeFalsy();
+
+    // Quepid running on http (default test env) calling an https search endpoint isn't
+    // mixed content -- browsers only block http calls made from an https page.
+    scope.settings.searchUrl = 'https://example.com';
+    scope.settings.proxyRequests = false;
+
     scope.qp.toggleTab();
-    expect(scope.showTLSChangeWarning).toBeTruthy();
-    expect(scope.quepidUrlToSwitchTo).toEqual('https://server/?protocolToSwitchTo=https&searchEngine=solr&searchUrl=https://example.com&showWizard=false&apiMethod=JSONP&fieldSpec=id:id title:title')
-    scope.settings.searchUrl = 'http://example.com'
-    scope.qp.toggleTab();
-    expect(scope.showTLSChangeWarning).toBeFalsy();
-    //expect(scope.quepidUrlToSwitchTo).toEqual('http://server/')
+
+    expect(scope.showProxyRequiredWarning).toBeFalsy();
   });
 
 });

@@ -53,7 +53,7 @@ angular.module('QuepidApp')
         });
       };
 
-      var bootstrapCase = function() {
+      const bootstrapCase = function() {
         return caseSvc.get(caseNo)
           .then(function(acase) {
             if (angular.isUndefined(acase)){
@@ -70,22 +70,11 @@ angular.module('QuepidApp')
             if (!settingsSvc.isTrySelected()){
               flash.to('search-error').error = 'The try that was specified for the case does not actually exist!';
             }
-            else {
-              if (settingsSvc.editableSettings().proxyRequests === true){
-                $scope.showTLSChangeWarning = false;
-              }
-              else if  (caseTryNavSvc.needToRedirectQuepidProtocol(settingsSvc.editableSettings().searchUrl)){
-                $log.error('Can not send queries to search engine due to browser constraints.');
-                var message = 'You have specified a search engine url that is on a different protocol ( <code>' + caseTryNavSvc.getQuepidProtocol() + '</code> ) than Quepid is running on. Please either <a href="' + caseTryNavSvc.createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId) + '/edit" target="_self">swap to the proxied connection</a>, or make sure search endpoint is on the same HTTP protocol.';
-  
-                throw new Error('Blocked Request: mixed-content. ' + message); // Signal that we can't run the query with this setup.
-              }
-            }
           });
       };
 
-      var loadQueries = function() {
-        var newSettings = settingsSvc.editableSettings();
+      const loadQueries = function() {
+        const newSettings = settingsSvc.editableSettings();
         if ( caseChanged() || searchEngineChanged() ) {
           if ( caseChanged() ) {
             queryViewSvc.reset();
@@ -152,13 +141,9 @@ angular.module('QuepidApp')
             loadSnapshots();  // this is here just to set the caseNo in the querySnapshotSvc.
             updateCaseMetadata();
             paneSvc.refreshElements();
-          }).catch(function(error) {            
-            // brittle logic, but check if we throw the TLS error or if it's from something else.
+          }).catch(function(error) {
             var message = error.message;
-            if (message.startsWith('Blocked Request')){
-              flash.to('search-error').error = message;
-            }
-            else if (message.startsWith('Could not retrieve case')){
+            if (message.startsWith('Could not retrieve case')){
               flash.to('search-error').error = message;
             }
             else {

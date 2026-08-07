@@ -1,13 +1,13 @@
 'use strict';
 
- /*jslint latedef:false*/
+/*jslint latedef:false*/
 
 angular.module('QuepidApp')
   .controller('WizardModalCtrl', [
     '$rootScope', '$scope', '$uibModalInstance', '$log', '$window', '$location',
     'WizardHandler',
     'settingsSvc', 'SettingsValidatorFactory',
-    'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc','searchEndpointSvc','caseCSVSvc','querySnapshotSvc',
+    'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc', 'searchEndpointSvc', 'caseCSVSvc', 'querySnapshotSvc',
     function (
       $rootScope, $scope, $uibModalInstance, $log, $window, $location,
       WizardHandler,
@@ -15,11 +15,11 @@ angular.module('QuepidApp')
       docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc, searchEndpointSvc, caseCSVSvc, querySnapshotSvc
     ) {
       $log.debug('Init Wizard settings ctrl');
-      
+
       $scope.cancel = function () {
         let confirm = $window.confirm('Are you sure you want to abandon this case?');
         if (confirm) {
-          caseSvc.deleteCase(caseSvc.getSelectedCase()).then(function() {
+          caseSvc.deleteCase(caseSvc.getSelectedCase()).then(function () {
             $uibModalInstance.dismiss('cancel');
             $window.location = '/';
           });
@@ -28,7 +28,7 @@ angular.module('QuepidApp')
       };
 
       $scope.goToMapperWizard = function () {
-        caseSvc.deleteCase(caseSvc.getSelectedCase()).then(function() {
+        caseSvc.deleteCase(caseSvc.getSelectedCase()).then(function () {
           $uibModalInstance.dismiss('cancel');
           $window.location = caseTryNavSvc.getQuepidRootUrl() + '/search_endpoints/mapper_wizard';
         });
@@ -49,80 +49,80 @@ angular.module('QuepidApp')
         result: null,
         import: {}
       };
-            
+
       $scope.wizardSettingsModel = {};
 
-      $scope.wizardSettingsModel.settingsId = function() {
+      $scope.wizardSettingsModel.settingsId = function () {
         return settingsSvc.settingsId();
       };
 
       searchEndpointSvc.list()
-       .then(function() {
-         $scope.searchEndpoints = searchEndpointSvc.searchEndpoints; 
-         $scope.hasStaticEndpoints = false;
-         angular.forEach($scope.searchEndpoints, function(searchEndpoint) {
-          if (searchEndpoint.searchEngine === 'static'){
-            $scope.hasStaticEndpoints = true;
-          }
+        .then(function () {
+          $scope.searchEndpoints = searchEndpointSvc.searchEndpoints;
+          $scope.hasStaticEndpoints = false;
+          angular.forEach($scope.searchEndpoints, function (searchEndpoint) {
+            if (searchEndpoint.searchEngine === 'static') {
+              $scope.hasStaticEndpoints = true;
+            }
+          });
         });
-       });
-       
-      $scope.listSearchEndpoints = function() {
+
+      $scope.listSearchEndpoints = function () {
         // we only want the search endpoint dialgue to default to open
         // if we are not reloading and have search endpoints.
-        if (!angular.isDefined($location.search().searchEngine)){
+        if (!angular.isDefined($location.search().searchEngine)) {
           $scope.shouldCreateNewSearchEndpointDefaultToOpen = false;
         }
         return $scope.searchEndpoints;
       };
 
       // used when we first launch the wizard, and it handles reloading from http to https
-      $scope.updateSettingsDefaults = function() {
+      $scope.updateSettingsDefaults = function () {
 
-        if (angular.isUndefined($scope.pendingWizardSettings)){
-             // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.
-             // We then give you options to change from there.
-             
-             // If we are reloading, then use the new one we picked, otherwise
-             // we default to Solr.
-             let searchEngineToUse = null;
-             if (angular.isDefined($location.search().searchEngine)){
-               searchEngineToUse = $location.search().searchEngine;
-             }
-             else {
-               searchEngineToUse = 'solr';
-             }
-             $scope.pendingWizardSettings = {
-               searchEngine: searchEngineToUse
-             };
-             
-             // Helps us distingush if we are using tmdb demo setup or no
-             if (angular.isDefined($location.search().searchUrl)){
-               $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
-             }
+        if (angular.isUndefined($scope.pendingWizardSettings)) {
+          // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.
+          // We then give you options to change from there.
+
+          // If we are reloading, then use the new one we picked, otherwise
+          // we default to Solr.
+          let searchEngineToUse = null;
+          if (angular.isDefined($location.search().searchEngine)) {
+            searchEngineToUse = $location.search().searchEngine;
+          }
+          else {
+            searchEngineToUse = 'solr';
+          }
+          $scope.pendingWizardSettings = {
+            searchEngine: searchEngineToUse
+          };
+
+          // Helps us distingush if we are using tmdb demo setup or no
+          if (angular.isDefined($location.search().searchUrl)) {
+            $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
+          }
         }
-        
-        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
-        $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
-        $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
-        $scope.pendingWizardSettings.idField                  = settings.idField;
-        $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
-        $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
-        $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
-        $scope.pendingWizardSettings.headerType               = settings.headerType;
-        $scope.pendingWizardSettings.queryParams              = settings.queryParams;
-        $scope.pendingWizardSettings.titleField               = settings.titleField;
-        $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;    
-        $scope.pendingWizardSettings.searchEndpointId         = null;
-        $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
-        $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;
-        $scope.pendingWizardSettings.mapperCode               = settings.mapperCode;
 
-        
+        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
+        $scope.pendingWizardSettings.additionalFields = settings.additionalFields;
+        $scope.pendingWizardSettings.fieldSpec = settings.fieldSpec;
+        $scope.pendingWizardSettings.idField = settings.idField;
+        $scope.pendingWizardSettings.searchEngine = settings.searchEngine;
+        $scope.pendingWizardSettings.apiMethod = settings.apiMethod;
+        $scope.pendingWizardSettings.customHeaders = settings.customHeaders;
+        $scope.pendingWizardSettings.headerType = settings.headerType;
+        $scope.pendingWizardSettings.queryParams = settings.queryParams;
+        $scope.pendingWizardSettings.titleField = settings.titleField;
+        $scope.pendingWizardSettings.urlFormat = settings.urlFormat;
+        $scope.pendingWizardSettings.searchEndpointId = null;
+        $scope.pendingWizardSettings.proxyRequests = settings.proxyRequests;
+        $scope.pendingWizardSettings.basicAuthCredential = settings.basicAuthCredential;
+        $scope.pendingWizardSettings.mapperCode = settings.mapperCode;
+
+
         var quepidStartsWithHttps = $location.protocol() === 'https';
 
         if ($scope.pendingWizardSettings.searchEngine === 'solr') {
-          if (quepidStartsWithHttps === true){
+          if (quepidStartsWithHttps === true) {
             $scope.pendingWizardSettings.searchUrl = settings.secureSearchUrl;
           }
           else {
@@ -136,89 +136,90 @@ angular.module('QuepidApp')
         // if we have restarted the wizard, then grab the searchUrl, searchEngine, apiMethod,
         // and caseName from the params and override the default values.
         // We should pass this stuff in externally, not do it here.
-        if (angular.isDefined($location.search().searchEngine)){
+        if (angular.isDefined($location.search().searchEngine)) {
           $scope.pendingWizardSettings.searchEngine = $location.search().searchEngine;
         }
-        if (angular.isDefined($location.search().searchUrl)){
+        if (angular.isDefined($location.search().searchUrl)) {
           $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
         }
-        if (angular.isDefined($location.search().caseName)){
+        if (angular.isDefined($location.search().caseName)) {
           $scope.pendingWizardSettings.caseName = $location.search().caseName;
         }
-        if (angular.isDefined($location.search().apiMethod)){
+        if (angular.isDefined($location.search().apiMethod)) {
           $scope.pendingWizardSettings.apiMethod = $location.search().apiMethod;
         }
-        if (angular.isDefined($location.search().basicAuthCredential)){
+        if (angular.isDefined($location.search().basicAuthCredential)) {
           $scope.pendingWizardSettings.basicAuthCredential = $location.search().basicAuthCredential;
         }
         $scope.reset();
       };
 
       // used when you change a searchEndpoint that has already been set up, and then follow normal flow.
-      $scope.changeSearchEndpoint = function() {
+      $scope.changeSearchEndpoint = function () {
         var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.pendingWizardSettings.searchEndpointId);
 
         // From search endpoint - these are endpoint-specific settings
-        $scope.pendingWizardSettings.searchEngine             = searchEndpointToUse.searchEngine;
-        $scope.pendingWizardSettings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
-        $scope.pendingWizardSettings.apiMethod                = searchEndpointToUse.apiMethod;
+        $scope.pendingWizardSettings.searchEngine = searchEndpointToUse.searchEngine;
+        $scope.pendingWizardSettings.searchUrl = searchEndpointToUse.endpointUrl; // notice remapping
+        $scope.pendingWizardSettings.apiMethod = searchEndpointToUse.apiMethod;
         // Convert customHeaders to string if it's an object (from JSON serialization)
-        $scope.pendingWizardSettings.customHeaders            = typeof searchEndpointToUse.customHeaders === 'object' && searchEndpointToUse.customHeaders !== null ?
+        $scope.pendingWizardSettings.customHeaders = typeof searchEndpointToUse.customHeaders === 'object' && searchEndpointToUse.customHeaders !== null ?
           JSON.stringify(searchEndpointToUse.customHeaders, null, 2) :
           searchEndpointToUse.customHeaders;
-        $scope.pendingWizardSettings.proxyRequests            = searchEndpointToUse.proxyRequests;
-        $scope.pendingWizardSettings.basicAuthCredential      = searchEndpointToUse.basicAuthCredential;
-        $scope.pendingWizardSettings.mapperCode               = searchEndpointToUse.mapperCode;
-        $scope.pendingWizardSettings.testQuery                = searchEndpointToUse.testQuery;
+        $scope.pendingWizardSettings.proxyRequests = searchEndpointToUse.proxyRequests;
+        $scope.pendingWizardSettings.basicAuthCredential = searchEndpointToUse.basicAuthCredential;
+        $scope.pendingWizardSettings.mapperCode = searchEndpointToUse.mapperCode;
+        $scope.pendingWizardSettings.testQuery = searchEndpointToUse.testQuery;
 
         // Now grab default settings for the type of search endpoint you are using
         // These are display/query settings that have sensible defaults per search engine type
         var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
-        $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
-        $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
-        $scope.pendingWizardSettings.idField                  = settings.idField;
-        $scope.pendingWizardSettings.titleField               = settings.titleField;
+        $scope.pendingWizardSettings.additionalFields = settings.additionalFields;
+        $scope.pendingWizardSettings.fieldSpec = settings.fieldSpec;
+        $scope.pendingWizardSettings.idField = settings.idField;
+        $scope.pendingWizardSettings.titleField = settings.titleField;
 
         // For searchapi endpoints, use the saved testQuery as the queryParams
         // This pre-populates the query pattern with what was saved in the search endpoint
         if (searchEndpointToUse.searchEngine === 'searchapi' && searchEndpointToUse.testQuery) {
-          $scope.pendingWizardSettings.queryParams            = searchEndpointToUse.testQuery;
+          $scope.pendingWizardSettings.queryParams = searchEndpointToUse.testQuery;
         } else {
-          $scope.pendingWizardSettings.queryParams            = settings.queryParams;
+          $scope.pendingWizardSettings.queryParams = settings.queryParams;
         }
 
+        $scope.checkProxyRequirement();
         $scope.reset();
       };
-      
-      // used when you swap radio buttons for the search engine.
-      $scope.changeSearchEngine = function() {
 
-        if (angular.isUndefined($scope.pendingWizardSettings)){
-            // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.
-            // We then give you options to change from there.
-            $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
+      // used when you swap radio buttons for the search engine.
+      $scope.changeSearchEngine = function () {
+
+        if (angular.isUndefined($scope.pendingWizardSettings)) {
+          // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.
+          // We then give you options to change from there.
+          $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
         }
         var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
-        $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
-        $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
-        $scope.pendingWizardSettings.idField                  = settings.idField;
-        $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
-        $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
-        $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
-        $scope.pendingWizardSettings.headerType               = settings.headerType;
-        $scope.pendingWizardSettings.queryParams              = settings.queryParams;
-        $scope.pendingWizardSettings.titleField               = settings.titleField;
-        $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
-        $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
-        $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential; 
-        $scope.pendingWizardSettings.mapperCode               = settings.mapperCode;        
-        
+        $scope.pendingWizardSettings.additionalFields = settings.additionalFields;
+        $scope.pendingWizardSettings.fieldSpec = settings.fieldSpec;
+        $scope.pendingWizardSettings.idField = settings.idField;
+        $scope.pendingWizardSettings.searchEngine = settings.searchEngine;
+        $scope.pendingWizardSettings.apiMethod = settings.apiMethod;
+        $scope.pendingWizardSettings.customHeaders = settings.customHeaders;
+        $scope.pendingWizardSettings.headerType = settings.headerType;
+        $scope.pendingWizardSettings.queryParams = settings.queryParams;
+        $scope.pendingWizardSettings.titleField = settings.titleField;
+        $scope.pendingWizardSettings.urlFormat = settings.urlFormat;
+        $scope.pendingWizardSettings.proxyRequests = settings.proxyRequests;
+        $scope.pendingWizardSettings.basicAuthCredential = settings.basicAuthCredential;
+        $scope.pendingWizardSettings.mapperCode = settings.mapperCode;
+
         $scope.isHeaderConfigCollapsed = true;
 
         var quepidStartsWithHttps = $location.protocol() === 'https';
 
         if ($scope.pendingWizardSettings.searchEngine === 'solr') {
-          if (quepidStartsWithHttps === true){
+          if (quepidStartsWithHttps === true) {
             $scope.pendingWizardSettings.searchUrl = settings.secureSearchUrl;
           }
           else {
@@ -231,14 +232,22 @@ angular.module('QuepidApp')
 
         $scope.reset();
       };
-      
+
       // used when you click the accordion for new search endpoint
-      $scope.switchToCreateNewSearchEndpoint = function() {
-       $scope.pendingWizardSettings.searchEndpointId = null;       
+      // used when you click the accordion for new search endpoint
+      $scope.switchToCreateNewSearchEndpoint = function () {
+        // Only reset if an existing endpoint is currently selected.
+        // This stops regular clicks inside the form from wiping the data.
+        if ($scope.pendingWizardSettings.searchEndpointId !== null) {
+          $scope.pendingWizardSettings.searchEndpointId = null;
+          $scope.pendingWizardSettings.searchUrl = '';
+          $scope.pendingWizardSettings.proxyRequests = false;
+          $scope.reset();
+        }
       };
 
-      
-               
+
+
       if (angular.isDefined($location.search().searchEngine)) {
         // Changing http(s), so we should be open.  
         if (angular.isDefined($location.search().existingSearchEndpoint)) {
@@ -248,18 +257,17 @@ angular.module('QuepidApp')
         else {
           $scope.shouldCreateNewSearchEndpointDefaultToOpen = true;
         }
-      }            
-        
-      
-      $scope.validate       = validate;
+      }
+
+
+      $scope.validate = validate;
       $scope.skipValidation = skipValidation;
       $scope.readyToContinue = readyToContinue;
-      $scope.setupDefaults  = setupDefaults;
-      $scope.linkToSearchEndpointUrl  = linkToSearchEndpointUrl;
-      $scope.submit         = submit;
-      $scope.reset          = reset;
-      $scope.resetUrlValid  = resetUrlValid;
-      $scope.checkTLSForSearchEngineUrl = checkTLSForSearchEngineUrl;
+      $scope.setupDefaults = setupDefaults;
+      $scope.linkToSearchEndpointUrl = linkToSearchEndpointUrl;
+      $scope.submit = submit;
+      $scope.reset = reset;
+      $scope.resetUrlValid = resetUrlValid;
       $scope.updateSettingsDefaults();
       $scope.validateHeaders = validateHeaders;
       $scope.validateProxyApiMethod = validateProxyApiMethod;
@@ -272,10 +280,10 @@ angular.module('QuepidApp')
         $scope.isHeaderConfigCollapsed = !$scope.isHeaderConfigCollapsed;
       };
 
-      $scope.searchFields   = [];
+      $scope.searchFields = [];
       $scope.createSnapshot = createSnapshot;
 
-      $scope.extractSolrConfigApiUrl = function(searchUrl) {
+      $scope.extractSolrConfigApiUrl = function (searchUrl) {
         return searchUrl.substring(0, searchUrl.lastIndexOf('/')) + '/config';
       };
 
@@ -284,23 +292,22 @@ angular.module('QuepidApp')
         $scope.urlValid = $scope.urlInvalid = $scope.invalidHeaders = $scope.invalidProxyApiMethod = false;
         $scope.mapperInvalid = false;
         $scope.mapperErrorMessage = null;
-        
-        
-        $scope.showTLSChangeWarning = false; // hope this doesn't cause a flicker.'
-        if ($scope.pendingWizardSettings.searchUrl){
-          $scope.checkTLSForSearchEngineUrl();
+
+        // Triggers immediately as the user types or selects a dropdown option
+        if (typeof $scope.checkProxyRequirement === 'function') {
+          $scope.checkProxyRequirement();
         }
       }
-      
+
       function linkToSearchEndpointUrl() {
-        if ($scope.pendingWizardSettings.proxyRequests === true){
+        if ($scope.pendingWizardSettings.proxyRequests === true) {
           return caseTryNavSvc.getQuepidProxyUrl($scope.pendingWizardSettings.searchEndpointId) + $scope.pendingWizardSettings.searchUrl;
         }
         else {
           return $scope.pendingWizardSettings.searchUrl;
         }
       }
-      
+
       function resetUrlValid() {
         $scope.urlValid = false;
         $scope.invalidProxyApiMethod = false;
@@ -310,14 +317,14 @@ angular.module('QuepidApp')
         if ($scope.urlValid) {
           WizardHandler.wizard().next();
         }
-      }      
-      
+      }
+
       function readyToContinue() {
-        if ($scope.validating){
+        if ($scope.validating) {
           return false;
         }
-        if ($scope.pendingWizardSettings.searchEngine === 'static'){
-          if ($scope.addedStaticQueries){
+        if ($scope.pendingWizardSettings.searchEngine === 'static') {
+          if ($scope.addedStaticQueries) {
             return true;
           }
           else {
@@ -335,7 +342,7 @@ angular.module('QuepidApp')
         WizardHandler.wizard().next();
       }
 
-      function validate (justValidate) {
+      function validate(justValidate) {
         if (angular.isUndefined(justValidate)) {
           justValidate = false;
         }
@@ -345,27 +352,27 @@ angular.module('QuepidApp')
 
         // This logic maybe should live in Splainer Search if we wanted to support Splainer.io as well?
 
-        $scope.showTLSChangeWarning = false;
 
-        $scope.checkTLSForSearchEngineUrl();
+
         $scope.validateHeaders();
         $scope.validateProxyApiMethod();
+        $scope.checkProxyRequirement();
 
         // exit early if we have the TLS issue, this really should be part of the below logic.
         // validator.validateTLS().then.validateURL().then....
-        if ($scope.showTLSChangeWarning || $scope.invalidHeaders || $scope.invalidProxyApiMethod ){
+        if ($scope.invalidHeaders || $scope.invalidProxyApiMethod || $scope.showProxyRequiredWarning || $scope.showExistingProxyWarning) {
           $scope.validating = false;
           return;
         }
-        
+
         // copy the settings so we don't change the underlying settings during
         // the validation process.
-        var settingsForValidation  = angular.copy($scope.pendingWizardSettings);
-        if ($scope.pendingWizardSettings.searchEngine === 'static'){
+        var settingsForValidation = angular.copy($scope.pendingWizardSettings);
+        if ($scope.pendingWizardSettings.searchEngine === 'static') {
           // We pretend to be Solr for validating the URL.
           settingsForValidation.searchEngine = 'solr';
         }
-        else if ($scope.pendingWizardSettings.searchEngine === 'searchapi'){
+        else if ($scope.pendingWizardSettings.searchEngine === 'searchapi') {
           // For validation, we need query args:
           // - If queryParams has #$query##, substitute with testQuery
           // - If queryParams is not set but testQuery exists (from existing endpoint), use testQuery directly
@@ -383,17 +390,17 @@ angular.module('QuepidApp')
             queryParamsWithTestQuery = $scope.pendingWizardSettings.queryParams || '';
           }
           settingsForValidation.args = queryParamsWithTestQuery;
-        
+
           try {
             /*jshint evil:true */
             /* jshint undef: false */
             console.log('About to evaluate mapper code...');
-            
+
             // Alternative approach: Use Function constructor which runs in non-strict mode
             // and has access to global scope
             var mapperFunction = new Function(settingsForValidation.mapperCode);
             mapperFunction.call(window);
-            
+
             // The functions should now be available on the window object
             if (window.numberOfResultsMapper) {
               numberOfResultsMapper = window.numberOfResultsMapper;
@@ -403,8 +410,8 @@ angular.module('QuepidApp')
             }
             /*jshint evil:false */
             /* jshint undef: true */
-            
-      
+
+
           } catch (evalError) {
             console.error('Error evaluating mapper code:', evalError);
             console.error('Error stack:', evalError.stack);
@@ -413,7 +420,7 @@ angular.module('QuepidApp')
             $scope.validating = false;
             return; // Exit early if eval fails
           }
-          
+
           /* jshint undef: false */
           if (typeof numberOfResultsMapper === 'undefined') {
             console.error('numberOfResultsMapper is undefined after evaluation');
@@ -422,9 +429,9 @@ angular.module('QuepidApp')
           }
           else {
             console.log('numberOfResultsMapper defined successfully:', numberOfResultsMapper);
-            settingsForValidation.numberOfResultsMapper = numberOfResultsMapper; 
+            settingsForValidation.numberOfResultsMapper = numberOfResultsMapper;
           }
-          
+
           if (typeof docsMapper === 'undefined') {
             console.error('docsMapper is undefined after evaluation');
             $scope.mapperInvalid = true;
@@ -432,14 +439,14 @@ angular.module('QuepidApp')
           }
           else {
             console.log('docsMapper defined successfully:', docsMapper);
-            settingsForValidation.docsMapper = docsMapper; 
+            settingsForValidation.docsMapper = docsMapper;
           }
           /* jshint undef: true */
-          
+
           console.log('=== END MAPPER CODE DEBUG ===');
-          
+
           // This is an example of what the above mapper code might look like.
-          
+
           //eval(kode);
           // settingsForValidation.docsMapper = function(data){    
           //   let docs = [];
@@ -454,40 +461,48 @@ angular.module('QuepidApp')
           //   return docs;
           // };
         }
-        
-        if (settingsForValidation.proxyRequests === true){
+
+        if (settingsForValidation.proxyRequests === true) {
           // Pass in the Quepid specific proxy url
           settingsForValidation.proxyUrl = caseTryNavSvc.getQuepidProxyUrl(settingsForValidation.searchEndpointId);
         }
-        var validator = new SettingsValidatorFactory(settingsForValidation);
-      
-        validator.validateUrl()
-        .then(function () {
-          $scope.validating = false;
-          $scope.urlValid   = true;
 
-          if (!$scope.mapperInvalid) {
-            setupDefaults(validator);
+        // Wrap in try/catch to prevent the UI from hanging on silent JS errors
+        try {
+          var validator = new SettingsValidatorFactory(settingsForValidation);
 
-            if (!justValidate) {
-              $scope.pendingWizardSettings.searchUrl = settingsForValidation.searchUrl;
-              WizardHandler.wizard().next();
-            }
-          }
-        }, function (error) {
-          if (error.toString().startsWith('Error: MapperError')){
-            $scope.mapperInvalid = true;
-            $scope.mapperErrorMessage = error.toString();
-          }
-          else {
-            $scope.urlInvalid = true;
-            showProxyHelpIfNeeded();
-          }              
+          validator.validateUrl()
+            .then(function () {
+              $scope.validating = false;
+              $scope.urlValid = true;
+
+              if (!$scope.mapperInvalid) {
+                setupDefaults(validator);
+
+                if (!justValidate) {
+                  $scope.pendingWizardSettings.searchUrl = settingsForValidation.searchUrl;
+                  WizardHandler.wizard().next();
+                }
+              }
+            }, function (error) {
+              if (error.toString().startsWith('Error: MapperError')) {
+                $scope.mapperInvalid = true;
+                $scope.mapperErrorMessage = error.toString();
+              }
+              else {
+                $scope.urlInvalid = true;
+                showProxyHelpIfNeeded();
+              }
+              $scope.validating = false;
+            });
+        } catch (e) {
+          console.error('Validation crashed:', e);
+          $scope.urlInvalid = true;
           $scope.validating = false;
-        });
+        }
       }
 
-      function showProxyHelpIfNeeded () {
+      function showProxyHelpIfNeeded() {
         if (
           $scope.urlInvalid &&
           !$scope.pendingWizardSettings.proxyRequests &&
@@ -497,7 +512,7 @@ angular.module('QuepidApp')
         }
       }
 
-      function validateHeaders () {
+      function validateHeaders() {
         $scope.invalidHeaders = false;
 
         if (
@@ -511,114 +526,120 @@ angular.module('QuepidApp')
         }
 
       }
-      
-      function changeProxySetting () {
-        if ($scope.pendingWizardSettings.proxyRequests === true){
-          $scope.showTLSChangeWarning = false;
+
+      $scope.checkProxyRequirement = function () {
+
+        if (!$scope.pendingWizardSettings || !$scope.pendingWizardSettings.searchUrl) {
+          $scope.showProxyRequiredWarning = false;
+          $scope.showExistingProxyWarning = false;
+          $scope.quepidProtocol = null;
+          $scope.endpointProtocol = null;
+          return;
         }
-        validateProxyApiMethod();
-        checkTLSForSearchEngineUrl();
+
+        var proxyRequired = false;
+
+        if ($scope.pendingWizardSettings.proxyRequests === true) {
+          proxyRequired = false;
+        } else {
+          proxyRequired = caseTryNavSvc.specifySearchProxyRequired($scope.pendingWizardSettings.searchUrl);
+        }
+
+        if (proxyRequired) {
+          $scope.quepidProtocol = caseTryNavSvc.getQuepidProtocol();
+          $scope.endpointProtocol = ($scope.pendingWizardSettings.searchUrl && $scope.pendingWizardSettings.searchUrl.startsWith('https')) ? 'https' : 'http';
+        }
+
+        // Isolate the warnings
+        if ($scope.pendingWizardSettings.searchEndpointId != null) {
+          $scope.showExistingProxyWarning = proxyRequired;
+          $scope.showProxyRequiredWarning = false;
+        } else {
+          $scope.showProxyRequiredWarning = proxyRequired;
+          $scope.showExistingProxyWarning = false;
+        }
+      };
+
+      function changeProxySetting() {
+        $scope.validateProxyApiMethod();
+        $scope.checkProxyRequirement();
       }
-      
-      function validateProxyApiMethod () {
+
+      function validateProxyApiMethod() {
         $scope.invalidProxyApiMethod = false;
-        if ($scope.pendingWizardSettings.proxyRequests === true){
+        if ($scope.pendingWizardSettings.proxyRequests === true) {
           if (
             $scope.pendingWizardSettings.apiMethod && $scope.pendingWizardSettings.apiMethod === 'JSONP') {
-            
-              $scope.invalidProxyApiMethod = true;
-              $scope.validating = false;
+
+            $scope.invalidProxyApiMethod = true;
+            $scope.validating = false;
           }
         }
       }
 
-
-      function checkTLSForSearchEngineUrl () {
-        if ($scope.pendingWizardSettings.proxyRequests === true){
-          $scope.showTLSChangeWarning = false;
-        }
-        else {
-          $scope.showTLSChangeWarning = caseTryNavSvc.needToRedirectQuepidProtocol($scope.pendingWizardSettings.searchUrl);
-          
-          if ($scope.showTLSChangeWarning){         
-            var resultsTuple = caseTryNavSvc.swapQuepidUrlTLS();
-            
-            $scope.quepidUrlToSwitchTo = resultsTuple[0];
-            $scope.protocolToSwitchTo = resultsTuple[1];
-
-            
-            $scope.quepidUrlToSwitchTo = caseTryNavSvc.appendQueryParams($scope.quepidUrlToSwitchTo, `showWizard=true` +
-              `&searchEngine=${$scope.pendingWizardSettings.searchEngine}` +
-              `&searchUrl=${$scope.pendingWizardSettings.searchUrl}` +
-              `&caseName=${$scope.pendingWizardSettings.caseName}` +
-              `&apiMethod=${$scope.pendingWizardSettings.apiMethod}` +
-              `&basicAuthCredential=${$scope.pendingWizardSettings.basicAuthCredential}`);            
-          }
-        }
-      }
 
 
       function setupDefaults(validator) {
-        $scope.validating   = false;
-        $scope.urlValid     = true;
-        $scope.mapperInvalid= false;
+        $scope.validating = false;
+        $scope.urlValid = true;
+        $scope.mapperInvalid = false;
         $scope.mapperErrorMessage = null;
         $scope.searchFields = validator.fields;
-        $scope.idFields     = validator.idFields;            
+        $scope.idFields = validator.idFields;
 
         // Since the defaults are being overridden by the editableSettings(),
         // we need to restore the TMDB demo settings if that matches our URL for the next screen.
-        var searchEngine  = $scope.pendingWizardSettings.searchEngine;
-        var newUrl        = $scope.pendingWizardSettings.searchUrl;
-        
+        var searchEngine = $scope.pendingWizardSettings.searchEngine;
+        var newUrl = $scope.pendingWizardSettings.searchUrl;
+
         var settingsToUse = settingsSvc.pickSettingsToUse(searchEngine, newUrl);
-        
-        
-        $scope.pendingWizardSettings.idField          = settingsToUse.idField;
-        $scope.pendingWizardSettings.titleField       = settingsToUse.titleField;
+
+
+        $scope.pendingWizardSettings.idField = settingsToUse.idField;
+        $scope.pendingWizardSettings.titleField = settingsToUse.titleField;
         $scope.pendingWizardSettings.additionalFields = settingsToUse.additionalFields;
-        
+
       }
 
       $scope.validateFieldSpec = validateFieldSpec;
-      function validateFieldSpec () {
-        $scope.validating           = true;
-        $scope.idFieldRequired      = false;
-        $scope.titleFieldRequired   = false;
+      function validateFieldSpec() {
+        $scope.validating = true;
+        $scope.idFieldRequired = false;
+        $scope.titleFieldRequired = false;
 
-        if ( angular.isUndefined($scope.pendingWizardSettings.idField) ||
+        if (angular.isUndefined($scope.pendingWizardSettings.idField) ||
           $scope.pendingWizardSettings.idField === '' ||
           $scope.pendingWizardSettings.idField === null
         ) {
           $scope.idFieldRequired = true;
         }
 
-        if ( angular.isUndefined($scope.pendingWizardSettings.titleField) ||
+        if (angular.isUndefined($scope.pendingWizardSettings.titleField) ||
           $scope.pendingWizardSettings.titleField === '' ||
           $scope.pendingWizardSettings.titleField === null
         ) {
           $scope.titleFieldRequired = true;
         }
 
-        if ( $scope.titleFieldRequired || $scope.idFieldRequired) {
+        if ($scope.titleFieldRequired || $scope.idFieldRequired) {
           $scope.validating = false;
           return;
         }
         var customTitle = $scope.searchFields.indexOf($scope.pendingWizardSettings.titleField) === -1;
-        var customId    = $scope.searchFields.indexOf($scope.pendingWizardSettings.idField) === -1;
+        var customId = $scope.searchFields.indexOf($scope.pendingWizardSettings.idField) === -1;
 
         // Skip the custom field warning for searchapi since fields are defined by the mapper code
         if ((customId || customTitle) && $scope.pendingWizardSettings.searchEngine !== 'searchapi') {
           var confirm = $window.confirm('You are using a custom field for the title or ID (could be a typo), are you sure you want to continue?');
 
-          if ( !confirm ) {
+          if (!confirm) {
             $scope.validating = false;
             return;
           }
         }
 
         var additionalFields = [];
-        angular.forEach($scope.pendingWizardSettings.additionalFields, function(field) {
+        angular.forEach($scope.pendingWizardSettings.additionalFields, function (field) {
           additionalFields.push(field.text);
         });
         additionalFields = additionalFields.join(', ');
@@ -637,16 +658,16 @@ angular.module('QuepidApp')
       }
 
       $scope.loadFields = loadFields;
-      function loadFields (query) {
+      function loadFields(query) {
         var autocompleteList = [];
         var _query = query.trim().toLowerCase();
         var modified = false;
         var modifierText = '';
 
         var allowedModifiers = [
-            'media:',
-            'thumb:',
-            'image:'
+          'media:',
+          'thumb:',
+          'image:'
         ];
 
         for (var i = 0; i < allowedModifiers.length; i++) {
@@ -660,8 +681,8 @@ angular.module('QuepidApp')
           }
         }
 
-        angular.forEach($scope.searchFields, function(field) {
-          if ( field.toLowerCase().indexOf(_query) !== -1 ) {
+        angular.forEach($scope.searchFields, function (field) {
+          if (field.toLowerCase().indexOf(_query) !== -1) {
             autocompleteList.push({ text: modified ? modifierText + field : field });
           }
         });
@@ -669,7 +690,7 @@ angular.module('QuepidApp')
         return autocompleteList;
       }
 
-      $scope.$watch('wizardSettingsModel.settingsId()', function() {
+      $scope.$watch('wizardSettingsModel.settingsId()', function () {
         // Reinit our pending settings from the service
         var tempSearchUrl = $scope.pendingWizardSettings.searchUrl;
         var tempApiMethod = $scope.pendingWizardSettings.apiMethod;
@@ -682,7 +703,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.searchEngine = tempSearchEngine;
         $scope.pendingWizardSettings.newQueries = [];
 
-        if(userSvc.getUser().completedCaseWizard===false){
+        if (userSvc.getUser().completedCaseWizard === false) {
           $scope.pendingWizardSettings.caseName = 'Movies Search';
           // should we be setting up more here?
         } else {
@@ -690,39 +711,39 @@ angular.module('QuepidApp')
           WizardHandler.wizard().goTo(1);
         }
 
-        $scope.pendingWizardSettings.deleteQuery = function(index) {
+        $scope.pendingWizardSettings.deleteQuery = function (index) {
           $scope.pendingWizardSettings.newQueries.splice(index, 1);
         };
 
-        $scope.pendingWizardSettings.addQuery = function(text) {
+        $scope.pendingWizardSettings.addQuery = function (text) {
           // This function is called on "Continue" which mean that the text
           // might actually be empty, so we shouldn't add that to the queries
           // list. Or even when the user clicks on "Add Query".
-          if ( text !== '' && text !== null && text !== undefined ) {
+          if (text !== '' && text !== null && text !== undefined) {
             var length = $scope.pendingWizardSettings.newQueries.length;
             var unique = true;
-            for(var i=0; i<length; i++){
-              if(text === $scope.pendingWizardSettings.newQueries[i].queryString){
-                unique =false;
+            for (var i = 0; i < length; i++) {
+              if (text === $scope.pendingWizardSettings.newQueries[i].queryString) {
+                unique = false;
               }
             }
-            if(unique){
+            if (unique) {
               var obj = {};
               obj.queryString = text;
               $scope.pendingWizardSettings.newQueries.push(obj);
-              $scope.pendingWizardSettings.text='';//Reset text in input box
+              $scope.pendingWizardSettings.text = '';//Reset text in input box
             }
           }
         };
-        
-        $scope.pendingWizardSettings.addQueryStaticQueries = function() {
-          angular.forEach($scope.listOfStaticQueries, function(queryText) {
+
+        $scope.pendingWizardSettings.addQueryStaticQueries = function () {
+          angular.forEach($scope.listOfStaticQueries, function (queryText) {
             $scope.pendingWizardSettings.addQuery(queryText);
-          });                    
-         };
+          });
+        };
 
         // pass pending settings on to be saved
-        $scope.pendingWizardSettings.submit = function() {
+        $scope.pendingWizardSettings.submit = function () {
           if ($scope.savingFinish) {
             return;
           }
@@ -730,55 +751,55 @@ angular.module('QuepidApp')
           $log.debug('Submitting settings (from wizard modal)');
 
           // if we aren't using a demo, then lets finalize our queryParams with our best guess
-         if (!settingsSvc.demoSettingsChosen($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl)){
-           if ($scope.pendingWizardSettings.searchEngine === 'os' || $scope.pendingWizardSettings.searchEngine === 'es'){
-             $scope.pendingWizardSettings.queryParams = $scope.pendingWizardSettings.queryParams.replace('REPLACE_ME', $scope.pendingWizardSettings.titleField);
-           }
-           
-           if ($scope.pendingWizardSettings.searchEngine === 'solr'){
-             $scope.pendingWizardSettings.queryParams = settingsSvc.defaultSettings['solr'].queryParams;             
-           }
-         }
+          if (!settingsSvc.demoSettingsChosen($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl)) {
+            if ($scope.pendingWizardSettings.searchEngine === 'os' || $scope.pendingWizardSettings.searchEngine === 'es') {
+              $scope.pendingWizardSettings.queryParams = $scope.pendingWizardSettings.queryParams.replace('REPLACE_ME', $scope.pendingWizardSettings.titleField);
+            }
+
+            if ($scope.pendingWizardSettings.searchEngine === 'solr') {
+              $scope.pendingWizardSettings.queryParams = settingsSvc.defaultSettings['solr'].queryParams;
+            }
+          }
 
           $scope.finishSaveError = null;
           $scope.savingFinish = true;
           return settingsSvc.update($scope.pendingWizardSettings)
-          .then(function() {
-            var latestSettings = settingsSvc.editableSettings();
-            docCacheSvc.invalidate();
-            docCacheSvc.update(latestSettings);
-            queriesSvc.changeSettings(caseTryNavSvc.getCaseNo(), latestSettings);
+            .then(function () {
+              var latestSettings = settingsSvc.editableSettings();
+              docCacheSvc.invalidate();
+              docCacheSvc.update(latestSettings);
+              queriesSvc.changeSettings(caseTryNavSvc.getCaseNo(), latestSettings);
 
-            //Change Case Name (Separate from Dev settings)
-            if(typeof($scope.pendingWizardSettings.caseName) !=='undefined' && $scope.pendingWizardSettings.caseName !== ''){
-              caseSvc.renameCase(caseSvc.getSelectedCase(), $scope.pendingWizardSettings.caseName);
-            }
-            var length = $scope.pendingWizardSettings.newQueries.length;
-            
-            var queries = [];
-            for(var queryIndex = 0; queryIndex < length; queryIndex++){
-              var query  = $scope.pendingWizardSettings.newQueries[queryIndex];
-
-              if( typeof(query.queryString) !== 'undefined' && query.queryString !== '' ) {
-                //var q = queriesSvc.createQuery(query.queryString);
-                //queriesSvc.persistQuery(q);
-                queries.push(queriesSvc.createQuery(query.queryString));
+              //Change Case Name (Separate from Dev settings)
+              if (typeof ($scope.pendingWizardSettings.caseName) !== 'undefined' && $scope.pendingWizardSettings.caseName !== '') {
+                caseSvc.renameCase(caseSvc.getSelectedCase(), $scope.pendingWizardSettings.caseName);
               }
-            }
-            
-            queriesSvc.persistQueries(queries);
+              var length = $scope.pendingWizardSettings.newQueries.length;
 
-            $rootScope.currentUser.shownIntroWizard();
+              var queries = [];
+              for (var queryIndex = 0; queryIndex < length; queryIndex++) {
+                var query = $scope.pendingWizardSettings.newQueries[queryIndex];
 
-            $uibModalInstance.close();
-          })
-          .catch(function(response) {
-            $log.error('Wizard finish save failed', response);
-            $scope.finishSaveError = formatFinishSaveError(response);
-          })
-          .finally(function() {
-            $scope.savingFinish = false;
-          });
+                if (typeof (query.queryString) !== 'undefined' && query.queryString !== '') {
+                  //var q = queriesSvc.createQuery(query.queryString);
+                  //queriesSvc.persistQuery(q);
+                  queries.push(queriesSvc.createQuery(query.queryString));
+                }
+              }
+
+              queriesSvc.persistQueries(queries);
+
+              $rootScope.currentUser.shownIntroWizard();
+
+              $uibModalInstance.close();
+            })
+            .catch(function (response) {
+              $log.error('Wizard finish save failed', response);
+              $scope.finishSaveError = formatFinishSaveError(response);
+            })
+            .finally(function () {
+              $scope.savingFinish = false;
+            });
         };
 
         function formatFinishSaveError(response) {
@@ -792,7 +813,7 @@ angular.module('QuepidApp')
               detail = data.error;
             } else {
               var messages = [];
-              angular.forEach(data, function(value, key) {
+              angular.forEach(data, function (value, key) {
                 if (angular.isArray(value)) {
                   messages.push(key + ' ' + value.join(', '));
                 } else if (angular.isString(value)) {
@@ -810,28 +831,28 @@ angular.module('QuepidApp')
         }
       });
 
-      $scope.close = function() {
+      $scope.close = function () {
         $uibModalInstance.dismiss('cancel');
       };
-      
+
       function createSnapshot() {
         $scope.staticContent.import.loading = true;
         $scope.isStaticCollapsed = false;
-                
-        angular.forEach($scope.staticContent.result, function(doc) {
-          if (!$scope.listOfStaticQueries.includes(doc['Query Text'])){
+
+        angular.forEach($scope.staticContent.result, function (doc) {
+          if (!$scope.listOfStaticQueries.includes(doc['Query Text'])) {
             $scope.listOfStaticQueries.push(doc['Query Text']);
           }
         });
-            
+
         querySnapshotSvc.importSnapshotsToSpecificCase($scope.staticContent.result, caseTryNavSvc.getCaseNo())
           .then(function () {
             const keys = Object.keys(querySnapshotSvc.snapshots);
             const snapshotId = keys[keys.length - 1];
-            
+
             // The magic URL for looking up queries as if we talked to a REAL Solr search engine ;-).
             $scope.pendingWizardSettings.searchUrl = `${caseTryNavSvc.getQuepidRootUrl()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
-            
+
             $scope.isStaticCollapsed = false;
             $scope.addedStaticQueries = true;
             //var result = {
@@ -841,15 +862,15 @@ angular.module('QuepidApp')
             $scope.staticContent.import.loading = false;
           }, function () {
             //var result = {
-              // error: true,
-              // message: 'Could not import static data successfully! Please try again.',
+            // error: true,
+            // message: 'Could not import static data successfully! Please try again.',
             //};
 
             $scope.staticContent.import.loading = false;
           });
       }
       $scope.checkStaticHeaders = checkStaticHeaders;
-      function checkStaticHeaders () {
+      function checkStaticHeaders() {
 
         var headers = $scope.staticContent.content.split('\n')[0];
         headers = headers.split($scope.staticContent.separator);
@@ -868,7 +889,7 @@ angular.module('QuepidApp')
 
           $scope.staticContent.import.alert = alert;
         }
-        
+
         const documentHeaders = headers.filter(item => !expectedHeaders.includes(item));
         const containsSpace = documentHeaders.some(item => item.trim().includes(' '));
         if (containsSpace) {
@@ -879,15 +900,15 @@ angular.module('QuepidApp')
 
           $scope.staticContent.import.alert = alert;
         }
-        
-        
+
+
       }
-      
+
       $scope.$watch('staticContent.content', function (newVal, oldVal) {
         if (newVal !== oldVal) {
           $scope.staticContent.import.alert = undefined;
           $scope.staticContent.result = caseCSVSvc.fixObjectKeys($scope.staticContent.result);
-          checkStaticHeaders();          
+          checkStaticHeaders();
         }
       }, true);
     }
