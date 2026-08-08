@@ -43,15 +43,15 @@
 
       <div class="mb-3">
         <input type="radio" id="csv" name="importSelection" value="csv" ng-model="ctrl.options.which">
-        <label for="csv">CSV</label>
-        <span class="form-text">
+        <label for="csv" class="fw-bold">CSV</label>
+        <div class="form-text">
           The CSV file should have the headers: <code>query,docid,rating</code> and lines similar to:
           <pre>
 query,docid,rating
 star wars,3574597,3
 star wars,3557771,
 star trek,,</pre>
-        </span>
+        </div>
         <p>Select CSV file to import:</p>
 
         <ng-csv-import
@@ -76,10 +76,10 @@ star trek,,</pre>
 
       <div class="mb-3">
         <input type="radio" id="rre" name="importSelection" value="rre" ng-model="ctrl.options.which">
-        <label for="rre">Rated Ranking Evaluator</label>
-        <span class="form-text">
+        <label for="rre" class="fw-bold">Rated Ranking Evaluator</label>
+        <div class="form-text">
           Quepid only imports the ratings part of the <a href="https://github.com/SeaseLtd/rated-ranking-evaluator/wiki/What%20We%20Need%20To%20Provide#ratings" target="_blank" rel="noopener noreferrer">RRE judgement</a> file.
-        </span>
+        </div>
         <p>Select RRE ratings file to import:</p>
         <!-- this onchange is a code smell. -->
         <input type="file" id="rreFile" name="rreFile"
@@ -89,10 +89,10 @@ star trek,,</pre>
 
       <div class="mb-3">
         <input type="radio" id="ltr" name="importSelection" value="ltr" ng-model="ctrl.options.which">
-        <label for="ltr">Learning to Rank</label>
-        <span class="form-text">
+        <label for="ltr" class="fw-bold">Learning to Rank</label>
+        <div class="form-text">
           LTR uses a rather odd format of <code>rating qid:queryid # docid query</code>, eg <code>3 qid:1 # 1370 star trek</code>.  We ignore the <code>qid:queryid</code> and use the <code>query</code> for matching up to existing queries.
-        </span>
+        </div>
         <p>Select LTR ratings file to import:</p>
         <!-- this onchange is a code smell. -->
         <input type="file" id="ltrFile" name="ltrFile"
@@ -107,7 +107,7 @@ star trek,,</pre>
       </p>
       <div class="mb-3">
         <input type="radio" id="information_needs" name="importSelection" value="information_needs" ng-model="ctrl.options.which">
-        <label for="information_needs">Information Needs CSV</label>
+        <label for="information_needs" class="fw-bold">Information Needs CSV</label>
         <div class="form-check">
           <input id="create-missing-queries" type="checkbox" class="form-check-input" ng-model='ctrl.createQueries'>
           <label class="form-check-label" for="create-missing-queries">
@@ -116,12 +116,12 @@ star trek,,</pre>
           </label>
         </div>
 
-        <span class="form-text">
+        <div class="form-text">
           The CSV file should have the headers: <code>query,information_need</code> and lines similar to:
           <pre>
 query,information_need
 star wars,"The original movie"</pre>
-        </span>
+        </div>
         <p>Select CSV file to import:</p>
 
         <ng-csv-import
@@ -152,9 +152,9 @@ star wars,"The original movie"</pre>
       <div class="mb-3">
         <input type="radio" id="snapshots" name="importSelection" value="snapshots"
                ng-model="ctrl.options.which">
-        <label for="snapshots">Snapshot CSV</label>
+        <label for="snapshots" class="fw-bold">Snapshot CSV</label>
 
-        <span class="form-text">
+        <div class="form-text">
           The CSV file should have the headers: <code>Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position</code> and lines similar to:
           <pre>
 Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,527641,1
@@ -163,7 +163,7 @@ Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,1921,3
           </pre>
           Please note that the <code>Case ID</code> column is ignored so you can export from one case and import into another.
           Any additional columns will be treated as document fields and stored in the Snapshot.
-        </span>
+        </div>
         <p>Select Snapshot CSV file to import:</p>
 
         <ng-csv-import

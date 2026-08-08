@@ -41,12 +41,12 @@
     </div>
     <div class="col-md-6">
       <div class="mb-3">
-        <label>Select content <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="When cloning a case, you typically want to include your existing queries. If you want to preserve ratings, select to import them as well."></i></label>
-        <div class="form-check">
+        <label class="d-block">Select content <i class="bi bi-question-circle-fill" aria-hidden="true" popover-trigger="'mouseenter'" popover-placement="right" quepid-popover="When cloning a case, you typically want to include your existing queries. If you want to preserve ratings, select to import them as well."></i></label>
+        <div class="form-check form-check-inline">
           <input id="include-queries" type="checkbox" class="form-check-input" ng-model='ctrl.options.queries' checked>
           <label class="form-check-label" for="include-queries">Include Queries</label>
         </div>
-        <div class="form-check">
+        <div class="form-check form-check-inline">
           <input id="include-ratings" type="checkbox" class="form-check-input" ng-model='ctrl.options.ratings'>
           <label class="form-check-label" for="include-ratings">Include Ratings</label>
         </div>
@@ -55,6 +55,6 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-outline-secondary float-start me-auto" ng-click="ctrl.cancel()">Cancel</button>
   <button class="btn btn-primary" ng-click="ctrl.ok()" ng-disabled="ctrl.cannotClone()">Clone</button>
+  <button class="btn btn-outline-secondary" ng-click="ctrl.cancel()">Cancel</button>
 </div>

@@ -26,6 +26,7 @@ angular.module('QuepidApp')
           templateUrl:  'diff/_modal.html',
           controller:   'DiffModalInstanceCtrl',
           controllerAs: 'ctrl',
+          windowClass:  'diff-modal-window',
           resolve: {
             initialSelection: function() {
               return initialSelection;

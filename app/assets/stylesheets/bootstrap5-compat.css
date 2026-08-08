@@ -59,6 +59,36 @@ pre {
   --bs-btn-disabled-border-color: #337ab7;
 }
 
+/* BS3's `.list-group-item.active` (e.g. the Share Case modal's selected
+ * team row) used the same shared #337ab7 blue as links/.btn-primary; BS5
+ * defaults it to the brighter #0d6efd. Restore BS3's blue for consistency. */
+.list-group-item.active {
+  --bs-list-group-active-bg: #337ab7;
+  --bs-list-group-active-border-color: #337ab7;
+}
+
+/* BS3's `.list-group-item-success` (e.g. the Share Case modal's "Already
+ * shared with" rows) was a vivid pale green (bg #dff0d8, text #3c763d,
+ * default gray border). BS5's success-subtle tokens are far more
+ * desaturated/grayish (bg #d1e7dd, text #0a3622) and add a matching green
+ * border where BS3 had none. Restore BS3's look. */
+.list-group-item-success {
+  --bs-list-group-color: #3c763d;
+  --bs-list-group-bg: #dff0d8;
+  --bs-list-group-border-color: #ddd;
+}
+
+/* BS3's `.alert-success` (e.g. the "Case shared with team successfully."
+ * flash) was the same vivid pale green as `.list-group-item-success`
+ * (bg #dff0d8, text #3c763d, border #d6e9c6). BS5's success-subtle tokens
+ * are the same desaturated/grayish colors flagged above. Restore BS3's. */
+.alert-success {
+  --bs-alert-color: #3c763d;
+  --bs-alert-bg: #dff0d8;
+  --bs-alert-border-color: #d6e9c6;
+  --bs-alert-link-color: #2b542c;
+}
+
 /* BS3's .btn-success was a brighter, more saturated #5cb85c; BS5 defaults
  * to a darker, more muted #198754. Restore BS3's green for "acceptance"
  * actions like "Add query". */
@@ -88,6 +118,19 @@ a:not([href]):not([class]):hover {
   color: var(--bs-link-hover-color);
 }
 
+/* core-additions.css restores BS3's muted link blue (#337ab7) scoped to
+ * `.results-control`, but $quepidModal appends its wrapper directly to
+ * `<body>` (outside that scope) — so nav-tabs and other link-colored
+ * elements inside modals (e.g. the Import modal's "Information Needs" /
+ * "Snapshots" tabs) fell back to BS5's brighter default #0d6efd. Repeat the
+ * same override here so modals match the rest of the app. */
+.modal {
+  --bs-link-color: #337ab7;
+  --bs-link-color-rgb: 51, 122, 183;
+  --bs-link-hover-color: #23527c;
+  --bs-link-hover-color-rgb: 35, 82, 124;
+}
+
 /* Tooltip + popover: quepidPopover / quepidTooltip pass `animation: false`
  * so `.fade` is never added — avoids invisible-but-present popover bugs
  * from cascade conflicts on opacity.
@@ -96,6 +139,80 @@ a:not([href]):not([class]):hover {
  * max-height 600px). Tooltip min-width 100px keeps single-word tooltips
  * from rendering as a sliver. Other px values restate BS5 defaults at
  * a 16px root for explicitness. */
+/* BS3's inline <code> was a pink "pill" (color #c7254e on a #f9f2f4
+ * background, padded and rounded) — BS5 drops the background entirely and
+ * uses a plain colored text color var. Restore the pill look for inline
+ * format examples (Import modal's `query,docid,rating`, etc.). */
+code {
+  padding: 2px 4px;
+  color: #c7254e;
+  background-color: #f9f2f4;
+  border-radius: 4px;
+}
+
+/* BS3's `.help-block` (the old class for form hint text, e.g. the Import
+ * modal's per-format descriptions) was `display: block; margin-top: 5px;
+ * margin-bottom: 10px;`. BS5's `.form-text` only sets `margin-top: 0.25rem`
+ * with no bottom margin, so hint paragraphs now sit flush against whatever
+ * follows them instead of having breathing room on both sides. */
+.form-text {
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
+/* BS3's base `label` was `display: inline-block; margin-bottom: 5px;
+ * font-weight: bold;` — BS5 keeps the `inline-block` but drops both the
+ * margin and the bold weight (its replacement, `.form-label`, isn't used
+ * by the Angular templates' bare labels, e.g. Clone Case's "New case
+ * name" / "Select try"). BS3 explicitly reset both back to normal for
+ * checkbox/radio labels via `.checkbox label, .radio label { margin-
+ * bottom: 0; font-weight: 400; }` — BS5's equivalent is `.form-check-
+ * label`, restored to match. */
+label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-check-label {
+  margin-bottom: 0;
+  font-weight: 400;
+}
+
+/* BS5's `.form-control` sets `appearance: none` (part of its cross-browser
+ * text-input reset) with no replacement chevron — fine for <input>, but
+ * applied to a <select> (several Angular templates use `.form-control`
+ * rather than the BS5-native `.form-select`, e.g. Clone Case's "Select
+ * try") it strips the native dropdown arrow entirely, leaving no visual
+ * affordance that the field opens a menu. BS3 never touched select
+ * appearance, so restore the browser's native rendering. */
+select.form-control {
+  appearance: auto;
+}
+
+/* BS5 dropped `.btn-group-justified` (BS3's equal-width button-group
+ * component, used by Clone Case's "Only include a specific try" /
+ * "Include the entire try history" toggle) entirely, so it's inert and
+ * the buttons just size to their own text — producing a lopsided split
+ * for uneven label lengths. Restore BS3's table-cell technique, which
+ * forces every direct `.btn-group` child to the same width regardless
+ * of content. */
+.btn-group-justified {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+}
+
+.btn-group-justified > .btn-group {
+  display: table-cell;
+  float: none;
+  width: 1%;
+}
+
+.btn-group-justified > .btn-group .btn {
+  width: 100%;
+}
+
 .tooltip {
   --bs-tooltip-font-size: 14px;
   --bs-tooltip-padding-x: 8px;
@@ -200,12 +317,30 @@ header.navbar-secondary .dropdown-toggle::after,
   margin-right: 6px;
 }
 
-/* Wizard dialog at 600px. BS5's default 500px reflows the endpoint
- * picker's 3-column logo row to 2 columns; .modal-lg jumps to 800px and
- * overflows the 768px viewports we still support. Applied via
- * `windowClass: 'wizard-modal-window'` in new_case_controller.js. */
-.wizard-modal-window .modal-dialog {
-  max-width: 600px;
+/* BS3's default (unsized) modal was 600px wide; BS5's is 500px. Every
+ * modal that doesn't opt into `size: 'sm'/'lg'/'xl'` (Clone Case, Import,
+ * Wizard, Diff/snapshot comparison, etc.) is narrower than it was under
+ * BS3 as a result — cramping the wizard's 3-column endpoint-picker row,
+ * the diff modal's per-snapshot dropdowns, Clone Case's two-column
+ * layout, and so on. `--bs-modal-width` is the single variable BS5's own
+ * `.modal-dialog` reads for the unsized case (`.modal-sm`/`.modal-lg`/
+ * `.modal-xl` each override it back to their own value), so overriding it
+ * once here fixes every default-sized modal at the source instead of
+ * patching each one via its own `windowClass`. */
+.modal {
+  --bs-modal-width: 600px;
+}
+
+/* BS5's `.modal-lg` only widens to 800px starting at a 992px viewport;
+ * BS3's equivalent kicked in at 768px. Below 992px (a fairly common window
+ * width), every `size: 'lg'` modal (Import, Export, Frog Report, Query
+ * Explain, Targeted Search, Judgements, etc.) silently falls back to the
+ * 500px default instead of 800px, reading as unexpectedly narrow. Restore
+ * BS3's lower threshold. */
+@media (min-width: 768px) {
+  .modal-lg {
+    max-width: 800px;
+  }
 }
 
 /* angular-wizard's breadcrumb is `position: absolute; bottom: 0` against
@@ -353,6 +488,14 @@ header .dropdown-toggle .bi {
 	color: #aaa;
 }
 
+/* ...except icons inside a colored button (e.g. the diff modal's "+ Add
+ * Snapshot"), which need to inherit the button's own (usually white) text
+ * color rather than the dimmed #aaa above — otherwise a gray glyph on a
+ * saturated button background reads as invisible. */
+.modal-body .btn .bi {
+	color: inherit;
+}
+
 .modal-title .modal-case {
 	font-weight: 200;
 	color: #888;
@@ -399,6 +542,14 @@ header .dropdown-toggle .bi {
 	--bs-btn-active-color: #fff;
 	--bs-btn-active-bg: #ec971f;
 	--bs-btn-active-border-color: #e28a00;
+}
+
+/* Modal-footer warning buttons (diff modal's "Clear Comparison View", etc.)
+ * — BS5's .btn-warning defaults to black text; BS3 used white. */
+.modal-footer .btn-warning {
+	--bs-btn-color: #fff;
+	--bs-btn-hover-color: #fff;
+	--bs-btn-active-color: #fff;
 }
 
 .sub-results .btn-danger {
