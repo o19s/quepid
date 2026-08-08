@@ -163,10 +163,6 @@ function buildAdminCSS() {
   output += readFileIfExists('node_modules/bootstrap-icons/font/bootstrap-icons.css');
   output += '\n';
 
-  // Cal-heatmap
-  output += readFileIfExists('node_modules/cal-heatmap/dist/cal-heatmap.css');
-  output += '\n';
-
   // Fonts
   output += readFileIfExists('app/assets/stylesheets/fonts.css');
   output += '\n';
