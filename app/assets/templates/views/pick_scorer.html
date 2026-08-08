@@ -1,6 +1,6 @@
 <div class="modal-header">
-  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">How would you like to score this case?</h3>
+  <button type="button" class="btn-core-close" ng-click="cancel()" aria-label="Close"></button>
 </div>
 <div class="modal-body">
   <div ng-if="!scorerAccessible" class="alert alert-warning" role="alert">
@@ -17,7 +17,7 @@
       </li>
     </ul>
 
-    <div ng-show="!communalScorersOnly"><h4>Or select from your own custom scorers:</h4></div>
+    <div ng-show="!communalScorersOnly" class="mt-3"><h4>Or select from your own custom scorers:</h4></div>
     <ul class="list-group">
       <li class="list-group-item"
       ng-repeat="scorer in userScorers track by scorer.scorerId"
@@ -26,14 +26,17 @@
         {{scorer.name}}
       </li>
     </ul>
+    <p ng-if="!communalScorersOnly && userScorers.length === 0" class="text-muted">
+      None exist. Use "Create New Scorer" below to make one.
+    </p>
   </div>
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary pull-left" ng-click="gotoScorers()" ng-show="!communalScorersOnly">
-    <i class="glyphicon glyphicon-plus" style="color: #FFF"></i>
+  <button class="btn btn-primary me-auto" ng-click="gotoScorers()" ng-show="!communalScorersOnly">
+    <i class="bi bi-plus" style="color: #FFF"></i>
     Create New Scorer
   </button>
   <button class="btn btn-success" ng-click="ok()">Select Scorer</button>
-  <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-outline-secondary" ng-click="cancel()">Cancel</button>
 </div>

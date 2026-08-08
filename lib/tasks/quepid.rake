@@ -66,10 +66,11 @@ namespace :test do
   desc 'Run js/karma tests (equivalent of karma:run)'
   task 'js' => 'karma:run'
 
-  desc 'Run all frontend tasks: test:js, test:jshint'
+  desc 'Run all frontend tasks: test:js, test:jshint, test:stylelint'
   task frontend: :environment do
     Rake::Task['test:js'].invoke
     Rake::Task['test:jshint'].invoke
+    Rake::Task['test:stylelint'].invoke
   end
 
   desc 'Run jshint on js files using configuration .jshintrc'
@@ -87,6 +88,34 @@ namespace :test do
     else
       puts 'JSHint tests passed!'.green
       puts '-' * 100
+    end
+  end
+
+  desc 'Run stylelint on app/assets/stylesheets using .stylelintrc.json'
+  task stylelint: :environment do
+    puts '-' * 100
+    puts 'Starting Stylelint'.yellow
+
+    stylelint = Rails.root.join('node_modules/.bin/stylelint')
+    unless stylelint.executable?
+      puts 'Stylelint not found; run: yarn install (or bin/docker r yarn install)'.red
+      puts '-' * 100
+      exit false
+    end
+
+    success = system(
+      stylelint.to_s,
+      'app/assets/stylesheets/**/*.css',
+      chdir: Rails.root.to_s
+    )
+
+    if success
+      puts 'Stylelint passed!'.green
+      puts '-' * 100
+    else
+      puts 'Stylelint failed!'.red
+      puts '-' * 100
+      exit false
     end
   end
 end

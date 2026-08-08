@@ -4,14 +4,14 @@
 
 angular.module('QuepidApp')
   .controller('CloneCaseCtrl', [
-    '$uibModal',
+    '$quepidModal',
     '$rootScope',
     '$log',
     'flash',
     'caseSvc',
     'caseTryNavSvc',
     function (
-      $uibModal,
+      $quepidModal,
       $rootScope,
       $log,
       flash,
@@ -38,7 +38,7 @@ angular.module('QuepidApp')
       }
 
       function prompt() {      
-        var modalInstance = $uibModal.open({
+        var modalInstance = $quepidModal.open({
           templateUrl:  'clone_case/_modal.html',
           controller:   'CloneCaseModalInstanceCtrl',
           controllerAs: 'ctrl',

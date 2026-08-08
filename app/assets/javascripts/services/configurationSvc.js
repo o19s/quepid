@@ -21,6 +21,6 @@ angular.module('UtilitiesModule')
       this.isQueryListSortable = function() {
         return queryListSortable;
       };
-          
+
     }
   ]);

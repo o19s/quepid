@@ -1,27 +1,26 @@
 <div class="modal-header">
-  <button type="button" class="close btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
   <h3 class="modal-title">Take a Snapshot of all your queries?</h3>
+  <button type="button" class="btn-core-close" ng-click="cancel()" aria-label="Close"></button>
 </div>
 <div class="modal-body">
   <p>Recording the current results of your queries is useful for compare future work against this point in time as well as to use in comparing multiple Cases.  A snapshot
   stores the individual queries in a case, the ratings made, and optionally all the fields returned for the documents.</p>
 
-  <label>Snapshot Name</label>
-  <input type="text" class="form-control" id="snapshotName"ng-model="snapPrompt.name" placeholder="Name your snapshot" ng-required="true"></input>
+  <label class="fw-bold">Snapshot Name</label>
+  <input type="text" class="form-control" id="snapshotName" ng-model="snapPrompt.name" placeholder="Name your snapshot" ng-required="true" />
 
   <br/>
 
-  <label>Include Document Fields</label>
+  <label class="fw-bold">Include Document Fields</label>
   <span ng-show="supportLookupById">
   <p>
   To facilitate additional analysis, you may want to record as part of the snapshot all the displayed fields for each document returned.
   This will be the <code>{{ fieldSpec }}</code> fields.
   </p>
 
-  <div class="checkbox">
-    <label>
-      <input id="include-document-fields" type="checkbox" ng-model='snapPrompt.recordDocumentFields'> Record Document Fields?</input>
-    </label>
+  <div class="form-check">
+    <input id="include-document-fields" type="checkbox" class="form-check-input" ng-model='snapPrompt.recordDocumentFields'>
+    <label class="form-check-label" for="include-document-fields">Record Document Fields?</label>
   </div>
   </span>
   
@@ -38,10 +37,10 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-default" ng-disabled="snapPrompt.inProgress" ng-click="ok()">
+  <button class="btn btn-primary" ng-disabled="snapPrompt.inProgress" ng-click="ok()">
     Take Snapshot
   </button>
-  <button class="btn btn-default" ng-disabled="snapPrompt.inProgress" ng-click="cancel()">
+  <button class="btn btn-outline-secondary" ng-disabled="snapPrompt.inProgress" ng-click="cancel()">
     Cancel
   </button>
   <div ng-show="snapPrompt.inProgress">

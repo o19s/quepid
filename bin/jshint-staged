@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Lint staged JS under the same paths as `rake test:jshint` (lib/jshint/configuration.rb).
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+JSHINT="$ROOT/node_modules/jshint/bin/jshint"
+
+if [[ ! -x "$JSHINT" ]]; then
+  echo "jshint not found; run: yarn install (or bin/docker r yarn install)" >&2
+  exit 1
+fi
+
+files=()
+for path in "$@"; do
+  case "$path" in
+    app/assets/javascripts/*|vendor/assets/javascripts/*|lib/assets/javascripts/*)
+      case "$path" in
+        */tour.js|*/mode-json.js) continue ;;
+      esac
+      files+=("$path")
+      ;;
+  esac
+done
+
+if [[ ${#files[@]} -eq 0 ]]; then
+  exit 0
+fi
+
+cd "$ROOT"
+exec "$JSHINT" "${files[@]}"

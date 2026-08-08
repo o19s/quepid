@@ -18,7 +18,7 @@
 }
 
 .frog-pond-content {
-  opacity: .99;  // 1.0 doesn't work.
+  opacity: .99;  /* 1.0 doesn't work. */
 }
 
 .vega-embed {

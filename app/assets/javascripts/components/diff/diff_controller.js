@@ -4,10 +4,10 @@
 
 angular.module('QuepidApp')
   .controller('DiffCtrl', [
-    '$uibModal',
+    '$quepidModal',
     '$log',
     'queryViewSvc', 'queriesSvc',
-    function($uibModal, $log, queryViewSvc, queriesSvc) {
+    function($quepidModal, $log, queryViewSvc, queriesSvc) {
       var ctrl = this;
 
       // Functions
@@ -22,10 +22,11 @@ angular.module('QuepidApp')
       function prompt() {
         var initialSelection = getCurrentDiffSelection();
         
-        var modalInstance = $uibModal.open({
+        var modalInstance = $quepidModal.open({
           templateUrl:  'diff/_modal.html',
           controller:   'DiffModalInstanceCtrl',
           controllerAs: 'ctrl',
+          windowClass:  'diff-modal-window',
           resolve: {
             initialSelection: function() {
               return initialSelection;

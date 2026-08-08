@@ -4,7 +4,7 @@ angular.module('QuepidApp')
   .controller('ShareCaseModalInstanceCtrl', [
     '$rootScope',
     '$scope',
-    '$uibModalInstance',
+    '$quepidModalInstance',
     '$log',
     '$location',
     'teamSvc',
@@ -13,7 +13,7 @@ angular.module('QuepidApp')
     function (
       $rootScope,
       $scope,
-      $uibModalInstance,
+      $quepidModalInstance,
       $log,
       $location,
       teamSvc,
@@ -84,15 +84,15 @@ angular.module('QuepidApp')
       };
 
       ctrl.ok = function () {
-        $uibModalInstance.close(ctrl.share);
+        $quepidModalInstance.close(ctrl.share);
       };
 
       ctrl.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
 
       ctrl.goToTeamsPage = function () {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
         var url = caseTryNavSvc.getQuepidRootUrl() + '/teams';
         window.location.href = url;
       };

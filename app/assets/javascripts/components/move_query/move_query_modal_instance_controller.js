@@ -5,13 +5,13 @@
 angular.module('QuepidApp')
   .controller('MoveQueryModalInstanceCtrl', [
     '$scope',
-    '$uibModalInstance',
+    '$quepidModalInstance',
     'broadcastSvc',
     'caseSvc',
     'query',
     function(
       $scope,
-      $uibModalInstance,
+      $quepidModalInstance,
       broadcastSvc,
       caseSvc,
       query
@@ -53,7 +53,7 @@ angular.module('QuepidApp')
       ctrl.selectCase = selectCase;
 
       function cancel () {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       }
 
       function fetchCaseList () {
@@ -75,7 +75,7 @@ angular.module('QuepidApp')
       }
 
       function ok () {
-        $uibModalInstance.close(ctrl.activeCase);
+        $quepidModalInstance.close(ctrl.activeCase);
       }
 
       function selectCase (activeCase) {

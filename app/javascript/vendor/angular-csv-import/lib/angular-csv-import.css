@@ -1,0 +1,7 @@
+ng-csv-import, .ng-csv-import {
+	display: inline-block;
+    position: relative;
+    padding: 2px;
+    margin: 0;
+    vertical-align: middle;
+}

@@ -1,19 +1,4 @@
 /* Misc. */
- .vcard-stats {
-	 text-align: center;
-}
- .vcard-stat {
-	 font-size: 11px;
-	 text-transform: capitalize;
-}
- .vcard-stat-count {
-	 font-size: 28px;
-	 font-weight: bold;
-	 line-height: 1;
-}
- .d-block {
-	 display: block;
-}
  .border-bottom {
 	 border-bottom: 1px #aaa solid;
 }
@@ -32,36 +17,14 @@
 	 top: -1em;
 	 font-size: 10px;
 }
- .p-t-10 {
-	 padding-top: 10px;
-}
  .p-r-10 {
 	 padding-right: 10px;
-}
- .p-b-10 {
-	 padding-bottom: 10px;
-}
- .p-l-10 {
-	 padding-left: 10px;
 }
  .p-t-20 {
 	 padding-top: 20px;
 }
- .p-r-20 {
-	 padding-right: 20px;
-}
  .p-b-20 {
 	 padding-bottom: 20px;
-}
- .p-l-20 {
-	 padding-left: 20px;
-}
- .syntax-popover {
-	 color: black;
-	 position: fixed;
-}
- .syntax-popover .close {
-	 line-height: 12px;
 }
  .query-help {
 	 font-size: 1.5em;
@@ -73,10 +36,59 @@
  .full-screen-modal .modal-dialog {
 	 height: calc(100% - 100px);
 	 width: calc(100% - 100px);
+	 /* BS5's .modal-dialog sets max-width: 500px (at the >=576px breakpoint);
+	    without overriding it here too, that cap wins over the width above
+	    and this modal never actually grows past the default small size. */
+	 max-width: calc(100% - 100px);
 }
  .full-screen-modal .modal-content {
 	 height: 100%;
 	 overflow: scroll;
+}
+
+/* BS3's default modal width was 600px; BS5's default is 500px, with no
+   built-in size between default and .modal-lg (800px). Restore the BS3
+   width for the "Select Scorer" modal, which used the plain default size. */
+ .pick-scorer-modal .modal-dialog {
+	 max-width: 600px;
+}
+
+/* BS5's h4 is 1.5rem vs BS3's 1.25x-base (~18px), and BS5's .list-group-item
+   uses looser padding, a lighter border, no border-collapsing margin, and
+   the BS5 primary blue for .active instead of BS3's. Restore the BS3 look
+   for the scorer/custom-scorer lists in this modal. */
+ .pick-scorer-modal h4 {
+	 font-size: 18px;
+	 color: #333;
+}
+
+ .pick-scorer-modal .list-group-item {
+	 padding: 10px 15px;
+	 margin-bottom: -1px;
+	 border-color: #ddd;
+}
+
+ .pick-scorer-modal .list-group-item.active {
+	 background-color: #337ab7;
+	 border-color: #337ab7;
+}
+
+/* This modal uses .row purely as a scrollable wrapper, not a grid — but BS5's
+   .row still applies its negative gutter margin, and .row > * still applies
+   the compensating gutter padding to any direct child that doesn't cancel it
+   itself. .list-group cancels it (padding-left: 0 in its own component
+   style), so the list box ends up flush with .row's pulled-out edge while
+   the <h4> siblings (no such override) stay indented by the gutter, throwing
+   the headings and list boxes out of alignment. Zeroing both here keeps
+   every direct child flush with the modal's own padding. */
+ .pick-scorer-modal .row {
+	 margin-left: 0;
+	 margin-right: 0;
+}
+
+ .pick-scorer-modal .row > * {
+	 padding-left: 0;
+	 padding-right: 0;
 }
 
 /* begin close button for modals in core app */
@@ -114,8 +126,13 @@
 .btn-core-close:disabled, .btn-core-close.disabled {
   pointer-events: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
   user-select: none;
   opacity: var(--bs-btn-close-disabled-opacity);
+}
+/* BS5 pushes .btn-close to the far right of .modal-header via margin-left:
+ * auto on the button itself (not justify-content: space-between on the
+ * header, which our vendored bootstrap.css doesn't set). */
+.modal-header .btn-core-close {
+  margin: 5px 5px 0 auto;
 }
 /* end close button for modals in core app */

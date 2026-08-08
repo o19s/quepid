@@ -9,7 +9,7 @@ angular.module('QuepidApp')
     '$log',
     '$location',
     '$routeParams',
-    '$uibModal',
+    '$quepidModal',
     'queriesSvc',
     'queryViewSvc',
     'querySnapshotSvc',
@@ -25,7 +25,7 @@ angular.module('QuepidApp')
       $log,
       $location,
       $routeParams,
-      $uibModal,
+      $quepidModal,
       queriesSvc,
       queryViewSvc,
       querySnapshotSvc,
@@ -526,9 +526,10 @@ angular.module('QuepidApp')
 
       /*jslint latedef:false*/
       function pickCaseScorer() {
-        var modalInstance = $uibModal.open({
+        var modalInstance = $quepidModal.open({
           templateUrl: 'views/pick_scorer.html',
           controller:  'ScorerCtrl',
+          windowClass: 'pick-scorer-modal',
           resolve:     {
             parent: function() {
               return {

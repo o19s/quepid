@@ -7,6 +7,8 @@
 #
 # The mounted files below will be bundled into app/assets/builds/angular_app.js during
 # the build process, so any changes you make locally will be included after rebuilding.
+# Vendor CSS for the core layout (wizard, ng-tags-input, etc.) is refreshed separately via:
+#   bin/docker r yarn build:css
 
 services:
   app:

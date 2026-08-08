@@ -304,6 +304,35 @@ To check the JS syntax:
 bin/docker r rails test:jshint
 ```
 
+Git commits can run JSHint on staged app JS via [pre-commit](https://pre-commit.com/):
+
+```bash
+pip install pre-commit   # or: pipx install pre-commit
+pre-commit install
+```
+
+The hook lints only staged `*.js` files under `app/assets/javascripts`, `vendor/assets/javascripts`, and `lib/assets/javascripts` (same paths and skips as `rake test:jshint`). Requires `yarn install` on the host so `node_modules/jshint` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
+
+### CSS Lint
+
+To lint first-party stylesheets in `app/assets/stylesheets`:
+
+```bash
+bin/docker r yarn lint:css
+# or
+bin/docker r rails test:stylelint
+```
+
+Configuration lives in `.stylelintrc.json` (extends `stylelint-config-standard` with pragmatic overrides for legacy Quepid CSS). Built bundles under `app/assets/builds/` and vendored CSS are ignored (see `.stylelintignore`).
+
+Pre-commit can lint staged CSS the same way as JSHint:
+
+```bash
+pre-commit install
+```
+
+The `stylelint-staged` hook only runs on `app/assets/stylesheets/*.css`. Requires `yarn install` so `node_modules/stylelint` exists.
+
 ### Karma
 
 Runs tests for the Angular side. There are two modes for the karma tests:
@@ -447,6 +476,8 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
 
 4. **Why bundles work this way**
    - Splainer-search ESM modules are inlined into **`app/assets/builds/angular_app.js`** at build time, not runtime (`splainer_search_adapter.js` registers wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI keeps working).
+   - The vendor bundle also inlines npm **Bootstrap 5** JS (for `quepidPopover`, `quepidTooltip`, `quepidModalSvc`, etc.).
+   - Vendored widget CSS (`angular-wizard`, `ng-json-explorer`, `ng-tags-input`) is copied into **`app/assets/builds/`** by **`yarn build:css`** (`build_css.js` → `copyVendorFiles()`), not by **`build:angular-vendor`**
    - With **`bin/docker s`**, Foreman watches the vendor import graph (including **`node_modules/splainer-search`**) and keeps **`angular_app.js`** + **`quepid_angular_app.js`** in sync. Save edits and hard-refresh. Run **`yarn build:angular`** only if watchers are not running (that script runs both bundles).
 
 
@@ -492,6 +523,7 @@ bin/docker r bin/rails routes
 bin/docker r rails test
 bin/docker r rails test:frontend
 bin/docker r bin/rake test:jshint
+bin/docker r bin/rake test:stylelint
 ```
 
 ### Thor
@@ -729,13 +761,10 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 
 ## How does the Frontend work?
 
-We use Angular 1 for the core interactive application, and as part of that we use the `angular-ui-bootstrap` package for all our UI components.
-This package is tied to Bootstrap version 3.  
-We import the Bootstrap 3 CSS directly via the file `bootstrap3.css`.
+We use Angular 1 for the core interactive application. **`splainer-search`** is **`3.x` from npm** (see root `package.json`); **`app/javascript/splainer_search_adapter.js`** registers the wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI (`fieldSpecSvc`, `searchSvc`, …) keeps working. Most other AngularJS-era UI libraries (wizard, pagination, ui-ace, `ng-tags-input`, etc.) remain **under `app/javascript/vendor/`** (see `vendor/README.md`). Only **`angular`**, **`splainer-search`**, and shared utilities (Bootstrap, autocompleter, ...) are npm dependencies for the core Case UI bundle. Esbuild bundles from **`app/javascript/angular_app.js`**.  
+The Angular **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5** plus Quepid sheets (`core-additions.css`, **`bootstrap5-compat.css`**, and screen CSS), wired in **`build_css.js`** (`buildCoreCSS()`). The historical **`bootstrap3-add.css`** navbar slice has been consolidated into **`bootstrap5-compat.css`**.
 
-For the rest of Quepid, we use Bootstrap 5! That is included via the `package.json` using NPM. See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle`.
-
-We currently use Rails Sprockets to compile everything, but do have dreams of moving to Propshaft, and maybe js-bundling.
+For the rest of Quepid, we use Bootstrap 5 via npm; the non-Angular UI loads it through `app/javascript/application_modern.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the Angular core bundle and CSS).
 
 ## Fonts
 
@@ -748,7 +777,7 @@ also sets up the static files in the `./public/notebooks` directory. However, so
 we ignore that directory from Github. At `asset:precompile` time we unpack the `./jupyterlite/notebooks.gz` file instead.
 This works on Heroku and the production Docker image.
 
-To update the version of Jupyterlite edit `Dockerfile.dev` and `Dockerfile.prod` and update the `pip install` version.
+To update the Jupyterlite version, change the release URL in `Dockerfile.prod` or run `./bin/setup_jupyterlite` locally to pull a new release.
 
 Yes, Jupyterlite works in localhost. After running `./bin/setup_jupyterlite`, you can access the notebooks by navigating to http://localhost:3000/notebooks/ when running your local development server. Jupyterlite runs entirely in the browser, so it works the same way in development as it does in production.
 
@@ -837,9 +866,10 @@ This section covers common issues you might encounter during development and how
 **Symptom**: JavaScript or CSS assets fail to compile.
 
 **Solutions**:
-1. Check for JavaScript syntax errors:
+1. Check for JavaScript or CSS syntax errors:
    ```bash
    bin/docker r rails test:jshint
+   bin/docker r rails test:stylelint
    ```
 
 2. Clear asset cache:

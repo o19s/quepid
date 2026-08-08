@@ -7,7 +7,7 @@
           <div class="card-body p-4">
             <div class="d-flex text-black">
               <div class="flex-shrink-0">
-                <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', class:'img-fluid img-rounded', style:"width: 180px;", title: 'Avatar image' %>
+                <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', class:'img-fluid rounded', style:"width: 180px;", title: 'Avatar image' %>
               </div>
               <div class="flex-grow-1 ms-3">
                 <h5 class="mb-1"><%= current_user.display_name %></h5>
@@ -89,7 +89,7 @@
 
         <%= f.email_field :email, class: "form-control", placeholder: "Email" %>
         <label for="user_email" class="form-label">Email</label>
-        <div id="emailHelp" class="form-text">Your profile image displayed is sourced from <a href="http://gravatar.com" target="_blank">gravatar.com</a> based on your email address.</div>
+        <div id="emailHelp" class="form-text">Your profile image displayed is sourced from <a href="http://gravatar.com" target="_blank" rel="noopener noreferrer">gravatar.com</a> based on your email address.</div>
       </div>
       <div class="form-floating mb-3">
 

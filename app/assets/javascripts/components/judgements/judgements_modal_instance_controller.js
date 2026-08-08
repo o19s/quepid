@@ -4,7 +4,7 @@ angular.module('QuepidApp')
   .controller('JudgementsModalInstanceCtrl', [
     '$rootScope',
     '$scope',
-    '$uibModalInstance',
+    '$quepidModalInstance',
     '$log',
     '$location',
     '$window',
@@ -17,7 +17,7 @@ angular.module('QuepidApp')
     function (
       $rootScope,
       $scope,
-      $uibModalInstance,
+      $quepidModalInstance,
       $log,
       $location,
       $window,
@@ -134,7 +134,7 @@ angular.module('QuepidApp')
           bookSvc.refreshCaseRatingsFromBook(ctrl.share.acase.caseNo, ctrl.activeBookId, false, processInBackground)
           .then(function(response) {
             $scope.processingPrompt.inProgress = false;
-            $uibModalInstance.close(true);
+            $quepidModalInstance.close(true);
 
             if (processInBackground) {
               flash.success = 'Settings saved. Ratings are being refreshed in the background.';
@@ -157,15 +157,15 @@ angular.module('QuepidApp')
         }
 
         flash.success = 'Settings saved.';
-        $uibModalInstance.close(false);
+        $quepidModalInstance.close(false);
       };
 
       ctrl.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
 
       ctrl.goToTeamsPage = function () {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
         var url = caseTryNavSvc.getQuepidRootUrl() + '/teams';
         window.location.href = url;
       };
@@ -176,7 +176,7 @@ angular.module('QuepidApp')
         .then(function() {
           $scope.processingPrompt.inProgress = false;
           flash.success = 'Updating Book with Query Doc Pairs.';
-          $uibModalInstance.close(false);
+          $quepidModalInstance.close(false);
         }, function(response) {
           $scope.processingPrompt.inProgress = false;
           $scope.processingPrompt.error = response.data.statusText;
@@ -191,7 +191,7 @@ angular.module('QuepidApp')
           $scope.processingPrompt.inProgress = false;
 
           if (processInBackground) {
-            $uibModalInstance.close(true);
+            $quepidModalInstance.close(true);
             setTimeout(function() {
               var url = caseTryNavSvc.getQuepidRootUrl() + '?notice=' + encodeURIComponent('Case ratings are being refreshed from book in the background.');
               $window.location.href = url;
@@ -200,7 +200,7 @@ angular.module('QuepidApp')
           }
 
           flash.success = 'Case ratings refreshed from book.';
-          $uibModalInstance.close(true);
+          $quepidModalInstance.close(true);
         }, function(response) {
           $scope.processingPrompt.inProgress = false;
           $scope.processingPrompt.error = response.data.statusText;
@@ -220,7 +220,7 @@ angular.module('QuepidApp')
           else {
             flash.success = 'Missing queries synced from book.';
           }
-          $uibModalInstance.close(true);
+          $quepidModalInstance.close(true);
 
           // Check if we should redirect to homepage
           if (response && response.data && processInBackground) {

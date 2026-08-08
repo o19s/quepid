@@ -4,10 +4,10 @@
 
 angular.module('QuepidApp')
   .controller('AnnotationCtrl', [
-    '$uibModal',
+    '$quepidModal',
     'flash',
     'annotationsSvc',
-    function($uibModal, flash, annotationsSvc) {
+    function($quepidModal, flash, annotationsSvc) {
       var ctrl = this;
 
       // Functions
@@ -26,7 +26,7 @@ angular.module('QuepidApp')
       function updateAnnotation () {
         var temp = angular.copy(ctrl.theAnnotation);
 
-        var modalInstance = $uibModal.open({
+        var modalInstance = $quepidModal.open({
           templateUrl:  'annotation/_update.html',
           controller:   'EditAnnotationModalInstanceCtrl',
           controllerAs: 'ctrl',

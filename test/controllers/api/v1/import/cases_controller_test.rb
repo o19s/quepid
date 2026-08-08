@@ -124,8 +124,10 @@ module Api
                 queries:   [],
               }
 
-              assert_no_difference 'SearchEndpoint.count' do
-                post :create, params: { case: data, format: :json }
+              assert_no_difference 'Case.count' do
+                assert_no_difference 'SearchEndpoint.count' do
+                  post :create, params: { case: data, format: :json }
+                end
               end
 
               assert_response :bad_request

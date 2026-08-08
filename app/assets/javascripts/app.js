@@ -4,9 +4,7 @@ angular.module('QuepidApp', [
   'yaru22.angular-timeago',
   'UtilitiesModule',
   'ngRoute',
-  'ngCookies',
   'ngSanitize',
-  'ui.bootstrap',
   'mgo-angular-wizard',
   'ui.sortable',
   'ngJsonExplorer',
@@ -19,7 +17,6 @@ angular.module('QuepidApp', [
   'ngTagsInput',
   'ng-rails-csrf',
   'templates',
-  'ngAnimate',
   'countUp',
   'ngclipboard',
   'ngVega'

@@ -3,18 +3,18 @@
 angular.module('QuepidApp')
   .controller('EditAnnotationModalInstanceCtrl', [
     '$scope',
-    '$uibModalInstance',
+    '$quepidModalInstance',
     'annotation',
-    function ($scope, $uibModalInstance, annotation) {
+    function ($scope, $quepidModalInstance, annotation) {
       var ctrl = this;
       ctrl.annotation = annotation;
 
       $scope.ok = function () {
-        $uibModalInstance.close(ctrl.annotation);
+        $quepidModalInstance.close(ctrl.annotation);
       };
 
       $scope.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
     }
   ]);

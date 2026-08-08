@@ -38,6 +38,13 @@ venv
 # puppeteer testing
 /spec/puppeteer/node_modules
 
+# Playwright e2e: keep config + specs + baselines, ignore runtime artifacts
+/test/playwright/.auth
+/test/playwright/test-results
+/test/playwright/playwright-report
+/test/playwright/baselines
+/playwright/.cache
+
 # VIM swp
 *.swp
 
@@ -84,4 +91,5 @@ volumes
 /node_modules
 *.patch
 
+yarn-error.log
 /.playwright-mcp

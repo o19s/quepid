@@ -1,31 +1,58 @@
 <div ng-controller="HotMatchesCtrl">
   <p
     class="matches-popper"
-    uib-popover-template="'matches/matches.html'"
+    quepid-popover-template="'matches/matches.html'"
     popover-title="Relevancy Score: {{doc.score()}}"
     popover-trigger="outsideClick"
     popover-placement="left"
   >
     <span ng-if="hots.length > 0">Matches</span>
     <span ng-if="hots.length===0">No Match</span>
-    <i class="glyphicon glyphicon-info-sign" aria-hidden="true"></i>
+    <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
   </p>
 
   <div ng-if="hots.length <= 3">
     <div ng-click="showDetailed()" class="graph-explain" ng-repeat="match in hots">
       <div class="graph-label">{{match.description}}</div>
-      <uib-progressbar animate="false" value="match.percentage"></uib-progressbar>
+      <div class="progress">
+        <div
+          class="progress-bar"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          ng-attr-aria-valuenow="{{ (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) }}"
+          ng-style="{ width: (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) + '%' }"
+        ></div>
+      </div>
     </div>
   </div>
   <div ng-if="hots.length > 3">
     <div ng-click="showDetailed()" class="graph-explain" ng-repeat="match in hots.slice(0,3)">
       <div class="graph-label">{{match.description}}</div>
-      <uib-progressbar animate="false" value="match.percentage"></uib-progressbar>
+      <div class="progress">
+        <div
+          class="progress-bar"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          ng-attr-aria-valuenow="{{ (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) }}"
+          ng-style="{ width: (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) + '%' }"
+        ></div>
+      </div>
     </div>
-    <div uib-collapse="!showAll">
+    <div quepid-collapse="!showAll">
       <div ng-click="showDetailed()" class="graph-explain" ng-repeat="match in hots.slice(3)">
         <div class="graph-label">{{match.description}}</div>
-        <uib-progressbar animate="false" value="match.percentage"></uib-progressbar>
+        <div class="progress">
+          <div
+            class="progress-bar"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            ng-attr-aria-valuenow="{{ (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) }}"
+            ng-style="{ width: (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) + '%' }"
+          ></div>
+        </div>
       </div>
     </div>
 

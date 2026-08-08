@@ -3,12 +3,12 @@
 angular.module('QuepidApp')
   .controller('ImportRatingsModalInstanceCtrl', [
     '$scope',
-    '$uibModalInstance',
+    '$quepidModalInstance',
     'importRatingsSvc',
     'theCase',
     'querySnapshotSvc',
     'caseCSVSvc',
-    function ($scope, $uibModalInstance, importRatingsSvc, theCase, querySnapshotSvc, caseCSVSvc) {
+    function ($scope, $quepidModalInstance, importRatingsSvc, theCase, querySnapshotSvc, caseCSVSvc) {
       var ctrl = this;
 
       ctrl.theCase = theCase;
@@ -145,7 +145,7 @@ angular.module('QuepidApp')
                 message: 'Snapshots imported successfully!',
               };
               ctrl.snapshots.import.loading = false;
-              $uibModalInstance.close(result);
+              $quepidModalInstance.close(result);
             }, function () {
               var result = {
                 error: true,
@@ -153,7 +153,7 @@ angular.module('QuepidApp')
               };
 
               ctrl.snapshots.import.loading = false;
-              $uibModalInstance.close(result);
+              $quepidModalInstance.close(result);
             });
           
         } else if (ctrl.options.which === 'csv') {
@@ -175,7 +175,7 @@ angular.module('QuepidApp')
                   success: true,
                   message: 'Successfully imported information needs from CSV.'
                 };
-                $uibModalInstance.close(modalResponse);
+                $quepidModalInstance.close(modalResponse);
               },
               function (response) {
                 let errorMessage = 'Unable to import information needs from CSV. ';
@@ -192,7 +192,7 @@ angular.module('QuepidApp')
                 };
 
                 ctrl.loading = false;
-                $uibModalInstance.close(modalResponse);
+                $quepidModalInstance.close(modalResponse);
               });
           } else if (ctrl.options.which === 'csv') {
 
@@ -206,7 +206,7 @@ angular.module('QuepidApp')
                   success: true,
                   message: 'Successfully imported ratings from CSV.'
                 };
-                $uibModalInstance.close(modalResponse);
+                $quepidModalInstance.close(modalResponse);
               },
               function (response) {
                 let errorMessage = 'Unable to import ratings from CSV: ';
@@ -219,7 +219,7 @@ angular.module('QuepidApp')
                 };
 
                 ctrl.loading = false;
-                $uibModalInstance.close(modalResponse);
+                $quepidModalInstance.close(modalResponse);
               });
           } else if (ctrl.options.which === 'rre') {
             importRatingsSvc.importRREFormat(
@@ -232,7 +232,7 @@ angular.module('QuepidApp')
                   success: true,
                   message: 'Successfully imported ratings from RRE.'
                 };
-                $uibModalInstance.close(modalResponse);
+                $quepidModalInstance.close(modalResponse);
               },
               function (response) {
                 let errorMessage = 'Unable to import ratings from RRE: ';
@@ -245,7 +245,7 @@ angular.module('QuepidApp')
                 };
 
                 ctrl.loading = false;
-                $uibModalInstance.close(modalResponse);
+                $quepidModalInstance.close(modalResponse);
               });
           } else if (ctrl.options.which === 'ltr') {
             importRatingsSvc.importLTRFormat(
@@ -258,7 +258,7 @@ angular.module('QuepidApp')
                   success: true,
                   message: 'Successfully imported ratings from LTR.'
                 };
-                $uibModalInstance.close(modalResponse);
+                $quepidModalInstance.close(modalResponse);
               },
               function (response) {
                 let errorMessage = 'Unable to import ratings from LTR: ';
@@ -271,14 +271,14 @@ angular.module('QuepidApp')
                 };
 
                 ctrl.loading = false;
-                $uibModalInstance.close(modalResponse);
+                $quepidModalInstance.close(modalResponse);
               });
           }
         }
       };
 
       ctrl.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
 
       ctrl.checkCSVHeaders = function () {
