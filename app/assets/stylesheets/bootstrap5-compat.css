@@ -440,23 +440,64 @@ header .dropdown-toggle .bi {
   background: linear-gradient(to bottom right, #EEE, #F8F8F8);
 }
 
-/* Dev panel tabs (devQueryParams.html). Most dark-state colors now come
- * from BS5's data-bs-theme="dark" on #dev-settings — nav-tabs border,
- * hover/focus, link colors, and active backgrounds inherit from the
- * dark palette. We only override the density (12/13px) and the active
- * rounded-bottom corners that aren't BS5 defaults. */
+/* #dev-settings sits outside `.results-control` (core-additions.css), so
+ * it never got that scope's BS3 body-font restore and renders in BS5's
+ * wider/chunkier system-ui stack instead of "Helvetica Neue". That alone
+ * adds ~75px to the five dev-panel tab labels combined, which is enough
+ * to force "Annotations" onto its own row even after the density fix
+ * below restores BS3's padding. */
+#dev-settings {
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* Dev panel tabs (devQueryParams.html). `data-bs-theme="dark"` on
+ * #dev-settings alone doesn't reproduce BS3's actual look here: BS5's
+ * dark-mode nav-link color resolves to its bright link blue (#6ea8fe) for
+ * inactive tabs and near-black (#212529) for the active tab's background,
+ * neither of which BS3 ever used. BS3's own tab bar (`.tabBoxSelected`)
+ * was a muted #999 gray, #666 active background/white text, and much
+ * tighter 5px/10px padding — five tabs ("Query" / "Tuning Knobs" /
+ * "Settings" / "History" / "Annotations") don't fit on one line at the
+ * sidebar's width without it, wrapping to a second row. Restore explicit
+ * colors + density rather than relying on the dark theme's defaults. */
+/* BS3's `.nav-tabs` also carried `margin-bottom: 20px`, separating the tab
+ * bar from whatever content sits below it (e.g. the History tab's links
+ * and instructions). BS5's `.nav-tabs` has no margin at all, so content
+ * now sits flush against the tab bar's bottom border. */
 #dev-settings .nav-tabs {
-	font-size: 12px;
+	margin-bottom: 20px;
 }
 
 #dev-settings .nav-tabs .nav-link {
-	padding: 12px;
+	padding: 5px 10px;
 	font-size: 13px;
+	color: #999;
+}
+
+#dev-settings .nav-tabs .nav-link:hover {
+	color: #FFF;
 }
 
 #dev-settings .nav-tabs .nav-link.active {
+	color: #FFF;
+	background: #666;
 	border-bottom-left-radius: 3px;
 	border-bottom-right-radius: 3px;
+}
+
+/* BS3's .form-control was always a plain white box with dark text,
+ * regardless of surrounding theme. BS5's .form-control is color-mode
+ * aware, so under #dev-settings' data-bs-theme="dark" the Query Sandbox
+ * textarea picks up a dark background instead — restore BS3's plain
+ * white look. Scoped to actual form fields, not `.btn.form-control`
+ * (e.g. "Rerun My Searches!"), which also carries `.form-control` for
+ * its full-width sizing and must keep its `.btn-primary` blue. */
+#dev-settings textarea.form-control,
+#dev-settings input.form-control,
+#dev-settings select.form-control {
+	background-color: #fff;
+	color: #555;
+	border-color: #ccc;
 }
 
 /*

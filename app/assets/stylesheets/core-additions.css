@@ -446,13 +446,13 @@ header .dropdown-item:focus {
 	padding: 15px;
 }
 
-#dev-settings .dev-section ul {
+#dev-settings .dev-section ul.history-list {
 	list-style: none;
 	padding: 0;
 	margin: 0 0 20px 0;
 }
 
-#dev-settings .dev-section ul li {
+#dev-settings .dev-section ul.history-list li {
 	padding: 5px 10px;
 	border-bottom: 1px solid var(--bs-border-color);
 }
@@ -461,6 +461,42 @@ header .dropdown-item:focus {
 #dev-settings .dev-section  {
   height:     100%;
   min-height: 300px;
+}
+
+/* Query Sandbox heading row. BS3's `<h4 class="pull-left">Query Sandbox:</h4>`
+ * had a 10px margin-bottom by default, giving it breathing room above the
+ * textarea below. The BS5 migration wrapped it in a `.d-flex` row (to align
+ * it with the help icon) and zeroed both children's margins with `mb-0`,
+ * losing that gap — the heading now sits flush against the textarea. */
+#dev-settings .query-sandbox .d-flex {
+  margin-bottom: 10px;
+}
+
+/* "Evaluate Nightly?" checkbox (devQueryParams.html). Its markup nests the
+ * <input> *inside* <label class="form-check-label"> (`<label><input/>
+ * text</label>`) rather than BS5's expected structure of input and label
+ * as siblings inside a `.form-check` wrapper. `.form-check-input`'s
+ * `margin-left: -1.5em` assumes the *wrapper* supplies matching
+ * `padding-left: 1.5em` to offset it back into place — here that offset
+ * is applied one level too high (on the outer `.dev-body.form-check` div,
+ * not the label the input actually sits in), so the checkbox gets pulled
+ * 1.5em left of the label's own content box, landing outside the panel's
+ * padding and clipping against its edge. Cancel the offset for this
+ * nested pattern. */
+#dev-settings .form-check-label .form-check-input {
+  margin-left: 0;
+}
+
+/* Same section's info tooltip badge — `<span class="badge bg-info"><a
+ * href="#"><i class="bi bi-question-circle-fill"></i></a></span>`. `.badge`
+ * sets `color: #fff`, but the *inner* `<a>` has its own `color` from
+ * Bootstrap's Reboot (`a { color: var(--bs-link-color) }`), which wins
+ * over the inherited white — and under #dev-settings' dark theme that
+ * resolves to a light blue nearly indistinguishable from the cyan badge
+ * background, making the "?" glyph it colors read as an invisible/solid
+ * block instead of a visible icon. */
+#dev-settings .badge a {
+  color: inherit;
 }
 
 #dev-settings #queryParamsArea {
