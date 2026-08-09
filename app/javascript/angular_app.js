@@ -2,22 +2,14 @@
 // This will be compiled by esbuild into app/assets/builds/angular_app.js
 // NOTE: jQuery must be loaded separately before this bundle
 
-// jQuery UI and plugins (jQuery must already be loaded globally)
-import 'jquery-ui-dist/jquery-ui.min';
-
 // Angular and AngularJS satellite modules (vendored under ./vendor/ except core angular from npm)
 import 'angular';
 import './vendor/angular-route';
 import './vendor/angular-sanitize';
 
-// Bootstrap 5 JS (Tooltip, Popover, etc.) — exposed as window.bootstrap for
-// use by directives such as quepidTooltip. Pulls @popperjs/core transitively.
-// esbuild resolves `bootstrap` to its ESM build, which exports named symbols
-// but does NOT auto-assign window.bootstrap (unlike the UMD build that the
-// importmap'd application_modern.js gets). Re-pin it here so directives can
-// use the same window.bootstrap.* surface across both bundles.
-import * as bootstrap from 'bootstrap';
-window.bootstrap = bootstrap;
+// Bootstrap 5 JS (Tooltip, Popover, etc.) is loaded separately via the
+// `bootstrap_globals` importmap pin (see app/views/layouts/core.html.erb)
+// instead of being bundled here from npm — see config/importmap.rb for why.
 
 // kraaden/autocompleter — vanilla replacement for uib-typeahead. Pinned to
 // window so quepidTypeahead can use it without importing into the Angular
@@ -25,9 +17,14 @@ window.bootstrap = bootstrap;
 import autocomplete from 'autocompleter';
 window.autocompleter = autocomplete;
 
+// SortableJS — vanilla replacement for angular-ui-sortable/jQuery UI's
+// $.fn.sortable(). Pinned to window so quepidSortable can use it without
+// importing into the Angular bundle (matches the pattern above).
+import Sortable from 'sortablejs';
+window.Sortable = Sortable;
+
 // Angular third-party modules (vendored sources; see vendor/README.md)
 import './vendor/angular-wizard/angular-wizard.js';
-import './vendor/angular-ui-sortable/src/sortable.js';
 import './vendor/angular-utils-pagination';
 import './vendor/angular-timeago/dist/angular-timeago.js';
 import './vendor/angular-csv-import/lib/angular-csv-import.js';

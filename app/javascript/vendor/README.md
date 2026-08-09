@@ -9,7 +9,6 @@ Third-party JavaScript that Quepid previously loaded from `package.json` now liv
 | `angular-route`, `angular-sanitize` | AngularJS satellites: `ngRoute`, `ngSanitize` |
 | `angular-countup` | `countUp` module |
 | `angular-wizard/` | `mgo-angular-wizard` |
-| `angular-ui-sortable/` | `ui.sortable` |
 | `angular-utils-pagination/` | `angularUtils.directives.dirPagination` |
 | `angular-timeago/` | `yaru22.angular-timeago` |
 | `angular-csv-import/` | CSV import directives |

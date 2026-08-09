@@ -6,7 +6,6 @@ angular.module('QuepidApp', [
   'ngRoute',
   'ngSanitize',
   'mgo-angular-wizard',
-  'ui.sortable',
   'ngJsonExplorer',
   'o19s.splainer-search',
   'ui.ace',

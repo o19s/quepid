@@ -9,7 +9,6 @@
     "node": ">=24 <25"
   },
   "dependencies": {
-    "@popperjs/core": "^2.11.6",
     "@rails/actioncable": "8.1.301",
     "@rails/activestorage": "8.1.301",
     "ace-builds": "^1.43.4",
@@ -21,8 +20,8 @@
     "esbuild": "^0.28.0",
     "file-saver": "^2.0.5",
     "jquery": "^3.7.1",
-    "jquery-ui-dist": "^1.13.3",
     "local-time": "^3.0.0",
+    "sortablejs": "^1.15.6",
     "splainer-search": "3.0.0",
     "tether-shepherd": "latest",
     "urijs": "^1.19.11"
