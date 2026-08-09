@@ -19,20 +19,32 @@ pre {
   border-radius: 4px;
 }
 
+/* Every other var this block used to pin (--bs-body-color, --bs-body-bg,
+ * --bs-secondary-bg, --bs-emphasis-color, --bs-border-width, --bs-border-
+ * color, --bs-border-color-translucent, --bs-box-shadow, --bs-primary-
+ * text-emphasis, --bs-primary-bg-subtle) turned out to be verbatim restate-
+ * ments of BS5's own defaults — no-ops, removed. Only these two actually
+ * differ: BS5's rem-based radii (0.375rem / 0.5rem) compute smaller once
+ * `html { font-size: 87.5% }` (core-additions.css) shrinks the em base,
+ * so pin the px values Quepid actually wants. */
 :root {
-  --bs-body-color: #212529;
-  --bs-body-bg: #fff;
-  --bs-secondary-bg: #e9ecef;
-  --bs-emphasis-color: #000;
-  --bs-border-width: 1px;
-  --bs-border-color: #dee2e6;
-  --bs-border-color-translucent: rgba(0, 0, 0, 0.175);
   --bs-border-radius: 4px;
   --bs-border-radius-lg: 8px;
-  --bs-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-  --bs-primary-text-emphasis: #052c65;
-  --bs-primary-bg-subtle: #cfe2ff;
   --q-query-error-icon-color: #fe5b00;
+
+  /* BS3's shared brand palette — one consistent blue for links/.btn-primary/
+   * selected list items, one green for "success" states. Referenced by
+   * component overrides below instead of repeating the hex literals at
+   * each call site (they used to be duplicated across .btn-primary,
+   * .list-group-item.active, .modal, and core-additions.css's
+   * .results-control for the blue; .list-group-item-success and
+   * .alert-success for the green). */
+  --q-brand-blue: #337ab7;
+  --q-brand-blue-rgb: 51, 122, 183;
+  --q-brand-blue-hover: #23527c;
+  --q-brand-blue-hover-rgb: 35, 82, 124;
+  --q-success-bg: #dff0d8;
+  --q-success-text: #3c763d;
 }
 
 /* Our vendored BS5 build defines --bs-modal-box-shadow but never actually
@@ -44,47 +56,47 @@ pre {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
-/* BS3 used one consistent blue (#337ab7) for both links and .btn-primary;
- * BS5 defaults .btn-primary to a separate, brighter #0d6efd. Restore BS3's
- * shared blue so primary buttons (Set Options, wizard Continue, etc.) match
- * the link color used throughout the case view. */
+/* BS3 used one consistent blue (--q-brand-blue) for both links and
+ * .btn-primary; BS5 defaults .btn-primary to a separate, brighter #0d6efd.
+ * Restore BS3's shared blue so primary buttons (Set Options, wizard
+ * Continue, etc.) match the link color used throughout the case view. */
 .btn-primary {
-  --bs-btn-bg: #337ab7;
-  --bs-btn-border-color: #337ab7;
+  --bs-btn-bg: var(--q-brand-blue);
+  --bs-btn-border-color: var(--q-brand-blue);
   --bs-btn-hover-bg: #2e6da4;
   --bs-btn-hover-border-color: #2b6496;
   --bs-btn-active-bg: #2e6da4;
   --bs-btn-active-border-color: #2b6496;
-  --bs-btn-disabled-bg: #337ab7;
-  --bs-btn-disabled-border-color: #337ab7;
+  --bs-btn-disabled-bg: var(--q-brand-blue);
+  --bs-btn-disabled-border-color: var(--q-brand-blue);
 }
 
 /* BS3's `.list-group-item.active` (e.g. the Share Case modal's selected
- * team row) used the same shared #337ab7 blue as links/.btn-primary; BS5
- * defaults it to the brighter #0d6efd. Restore BS3's blue for consistency. */
+ * team row) used the same shared blue as links/.btn-primary; BS5 defaults
+ * it to the brighter #0d6efd. Restore BS3's blue for consistency. */
 .list-group-item.active {
-  --bs-list-group-active-bg: #337ab7;
-  --bs-list-group-active-border-color: #337ab7;
+  --bs-list-group-active-bg: var(--q-brand-blue);
+  --bs-list-group-active-border-color: var(--q-brand-blue);
 }
 
 /* BS3's `.list-group-item-success` (e.g. the Share Case modal's "Already
- * shared with" rows) was a vivid pale green (bg #dff0d8, text #3c763d,
- * default gray border). BS5's success-subtle tokens are far more
- * desaturated/grayish (bg #d1e7dd, text #0a3622) and add a matching green
- * border where BS3 had none. Restore BS3's look. */
+ * shared with" rows) was a vivid pale green (bg/text below, default gray
+ * border). BS5's success-subtle tokens are far more desaturated/grayish
+ * (bg #d1e7dd, text #0a3622) and add a matching green border where BS3 had
+ * none. Restore BS3's look. */
 .list-group-item-success {
-  --bs-list-group-color: #3c763d;
-  --bs-list-group-bg: #dff0d8;
+  --bs-list-group-color: var(--q-success-text);
+  --bs-list-group-bg: var(--q-success-bg);
   --bs-list-group-border-color: #ddd;
 }
 
 /* BS3's `.alert-success` (e.g. the "Case shared with team successfully."
- * flash) was the same vivid pale green as `.list-group-item-success`
- * (bg #dff0d8, text #3c763d, border #d6e9c6). BS5's success-subtle tokens
- * are the same desaturated/grayish colors flagged above. Restore BS3's. */
+ * flash) was the same vivid pale green as `.list-group-item-success`,
+ * plus its own border shade. BS5's success-subtle tokens are the same
+ * desaturated/grayish colors flagged above. Restore BS3's. */
 .alert-success {
-  --bs-alert-color: #3c763d;
-  --bs-alert-bg: #dff0d8;
+  --bs-alert-color: var(--q-success-text);
+  --bs-alert-bg: var(--q-success-bg);
   --bs-alert-border-color: #d6e9c6;
   --bs-alert-link-color: #2b542c;
 }
@@ -118,17 +130,17 @@ a:not([href]):not([class]):hover {
   color: var(--bs-link-hover-color);
 }
 
-/* core-additions.css restores BS3's muted link blue (#337ab7) scoped to
+/* core-additions.css restores BS3's muted link blue scoped to
  * `.results-control`, but $quepidModal appends its wrapper directly to
  * `<body>` (outside that scope) — so nav-tabs and other link-colored
  * elements inside modals (e.g. the Import modal's "Information Needs" /
  * "Snapshots" tabs) fell back to BS5's brighter default #0d6efd. Repeat the
  * same override here so modals match the rest of the app. */
 .modal {
-  --bs-link-color: #337ab7;
-  --bs-link-color-rgb: 51, 122, 183;
-  --bs-link-hover-color: #23527c;
-  --bs-link-hover-color-rgb: 35, 82, 124;
+  --bs-link-color: var(--q-brand-blue);
+  --bs-link-color-rgb: var(--q-brand-blue-rgb);
+  --bs-link-hover-color: var(--q-brand-blue-hover);
+  --bs-link-hover-color-rgb: var(--q-brand-blue-hover-rgb);
 }
 
 /* Tooltip + popover: quepidPopover / quepidTooltip pass `animation: false`
@@ -440,15 +452,10 @@ header .dropdown-toggle .bi {
   background: linear-gradient(to bottom right, #EEE, #F8F8F8);
 }
 
-/* #dev-settings sits outside `.results-control` (core-additions.css), so
- * it never got that scope's BS3 body-font restore and renders in BS5's
- * wider/chunkier system-ui stack instead of "Helvetica Neue". That alone
- * adds ~75px to the five dev-panel tab labels combined, which is enough
- * to force "Annotations" onto its own row even after the density fix
- * below restores BS3's padding. */
-#dev-settings {
-	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
+/* ── #dev-settings — Bootstrap-class overrides ──────────────────────
+ * Non-Bootstrap-class rules for this same panel (base sizing/theme,
+ * .dev-header, .dev-section, history list, etc.) live in core-additions.css.
+ */
 
 /* Dev panel tabs (devQueryParams.html). `data-bs-theme="dark"` on
  * #dev-settings alone doesn't reproduce BS3's actual look here: BS5's
@@ -503,11 +510,32 @@ header .dropdown-toggle .bi {
 /*
  * Dev panel — History tab scroll container.
  * The History tab in `devQueryParams.html` wraps its content in a BS
- * `.container`; this lets it fill the panel height and scroll.
+ * `.container-fluid`; this lets it fill the panel height and scroll.
  */
-#dev-settings .settings-tab > .container {
+#dev-settings .settings-tab > .container-fluid {
 	height: 100%;
 	overflow-y: auto;
+}
+
+/* Query Sandbox heading row. BS3's `<h4 class="pull-left">Query Sandbox:</h4>`
+ * had a 10px margin-bottom by default, giving it breathing room above the
+ * textarea below. The BS5 migration wrapped it in a `.d-flex` row (to align
+ * it with the help icon) and zeroed both children's margins with `mb-0`,
+ * losing that gap — the heading now sits flush against the textarea. */
+#dev-settings .query-sandbox .d-flex {
+  margin-bottom: 10px;
+}
+
+/* Info tooltip badge — `<span class="badge bg-info"><a href="#"><i
+ * class="bi bi-question-circle-fill"></i></a></span>`, e.g. next to
+ * "Evaluate Nightly?" / "Escape Queries". `.badge` sets `color: #fff`, but
+ * the *inner* `<a>` has its own `color` from Bootstrap's Reboot (`a {
+ * color: var(--bs-link-color) }`), which wins over the inherited white —
+ * and under #dev-settings' dark theme that resolves to a light blue nearly
+ * indistinguishable from the cyan badge background, making the "?" glyph
+ * it colors read as an invisible/solid block instead of a visible icon. */
+#dev-settings .badge a {
+  color: inherit;
 }
 
 /* Annotation dropdown — markup in components/annotation/annotation.html. */
@@ -648,13 +676,7 @@ header .dropdown-toggle .bi {
 	margin-left: 4px;
 }
 
-/* Full-bleed .container — Quepid expects no breakpoint max-width cap.
- * .btn-group z-index keeps toolbar dropdowns above static siblings. */
-.container {
-	width: 100%;
-	max-width: none;
-}
-
+/* .btn-group z-index keeps toolbar dropdowns above static siblings. */
 .btn-group {
 	z-index: 10;
 }

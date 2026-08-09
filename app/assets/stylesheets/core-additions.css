@@ -2,8 +2,8 @@
  * Quepid core UI — layout and skin that do not use Bootstrap framework classes
  * in selectors. All Bootstrap-class overrides for the Angular core bundle —
  * navbar brand skin (`.navbar-brand`, `.navbar-secondary`, header `.nav-link`),
- * fluid `.container`, sub-results toolbars, `#dev-settings` tabs, modals,
- * annotations, dropdown shims, etc. — live in bootstrap5-compat.css.
+ * sub-results toolbars, `#dev-settings` tabs, modals, annotations, dropdown
+ * shims, etc. — live in bootstrap5-compat.css.
  *
  * Header dropdown skin (scoped overrides on BS5 `.dropdown-menu` /
  * `.dropdown-item`), flash directive chrome (`.flash`), and
@@ -116,11 +116,12 @@ header .dropdown-item:focus {
  * has to be steered via the custom property it reads rather than overriding
  * `color` directly. Restore the softer BS3 tone across the case view (case
  * header subtext, query-toolbar separators and "Sort" label). */
-/* BS3's link blue was #337ab7 (hover #23527c); BS5 defaults to the much
- * brighter/more saturated #0d6efd. Restore the muted BS3 blue across the
- * case view by steering the variables `a`/`a:hover` read from, rather than
- * overriding `color` directly (keeps the cascade intact for any other rule
- * that reads these same variables).
+/* BS3's link blue (--q-brand-blue, defined in bootstrap5-compat.css)
+ * was much more muted than BS5's brighter/more saturated #0d6efd default.
+ * Restore the muted BS3 blue across the case view by steering the
+ * variables `a`/`a:hover` read from, rather than overriding `color`
+ * directly (keeps the cascade intact for any other rule that reads these
+ * same variables).
  *
  * BS3's body font was "Helvetica Neue", Helvetica, Arial, sans-serif; BS5
  * defaults to a system-ui stack whose glyphs render noticeably larger/
@@ -132,10 +133,10 @@ header .dropdown-item:focus {
  * for headings, so the Aller branding font is unaffected. */
 .results-control {
   --bs-secondary-color: #777;
-  --bs-link-color: #337ab7;
-  --bs-link-color-rgb: 51, 122, 183;
-  --bs-link-hover-color: #23527c;
-  --bs-link-hover-color-rgb: 35, 82, 124;
+  --bs-link-color: var(--q-brand-blue);
+  --bs-link-color-rgb: var(--q-brand-blue-rgb);
+  --bs-link-hover-color: var(--q-brand-blue-hover);
+  --bs-link-hover-color-rgb: var(--q-brand-blue-hover-rgb);
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
@@ -346,8 +347,8 @@ header .dropdown-item:focus {
 
 /* Per-document rating column sits inside a different positioned ancestor
  * (.col-md-10, 10.5px padding) than the "Score All" column above it
- * (.sub-results.container, 15px padding), so absolute `left: 0` alone lands
- * 11px further left. Nudge it right to line up under "Score All". */
+ * (.sub-results.container-fluid, 15px padding), so absolute `left: 0` alone
+ * lands 11px further left. Nudge it right to line up under "Score All". */
 .col-ratings:not(.query-rating) {
   margin-left: 11px;
 }
@@ -425,6 +426,12 @@ header .dropdown-item:focus {
 	 * automatically (only <body> does). */
 	background-color: var(--bs-body-bg);
 	color: var(--bs-body-color);
+	/* #dev-settings sits outside `.results-control`'s BS3 body-font
+	 * restore below, so without this it renders in BS5's wider/chunkier
+	 * system-ui stack instead of "Helvetica Neue" — enough extra width
+	 * across the five dev-panel tab labels to force "Annotations" onto
+	 * its own row even with the tab density fix in bootstrap5-compat.css. */
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 #dev-settings .dev-header {
@@ -463,41 +470,10 @@ header .dropdown-item:focus {
   min-height: 300px;
 }
 
-/* Query Sandbox heading row. BS3's `<h4 class="pull-left">Query Sandbox:</h4>`
- * had a 10px margin-bottom by default, giving it breathing room above the
- * textarea below. The BS5 migration wrapped it in a `.d-flex` row (to align
- * it with the help icon) and zeroed both children's margins with `mb-0`,
- * losing that gap — the heading now sits flush against the textarea. */
-#dev-settings .query-sandbox .d-flex {
-  margin-bottom: 10px;
-}
-
-/* "Evaluate Nightly?" checkbox (devQueryParams.html). Its markup nests the
- * <input> *inside* <label class="form-check-label"> (`<label><input/>
- * text</label>`) rather than BS5's expected structure of input and label
- * as siblings inside a `.form-check` wrapper. `.form-check-input`'s
- * `margin-left: -1.5em` assumes the *wrapper* supplies matching
- * `padding-left: 1.5em` to offset it back into place — here that offset
- * is applied one level too high (on the outer `.dev-body.form-check` div,
- * not the label the input actually sits in), so the checkbox gets pulled
- * 1.5em left of the label's own content box, landing outside the panel's
- * padding and clipping against its edge. Cancel the offset for this
- * nested pattern. */
-#dev-settings .form-check-label .form-check-input {
-  margin-left: 0;
-}
-
-/* Same section's info tooltip badge — `<span class="badge bg-info"><a
- * href="#"><i class="bi bi-question-circle-fill"></i></a></span>`. `.badge`
- * sets `color: #fff`, but the *inner* `<a>` has its own `color` from
- * Bootstrap's Reboot (`a { color: var(--bs-link-color) }`), which wins
- * over the inherited white — and under #dev-settings' dark theme that
- * resolves to a light blue nearly indistinguishable from the cyan badge
- * background, making the "?" glyph it colors read as an invisible/solid
- * block instead of a visible icon. */
-#dev-settings .badge a {
-  color: inherit;
-}
+/* Rules for this section that reference Bootstrap classes (`.d-flex`,
+ * `.form-check-*`, `.badge`) live in bootstrap5-compat.css alongside the
+ * other #dev-settings Bootstrap-class overrides (nav-tabs, form-control),
+ * per this file's Bootstrap-class-vs-not split (see file header). */
 
 #dev-settings #queryParamsArea {
   height:     calc(100% - 50px);
