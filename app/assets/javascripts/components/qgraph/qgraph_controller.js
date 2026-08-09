@@ -16,12 +16,12 @@
                   ]
     annotations (angular variable name) The list of annotations to display as markers:
                   [
-                    { message: string, updated_at: date },
-                    { message: string, updated_at: date }
+                    { message: string, updatedAt: date },
+                    { message: string, updatedAt: date }
                   ]
 */
 
-/* global d3 */
+/* global vegaEmbed */
 /* jshint latedef: false */
 
 angular.module('QuepidApp')
@@ -31,11 +31,13 @@ angular.module('QuepidApp')
       var ctrl = this;
 
       // Attributes
-      ctrl.height = 0;
-      ctrl.margin = 0;
-      ctrl.width  = 0;
-      ctrl.max    = $scope.max;
-      ctrl.scores = $scope.scores;
+      ctrl.height     = 0;
+      ctrl.margin     = 0;
+      ctrl.width      = 0;
+      ctrl.container  = null;
+      ctrl.vegaResult = null;
+      ctrl.max        = $scope.max;
+      ctrl.scores     = $scope.scores;
       ctrl.annotations = $scope.annotations;
 
       // Watches
@@ -62,9 +64,13 @@ angular.module('QuepidApp')
       // Functions
       ctrl.render = renderGraph;
 
+      function byUpdatedAtAscending(a, b) {
+        return new Date(a.updated_at) - new Date(b.updated_at);
+      }
+
       function renderGraph() {
         // Ensure all required data is available
-        if (!$scope.graph || ctrl.width <= 0 || ctrl.height <= 0 || !ctrl.max) {
+        if (!ctrl.container || ctrl.width <= 0 || ctrl.height <= 0 || !ctrl.max) {
           return;
         }
 
@@ -74,106 +80,104 @@ angular.module('QuepidApp')
         }
 
         // We want to have the last ten scores, and ANY annotations that happened
-        // during that time range.  So some complex logic to figure that out.
-        // Create a copy of scores and sort by date
-        var sortedScores = ctrl.scores.slice().sort(function (a, b) {
-          return d3.ascending(a.updated_at, b.updated_at);
-        });
-
-        // Take the last 10 scores
+        // during that time range.
+        var sortedScores  = ctrl.scores.slice().sort(byUpdatedAtAscending);
         var lastTenScores = sortedScores.slice(-10);
-        
-        var data = [];
-        
+
         if (lastTenScores.length === 0) {
-          // No scores to display
           return;
-        } else {
-          // Get the time range of these last 10 scores
-          var minDate = new Date(lastTenScores[0].updated_at);
-          
-          // Add the last 10 scores to data with type 'score'
-          lastTenScores.forEach(function(score) {
-            data.push({
-              type: 'score',
-              score: score.score,
-              updated_at: score.updated_at,
-              message: null
-            });
-          });
-          
-          // Add annotations that are newer then the oldest score that we displaying.          
-          ctrl.annotations.forEach(function(annotation) {
-            var annotationDateStr = annotation.updatedAt;
-            if (annotationDateStr) {
-              var annotationDate = new Date(annotationDateStr);            
-              if (annotationDate >= minDate) {
-                data.push({
-                  type: 'annotation',
-                  score: null,
-                  updated_at: annotationDateStr, // Keep as string for consistency with scores
-                  message: annotation.message
-                });
-              }
-            }
-          });
-        
-          // Sort the combined data by date
-          data.sort(function (a, b) {
-            return d3.ascending(a.updated_at, b.updated_at);
-          });
         }
-        // Data is now prepared with the last 10 scores and relevant annotations
 
-        // Filter out just the scores for the line graph
-        var scoreData = data.filter(function(d) {
-          return d.type === 'score' && d.score !== null;
+        // Each score gets an evenly-spaced x slot (its rank, 0..n-1) rather
+        // than one proportional to actual elapsed time, so the sparkline
+        // keeps showing "last 10 results" evenly rather than bunching up
+        // when scores happen close together.
+        var scoreData = lastTenScores.map(function (score, index) {
+          return { index: index, score: score.score };
         });
 
-        if (scoreData.length === 0) {
-          return;
-        }
+        var minDate = new Date(lastTenScores[0].updated_at);
 
-        // Only remove existing elements after we've validated we have data to render
-        $scope.graph.selectAll('path').remove();
-        $scope.graph.selectAll('.marker').remove();
-
-        var x = d3.scaleLinear().domain([0, (scoreData.length - 1)]).range([0, ctrl.width]);
-        var y = d3.scaleLinear().domain([0, ctrl.max]).range([ctrl.height, 0]);
-
-        var line = d3.line()
-          .x(function (d, i) {
-            return x(i) + ctrl.margin.left;
+        // Annotations newer than the oldest displayed score are snapped to
+        // the x slot of whichever displayed score is nearest to them in
+        // time, so they always land on the same ordinal scale the score
+        // line uses.
+        var annotationData = ctrl.annotations
+          .filter(function (annotation) {
+            return annotation.updatedAt && new Date(annotation.updatedAt) >= minDate;
           })
-          .y(function (d) {
-            return y(d.score);
+          .map(function (annotation) {
+            var annotationTime = new Date(annotation.updatedAt).getTime();
+
+            var nearestIndex = lastTenScores.reduce(function (nearest, score, index) {
+              var distance = Math.abs(new Date(score.updated_at).getTime() - annotationTime);
+              return distance < nearest.distance ? { index: index, distance: distance } : nearest;
+            }, { index: 0, distance: Infinity }).index;
+
+            return { index: nearestIndex, message: annotation.message };
           });
 
-        // First, add the path for scores only
-        $scope.graph.append('path').attr('d', line(scoreData));
+        if (ctrl.vegaResult) {
+          ctrl.vegaResult.finalize();
+          ctrl.vegaResult = null;
+        }
+        ctrl.container.innerHTML = '';
 
-        // Then, add markers for annotations (on top of the path)
-        // We need to position annotations based on their timestamp relative to scores
-        data.forEach(function(d, i) {
-          if (d.type === 'annotation' && d.message) {
-            // Find the position of this annotation in the timeline
-            // Map it to the x-axis based on its position in the full data array
-            var xpos = (i / (data.length - 1)) * ctrl.width + ctrl.margin.left;
+        vegaEmbed(ctrl.container, buildSpec(scoreData, annotationData), {
+          actions:  false,
+          renderer: 'svg',
+          tooltip:  { theme: 'dark' },
+        })
+          .then(function (result) {
+            ctrl.vegaResult = result;
+          })
+          .catch(function (error) {
+            console.error('Error rendering qgraph:', error);
+          });
+      }
 
-            $scope.graph.append('line')
-              .attr('class', 'marker')
-              .attr('x1', xpos)
-              .attr('x2', xpos)
-              .attr('y1', 0)
-              .attr('y2', ctrl.height)
-              .attr('class', 'marker')        
-              .style('pointer-events', 'all')
-              .on('mouseover', function (event) { $scope.tip.show(d.message, this, event); })
-              .on('mouseout', function () { $scope.tip.hide(); })
-              .append('title')
-              .text(d.message);
-          }
-        });
+      function buildSpec(scoreData, annotationData) {
+        return {
+          $schema:    'https://vega.github.io/schema/vega-lite/v6.json',
+          width:      ctrl.width,
+          height:     ctrl.height,
+          autosize:   { type: 'none' },
+          padding:    ctrl.margin,
+          background: null,
+          layer: [
+            {
+              // The score line. Styled via the `qgraph path` CSS rule
+              // rather than here, so the color stays in one place.
+              data: { values: scoreData },
+              mark: { type: 'line', interpolate: 'linear' },
+              encoding: {
+                x: { field: 'index', type: 'ordinal', axis: null },
+                y: {
+                  field: 'score',
+                  type:  'quantitative',
+                  scale: { domain: [ 0, ctrl.max ] },
+                  axis:  null,
+                },
+              },
+            },
+            {
+              // Annotation markers. A rule mark with no y/y2 encoding spans
+              // the full height of the plot, same as the old x1/x2 lines.
+              // Styled via the `qgraph line` CSS rule.
+              data: { values: annotationData },
+              mark: { type: 'rule' },
+              encoding: {
+                x: { field: 'index', type: 'ordinal', axis: null },
+                // A plain signal (rather than a field encoding) keeps the
+                // tooltip to just the message text, matching the old
+                // hand-rolled tooltip instead of vega-tooltip's default
+                // "field: value" table row.
+                tooltip: { value: { signal: 'datum.message' } },
+              },
+            },
+          ],
+          config: { view: { stroke: 'transparent' } },
+        };
       }
     }
   ]);

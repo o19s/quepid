@@ -6,10 +6,6 @@
 import 'jquery-ui-dist/jquery-ui.min';
 import 'jquery-autogrowinput';
 
-// D3 for visualizations
-import * as d3 from 'd3';
-window.d3 = d3;
-
 // Angular and AngularJS satellite modules (vendored under ./vendor/ except core angular from npm)
 import 'angular';
 import './vendor/angular-route';

@@ -23,8 +23,6 @@
   NOTE: renaming 'max' to 'maxScore' breaks the graph!
 */
 
-/* global d3 */
-
 angular.module('QuepidApp')
   .directive('qgraph', [
     function () {
@@ -39,53 +37,23 @@ angular.module('QuepidApp')
           annotations: '=',
         },
         link: function (scope, elem) {
-          // Setup d3
-          var margin  = { top: 2, right: 13, bottom: 6, left: 2 };
-          var height  = elem.height() - margin.top - margin.bottom;
-          var width   = elem.width() - margin.left - margin.right;
+          // Leaves room so the line's stroke width and the rule marks don't
+          // get clipped at the edges of the container.
+          var margin = { top: 4, right: 6, bottom: 4, left: 4 };
 
-          scope.ctrl.height = height;
-          scope.ctrl.margin = margin;
-          scope.ctrl.width  = width;
-
-          // Create a tooltip div instead of using d3-tip
-          var tooltip = d3.select('body').append('div')
-            .attr('class', 'd3-tip')
-            .style('opacity', 0)
-            .style('position', 'absolute')
-            .style('pointer-events', 'none');
-
-          scope.tip = {
-            show: function(content, element, event) {
-              var coords = d3.pointer(event || d3.event, document.body);
-              tooltip.transition()
-                .duration(200)
-                .style('opacity', 0.9);
-              tooltip.html('<div>' + content + '</div>')
-                .style('left', (coords[0] + 10) + 'px')
-                .style('top', (coords[1] - 28) + 'px');
-            },
-            hide: function() {
-              tooltip.transition()
-                .duration(500)
-                .style('opacity', 0);
-            }
-          };
-
-          scope.graph = d3.select(elem.find('svg')[0])
-            .attr('width', width  + margin.left + margin.right)
-            .attr('height', height + margin.top  + margin.bottom)
-            .append('g')
-            .attr(
-              'transform',
-              'translate(' + margin.left + ',' + margin.top + ')'
-            );
+          scope.ctrl.margin    = margin;
+          scope.ctrl.height    = elem.height() - margin.top  - margin.bottom;
+          scope.ctrl.width     = elem.width()  - margin.left - margin.right;
+          scope.ctrl.container = elem.find('div')[0];
 
           scope.ctrl.render();
 
-          // Cleanup tooltip on directive destroy
+          // vegaEmbed attaches its own tooltip handler and event listeners
+          // to the container, so they need to be torn down along with it.
           scope.$on('$destroy', function() {
-            tooltip.remove();
+            if (scope.ctrl.vegaResult) {
+              scope.ctrl.vegaResult.finalize();
+            }
           });
         },
       };

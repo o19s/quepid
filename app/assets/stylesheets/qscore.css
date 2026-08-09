@@ -103,8 +103,7 @@ qscore-case qgraph {
 qscore-case qgraph svg {
   border: var(--qscore-border-width-thick) solid grey;
   border-right-style: none;
-  border-top-left-radius: var(--qscore-border-radius);
-  border-bottom-left-radius: var(--qscore-border-radius);
+  border-radius: var(--qscore-border-radius);
 }
 
 /* Diff container styles */
