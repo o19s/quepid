@@ -1,5 +1,5 @@
-// This controller uses global variables loaded via admin_users.js bundle
-// vegaEmbed is available globally
+// vegaEmbed is available globally via the `vega_globals` importmap pin,
+// loaded as part of application_modern.js on every page using this controller.
 import { Controller } from "@hotwired/stimulus"
 
 export default class UserActivityController extends Controller {

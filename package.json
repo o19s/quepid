@@ -28,10 +28,7 @@
     "local-time": "^3.0.0",
     "splainer-search": "3.0.0",
     "tether-shepherd": "latest",
-    "urijs": "^1.19.11",
-    "vega": "^6.0.0",
-    "vega-embed": "^7.1.0",
-    "vega-lite": "^6.4.1"
+    "urijs": "^1.19.11"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
@@ -57,14 +54,13 @@
     "build:angular": "npm run build:angular-vendor && npm run build:angular-app",
     "build:angular-templates": "node build_templates.js",
     "build:angular-templates:watch": "node build_templates.js --watch",
-    "build:admin": "esbuild app/javascript/admin_users.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets",
     "build:analytics": "esbuild app/javascript/analytics.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets",
     "build:css": "node build_css.js",
     "build:css:watch": "node build_css.js --watch",
     "audit:css": "node audit_css.js",
     "audit:css:host": "mkdir -p tmp/css-audit-host && CSS_AUDIT_DIR=tmp/css-audit-host node audit_css.js",
     "lint:css": "stylelint \"app/assets/stylesheets/**/*.css\"",
-    "build": "npm run build:css && npm run build:jquery && npm run build:angular-vendor && npm run build:angular-app && npm run build:angular-templates && npm run build:admin && npm run build:analytics",
+    "build": "npm run build:css && npm run build:jquery && npm run build:angular-vendor && npm run build:angular-app && npm run build:angular-templates && npm run build:analytics",
     "test": "rake karma:run",
     "test:ci": "rake karma:ci",
     "test:e2e": "playwright test --config test/playwright/playwright.config.ts",

@@ -60,13 +60,9 @@ import './splainer_search_adapter';
 // ng-json-explorer - use dist build to avoid gulpfile issues
 import './vendor/ng-json-explorer/dist/angular-json-explorer.js';
 
-// Vega for charts
-import * as vega from 'vega';
-import * as vegaLite from 'vega-lite';
-import vegaEmbed from 'vega-embed';
-window.vega = vega;
-window.vegaLite = vegaLite;
-window.vegaEmbed = vegaEmbed;
+// Vega for charts (angular-vega.js directive) is loaded separately via the
+// `vega_globals` importmap pin (see app/views/layouts/core.html.erb) instead
+// of being bundled here from npm — see config/importmap.rb for why.
 
 // URI.js
 import URI from 'urijs';
