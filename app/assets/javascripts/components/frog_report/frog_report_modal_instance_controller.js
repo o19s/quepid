@@ -31,6 +31,12 @@ angular.module('QuepidApp')
         "width": 800,
         "height": 200,
         "padding": 5,
+        "background": "#fff",
+        // Without this, Vega adds axis/title chrome *outside* the given
+        // width, so the rendered SVG ends up wider than the container the
+        // angular-vega directive measured — "fit-x" + "padding" keeps the
+        // axis labels within the width we hand it instead.
+        "autosize": { "type": "fit-x", "contains": "padding" },
         "title": {
            "text": "",
            "subtitle": "Number of queries grouped by count of missing ratings",

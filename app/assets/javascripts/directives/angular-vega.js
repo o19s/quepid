@@ -15,15 +15,31 @@ var ngVega = angular.module('ngVega', []);
 
 ngVega.directive('vega', function() {
 
+    function embed(scope, element, attrs) {
+        // Specs written with a fixed pixel width (e.g. the frog report's
+        // 800) leave a gap when the container is wider, or overflow it when
+        // narrower. Stretch to whatever width the container actually has.
+        if (scope.spec && typeof scope.spec.width === 'number' && element.width() > 0) {
+            scope.spec.width = element.width();
+        }
+
+        vegaEmbed('#'+attrs.id, scope.spec).catch(console.error);
+    }
+
     function link(scope, element, attrs) {
-        //scope.$watch('spec', function () {
-            //var r = vega.parse(scope.spec);
-            console.log("Please ignore the Promise.resolve error, it appears to not matter and I can't eliminate it.  Have Ideas?  Talk to me!  - Eric")
-            vegaEmbed('#'+attrs.id, scope.spec).then(result => console.log(result)).catch(console.error);
-            //vg.parse.spec(scope.spec, function(chart) {
-            //    chart({el:"#"+attrs.id}).update();
-            // })
-        //}, true)
+        var modalEl = element.closest('.modal');
+
+        if (modalEl.length) {
+            // This directive is only ever used inside a modal, and Angular
+            // compiles (and links) the modal's content while it's still
+            // `display: none` — the container has no measurable width yet.
+            // Wait until Bootstrap has actually shown it.
+            modalEl.one('shown.bs.modal', function () {
+                embed(scope, element, attrs);
+            });
+        } else {
+            embed(scope, element, attrs);
+        }
     }
 
 
