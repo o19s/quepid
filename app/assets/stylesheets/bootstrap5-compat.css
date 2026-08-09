@@ -345,10 +345,21 @@ header.navbar-secondary .dropdown-toggle::after,
 }
 
 /* angular-wizard's breadcrumb is `position: absolute; bottom: 0` against
- * .modal-body; reserve padding so short steps don't let it sit flush
- * against the modal edge or briefly escape during transitions. */
-.modal-body#wizard {
+ * .modal-content (BS5's default `position: relative` on that element);
+ * reserve padding so short steps don't let it sit flush against the modal
+ * edge or briefly escape during transitions. Each wz-step now brings its
+ * own .modal-header/.modal-body (see wizardModal.html), so #wizard itself
+ * is just the outer wrapper. */
+#wizard {
   padding-bottom: 50px;
+}
+
+/* Short steps (Name, Finish, etc.) used to pad themselves out to a
+ * reasonable height with a run of literal <br> tags so they wouldn't look
+ * cramped against the breadcrumb below. A min-height here does the same
+ * job for every step's .modal-body without the markup repetition. */
+#wizard .modal-body {
+  min-height: 200px;
 }
 
 /* ── Header navbar — Quepid brand skin ──────────────────────────────

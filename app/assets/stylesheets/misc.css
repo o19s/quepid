@@ -144,11 +144,4 @@
 .modal-header .btn-core-close {
   margin: 5px 5px 0 auto;
 }
-/* The wizard modal has no .modal-header wrapper around its close button, so the
- * rule above never applies. Auto margins only right-align block-level boxes, and
- * a <button> is inline-block by default, so display:block is needed too. */
-#wizard > .btn-core-close {
-  display: block;
-  margin: 5px 5px 0 auto;
-}
 /* end close button for modals in core app */

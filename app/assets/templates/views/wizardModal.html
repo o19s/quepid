@@ -1,18 +1,22 @@
-<div class="modal-body" id="wizard">
-  <button type="button" class="btn-core-close" ng-click="cancel()" aria-label="Close"></button>
+<div id="wizard">
   <wizard on-finish="pendingWizardSettings.submit()">
     <wz-step title="Welcome" id="step-one">
-      <h1>Welcome To Quepid!</h1>
-      <div>
+      <div class="modal-header">
+        <h1 class="mb-0">Welcome To Quepid!</h1>
+        <button type="button" class="btn-core-close" ng-click="cancel()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
         <img ng-src="images/doug.jpg" style="float: left; margin: 20px 30px 100px 20px; width: 100px" />
         <p>Hi, I'm Doug, creator of Quepid. Let me guide you through setting up your very first Case!</p>
         <button class="btn btn-primary float-end continue" wz-next>Continue</button>
-        <br><br><br><br><br>
       </div>
     </wz-step>
     <wz-step title="Name" id="step-two">
-      <h2>Name Your Case!</h2>
-      <div>
+      <div class="modal-header">
+        <h2 class="mb-0">Name Your Case!</h2>
+        <button type="button" class="btn-core-close" ng-click="cancel()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
         <p>Give an informative name to the problem you're solving.</p>
 
         <form class="d-flex flex-wrap align-items-center gap-2">
@@ -22,13 +26,14 @@
           </div>
           <button class="btn btn-primary float-end continue" wz-next>Continue</button>
         </form>
-
-        <br><br><br><br><br>
       </div>
     </wz-step>
     <wz-step title="Endpoint" id="step-three">
-      <h2>What Search Endpoint do you want to connect to?</h2>
-      <div>
+      <div class="modal-header">
+        <h2 class="mb-0">What Search Endpoint do you want to connect to?</h2>
+        <button type="button" class="btn-core-close" ng-click="cancel()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
         <div class="accordion" id="wizardEndpointAccordion">
           <div class="accordion-item">
             <h2 class="accordion-header">
@@ -423,12 +428,14 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
           </div>
         </div>
-        <br><br><br><br>
       </div>
     </wz-step>
     <wz-step title="Fields" id="step-four">
-      <h2>How Should We Display Your Results?</h2>
-      <div>
+      <div class="modal-header">
+        <h2 class="mb-0">How Should We Display Your Results?</h2>
+        <button type="button" class="btn-core-close" ng-click="cancel()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
 
         <form class="">
           <div class="mb-3 row">
@@ -467,21 +474,25 @@ star wars,1921,3, Star Wars: Return of the Jedi
           </div>
         </form>
       </div>
-      <br><br><br><br><br>
     </wz-step>
     <wz-step title="Query" id="step-five">
       <span ng-if="pendingWizardSettings.searchEngine === 'static'">
-        <h2>Search Queries</h2>
-        <div>
+        <div class="modal-header">
+          <h2 class="mb-0">Search Queries</h2>
+          <button type="button" class="btn-core-close" ng-click="cancel()" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
           <p class="form-text">All of the queries defined in the static upload will be created.</p>
           <button class="btn btn-primary float-end continue" wz-next ng-click="pendingWizardSettings.addQueryStaticQueries()">Continue</button>
         </div>
-        <br><br><br><br><br>
       </span>
       <span ng-if="pendingWizardSettings.searchEngine !== 'static'">
-      <h2>Add Your Search Queries</h2>
-      <div>
-        <p class="form-text">Start out tuning a couple important search queries:</p>
+      <div class="modal-header">
+        <h2 class="mb-0">Add Your Search Queries</h2>
+        <button type="button" class="btn-core-close" ng-click="cancel()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Start out tuning a couple important search queries:</p>
 
         <!-- Query Pattern for Search API -->
         <div ng-if="pendingWizardSettings.searchEngine === 'searchapi'" class="bg-light p-2 rounded border" style="margin-bottom: 15px;">
@@ -531,19 +542,22 @@ star wars,1921,3, Star Wars: Return of the Jedi
         </div>
 
         <button class="btn btn-primary float-end continue" wz-next ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)" ng-disabled="pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0)">Continue</button>
-        <br><br><br><br><br>
       </div>
       </span>
     </wz-step>
     <wz-step title="Finish" id="step-six">
-      <h1>That's It!</h1>
-      <p class="form-text">Go to "Tune Relevance" to iterate on your relevance and manipulate searches</p>
-      <div ng-show="finishSaveError" class="alert alert-danger">
-        {{ finishSaveError }}
+      <div class="modal-header">
+        <h1 class="mb-0">That's It!</h1>
+        <button type="button" class="btn-core-close" ng-click="cancel()" aria-label="Close"></button>
       </div>
+      <div class="modal-body">
+        <p>Go to "Tune Relevance" to iterate on your relevance and manipulate searches</p>
+        <div ng-show="finishSaveError" class="alert alert-danger">
+          {{ finishSaveError }}
+        </div>
 
-      <button class="btn-lg btn-success float-end finish" wz-next ng-disabled="savingFinish">Finish</button>
-      <br><br><br><br><br>
+        <button class="btn btn-primary float-end" wz-next ng-disabled="savingFinish">Finish</button>
+      </div>
     </wz-step>
   </wizard>
 </div>
