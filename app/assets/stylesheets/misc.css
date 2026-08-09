@@ -53,6 +53,15 @@
 	 max-width: 600px;
 }
 
+/* The wizard has no .modal-header, so its step headings (plain BS5 <h1>/<h2>
+   tags) sit directly under the close button rather than beside it in a
+   flex row. At the shared 600px modal width, longer headings like "What
+   Search Endpoint do you want to connect to?" run almost edge-to-edge and
+   crowd the X. Give the wizard extra width so headings clear it. */
+ .wizard-modal-window .modal-dialog {
+	 max-width: 700px;
+}
+
 /* BS5's h4 is 1.5rem vs BS3's 1.25x-base (~18px), and BS5's .list-group-item
    uses looser padding, a lighter border, no border-collapsing margin, and
    the BS5 primary blue for .active instead of BS3's. Restore the BS3 look
@@ -133,6 +142,13 @@
  * auto on the button itself (not justify-content: space-between on the
  * header, which our vendored bootstrap.css doesn't set). */
 .modal-header .btn-core-close {
+  margin: 5px 5px 0 auto;
+}
+/* The wizard modal has no .modal-header wrapper around its close button, so the
+ * rule above never applies. Auto margins only right-align block-level boxes, and
+ * a <button> is inline-block by default, so display:block is needed too. */
+#wizard > .btn-core-close {
+  display: block;
   margin: 5px 5px 0 auto;
 }
 /* end close button for modals in core app */

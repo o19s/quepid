@@ -190,17 +190,6 @@ label {
   font-weight: 400;
 }
 
-/* BS5's `.form-control` sets `appearance: none` (part of its cross-browser
- * text-input reset) with no replacement chevron — fine for <input>, but
- * applied to a <select> (several Angular templates use `.form-control`
- * rather than the BS5-native `.form-select`, e.g. Clone Case's "Select
- * try") it strips the native dropdown arrow entirely, leaving no visual
- * affordance that the field opens a menu. BS3 never touched select
- * appearance, so restore the browser's native rendering. */
-select.form-control {
-  appearance: auto;
-}
-
 /* BS5 dropped `.btn-group-justified` (BS3's equal-width button-group
  * component, used by Clone Case's "Only include a specific try" /
  * "Include the entire try history" toggle) entirely, so it's inert and
@@ -493,18 +482,28 @@ header .dropdown-toggle .bi {
 }
 
 /* BS3's .form-control was always a plain white box with dark text,
- * regardless of surrounding theme. BS5's .form-control is color-mode
- * aware, so under #dev-settings' data-bs-theme="dark" the Query Sandbox
- * textarea picks up a dark background instead — restore BS3's plain
- * white look. Scoped to actual form fields, not `.btn.form-control`
- * (e.g. "Rerun My Searches!"), which also carries `.form-control` for
- * its full-width sizing and must keep its `.btn-primary` blue. */
+ * regardless of surrounding theme. BS5's .form-control/.form-select are
+ * color-mode aware, so under #dev-settings' data-bs-theme="dark" the
+ * Query Sandbox textarea and Search Endpoint <select> would otherwise
+ * pick up a dark background instead — restore BS3's plain white look.
+ * Scoped to actual form fields, not `.btn.form-control` (e.g. "Rerun My
+ * Searches!"), which also carries `.form-control` for its full-width
+ * sizing and must keep its `.btn-primary` blue. */
 #dev-settings textarea.form-control,
 #dev-settings input.form-control,
-#dev-settings select.form-control {
+#dev-settings select.form-select {
 	background-color: #fff;
 	color: #555;
 	border-color: #ccc;
+}
+
+/* `.form-select`'s dropdown chevron is also color-mode aware — under dark
+ * theme its stroke is a light gray (#dee2e6) meant to read against a dark
+ * fill, which is nearly invisible against the white background forced
+ * above. Restore BS5's own light-mode chevron (dark gray stroke) so it's
+ * legible again. */
+#dev-settings select.form-select {
+	--bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
 }
 
 /*

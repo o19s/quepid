@@ -16,7 +16,7 @@
         <p>Give an informative name to the problem you're solving.</p>
 
         <form class="d-flex flex-wrap align-items-center gap-2">
-          <div class="mb-3">
+          <div>
             <label>New Case Name:</label>
             <input type="text" ng-model="pendingWizardSettings.caseName" style='width: 250px' />
           </div>
@@ -240,12 +240,12 @@ star wars,1921,3, Star Wars: Return of the Jedi
             <p>
               <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
             </p>
-            <div quepid-collapse="!isSolrCollapsed">
+            <div quepid-collapse="!isSolrCollapsed" class="mb-3">
               <div class="bg-light p-2 rounded border">
                 <div class="mb-3 row">
                   <label class="col-sm-3 col-form-label">API Method</label>
                   <div class="col-sm-9">
-                    <select class="form-control" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
+                    <select class="form-select" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
                       <option>JSONP</option>
                       <option>GET</option>
                     </select>
@@ -285,7 +285,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
               <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="toggleHeaderConfig()">Advanced</button>
             </p>
             <div quepid-collapse="!isHeaderConfigCollapsed">
-              <div class="bg-light p-2 rounded border">
+              <div class="bg-light p-2 rounded border mb-3">
                 <div class="mb-3 row">
                   <label class="col-sm-3 col-form-label">Proxy Requests</label>
                   <div class="col-sm-9">
