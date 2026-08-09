@@ -108,7 +108,7 @@
           <div ng-repeat="curatorVar in settings.selectedTry.curatorVars">
             <div ng-show="curatorVar.inQueryParams" class="slider-wrap">
               <label class="mb-0">{{ curatorVar.name }}:</label>
-              <input type="number" class="slider-val" min=0 max=10000000000 ng-model="curatorVar.value" auto-grow />
+              <input type="number" class="slider-val form-control form-control-sm" min=0 max=10000000000 ng-model="curatorVar.value" />
               <p ng-show="curatorVar.inQueryParams != true" class="mb-0">
                 This knob/dial is not currently used by the query!
               </p>

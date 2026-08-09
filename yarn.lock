@@ -1309,11 +1309,6 @@ jasmine-core@^4.1.0:
   resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-4.6.1.tgz#5ebb8afa07282078f8d7b15871737a83b74e58f2"
   integrity sha512-VYz/BjjmC3klLJlLwA4Kw8ytk0zDSmbbDLNs794VnWmkcCB7I9aAL/D48VNQtmITyPvea2C3jdUMfc3kAoy0PQ==
 
-jquery-autogrowinput@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/jquery-autogrowinput/-/jquery-autogrowinput-1.0.3.tgz#7123069009cf75772479b3d58df6b69dcde26935"
-  integrity sha512-+u3wgxgqnCCWyECCxoiCkfCkSZBIwzbqOXXbsUQhmjuW/l9i95nO6Kvlk+m84MH7J0QhWVhevOk77RGyeMqJsw==
-
 jquery-ui-dist@^1.13.3:
   version "1.13.3"
   resolved "https://registry.yarnpkg.com/jquery-ui-dist/-/jquery-ui-dist-1.13.3.tgz#13c186eb403e660c96b9b7edb7ae1466eaef9974"

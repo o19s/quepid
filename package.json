@@ -21,7 +21,6 @@
     "esbuild": "^0.28.0",
     "file-saver": "^2.0.5",
     "jquery": "^3.7.1",
-    "jquery-autogrowinput": "^1.0.3",
     "jquery-ui-dist": "^1.13.3",
     "local-time": "^3.0.0",
     "splainer-search": "3.0.0",

@@ -4,7 +4,6 @@
 
 // jQuery UI and plugins (jQuery must already be loaded globally)
 import 'jquery-ui-dist/jquery-ui.min';
-import 'jquery-autogrowinput';
 
 // Angular and AngularJS satellite modules (vendored under ./vendor/ except core angular from npm)
 import 'angular';

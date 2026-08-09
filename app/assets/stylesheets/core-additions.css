@@ -506,7 +506,11 @@ header .dropdown-item:focus {
 }
 
 #queryParamsCanvas .slider-wrap input {
-  color: black;
+  /* Color comes from the `#dev-settings input.form-control` white-box
+     override in bootstrap5-compat.css now that this input carries
+     .form-control. Room for 4 digits plus the number input's spin-button
+     chrome. */
+  width: 7ch;
 }
 
 /*
