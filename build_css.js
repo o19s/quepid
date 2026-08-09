@@ -64,6 +64,8 @@ function buildApplicationCSS() {
   // Application styles
   output += readFileIfExists('app/assets/stylesheets/fonts.css');
   output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/navbar-brand.css');
+  output += '\n';
   output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/signup.css');
@@ -111,7 +113,8 @@ function buildCoreCSS() {
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/core-additions.css');
   output += '\n';
-  // (bootstrap3-add.css retired — navbar brand skin merged into bootstrap5-compat.css)
+  output += readFileIfExists('app/assets/stylesheets/navbar-brand.css');
+  output += '\n';
   output += readFileIfExists('app/assets/stylesheets/bootstrap5-compat.css');
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/style.css');
@@ -168,6 +171,8 @@ function buildAdminCSS() {
   output += '\n';
 
   // Bootstrap 5 additions
+  output += readFileIfExists('app/assets/stylesheets/navbar-brand.css');
+  output += '\n';
   output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
   output += '\n';
 

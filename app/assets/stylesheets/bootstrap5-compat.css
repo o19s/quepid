@@ -363,74 +363,55 @@ header.navbar-secondary .dropdown-toggle::after,
 }
 
 /* ── Header navbar — Quepid brand skin ──────────────────────────────
- * Two-tier: .navbar-brand + .navbar-secondary (gradient strip). Parallel
- * skin for the non-Angular bundle lives in bootstrap5-add.css against
- * a `.navbar-expand-lg` host; keep both in sync when adjusting chrome.
+ * Shared declarations (identical between this Angular header and the
+ * non-Angular one) live in navbar-brand.css. Only genuine deltas — driven
+ * by this header being a bare `<header class="navbar-secondary
+ * navbar-expand">` with no `.navbar` class, unlike the non-Angular
+ * `.navbar.navbar-expand-lg` header — live below.
  */
 
-/* Primary navbar — Quepid wordmark, sized to 56px brand strip. Explicit
- * line-height keeps the wordmark centered in the 56px box: without it,
- * BS5's unitless `line-height: 1.5` on body inherits and recomputes
- * against this element's own 28px font-size (1.5 * 28 = 42px), overflowing
- * the fixed-height box below the 16px top padding and pushing the text
- * down instead of centering it. */
+/* Explicit line-height keeps the wordmark centered in the 56px box:
+ * without it, BS5's unitless `line-height: 1.5` on body inherits and
+ * recomputes against this element's own 28px font-size (1.5 * 28 = 42px),
+ * overflowing the fixed-height box below the 16px top padding and pushing
+ * the text down instead of centering it. Neither the padding nor the
+ * line-height is needed on the non-Angular header (bootstrap5-add.css),
+ * which doesn't set either. */
 .navbar-brand {
-  position: relative;
-  height: 56px;
-  min-width: 120px;
   padding: 16px 15px 0 0;
-  font-family: 'alleritalic';
-  font-size: 28px;
   line-height: 20px;
-  color: #FFF !important;
-}
-
-.navbar-brand .hover {
-  display: none;
 }
 
 .navbar-brand:hover .hover {
-  display: block;
-  position: absolute;
   /* 15px here vs 5px in bootstrap5-add.css's copy of this rule is
-   * intentional, not drift: this file's .navbar-brand carries an extra
-   * `padding-top: 16px` (see the comment above it) that the non-Angular
-   * skin doesn't have, so the wordmark — and this tooltip's offset from
-   * it — sits lower here. Verified visually in both contexts; don't
-   * "sync" this number without re-checking padding-top in both files. */
+   * intentional, not drift: this file's .navbar-brand carries the extra
+   * `padding-top: 16px` above that the non-Angular skin doesn't have, so
+   * the wordmark — and this tooltip's offset from it — sits lower here.
+   * Verified visually in both contexts; don't "sync" this number without
+   * re-checking padding-top in both files. */
   top: 15px;
-  left: 100px;
-  z-index: 10;
 }
 
 /* 18px y centres nav items against the 56px brand strip (BS5 default
  * 8px sits high). Scoped to `header.navbar-secondary` so the selector
  * (0,3,1) outranks BS5's `.navbar-expand .navbar-nav .nav-link` (0,3,0),
  * which sets `padding-right/left` to `--bs-navbar-nav-link-padding-x`
- * and would otherwise clobber the 15px horizontal padding. */
+ * and would otherwise clobber the 15px horizontal padding. Only needed
+ * here: the non-Angular header's `.navbar` class already gets reasonable
+ * nav-link vertical centering from BS5 itself. */
 header.navbar-secondary .navbar-nav .nav-link {
   padding: 18px 15px;
   line-height: 24px;
 }
 
-/* Secondary navbar — brand gradient strip below the primary nav. */
-.navbar-secondary {
-  background: #369;
-  background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
-  font-family: 'allerregular';
-}
-
-/* Row + center the secondary navbar's dropdown and breadcrumb siblings. */
+/* Row + center the secondary navbar's dropdown and breadcrumb siblings.
+ * Only this header has a `.container-home` sibling to center. */
 .navbar-secondary .container-home {
   display: flex;
   align-items: center;
 }
 
-/* Secondary nav-link colours + hover/active emphasis. */
-.navbar-secondary .navbar-nav .nav-link {
-  color: #FFF;
-}
-
+/* Hover/active emphasis — only this header's nav-links get it. */
 .navbar-secondary .navbar-nav .nav-link:hover,
 .navbar-secondary .navbar-nav .nav-link.active {
   background: rgba(0,0,0,0.25);

@@ -9,7 +9,7 @@
 
 <%= render 'books/tabs', book: @book %>
 
-<div class="card h-100">
+<div class="card">
   <div class="card-header">
     <%= form_tag(book_judge_bulk_path(@book), { method: :get }) do %>
       <div class="mb-0 d-flex fs-6 align-items-center">

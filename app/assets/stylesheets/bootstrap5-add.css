@@ -16,53 +16,20 @@ body {
 }
 
 /*
-	Primary Navbar - branding
+	Primary Navbar - branding — shared declarations (identical between this
+	non-Angular header and the Angular core one) live in navbar-brand.css.
+	Only genuine deltas live below: this header's .navbar-brand has no
+	padding-top (unlike the Angular core skin — see the comment in
+	bootstrap5-compat.css), so the wordmark sits higher and this tooltip
+	offset is correspondingly smaller.
 */
-
-.navbar-brand {
-	position: relative;
-  height: 56px;
-  min-width: 120px;
-	/*padding: 16px 15px 0 0;*/
-	font-family: 'alleritalic';
-	font-size: 28px;
-	color: #FFF !important;
-}
-
-.navbar-brand .hover {
-	display: none;
-}
 
 .navbar-brand:hover .hover {
-	display: block;
-	position: absolute;
-	/* 5px here vs 15px in bootstrap5-compat.css's copy of this rule is
-	 * intentional, not drift: this file's .navbar-brand has no padding-top
-	 * (commented out above), unlike the Angular core skin, so the wordmark
-	 * sits higher here and this tooltip offset is correspondingly smaller.
-	 * Verified visually in both contexts; don't "sync" this number without
-	 * re-checking padding-top in both files. */
 	top: 5px;
-	left: 100px;
-  z-index: 10;
 }
-
-/*
-	Secondary Navbar
-*/
 
 .navbar-secondary {
-	background: #369;
-	background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
-	/* border-bottom: 1px solid #258; */
-	font-family: 'allerregular';
   padding: 0px;
-}
-
-
-.navbar-secondary .nav-link {
-	color: #FFF;
-  font-family: 'allerregular', sans-serif;
 }
 
 

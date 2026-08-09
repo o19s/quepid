@@ -1,0 +1,50 @@
+/*
+ * Quepid navbar brand skin shared by all three bundles: the Angular core
+ * header (_header_core_app.html.erb, styled the rest of the way by
+ * bootstrap5-compat.css) and the non-Angular header (_header.html.erb,
+ * used by both the dashboard/cases bundle and the admin bundle, styled the
+ * rest of the way by bootstrap5-add.css).
+ *
+ * Only declarations that are byte-identical across both headers live here.
+ * The two headers' markup genuinely differs (the Angular header is a bare
+ * `<header class="navbar-secondary navbar-expand">` with no `.navbar`
+ * class, so it doesn't inherit BS5's own `.navbar` nav-link centering;
+ * the non-Angular header uses the full `.navbar.navbar-expand-lg` classes)
+ * — so bundle-specific deltas (the Angular `.navbar-brand`'s extra
+ * `padding`/`line-height`, each header's `:hover .hover` tooltip offset,
+ * `.navbar-secondary`'s `padding` on the non-Angular side, and the
+ * Angular-only nav-link centering/hover-active rules) stay in
+ * bootstrap5-compat.css / bootstrap5-add.css rather than being forced
+ * together here. Verify visually in both contexts before changing
+ * anything in this file.
+ */
+
+.navbar-brand {
+  position: relative;
+  height: 56px;
+  min-width: 120px;
+  font-family: 'alleritalic';
+  font-size: 28px;
+  color: #FFF !important;
+}
+
+.navbar-brand .hover {
+  display: none;
+}
+
+.navbar-brand:hover .hover {
+  display: block;
+  position: absolute;
+  left: 100px;
+  z-index: 10;
+}
+
+.navbar-secondary {
+  background: #369;
+  background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
+  font-family: 'allerregular';
+}
+
+.navbar-secondary .navbar-nav .nav-link {
+  color: #FFF;
+}

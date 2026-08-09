@@ -10,7 +10,7 @@
 
 <%= render 'books/tabs', book: @book %>
 
-<div class="card h-100" data-controller="document-fields-modal">
+<div class="card" data-controller="document-fields-modal">
   <div class="card-header">
     <%= form_tag(book_query_doc_pairs_path(@book), { method: :get }) do %>
       <div class="mb-0 d-flex flex-wrap align-items-center gap-3 fs-6">

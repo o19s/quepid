@@ -23,7 +23,7 @@
   </div>
 <% end %>
 
-<div class="card h-100">
+<div class="card">
   <div class="card-header">
     <%= form_tag(books_path, { method: :get }) do %>
       <%= hidden_field_tag :archived, params[:archived] if params[:archived] %>
