@@ -56,9 +56,8 @@
     "audit:css": "node audit_css.js",
     "audit:css:host": "mkdir -p tmp/css-audit-host && CSS_AUDIT_DIR=tmp/css-audit-host node audit_css.js",
     "lint:css": "stylelint \"app/assets/stylesheets/**/*.css\"",
-    "build": "npm run build:css && npm run build:jquery && npm run build:angular-vendor && npm run build:angular-app && npm run build:angular-templates && npm run build:analytics",
+    "build": "yarn build:css && yarn build:jquery && yarn build:angular-vendor && yarn build:angular-app && yarn build:angular-templates && yarn build:analytics",
     "test": "rake karma:run",
-    "test:ci": "rake karma:ci",
     "test:e2e": "playwright test --config test/playwright/playwright.config.ts",
     "test:e2e:update-baselines": "playwright test --config test/playwright/playwright.config.ts --update-snapshots",
     "test:e2e:ui": "playwright test --config test/playwright/playwright.config.ts --ui"
