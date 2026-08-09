@@ -79,14 +79,14 @@ header .dropdown-menu > li {
 
 header .dropdown-item {
   padding: 0;
-  color: var(--q-brand-link);
+  color: var(--q-brand-blue);
   background: transparent;
 }
 
 header .dropdown-item:hover,
 header .dropdown-item:focus {
   background: transparent;
-  color: var(--q-brand-link);
+  color: var(--q-brand-blue-hover);
   text-decoration: underline;
 }
 

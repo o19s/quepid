@@ -392,6 +392,12 @@ header.navbar-secondary .dropdown-toggle::after,
 .navbar-brand:hover .hover {
   display: block;
   position: absolute;
+  /* 15px here vs 5px in bootstrap5-add.css's copy of this rule is
+   * intentional, not drift: this file's .navbar-brand carries an extra
+   * `padding-top: 16px` (see the comment above it) that the non-Angular
+   * skin doesn't have, so the wordmark — and this tooltip's offset from
+   * it — sits lower here. Verified visually in both contexts; don't
+   * "sync" this number without re-checking padding-top in both files. */
   top: 15px;
   left: 100px;
   z-index: 10;

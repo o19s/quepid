@@ -106,14 +106,17 @@
         refreshContent();
       });
     } else {
-      // Template mode: re-attach compiled element on every show. The element
-      // is the same instance across shows, so Angular bindings stay live.
+      // Template mode: compile lazily on first show (see quepidPopoverTemplate),
+      // then re-attach the same compiled element on every subsequent show so
+      // Angular bindings stay live.
       onShow = function () {
-        const compiled = opts.getElement();
-        if (compiled) {
-          currentBody = compiled;
-          refreshContent();
-        }
+        opts.ensureCompiled(function () {
+          const compiled = opts.getElement();
+          if (compiled) {
+            currentBody = compiled;
+            refreshContent();
+          }
+        });
       };
       el.addEventListener('show.bs.popover', onShow);
     }
@@ -197,31 +200,48 @@
       return {
         restrict: 'A',
         link: function (scope, element, attrs) {
-          const contentScope = scope.$new();
-          const templateUrl  = scope.$eval(attrs.quepidPopoverTemplate);
-          let   contentEl    = null;
+          const templateUrl = scope.$eval(attrs.quepidPopoverTemplate);
+          let contentScope = null;
+          let contentEl    = null;
 
-          const compileTemplate = function (html) {
-            const wrap = angular.element('<div>' + html + '</div>');
-            $compile(wrap)(contentScope);
-            contentEl = wrap[0];
-          };
-
-          const cached = $templateCache.get(templateUrl);
-          if (cached) {
-            compileTemplate(cached);
-          } else {
-            $templateRequest(templateUrl).then(compileTemplate);
+          // Compiled + linked lazily on first show rather than at link time.
+          // quepid-popover-template sits on every search-result row
+          // (trigger is always 'outsideClick', never hover), so on a results
+          // page most instances are never opened — eager compilation would
+          // register a live scope + ng-repeat watchers (ratings/popover.html)
+          // per row regardless of whether the user ever clicks it.
+          function ensureCompiled(onReady) {
+            if (contentEl) { onReady(); return; }
+            const compileTemplate = function (html) {
+              contentScope = scope.$new();
+              const wrap = angular.element('<div>' + html + '</div>');
+              $compile(wrap)(contentScope);
+              contentEl = wrap[0];
+              onReady();
+              // Some call sites (e.g. stackedChart.html's matches popover)
+              // toggle the popover from a plain click handler with no
+              // surrounding $apply, so the newly-linked ng-repeat/interpolation
+              // bindings above wouldn't otherwise render until some unrelated
+              // digest happens to run later.
+              if (!scope.$root.$$phase) { scope.$apply(); }
+            };
+            const cached = $templateCache.get(templateUrl);
+            if (cached) {
+              compileTemplate(cached);
+            } else {
+              $templateRequest(templateUrl).then(compileTemplate);
+            }
           }
 
           linkPopover(scope, element, attrs, {
             mode: 'template',
             html: true,
-            getElement: function () { return contentEl; }
+            getElement: function () { return contentEl; },
+            ensureCompiled: ensureCompiled
           }, $parse);
 
           scope.$on('$destroy', function () {
-            contentScope.$destroy();
+            if (contentScope) { contentScope.$destroy(); }
           });
         }
       };

@@ -77,10 +77,9 @@
 	 border-color: #ddd;
 }
 
- .pick-scorer-modal .list-group-item.active {
-	 background-color: #337ab7;
-	 border-color: #337ab7;
-}
+/* .list-group-item.active's brand-blue color already comes from the
+ * global rule in bootstrap5-compat.css (--bs-list-group-active-bg/
+ * -border-color: var(--q-brand-blue)) — no need to repeat the hex here. */
 
 /* This modal uses .row purely as a scrollable wrapper, not a grid — but BS5's
    .row still applies its negative gutter margin, and .row > * still applies
