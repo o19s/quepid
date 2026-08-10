@@ -13,7 +13,7 @@ fi
 files=()
 for path in "$@"; do
   case "$path" in
-    app/assets/javascripts/*|vendor/assets/javascripts/*|lib/assets/javascripts/*)
+    app/assets/javascripts/*)
       case "$path" in
         */tour.js|*/mode-json.js) continue ;;
       esac

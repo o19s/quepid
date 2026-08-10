@@ -141,6 +141,18 @@ a:not([href]):not([class]):hover {
   --bs-link-color-rgb: var(--q-brand-blue-rgb);
   --bs-link-hover-color: var(--q-brand-blue-hover);
   --bs-link-hover-color-rgb: var(--q-brand-blue-hover-rgb);
+
+  /* BS3's default (unsized) modal was 600px wide; BS5's is 500px. Every
+   * modal that doesn't opt into `size: 'sm'/'lg'/'xl'` (Clone Case, Import,
+   * Wizard, Diff/snapshot comparison, etc.) is narrower than it was under
+   * BS3 as a result — cramping the wizard's 3-column endpoint-picker row,
+   * the diff modal's per-snapshot dropdowns, Clone Case's two-column
+   * layout, and so on. `--bs-modal-width` is the single variable BS5's own
+   * `.modal-dialog` reads for the unsized case (`.modal-sm`/`.modal-lg`/
+   * `.modal-xl` each override it back to their own value), so overriding it
+   * once here fixes every default-sized modal at the source instead of
+   * patching each one via its own `windowClass`. */
+  --bs-modal-width: 600px;
 }
 
 /* Tooltip + popover: quepidPopover / quepidTooltip pass `animation: false`
@@ -316,20 +328,6 @@ header.navbar-secondary .dropdown-toggle::after,
 .quepid-typeahead-dropdown img {
   vertical-align: middle;
   margin-right: 6px;
-}
-
-/* BS3's default (unsized) modal was 600px wide; BS5's is 500px. Every
- * modal that doesn't opt into `size: 'sm'/'lg'/'xl'` (Clone Case, Import,
- * Wizard, Diff/snapshot comparison, etc.) is narrower than it was under
- * BS3 as a result — cramping the wizard's 3-column endpoint-picker row,
- * the diff modal's per-snapshot dropdowns, Clone Case's two-column
- * layout, and so on. `--bs-modal-width` is the single variable BS5's own
- * `.modal-dialog` reads for the unsized case (`.modal-sm`/`.modal-lg`/
- * `.modal-xl` each override it back to their own value), so overriding it
- * once here fixes every default-sized modal at the source instead of
- * patching each one via its own `windowClass`. */
-.modal {
-  --bs-modal-width: 600px;
 }
 
 /* BS5's `.modal-lg` only widens to 800px starting at a 992px viewport;
