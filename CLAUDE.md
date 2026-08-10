@@ -22,7 +22,7 @@
 
 ## Backend
 
-- We are currently using Rails 8.1.3 and Ruby 4.0.1.
+- We are currently using Rails 8.1.3 and Ruby 4.0.6.
 - Tests for Ruby are written in Minitest.
 - Long-running work uses ActiveJob + SolidQueue, ActionCable pushes state to the frontend.
 - Solr JSONP forces the case page to HTTP while the rest may be HTTPS. When touching `CoreController` or SSL config, make sure to take this into consideration.
@@ -38,6 +38,7 @@
 - Run JavaScript tests via `bin/docker r yarn test`.
 - Run Rails tests via `bin/docker r rails test`.
 - Lint CSS via `bin/docker r yarn lint:css` or `bin/docker r rails test:stylelint` (config: `.stylelintrc.json`).
+- Run Playwright E2E tests via `bin/docker r yarn test:e2e` (requires the app already running via `bin/docker s`, and `bin/docker r npx playwright install chromium` once). This is a separate, checked-in test suite under `test/playwright/` — not the same thing as the Playwright MCP interactive tool described below. See DEVELOPER_GUIDE.md's "Playwright E2E" section for env vars and full details.
 
 
 ## Documentation
