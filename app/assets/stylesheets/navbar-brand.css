@@ -45,6 +45,14 @@
   font-family: 'allerregular';
 }
 
+/* BS5's `.nav-link` sets `font-size: var(--bs-nav-link-font-size)`, which
+ * Quepid never defines — invalid at computed-value time, so it falls back
+ * to the *inherited* font-size. On the Angular core header that happens to
+ * land on 14px (core-additions.css's 87.5% root), but the non-Angular
+ * dashboard header has a 16px root and would silently render 16px nav
+ * links without this. Pin it explicitly so both headers match regardless
+ * of ambient root font-size. */
 .navbar-secondary .navbar-nav .nav-link {
   color: #FFF;
+  font-size: 14px;
 }

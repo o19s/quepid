@@ -131,6 +131,13 @@
             // unmatched input on blur.
             let lastCommittedLabel = '';
 
+            // In object mode, onSelect() below stages the chosen item here
+            // immediately before calling $setViewValue so the $parsers hook
+            // can tell "the user just picked this row" apart from "the user
+            // is typing" and hand back the right value in each case.
+            let pendingSelection;
+            let hasPendingSelection = false;
+
             // Active per-row child scopes from the most recent render pass.
             // Destroyed at the start of each new fetch (since kraaden replaces
             // the dropdown's children) and on directive teardown. Without this
@@ -171,11 +178,20 @@
 
               // In object mode, suppress the default text-binding parser so
               // typing doesn't overwrite the chosen object with a partial
-              // label string. In string mode, the model IS the typed string —
-              // let the default $parser run so ng-change/ng-model bindings
-              // fire on every keystroke (sites 2 & 3 depend on this).
+              // label string — except right after onSelect() stages a real
+              // selection via pendingSelection/hasPendingSelection, when we
+              // want the chosen item to actually reach the model. In string
+              // mode, the model IS the typed string — let the default
+              // $parser run so ng-change/ng-model bindings fire on every
+              // keystroke (sites 2 & 3 depend on this).
               if (labelField) {
-                ngModel.$parsers.push(function () { return ngModel.$modelValue; });
+                ngModel.$parsers.push(function () {
+                  if (hasPendingSelection) {
+                    hasPendingSelection = false;
+                    return pendingSelection;
+                  }
+                  return ngModel.$modelValue;
+                });
               }
             }
 
@@ -225,7 +241,20 @@
                 lastCommittedLabel = label;
                 input.value = label;
                 scope.$apply(function () {
-                  if (ngModel) { ngModel.$setViewValue(modelOf(item)); }
+                  if (ngModel) {
+                    // $setViewValue's argument should be the *view* value
+                    // (what the input now displays); the parser above reads
+                    // the actual model (modelOf(item)) from pendingSelection.
+                    pendingSelection = modelOf(item);
+                    hasPendingSelection = true;
+                    ngModel.$setViewValue(label);
+                    // $commitViewValue no-ops (and skips the $parsers pipeline
+                    // entirely) if the view value didn't change — e.g.
+                    // re-selecting the already-chosen row. Clear the flag so
+                    // a stale pendingSelection can't leak into the next real
+                    // keystroke's parser call.
+                    hasPendingSelection = false;
+                  }
                   if (onSelectGet) {
                     onSelectGet(scope, { $item: item, $label: label });
                   }

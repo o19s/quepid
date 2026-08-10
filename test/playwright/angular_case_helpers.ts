@@ -19,13 +19,13 @@ export const CASE_ID = readCaseId();
 export async function gotoCase(page: Page, query: string = ''): Promise<void> {
   const suffix = query ? `?${query}` : '';
   await page.goto(`case/${CASE_ID}${suffix}`);
-  await page.waitForSelector('li.ui-sortable-handle, .modal.show', { timeout: 20_000 });
+  await page.waitForSelector('.results-list-element li, .modal.show', { timeout: 20_000 });
 }
 
 /** Expand the first query row unless results are already visible. */
 export async function expandFirstQuery(page: Page): Promise<void> {
   if (await page.locator('search-result').count() > 0) return;
-  const toggle = page.locator('li.ui-sortable-handle .toggleSign[ng-click="query.toggle()"]').first();
+  const toggle = page.locator('.results-list-element li .toggleSign[ng-click="query.toggle()"]').first();
   await toggle.click();
   await page.waitForSelector('search-result', { timeout: 15_000 });
 }

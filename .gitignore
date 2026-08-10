@@ -42,7 +42,6 @@ venv
 /test/playwright/.auth
 /test/playwright/test-results
 /test/playwright/playwright-report
-/test/playwright/baselines
 /playwright/.cache
 
 # VIM swp

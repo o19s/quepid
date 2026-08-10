@@ -138,7 +138,10 @@
         //      traversal, which trips a `$$nextSibling` null deref because
         //      the scope chain is mid-unwind. Add only with care.
 
-        // DOM + scope + BS5 instance only (no listener detach).
+        // DOM + scope + BS5 instance only (no listener detach — the two
+        // call sites below each handle detaching the listener themselves,
+        // since JSHint's latedef forbids teardownCore and onHidden from
+        // referencing each other whichever one is declared first).
         function teardownCore() {
           if (tornDown) { return; }
           tornDown = true;
@@ -153,6 +156,10 @@
         // Wrapped in $apply because hidden.bs.modal is a raw DOM event,
         // outside any digest, and result.then handlers need a digest to run.
         function onHidden() {
+          // Self-detach — this handler only ever fires once per modal
+          // instance, and removeEventListener with an already-removed
+          // listener is a safe no-op if teardown() below also runs.
+          wrapperEl.removeEventListener('hidden.bs.modal', onHidden);
           safeApply(function () {
             if (!settled) {
               settled = true;
@@ -173,7 +180,9 @@
           });
         }
 
-        // Tear down listener + DOM + scope + BS5 instance. teardownCore and
+        // Tear down listener + DOM + scope + BS5 instance. Used by the
+        // abandon-before-shown paths below (onHidden never fires for those,
+        // since bsModal.show() never ran). teardownCore and
         // removeEventListener are both safe to call more than once.
         function teardown() {
           wrapperEl.removeEventListener('hidden.bs.modal', onHidden);
