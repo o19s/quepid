@@ -28,7 +28,9 @@ This guide provides detailed instructions for developers who want to set up, run
 		- [Minitest](#minitest)
 		- [Pre-commit hooks](#pre-commit-hooks)
 		- [JS Lint](#js-lint)
+		- [CSS Lint](#css-lint)
 		- [Karma](#karma)
+		- [Playwright E2E](#playwright-e2e)
 		- [Rubocop](#rubocop)
 		- [All Tests](#all-tests)
 		- [Performance Testing](#performance-testing)
@@ -311,7 +313,7 @@ pip install pre-commit   # or: pipx install pre-commit
 pre-commit install
 ```
 
-The hook lints only staged `*.js` files under `app/assets/javascripts`, `vendor/assets/javascripts`, and `lib/assets/javascripts` (same paths and skips as `rake test:jshint`). Requires `yarn install` on the host so `node_modules/jshint` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
+The hook lints only staged `*.js` files under `app/assets/javascripts` (same path and skips as `rake test:jshint` — `lib/jshint/configuration.rb` excludes `vendor/assets/javascripts` and `lib/assets/javascripts` from the default search paths, so those are deliberately not linted by either). Requires `yarn install` on the host so `node_modules/jshint` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
 
 ### CSS Lint
 
@@ -343,6 +345,39 @@ Runs tests for the Angular side. There are two modes for the karma tests:
 **Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run.
 If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`).
 The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
+
+### Playwright E2E
+
+Golden-path and visual-regression tests against a running app, under `test/playwright/`. Unlike Karma, these hit real HTTP and a real browser, so the app must already be up (`bin/docker s`) before running them.
+
+```bash
+bin/docker r yarn test:e2e             # run the suite
+bin/docker r yarn test:e2e:ui          # Playwright's interactive UI runner
+bin/docker r yarn test:e2e:update-baselines   # regenerate baseline screenshots
+```
+
+One-time setup: the Playwright browser binaries aren't part of `node_modules` and don't ship in the app image, so install them once (they only need to be reinstalled if `@playwright/test`'s version changes):
+
+```bash
+bin/docker r npx playwright install chromium
+```
+
+Environment variables (all optional, sensible defaults baked in):
+
+* `QUEPID_BASE_URL` — defaults to `http://localhost:33000` (`docker-compose`'s published port). Override for a different host/port, e.g. `QUEPID_BASE_URL=http://localhost:3000` if your setup exposes the app there directly instead of through nginx.
+* `QUEPID_E2E_EMAIL` / `QUEPID_E2E_PASSWORD` — sign-in credentials used by `auth.setup.ts`, default to the same sandbox login CLAUDE.md documents for the Playwright MCP flow (`quepid+realisticactivity@o19s.com` / `password`). The resulting session is cached at `test/playwright/.auth/user.json` (gitignored).
+* `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `1`. **Must be a case with queries** — if your seed data's case 1 has none, the shared `gotoCase()` helper (`test/playwright/angular_case_helpers.ts`) times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data, e.g. `QUEPID_E2E_CASE_ID=5`.
+
+Structure:
+
+* `core_smoke.spec.ts`, `angular_pages.spec.ts`, `angular_pages_narrow_viewport.spec.ts` — golden-path interaction screenshots (`toHaveScreenshot`) across modals, dropdowns, and the wizard, at desktop and narrow viewports.
+* `popover_visibility.spec.ts` — computed-style assertions catching invisible-but-present popovers (see the BS5-on-`core` traps documented in CLAUDE.md).
+* `modal_a11y.spec.ts` — axe accessibility smoke test on a modal.
+* `case_header_typography.spec.ts` — a non-screenshot, computed-style assertion.
+
+Baseline screenshots live under `test/playwright/baselines/` and **are checked into git** (unlike `test/playwright/test-results/` and `playwright-report/`, which are runtime output and gitignored) — a missing baseline fails its test with "no baseline found" rather than silently passing. When you add a new `toHaveScreenshot()` call or intentionally change a screen's appearance, run `test:e2e:update-baselines` and `git add` the resulting PNGs.
+
+Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.ts`) because they share case state in MySQL and a single authenticated session — don't assume they're safe to parallelize without addressing that first.
 
 ### Rubocop
 
