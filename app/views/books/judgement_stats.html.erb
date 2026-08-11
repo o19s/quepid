@@ -53,8 +53,8 @@
         <% if row[:judge] && row[:judge].ai_judge? %>
           <i class="bi bi-robot"></i>
           <div class="float-end d-flex gap-2">
-            <%= button_to 'Refine Prompt', edit_ai_judge_prompt_path(row[:judge]), params: { book_id: @book.id }, class: 'btn btn-block btn-light', role: 'button', method: :get %>           
-            <button type="button" class="btn btn-block btn-light" <%= (row[:can_judge_more] && @moar_judgements_needed )? '' : 'disabled' %> data-bs-toggle="modal" data-bs-target="#unleash_modal_<%= row[:judge].id %>">
+            <%= button_to 'Refine Prompt', edit_ai_judge_prompt_path(row[:judge]), params: { book_id: @book.id }, class: 'btn btn-light', role: 'button', method: :get %>
+            <button type="button" class="btn btn-light" <%= (row[:can_judge_more] && @moar_judgements_needed )? '' : 'disabled' %> data-bs-toggle="modal" data-bs-target="#unleash_modal_<%= row[:judge].id %>">
               Prepare to Judge!
             </button>      
           </div>         

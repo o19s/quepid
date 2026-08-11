@@ -72,13 +72,11 @@
 
   <hr/>
 
-  <div class="row" style="padding: 10px">
-    <div class="float-end">
-      <button type="button" ng-if="tryName.startRename" ng-click="tryName.startRename = false" class="btn btn-outline-secondary">Cancel Rename</button>
-      <button type="button" ng-if="!tryName.startRename" ng-click="tryName.startRename = true" class="btn btn-outline-secondary">Rename</button>
-      <button type="button" ng-click="duplicateTry(aTry)" class="btn btn-outline-secondary">Duplicate</button>
-      <button type="button" ng-disabled="numTries() === 1" ng-click="deleteTry(aTry)" class="btn btn-danger">Delete</button>
-      <button type="button" ng-click="cancel()"  class="btn btn-outline-secondary">Dismiss</button>
-    </div>
+  <div class="d-flex justify-content-end gap-2" style="padding: 10px">
+    <button type="button" ng-if="tryName.startRename" ng-click="tryName.startRename = false" class="btn btn-outline-secondary">Cancel Rename</button>
+    <button type="button" ng-if="!tryName.startRename" ng-click="tryName.startRename = true" class="btn btn-outline-secondary">Rename</button>
+    <button type="button" ng-click="duplicateTry(aTry)" class="btn btn-outline-secondary">Duplicate</button>
+    <button type="button" ng-disabled="numTries() === 1" ng-click="deleteTry(aTry)" class="btn btn-danger">Delete</button>
+    <button type="button" ng-click="cancel()"  class="btn btn-outline-secondary">Dismiss</button>
   </div>
 </div>

@@ -232,9 +232,14 @@ label {
   --bs-tooltip-padding-y: 4px;
   --bs-tooltip-arrow-width: 12px;
   --bs-tooltip-arrow-height: 6px;
+  /* Quepid's tooltips use explicit <br/> tags for multi-line content, so they
+   * need to be left-aligned and wider than BS5's 200px default rather than
+   * centered and wrapped. */
+  --bs-tooltip-max-width: 300px;
 }
 .tooltip-inner {
-  min-width: 100px;
+  min-width:  100px;
+  text-align: left;
 }
 
 .popover {
@@ -254,6 +259,14 @@ label {
   /* BS5's .popover doesn't ship a box-shadow at all; BS3's did, giving the
    * popover a "lifted" look instead of blending flat into the page. */
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* BS5 renamed .popover-content to .popover-body but .popover defaults to
+ * overflow: visible, so without this, tall content spills past the
+ * bordered box instead of scrolling within it. */
+.popover-body {
+  overflow-y: auto;
+  max-height: 550px;
 }
 
 /* Accordion: only live use is the wizard endpoint picker (wizardModal.html).
@@ -298,6 +311,14 @@ label {
 header.navbar-secondary .dropdown-toggle::after,
 .annotation .dropdown-toggle::after {
   display: none;
+}
+
+/* The "View all cases/books" + "Create a case/book" buttons in the header's
+ * .actions dropdown items are stacked full-width (w-100) with no gap of
+ * their own — BS3's .dropdown-menu .actions .btn-block gave them margin
+ * that the w-100 migration didn't replace. */
+.dropdown-menu .actions .btn + .btn {
+  margin-top: 10px;
 }
 
 /*
@@ -649,6 +670,16 @@ header .dropdown-toggle .bi {
  * button, depth-of-rating note) aren't grid columns, so they should sit
  * inline and wrap naturally like they did under BS3. */
 .results-pane-footer > * {
+	width: auto;
+}
+
+/* Same BS5 .row > * { width: 100% } trap as .results-pane-footer above:
+ * the "peek at next page" link and paging spinner aren't grid columns, so
+ * they should sit side by side instead of stacking. */
+.paging-row {
+	align-items: center;
+}
+.paging-row > * {
 	width: auto;
 }
 
