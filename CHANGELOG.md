@@ -1,10 +1,58 @@
 # Changelog
 
-## 8.6.0 -- 2026-??-??
+## 8.6.0 -- 2026-08-14
 
-Big upgrade of the core application stack, moving Ruby from 3.4.8 to 4.0.1, Rails from 8.1.1 to 8.1.2, and the Debian base image from Bookworm to Trixie, along with Bundler and numerous gem/Node package updates.
+A hefty release packed with security improvements, new authentication options, AI Judge enhancements, and continued progress on moving Quepid away from AngularJS.
 
-* **splainer-search 3.0.0:** The `splainer-search` npm package is now a vanilla JavaScript (ESM) library rather than an AngularJS module. The Angular app still depends on the `o19s.splainer-search` module name; `app/javascript/splainer_search_adapter.js` wires the new `createWiredServices` API from the package to that module so existing injectors and services keep working.
+Big upgrade of the core application stack, moving Ruby from 3.4.8 to 4.0.1, Rails from 8.1.1 to 8.1.2, and the Debian base image from Bookworm to Trixie, along with Bundler and numerous gem/Node package updates.  https://github.com/o19s/quepid/pull/1635 by @epugh.
+
+## 🔐 OpenID Connect Support
+Quepid now supports OpenID Connect as an authentication provider! This joins Keycloak and Google as supported SSO options, making it much easier to integrate Quepid into your organization's existing identity infrastructure.  https://github.com/o19s/quepid/pull/1701 by @epugh with contributions from @JPrevost.
+
+## 🔒 Encrypted Basic Auth Credentials
+Basic auth credentials stored in Search Endpoints are now encrypted at rest in the database. We've also introduced `REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS` to control whether queries can be sent directly from the browser (which would expose the credentials in URLs) or must go through Quepid's server-side proxy.
+
+## 🤖 More AI Judge Providers
+Azure OpenAI and Azure AI Foundry (Anthropic) are now supported as AI Judge providers.  https://github.com/o19s/quepid/pull/1676 by @marco-bertani-okland.
+
+## 📊 Scores Over Time Chart Migrated to Vega
+The cal-heatmap library used for the Scores Over Time chart is no longer maintained, so we've migrated to a Vega-based solution that is more flexible and future-proof.  https://github.com/o19s/quepid/pull/1748 by @epugh.
+
+## 🚀 Continued AngularJS Migration
+Teams, Scorers, and Case listings are now served by server-rendered Rails views with Stimulus controllers, continuing the steady march away from AngularJS.  https://github.com/o19s/quepid/pull/1642 by @epugh.
+
+### Features
+
+* OpenID Connect authentication support via the `omniauth-openid-connect` gem. https://github.com/o19s/quepid/pull/1701 by @epugh.
+* Azure OpenAI and Azure AI Foundry Anthropic provider support for AI Judges. https://github.com/o19s/quepid/pull/1676 by @marco-bertani-okland.
+* Query text that looks like an image URL is now rendered as an image in the UI. https://github.com/o19s/quepid/pull/1683 by @epugh, thanks @akornilov.
+* Basic auth credentials on Search Endpoints are now encrypted at rest, with a new `REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS` environment variable to enforce server-side proxying.
+* The `SOLID_QUEUE_POLLING` interval is now configurable via an environment variable, making it easier to tune for resource-constrained environments. https://github.com/o19s/quepid/pull/1689 by @mkr.
+
+### Improvements
+
+* **splainer-search 3.0.0:** The `splainer-search` npm package is now a vanilla JavaScript (ESM) library rather than an AngularJS module. The Angular app still depends on the `o19s.splainer-search` module name; `app/javascript/splainer_search_adapter.js` wires the new `createWiredServices` API from the package to that module so existing injectors and services keep working. https://github.com/o19s/quepid/pull/1691 by @epugh.
+* Teams, Scorers, and Case listings migrated from AngularJS to server-rendered Rails views with Stimulus controllers. https://github.com/o19s/quepid/pull/1642 by @epugh.
+* Custom headers on Search Endpoints are now stored as JSON and validated on save. https://github.com/o19s/quepid/pull/1638 by @epugh.
+* The Case creation wizard now shows API validation errors on the final step instead of closing silently, disables the button while saving, and handles reused basic-auth endpoints more gracefully. https://github.com/o19s/quepid/pull/1705 and https://github.com/o19s/quepid/pull/1710 by @epugh.
+* Book/Case syncing improvements: the sync modal now shows document fields as it syncs, and judgement counts are more clearly linked. https://github.com/o19s/quepid/pull/1677 by @epugh and https://github.com/o19s/quepid/pull/1619 by @epugh.
+* Query Doc Pairs can now be searched by their numeric ID in addition to query text, doc ID, and document fields. https://github.com/o19s/quepid/pull/1681 by @epugh.
+* Permissions checking across AI Judge, Book, and Case controllers was tightened up significantly. https://github.com/o19s/quepid/pull/1696 by @epugh.
+* Proxy controller hardened with stricter validation rules. https://github.com/o19s/quepid/pull/1694 by @epugh.
+* Thor `large_data` command for Solr now handles timeouts and bad responses more robustly with retry logic. https://github.com/o19s/quepid/pull/1692 by @epugh.
+* Docker dev setup now has healthchecks for MySQL and Ollama, gates app startup on `service_healthy`, and makes the app port configurable via `APP_PORT`. by @epugh.
+* Added pre-commit hooks that run JSHint and RuboCop on every commit, keeping the codebase lint-clean before code reaches CI. https://github.com/o19s/quepid/pull/1706 by @epugh.
+* AngularJS bundle rebuilds unified and dev watch workflow improved. https://github.com/o19s/quepid/pull/1707 by @epugh.
+* Switched from Dependabot to Renovate for automated dependency updates.
+
+### Bugs Addressed
+
+* Wizard validation spinner got stuck after the splainer-search 3.x migration. https://github.com/o19s/quepid/pull/1704 by @epugh.
+* Scorer create link was pointing to the old AngularJS route. https://github.com/o19s/quepid/pull/1699 by @epugh.
+* Image lookup by LLM-as-a-Judge was broken (provider output formatting and model pre-population fixes). https://github.com/o19s/quepid/pull/1698 by @epugh.
+* 403 errors returned by custom external search engines accessed via Quepid's proxy are now handled correctly. https://github.com/o19s/quepid/pull/1659 by @epugh, fixes https://github.com/o19s/quepid/issues/1658.
+* Various bugs around custom headers (object vs string handling) fixed. https://github.com/o19s/quepid/pull/1661 by @epugh and https://github.com/o19s/quepid/pull/1650 by @epugh.
+* Dependencies: Node.js v24.18.1, Rails 8.1.301, nginx v1.31.3, actions/checkout v7, selenium-webdriver 4.41.0, devise 5.0.2, solid_queue 1.3.2, ruby_llm 1.12.1, scout_apm 6.1.1, pagy 43.3.0, oas_rails 1.3.4 by Renovate/Dependabot in assorted PRs.
 
 ## 8.5.0 -- 2026-01-14
 
