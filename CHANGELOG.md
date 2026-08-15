@@ -1,6 +1,6 @@
 # Changelog
 
-## 8.6.0 -- 2026-08-14
+## 8.6.0 -- 2026-08-16
 
 A hefty release packed with security improvements, new authentication options, AI Judge enhancements, and continued progress on moving Quepid away from AngularJS.
 
