@@ -113,12 +113,17 @@ angular.module('QuepidApp')
         var docs = {};
         var queriesPayload = {};
         angular.forEach(queries, function(query) {
-          queriesPayload[query.queryId] = {
-            'score': query.currentScore.score,
-            'all_rated': query.currentScore.allRated,
+          queriesPayload[query.queryId] = {            
             'number_of_results': query.numFound
           };
-
+          
+          // If the currentScore has been calculated, then include it
+          if (query.currentScore) {
+            queriesPayload[query.queryId].score = query.currentScore.score;
+            queriesPayload[query.queryId].all_rated = query.currentScore.allRated;
+          }
+          
+    
           // The score can be -- if it hasn't actually been scored, so convert
           // that to null for the call to the backend.
           if (queriesPayload[query.queryId].score === '--') {
