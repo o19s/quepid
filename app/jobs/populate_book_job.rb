@@ -6,6 +6,16 @@ class PopulateBookJob < ApplicationJob
   # NOTE: Duplicate prevention is handled on the client side in queriesSvc.syncToBook
   # which maintains a cache of already-synced query-doc pairs and only sends new ones.
   # Queries are batched in groups of 100 for efficiency.
+  #
+  # The client-side cache is reset on page reload though, so a case reloaded
+  # mid-sync (or opened in multiple tabs) can still queue several full syncs
+  # for the same book. Guard against that here: only one sync per book may be
+  # queued/running at a time, and duration must comfortably exceed the
+  # longest observed sync (large books can take 10+ minutes).
+  limits_concurrency to:          1,
+                     key:         ->(book, _kase, _blob) { "book_#{book.id}" },
+                     duration:    30.minutes,
+                     on_conflict: :discard
 
   # rubocop:disable Security/MarshalLoad
   # rubocop:disable Metrics/MethodLength

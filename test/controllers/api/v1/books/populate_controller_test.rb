@@ -62,6 +62,34 @@ module Api
           end
         end
 
+        describe 'a sync is already queued or running for the book' do
+          test 'rejects the request without enqueuing another job' do
+            book.update(populate_job: "queued at #{Time.zone.now}")
+
+            data = {
+              book_id:         book.id,
+              case_id:         acase.id,
+              query_doc_pairs: [
+                {
+                  query_text:      'star wars',
+                  doc_id:          'https://www.themoviedb.org/movie/11-star-wars',
+                  position:        0,
+                  document_fields: {
+                    title: 'Star Wars',
+                    year:  '1977',
+                  },
+                }
+              ],
+            }
+
+            assert_no_enqueued_jobs do
+              put :update, params: data
+            end
+
+            assert_response :conflict
+          end
+        end
+
         describe 'refresh a existing book' do
           test 'updates the position and doc fields' do
             data = {
