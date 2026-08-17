@@ -519,10 +519,11 @@ angular.module('QuepidApp')
       /*jslint latedef:false*/
       function pickCaseScorer() {
         var modalInstance = $quepidModal.open({
-          templateUrl: 'views/pick_scorer.html',
-          controller:  'ScorerCtrl',
-          windowClass: 'pick-scorer-modal',
-          resolve:     {
+          templateUrl:    'views/pick_scorer.html',
+          controller:     'ScorerCtrl',
+          windowClass:    'pick-scorer-modal',
+          ariaLabelledBy: 'pick-scorer-modal-title',
+          resolve:        {
             parent: function() {
               return {
                 attachTo:      queriesSvc,

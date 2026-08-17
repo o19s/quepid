@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="card-header">   
       <div class="mb-0 d-flex fs-6">
         <div class="d-flex d-flex align-items-centerween">
-          <input type="checkbox" class="ms-2 form-check-input form-check-input-sm" name="check_all" id="check_all"/>
+          <input type="checkbox" class="ms-2 form-check-input" name="check_all" id="check_all"/>
         </div>
         
         <!-- form to handle filters -->
@@ -91,9 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
       <% @scores.each do |score| %>
           <tr>
             <td>
-              <%= check_box_tag "score_ids[]", 
-                  score.id, 
-                  class: "form-check-input form-check-input-sm" 
+              <%= check_box_tag "score_ids[]",
+                  score.id,
+                  class: "form-check-input"
               %>
             </td>
             <td>

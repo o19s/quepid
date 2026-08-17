@@ -4,7 +4,7 @@
     <p class="form-text">
       Manage the basic attributes of a user.
     </p>
-    <%= form_for(@user, url: {action: passed_in_action}, class: 'form-horizontal') do |f| %>
+    <%= form_for(@user, url: {action: passed_in_action}) do |f| %>
       <% if @user.errors.any? %>
         <div id="error_explanation">
           <h2><%= pluralize(@user.errors.count, "error") %> prohibited this user from being saved:</h2>
@@ -98,7 +98,7 @@
       <p class="form-text">
         You can either set the user's password in plain text, or, if you know their encrypted password then you provide it.
       </p>
-      <%= form_for(@user, url: {action: passed_in_action}, class: 'form-horizontal') do |f| %>      
+      <%= form_for(@user, url: {action: passed_in_action}) do |f| %>      
         <% if @user.errors.any? %>
           <div id="error_explanation">
             <h2><%= pluralize(@user.errors.count, "error") %> prohibited this from being saved:</h2>

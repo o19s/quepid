@@ -8,8 +8,9 @@ angular.module('QuepidApp')
       $scope.snapshot.prompt = function() {
 
         var modalInstance = $quepidModal.open({
-          templateUrl: 'views/snapshotModal.html',
-          controller: 'PromptSnapshotCtrl',
+          templateUrl:    'views/snapshotModal.html',
+          controller:     'PromptSnapshotCtrl',
+          ariaLabelledBy: 'snapshot-modal-title',
         });
 
         modalInstance.result.then(function() {

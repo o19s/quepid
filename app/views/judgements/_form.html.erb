@@ -304,7 +304,7 @@
 <!-- Modal -->
 <div class="modal fade" id="explanationModal" tabindex="-1" aria-labelledby="explanationModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-right">
-    <%= form_for(judgement, url: book_query_doc_pair_unrateable_path(@book, query_doc_pair), class: 'form-horizontal', data: { turbo: false }) do |f| %>
+    <%= form_for(judgement, url: book_query_doc_pair_unrateable_path(@book, query_doc_pair), data: { turbo: false }) do |f| %>
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="modal-title fs-5" id="explanationModalLabel">Record Explanation</h1>

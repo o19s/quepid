@@ -53,7 +53,7 @@
 //   quepid-typeahead-editable     "false" rejects input that doesn't match a
 //                                 suggestion: on blur the field reverts to
 //                                 the last selected value (or empty).
-//   quepid-typeahead-limit        integer; default 8.
+//   quepid-typeahead-limit        integer; default 8. Set 0 for unlimited.
 //   quepid-typeahead-on-select    expression invoked on selection with
 //                                 locals {$item, $label}.
 //   quepid-typeahead-no-results   assignable scope expression; set to true
@@ -62,6 +62,11 @@
 //                                 `typeahead-no-results`.
 
 (function () {
+  function parseIntOr(value, fallback) {
+    const parsed = parseInt(value, 10);
+    return Number.isNaN(parsed) ? fallback : parsed;
+  }
+
   angular.module('QuepidApp')
     .directive('quepidTypeahead', [
       '$parse', '$compile', '$templateRequest', '$templateCache', '$timeout',
@@ -82,9 +87,9 @@
             const noResultsSet = attrs.quepidTypeaheadNoResults ? ($parse(attrs.quepidTypeaheadNoResults).assign || null) : null;
             const labelField  = attrs.quepidTypeaheadLabelField || null;
             const templateUrl = attrs.quepidTypeaheadTemplateUrl ? scope.$eval(attrs.quepidTypeaheadTemplateUrl) : null;
-            const minLength   = attrs.quepidTypeaheadMinLength != null ? parseInt(attrs.quepidTypeaheadMinLength, 10) : 1;
+            const minLength   = attrs.quepidTypeaheadMinLength ? parseIntOr(attrs.quepidTypeaheadMinLength, 1) : 1;
             const editable    = attrs.quepidTypeaheadEditable !== 'false';
-            const limit       = parseInt(attrs.quepidTypeaheadLimit, 10) || 8;
+            const limit       = attrs.quepidTypeaheadLimit != null ? parseIntOr(attrs.quepidTypeaheadLimit, 8) : 8;
 
             // Cache the compiled template HTML once. The per-row scope/compile
             // runs inside render() — same as quepidPopoverTemplate. In Quepid
@@ -118,7 +123,7 @@
               if (!Array.isArray(items)) { return []; }
               const q = (query || '').toLowerCase();
               const out = [];
-              for (let i = 0; i < items.length && out.length < limit; i++) {
+              for (let i = 0; i < items.length && (limit === 0 || out.length < limit); i++) {
                 const item = items[i];
                 if (!q || labelOf(item).toLowerCase().indexOf(q) !== -1) {
                   out.push(item);

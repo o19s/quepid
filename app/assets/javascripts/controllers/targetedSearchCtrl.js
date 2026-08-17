@@ -8,9 +8,10 @@ angular.module('QuepidApp')
       $scope.targetedSearch.triggerModal = function() {
 
         var modalInstance = $quepidModal.open({
-          templateUrl: 'views/targetedSearchModal.html',
-          controller: 'TargetedSearchModalCtrl',
-          size: 'lg',
+          templateUrl:    'views/targetedSearchModal.html',
+          controller:     'TargetedSearchModalCtrl',
+          size:           'lg',
+          ariaLabelledBy: 'targeted-search-modal-title',
           resolve: {
             query: function(){
               return $scope.query;
