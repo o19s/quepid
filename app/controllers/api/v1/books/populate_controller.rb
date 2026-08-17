@@ -20,6 +20,17 @@ module Api
         # With 5000 queries in large case, this takes 108 seconds...
         #
         def update
+          # A sync for this book is already queued or running (PopulateBookJob
+          # itself also guards against duplicates via limits_concurrency, but
+          # checking here avoids uploading a throwaway blob for a job that
+          # would just get discarded). Respond with a conflict, rather than
+          # silently succeeding, so the client's syncedPairsCache retries
+          # these pairs on its next sync instead of assuming they landed.
+          if @book.populate_job.present?
+            head :conflict
+            return
+          end
+
           serialized_data = Marshal.dump(query_doc_pairs_params)
 
           compressed_data = Zlib::Deflate.deflate(serialized_data)
