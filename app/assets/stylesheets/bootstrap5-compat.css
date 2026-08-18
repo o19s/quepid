@@ -351,12 +351,13 @@ header.navbar-secondary .dropdown-toggle::after,
   margin-right: 6px;
 }
 
-/* BS5's `.modal-lg` only widens to 800px starting at a 992px viewport;
- * BS3's equivalent kicked in at 768px. Below 992px (a fairly common window
- * width), every `size: 'lg'` modal (Import, Export, Frog Report, Query
+/* BS5's `.modal-lg` only widens to 800px starting at a 992px viewport,
+ * below which every `size: 'lg'` modal (Import, Export, Frog Report, Query
  * Explain, Targeted Search, Judgements, etc.) silently falls back to the
- * 500px default instead of 800px, reading as unexpectedly narrow. Restore
- * BS3's lower threshold. */
+ * 500px default instead of 800px, reading as unexpectedly narrow at a
+ * fairly common window width. Widen the breakpoint down to BS3's generic
+ * `.modal-dialog` width (600px, from 768px), which is what `.modal-lg`
+ * inherited on any viewport below BS3's own 900px/992px `.modal-lg` tier. */
 @media (min-width: 768px) {
   .modal-lg {
     max-width: 800px;

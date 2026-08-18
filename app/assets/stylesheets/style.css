@@ -17,7 +17,7 @@
     position: absolute;
 }
 
-.rating:hover, .ratingNum:hover, .close:hover {
+.rating:hover, .ratingNum:hover {
     cursor: pointer;
 }
 

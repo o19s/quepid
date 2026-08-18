@@ -101,7 +101,7 @@
               <strong>Off:</strong> Manually trigger updates to the Book when needed.
             </p>
           </div>
-          <div class="col-sm-4 text-right text-end">
+          <div class="col-sm-4 text-end">
             <button class="btn btn-outline-secondary btn-sm" ng-click="ctrl.manualPopulateBook()" ng-disabled="processingPrompt.inProgress || !ctrl.activeBookId">
               <i class="bi bi-box-arrow-up"></i> Populate Now
             </button>
@@ -122,7 +122,7 @@
               <strong>Off:</strong> Manually import judgements when ready to test.
             </p>
           </div>
-          <div class="col-sm-4 text-right text-end">
+          <div class="col-sm-4 text-end">
             <button class="btn btn-outline-secondary btn-sm" ng-click="ctrl.manualRefreshRatings()" ng-disabled="processingPrompt.inProgress || !ctrl.activeBookId">
               <i class="bi bi-box-arrow-in-down"></i> Refresh Ratings
             </button>
@@ -138,7 +138,7 @@
             </label>
             <p class="text-muted small">Case <i class="bi bi-arrow-left"></i> Book: add queries that exist in Book but not in Case.</p>
           </div>
-          <div class="col-sm-4 text-right text-end">
+          <div class="col-sm-4 text-end">
             <button class="btn btn-outline-secondary btn-sm" ng-click="ctrl.manualSyncQueries()" ng-disabled="processingPrompt.inProgress || !ctrl.activeBookId">
               <i class="bi bi-plus"></i> Sync Queries
             </button>
@@ -156,15 +156,17 @@
 </div>
 
 <div class="modal-footer">
-  <a class="btn btn-primary me-auto" ng-href="{{ctrl.createNewBookLink()}}" target="_self" ng-disabled="processingPrompt.inProgress">
-    <i class="bi bi-plus" style="color: #FFF"></i>
-    Create a book
-  </a>
+  <div class="d-flex gap-2 me-auto">
+    <a class="btn btn-primary" ng-href="{{ctrl.createNewBookLink()}}" target="_self" ng-disabled="processingPrompt.inProgress">
+      <i class="bi bi-plus" style="color: #FFF"></i>
+      Create a book
+    </a>
 
-  <a class="btn btn-outline-secondary" href="books/{{ctrl.activeBookId}}/judge" target="_self" ng-show="ctrl.activeBookId">
-    <i class="bi bi-book-fill"></i>
-    Judge Documents!
-  </a>
+    <a class="btn btn-outline-secondary" href="books/{{ctrl.activeBookId}}/judge" target="_self" ng-show="ctrl.activeBookId">
+      <i class="bi bi-book-fill"></i>
+      Judge Documents!
+    </a>
+  </div>
   <button
     class="btn btn-success"
     ng-show="ctrl.hasUnsavedChanges()"

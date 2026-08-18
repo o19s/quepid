@@ -21,8 +21,6 @@
     >
     </qscore-query>
 
-    <span class="loading-query"></span>
-
     <h2 class="results-title">
       <span class='query' quepid-tooltip="Info Need: {{query.informationNeed}}" tooltip-popup-delay="1000" tooltip-placement="right">
         <img class="img-thumbnail query-thumbnail" ng-if="query.queryText | isImageUrl"
@@ -113,7 +111,7 @@
     <!-- Query note taker -->
     <div ng-class="{true: 'notes-box', false: 'd-none'}[displayed.notes]">
       <div ng-controller = 'QueryNotesCtrl as ctrl' class="notes-content">
-        <form ng-submit="saveNotes()" class="form-horizontal">
+        <form ng-submit="saveNotes()">
           <div class="row mb-3">
             <label for="information-need" class="col-sm-2 col-form-label text-sm-end">Information Need</label>
             <div class="col-sm-10">

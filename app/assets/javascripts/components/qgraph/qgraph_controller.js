@@ -137,6 +137,12 @@ angular.module('QuepidApp')
       }
 
       function buildSpec(scoreData, annotationData) {
+        // Quantitative + explicit domain (rather than ordinal/band) so the
+        // line runs edge-to-edge like the old d3 scaleLinear did, instead of
+        // being inset by half a band on either side.
+        var lastIndex = scoreData.length - 1;
+        var xScale = { domain: [ 0, lastIndex || 1 ], nice: false };
+
         return {
           $schema:    'https://vega.github.io/schema/vega-lite/v6.json',
           width:      ctrl.width,
@@ -151,7 +157,7 @@ angular.module('QuepidApp')
               data: { values: scoreData },
               mark: { type: 'line', interpolate: 'linear' },
               encoding: {
-                x: { field: 'index', type: 'ordinal', axis: null },
+                x: { field: 'index', type: 'quantitative', scale: xScale, axis: null },
                 y: {
                   field: 'score',
                   type:  'quantitative',
@@ -167,7 +173,7 @@ angular.module('QuepidApp')
               data: { values: annotationData },
               mark: { type: 'rule' },
               encoding: {
-                x: { field: 'index', type: 'ordinal', axis: null },
+                x: { field: 'index', type: 'quantitative', scale: xScale, axis: null },
                 // A plain signal (rather than a field encoding) keeps the
                 // tooltip to just the message text, matching the old
                 // hand-rolled tooltip instead of vega-tooltip's default

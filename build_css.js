@@ -185,22 +185,6 @@ function buildAdminCSS() {
   console.log(`admin.css created (${(stats.size / 1024).toFixed(1)}KB)`);
 }
 
-function buildAdminUsersCSS() {
-  console.log('Building admin_users.css...');
-  
-  const outputFile = 'app/assets/builds/admin_users.css';
-  let output = '/* Admin Users CSS Bundle */\n';
-  output += `/* Generated on ${new Date().toISOString()} */\n`;
-  output += '\n';
-
-  // Copy admin_users.css if it exists
-  output += readFileIfExists('app/assets/stylesheets/admin_users.css');
-
-  fs.writeFileSync(outputFile, output);
-  const stats = fs.statSync(outputFile);
-  console.log(`admin_users.css created (${(stats.size / 1024).toFixed(1)}KB)`);
-}
-
 function copyVendorFiles() {
   console.log('Copying Angular vendor CSS files...');
   
@@ -253,8 +237,7 @@ function buildAllCSS() {
     buildApplicationCSS();
     buildCoreCSS();
     buildAdminCSS();
-    buildAdminUsersCSS();
-    
+
     // Copy vendor and asset files
     copyVendorFiles();
     copyFontFiles();
