@@ -2,15 +2,17 @@
 
 You are working on Quepid, a Rails application. Also look at @DEVELOPER_GUIDE.md.
 
-We run Quepid in Docker primarily, don't run Rails and other build tasks locally..
+We run Quepid in Docker primarily, don't run Rails and other build tasks locally.
 
-To set up the envirnoment use:
-
-`bin/setup_docker`.
+Assume Quepid is already up and running. Check first (for example, a request to http://localhost:33000 or `docker compose ps`) and only start it if it isn't.
 
 To start rails:
 
-`bin/docker s`
+`bin/docker s`.
+
+To set up the environment use:
+
+`bin/setup_docker`.
 
 Do not stop (you may restart) the dev server unless the user explicitly asks. Leave it running across tasks.
 
@@ -21,7 +23,7 @@ Use yarn instead of npm for package management.
 Run javascript tests via `bin/docker r yarn test`.
 
 
-Documentation goes in the `docs` directory, not a toplevel `doc` directory.
+Documentation goes in the `docs` directory, not a toplevel `doc` directory. When editing markdown, update only what changed -- avoid rewriting unrelated sections; we want minimal churn so the diff is clear.
 
 To understand the data model used by Quepid, consult `./docs/data_mapping.md`.
 
