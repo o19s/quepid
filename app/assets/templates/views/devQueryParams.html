@@ -179,13 +179,11 @@
             <p>
               <a ng-href="{{createSearchEndpointLink(settings.selectedTry.searchEndpointId)}}" target="_self">More</a>
             </p>
-            <p>
-              <span ng-show="showTLSChangeWarning">
-                You have specified a search engine url that is on a different protocol (
-                <code>{{protocolToSwitchTo}}</code> ) than Quepid is on. Please either <a href="{{createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId)}}/edit" target="_self">swap to the proxied connection</a>, or make sure the search endpoint is running on the same HTTP protocol.
-                This is to comply with browser security constraints.
-              </span>
-            </p>
+            <div ng-show="showProxyRequiredWarning" class="alert alert-warning" style="margin-top: 15px;">
+              <strong>Protocol Mismatch:</strong> You have specified a search engine URL that is on a different protocol (<code>{{endpointProtocol}}</code>) than Quepid (<code>{{quepidProtocol}}</code>).
+              <br/>
+              Please enable <strong>Proxy Requests</strong> on your search endpoint settings to comply with browser security constraints.
+            </div>
           </div>
         </div>
         <!-- end of Search Endpoint -->
@@ -314,14 +312,11 @@
 </div> <!-- end #queryParamsArea -->
 
 <span ng-show="qp.curTab == 'developer' || qp.curTab == 'engineSettings' || qp.curTab == 'curator'">
-  <span ng-show="showTLSChangeWarning">
-    <a href="{{quepidUrlToSwitchTo}}" class="btn btn-primary form-control">
-      <span class="glyphicon glyphicon-refresh"></span> Reload Quepid in <code>{{protocolToSwitchTo}}</code>
-      Protocol
-    </a>
+  <span ng-show="showProxyRequiredWarning" class="alert alert-warning" style="display: block; margin-bottom: 10px;">
+    Please enable Proxy Requests in Settings to run searches.
   </span>
 
-  <span ng-show="!showTLSChangeWarning" id="query-sandbox-action" ng-click="settings.submit()"
+  <span ng-show="!showProxyRequiredWarning" id="query-sandbox-action" ng-click="settings.submit()"
     class="btn btn-primary form-control">
     Rerun My Searches!
   </span>
