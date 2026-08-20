@@ -1,0 +1,37 @@
+{
+  "name": "angular-ui-ace",
+  "version": "0.2.3",
+  "description": "This directive allows you to add ACE editor elements.",
+  "author": "https://github.com/angular-ui/ui-ace/graphs/contributors",
+  "license": "MIT",
+  "homepage": "http://angular-ui.github.com",
+  "main": "./ui-ace.js",
+  "dependencies": {},
+  "devDependencies": {
+    "angular-ui-publisher": "~1.x",
+    "grunt": "~0.4.5",
+    "grunt-contrib-connect": "~0.9.0",
+    "grunt-contrib-copy": "~0.7.0",
+    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-contrib-uglify": "~0.7.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-conventional-changelog": "~1.1.0",
+    "grunt-karma": "~0.9.0",
+    "grunt-ng-annotate": "^0.8.0",
+    "jasmine-core": "^2.1.3",
+    "karma": "~0.12.31",
+    "karma-chrome-launcher": "~0.1.7",
+    "karma-coverage": "~0.2.7",
+    "karma-firefox-launcher": "~0.1.4",
+    "karma-jasmine": "~0.3.4",
+    "karma-phantomjs-launcher": "~0.1.4",
+    "load-grunt-tasks": "~2.0.0"
+  },
+  "scripts": {
+    "test": "grunt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/angular-ui/ui-ace.git"
+  }
+}

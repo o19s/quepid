@@ -2,14 +2,15 @@
 
 angular.module('QuepidApp')
   .controller('TakeSnapshotCtrl', [
-    '$scope', '$uibModal', '$log',
-    function ($scope, $uibModal, $log) {
+    '$scope', '$quepidModal', '$log',
+    function ($scope, $quepidModal, $log) {
       $scope.snapshot = {};
       $scope.snapshot.prompt = function() {
 
-        var modalInstance = $uibModal.open({
-          templateUrl: 'views/snapshotModal.html',
-          controller: 'PromptSnapshotCtrl',
+        var modalInstance = $quepidModal.open({
+          templateUrl:    'views/snapshotModal.html',
+          controller:     'PromptSnapshotCtrl',
+          ariaLabelledBy: 'snapshot-modal-title',
         });
 
         modalInstance.result.then(function() {

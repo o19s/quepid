@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1>
-    <%= image_tag @user.avatar_url(:big), size:'96x96', class:'img-rounded', title: 'Avatar image' unless @user.ai_judge? %>
+    <%= image_tag @user.avatar_url(:big), size:'96x96', class:'rounded', title: 'Avatar image' unless @user.ai_judge? %>
     <%= @user.display_name %>    
   </h1>
   <div class="btn-toolbar mb-2 mb-md-0">

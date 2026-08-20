@@ -2,10 +2,10 @@
 
 angular.module('QuepidApp')
   .controller('QueryOptionsModalInstanceCtrl', [
-    '$uibModalInstance',
+    '$quepidModalInstance',
     'value',
     function (
-      $uibModalInstance,
+      $quepidModalInstance,
       value
     ) {
       var ctrl = this;
@@ -13,11 +13,11 @@ angular.module('QuepidApp')
       ctrl.value = JSON.stringify(value, null, 2);
 
       ctrl.ok = function () {
-        $uibModalInstance.close(ctrl.value);
+        $quepidModalInstance.close(ctrl.value);
       };
 
       ctrl.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
     }
   ]);

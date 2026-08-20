@@ -89,14 +89,14 @@ angular.module('QuepidApp')
         if (searchEngine === 'solr') {
           return 'One or more of your Solr queries failed to return results, please access your <a href="' +
                  inspectUrl +
-                 '" target="_blank">Solr instance directly</a> to confirm Solr is accessible and to inspect the error.   If Solr responds, check if you have an ad blocker blocking your queries.  With Solr 8.4.1 and later you need to allow Quepid access to Solr.  Learn more <a href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid#compatibility-with-nosniff" target="_blank">on the troubleshooting Solr wiki page</a>.';
+                 '" target="_blank" rel="noopener noreferrer">Solr instance directly</a> to confirm Solr is accessible and to inspect the error.   If Solr responds, check if you have an ad blocker blocking your queries.  With Solr 8.4.1 and later you need to allow Quepid access to Solr.  Learn more <a href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid#compatibility-with-nosniff" target="_blank" rel="noopener noreferrer">on the troubleshooting Solr wiki page</a>.';
         }
 
         var error = 'An unexpected error was returned: ';
 
         if ( response.status === -1 ) {
           error += 'You may have a typo in your URL';
-          error += ' (<a href="https://github.com/o19s/quepid/wiki" target="_blank">Quepid Wiki</a> for more help).';
+          error += ' (<a href="https://github.com/o19s/quepid/wiki" target="_blank" rel="noopener noreferrer">Quepid Wiki</a> for more help).';
           error += ' If that is not the case, make sure that CORS is enabled in your config.';
         } else {
           error +=  self.formatCode(response.status);

@@ -74,11 +74,11 @@
 
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
 
 <%= render 'layouts/header' %>
 
-<div class="container-fluid">
+<div class="container-fluid flex-shrink-0">
   <div class="row">
 
     <% if @current_user  && !(controller_name == 'judgements' and ['new','edit'].any? params[:action]) %>
@@ -91,6 +91,9 @@
     </main>
   </div>
 </div>
+
+<%= render 'layouts/footer' %>
+
 <%= debugbar_body if defined? Debugbar %>
 </body>
 </html>

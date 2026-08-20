@@ -12,11 +12,7 @@ LocalTime.start()
 Turbo.config.drive.progressBarDelay = 1
 Turbo.session.drive = false
 
-import "vega"
-import "vega-lite"
-import "vega-embed"
-
-window.dispatchEvent(new Event("vega:load"))
+import "vega_globals"
 
 import "ahoy"
 

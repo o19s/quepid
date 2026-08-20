@@ -2,9 +2,9 @@
 
 angular.module('QuepidApp')
   .controller('TargetedSearchModalCtrl', [
-    '$scope', '$uibModalInstance', '$log',
+    '$scope', '$quepidModalInstance', '$log',
     'query',
-    function ($scope, $uibModalInstance, $log, query) {
+    function ($scope, $quepidModalInstance, $log, query) {
 
       $scope.query = query;
       $scope.targetedSearchModalModel = {};
@@ -13,7 +13,7 @@ angular.module('QuepidApp')
       $log.debug('TargetedSearchModalCtrl - Initiated');
 
       $scope.targetedSearchModalModel.closeModal = function() {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
 
       // using the enter key causes the lucene query to scroll out of view

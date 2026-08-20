@@ -2,34 +2,37 @@
 // This will be compiled by esbuild into app/assets/builds/angular_app.js
 // NOTE: jQuery must be loaded separately before this bundle
 
-// jQuery UI and plugins (jQuery must already be loaded globally)
-import 'jquery-ui-dist/jquery-ui.min';
-import 'jquery-autogrowinput';
-
-// D3 for visualizations
-import * as d3 from 'd3';
-window.d3 = d3;
-
-// Angular and core dependencies
+// Angular and AngularJS satellite modules (vendored under ./vendor/ except core angular from npm)
 import 'angular';
-import 'angular-resource';
-import 'angular-cookies';
-import 'angular-route';
-import 'angular-sanitize';
-import 'angular-animate';
+import './vendor/angular-route';
+import './vendor/angular-sanitize';
 
-// Angular third-party modules
-import 'angular-ui-bootstrap';
-import 'angular-wizard';
-import 'angular-ui-sortable';
-import 'angular-utils-pagination';
-import 'angular-timeago';
-import 'angular-csv-import';
-import 'angular-flash/dist/angular-flash';
-import 'angular-countup';
+// Bootstrap 5 JS (Tooltip, Popover, etc.) is loaded separately via the
+// `bootstrap_globals` importmap pin (see app/views/layouts/core.html.erb)
+// instead of being bundled here from npm — see config/importmap.rb for why.
+
+// kraaden/autocompleter — vanilla replacement for uib-typeahead. Pinned to
+// window so quepidTypeahead can use it without importing into the Angular
+// bundle (matches the bootstrap pattern above).
+import autocomplete from 'autocompleter';
+window.autocompleter = autocomplete;
+
+// SortableJS — vanilla replacement for angular-ui-sortable/jQuery UI's
+// $.fn.sortable(). Pinned to window so quepidSortable can use it without
+// importing into the Angular bundle (matches the pattern above).
+import Sortable from 'sortablejs';
+window.Sortable = Sortable;
+
+// Angular third-party modules (vendored sources; see vendor/README.md)
+import './vendor/angular-wizard/angular-wizard.js';
+import './vendor/angular-utils-pagination';
+import './vendor/angular-timeago/dist/angular-timeago.js';
+import './vendor/angular-csv-import/lib/angular-csv-import.js';
+import './vendor/angular-flash/angular-flash.js';
+import './vendor/angular-countup/angular-countup.js';
 import 'clipboard';
-import 'ngclipboard';
-import 'ng-tags-input';
+import './vendor/ngclipboard/ngclipboard.js';
+import './vendor/ng-tags-input/build/ng-tags-input.js';
 import 'file-saver';
 
 // ACE editor
@@ -41,21 +44,17 @@ import 'ace-builds/src-min-noconflict/mode-lucene';
 window.ace = ace;
 
 // Angular UI ACE
-import 'angular-ui-ace/src/ui-ace';
+import './vendor/angular-ui-ace/src/ui-ace.js';
 
 // Splainer Search (vanilla-JS 3.x wrapped in a local Angular shim)
 import './splainer_search_adapter';
 
-// ng-json-explorer - use the dist file to avoid gulpfile issues
-import 'ng-json-explorer/dist/angular-json-explorer';
+// ng-json-explorer - use dist build to avoid gulpfile issues
+import './vendor/ng-json-explorer/dist/angular-json-explorer.js';
 
-// Vega for charts
-import * as vega from 'vega';
-import * as vegaLite from 'vega-lite';
-import vegaEmbed from 'vega-embed';
-window.vega = vega;
-window.vegaLite = vegaLite;
-window.vegaEmbed = vegaEmbed;
+// Vega for charts (angular-vega.js directive) is loaded separately via the
+// `vega_globals` importmap pin (see app/views/layouts/core.html.erb) instead
+// of being bundled here from npm — see config/importmap.rb for why.
 
 // URI.js
 import URI from 'urijs';
@@ -65,6 +64,7 @@ window.URI = URI;
 import 'tether-shepherd/dist/js/tether';
 import 'tether-shepherd/dist/js/shepherd';
 
-// Angular templates will be handled separately via angular-rails-templates
-// The actual application code will be loaded via individual script tags
-// or bundled in a separate step
+// Angular templates are pre-populated into $templateCache by build_templates.js
+// (a local replacement for the angular-rails-templates gem). Controllers,
+// directives, and services under app/assets/javascripts/ are still loaded via
+// the asset pipeline rather than this bundle.

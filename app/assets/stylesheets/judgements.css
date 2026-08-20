@@ -1,4 +1,7 @@
-/* Shared styles for judgment/rating UI */
+/*
+ * Judgement/rating UI (forms, bulk judge layout, scoring guidelines).
+ * Bundled in application.css via build_css.js.
+ */
 .btn-preselected { 
   color: black !important; 
   font-weight: bold !important; 
@@ -10,7 +13,6 @@
 .bold-and-black { color: black; font-weight: bold; }
 .keyboard-shortcuts-td { padding: 5px; text-align: center; color: #999; }
 .padded { padding:5px; }
-.hidden { visibility: hidden!important; display: none!important; }
 
 .rating-buttons .btn-check:checked + .btn {
   box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.3);
@@ -83,4 +85,57 @@
 
 .scoring-guidelines-content a:hover {
   text-decoration: underline;
+}
+
+/*
+ * Bulk judge page (bulk_judge#new) — card/query sidebar layout.
+ * Lives here with the rest of judgement UI styles (application bundle).
+ */
+.query-group-card {
+  overflow: visible;
+}
+
+.query-sidebar {
+  background-color: #f8f9fa;
+  border-right: 2px solid #dee2e6;
+  min-height: 100%;
+}
+
+.sticky-query-label {
+  position: sticky;
+  top: 70px; /* navbar (~56px) + padding */
+  padding: 1.5rem;
+}
+
+.query-title {
+  color: #6c757d;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.query-text {
+  font-size: 1.1rem;
+  color: #212529;
+  overflow-wrap: break-word;
+}
+
+.document-card {
+  background-color: white;
+}
+
+.document-card:last-child {
+  border-bottom: none !important;
+}
+
+.document-header {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e9ecef;
+  min-height: 3rem;
+}
+
+.document-content {
+  max-height: 300px;
+  overflow-y: auto;
 }

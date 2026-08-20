@@ -1,7 +1,7 @@
-<div class="container">
+<div class="container-fluid">
   <div style="margin: 10px" ng-if="tryName.startRename">
-    <form class="form-inline" ng-submit="tryName.rename()">
-      <div class="form-group">
+    <form class="d-flex flex-wrap align-items-center gap-2" ng-submit="tryName.rename()">
+      <div class="mb-3">
         <label>Name:</label><input style="background:#FFFF99" type="text" ng-model="tryName.name" class="form-control" />
         <input type="submit" class="btn btn-sm btn-primary" value="Rename" />
       </div>
@@ -14,7 +14,8 @@
       Arguments
     </div>
     <div class="col-sm-9">
-    <pre><code>{{aTry.queryParams}}</code></pre>
+      <pre><code>{{aTry.queryParams}}</code></pre>
+    </div>
   </div>
 
   <div class="row">
@@ -29,7 +30,7 @@
         {{aTry.endpointName}}
         </a>
         --
-        <a href="{{aTry.searchUrl}}" target="_blank">Browse Search Endpoint</a>
+        <a href="{{aTry.searchUrl}}" target="_blank" rel="noopener noreferrer">Browse Search Endpoint</a>
       </div>
     </div>
   </div>
@@ -61,24 +62,22 @@
     </div>
   </div>
 
-  <div ng-repeat="var in aTry.curatorVars" class="row">
+  <div ng-repeat="curatorVar in aTry.curatorVars" class="row">
     <div style="text-align: right" class="col-sm-3">
-      ##{{var.name}}##
+      ##{{curatorVar.name}}##
     </div>
     <div class="col-sm-9">
-        {{var.value}}
+        {{curatorVar.value}}
     </div>
   </div>
 
   <hr/>
 
-  <div class="row" style="padding: 10px">
-    <div class="pull-right">
-      <button type="button" ng-if="tryName.startRename" ng-click="tryName.startRename = false" class="btn btn-default">Cancel Rename</button>
-      <button type="button" ng-if="!tryName.startRename" ng-click="tryName.startRename = true" class="btn btn-default">Rename</button>
-      <button type="button" ng-click="duplicateTry(aTry)" class="btn btn-default">Duplicate</button>
-      <button type="button" ng-disabled="numTries() === 1" ng-click="deleteTry(aTry)" class="btn btn-danger">Delete</button>
-      <button type="button" ng-click="cancel()"  class="btn btn-default">Dismiss</button>
-    </div>
+  <div class="d-flex justify-content-end gap-2" style="padding: 10px">
+    <button type="button" ng-if="tryName.startRename" ng-click="tryName.startRename = false" class="btn btn-outline-secondary">Cancel Rename</button>
+    <button type="button" ng-if="!tryName.startRename" ng-click="tryName.startRename = true" class="btn btn-outline-secondary">Rename</button>
+    <button type="button" ng-click="duplicateTry(aTry)" class="btn btn-outline-secondary">Duplicate</button>
+    <button type="button" ng-disabled="numTries() === 1" ng-click="deleteTry(aTry)" class="btn btn-danger">Delete</button>
+    <button type="button" ng-click="cancel()"  class="btn btn-outline-secondary">Dismiss</button>
   </div>
 </div>

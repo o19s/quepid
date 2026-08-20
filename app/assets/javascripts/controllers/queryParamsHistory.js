@@ -2,10 +2,10 @@
 
 angular.module('QuepidApp')
   .controller('queryParamsHistoryCtrl', [
-    '$scope', '$uibModal',
+    '$scope', '$quepidModal',
     'flash',
     'caseTryNavSvc',
-    function($scope, $uibModal, flash, caseTryNavSvc) {
+    function($scope, $quepidModal, flash, caseTryNavSvc) {
       var urlsIveSeen = {};
 
       // This method trys to group search end urls into
@@ -41,7 +41,7 @@ angular.module('QuepidApp')
       };
 
       $scope.tryDetails = function(aTry) {
-        var modalInstance = $uibModal.open({
+        var modalInstance = $quepidModal.open({
           templateUrl: 'views/queryParamsDetails.html',
           controller: 'QueryParamsDetailsCtrl',
           windowClass: 'queryParamsDetails',

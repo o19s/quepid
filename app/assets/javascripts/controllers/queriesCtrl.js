@@ -9,7 +9,7 @@ angular.module('QuepidApp')
     '$log',
     '$location',
     '$routeParams',
-    '$uibModal',
+    '$quepidModal',
     'queriesSvc',
     'queryViewSvc',
     'querySnapshotSvc',
@@ -25,7 +25,7 @@ angular.module('QuepidApp')
       $log,
       $location,
       $routeParams,
-      $uibModal,
+      $quepidModal,
       queriesSvc,
       queryViewSvc,
       querySnapshotSvc,
@@ -95,38 +95,34 @@ angular.module('QuepidApp')
       //   $scope.queries.avgQuery.calcScore();
       // });
 
-      // Options for ui-sortable at http://api.jqueryui.com/sortable/
+      // Options for quepidSortable (see directives/quepidSortable.js). The
+      // directive already runs start/stop inside $scope.$apply, so these
+      // must not call $apply themselves.
       var sortableOptions = {
-        opacity:        0.75,
-        revert:         250,
-        helper:         'clone',
-        axis:           'y',
-        cancel:         '.unsortable',
         start: function() {
-          $scope.$apply($scope.dragging = true);
+          $scope.dragging = true;
 
-          // This is required because by the time the `stop` function is called
-          // the list is already altered by the directive, so the items are
-          // already in the new order.
+          // This is required because by the time `stop` is called the DOM
+          // (and therefore SortableJS's oldIndex/newIndex) already reflects
+          // the new order.
           $scope.originalList = angular.copy($scope.queriesList);
 
           if ( $scope.reverse ) {
             $scope.originalList = $scope.originalList.reverse();
           }
         },
-        stop: function(event, ui) {
-          if (ui.item.sortable.droptarget === undefined) {
-            $scope.$apply($scope.dragging = false);
+        stop: function(oldIndex, newIndex) {
+          $scope.dragging = false;
+
+          if ( angular.isUndefined(newIndex) || oldIndex === newIndex ) {
             return;
           }
 
           var reverse   = $scope.reverse;
-          var fromIndex = ui.item.sortable.index;
-          var toIndex   = ui.item.sortable.dropindex;
-          fromIndex     = fromIndex + (
+          var fromIndex = oldIndex + (
             ($scope.pagination.currentPage - 1) * $scope.pagination.pageSize
           );
-          toIndex       = toIndex + (
+          var toIndex   = newIndex + (
             ($scope.pagination.currentPage - 1) * $scope.pagination.pageSize
           );
 
@@ -137,14 +133,10 @@ angular.module('QuepidApp')
             reverse = !reverse;
           }
 
-          if ( !angular.isUndefined(toIndex) && fromIndex !== toIndex ) {
-            queriesSvc.updateQueryDisplayPosition(item.queryId, oldItem.queryId, reverse)
-              .then(function() {
-                $scope.originalList = $scope.queriesList;
-              });
-          }
-
-          $scope.$apply($scope.dragging = false);
+          queriesSvc.updateQueryDisplayPosition(item.queryId, oldItem.queryId, reverse)
+            .then(function() {
+              $scope.originalList = $scope.queriesList;
+            });
         }
       };
 
@@ -526,10 +518,12 @@ angular.module('QuepidApp')
 
       /*jslint latedef:false*/
       function pickCaseScorer() {
-        var modalInstance = $uibModal.open({
-          templateUrl: 'views/pick_scorer.html',
-          controller:  'ScorerCtrl',
-          resolve:     {
+        var modalInstance = $quepidModal.open({
+          templateUrl:    'views/pick_scorer.html',
+          controller:     'ScorerCtrl',
+          windowClass:    'pick-scorer-modal',
+          ariaLabelledBy: 'pick-scorer-modal-title',
+          resolve:        {
             parent: function() {
               return {
                 attachTo:      queriesSvc,

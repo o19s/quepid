@@ -1,0 +1,670 @@
+/*
+ * Quepid core UI — layout and skin that do not use Bootstrap framework classes
+ * in selectors. All Bootstrap-class overrides for the Angular core bundle —
+ * navbar brand skin (`.navbar-brand`, `.navbar-secondary`, header `.nav-link`),
+ * sub-results toolbars, `#dev-settings` tabs, modals, annotations, dropdown
+ * shims, etc. — live in bootstrap5-compat.css.
+ *
+ * Header dropdown skin (scoped overrides on BS5 `.dropdown-menu` /
+ * `.dropdown-item`), flash directive chrome (`.flash`), and
+ * `#flash-messages` live here.
+ *
+ * Loaded by build_css.js between fonts.css and bootstrap5-compat.css.
+ */
+
+/* BS3's default base font-size was 14px; BS5 defaults to 16px. Rem-based
+ * BS5 spacing/padding/font-sizes throughout core.css scale off the root
+ * font-size, so leaving BS5's 16px default makes the whole case view look
+ * noticeably larger/looser than the old BS3 UI. This restores BS3's density
+ * (14/16 = 87.5%) for every rem-based measurement at once. Scoped to `html`
+ * only — putting it on `body` too would compound (each `%` is relative to
+ * its own parent), shrinking body to 87.5% of 14px instead of 14px. */
+html {
+  font-size: 87.5%;
+}
+
+html, body {
+  width:    100%;
+  height:   100%;
+  padding:  0;
+  margin:   0;
+  overflow: auto; /* when page gets too small */
+}
+
+hr {
+  border-color: rgb(170, 170, 170);
+}
+
+/*
+	Base Styles
+*/
+
+body {
+  background: url('blue_bg.jpg') top center repeat;
+}
+
+a, button, .button {
+  cursor: pointer;
+}
+
+#main {
+	padding: 0;
+	position: relative;
+	min-width: 750px;
+}
+
+/*
+	Header dropdown skin — Quepid visual on BS5's .dropdown-menu /
+	.dropdown-item. Markup lives in _header_core_app.html.erb. BS5
+	supplies positioning (Popper.js), open/close plumbing, and the
+	keyboard a11y; we only override spacing, item layout, and the
+	link color/hover treatment.
+
+	Scoped to `header` so other dropdowns (case toolbar, account
+	picker outside the header) stay on BS5 defaults.
+*/
+
+header .dropdown-menu {
+  margin: 0;
+  padding: 1px 0 0 0;
+  border-radius: 0;
+  z-index: 999;
+}
+
+header .dropdown-menu > li {
+  min-width: 250px;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+header .dropdown-item {
+  padding: 0;
+  color: var(--q-brand-blue);
+  background: transparent;
+}
+
+header .dropdown-item:hover,
+header .dropdown-item:focus {
+  background: transparent;
+  color: var(--q-brand-blue-hover);
+  text-decoration: underline;
+}
+
+/*
+	Main - results
+*/
+.dragging {
+  border: 1px dashed #AAA;
+  padding: 5px 0px;
+}
+.results-control h1 {
+  margin: 15px 0 20px 0;
+  padding-bottom: 10px;
+}
+
+/* stackedChart.css has an unscoped `small { font-size: 11px; }` leak that
+ * otherwise wins the cascade here and flattens the "Current case" / "Try N"
+ * subtext to a fixed 11px regardless of the heading size. Restore `small`'s
+ * normal size-relative-to-parent behavior so it scales with the case title. */
+.results-control h1 small {
+  font-size: 0.875em;
+}
+
+/* BS3's .text-muted was a flat #777; BS5's is --bs-secondary-color, body
+ * color at 75% opacity (~#585c60 on white) — noticeably darker/heavier than
+ * the old muted gray. BS5's .text-muted sets `color` with !important, so it
+ * has to be steered via the custom property it reads rather than overriding
+ * `color` directly. Restore the softer BS3 tone across the case view (case
+ * header subtext, query-toolbar separators and "Sort" label). */
+/* BS3's link blue (--q-brand-blue, defined in bootstrap5-compat.css)
+ * was much more muted than BS5's brighter/more saturated #0d6efd default.
+ * Restore the muted BS3 blue across the case view by steering the
+ * variables `a`/`a:hover` read from, rather than overriding `color`
+ * directly (keeps the cascade intact for any other rule that reads these
+ * same variables).
+ *
+ * BS3's body font was "Helvetica Neue", Helvetica, Arial, sans-serif; BS5
+ * defaults to a system-ui stack whose glyphs render noticeably larger/
+ * chunkier at the same declared font-size (e.g. the "0.00" case score).
+ * `font-family` is a normal inherited property (not read per-element via
+ * var() the way .text-muted/`a` are), so it's enough to set it once here —
+ * every descendant that doesn't declare its own font-family inherits it.
+ * `.results-control :is(h1, h2, ...)` below is more specific and still wins
+ * for headings, so the Aller branding font is unaffected. */
+.results-control {
+  --bs-secondary-color: #777;
+  --bs-link-color: var(--q-brand-blue);
+  --bs-link-color-rgb: var(--q-brand-blue-rgb);
+  --bs-link-hover-color: var(--q-brand-blue-hover);
+  --bs-link-hover-color-rgb: var(--q-brand-blue-hover-rgb);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* BS3 never underlined links by default (only on hover/focus); BS5's Reboot
+ * underlines every <a> by default. Restore BS3's convention across the case
+ * view — toolbar links, sort/filter controls, etc. — since the blue link
+ * color alone already signals interactivity throughout the app. */
+.results-control a {
+  text-decoration: none;
+}
+
+.results-control a:hover,
+.results-control a:focus {
+  text-decoration: underline;
+}
+
+.results-control :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6) {
+  font-family: 'allerregular', sans-serif;
+}
+
+/* #query-container/#case-header/#case-actions have no side padding, so
+ * BS5's default .row negative margin (bs-gutter-x / -2) bleeds their
+ * children flush to the viewport edge — the old BS3 build zeroed .row's
+ * margin in this results-control area so each .col's own gutter padding
+ * became the only inset, leaving a clean margin instead of edge-to-edge
+ * content (e.g. the case score badge and the case-actions toolbar). */
+.results-control #query-container > .row,
+.results-control #case-header,
+.results-control #case-actions {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.results-control #query-container {
+  margin: 5px 0 60px;
+  padding: 30px 0 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-width:1px 0;
+}
+
+.results-control queries {
+  background: #fff;
+}
+
+.results-list-element {
+	list-style: none;
+  display: block;
+  clear: both;
+	margin: 20px 0 0;
+  padding-left: 0;
+}
+
+.results-list-element > li {
+  border: 1px solid #eee;
+	margin: 0 0 5px 0;
+	position: relative;
+	border-radius: 5px;
+}
+
+.result-header {
+  align-items: stretch;
+  overflow: auto;
+  position: relative;
+  padding: 10px 20px;
+}
+.result-header:hover {
+  background: #eee;
+}
+
+.case-score {
+  display: block;
+}
+
+.results-title {
+	color:       #222;
+	cursor:      pointer;
+	font-size:   18px;
+	font-weight: normal;
+	line-height: 1.5em;
+	margin:      0;
+  display:    block;
+  flex:       2 2 10%;
+  float:      left;
+}
+
+.results .total-results {
+  display:      block;
+  float:        right;
+  line-height:  30px;
+  margin-right: 50px;
+  text-align:   right;
+}
+
+.low-profile {
+  opacity: 0.5;
+  font-size: 60%;
+}
+
+.query-score-label {
+  display: block;
+}
+
+.results .error-warning {
+	display: none;
+}
+
+.results .queryHeader_error .error-warning {
+	display: inline-block;
+	font-size: 1.25rem;
+	color: var(--q-query-error-icon-color);
+}
+
+.results .toggleSign {
+	color: #2872bc;
+	position: absolute;
+	top: 50%;
+	right: 19px;
+	transform: translateY(-50%);
+	font-weight: bold;
+	border-radius: 3px;
+	font-size: 16px;
+}
+
+.toggleSign {
+  cursor: pointer;
+}
+
+
+/*
+	Main - Results - Sub Results (structure only; .btn-toolbar / .row lives in bootstrap5-compat.css)
+*/
+
+.sub-results {
+	clear: both;
+	background: url('sub-results-bg.png') top center no-repeat #F7F7F7;
+	padding: 75px 15px 15px 15px;
+	position: relative;
+	min-width: 650px;
+}
+
+.sub-results td {
+	vertical-align: middle;
+}
+
+
+/*
+	Main - Results - Sub Results — rating columns and thumbnails
+*/
+
+/* BS5 Reboot's `ul { margin-bottom: 1rem }` default is left over here since
+ * nothing else resets it, adding ~14px of unwanted space below the rating
+ * buttons inside the "Score All" popover. */
+.ratingContainer ul {
+  margin: 0;
+  padding: 0;
+}
+
+.ratingContainer .ratingNum {
+	box-shadow: inset 0 0 20px rgba(255,255,255,0.75);
+}
+
+.ratingContainer .ratingNum:hover {
+	box-shadow: inset 0 0 15px rgba(0,0,0,0.25);
+	color: #FFF;
+}
+
+.col-summary {
+	text-align: left;
+	margin-left: 70px;
+	padding: 15px;
+}
+
+.query-thumbnail {
+	width: 75px;
+	height: 100%;
+	margin: -10px 0;
+	padding: 0;
+	display: block;
+	line-height: 0;
+	object-fit: contain;
+}
+
+.result-thumbnail {
+	width: 75px;
+}
+
+.result-image {
+	width: 250px;
+}
+
+.score-all {
+  margin-left: 15px;
+}
+
+.score-all .ratings {
+  position: relative;
+}
+
+.score-all-alert {
+  margin-left: 20px;
+}
+
+.col-ratings.query-rating {
+  margin-left: 15px;
+  margin-top: -10px;
+}
+
+/* Per-document rating column sits inside a different positioned ancestor
+ * (.col-md-10, 10.5px padding) than the "Score All" column above it
+ * (.sub-results.container-fluid, 15px padding), so absolute `left: 0` alone
+ * lands 11px further left. Nudge it right to line up under "Score All". */
+.col-ratings:not(.query-rating) {
+  margin-left: 11px;
+}
+
+.col-ratings {
+	width: 75px;
+	padding: 0;
+	position: absolute;
+	top: 15px;
+	left: 0;
+}
+
+.result-thumb-col {
+	width: 125px;
+}
+
+.result-image-col {
+	width: 300px;
+}
+
+.col-summary .subfields {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.col-summary .subfields li {
+	margin: 0 0 10px 0;
+	padding: 0;
+}
+
+.col-summary .subfields li:last-child {
+	margin: 0;
+}
+
+.col-summary .subfields li.subTitle {
+	font-family: 'allerregular';
+	font-size: 18px;
+}
+
+.col-summary .subfields li .subLabel {
+	font-weight: bold;
+}
+
+/*
+  Main - Results - Move query
+*/
+.move-query-cases-list {
+  max-height: 300px;
+  overflow:   scroll;
+}
+
+
+
+.result-rank {
+  font-size:  1em;
+}
+
+
+/*
+	Dev Settings — panel skin (selectors with no Bootstrap classes).
+	Dark theme is delivered via data-bs-theme="dark" on #dev-settings
+	(see _dev_settings.html); BS5 supplies --bs-body-bg / --bs-body-color
+	and the nav-tabs palette. Rules below are brand-specific surface
+	treatments BS5 doesn't cover (the gradient header, the dev-section
+	separators, and panel sizing).
+*/
+
+#dev-settings {
+	width: 100%;
+	height: 100%;
+	min-height: calc(100% - 70px);
+	/* data-bs-theme="dark" sets the --bs-body-* vars; consume them
+	 * explicitly because a plain <div> doesn't get the theme applied
+	 * automatically (only <body> does). */
+	background-color: var(--bs-body-bg);
+	color: var(--bs-body-color);
+	/* #dev-settings sits outside `.results-control`'s BS3 body-font
+	 * restore below, so without this it renders in BS5's wider/chunkier
+	 * system-ui stack instead of "Helvetica Neue" — enough extra width
+	 * across the five dev-panel tab labels to force "Annotations" onto
+	 * its own row even with the tab density fix in bootstrap5-compat.css. */
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+#dev-settings .dev-header {
+	background: linear-gradient(to bottom, #282828, #222222);
+	padding: 15px;
+	border-bottom: 1px solid #363636;
+	cursor: pointer;
+}
+
+#dev-settings .dev-header .bi {
+	margin-left: 10px;
+	font-size: 14px;
+	font-weight: normal;
+}
+
+#dev-settings .dev-section,
+#dev-settings .dev-body,
+#dev-settings .dev-setting-attribute {
+	padding: 15px;
+}
+
+#dev-settings .dev-section ul.history-list {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 20px 0;
+}
+
+#dev-settings .dev-section ul.history-list li {
+	padding: 5px 10px;
+	border-bottom: 1px solid var(--bs-border-color);
+}
+
+#dev-settings .settings-tab,
+#dev-settings .dev-section  {
+  height:     100%;
+  min-height: 300px;
+}
+
+/* Rules for this section that reference Bootstrap classes (`.d-flex`,
+ * `.form-check-*`, `.badge`) live in bootstrap5-compat.css alongside the
+ * other #dev-settings Bootstrap-class overrides (nav-tabs, form-control),
+ * per this file's Bootstrap-class-vs-not split (see file header). */
+
+#dev-settings #queryParamsArea {
+  height:     calc(100% - 50px);
+  min-height: calc(100% - 50px);
+}
+
+#dev-settings #queryParamsCanvas {
+  height: calc(100% - 10px);
+}
+
+#dev-settings .rerunnable-settings-tab {
+  height:         calc(100% - 50px);
+  min-height:     300px;
+  margin-bottom:  20px;
+  overflow:       auto;
+}
+
+#queryParamsCanvas textarea {
+	height: calc(100% - 40px);
+}
+
+#queryParamsCanvas .slider-wrap {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 0;
+	border-bottom: 1px solid #555;
+}
+
+#queryParamsCanvas .slider-wrap input {
+  /* Color comes from the `#dev-settings input.form-control` white-box
+     override in bootstrap5-compat.css now that this input carries
+     .form-control. Room for 4 digits plus the number input's spin-button
+     chrome. */
+  width: 7ch;
+}
+
+/*
+	Dev Settings - History (rest of #dev-settings uses Bootstrap selectors — bootstrap5-compat.css)
+*/
+
+.history-container {
+	height: auto;
+	overflow-y: auto;
+}
+
+.history-list li {
+	background: #666;
+	overflow-wrap: break-word;
+    position: relative;
+}
+.history-list li:hover {
+	background: #555;
+	cursor: pointer;
+    position: relative;
+}
+
+.history-list li:hover .try-details {
+  display: inline;
+}
+
+.history-list li span {
+	display: block;
+	text-align: left;
+	font-weight: bold;
+	font-family: 'allerbold_italic';
+	font-size: 16px;
+	color: #CCC;
+	padding: 3px 0 8px 0;
+}
+
+.try-details {
+  position: absolute;
+  display: none;
+  top: 5px;
+  right: 10px;
+  background: #777;
+  cursor: pointer;
+}
+
+/*
+	Footer
+*/
+
+footer {
+  margin-top: 30px;
+}
+
+.matches-popper:hover {
+  cursor:           pointer;
+  text-decoration:  underline;
+}
+
+.btn-circle {
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 12px;
+  line-height: 1.42;
+  border-radius: 15px;
+}
+
+.ace_editor {
+    height: 400px;
+}
+
+.customheaders.code .ace_editor {
+  height: 125px;
+}
+
+.detaileddoc.code .ace_editor {
+  height: 300px;
+}
+
+.search-feedback {
+  margin: 20px 0;
+}
+
+#flash-messages {
+  bottom:     0;
+  position:   fixed;
+  width:      100%;
+  z-index:    100;
+}
+
+/*
+	Flash — directive uses active-class="show alert" on class="flash fade"
+	(templates flash.html / search_flash.html). Dismiss control is
+	.btn-core-close (styled in misc.css), not Bootstrap’s .close.
+*/
+
+.flash {
+  border-radius:  0;
+  display:        none;
+  margin:         0;
+  width:          100%;
+  padding-right:  80px;
+}
+.flash.show {
+  display: block;
+  opacity: 1;
+}
+
+.flash > span {
+  display:      block;
+  margin-left:  20px;
+}
+
+.loading-app {
+  color: rgb(77, 183, 249);
+  font-size: 14px;
+}
+
+.loading-app .loading-text {
+  font-size: 0.5em !important;
+}
+
+.loading-app i {
+  background-color: transparent;
+}
+
+/* Import */
+.import-content {
+  max-height: 200px;
+  overflow:   scroll;
+}
+
+#annotations {
+  overflow: auto;
+  height:   auto;
+}
+
+li.annotation {
+  border: 1px solid #444;
+}
+
+.annotations-time {
+  font-size: 0.7em;
+}
+
+.annotation-source {
+  font-size: 0.8em;
+}
+
+.annotation {
+  margin: 10px 0;
+}
+
+.annotation > div {
+  margin: 5px 0;
+}

@@ -69,7 +69,7 @@ describe('Controller: WizardModalCtrl', function () {
   // Initialize the controller and a mock scope
   beforeEach(function() {
     module(function($provide) {
-      $provide.value('$uibModalInstance', mockModalInstance);
+      $provide.value('$quepidModalInstance', mockModalInstance);
       $provide.value('userSvc', mockUserSvc);
       $provide.value('WizardHandler', mockWizardHandler);
     });
@@ -272,7 +272,7 @@ describe('Controller: WizardModalCtrl — validating flag lifecycle', function (
     nextSpy = jasmine.createSpy('wizard.next');
 
     module(function ($provide) {
-      $provide.value('$uibModalInstance', { close: function () {}, dismiss: function () {} });
+      $provide.value('$quepidModalInstance', { close: function () {}, dismiss: function () {} });
       $provide.value('userSvc', { getUser: function () { return { completedCaseWizard: true }; } });
       $provide.value('WizardHandler', { wizard: function () { return { next: nextSpy, goTo: function () {} }; } });
 

@@ -18,6 +18,14 @@ module.exports = async function(config) {
     // Built bundles come from esbuild/npm scripts (no Sprockets tmp/assets)
     files: [
       'app/assets/builds/jquery_bundle.js',
+      // Bootstrap 5 JS and its Popper dependency are loaded via the
+      // `bootstrap_globals` importmap pin in the browser (see
+      // config/importmap.rb and app/javascript/bootstrap_globals.js)
+      // instead of being bundled into angular_app.js. Load the same
+      // vendored UMD files here so window.bootstrap/window.Popper exist
+      // for specs, same as the browser gets them.
+      'vendor/javascript/popper.min.js',
+      'vendor/javascript/bootstrap.min.js',
       'app/assets/builds/angular_app.js',
       'app/assets/builds/quepid_angular_app.js',
       'app/assets/builds/angular_templates.js',

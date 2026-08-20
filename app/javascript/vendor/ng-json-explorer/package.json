@@ -1,0 +1,31 @@
+{
+  "name": "ng-json-explorer",
+  "version": "1.3.6",
+  "description": "Simple json explorer angular directive that uses raw json data as source.",
+  "main": "gulpfile.js",
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-nodemon": "^2.2.1",
+    "gulp-clean-css": "^3.9.0",
+    "gulp-open": "^2.0.0",
+    "gulp-uglify": "^3.0.0",
+    "gulp-connect": "^5.0.0",
+    "gulp-serve": "^1.4.0",
+    "gulp-watch": "^4.3.11"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Goldark/ng-json-explorer.git"
+  },
+  "author": "Leonardo Rossetti <leonardo@goldark.com.br>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Goldark/ng-json-explorer/issues"
+  },
+  "homepage": "https://github.com/Goldark/ng-json-explorer#readme"
+}

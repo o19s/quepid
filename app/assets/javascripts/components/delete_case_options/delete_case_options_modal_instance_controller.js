@@ -2,9 +2,9 @@
 
 angular.module('QuepidApp')
   .controller('DeleteCaseOptionsModalInstanceCtrl', [
-    '$uibModalInstance',
+    '$quepidModalInstance',
     'theCase',
-    function ($uibModalInstance, theCase) {
+    function ($quepidModalInstance, theCase) {
       var ctrl = this;
 
       ctrl.theCase = theCase;
@@ -31,11 +31,11 @@ angular.module('QuepidApp')
       };
 
       ctrl.ok = function () {
-        $uibModalInstance.close(ctrl.options);
+        $quepidModalInstance.close(ctrl.options);
       };
 
       ctrl.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
+        $quepidModalInstance.dismiss('cancel');
       };
     }
   ]);

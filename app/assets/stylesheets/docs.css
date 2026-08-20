@@ -3,8 +3,13 @@
   z-index:  2050 !important;
 
   .modal-dialog {
-    height: calc(100% - 100px);
-    width:  calc(100% - 100px);
+    height:    calc(100% - 100px);
+    width:     calc(100% - 100px);
+    /* BS5's .modal-dialog sets max-width: var(--bs-modal-width) (500px, or
+       800px here since size: 'lg' is passed); without overriding it too,
+       that cap wins over the width above. See misc.css's .full-screen-modal
+       for the same trap. */
+    max-width: calc(100% - 100px);
   }
 
   .modal-content {

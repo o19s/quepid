@@ -24,10 +24,12 @@
           <p/>
         </div>
         <div>
-          <%= form.submit 'Run Prompt', class: 'btn btn-default btn-primary' %>
+          <%= form.submit 'Run Prompt', class: 'btn btn-primary' %>
 
-          <%= link_to 'Back', judgement_stats_book_path(@book), method: :get, class: 'btn btn-block btn-light float-end' if @book %>
-          <%= link_to 'Edit Judge', edit_team_ai_judge_path(team_id: @ai_judge.teams.first.id, id: @ai_judge.id), method: :get, class: 'btn btn-block btn-light float-end' %>
+          <div class="d-grid gap-2 mt-2">
+            <%= link_to 'Back', judgement_stats_book_path(@book), method: :get, class: 'btn btn-light' if @book %>
+            <%= link_to 'Edit Judge', edit_team_ai_judge_path(team_id: @ai_judge.teams.first.id, id: @ai_judge.id), method: :get, class: 'btn btn-light' %>
+          </div>
         </div>
       </div>
       <!-- Loading spinner shown during form submission -->
@@ -58,7 +60,11 @@
     <div class="col-md-6">
       <h2>Query Doc Pair to Evaluate</h2>
       <div>
-        <%= link_to 'Change Query Doc Pair', edit_ai_judge_prompt_path(@ai_judge, book_id: @book.id), class: 'btn btn-block btn-light float-end', role: 'button', method: :get if @book%>
+        <% if @book %>
+          <div class="d-grid mb-2">
+            <%= link_to 'Change Query Doc Pair', edit_ai_judge_prompt_path(@ai_judge, book_id: @book.id), class: 'btn btn-light', role: 'button', method: :get %>
+          </div>
+        <% end %>
         <%= fields_for :query_doc_pair, query_doc_pair do |query_doc_pair_fields| %>
 
           <div class="field">

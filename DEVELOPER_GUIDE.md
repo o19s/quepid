@@ -28,7 +28,9 @@ This guide provides detailed instructions for developers who want to set up, run
 		- [Minitest](#minitest)
 		- [Pre-commit hooks](#pre-commit-hooks)
 		- [JS Lint](#js-lint)
+		- [CSS Lint](#css-lint)
 		- [Karma](#karma)
+		- [Playwright E2E](#playwright-e2e)
 		- [Rubocop](#rubocop)
 		- [All Tests](#all-tests)
 		- [Performance Testing](#performance-testing)
@@ -304,6 +306,35 @@ To check the JS syntax:
 bin/docker r rails test:jshint
 ```
 
+Git commits can run JSHint on staged app JS via [pre-commit](https://pre-commit.com/):
+
+```bash
+pip install pre-commit   # or: pipx install pre-commit
+pre-commit install
+```
+
+The hook lints only staged `*.js` files under `app/assets/javascripts` (same path and skips as `rake test:jshint` — `lib/jshint/configuration.rb` excludes `vendor/assets/javascripts` and `lib/assets/javascripts` from the default search paths, so those are deliberately not linted by either). Requires `yarn install` on the host so `node_modules/jshint` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
+
+### CSS Lint
+
+To lint first-party stylesheets in `app/assets/stylesheets`:
+
+```bash
+bin/docker r yarn lint:css
+# or
+bin/docker r rails test:stylelint
+```
+
+Configuration lives in `.stylelintrc.json` (extends `stylelint-config-standard` with pragmatic overrides for legacy Quepid CSS). Built bundles under `app/assets/builds/` and vendored CSS are ignored (see `.stylelintignore`).
+
+Pre-commit can lint staged CSS the same way as JSHint:
+
+```bash
+pre-commit install
+```
+
+The `stylelint-staged` hook only runs on `app/assets/stylesheets/*.css`. Requires `yarn install` so `node_modules/stylelint` exists.
+
 ### Karma
 
 Runs tests for the Angular side. There are two modes for the karma tests:
@@ -314,6 +345,39 @@ Runs tests for the Angular side. There are two modes for the karma tests:
 **Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run.
 If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`).
 The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
+
+### Playwright E2E
+
+Golden-path and visual-regression tests against a running app, under `test/playwright/`. Unlike Karma, these hit real HTTP and a real browser, so the app must already be up (`bin/docker s`) before running them.
+
+```bash
+bin/docker r yarn test:e2e             # run the suite
+bin/docker r yarn test:e2e:ui          # Playwright's interactive UI runner
+bin/docker r yarn test:e2e:update-baselines   # regenerate baseline screenshots
+```
+
+One-time setup: the Playwright browser binaries aren't part of `node_modules` and don't ship in the app image, so install them once (they only need to be reinstalled if `@playwright/test`'s version changes):
+
+```bash
+bin/docker r npx playwright install chromium
+```
+
+Environment variables (all optional, sensible defaults baked in):
+
+* `QUEPID_BASE_URL` — defaults to `http://localhost:33000` (`docker-compose`'s published port). Override for a different host/port, e.g. `QUEPID_BASE_URL=http://localhost:3000` if your setup exposes the app there directly instead of through nginx.
+* `QUEPID_E2E_EMAIL` / `QUEPID_E2E_PASSWORD` — sign-in credentials used by `auth.setup.ts`, default to the same sandbox login CLAUDE.md documents for the Playwright MCP flow (`quepid+realisticactivity@o19s.com` / `password`). The resulting session is cached at `test/playwright/.auth/user.json` (gitignored).
+* `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `1`. **Must be a case with queries** — if your seed data's case 1 has none, the shared `gotoCase()` helper (`test/playwright/angular_case_helpers.ts`) times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data, e.g. `QUEPID_E2E_CASE_ID=5`.
+
+Structure:
+
+* `core_smoke.spec.ts`, `angular_pages.spec.ts`, `angular_pages_narrow_viewport.spec.ts` — golden-path interaction screenshots (`toHaveScreenshot`) across modals, dropdowns, and the wizard, at desktop and narrow viewports.
+* `popover_visibility.spec.ts` — computed-style assertions catching invisible-but-present popovers (see the BS5-on-`core` traps documented in CLAUDE.md).
+* `modal_a11y.spec.ts` — axe accessibility smoke test on a modal.
+* `case_header_typography.spec.ts` — a non-screenshot, computed-style assertion.
+
+Baseline screenshots live under `test/playwright/baselines/` and **are checked into git** (unlike `test/playwright/test-results/` and `playwright-report/`, which are runtime output and gitignored) — a missing baseline fails its test with "no baseline found" rather than silently passing. When you add a new `toHaveScreenshot()` call or intentionally change a screen's appearance, run `test:e2e:update-baselines` and `git add` the resulting PNGs.
+
+Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.ts`) because they share case state in MySQL and a single authenticated session — don't assume they're safe to parallelize without addressing that first.
 
 ### Rubocop
 
@@ -447,6 +511,8 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
 
 4. **Why bundles work this way**
    - Splainer-search ESM modules are inlined into **`app/assets/builds/angular_app.js`** at build time, not runtime (`splainer_search_adapter.js` registers wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI keeps working).
+   - The vendor bundle also inlines npm **Bootstrap 5** JS (for `quepidPopover`, `quepidTooltip`, `quepidModalSvc`, etc.).
+   - Vendored widget CSS (`angular-wizard`, `ng-json-explorer`, `ng-tags-input`) is copied into **`app/assets/builds/`** by **`yarn build:css`** (`build_css.js` → `copyVendorFiles()`), not by **`build:angular-vendor`**
    - With **`bin/docker s`**, Foreman watches the vendor import graph (including **`node_modules/splainer-search`**) and keeps **`angular_app.js`** + **`quepid_angular_app.js`** in sync. Save edits and hard-refresh. Run **`yarn build:angular`** only if watchers are not running (that script runs both bundles).
 
 
@@ -492,6 +558,7 @@ bin/docker r bin/rails routes
 bin/docker r rails test
 bin/docker r rails test:frontend
 bin/docker r bin/rake test:jshint
+bin/docker r bin/rake test:stylelint
 ```
 
 ### Thor
@@ -729,13 +796,10 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 
 ## How does the Frontend work?
 
-We use Angular 1 for the core interactive application, and as part of that we use the `angular-ui-bootstrap` package for all our UI components.
-This package is tied to Bootstrap version 3.  
-We import the Bootstrap 3 CSS directly via the file `bootstrap3.css`.
+We use Angular 1 for the core interactive application. **`splainer-search`** is **`3.x` from npm** (see root `package.json`); **`app/javascript/splainer_search_adapter.js`** registers the wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI (`fieldSpecSvc`, `searchSvc`, …) keeps working. Most other AngularJS-era UI libraries (wizard, pagination, ui-ace, `ng-tags-input`, etc.) remain **under `app/javascript/vendor/`** (see `vendor/README.md`). Only **`angular`**, **`splainer-search`**, and shared utilities (Bootstrap, autocompleter, ...) are npm dependencies for the core Case UI bundle. Esbuild bundles from **`app/javascript/angular_app.js`**.  
+The Angular **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5** plus Quepid sheets (`core-additions.css`, **`bootstrap5-compat.css`**, and screen CSS), wired in **`build_css.js`** (`buildCoreCSS()`). The historical **`bootstrap3-add.css`** navbar slice has been consolidated into **`bootstrap5-compat.css`**.
 
-For the rest of Quepid, we use Bootstrap 5! That is included via the `package.json` using NPM. See `admin.js` for the line `//= require bootstrap/dist/js/bootstrap.bundle`.
-
-We currently use Rails Sprockets to compile everything, but do have dreams of moving to Propshaft, and maybe js-bundling.
+For the rest of Quepid, we use Bootstrap 5 via npm; the non-Angular UI loads it through `app/javascript/application_modern.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the Angular core bundle and CSS).
 
 ## Fonts
 
@@ -748,7 +812,7 @@ also sets up the static files in the `./public/notebooks` directory. However, so
 we ignore that directory from Github. At `asset:precompile` time we unpack the `./jupyterlite/notebooks.gz` file instead.
 This works on Heroku and the production Docker image.
 
-To update the version of Jupyterlite edit `Dockerfile.dev` and `Dockerfile.prod` and update the `pip install` version.
+To update the Jupyterlite version, change the release URL in `Dockerfile.prod` or run `./bin/setup_jupyterlite` locally to pull a new release.
 
 Yes, Jupyterlite works in localhost. After running `./bin/setup_jupyterlite`, you can access the notebooks by navigating to http://localhost:3000/notebooks/ when running your local development server. Jupyterlite runs entirely in the browser, so it works the same way in development as it does in production.
 
@@ -837,9 +901,10 @@ This section covers common issues you might encounter during development and how
 **Symptom**: JavaScript or CSS assets fail to compile.
 
 **Solutions**:
-1. Check for JavaScript syntax errors:
+1. Check for JavaScript or CSS syntax errors:
    ```bash
    bin/docker r rails test:jshint
+   bin/docker r rails test:stylelint
    ```
 
 2. Clear asset cache:

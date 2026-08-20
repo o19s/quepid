@@ -9,7 +9,7 @@
 
 <%= render 'books/tabs', book: @book %>
 
-<div class="card h-100">
+<div class="card">
   <div class="card-header">
     <%= form_tag(book_judgements_path(@book), { method: :get }) do %>
       <%= hidden_field_tag :filtered, true %>

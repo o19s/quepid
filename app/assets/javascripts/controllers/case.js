@@ -2,10 +2,10 @@
 
 angular.module('QuepidApp')
   .controller('CaseCtrl', [
-    '$scope', '$uibModal', '$log',
+    '$scope', '$quepidModal', '$log',
     'caseSvc',
     function (
-      $scope, $uibModal, $log,
+      $scope, $quepidModal, $log,
       caseSvc
     ) {
       $scope.caseModel = {};

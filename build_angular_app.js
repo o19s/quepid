@@ -186,7 +186,7 @@ function buildAngularApp() {
 
 function rebuildCaseAngularBundles() {
   console.log('Rebuilding angular_app.js + quepid_angular_app.js...');
-  execSync('npm run build:angular', { stdio: 'inherit', cwd: path.resolve(__dirname) });
+  execSync('yarn build:angular', { stdio: 'inherit', cwd: path.resolve(__dirname) });
 }
 
 // Main execution

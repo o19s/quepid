@@ -2,15 +2,16 @@
 
 angular.module('QuepidApp')
   .controller('TargetedSearchCtrl', [
-    '$scope', '$uibModal',
-    function ($scope, $uibModal) {
+    '$scope', '$quepidModal', '$log',
+    function ($scope, $quepidModal, $log) {
       $scope.targetedSearch = {};
       $scope.targetedSearch.triggerModal = function() {
 
-        var modalInstance = $uibModal.open({
-          templateUrl: 'views/targetedSearchModal.html',
-          controller: 'TargetedSearchModalCtrl',
-          size: 'lg',
+        var modalInstance = $quepidModal.open({
+          templateUrl:    'views/targetedSearchModal.html',
+          controller:     'TargetedSearchModalCtrl',
+          size:           'lg',
+          ariaLabelledBy: 'targeted-search-modal-title',
           resolve: {
             query: function(){
               return $scope.query;
@@ -18,9 +19,14 @@ angular.module('QuepidApp')
           }
         });
 
-        modalInstance.result.then(function() {
-          //Then anything?
-        });
+        modalInstance.result.then(
+          function() {
+            //Then anything?
+          },
+          function() {
+            $log.info('INFO: Modal dismissed');
+          }
+        );
       };
     }
   ]);

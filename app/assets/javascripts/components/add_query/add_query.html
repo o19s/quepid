@@ -1,21 +1,23 @@
-<form class="form input-append vertically-centered">
-  <input
-    id="add-query"
-    class="form-control"
-    ng-model="ctrl.text"
-    placeholder="{{ ctrl.message() }}"
-    text-paste="ctrl.handlePaste($pastedText)"
-    type="text"
-   />
+<form class="vertically-centered gap-2">
+  <div class="input-group">
+    <input
+      id="add-query"
+      class="form-control"
+      ng-model="ctrl.text"
+      placeholder="{{ ctrl.message() }}"
+      text-paste="ctrl.handlePaste($pastedText)"
+      type="text"
+     />
 
-  <input
-    id="add-query-submit"
-    class="btn btn-success"
-    ng-click="ctrl.submit()"
-    ng-disabled="!ctrl.canAddQueries || ctrl.textInputIsEmpty()"
-    type="submit"
-    value="{{ ctrl.text.indexOf(';') === -1 ? 'Add query' : 'Add queries' }}"
-   />
+    <input
+      id="add-query-submit"
+      class="btn btn-success"
+      ng-click="ctrl.submit()"
+      ng-disabled="!ctrl.canAddQueries || ctrl.textInputIsEmpty()"
+      type="submit"
+      value="{{ ctrl.text.indexOf(';') === -1 ? 'Add query' : 'Add queries' }}"
+     />
+  </div>
 
-  <i class="spinner" ng-class="{'hidden': !ctrl.loading}">/>
+  <i class="spinner" ng-class="{'d-none': !ctrl.loading}"></i>
 </form>

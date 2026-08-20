@@ -10,25 +10,6 @@
   --qscore-highlight-width: 4px;
 }
 
-/* Utility classes for common border radius patterns */
-.border-radius-left {
-  border-top-left-radius: var(--qscore-border-radius);
-  border-bottom-left-radius: var(--qscore-border-radius);
-}
-
-.border-radius-right {
-  border-top-right-radius: var(--qscore-border-radius);
-  border-bottom-right-radius: var(--qscore-border-radius);
-}
-
-.border-radius-none {
-  border-radius: 0;
-}
-
-.border-radius-full {
-  border-radius: var(--qscore-border-radius);
-}
-
 /* Base qscore component styles */
 qscore-case, qscore-query {
   padding: 0;
@@ -122,8 +103,7 @@ qscore-case qgraph {
 qscore-case qgraph svg {
   border: var(--qscore-border-width-thick) solid grey;
   border-right-style: none;
-  border-top-left-radius: var(--qscore-border-radius);
-  border-bottom-left-radius: var(--qscore-border-radius);
+  border-radius: var(--qscore-border-radius);
 }
 
 /* Diff container styles */
@@ -158,26 +138,6 @@ qscore-case qgraph svg {
 
 .diff-column:last-child {
   border-right: none;
-}
-
-/* Diff score styling */
-.diff-score-display {
-  display: inline-block;
-  margin: var(--qscore-spacing-md) 0;
-}
-
-.diff-score-display .overall-rating {
-  margin: 0;
-  border-radius: var(--qscore-border-radius);
-}
-
-.diff-score-display.snapshot-score .overall-rating {
-  border-top-left-radius: var(--qscore-border-radius);
-  border-bottom-left-radius: var(--qscore-border-radius);
-}
-
-.score-details {
-  margin-top: var(--qscore-spacing-sm);
 }
 
 .diff-actions {

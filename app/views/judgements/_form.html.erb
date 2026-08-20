@@ -297,14 +297,14 @@
 
   <%= form.hidden_field :rating %>
   <%= form.hidden_field :query_doc_pair_id, :value => query_doc_pair.id %>
-  <%= form.submit class: 'hidden'%>
+  <%= form.submit class: 'd-none'%>
 
 <% end %>
 
 <!-- Modal -->
 <div class="modal fade" id="explanationModal" tabindex="-1" aria-labelledby="explanationModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-right">
-    <%= form_for(judgement, url: book_query_doc_pair_unrateable_path(@book, query_doc_pair), class: 'form-horizontal', data: { turbo: false }) do |f| %>
+    <%= form_for(judgement, url: book_query_doc_pair_unrateable_path(@book, query_doc_pair), data: { turbo: false }) do |f| %>
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="modal-title fs-5" id="explanationModalLabel">Record Explanation</h1>
@@ -317,8 +317,8 @@
         </p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <%= f.submit "Skip Judging",class: 'btn btn-primary' %>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
       </div>
      </div>
      <% end %>

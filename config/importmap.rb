@@ -13,6 +13,10 @@ pin 'local-time' # @3.0.3
 pin 'vega', to: 'vega.js'
 pin 'vega-lite', to: 'vega-lite.js'
 pin 'vega-embed', to: 'vega-embed.js'
+# Shared entry point that loads the three above and exposes them as window
+# globals — pinned separately so pages that don't otherwise load
+# application_modern.js (analytics, the Angular core app) can load just this.
+pin 'vega_globals'
 
 pin 'ahoy', to: 'ahoy.js'
 
@@ -21,6 +25,10 @@ pin 'js-cookie' # @3.0.8
 # Bootstrap and its dependencies
 pin 'bootstrap', to: 'bootstrap.min.js' # @5.3.8
 pin '@popperjs/core', to: 'popper.min.js' # @2.11.8
+# Shared entry point that loads the two above and exposes them as window
+# globals — pinned separately so pages that don't otherwise load
+# application_modern.js (the Angular core app) can load just this.
+pin 'bootstrap_globals'
 
 # CodeMirror 6 packages
 pin 'modules/editor', to: 'modules/editor.js'

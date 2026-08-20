@@ -1,7 +1,11 @@
 
 .frog-pond {
-  height: 550px;
-  width: 898px;
+  /* min-height (not height) so long content — a large query count, lots of
+     rating buckets in the chart — can grow the box instead of being clipped
+     by the fixed-size background below. */
+  min-height: 550px;
+  position: relative;
+  overflow: hidden;
 }
 
 .frog-pond::before{
@@ -11,19 +15,26 @@
   background-repeat: no-repeat;
   position: absolute;
   height: 550px;
-  width: 898px;
+  width: 100%;
   top: 0;
   left: 0;
   opacity: 0.35;
 }
 
 .frog-pond-content {
-  opacity: .99;  // 1.0 doesn't work.
+  opacity: .99;  /* 1.0 doesn't work. */
 }
 
 .vega-embed {
   width: 100%;
   height: 100%;
+}
+
+/* #chart1 stretches to the full width of .frog-pond-content, but the Vega
+   spec's own canvas is a fixed 800px — without an opaque background of its
+   own, the pond image shows through the gap to the right of the canvas. */
+#chart1 {
+  background-color: #fff;
 }
 
 
