@@ -129,4 +129,40 @@
 </p>
 <% end %>
 
+<h3>Remap Judgement Ratings</h3>
+
+<p class="form-text">
+  Remap existing rating values to new values. For example, convert a 5-point scale (5,4,3,2,1) to a binary scale by mapping 5&rarr;1, 4&rarr;1, 3&rarr;0, 2&rarr;0, 1&rarr;0.
+  Only entries whose value differs from the current rating will be updated.
+</p>
+<%= form_for(@book, url: remap_judgement_ratings_book_path(@book), method: :patch, data: { confirm: "Are you sure? This will update all matching judgement ratings." }) do |form| %>
+  <% if @current_ratings.empty? %>
+    <p class="text-muted">No rated judgements found in this book.</p>
+  <% else %>
+    <table class="table table-sm w-auto">
+      <thead>
+        <tr>
+          <th>Current Rating</th>
+          <th>Map To</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @current_ratings.each do |rating| %>
+          <tr>
+            <td class="align-middle"><strong><%= rating % 1 == 0 ? rating.to_i : rating %></strong></td>
+            <td>
+              <%= number_field_tag "rating_map[#{rating}]", (rating % 1 == 0 ? rating.to_i : rating), class: 'form-control', step: 'any' %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <p>
+    <div class="actions">
+      <%= form.submit 'Remap Ratings' %>
+    </div>
+    </p>
+  <% end %>
+<% end %>
+
 </div>
