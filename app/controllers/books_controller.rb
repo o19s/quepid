@@ -147,7 +147,7 @@ class BooksController < ApplicationController
     # In our use case just looks up the count of records per book.
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
-    @current_ratings = @book.judgements.where.not(rating: nil).distinct.pluck(:rating).sort
+    @current_ratings = @book.judgements.where.not(rating: nil).distinct.order(:rating).pluck(:rating)
   end
 
   def create
