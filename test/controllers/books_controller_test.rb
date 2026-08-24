@@ -186,6 +186,53 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 2, book_with_multiple_raters.judgements.count
   end
 
+  describe 'remapping judgement ratings' do
+    let(:doug) { users(:doug) }
+
+    test 'remaps matching ratings to new values' do
+      login_user_for_integration_test doug
+
+      # james_bond_movies has judgements with ratings 0, 1, 2, 3
+      assert_equal [ 0, 1, 2, 3 ], james_bond_movies.judgements.where.not(rating: nil).pluck(:rating).sort.map(&:to_i)
+
+      patch "/books/#{james_bond_movies.id}/remap_judgement_ratings",
+            params: { rating_map: { '3.0' => '1', '2.0' => '1', '1.0' => '0', '0.0' => '0' } }
+
+      follow_redirect!
+      # 0→0 is a no-op (skipped), so only 3 judgements are actually remapped
+      assert_equal 'Remapped 3 judgements.', flash[:notice]
+
+      james_bond_movies.reload
+      # was [0,1,2,3]; 0 stays 0, 1→0, 2→1, 3→1
+      assert_equal [ 0, 0, 1, 1 ], james_bond_movies.judgements.where.not(rating: nil).pluck(:rating).sort.map(&:to_i)
+    end
+
+    test 'skips entries where old rating equals new rating' do
+      login_user_for_integration_test doug
+
+      patch "/books/#{james_bond_movies.id}/remap_judgement_ratings",
+            params: { rating_map: { '3.0' => '3', '0.0' => '0' } }
+
+      follow_redirect!
+      assert_equal 'No ratings changed.', flash[:notice]
+    end
+
+    test 'handles chained remapping without double-updating (3→2, 2→1)' do
+      login_user_for_integration_test doug
+
+      # Map 3→2 and 2→1 simultaneously — judgements originally rated 3 must end up at 2, not 1
+      patch "/books/#{james_bond_movies.id}/remap_judgement_ratings",
+            params: { rating_map: { '3.0' => '2', '2.0' => '1' } }
+
+      follow_redirect!
+      james_bond_movies.reload
+      ratings = james_bond_movies.judgements.where.not(rating: nil).pluck(:rating).sort.map(&:to_i)
+
+      assert_includes ratings, 2  # originally-3 judgement ended at 2, not 1
+      assert_includes ratings, 1  # originally-2 judgements ended at 1
+    end
+  end
+
   def test_scorer_id_copies_scale_fields_when_creating_book
     login_user_for_integration_test user
 

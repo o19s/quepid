@@ -127,6 +127,8 @@ Rails.application.routes.draw do
                                                       as:     :delete_query_doc_pairs_below_position
       patch 'eric_steered_us_wrong',
             action: :eric_steered_us_wrong, as: :eric_steered_us_wrong
+      patch 'remap_judgement_ratings',
+            action: :remap_judgement_ratings, as: :remap_judgement_ratings
     end
   end
 
