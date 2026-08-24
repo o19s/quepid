@@ -3,6 +3,10 @@
 require 'test_helper'
 
 class ApplicationHelperTest < ActionView::TestCase
+  test 'quepid_root_url returns application root without trailing slash' do
+    assert_equal root_url.chomp('/'), quepid_root_url
+  end
+
   test 'understand how the rails sanitize command works with some examples of snippetted text' do
     safe_list_sanitizer = Rails::Html::SafeListSanitizer.new
     assert_equal 'Bold no more!  <a href="more.html">See more here</a>...',

@@ -639,11 +639,12 @@ $window.location.href = caseTryNavSvc.getQuepidRootUrl() + '/cases'
 
 **Endpoint catalog:** OpenAPI at `/api/docs` (not a hand-maintained list). Domains hit from Angular: cases, tries, queries, ratings, snapshots, scorers, teams, books, judgements, search endpoints, annotations, export/import. `CoreController` syncs wizard params server-side.
 
-**Migration targets** (promote from `deangularjs-experimental`):
+**Migration targets** (hybrid: shared CSRF + root URL; server-owned endpoint URLs per control):
 
-- [ ] Adopt `app/javascript/api/fetch.js` (`apiFetch`, `getCsrfToken`) and `app/javascript/utils/quepid_root.js`
-- [ ] Add `quepid_root_url`, `data-quepid-root-url`, Turbo query routes, server-side import page URLs
-- [ ] Prefer server-passed URLs over client-built paths (e.g. bulk judge builds `books/{id}/judge/bulk/...` in JS today)
+- [x] Adopt `app/javascript/api/fetch.js` (`apiFetch`, `getCsrfToken`) and minimal `app/javascript/utils/quepid_root.js` (`getQuepidRootUrl` only)
+- [x] Add `quepid_root_url`, `data-quepid-root-url` on `application`, `admin`, and `core` layouts
+- [ ] Turbo query routes, server-side import page URLs (add `data-*-url-value` per migrated control)
+- [ ] Port additional `build*Url` helpers from `deangularjs-experimental` only when a control cannot use server-rendered URLs
 
 ---
 
@@ -683,7 +684,7 @@ $window.location.href = caseTryNavSvc.getQuepidRootUrl() + '/cases'
 
 - [ ] Stray `ng-href` in invitations edit view
 - [ ] `bootstrap5-compat.css` Angular-only shims
-- [ ] Shared `apiFetch` / `quepid_root.js` promoted from `deangularjs-experimental` (see [Angular core HTTP patterns](#angular-core-http-patterns-legacy))
+- [x] Shared `apiFetch` / minimal `quepid_root.js` (see [Angular core HTTP patterns](#angular-core-http-patterns-legacy))
 
 ---
 

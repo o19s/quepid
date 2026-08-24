@@ -35,7 +35,9 @@
 
 ## Tests
 
-- Run JavaScript tests via `bin/docker r yarn test`.
+- Run JavaScript unit tests via `bin/docker r yarn test:unit` (Vitest — `app/javascript`) or `bin/docker r yarn test` (Karma — legacy Angular).
+- Lint modern JS via `bin/docker r yarn lint:js` or `bin/docker r rails test:eslint` (see `docs/js_tooling.md`).
+- **Vitest PR policy:** new or materially changed logic in `app/javascript/api/` or `app/javascript/utils/` → colocated `*.test.js` in the same PR. Stimulus `controllers/` → add tests when you touch them for migration or behavior changes, not a blanket rewrite for coverage.
 - Run Rails tests via `bin/docker r rails test`.
 - Lint CSS via `bin/docker r yarn lint:css` or `bin/docker r rails test:stylelint` (config: `.stylelintrc.json`).
 - Run Playwright E2E tests via `bin/docker r yarn test:e2e` (requires the app already running via `bin/docker s`, and `bin/docker r npx playwright install chromium` once). This is a separate, checked-in test suite under `test/playwright/` — not the same thing as the Playwright MCP interactive tool described below. See DEVELOPER_GUIDE.md's "Playwright E2E" section for env vars and full details.

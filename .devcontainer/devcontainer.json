@@ -10,6 +10,7 @@
         "Shopify.ruby-lsp",
         "rubocop.vscode-rubocop",
         "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
         "EditorConfig.EditorConfig"
       ],
       "settings": {

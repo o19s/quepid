@@ -56,6 +56,8 @@ This guide provides detailed instructions for developers who want to set up, run
 	- [Modifying the database](#modifying-the-database)
 	- [Updating RubyGems](#updating-rubygems)
 	- [How does the Frontend work?](#how-does-the-frontend-work)
+		- [Stimulus HTTP conventions](#stimulus-http-conventions)
+		- [AngularJS code comments](#angularjs-code-comments)
 	- [Fonts](#fonts)
 	- [How to develop Jupyterlite](#how-to-develop-jupyterlite)
 	- [How do Personal Access Tokens work?](#how-do-personal-access-tokens-work)
@@ -130,7 +132,7 @@ You can still use `docker compose` directly, but for the basic stuff you can use
 * Run any command: `bin/docker run [COMMAND]` or `bin/docker r [COMMAND]`
 * Run dev mode as daemon: `bin/docker daemon` or `bin/docker q`
 * Destroy the Docker env: `bin/docker destroy` or `bin/docker d`
-* Run front end unit tests: `bin/docker r rails test:frontend`
+* Run front end unit tests: `bin/docker r rails test:vitest` (Vitest) or `bin/docker r rails test:frontend` (Vitest + Karma + linters)
 * Run back end unit tests: `bin/docker r rails test`
 
 ### Local Setup
@@ -186,7 +188,8 @@ Run the test suite:
 
 ```bash
 bin/rails test                # Run backend tests
-bin/rails test:frontend       # Run frontend tests
+bin/rails test:vitest         # Vitest (app/javascript)
+bin/rails test:frontend       # Vitest + Karma + linters
 bundle exec rubocop           # Run Ruby linter
 ```
 
@@ -273,7 +276,7 @@ tail -f log/test.log
 
 ### Pre-commit hooks
 
-Git commits run RuboCop (Ruby) and JSHint (JavaScript in `app/assets/javascripts/`) via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn/JSHint).
+Git commits run RuboCop (Ruby), JSHint (`app/assets/javascripts/`), and ESLint + Prettier (`app/javascript/`) via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
 
 Hooks prefer Docker when it is available (`bin/docker r`), matching the usual Quepid development workflow.
 
@@ -296,24 +299,38 @@ Run linters directly:
 ```bash
 bin/pre-commit-rubocop path/to/file.rb
 bin/pre-commit-jshint path/to/file.js
+bin/eslint-staged path/to/app/javascript/file.js
+bin/prettier-staged path/to/app/javascript/file.js
 ```
 
 ### JS Lint
 
-To check the JS syntax:
+**Legacy Angular assets** (`app/assets/javascripts/`) — JSHint:
 
 ```bash
 bin/docker r rails test:jshint
 ```
 
-Git commits can run JSHint on staged app JS via [pre-commit](https://pre-commit.com/):
+**Modern importmap / Stimulus** (`app/javascript/`) — ESLint + Prettier (see [`docs/js_tooling.md`](docs/js_tooling.md)):
+
+```bash
+bin/docker r yarn lint:js
+bin/docker r yarn format:js:check    # or yarn format:js to fix
+bin/docker r yarn test:unit          # Vitest (app/javascript)
+bin/docker r rails test:vitest       # same as yarn test:unit
+bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
+```
+
+**Vitest PR policy:** new or changed logic in `api/` or `utils/` → colocated `*.test.js` in the same PR. Controllers → test when you touch them for migration, not a blanket rewrite.
+
+Git commits can run linters on staged JS via [pre-commit](https://pre-commit.com):
 
 ```bash
 pip install pre-commit   # or: pipx install pre-commit
 pre-commit install
 ```
 
-The hook lints only staged `*.js` files under `app/assets/javascripts` (same path and skips as `rake test:jshint` — `lib/jshint/configuration.rb` excludes `vendor/assets/javascripts` and `lib/assets/javascripts` from the default search paths, so those are deliberately not linted by either). Requires `yarn install` on the host so `node_modules/jshint` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
+The hook lints staged `*.js` under `app/assets/javascripts` (JSHint) and scoped files under `app/javascript` (ESLint + Prettier). JSHint paths and skips match `rake test:jshint` — `lib/jshint/configuration.rb` excludes `vendor/assets/javascripts` and `lib/assets/javascripts` from the default search paths. ESLint scope is documented in `eslint.config.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
 
 ### CSS Lint
 
@@ -401,6 +418,7 @@ If you want to run all of the tests in one go (before you commit and push for ex
 
 ```bash
 bin/docker r rails test
+bin/docker r rails test:vitest
 bin/docker r rails test:frontend
 ```
 
@@ -556,8 +574,10 @@ bin/docker r bin/rails routes
 
 # tests
 bin/docker r rails test
+bin/docker r rails test:vitest
 bin/docker r rails test:frontend
 bin/docker r bin/rake test:jshint
+bin/docker r rails test:eslint
 bin/docker r bin/rake test:stylelint
 ```
 
@@ -800,6 +820,16 @@ We use Angular 1 for the core interactive application. **`splainer-search`** is 
 The Angular **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5** plus Quepid sheets (`core-additions.css`, **`bootstrap5-compat.css`**, and screen CSS), wired in **`build_css.js`** (`buildCoreCSS()`). The historical **`bootstrap3-add.css`** navbar slice has been consolidated into **`bootstrap5-compat.css`**.
 
 For the rest of Quepid, we use Bootstrap 5 via npm; the non-Angular UI loads it through `app/javascript/application_modern.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the Angular core bundle and CSS).
+
+### Stimulus HTTP conventions
+
+Normative patterns for **new** client code on Rails pages (teams, books, admin, …). Legacy Angular patterns on `/case/...` live in [`docs/todo/angularjs_removal_inventory.md`](docs/todo/angularjs_removal_inventory.md#angular-core-http-patterns-legacy).
+
+- **Server owns URLs.** Pass Rails path helpers or `url_for` into Stimulus as `data-*-url-value` attributes (see `mapper_wizards/show.html.erb`, `mapper_wizard_controller.js`). For forms, use `this.formTarget.action` (`import_case_controller.js`). Never hardcode `/` or absolute site-root paths for navigation.
+- **CSRF on mutating requests.** Layouts include `csrf_meta_tags`. Use `apiFetch` from `app/javascript/api/fetch.js` (importmap: `api/fetch`) so `X-CSRF-Token` is added automatically. For form submits (e.g. `confirm_delete_controller.js`), use `authenticity_token` instead.
+- **`fetch` shape:** `POST`/`PUT`/`DELETE` with `Content-Type: application/json`, the CSRF header, and `JSON.stringify` body. Check `response.ok`; on failure, parse JSON with `.catch(() => ({}))` before surfacing `data.message`, `data.error`, or `response.statusText`.
+- **REST vs HTML routes.** JSON under `/api/...` is the REST surface ([OpenAPI](/api/docs), [`docs/QUEPID_FEATURES.md` §23](docs/QUEPID_FEATURES.md#23-api-surface)). Some Stimulus controllers hit **HTML JSON endpoints** instead (bulk judge, mapper wizard) — still prefer server-generated URLs over paths built in JS.
+- **Subpath deployments.** Layouts set `data-quepid-root-url` on `<body>` via `quepid_root_url`. Use `getQuepidRootUrl()` from `utils/quepid_root` only when navigation cannot be a server-rendered URL (e.g. redirect after import). Prefer `data-*-url-value` for API endpoints.
 
 ## Fonts
 
