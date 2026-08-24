@@ -13,13 +13,11 @@ angular.module('QuepidApp')
       broadcastSvc
     ) {
 
-      var bootstrapped = false;
       var cases = {};
       var selectedCase = null;
       var svc = this;
 
       svc.allCases          = [];
-      this.archived         = [];
       this.dropdownCases    = [];
       svc.casesCount        = 0;
 
@@ -28,7 +26,6 @@ angular.module('QuepidApp')
       svc.constructFromData = constructFromData;
       svc.get               = get;
       svc.getCases          = getCases;
-      svc.isBootstrapped    = isBootstrapped;
       svc.refetchCaseLists  = refetchCaseLists;
       svc.runEvaluation     = runEvaluation;
       svc.saveDefaultScorer = saveDefaultScorer;
@@ -114,22 +111,6 @@ angular.module('QuepidApp')
           svc.getSelectedCase().teams.push(args.team);
         }
       });
-
-      // resolve promise when bootstrapped
-      this.uponBeingBootstrapped = function() {
-        var self = this;
-
-        if (bootstrapped) {
-          return $q(function(resolve) {
-            resolve();
-          });
-        }
-        return self.refetchCaseLists()
-          .then(function() {
-            bootstrapped = true;
-            broadcastSvc.send('bootstrapped', self.allCases);
-          });
-      };
 
       this.selectCase = function(caseNo) {
         var cases = this.allCases.slice(); // shallow copy (dont create new cases)
@@ -235,43 +216,8 @@ angular.module('QuepidApp')
             //svc.allCases = svc.allCases.filter( function(acase) {
             //  acase.caseNo !== newCase.caseNo;
             //});
-            svc.archived.push(newCase);
 
             broadcastSvc.send('updatedCasesList', svc.allCases);
-          });
-      };
-
-      this.unarchiveCase = function(caseToUnarchive) {
-        var caseNumber  = caseToUnarchive.caseNo;
-        var url         = 'api/cases/' + caseNumber;
-        var data        = { archived: false };
-
-        return $http.put(url, data)
-          .then(function(response) {
-            var data    = response.data;
-            var newCase = new Case(data);
-
-            svc.allCases.push(newCase);
-            svc.archived = svc.archived.filter( function(acase) {
-              acase.caseNo !== newCase.caseNo;
-            });
-
-            broadcastSvc.send('updatedCasesList', svc.allCases);
-          });
-      };
-
-      this.fetchArchived = function() {
-        svc.archived = [];
-
-        return $http.get('api/cases?archived=true')
-          .then(function(response) {
-            angular.forEach(response.data.all_cases, function(rawCase) {
-              var newCase = constructFromData(rawCase);
-
-              if ( !listContainsCase(svc.archived, newCase) ) {
-                svc.archived.push(newCase);
-              }
-            });
           });
       };
 
@@ -374,8 +320,6 @@ angular.module('QuepidApp')
                 svc.allCases.push(newCase);
               }
             });
-
-            bootstrapped = true;
           }, function() {
             caseTryNavSvc.notFound();
           });
@@ -562,10 +506,6 @@ angular.module('QuepidApp')
         var check = list.filter(function(e) { return c.caseNo === e.caseNo; });
 
         return check.length > 0;
-      }
-
-      function isBootstrapped () {
-        return bootstrapped;
       }
     }
   ]);

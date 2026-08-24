@@ -1,5 +1,11 @@
 'use strict';
 
+/**
+ * Top-level controller for `/case/:caseNo` and `/case/:caseNo/try/:tryNo`. Boots the selected case:
+ * load case + try from the API, reset cached query state when the case or search engine changes,
+ * run searches, load query snapshots, and surface TLS/mixed-content errors from `bootstrapCase`.
+ */
+
 angular.module('QuepidApp')
   // there's a lot of dependencies here, but this guy
   // is responsible for bootstrapping everyone so...
@@ -53,6 +59,10 @@ angular.module('QuepidApp')
         });
       };
 
+      /**
+       * Fetches the case from the API, applies tries to `settingsSvc`, defaults `tryNo` from the case
+       * when missing from the URL, and throws if the case is missing or mixed-content rules block the endpoint.
+       */
       var bootstrapCase = function() {
         return caseSvc.get(caseNo)
           .then(function(acase) {
@@ -84,6 +94,10 @@ angular.module('QuepidApp')
           });
       };
 
+      /**
+       * When the case or search engine changed, resets view state, scorers, and the doc cache; then
+       * updates the cache for the new settings and runs `searchAll` for the current try.
+       */
       var loadQueries = function() {
         var newSettings = settingsSvc.editableSettings();
         if ( caseChanged() || searchEngineChanged() ) {

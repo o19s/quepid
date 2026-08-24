@@ -71,7 +71,7 @@ describe('Service: caseSvc', function () {
     $httpBackend.expectGET('api/cases').respond(200, mockCases);
     $httpBackend.expectGET('api/dropdown/cases').respond(200, mockCases);
 
-    caseSvc.uponBeingBootstrapped().
+    caseSvc.refetchCaseLists().
       then(function() {
         expect(caseSvc.allCases.length).toBe(4);
       });
@@ -87,7 +87,7 @@ describe('Service: caseSvc', function () {
 
 
 
-      caseSvc.uponBeingBootstrapped().
+      caseSvc.refetchCaseLists().
         then(function() {
           expect(caseSvc.allCases.length).toBe(4);
         });
@@ -261,129 +261,6 @@ describe('Service: caseSvc', function () {
       });
       $httpBackend.flush();
       expect(caseSvc.getSelectedCase().caseNo).toEqual(2);
-    });
-
-    var archivedCasesAPIResponse = {
-      all_cases: [
-        {
-          'case_id':   6,
-          'case_name': 'archived',
-          'last_try_number':  4
-        }
-      ]
-    };
-
-    it('add back archived case', function() {
-      $httpBackend.expectGET('api/cases?archived=true').respond(200, archivedCasesAPIResponse);
-      var called = 0;
-      caseSvc.fetchArchived()
-      .then(function() {
-        called++;
-        expect(caseSvc.archived.length).toBe(1);
-        expect(caseSvc.archived[0].caseNo).toBe(6);
-        expect(caseSvc.archived[0].caseName).toBe('archived');
-        expect(caseSvc.archived[0].lastTry).toBe(4);
-      });
-
-      $httpBackend.flush();
-      expect(called).toBe(1);
-
-      var archivedCaseNo = caseSvc.archived[0].caseNo;
-      $httpBackend.expectPUT('api/cases/' + archivedCaseNo).respond(200, archivedCasesAPIResponse.all_cases[0]);
-
-      var casesBefore = caseSvc.allCases.length;
-      caseSvc.unarchiveCase(caseSvc.archived[0]).then(function() {
-        called++;
-        expect(caseSvc.archived.length).toBe(0);
-        expect(caseSvc.allCases.length).toBe(casesBefore + 1);
-        caseSvc.selectCase(archivedCaseNo);
-        expect(caseSvc.getSelectedCase().caseNo).toEqual(archivedCaseNo);
-        expect(caseSvc.getSelectedCase().caseName).toEqual('archived');
-      });
-      $httpBackend.flush();
-      expect(called).toBe(2);
-    });
-
-    it('refetch archive', function() {
-      $httpBackend.expectGET('api/cases?archived=true').respond(200, archivedCasesAPIResponse);
-      var called = 0;
-      caseSvc.fetchArchived()
-      .then(function() {
-        called++;
-        expect(caseSvc.archived.length).toBe(1);
-        expect(caseSvc.archived[0].caseNo).toBe(6);
-        expect(caseSvc.archived[0].caseName).toBe('archived');
-        expect(caseSvc.archived[0].lastTry).toBe(4);
-      });
-
-      $httpBackend.flush();
-      expect(called).toBe(1);
-
-      $httpBackend.expectGET('api/cases?archived=true').respond(200, archivedCasesAPIResponse);
-      caseSvc.fetchArchived()
-      .then(function() {
-        called++;
-        expect(caseSvc.archived.length).toBe(1);
-        expect(caseSvc.archived[0].caseNo).toBe(6);
-        expect(caseSvc.archived[0].caseName).toBe('archived');
-        expect(caseSvc.archived[0].lastTry).toBe(4);
-      });
-
-      $httpBackend.flush();
-      expect(called).toBe(2);
-    });
-
-    it('larger archive', function() {
-      var archiveAPIResponse = angular.copy(archivedCasesAPIResponse);
-      var baseNo = archiveAPIResponse.all_cases[0].case_id;
-      var baseName = archiveAPIResponse.all_cases[0].case_name;
-      var numArchived = 10;
-      for (var i = 0; i < numArchived - 1; i++) {
-        var newCase = {
-          'case_id':   baseNo + (i + 1),
-          'case_name': baseName + (i + 1),
-          'lastTry':  i
-        };
-        archiveAPIResponse.all_cases.push(newCase);
-      }
-
-      $httpBackend.expectGET('api/cases?archived=true').respond(200, archiveAPIResponse);
-      var called = 0;
-      caseSvc.fetchArchived()
-      .then(function() {
-        called++;
-        expect(caseSvc.archived.length).toBe(numArchived);
-      });
-      $httpBackend.flush();
-      expect(called).toBe(1);
-
-      // unarchive every odd case
-      var undeleted = [];
-      angular.forEach(caseSvc.archived, function(aCase) {
-        if (aCase.caseNo % 2 === 1) {
-          undeleted.push(aCase.caseNo);
-          $httpBackend.expectPUT('api/cases/' + aCase.caseNo).respond(200, archiveAPIResponse.all_cases[aCase.caseNo - baseNo]);
-          caseSvc.unarchiveCase(aCase)
-          .then(function() {
-            called++;
-          });
-        }
-      });
-      $httpBackend.flush();
-      expect(called).toBe(undeleted.length + 1);
-
-      // should be no odd cases in archive
-      angular.forEach(caseSvc.archived, function(aCase) {
-        expect(aCase.caseNo % 2).not.toBe(1);
-      });
-
-      // all cases should be readded
-      angular.forEach(caseSvc.allCases, function(aCase) {
-        if (aCase.caseNo > baseNo) {
-          expect(aCase.caseNo % 2).toBe(1);
-          expect(undeleted).toContain(aCase.caseNo);
-        }
-      });
     });
 
     it('set the last viewed at date', function() {
@@ -585,7 +462,7 @@ describe('Service: caseSvc', function () {
       $httpBackend.expectGET(url).respond(200, mockCases);
       $httpBackend.expectGET('api/dropdown/cases').respond(200, mockCases);
 
-      caseSvc.uponBeingBootstrapped().
+      caseSvc.refetchCaseLists().
         then(function() {
           var sharedCase = caseSvc.allCases.filter(function(item) { return item.owned === false; });
           expect(sharedCase.length).toBe(2);

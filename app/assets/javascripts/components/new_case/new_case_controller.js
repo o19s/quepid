@@ -2,18 +2,21 @@
 
 /*jslint latedef:false*/
 
+/**
+ * Header "Create a case" control: creates a case via the API, navigates to it, and opens the
+ * endpoint wizard. Forced wizard open on load uses `?showWizard=true` (see `wizardCtrl`), not this component.
+ */
+
 angular.module('QuepidApp')
   .controller('NewCaseCtrl', [
     '$rootScope',
     '$scope',
-    '$location',
     '$quepidModal',
     '$timeout',
     'caseSvc',
     function (
       $rootScope,
       $scope,
-      $location,
       $quepidModal,
       $timeout,
       caseSvc
@@ -23,19 +26,6 @@ angular.module('QuepidApp')
 
       // Functions
       ctrl.newCase = newCase;
-
-      $scope.bootstrapped = caseSvc.isBootstrapped;
-      $scope.$watch('bootstrapped()', function() {
-        if ( $scope.bootstrapped() ) {
-          var searchObject = $location.search();
-          if ( angular.isDefined(searchObject.new) && searchObject.new === 'true' ) {
-            $location.search('new', null);
-            $rootScope.$watch('currentUser', function() {
-              ctrl.newCase();
-            });
-          }
-        }
-      });
 
       function newCase() {
         // the server will bootstrap a new case
