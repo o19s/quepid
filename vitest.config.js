@@ -18,6 +18,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      "@hotwired/stimulus": path.resolve(repoRoot, "app/javascript/test/stimulus_stub.js"),
       "api/fetch": path.resolve(repoRoot, "app/javascript/api/fetch.js"),
       "utils/quepid_root": path.resolve(repoRoot, "app/javascript/utils/quepid_root.js"),
     },

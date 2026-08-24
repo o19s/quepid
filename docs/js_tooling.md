@@ -5,7 +5,7 @@ Quepid runs **two parallel JavaScript worlds** during the Angular → Hotwire mi
 | Tree | Role | Lint | Unit tests |
 |------|------|------|------------|
 | `app/assets/javascripts/` | Legacy Angular case app (esbuild → `app/assets/builds/`) | **JSHint** (`.jshintrc`) | **Karma + Jasmine** (`spec/javascripts/`) |
-| `app/javascript/` | Importmap + Stimulus + Turbo (`application_modern.js`, controllers) | **ESLint + Prettier** (`eslint.config.mjs`, `.prettierrc.json`) | **Vitest** (`app/javascript/**/*.test.js`, `vitest.config.js`) |
+| `app/javascript/` | Importmap + Stimulus + Turbo (`application_modern.js`, controllers) | **ESLint** (full modern tree); **Prettier** (`api/`, `utils/` only) | **Vitest** (`app/javascript/**/*.test.js`, `vitest.config.js`) |
 
 Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; it is not a substitute for fast unit tests.
 
@@ -36,21 +36,37 @@ ESLint `no-unused-vars` and `no-console` are off during migration (unused `catch
 
 ### Formatting conventions
 
-Quepid's `app/javascript/` style is **double quotes**, no semicolons, 2-space indent (`.prettierrc.json`). Newer Stimulus controllers already follow that; a few older files still have single quotes from earlier edits — converge on double quotes when you touch them.
+Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no trailing commas** (`trailingComma: "none"` in `.prettierrc.json`), 2-space indent. Write **new** code to these conventions; do not reformat older lines or unrelated sections just to normalize style.
 
-Prettier enforcement is limited to **`api/` and `utils/`** for now so this tooling PR does not reformat every controller and `modules/editor.js` at once. ESLint still covers the full modern tree. `.editorconfig` still applies (e.g. final newline).
+**Trailing commas:** unlike many JS projects, Quepid does **not** use them in modern JS. Ruby is the opposite — RuboCop **requires** trailing commas on multiline hashes. See `CLAUDE.md` § Agent checklist.
 
-`eslint-config-prettier` disables ESLint rules that conflict with Prettier; run both (`lint:js` + `format:js:check`) — formatting is not enforced through ESLint plugins.
+**Prettier** is enforced on **`api/` and `utils/`** only (via pre-commit and `yarn format:js*`). Do **not** run Prettier on `controllers/`, `modules/`, or entry bundles for now — whole-file Prettier would churn older single-quote files. Hand-apply modern style to **new** lines you add there.
+
+**ESLint** covers the full modern tree (but **ignores `*.test.js`**). Pre-commit runs ESLint on staged `controllers/`, `modules/`, etc.; run it yourself before finishing. Specs follow formatting conventions manually (no ESLint/Prettier on `*.test.js`).
+
+**Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style.
+
+`.editorconfig` still applies (e.g. final newline).
+
+`eslint-config-prettier` disables ESLint rules that conflict with Prettier; in `api/`/`utils/` run both (`lint:js` + `format:js:check`) — formatting is not enforced through ESLint plugins.
 
 ### Commands
 
 ```bash
-bin/docker r yarn lint:js              # ESLint (eslint.config.mjs)
-bin/docker r yarn format:js:check      # Prettier check only
-bin/docker r yarn format:js            # Prettier write (fix formatting)
-bin/docker r rails test:eslint           # ESLint + Prettier check (CI-style)
-bin/docker r rails test:frontend         # Vitest + Karma + JSHint + ESLint + Stylelint
+bin/docker r yarn lint:js              # ESLint — full modern tree (eslint.config.mjs)
+bin/docker r yarn format:js:check      # Prettier check — api/ and utils/ only
+bin/docker r yarn format:js            # Prettier write — api/ and utils/ only
+bin/docker r rails test:eslint         # ESLint + Prettier check (CI-style)
+bin/docker r rails test:frontend       # Vitest + Karma + JSHint + ESLint + Stylelint
 ```
+
+Per-file ESLint (e.g. a controller outside the Prettier scope):
+
+```bash
+bin/docker r npx eslint app/javascript/controllers/foo_controller.js
+```
+
+Do not run `prettier --write` on paths outside `api/`/`utils/` unless you deliberately want a whole-file reformat.
 
 After pulling these dependencies, run `bin/docker r yarn install` once.
 
@@ -59,7 +75,8 @@ After pulling these dependencies, run `bin/docker r yarn install` once.
 `.githooks/pre-commit` (via `bin/install-git-hooks`) runs on staged files:
 
 - `app/assets/javascripts/*.js` → JSHint
-- `app/javascript/**/*.js` (scoped) → ESLint + Prettier
+- `app/javascript/**/*.js` (lint scope) → **ESLint** via `eslint-staged` + `filter_javascript_lint_paths.mjs`
+- `app/javascript/api/**`, `app/javascript/utils/**` → **Prettier** via `prettier-staged` + `filter_javascript_prettier_paths.mjs` (other modern paths are ESLint-only for now)
 
 [pre-commit.com](https://pre-commit.com) hooks: `jshint-staged`, `eslint-staged`, `prettier-staged`, `stylelint-staged`.
 
@@ -95,7 +112,7 @@ bin/docker r rails test:vitest        # same as yarn test:unit (CI-style)
 
 `rails test:frontend` runs Vitest **before** Karma so fast failures surface first.
 
-Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests import them.
+Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests import them (controller specs use `app/javascript/test/stimulus_stub.js` for `@hotwired/stimulus`).
 
 ### PR policy
 
@@ -107,7 +124,7 @@ Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests 
 
 ### Current state
 
-- **Vitest + happy-dom** — `app/javascript/**/*.test.js` (start with `api/fetch`, `utils/quepid_root`; add Stimulus controller tests as needed).
+- **Vitest + happy-dom** — `app/javascript/**/*.test.js` (shared modules plus Stimulus controller tests where behavior changes, e.g. `controllers/import_case_controller.test.js`).
 - **Karma + Jasmine + angular-mocks** — ~41 specs under `spec/javascripts/`, all Angular.
 - Karma loads **pre-built esbuild bundles**; every `karma:run` runs `yarn build` first.
 

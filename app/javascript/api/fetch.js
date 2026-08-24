@@ -26,19 +26,21 @@ export function getCsrfToken() {
 
 /**
  * Merges CSRF token into request headers. Does not overwrite existing X-CSRF-Token.
- * @param {HeadersInit} [headers] - Existing headers (object or Headers)
+ * @param {HeadersInit} [headers] - Existing headers (object, tuple array, or Headers)
  * @returns {Record<string, string>} Headers with CSRF token
  */
 function headersWithCsrf(headers = {}) {
   const token = getCsrfToken()
-  const out =
-    typeof headers === "object" && headers !== null && !(headers instanceof Headers)
+  const out = Array.isArray(headers)
+    ? Object.fromEntries(headers)
+    : typeof headers === "object" && headers !== null && !(headers instanceof Headers)
       ? { ...headers }
       : headers instanceof Headers
         ? Object.fromEntries(headers.entries())
         : {}
-  if (!(CSRF_HEADER in out) || out[CSRF_HEADER] === "") {
-    out[CSRF_HEADER] = token
+  const csrfKey = Object.keys(out).find((key) => key.toLowerCase() === CSRF_HEADER.toLowerCase())
+  if (!csrfKey || out[csrfKey] === "") {
+    out[csrfKey || CSRF_HEADER] = token
   }
   return out
 }
@@ -53,6 +55,7 @@ function headersWithCsrf(headers = {}) {
  */
 export function apiFetch(input, init = {}) {
   const merged = { ...init }
-  merged.headers = headersWithCsrf(init.headers)
+  const headers = init.headers ?? (input instanceof Request ? input.headers : undefined)
+  merged.headers = headersWithCsrf(headers)
   return fetch(input, merged)
 }

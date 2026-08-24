@@ -208,14 +208,13 @@ angular.module('QuepidApp')
             var data    = response.data;
             var newCase = new Case(data);
 
-            // the .filter() should work, but doesn't so instead combine with a splice.
-            var indexOfCase = svc.allCases.indexOf( svc.allCases.filter( function (item) {
+            // Mutate in place so Angular bindings keep their array reference.
+            var indexOfCase = svc.allCases.findIndex(function (item) {
               return item.caseNo === newCase.caseNo;
-            })[0] );
-            svc.allCases.splice(indexOfCase, 1);
-            //svc.allCases = svc.allCases.filter( function(acase) {
-            //  acase.caseNo !== newCase.caseNo;
-            //});
+            });
+            if (indexOfCase !== -1) {
+              svc.allCases.splice(indexOfCase, 1);
+            }
 
             broadcastSvc.send('updatedCasesList', svc.allCases);
           });

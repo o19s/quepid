@@ -202,6 +202,37 @@ describe('Service: caseSvc', function () {
     });
 
 
+    it('archives a case and removes it from allCases', function() {
+      var caseToArchive = caseSvc.allCases[0];
+      var archivedResponse = angular.extend({}, mockCase1, { archived: true });
+
+      $httpBackend.expectPUT('api/cases/1', { archived: true }).respond(200, archivedResponse);
+
+      caseSvc.archiveCase(caseToArchive);
+      $httpBackend.flush();
+
+      expect(caseSvc.allCases.length).toBe(3);
+      expect(caseSvc.allCases.some(function (aCase) {
+        return aCase.caseNo === 1;
+      })).toBe(false);
+    });
+
+    it('archives a case without removing another when it is not in allCases', function() {
+      var caseToArchive = { caseNo: 99 };
+      var archivedResponse = {
+        case_id:   99,
+        case_name: 'orphan case',
+        archived:  true
+      };
+
+      $httpBackend.expectPUT('api/cases/99', { archived: true }).respond(200, archivedResponse);
+
+      caseSvc.archiveCase(caseToArchive);
+      $httpBackend.flush();
+
+      expect(caseSvc.allCases.length).toBe(4);
+    });
+
     it('deletes a case', function() {
       $httpBackend.expectGET('api/cases/1').respond(200, mockCase1);
       $httpBackend.expectDELETE('api/cases/1').respond(200, '');

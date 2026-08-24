@@ -276,7 +276,7 @@ tail -f log/test.log
 
 ### Pre-commit hooks
 
-Git commits run RuboCop (Ruby), JSHint (`app/assets/javascripts/`), and ESLint + Prettier (`app/javascript/`) via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
+Git commits run RuboCop (Ruby), JSHint (`app/assets/javascripts/`), ESLint on the modern `app/javascript/` tree, and Prettier on `app/javascript/api/` and `utils/` only — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
 
 Hooks prefer Docker when it is available (`bin/docker r`), matching the usual Quepid development workflow.
 
@@ -311,11 +311,11 @@ bin/prettier-staged path/to/app/javascript/file.js
 bin/docker r rails test:jshint
 ```
 
-**Modern importmap / Stimulus** (`app/javascript/`) — ESLint + Prettier (see [`docs/js_tooling.md`](docs/js_tooling.md)):
+**Modern importmap / Stimulus** (`app/javascript/`) — ESLint on the full modern tree; Prettier on `api/` and `utils/` only (see [`docs/js_tooling.md`](docs/js_tooling.md)):
 
 ```bash
 bin/docker r yarn lint:js
-bin/docker r yarn format:js:check    # or yarn format:js to fix
+bin/docker r yarn format:js:check    # Prettier check — api/ and utils/ only; or yarn format:js to fix
 bin/docker r yarn test:unit          # Vitest (app/javascript)
 bin/docker r rails test:vitest       # same as yarn test:unit
 bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
@@ -330,7 +330,7 @@ pip install pre-commit   # or: pipx install pre-commit
 pre-commit install
 ```
 
-The hook lints staged `*.js` under `app/assets/javascripts` (JSHint) and scoped files under `app/javascript` (ESLint + Prettier). JSHint paths and skips match `rake test:jshint` — `lib/jshint/configuration.rb` excludes `vendor/assets/javascripts` and `lib/assets/javascripts` from the default search paths. ESLint scope is documented in `eslint.config.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
+The hook lints staged `*.js` under `app/assets/javascripts` (JSHint) and scoped files under `app/javascript` (ESLint on controllers/modules/etc.; Prettier on `api/` and `utils/` only). JSHint paths and skips match `rake test:jshint` — `lib/jshint/configuration.rb` excludes `vendor/assets/javascripts` and `lib/assets/javascripts` from the default search paths. Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
 
 ### CSS Lint
 
@@ -388,6 +388,7 @@ Environment variables (all optional, sensible defaults baked in):
 Structure:
 
 * `core_smoke.spec.ts`, `angular_pages.spec.ts`, `angular_pages_narrow_viewport.spec.ts` — golden-path interaction screenshots (`toHaveScreenshot`) across modals, dropdowns, and the wizard, at desktop and narrow viewports.
+* `stimulus_pages.spec.ts` — smoke and interaction tests for Stimulus pages (cases import modal redirect, bulk judgement save via routed API, mapper wizard) on the `application` layout.
 * `popover_visibility.spec.ts` — computed-style assertions catching invisible-but-present popovers (see the BS5-on-`core` traps documented in CLAUDE.md).
 * `modal_a11y.spec.ts` — axe accessibility smoke test on a modal.
 * `case_header_typography.spec.ts` — a non-screenshot, computed-style assertion.
