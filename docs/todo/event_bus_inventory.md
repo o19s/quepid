@@ -64,7 +64,6 @@ deregister). `R` and `S` columns below distinguish them.
 | `fetchedDropdownBooksList` | `bookSvc.js:147` | `headerCtrl.js:39` | S | |
 | `settings-changed` | `settingsSvc.js:408` | *(none found)* | — | **Dead emit** — emitted on try-list fetch; no listener (COREUI doc reference is stale) |
 | `settings-updated` | `settingsSvc.js:549,626` | `caseSvc.js:96` (per `Case` instance), `move_query_modal_instance_controller.js:39` (loop) | R + S | **Leak:** listener registered inside `Case` constructor — one `$rootScope.$on` per constructed case |
-| `updatedScorersList` | `scorerSvc.js:68,81,106,148,193` | *(none found)* | — | **Dead emit** — five emitters, zero listeners; `ScorerCtrl` calls `scorerSvc.list()` directly |
 | `rating-changed` | `ratingsStoreSvc.js:29` (`$rootScope.$emit` via alias) | `queriesSvc.js:119`, `queriesCtrl.js:67`, `searchResults.js:26` | R | All three listeners are `$rootScope.$on`; `queriesCtrl` deregisters on `$destroy`, others do not |
 | `scoring-complete` | `queriesSvc.js:1252` (`$rootScope.$emit` via alias), `add_query_controller.js:49` (`$rootScope.$emit`) | `queriesCtrl.js:54` | R | Both emitters use `$rootScope.$emit`; `queriesCtrl` deregisters on `$destroy` |
 | `deepCaseListUpdated` | *(none found)* | `move_query_modal_instance_controller.js:39` (loop) | S | **Dead listener** — no emitter |
@@ -72,12 +71,11 @@ deregister). `R` and `S` columns below distinguish them.
 
 ## Emitter index (`broadcastSvc.send`)
 
-26 active calls across 7 files (+1 commented in `queriesSvc.js`; last counted 2026-08-24):
+21 active calls across 6 files (+1 commented in `queriesSvc.js`; last counted 2026-08-24):
 
 | File | Count | Events |
 |------|-------|--------|
 | `services/caseSvc.js` | 10 | `caseSelected`, `updatedCasesList` ×5, `fetchedDropdownCasesList`, `updatedCaseScore`, `caseRenamed`, `caseUpdate`, `associateBook` |
-| `services/scorerSvc.js` | 5 | `updatedScorersList` |
 | `services/annotationsSvc.js` | 4 | `updatedCaseScore` ×3, `annotationDeleted` |
 | `services/settingsSvc.js` | 3 | `settings-changed`, `settings-updated` ×2 |
 | `services/teamSvc.js` | 2 | `caseTeamAdded`, `caseTeamRemoved` |
@@ -101,17 +99,17 @@ deregister). `R` and `S` columns below distinguish them.
 
 ## Migration-relevant observations
 
-1. **`caseSvc` is the bus hub.** 10 of the 26 active `broadcastSvc.send` calls originate
+1. **`caseSvc` is the bus hub.** 10 of the 21 active `broadcastSvc.send` calls originate
    there. Any migration that touches `caseSvc` must account for every row above
    where `caseSvc.js` appears — prefer `apiFetch` re-fetch for shared state and
    `document.dispatchEvent(new CustomEvent(...))` only when a surviving Angular
    listener still needs notification during a partial migration.
 
 2. **Dead emits to clean up.** `caseUpdate`, `caseTeamRemoved`,
-   `settings-changed`, `updatedQueriesList` (commented), and all five
-   `updatedScorersList` emits have no `$on` listeners. Safe to remove after a
-   quick template grep confirms no `ng-{{…}}` bindings depended on the digest
-   side-effect.
+   `settings-changed`, and `updatedQueriesList` (commented) have no `$on`
+   listeners. Safe to remove after a quick template grep confirms no
+   `ng-{{…}}` bindings depended on the digest side-effect. (`updatedScorersList`
+   was removed from `scorerSvc.js` — had five emitters, zero listeners.)
 
 3. **Dead listener.** `deepCaseListUpdated` in
    `move_query_modal_instance_controller.js:31-37` listens for an event no one
@@ -146,7 +144,7 @@ rg "\$scope\.\$emit|\$rootScope\.\$emit" app/assets/javascripts/
 rg "\$scope\.\$on|\$rootScope\.\$on" app/assets/javascripts/
 
 # Dead-event sanity check (each event name)
-rg "caseUpdate|caseTeamRemoved|settings-changed|updatedScorersList|deepCaseListUpdated|updatedQueriesList" app/assets/javascripts/
+rg "caseUpdate|caseTeamRemoved|settings-changed|deepCaseListUpdated|updatedQueriesList" app/assets/javascripts/
 ```
 
 Re-run on each Angular slice migration to keep the table honest. Drop rows

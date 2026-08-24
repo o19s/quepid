@@ -206,3 +206,48 @@ Candidates for extraction into smaller methods or services:
 - `BookImporter` / `RatingsImporter`
 - `MapperWizardsController`
 - `TeamsController` / `BooksController` / `HomeController`
+
+---
+
+## P2 — Stimulus HTTP infra follow-ups (hybrid migration)
+
+Shared `apiFetch` / `getQuepidRootUrl()` landed on `main` (see [DEVELOPER_GUIDE § Stimulus HTTP conventions](../DEVELOPER_GUIDE.md#stimulus-http-conventions)). Remaining consistency work:
+
+### `bulk_judgement` — server-owned URLs
+
+**Location:** `app/javascript/controllers/bulk_judgement_controller.js`, `app/views/bulk_judge/new.html.erb`
+
+Still builds `` `books/${bookId}/judge/bulk/save` `` / `delete` in JS. Pass `saveUrl` and `deleteUrl` from ERB via `data-*-url-value` (same pattern as `mapper_wizard`).
+
+---
+
+### `import_snapshot` — `apiFetch` and subpath-safe URLs
+
+**Location:** `app/javascript/controllers/import_snapshot_controller.js`
+
+Inline CSRF + hardcoded `` `/api/cases/${caseId}/snapshots/imports` ``. Switch to `apiFetch`; prefer server-rendered URL or root-aware path (same class of fix as `import_case` redirect).
+
+---
+
+### Import case API — return `redirect_url`
+
+**Location:** `app/controllers/api/v1/import/cases_controller.rb`, `import_case_controller.js`
+
+Post-import navigation still built client-side: `` `${getQuepidRootUrl()}/case/${result.case_id}` ``. When touching the import API, return `redirect_url` from `case_core_url` in JSON and drop client path construction.
+
+---
+
+### `quepid_root_url` — subpath integration test (optional)
+
+**Location:** `test/helpers/application_helper_test.rb`
+
+Current test only asserts `root_url.chomp('/')`. Add a case with `RAILS_RELATIVE_URL_ROOT` set to verify subpath deployments.
+
+---
+
+### Remaining inline CSRF controllers
+
+Migrate to `apiFetch` when touched: `import_snapshot_controller.js`, `confirm_delete_controller.js` (form submit — keep as-is unless moving to fetch).
+
+**Also:** add `data-quepid-root-url` to `analytics.html.erb` if that layout ever loads Stimulus HTTP code.
+

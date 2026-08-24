@@ -15,7 +15,7 @@
 
 <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
 </head>
-<body ng-app="QuepidApp">
+<body ng-app="QuepidApp" data-quepid-root-url="<%= quepid_root_url %>">
   <%= render 'layouts/header_core_app' %>
 
   <div id="main-content">

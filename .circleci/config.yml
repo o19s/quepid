@@ -80,6 +80,10 @@ jobs:
           command: bundle exec rake db:setup --trace
 
       - run:
+          name: Run Vitest (app/javascript)
+          command: bundle exec rake test:vitest
+
+      - run:
           name: Run unit tests (frontend)
           command: bundle exec rake test:js
 
@@ -90,6 +94,10 @@ jobs:
       - run:
           name: Run jshint
           command: bundle exec rake test:jshint
+
+      - run:
+          name: Run ESLint and Prettier (app/javascript)
+          command: bundle exec rake test:eslint
 
       - run:
           name: Run rubocop

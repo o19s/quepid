@@ -1,0 +1,5 @@
+# Global Prettier ignores. app/javascript scope is driven by
+# config/javascript_lint_scope.mjs + scripts/javascript_lint.mjs (not this file).
+node_modules
+app/assets/builds
+vendor
