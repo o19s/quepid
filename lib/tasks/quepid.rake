@@ -67,7 +67,7 @@ namespace :test do
   task 'js' => 'karma:run'
 
   desc 'Run Vitest unit tests for app/javascript (see vitest.config.js)'
-  task vitest: [] do
+  task vitest: :environment do
     puts '-' * 100
     puts 'Starting Vitest (app/javascript)'.yellow
 
