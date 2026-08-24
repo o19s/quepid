@@ -9,9 +9,8 @@
   angular.module('QuepidApp')
     .service('scorerSvc', [
       '$http', '$q',
-      'broadcastSvc',
       'ScorerFactory',
-      function($http, $q, broadcastSvc, ScorerFactory) {
+      function($http, $q, ScorerFactory) {
         var self = this;
 
         // make sure we have all scorers used for a case
@@ -65,7 +64,6 @@
               var scorer = self.constructFromData(response.data);
 
               self.scorers.push(scorer);
-              broadcastSvc.send('updatedScorersList');
 
               return scorer;
             });
@@ -78,7 +76,6 @@
           return $http.delete(url)
           .then(function() {
             self.scorers.splice(self.scorers.indexOf(scorer), 1);
-            broadcastSvc.send('updatedScorersList');
           });
         }
 
@@ -103,7 +100,6 @@
 
               if( !contains(self.scorers, scorer)) {
                 self.scorers.push(scorer);
-                broadcastSvc.send('updatedScorersList');
               }
 
               return scorer;
@@ -144,8 +140,6 @@
               }
               return 0;
             });
-
-            broadcastSvc.send('updatedScorersList');
           });
         }
 
@@ -189,8 +183,6 @@
             } else {
               resetScorer();
             }
-
-            broadcastSvc.send('updatedScorersList');
           });
         }
 

@@ -557,7 +557,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 **Factories (8):** `$quepidModal` (`services/quepidModalSvc.js`), `AnnotationFactory`, `broadcastSvc`, `docListFactory`, `ScorerFactory`, `SettingsFactory`, `SnapshotFactory`, `TryFactory`
 
-`broadcastSvc` wraps `$rootScope.$broadcast` — used by `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `annotationsSvc`, `bookSvc`, `teamSvc`. See [event bus inventory](./event_bus_inventory.md).
+`broadcastSvc` wraps `$rootScope.$broadcast` — used by `caseSvc`, `settingsSvc`, `queriesSvc`, `annotationsSvc`, `bookSvc`, `teamSvc`. See [event bus inventory](./event_bus_inventory.md).
 
 **Filters (7):** `caseType`, `isImageUrl`, `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`
 
