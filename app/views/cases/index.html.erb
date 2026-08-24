@@ -126,6 +126,9 @@ Cases are a group of queries that you are evaluating and experimenting with.
               <% else %>
                 —
               <% end %>
+              <% if kase.nightly? %>
+                <i class="bi bi-repeat float-end"></i>
+              <% end %>
             </td>
             <td>
               <% if kase.ratings.count > 0 %>
