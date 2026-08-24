@@ -217,7 +217,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       assert_equal 'No ratings changed.', flash[:notice]
     end
 
-    test 'handles chained remapping without double-updating (5→4, 4→3)' do
+    test 'handles chained remapping without double-updating (3→2, 2→1)' do
       login_user_for_integration_test doug
 
       # Map 3→2 and 2→1 simultaneously — judgements originally rated 3 must end up at 2, not 1
