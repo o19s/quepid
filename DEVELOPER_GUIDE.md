@@ -410,6 +410,14 @@ yarn screenshots:view
 
 Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — pairs `*-before.png` / `*-after.png`, flags **byte-identical** pairs at manifest generation time, and runs a **pixel diff** in the browser (magenta overlay + diff map) when bytes differ. Sidebar badges: `byte =` (identical files), `bytes ≠` / `diff` (changed), `pixel =` (same image, different PNG encoding). Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`.
 
+**Ad-hoc screenshot review** (Playwright MCP captures, migration proofs, etc.) land in `.playwright-mcp/` (gitignored). To browse them side by side with byte/pixel diff highlighting:
+
+```bash
+yarn screenshots:view
+```
+
+Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — pairs `*-before.png` / `*-after.png`, flags **byte-identical** pairs at manifest generation time, and runs a **pixel diff** in the browser (magenta overlay + diff map) when bytes differ. Sidebar badges: `byte =` (identical files), `bytes ≠` / `diff` (changed), `pixel =` (same image, different PNG encoding). Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`.
+
 ### Rubocop
 
 To check the Ruby syntax:
