@@ -26,10 +26,8 @@ window.Sortable = Sortable;
 // Angular third-party modules (vendored sources; see vendor/README.md)
 import './vendor/angular-wizard/angular-wizard.js';
 import './vendor/angular-utils-pagination';
-import './vendor/angular-timeago/dist/angular-timeago.js';
 import './vendor/angular-csv-import/lib/angular-csv-import.js';
 import './vendor/angular-flash/angular-flash.js';
-import './vendor/angular-countup/angular-countup.js';
 import 'clipboard';
 import './vendor/ngclipboard/ngclipboard.js';
 import './vendor/ng-tags-input/build/ng-tags-input.js';
@@ -59,6 +57,10 @@ import './vendor/ng-json-explorer/dist/angular-json-explorer.js';
 // URI.js
 import URI from 'urijs';
 window.URI = URI;
+
+// Shared BS5 tooltip/popover/paste helpers (see app/javascript/quepid_dom.js).
+import quepidDom from './quepid_dom';
+window.quepidDom = quepidDom;
 
 // Shepherd for tours
 import 'tether-shepherd/dist/js/tether';
