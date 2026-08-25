@@ -50,6 +50,11 @@ angular.module('QuepidApp')
           // dragging) is left stuck open after drop. Explicitly hide any
           // open tooltips in the list on start/end as a safety net.
           function hideTooltipsWithin(root) {
+            const dom = window.quepidDom && window.quepidDom.tooltip;
+            if (dom && dom.hideWithin) {
+              dom.hideWithin(root);
+              return;
+            }
             const Tooltip = window.bootstrap && window.bootstrap.Tooltip;
             if (!Tooltip) { return; }
             root.querySelectorAll('[quepid-tooltip]').forEach(function (el) {
