@@ -547,4 +547,125 @@ describe('Service: caseSvc', function () {
       expect(caseSvc.allCases.length).toBe(3);
     });
   });
+
+  // Stimulus share-case on core dispatches this instead of Angular caseTeamAdded.
+  describe('quepid:case-team-changed bridge', function() {
+    var $rootScope;
+    var $timeout;
+
+    beforeEach(inject(function(_$rootScope_, _$timeout_) {
+      $rootScope = _$rootScope_;
+      $timeout   = _$timeout_;
+
+      caseSvc.allCases = [
+        {
+          caseNo:   5,
+          caseName: 'Demo Case',
+          teams:    [{ id: 1, name: 'OSC' }]
+        }
+      ];
+      caseSvc.selectCase(5);
+    }));
+
+    it('adds a team when Stimulus shares the selected case', function() {
+      document.dispatchEvent(new CustomEvent('quepid:case-team-changed', {
+        detail: {
+          action: 'added',
+          caseNo: 5,
+          team:   { id: 2, name: 'Other' }
+        }
+      }));
+      $timeout.flush();
+      $rootScope.$apply();
+
+      expect(caseSvc.getSelectedCase().teams.map(function(t) { return t.id; }))
+        .toEqual([1, 2]);
+    });
+
+    it('removes a team when Stimulus unshares the selected case', function() {
+      document.dispatchEvent(new CustomEvent('quepid:case-team-changed', {
+        detail: {
+          action: 'removed',
+          caseNo: 5,
+          team:   { id: 1, name: 'OSC' }
+        }
+      }));
+      $timeout.flush();
+      $rootScope.$apply();
+
+      expect(caseSvc.getSelectedCase().teams).toEqual([]);
+    });
+
+    it('ignores events for a different case', function() {
+      document.dispatchEvent(new CustomEvent('quepid:case-team-changed', {
+        detail: {
+          action: 'added',
+          caseNo: 99,
+          team:   { id: 2, name: 'Other' }
+        }
+      }));
+      // Early return before $applyAsync — nothing to flush.
+      $rootScope.$apply();
+
+      expect(caseSvc.getSelectedCase().teams.map(function(t) { return t.id; }))
+        .toEqual([1]);
+    });
+
+    it('does not duplicate a team already on the selected case', function() {
+      document.dispatchEvent(new CustomEvent('quepid:case-team-changed', {
+        detail: {
+          action: 'added',
+          caseNo: 5,
+          team:   { id: 1, name: 'OSC' }
+        }
+      }));
+      $timeout.flush();
+      $rootScope.$apply();
+
+      expect(caseSvc.getSelectedCase().teams.map(function(t) { return t.id; }))
+        .toEqual([1]);
+    });
+  });
+
+  // Legacy Angular path: teamSvc.shareCase still broadcasts caseTeamAdded.
+  describe('caseTeamAdded bridge', function() {
+    var $rootScope;
+    var broadcastSvc;
+
+    beforeEach(inject(function(_$rootScope_, _broadcastSvc_) {
+      $rootScope  = _$rootScope_;
+      broadcastSvc = _broadcastSvc_;
+
+      caseSvc.allCases = [
+        {
+          caseNo:   5,
+          caseName: 'Demo Case',
+          teams:    [{ id: 1, name: 'OSC' }]
+        }
+      ];
+      caseSvc.selectCase(5);
+    }));
+
+    it('adds a team when teamSvc broadcasts caseTeamAdded', function() {
+      broadcastSvc.send('caseTeamAdded', {
+        caseNo: 5,
+        team:   { id: 2, name: 'Other' }
+      });
+      $rootScope.$apply();
+
+      expect(caseSvc.getSelectedCase().teams.map(function(t) { return t.id; }))
+        .toEqual([1, 2]);
+    });
+
+    it('ignores caseTeamAdded for a different case', function() {
+      broadcastSvc.send('caseTeamAdded', {
+        caseNo: 99,
+        team:   { id: 2, name: 'Other' }
+      });
+      $rootScope.$apply();
+
+      expect(caseSvc.getSelectedCase().teams.map(function(t) { return t.id; }))
+        .toEqual([1]);
+    });
+  });
 });

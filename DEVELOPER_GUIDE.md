@@ -393,17 +393,18 @@ Structure:
 * `modal_a11y.spec.ts` — axe accessibility smoke test on a modal.
 * `case_header_typography.spec.ts` — a non-screenshot, computed-style assertion.
 
-Baseline screenshots live under `test/playwright/baselines/` and **are checked into git** (unlike `test/playwright/test-results/` and `playwright-report/`, which are runtime output and gitignored) — a missing baseline fails its test with "no baseline found" rather than silently passing. When you add a new `toHaveScreenshot()` call or intentionally change a screen's appearance, run `test:e2e:update-baselines` and `git add` the resulting PNGs.
+Baseline screenshots live under `test/playwright/baselines/` and **are checked into git** (unlike runtime output, which is gitignored: `test/playwright/test-results/` from `--config`, and repo-root `/test-results` from Playwright’s default when the config is omitted) — a missing baseline fails its test with "no baseline found" rather than silently passing. When you add a new `toHaveScreenshot()` call or intentionally change a screen's appearance, run `test:e2e:update-baselines` and `git add` the resulting PNGs.
 
 Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.ts`) because they share case state in MySQL and a single authenticated session — don't assume they're safe to parallelize without addressing that first.
 
-**Ad-hoc screenshot review** (Playwright MCP captures, migration proofs, etc.) land in `.playwright-mcp/` (gitignored). To browse them side by side with byte/pixel diff highlighting:
+**Ad-hoc screenshot review** (Playwright MCP captures, migration proofs, etc.) land in `.playwright-mcp/` (gitignored). Organize by **topic subfolder** so the viewer can separate this PR’s shots from older work, e.g. `.playwright-mcp/share-case/`, `.playwright-mcp/prior/`. Filenames stay `*-before.png` / `*-after.png`.
 
 ```bash
 yarn screenshots:view
+# if host Node engines block yarn: node test/playwright/screenshot-viewer-server.mjs
 ```
 
-Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — pairs `*-before.png` / `*-after.png`, flags **byte-identical** pairs at manifest generation time, and runs a **pixel diff** in the browser (magenta overlay + diff map) when bytes differ. Sidebar badges: `byte =` (identical files), `bytes ≠` / `diff` (changed), `pixel =` (same image, different PNG encoding). Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`.
+Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — sidebar groups by folder, pairs before/after, flags **byte-identical** pairs at manifest generation time, and runs a **pixel diff** in the browser (magenta overlay + diff map) when bytes differ. Sidebar badges: `byte =` (identical files), `bytes ≠` / `diff` (changed), `pixel =` (same image, different PNG encoding). Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`. For `dom_migration_screenshots.spec.ts`, set `MIGRATION_SHOT_TOPIC=share-case` (share-case tests also hardcode that folder).
 
 ### Rubocop
 

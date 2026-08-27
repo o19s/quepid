@@ -106,9 +106,20 @@
               ></import-ratings>
             </li>
             <li class="list-inline-item">
-              <share-case
-                acase="caseModel.selectedCase()"
-              ></share-case>
+              <i
+                class="bi bi-share-fill"
+                aria-hidden="true"
+                title="Share Case"
+              ></i>
+              <a
+                href="#"
+                data-controller="share-case-core"
+                data-action="click->share-case-core#open"
+                data-bs-toggle="modal"
+                data-bs-target="#shareCaseModal"
+                data-share-case-core-id-value="{{ caseModel.selectedCase().caseNo }}"
+                data-share-case-core-name-value="{{ caseModel.selectedCase().caseName }}"
+              >Share case</a>
             </li>
             <li class="list-inline-item">
               <clone-case
