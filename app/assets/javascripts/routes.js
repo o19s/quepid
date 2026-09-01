@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * Client-side routes and HTTP/flash configuration for the Quepid app shell.
+ * Case pages use `MainCtrl` with `views/queriesLayout.html`; unknown paths render the 404 view.
+ */
+
 angular.module('QuepidApp')
   .config([
     '$locationProvider',

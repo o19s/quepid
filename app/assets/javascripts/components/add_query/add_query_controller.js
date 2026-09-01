@@ -2,6 +2,12 @@
 
 /* jshint latedef:false */
 
+/**
+ * "Add query" panel: users type or paste one or many semicolon-separated query strings (pasted text
+ * has its newlines converted to semicolons), which are persisted and then searched/scored, with
+ * batched add using `searchAll` for more than one query.
+ */
+
 angular.module('QuepidApp')
   .controller('AddQueryCtrl', [
     '$rootScope',

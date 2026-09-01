@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * Root Angular module for Quepid's interactive case UI (search tries, queries, scorers).
+ * Declares third-party and internal modules; routing and `MainCtrl` wiring live in `routes.js`.
+ */
+
 angular.module('QuepidApp', [
   'yaru22.angular-timeago',
   'UtilitiesModule',

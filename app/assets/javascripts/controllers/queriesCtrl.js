@@ -1,6 +1,12 @@
 'use strict';
 /*jslint latedef:false*/
 
+/**
+ * Primary controller for the queries list and aggregate row: wires `queriesSvc` to the template,
+ * handles modals (snapshots, annotations, etc.), listens for scoring and rating events to refresh
+ * averages and diffs, and coordinates sort/order when enabled.
+ */
+
 angular.module('QuepidApp')
   .controller('QueriesCtrl', [
     '$scope',

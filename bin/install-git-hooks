@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Point git at the version-controlled hooks in .githooks/ (rubocop + jshint).
+# Point git at the version-controlled hooks in .githooks/ (rubocop, jshint, eslint, prettier).
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"

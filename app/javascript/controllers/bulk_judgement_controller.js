@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { apiFetch } from "api/fetch"
 
 export default class extends Controller {
   static targets = ["rating", "explanation", "status", "savedIndicator"]
@@ -24,11 +25,10 @@ export default class extends Controller {
     this.showStatus(queryDocPairId, "saving")
 
     try {
-      const response = await fetch(`books/${bookId}/judge/bulk/delete`, {
+      const response = await apiFetch(`books/${bookId}/judge/bulk/delete`, {
         method: "DELETE",
         headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           query_doc_pair_id: queryDocPairId
@@ -92,11 +92,10 @@ export default class extends Controller {
     const explanation = explanationField ? explanationField.value : ""
 
     try {
-      const response = await fetch(`books/${bookId}/judge/bulk/save`, {
+      const response = await apiFetch(`books/${bookId}/judge/bulk/save`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           query_doc_pair_id: queryDocPairId,
@@ -150,11 +149,10 @@ export default class extends Controller {
       this.showStatus(queryDocPairId, "saving")
 
       try {
-        const response = await fetch(`books/${bookId}/judge/bulk/save`, {
+        const response = await apiFetch(`books/${bookId}/judge/bulk/save`, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": this.getCSRFToken()
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({
             query_doc_pair_id: queryDocPairId,
@@ -269,9 +267,5 @@ export default class extends Controller {
       default:
         statusElement.innerHTML = ''
     }
-  }
-
-  getCSRFToken() {
-    return document.querySelector('meta[name="csrf-token"]').content
   }
 }

@@ -35,7 +35,9 @@
 
 ## Tests
 
-- Run JavaScript tests via `bin/docker r yarn test`.
+- Run JavaScript unit tests via `bin/docker r yarn test:unit` (Vitest — `app/javascript`) or `bin/docker r yarn test` (Karma — legacy Angular).
+- Lint modern JS via `bin/docker r yarn lint:js` or `bin/docker r rails test:eslint` (see `docs/js_tooling.md`).
+- **Vitest PR policy:** new or materially changed logic in `app/javascript/api/` or `app/javascript/utils/` → colocated `*.test.js` in the same PR. Stimulus `controllers/` → add tests when you touch them for migration or behavior changes, not a blanket rewrite for coverage.
 - Run Rails tests via `bin/docker r rails test`.
 - Lint CSS via `bin/docker r yarn lint:css` or `bin/docker r rails test:stylelint` (config: `.stylelintrc.json`).
 - Run Playwright E2E tests via `bin/docker r yarn test:e2e` (requires the app already running via `bin/docker s`, and `bin/docker r npx playwright install chromium` once). This is a separate, checked-in test suite under `test/playwright/` — not the same thing as the Playwright MCP interactive tool described below. See DEVELOPER_GUIDE.md's "Playwright E2E" section for env vars and full details.
@@ -54,8 +56,40 @@
 - Never do $window.location.href= '/', do $window.location.href= caseTryNavSvc.getQuepidRootUrl();.
 - Likewise urls generated should never start with / as we need relative links.
 - In Ruby we say `credentials?` versus `has_credentials?` for predicates.
-- In JavaScript, use `const` or `let` instead of `var`. When writing multiline ternary expressions, keep `?` and `:` at the end of the line, not the start of the next line, to avoid JSHint "misleading line break" errors.
 - Prefer BS5 spacing utilities over one-off margins.
+
+### Agent checklist — match the linter for the file you touch
+
+Quepid **does not** use one global JS style. Write **new** code to modern conventions (below); do not reformat older lines or unrelated sections just to normalize style.
+
+**Modern JS** (`app/javascript/`) — `.prettierrc.json`; full tooling in `docs/js_tooling.md`:
+
+- **Double quotes**, **no semicolons**, **no trailing commas** (`trailingComma: "none"`).
+- Prettier pre-commit is limited to **`api/` and `utils/`** (see `config/javascript_lint_scope.mjs`). Before committing there: `bin/docker r yarn format:js:check` and `bin/docker r yarn lint:js`.
+- ESLint covers the wider modern tree (`controllers/`, `modules/`, entry bundles, etc.) but **ignores `*.test.js`**. Pre-commit **still runs ESLint** on those paths — run it yourself before finishing: `bin/docker r npx eslint app/javascript/path/to/file.js` or tree-wide `bin/docker r yarn lint:js`. Do **not** run Prettier outside `api/`/`utils/` for now (it would churn older single-quote files); hand-apply modern style to **new** lines you add.
+- **Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style. Do not fall back to legacy Angular habits (`var`, semicolons) on greenfield Stimulus/importmap code.
+- **Importmap bare paths** — `import { apiFetch } from "api/fetch"`, not relative `../api/...`. Add new pins to `vitest.config.js` when tests import them.
+- **ESLint ignores `*.test.js`** — follow the conventions above manually when you add specs.
+- Use `const` or `let`, not `var`.
+
+**Legacy Angular JS** (`app/assets/javascripts/`) — `.jshintrc`:
+
+- **Single quotes** (`quotmark: single`), not the modern double-quote style.
+- Multiline ternary: keep `?` and `:` at the **end** of the line, not the start of the next line (JSHint “misleading line break”).
+
+**Ruby** — `.rubocop.yml` (opposite comma rule from JS):
+
+- **Multiline hashes require a trailing comma** (`Style/TrailingCommaInHashLiteral: comma`).
+- Table-style hash alignment (`Layout/HashAlignment: table`).
+
+**Stimulus / HTTP** — `DEVELOPER_GUIDE.md` § Stimulus HTTP conventions:
+
+- Server-owned URLs (`data-*-url-value`, `formTarget.action`); `apiFetch` for mutating JSON.
+- `getQuepidRootUrl()` only when the server cannot pass the URL (e.g. redirect after import).
+
+**Vitest** — `vi.resetModules()` + fresh `import()` for module singletons; `@hotwired/stimulus` is stubbed via `app/javascript/test/stimulus_stub.js`.
+
+**Playwright** (`test/playwright/*.ts`) — TypeScript; not governed by `.prettierrc.json`.
 
 
 ## UI/UX and Styling
