@@ -1,0 +1,35 @@
+schema news {
+  document news {
+    field news_id type string {
+      indexing: summary | attribute
+    }
+    field title type string {
+      indexing: summary | index
+      index: enable-bm25
+    }
+    field abstract type string {
+      indexing: summary | index
+      index: enable-bm25
+    }
+    field url type string {
+      indexing: summary
+    }
+    field category type string {
+      indexing: summary | attribute
+    }
+  }
+
+  fieldset default {
+    fields: title, abstract
+  }
+
+  rank-profile bm25 inherits default {
+    first-phase {
+      expression: bm25(title) + bm25(abstract)
+    }
+    match-features {
+      bm25(title)
+      bm25(abstract)
+    }
+  }
+}
