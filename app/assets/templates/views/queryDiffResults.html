@@ -35,7 +35,13 @@
 
       <!-- Snapshot results -->
       <div class="diff-column" ng-repeat="diffDoc in docTuple.diffDocs track by $index">
-        <div ng-if="$parent.$first && diffDoc === null" class="alert alert-warning" role="alert">
+        <!-- The snapshot recorded a server-side extraction failure (e.g. a Search API
+             mapper that threw) for this query - a real error, not a legitimate
+             zero-result query, so show it instead of the generic ZSR message below. -->
+        <div ng-if="$parent.$first && query.diffs.getSearcher($index).inError" class="alert alert-danger" role="alert">
+          {{ query.diffs.getSearcher($index).searchError }}
+        </div>
+        <div ng-if="$parent.$first && diffDoc === null && !query.diffs.getSearcher($index).inError" class="alert alert-warning" role="alert">
           This query is not present in the snapshot so it is treated as ZSR.
         </div>
         <search-result

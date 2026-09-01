@@ -621,9 +621,10 @@ angular.module('QuepidApp')
                 self.linkUrl = self.searcher.linkUrl;
 
                 if (self.searcher.inError) {
+                  let msg = self.searcher.searchError || 'Error loading snapshot results';
                   self.setDocs([], 0);
-                  self.onError('Error loading snapshot results');
-                  reject('Error loading snapshot results');
+                  self.onError(msg);
+                  reject(msg);
                 } else {
                   let error = self.setDocs(self.searcher.docs, self.searcher.numFound);
                   if (error) {

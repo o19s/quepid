@@ -224,6 +224,31 @@ describe('Service: snapshotSearcherSvc', function () {
     });
   });
 
+  describe('when the snapshot recorded a server-side error for this query', function() {
+    it('surfaces it as inError/searchError instead of silently showing 0 docs', function() {
+      var erroredSnapshot = {
+        id: mockSnapshot.id,
+        name: mockSnapshot.name,
+        getSearchResults: mockSnapshot.getSearchResults,
+        getQueryError: function(queryId) {
+          return queryId === 'test-query-1' ? 'JavaScript execution error: boom' : null;
+        }
+      };
+
+      var searcher = snapshotSearcherSvc.createSnapshotSearcher(erroredSnapshot, mockQuery, mockSettings.createFieldSpec());
+
+      expect(searcher.inError).toBe(true);
+      expect(searcher.searchError).toBe('JavaScript execution error: boom');
+    });
+
+    it('does not flag an error for a snapshot without a recorded error', function() {
+      var searcher = snapshotSearcherSvc.createSnapshotSearcher(mockSnapshot, mockQuery, mockSettings.createFieldSpec());
+
+      expect(searcher.inError).toBe(false);
+      expect(searcher.searchError).toBeNull();
+    });
+  });
+
   describe('pagination', function() {
     it('should return null for pager (snapshots do not support pagination)', function() {
       var searcher = snapshotSearcherSvc.createSnapshotSearcher(mockSnapshot, mockQuery, mockSettings.createFieldSpec());

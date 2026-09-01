@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_15_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_01_191400) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -381,6 +381,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_000000) do
 
   create_table "snapshot_queries", id: :integer, charset: "latin1", force: :cascade do |t|
     t.boolean "all_rated"
+    t.text "error"
     t.integer "number_of_results"
     t.integer "query_id"
     t.integer "response_status"
