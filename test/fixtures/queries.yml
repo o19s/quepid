@@ -112,3 +112,8 @@ query2_for_case_with_book:
   case:         :case_with_book
   query_text:   Han
   arranged_at:  2
+
+query_for_james_bond_case:
+  case:         :james_bond_case
+  query_text:   James Bond
+  arranged_at:  1

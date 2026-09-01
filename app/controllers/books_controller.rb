@@ -147,7 +147,9 @@ class BooksController < ApplicationController
     # In our use case just looks up the count of records per book.
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
-    @current_ratings = @book.judgements.where.not(rating: nil).distinct.order(:rating).pluck(:rating)
+    judgement_ratings = @book.judgements.where.not(rating: nil).distinct.pluck(:rating)
+    case_ratings = Rating.joins(query: :case).where(cases: { book_id: @book.id }).where.not(rating: nil).distinct.pluck(:rating)
+    @current_ratings = (judgement_ratings + case_ratings).uniq.sort
   end
 
   def create
@@ -404,11 +406,18 @@ class BooksController < ApplicationController
     # Values are already coerced to Float so interpolation is safe (no injection risk).
     whens = changes.map { |old, new_val| "WHEN #{old} THEN #{new_val}" }.join(' ')
     case_sql = "CASE rating #{whens} ELSE rating END"
-    total_updated = @book.judgements.where(rating: changes.keys).update_all("rating = #{case_sql}")
+    judgements_updated = @book.judgements.where(rating: changes.keys).update_all("rating = #{case_sql}")
+
+    # Qualify column with table name to avoid ambiguity when joining through queries → cases.
+    ratings_case_sql = "CASE ratings.rating #{whens} ELSE ratings.rating END"
+    case_ratings_updated = Rating.joins(query: :case)
+      .where(cases: { book_id: @book.id })
+      .where(rating: changes.keys)
+      .update_all("ratings.rating = #{ratings_case_sql}")
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book),
-                :notice => "Remapped #{total_updated} judgements."
+                :notice => "Remapped #{judgements_updated} judgements and #{case_ratings_updated} case ratings."
   end
 
   private
