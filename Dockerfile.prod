@@ -40,7 +40,7 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install JavaScript dependencies
-ARG NODE_VERSION=24.18.1
+ARG NODE_VERSION=24.20.0
 ARG YARN_VERSION=1.22.22
 ENV PATH=/usr/local/node/bin:$PATH
 RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \
@@ -85,7 +85,7 @@ FROM base
 ENV QUEPID_VERSION=$QUEPID_VERSION_VARIABLE
 
 # Install Node.js and yarn in final image for asset recompilation for nested paths /quepid at runtime
-ARG NODE_VERSION=24.18.1
+ARG NODE_VERSION=24.20.0
 ARG YARN_VERSION=1.22.22
 ENV PATH=/usr/local/node/bin:$PATH
 RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \
