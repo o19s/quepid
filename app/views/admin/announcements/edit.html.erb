@@ -16,7 +16,19 @@
         <%= form.text_area :text, required: true, rows: 5, class: 'form-control' %>
         <div class="form-text">The announcement.  You can use HTML and emojis.</div>
       </div>
-    
+
+      <div class="mb-3">
+        <%= form.label :publish_date, class: 'form-label' %>
+        <%= form.date_field :publish_date, required: true, class: 'form-control' %>
+        <div class="form-text">The announcement won't be shown to users before this date. Use today's date to publish immediately.</div>
+      </div>
+
+      <div class="mb-3">
+        <%= form.label :expiration_date, class: 'form-label' %>
+        <%= form.date_field :expiration_date, required: true, class: 'form-control' %>
+        <div class="form-text">After this date the announcement will no longer be shown to users.</div>
+      </div>
+
       <br>
     
       <div class="actions">

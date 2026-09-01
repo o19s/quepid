@@ -4,42 +4,85 @@
 #
 # Table name: announcements
 #
-#  id         :bigint           not null, primary key
-#  live       :boolean          default(FALSE)
-#  text       :text(65535)
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
-#  author_id  :integer
+#  id              :bigint           not null, primary key
+#  expiration_date :date             not null
+#  publish_date    :date             not null
+#  text            :text(65535)
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  author_id       :integer
 #
 # Indexes
 #
 #  index_announcements_author_id  (author_id)
-#  index_announcements_on_live    (live)
 #
 require 'test_helper'
 
 class AnnouncementTest < ActiveSupport::TestCase
-  describe 'Creating a Announcement' do
+  describe 'validations' do
     let(:user) { users(:random) }
-    let(:existing_announcement) { announcements(:live_announcement) }
-    test 'sets live flag to false by default' do
-      announcement = Announcement.create(text: 'Hooray! 🥳 is ready to use.')
 
-      assert_not announcement.live
+    test 'requires publish_date' do
+      announcement = Announcement.new(text: 'x', author: user, expiration_date: Date.current)
+
+      assert_not announcement.valid?
+      assert_includes announcement.errors[:publish_date], "can't be blank"
     end
 
-    test 'can be set to true, forcing others to false' do
-      assert_predicate existing_announcement, :live?
+    test 'requires expiration_date' do
+      announcement = Announcement.new(text: 'x', author: user, publish_date: Date.current)
 
-      announcement = Announcement.create(text: 'Hooray! 🥳 is ready to use.')
+      assert_not announcement.valid?
+      assert_includes announcement.errors[:expiration_date], "can't be blank"
+    end
 
-      assert_not announcement.live
-      existing_announcement.reload
-      assert existing_announcement.live
+    test 'publish_date must be on or before expiration_date' do
+      announcement = Announcement.new(text: 'x', author: user, publish_date: Date.current,
+                                      expiration_date: 1.day.ago.to_date)
 
-      announcement.make_live!
-      existing_announcement.reload
-      assert_not existing_announcement.live
+      assert_not announcement.valid?
+      assert_includes announcement.errors[:publish_date], 'must be on or before the expiration date'
+    end
+
+    test 'publish_date equal to expiration_date is valid' do
+      announcement = Announcement.new(text: 'x', author: user, publish_date: Date.current,
+                                      expiration_date: Date.current)
+
+      assert_predicate announcement, :valid?
+    end
+  end
+
+  describe 'published?, expired?, and active?' do
+    test 'a currently active announcement is published, not expired, and active' do
+      announcement = announcements(:active_announcement)
+
+      assert_predicate announcement, :published?
+      assert_not announcement.expired?
+      assert_predicate announcement, :active?
+    end
+
+    test 'an expired announcement is published but not active' do
+      announcement = announcements(:expired_announcement)
+
+      assert_predicate announcement, :published?
+      assert_predicate announcement, :expired?
+      assert_not announcement.active?
+    end
+
+    test 'an announcement scheduled for the future is not published and not active' do
+      announcement = announcements(:scheduled_announcement)
+
+      assert_not announcement.published?
+      assert_not announcement.expired?
+      assert_not announcement.active?
+    end
+  end
+
+  describe '.active scope' do
+    test 'only includes announcements currently between publish_date and expiration_date' do
+      assert_includes Announcement.active, announcements(:active_announcement)
+      assert_not_includes Announcement.active, announcements(:expired_announcement)
+      assert_not_includes Announcement.active, announcements(:scheduled_announcement)
     end
   end
 end
