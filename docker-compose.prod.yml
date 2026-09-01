@@ -55,7 +55,7 @@ services:
       - mysql
       - ollama
   nginx:
-    image: nginx:1.31.3-alpine-slim
+    image: nginx:1.31.4-alpine-slim
     container_name: quepid_nginx
     ports:
       - "443:8443"
