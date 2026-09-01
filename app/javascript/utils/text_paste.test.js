@@ -35,4 +35,16 @@ describe("text_paste", () => {
 
     expect(onPaste).not.toHaveBeenCalled()
   })
+
+  it("falls back to window.clipboardData when event.clipboardData is missing", () => {
+    const onPaste = vi.fn()
+    attachTextPaste(input, onPaste)
+
+    window.clipboardData = { getData: () => "legacy paste" }
+    const event = new Event("paste", { bubbles: true })
+    input.dispatchEvent(event)
+    delete window.clipboardData
+
+    expect(onPaste).toHaveBeenCalledWith("legacy paste")
+  })
 })

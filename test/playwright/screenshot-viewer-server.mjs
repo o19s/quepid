@@ -36,7 +36,7 @@ function safePath(urlPath) {
   const decoded = decodeURIComponent(urlPath.split("?")[0])
   const relative = decoded.replace(/^\/+/, "")
   const absolute = path.resolve(repoRoot, relative)
-  if (!absolute.startsWith(repoRoot)) return null
+  if (absolute !== repoRoot && !absolute.startsWith(repoRoot + path.sep)) return null
   return absolute
 }
 

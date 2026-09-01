@@ -7,17 +7,10 @@
  * @returns {() => void} detach listener (call on disconnect / $destroy)
  */
 export function attachTextPaste(element, onPaste) {
-  const handler = event => {
-    let pastedText = null
-
-    try {
-      pastedText = event.clipboardData?.getData("text/plain")
-    } catch (_ex) {
-      // IE legacy
-      if (!pastedText && window.clipboardData) {
-        pastedText = window.clipboardData.getData("Text")
-      }
-    }
+  const handler = (event) => {
+    const pastedText = event.clipboardData
+      ? event.clipboardData.getData("text/plain")
+      : window.clipboardData?.getData("Text") // IE legacy
 
     if (pastedText) onPaste(pastedText)
   }
