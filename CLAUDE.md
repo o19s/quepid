@@ -115,4 +115,12 @@ For any user-visible change, prove the behavior with Playwright MCP screenshots 
 - **Frame big** (my screenshots have come out too small): shoot the **full viewport**, not element crops. Quepid modals scroll *internally*, so `fullPage:true` does NOT reach below their fold — instead `browser_resize` the viewport to roughly match the modal so it fills the frame, then screenshot the viewport. Size to the content: a tall step (e.g. the wizard endpoint step) needs ~`820x2200`; a short step (e.g. wizard Finish) needs ~`900x760` — a tall viewport dwarfs a short modal. Narrower width = modal fills more of the frame.
 - **Force hard-to-reach states** (e.g. a failed save) by intercepting the API with `browser_run_code_unsafe` + `page.route('**/api/...', ...)`.
     - Gotcha: `setTimeout` is undefined in that context — use `await page.waitForTimeout(ms)` for delays.
-- **Save** under `./playwright/` (gitignored) with clear `-before`/`-after` (+ state) names, e.g. `behavior-wizard-proxy-after-error.png`.
+- **Save** under `.playwright-mcp/` (gitignored) with clear `-before`/`-after` (+ state) names, e.g. `behavior-wizard-proxy-after-error.png`.
+
+### Before/after pairs — do not break the working tree
+
+- Capture **before** first, or keep existing **after** PNGs until matching befores exist — **never delete** the only half of a pair.
+- To shoot pre-change UI: **save after sources aside**, flip **only** the files needed (often templates/modals), rebuild Angular (`yarn build:angular-vendor`, `build:angular-app`, `build:angular-templates`), capture, then **restore + rebuild in the same session** before anything else.
+- **Never leave the repo on HEAD/pre-migration sources** after a before capture — verify migrated markup and bundles before finishing.
+- Use `test/playwright/dom_migration_screenshots.spec.ts` + `MIGRATION_SHOT_PHASE=before|after`, Playwright MCP, or a few manual shots — **not** a Docker orchestration script.
+- No viewer tooling, inventory docs, or unrelated edits while the tree is mid-flip.

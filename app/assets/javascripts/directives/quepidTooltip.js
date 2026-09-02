@@ -1,26 +1,16 @@
 'use strict';
 
-// Replacement for angular-ui-bootstrap's `uib-tooltip` / `uib-tooltip-html`,
-// using Bootstrap 5's native Tooltip. Bootstrap is imported in
-// app/javascript/angular_app.js so window.bootstrap.Tooltip is available here.
-//
-// Usage:
-//   <a quepid-tooltip="Plain text"></a>
-//   <a quepid-tooltip="<b>HTML</b> allowed" quepid-tooltip-html></a>
-//   tooltip-placement="left|right|top|bottom"   (default 'top')
-//   tooltip-popup-delay="1000"                  (default 0, in ms)
+// uib-tooltip replacement — BS5 via quepidDom.tooltip (utils/bs_tooltip.js).
+// Interpolated content needs quepid-tooltip="{{tip}}" so $observe sees updates.
 
 angular.module('QuepidApp')
   .directive('quepidTooltip', function () {
     return {
       restrict: 'A',
       link: function (scope, element, attrs) {
-        const Tooltip = window.bootstrap && window.bootstrap.Tooltip;
-        if (!Tooltip) {
-          // Loud failure beats silent — if you see this, Bootstrap 5's JS
-          // didn't make it into window.bootstrap on this page. Check that
-          // app/javascript/angular_app.js still does the namespace import.
-          console.warn('quepidTooltip: window.bootstrap.Tooltip not available; tooltip will not render', element[0]);
+        const dom = window.quepidDom && window.quepidDom.tooltip;
+        if (!dom) {
+          console.warn('quepidTooltip: window.quepidDom.tooltip not available', element[0]);
           return;
         }
 
@@ -29,23 +19,19 @@ angular.module('QuepidApp')
         const placement = attrs.tooltipPlacement || 'top';
         const delayMs = parseInt(attrs.tooltipPopupDelay, 10);
 
-        const instance = new Tooltip(el, {
+        const instance = dom.create(el, {
           title: attrs.quepidTooltip || '',
           placement: placement,
           html: isHtml,
-          trigger: 'hover focus',
-          delay: isFinite(delayMs) ? { show: delayMs, hide: 0 } : 0,
-          container: 'body',
-          animation: false
+          delayMs: delayMs
         });
 
         attrs.$observe('quepidTooltip', function (val) {
-          // setContent landed in Bootstrap 5.2; we are on 5.3+.
-          instance.setContent({ '.tooltip-inner': val || '' });
+          dom.updateContent(instance, val);
         });
 
         scope.$on('$destroy', function () {
-          instance.dispose();
+          dom.dispose(instance);
         });
       }
     };
