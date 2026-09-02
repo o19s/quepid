@@ -404,9 +404,10 @@ class BooksController < ApplicationController
     # Single UPDATE with a CASE expression — SQL evaluates all WHEN conditions against
     # the original value, so chained remappings (e.g. 5→4, 4→3) cannot double-update.
     # Values are already coerced to Float so interpolation is safe (no injection risk).
-    # judgements is a has_many :through, so update_all's generated UPDATE ... FROM
-    # joins query_doc_pairs back in - "rating" alone is ambiguous there, so it's
-    # qualified with the table name.
+    # Both update_all calls below join through other tables, so the CASE expression
+    # qualifies its column reference to avoid ambiguity - but the SET target itself
+    # stays an unqualified "rating =", since SQLite's UPDATE ... FROM syntax rejects
+    # a qualified assignment target (MySQL accepts either form).
     whens = changes.map { |old, new_val| "WHEN #{old} THEN #{new_val}" }.join(' ')
     case_sql = "CASE judgements.rating #{whens} ELSE judgements.rating END"
 
@@ -417,12 +418,11 @@ class BooksController < ApplicationController
     ActiveRecord::Base.transaction do
       judgements_updated = @book.judgements.where(rating: changes.keys).update_all("rating = #{case_sql}")
 
-      # Qualify column with table name to avoid ambiguity when joining through queries → cases.
       ratings_case_sql = "CASE ratings.rating #{whens} ELSE ratings.rating END"
       case_ratings_updated = Rating.joins(query: :case)
         .where(cases: { book_id: @book.id })
         .where(rating: changes.keys)
-        .update_all("ratings.rating = #{ratings_case_sql}")
+        .update_all("rating = #{ratings_case_sql}")
     end
 
     UpdateCaseJob.perform_later @book
