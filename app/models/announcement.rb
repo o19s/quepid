@@ -26,11 +26,11 @@ class Announcement < ApplicationRecord
   validates :expiration_date, presence: true
   validate :publish_date_not_after_expiration_date
 
-  # Currently-visible announcements: today falls within [publish_date, expiration_date].
-  # Ordered by publish_date desc so the most recently scheduled one wins when windows
-  # overlap - no separate "only one at a time" flag to keep in sync.
+  # Ordered by publish_date desc, id desc so the most recently scheduled announcement
+  # wins when windows overlap (id as a tiebreaker keeps same-day picks deterministic) -
+  # avoids needing a separate "only one active" flag to keep in sync.
   scope :active, -> {
-    where(publish_date: ..Date.current).where(expiration_date: Date.current..).order(publish_date: :desc)
+    where(publish_date: ..Date.current).where(expiration_date: Date.current..).order(publish_date: :desc, id: :desc)
   }
 
   scope :latest_unseen_for_user, ->(user) {

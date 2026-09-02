@@ -32,16 +32,18 @@ module Admin
       if @announcement.save
         redirect_to edit_admin_announcement_path(@announcement)
       else
-        render 'new'
+        render 'new', status: :unprocessable_content
       end
     end
 
     def update
       @announcement = Announcement.find(params.expect(:id))
 
-      @announcement.update(announcement_params)
-
-      render 'edit' # we stay on the edit page because that is where you can preview the rendered changes
+      if @announcement.update(announcement_params)
+        render 'edit' # we stay on the edit page because that is where you can preview the rendered changes
+      else
+        render 'edit', status: :unprocessable_content
+      end
     end
 
     def destroy

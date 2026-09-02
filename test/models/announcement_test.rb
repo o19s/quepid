@@ -84,5 +84,21 @@ class AnnouncementTest < ActiveSupport::TestCase
       assert_not_includes Announcement.active, announcements(:expired_announcement)
       assert_not_includes Announcement.active, announcements(:scheduled_announcement)
     end
+
+    test 'agrees with the active? predicate for every announcement' do
+      # The scope re-implements published?/expired? in SQL so it can be queried -
+      # this keeps the two definitions from drifting apart unnoticed.
+      assert_equal Announcement.all.select(&:active?).to_set, Announcement.active.to_set
+    end
+
+    test 'breaks a publish_date tie by preferring the most recently created announcement' do
+      user = users(:random)
+      older = Announcement.create!(text: 'older', author: user, publish_date: Date.current,
+                                   expiration_date: 1.day.from_now.to_date)
+      newer = Announcement.create!(text: 'newer', author: user, publish_date: Date.current,
+                                   expiration_date: 1.day.from_now.to_date)
+
+      assert_equal newer, Announcement.active.where(id: [ older.id, newer.id ]).first
+    end
   end
 end
