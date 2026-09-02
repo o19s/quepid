@@ -57,9 +57,14 @@ module ApplicationHelper
   end
 
   # rubocop:disable Lint/EmptyBlock
+  # Flash keys that carry structural signals for a view to key off of, not a
+  # user-facing message -- these must never fall through to the generic
+  # alert-box rendering below.
+  NON_DISPLAYABLE_FLASH_KEYS = %w[unfurl kraken_unleashed].freeze
+
   def flash_messages _opts = {}
     flash.each do |msg_type, message|
-      next if 'unfurl' == msg_type # we don't show unfurl's in the flash notice UI.
+      next if NON_DISPLAYABLE_FLASH_KEYS.include?(msg_type)
 
       concat(
         content_tag(

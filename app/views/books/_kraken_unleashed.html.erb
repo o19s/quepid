@@ -6,6 +6,11 @@
 </div>
 
 <script>
+  // This inline script only re-runs reliably because Turbo.session.drive = false
+  // (see app/javascript/application_modern.js) makes every navigation to this
+  // page a plain full-page load. If Turbo Drive is ever re-enabled here, this
+  // needs to move to a Stimulus controller instead, or it may stop firing (or
+  // fire against stale DOM) on cached/back-forward navigations.
   document.getElementById('successModal').style.display = 'block';
   function closeModal() {
     document.getElementById('successModal').style.display = 'none';

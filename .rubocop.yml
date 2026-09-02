@@ -134,4 +134,4 @@ Style/YodaCondition:
   EnforcedStyle: require_for_equality_operators_only
 
 Style/HashSyntax:
-  Enabled: false
+  EnforcedStyle: ruby19

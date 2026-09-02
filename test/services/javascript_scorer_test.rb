@@ -82,14 +82,14 @@ class JavascriptScorerTest < ActiveSupport::TestCase
       # Need David Fisher help here.  Why am I getting NaN?
       # Going to just make it return a 0 in FetchService
 
-      docs = [ { :id => '77383738', :rating => 0.0 },
-               { :id => '77502729', :rating => 0.0 },
-               { :id => '77031393', :rating => 0.0 },
-               { :id => '78106266', :rating => 0.0 } ]
+      docs = [ { id: '77383738', rating: 0.0 },
+               { id: '77502729', rating: 0.0 },
+               { id: '77031393', rating: 0.0 },
+               { id: '78106266', rating: 0.0 } ]
 
-      best_docs = [ { :id => '77193049', :rating => 0.0 },
-                    { :id => '77031393', :rating => 0.0 },
-                    { :id => '2120998', :rating => 0.0 } ]
+      best_docs = [ { id: '77193049', rating: 0.0 },
+                    { id: '77031393', rating: 0.0 },
+                    { id: '2120998', rating: 0.0 } ]
 
       score = javascript_scorer.score(docs, best_docs, scorer_code)
       assert_predicate score, :nan?

@@ -39,7 +39,7 @@ module AiJudges
 
       llm_service = LlmService.new(@ai_judge.llm_key, @ai_judge.judge_options)
       @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @ai_judge)
-      llm_service.perform_safe_judgement @judgement
+      llm_service.perform_safe_judgement @judgement, book: @book
 
       render :edit
     end

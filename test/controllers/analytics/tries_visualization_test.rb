@@ -28,5 +28,15 @@ module Analytics
         end
       end
     end
+
+    describe 'a case this user cannot access' do
+      let(:matt_case) { cases(:matt_case) } # owned by a different user, not public, not shared with joey
+
+      test 'renders the 404 page instead of crashing on a nil @case' do
+        get :show, params: { case_id: matt_case.id }
+
+        assert_response :not_found
+      end
+    end
   end
 end

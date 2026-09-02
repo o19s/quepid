@@ -4,7 +4,6 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PRETTIER="./node_modules/.bin/prettier"
-FILTER="node scripts/filter_javascript_prettier_paths.mjs"
 
 if [[ $# -eq 0 ]]; then
   exit 0
@@ -12,7 +11,12 @@ fi
 
 cd "$ROOT"
 
-mapfile -t files < <("$FILTER" "$@")
+files=()
+while IFS= read -r file; do
+  [[ -z "$file" ]] && continue
+  files+=("$file")
+done < <(node scripts/filter_javascript_prettier_paths.mjs "$@")
+
 if [[ ${#files[@]} -eq 0 ]]; then
   exit 0
 fi

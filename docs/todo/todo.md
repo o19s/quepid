@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-08-24
+**Last updated:** 2026-08-27
 
 Outstanding bugs, hardening, and cleanup on `main` only. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -100,6 +100,16 @@ Deleting a rating that was already removed can error; races (tabs, double clicks
 **Cause:** `ProfilesController#update` surfaces errors for JSON only.
 
 **Fix direction:** On HTML failure, re-render with flash / errors (mirror `AccountsController`).
+
+---
+
+### Judgement rating not validated against book's scale (outside AI judging)
+
+**Observed:** `Judgement#rating` only validates presence, never that the value is actually one of the book's configured scale values. `Api::V1::JudgementsController#update` (writes `judgement_params[:rating]` directly) and `JudgementsController` can both persist a rating outside the book's scale. The AI-judging path (`app/jobs/run_judge_judy_job.rb`) was hardened against this (LLM-returned out-of-scale ratings get marked `unrateable`), but that guard is job-local — the human/API paths were never covered.
+
+**Cause:** No model-level validation ties `Judgement#rating` to `query_doc_pair.book.scale`.
+
+**Fix direction:** Add a conditional `inclusion` validation on `Judgement` scoped to `query_doc_pair.book.scale`, and retire the job-local check in `run_judge_judy_job.rb` in favor of it (the job would need to catch the validation failure and call `mark_unrateable` instead of letting `save!` raise). Audit `BookImporter`/`RatingsImporter` and the book-combine flow first — confirm none of them legitimately rely on writing out-of-scale ratings today before making this a hard validation.
 
 ---
 
