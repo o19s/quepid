@@ -47,7 +47,10 @@ module Api
             }
           end
 
-          Query.upsert_all(queries_to_import)
+          # insert_all, not upsert_all: queries_to_import is already filtered down to
+          # non-existing (case_id, query_text) pairs above, and there's no unique index
+          # on queries for upsert_all to target on SQLite/Postgres anyway.
+          Query.insert_all(queries_to_import)
           # rubocop:enable Rails/SkipsModelValidations
 
           @case.reload

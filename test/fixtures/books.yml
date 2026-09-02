@@ -60,3 +60,11 @@ empty_book_2:
   name: Empty Book 2
   scale: "0,1,2,3"
   scale_with_labels: null
+
+
+# Dedicated home for query_doc_pairs(:one)/(:two) below - kept separate from the
+# other book fixtures so it doesn't shift their query_doc_pairs counts.
+book_for_orphan_query_doc_pairs:
+  name: Book For Orphan Query Doc Pairs
+  scale: "0,1"
+  scale_with_labels: '{"0": "Not Relevant", "1": "Relevant"}'

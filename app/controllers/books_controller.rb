@@ -402,8 +402,11 @@ class BooksController < ApplicationController
     # Single UPDATE with a CASE expression — SQL evaluates all WHEN conditions against
     # the original value, so chained remappings (e.g. 5→4, 4→3) cannot double-update.
     # Values are already coerced to Float so interpolation is safe (no injection risk).
+    # judgements is a has_many :through, so update_all's generated UPDATE ... FROM
+    # joins query_doc_pairs back in - "rating" alone is ambiguous there, so it's
+    # qualified with the table name.
     whens = changes.map { |old, new_val| "WHEN #{old} THEN #{new_val}" }.join(' ')
-    case_sql = "CASE rating #{whens} ELSE rating END"
+    case_sql = "CASE judgements.rating #{whens} ELSE judgements.rating END"
     total_updated = @book.judgements.where(rating: changes.keys).update_all("rating = #{case_sql}")
 
     UpdateCaseJob.perform_later @book

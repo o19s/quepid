@@ -19,7 +19,7 @@ class HomeController < ApplicationController
     # @cases = recent_cases(30)
     @cases = @current_user.cases_involved_with.not_archived.with_counts
       .includes([ :metadata ])
-      .order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
+      .order('case_metadata.last_viewed_at DESC, cases.id DESC')
       .limit(10)
 
     @most_recent_cases = @cases[0...4].sort_by { |c| c.case_name.downcase }
