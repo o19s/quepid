@@ -25,6 +25,14 @@ class RenameGloballyCollidingIndexNames < ActiveRecord::Migration[8.1]
   end
 
   def down
+    # The old names being restored are exactly the ones that collided in the first
+    # place (e.g. both case_scores and queries used "case_id") - SQLite requires
+    # index names to be unique database-wide, so replaying these renames in reverse
+    # would fail partway through with the same "index already exists" error this
+    # migration exists to fix. There's no way to recreate the pre-rename schema on
+    # SQLite, so fail up front instead of leaving a partial rename in place.
+    raise ActiveRecord::IrreversibleMigration unless connection.adapter_name == 'Mysql2'
+
     RENAMES.each do |table, old_name, new_name|
       rename_index table, new_name, old_name
     end

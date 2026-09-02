@@ -59,4 +59,22 @@ class ScoreTest < ActiveSupport::TestCase
       assert_instance_of Hash, score_with_queries.queries
     end
   end
+
+  describe '.sampled' do
+    let(:kase) { cases(:one) }
+
+    it 'returns the requested number of scores for the case' do
+      # fixtures give case :one 11 scores (one + valid_1..valid_10)
+      sampled = Score.sampled(kase.id, 5)
+
+      assert_equal 5, sampled.count
+      assert(sampled.all? { |score| score.case_id == kase.id })
+    end
+
+    it 'returns every score for the case when the sample size exceeds the total' do
+      sampled = Score.sampled(kase.id, 100)
+
+      assert_equal kase.scores.count, sampled.count
+    end
+  end
 end
