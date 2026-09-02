@@ -128,7 +128,9 @@ class HomeController < ApplicationController
   private
 
   def check_for_announcement
-    @announcement = Announcement.where(live: true).latest_unseen_for_user(@current_user).first if @current_user
+    return unless @current_user
+
+    @announcement = Announcement.active.latest_unseen_for_user(@current_user).first
     AnnouncementViewed.create(user: @current_user, announcement: @announcement) if @announcement
   end
 end

@@ -191,11 +191,7 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :announcements, except: [ :show ] do
-      member do
-        post :publish
-      end
-    end
+    resources :announcements, except: [ :show ]
     resources :websocket_tester, only: [ :index ] do
       post 'test_background_job', on: :collection
     end
