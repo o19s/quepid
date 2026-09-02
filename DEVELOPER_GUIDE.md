@@ -66,6 +66,7 @@ This guide provides detailed instructions for developers who want to set up, run
 		- [Docker Container Won't Start](#docker-container-wont-start)
 		- [Slow Docker Performance](#slow-docker-performance)
 	- [Database Issues](#database-issues)
+		- [Choosing a database adapter](#choosing-a-database-adapter)
 		- [Database Connection Errors](#database-connection-errors)
 		- [Migration Errors](#migration-errors)
 	- [Frontend Issues](#frontend-issues)
@@ -85,6 +86,8 @@ This guide provides detailed instructions for developers who want to set up, run
 ## I. Setting up Quepid to do Development
 
 Historically Quepid development has REQUIRED Docker, which avoids having to deal with installing dependencies like Ruby and MySQL. However, we recently made some tweaks so you can do development without using Docker, which may fit some folks much better.
+
+Quepid supports two database adapters: **SQLite** (the default - no separate database server to install or run) and **MySQL** (what production deployments use). Set `DB_ADAPTER=mysql2` in your `.env` file (or export it before running `bin/docker`/`bin/rails` commands) to opt into MySQL instead; leave it unset to use SQLite. See [Choosing a database adapter](#choosing-a-database-adapter) below.
 
 ### Docker Based Setup
 
@@ -147,11 +150,13 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 3. **Yarn**: Install Yarn package manager.
 
-4. **MySQL**: Install MySQL 8.0 or later.
+4. **Database** (optional): By default Quepid uses SQLite, which needs no separate server or install - the `sqlite3` gem is enough. If you want to run against MySQL instead (matching production), install MySQL 8.0+ and set `DB_ADAPTER=mysql2` in your `.env` file.
 
 #### Database Setup
 
-1. Start up MySQL however you like.  Some folks set up Quepid with Docker, and then 
+With the default SQLite adapter, there's nothing to start up separately - `bin/setup` (below) creates `storage/development.sqlite3` for you.
+
+If you set `DB_ADAPTER=mysql2`, start up MySQL however you like first (some folks set up just the `mysql` container with `docker compose up -d mysql` and run everything else locally).
 
 
 #### Application Setup
@@ -168,7 +173,7 @@ bundle install
 bin/setup
 ```
 
-We assume a `root` database user with the password `password`.  If your password is different you will need to edit the `.env` file created after running the setup steps.
+If you're using `DB_ADAPTER=mysql2`, we assume a `root` database user with the password `password`.  If your password is different you will need to edit the `.env` file created after running the setup steps.
 
 This will install node and yarn, set up the database, run migrations, and seed initial data and then start Rails.
 
@@ -395,7 +400,7 @@ Structure:
 
 Baseline screenshots live under `test/playwright/baselines/` and **are checked into git** (unlike `test/playwright/test-results/` and `playwright-report/`, which are runtime output and gitignored) — a missing baseline fails its test with "no baseline found" rather than silently passing. When you add a new `toHaveScreenshot()` call or intentionally change a screen's appearance, run `test:e2e:update-baselines` and `git add` the resulting PNGs.
 
-Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.ts`) because they share case state in MySQL and a single authenticated session — don't assume they're safe to parallelize without addressing that first.
+Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.ts`) because they share case state in the database (whichever adapter the dev server is running against) and a single authenticated session — don't assume they're safe to parallelize without addressing that first.
 
 ### Rubocop
 
@@ -893,12 +898,22 @@ This section covers common issues you might encounter during development and how
 
 ## Database Issues
 
+### Choosing a database adapter
+
+Quepid defaults to **SQLite** (`storage/development.sqlite3` / `storage/test.sqlite3`) - nothing to start up separately. Set `DB_ADAPTER=mysql2` in `.env` (or export it before running `bin/docker`/`bin/rails` commands) to use MySQL instead, which is what production deployments run. Both are exercised in CI (`.github/workflows/test.yml`).
+
+Known SQLite-specific behavior to be aware of:
+- SQLite's default text comparison is already case-sensitive, matching the case-sensitive collation MySQL uses for `query_text` columns - no configuration needed.
+- Solid Queue and Solid Cable both poll the same database file; under heavy concurrent local load you may occasionally see `SQLITE_BUSY` - `config/database.yml`'s `timeout:` setting gives busy connections a retry window before failing.
+- `docker-compose.yml`'s `app` service still declares `depends_on: mysql`, so the `mysql` container starts (and Docker waits for it to be healthy) even when `DB_ADAPTER` is left at its `sqlite3` default. It's unused in that case, just an idle extra container - not a functional problem, but not the "zero extra infrastructure" experience SQLite is meant to give either. Making that dependency conditional (e.g. via Compose profiles) is a reasonable follow-up if it becomes annoying.
+- A handful of tests that depend on MySQL-only behavior (e.g. VARCHAR length enforcement, which SQLite doesn't have) are skipped when running against SQLite - see `AdapterFunctions.mysql?` usage in `test/`.
+
 ### Database Connection Errors
 
-**Symptom**: Rails can't connect to MySQL database.
+**Symptom**: Rails can't connect to the database.
 
 **Solutions**:
-1. Verify MySQL is running:
+1. If using MySQL (`DB_ADAPTER=mysql2`), verify the container is running:
    ```bash
    docker compose ps mysql
    ```

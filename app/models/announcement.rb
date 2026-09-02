@@ -26,12 +26,12 @@ class Announcement < ApplicationRecord
 
   scope :latest_unseen_for_user, ->(user) {
     join_condition = "
-      LEFT OUTER JOIN `announcement_viewed`
-        ON `announcements`.`id` = `announcement_viewed`.`announcement_id`
-        AND `announcement_viewed`.`user_id` = ?
+      LEFT OUTER JOIN announcement_viewed
+        ON announcements.id = announcement_viewed.announcement_id
+        AND announcement_viewed.user_id = ?
     "
     joins(sanitize_sql_array([ join_condition, user.id ]))
-      .where('`announcement_viewed`.`user_id` IS NULL')
+      .where(announcement_viewed: { user_id: nil })
   }
 
   def live?

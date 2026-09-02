@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_15_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_02_120000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -236,10 +236,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_000000) do
     t.datetime "updated_at", precision: nil
     t.integer "user_id"
     t.index ["annotation_id"], name: "index_case_scores_annotation_id", unique: true
-    t.index ["case_id"], name: "case_id"
+    t.index ["case_id"], name: "index_case_scores_on_case_id"
     t.index ["scorer_id"], name: "index_case_scores_on_scorer_id"
     t.index ["updated_at", "created_at", "id"], name: "support_last_score"
-    t.index ["user_id"], name: "user_id"
+    t.index ["user_id"], name: "index_case_scores_on_user_id"
   end
 
   create_table "cases", id: :integer, charset: "utf8mb3", force: :cascade do |t|
@@ -258,7 +258,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_000000) do
     t.datetime "updated_at", precision: nil, null: false
     t.index ["book_id"], name: "index_cases_book_id"
     t.index ["owner_id", "archived"], name: "idx_owner_archived"
-    t.index ["owner_id"], name: "user_id"
+    t.index ["owner_id"], name: "index_cases_on_owner_id"
   end
 
   create_table "curator_variables", id: :integer, charset: "latin1", force: :cascade do |t|
@@ -309,7 +309,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_000000) do
     t.json "options"
     t.string "query_text", limit: 2048, collation: "utf8mb4_bin"
     t.datetime "updated_at", precision: nil, null: false
-    t.index ["case_id"], name: "case_id"
+    t.index ["case_id"], name: "index_queries_on_case_id"
   end
 
   create_table "query_doc_pairs", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
@@ -334,7 +334,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_000000) do
     t.datetime "updated_at", precision: nil, null: false
     t.integer "user_id"
     t.index ["doc_id"], name: "index_ratings_on_doc_id", length: 191
-    t.index ["query_id"], name: "query_id"
+    t.index ["query_id"], name: "index_ratings_on_query_id"
   end
 
   create_table "scorers", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -386,7 +386,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_000000) do
     t.integer "response_status"
     t.float "score"
     t.integer "snapshot_id"
-    t.index ["query_id"], name: "query_id"
+    t.index ["query_id"], name: "index_snapshot_queries_on_query_id"
     t.index ["snapshot_id"], name: "snapshot_id"
   end
 
@@ -397,7 +397,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_000000) do
     t.bigint "scorer_id"
     t.bigint "try_id"
     t.datetime "updated_at", precision: nil, null: false
-    t.index ["case_id"], name: "case_id"
+    t.index ["case_id"], name: "index_snapshots_on_case_id"
     t.index ["scorer_id"], name: "index_snapshots_on_scorer_id"
     t.index ["try_id"], name: "index_snapshots_on_try_id"
   end
@@ -585,7 +585,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_000000) do
     t.bigint "search_endpoint_id"
     t.integer "try_number"
     t.datetime "updated_at", precision: nil, null: false
-    t.index ["case_id"], name: "case_id"
+    t.index ["case_id"], name: "index_tries_on_case_id"
     t.index ["search_endpoint_id"], name: "index_tries_on_search_endpoint_id"
     t.index ["try_number"], name: "ix_queryparam_tryNo"
   end

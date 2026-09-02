@@ -92,7 +92,7 @@ class Case < ApplicationRecord
   # Scopes
   include ForUserScope
 
-  scope :not_archived, -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
+  scope :not_archived, -> { where(archived: [ false, nil ]) }
 
   scope :active, -> { where(archived: false) }
   scope :archived, -> { where(archived: true) }

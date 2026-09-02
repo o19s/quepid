@@ -1,25 +1,48 @@
 # For more information consult https://guides.rubyonrails.org/configuring.html#configuring-a-database
+#
+# SQLite is the default local/dev/test adapter (no separate database server needed).
+# Set DB_ADAPTER=mysql2 to use MySQL instead (what production deployments use).
+
+<% db_adapter = ENV.fetch("DB_ADAPTER", "sqlite3") %>
 
 default: &default
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+<% if db_adapter == "mysql2" %>
+mysql: &db_config
   adapter:    mysql2
   encoding:   utf8mb4
   collation:  utf8mb4_bin
   reconnect:  false
-  pool:       5
   username:   <%= ENV["DB_USERNAME"] %>
   password:   <%= ENV["DB_PASSWORD"] %>
   host:       <%= ENV["DB_HOST"] %>
+<% else %>
+sqlite: &db_config
+  adapter:  sqlite3
+  timeout:  5000
+<% end %>
 
 development:
   <<: *default
+  <<: *db_config
+<% if db_adapter == "mysql2" %>
   database: <%= ENV["DB_NAME"] %>_development
+<% else %>
+  database: storage/development.sqlite3
+<% end %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test:
   <<: *default
+  <<: *db_config
+<% if db_adapter == "mysql2" %>
   database: <%= ENV["DB_NAME"] %>_test
+<% else %>
+  database: storage/test.sqlite3
+<% end %>
 
 production:
   <<: *default

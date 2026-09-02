@@ -44,7 +44,7 @@
 :ignore_routes: '(cable|debugbar|mission_control|blazer)'
 :models: true
 :routes: true
-:skip_on_db_migrate: false
+:skip_on_db_migrate: true
 :target_action: :do_annotations
 :wrapper: 
 :wrapper_close: 
