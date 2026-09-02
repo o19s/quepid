@@ -1,7 +1,17 @@
 #!/bin/bash -e
-# 
+#
 # This file is loaded into the Dockerfile.prod Dockerfile
 # to faciliate startup steps.
+
+# Same placeholder docker-compose.prod.yml has always shipped with, used here too so a bare
+# `docker run` with no flags works for a quick demo. It's not a real secret - it's public, in
+# this repo, so every deployment relying on it shares the same forgeable session/CSRF signing
+# key. Set your own SECRET_KEY_BASE (e.g. `openssl rand -hex 64`) for anything with real users
+# or data. Skipped when RAILS_MASTER_KEY is set, since that means Rails credentials should
+# supply the real secret instead - forcing this placeholder would short-circuit that.
+if [ -z "${SECRET_KEY_BASE}" ] && [ -z "${RAILS_MASTER_KEY}" ]; then
+  export SECRET_KEY_BASE="some_value_needed_here"
+fi
 
 # If running foreman or rails server, handle database setup
 if [ "${1}" == "foreman" ] || ([ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]); then
