@@ -63,9 +63,9 @@ export default class extends Controller {
       if (response.ok) {
         this.showAlert('Case imported successfully! Redirecting...', 'success')
         setTimeout(() => {
-          // Redirect to the imported case or refresh the page
-          if (result.case_id) {
-            window.location.href = `${getQuepidRootUrl()}/case/${result.case_id}`
+          const caseId = result.id ?? result.case_id
+          if (caseId) {
+            window.location.href = `${getQuepidRootUrl()}/case/${caseId}`
           } else {
             window.location.reload()
           }

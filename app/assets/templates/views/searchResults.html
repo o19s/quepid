@@ -32,7 +32,7 @@
     </h2>
 
     <span class='float-end total-results'>
-      <count-up ng-data="query.getNumFound()" ng-model="numFound" steps="5" time="500" />
+      <span count-up="query.getNumFound()"></span>
       <small class="text-muted">
         <ng-pluralize count="query.getNumFound()"
             when="{'0': 'Results',
