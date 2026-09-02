@@ -45,7 +45,8 @@ venv
 /test/playwright/.auth
 /test/playwright/test-results
 /test/playwright/playwright-report
-/playwright/
+/test/playwright/screenshot-manifest.json
+/playwright/.cache
 
 # VIM swp
 *.swp

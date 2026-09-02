@@ -386,7 +386,7 @@ bin/docker r npx playwright install chromium
 
 Environment variables (all optional, sensible defaults baked in):
 
-* `QUEPID_BASE_URL` — defaults to `http://localhost:33000` (`docker-compose`'s published port). Override for a different host/port, e.g. `QUEPID_BASE_URL=http://localhost:3000` if your setup exposes the app there directly instead of through nginx.
+* `QUEPID_BASE_URL` — defaults to `http://localhost:33000` (`docker-compose`'s published port). Override for a different host/port, e.g. `QUEPID_BASE_URL=http://localhost:3000` if your setup exposes the app there directly instead of through nginx. With `RAILS_RELATIVE_URL_ROOT`, include the subpath (e.g. `http://localhost:33000/quepid-app`); `test/playwright/env.ts` normalizes a trailing slash so relative `page.goto()` paths resolve under the mount.
 * `QUEPID_E2E_EMAIL` / `QUEPID_E2E_PASSWORD` — sign-in credentials used by `auth.setup.ts`, default to the same sandbox login CLAUDE.md documents for the Playwright MCP flow (`quepid+realisticactivity@o19s.com` / `password`). The resulting session is cached at `test/playwright/.auth/user.json` (gitignored).
 * `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `1`. **Must be a case with queries** — if your seed data's case 1 has none, the shared `gotoCase()` helper (`test/playwright/angular_case_helpers.ts`) times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data, e.g. `QUEPID_E2E_CASE_ID=5`.
 
@@ -401,6 +401,14 @@ Structure:
 Baseline screenshots live under `test/playwright/baselines/` and **are checked into git** (unlike `test/playwright/test-results/` and `playwright-report/`, which are runtime output and gitignored) — a missing baseline fails its test with "no baseline found" rather than silently passing. When you add a new `toHaveScreenshot()` call or intentionally change a screen's appearance, run `test:e2e:update-baselines` and `git add` the resulting PNGs.
 
 Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.ts`) because they share case state in the database (whichever adapter the dev server is running against) and a single authenticated session — don't assume they're safe to parallelize without addressing that first.
+
+**Ad-hoc screenshot review** (Playwright MCP captures, migration proofs, etc.) land in `.playwright-mcp/` (gitignored). To browse them side by side with byte/pixel diff highlighting:
+
+```bash
+yarn screenshots:view
+```
+
+Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — pairs `*-before.png` / `*-after.png`, flags **byte-identical** pairs at manifest generation time, and runs a **pixel diff** in the browser (magenta overlay + diff map) when bytes differ. Sidebar badges: `byte =` (identical files), `bytes ≠` / `diff` (changed), `pixel =` (same image, different PNG encoding). Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`.
 
 ### Rubocop
 

@@ -6,7 +6,6 @@
  */
 
 angular.module('QuepidApp', [
-  'yaru22.angular-timeago',
   'UtilitiesModule',
   'ngRoute',
   'ngSanitize',
@@ -21,7 +20,6 @@ angular.module('QuepidApp', [
   'ngTagsInput',
   'ng-rails-csrf',
   'templates',
-  'countUp',
   'ngclipboard',
   'ngVega'
 ]);
