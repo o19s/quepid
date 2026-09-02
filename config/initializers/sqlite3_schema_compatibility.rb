@@ -8,9 +8,14 @@
 #
 # `:size` has no meaning to SQLite (TEXT/BLOB there are unbounded regardless),
 # so this only relaxes validation - it never affects the SQL SQLite generates.
-# Dumping stays MySQL-only (`config/environments/production.rb` disables
-# dump_schema_after_migration, and MySQL is the only adapter used to author
-# schema.rb), so this patch only needs to make *loading* tolerant, not dumping.
+#
+# Dumping is meant to stay MySQL-only by convention (MySQL is the default
+# adapter, and DEVELOPER_GUIDE.md warns against running db:migrate under
+# DB_ADAPTER=sqlite3) - but Rails' dump_schema_after_migration is only
+# disabled in config/environments/production.rb, not development/test, so
+# nothing actually stops a SQLite connection from re-dumping schema.rb and
+# stripping these options if that convention isn't followed. This patch only
+# covers the *loading* side; it can't protect against that.
 #
 # The SQLite3::TableDefinition class loads lazily (only on `establish_connection`),
 # so `defined?` at boot time would miss it - require the adapter file directly to

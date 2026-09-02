@@ -62,6 +62,14 @@ RUN yarn install --production --frozen-lockfile
 # Copy application code
 COPY . .
 
+# config/database.yml is gitignored (holds no secrets - real config comes from
+# DATABASE_URL/DB_ADAPTER at runtime - but is generated locally by bin/setup*,
+# which this image doesn't run). Fall back to the checked-in sample so Rails
+# has a database.yml to parse; asset precompilation below boots the full app
+# without DATABASE_URL set, and Rails raises if database.yml is missing
+# entirely rather than falling back to DATABASE_URL alone.
+RUN if [ ! -f config/database.yml ]; then cp config/database.yml.sample config/database.yml; fi
+
 # Precompile bootsnap code for faster boot times.
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
 RUN bundle exec bootsnap precompile -j 1 app/ lib/

@@ -87,7 +87,7 @@ This guide provides detailed instructions for developers who want to set up, run
 
 Historically Quepid development has REQUIRED Docker, which avoids having to deal with installing dependencies like Ruby and MySQL. However, we recently made some tweaks so you can do development without using Docker, which may fit some folks much better.
 
-Quepid supports two database adapters: **SQLite** (the default - no separate database server to install or run) and **MySQL** (what production deployments use). Set `DB_ADAPTER=mysql2` in your `.env` file (or export it before running `bin/docker`/`bin/rails` commands) to opt into MySQL instead; leave it unset to use SQLite. See [Choosing a database adapter](#choosing-a-database-adapter) below.
+Quepid supports two database adapters: **MySQL** (the default - matches production) and **SQLite** (no separate database server to install or run). Set `DB_ADAPTER=sqlite3` in your `.env` file (or export it before running `bin/docker`/`bin/rails` commands) to opt into SQLite instead; leave it unset to use MySQL. See [Choosing a database adapter](#choosing-a-database-adapter) below.
 
 ### Docker Based Setup
 
@@ -150,13 +150,13 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 3. **Yarn**: Install Yarn package manager.
 
-4. **Database** (optional): By default Quepid uses SQLite, which needs no separate server or install - the `sqlite3` gem is enough. If you want to run against MySQL instead (matching production), install MySQL 8.0+ and set `DB_ADAPTER=mysql2` in your `.env` file.
+4. **Database**: By default Quepid uses MySQL, matching production - install MySQL 8.0+. If you'd rather avoid running a database server locally, set `DB_ADAPTER=sqlite3` in your `.env` file instead - the `sqlite3` gem is enough, no separate install needed.
 
 #### Database Setup
 
-With the default SQLite adapter, there's nothing to start up separately - `bin/setup` (below) creates `storage/development.sqlite3` for you.
+With the default MySQL adapter, start up MySQL however you like first (some folks set up just the `mysql` container with `docker compose up -d mysql` and run everything else locally).
 
-If you set `DB_ADAPTER=mysql2`, start up MySQL however you like first (some folks set up just the `mysql` container with `docker compose up -d mysql` and run everything else locally).
+If you set `DB_ADAPTER=sqlite3`, there's nothing to start up separately - `bin/setup` (below) creates `storage/development.sqlite3` for you.
 
 
 #### Application Setup
@@ -173,7 +173,7 @@ bundle install
 bin/setup
 ```
 
-If you're using `DB_ADAPTER=mysql2`, we assume a `root` database user with the password `password`.  If your password is different you will need to edit the `.env` file created after running the setup steps.
+With the default MySQL adapter, we assume a `root` database user with the password `password`.  If your password is different you will need to edit the `.env` file created after running the setup steps.
 
 This will install node and yarn, set up the database, run migrations, and seed initial data and then start Rails.
 
@@ -900,20 +900,21 @@ This section covers common issues you might encounter during development and how
 
 ### Choosing a database adapter
 
-Quepid defaults to **SQLite** (`storage/development.sqlite3` / `storage/test.sqlite3`) - nothing to start up separately. Set `DB_ADAPTER=mysql2` in `.env` (or export it before running `bin/docker`/`bin/rails` commands) to use MySQL instead, which is what production deployments run. Both are exercised in CI (`.github/workflows/test.yml`).
+Quepid defaults to **MySQL**, matching production. Set `DB_ADAPTER=sqlite3` in `.env` (or export it before running `bin/docker`/`bin/rails` commands) to use SQLite instead (`storage/development.sqlite3` / `storage/test.sqlite3`) - nothing to start up separately. Both are exercised in CI (`.github/workflows/test.yml`), and the production Docker image (`Dockerfile.prod`) carries the `sqlite3` gem too, so it can run against either adapter via `DATABASE_URL`.
 
 Known SQLite-specific behavior to be aware of:
 - SQLite's default text comparison is already case-sensitive, matching the case-sensitive collation MySQL uses for `query_text` columns - no configuration needed.
 - Solid Queue and Solid Cable both poll the same database file; under heavy concurrent local load you may occasionally see `SQLITE_BUSY` - `config/database.yml`'s `timeout:` setting gives busy connections a retry window before failing.
-- `docker-compose.yml`'s `app` service still declares `depends_on: mysql`, so the `mysql` container starts (and Docker waits for it to be healthy) even when `DB_ADAPTER` is left at its `sqlite3` default. It's unused in that case, just an idle extra container - not a functional problem, but not the "zero extra infrastructure" experience SQLite is meant to give either. Making that dependency conditional (e.g. via Compose profiles) is a reasonable follow-up if it becomes annoying.
+- `docker-compose.yml`'s `app` service still declares `depends_on: mysql`, so the `mysql` container starts (and Docker waits for it to be healthy) even when `DB_ADAPTER` is set to `sqlite3`. It's unused in that case, just an idle extra container - not a functional problem, but not the "zero extra infrastructure" experience SQLite is meant to give either. Making that dependency conditional (e.g. via Compose profiles) is a reasonable follow-up if it becomes annoying.
 - A handful of tests that depend on MySQL-only behavior (e.g. VARCHAR length enforcement, which SQLite doesn't have) are skipped when running against SQLite - see `AdapterFunctions.mysql?` usage in `test/`.
+- `db/schema.rb` is authored from MySQL and carries MySQL-specific `charset:`/`collation:`/`size:` options; `config/initializers/sqlite3_schema_compatibility.rb` makes SQLite tolerant of loading it. **Don't run `db:migrate` (or anything that dumps schema) with `DB_ADAPTER=sqlite3`** - Rails' `dump_schema_after_migration` (on by default outside production) would regenerate `db/schema.rb` from the SQLite connection instead, stripping those MySQL options for everyone. Author migrations and regenerate `db/schema.rb` against MySQL; use SQLite only for running the app/tests against an already-committed schema.
 
 ### Database Connection Errors
 
 **Symptom**: Rails can't connect to the database.
 
 **Solutions**:
-1. If using MySQL (`DB_ADAPTER=mysql2`), verify the container is running:
+1. With the default MySQL adapter, verify the container is running:
    ```bash
    docker compose ps mysql
    ```

@@ -37,7 +37,7 @@ bin/docker r bundle config set --local no-document true
 bin/docker r yarn
 bin/docker r yarn build
 
-if [ "${DB_ADAPTER:-sqlite3}" = "mysql2" ]; then
+if [ "${DB_ADAPTER:-mysql2}" = "mysql2" ]; then
   bin/docker r ./wait-for mysql:3306 --timeout=60 -- bin/rake db:setup
 else
   bin/docker r bin/rake db:setup
