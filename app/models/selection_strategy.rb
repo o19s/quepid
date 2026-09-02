@@ -68,9 +68,9 @@ module SelectionStrategy
   # - Uses position-weighted randomization (higher positions are more likely to be selected)
   # - missing position value query doc pairs are pushed down and less likely to be selected
   def self.random_query_doc_pair_for_multiple_judges book, user
-    # Efraimidis-Spirakis weighted sampling: -ln(1 - U) * weight, U ~ Uniform(0, 1),
-    # sorted ascending, picks a random pair with probability proportional to weight
-    # (here, position). MySQL's RAND() is already Uniform(0, 1); SQLite's RANDOM()
+    # Exponential-race weighted sampling: -ln(1 - U) * scale, U ~ Uniform(0, 1),
+    # sorted ascending. Choosing the minimum favors smaller scales, so lower numeric
+    # positions (higher-ranked pairs) are more likely to be selected. MySQL's RAND()
     # is a signed 64-bit integer, so it has to be normalized into that same range
     # first. LOG() is natural log on MySQL but base-10 on SQLite, hence LN() there.
     weighted_random_order = if AdapterFunctions.mysql?
