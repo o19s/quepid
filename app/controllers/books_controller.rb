@@ -424,7 +424,6 @@ class BooksController < ApplicationController
         .where(rating: changes.keys)
         .update_all("ratings.rating = #{ratings_case_sql}")
     end
-    total_updated = judgements_updated + case_ratings_updated
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book),
