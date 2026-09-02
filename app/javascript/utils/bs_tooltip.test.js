@@ -45,7 +45,7 @@ describe("bs_tooltip", () => {
   afterEach(() => {
     element.remove()
     delete window.bootstrap
-    document.querySelectorAll(".tooltip").forEach(el => el.remove())
+    document.querySelectorAll(".tooltip").forEach((el) => el.remove())
   })
 
   it("creates a tooltip with placement, html, and delay options", () => {
