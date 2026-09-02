@@ -47,9 +47,8 @@ module Api
             }
           end
 
-          # insert_all, not upsert_all: queries_to_import is already filtered down to
-          # non-existing (case_id, query_text) pairs above, and there's no unique index
-          # on queries for upsert_all to target on SQLite/Postgres anyway.
+          # queries_to_import is already filtered down to non-existing (case_id, query_text)
+          # pairs above, and there's no unique index on queries to conflict-target anyway.
           Query.insert_all(queries_to_import)
           # rubocop:enable Rails/SkipsModelValidations
 
