@@ -3,15 +3,16 @@
 # MySQL is the default local/dev/test adapter.
 # For production, if you are part of a team and deploy Quepid on your network then you have the option of using
 # MySQL.  Otherwise we default to sqlite.
-# Set DB_ADAPTER=sqlite3 to use SQLite instead (no separate database server needed).
+# Set DB_ADAPTER=sqlite3 to use SQLite instead in dev/test (no separate database server needed).
+# For production, set DATABASE_URL (e.g. mysql2://...) to opt into MySQL - docker-compose.prod.yml
+# already does this. With no DATABASE_URL at all, production defaults to SQLite.
 
 <% db_adapter = ENV.fetch("DB_ADAPTER", "mysql2") %>
 
 default: &default
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
-<% if db_adapter == "mysql2" %>
-mysql: &db_config
+mysql: &mysql_config
   adapter:    mysql2
   encoding:   utf8mb4
   collation:  utf8mb4_bin
@@ -19,18 +20,18 @@ mysql: &db_config
   password:   <%= ENV["DB_PASSWORD"] %>
   # Docker requires mysql as host name and local requires IP address.
   host:       <%= ENV.key?('DOCKER_CONTAINER') ? 'mysql' : '127.0.0.1' %>
-<% else %>
-sqlite: &db_config
+
+sqlite: &sqlite_config
   adapter:  sqlite3
   timeout:  5000
-<% end %>
 
 development:
   <<: *default
-  <<: *db_config
 <% if db_adapter == "mysql2" %>
+  <<: *mysql_config
   database: <%= ENV["DB_NAME"] %>_development
 <% else %>
+  <<: *sqlite_config
   database: storage/development.sqlite3
 <% end %>
 
@@ -39,19 +40,25 @@ development:
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  <<: *db_config
 <% if db_adapter == "mysql2" %>
+  <<: *mysql_config
   database: <%= ENV["DB_NAME"] %>_test
 <% else %>
+  <<: *sqlite_config
   database: storage/test.sqlite3
 <% end %>
 
 production:
   <<: *default
-  # Falls back to *db_config's adapter/host/etc so a boot with no DATABASE_URL
-  # set (e.g. asset precompilation during the Docker image build) still has a
-  # valid adapter to resolve, matching this file's pre-dual-adapter behavior.
-  # DATABASE_URL, when set at runtime, overrides these via Rails' URL config
-  # resolution.
-  <<: *db_config
+<% if ENV["DATABASE_URL"].to_s.empty? %>
+  # No DATABASE_URL set - default to SQLite (e.g. a bare `docker run` or asset
+  # precompilation during the image build) rather than requiring a MySQL server
+  # to be reachable. This fallback is independent of DB_ADAPTER, which only
+  # controls dev/test above - production has its own default. Set DATABASE_URL
+  # explicitly (mysql2://... or sqlite3:...) to override; docker-compose.prod.yml
+  # already sets it to mysql2.
+  <<: *sqlite_config
+  database: storage/production.sqlite3
+<% else %>
   url: <%= ENV["DATABASE_URL"] %>
+<% end %>

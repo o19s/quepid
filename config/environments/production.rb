@@ -19,9 +19,16 @@ Rails.application.configure do
 
   config.action_controller.default_protect_from_forgery = false
 
-  # This may not be needed
-  # Disable serving static files from `public/`, relying on NGINX/Apache to do so instead.
-  config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
+  # Every documented deployment path (app.json, docker-compose.prod.yml,
+  # deployment/quepid-docker-deploy/docker-compose.yml) already sets
+  # RAILS_SERVE_STATIC_FILES=true explicitly, so default to serving assets -
+  # a bare `docker run` with no reverse proxy in front needs this to work at
+  # all. Set RAILS_SERVE_STATIC_FILES=false to disable it (e.g. behind
+  # NGINX/Apache serving `/assets` directly). Previously this used
+  # ENV[...].present?, which meant RAILS_SERVE_STATIC_FILES=false ironically
+  # *enabled* it too, since "false" is still a non-blank string - only leaving
+  # the var completely unset actually disabled it.
+  config.public_file_server.enabled = 'false' != ENV['RAILS_SERVE_STATIC_FILES']
 
   # Cache assets for far-future expiry since they are all digest stamped.
   config.public_file_server.headers = { 'cache-control' => "public, max-age=#{1.year.to_i}" }
