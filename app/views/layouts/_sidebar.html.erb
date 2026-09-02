@@ -8,14 +8,6 @@
       }
     }
     </script-->
-    <script type="module">
-      //import * as bootstrap from 'bootstrap'
-
-      //const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-      //const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-    </script>
-
-
 <style>
 /* position: sticky (not fixed) so the sidebar's box stays in normal flow —
  * its height matches the .row it's in (which stretches to match `main`'s
@@ -76,12 +68,12 @@
 <div class="sidebar d-flex flex-column flex-shrink-0 bg-body-tertiary" style="width: 3.5rem;">
     <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
       <li class="nav-item">
-        <a href="#" class="nav-link active py-3 border-bottom rounded-0" aria-current="page" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Home" data-bs-original-title="Home">
+        <a href="#" class="nav-link active py-3 border-bottom rounded-0" aria-current="page" data-controller="bs-tooltip" data-bs-tooltip-placement-value="right" aria-label="Home" data-bs-tooltip-title-value="Home">
           <svg class="bi pe-none" width="24" height="24" role="img" aria-label="Home"><use xlink:href="#home"></use></svg>
         </a>
       </li>
       <li>
-        <%= link_to root_path, class: "nav-link #{make_active?({controller: 'home'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Dashboard', 'data-bs-original-title':'Dashboard' do %>
+        <%= link_to root_path, class: "nav-link #{make_active?({controller: 'home'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-controller':'bs-tooltip', 'data-bs-tooltip-placement-value':'right', 'aria-label':'Dashboard', 'data-bs-tooltip-title-value':'Dashboard' do %>
           <i
             class="bi bi-speedometer2"
             aria-hidden="true"
@@ -92,7 +84,7 @@
         <% end %>
       </li>
       <li>
-        <%= link_to cases_path, data: { turbo_prefetch: false }, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Relevancy Cases', 'data-bs-original-title':'Relevancy Cases' do %>
+        <%= link_to cases_path, data: { turbo_prefetch: false, controller: 'bs-tooltip', 'bs-tooltip-placement-value': 'right', 'bs-tooltip-title-value': 'Relevancy Cases' }, class: "nav-link #{make_active?({path: 'case'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'aria-label':'Relevancy Cases' do %>
           <i
             class="bi bi-briefcase"
             aria-hidden="true"
@@ -103,7 +95,7 @@
         <% end %>
       </li>
       <li>
-        <%= link_to books_path, class: "nav-link #{make_active?({path: 'book'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Judgements', 'data-bs-original-title':'Judgements' do %>
+        <%= link_to books_path, class: "nav-link #{make_active?({path: 'book'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-controller':'bs-tooltip', 'data-bs-tooltip-placement-value':'right', 'aria-label':'Judgements', 'data-bs-tooltip-title-value':'Judgements' do %>
           <i
             class="bi bi-book"
             aria-hidden="true"
@@ -114,7 +106,7 @@
         <% end %>
       </li>
       <li>
-        <%= link_to scorers_path, data: { turbo_prefetch: false }, class: "nav-link #{make_active?({path: 'scorers'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Scorers', 'data-bs-original-title':'Scorers' do %>
+        <%= link_to scorers_path, data: { turbo_prefetch: false, controller: 'bs-tooltip', 'bs-tooltip-placement-value': 'right', 'bs-tooltip-title-value': 'Scorers' }, class: "nav-link #{make_active?({path: 'scorers'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'aria-label':'Scorers' do %>
           <i
             class="bi bi-list-task"
             aria-hidden="true"
@@ -125,7 +117,7 @@
         <% end %>
       </li>
       <li>
-        <%= link_to "#{root_path}notebooks/lab/index.html", target: '_blank', rel: 'noopener noreferrer', class: "nav-link py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Notebooks', 'data-bs-original-title':'Notebooks' do %>
+        <%= link_to "#{root_path}notebooks/lab/index.html", target: '_blank', rel: 'noopener noreferrer', class: "nav-link py-3 border-bottom rounded-0", 'data-controller':'bs-tooltip', 'data-bs-tooltip-placement-value':'right', 'aria-label':'Notebooks', 'data-bs-tooltip-title-value':'Notebooks' do %>
           <i
             class="bi bi-journal-medical"
             aria-hidden="true"
@@ -136,7 +128,7 @@
         <% end %>
       </li>
       <li>
-        <%= link_to search_endpoints_path, class: "nav-link #{make_active?({path: 'search_endpoint'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Search Endpoints', 'data-bs-original-title':'Search Endpoints' do %>
+        <%= link_to search_endpoints_path, class: "nav-link #{make_active?({path: 'search_endpoint'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-controller':'bs-tooltip', 'data-bs-tooltip-placement-value':'right', 'aria-label':'Search Endpoints', 'data-bs-tooltip-title-value':'Search Endpoints' do %>
           <i
             class="bi bi-send-fill"
             aria-hidden="true"
@@ -147,7 +139,7 @@
         <% end %>
       </li>
       <li>
-        <%= link_to teams_path, data: { turbo_prefetch: false }, class: "nav-link #{make_active?({path: 'teams'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-bs-toggle':'tooltip', 'data-bs-placement':'right', 'aria-label':'Teams', 'data-bs-original-title':'Teams' do %>
+        <%= link_to teams_path, data: { turbo_prefetch: false, controller: 'bs-tooltip', 'bs-tooltip-placement-value': 'right', 'bs-tooltip-title-value': 'Teams' }, class: "nav-link #{make_active?({path: 'teams'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'aria-label':'Teams' do %>
           <i
             class="bi bi-people-fill"
             aria-hidden="true"

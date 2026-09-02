@@ -57,6 +57,14 @@ module ActiveSupport
       Rails.application.config.require_proxy_with_basic_auth_credentials = original
     end
 
+    def with_cookies_url value
+      original = Rails.application.config.cookies_url
+      Rails.application.config.cookies_url = value
+      yield
+    ensure
+      Rails.application.config.cookies_url = original
+    end
+
     def login_user_for_integration_test user
       # We don't actually want to load up scores...
       Bullet.enable = false

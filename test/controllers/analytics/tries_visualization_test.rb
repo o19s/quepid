@@ -37,6 +37,30 @@ module Analytics
 
         assert_response :not_found
       end
+
+      test 'vega_data renders a JSON 404 instead of crashing on a nil @case' do
+        get :vega_data, params: { case_id: matt_case.id, format: :json }
+
+        assert_response :not_found
+        assert_equal 'Case not found!', response.parsed_body['message']
+      end
+
+      test 'vega_specification renders a JSON 404 instead of crashing on a nil @case' do
+        get :vega_specification, params: { case_id: matt_case.id, format: :json }
+
+        assert_response :not_found
+        assert_equal 'Case not found!', response.parsed_body['message']
+      end
+    end
+
+    describe 'Fetches the vega specification for a case' do
+      let(:case_with_two_tries) { cases(:case_with_two_tries) }
+
+      test 'renders successfully for a case the user can access' do
+        get :vega_specification, params: { case_id: case_with_two_tries.id, format: :json }
+
+        assert_response :ok
+      end
     end
   end
 end

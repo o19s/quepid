@@ -25,43 +25,49 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  #   test 'should get new' do
-  #     get new_judgement_url
-  #     assert_response :success
-  #   end
+  describe 'judgement CRUD, nested under a book the user has access to' do
+    let(:jbm_book) { books(:james_bond_movies) }
+    let(:existing_judgement) { judgements(:low_judgement) }
 
-  #   test 'should create judgement' do
-  #     assert_difference('Judgement.count') do
-  #       post judgements_url,
-  #            params: { judgement: { query_doc_pair_id: @judgement.query_doc_pair_id, rating: @judgement.rating,
-  # user_id: @judgement.user_id } }
-  #     end
+    test 'should get new' do
+      get new_book_judgement_url(jbm_book)
+      assert_response :success
+    end
 
-  #     assert_redirected_to judgement_url(Judgement.last)
-  #   end
+    test 'should create judgement' do
+      query_doc_pair = query_doc_pairs(:jbm_qdp1)
 
-  #   test 'should show judgement' do
-  #     get judgement_url(@judgement)
-  #     assert_response :success
-  #   end
+      assert_difference('Judgement.count') do
+        post book_judgements_url(jbm_book), params: { judgement: { query_doc_pair_id: query_doc_pair.id, rating: 2 } }
+      end
 
-  #   test 'should get edit' do
-  #     get edit_judgement_url(@judgement)
-  #     assert_response :success
-  #   end
+      assert_redirected_to book_judge_path(jbm_book)
+      assert_equal user, Judgement.last.user
+    end
 
-  #   test 'should update judgement' do
-  #     patch judgement_url(@judgement),
-  #           params: { judgement: { query_doc_pair_id: @judgement.query_doc_pair_id, rating: @judgement.rating,
-  # user_id: @judgement.user_id } }
-  #     assert_redirected_to judgement_url(@judgement)
-  #   end
+    test 'should show judgement' do
+      get book_judgement_url(jbm_book, existing_judgement)
+      assert_response :success
+    end
 
-  #   test 'should destroy judgement' do
-  #     assert_difference('Judgement.count', -1) do
-  #       delete judgement_url(@judgement)
-  #     end
+    test 'should get edit' do
+      get edit_book_judgement_url(jbm_book, existing_judgement)
+      assert_response :success
+    end
 
-  #     assert_redirected_to judgements_url
-  #   end
+    test 'should update judgement' do
+      patch book_judgement_url(jbm_book, existing_judgement), params: { judgement: { rating: 3 } }
+
+      assert_redirected_to book_judge_path(jbm_book)
+      assert_equal 3, existing_judgement.reload.rating
+    end
+
+    test 'should destroy judgement' do
+      assert_difference('Judgement.count', -1) do
+        delete book_judgement_url(jbm_book, existing_judgement)
+      end
+
+      assert_redirected_to book_judge_path(jbm_book)
+    end
+  end
 end

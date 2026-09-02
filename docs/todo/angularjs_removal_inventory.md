@@ -2,7 +2,7 @@
 
 Fresh codebase scan (25 Aug 2026; counts re-verified after DOM-utils extraction / Vitest coverage expansion). Single reference for **what** AngularJS owns in Quepid, **why** to migrate, **how** to do it incrementally (default), optional **full case-page rewrite** decisions, and **what to delete** when done.
 
-**Recent cleanup reflected below:** unused Angular components `action_icon`, `delete_case`, and `unarchiveCase` removed; `angular-countup` / `angular-timeago` / `textPaste` dropped in favor of `window.quepidDom` helpers, a first-party `timeAgo` filter, and Stimulus `bs-tooltip` / `text-paste`.
+**Recent cleanup reflected below:** unused Angular components `action_icon`, `delete_case`, and `unarchiveCase` removed; `angular-countup` / `angular-timeago` / `textPaste` dropped in favor of `window.quepidDom` helpers, a first-party `timeAgo` filter, and Stimulus `bs-tooltip` / `text-paste`; `angular_app.js` now pins `window.Shepherd` / `window.Tether` (first-run tour bug fixed).
 
 Quepid’s frontend is split in two:
 
@@ -35,9 +35,9 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 15 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 10 packages (+ `angular` core from npm) |
 | Karma unit specs (`spec/javascripts/angular`) | 37 |
-| Vitest unit specs (`app/javascript/**/*.test.js`) | 10 |
+| Vitest unit specs (`app/javascript/**/*.test.js`) | 13 |
 | Playwright specs for the case UI | 2 Angular page specs + helpers + baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` |
-| Playwright specs for Stimulus pages | `stimulus_pages.spec.ts` (cases index import-case, bulk judge, mapper wizard); core share-case: `share_case_smoke.spec.ts` + `dom_migration_screenshots` |
+| Playwright specs for Stimulus pages | `stimulus_pages.spec.ts` (cases index import-case, bulk judge, mapper wizard); core + Rails share-case: `share_case.spec.ts` (not exhaustive — non-Angular Rails-page specs like `admin`, `teams`, `judging`, `signup`, etc. aren't Angular-migration-relevant and aren't tracked here) |
 
 ---
 
@@ -256,13 +256,13 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **queriesSvc** | 1,386 | Central case state — search, docs, scores, persistence |
 | **wizardModal** | 909 | Onboarding wizard (ACE, CSV, tags, tour) |
 | **queriesCtrl** | 606 | Query list UX (sort, filter, paginate, keyboard) |
-| **settingsSvc** / **caseSvc** | 638 / 510 | Try / case domain model |
+| **settingsSvc** / **caseSvc** | 638 / 535 | Try / case domain model |
 | **$quepidModal** | 275 | BS5 modals + `$compile` — ~22 `.open()` call sites (~40 consumer files) |
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **routes.js** + **ngRoute** | — | Entire SPA |
 | **angular core** | — | Remove last |
 
-**Component LOC** (easiest → hardest, after toolbar duplicates): matches (0 JS) → debug_matches (59) → new_case (66) → expand_content (69) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → clone_case (105) → query_explain (116) → move_query (152) → delete_case_options (153) → add_query (160) → export_case (257) → qgraph (250) → diff (285) → judgements (302) → frog_report (360) → import_ratings (462).
+**Component LOC** (easiest → hardest, after toolbar duplicates): matches (0 JS) → debug_matches (59) → new_case (66) → expand_content (69) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → clone_case (105) → query_explain (116) → move_query (152) → delete_case_options (153) → add_query (160) → export_case (257) → qgraph (250) → diff (285) → judgements (327) → frog_report (360) → import_ratings (462).
 
 **Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `add-query`, `query-options`, `query-explain`, `new-case` / wizard, `frog-report`, `judgements`, annotations, `quepidTypeahead`, `queryParams`, `stackedChart`, `quepidCollapse`. Moving these implies rebuilding the case SPA, not a framework swap.
 
@@ -297,16 +297,6 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 **Fix during migration:** Fall back to the newest try when `selectedTry` is null; confirm before try delete; handle delete promise rejections cleanly.
 
 **Backend still required:** `Api::V1::TriesController#destroy` must recompute `cases.last_try_number` — tracked in [todo.md § P0 backend](./todo.md#deleting-the-latest-try-bricks-the-case-backend).
-
-#### First-run Shepherd tour: `Shepherd is not defined`
-
-**Observed:** After a new user's first wizard Finish, tour never starts; console `ReferenceError: Shepherd is not defined`.
-
-**Cause:** `tour.js` expects global `Shepherd`; `angular_app.js` side-effect-imports tether-shepherd but does not pin `window.Shepherd` (unlike `window.bootstrap`).
-
-**Fix during migration:** Pin `window.Shepherd` (and confirm Tether) in the post-Angular entry bundle, or load Shepherd only from the new wizard/tour Stimulus (or server) flow. See [core_ui_implementation_reference § Shepherd](./core_ui_implementation_reference.md#1-shepherd-post-wizard-tour-tourjs).
-
-**Touches:** wizard finish (`wizardCtrl.js` / `new_case_controller.js`), [Feature area § New-case wizard](#4-new-case-wizard), full removal order step 7 (wizard).
 
 #### Wizard Esc orphans empty cases
 
@@ -660,10 +650,10 @@ Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (10 packages; see [vend
 
 ### Tests
 
-- **Karma:** 36 specs in `spec/javascripts/angular/` (incl. `bsStaticPopover`, `timeAgo`); loads all three Angular bundles + `angular-mocks`
+- **Karma:** 37 specs in `spec/javascripts/angular/` (incl. `bsStaticPopover`, `timeAgo`); loads all three Angular bundles + `angular-mocks`
 - **Vitest:** incl. `controllers/{share_case,share_case_core}_controller.test.js` and `utils/share_case_teams.js`
 - **Playwright (Angular core):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
-- **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case_smoke.spec.ts` — core toolbar share/unshare; `dom_migration_screenshots.spec.ts` — per-surface before/after shots (`share-case/` core, `share-case-rails/` index)
+- **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case.spec.ts` — permanent regression coverage for core toolbar share/unshare and the Rails cases-index/teams share modal (baseline screenshots + behavioral assertions, no before/after phase); `dom_migration_screenshots.spec.ts` — remaining per-surface before/after shots (hit count, clone-case/judgements/import-ratings popovers, annotation timeAgo)
 - **Rails:** `core_controller_test.rb`, `tls_flow_test.rb`, `user_invite_flow_test.rb`, `cases_controller_test.rb` (Stimulus cases index), `application_helper_test.rb` (`quepid_root_url`)
 
 ### Stray Angular markup
@@ -691,9 +681,6 @@ $window.location.href = caseTryNavSvc.getQuepidRootUrl() + '/cases'
 
 **Migration targets** (hybrid: shared CSRF + root URL; server-owned endpoint URLs per control):
 
-- [x] Adopt `app/javascript/api/fetch.js` (`apiFetch`, `getCsrfToken`) and minimal `app/javascript/utils/quepid_root.js` (`getQuepidRootUrl` only)
-- [x] Add `quepid_root_url`, `data-quepid-root-url` on `application`, `admin`, and `core` layouts
-- [x] Vitest + ESLint + Prettier for `app/javascript/` (Karma/JSHint remain for Angular until removal)
 - [ ] Remaining Stimulus HTTP consistency — see [todo.md § Stimulus HTTP infra follow-ups](./todo.md#p2--stimulus-http-infra-follow-ups-hybrid-migration) (`bulk_judgement` URLs, `import_snapshot` `apiFetch`, import-case `redirect_url`, …)
 - [ ] Turbo query routes, server-side import page URLs (add `data-*-url-value` per migrated control)
 - [ ] Port additional `build*Url` helpers from `deangularjs-experimental` only when a control cannot use server-rendered URLs
@@ -736,7 +723,6 @@ $window.location.href = caseTryNavSvc.getQuepidRootUrl() + '/cases'
 
 - [ ] Stray `ng-href` in invitations edit view
 - [ ] `bootstrap5-compat.css` Angular-only shims
-- [x] Shared `apiFetch` / minimal `quepid_root.js` (see [Angular core HTTP patterns](#angular-core-http-patterns-legacy))
 
 ---
 

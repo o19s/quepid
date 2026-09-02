@@ -163,6 +163,25 @@ describe("MapperWizardController save", () => {
   })
 })
 
+describe("MapperWizardController showStep3Manually", () => {
+  it("reveals step 3 and scrolls it into view", () => {
+    const controller = buildController()
+    controller.step3Target = document.createElement("div")
+    controller.step3Target.style = {}
+    controller.step3Target.scrollIntoView = vi.fn()
+
+    MapperWizardController.prototype.showStep3Manually.call(controller, {
+      preventDefault: vi.fn(),
+    })
+
+    expect(controller.step3Target.style.display).toBe("block")
+    expect(controller.step3Target.scrollIntoView).toHaveBeenCalledWith({
+      behavior: "smooth",
+      block: "start",
+    })
+  })
+})
+
 describe("MapperWizardController testMapper", () => {
   afterEach(() => {
     vi.clearAllMocks()

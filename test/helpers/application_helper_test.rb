@@ -46,6 +46,44 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, 'class="btn btn-primary"'
   end
 
+  describe 'flash_messages' do
+    test 'renders a dismissible alert for a displayable flash message' do
+      flash[:notice] = 'Saved successfully.'
+      self.output_buffer = ActionView::OutputBuffer.new
+
+      flash_messages
+
+      rendered = output_buffer.to_s
+      assert_includes rendered, 'Saved successfully.'
+      assert_includes rendered, 'alert-info'
+      assert_includes rendered, 'alert-dismissible'
+    end
+
+    test 'maps each flash type to its bootstrap alert class' do
+      flash[:success] = 'Success message'
+      flash[:error] = 'Error message'
+      flash[:alert] = 'Alert message'
+      self.output_buffer = ActionView::OutputBuffer.new
+
+      flash_messages
+
+      rendered = output_buffer.to_s
+      assert_includes rendered, 'alert-success'
+      assert_includes rendered, 'alert-danger'
+      assert_includes rendered, 'alert-warning'
+    end
+
+    test 'suppresses structural, non-displayable flash keys' do
+      flash[:unfurl] = 'true'
+      flash[:kraken_unleashed] = 'true'
+      self.output_buffer = ActionView::OutputBuffer.new
+
+      flash_messages
+
+      assert_equal '', output_buffer.to_s.strip
+    end
+  end
+
   describe 'Smart handling of links to HTTPS search end points' do
     let(:https_search_endpoint) { search_endpoints(:bootstrap_try_1) }
 

@@ -34,22 +34,42 @@ class V8MapperExecutorTest < ActiveSupport::TestCase
   describe 'parsing JSON' do
     describe 'conversion' do
       test 'runs simple' do
-        # scorer_code = File.read('db/scorers/p@10.js')
-        # docs = [
-        #   { id: 1, rating: 1 },
-        #   { id: 2, rating: 0 }
-        # ]
-        # best_docs = []
-        # score = javascript_scorer.score(docs, best_docs, scorer_code)
-        # assert_equal 0.5, score
-        assert true
+        code_mapper = <<~JS
+          numberOfResultsMapper = function(data) {
+            return data.length;
+          }
+          docsMapper = function(data) {
+            return data.map(function(d) { return { id: d.id, rating: d.rating }; });
+          }
+        JS
+
+        json_response = [ { id: 1, rating: 1 }, { id: 2, rating: 0 } ].to_json
+
+        docs = v8_executor.extract_docs(code_mapper, json_response)
+        assert_equal 2, docs.length
+        assert_equal 1, docs[0]['rating']
+        assert_equal 0, docs[1]['rating']
+
+        num_results = v8_executor.extract_number_of_results(code_mapper, json_response)
+        assert_equal 2, num_results
       end
     end
     describe 'when score data is invalid' do
-      let(:the_case) { cases(:case_without_score) }
-
       test 'runs even though no scores provided' do
-        assert true
+        code_mapper = <<~JS
+          numberOfResultsMapper = function(data) {
+            return data.length;
+          }
+          docsMapper = function(data) {
+            return data.map(function(d) { return { id: d.id }; });
+          }
+        JS
+
+        json_response = [ { id: 1 }, { id: 2 } ].to_json
+
+        docs = v8_executor.extract_docs(code_mapper, json_response)
+        assert_equal 2, docs.length
+        assert_nil docs[0]['rating']
       end
     end
   end

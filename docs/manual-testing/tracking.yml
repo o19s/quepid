@@ -1,0 +1,859 @@
+# Manual-testing coverage tracker.
+#
+# One entry per numbered scenario in docs/manual-testing/*.md (same numbering). Tracks when a
+# scenario was last actually driven end-to-end (via Playwright MCP or by hand) so we know:
+#
+#   1. whether it's DUE for a rerun because related source files changed since last_run, and
+#   2. whether it's STALE by pure time (rerun periodically even absent code changes — seed data,
+#      dependencies, and external services like Ollama/Solr drift independently of app code).
+#
+# Update rules:
+#   - After actually exercising a scenario: set last_run to today (UTC, YYYY-MM-DD), result to
+#     pass / pass_with_fixes / fail / blocked, and a one-line note (what you did, what you found).
+#   - If you skip a scenario, leave it alone — last_run: null means "never verified", which is
+#     honest and useful. Don't backfill a date for something you didn't actually run.
+#   - `paths` are repo-relative glob-ish hints at the source most likely to affect this scenario.
+#     They're a best-effort heuristic for `bin/manual_test_status`, not exhaustive — improve them
+#     when you learn a scenario touches a file this list is missing.
+#   - result: pass_with_fixes means bugs were found AND fixed in the same pass (see notes for what).
+#
+# Check status: bin/manual_test_status  (or `bin/manual_test_status --due-only`)
+
+policy:
+  default_max_age_days: 90
+
+parts:
+  "01":
+    file: 01-environment-setup-and-accounts.md
+    scenarios:
+      "1.1":
+        title: "Sign up for a new account"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Signed up a throwaway account, happy path only. Did not test duplicate-email, mismatched-password, or terms-checkbox edge cases."
+        paths: ["app/controllers/users/signups_controller.rb", "app/views/sessions/new.html.erb"]
+      "1.2":
+        title: "Log in / log out"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Login, wrong-password error message, logout all verified. Lockout-after-N-attempts not tested."
+        paths: ["app/controllers/sessions_controller.rb", "app/views/sessions/"]
+      "1.3":
+        title: "OAuth login"
+        last_run: 2026-09-02
+        result: blocked
+        notes: "Google: placeholder client id/secret in .env, expected to be unusable. Keycloak: click produces 'Could not sign user in with OAuth provider' — root cause is environment setup, not app code: keycloak/wait-for-keycloak.sh documents that the browser's host machine needs a `127.0.0.1 keycloak` /etc/hosts entry for the OAuth redirect to resolve, and this host doesn't have one. Did not add it (host-level system file change outside the repo). Devise config (config/initializers/devise.rb:324-332) looks correctly wired otherwise."
+        paths: ["app/controllers/users/omniauth_callbacks_controller.rb", "config/initializers/devise.rb"]
+      "1.4":
+        title: "Password reset"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Full round-trip verified: requested reset, found the real token in development.log (letter_opener doesn't write tmp/letter_opener/ in this headless setup, but the mailer content is logged), completed reset, tested mismatched-password validation, confirmed old password stops working and new one works. Reset password back to 'password' afterward via Profile (also covers 1.7)."
+        paths: ["app/controllers/users/passwords_controller.rb"]
+      "1.5":
+        title: "Invitations (accepting one)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Full flow verified: invited a new email from a team, got the invite link from the page (copy-link button), accepted it (name/password form, email pre-filled), confirmed INVITED badge disappeared after acceptance, confirmed reusing the same invitation token afterward is rejected ('The invitation token provided is not valid!')."
+        paths: ["app/controllers/users/invitations_controller.rb", "app/controllers/teams_controller.rb"]
+      "1.6":
+        title: "Profile page"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Fixed: Name field's <label for> pointed at user_email instead of user_name (app/views/profiles/show.html.erb)."
+        paths: ["app/controllers/profiles_controller.rb", "app/views/profiles/show.html.erb"]
+      "1.7":
+        title: "Change password from Profile"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified wrong-old-password error ('The original password is incorrect.') and a successful change (used to restore the realisticActivity seed account's password back to 'password' after 1.4's reset test)."
+        paths: ["app/controllers/accounts_controller.rb", "app/views/profiles/show.html.erb"]
+      "1.8":
+        title: "API Keys (Personal Access Tokens)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Generated, used via curl, destroyed, confirmed token stops working."
+        paths: ["app/controllers/api_keys_controller.rb", "app/models/api_key.rb"]
+      "1.9":
+        title: "Account deletion (Danger Zone)"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Tested via the equivalent admin-delete path (14.8), which shares the same code path. Fixed: User#destroy 500'd (ActiveRecord::InvalidForeignKey) for any user who authored an Annotation — added has_many :annotations, dependent: :nullify to app/models/user.rb. Confirmed team-shared case/book survive with owner nullified. Did not test the self-service Danger Zone button in accounts_controller directly, nor the pending-team-invitation edge case."
+        paths: ["app/controllers/accounts_controller.rb", "app/models/user.rb"]
+
+  "02":
+    file: 02-home-dashboard.md
+    scenarios:
+      "2.1":
+        title: "First-time / empty state"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified on a brand-new account: welcome banner + Create Your First Relevancy Case CTA."
+        paths: ["app/controllers/home_controller.rb", "app/views/home/"]
+      "2.2":
+        title: "Case summary cards"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified 4 cards, alphabetical order, links navigate correctly. Did not test the 'moves up after viewing' recency edge case."
+        paths: ["app/controllers/home_controller.rb", "app/helpers/home_helper.rb"]
+      "2.3":
+        title: "Book summary cards"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified card + Judge button navigates into judging screen."
+        paths: ["app/controllers/home_controller.rb"]
+      "2.4":
+        title: "Case score trend card (case_prophet)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Visually verified trend/delta/sparkline on populated cases. Did not test the 0/1/2-score, zero-changepoint, or annotation-marker-hover edge cases explicitly."
+        paths: ["app/services/case_prophet.rb", "app/views/home/"]
+      "2.5":
+        title: "Book summary detail"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified both a populated book and a brand-new zero-pair book."
+        paths: ["app/controllers/home_controller.rb"]
+      "2.6":
+        title: "Cases table"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Columns verified, View all Cases navigates to /cases."
+        paths: ["app/controllers/home_controller.rb"]
+      "2.7":
+        title: "Cookie consent toast"
+        last_run: 2026-09-02
+        result: pass
+        notes: "This dev environment has no COOKIES_URL configured, so live-browser testing could only confirm the toast is absent (verified). Restarting the persistent dev server to test the positive path was avoided per policy (don't stop it without being asked), so instead added an integration test suite covering the server-side gating logic in app/views/home/_consent_toast.html.erb via a new with_cookies_url test helper: toast absent with no cookies_url, present (with correct Learn More href) when configured and not yet consented, and absent again once the cookie_eu_consented cookie is set. Client-side show/dismiss/autohide is standard Bootstrap Toast API (app/javascript/application_modern.js) already exercised elsewhere in the app; not independently re-verified live."
+        paths: ["app/javascript/application_modern.js", "app/views/home/_consent_toast.html.erb", "app/controllers/home_controller.rb", "test/controllers/home_controller_test.rb"]
+
+  "03":
+    file: 03-case-management.md
+    scenarios:
+      "3.1":
+        title: "Cases list — browsing and filtering"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Fixed: empty-state 'create your first case' message showed even when a filter (not lack of data) produced zero rows (app/views/cases/index.html.erb). Pagination and multi-account isolation not tested."
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
+      "3.2":
+        title: "Create a new case (setup wizard)"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Fixed: wizard Name step let you continue with a blank name (app/assets/templates/views/wizardModal.html, needs `yarn build:angular-templates`). Fixed: Shepherd product-tour crashed with ReferenceError for every first-time user (app/javascript/angular_app.js — Shepherd/Tether never assigned to window). Verified full wizard incl. Solr ping + tour now works end-to-end. Did not test invalid-endpoint-URL or HTTPS/HTTP protocol-mismatch messaging."
+        paths: ["app/controllers/core_controller.rb", "app/assets/javascripts/controllers/wizardCtrl.js", "app/assets/javascripts/controllers/wizardModal.js", "app/assets/templates/views/wizardModal.html", "app/javascript/angular_app.js"]
+      "3.3":
+        title: "Import a case from JSON"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Cancel with no file chosen closed cleanly (no partial case). Uploading a .txt file was blocked client-side ('Please select a valid JSON file.'). A .json-named file with malformed content was rejected server-side with a clear inline error ('Invalid JSON file. Please check the file format.'), no crash. A valid exported-case JSON (from case 4) imported successfully, created a new case, and navigated straight to its workbench. Deleted the test case after verification. Large-export / progress-indicator behavior not tested."
+        paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb"]
+      "3.4":
+        title: "Import snapshots from CSV"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Bug found: a valid CSV import 500'd with NoMethodError (undefined method 'keys' for an instance of Array) in SnapshotManager#import_queries — import_snapshot_controller.js built the queries payload as an array of {query_text, docs}, but SnapshotImporter/SnapshotManager (and their existing, passing tests) expect a hash keyed by query text. Fixed by building the payload as a hash in app/javascript/controllers/import_snapshot_controller.js (Object.fromEntries), added app/javascript/controllers/import_snapshot_controller.test.js to catch a regression. Re-verified: valid CSV imports two distinctly-named snapshots correctly split by name, with docs attached. Edge cases: missing/misnamed header blocked client-side with a clear message; nonexistent Case ID rejected server-side (404) with a clear inline error and no orphaned snapshot; Import button starts disabled with no file chosen. Cleaned up all test snapshots after verification."
+        paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "app/javascript/controllers/import_snapshot_controller.test.js"]
+      "3.5":
+        title: "Archive / unarchive a case from the list"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Archived ES CASE from the list (confirm dialog 'Archive ES CASE?', flash 'Case #ES CASE archived.', disappeared from active list), found it under the Archived filter, unarchived it (confirm dialog 'Unarchive ES CASE?', flash 'Case #ES CASE unarchived.'). Ownership-transfer-on-archive and the two-tabs-race edge case not tested."
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
+      "3.6":
+        title: "Share a case from the list"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Shared SEARCHAPI CASE with OSC from the list-row Share icon (flash 'SEARCHAPI CASE shared with OSC.', Teams column updated on reload), then unshared it (flash 'SEARCHAPI CASE unshared from OSC.'). Confirmed the team dropdown only ever lists the current user's own teams, and already-shared teams are excluded from it. Restored to original (unshared) state."
+        paths: ["app/controllers/cases_controller.rb", "app/views/shared/_share_case_modal.html.erb"]
+
+  "04":
+    file: 04-core-workbench-queries-and-scoring.md
+    scenarios:
+      "4.1":
+        title: "Rename case / rename try"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Bug found: submitting a blank case or try name silently saved the empty string (persisted across reload, confirmed via API) instead of being blocked — same class of bug as 3.2's blank-name wizard issue. Fixed by disabling the Rename submit button when the field is blank/whitespace-only (app/assets/templates/views/queriesLayout.html, needs yarn build:angular-templates + build:angular-app) and adding a matching guard in the rename() functions themselves (app/assets/javascripts/controllers/case.js, currSettings.js) in case Enter-to-submit bypasses the disabled button. Verified: normal rename of both case and try name works and persists on reload; blank submission is now blocked. Restored SOLR CASE / Try 1 to their original names afterward."
+        paths: ["app/assets/javascripts/controllers/case.js", "app/assets/javascripts/controllers/currSettings.js", "app/assets/templates/views/queriesLayout.html", "app/models/case.rb"]
+      "4.2":
+        title: "Add a query (single)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Added 'star wars' query against live Solr, search/score ran correctly."
+        paths: ["app/assets/javascripts/directives/", "app/models/query.rb"]
+      "4.3":
+        title: "Add multiple queries (bulk)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Simulated a real paste event (newlines) into the add-query input; the paste directive correctly converted newlines to semicolons, button label switched from 'Add query' to 'Add queries', and submitting created both queries with a distinct 'Queries added successfully.' flash. Cleaned up the added test queries afterward."
+        paths: ["app/assets/javascripts/components/add_query/"]
+      "4.4":
+        title: "Move a query to another case"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Expanded a query, clicked Move Query, picked a target case from the list — footer button correctly updated to 'Move to {case name}', and confirming moved the query (flash 'Query moved successfully!') removing it from the source case and adding it to the target. Cleaned up afterward. Empty-case-list and forced-failure edge cases not tested."
+        paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb"]
+      "4.5":
+        title: "Set per-query options (Query Options)"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Bug found: submitting invalid JSON showed the flash 'Please provide a valid JSON object.' but the modal closed anyway (QueryOptionsModalInstanceCtrl#ok closed unconditionally; validation only ran afterward in QueryOptionsCtrl's .then(), too late to keep the modal open) — contradicting the doc's expected 'modal does not close or save'. No bad data was actually persisted (query.options stayed nil), but the UX was wrong. Fixed by validating JSON inside ok() itself before closing the modal (app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js). Re-verified: invalid JSON now keeps the modal open with the error flash; valid JSON saves, closes, and flashes 'Query options saved successfully.' Cleaned up test options afterward."
+        paths: ["app/models/query.rb", "app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js", "app/assets/javascripts/components/query_options/query_options_controller.js"]
+      "4.6":
+        title: "Rate a document"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Rated a document, badge/query/case score all updated live. Reload-persists and RESET not explicitly re-verified after rating."
+        paths: ["app/controllers/ratings_controller.rb", "app/assets/javascripts/directives/quepidPopover.js"]
+      "4.7":
+        title: "Case & query score badges"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified badges update live with sensible color change on rating."
+        paths: ["app/models/score.rb"]
+      "4.8":
+        title: "Select a scorer for the case"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Switched from AP@10 to nDCG@10 via the Select Scorer modal; header/score badge updated to nDCG@10 immediately. Switched back to AP@10 to restore original state. Custom-scorer / not-shared-with-you warning not tested."
+        paths: ["app/controllers/scores_controller.rb", "app/models/scorer.rb"]
+      "4.9":
+        title: "Missing Documents finder"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Searched with Lucene syntax (title:Ghostbusters); got '...returned 3 matching documents.' with the persistent 'Changing ratings will affect the query score.' warning, rated one inline, and 'Reset to All Rated Docs' worked. Reset the test rating back to unrated afterward."
+        paths: ["app/assets/javascripts/"]
+      "4.10":
+        title: "Tune Relevance drawer — Query tab"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Edited the raw query template and clicked 'Rerun My Searches!' — note: this creates a new Try (case 1 went from Try 1 to Try 2) rather than editing in place, which is expected/by-design (each rerun is a new try, per Part 5's try-history model). Did not test static-engine empty-state or TLS/protocol-mismatch messaging."
+        paths: ["app/assets/javascripts/controllers/"]
+      "4.11":
+        title: "Tune Relevance drawer — Tuning Knobs tab"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Empty state (no ##variable## placeholders) correctly explains the templating convention with a title^##titleBoost## example. Added ##titleBoost## to the query template on the Query tab; switching to Tuning Knobs auto-revealed a numeric input for it (default 10). Reverted the template to q=*:* afterward (which itself created SOLR CASE's Try 2 — see 4.10)."
+        paths: ["app/assets/javascripts/controllers/"]
+      "4.12":
+        title: "Tune Relevance drawer — Settings tab"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Viewed Search Endpoints/Endpoint Details/Displayed Fields sections render correctly. Did not change values or test Evaluate Nightly/Escape Queries toggles."
+        paths: ["app/assets/javascripts/controllers/", "app/models/search_endpoint.rb"]
+      "4.13":
+        title: "Tune Relevance drawer — History tab"
+        last_run: null
+        result: null
+        notes: "Not opened this pass."
+        paths: ["app/controllers/scores_controller.rb", "app/views/scores/"]
+      "4.14":
+        title: "Tune Relevance drawer — Annotations tab"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Covered via Part 5.4 (same tab)."
+        paths: ["app/controllers/api/v1/annotations_controller.rb"]
+      "4.15":
+        title: "Per-query quick actions (Copy, Delete Query)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Copy query icon (ngclipboard directive) correctly copied the query text to the clipboard. Delete Query showed the native 'Are you absolutely sure you want to delete?' confirm and removed the query on accept, restoring the case's query count."
+        paths: ["app/models/query.rb"]
+      "4.16":
+        title: "Query Notes & Information Need"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Filled Information Need and Notes, saved (flash 'Success! Your query details have been saved.', panel auto-collapsed); re-expanded after a full reload and both values persisted correctly. Saving with both fields blank also succeeded without error. Cleared test values afterward. Forced-failure and Part 6 export round-trip edge cases not tested."
+        paths: ["app/models/query.rb"]
+
+  "05":
+    file: 05-core-workbench-history-snapshots-and-annotations.md
+    scenarios:
+      "5.1":
+        title: "Try history (History tab)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "History tab lists all tries, color-coded per endpoint URL, with 'Visualize your tries' / 'Check Scores' / 'Check Ratings' links. Clicking an older try (Try 1) switched the whole page (URL, header, settings) live; switching back to the newest (Try 2, created during 4.10/4.11 testing) round-tripped cleanly with no data loss. Note: SOLR CASE now has 2 tries as a result of the 4.10/4.11 rerun testing — normal/expected since each rerun creates a new try, not something to clean up."
+        paths: ["app/models/try.rb", "app/controllers/core_controller.rb"]
+      "5.2":
+        title: "Create a snapshot"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Created a named snapshot successfully; 'Snapshot created successfully' flash confirmed. Doc note: submitting with the name field left blank is not actually blocked (button isn't disabled, no required-field error) — but it isn't silently broken either, it falls back to a sensible auto-generated name like 'Snapshot 09/02/26'. Worth a doc update but not a functional bug. Forced-server-error and large-case-background behavior not tested."
+        paths: ["app/services/snapshot_generator.rb", "app/models/snapshot.rb"]
+      "5.3":
+        title: "Compare snapshots (diff)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Selected a snapshot in the compare modal, clicked Update Comparison Settings — flash 'Snapshot loaded successfully for comparison.' and a second score badge for the snapshot appeared next to the live case score. Clear Comparison View removed it. Multi-row add, duplicate-selection warning, in-progress-snapshot warning, and the in-modal delete-snapshot confirm were not tested."
+        paths: ["app/models/snapshot.rb"]
+      "5.4":
+        title: "Annotations"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Created an annotation, verified it appears with try/score/message. Did not test edit/cancel/delete."
+        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb"]
+      "5.5":
+        title: "Score graph (sparkline) & annotation markers"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Confirmed on the home dashboard sparkline for '10s Of Queries' (which has 2+ historical scores and an existing annotation): the Vega graph renders per-point x/y score data plus a distinct annotation-marker node carrying 'x: Sep 2; message: Migration screenshot annotation' — i.e. the annotation's message is present and associated with its marker, consistent with a working hover tooltip. Did not separately verify the in-workbench header sparkline (which showed only a single flat point for case 1) or the 0/1-score no-graph case, or re-render-without-duplication behavior."
+        paths: ["app/assets/javascripts/"]
+
+  "06":
+    file: 06-core-workbench-import-export-and-explain-tools.md
+    scenarios:
+      "6.1":
+        title: "Export a case"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Opened modal, verified all format options and copy render correctly. Did not actually click Export / verify downloaded file contents."
+        paths: ["app/controllers/cases_controller.rb", "app/services/case_export"]
+      "6.2":
+        title: "Import into a case (ratings / information needs / snapshots)"
+        last_run: null
+        result: null
+        notes: "Not tested."
+        paths: ["app/controllers/cases_controller.rb"]
+      "6.3":
+        title: "Clone a case"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Clone button stayed disabled with a blank name, enabled once filled in. Cloned SOLR CASE (Try 1, Include Queries checked) into a new case; landed in its workbench with the copied query/try intact. Deleted the test clone afterward. Include-Ratings-off and forced-failure edge cases not tested."
+        paths: ["app/controllers/cases_controller.rb", "app/models/case.rb"]
+      "6.4":
+        title: "Delete / Archive / Delete-all-queries (in-case toolbar)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Used two disposable imported test cases. Delete All Queries: confirm button correctly read 'Delete All Queries' with warning 'Deleting all the queries will also delete your ratings for those queries.'; confirmed it emptied the case's queries (0 remaining) while the case itself still existed via API (not archived, not deleted) — exactly as documented. Archive Case: confirm button read 'Archive', warning explained the archived-filter retrieval path, confirming navigated to the Cases list and the case showed up under the Archived filter. Delete Case already verified in 3.3/6.3/7.x cleanups. Confirm-disabled-until-option-picked and forced-server-failure edge cases not tested."
+        paths: ["app/controllers/cases_controller.rb"]
+      "6.5":
+        title: "Share a case (in-case toolbar)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Shared 'Movies Search' case with a team from the workbench toolbar; verified 'Already shared with' state."
+        paths: ["app/views/shared/_share_case_modal.html.erb"]
+      "6.6":
+        title: "Judgements link (connect a case to a Book)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Linked case to book, used Populate Now (case→book) successfully. Learned the hard way that selecting a book in the modal does NOT persist the link until you click Save — worth a UX look, but matches documented behavior once Save is clicked. Did not test Refresh Ratings (book→case) or Sync Queries."
+        paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb"]
+      "6.7":
+        title: "Explain a query (Explain Query modal)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified Params and Parsing tabs render real Solr debug data. Did not test Query Template tab or the Copy icon."
+        paths: ["app/assets/javascripts/directives/"]
+      "6.8":
+        title: "Explain a single document (Debug Explain)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Clicked a document's Matches area to reveal its score tooltip, clicked Debug, and confirmed 'Debug Explain for Long Day's Journey Into Night (id:43004)' opened with the JSON explain tree."
+        paths: ["app/assets/javascripts/directives/"]
+      "6.9":
+        title: "Frog Report"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Opened 'The Frog Pond Report: SOLR CASE' — summary text and the 'Distribution of Queries Needing Ratings' bar chart correctly reflected the case's actual state (1 query, 10 ratings missing, 100% missing rate). Fully-rated congratulations state and the book-linked 'Refresh ratings from book' action not tested."
+        paths: ["app/assets/javascripts/"]
+      "6.10":
+        title: "Unarchive case (from within a case context)"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Doc inaccuracy found: there is no 'Unarchive case' modal with an 'Add Back {case name}' button anywhere in the codebase (grepped app/views and app/assets/templates — no matches). The actual mechanism is the same icon-button pattern already verified in 3.5 and app/views/teams/_cases.html.erb: an 'Unarchive case' icon with a confirm dialog 'Unarchive {case name}?', reachable from the Cases list (Archived filter) and from a Team's case list (Archived Cases checkbox) — not a distinct modal. Verified working via the Cases-list path with a disposable archived case. Recommend updating this doc entry to describe the real UI instead of a modal that doesn't exist; not filing this as a code fix since the underlying feature works correctly, just the doc's steps are wrong."
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb"]
+
+  "07":
+    file: 07-search-endpoints-and-mapper-wizard.md
+    scenarios:
+      "7.1":
+        title: "Browse / filter the Search Endpoints list"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Fixed: empty-state copy said 'Create your first book...' instead of 'search endpoint' (app/views/search_endpoints/index.html.erb), and same filter-blind-empty-message bug as 3.1. Multi-user isolation and direct-URL-to-inaccessible-endpoint not tested."
+        paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/index.html.erb"]
+      "7.2":
+        title: "Create a Search Endpoint — one per engine type"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Created via the standalone New Search Endpoint form (solr engine type). Required fields validated correctly; endpoint created and appeared in the list. Deleted after verification."
+        paths: ["app/controllers/search_endpoints_controller.rb", "app/models/search_endpoint.rb", "app/views/search_endpoints/_form.html.erb"]
+      "7.3":
+        title: "View / Edit a Search Endpoint"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Viewed and edited an existing endpoint's fields (name, URL); changes saved and displayed correctly on show page."
+        paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/show.html.erb"]
+      "7.4":
+        title: "Clone a Search Endpoint"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Cloned an existing endpoint; clone appeared with a distinct name/id and did not carry over team-sharing from the original. Deleted after verification."
+        paths: ["app/controllers/search_endpoints_controller.rb"]
+      "7.5":
+        title: "Archive / Delete a Search Endpoint"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Archived a test endpoint (disappeared from default list, reappeared under archived filter), then deleted it; both operations worked as expected."
+        paths: ["app/controllers/search_endpoints_controller.rb"]
+      "7.6":
+        title: "Share / unshare a Search Endpoint"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Shared a test endpoint with a team via the share modal, then unshared it; team access reflected correctly both times."
+        paths: ["app/views/shared/_share_search_endpoint_modal.html.erb"]
+      "7.7":
+        title: "Mapper Wizard — Step 1: Fetch Search Results"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Fetched real HTML from a public Solr demo search URL; HTML preview and length displayed correctly, Step 2 revealed."
+        paths: ["app/controllers/mapper_wizards_controller.rb"]
+      "7.8":
+        title: "Mapper Wizard — Step 2: Generate Mappers with AI"
+        last_run: 2026-09-02
+        result: blocked
+        notes: "Still not testable — needs a real OpenAI key, none configured in this environment."
+        paths: ["app/controllers/mapper_wizards_controller.rb"]
+      "7.9":
+        title: "Mapper Wizard — Step 3: Edit, Test & Refine"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Bug found: in a brand-new wizard session (no OpenAI key, no pre-existing SearchAPI endpoint), Step 3 was unreachable — it was only ever revealed by a successful AI-generation response, contradicting the doc's stated hand-edit path. Fixed by adding a 'No OpenAI key? Write the mapper code by hand instead.' link (showStep3Manually action in app/javascript/controllers/mapper_wizard_controller.js + app/views/mapper_wizards/show.html.erb) that reveals Step 3 with the default template code. Verified: clicking it reveals Step 3, Test button runs numberOfResultsMapper/docsMapper code correctly (got 'Test Result: 0' on default template)."
+        paths: ["app/controllers/mapper_wizards_controller.rb", "app/services/v8_mapper_executor.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb"]
+      "7.10":
+        title: "Mapper Wizard — Step 4: Save Search Endpoint"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Completed Save with hand-written mapper code from 7.9's fix; created a real endpoint with search_engine forced to searchapi and the combined mapper code persisted. Deleted after verification."
+        paths: ["app/controllers/mapper_wizards_controller.rb"]
+
+  "08":
+    file: 08-scorers.md
+    scenarios:
+      "8.1":
+        title: "Scorers list"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified counts, columns, non-admin sees Clone but not Edit on communal rows."
+        paths: ["app/controllers/scorers_controller.rb", "app/views/scorers/index.html.erb"]
+      "8.2":
+        title: "Set your default scorer"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Changed to nDCG@10, verified 'Default scorer updated.' flash and selection persisted; restored to AP@10 afterward."
+        paths: ["app/controllers/scorers_controller.rb"]
+      "8.3":
+        title: "Create a custom scorer"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Created with custom JS code, Binary scale, and scale labels (0=Bad, 1=Good) — all persisted correctly. Name auto-suggests 'Scorer N' when untouched (matches the blank-name edge case). Did not test the >10-values or non-integer-values validation errors."
+        paths: ["app/controllers/scorers_controller.rb", "app/models/scorer.rb"]
+      "8.4":
+        title: "Edit a scorer"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Renamed the scorer created in 8.3, saved, 'Scorer updated.' flash confirmed. Did not test the communal-scorer-as-admin warning banner."
+        paths: ["app/controllers/scorers_controller.rb"]
+      "8.5":
+        title: "Clone a scorer"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Cloned communal AP@10 as a non-admin-context action, got an editable 'Clone of AP@10' with 'Scorer cloned.' flash."
+        paths: ["app/controllers/scorers_controller.rb"]
+      "8.6":
+        title: "Delete a scorer"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Deleted both test scorers created this pass (8.3's and 8.5's clone); confirm dialog text is correct ('Are you sure you want to delete this Scorer?', no typo)."
+        paths: ["app/controllers/scorers_controller.rb"]
+      "8.7":
+        title: "Share / unshare a scorer with a team"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Full cycle verified: share with OSC, 'Already shared with' shows it, unshare (clicking the team chip populates and enables the Unshare button) removes it. Communal rows correctly have no Share icon at all. Did not test the double-share/double-unshare informational-alert edge cases specifically."
+        paths: ["app/views/shared/_share_scorer_modal.html.erb"]
+      "8.8":
+        title: "Confirm the seeded communal scorers"
+        last_run: 2026-09-02
+        result: pass
+        notes: "All 7 communal scorers present with correct scales/labels/owner=System."
+        paths: ["db/seeds.rb"]
+
+  "09":
+    file: 09-teams-and-sharing.md
+    scenarios:
+      "9.1":
+        title: "Create, rename, and browse teams"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Created a team, creator auto-added as member. Did not test rename or duplicate-name behavior."
+        paths: ["app/controllers/teams_controller.rb", "app/models/team.rb"]
+      "9.2":
+        title: "Add a team member (existing user)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Autocomplete correctly suggested a same-domain user not already on the team; add succeeded; re-adding the same user showed 'is already a member of this team.' Did not test the cross-domain privacy-boundary suppression itself (no non-o19s.com seed account handy)."
+        paths: ["app/controllers/teams_controller.rb"]
+      "9.3":
+        title: "Invite a new (non-existing) user"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Full flow verified (see 1.5 for the acceptance half). 'Invitation email was sent to ...' flash, INVITED badge with working copy-link button, real mailer content confirmed via development.log."
+        paths: ["app/controllers/teams_controller.rb", "app/controllers/users/invitations_controller.rb"]
+      "9.4":
+        title: "Remove a team member"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Confirm dialog text exactly matches doc ('Remove {fullname} from this team?'); member removed after confirming."
+        paths: ["app/controllers/teams_controller.rb"]
+      "9.5":
+        title: "Sharing a Case/Book/Search Endpoint/Scorer with a team"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Tested for Case only (from the in-workbench entry point, 6.5). Book/Search-Endpoint/Scorer sharing and the team-page entry point not tested."
+        paths: ["app/views/shared/_share_case_modal.html.erb", "app/views/shared/_share_book_modal.html.erb", "app/views/shared/_share_search_endpoint_modal.html.erb", "app/views/shared/_share_scorer_modal.html.erb"]
+      "9.6":
+        title: "Archive/unarchive a Case or Search Endpoint from the team page"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Shared a disposable test case with OSC, archived it from the Cases list, then confirmed it appears under the team page's 'Archived Cases' checkbox filter with its own 'Unarchive case' icon — clicking it showed the same 'Unarchive {name}?' confirm dialog as 3.5/6.10, and confirming restored it. Search Endpoint archive/unarchive from the team page not separately tested (same UI pattern visible in the page, e.g. 'Archive search endpoint' buttons)."
+        paths: ["app/controllers/teams_controller.rb", "app/views/teams/_cases.html.erb"]
+
+  "10":
+    file: 10-books-management.md
+    scenarios:
+      "10.1":
+        title: "Books list"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified columns and empty state."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/index.html.erb"]
+      "10.2":
+        title: "Create a new book"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Created book, shared with team, chose rating scale. Did not test blank-name validation or origin_case_id Case Integration toggles."
+        paths: ["app/controllers/books_controller.rb", "app/models/book.rb"]
+      "10.3":
+        title: "Edit book settings"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Only toggled AI Judges Assigned checkbox and saved. Rating scale change, Show Rank, Delete Import/Export File not tested."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb"]
+      "10.4":
+        title: "Book Overview / Show page"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified no-pairs banner, teams, scale labels, related cases. Archive/unarchive not tested."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/show.html.erb"]
+      "10.5":
+        title: "Combine (merge) books"
+        last_run: null
+        result: null
+        notes: "Not tested."
+        paths: ["app/controllers/books_controller.rb"]
+      "10.6a":
+        title: "Assign anonymous judgements/ratings to a user"
+        last_run: 2026-09-02
+        result: pass
+        notes: "On a disposable imported book: assignee dropdown was correctly empty until the book was shared with a team (team membership populates the candidate list), then listed real members/AI judges. Assigning produced flash 'Assigned Osc Team Member to ratings and judgements.' Submitting with no assignee chosen was blocked (redirected back to the settings page, no success flash) — required-field validation confirmed. Duplicate-judgement-removal edge case not tested (no pre-existing duplicate to exercise it)."
+        paths: ["app/controllers/books_controller.rb"]
+      "10.6b":
+        title: "Delete judgements by user"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Picked a user from the dropdown, clicked Delete Judgements — flash 'Deleted 200 judgements belonging to Osc Team Member.' on the disposable imported book."
+        paths: ["app/controllers/books_controller.rb"]
+      "10.6c":
+        title: "Delete query doc pairs below a rank"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Picked position 9, submitted — flash 'Deleted 0 query/doc pairs below position 9.' (correct, since 9 was the deepest position present)."
+        paths: ["app/controllers/books_controller.rb", "app/models/query_doc_pair.rb"]
+      "10.6d":
+        title: "Assign rating to Judge Later judgements"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Ran with zero Judge Later judgements present — succeeded with flash 'Mapped 0 judgements to have rating 0.', confirming the zero-case edge case works without erroring."
+        paths: ["app/controllers/books_controller.rb"]
+      "10.7":
+        title: "Import a new book from JSON"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Submitting with no file gave 'You must select the file to be imported first.' Uploaded a real .json.zip export of 'Book of Ratings' (from 10.9) with Force Create Users unchecked (all judges already existed) — redirected to the new book's Show page with 'Book was successfully created.', showed the 'currently being processed' alert with a manual Refresh link, and after refresh showed '43 out of 200 query/doc pairs' judged, matching the source book. Deleted the test book afterward. Invalid-JSON, structurally-invalid-JSON, and unknown-user-email edge cases not tested."
+        paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb"]
+      "10.8":
+        title: "Import additional data into an existing book"
+        last_run: null
+        result: null
+        notes: "Not tested."
+        paths: ["app/controllers/books/import_controller.rb"]
+      "10.9":
+        title: "Export a book"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Clicked Export on 'Book of Ratings' — flash 'Queued up export of book as file.'; the background job completed within seconds, the button switched to 'Re-Export' with a 'created less than a minute ago' download link that downloaded a valid 86KB .json.zip. 'Quepid APIs' link correctly points to /api/docs. Immediate-double-click blocking and the 'currently being exported' interstitial state not directly observed (job finished too fast to catch it)."
+        paths: ["app/controllers/books/export_controller.rb"]
+
+  "11":
+    file: 11-judging-workflows.md
+    scenarios:
+      "11.1":
+        title: "Single-pair judging screen"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Rated a pair, advanced without full reload."
+        paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb"]
+      "11.2":
+        title: "Keyboard-shortcut rating"
+        last_run: null
+        result: null
+        notes: "Not tested."
+        paths: ["app/assets/"]
+      "11.3":
+        title: "I will Judge Later"
+        last_run: null
+        result: null
+        notes: "Not tested specifically (tested the sibling 'I Can't Tell' action, 11.4, not this one)."
+        paths: ["app/controllers/judgements_controller.rb"]
+      "11.4":
+        title: "I Can't Tell (mark unrateable)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified Record Explanation modal + Skip Judging creates an unrateable judgement."
+        paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb"]
+      "11.5":
+        title: "Session milestones, navigation, and completion"
+        last_run: null
+        result: null
+        notes: "Not tested (50-pair party screen, Go Back, Quit Judging)."
+        paths: ["app/controllers/judgements_controller.rb"]
+      "11.6":
+        title: "Judgements list (audit view)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified table + Unrateable filter. Judge-dropdown filter, Compact toggle, and Later filter not tested."
+        paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/"]
+      "11.7":
+        title: "Judgement Stats (leaderboard)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified leaderboard bars per judge. Reset buttons for Unrateable/Judge Later counts not tested."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/judgement_stats.html.erb"]
+      "11.8":
+        title: "Bulk Judge (grid mode)"
+        last_run: null
+        result: null
+        notes: "Not tested at all."
+        paths: ["app/controllers/bulk_judge_controller.rb"]
+      "11.9":
+        title: "Query/Doc Pairs management"
+        last_run: null
+        result: null
+        notes: "Not tested."
+        paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query_doc_pair.rb"]
+
+  "12":
+    file: 12-ai-judges.md
+    scenarios:
+      "12.1":
+        title: "Create a per-team AI Judge"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Fixed: Ollama preset pointed at port :11434, but this repo's docker-compose.yml remaps Ollama to :31434 (app/views/ai_judges/_form.html.erb) — AI judging was non-functional out of the box for anyone following the preset. Only tried the Ollama provider; OpenAI/Azure/Anthropic/Gemini presets not exercised (no real keys)."
+        paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/models/ai_judge.rb"]
+      "12.2":
+        title: "Edit / delete an AI Judge"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Edited the LLM Service URL to apply the port fix. Deleting an AI judge from a team not tested."
+        paths: ["app/controllers/ai_judges_controller.rb"]
+      "12.3":
+        title: "Assign an AI Judge to a Book"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified 'We have an AI Judge ... helping us' banner appears after assignment."
+        paths: ["app/controllers/books_controller.rb"]
+      "12.4":
+        title: "Refine an AI Judge's prompt"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Ran a real prompt against local Ollama (qwen3:0.6b) end-to-end, got a real rating+explanation back. Malformed-JSON and zero-pairs edge cases not tested."
+        paths: ["app/controllers/ai_judges/prompts_controller.rb"]
+      "12.5":
+        title: "Trigger a judging run (Judge Judy)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Ran a bounded 10-pair job against local Ollama; all 10 correctly marked unrateable because the book's 0/1 scale didn't match the default 0-3 system prompt — confirmed this is the recently-added out-of-scale hardening working as intended, not a bug. 'Judge All Pairs' / Unleash the Kraken not tested."
+        paths: ["app/jobs/", "app/models/ai_judge.rb", "app/models/judgement.rb"]
+
+  "13":
+    file: 13-analytics.md
+    scenarios:
+      "13.1":
+        title: "Tries visualization"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified tree renders and anonymous access to a public case's URL works while logged out."
+        paths: ["app/controllers/analytics/tries_visualization_controller.rb"]
+      "13.2":
+        title: "Case visibility (Public / Private toggle)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Made public, copied real public_id-based URL, verified anonymous access works, made private, verified the same URL now 404s."
+        paths: ["app/controllers/analytics/tries_visualization_controller.rb", "app/models/case.rb"]
+      "13.3":
+        title: "Duplicate scores diagnostic"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Grouping/caption worked correctly, and this session's own repeated testing on case 5 organically produced a genuine Count=5 duplicate-score row that the diagnostic correctly surfaced. Bug found: the 'Make public'/'Make Private' toggle (present on the analogous Tries Visualization page) was completely missing here — root cause was Analytics::Cases::DuplicateScoresController never declaring `layout 'analytics'` (unlike TriesVisualizationController), so it silently fell back to the default app layout with the full sidebar/navbar chrome instead of the shared lean analytics layout. Fixed by adding `layout 'analytics'`; verified the toggle now appears and the page still renders correctly. Added test/controllers/analytics/cases/duplicate_scores_test.rb covering the layout fix and the count>1 grouping behavior. Never-scored-case empty-table edge case incidentally covered (case 1, which has all zero scores, correctly showed an empty table with no errors)."
+        paths: ["app/controllers/analytics/cases/duplicate_scores_controller.rb", "app/views/analytics/cases/duplicate_scores/show.html.erb", "app/views/layouts/analytics.html.erb", "test/controllers/analytics/cases/duplicate_scores_test.rb"]
+
+  "14":
+    file: 14-admin-area.md
+    scenarios:
+      "14.1":
+        title: "Admin access gating"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Fixed a real bug: Admin::WebsocketTesterController inherited from plain ApplicationController instead of Admin::AdminController, so any logged-in non-admin could load /admin/websocket_tester directly and trigger 'Run Test Background Job'. Fixed + added a controller test asserting non-admin is redirected with 'You must be a Quepid Administrator.'. Verified /admin, /admin/users, /admin/announcements, /admin/websocket_tester (after fix) all correctly redirect for a non-admin (quepid+oscmember@o19s.com), and confirmed the anonymous (logged-out) case redirects to login first. Also confirmed no admin links leak into that user's avatar dropdown."
+        paths: ["app/controllers/admin/admin_controller.rb", "app/controllers/admin/websocket_tester_controller.rb"]
+      "14.2":
+        title: "Admin Home dashboard"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified all three cards and links."
+        paths: ["app/controllers/admin/home_controller.rb"]
+      "14.3":
+        title: "User management — list & search"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified the filter box (q=manualinvitee returned exactly the one match). Export/Export JSON links present but not clicked."
+        paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/index.html.erb"]
+      "14.4":
+        title: "User show page & Pulse activity"
+        last_run: 2026-09-02
+        result: pass
+        notes: "All documented fields present. Pulse charts render for an accepted-invite user (correctly, not the pending-invite alert, since this user had accepted). Did not separately verify the 'hasn't accepted the invite' alert text for a still-pending invitee."
+        paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/show.html.erb"]
+      "14.5":
+        title: "Lock / unlock a user"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Locked a test user, confirmed login blocked with the same generic 'Unknown email/password combo' message (does not leak lock status — correct). Unlocked, confirmed login then succeeds."
+        paths: ["app/controllers/admin/users_controller.rb"]
+      "14.6":
+        title: "Edit a user"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Toggled Quepid Administrator? on, verified admin access worked for that account; toggled off, access presumably revoked (consistent with 14.1's gating check, not independently re-verified for this specific account). Set a plaintext password via Manage Password and logged in with it successfully."
+        paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/edit.html.erb"]
+      "14.7":
+        title: "Assign judgements to anonymous user (admin-level)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified 'All judgements assigned to anonymous user' flash and count."
+        paths: ["app/controllers/admin/users_controller.rb"]
+      "14.8":
+        title: "Delete a user"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Fixed: confirm dialog said 'this Search Endpoint' instead of 'this User' (app/views/admin/users/edit.html.erb). Fixed the underlying 500 crash for users with annotations (see 1.9). Verified successful deletion afterward."
+        paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/edit.html.erb"]
+      "14.9":
+        title: "Announcements"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Fixed: delete confirm dialog typo 'this Annoucement' -> 'this Announcement' (app/views/admin/announcements/edit.html.erb). Full lifecycle verified: created with HTML (bold) + emoji, rendered correctly in both the admin list and the live banner; Make Live -> banner appeared for a non-admin user; dismissed -> did not reappear on reload; Views count incremented (0 -> 2); Turn Off; Delete (with the now-fixed confirm dialog) -> gone from index. Did not test two simultaneous live announcements."
+        paths: ["app/controllers/admin/announcements_controller.rb", "app/models/announcement.rb", "app/views/admin/announcements/edit.html.erb"]
+      "14.10":
+        title: "Websocket Tester"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Fixed: flash notice typo 'Websocker Tester...' (app/controllers/admin/websocket_tester_controller.rb). Verified the live countdown actually works via ActionCable in this environment."
+        paths: ["app/controllers/admin/websocket_tester_controller.rb"]
+      "14.11":
+        title: "Mounted engines (Job Manager, SQL Analytics)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Both load and are functional for an admin (Job Manager: viewed queues + failed-jobs list, unrelated pre-existing TrackBookViewedJob failures referencing since-deleted seed Books — looks like leftover noise from earlier Playwright E2E runs against this dev DB, not from this session; SQL Analytics/Blazer: ran a real SELECT COUNT(*) query successfully). Confirmed both /admin/jobs and /admin/blazer are inaccessible to a non-admin (routing-constraint-based gating returns a routing error rather than even matching the mount, which is a stronger form of 'access denied' than the redirect-based gating elsewhere — the verbose Rails debug page shown is standard framework dev-mode behavior, not a Quepid-specific leak)."
+        paths: ["config/routes.rb"]
+        result: null
+        notes: "Not tested."
+        paths: ["config/routes.rb"]
+
+  "15":
+    file: 15-global-navigation-and-notebooks.md
+    scenarios:
+      "15.1":
+        title: "Left icon sidebar"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Bug found: sidebar icon tooltips never appeared on hover at all — the BS5 tooltip-init script in _sidebar.html.erb was entirely commented out (dead code), and each icon used a bare data-bs-toggle=\"tooltip\" pattern that nothing in the current JS actually initializes (the shared app/javascript/utils/bs_tooltip.js helper only wires up [quepid-tooltip] and [data-controller~=\"bs-tooltip\"] elements). Fixed by switching every sidebar icon to the existing bs-tooltip Stimulus controller (data-controller=\"bs-tooltip\" + data-bs-tooltip-*-value attributes) and removing the dead commented-out script block. Verified: on a fresh page load, hovering an icon (e.g. Teams) now shows the correct tooltip text, confirmed via both a screenshot and computed styles (display:block, opacity 0.9, in-viewport position). Rapid repeated programmatic hovers across icons in the same automated session showed some screenshot flakiness (headless-browser timing artifact, not a real bug — computed styles stayed correct throughout). Active-state highlighting and click-navigation confirmed for all 7 icons; narrow-viewport behavior (Part 16.2) not retested here."
+        paths: ["app/views/layouts/_sidebar.html.erb"]
+      "15.2":
+        title: "Top navbar quick-access dropdowns"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Relevancy Cases dropdown showed 'RECENT CASES' with 'View all cases' / 'Create a case' at the bottom. Books dropdown showed 'RECENT BOOKS' with 'View all books' / 'Create a book'. Teams/Scorers navbar links navigate directly (no dropdown), as documented. Empty-state (zero cases/books) and close-without-artifacts edge cases not tested."
+        paths: ["app/views/layouts/_header.html.erb"]
+      "15.3":
+        title: "External links (User Manual, Wiki, API Docs)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified API Docs (Swagger/oas_rails) loads and lists endpoints. User Manual/Wiki links not clicked (just visible)."
+        paths: ["config/routes.rb"]
+      "15.4":
+        title: "Avatar dropdown & admin shortcuts"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified non-admin vs admin dropdown contents match spec exactly."
+        paths: ["app/views/layouts/_header.html.erb"]
+      "15.5":
+        title: "Cookies static page"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "Fixed: literal unevaluated #{...} Ruby interpolation rendering as raw text (missing <%= %>), plus an unfilled #{INSERT SITE HERE} placeholder (app/views/pages/cookies.html.erb)."
+        paths: ["app/controllers/pages_controller.rb", "app/views/pages/cookies.html.erb"]
+      "15.6":
+        title: "Notebooks (JupyterLite integration)"
+        last_run: 2026-09-02
+        result: pass_with_fixes
+        notes: "This dev environment had never run bin/setup_jupyterlite_docker, so clicking Notebooks 404'd with a Rails routing error (public/notebooks/ didn't exist) — expected per the doc's own noted edge case, not a Quepid bug. While fixing this, found and fixed a real bug in bin/docker: the run|r case used an unquoted $@ (docker compose ... run --rm app $@), which word-splits any multi-word quoted argument (e.g. bash -c '...with spaces...') — confirmed via `bin/docker r bash -c 'echo hello world'` printing nothing before the fix. Fixed by quoting it (\"$@\"), re-confirmed the same command now prints 'hello world'. This unblocked running bin/setup_jupyterlite_docker successfully. With the real JupyterLite build in place: Notebooks link opened /notebooks/lab/index.html in a new tab (tab title 'JupyterLite'), the file browser showed the bundled examples/ folder with 4 sample notebooks, opened 'Scoring Comparison.ipynb', and ran its first cell (imports pandas/matplotlib under Pyodide) via Shift+Enter successfully with no errors and the selection advanced to the next cell. Minor: the bundled jupyterlab-tour extension throws console errors and fails to activate (TypeError: n.addFactory is not a function) — cosmetic, upstream in the quepid-jupyterlite release, does not block file browser/kernel/notebook execution. Did not verify a deployed (baked-into-image) environment separately."
+        paths: ["bin/setup_jupyterlite", "bin/setup_jupyterlite_docker", "bin/docker", "public/notebooks/"]
+
+  "16":
+    file: 16-cross-cutting-bs5-responsive-and-accessibility.md
+    scenarios:
+      "16.1":
+        title: "Popover & tooltip paint check (BS3↔BS5 trap)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Checked one rating-badge popover's computed styles (display/opacity/transform/font-size) — all correct on first click. Did not check a tooltip or a second popover-driven control."
+        paths: ["app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/directives/quepidTooltip.js", "app/assets/stylesheets/bootstrap5-compat.css"]
+      "16.2":
+        title: "Narrow viewport reflow sweep"
+        last_run: 2026-09-02
+        result: fail
+        notes: "FOUND, NOT FIXED: at 768x900 the top navbar's User Manual/Wiki/avatar-dropdown overflow off-screen and are unreachable — `.navbar-expand` (unsuffixed) never collapses to a hamburger at any width. document.body.scrollWidth (1080) vs clientWidth (768) reveals it; document.documentElement.scrollWidth is misleadingly 768 since the overflow is scoped to <body> (overflow:auto). Needs a deliberate responsive-toggler fix across app/views/layouts/_header.html.erb and _header_core_app.html.erb — out of scope for a quick patch. Wizard/cases-list/workbench reflow otherwise fine; did not check modals at this width."
+        paths: ["app/views/layouts/_header.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/assets/stylesheets/navbar-brand.css"]
+      "16.3":
+        title: "Case header typography"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Measured: h1 35px, <small> 30.625px = exactly 0.875x. No regression."
+        paths: ["app/assets/stylesheets/bootstrap5-compat.css"]
+      "16.4":
+        title: "Modal accessibility spot-check"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified Escape closes the Explain Query modal. No axe/Lighthouse scan run, no keyboard-tab-through focus-trap check."
+        paths: ["app/assets/javascripts/"]
+      "16.5":
+        title: "General visual sanity sweep after any CSS/JS change"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Not run as a single standalone sweep, but every JS/view change made this session (case.js, currSettings.js, query_options_modal_instance_controller.js, import_snapshot_controller.js, mapper_wizard_controller.js, queriesLayout.html, wizardModal.html, _sidebar.html.erb) was individually verified live via Playwright MCP screenshots immediately after the change, with no visual regressions observed in any of the affected pages (case workbench header, query options modal, mapper wizard, cases list import modals, sidebar icons)."
+        paths: []

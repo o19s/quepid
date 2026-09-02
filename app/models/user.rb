@@ -99,6 +99,9 @@ class User < ApplicationRecord
   has_many :judgements,
            dependent: :restrict_with_error
 
+  has_many :annotations,
+           dependent: :nullify
+
   has_many :case_metadata,
            class_name: 'CaseMetadatum',
            dependent:  :destroy

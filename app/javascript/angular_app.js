@@ -62,9 +62,15 @@ window.URI = URI;
 import quepidDom from './quepid_dom';
 window.quepidDom = quepidDom;
 
-// Shepherd for tours
-import 'tether-shepherd/dist/js/tether';
-import 'tether-shepherd/dist/js/shepherd';
+// Shepherd for tours. Both are UMD builds; under esbuild's CommonJS-like
+// module scope they resolve to their `module.exports` branch instead of
+// setting `root.Shepherd`/`root.Tether`, so legacy code (app/assets/javascripts/tour.js)
+// referencing the bare `Shepherd` global needs it pinned to window explicitly
+// (matches the URI/quepidDom pattern above).
+import Tether from 'tether-shepherd/dist/js/tether';
+window.Tether = Tether;
+import Shepherd from 'tether-shepherd/dist/js/shepherd';
+window.Shepherd = Shepherd;
 
 // Angular templates are pre-populated into $templateCache by build_templates.js
 // (a local replacement for the angular-rails-templates gem). Controllers,

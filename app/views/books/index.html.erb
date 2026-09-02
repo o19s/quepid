@@ -17,7 +17,7 @@
 
 
 <p id="notice"><%= notice %></p>
-<% if params[:archived] != 'true' && @books.empty? %>
+<% if params[:archived] != 'true' && @books.empty? && params[:q].blank? && params[:team_id].blank? %>
   <div class="alert alert-primary" role="alert">
     Create your first book by clicking on the New Book button above.
   </div>

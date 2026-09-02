@@ -388,6 +388,7 @@ Environment variables (all optional, sensible defaults baked in):
 Structure:
 
 * `core_smoke.spec.ts`, `angular_pages.spec.ts`, `angular_pages_narrow_viewport.spec.ts` — golden-path interaction screenshots (`toHaveScreenshot`) across modals, dropdowns, and the wizard, at desktop and narrow viewports.
+* `share_case.spec.ts` — permanent regression coverage for case sharing: the Stimulus `share-case-core` modal on the core toolbar (incl. the judgements-modal bridge into it) and the Rails cases-index/teams share modal. Mixes `toHaveScreenshot()` baselines with plain behavioral assertions (share/unshare click flow, success alerts) that don't depend on any before/after phase.
 * `stimulus_pages.spec.ts` — smoke and interaction tests for Stimulus pages (cases import modal redirect, bulk judgement save via routed API, mapper wizard) on the `application` layout.
 * `popover_visibility.spec.ts` — computed-style assertions catching invisible-but-present popovers (see the BS5-on-`core` traps documented in CLAUDE.md).
 * `modal_a11y.spec.ts` — axe accessibility smoke test on a modal.
@@ -404,7 +405,7 @@ yarn screenshots:view
 # if host Node engines block yarn: node test/playwright/screenshot-viewer-server.mjs
 ```
 
-Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — sidebar groups by folder, pairs before/after, flags **byte-identical** pairs at manifest generation time, and runs a **pixel diff** in the browser (magenta overlay + diff map) when bytes differ. Sidebar badges: `byte =` (identical files), `bytes ≠` / `diff` (changed), `pixel =` (same image, different PNG encoding). Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`. For `dom_migration_screenshots.spec.ts`, set `MIGRATION_SHOT_TOPIC=share-case` (share-case tests also hardcode that folder).
+Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — sidebar groups by folder, pairs before/after, flags **byte-identical** pairs at manifest generation time, and runs a **pixel diff** in the browser (magenta overlay + diff map) when bytes differ. Sidebar badges: `byte =` (identical files), `bytes ≠` / `diff` (changed), `pixel =` (same image, different PNG encoding). Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`. For `dom_migration_screenshots.spec.ts`, set `MIGRATION_SHOT_PHASE=before|after` to pick the phase; group a run's shots by saving them into a topic subfolder as described above. (The share-case surface no longer runs through this ad-hoc flow — its screenshots are ordinary checked-in `toHaveScreenshot()` baselines in `share_case.spec.ts`.)
 
 ### Rubocop
 

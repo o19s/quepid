@@ -169,10 +169,12 @@ export default class extends Controller {
         const snapshotPayload = {
           name: snapshot.name,
           created_at: snapshot.created_at,
-          queries: Object.entries(snapshot.queries).map(([queryText, queryData]) => ({
-            query_text: queryText,
-            docs: queryData.docs
-          }))
+          queries: Object.fromEntries(
+            Object.entries(snapshot.queries).map(([queryText, queryData]) => [
+              queryText,
+              { docs: queryData.docs }
+            ])
+          )
         }
         
         promises.push(this.sendSnapshotToAPI(caseId, snapshotPayload))

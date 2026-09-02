@@ -19,6 +19,8 @@ class ApiKey < ApplicationRecord
   HMAC_SECRET_KEY = Rails.application.secret_key_base
   belongs_to :user
 
+  validates :token, presence: true, on: :create
+
   before_create :generate_token_hmac_digest
 
   # Virtual attribute for raw token value, allowing us to respond with the
@@ -54,10 +56,6 @@ class ApiKey < ApplicationRecord
   private
 
   def generate_token_hmac_digest
-    raise ActiveRecord::RecordInvalid, 'token is required' if
-
-      token.blank?
-
     digest = OpenSSL::HMAC.hexdigest 'SHA256', HMAC_SECRET_KEY, token
 
     self.token_digest = digest

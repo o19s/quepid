@@ -3,6 +3,8 @@
 module Analytics
   module Cases
     class DuplicateScoresController < ApplicationController
+      layout 'analytics'
+
       before_action :set_case, only: [ :show ]
 
       def show

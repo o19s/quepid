@@ -22,6 +22,10 @@ angular.module('QuepidApp')
         name: null,
         startRename: false,
         rename: function() {
+          if (!$scope.tryName.name || !$scope.tryName.name.trim()) {
+            return;
+          }
+
           settingsSvc.renameTry($scope.currentTry.selectedTry().tryNo, $scope.tryName.name)
           .then(function() {
             $scope.tryName.startRename = false;
