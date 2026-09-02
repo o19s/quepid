@@ -87,7 +87,7 @@ This guide provides detailed instructions for developers who want to set up, run
 
 Historically Quepid development has REQUIRED Docker, which avoids having to deal with installing dependencies like Ruby and MySQL. However, we recently made some tweaks so you can do development without using Docker, which may fit some folks much better.
 
-Quepid supports two database adapters: **MySQL** (the default - matches production) and **SQLite** (no separate database server to install or run). Set `DB_ADAPTER=sqlite3` in your `.env` file (or export it before running `bin/docker`/`bin/rails` commands) to opt into SQLite instead; leave it unset to use MySQL. See [Choosing a database adapter](#choosing-a-database-adapter) below.
+Quepid supports two database adapters: **MySQL** (the default for development and test) and **SQLite** (the production fallback when `DATABASE_URL` is unset, with no separate database server to install or run). Set `DB_ADAPTER=sqlite3` in your `.env` file (or export it before running `bin/docker`/`bin/rails` commands) to opt into SQLite for development and test; leave it unset to use MySQL. See [Choosing a database adapter](#choosing-a-database-adapter) below.
 
 ### Docker Based Setup
 
