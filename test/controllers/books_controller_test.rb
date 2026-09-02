@@ -199,8 +199,8 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
             params: { rating_map: { '3.0' => '1', '2.0' => '1', '1.0' => '0', '0.0' => '0' } }
 
       follow_redirect!
-      # 0→0 is a no-op (skipped), so only 3 judgements are actually remapped
-      assert_equal 'Remapped 3 judgements.', flash[:notice]
+      # 0→0 is a no-op (skipped), so only 3 judgements and 2 case ratings are actually remapped
+      assert_equal 'Remapped 3 judgements and 2 case ratings.', flash[:notice]
 
       james_bond_movies.reload
       # was [0,1,2,3]; 0 stays 0, 1→0, 2→1, 3→1
@@ -230,6 +230,35 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
       assert_includes ratings, 2  # originally-3 judgement ended at 2, not 1
       assert_includes ratings, 1  # originally-2 judgements ended at 1
+    end
+
+    test 'also remaps ratings in cases associated with the book' do
+      login_user_for_integration_test doug
+
+      james_bond_case = cases(:james_bond_case)
+      # fixture has case ratings [1, 3, 5]
+      assert_equal [ 1, 3, 5 ], james_bond_case.ratings.where.not(rating: nil).pluck(:rating).sort.map(&:to_i)
+
+      patch "/books/#{james_bond_movies.id}/remap_judgement_ratings",
+            params: { rating_map: { '3.0' => '1', '2.0' => '1', '1.0' => '0', '0.0' => '0' } }
+
+      follow_redirect!
+      james_bond_case.reload
+      # ratings 3→1, 1→0; 5 is not in the remap so stays 5
+      assert_equal [ 0, 1, 5 ], james_bond_case.ratings.where.not(rating: nil).pluck(:rating).sort.map(&:to_i)
+    end
+
+    test 'edit page shows ratings from both judgements and associated cases' do
+      login_user_for_integration_test doug
+
+      # Bullet fires on the pre-existing @other_books N+1, not our new query — suppress it.
+      Bullet.enable = false
+      get "/books/#{james_bond_movies.id}/edit"
+      Bullet.enable = true
+
+      # judgements: 0,1,2,3; james_bond_case ratings: 1,3,5 → combined unique sorted: 0,1,2,3,5
+      # rating_map[5.0] input only appears if case ratings were included in @current_ratings
+      assert_includes response.body, 'name="rating_map[5.0]"'
     end
   end
 

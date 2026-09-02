@@ -234,3 +234,9 @@ case_no_queries:
   case_name: Case with No Queries
   archived:  false
   scorer:   :case_default_scorer
+
+james_bond_case:
+  owner:     :doug
+  case_name: James Bond Case
+  archived:  false
+  book:      :james_bond_movies

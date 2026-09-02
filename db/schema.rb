@@ -108,11 +108,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_120000) do
   create_table "announcements", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "author_id"
     t.datetime "created_at", null: false
-    t.boolean "live", default: false
+    t.date "expiration_date", null: false
+    t.date "publish_date", null: false
     t.text "text", collation: "utf8mb4_unicode_ci"
     t.datetime "updated_at", null: false
     t.index ["author_id"], name: "index_announcements_author_id"
-    t.index ["live"], name: "index_announcements_on_live"
   end
 
   create_table "api_keys", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
