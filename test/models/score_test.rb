@@ -18,11 +18,11 @@
 #
 # Indexes
 #
-#  case_id                          (case_id)
 #  index_case_scores_annotation_id  (annotation_id) UNIQUE
+#  index_case_scores_on_case_id     (case_id)
 #  index_case_scores_on_scorer_id   (scorer_id)
+#  index_case_scores_on_user_id     (user_id)
 #  support_last_score               (updated_at,created_at,id)
-#  user_id                          (user_id)
 #
 # Foreign Keys
 #

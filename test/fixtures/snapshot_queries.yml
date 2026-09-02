@@ -12,8 +12,8 @@
 #
 # Indexes
 #
-#  query_id     (query_id)
-#  snapshot_id  (snapshot_id)
+#  index_snapshot_queries_on_query_id  (query_id)
+#  snapshot_id                         (snapshot_id)
 #
 # Foreign Keys
 #
