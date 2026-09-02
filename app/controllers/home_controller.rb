@@ -130,7 +130,7 @@ class HomeController < ApplicationController
   def check_for_announcement
     return unless @current_user
 
-    @announcement = Announcement.active.order(publish_date: :desc).latest_unseen_for_user(@current_user).first
+    @announcement = Announcement.active.latest_unseen_for_user(@current_user).first
     AnnouncementViewed.create(user: @current_user, announcement: @announcement) if @announcement
   end
 end

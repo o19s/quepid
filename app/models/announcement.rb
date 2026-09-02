@@ -29,7 +29,9 @@ class Announcement < ApplicationRecord
   # Currently-visible announcements: today falls within [publish_date, expiration_date].
   # Ordered by publish_date desc so the most recently scheduled one wins when windows
   # overlap - no separate "only one at a time" flag to keep in sync.
-  scope :active, -> { where(publish_date: ..Date.current).where(expiration_date: Date.current..) }
+  scope :active, -> {
+    where(publish_date: ..Date.current).where(expiration_date: Date.current..).order(publish_date: :desc)
+  }
 
   scope :latest_unseen_for_user, ->(user) {
     join_condition = "
