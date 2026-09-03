@@ -22,6 +22,7 @@ services:
       - "${APP_PORT:-3000}:3000"
     links:
       - mysql
+      - postgres
       - keycloak
       - ollama
     depends_on:
@@ -43,6 +44,21 @@ services:
       - ./volumes/mysql/data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  postgres:
+    container_name: quepid_postgres
+    image: postgres:17-alpine
+    ports:
+      - 35432:5432
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=root
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -45,8 +45,13 @@ module Quepid
     # Enable encryption for sensitive data.  Someday, when our database doesn't have potentially mixed encryption state, this should be set to false.
     # Maybe in Quepid 9?
     config.active_record.encryption.support_unencrypted_data = true
-    sqlite_adapter = 'sqlite3' == ENV.fetch('DB_ADAPTER', nil) || ENV.fetch('DATABASE_URL', '').start_with?('sqlite3:')
-    config.active_record.dump_schema_after_migration = false if sqlite_adapter
+    # schema.rb is dumped from MySQL and carries MySQL-only options that the
+    # other adapters cannot reproduce, so only MySQL may re-dump it.
+    db_adapter = ENV.fetch('DB_ADAPTER', nil)
+    database_url = ENV.fetch('DATABASE_URL', '')
+    non_mysql_adapter = %w[sqlite3 postgresql].include?(db_adapter) ||
+                        database_url.start_with?('sqlite3:', 'postgres')
+    config.active_record.dump_schema_after_migration = false if non_mysql_adapter
 
     # Encryption keys must be set here (not in config/initializers/) so they are in
     # place before the active_record.encryption Railtie initializer copies them into

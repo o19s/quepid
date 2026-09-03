@@ -87,7 +87,7 @@ This guide provides detailed instructions for developers who want to set up, run
 
 Historically Quepid development has REQUIRED Docker, which avoids having to deal with installing dependencies like Ruby and MySQL. However, we recently made some tweaks so you can do development without using Docker, which may fit some folks much better.
 
-Quepid supports two database adapters: **MySQL** (the default for development and test) and **SQLite** (the production fallback when `DATABASE_URL` is unset, with no separate database server to install or run). Set `DB_ADAPTER=sqlite3` in your `.env` file (or export it before running `bin/docker`/`bin/rails` commands) to opt into SQLite for development and test; leave it unset to use MySQL. See [Choosing a database adapter](#choosing-a-database-adapter) below.
+Quepid supports **MySQL** (the default for development and test) and **SQLite** (the production fallback when `DATABASE_URL` is unset, with no separate database server to install or run). Set `DB_ADAPTER=sqlite3` in your `.env` file (or export it before running `bin/docker`/`bin/rails` commands) to opt into SQLite for development and test; leave it unset to use MySQL. **PostgreSQL** (`DB_ADAPTER=postgresql`) is also supported, served by the `postgres` container. See [Choosing a database adapter](#choosing-a-database-adapter) below.
 
 ### Docker Based Setup
 
@@ -150,13 +150,15 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 3. **Yarn**: Install Yarn package manager.
 
-4. **Database**: By default Quepid uses MySQL, matching production - install MySQL 8.0+. If you'd rather avoid running a database server locally, set `DB_ADAPTER=sqlite3` in your `.env` file instead - the `sqlite3` gem is enough, no separate install needed.
+4. **Database**: By default Quepid uses MySQL, matching production - install MySQL 8.0+. If you'd rather avoid running a database server locally, set `DB_ADAPTER=sqlite3` in your `.env` file instead - the `sqlite3` gem is enough, no separate install needed. For PostgreSQL, set `DB_ADAPTER=postgresql` and install PostgreSQL 14+, or run just the `postgres` container.
 
 #### Database Setup
 
 With the default MySQL adapter, start up MySQL however you like first (some folks set up just the `mysql` container with `docker compose up -d mysql` and run everything else locally).
 
 If you set `DB_ADAPTER=sqlite3`, there's nothing to start up separately - `bin/setup` (below) creates `storage/development.sqlite3` for you.
+
+For `DB_ADAPTER=postgresql`, `docker compose up -d postgres` gives you a server on port 35432.
 
 
 #### Application Setup
@@ -911,12 +913,23 @@ This section covers common issues you might encounter during development and how
 
 Quepid defaults to **MySQL**, matching production. Set `DB_ADAPTER=sqlite3` in `.env` (or export it before running `bin/docker`/`bin/rails` commands) to use SQLite instead (`storage/development.sqlite3` / `storage/test.sqlite3`) - nothing to start up separately. Both are exercised in CI (`.github/workflows/test.yml`), and the production Docker image (`Dockerfile.prod`) carries the `sqlite3` gem too, so it can run against either adapter via `DATABASE_URL`.
 
+**Adding or changing an adapter gem requires an image rebuild.** `bin/docker r bundle install` runs in a `--rm` container and gems live in the image, not a volume, so the install is discarded when the container exits. Run `docker compose build app` instead.
+
+#### PostgreSQL
+
+`DB_ADAPTER=postgresql` selects PostgreSQL, served by the `postgres` container on port 35432. It is exercised in CI alongside MySQL and SQLite.
+
+Two things to know:
+
+- `config/initializers/postgresql_schema_compatibility.rb` makes `db/schema.rb`'s MySQL-only column options loadable: it allows `size:` (a MySQL text/blob width hint that means nothing to PostgreSQL) and maps MySQL collation names, `_bin` to `"C"` and dropping the case-insensitive ones. **Columns that are case-insensitive on MySQL are therefore case-sensitive on PostgreSQL.** Application code no longer depends on that - email lookups and searches fold case in SQL - but keep it in mind when adding queries. Making the columns themselves behave as they do on MySQL would need `citext` or a nondeterministic ICU collation, which is a schema decision rather than a compatibility shim.
+- `SelectionStrategy`'s weighted sampling, and anything else needing `RANDOM()` or a natural log, goes through `AdapterFunctions` rather than branching inline. These functions are spelled differently per adapter and getting one wrong returns wrong numbers rather than raising, so add new ones there rather than at the call site.
+
 Known SQLite-specific behavior to be aware of:
 - SQLite's default text comparison is already case-sensitive, matching the case-sensitive collation MySQL uses for `query_text` columns - no configuration needed.
 - SQLite runs in WAL mode by default (readers don't block writers), and `config/database.yml`'s `timeout:` gives a busy connection a retry window before failing - but SQLite still allows only one writer at a time. Solid Queue's Dispatcher, Scheduler, and Worker processes all register themselves in the queue tables within the same window at boot, so an occasional `SQLite3::BusyException` there is expected, not a bug. Solid Queue's supervisor detects and restarts a process that dies this way automatically, so it shows up as noisy startup logs, not a lasting failure. Don't raise `WEB_CONCURRENCY` or `JOB_CONCURRENCY` above their defaults (0 and 1) when running SQLite - each adds another process writing to the same single file, which only makes this worse.
 - `docker-compose.yml`'s `app` service still declares `depends_on: mysql`, so the `mysql` container starts (and Docker waits for it to be healthy) even when `DB_ADAPTER` is set to `sqlite3`. It's unused in that case, just an idle extra container - not a functional problem, but not the "zero extra infrastructure" experience SQLite is meant to give either. Making that dependency conditional (e.g. via Compose profiles) is a reasonable follow-up if it becomes annoying.
 - A handful of tests that depend on MySQL-only behavior (e.g. VARCHAR length enforcement, which SQLite doesn't have) are skipped when running against SQLite - see `AdapterFunctions.mysql?` usage in `test/`.
-- `db/schema.rb` is authored from MySQL and carries MySQL-specific `charset:`/`collation:`/`size:` options; `config/initializers/sqlite3_schema_compatibility.rb` makes SQLite tolerant of loading it. **Don't run `db:migrate` (or anything that dumps schema) with `DB_ADAPTER=sqlite3`** - Rails' `dump_schema_after_migration` (on by default outside production) would regenerate `db/schema.rb` from the SQLite connection instead, stripping those MySQL options for everyone. Author migrations and regenerate `db/schema.rb` against MySQL; use SQLite only for running the app/tests against an already-committed schema.
+- `db/schema.rb` is authored from MySQL and carries MySQL-specific `charset:`/`collation:`/`size:` options; `config/initializers/sqlite3_schema_compatibility.rb` makes SQLite tolerant of loading it. **Don't run `db:migrate` (or anything that dumps schema) with a non-MySQL adapter** - Rails' `dump_schema_after_migration` (on by default outside production) would regenerate `db/schema.rb` from the SQLite connection instead, stripping those MySQL options for everyone. Author migrations and regenerate `db/schema.rb` against MySQL; use SQLite only for running the app/tests against an already-committed schema.
 
 ### Database Connection Errors
 

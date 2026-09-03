@@ -392,6 +392,10 @@ GEM
     parser (3.3.12.0)
       ast (~> 2.4.1)
       racc
+    pg (1.6.3-aarch64-linux)
+    pg (1.6.3-arm64-darwin)
+    pg (1.6.3-x86_64-darwin)
+    pg (1.6.3-x86_64-linux)
     postmark (1.25.1)
       json
     postmark-rails (0.22.1)
@@ -673,6 +677,7 @@ DEPENDENCIES
   omniauth-rails_csrf_protection
   omniauth_openid_connect
   pagy
+  pg
   postmark-rails
   prophet-rb
   propshaft
