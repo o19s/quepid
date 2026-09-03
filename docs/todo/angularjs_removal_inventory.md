@@ -121,7 +121,7 @@ Before markup or controller work:
 
 **Collapse anti-pattern (share-case):** one list-group `_share_case_modal` everywhere — Angular-equivalent on core but **changed** cases index/teams away from `<select>` + always-visible disabled footers. Conversely, putting the old `<select>` partial on core **changed** the case toolbar away from Angular.
 
-Agents: `.cursor/rules/angular-to-stimulus-port.mdc`; `.cursor/skills/angular-case-migration/SKILL.md`.
+Agents: `angular-case-migration` skill (`.claude/skills/angular-case-migration/SKILL.md`).
 
 ### Category playbooks
 
