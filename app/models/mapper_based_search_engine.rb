@@ -44,7 +44,7 @@ class MapperBasedSearchEngine
       supports_basic_auth: false,
       search_url:          'https://a119b8dc.eb5f2dd2.z.vespa-app.cloud/search/',
       url_format:          'https://<app>.<tenant>.z.vespa-app.cloud/search/',
-      query_params:        'yql=select * from news where title contains "#$query##" or abstract contains "#$query##"&ranking.profile=bm25',
+      query_params:        'yql=select * from movies where title contains "#$query##" or overview contains "#$query##"&ranking.profile=bm25',
       # Read-only Vespa Cloud data-plane token for the o19s demo tenant; scoped to query
       # access only, so exposure is bounded to someone running extra queries against the
       # demo index, not writing/deleting data.
@@ -55,12 +55,15 @@ class MapperBasedSearchEngine
       # Vespa's schema-agnostic match-all query — YQL's equivalent of Solr's "*:*" or
       # Elasticsearch's match_all. "sources *" searches every content source regardless
       # of schema/field names, so this works against any Vespa app, not just this demo's
-      # "news" schema. Used complete, as-is (see wizardModal.js's validate()) when the
+      # "movies" schema. Used complete, as-is (see wizardModal.js's validate()) when the
       # wizard validates the endpoint (ping-it) or discovers field names for the Fields
       # step — substituting a real search term into query_params' #$query## placeholder
       # instead would only surface fields from docs matching that specific term, and
       # wouldn't generalize to a real user's own Vespa app/content.
       test_query:          'yql=select * from sources * where true',
+      # Mirrors the existing TMDB demo convention used by the built-in Algolia preset
+      # (see settingsSvc.js's defaultSettings.algolia) — this is the same movie corpus.
+      additional_fields:   [ 'overview', 'cast', 'thumb:poster_path' ],
       mapper_file:         'db/mapper_based_search_engines/vespa.js',
     }
   ].freeze

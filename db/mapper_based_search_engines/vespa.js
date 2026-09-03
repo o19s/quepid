@@ -6,12 +6,12 @@ numberOfResultsMapper = function (data) {
 
 // docsMapper - Schema-agnostic: root.children[].id/relevance/fields are part of
 // Vespa's response envelope for every schema, so nothing here is specific to the
-// "news" schema. Which raw field displays as title/body/etc. is controlled entirely
-// by the case's field_spec (e.g. "title:title body:abstract url:url"), not by this
-// mapper. Add fields, or point a case at a different Vespa schema, without ever
-// touching this code.
+// "movies" schema this demo currently points at. Which raw field displays as
+// title/body/etc. is controlled entirely by the case's field_spec (e.g.
+// "title:title body:overview thumb:poster_path"), not by this mapper. Add fields,
+// or point a case at a different Vespa schema, without ever touching this code.
 //
-// Each raw Vespa field (title, abstract, url, ...) is spread onto the doc at the
+// Each raw Vespa field (title, overview, genres, ...) is spread onto the doc at the
 // top level, so field_spec can reference them directly (e.g. "title") instead of
 // "fields.title". The nested "fields" sub-object is also kept alongside that,
 // unchanged, because Quepid's server-side snapshot storage/compare-view
