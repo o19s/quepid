@@ -8,6 +8,9 @@ json.mapper_based_search_engines @mapper_based_search_engines do |engine|
   json.apiMethod        engine.api_method
   json.proxyRequests    engine.proxy_requests
   json.supportsBasicAuth engine.supports_basic_auth
+  json.supportsPagination engine.supports_pagination
+  json.paginationHitsParam engine.pagination_hits_param
+  json.paginationOffsetParam engine.pagination_offset_param
   json.searchUrl        engine.search_url
   json.urlFormat        engine.url_format
   json.queryParams      engine.query_params

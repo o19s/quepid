@@ -108,6 +108,7 @@ angular.module('QuepidApp')
       this.getCaseNo = getCaseNo;
       this.createSearcherFromSettings = createSearcherFromSettings;
       this.createSearcherFromSnapshot = createSearcherFromSnapshot;
+      this.nextSearchApiPageArgs = nextSearchApiPageArgs;
       this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
 
@@ -240,6 +241,30 @@ angular.module('QuepidApp')
 
       function createSearcherFromSnapshot(snapshotId, query, settings) {
         return snapshotSearcherSvc.createSearcherFromSnapshot(snapshotId, query, settings);
+      }
+
+      /**
+       * splainer-search's generic Search API engine has no pager() implementation (see
+       * searchApiSearcherFactory.js — it always returns null, unlike Solr/ES/Algolia/Vectara),
+       * since it has no built-in offset concept. For engines that do support it (e.g. Vespa,
+       * whose query API takes hits/offset as plain params), we drive the same "next page" widening
+       * ourselves: bump the page-size/offset key-value pairs already present (or default to them)
+       * in the try's parsed args, and let createSearcherFromSettings build a fresh request from
+       * that — no vendored code touched.
+       *
+       * hitsParam/offsetParam name the actual query_params keys (e.g. Vespa's 'hits'/'offset',
+       * see MapperBasedSearchEngine#pagination_hits_param/#pagination_offset_param) — there's no
+       * universal convention across search APIs, so callers must supply both explicitly.
+       */
+      function nextSearchApiPageArgs(existingArgs, defaultRows, hitsParam, offsetParam) {
+        let nextArgs = angular.copy(existingArgs) || {};
+        let pageSize = nextArgs[hitsParam] ? parseInt(nextArgs[hitsParam][0], 10) : defaultRows;
+        let currentOffset = nextArgs[offsetParam] ? parseInt(nextArgs[offsetParam][0], 10) : 0;
+
+        nextArgs[hitsParam] = [ String(pageSize) ];
+        nextArgs[offsetParam] = [ String(currentOffset + pageSize) ];
+
+        return nextArgs;
       }
 
       function normalizeDocExplains(query, searcher, fieldSpec) {
@@ -541,6 +566,9 @@ angular.module('QuepidApp')
 
           return $q(function(resolve, reject) {
             self.hasBeenScored = false;
+            // A fresh search restarts pagination from page 1 — see paginate()/ratedPaginate().
+            self.searchApiPageArgs = null;
+            self.ratedSearchApiPageArgs = null;
 
             self.searcher = svc.createSearcherFromSettings(
               currSettings,
@@ -663,7 +691,34 @@ angular.module('QuepidApp')
             return;
           }
 
-          self.searcher = self.searcher.pager();
+          if (currSettings.searchEngine === 'searchapi') {
+            let hitsParam = currSettings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
+            let offsetParam = currSettings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
+
+            if (hitsParam && offsetParam) {
+              let originalArgs = currSettings.selectedTry.args;
+              // Track this query's own running offset (self.searchApiPageArgs), rather than
+              // leaving it on the shared currSettings.selectedTry.args — that object is reused
+              // by every query in the try, so mutating it in place either leaks a stale offset
+              // into other queries' fresh searches, or (if restored after each call, as an
+              // earlier version of this did) forgets the offset entirely and refetches the same
+              // page on every subsequent click instead of advancing.
+              let baseArgs = self.searchApiPageArgs || originalArgs;
+              self.searchApiPageArgs = svc.nextSearchApiPageArgs(baseArgs, currSettings.numberOfRows, hitsParam, offsetParam);
+
+              currSettings.selectedTry.args = self.searchApiPageArgs;
+              self.searcher = svc.createSearcherFromSettings(currSettings, self);
+              currSettings.selectedTry.args = originalArgs;
+            } else {
+              self.searcher = null;
+            }
+          } else {
+            self.searcher = self.searcher.pager();
+          }
+
+          if (self.searcher === null) {
+            return;
+          }
 
           return self.searcher.search()
             .then(function() {
@@ -688,7 +743,29 @@ angular.module('QuepidApp')
               return;
             }
 
-            self.ratedSearcher = self.ratedSearcher.pager();
+            if (currSettings.searchEngine === 'searchapi') {
+              let hitsParam = currSettings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
+              let offsetParam = currSettings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
+
+              if (hitsParam && offsetParam) {
+                let originalArgs = currSettings.selectedTry.args;
+                let baseArgs = self.ratedSearchApiPageArgs || originalArgs;
+                self.ratedSearchApiPageArgs = svc.nextSearchApiPageArgs(baseArgs, currSettings.numberOfRows, hitsParam, offsetParam);
+
+                currSettings.selectedTry.args = self.ratedSearchApiPageArgs;
+                self.ratedSearcher = svc.createSearcherFromSettings(currSettings, self, { filterToRated: true });
+                currSettings.selectedTry.args = originalArgs;
+              } else {
+                self.ratedSearcher = null;
+              }
+            } else {
+              self.ratedSearcher = self.ratedSearcher.pager();
+            }
+
+            if (self.ratedSearcher === null) {
+              return;
+            }
+
             return self.ratedSearcher.search()
               .then(function() {
                 let normed = svc.normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());

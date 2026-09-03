@@ -152,7 +152,7 @@
 
       <div class='row results-pane-footer'>
         <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" quepid-popover="Close the results pane"></i>
-        <span ng-if="query.numFound > query.docs.length">
+        <span ng-if="query.numFound > query.docs.length && (selectedTry.searchEngine != 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination)">
           <a
             class="btn btn-outline-secondary"
             ng-click="query.paginate()"
@@ -177,7 +177,7 @@
 
       <div class='row results-pane-footer'>
         <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" quepid-popover="Close the results pane"></i>
-        <span ng-if="query.getNumFound() > query.ratedDocs.length">
+        <span ng-if="query.getNumFound() > query.ratedDocs.length && (selectedTry.searchEngine != 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination)">
           <a
             ng-show='query.getNumFound() > query.ratedDocs.length'
             class="btn btn-outline-secondary"

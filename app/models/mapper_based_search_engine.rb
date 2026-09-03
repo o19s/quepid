@@ -20,6 +20,16 @@ class MapperBasedSearchEngine
   attribute :api_method,          :string
   attribute :proxy_requests,      :boolean, default: false
   attribute :supports_basic_auth, :boolean, default: true
+  # Whether "Peek at the next page of results" can widen the request (e.g. Vespa's
+  # hits/offset). Not every search API exposes an offset concept the wizard's generic
+  # query_params template can drive, so this defaults to false rather than assuming it.
+  attribute :supports_pagination, :boolean, default: false
+  # The query_params key names for page size / offset (e.g. Vespa's 'hits'/'offset').
+  # Deliberately no default: an engine claiming supports_pagination without naming both
+  # of these is a config bug we want to surface (queriesSvc.js's paginate() refuses to
+  # guess a key name), not silently fall back to some other engine's convention.
+  attribute :pagination_hits_param,   :string
+  attribute :pagination_offset_param, :string
   attribute :search_url,          :string, default: ''
   attribute :url_format,          :string
   attribute :query_params,        :string
@@ -34,37 +44,30 @@ class MapperBasedSearchEngine
 
   DEFINITIONS = [
     {
-      id:                  'vespa',
-      name:                'Vespa',
-      logo:                'vespa',
-      api_method:          'GET',
-      proxy_requests:      true,
-      # Vespa Cloud's data plane authenticates via mTLS or a bearer token (sent as a
-      # custom header below), never HTTP Basic Auth, so the wizard shouldn't offer it.
-      supports_basic_auth: false,
-      search_url:          'https://a119b8dc.eb5f2dd2.z.vespa-app.cloud/search/',
-      url_format:          'https://<app>.<tenant>.z.vespa-app.cloud/search/',
-      query_params:        'yql=select * from movies where title contains "#$query##" or overview contains "#$query##"&ranking.profile=bm25',
+      id:                      'vespa',
+      name:                    'Vespa',
+      logo:                    'vespa',
+      api_method:              'GET',
+      proxy_requests:          true,
+      supports_basic_auth:     false,
+      # Vespa's query API takes hits/offset as plain top-level params alongside yql, so
+      # queriesSvc.js's paginate() can widen the request by bumping offset on each click.
+      supports_pagination:     true,
+      pagination_hits_param:   'hits',
+      pagination_offset_param: 'offset',
+      search_url:              'https://a119b8dc.eb5f2dd2.z.vespa-app.cloud/search/',
+      url_format:              'https://<app>.<tenant>.z.vespa-app.cloud/search/',
+      query_params:            'yql=select * from movies where title contains "#$query##" or overview contains "#$query##"&ranking.profile=bm25&hits=10&offset=0',
       # Read-only Vespa Cloud data-plane token for the o19s demo tenant; scoped to query
       # access only, so exposure is bounded to someone running extra queries against the
       # demo index, not writing/deleting data.
-      custom_headers:      { Authorization: 'Bearer vespa_cloud_TR8wpJb6M2x0TltmxqTdupqA20rcAI5tAEfqHWbvsx5' }.to_json,
-      header_type:         'Custom',
-      id_field:            'id',
-      title_field:         'title',
-      # Vespa's schema-agnostic match-all query — YQL's equivalent of Solr's "*:*" or
-      # Elasticsearch's match_all. "sources *" searches every content source regardless
-      # of schema/field names, so this works against any Vespa app, not just this demo's
-      # "movies" schema. Used complete, as-is (see wizardModal.js's validate()) when the
-      # wizard validates the endpoint (ping-it) or discovers field names for the Fields
-      # step — substituting a real search term into query_params' #$query## placeholder
-      # instead would only surface fields from docs matching that specific term, and
-      # wouldn't generalize to a real user's own Vespa app/content.
-      test_query:          'yql=select * from sources * where true',
-      # Mirrors the existing TMDB demo convention used by the built-in Algolia preset
-      # (see settingsSvc.js's defaultSettings.algolia) — this is the same movie corpus.
-      additional_fields:   [ 'overview', 'cast', 'thumb:poster_path' ],
-      mapper_file:         'db/mapper_based_search_engines/vespa.js',
+      custom_headers:          { Authorization: 'Bearer vespa_cloud_TR8wpJb6M2x0TltmxqTdupqA20rcAI5tAEfqHWbvsx5' }.to_json,
+      header_type:             'Custom',
+      id_field:                'id',
+      title_field:             'title',
+      test_query:              'yql=select * from sources * where true',
+      additional_fields:       [ 'overview', 'cast', 'thumb:poster_path' ],
+      mapper_file:             'db/mapper_based_search_engines/vespa.js',
     }
   ].freeze
 
