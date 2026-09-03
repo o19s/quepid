@@ -160,14 +160,8 @@
             Peek at the next page of results
           </a>
         </span>
-        <span ng-if="selectedTry.searchEngine == 'solr'">
-          <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank" rel="noopener noreferrer">
-            <ng-pluralize count="query.numFound"
-                when="{'0': 'Browse {} Results on Solr',
-                       'one': 'Browse {} Result on Solr',
-                       'other': 'Browse {} Results on Solr'}">
-            </ng-pluralize>
-          </a>
+        <span ng-if="selectedTry.searchEngine == 'solr' || (selectedTry.searchEngine == 'searchapi' && selectedTry.apiMethod == 'GET')">
+          <browse-query query="query" selected-try="selectedTry"></browse-query>
         </span>
 
         <div ng-if="query.depthOfRating" class="alert alert-warning mb-0" role="alert">
@@ -192,14 +186,8 @@
             Peek at the next page of results
           </a>
         </span>
-        <span ng-if="selectedTry.searchEngine == 'solr'">
-          <a ng-show="query.state() !== 'error'" class="btn btn-primary" href="{{query.browseUrl()}}" target="_blank" rel="noopener noreferrer">
-            <ng-pluralize count="query.getNumFound()"
-                when="{'0': 'Browse {} Results on Solr',
-                       'one': 'Browse {} Result on Solr',
-                       'other': 'Browse {} Results on Solr'}">
-            </ng-pluralize>
-          </a>
+        <span ng-if="selectedTry.searchEngine == 'solr' || (selectedTry.searchEngine == 'searchapi' && selectedTry.apiMethod == 'GET')">
+          <browse-query query="query" selected-try="selectedTry"></browse-query>
         </span>
 
         <div class="alert alert-warning mb-0" role="alert">

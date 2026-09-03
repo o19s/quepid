@@ -72,6 +72,10 @@ class MapperBasedSearchEngine
     DEFINITIONS.map { |definition| new(definition) }
   end
 
+  def self.find id
+    all.find { |engine| engine.id == id }
+  end
+
   def mapper_code
     self.class.mapper_code_cache[mapper_file] ||= File.read(Rails.root.join(mapper_file))
   end

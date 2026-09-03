@@ -567,10 +567,15 @@ angular.module('QuepidApp')
             promises.push(self.searcher.search()
               .then(function() {
                             }, function(response) {
-                self.linkUrl = self.searcher.linkUrl;
+                // splainer-search only ever sets searcher.linkUrl for Solr (see
+                // solrSearcherPreprocessorSvc.js); for a GET-method searchapi engine
+                // (e.g. Vespa), searcher.url already holds the same fully-resolved,
+                // real request URL by the time search() settles, so fall back to it
+                // rather than patching the vendored library for one more engine.
+                self.linkUrl = self.searcher.linkUrl || self.searcher.url;
                 self.setDocs([], 0);
 
-                let msg = searchErrorTranslatorSvc.parseResponseObject(response, self.searcher.linkUrl, currSettings.searchEngine);
+                let msg = searchErrorTranslatorSvc.parseResponseObject(response, self.linkUrl, currSettings.searchEngine);
 
                 self.onError(msg);
                 reject(msg);
@@ -584,7 +589,7 @@ angular.module('QuepidApp')
             //promises.push(self.refreshRatedDocs());
 
             $q.all(promises).then( () => {
-              self.linkUrl = self.searcher.linkUrl;
+              self.linkUrl = self.searcher.linkUrl || self.searcher.url;
 
               if (self.searcher.inError) {
                 //self.docs.length = 0;

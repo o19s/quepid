@@ -71,6 +71,12 @@ class SearchEndpoint < ApplicationRecord
     name.presence || middle_truncate("#{search_engine.titleize} #{endpoint_url}")
   end
 
+  # mapper_based_search_engine_id is a plain string column (see DEFINITIONS in
+  # MapperBasedSearchEngine), not a foreign key, so this can't be a real belongs_to.
+  def mapper_based_search_engine
+    MapperBasedSearchEngine.find(mapper_based_search_engine_id)
+  end
+
   def mark_archived
     self.archived = true
   end
