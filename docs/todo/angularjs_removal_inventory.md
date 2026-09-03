@@ -25,7 +25,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 146 files, 141 register `angular.module` |
+| Angular JS source files (`app/assets/javascripts`) | 147 files, 142 register `angular.module` |
 | HTML templates (components + `app/assets/templates`) | 56 (33 component + 23 under `app/assets/templates`) |
 | Controllers | 59 (`.controller()` registrations; 27 files under `controllers/`) |
 | Services | 26 (`.service()` registrations; 27 files under `services/` — `quepidModalSvc.js` registers a factory) |
@@ -34,8 +34,8 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | Custom directives / components | 36 (26 `.directive()` + 10 `.component()`) |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 15 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 10 packages (+ `angular` core from npm) |
-| Karma unit specs (`spec/javascripts/angular`) | 37 |
-| Vitest unit specs (`app/javascript/**/*.test.js`) | 10 |
+| Karma unit specs (`spec/javascripts/angular`) | 38 |
+| Vitest unit specs (`app/javascript/**/*.test.js`) | 14 |
 | Playwright specs for the case UI | 2 Angular page specs + helpers + baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` |
 | Playwright specs for Stimulus pages | `stimulus_pages.spec.ts` (cases index import-case, bulk judge, mapper wizard); core share-case: `share_case_smoke.spec.ts` + `dom_migration_screenshots` |
 
@@ -121,7 +121,7 @@ Before markup or controller work:
 
 **Collapse anti-pattern (share-case):** one list-group `_share_case_modal` everywhere — Angular-equivalent on core but **changed** cases index/teams away from `<select>` + always-visible disabled footers. Conversely, putting the old `<select>` partial on core **changed** the case toolbar away from Angular.
 
-Agents: `.cursor/rules/angular-to-stimulus-port.mdc`; `.cursor/skills/angular-case-migration/SKILL.md`.
+Agents: this inventory doc is the migration playbook — see `CLAUDE.md`'s "Angular → Stimulus on core" rule and the per-surface checklist above.
 
 ### Category playbooks
 
@@ -660,7 +660,7 @@ Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (10 packages; see [vend
 
 ### Tests
 
-- **Karma:** 36 specs in `spec/javascripts/angular/` (incl. `bsStaticPopover`, `timeAgo`); loads all three Angular bundles + `angular-mocks`
+- **Karma:** 38 specs in `spec/javascripts/angular/` (incl. `bsStaticPopover`, `timeAgo`); loads all three Angular bundles + `angular-mocks`
 - **Vitest:** incl. `controllers/{share_case,share_case_core}_controller.test.js` and `utils/share_case_teams.js`
 - **Playwright (Angular core):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
 - **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case_smoke.spec.ts` — core toolbar share/unshare; `dom_migration_screenshots.spec.ts` — per-surface before/after shots (`share-case/` core, `share-case-rails/` index)

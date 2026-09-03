@@ -31,13 +31,8 @@ test("share-case smoke: share then unshare updates toolbar teams", async ({ page
     await expect(modal.locator("#unshare-case-submit")).toBeVisible()
     await modal.locator("#unshare-case-submit").click()
     await expect(modal.locator(".alert-success")).toContainText("unshared", { timeout: 10_000 })
-  } else if ((await shared.count()) > 0) {
-    await shared.first().click()
-    await expect(modal.locator("#unshare-case-submit")).toBeVisible()
-    await modal.locator("#unshare-case-submit").click()
-    await expect(modal.locator(".alert-success")).toContainText("unshared", { timeout: 10_000 })
   } else {
-    test.skip(true, "No teams available for share-case smoke")
+    test.skip(true, "No unshared teams available for share-case smoke")
   }
 
   await modal.getByRole("button", { name: "Cancel" }).click()

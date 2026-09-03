@@ -266,6 +266,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
   });
 
   test('share-case rails modal unshare selected', async ({ page }) => {
+    await ensureCaseSharedWithOneTeam(page, SHARE_CASE_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     const modal = await openCasesIndexShareModalForCase(page, SHARE_CASE_ID);
     const shared = modal.locator('#share-case-shared-list [data-team-id]').first();

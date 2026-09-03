@@ -1,7 +1,12 @@
 /**
  * Slim Stimulus entry for the Angular core case layout (`core.html.erb`).
  *
- * Loads controllers without Turbo / Ahoy / CodeMirror from `application_modern.js`,
- * so toolbar twins (share-case-core, …) can run beside QuepidApp.
+ * Registers only the controllers `core.html.erb` actually renders, instead of
+ * `controllers/index.js`'s `eagerLoadControllersFrom` (which would import every
+ * pinned controller, Rails-only ones like `confetti_controller.js` included) on
+ * this already-heavy Angular surface.
  */
-import "controllers"
+import { application } from "controllers/application"
+import ShareCaseCoreController from "controllers/share_case_core_controller"
+
+application.register("share-case-core", ShareCaseCoreController)

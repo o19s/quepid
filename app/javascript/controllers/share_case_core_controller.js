@@ -319,10 +319,28 @@ export default class extends Controller {
     } catch (error) {
       console.error("share-case-core: load teams failed", error)
       this.showAlert("Unable to load teams. Please try again.", "danger")
-      this.applyTeamLists([], [])
+      this.resetTeamListsForError()
     } finally {
       this.setLoading(false)
     }
+  }
+
+  resetTeamListsForError() {
+    this.allTeams = []
+    this.sharedTeams = []
+    this.renderShareableTeams([])
+    this.renderSharedTeams([])
+    if (this.hasEmptyShareableTarget) {
+      this.emptyShareableTarget.classList.add("d-none")
+    }
+    if (this.hasSharePickerTarget) {
+      this.sharePickerTarget.classList.add("d-none")
+    }
+    if (this.hasSharedSectionTarget) {
+      this.sharedSectionTarget.classList.add("d-none")
+    }
+    this.clearShareSelection()
+    this.clearSharedSelection()
   }
 
   applyTeamLists(allTeams, sharedTeams) {
