@@ -267,6 +267,32 @@ angular.module('QuepidApp')
         return nextArgs;
       }
 
+      /**
+       * A mapper (e.g. db/mapper_based_search_engines/vespa.js) may spread a per-field score
+       * breakdown onto each doc as matchfeatures (Vespa's convention, e.g. {"bm25(overview)":
+       * 5.07, "bm25(title)": 2.64}). The generic searchapi engine has no explain concept of
+       * its own (SearchApiDocFactory#explain always returns {}), so build a synthetic explain
+       * tree in the same {description, value, details} shape Solr/ES explains use — the
+       * engine-agnostic bar rendering (explainSvc/normalDocsSvc) picks it up identically to
+       * how it already does for Solr's real explain output. Returns undefined (falling back
+       * to "no explain for doc") when a doc has no matchfeatures to show.
+       */
+      function matchFeaturesExplain(doc) {
+        let matchFeatures = doc.matchfeatures;
+
+        if (!matchFeatures || Object.keys(matchFeatures).length === 0) {
+          return undefined;
+        }
+
+        return {
+          description: 'sum of matched fields:',
+          value: doc.fields ? doc.fields.score : undefined,
+          details: Object.keys(matchFeatures).map(function(fieldName) {
+            return { description: fieldName, value: matchFeatures[fieldName], details: [] };
+          })
+        };
+      }
+
       function normalizeDocExplains(query, searcher, fieldSpec) {
         let normed = [];
 
@@ -274,6 +300,10 @@ angular.module('QuepidApp')
           normed = esExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec);
         } else if (searcher.type === 'solr') {
           normed = solrExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec, searcher.othersExplained);
+        } else if (searcher.type === 'searchapi') {
+          normed = searcher.docs.map(function(doc) {
+            return normalDocsSvc.createNormalDoc(fieldSpec, doc, matchFeaturesExplain(doc));
+          });
         } else {
           // search engine with no explain output
           normed = searcher.docs.map(function(doc) {
@@ -530,7 +560,8 @@ angular.module('QuepidApp')
           let docList   = new DocListFactory(
             newDocs,
             fieldSpec,
-            that.ratingsStore
+            that.ratingsStore,
+            matchFeaturesExplain
           );
 
           that.docs = docList.list();
@@ -725,7 +756,7 @@ angular.module('QuepidApp')
               let ratingsStore  = self.ratingsStore;
               let docs          = self.searcher.docs;
               let fieldSpec     = currSettings.createFieldSpec();
-              let docList       = new DocListFactory(docs, fieldSpec, ratingsStore);
+              let docList       = new DocListFactory(docs, fieldSpec, ratingsStore, matchFeaturesExplain);
               self.docs         = self.docs.concat(docList.list());
             }, function(response) {
               $log.debug('Failed to load search: ', response);
