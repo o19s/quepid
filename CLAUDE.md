@@ -18,7 +18,7 @@
 
 - The core case app is built using AngularJS 1.8 but we are in the process of removing our AngularJS dependency.
 - In place of AngularJS we are using vanilla JS and StimulusJS along with various components of Hotwire, our goal is to have a modern Rails stack application.
-- **Angular → Stimulus on core:** per-surface equivalence — core matches Angular; Rails pages keep their prior UX. Do not collapse surfaces. Rule: `.cursor/rules/angular-to-stimulus-port.mdc`. Playbook: `.cursor/skills/angular-case-migration/SKILL.md`.
+- **Angular → Stimulus on core:** per-surface equivalence — core matches Angular; Rails pages keep their prior UX. Do not collapse surfaces. See `docs/todo/angularjs_removal_inventory.md` for the migration playbook and per-surface checklist.
 
 
 ## Backend
