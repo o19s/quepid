@@ -2,6 +2,13 @@
 
 # rubocop:disable Metrics/ModuleLength
 module ApplicationHelper
+  # Returns the Quepid application root URL (no trailing slash).
+  # Respects RAILS_RELATIVE_URL_ROOT so deployment under a subpath works.
+  # Exposed on <body> as data-quepid-root-url for Stimulus/JS navigation fallbacks.
+  def quepid_root_url
+    "#{request.base_url}#{request.script_name}".chomp('/')
+  end
+
   def book_title book
     if book.name.downcase.starts_with?('book')
       book.name.titleize

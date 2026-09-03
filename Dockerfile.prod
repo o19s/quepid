@@ -3,7 +3,7 @@
 
 # This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
 # docker build -t quepid .
-# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name quepid quepid
+# docker run -d -p 80:3000 -e RAILS_MASTER_KEY=<value from config/master.key> --name quepid quepid
 
 # For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
 
@@ -24,12 +24,20 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment variables and enable jemalloc for reduced memory usage and latency.
+# PORT matches the EXPOSE below - without it, Foreman (which runs the Procfile) picks its own
+# default of 5000 for the web process, pre-empting Puma's own ENV.fetch("PORT", 3000) fallback.
+#
+# Don't set SECRET_KEY_BASE here: ENV values are baked into image layers/history for
+# anyone to read, and BuildKit's SecretsUsedInArgOrEnv lint (a hard error via the
+# `check=error=true` directive above) rejects it. See bin/docker-entrypoint for the
+# runtime fallback instead.
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development test" \
     LD_PRELOAD="/usr/local/lib/libjemalloc.so" \
-    PUPPETEER_SKIP_DOWNLOAD="true"
+    PUPPETEER_SKIP_DOWNLOAD="true" \
+    PORT="3000"
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build
@@ -40,7 +48,7 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install JavaScript dependencies
-ARG NODE_VERSION=24.18.1
+ARG NODE_VERSION=24.20.0
 ARG YARN_VERSION=1.22.22
 ENV PATH=/usr/local/node/bin:$PATH
 RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \
@@ -61,6 +69,14 @@ RUN yarn install --production --frozen-lockfile
 
 # Copy application code
 COPY . .
+
+# config/database.yml is gitignored (holds no secrets - real config comes from
+# DATABASE_URL/DB_ADAPTER at runtime - but is generated locally by bin/setup*,
+# which this image doesn't run). Fall back to the checked-in sample so Rails
+# has a database.yml to parse; asset precompilation below boots the full app
+# without DATABASE_URL set, and Rails raises if database.yml is missing
+# entirely rather than falling back to DATABASE_URL alone.
+RUN if [ ! -f config/database.yml ]; then cp config/database.yml.sample config/database.yml; fi
 
 # Precompile bootsnap code for faster boot times.
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
@@ -85,7 +101,7 @@ FROM base
 ENV QUEPID_VERSION=$QUEPID_VERSION_VARIABLE
 
 # Install Node.js and yarn in final image for asset recompilation for nested paths /quepid at runtime
-ARG NODE_VERSION=24.18.1
+ARG NODE_VERSION=24.20.0
 ARG YARN_VERSION=1.22.22
 ENV PATH=/usr/local/node/bin:$PATH
 RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \
@@ -106,6 +122,14 @@ COPY --chown=rails:rails --from=build /rails /rails
 
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
+
+# Holds the SQLite database (when DATABASE_URL selects sqlite3) and local Active Storage
+# uploads. Without an explicit -v/--mount for this path, Docker still gives it a managed
+# anonymous volume rather than the container's own writable layer - so data written here
+# survives a `docker rm` by accident, recoverable via `docker volume ls`, instead of being
+# silently gone. For real persistence across container recreation you still want an
+# explicit named volume or bind mount; this is a safety net, not a substitute for that.
+VOLUME /rails/storage
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000

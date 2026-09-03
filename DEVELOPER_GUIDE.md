@@ -56,6 +56,8 @@ This guide provides detailed instructions for developers who want to set up, run
 	- [Modifying the database](#modifying-the-database)
 	- [Updating RubyGems](#updating-rubygems)
 	- [How does the Frontend work?](#how-does-the-frontend-work)
+		- [Stimulus HTTP conventions](#stimulus-http-conventions)
+		- [AngularJS code comments](#angularjs-code-comments)
 	- [Fonts](#fonts)
 	- [How to develop Jupyterlite](#how-to-develop-jupyterlite)
 	- [How do Personal Access Tokens work?](#how-do-personal-access-tokens-work)
@@ -64,6 +66,7 @@ This guide provides detailed instructions for developers who want to set up, run
 		- [Docker Container Won't Start](#docker-container-wont-start)
 		- [Slow Docker Performance](#slow-docker-performance)
 	- [Database Issues](#database-issues)
+		- [Choosing a database adapter](#choosing-a-database-adapter)
 		- [Database Connection Errors](#database-connection-errors)
 		- [Migration Errors](#migration-errors)
 	- [Frontend Issues](#frontend-issues)
@@ -83,6 +86,8 @@ This guide provides detailed instructions for developers who want to set up, run
 ## I. Setting up Quepid to do Development
 
 Historically Quepid development has REQUIRED Docker, which avoids having to deal with installing dependencies like Ruby and MySQL. However, we recently made some tweaks so you can do development without using Docker, which may fit some folks much better.
+
+Quepid supports two database adapters: **MySQL** (the default for development and test) and **SQLite** (the production fallback when `DATABASE_URL` is unset, with no separate database server to install or run). Set `DB_ADAPTER=sqlite3` in your `.env` file (or export it before running `bin/docker`/`bin/rails` commands) to opt into SQLite for development and test; leave it unset to use MySQL. See [Choosing a database adapter](#choosing-a-database-adapter) below.
 
 ### Docker Based Setup
 
@@ -130,7 +135,7 @@ You can still use `docker compose` directly, but for the basic stuff you can use
 * Run any command: `bin/docker run [COMMAND]` or `bin/docker r [COMMAND]`
 * Run dev mode as daemon: `bin/docker daemon` or `bin/docker q`
 * Destroy the Docker env: `bin/docker destroy` or `bin/docker d`
-* Run front end unit tests: `bin/docker r rails test:frontend`
+* Run front end unit tests: `bin/docker r rails test:vitest` (Vitest) or `bin/docker r rails test:frontend` (Vitest + Karma + linters)
 * Run back end unit tests: `bin/docker r rails test`
 
 ### Local Setup
@@ -145,11 +150,13 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 3. **Yarn**: Install Yarn package manager.
 
-4. **MySQL**: Install MySQL 8.0 or later.
+4. **Database**: By default Quepid uses MySQL, matching production - install MySQL 8.0+. If you'd rather avoid running a database server locally, set `DB_ADAPTER=sqlite3` in your `.env` file instead - the `sqlite3` gem is enough, no separate install needed.
 
 #### Database Setup
 
-1. Start up MySQL however you like.  Some folks set up Quepid with Docker, and then 
+With the default MySQL adapter, start up MySQL however you like first (some folks set up just the `mysql` container with `docker compose up -d mysql` and run everything else locally).
+
+If you set `DB_ADAPTER=sqlite3`, there's nothing to start up separately - `bin/setup` (below) creates `storage/development.sqlite3` for you.
 
 
 #### Application Setup
@@ -166,7 +173,7 @@ bundle install
 bin/setup
 ```
 
-We assume a `root` database user with the password `password`.  If your password is different you will need to edit the `.env` file created after running the setup steps.
+With the default MySQL adapter, we assume a `root` database user with the password `password`.  If your password is different you will need to edit the `.env` file created after running the setup steps.
 
 This will install node and yarn, set up the database, run migrations, and seed initial data and then start Rails.
 
@@ -186,7 +193,8 @@ Run the test suite:
 
 ```bash
 bin/rails test                # Run backend tests
-bin/rails test:frontend       # Run frontend tests
+bin/rails test:vitest         # Vitest (app/javascript)
+bin/rails test:frontend       # Vitest + Karma + linters
 bundle exec rubocop           # Run Ruby linter
 ```
 
@@ -273,7 +281,7 @@ tail -f log/test.log
 
 ### Pre-commit hooks
 
-Git commits run RuboCop (Ruby) and JSHint (JavaScript in `app/assets/javascripts/`) via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn/JSHint).
+Git commits run RuboCop (Ruby), JSHint (`app/assets/javascripts/`), ESLint on the modern `app/javascript/` tree, and Prettier on `app/javascript/api/` and `utils/` only — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
 
 Hooks prefer Docker when it is available (`bin/docker r`), matching the usual Quepid development workflow.
 
@@ -296,24 +304,38 @@ Run linters directly:
 ```bash
 bin/pre-commit-rubocop path/to/file.rb
 bin/pre-commit-jshint path/to/file.js
+bin/eslint-staged path/to/app/javascript/file.js
+bin/prettier-staged path/to/app/javascript/file.js
 ```
 
 ### JS Lint
 
-To check the JS syntax:
+**Legacy Angular assets** (`app/assets/javascripts/`) — JSHint:
 
 ```bash
 bin/docker r rails test:jshint
 ```
 
-Git commits can run JSHint on staged app JS via [pre-commit](https://pre-commit.com/):
+**Modern importmap / Stimulus** (`app/javascript/`) — ESLint on the full modern tree; Prettier on `api/` and `utils/` only (see [`docs/js_tooling.md`](docs/js_tooling.md)):
+
+```bash
+bin/docker r yarn lint:js
+bin/docker r yarn format:js:check    # Prettier check — api/ and utils/ only; or yarn format:js to fix
+bin/docker r yarn test:unit          # Vitest (app/javascript)
+bin/docker r rails test:vitest       # same as yarn test:unit
+bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
+```
+
+**Vitest PR policy:** new or changed logic in `api/` or `utils/` → colocated `*.test.js` in the same PR. Controllers → test when you touch them for migration, not a blanket rewrite.
+
+Git commits can run linters on staged JS via [pre-commit](https://pre-commit.com):
 
 ```bash
 pip install pre-commit   # or: pipx install pre-commit
 pre-commit install
 ```
 
-The hook lints only staged `*.js` files under `app/assets/javascripts` (same path and skips as `rake test:jshint` — `lib/jshint/configuration.rb` excludes `vendor/assets/javascripts` and `lib/assets/javascripts` from the default search paths, so those are deliberately not linted by either). Requires `yarn install` on the host so `node_modules/jshint` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
+The hook lints staged `*.js` under `app/assets/javascripts` (JSHint) and scoped files under `app/javascript` (ESLint on controllers/modules/etc.; Prettier on `api/` and `utils/` only). JSHint paths and skips match `rake test:jshint` — `lib/jshint/configuration.rb` excludes `vendor/assets/javascripts` and `lib/assets/javascripts` from the default search paths. Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
 
 ### CSS Lint
 
@@ -364,20 +386,29 @@ bin/docker r npx playwright install chromium
 
 Environment variables (all optional, sensible defaults baked in):
 
-* `QUEPID_BASE_URL` — defaults to `http://localhost:33000` (`docker-compose`'s published port). Override for a different host/port, e.g. `QUEPID_BASE_URL=http://localhost:3000` if your setup exposes the app there directly instead of through nginx.
+* `QUEPID_BASE_URL` — defaults to `http://localhost:33000` (`docker-compose`'s published port). Override for a different host/port, e.g. `QUEPID_BASE_URL=http://localhost:3000` if your setup exposes the app there directly instead of through nginx. With `RAILS_RELATIVE_URL_ROOT`, include the subpath (e.g. `http://localhost:33000/quepid-app`); `test/playwright/env.ts` normalizes a trailing slash so relative `page.goto()` paths resolve under the mount.
 * `QUEPID_E2E_EMAIL` / `QUEPID_E2E_PASSWORD` — sign-in credentials used by `auth.setup.ts`, default to the same sandbox login CLAUDE.md documents for the Playwright MCP flow (`quepid+realisticactivity@o19s.com` / `password`). The resulting session is cached at `test/playwright/.auth/user.json` (gitignored).
 * `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `1`. **Must be a case with queries** — if your seed data's case 1 has none, the shared `gotoCase()` helper (`test/playwright/angular_case_helpers.ts`) times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data, e.g. `QUEPID_E2E_CASE_ID=5`.
 
 Structure:
 
 * `core_smoke.spec.ts`, `angular_pages.spec.ts`, `angular_pages_narrow_viewport.spec.ts` — golden-path interaction screenshots (`toHaveScreenshot`) across modals, dropdowns, and the wizard, at desktop and narrow viewports.
+* `stimulus_pages.spec.ts` — smoke and interaction tests for Stimulus pages (cases import modal redirect, bulk judgement save via routed API, mapper wizard) on the `application` layout.
 * `popover_visibility.spec.ts` — computed-style assertions catching invisible-but-present popovers (see the BS5-on-`core` traps documented in CLAUDE.md).
 * `modal_a11y.spec.ts` — axe accessibility smoke test on a modal.
 * `case_header_typography.spec.ts` — a non-screenshot, computed-style assertion.
 
 Baseline screenshots live under `test/playwright/baselines/` and **are checked into git** (unlike `test/playwright/test-results/` and `playwright-report/`, which are runtime output and gitignored) — a missing baseline fails its test with "no baseline found" rather than silently passing. When you add a new `toHaveScreenshot()` call or intentionally change a screen's appearance, run `test:e2e:update-baselines` and `git add` the resulting PNGs.
 
-Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.ts`) because they share case state in MySQL and a single authenticated session — don't assume they're safe to parallelize without addressing that first.
+Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.ts`) because they share case state in the database (whichever adapter the dev server is running against) and a single authenticated session — don't assume they're safe to parallelize without addressing that first.
+
+**Ad-hoc screenshot review** (Playwright MCP captures, migration proofs, etc.) land in `.playwright-mcp/` (gitignored). To browse them side by side with byte/pixel diff highlighting:
+
+```bash
+yarn screenshots:view
+```
+
+Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — pairs `*-before.png` / `*-after.png`, flags **byte-identical** pairs at manifest generation time, and runs a **pixel diff** in the browser (magenta overlay + diff map) when bytes differ. Sidebar badges: `byte =` (identical files), `bytes ≠` / `diff` (changed), `pixel =` (same image, different PNG encoding). Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`.
 
 ### Rubocop
 
@@ -401,6 +432,7 @@ If you want to run all of the tests in one go (before you commit and push for ex
 
 ```bash
 bin/docker r rails test
+bin/docker r rails test:vitest
 bin/docker r rails test:frontend
 ```
 
@@ -556,8 +588,10 @@ bin/docker r bin/rails routes
 
 # tests
 bin/docker r rails test
+bin/docker r rails test:vitest
 bin/docker r rails test:frontend
 bin/docker r bin/rake test:jshint
+bin/docker r rails test:eslint
 bin/docker r bin/rake test:stylelint
 ```
 
@@ -801,6 +835,16 @@ The Angular **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5
 
 For the rest of Quepid, we use Bootstrap 5 via npm; the non-Angular UI loads it through `app/javascript/application_modern.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the Angular core bundle and CSS).
 
+### Stimulus HTTP conventions
+
+Normative patterns for **new** client code on Rails pages (teams, books, admin, …). Legacy Angular patterns on `/case/...` live in [`docs/todo/angularjs_removal_inventory.md`](docs/todo/angularjs_removal_inventory.md#angular-core-http-patterns-legacy).
+
+- **Server owns URLs.** Pass Rails path helpers or `url_for` into Stimulus as `data-*-url-value` attributes (see `mapper_wizards/show.html.erb`, `mapper_wizard_controller.js`). For forms, use `this.formTarget.action` (`import_case_controller.js`). Never hardcode `/` or absolute site-root paths for navigation.
+- **CSRF on mutating requests.** Layouts include `csrf_meta_tags`. Use `apiFetch` from `app/javascript/api/fetch.js` (importmap: `api/fetch`) so `X-CSRF-Token` is added automatically. For form submits (e.g. `confirm_delete_controller.js`), use `authenticity_token` instead.
+- **`fetch` shape:** `POST`/`PUT`/`DELETE` with `Content-Type: application/json`, the CSRF header, and `JSON.stringify` body. Check `response.ok`; on failure, parse JSON with `.catch(() => ({}))` before surfacing `data.message`, `data.error`, or `response.statusText`.
+- **REST vs HTML routes.** JSON under `/api/...` is the REST surface ([OpenAPI](/api/docs), [`docs/QUEPID_FEATURES.md` §23](docs/QUEPID_FEATURES.md#23-api-surface)). Some Stimulus controllers hit **HTML JSON endpoints** instead (bulk judge, mapper wizard) — still prefer server-generated URLs over paths built in JS.
+- **Subpath deployments.** Layouts set `data-quepid-root-url` on `<body>` via `quepid_root_url`. Use `getQuepidRootUrl()` from `utils/quepid_root` only when navigation cannot be a server-rendered URL (e.g. redirect after import). Prefer `data-*-url-value` for API endpoints.
+
 ## Fonts
 
 The *aller* font face is from FontSquirrel, and the .ttf is converted into .woff2 format.  
@@ -862,12 +906,23 @@ This section covers common issues you might encounter during development and how
 
 ## Database Issues
 
+### Choosing a database adapter
+
+Quepid defaults to **MySQL**, matching production. Set `DB_ADAPTER=sqlite3` in `.env` (or export it before running `bin/docker`/`bin/rails` commands) to use SQLite instead (`storage/development.sqlite3` / `storage/test.sqlite3`) - nothing to start up separately. Both are exercised in CI (`.github/workflows/test.yml`), and the production Docker image (`Dockerfile.prod`) carries the `sqlite3` gem too, so it can run against either adapter via `DATABASE_URL`.
+
+Known SQLite-specific behavior to be aware of:
+- SQLite's default text comparison is already case-sensitive, matching the case-sensitive collation MySQL uses for `query_text` columns - no configuration needed.
+- SQLite runs in WAL mode by default (readers don't block writers), and `config/database.yml`'s `timeout:` gives a busy connection a retry window before failing - but SQLite still allows only one writer at a time. Solid Queue's Dispatcher, Scheduler, and Worker processes all register themselves in the queue tables within the same window at boot, so an occasional `SQLite3::BusyException` there is expected, not a bug. Solid Queue's supervisor detects and restarts a process that dies this way automatically, so it shows up as noisy startup logs, not a lasting failure. Don't raise `WEB_CONCURRENCY` or `JOB_CONCURRENCY` above their defaults (0 and 1) when running SQLite - each adds another process writing to the same single file, which only makes this worse.
+- `docker-compose.yml`'s `app` service still declares `depends_on: mysql`, so the `mysql` container starts (and Docker waits for it to be healthy) even when `DB_ADAPTER` is set to `sqlite3`. It's unused in that case, just an idle extra container - not a functional problem, but not the "zero extra infrastructure" experience SQLite is meant to give either. Making that dependency conditional (e.g. via Compose profiles) is a reasonable follow-up if it becomes annoying.
+- A handful of tests that depend on MySQL-only behavior (e.g. VARCHAR length enforcement, which SQLite doesn't have) are skipped when running against SQLite - see `AdapterFunctions.mysql?` usage in `test/`.
+- `db/schema.rb` is authored from MySQL and carries MySQL-specific `charset:`/`collation:`/`size:` options; `config/initializers/sqlite3_schema_compatibility.rb` makes SQLite tolerant of loading it. **Don't run `db:migrate` (or anything that dumps schema) with `DB_ADAPTER=sqlite3`** - Rails' `dump_schema_after_migration` (on by default outside production) would regenerate `db/schema.rb` from the SQLite connection instead, stripping those MySQL options for everyone. Author migrations and regenerate `db/schema.rb` against MySQL; use SQLite only for running the app/tests against an already-committed schema.
+
 ### Database Connection Errors
 
-**Symptom**: Rails can't connect to MySQL database.
+**Symptom**: Rails can't connect to the database.
 
 **Solutions**:
-1. Verify MySQL is running:
+1. With the default MySQL adapter, verify the container is running:
    ```bash
    docker compose ps mysql
    ```

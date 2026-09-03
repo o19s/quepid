@@ -29,7 +29,6 @@ angular.module('QuepidApp')
       }
 
       var events = [
-        'bootstrapped',
         'caseRenamed',
         'deepCaseListUpdated',
         'settings-updated',

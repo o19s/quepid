@@ -192,7 +192,7 @@ module Api
         base_query.includes(:owner, :book).preload(:tries, :teams, :cases_teams)
           .left_outer_joins(:metadata) # this is slow!
           .select('cases.*, case_metadata.last_viewed_at')
-          .order(Arel.sql('`case_metadata`.`last_viewed_at` DESC, `cases`.`updated_at` DESC'))
+          .order(Arel.sql('case_metadata.last_viewed_at DESC, cases.updated_at DESC'))
       end
 
       def base_query

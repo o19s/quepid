@@ -28,18 +28,25 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
+    "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.49.0",
     "angular-mocks": "~1.8.3",
     "chokidar": "5.0.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.4.0",
     "jasmine-core": "6.3.0",
     "jshint": "2.13.6",
     "karma": "^6.4.1",
     "karma-chrome-launcher": "3.2.0",
     "karma-jasmine": "5.1.0",
+    "prettier": "^3.6.2",
     "puppeteer": "^25.2.0",
     "purgecss": "^8.0.0",
     "stylelint": "^17.0.0",
-    "stylelint-config-standard": "^40.0.0"
+    "stylelint-config-standard": "^40.0.0",
+    "happy-dom": "^20.0.10",
+    "vitest": "^3.2.4"
   },
   "resolutions": {},
   "scripts": {
@@ -47,7 +54,7 @@
     "build:angular-vendor": "esbuild app/javascript/angular_app.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets --loader:.css=css --loader:.png=dataurl --loader:.svg=dataurl --loader:.woff=dataurl --loader:.woff2=dataurl --loader:.ttf=dataurl --loader:.eot=dataurl --external:jquery",
     "build:angular-app": "node build_angular_app.js",
     "build:angular-app:watch": "node build_angular_app.js --watch",
-    "build:angular": "npm run build:angular-vendor && npm run build:angular-app",
+    "build:angular": "yarn build:angular-vendor && yarn build:angular-app",
     "build:angular-templates": "node build_templates.js",
     "build:angular-templates:watch": "node build_templates.js --watch",
     "build:analytics": "esbuild app/javascript/analytics.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets",
@@ -56,10 +63,16 @@
     "audit:css": "node audit_css.js",
     "audit:css:host": "mkdir -p tmp/css-audit-host && CSS_AUDIT_DIR=tmp/css-audit-host node audit_css.js",
     "lint:css": "stylelint \"app/assets/stylesheets/**/*.css\"",
+    "lint:js": "eslint app/javascript",
+    "format:js": "node scripts/javascript_lint.mjs write",
+    "format:js:check": "node scripts/javascript_lint.mjs check",
     "build": "yarn build:css && yarn build:jquery && yarn build:angular-vendor && yarn build:angular-app && yarn build:angular-templates && yarn build:analytics",
     "test": "rake karma:run",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
     "test:e2e": "playwright test --config test/playwright/playwright.config.ts",
     "test:e2e:update-baselines": "playwright test --config test/playwright/playwright.config.ts --update-snapshots",
-    "test:e2e:ui": "playwright test --config test/playwright/playwright.config.ts --ui"
+    "test:e2e:ui": "playwright test --config test/playwright/playwright.config.ts --ui",
+    "screenshots:view": "node test/playwright/screenshot-viewer-server.mjs"
   }
 }

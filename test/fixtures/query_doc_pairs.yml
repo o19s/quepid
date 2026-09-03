@@ -30,7 +30,7 @@ one:
   position: 1
   doc_id: "MyDocA"
   document_fields: '{"title":"MyText"}'
-  book: one
+  book: book_for_orphan_query_doc_pairs
   options:
     special_boost: 3.1
 
@@ -39,7 +39,7 @@ two:
   position: 2
   doc_id: "MyDocB"
   document_fields: '{"title":"MyText"}'
-  book: two
+  book: book_for_orphan_query_doc_pairs
 
 jbm_qdp1:
   query_text: Best Bond Ever

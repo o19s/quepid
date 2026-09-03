@@ -52,7 +52,7 @@ class SearchEndpoint < ApplicationRecord
   # Encryption
   encrypts :basic_auth_credential, deterministic: false
 
-  scope :not_archived, -> { where('`search_endpoints`.`archived` = false') }
+  scope :not_archived, -> { where(archived: false) }
 
   after_initialize do |se|
     se.archived = false if se.archived.nil?

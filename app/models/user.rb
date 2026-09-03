@@ -210,7 +210,7 @@ class User < ApplicationRecord
 
   # Scopes
   # default_scope -> { includes(:permissions) }
-  scope :only_ai_judges, -> { where('`users`.`llm_key` IS NOT NULL') }
+  scope :only_ai_judges, -> { where.not(llm_key: nil) }
 
   # Lets get STI in and have actual AiJudge and User objects!
   # Reads the raw column to avoid triggering Active Record encryption, which

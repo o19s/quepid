@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Lint staged JS under app/javascript (scope: config/javascript_lint_scope.mjs).
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ESLINT="./node_modules/.bin/eslint"
+FILTER=(node scripts/filter_javascript_lint_paths.mjs)
+
+if [[ $# -eq 0 ]]; then
+  exit 0
+fi
+
+cd "$ROOT"
+
+files=()
+while IFS= read -r line; do
+  [[ -n "$line" ]] && files+=("$line")
+done < <("${FILTER[@]}" "$@")
+if [[ ${#files[@]} -eq 0 ]]; then
+  exit 0
+fi
+
+if docker info >/dev/null 2>&1; then
+  exec bin/docker r "$ESLINT" "${files[@]}"
+fi
+
+if [[ ! -x "$ROOT/node_modules/.bin/eslint" ]]; then
+  echo "eslint not found; run: yarn install (or bin/docker r yarn install)" >&2
+  exit 1
+fi
+
+exec "$ROOT/node_modules/.bin/eslint" "${files[@]}"

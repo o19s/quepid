@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Run RuboCop and JSHint on staged files before commit.
+# Run RuboCop, JSHint (legacy Angular assets), ESLint + Prettier (app/javascript).
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 ruby_files=()
-js_files=()
+legacy_js_files=()
+modern_js_files=()
 
 while IFS= read -r file; do
   [[ -z "$file" ]] && continue
@@ -17,15 +18,25 @@ while IFS= read -r file; do
       ruby_files+=("$file")
       ;;
     app/assets/javascripts/*.js)
-      js_files+=("$file")
+      legacy_js_files+=("$file")
       ;;
   esac
+
+  # Any depth under app/javascript/; eslint-staged/prettier-staged filter scope.
+  if [[ "$file" == *.js && "${file#app/javascript/}" != "$file" ]]; then
+    modern_js_files+=("$file")
+  fi
 done < <(git diff --cached --name-only --diff-filter=ACM)
 
 if [[ ${#ruby_files[@]} -gt 0 ]]; then
   bin/pre-commit-rubocop "${ruby_files[@]}"
 fi
 
-if [[ ${#js_files[@]} -gt 0 ]]; then
-  bin/pre-commit-jshint "${js_files[@]}"
+if [[ ${#legacy_js_files[@]} -gt 0 ]]; then
+  bin/pre-commit-jshint "${legacy_js_files[@]}"
+fi
+
+if [[ ${#modern_js_files[@]} -gt 0 ]]; then
+  bin/eslint-staged "${modern_js_files[@]}"
+  bin/prettier-staged "${modern_js_files[@]}"
 fi

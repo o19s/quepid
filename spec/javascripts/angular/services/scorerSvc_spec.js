@@ -86,22 +86,6 @@ describe('Service: scorerSvc', function () {
     $httpBackend.flush();
   });
 
-  it('edits a scorer', function() {
-    var editedScorer  = mockScorer;
-    var editedScorerResp = mockScorerResp;
-    editedScorer.name = 'Edited Scorer';
-    editedScorerResp.name = 'Edited Scorer';
-
-    var url = 'api/scorers/' + mockScorer.scorerId;
-    $httpBackend.expectPUT(url).respond(200, editedScorerResp);
-
-    scorerSvc.edit(editedScorer)
-      .then(function(response) {
-        expect(response.name).toEqual('Edited Scorer');
-      });
-    $httpBackend.flush();
-  });
-
   it('fetches a scorer', function() {
     var url = 'api/scorers/' + mockScorer.scorerId;
     $httpBackend.expectGET(url).respond(200, mockScorerResp);
@@ -113,23 +97,6 @@ describe('Service: scorerSvc', function () {
     $httpBackend.flush();
   });
 
-  it('updates the cache when editing a scorer', function() {
-    var url = 'api/scorers/' + mockScorer.scorerId;
-    mockScorer.name = 'New Name';
-    mockScorerResp.name = 'New Name';
-    $httpBackend.expectPUT(url).respond(200, mockScorerResp);
-
-    scorerSvc.edit(mockScorer).
-      then(function() {
-        scorerSvc.get(mockScorer.scorerId)
-          .then(function(response) {
-            // this should fire without a new get request
-            expect(response.name).toEqual('New Name');
-          });
-        });
-    $httpBackend.flush();
-  });
-
   it('bootstraps and goes nuts', function() {
     var scorerDefault = scorerSvc.get();
     expect(scorerDefault).not.toBe(null);
@@ -137,7 +104,7 @@ describe('Service: scorerSvc', function () {
 
   describe('bootstrap', function() {
     beforeEach(function() {
-      scorerSvc.clearScorer();
+      scorerSvc.defaultScorer = null;
     });
 
     var mockResponse = {

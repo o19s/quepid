@@ -66,10 +66,36 @@ namespace :test do
   desc 'Run js/karma tests (equivalent of karma:run)'
   task 'js' => 'karma:run'
 
-  desc 'Run all frontend tasks: test:js, test:jshint, test:stylelint'
+  desc 'Run Vitest unit tests for app/javascript (see vitest.config.js)'
+  task vitest: :environment do
+    puts '-' * 100
+    puts 'Starting Vitest (app/javascript)'.yellow
+
+    vitest = Rails.root.join('node_modules/.bin/vitest')
+    unless vitest.executable?
+      puts 'Vitest not found; run: yarn install (or bin/docker r yarn install)'.red
+      puts '-' * 100
+      exit false
+    end
+
+    success = system(vitest.to_s, 'run', chdir: Rails.root.to_s)
+
+    if success
+      puts 'Vitest passed!'.green
+      puts '-' * 100
+    else
+      puts 'Vitest failed!'.red
+      puts '-' * 100
+      exit false
+    end
+  end
+
+  desc 'Run all frontend tasks: test:vitest, test:js, test:jshint, test:eslint, test:stylelint'
   task frontend: :environment do
+    Rake::Task['test:vitest'].invoke
     Rake::Task['test:js'].invoke
     Rake::Task['test:jshint'].invoke
+    Rake::Task['test:eslint'].invoke
     Rake::Task['test:stylelint'].invoke
   end
 
@@ -88,6 +114,39 @@ namespace :test do
     else
       puts 'JSHint tests passed!'.green
       puts '-' * 100
+    end
+  end
+
+  desc 'Run ESLint on app/javascript (see eslint.config.mjs)'
+  task eslint: :environment do
+    puts '-' * 100
+    puts 'Starting ESLint (app/javascript)'.yellow
+
+    eslint = Rails.root.join('node_modules/.bin/eslint')
+    unless eslint.executable?
+      puts 'ESLint not found; run: yarn install (or bin/docker r yarn install)'.red
+      puts '-' * 100
+      exit false
+    end
+
+    eslint_success = system(eslint.to_s, 'app/javascript', chdir: Rails.root.to_s)
+
+    prettier_script = Rails.root.join('scripts/javascript_lint.mjs')
+    unless prettier_script.exist?
+      puts 'scripts/javascript_lint.mjs not found'.red
+      puts '-' * 100
+      exit false
+    end
+
+    prettier_success = system('node', prettier_script.to_s, 'check', chdir: Rails.root.to_s)
+
+    if eslint_success && prettier_success
+      puts 'ESLint and Prettier checks passed!'.green
+      puts '-' * 100
+    else
+      puts 'ESLint or Prettier failed!'.red
+      puts '-' * 100
+      exit false
     end
   end
 

@@ -2,6 +2,11 @@
 
  /*jslint latedef:false*/
 
+/**
+ * Multi-step wizard modal for configuring a new or existing case's search endpoint, static corpus,
+ * import paths, and related options before entering the main queries UI.
+ */
+
 angular.module('QuepidApp')
   .controller('WizardModalCtrl', [
     '$rootScope', '$scope', '$quepidModalInstance', '$log', '$window', '$location',

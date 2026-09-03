@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { apiFetch } from "api/fetch"
 
 export default class extends Controller {
   static targets = [
@@ -135,11 +136,10 @@ export default class extends Controller {
     this.showStatus(`Fetching via ${httpMethod}...`, "info")
 
     try {
-      const response = await fetch(this.fetchUrlValue, {
+      const response = await apiFetch(this.fetchUrlValue, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           search_url: url,
@@ -181,11 +181,10 @@ export default class extends Controller {
     this.showStatus("Generating mapper functions with AI... This may take a moment.", "info")
 
     try {
-      const response = await fetch(this.generateUrlValue, {
+      const response = await apiFetch(this.generateUrlValue, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({ api_key: apiKey })
       })
@@ -261,11 +260,10 @@ export default class extends Controller {
     this.setButtonLoading(button, true)
 
     try {
-      const response = await fetch(this.testUrlValue, {
+      const response = await apiFetch(this.testUrlValue, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           mapper_type: mapperType,
@@ -359,11 +357,10 @@ export default class extends Controller {
     this.showStatus(`Refining ${mapperType} with AI...`, "info")
 
     try {
-      const response = await fetch(this.refineUrlValue, {
+      const response = await apiFetch(this.refineUrlValue, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           mapper_type: mapperType,
@@ -432,11 +429,10 @@ export default class extends Controller {
       : []
 
     try {
-      const response = await fetch(this.saveUrlValue, {
+      const response = await apiFetch(this.saveUrlValue, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": this.getCSRFToken()
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           name: name,
@@ -537,9 +533,5 @@ export default class extends Controller {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
-  }
-
-  getCSRFToken() {
-    return document.querySelector('meta[name="csrf-token"]')?.content
   }
 }

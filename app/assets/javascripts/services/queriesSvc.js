@@ -2,9 +2,11 @@
 
 /* jslint latedef:false */
 
-// Responsible for managing individual queries
-// so its a starting point for a lot of functionality...
-// .... (as you can tell by the dependencies)
+/**
+ * Central service for query lifecycle: in-memory `Query` objects, search against the current try
+ * (or snapshots), scoring, diffs, ratings, book sync, and bulk operations (`searchAll`, persist, reorder).
+ * Most of the interactive case page depends on this service and `settingsSvc`.
+ */
 angular.module('QuepidApp')
   .service('queriesSvc', [
     '$rootScope',
@@ -118,6 +120,10 @@ angular.module('QuepidApp')
         svc.scoreAll();
       });
 
+      /**
+       * Builds a splainer-search Searcher from the active try's settings and a `Query`, including
+       * engine-specific behavior (proxy URL, static engine, searchapi mapper functions, rated-doc filters).
+       */
       function createSearcherFromSettings(passedInSettings, query, options) {
         let queryText = query.queryText;
         let args = angular.copy(passedInSettings.selectedTry.args) || {};
@@ -270,9 +276,12 @@ angular.module('QuepidApp')
         }
       }
 
-      // ***********************************
-      // An individual search query that
-      // gets executed
+      /**
+       * An individual search query that gets executed.
+       *
+       * Per-query state: text, options, result documents, ratings store, search/snapshot runs, scoring,
+       * and notes/options sync with the REST API for this query id.
+       */
       let Query = function(queryWithRatings) {
         let self    = this;
 

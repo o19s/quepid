@@ -1,4 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
+import { apiFetch } from "api/fetch"
+import { getQuepidRootUrl } from "utils/quepid_root"
 
 export default class extends Controller {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner"]
@@ -48,11 +50,10 @@ export default class extends Controller {
       }
 
       // Send to API - wrap in 'case' key as expected by API
-      const response = await fetch(this.formTarget.action, {
+      const response = await apiFetch(this.formTarget.action, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ case: caseData })
       })
@@ -62,9 +63,9 @@ export default class extends Controller {
       if (response.ok) {
         this.showAlert('Case imported successfully! Redirecting...', 'success')
         setTimeout(() => {
-          // Redirect to the imported case or refresh the page
-          if (result.case_id) {
-            window.location.href = `/case/${result.case_id}`
+          const caseId = result.id ?? result.case_id
+          if (caseId) {
+            window.location.href = `${getQuepidRootUrl()}/case/${caseId}`
           } else {
             window.location.reload()
           }

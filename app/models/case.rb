@@ -21,9 +21,9 @@
 #
 # Indexes
 #
-#  idx_owner_archived   (owner_id,archived)
-#  index_cases_book_id  (book_id)
-#  user_id              (owner_id)
+#  idx_owner_archived       (owner_id,archived)
+#  index_cases_book_id      (book_id)
+#  index_cases_on_owner_id  (owner_id)
 #
 # Foreign Keys
 #
@@ -92,7 +92,7 @@ class Case < ApplicationRecord
   # Scopes
   include ForUserScope
 
-  scope :not_archived, -> { where('`cases`.`archived` = false OR `cases`.`archived` IS NULL') }
+  scope :not_archived, -> { where(archived: [ false, nil ]) }
 
   scope :active, -> { where(archived: false) }
   scope :archived, -> { where(archived: true) }

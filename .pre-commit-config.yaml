@@ -9,6 +9,18 @@ repos:
         language: script
         files: \.js$
         pass_filenames: true
+      - id: eslint-staged
+        name: eslint (app/javascript)
+        entry: bin/eslint-staged
+        language: script
+        files: ^app/javascript/.*\.js$
+        pass_filenames: true
+      - id: prettier-staged
+        name: prettier (app/javascript)
+        entry: bin/prettier-staged
+        language: script
+        files: ^app/javascript/.*\.js$
+        pass_filenames: true
       - id: stylelint-staged
         name: stylelint
         entry: bin/stylelint-staged
