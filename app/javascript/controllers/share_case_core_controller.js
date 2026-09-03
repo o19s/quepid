@@ -325,22 +325,14 @@ export default class extends Controller {
     }
   }
 
+  // Same end state as applyTeamLists([], []) — empty picker/shared section,
+  // selections cleared — except the "no teams" placeholder must stay hidden
+  // here: this is a load failure, not a user with zero teams.
   resetTeamListsForError() {
-    this.allTeams = []
-    this.sharedTeams = []
-    this.renderShareableTeams([])
-    this.renderSharedTeams([])
+    this.applyTeamLists([], [])
     if (this.hasEmptyShareableTarget) {
       this.emptyShareableTarget.classList.add("d-none")
     }
-    if (this.hasSharePickerTarget) {
-      this.sharePickerTarget.classList.add("d-none")
-    }
-    if (this.hasSharedSectionTarget) {
-      this.sharedSectionTarget.classList.add("d-none")
-    }
-    this.clearShareSelection()
-    this.clearSharedSelection()
   }
 
   applyTeamLists(allTeams, sharedTeams) {

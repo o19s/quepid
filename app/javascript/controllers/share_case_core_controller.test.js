@@ -247,6 +247,13 @@ describe("ShareCaseCoreController — API share/unshare", () => {
     expect(controller.alertTarget.textContent).toBe("Unable to load teams. Please try again.")
     expect(controller.alertTarget.className).toBe("alert alert-danger")
     expect(controller.sharedTeams).toEqual([])
+
+    // resetTeamListsForError: the "no teams" placeholder must stay hidden on
+    // a load failure — showing it here would misleadingly suggest the case
+    // truly has zero teams instead of a failed request (PR #1764).
+    expect(controller.emptyShareableTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.sharePickerTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.sharedSectionTarget.classList.contains("d-none")).toBe(true)
   })
 
   it("shares via API and dispatches quepid:case-team-changed", async () => {
