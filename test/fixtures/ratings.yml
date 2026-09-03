@@ -12,8 +12,8 @@
 #
 # Indexes
 #
-#  index_ratings_on_doc_id  (doc_id)
-#  query_id                 (query_id)
+#  index_ratings_on_doc_id    (doc_id)
+#  index_ratings_on_query_id  (query_id)
 #
 # Foreign Keys
 #
