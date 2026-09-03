@@ -94,8 +94,14 @@ angular.module('QuepidApp')
          // deep-linking/reloading straight into a mapper-based engine like Vespa. In
          // that case pickSettingsToUse() fell back to the generic searchapi defaults
          // (see settingsSvc.pickSettingsToUse) because the engine wasn't registered
-         // yet. Re-apply the engine-specific defaults now that they're available.
-         if ($scope.pendingWizardSettings &&
+         // yet. Re-apply the engine-specific defaults now that they're available — but
+         // only for that exact initial race (guarded by pendingMapperEngineDeepLink, set
+         // in updateSettingsDefaults() and cleared by any real user action in the
+         // meantime), not unconditionally: by the time this resolves the user may have
+         // already picked a different engine, selected an existing endpoint, or edited
+         // fields, and this must not clobber that.
+         if ($scope.pendingMapperEngineDeepLink &&
+             $scope.pendingWizardSettings &&
              angular.isDefined($scope.pendingWizardSettings.searchEnginePreset) &&
              angular.isDefined(settingsSvc.defaultSettings[$scope.pendingWizardSettings.searchEnginePreset])) {
            // changeSearchEngine() resets searchUrl to the engine's default; preserve
@@ -106,6 +112,7 @@ angular.module('QuepidApp')
              $scope.pendingWizardSettings.searchUrl = urlBeforeRefresh;
            }
          }
+         $scope.pendingMapperEngineDeepLink = false;
        });
 
       $scope.listSearchEndpoints = function() {
@@ -189,6 +196,12 @@ angular.module('QuepidApp')
           // so this is a no-op for them.
           $scope.pendingWizardSettings.searchEngine = (settingsSvc.defaultSettings[presetFromUrl] &&
             settingsSvc.defaultSettings[presetFromUrl].searchEngine) || presetFromUrl;
+
+          // Track whether this deep link named a mapper-based preset (e.g. 'vespa') that
+          // mapperBasedSearchEngineSvc.list() hasn't registered into defaultSettings yet —
+          // see the async resolve handler above, which only re-applies defaults for this
+          // exact race, not for every later moment this preset happens to be registered.
+          $scope.pendingMapperEngineDeepLink = angular.isUndefined(settingsSvc.defaultSettings[presetFromUrl]);
         }
         if (angular.isDefined($location.search().searchUrl)){
           $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
@@ -207,6 +220,12 @@ angular.module('QuepidApp')
 
       // used when you change a searchEndpoint that has already been set up, and then follow normal flow.
       $scope.changeSearchEndpoint = function() {
+        // A real user pick invalidates the initial deep-link race window (see
+        // updateSettingsDefaults()/mapperBasedSearchEngineSvc.list() above) — once the
+        // user has chosen an existing endpoint, the async resolve handler must not later
+        // overwrite it with a mapper-based preset's defaults.
+        $scope.pendingMapperEngineDeepLink = false;
+
         var searchEndpointToUse = $scope.searchEndpoints.find(obj => obj.id === $scope.pendingWizardSettings.searchEndpointId);
 
         // From search endpoint - these are endpoint-specific settings
@@ -256,6 +275,12 @@ angular.module('QuepidApp')
       // the time this runs. The looked-up settings' own searchEngine (e.g. 'searchapi'
       // for a mapper-based engine) is what actually gets persisted.
       $scope.changeSearchEngine = function() {
+        // A real pick (radio ng-change) invalidates the initial deep-link race window
+        // (see updateSettingsDefaults()/mapperBasedSearchEngineSvc.list() above) — the
+        // async resolve handler itself also calls this function to replay that exact
+        // race, so this is a no-op for that path (it reads the flag before calling,
+        // then clears it again regardless right after).
+        $scope.pendingMapperEngineDeepLink = false;
 
         if (angular.isUndefined($scope.pendingWizardSettings)){
             // When we run the case wizard, we assume that you want to use our Solr based TMDB demo setup.

@@ -18,16 +18,16 @@ numberOfResultsMapper = function (data) {
 // (FetchService#setup_docs_for_query, the snapshots jbuilder views) read a mapped
 // doc's "fields" key directly rather than resolving it through field_spec.
 docsMapper = function (data) {
-  var docs = [];
-  var count = data.root.fields.totalCount;
+  const docs = [];
+  const count = data.root.fields.totalCount;
 
   if (count > 0 && data.root.children) {
     data.root.children.forEach(function (child) {
-      var fields = Object.assign({}, child.fields);
+      const fields = Object.assign({}, child.fields);
       fields.score = child.relevance;
       docs.push(Object.assign({
         id: child.id,
-        fields: fields
+        fields
       }, fields));
     });
   }

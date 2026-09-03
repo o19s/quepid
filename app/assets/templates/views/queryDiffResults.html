@@ -56,7 +56,7 @@
           query="query"
           doc-id="doc.id">
         </search-result>
-        <div ng-if="diffDoc == null" class="alert alert-info" role="alert">
+        <div ng-if="diffDoc == null && !query.diffs.getSearcher($index).inError" class="alert alert-info" role="alert">
           <small>No result at position {{$parent.$parent.$index + 1}}</small>
         </div>
       </div>
