@@ -586,7 +586,7 @@ class SampleData < Thor
     data = JSON.parse(contents)
     case_params = data.to_h.deep_symbolize_keys
 
-    realistic_activity_user = ::User.find_by(email: 'quepid+realisticActivity@o19s.com')
+    realistic_activity_user = ::User.by_email('quepid+realisticActivity@o19s.com').first
 
     @case = ::Case.find_by(id: 6789)
     @case&.destroy
@@ -682,8 +682,8 @@ class SampleData < Thor
   private
 
   def seed_user hash
-    if hash[:email] && ::User.exists?(email: hash[:email].downcase)
-      ::User.where(email: hash[:email].downcase).first
+    if hash[:email] && ::User.by_email(hash[:email]).exists?
+      ::User.by_email(hash[:email]).first
     elsif hash[:name] && ::User.exists?(name: hash[:name])
       ::User.where(name: hash[:name]).first
     else

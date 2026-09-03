@@ -118,7 +118,7 @@ class User < ApplicationRecord
   # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
   validates :email,
             presence:   true,
-            uniqueness: true,
+            uniqueness: { case_sensitive: false },
             format:     { with: URI::MailTo::EMAIL_REGEXP },
             length:     { maximum: 80 },
             unless:     :ai_judge?
@@ -211,6 +211,12 @@ class User < ApplicationRecord
   # Scopes
   # default_scope -> { includes(:permissions) }
   scope :only_ai_judges, -> { where.not(llm_key: nil) }
+
+  # Email matching is case insensitive on MySQL only because the users table
+  # inherits latin1_swedish_ci; PostgreSQL and SQLite compare byte for byte.
+  # Fold both sides in SQL so lookups behave the same on every adapter and
+  # don't depend on every stored address already being lowercase.
+  scope :by_email, ->(email) { where('LOWER(users.email) = ?', email.to_s.strip.downcase) }
 
   # Lets get STI in and have actual AiJudge and User objects!
   # Reads the raw column to avoid triggering Active Record encryption, which
