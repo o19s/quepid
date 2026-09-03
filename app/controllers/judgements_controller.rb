@@ -168,8 +168,8 @@ class JudgementsController < ApplicationController
     # Apply generic LIKE search for remaining text
     if remaining_text.present?
       query = query.where(
-        'query_doc_pair_id LIKE ? OR doc_id LIKE ? OR query_text LIKE ? OR information_need LIKE ? OR judgements.explanation LIKE ?',
-        "%#{remaining_text}%", "%#{remaining_text}%", "%#{remaining_text}%", "%#{remaining_text}%", "%#{remaining_text}%"
+        'query_doc_pair_id = ? OR doc_id LIKE ? OR query_text LIKE ? OR information_need LIKE ? OR judgements.explanation LIKE ?',
+        remaining_text.to_i, "%#{remaining_text}%", "%#{remaining_text}%", "%#{remaining_text}%", "%#{remaining_text}%"
       )
     end
 
