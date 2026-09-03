@@ -241,8 +241,8 @@ class TeamsController < ApplicationController
     # Cases filtering
     cases_query = @team.cases
     if @cases_q.present?
-      cases_query = cases_query.where('case_name LIKE ? OR id LIKE ? ',
-                                      "%#{@cases_q}%", "%#{@cases_q}%")
+      cases_query = cases_query.where('case_name LIKE ? OR id = ?',
+                                      "%#{@cases_q}%", @cases_q.to_i)
     end
     cases_query = @cases_archived ? cases_query.archived : cases_query.active
     @pagy_cases, @cases = pagy(cases_query.order(:id).includes(:owner, :teams))
