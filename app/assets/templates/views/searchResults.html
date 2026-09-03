@@ -32,7 +32,7 @@
     </h2>
 
     <span class='float-end total-results'>
-      {{ query.getNumFound() }}
+      <span count-up="query.getNumFound()"></span>
       <small class="text-muted">
         <ng-pluralize count="query.getNumFound()"
             when="{'0': 'Results',

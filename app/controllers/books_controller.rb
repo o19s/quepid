@@ -7,11 +7,11 @@ class BooksController < ApplicationController
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :run_judge_judy, :judgement_stats, :export, :archive, :unarchive ]
+                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :judgement_stats, :export, :archive, :unarchive ]
   before_action :check_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :run_judge_judy, :judgement_stats, :export, :archive, :unarchive ]
+                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :judgement_stats, :export, :archive, :unarchive ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -146,6 +146,10 @@ class BooksController < ApplicationController
     # Bullet really wants :rated_query_doc_pairs to be included, however that kills our performance!
     # In our use case just looks up the count of records per book.
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
+
+    judgement_ratings = @book.judgements.where.not(rating: nil).distinct.pluck(:rating)
+    case_ratings = Rating.joins(query: :case).where(cases: { book_id: @book.id }).where.not(rating: nil).distinct.pluck(:rating)
+    @current_ratings = (judgement_ratings + case_ratings).uniq.sort
   end
 
   def create
@@ -383,6 +387,47 @@ class BooksController < ApplicationController
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book),
                 notice: "Mapped #{judgements_to_update_count} judgements to have rating #{rating}."
+  end
+
+  def remap_judgement_ratings
+    changes = (params[:rating_map] || {}).to_unsafe_h.each_with_object({}) do |(old_rating, new_rating), acc|
+      next if new_rating.blank? || old_rating.to_r == new_rating.to_r
+
+      acc[old_rating.to_f] = new_rating.to_f
+    end
+
+    if changes.empty?
+      redirect_to book_path(@book), notice: 'No ratings changed.'
+      return
+    end
+
+    # Single UPDATE with a CASE expression — SQL evaluates all WHEN conditions against
+    # the original value, so chained remappings (e.g. 5→4, 4→3) cannot double-update.
+    # Values are already coerced to Float so interpolation is safe (no injection risk).
+    # Both update_all calls below join through other tables, so the CASE expression
+    # qualifies its column reference to avoid ambiguity - but the SET target itself
+    # stays an unqualified "rating =", since SQLite's UPDATE ... FROM syntax rejects
+    # a qualified assignment target (MySQL accepts either form).
+    whens = changes.map { |old, new_val| "WHEN #{old} THEN #{new_val}" }.join(' ')
+    case_sql = "CASE judgements.rating #{whens} ELSE judgements.rating END"
+
+    # Wrapped in a transaction so judgements and case ratings remap together or not at all -
+    # otherwise a failure between the two update_all calls would leave the book's ratings
+    # partially remapped.
+    judgements_updated = case_ratings_updated = 0
+    ActiveRecord::Base.transaction do
+      judgements_updated = @book.judgements.where(rating: changes.keys).update_all("rating = #{case_sql}")
+
+      ratings_case_sql = "CASE ratings.rating #{whens} ELSE ratings.rating END"
+      case_ratings_updated = Rating.joins(query: :case)
+        .where(cases: { book_id: @book.id })
+        .where(rating: changes.keys)
+        .update_all("rating = #{ratings_case_sql}")
+    end
+
+    UpdateCaseJob.perform_later @book
+    redirect_to book_path(@book),
+                notice: "Remapped #{judgements_updated} judgements and #{case_ratings_updated} case ratings."
   end
 
   private

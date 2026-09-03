@@ -3,6 +3,19 @@ on: push
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DB_ADAPTER: mysql2
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build the stack
+        run: bin/setup_docker
+      - name: Test
+        run: bin/docker r rails test
+
+  test-sqlite:
+    runs-on: ubuntu-latest
+    env:
+      DB_ADAPTER: sqlite3
     steps:
       - uses: actions/checkout@v7
       - name: Build the stack

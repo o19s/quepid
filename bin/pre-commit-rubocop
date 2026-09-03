@@ -11,7 +11,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 if docker info >/dev/null 2>&1; then
-  exec bin/docker r bundle exec rubocop "$@"
+  exec bin/docker r bundle exec rubocop --force-exclusion "$@"
 fi
 
-exec bin/rubocop "$@"
+exec bin/rubocop --force-exclusion "$@"

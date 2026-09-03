@@ -13,6 +13,7 @@ import {
   toBsPopoverTrigger
 } from "./utils/bs_popover"
 import { attachTextPaste } from "./utils/text_paste"
+import { animateCountUp, stopCountUp } from "./utils/count_up"
 
 /**
  * Shared DOM helpers for Bootstrap tooltips/popovers and paste handling.
@@ -36,6 +37,10 @@ const quepidDom = {
   },
   textPaste: {
     attach: attachTextPaste
+  },
+  countUp: {
+    animate: animateCountUp,
+    stop: stopCountUp
   }
 }
 

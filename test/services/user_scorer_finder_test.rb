@@ -60,7 +60,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for owned scorers' do
-      result = user.scorers_involved_with.where('`scorers`.`name` LIKE ?', '%Owned%').all
+      result = user.scorers_involved_with.where('scorers.name LIKE ?', '%Owned%').all
 
       assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        3,      result.length
@@ -68,7 +68,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for shared scorers' do
-      result = user.scorers_involved_with.where('`scorers`.`name` LIKE ?', '%Shared%').all
+      result = user.scorers_involved_with.where('scorers.name LIKE ?', '%Shared%').all
 
       assert_equal        'Scorer::ActiveRecord_Relation', result.class.to_s
       assert_equal        3,      result.length
@@ -111,7 +111,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for owned scorers' do
-      result = user.scorers_involved_with.where('`scorers`.`name` LIKE ?', '%Owned%')
+      result = user.scorers_involved_with.where('scorers.name LIKE ?', '%Owned%')
         .order(name: :asc)
         .first
 
@@ -120,7 +120,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for shared scorers' do
-      result = user.scorers_involved_with.where('`scorers`.`name` LIKE ?', '%Shared%')
+      result = user.scorers_involved_with.where('scorers.name LIKE ?', '%Shared%')
         .order(name: :asc)
         .first
 
@@ -166,7 +166,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for owned scorers' do
-      result = user.scorers_involved_with.where('`scorers`.`name` LIKE ?', '%Owned%')
+      result = user.scorers_involved_with.where('scorers.name LIKE ?', '%Owned%')
         .order(name: :desc)
         .last
 
@@ -175,7 +175,7 @@ class UserScorerFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for shared scorers' do
-      result = user.scorers_involved_with.where('`scorers`.`name` LIKE ?', '%Shared%')
+      result = user.scorers_involved_with.where('scorers.name LIKE ?', '%Shared%')
         .order(name: :desc)
         .last
 

@@ -8,6 +8,7 @@ services:
       - .env
     environment:
       #- RAILS_RELATIVE_URL_ROOT=/quepid-app # Use to nest under a context path like tools.mycompany.com/quepid-app
+      - DB_ADAPTER=${DB_ADAPTER:-mysql2} # mysql2 (default) or sqlite3; see config/database.yml
       - DOCKER_CONTAINER=true
       - QUEPID_DOMAIN=tools.dev.mycorp.com
       - LAUNCHY_DRY_RUN=true # dev only letter_opener gem wants to open a browser when sending emails.
@@ -90,7 +91,7 @@ services:
       OLLAMA_HOST: "0.0.0.0:31434"
 
   nginx:
-    image: nginx:1.31.3-alpine-slim
+    image: nginx:1.31.4-alpine-slim
     container_name: quepid_nginx
     ports:
       - "443:8443"

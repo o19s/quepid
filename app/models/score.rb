@@ -18,11 +18,11 @@
 #
 # Indexes
 #
-#  case_id                          (case_id)
 #  index_case_scores_annotation_id  (annotation_id) UNIQUE
+#  index_case_scores_on_case_id     (case_id)
 #  index_case_scores_on_scorer_id   (scorer_id)
+#  index_case_scores_on_user_id     (user_id)
 #  support_last_score               (updated_at,created_at,id)
-#  user_id                          (user_id)
 #
 # Foreign Keys
 #
@@ -66,10 +66,11 @@ class Score < ApplicationRecord
   # Have to pass in the case_id and the number of records to randomly sample.
   # Yes, needing to pass in the case_id is awkward if you have kase.scorers.sampled(kase.id, 100).count
   scope :sampled, ->(case_id, count) {
+    random_function = AdapterFunctions.mysql? ? 'RAND()' : 'RANDOM()'
     joins("
       JOIN (
-        SELECT id FROM case_scores where case_id=#{case_id} ORDER BY RAND() LIMIT #{count}
-      ) as filtered_case_scores ON `case_scores`.`id`=filtered_case_scores.id
+        SELECT id FROM case_scores where case_id=#{case_id} ORDER BY #{random_function} LIMIT #{count}
+      ) as filtered_case_scores ON case_scores.id=filtered_case_scores.id
     ")
   }
 end

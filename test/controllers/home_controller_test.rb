@@ -45,6 +45,43 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'announcements' do
+    let(:user) { users(:random) }
+
+    test 'shows a currently active announcement' do
+      login_user_for_integration_test user
+
+      get root_url
+
+      assert_response :success
+      assert_includes response.body, announcements(:active_announcement).text
+    end
+
+    test 'does not show an announcement that has expired' do
+      # Only the expired announcement is unseen for this user in this test, so if
+      # filtering failed we'd see it here.
+      announcements(:active_announcement).announcement_viewed.create!(user: user)
+
+      login_user_for_integration_test user
+
+      get root_url
+
+      assert_response :success
+      assert_not_includes response.body, announcements(:expired_announcement).text
+    end
+
+    test 'does not show an announcement scheduled for the future' do
+      announcements(:active_announcement).announcement_viewed.create!(user: user)
+
+      login_user_for_integration_test user
+
+      get root_url
+
+      assert_response :success
+      assert_not_includes response.body, announcements(:scheduled_announcement).text
+    end
+  end
+
   test 'can I group things' do
     case_names = [ 'Typeahead: Dairy', 'Typeahead: Meats', 'Typeahead: Dessert', 'Typeahead: Fruit & Veg',
                    'Global Search', 'Nested:Search:IsFun' ]

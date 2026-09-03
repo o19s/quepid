@@ -55,6 +55,16 @@ Rails.application.configure do
     Bullet.bullet_logger = true
     Bullet.raise = true # raise an error if n+1 query occurs
     Bullet.add_safelist type: :unused_eager_loading, class_name: 'ActiveStorage::Attachment', association: :record
+
+    # RatingsManager#sync_ratings_for_case calls kase.queries.size once per case in
+    # UpdateCaseJob's loop over a book's cases - Bullet reads this as "add a counter
+    # cache". A counter cache isn't a good fit here: the same method just created/updated
+    # Query rows via Query.find_or_initialize_by (bypassing the kase.queries association
+    # proxy), so an eager-loaded or cached count would under-report by however many
+    # queries were just synced. The size is needed post-mutation, so this has to stay a
+    # fresh query - the number of cases per book is small enough that it's not worth
+    # the schema churn.
+    Bullet.add_safelist type: :counter_cache, class_name: 'Case', association: :queries
   end
 
   # Raises error for missing translations

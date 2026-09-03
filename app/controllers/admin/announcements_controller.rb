@@ -17,6 +17,8 @@ module Admin
     def new
       @announcement = Announcement.new
       @announcement.text = ''
+      @announcement.publish_date = 1.day.from_now.to_date
+      @announcement.expiration_date = 30.days.from_now.to_date
     end
 
     def edit
@@ -30,16 +32,18 @@ module Admin
       if @announcement.save
         redirect_to edit_admin_announcement_path(@announcement)
       else
-        render 'new'
+        render 'new', status: :unprocessable_content
       end
     end
 
     def update
       @announcement = Announcement.find(params.expect(:id))
 
-      @announcement.update(announcement_params)
-
-      render 'edit' # we stay on the edit page because that is where you can preview the rendered changes
+      if @announcement.update(announcement_params)
+        render 'edit' # we stay on the edit page because that is where you can preview the rendered changes
+      else
+        render 'edit', status: :unprocessable_content
+      end
     end
 
     def destroy
@@ -48,21 +52,10 @@ module Admin
       redirect_to admin_announcements_path
     end
 
-    def publish
-      @announcement = Announcement.find(params.expect(:id))
-      if @announcement.live?
-        @announcement.update(live: false)
-        redirect_to admin_announcements_path, notice: "Announcement id #{@announcement.id} is hidden."
-      else
-        @announcement.make_live!
-        redirect_to admin_announcements_path, notice: "Announcement id #{@announcement.id} is now live."
-      end
-    end
-
     private
 
     def announcement_params
-      params.expect(announcement: [ :text, :author_id ])
+      params.expect(announcement: [ :text, :author_id, :publish_date, :expiration_date ])
     end
   end
 end
