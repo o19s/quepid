@@ -697,12 +697,12 @@ angular.module('QuepidApp')
 
             if (hitsParam && offsetParam) {
               let originalArgs = currSettings.selectedTry.args;
-              // Track this query's own running offset (self.searchApiPageArgs), rather than
-              // leaving it on the shared currSettings.selectedTry.args — that object is reused
-              // by every query in the try, so mutating it in place either leaks a stale offset
-              // into other queries' fresh searches, or (if restored after each call, as an
-              // earlier version of this did) forgets the offset entirely and refetches the same
-              // page on every subsequent click instead of advancing.
+              // Track this query's own running offset on self.searchApiPageArgs, rather than
+              // on the shared currSettings.selectedTry.args — that object is reused by every
+              // query in the try, so mutating it in place would either leak a stale offset
+              // into other queries' fresh searches, or, if reset after each call, forget the
+              // offset entirely and refetch the same page on every subsequent click instead
+              // of advancing.
               let baseArgs = self.searchApiPageArgs || originalArgs;
               self.searchApiPageArgs = svc.nextSearchApiPageArgs(baseArgs, currSettings.numberOfRows, hitsParam, offsetParam);
 
