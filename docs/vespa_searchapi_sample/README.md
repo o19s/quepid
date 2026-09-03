@@ -82,10 +82,14 @@ secret once — put it in Quepid's SearchEndpoint "Custom Headers" field:
 `mapper_code.js` deliberately knows nothing about the `news` schema. It only
 relies on Vespa's fixed response envelope (`root.fields.totalCount`,
 `root.children[].id`/`.relevance`/`.fields`) — every Vespa app returns that
-shape regardless of what fields you've indexed. Each mapped doc is just:
+shape regardless of what fields you've indexed. Each mapped doc is:
 
 ```js
-{ id: child.id, fields: { /* every field Vespa returned, plus score */ } }
+{
+  id: child.id,
+  fields: { /* every field Vespa returned, plus score */ },
+  ...fields // the same fields spread onto the doc directly too
+}
 ```
 
 `child.id` is Vespa's own per-hit document id (e.g. `id:news:news::n3`), so
@@ -93,13 +97,17 @@ even the doc identifier requires no schema knowledge.
 
 Which raw field becomes the case's "title", "body", etc. is controlled
 entirely by the **`field_spec`** on the case's Try (the `fl`-equivalent) —
-not by the mapper. Quepid's field_spec syntax supports dot-notation paths
-(see `normalDocsSvc.js#pathIndex` in `splainer-search`), so it can reach
-straight into the nested `fields` object our mapper emits:
+not by the mapper. Since every field is spread onto the doc's top level,
+field_spec can reference it directly:
 
 ```
-title:fields.title sub:fields.abstract sub:fields.url
+title:title sub:abstract sub:url
 ```
+
+(Quepid's field_spec syntax also supports dot-notation paths — see
+`normalDocsSvc.js#pathIndex` in `splainer-search` — so `fields.title` etc.
+still works if you'd rather read from the nested object; the flattened
+top-level fields exist to avoid needing that.)
 
 `fieldSpecSvc.js` only recognizes a fixed set of type prefixes —
 **`id`, `title`, `thumb`, `image`** are read as single fields; anything else

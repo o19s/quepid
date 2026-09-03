@@ -7,12 +7,12 @@ angular.module('QuepidApp')
     '$rootScope', '$scope', '$quepidModalInstance', '$log', '$window', '$location',
     'WizardHandler',
     'settingsSvc', 'SettingsValidatorFactory',
-    'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc','searchEndpointSvc','caseCSVSvc','querySnapshotSvc',
+    'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc','searchEndpointSvc','mapperBasedSearchEngineSvc','caseCSVSvc','querySnapshotSvc',
     function (
       $rootScope, $scope, $quepidModalInstance, $log, $window, $location,
       WizardHandler,
       settingsSvc, SettingsValidatorFactory,
-      docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc, searchEndpointSvc, caseCSVSvc, querySnapshotSvc
+      docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc, searchEndpointSvc, mapperBasedSearchEngineSvc, caseCSVSvc, querySnapshotSvc
     ) {
       $log.debug('Init Wizard settings ctrl');
       
@@ -76,7 +76,33 @@ angular.module('QuepidApp')
           }
         });
        });
-       
+
+      mapperBasedSearchEngineSvc.list()
+       .then(function() {
+         angular.forEach(mapperBasedSearchEngineSvc.engines, function(engine) {
+           settingsSvc.registerMapperBasedSearchEngine(engine);
+         });
+         $scope.mapperBasedSearchEngines = mapperBasedSearchEngineSvc.engines;
+
+         // updateSettingsDefaults() (called synchronously during controller init, see
+         // below) may have already run before this async call resolved, e.g. when
+         // deep-linking/reloading straight into a mapper-based engine like Vespa. In
+         // that case pickSettingsToUse() fell back to the generic searchapi defaults
+         // (see settingsSvc.pickSettingsToUse) because the engine wasn't registered
+         // yet. Re-apply the engine-specific defaults now that they're available.
+         if ($scope.pendingWizardSettings &&
+             angular.isDefined($scope.pendingWizardSettings.searchEnginePreset) &&
+             angular.isDefined(settingsSvc.defaultSettings[$scope.pendingWizardSettings.searchEnginePreset])) {
+           // changeSearchEngine() resets searchUrl to the engine's default; preserve
+           // whatever URL is already pending (e.g. from a deep-linked reload) instead.
+           var urlBeforeRefresh = $scope.pendingWizardSettings.searchUrl;
+           $scope.changeSearchEngine();
+           if (angular.isDefined($location.search().searchUrl)) {
+             $scope.pendingWizardSettings.searchUrl = urlBeforeRefresh;
+           }
+         }
+       });
+
       $scope.listSearchEndpoints = function() {
         // we only want the search endpoint dialgue to default to open
         // if we are not reloading and have search endpoints.
@@ -103,7 +129,8 @@ angular.module('QuepidApp')
                searchEngineToUse = 'solr';
              }
              $scope.pendingWizardSettings = {
-               searchEngine: searchEngineToUse
+               searchEngine: searchEngineToUse,
+               searchEnginePreset: searchEngineToUse
              };
              
              // Helps us distingush if we are using tmdb demo setup or no
@@ -147,7 +174,16 @@ angular.module('QuepidApp')
         // and caseName from the params and override the default values.
         // We should pass this stuff in externally, not do it here.
         if (angular.isDefined($location.search().searchEngine)){
-          $scope.pendingWizardSettings.searchEngine = $location.search().searchEngine;
+          var presetFromUrl = $location.search().searchEngine;
+          $scope.pendingWizardSettings.searchEnginePreset = presetFromUrl;
+          // For mapper-based tiles (e.g. 'vespa') the underlying searchEngine is
+          // 'searchapi', not the preset id itself — resolve it the same way
+          // changeSearchEngine()/changeSearchEndpoint() do, instead of clobbering
+          // the already-resolved searchEngine (set above from `settings.searchEngine`)
+          // back to the raw preset. Built-in engines have preset === searchEngine,
+          // so this is a no-op for them.
+          $scope.pendingWizardSettings.searchEngine = (settingsSvc.defaultSettings[presetFromUrl] &&
+            settingsSvc.defaultSettings[presetFromUrl].searchEngine) || presetFromUrl;
         }
         if (angular.isDefined($location.search().searchUrl)){
           $scope.pendingWizardSettings.searchUrl = $location.search().searchUrl;
@@ -170,6 +206,9 @@ angular.module('QuepidApp')
 
         // From search endpoint - these are endpoint-specific settings
         $scope.pendingWizardSettings.searchEngine             = searchEndpointToUse.searchEngine;
+        // Falls back to searchEngine for a plain endpoint; mapperBasedSearchEngineId
+        // (e.g. 'vespa') is what distinguishes a mapper-based tile pick when set.
+        $scope.pendingWizardSettings.searchEnginePreset       = searchEndpointToUse.mapperBasedSearchEngineId || searchEndpointToUse.searchEngine;
         $scope.pendingWizardSettings.searchUrl                = searchEndpointToUse.endpointUrl; // notice remapping
         $scope.pendingWizardSettings.apiMethod                = searchEndpointToUse.apiMethod;
         // Convert customHeaders to string if it's an object (from JSON serialization)
@@ -182,8 +221,13 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.testQuery                = searchEndpointToUse.testQuery;
 
         // Now grab default settings for the type of search endpoint you are using
-        // These are display/query settings that have sensible defaults per search engine type
-        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
+        // These are display/query settings that have sensible defaults per search engine type.
+        // Use the preset (e.g. 'vespa') rather than the raw searchEngine ('searchapi')
+        // so mapper-based tiles get their own field mapping instead of the generic
+        // searchapi defaults (fieldSpec/idField/titleField all null) — see the same
+        // pattern in changeSearchEngine() above.
+        var lookupKey = $scope.pendingWizardSettings.searchEnginePreset || $scope.pendingWizardSettings.searchEngine;
+        var settings = settingsSvc.pickSettingsToUse(lookupKey, $scope.pendingWizardSettings.searchUrl);
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
@@ -201,6 +245,11 @@ angular.module('QuepidApp')
       };
       
       // used when you swap radio buttons for the search engine.
+      // Every radio (built-in or a mapper-based tile like Vespa) binds ng-model to
+      // pendingWizardSettings.searchEnginePreset directly, and AngularJS applies that
+      // model write before firing ng-change, so it's already the lookup key we need by
+      // the time this runs. The looked-up settings' own searchEngine (e.g. 'searchapi'
+      // for a mapper-based engine) is what actually gets persisted.
       $scope.changeSearchEngine = function() {
 
         if (angular.isUndefined($scope.pendingWizardSettings)){
@@ -208,10 +257,12 @@ angular.module('QuepidApp')
             // We then give you options to change from there.
             $scope.pendingWizardSettings = angular.copy(settingsSvc.tmdbSettings['solr']);
         }
-        var settings = settingsSvc.pickSettingsToUse($scope.pendingWizardSettings.searchEngine, $scope.pendingWizardSettings.searchUrl);
+        var lookupKey = $scope.pendingWizardSettings.searchEnginePreset || $scope.pendingWizardSettings.searchEngine;
+        var settings = settingsSvc.pickSettingsToUse(lookupKey, $scope.pendingWizardSettings.searchUrl);
         $scope.pendingWizardSettings.additionalFields         = settings.additionalFields;
         $scope.pendingWizardSettings.fieldSpec                = settings.fieldSpec;
         $scope.pendingWizardSettings.idField                  = settings.idField;
+        $scope.pendingWizardSettings.searchEnginePreset       = lookupKey;
         $scope.pendingWizardSettings.searchEngine             = settings.searchEngine;
         $scope.pendingWizardSettings.apiMethod                = settings.apiMethod;
         $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
@@ -220,8 +271,14 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
         $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
-        $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential; 
-        $scope.pendingWizardSettings.mapperCode               = settings.mapperCode;        
+        $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;
+        $scope.pendingWizardSettings.mapperCode               = settings.mapperCode;
+        $scope.pendingWizardSettings.supportsBasicAuth        = settings.supportsBasicAuth;
+        // A known-good search term (e.g. Vespa's 'bm25') so ping-it/field-discovery gets
+        // back a real matching document instead of a syntactically-valid-but-empty result
+        // set — see MapperBasedSearchEngine#test_query. undefined for built-in engines,
+        // which don't set this; validate() already falls back to a generic term then.
+        $scope.pendingWizardSettings.testQuery                = settings.testQuery;
         
         $scope.isHeaderConfigCollapsed = true;
 
@@ -376,23 +433,32 @@ angular.module('QuepidApp')
           settingsForValidation.searchEngine = 'solr';
         }
         else if ($scope.pendingWizardSettings.searchEngine === 'searchapi'){
-          // For validation, we need query args:
-          // - If queryParams has #$query##, substitute with testQuery
-          // - If queryParams is not set but testQuery exists (from existing endpoint), use testQuery directly
-          var queryParamsWithTestQuery;
-          if ($scope.pendingWizardSettings.queryParams && $scope.pendingWizardSettings.queryParams.indexOf('#$query##') !== -1) {
-            // queryParams has placeholder, substitute with test query
-            queryParamsWithTestQuery = $scope.pendingWizardSettings.queryParams;
-            if ($scope.pendingWizardSettings.testQuery && $scope.pendingWizardSettings.testQuery.trim().length > 0) {
-              queryParamsWithTestQuery = queryParamsWithTestQuery.replace(/#\$query##/g, $scope.pendingWizardSettings.testQuery);
-            }
-          } else if ($scope.pendingWizardSettings.testQuery && $scope.pendingWizardSettings.testQuery.trim().length > 0) {
-            // Use testQuery directly (from existing endpoint's test_query)
-            queryParamsWithTestQuery = $scope.pendingWizardSettings.testQuery;
-          } else {
-            queryParamsWithTestQuery = $scope.pendingWizardSettings.queryParams || '';
+          var testQuery = $scope.pendingWizardSettings.testQuery;
+          var queryParams = $scope.pendingWizardSettings.queryParams || '';
+
+          if (testQuery && testQuery.trim().length > 0) {
+            // Test Query always holds a complete, ready-to-send query — either mirrored
+            // from an existing endpoint (changeSearchEndpoint()) or a mapper-based
+            // preset's own schema-agnostic match-all default (e.g. Vespa's
+            // "select * from sources * where true", see
+            // MapperBasedSearchEngine#test_query) — so send it as-is, bypassing
+            // queryParams entirely. A real per-case query built by substituting some
+            // term into queryParams' #$query## placeholder would only surface fields
+            // from docs matching that specific term/field structure, and wouldn't
+            // generalize to a real user's own data.
+            settingsForValidation.args = testQuery;
           }
-          settingsForValidation.args = queryParamsWithTestQuery;
+          else if (queryParams.indexOf('#$query##') !== -1) {
+            // No test query configured (e.g. a hand-typed new Custom Search API
+            // endpoint): validate the real template, substituting a generic non-empty
+            // placeholder term so strict engines (Vespa YQL rejects `contains ""`)
+            // don't reject an empty one. splainer-search itself would otherwise hydrate
+            // #$query## with an empty string during this pre-real-query validation.
+            settingsForValidation.args = queryParams.replace(/#\$query##/g, 'test');
+          }
+          else {
+            settingsForValidation.args = queryParams;
+          }
         
           try {
             /*jshint evil:true */
@@ -578,10 +644,12 @@ angular.module('QuepidApp')
 
         // Since the defaults are being overridden by the editableSettings(),
         // we need to restore the TMDB demo settings if that matches our URL for the next screen.
-        var searchEngine  = $scope.pendingWizardSettings.searchEngine;
+        // Look up by searchEnginePreset (falling back to searchEngine) so a dynamic engine
+        // preset like Vespa restores its own field mappings, not generic searchapi ones.
+        var lookupKey     = $scope.pendingWizardSettings.searchEnginePreset || $scope.pendingWizardSettings.searchEngine;
         var newUrl        = $scope.pendingWizardSettings.searchUrl;
-        
-        var settingsToUse = settingsSvc.pickSettingsToUse(searchEngine, newUrl);
+
+        var settingsToUse = settingsSvc.pickSettingsToUse(lookupKey, newUrl);
         
         
         $scope.pendingWizardSettings.idField          = settingsToUse.idField;

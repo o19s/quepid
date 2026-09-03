@@ -182,7 +182,7 @@
             </p>
             <p>
               <img ng-if="settings.selectedTry.searchEngine"
-                ng-src="images/{{ settings.selectedTry.searchEngine }}-icon.png" width="32px" /> &nbsp;
+                ng-src="images/{{ settings.selectedTry.mapperBasedSearchEngineId || settings.selectedTry.searchEngine }}-icon.png" width="32px" /> &nbsp;
               {{settings.searchUrl}}
             </p>
             <p>

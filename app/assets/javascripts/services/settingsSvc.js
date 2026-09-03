@@ -40,7 +40,8 @@ angular.module('QuepidApp')
           secureSearchUrl: 'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
           urlFormat: 'http(s?)://yourdomain.com:8983/<index>/select',
           proxyRequests: false,
-          basicAuthCredential: ''
+          basicAuthCredential: '',
+          supportsBasicAuth: true
         },
         es: {
           queryParams: [
@@ -68,7 +69,8 @@ angular.module('QuepidApp')
           searchUrl: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
           urlFormat: 'http(s?)://yourdomain.com:9200/<index>/_search',
           proxyRequests: false,
-          basicAuthCredential: ''
+          basicAuthCredential: '',
+          supportsBasicAuth: true
         },
         os: {
           queryParams: [
@@ -94,7 +96,8 @@ angular.module('QuepidApp')
           searchUrl: 'https://quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
           urlFormat: 'http(s?)://yourdomain.com:9200/<index>/_search',
           proxyRequests: false,
-          basicAuthCredential: 'reader:reader'
+          basicAuthCredential: 'reader:reader',
+          supportsBasicAuth: true
         },
         vectara: {
           queryParams: [
@@ -134,7 +137,9 @@ angular.module('QuepidApp')
           searchUrl: 'https://api.vectara.io/v1/query',
           urlFormat: 'https://api.vectara.io/v1/query',
           proxyRequests: false,
-          basicAuthCredential: ''
+          basicAuthCredential: '',
+          // Vectara authenticates via the API key custom headers above, not Basic Auth.
+          supportsBasicAuth: false
         },
         algolia: {
           queryParams: [
@@ -166,7 +171,9 @@ angular.module('QuepidApp')
           searchUrl: 'https://OKF83BFQS4-dsn.algolia.net/1/indexes/movies_demo_quepid/query',
           urlFormat: 'https://<APPLICATION-ID>-dsn.algolia.net/1/indexes/<index>/query',
           proxyRequests: true,
-          basicAuthCredential: ''
+          basicAuthCredential: '',
+          // Algolia authenticates via the API key custom headers above, not Basic Auth.
+          supportsBasicAuth: false
         },
         static: {
           queryParams: [
@@ -182,8 +189,11 @@ angular.module('QuepidApp')
           additionalFields: [],
           numberOfRows: 10,
           searchEngine: 'static',
-          proxyRequests: false
+          proxyRequests: false,
           // no searchUrl or urlFormat because it's code generated!
+          // No live connection at all, so Basic Auth is moot (the wizard already
+          // hides the whole Advanced section for 'static').
+          supportsBasicAuth: false
         },
         searchapi: {
           // a lot of these defaults can probably be removed in the future
@@ -206,6 +216,9 @@ angular.module('QuepidApp')
           searchUrl: 'https://example.com/api/search',
           urlFormat: null,
           proxyRequests: true,
+          // Custom Search API points at an arbitrary user-defined REST endpoint, which
+          // may well require Basic Auth, so leave the field available.
+          supportsBasicAuth: true,
           mapperCode: [
             'numberOfResultsMapper = function(data){',
             '  return data.length;',
@@ -253,7 +266,8 @@ angular.module('QuepidApp')
           secureSearchUrl: 'https://quepid-solr.dev.o19s.com/solr/tmdb/select',
           urlFormat: 'http(s?)://yourdomain.com:8983/<index>/select',
           proxyRequests: false,
-          basicAuthCredential: ''
+          basicAuthCredential: '',
+          supportsBasicAuth: true
         },
         es: {
           queryParams: [
@@ -285,7 +299,8 @@ angular.module('QuepidApp')
           searchUrl: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search',
           urlFormat: 'http(s?)://yourdomain.com:9200/<index>/_search',
           proxyRequests: false,
-          basicAuthCredential: ''
+          basicAuthCredential: '',
+          supportsBasicAuth: true
         },
         os: {
           queryParams: [
@@ -316,11 +331,19 @@ angular.module('QuepidApp')
           urlFormat: 'http(s?)://yourdomain.com:9200/<index>/_search',
           customHeaders: '',
           proxyRequests: false,
-          basicAuthCredential: 'reader:reader'
+          basicAuthCredential: 'reader:reader',
+          supportsBasicAuth: true
         }
       };
 
       /* jshint ignore:end */
+
+      // Augments defaultSettings with a search engine fetched from the server
+      // (see mapperBasedSearchEngineSvc), so the wizard can offer it as a tile
+      // alongside the built-in engines above.
+      this.registerMapperBasedSearchEngine = function(engine) {
+        this.defaultSettings[engine.id] = engine;
+      };
 
       var Settings = SettingsFactory;
       var currSettings = null;
@@ -371,7 +394,12 @@ angular.module('QuepidApp')
           return angular.copy(this.tmdbSettings[searchEngine]);
         }
         else {
-          return angular.copy(this.defaultSettings[searchEngine]);
+          // Mapper-based engines (e.g. Vespa) are only registered into defaultSettings
+          // once mapperBasedSearchEngineSvc.list() resolves (see wizardModal.js). If a
+          // deep link/reload picks one of these before that async call finishes, or if
+          // searchEngine is otherwise unrecognized, fall back to the generic searchapi
+          // defaults rather than returning undefined and crashing the caller.
+          return angular.copy(this.defaultSettings[searchEngine] || this.defaultSettings.searchapi);
         }
       };
 
@@ -616,6 +644,19 @@ angular.module('QuepidApp')
           payloadSearchEndpoint.basic_auth_credential = settingsToSave.basicAuthCredential;
           payloadSearchEndpoint.mapper_code = settingsToSave.mapperCode;
           payloadSearchEndpoint.proxy_requests = settingsToSave.proxyRequests;
+
+          // searchEnginePreset differs from searchEngine only when a mapper-based
+          // engine tile (e.g. Vespa) was picked in the wizard, rather than a plain
+          // built-in engine or the generic Custom Search API tile; record which one
+          // so icons elsewhere in the app can show it instead of a generic icon.
+          // Always send the key (even as null for the generic tile) so the server can
+          // clear a stale preset id on an endpoint that's being reused under a
+          // different tile, instead of only ever backfilling a blank value.
+          payloadSearchEndpoint.mapper_based_search_engine_id =
+            (settingsToSave.searchEnginePreset && settingsToSave.searchEnginePreset !== settingsToSave.searchEngine) ?
+              settingsToSave.searchEnginePreset :
+              null;
+
           payload.search_endpoint = payloadSearchEndpoint;
         }
 

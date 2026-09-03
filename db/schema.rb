@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_01_191400) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_03_152500) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -357,6 +357,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_191400) do
     t.datetime "created_at", null: false
     t.string "custom_headers", limit: 6000
     t.string "endpoint_url", limit: 500
+    t.string "mapper_based_search_engine_id"
     t.text "mapper_code"
     t.string "name"
     t.json "options"

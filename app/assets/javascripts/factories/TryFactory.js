@@ -41,6 +41,7 @@
       self.numberOfRows  = data.number_of_rows;
       self.queryParams   = data.query_params;
       self.searchEngine  = data.search_engine;
+      self.mapperBasedSearchEngineId = data.mapper_based_search_engine_id;
       self.searchEndpointId = data.search_endpoint_id;
       self.endpointName  = data.endpoint_name;
       self.searchUrl     = data.search_url;

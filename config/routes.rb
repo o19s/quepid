@@ -295,6 +295,7 @@ Rails.application.routes.draw do
       end
 
       resources :search_endpoints, except: [ :new, :edit ]
+      resources :mapper_based_search_engines, only: [ :index ]
       resources :scorers, except: [ :new, :edit ]
 
       resources :teams, except: [ :new, :edit ], param: :team_id

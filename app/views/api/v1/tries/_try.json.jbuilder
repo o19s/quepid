@@ -12,7 +12,8 @@ json.endpoint_name  try.search_endpoint&.fullname
 json.custom_headers try.search_endpoint&.custom_headers
 json.api_method     try.search_endpoint&.api_method
 json.search_engine  try.search_endpoint&.search_engine
-json.search_url     try.search_endpoint&.endpoint_url
+json.mapper_based_search_engine_id try.search_endpoint&.mapper_based_search_engine_id
+json.search_url try.search_endpoint&.endpoint_url
 json.basic_auth_credential try.search_endpoint&.api_basic_auth_credential
 json.mapper_code    try.search_endpoint&.mapper_code
 json.proxy_requests try.search_endpoint&.proxy_requests
