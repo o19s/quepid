@@ -37,6 +37,24 @@ module Users
         assert_nil flash[:alert]
       end
 
+      # The identity provider chooses how it cases the address it sends us. On
+      # MySQL the collation hid any mismatch; everywhere else it would miss the
+      # existing account and fail to save over the unique index.
+      test 'logs in an existing user when the provider sends a different case' do
+        user = users(:random)
+
+        OmniAuth.config.add_mock(:openid_connect, { info: { 'email' => user.email.upcase } })
+        @request.env['omniauth.auth'] = OmniAuth.config.mock_auth[:openid_connect]
+
+        assert_no_difference 'User.count' do
+          post :openid_connect
+        end
+
+        assert_equal user, @controller.ahoy.user
+        assert_redirected_to root_path
+        assert_nil flash[:alert]
+      end
+
       test 'prevents logging in an existing locked user' do
         OmniAuth.config.add_mock(:openid_connect, { info: { 'email' => locked_user.email } })
         @request.env['omniauth.auth'] = OmniAuth.config.mock_auth[:openid_connect]

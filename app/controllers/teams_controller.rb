@@ -301,7 +301,7 @@ class TeamsController < ApplicationController
   # rubocop:disable Metrics/MethodLength
   def add_member
     email = params[:email].to_s.strip.downcase
-    user = User.where(email: email).first
+    user = User.by_email(email).first
 
     if user
       if @team.members.exists?(user.id)
@@ -395,7 +395,7 @@ class TeamsController < ApplicationController
     query1_start = Time.current
     exact_email_matches = User
       .where.not(id: @team.members.pluck(:id))
-      .where('LOWER(email) = ?', query)
+      .by_email(query)
       .limit(10)
     exact_count = exact_email_matches.to_a.count
     query1_time = ((Time.current - query1_start) * 1000).round(2)
@@ -404,7 +404,7 @@ class TeamsController < ApplicationController
     # Used for prefix and name matching (more restricted)
     scope_start = Time.current
     base_scope = User.where.not(id: @team.members.pluck(:id))
-      .where('id IN (?) OR email LIKE ?', team_member_ids, "%@#{current_domain}")
+      .where('id IN (?) OR LOWER(email) LIKE ?', team_member_ids, "%@#{current_domain.to_s.downcase}")
     scope_time = ((Time.current - scope_start) * 1000).round(2)
 
     # Query 2: Prefix email match (exclude exact matches)

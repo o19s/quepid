@@ -39,7 +39,7 @@ class BookImporter
       end
       list_of_emails_of_users.uniq!
       list_of_emails_of_users.each do |email|
-        unless User.exists?(email: email)
+        unless User.by_email(email).exists?
           if true == options[:force_create_users]
             User.invite!({ email: email, password: '', skip_invitation: true }, @current_user)
           else
@@ -96,7 +96,7 @@ class BookImporter
         next unless query_doc_pair[:judgements]
 
         query_doc_pair[:judgements].each do |judgement|
-          judgement[:user] = User.find_by(email: judgement[:user_email])
+          judgement[:user] = User.by_email(judgement[:user_email]).first
           qdp.judgements.create(judgement.except(:user_email))
         end
       end

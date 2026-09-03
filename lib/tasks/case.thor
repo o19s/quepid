@@ -26,7 +26,7 @@ class Case < Thor
       puts "Could not find scorer with name: #{scorer_name}".red
       return
     end
-    owner = ::User.find_by! email: owner_email
+    owner = ::User.by_email(owner_email).first
     unless owner
       puts "Could not find owner with email: #{owner_email}".red
       return

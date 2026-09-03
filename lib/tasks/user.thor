@@ -59,7 +59,7 @@ class User < Thor
 
     load_environment
 
-    user = ::User.where(email: email).first
+    user = ::User.by_email(email).first
 
     unless user
       puts "Could not find user with email: #{email}".red
@@ -89,7 +89,7 @@ class User < Thor
 
     load_environment
 
-    user = ::User.where(email: email).first
+    user = ::User.by_email(email).first
 
     unless user
       puts "Could not find user with email: #{email}".red
@@ -119,7 +119,7 @@ class User < Thor
 
     load_environment
 
-    user = ::User.where(email: email).first
+    user = ::User.by_email(email).first
 
     unless user
       puts "Could not find user with email: #{email}".red
