@@ -79,7 +79,13 @@ class Book < ApplicationRecord
   has_many   :judgements,
              through: :query_doc_pairs
 
-  has_many :judges, -> { distinct }, through: :judgements, class_name: 'User', source: :user
+  # Deduplicating by id rather than SELECT DISTINCT over every user column: a
+  # judge appears once per judgement, but `users` carries a json options
+  # column, and comparing whole rows is both more work than the question needs
+  # and something not every database can do.
+  def judges
+    User.where(id: judgements.select(:user_id))
+  end
 
   has_many :cases, dependent: :nullify
 
