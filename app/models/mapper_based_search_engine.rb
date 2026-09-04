@@ -57,7 +57,12 @@ class MapperBasedSearchEngine
       pagination_offset_param: 'offset',
       search_url:              'https://a119b8dc.eb5f2dd2.z.vespa-app.cloud/search/',
       url_format:              'https://<app>.<tenant>.z.vespa-app.cloud/search/',
-      query_params:            'yql=select * from movies where title contains "#$query##" or overview contains "#$query##"&ranking.profile=bm25&hits=10&offset=0',
+      # hits/offset are deliberately not baked in here — they'd show up in the editable
+      # Query Sandbox as if they were part of the query. queriesSvc.js's
+      # createSearcherFromSettings() injects them at request-build time instead (using
+      # pagination_hits_param/pagination_offset_param below), the same way it already
+      # injects Solr's echoParams=all without persisting it into query_params.
+      query_params:            'yql=select * from movies where title contains "#$query##" or overview contains "#$query##"&ranking.profile=bm25',
       # Read-only Vespa Cloud data-plane token for the o19s demo tenant; scoped to query
       # access only, so exposure is bounded to someone running extra queries against the
       # demo index, not writing/deleting data.

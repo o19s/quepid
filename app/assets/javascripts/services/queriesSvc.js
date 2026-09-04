@@ -196,6 +196,25 @@ angular.module('QuepidApp')
               args['echoParams'] = 'all';
             }
           }
+          else if (passedInSettings.searchEngine === 'searchapi') {
+            // For engines that support pagination (e.g. Vespa's hits/offset), inject the
+            // page-size param on every request — including this first one, not just
+            // paginate()'s follow-ups (see nextSearchApiPageArgs) — so numberOfRows is
+            // honored from page 1 without baking hits/offset into the editable
+            // query_params template. Only fills in what the user's own template doesn't
+            // already set, so an explicit hits=/offset= in query_params still wins.
+            let hitsParam = passedInSettings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
+            let offsetParam = passedInSettings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
+
+            if (hitsParam && offsetParam) {
+              if (args[hitsParam] === undefined) {
+                args[hitsParam] = [ String(passedInSettings.numberOfRows) ];
+              }
+              if (args[offsetParam] === undefined) {
+                args[offsetParam] = [ '0' ];
+              }
+            }
+          }
           // Modify query if ratings were passed in
           if (options.filterToRated) {
             if (passedInSettings.searchEngine === 'es' || passedInSettings.searchEngine === 'os') {
