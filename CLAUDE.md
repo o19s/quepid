@@ -18,6 +18,7 @@
 
 - The core case app is built using AngularJS 1.8 but we are in the process of removing our AngularJS dependency.
 - In place of AngularJS we are using vanilla JS and StimulusJS along with various components of Hotwire, our goal is to have a modern Rails stack application.
+- **Angular → Stimulus on core:** per-surface equivalence — core matches Angular; Rails pages keep their prior UX. Do not collapse surfaces. See `docs/todo/angularjs_removal_inventory.md` for the migration playbook and per-surface checklist.
 
 
 ## Backend
@@ -115,7 +116,7 @@ For any user-visible change, prove the behavior with Playwright MCP screenshots 
 - **Frame big** (my screenshots have come out too small): shoot the **full viewport**, not element crops. Quepid modals scroll *internally*, so `fullPage:true` does NOT reach below their fold — instead `browser_resize` the viewport to roughly match the modal so it fills the frame, then screenshot the viewport. Size to the content: a tall step (e.g. the wizard endpoint step) needs ~`820x2200`; a short step (e.g. wizard Finish) needs ~`900x760` — a tall viewport dwarfs a short modal. Narrower width = modal fills more of the frame.
 - **Force hard-to-reach states** (e.g. a failed save) by intercepting the API with `browser_run_code_unsafe` + `page.route('**/api/...', ...)`.
     - Gotcha: `setTimeout` is undefined in that context — use `await page.waitForTimeout(ms)` for delays.
-- **Save** under `.playwright-mcp/` (gitignored) with clear `-before`/`-after` (+ state) names, e.g. `behavior-wizard-proxy-after-error.png`.
+- **Save** under `.playwright-mcp/<topic>/` (gitignored) with clear `-before`/`-after` (+ state) names, e.g. `.playwright-mcp/share-case/migration-share-case-modal-after.png`. Topic folders keep this PR’s shots separate from older captures in the screenshot viewer (`yarn screenshots:view` / `node test/playwright/screenshot-viewer-server.mjs`).
 
 ### Before/after pairs — do not break the working tree
 

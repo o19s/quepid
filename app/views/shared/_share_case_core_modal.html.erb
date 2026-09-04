@@ -1,0 +1,68 @@
+<%# Core case toolbar — list UI, API stay-on-page %>
+<div
+  class="modal fade"
+  id="shareCaseModal"
+  tabindex="-1"
+  aria-labelledby="shareCaseModalLabel"
+  aria-hidden="true"
+  data-controller="share-case-core"
+  data-share-case-core-teams-url-value="<%= api_teams_path %>"
+  data-share-case-core-team-cases-url-template-value="<%= api_team_cases_path(team_id: '__TEAM_ID__') %>"
+  data-share-case-core-team-case-url-template-value="<%= api_team_case_path(team_id: '__TEAM_ID__', id: '__CASE_ID__') %>"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="shareCaseModalLabel" data-share-case-core-target="title">Share Case</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div data-share-case-core-target="alert" class="alert d-none" role="alert"></div>
+
+        <div data-share-case-core-target="loading" class="d-none text-center py-3">
+          <p class="mb-2">Loading your teams…</p>
+          <i class="bi bi-arrow-repeat spintime" aria-hidden="true"></i>
+        </div>
+
+        <div data-share-case-core-target="bodyContent">
+          <div data-share-case-core-target="emptyShareable" class="d-none text-center mb-3">
+            <p class="mb-3">
+              No teams to share with? Why not go ahead and create a new team!
+            </p>
+            <a href="<%= new_team_path %>" class="btn btn-primary btn-lg">
+              <i class="bi bi-plus-lg" aria-hidden="true"></i>
+              Create a team
+            </a>
+          </div>
+
+          <div data-share-case-core-target="sharePicker" class="d-none">
+            <%= form_with url: share_case_teams_path, method: :post, local: true, html: { id: 'share-case-form', class: 'mb-3', data: { share_case_core_target: 'shareForm' } } do %>
+              <%= hidden_field_tag :case_id, '', id: 'share-case-id', data: { share_case_core_target: 'caseId' } %>
+              <%= hidden_field_tag :team_id, '', id: 'share-case-team', data: { share_case_core_target: 'teamId' } %>
+
+              <p class="h5">Select a team to share this case with:</p>
+              <div id="share-case-shareable-list" class="list-group mt-2" data-share-case-core-target="shareableList"></div>
+            <% end %>
+          </div>
+
+          <div data-share-case-core-target="sharedSection" class="d-none">
+            <hr>
+            <p class="h5">Already shared with:</p>
+            <div id="share-case-shared-list" class="list-group mt-2" data-share-case-core-target="sharedList"></div>
+
+            <%= form_with url: unshare_case_teams_path, method: :post, local: true, html: { id: 'unshare-case-form', class: 'mt-3', data: { share_case_core_target: 'unshareForm' } } do %>
+              <%= hidden_field_tag :case_id, '', id: 'unshare-case-id', data: { share_case_core_target: 'unshareCaseId' } %>
+              <%= hidden_field_tag :team_id, '', id: 'unshare-case-team', data: { share_case_core_target: 'unshareTeamId' } %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a href="<%= new_team_path %>" class="btn btn-primary me-auto">+ Create a team</a>
+        <button type="submit" form="share-case-form" id="share-case-submit" class="btn btn-success d-none" data-share-case-core-target="submitButton">Share with team</button>
+        <button type="submit" form="unshare-case-form" id="unshare-case-submit" class="btn btn-success d-none" data-share-case-core-target="unshareButton">Unshare from team</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

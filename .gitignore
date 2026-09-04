@@ -47,6 +47,8 @@ venv
 /test/playwright/playwright-report
 /test/playwright/screenshot-manifest.json
 /playwright/.cache
+# Default Playwright outputDir when run without --config (cwd = repo root)
+/test-results
 
 # VIM swp
 *.swp

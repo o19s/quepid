@@ -51,7 +51,7 @@ test.describe('Angular pages — interaction screenshots', () => {
     await expect(page.locator('.modal.show')).toContainText(/Share Case/i);
     await expect(page).toHaveScreenshot('cases-list-05-share-case-modal.png', expandedCaseScreenshotOpts(page));
 
-    await page.locator('.modal.show').locator('.btn-core-close').first().click();
+    await page.locator('.modal.show').locator('.btn-close').click();
     await expect(page.locator('.modal.show')).toHaveCount(0);
 
     await page.locator('search-result .single-rating').first().click();
@@ -210,7 +210,7 @@ test.describe('Angular pages — interaction screenshots', () => {
     await page.getByText('Share case', { exact: true }).click();
     await expect(page.locator('.modal.show')).toContainText(/Share Case/i);
     await expect(page).toHaveScreenshot('wizard-07-share-case-modal.png', expandedCaseScreenshotOpts(page));
-    await page.locator('.modal.show').locator('.btn-core-close').first().click();
+    await page.locator('.modal.show').locator('.btn-close').click();
     await expect(page.locator('.modal.show')).toHaveCount(0);
 
     await page.locator('#queries-filter').focus();

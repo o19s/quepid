@@ -169,6 +169,31 @@ angular.module('QuepidApp')
         var url = caseTryNavSvc.getQuepidRootUrl() + '/teams';
         window.location.href = url;
       };
+
+      ctrl.openShareCase = function () {
+        var caseNo = ctrl.share.acase.caseNo;
+        var caseName = ctrl.share.acase.caseName;
+        var judgementsModalEl = document.querySelector('.modal.show');
+        var openShareCaseModal = function () {
+          document.dispatchEvent(
+            new CustomEvent('quepid:open-share-case-core', {
+              detail: { caseNo: caseNo, caseName: caseName }
+            })
+          );
+        };
+
+        if (!judgementsModalEl) {
+          openShareCaseModal();
+          return;
+        }
+
+        var onHidden = function () {
+          judgementsModalEl.removeEventListener('hidden.bs.modal', onHidden);
+          openShareCaseModal();
+        };
+        judgementsModalEl.addEventListener('hidden.bs.modal', onHidden);
+        ctrl.cancel();
+      };
       
       ctrl.manualPopulateBook = function() {
         $scope.processingPrompt.inProgress = true;

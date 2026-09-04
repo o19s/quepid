@@ -3,6 +3,8 @@
 # Pin npm packages by running ./bin/importmap
 
 pin 'application_modern'
+# Stimulus-only entry for the Angular core case layout (no Turbo).
+pin 'core_stimulus'
 pin '@hotwired/turbo-rails', to: 'turbo.min.js'
 pin '@hotwired/stimulus', to: 'stimulus.min.js'
 pin '@hotwired/stimulus-loading', to: 'stimulus-loading.js'
@@ -13,6 +15,7 @@ pin 'utils/bs_tooltip', to: 'utils/bs_tooltip.js'
 pin 'utils/bs_popover', to: 'utils/bs_popover.js'
 pin 'utils/text_paste', to: 'utils/text_paste.js'
 pin 'utils/count_up', to: 'utils/count_up.js'
+pin 'utils/share_case_teams', to: 'utils/share_case_teams.js'
 
 pin 'local-time' # @3.0.3
 
