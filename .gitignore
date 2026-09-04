@@ -75,6 +75,9 @@ coverage/
 tmp/stryker-tmp/
 tmp/mutation-report/
 
+# Mutant (Ruby) mutation testing result cache
+.mutant/
+
 # Docker artifacts
 docker-compose.override.yml
 

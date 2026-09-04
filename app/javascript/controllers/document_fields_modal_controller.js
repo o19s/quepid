@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
 
 export default class extends Controller {
   static targets = ["queryText", "docId", "content", "modal"]
@@ -23,7 +24,6 @@ export default class extends Controller {
     }
 
     // Show the Bootstrap modal using the global bootstrap object
-    const modal = new bootstrap.Modal(this.modalTarget)
-    modal.show()
+    showBsModal(getOrCreateBsModal(this.modalTarget))
   }
 }

@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { createBsModal } from "utils/bs_modal"
 
 // Shows a Bootstrap modal confirmation and submits a DELETE (or other) request
 // with the CSRF token when confirmed. Falls back to native confirm() if
@@ -37,8 +38,8 @@ export default class extends Controller {
     this.confirmBtn.addEventListener('click', this._onConfirm)
 
     // Try to use Bootstrap modal if available
-    if (window.bootstrap && window.bootstrap.Modal) {
-      this._bsModal = new window.bootstrap.Modal(this.modal)
+    this._bsModal = createBsModal(this.modal)
+    if (this._bsModal) {
       // Listen for modal hidden event to clean up listeners
       this.modal.addEventListener('hidden.bs.modal', this._onModalHidden)
       this._bsModal.show()

@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
+import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
 import {
   deactivateListItem,
   parseTeamsJson,
@@ -113,9 +114,8 @@ export default class extends Controller {
 
   openFromExternal(event) {
     const detail = event.detail || {}
-    const bs = window.bootstrap?.Modal
-    if (bs && this.element) {
-      bs.getOrCreateInstance(this.element).show()
+    if (this.element) {
+      showBsModal(getOrCreateBsModal(this.element))
     }
 
     return this.open({
