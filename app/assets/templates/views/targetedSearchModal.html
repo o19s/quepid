@@ -13,7 +13,7 @@
     <form ng-submit="findDocs()">
       <div class="row">
         <div class="mb-3 col-sm-6">
-          <div class="form-control">
+          <div class="form-control" ng-if="settings.searchEngine != 'solr' && settings.searchEngine != 'es' && settings.searchEngine != 'os'">
             <div ui-ace="{
               onLoad : aceLoaded,
               onChange: aceChanged,
@@ -39,11 +39,32 @@
             Please click the "Search" button instead of enter key to avoid scrolling your query out of view!
           </p>
 
-          <p class="form-text">
-            Solr:
-            Use the simple <a href="https://www.lucenetutorial.com/lucene-query-syntax.html" target="_blank" rel="noopener noreferrer">Lucene query syntax</a> (<code>field:value</code>).<br />
-            Example: <code>id:123</code>.<br />
-            <br />
+          <textarea class="form-control" ng-if="settings.searchEngine == 'solr'" name="docFinderQueryParams"
+            ng-model="docFinder.queryParams"></textarea>
+
+          <div id='docfinder-es-query-params-editor' class='es-query-params' ng-if="settings.searchEngine == 'es'" ui-ace="{
+              require:      ['ace/ext/language_tools'],
+              useWrapMode:  true,
+              mode:         'json',
+              theme:        'chrome'
+            }" ng-model="docFinder.queryParams">
+          </div>
+
+          <div id='docfinder-os-query-params-editor' class='os-query-params' ng-if="settings.searchEngine == 'os'" ui-ace="{
+              require:      ['ace/ext/language_tools'],
+              useWrapMode:  true,
+              mode:         'json',
+              theme:        'chrome'
+            }" ng-model="docFinder.queryParams">
+          </div>
+
+          <p class="form-text" ng-if="settings.searchEngine == 'solr' || settings.searchEngine == 'es' || settings.searchEngine == 'os'">
+            This is pre-filled from your current try's query, just like the Query Sandbox &mdash;
+            edit it however you like to search for a document to rate. It's a one-off query and
+            won't change your try's saved query.
+          </p>
+
+          <p class="form-text" ng-if="settings.searchEngine != 'solr' && settings.searchEngine != 'es' && settings.searchEngine != 'os'">
             Elasticsearch/OpenSearch:
             Entered keywords will replace the <code>#$query##</code> placeholder in your configured query. Lucene syntax is
             only supported for specific query types such as
@@ -53,7 +74,7 @@
         </div>
         <div class="col-sm-3">
           <p>
-            <input type="submit" class="btn btn-primary form-control" value="Search" />
+            <input type="submit" class="btn btn-primary form-control" ng-disabled="docFinder.searching" value="Search" />
           </p>
         </div>
       </div>
@@ -69,7 +90,11 @@
 </div>
 
 <div>
-  <div class="row alert alert-warning" ng-if="this.docFinder.numFound == 0">
+  <div class="row alert alert-danger" ng-if="docFinder.parseError">
+    Couldn't parse that query &mdash; check the syntax and try again.
+  </div>
+
+  <div class="row alert alert-warning" ng-if="this.docFinder.numFound == 0 && !docFinder.parseError">
     Your query <em>{{docFinder.lastQuery}}</em> returned no results
   </div>
 

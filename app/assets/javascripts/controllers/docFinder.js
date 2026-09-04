@@ -14,24 +14,86 @@ angular.module('QuepidApp')
     ) {
       $scope.defaultList = false;
       $scope.docFinder = {
-        docs:       [],
-        lastQuery:  '',
-        queryText:  '',
+        docs:        [],
+        lastQuery:   '',
+        queryText:   '',
+        queryParams: '',
+        parseError:  false,
       };
 
       var currSettings = settingsSvc.editableSettings();
+      $scope.settings = currSettings;
+
+      // The try's saved queryParams still has the '#$query##' placeholder in it - swap in the
+      // actual query being tested (the same substitution fetch_service.rb does at search time)
+      // so the editor shows e.g. 'q=news&magicBoost=15' instead of 'q=#$query##&magicBoost=15'.
+      function resolveQueryPlaceholder(queryParams) {
+        return queryParams ? queryParams.replace(/#\$query##/g, $scope.query.queryText) : queryParams;
+      }
+
+      $scope.docFinder.queryParams = resolveQueryPlaceholder(currSettings.selectedTry.queryParams);
+
+      // Solr/ES/OpenSearch: the query box is now the same kind of full query-params editor as
+      // the Query Sandbox (pre-filled from the try's current query), rather than a Lucene
+      // keyword fragment merged into the configured query via explainOther(). We resolve the
+      // edited text into args via settingsSvc.previewArgs() (server-side, non-persisting —
+      // reuses Try#args/SolrArgParser/EsArgParser so curator vars etc. behave identically to
+      // the real Sandbox), then run a real search and explain it the same way normal results
+      // are explained (queriesSvc.normalizeDocExplains), instead of the old solr/es/os-only
+      // explainOther dispatch below (which has no case for searchapi/vectara/algolia at all).
+      var ENGINES_WITH_QUERY_PARAMS_EDITOR = [ 'solr', 'es', 'os' ];
+
+      function findDocsByPreviewingQueryParams() {
+        var settings  = settingsSvc.editableSettings();
+        var query     = $scope.query;
+        var fieldSpec = settings.createFieldSpec();
+
+        $scope.docFinder.searching = true;
+
+        return settingsSvc.previewArgs(settings.selectedTry.tryNo, $scope.docFinder.queryParams).then(function(resolvedArgs) {
+          $scope.docFinder.searching = false;
+          $scope.docFinder.lastQuery = $scope.docFinder.queryParams;
+
+          if (resolvedArgs === null) {
+            $scope.docFinder.numFound   = 0;
+            $scope.docFinder.parseError = true;
+            return;
+          }
+
+          $scope.docFinder.parseError = false;
+
+          var tempSettings = angular.extend({}, settings, {
+            selectedTry: angular.extend({}, settings.selectedTry, {
+              args:        resolvedArgs,
+              queryParams: $scope.docFinder.queryParams
+            })
+          });
+
+          $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(tempSettings, query);
+
+          return $scope.docFinder.searcher.search().then(function() {
+            $scope.docFinder.numFound = $scope.docFinder.searcher.numFound;
+            $scope.docFinder.docs     = queriesSvc.normalizeDocExplains(query, $scope.docFinder.searcher, fieldSpec);
+          });
+        });
+      }
 
       $scope.findDocs = function() {
-        var settings      = settingsSvc.editableSettings();
+        $scope.defaultList     = false;
+        $scope.docFinder.docs  = [];
+
+        var settings = settingsSvc.editableSettings();
+
+        if (ENGINES_WITH_QUERY_PARAMS_EDITOR.indexOf(settings.searchEngine) !== -1) {
+          return findDocsByPreviewingQueryParams();
+        }
+
         var query         = $scope.query;
         var ratingsStore  = $scope.query.ratingsStore;
         var fieldSpec     = settings.createFieldSpec();
 
-        $scope.defaultList = false;
-
         $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(settings, query);
 
-        $scope.docFinder.docs = []; // reset the array for a new search
         $scope.docFinder.searcher.explainOther($scope.docFinder.queryText, fieldSpec)
           .then(function() {
             $scope.docFinder.numFound   = $scope.docFinder.searcher.numFound;
@@ -64,6 +126,29 @@ angular.module('QuepidApp')
           return;
         }
 
+        var settings = settingsSvc.editableSettings();
+
+        if (ENGINES_WITH_QUERY_PARAMS_EDITOR.indexOf(settings.searchEngine) !== -1) {
+          $scope.docFinder.searcher = $scope.docFinder.searcher.pager();
+          $scope.docFinder.paging = true;
+
+          if ( $scope.docFinder.searcher === null ) {
+            $scope.docFinder.paging = false;
+            return;
+          }
+
+          var previewFieldSpec = settings.createFieldSpec();
+
+          $scope.docFinder.searcher.search().then(function() {
+            $scope.docFinder.numFound = $scope.docFinder.searcher.numFound;
+            var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, previewFieldSpec);
+            $scope.docFinder.docs = $scope.docFinder.docs.concat(normed);
+            $scope.docFinder.paging = false;
+          });
+
+          return;
+        }
+
         $scope.docFinder.searcher = $scope.docFinder.searcher.pager();
         $scope.docFinder.paging = true;
 
@@ -72,7 +157,6 @@ angular.module('QuepidApp')
           return;
         }
 
-        var settings      = settingsSvc.editableSettings();
         var fieldSpec     = settings.createFieldSpec();
         var ratingsStore  = $scope.query.ratingsStore;
 
@@ -109,8 +193,12 @@ angular.module('QuepidApp')
           var filter = {
             'query': $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length)
           };
-          $scope.docFinder.searcher.explainOther(
-            filter, fieldSpec)
+          // explainOther() doesn't reliably route through Quepid's proxy (unlike search()),
+          // so it 400s/CORS-fails whenever the endpoint requires proxying - reuse the same
+          // "swap in this query, then just search()" technique the templated-call branch
+          // below already relies on instead.
+          $scope.docFinder.searcher.queryDsl = filter;
+          $scope.docFinder.searcher.search()
             .then(function() {
               var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
               $scope.docFinder.docs = $scope.docFinder.docs.concat(normed);
@@ -165,6 +253,8 @@ angular.module('QuepidApp')
 
       $scope.resetToAllRatedDocs = function(){
         $scope.docFinder.queryText = '';
+        $scope.docFinder.queryParams = resolveQueryPlaceholder(currSettings.selectedTry.queryParams);
+        $scope.docFinder.parseError = false;
         $scope.docFinder.docs = [];
         $scope.initializeToRatedDocs();
 
@@ -205,8 +295,12 @@ angular.module('QuepidApp')
             });
           }
           else {
-            $scope.docFinder.searcher.explainOther(
-              filter, fieldSpec)
+            // explainOther() doesn't reliably route through Quepid's proxy (unlike
+            // search()), so it 400s/CORS-fails whenever the endpoint requires proxying -
+            // reuse the same "swap in this query, then just search()" technique the
+            // templated-call branch above already relies on instead.
+            $scope.docFinder.searcher.queryDsl = filter;
+            $scope.docFinder.searcher.search()
               .then(function() {
                 let normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
                 $scope.docFinder.docs = normed;
@@ -216,6 +310,13 @@ angular.module('QuepidApp')
           }
 
         } else if ($scope.docFinder.searcher.type === 'solr') {
+          // explainOther() reuses the try's own args.start as the offset for its second
+          // (metadata-fetch) query - fine when listing a page of real results, but wrong
+          // here: we're looking up a specific handful of already-rated doc IDs, so a try
+          // saved mid-page (e.g. start=800) makes it look past all of them and find nothing,
+          // even though the ratings themselves were found just fine.
+          delete $scope.docFinder.searcher.args.start;
+
           $scope.docFinder.searcher.explainOther(
             $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec, 'lucene')
             .then(function() {

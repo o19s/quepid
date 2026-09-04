@@ -233,7 +233,11 @@ Rails.application.routes.draw do
       end
       resources :cases, only: [] do
         # Case Tries
-        resources :tries, param: :try_number, except: [ :new, :edit ]
+        resources :tries, param: :try_number, except: [ :new, :edit ] do
+          member do
+            post 'preview_args'
+          end
+        end
 
         # Case Scorers
         resources :scorers, only: [ :index, :update ], controller: :case_scorers
