@@ -13,9 +13,9 @@
             <div id="error_explanation">
               <h2><%= pluralize(resource.errors.count, "error") %> prohibited this invitation from being completed:</h2>
 
-              <% resource.errors.full_messages.each do |message| %>
+              <% resource.errors.each do |error| %>
               <div class="alert alert-danger">
-                <%= message %>
+                <%= error.full_message %>
               </div>
               <% end %>
             </div>

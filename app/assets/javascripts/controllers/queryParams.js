@@ -51,7 +51,7 @@ angular.module('QuepidApp')
 
       $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){
-          if ($scope.settings.searchEngine === 'es' || $scope.settings.searchEngine === 'os'){
+          if (searchEndpointSvc.isEsOrOsEngine($scope.settings.searchEngine)){
             try {
               const args = JSON.parse($scope.settings.queryParams);
               $scope.showESTemplateWarning = esUrlSvc.isTemplateCall(args);

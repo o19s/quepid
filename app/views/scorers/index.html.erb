@@ -1,11 +1,10 @@
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1>Scorer Options</h1>
+<%= page_header "Scorer Options" do %>
   <div class="text-end">
     <small class="text-muted">Communal: <strong><%= @communal_count %></strong></small>
     &nbsp;&nbsp;
     <small class="text-muted">Custom: <strong><%= @custom_count %></strong></small>
   </div>
-</div>
+<% end %>
 
 <div class="row mb-4">
   <div class="col-md-4">
@@ -30,7 +29,7 @@
     </div>
   </div>
 
-  <div class="col-md-8" data-controller="share-scorer">
+  <div class="col-md-8">
     <div class="card">
       <div class="card-body">
         <h5 class="card-title">Scorers</h5>

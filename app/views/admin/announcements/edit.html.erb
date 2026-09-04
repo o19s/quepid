@@ -1,25 +1,14 @@
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1>Edit Quepid Announcement</h1>
+<%= page_header "Edit Quepid Announcement" do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= button_to "Delete", admin_announcement_path(@announcement), method: :delete, class: 'btn btn-sm btn-outline-danger', onclick: "return confirm('Are you sure you want to delete this Announcement?');" %>      
+      <%= button_to "Delete", admin_announcement_path(@announcement), method: :delete, class: 'btn btn-sm btn-outline-danger', onclick: "return confirm('Are you sure you want to delete this Announcement?');" %>
       <%= link_to 'Back to Quepid Announcements', admin_announcements_path, method: :get, class:'btn btn-sm btn-outline-secondary' %>
     </div>
   </div>
-</div>
+<% end %>
 
 <%= form_for [:admin, @announcement] do |form| %>
-  <% if @announcement.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@announcement.errors.count, "error") %> prohibited this announcement from being saved:</h2>
-
-      <ul>
-      <% @announcement.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-      </ul>
-    </div>
-  <% end %>
+  <%= render "shared/error_messages", record: @announcement, subject: "announcement" %>
 
   <div class="card">
     <div class="card-body">

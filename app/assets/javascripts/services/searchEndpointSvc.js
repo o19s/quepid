@@ -76,6 +76,21 @@ angular.module('QuepidApp')
             });
           });
       };
-      
+
+      // Elasticsearch and OpenSearch share the same query DSL shape (bool/terms
+      // clauses, _source template semantics). Solr, Vectara, and Algolia each have
+      // their own distinct query shapes and are handled in their own branches
+      // wherever this matters, so don't fold them into this check.
+      this.isEsOrOsEngine = function(searchEngine) {
+        return searchEngine === 'es' || searchEngine === 'os';
+      };
+
+      // Broader than isEsOrOsEngine: true for any engine whose queryParams field
+      // holds a JSON document (as opposed to Solr's classic query-string params),
+      // so it's the right check for "is this JSON I should validate/parse".
+      this.usesJsonQueryParams = function(searchEngine) {
+        return this.isEsOrOsEngine(searchEngine) || searchEngine === 'vectara' || searchEngine === 'algolia';
+      };
+
     }
   ]);

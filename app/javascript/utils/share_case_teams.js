@@ -10,6 +10,17 @@ export function parseTeamsJson(rawJson) {
   return []
 }
 
+export function unsharedTeams(allTeams, sharedTeams) {
+  const sharedTeamIds = sharedTeams.map((t) => String(t.id))
+  return allTeams.filter((team) => !sharedTeamIds.includes(String(team.id)))
+}
+
+export function deactivateListItem(listElement, teamId) {
+  if (!teamId || !listElement) return
+  const prev = listElement.querySelector(`[data-team-id="${teamId}"]`)
+  if (prev) prev.classList.remove("active")
+}
+
 export function partitionTeams(teams, caseId) {
   const caseNo = Number(caseId)
   const allTeams = []

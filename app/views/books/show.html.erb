@@ -15,13 +15,13 @@ function updateModalTitle(judgeId) {
 
 <%= turbo_frame_tag "modal" %>
 
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1>
-    <i class="bi bi-book"></i> <%= book_title @book %>
-    <% if @book.archived? %>
-      <span class="badge bg-warning">Archived</span>
-    <% end %>
-  </h1>
+<% title = capture do %>
+  <i class="bi bi-book"></i> <%= book_title @book %>
+  <% if @book.archived? %>
+    <span class="badge bg-warning">Archived</span>
+  <% end %>
+<% end %>
+<%= page_header title do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <% if @book.archived? %>
@@ -35,7 +35,7 @@ function updateModalTitle(judgeId) {
       <% end %>
     </div>
   </div>
-</div>
+<% end %>
 
 <%= render 'tabs', book: @book %>
 <p>

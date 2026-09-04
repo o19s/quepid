@@ -101,18 +101,7 @@
           </a>
 
           <ul class="dropdown-menu">
-            <li><%= link_to 'My profile', profile_path, class: 'dropdown-item', target: '_self' %></li>
-            <li><%= link_to 'Log out', logout_path, class: 'dropdown-item', target: '_self' %></li>
-            <li role="separator" class=""></li>
-            <li><%= link_to 'API Docs', oas_rails_path, class: 'dropdown-item', target: '_self' %></li>
-            <% if current_user.administrator? %>
-            <li role="separator" class=""></li>
-            <li><%= link_to 'Admin Home', admin_path, class: 'dropdown-item', target: '_self' %></li>
-            <li><%= link_to 'Users', admin_users_path, class: 'dropdown-item', target: '_self' %></li>
-
-            <li><%= link_to 'Announcements', admin_announcements_path, class: 'dropdown-item', target: '_self' %></li>
-            <li><%= link_to 'Job Manager', mission_control_jobs_path, class: 'dropdown-item', target: '_self' %></li>
-            <% end %>
+            <%= render 'shared/account_dropdown', divider: account_dropdown_divider(:separator) %>
           </ul>
         </li> <!-- End account management -->
       </ul>

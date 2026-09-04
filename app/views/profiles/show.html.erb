@@ -73,17 +73,7 @@
       <h2>
         Profile
       </h2>
-      <% if current_user.errors.any? %>
-        <div id="error_explanation">
-          <h2><%= pluralize(current_user.errors.count, "error") %> prohibited this from being saved:</h2>
-
-          <ul>
-          <% current_user.errors.full_messages.each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-          </ul>
-        </div>
-      <% end %>
+      <%= render "shared/error_messages", record: current_user, subject: "" %>
 
       <div class="form-floating mb-3">
 
@@ -120,17 +110,7 @@
       <h2>
         Account Security
       </h2>
-      <% if current_user.errors.any? %>
-        <div id="error_explanation">
-          <h2><%= pluralize(current_user.errors.count, "error") %> prohibited this from being saved:</h2>
-
-          <ul>
-          <% current_user.errors.full_messages.each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-          </ul>
-        </div>
-      <% end %>
+      <%= render "shared/error_messages", record: current_user, subject: "" %>
 
       <div class="form-floating mb-3">
         <input id="old" type="password" name="current_password" class="form-control" placeholder="Password"/>
@@ -196,17 +176,7 @@
       <h2>
         <font color="red">Danger Zone</font>
       </h2>
-      <% if current_user.errors.any? %>
-        <div id="error_explanation">
-          <h2><%= pluralize(current_user.errors.count, "error") %> prohibited this from being saved:</h2>
-
-          <ul>
-          <% current_user.errors.full_messages.each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-          </ul>
-        </div>
-      <% end %>
+      <%= render "shared/error_messages", record: current_user, subject: "" %>
 
       <label for="confirm" class="form-text">
         This will remove you from any existing teams, and delete any cases that you are the owner and only member of, as well as associated

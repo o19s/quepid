@@ -27,6 +27,7 @@ angular.module('QuepidApp')
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
     'normalDocsSvc',
+    'searchEndpointSvc',
     function queriesSvc(
       $scope,
       $http,
@@ -45,7 +46,8 @@ angular.module('QuepidApp')
       searchErrorTranslatorSvc,
       esExplainExtractorSvc,
       solrExplainExtractorSvc,
-      normalDocsSvc
+      normalDocsSvc,
+      searchEndpointSvc
     ) {
 
       let caseNo = -1;
@@ -197,7 +199,7 @@ angular.module('QuepidApp')
           }
           // Modify query if ratings were passed in
           if (options.filterToRated) {
-            if (passedInSettings.searchEngine === 'es' || passedInSettings.searchEngine === 'os') {
+            if (searchEndpointSvc.isEsOrOsEngine(passedInSettings.searchEngine)) {
               let mainQuery = args['query'];
               args['query'] = {
                 'bool': {
@@ -799,7 +801,7 @@ angular.module('QuepidApp')
 
           let fieldSpec = settings.createFieldSpec();
 
-          if (settings.searchEngine === 'es' || settings.searchEngine === 'os') {
+          if (searchEndpointSvc.isEsOrOsEngine(settings.searchEngine)) {
             let esQuery = {
               'terms': {}
             };

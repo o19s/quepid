@@ -71,10 +71,10 @@
                                    action: 'click->share-scorer#open',
                                    bs_toggle: 'modal',
                                    bs_target: '#shareScorerModal',
-                                   share_scorer_id: scorer.id,
-                                   share_scorer_name: scorer.name,
-                                   share_scorer_all_teams_json: current_user.teams.select(:id, :name).order(:name).to_json,
-                                   share_scorer_shared_teams_json: scorer.teams.select(:id, :name).to_json
+                                   share_scorer_id_value: scorer.id,
+                                   share_scorer_name_value: scorer.name,
+                                   share_scorer_all_teams_json_value: current_user.teams.select(:id, :name).order(:name).to_json,
+                                   share_scorer_shared_teams_json_value: scorer.teams.select(:id, :name).to_json
                                  } do %>
                     <i class="bi bi-share" aria-hidden="true"></i>
                   <% end %>

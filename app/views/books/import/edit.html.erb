@@ -1,11 +1,13 @@
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1><i class="bi bi-book"></i> Import Data Into This Book</h1>
+<% title = capture do %>
+  <i class="bi bi-book"></i> Import Data Into This Book
+<% end %>
+<%= page_header title do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= button_to 'Back to Book', book_path(@book), class: "btn btn-sm btn-outline-secondary", method: :get %>
-    </div>    
-  </div>  
-</div>
+    </div>
+  </div>
+<% end %>
 
 <div class="card" style="">
   <div class="card-body">
@@ -40,18 +42,10 @@
       If you do NOT provide a <code>query_doc_pair_id</code> then the <code>query_text</code> and <code>doc_id</code> must both be present and will be used to upsert the query doc pair.
     </p>
   
+    <%= render "shared/error_messages", record: @book, subject: "book" %>
+
     <% if @book.errors.any? %>
-      <div id="error_explanation">
-        <h2><%= pluralize(@book.errors.count, "error") %> prohibited this book from being saved:</h2>
-    
-        <ul>
-          <% @book.errors.each do |error| %>
-            <li><%= error.full_message %></li>
-          <% end %>
-        </ul>
-      </div>
-      
-      <div class="alert alert-warning" role="alert" >  
+      <div class="alert alert-warning" role="alert" >
         You will need to pick the file to be imported again.
       </div>
     <% end %>
@@ -120,18 +114,10 @@
       </code>       
     </p>
   
+    <%= render "shared/error_messages", record: @book, subject: "book" %>
+
     <% if @book.errors.any? %>
-      <div id="error_explanation">
-        <h2><%= pluralize(@book.errors.count, "error") %> prohibited this book from being saved:</h2>
-    
-        <ul>
-          <% @book.errors.each do |error| %>
-            <li><%= error.full_message %></li>
-          <% end %>
-        </ul>
-      </div>
-      
-      <div class="alert alert-warning" role="alert" >  
+      <div class="alert alert-warning" role="alert" >
         You will need to pick the file to be imported again.
       </div>
     <% end %>
