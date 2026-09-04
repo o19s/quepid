@@ -105,7 +105,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
   test('clone-case popover', async ({ page }) => {
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page);
-    await page.locator('clone-case a').click();
+    await page.locator('a[data-controller="clone-case-core"]').click();
     const modal = page.locator('.modal.show').first();
     await expect(modal).toBeVisible();
     await page.setViewportSize({ width: 900, height: 760 });

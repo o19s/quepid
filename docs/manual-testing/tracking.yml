@@ -318,10 +318,10 @@ parts:
         paths: ["app/controllers/cases_controller.rb"]
       "6.3":
         title: "Clone a case"
-        last_run: 2026-09-02
+        last_run: 2026-09-04
         result: pass
-        notes: "Clone button stayed disabled with a blank name, enabled once filled in. Cloned SOLR CASE (Try 1, Include Queries checked) into a new case; landed in its workbench with the copied query/try intact. Deleted the test clone afterward. Include-Ratings-off and forced-failure edge cases not tested."
-        paths: ["app/controllers/cases_controller.rb", "app/models/case.rb"]
+        notes: "Re-verified after migrating the toolbar's clone-case modal from AngularJS to Stimulus. Clone button stayed disabled with a blank name, enabled once filled in; toggled 'include entire try history' (hides the try picker) and unchecked Include Queries (shows the empty-case warning) before re-checking it. Cloned SOLR CASE (Try 2, Include Queries checked) into a new case; landed in its workbench with the copied query/try intact, then deleted the test clone via the toolbar's Delete option. Include-Ratings-off and forced-failure edge cases not tested."
+        paths: ["app/controllers/api/v1/clone/cases_controller.rb", "app/models/case.rb", "app/views/shared/_clone_case_core_modal.html.erb", "app/javascript/controllers/clone_case_core_controller.js", "app/assets/templates/views/queriesLayout.html"]
       "6.4":
         title: "Delete / Archive / Delete-all-queries (in-case toolbar)"
         last_run: 2026-09-02

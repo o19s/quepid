@@ -22,7 +22,6 @@ angular.module('QuepidApp')
       svc.casesCount        = 0;
 
       // Functions
-      svc.cloneCase         = cloneCase;
       svc.constructFromData = constructFromData;
       svc.get               = get;
       svc.getCases          = getCases;
@@ -478,42 +477,6 @@ angular.module('QuepidApp')
               $log.info('Did not find the case ' + id);              
           });
         }
-      }
-
-      function cloneCase(theCase, options) {
-        var url             = 'api/clone/cases';
-
-        if ( angular.isUndefined(options) ) {
-          options = {};
-        }
-
-        var opts            = {
-          clone_queries:    options.queries,
-          clone_ratings:    options.ratings,
-          preserve_history: options.history,
-          try_number:       options.tryId,
-          case_name:        options.caseName
-        };
-        var defaultOptions  = {
-          case_id:          theCase.caseNo,
-          clone_queries:    false,
-          clone_ratings:    false,
-          preserve_history: false,
-          try_number:       null,
-        };
-
-        var data = angular.extend({}, defaultOptions, opts);
-
-        return $http.post(url, data)
-          .then(function(response) {
-            var acase       = constructFromData(response.data);
-            cases[acase.id] = acase;
-
-            svc.allCases.push(acase);
-            broadcastSvc.send('updatedCasesList', svc.allCases);
-
-            return acase;
-          });
       }
 
       function refetchCaseLists () {

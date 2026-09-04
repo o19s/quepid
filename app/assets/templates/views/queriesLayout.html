@@ -122,9 +122,17 @@
               >Share case</a>
             </li>
             <li class="list-inline-item">
-              <clone-case
-                acase="caseModel.selectedCase()"
-              ></clone-case>
+              <i class="bi bi-copy" aria-hidden="true"></i>
+              <a
+                href="#"
+                data-controller="clone-case-core"
+                data-action="click->clone-case-core#open"
+                data-bs-toggle="modal"
+                data-bs-target="#cloneCaseModal"
+                data-clone-case-core-id-value="{{ caseModel.selectedCase().caseNo }}"
+                data-clone-case-core-name-value="{{ caseModel.selectedCase().caseName }}"
+                data-clone-case-core-last-try-value="{{ caseModel.selectedCase().lastTry }}"
+              >Clone</a>
             </li>
             <li class="list-inline-item">
               <i class="bi bi-x-lg" aria-hidden="true"></i>
