@@ -42,7 +42,7 @@
 
         <div id='es-query-params-editor' class='es-query-params' ng-show="settings.searchEngine == 'es'" ui-ace="{
             require:      ['ace/ext/language_tools'],
-            useWrapMode:  false,
+            useWrapMode:  true,
             mode:         'json',
             theme:        'chrome'
           }" ng-model="settings.selectedTry.queryParams">
@@ -50,7 +50,7 @@
 
         <div id='os-query-params-editor' class='os-query-params' ng-show="settings.searchEngine == 'os'" ui-ace="{
             require:      ['ace/ext/language_tools'],
-            useWrapMode:  false,
+            useWrapMode:  true,
             mode:         'json',
             theme:        'chrome'
           }" ng-model="settings.selectedTry.queryParams">
@@ -59,7 +59,7 @@
         <div id='vectara-query-params-editor' class='vectara-query-params' ng-show="settings.searchEngine == 'vectara'"
           ui-ace="{
             require:      ['ace/ext/language_tools'],
-            useWrapMode:  false,
+            useWrapMode:  true,
             mode:         'json',
             theme:        'chrome'
           }" ng-model="settings.selectedTry.queryParams">
@@ -68,7 +68,7 @@
         <div id='algolia-query-params-editor' class='algolia-query-params' ng-show="settings.searchEngine == 'algolia'"
           ui-ace="{
             require:      ['ace/ext/language_tools'],
-            useWrapMode:  false,
+            useWrapMode:  true,
             mode:         'json',
             theme:        'chrome'
           }" ng-model="settings.selectedTry.queryParams">
@@ -76,7 +76,7 @@
 
         <div id='searchapi-query-params-editor' class='searchapi-query-params' ng-show="settings.searchEngine == 'searchapi'" ui-ace="{
             require:      ['ace/ext/language_tools'],
-            useWrapMode:  false,
+            useWrapMode:  true,
             mode:         'json',
             theme:        'chrome',
             showGutter:   settings.apiMethod == 'POST'
