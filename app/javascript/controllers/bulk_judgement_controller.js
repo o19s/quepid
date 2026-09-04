@@ -1,5 +1,14 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
+import { showStatusMessage } from "utils/status_message"
+
+const STATUS_VARIANT_CLASSES = [
+  "text-muted",
+  "text-warning",
+  "text-success",
+  "text-danger",
+  "text-info"
+]
 
 export default class extends Controller {
   static targets = ["rating", "explanation", "status", "savedIndicator"]
@@ -216,56 +225,51 @@ export default class extends Controller {
     }
   }
 
+  // Transient states (saved/reset) auto-clear after 2s (guarded); sticky states (error/typing/saving) don't.
   showStatus(queryDocPairId, status) {
     const statusElement = this.element.querySelector(`#status_${queryDocPairId}`)
     if (!statusElement) return
 
-    // Remove all status classes
-    statusElement.classList.remove(
-      "text-muted",
-      "text-warning",
-      "text-success",
-      "text-danger",
-      "text-info"
-    )
-
-    // Transient states (saved/reset) auto-clear after 2s; sticky states (error/typing/saving) don't.
-    switch(status) {
+    switch (status) {
       case "saving":
-        statusElement.innerHTML =
-          '<span class="spinner-border spinner-border-sm me-1 align-middle" role="status" aria-hidden="true"></span> Saving...'
-        statusElement.classList.add("text-warning")
+        showStatusMessage(statusElement, {
+          html: '<span class="spinner-border spinner-border-sm me-1 align-middle" role="status" aria-hidden="true"></span> Saving...',
+          variantClass: "text-warning",
+          variantClasses: STATUS_VARIANT_CLASSES
+        })
         break
       case "saved":
-        statusElement.innerHTML = '<i class="bi bi-check-circle"></i> Saved'
-        statusElement.classList.add("text-success")
-        // Hide success message after 2 seconds
-        setTimeout(() => {
-          if (statusElement.innerHTML.includes("Saved")) {
-            statusElement.innerHTML = ''
-          }
-        }, 2000)
+        showStatusMessage(statusElement, {
+          html: '<i class="bi bi-check-circle"></i> Saved',
+          variantClass: "text-success",
+          variantClasses: STATUS_VARIANT_CLASSES,
+          autoHideMs: 2000
+        })
         break
       case "reset":
-        statusElement.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i> Reset'
-        statusElement.classList.add("text-info")
-        // Hide reset message after 2 seconds
-        setTimeout(() => {
-          if (statusElement.innerHTML.includes("Reset")) {
-            statusElement.innerHTML = ''
-          }
-        }, 2000)
+        showStatusMessage(statusElement, {
+          html: '<i class="bi bi-arrow-counterclockwise"></i> Reset',
+          variantClass: "text-info",
+          variantClasses: STATUS_VARIANT_CLASSES,
+          autoHideMs: 2000
+        })
         break
       case "error":
-        statusElement.innerHTML = '<i class="bi bi-x-circle"></i> Error saving'
-        statusElement.classList.add("text-danger")
+        showStatusMessage(statusElement, {
+          html: '<i class="bi bi-x-circle"></i> Error saving',
+          variantClass: "text-danger",
+          variantClasses: STATUS_VARIANT_CLASSES
+        })
         break
       case "typing":
-        statusElement.innerHTML = '<i class="bi bi-pencil"></i> Typing...'
-        statusElement.classList.add("text-muted")
+        showStatusMessage(statusElement, {
+          html: '<i class="bi bi-pencil"></i> Typing...',
+          variantClass: "text-muted",
+          variantClasses: STATUS_VARIANT_CLASSES
+        })
         break
       default:
-        statusElement.innerHTML = ''
+        showStatusMessage(statusElement, { html: "", variantClasses: STATUS_VARIANT_CLASSES })
     }
   }
 }

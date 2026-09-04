@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { getQuepidRootUrl } from "utils/quepid_root"
+import { showStatusMessage } from "utils/status_message"
 
 export default class extends Controller {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner"]
@@ -103,9 +104,7 @@ export default class extends Controller {
   }
 
   showAlert(message, type) {
-    this.alertTarget.textContent = message
-    this.alertTarget.className = `alert alert-${type}`
-    this.alertTarget.classList.remove('d-none')
+    showStatusMessage(this.alertTarget, { message, className: `alert alert-${type}` })
   }
 
   hideAlert() {

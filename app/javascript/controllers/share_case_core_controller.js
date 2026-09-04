@@ -7,6 +7,7 @@ import {
   partitionTeams,
   unsharedTeams
 } from "utils/share_case_teams"
+import { showStatusMessage } from "utils/status_message"
 
 /**
  * Share / unshare from the core case toolbar — list UI, API stay-on-page.
@@ -457,9 +458,7 @@ export default class extends Controller {
 
   showAlert(message, variant) {
     if (!this.hasAlertTarget) return
-    this.alertTarget.textContent = message
-    this.alertTarget.className = `alert alert-${variant}`
-    this.alertTarget.classList.remove("d-none")
+    showStatusMessage(this.alertTarget, { message, className: `alert alert-${variant}` })
   }
 
   clearAlert() {

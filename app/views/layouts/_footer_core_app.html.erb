@@ -2,11 +2,7 @@
   <div class="container">
     <div class="row">
       <div class="col-md-12 text-center">
-        &copy; <%= Time.zone.now.year %> &nbsp;&mdash;&nbsp;
-        <a href="http://opensourceconnections.com">
-          <%= image_tag "OSC-icon.png", width: 24 %>
-          OpenSource Connections, LLC
-        </a>
+        <%= render 'shared/osc_copyright', link_class: nil, separator: ' &nbsp;&mdash;&nbsp;'.html_safe, open_in_new_tab: false %>
 
         <% footer_links = [
           {

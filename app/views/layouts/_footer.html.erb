@@ -7,11 +7,7 @@
     </section>
   </div-->
   <div class="text-center p-3 footer-bar">
-    &copy; <%= Time.zone.now.year %>
-    <a class="text-white" href="http://opensourceconnections.com" target="_blank" rel="noopener noreferrer">
-      <%= image_tag "OSC-icon.png", width: 24 %>
-      OpenSource Connections, LLC
-    </a>
+    <%= render 'shared/osc_copyright', link_class: 'text-white', separator: nil, open_in_new_tab: true %>
     &nbsp;|&nbsp;
     <small>
     Quepid Version <code><%= Rails.application.config.quepid_version %></code>

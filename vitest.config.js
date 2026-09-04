@@ -27,6 +27,7 @@ export default defineConfig({
       "utils/text_paste": path.resolve(repoRoot, "app/javascript/utils/text_paste.js"),
       "utils/share_case_teams": path.resolve(repoRoot, "app/javascript/utils/share_case_teams.js"),
       "utils/count_up": path.resolve(repoRoot, "app/javascript/utils/count_up.js"),
+      "utils/status_message": path.resolve(repoRoot, "app/javascript/utils/status_message.js"),
       "controllers/share_entity_controller_base": path.resolve(
         repoRoot,
         "app/javascript/controllers/share_entity_controller_base.js"

@@ -17,6 +17,7 @@ pin 'utils/bs_modal', to: 'utils/bs_modal.js'
 pin 'utils/text_paste', to: 'utils/text_paste.js'
 pin 'utils/share_case_teams', to: 'utils/share_case_teams.js'
 pin 'utils/count_up', to: 'utils/count_up.js'
+pin 'utils/status_message', to: 'utils/status_message.js'
 
 pin 'local-time' # @3.0.3
 

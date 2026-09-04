@@ -1,0 +1,36 @@
+<%# Generic Bootstrap 5 modal shell (.modal > .modal-dialog > .modal-content >
+    .modal-header/.modal-body/.modal-footer) shared across the share/import
+    modal partials. The standard Cancel/data-bs-dismiss button is rendered
+    automatically after `footer`.
+
+    Locals:
+      id           - DOM id for the outer .modal div; also drives the title's
+                     id/aria-labelledby ("#{id}Label")
+      title        - modal title text
+      body         - captured .modal-body content
+      footer       - captured .modal-footer content, rendered before Cancel (default: none)
+      dialog_class - extra classes for .modal-dialog, e.g. "modal-lg" (default: none)
+      data         - data attributes for the outer .modal div, e.g. { controller: "share-book" }
+      title_data   - data attributes for the .modal-title element (default: none) %>
+<% footer ||= nil %>
+<% dialog_class ||= "" %>
+<% data ||= {} %>
+<% title_data ||= {} %>
+<%= content_tag :div, class: "modal fade", id: id, tabindex: "-1",
+                aria: { labelledby: "#{id}Label", hidden: "true" }, data: data do %>
+  <div class="modal-dialog <%= dialog_class %>">
+    <div class="modal-content">
+      <div class="modal-header">
+        <%= content_tag :h5, title, class: "modal-title", id: "#{id}Label", data: title_data %>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <%= body %>
+      </div>
+      <div class="modal-footer">
+        <%= footer %>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+<% end %>
