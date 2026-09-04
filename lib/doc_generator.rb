@@ -224,7 +224,10 @@ class DocGenerator
     return false unless response
 
     code = response.code.to_i
-    (code >= 500 && code < 600) || 429 == code
+    # Solr's JSON API never legitimately redirects; a 3xx here means a network
+    # intermediary (e.g. a firewall/content filter) intercepted the request, which
+    # is transient and usually succeeds on retry.
+    (code >= 500 && code < 600) || 429 == code || (code >= 300 && code < 400)
   end
 
   def retry_backoff_seconds attempt, max_delay

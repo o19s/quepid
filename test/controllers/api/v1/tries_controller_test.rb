@@ -174,6 +174,58 @@ search_endpoint: es_endpoint.attributes }
           assert_equal 'es', the_try.search_endpoint.search_engine
         end
 
+        test 'records which mapper based search engine a new search endpoint came from' do
+          put :update,
+              params: {
+                case_id:         the_case.id,
+                try_number:      the_try.try_number,
+                try:             { query_params: 'yql=select * from news where title contains "#$query##"' },
+                search_endpoint: {
+                  search_engine:                 'searchapi',
+                  endpoint_url:                  'https://example.vespa-app.cloud/search/',
+                  api_method:                    'GET',
+                  proxy_requests:                true,
+                  mapper_based_search_engine_id: 'vespa',
+                },
+              }
+
+          assert_response :ok
+
+          the_try.reload
+          assert_equal 'vespa', the_try.search_endpoint.mapper_based_search_engine_id
+        end
+
+        test 'backfills the preset id on an existing endpoint matched by connection details' do
+          existing = SearchEndpoint.create!(
+            search_engine:  'searchapi',
+            endpoint_url:   'https://example.vespa-app.cloud/search/',
+            api_method:     'GET',
+            proxy_requests: true,
+            owner:          joey
+          )
+          assert_nil existing.mapper_based_search_engine_id
+
+          put :update,
+              params: {
+                case_id:         the_case.id,
+                try_number:      the_try.try_number,
+                try:             { query_params: 'yql=select * from news where title contains "#$query##"' },
+                search_endpoint: {
+                  search_engine:                 'searchapi',
+                  endpoint_url:                  'https://example.vespa-app.cloud/search/',
+                  api_method:                    'GET',
+                  proxy_requests:                true,
+                  mapper_based_search_engine_id: 'vespa',
+                },
+              }
+
+          assert_response :ok
+
+          existing.reload
+          assert_equal 'vespa', existing.mapper_based_search_engine_id
+          assert_equal existing.id, the_try.reload.search_endpoint.id
+        end
+
         test 'creates opensearch endpoint with basic auth and proxy on wizard finish' do
           with_require_proxy_with_basic_auth(true) do
             put :update,

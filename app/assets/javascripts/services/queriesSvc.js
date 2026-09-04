@@ -108,6 +108,7 @@ angular.module('QuepidApp')
       this.getCaseNo = getCaseNo;
       this.createSearcherFromSettings = createSearcherFromSettings;
       this.createSearcherFromSnapshot = createSearcherFromSnapshot;
+      this.nextSearchApiPageArgs = nextSearchApiPageArgs;
       this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
 
@@ -195,6 +196,25 @@ angular.module('QuepidApp')
               args['echoParams'] = 'all';
             }
           }
+          else if (passedInSettings.searchEngine === 'searchapi') {
+            // For engines that support pagination (e.g. Vespa's hits/offset), inject the
+            // page-size param on every request — including this first one, not just
+            // paginate()'s follow-ups (see nextSearchApiPageArgs) — so numberOfRows is
+            // honored from page 1 without baking hits/offset into the editable
+            // query_params template. Only fills in what the user's own template doesn't
+            // already set, so an explicit hits=/offset= in query_params still wins.
+            let hitsParam = passedInSettings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
+            let offsetParam = passedInSettings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
+
+            if (hitsParam && offsetParam) {
+              if (args[hitsParam] === undefined) {
+                args[hitsParam] = [ String(passedInSettings.numberOfRows) ];
+              }
+              if (args[offsetParam] === undefined) {
+                args[offsetParam] = [ '0' ];
+              }
+            }
+          }
           // Modify query if ratings were passed in
           if (options.filterToRated) {
             if (passedInSettings.searchEngine === 'es' || passedInSettings.searchEngine === 'os') {
@@ -242,6 +262,56 @@ angular.module('QuepidApp')
         return snapshotSearcherSvc.createSearcherFromSnapshot(snapshotId, query, settings);
       }
 
+      /**
+       * splainer-search's generic Search API engine has no pager() implementation (see
+       * searchApiSearcherFactory.js — it always returns null, unlike Solr/ES/Algolia/Vectara),
+       * since it has no built-in offset concept. For engines that do support it (e.g. Vespa,
+       * whose query API takes hits/offset as plain params), we drive the same "next page" widening
+       * ourselves: bump the page-size/offset key-value pairs already present (or default to them)
+       * in the try's parsed args, and let createSearcherFromSettings build a fresh request from
+       * that — no vendored code touched.
+       *
+       * hitsParam/offsetParam name the actual query_params keys (e.g. Vespa's 'hits'/'offset',
+       * see MapperBasedSearchEngine#pagination_hits_param/#pagination_offset_param) — there's no
+       * universal convention across search APIs, so callers must supply both explicitly.
+       */
+      function nextSearchApiPageArgs(existingArgs, defaultRows, hitsParam, offsetParam) {
+        let nextArgs = angular.copy(existingArgs) || {};
+        let pageSize = nextArgs[hitsParam] ? parseInt(nextArgs[hitsParam][0], 10) : defaultRows;
+        let currentOffset = nextArgs[offsetParam] ? parseInt(nextArgs[offsetParam][0], 10) : 0;
+
+        nextArgs[hitsParam] = [ String(pageSize) ];
+        nextArgs[offsetParam] = [ String(currentOffset + pageSize) ];
+
+        return nextArgs;
+      }
+
+      /**
+       * A mapper (e.g. db/mapper_based_search_engines/vespa.js) may spread a per-field score
+       * breakdown onto each doc as matchfeatures (Vespa's convention, e.g. {"bm25(overview)":
+       * 5.07, "bm25(title)": 2.64}). The generic searchapi engine has no explain concept of
+       * its own (SearchApiDocFactory#explain always returns {}), so build a synthetic explain
+       * tree in the same {description, value, details} shape Solr/ES explains use — the
+       * engine-agnostic bar rendering (explainSvc/normalDocsSvc) picks it up identically to
+       * how it already does for Solr's real explain output. Returns undefined (falling back
+       * to "no explain for doc") when a doc has no matchfeatures to show.
+       */
+      function matchFeaturesExplain(doc) {
+        let matchFeatures = doc.matchfeatures;
+
+        if (!matchFeatures || Object.keys(matchFeatures).length === 0) {
+          return undefined;
+        }
+
+        return {
+          description: 'sum of matched fields:',
+          value: doc.fields ? doc.fields.score : undefined,
+          details: Object.keys(matchFeatures).map(function(fieldName) {
+            return { description: fieldName, value: matchFeatures[fieldName], details: [] };
+          })
+        };
+      }
+
       function normalizeDocExplains(query, searcher, fieldSpec) {
         let normed = [];
 
@@ -249,6 +319,10 @@ angular.module('QuepidApp')
           normed = esExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec);
         } else if (searcher.type === 'solr') {
           normed = solrExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec, searcher.othersExplained);
+        } else if (searcher.type === 'searchapi') {
+          normed = searcher.docs.map(function(doc) {
+            return normalDocsSvc.createNormalDoc(fieldSpec, doc, matchFeaturesExplain(doc));
+          });
         } else {
           // search engine with no explain output
           normed = searcher.docs.map(function(doc) {
@@ -505,7 +579,8 @@ angular.module('QuepidApp')
           let docList   = new DocListFactory(
             newDocs,
             fieldSpec,
-            that.ratingsStore
+            that.ratingsStore,
+            matchFeaturesExplain
           );
 
           that.docs = docList.list();
@@ -541,6 +616,9 @@ angular.module('QuepidApp')
 
           return $q(function(resolve, reject) {
             self.hasBeenScored = false;
+            // A fresh search restarts pagination from page 1 — see paginate()/ratedPaginate().
+            self.searchApiPageArgs = null;
+            self.ratedSearchApiPageArgs = null;
 
             self.searcher = svc.createSearcherFromSettings(
               currSettings,
@@ -567,10 +645,15 @@ angular.module('QuepidApp')
             promises.push(self.searcher.search()
               .then(function() {
                             }, function(response) {
-                self.linkUrl = self.searcher.linkUrl;
+                // splainer-search only ever sets searcher.linkUrl for Solr (see
+                // solrSearcherPreprocessorSvc.js); for a GET-method searchapi engine
+                // (e.g. Vespa), searcher.url already holds the same fully-resolved,
+                // real request URL by the time search() settles, so fall back to it
+                // rather than patching the vendored library for one more engine.
+                self.linkUrl = self.searcher.linkUrl || self.searcher.url;
                 self.setDocs([], 0);
 
-                let msg = searchErrorTranslatorSvc.parseResponseObject(response, self.searcher.linkUrl, currSettings.searchEngine);
+                let msg = searchErrorTranslatorSvc.parseResponseObject(response, self.linkUrl, currSettings.searchEngine);
 
                 self.onError(msg);
                 reject(msg);
@@ -584,7 +667,7 @@ angular.module('QuepidApp')
             //promises.push(self.refreshRatedDocs());
 
             $q.all(promises).then( () => {
-              self.linkUrl = self.searcher.linkUrl;
+              self.linkUrl = self.searcher.linkUrl || self.searcher.url;
 
               if (self.searcher.inError) {
                 //self.docs.length = 0;
@@ -630,9 +713,10 @@ angular.module('QuepidApp')
                 self.linkUrl = self.searcher.linkUrl;
 
                 if (self.searcher.inError) {
+                  let msg = self.searcher.searchError || 'Error loading snapshot results';
                   self.setDocs([], 0);
-                  self.onError('Error loading snapshot results');
-                  reject('Error loading snapshot results');
+                  self.onError(msg);
+                  reject(msg);
                 } else {
                   let error = self.setDocs(self.searcher.docs, self.searcher.numFound);
                   if (error) {
@@ -657,14 +741,41 @@ angular.module('QuepidApp')
             return;
           }
 
-          self.searcher = self.searcher.pager();
+          if (currSettings.searchEngine === 'searchapi') {
+            let hitsParam = currSettings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
+            let offsetParam = currSettings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
+
+            if (hitsParam && offsetParam) {
+              let originalArgs = currSettings.selectedTry.args;
+              // Track this query's own running offset on self.searchApiPageArgs, rather than
+              // on the shared currSettings.selectedTry.args — that object is reused by every
+              // query in the try, so mutating it in place would either leak a stale offset
+              // into other queries' fresh searches, or, if reset after each call, forget the
+              // offset entirely and refetch the same page on every subsequent click instead
+              // of advancing.
+              let baseArgs = self.searchApiPageArgs || originalArgs;
+              self.searchApiPageArgs = svc.nextSearchApiPageArgs(baseArgs, currSettings.numberOfRows, hitsParam, offsetParam);
+
+              currSettings.selectedTry.args = self.searchApiPageArgs;
+              self.searcher = svc.createSearcherFromSettings(currSettings, self);
+              currSettings.selectedTry.args = originalArgs;
+            } else {
+              self.searcher = null;
+            }
+          } else {
+            self.searcher = self.searcher.pager();
+          }
+
+          if (self.searcher === null) {
+            return;
+          }
 
           return self.searcher.search()
             .then(function() {
               let ratingsStore  = self.ratingsStore;
               let docs          = self.searcher.docs;
               let fieldSpec     = currSettings.createFieldSpec();
-              let docList       = new DocListFactory(docs, fieldSpec, ratingsStore);
+              let docList       = new DocListFactory(docs, fieldSpec, ratingsStore, matchFeaturesExplain);
               self.docs         = self.docs.concat(docList.list());
             }, function(response) {
               $log.debug('Failed to load search: ', response);
@@ -682,7 +793,29 @@ angular.module('QuepidApp')
               return;
             }
 
-            self.ratedSearcher = self.ratedSearcher.pager();
+            if (currSettings.searchEngine === 'searchapi') {
+              let hitsParam = currSettings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
+              let offsetParam = currSettings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
+
+              if (hitsParam && offsetParam) {
+                let originalArgs = currSettings.selectedTry.args;
+                let baseArgs = self.ratedSearchApiPageArgs || originalArgs;
+                self.ratedSearchApiPageArgs = svc.nextSearchApiPageArgs(baseArgs, currSettings.numberOfRows, hitsParam, offsetParam);
+
+                currSettings.selectedTry.args = self.ratedSearchApiPageArgs;
+                self.ratedSearcher = svc.createSearcherFromSettings(currSettings, self, { filterToRated: true });
+                currSettings.selectedTry.args = originalArgs;
+              } else {
+                self.ratedSearcher = null;
+              }
+            } else {
+              self.ratedSearcher = self.ratedSearcher.pager();
+            }
+
+            if (self.ratedSearcher === null) {
+              return;
+            }
+
             return self.ratedSearcher.search()
               .then(function() {
                 let normed = svc.normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());

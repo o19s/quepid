@@ -22,12 +22,14 @@
       self.hasSnapshotFile = params.has_snapshot_file;
       self.docs = params.docs;
       self.queries = params.queries;
+      self.scores = params.scores;
 
       self.allDocIds        = allDocIds;
       self.getSearchResults = getSearchResults;
-      
+      self.getQueryError    = getQueryError;
+
       self.docIdsPerQuery   = {};
-      
+
       // Map from snake_case to camelCase.
       angular.forEach(self.queries, function(query) {
         query.queryId = query.query_id;
@@ -96,6 +98,23 @@
         });
 
         return searchResults;
+      }
+
+      // Returns the recorded server-side error (e.g. a Search API mapper that threw)
+      // for this query in this snapshot, or null if there wasn't one.
+      function getQueryError (queryId) {
+        if (angular.isUndefined(self.scores) || self.scores === null) {
+          return null;
+        }
+
+        var match = null;
+        angular.forEach(self.scores, function(scoreEntry) {
+          if (String(scoreEntry.query_id) === String(queryId)) {
+            match = scoreEntry.error || null;
+          }
+        });
+
+        return match;
       }
     };
 

@@ -82,6 +82,9 @@ describe('Controller: WizardModalCtrl', function () {
       // Handle the case data fetch for book sync properties (triggered by queriesSvc.changeSettings)
       $httpBackend.whenGET(/^api\/cases\/\d+$/).respond(200, {book_id: null, auto_populate_book_pairs: false});
 
+      // The controller unconditionally fetches the mapper-based engine tiles (e.g. Vespa) on init.
+      $httpBackend.whenGET('api/mapper_based_search_engines').respond(200, { mapper_based_search_engines: [] });
+
       WizardModalCtrl = $controller('WizardModalCtrl', {
         $scope: scope
       });
@@ -292,6 +295,7 @@ describe('Controller: WizardModalCtrl — validating flag lifecycle', function (
       $httpBackend.whenGET(/^api\/cases\/\d+$/).respond(200, {});
       $httpBackend.whenGET(/^api\/search_endpoints/).respond(200, {});
       $httpBackend.whenGET(/^api\/cases\/\d+\/tries/).respond(200, { tries: [] });
+      $httpBackend.whenGET('api/mapper_based_search_engines').respond(200, { mapper_based_search_engines: [] });
 
       $controller('WizardModalCtrl', { $scope: scope });
     });

@@ -34,8 +34,23 @@ angular.module('QuepidApp')
         self.numFound = 0;
         self.linkUrl = null;
         self.inError = false;
+        self.searchError = null;
         self.lastResponse = null;
-        
+
+        // A query whose server-side extraction failed (e.g. a Search API mapper that
+        // threw) is a real error, not a legitimate zero-result query - surface it the
+        // same way a live search failure would be, instead of silently showing 0 docs.
+        // getQueryError is guarded since callers may pass any snapshot-like object that
+        // implements just getSearchResults/name (see the "searcher interface" contract
+        // at the top of this file).
+        var queryError = angular.isFunction(self.snapshot.getQueryError) ?
+          self.snapshot.getQueryError(self.query.queryId) :
+          null;
+        if (queryError) {
+          self.inError = true;
+          self.searchError = queryError;
+        }
+
         // Initialize docs from snapshot
         self._initializeDocs();
       };

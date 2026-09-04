@@ -91,14 +91,10 @@ class V8MapperExecutor
       @context.eval("var responseBody = #{response_body.to_json};")
     end
 
-    @context.eval <<-JS
-      try {
-        docs = docsMapper(responseBody); // Your JavaScript document mapping function
-      } catch (error) {
-        console.error('docsMapper error:', error.message);
-        ({ error: error.message });
-      }
-    JS
+    # Let a thrown docsMapper error propagate as a MiniRacer::Error (caught below) rather
+    # than swallowing it here - callers need to distinguish "the mapper crashed" from
+    # "the mapper legitimately found zero docs".
+    @context.eval('docs = docsMapper(responseBody);')
 
     docs = @context.eval('docs')
     docs
@@ -126,14 +122,10 @@ class V8MapperExecutor
       @context.eval("var responseBody = #{response_body.to_json};")
     end
 
-    @context.eval <<-JS
-      try {
-        numberOfResults = numberOfResultsMapper(responseBody);
-      } catch (error) {
-        console.error('numberOfResultsMapper error:', error.message);
-        numberOfResults = 0;
-      }
-    JS
+    # See the matching comment in extract_docs: let a thrown error propagate instead of
+    # silently defaulting numberOfResults to 0, which would be indistinguishable from a
+    # legitimate zero-result query.
+    @context.eval('numberOfResults = numberOfResultsMapper(responseBody);')
 
     number_of_results = @context.eval('numberOfResults')
     number_of_results

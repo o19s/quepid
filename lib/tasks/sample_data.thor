@@ -49,6 +49,18 @@ class SampleData < Thor
                                                          name: 'Static Endpoint',
                                                          endpoint_url: 'TO_BE_UPDATED', api_method: 'GET'
 
+    # Mirrors the wizard's Vespa tile (MapperBasedSearchEngine) instead of hardcoding its
+    # config here, so the demo endpoint always matches whatever the wizard currently offers.
+    vespa_engine = ::MapperBasedSearchEngine.find('vespa')
+
+    vespa_endpoint = ::SearchEndpoint.find_or_create_by search_engine:                 :searchapi,
+                                                        mapper_based_search_engine_id: vespa_engine.id,
+                                                        endpoint_url:                  vespa_engine.search_url,
+                                                        api_method:                    vespa_engine.api_method,
+                                                        proxy_requests:                vespa_engine.proxy_requests,
+                                                        custom_headers:                vespa_engine.custom_headers,
+                                                        mapper_code:                   vespa_engine.mapper_code
+
     print_step 'End of seeding search endpoints................'
 
     # Users
@@ -107,12 +119,14 @@ class SampleData < Thor
     tmdb_es_endpoint.owner = realistic_activity_user
     search_api_endpoint.owner = realistic_activity_user
     static_endpoint.owner = realistic_activity_user
+    vespa_endpoint.owner = realistic_activity_user
 
     statedecoded_solr_endpoint.save
     tmdb_solr_endpoint.save
     tmdb_es_endpoint.save
     search_api_endpoint.save
     static_endpoint.save
+    vespa_endpoint.save
 
     ######################################
     # OSC Team Owner
@@ -288,6 +302,25 @@ class SampleData < Thor
 
     print_case_info static_case
 
+    ######################################
+    # Vespa Case
+    ######################################
+
+    vespa_case = realistic_activity_user.cases.find_or_create_by case_name: 'VESPA CASE'
+    vespa_try = vespa_case.tries.latest
+    vespa_params = {
+      field_spec:   "id:#{vespa_engine.id_field}, title:#{vespa_engine.title_field}, #{vespa_engine.additional_fields.join(', ')}",
+      query_params: vespa_engine.query_params,
+    }
+    vespa_try.search_endpoint = vespa_endpoint
+    vespa_try.update vespa_params
+
+    %w[star matrix love].each do |query_text|
+      vespa_case.queries.find_or_create_by(query_text: query_text)
+    end
+
+    print_case_info vespa_case
+
     print_step 'End of seeding cases................'
 
     # Ratings
@@ -373,7 +406,7 @@ class SampleData < Thor
     osc.members << osc_ai_judge unless osc.members.include?(osc_ai_judge)
     osc.members << azure_openai_judge unless osc.members.include?(azure_openai_judge)
     osc.members << azure_anthropic_judge unless osc.members.include?(azure_anthropic_judge)
-    osc.cases << tens_of_queries_case unless osc.members.include?(tens_of_queries_case)
+    osc.cases << tens_of_queries_case unless osc.cases.include?(tens_of_queries_case)
     osc.search_endpoints << statedecoded_solr_endpoint unless osc.search_endpoints.include?(statedecoded_solr_endpoint)
     print_step 'End of seeding teams................'
 

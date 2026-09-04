@@ -112,11 +112,18 @@ module Api
       end
 
       def merge_search_endpoint_updates! search_endpoint, params_hash
-        credential = params_hash.to_h.symbolize_keys[:basic_auth_credential]
-        return if credential.blank?
-        return if credential == search_endpoint.masked_basic_auth_credential
+        attrs = params_hash.to_h.symbolize_keys
 
-        search_endpoint.basic_auth_credential = credential
+        credential = attrs[:basic_auth_credential]
+        search_endpoint.basic_auth_credential = credential if credential.present? && credential != search_endpoint.masked_basic_auth_credential
+
+        # A match found via find_or_initialize_for_user's connection-details lookup may
+        # reuse an endpoint that was previously tagged with a different (or no) preset,
+        # e.g. it was first created via the Vespa tile and is now being reconfigured
+        # under the generic Custom Search API tile. Set it whenever the client tells us
+        # which preset (if any) is in play, rather than only ever backfilling a blank
+        # value — otherwise a stale preset id can never be cleared.
+        search_endpoint.mapper_based_search_engine_id = attrs[:mapper_based_search_engine_id] if attrs.key?(:mapper_based_search_engine_id)
       end
 
       def save_search_endpoint_or_render_errors search_endpoint
@@ -170,7 +177,8 @@ module Api
                              :endpoint_url,
                              :basic_auth_credential,
                              :mapper_code,
-                             :proxy_requests ]
+                             :proxy_requests,
+                             :mapper_based_search_engine_id ]
         )
       end
     end

@@ -189,9 +189,11 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
       html_content: '<html>test</html>'
     )
 
-    # Runtime errors are caught by the mapper and return 0 for numberOfResultsMapper
-    assert result[:success]
-    assert_equal 0, result[:result]
+    # Runtime errors must be surfaced, not silently swallowed into a 0 result -
+    # a real user needs to know their mapper crashed rather than think it legitimately
+    # found zero results.
+    assert_not result[:success]
+    assert_includes result[:error], 'JavaScript error'
   end
 
   test 'test_mapper with real HTML parsing' do

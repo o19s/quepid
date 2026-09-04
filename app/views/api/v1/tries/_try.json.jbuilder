@@ -12,7 +12,12 @@ json.endpoint_name  try.search_endpoint&.fullname
 json.custom_headers try.search_endpoint&.custom_headers
 json.api_method     try.search_endpoint&.api_method
 json.search_engine  try.search_endpoint&.search_engine
-json.search_url     try.search_endpoint&.endpoint_url
+json.mapper_based_search_engine_id try.search_endpoint&.mapper_based_search_engine_id
+json.mapper_based_search_engine_name try.search_endpoint&.mapper_based_search_engine&.name
+json.mapper_based_search_engine_supports_pagination try.search_endpoint&.mapper_based_search_engine&.supports_pagination
+json.mapper_based_search_engine_pagination_hits_param try.search_endpoint&.mapper_based_search_engine&.pagination_hits_param
+json.mapper_based_search_engine_pagination_offset_param try.search_endpoint&.mapper_based_search_engine&.pagination_offset_param
+json.search_url try.search_endpoint&.endpoint_url
 json.basic_auth_credential try.search_endpoint&.api_basic_auth_credential
 json.mapper_code    try.search_endpoint&.mapper_code
 json.proxy_requests try.search_endpoint&.proxy_requests
