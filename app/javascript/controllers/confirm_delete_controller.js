@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { createBsModal } from "utils/bs_modal"
+import { submitDestructiveForm } from "utils/destructive_form"
 
 // Shows a Bootstrap modal confirmation and submits a DELETE (or other) request
 // with the CSRF token when confirmed. Falls back to native confirm() if
@@ -68,33 +69,7 @@ export default class extends Controller {
   }
 
   _submitDeleteForm() {
-    if (!this.currentUrl) return
-
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-
-    const form = document.createElement('form')
-    form.method = 'post'
-    form.action = this.currentUrl
-    form.style.display = 'none'
-
-    if (token) {
-      const input = document.createElement('input')
-      input.type = 'hidden'
-      input.name = 'authenticity_token'
-      input.value = token
-      form.appendChild(input)
-    }
-
-    if (this.currentMethod !== 'post') {
-      const methodInput = document.createElement('input')
-      methodInput.type = 'hidden'
-      methodInput.name = '_method'
-      methodInput.value = this.currentMethod
-      form.appendChild(methodInput)
-    }
-
-    document.body.appendChild(form)
-    form.submit()
+    submitDestructiveForm(this.currentUrl, this.currentMethod)
   }
 
   _insertModal() {

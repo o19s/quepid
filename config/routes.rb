@@ -337,6 +337,8 @@ Rails.application.routes.draw do
   get '/cases' => 'cases#index', as: :cases
   post '/cases/:id/archive' => 'cases#archive', as: :archive_case
   post '/cases/:id/unarchive' => 'cases#unarchive', as: :unarchive_case
+  delete '/cases/:id' => 'cases#destroy', as: :case
+  delete '/cases/:id/queries' => 'cases#destroy_queries', as: :case_queries
 
   # Routes handled by angular
   get '/case/:id(/try/:try_number)'   => 'core#index', as: :case_core

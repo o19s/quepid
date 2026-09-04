@@ -34,7 +34,7 @@
             <h1 class="fs-1 fw-normal lh-sm mb-3">
               <small class="d-block fw-normal text-muted">
                 Current case
-                <i class="bi bi-repeat" ng-show="caseModel.selectedCase().nightly" quepid-tooltip="Queries are run on a nightly basis." tooltip-popup-delay="1000" tooltip-placement="right"></i>
+                <i class="bi bi-repeat" ng-show="caseModel.selectedCase().nightly" data-controller="bs-tooltip" data-bs-tooltip-title-value="Queries are run on a nightly basis." data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right"></i>
                 <span ng-show="caseModel.selectedCase().public">PUBLIC</span>
                 <span ng-show="caseModel.selectedCase().archived">ARCHIVED</span>
               </small>

@@ -1,0 +1,49 @@
+<%# Core case toolbar — delete/archive options list UI, form-post (stay-Rails)
+    transport, mirrors the AngularJS delete-case-options modal it replaces. %>
+<% modal_footer = capture do %>
+  <button type="button" class="btn btn-danger" disabled
+          data-delete-case-options-core-target="submitButton"
+          data-action="click->delete-case-options-core#confirm">Delete</button>
+<% end %>
+
+<% modal_body = capture do %>
+  <p>We have a number of options for cleaning up a case, from deleting, to archiving, to deleting all of its queries.</p>
+
+  <div class="btn-group w-100" role="group" aria-label="Delete case options">
+    <button type="button" class="btn btn-outline-secondary"
+            data-delete-case-options-core-target="optionButton"
+            data-delete-case-options-core-action-param="destroy_queries"
+            data-action="click->delete-case-options-core#selectAction">Delete All Queries</button>
+    <button type="button" class="btn btn-outline-secondary"
+            data-delete-case-options-core-target="optionButton"
+            data-delete-case-options-core-action-param="archive"
+            data-action="click->delete-case-options-core#selectAction">Archive Case</button>
+    <button type="button" class="btn btn-outline-secondary"
+            data-delete-case-options-core-target="optionButton"
+            data-delete-case-options-core-action-param="destroy_case"
+            data-action="click->delete-case-options-core#selectAction">Delete Case</button>
+  </div>
+
+  <div class="mt-3">
+    <div data-delete-case-options-core-target="description" data-for-action="destroy_queries" hidden>
+      Deleting all the queries will also delete your ratings for those queries.
+    </div>
+    <div data-delete-case-options-core-target="description" data-for-action="archive" hidden>
+      You're about to put this case into deep freeze. You'll be able to get to it through the "Archived Cases" filter in the Relevancy Cases listing page.
+    </div>
+    <div data-delete-case-options-core-target="description" data-for-action="destroy_case" hidden>
+      You're about to delete this case forever! If you think you might want it later, use the Archive function instead.
+    </div>
+  </div>
+<% end %>
+
+<%= render "shared/modal_shell", id: "deleteCaseOptionsModal", title: "Delete Options for Case",
+                                 data: {
+                                   controller: "delete-case-options-core",
+                                   delete_case_options_core_archive_url_template_value: archive_case_path(id: '__CASE_ID__'),
+                                   delete_case_options_core_destroy_url_template_value: case_path(id: '__CASE_ID__'),
+                                   delete_case_options_core_destroy_queries_url_template_value: case_queries_path(id: '__CASE_ID__')
+                                 },
+                                 title_data: { delete_case_options_core_target: "title" },
+                                 footer: modal_footer,
+                                 body: modal_body %>

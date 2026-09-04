@@ -22,7 +22,7 @@
     </qscore-query>
 
     <h2 class="results-title">
-      <span class='query' quepid-tooltip="Info Need: {{query.informationNeed}}" tooltip-popup-delay="1000" tooltip-placement="right">
+      <span class='query' data-controller="bs-tooltip" data-bs-tooltip-title-value="Info Need: {{query.informationNeed}}" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
         <img class="img-thumbnail query-thumbnail" ng-if="query.queryText | isImageUrl"
              ng-src="{{query.queryText}}" />
         <span ng-if="!(query.queryText | isImageUrl)">
@@ -151,7 +151,7 @@
       </search-result>
 
       <div class='row results-pane-footer'>
-        <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" quepid-popover="Close the results pane"></i>
+        <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane"></i>
         <span ng-if="query.numFound > query.docs.length">
           <a
             class="btn btn-outline-secondary"
@@ -182,7 +182,7 @@
       </search-result>
 
       <div class='row results-pane-footer'>
-        <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" quepid-popover="Close the results pane"></i>
+        <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane"></i>
         <span ng-if="query.getNumFound() > query.ratedDocs.length">
           <a
             ng-show='query.getNumFound() > query.ratedDocs.length'

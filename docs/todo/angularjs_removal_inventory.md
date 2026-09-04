@@ -1,6 +1,6 @@
 # AngularJS removal: inventory & migration plan
 
-Fresh codebase scan (25 Aug 2026; counts re-verified after DOM-utils extraction / Vitest coverage expansion). Single reference for **what** AngularJS owns in Quepid, **why** to migrate, **how** to do it incrementally (default), optional **full case-page rewrite** decisions, and **what to delete** when done.
+Fresh codebase scan (25 Aug 2026; re-validated 4 Sep 2026 against actual code — counts refreshed, completed items removed). Single reference for **what** AngularJS owns in Quepid, **why** to migrate, **how** to do it incrementally (default), optional **full case-page rewrite** decisions, and **what to delete** when done.
 
 **Recent cleanup reflected below:** unused Angular components `action_icon`, `delete_case`, and `unarchiveCase` removed; `angular-countup` / `angular-timeago` / `textPaste` dropped in favor of `window.quepidDom` helpers, a first-party `timeAgo` filter, and Stimulus `bs-tooltip` / `text-paste`; `angular_app.js` now pins `window.Shepherd` / `window.Tether` (first-run tour bug fixed).
 
@@ -31,11 +31,11 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | Services | 26 (`.service()` registrations; 27 files under `services/` — `quepidModalSvc.js` registers a factory) |
 | Factories | 8 |
 | Filters | 8 under `filters/` (+ 4 directive-local: `plusOrMinus`, `stackChart*`) |
-| Custom directives / components | 36 (26 `.directive()` + 10 `.component()`) |
+| Custom directives / components | 35 (25 `.directive()` + 10 `.component()`) |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 15 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 10 packages (+ `angular` core from npm) |
-| Karma unit specs (`spec/javascripts/angular`) | 37 |
-| Vitest unit specs (`app/javascript/**/*.test.js`) | 13 |
+| Karma unit specs (`spec/javascripts/angular`) | 39 |
+| Vitest unit specs (`app/javascript/**/*.test.js`) | 21 |
 | Playwright specs for the case UI | 2 Angular page specs + helpers + baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` |
 | Playwright specs for Stimulus pages | `stimulus_pages.spec.ts` (cases index import-case, bulk judge, mapper wizard); core + Rails share-case: `share_case.spec.ts` (not exhaustive — non-Angular Rails-page specs like `admin`, `teams`, `judging`, `signup`, etc. aren't Angular-migration-relevant and aren't tracked here) |
 
@@ -147,11 +147,11 @@ Use when sizing a PR:
 
 Actionable incremental wins — do these before touching query/search state:
 
-1. **DOM utilities → Stimulus or BS5 data API** — **Partially done:** utils live in `utils/bs_tooltip.js`, `bs_popover.js`, `text_paste.js` (bridged via `window.quepidDom`); Stimulus `bs-tooltip` / `text-paste`; static help icons use Angular `bs-static-popover`. Thin Angular `quepidTooltip` / `quepidPopover` / `quepidPopoverTemplate` remain until those templates migrate.
-3. **`delete-case-options` / archive** — Mirror cases/teams `confirm-delete` + Rails archive/delete routes from the case context.
-4. **`clone-case`** — Modal + API / form-post; preserve post-clone navigation (`caseTryNavSvc.navigateTo` today).
-5. **`export-case`** — Larger modal + job polling; still a management action, not live search state.
-6. **Defer** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks until a deliberate case-page redesign.
+1. **DOM utilities → Stimulus or BS5 data API** — **Partially done:** plain-text tooltips (`quepid-tooltip`) and plain-text popovers (`quepid-popover`) migrated to Stimulus `bs-tooltip` / `bs-popover` (registered in `core_stimulus.js`); the Angular `quepidTooltip` directive and the text-mode `quepidPopover` directive are deleted. Angular `quepidPopoverTemplate` remains — it backs the ratings and search-match popovers (`views/ratings/popover.html`, `matches/matches.html`), which lazily `$compile` live interactive Angular content into the popover body and need their own migration, not just an attribute swap. `bs-static-popover` (fixed help-icon popovers) also remains Angular for now.
+2. **`delete-case-options` / archive** — Mirror cases/teams `confirm-delete` + Rails archive/delete routes from the case context.
+3. **`clone-case`** — Modal + API / form-post; preserve post-clone navigation (`caseTryNavSvc.navigateTo` today).
+4. **`export-case`** — Larger modal + job polling; still a management action, not live search state.
+5. **Defer** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks until a deliberate case-page redesign.
 
 Optional when touching nearby code:
 
@@ -292,9 +292,9 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 
 **Observed:** After deleting the latest try, reload shows *"Cannot read properties of null (reading 'tryNo')"* until DB repair.
 
-**Frontend cause:** `settingsSvc.editableSettings()` assumes `selectedTry` is non-null. Try delete has no confirm; delete produces unhandled rejection noise in the console.
+**Frontend cause:** `settingsSvc.editableSettings()` still assumes `selectedTry` is non-null (`settingsSvc.js:429-431`, `tryToUse.tryNo` with no guard, even though the file has a working `isTrySelected()` check elsewhere it doesn't reuse). Try delete still has no confirm. Delete rejection handling was fixed separately (`queryParamsDetails.js` `deleteTry` now has a proper `.then(success, failure)` with a flash error) — re-verified 2026-09-04.
 
-**Fix during migration:** Fall back to the newest try when `selectedTry` is null; confirm before try delete; handle delete promise rejections cleanly.
+**Fix during migration:** Fall back to the newest try when `selectedTry` is null; confirm before try delete.
 
 **Backend still required:** `Api::V1::TriesController#destroy` must recompute `cases.last_try_number` — tracked in [todo.md § P0 backend](./todo.md#deleting-the-latest-try-bricks-the-case-backend).
 

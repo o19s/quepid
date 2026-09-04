@@ -3,7 +3,7 @@
 class CasesController < ApplicationController
   include Pagy::Method
 
-  before_action :set_case, only: [ :archive, :unarchive ]
+  before_action :set_case, only: [ :archive, :unarchive, :destroy, :destroy_queries ]
 
   def index
     @archived = deserialize_bool_param(params[:archived])
@@ -67,9 +67,37 @@ class CasesController < ApplicationController
     redirect_to cases_path
   end
 
+  # Permanently delete a case
+  def destroy
+    unless @case
+      flash[:alert] = 'Case not found.'
+      redirect_to cases_path and return
+    end
+
+    case_name = @case.case_name
+    @case.really_destroy
+    Analytics::Tracker.track_case_deleted_event(current_user, @case) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_deleted_event)
+    flash[:notice] = "Case ##{case_name} deleted."
+
+    redirect_to cases_path
+  end
+
+  # Delete all queries (and their ratings) for a case
+  def destroy_queries
+    unless @case
+      flash[:alert] = 'Case not found.'
+      redirect_to cases_path and return
+    end
+
+    @case.queries.destroy_all
+    flash[:notice] = "All queries deleted for case ##{@case.case_name}."
+
+    redirect_to case_core_path(id: @case.id, try_number: @case.last_try_number)
+  end
+
   private
 
   def set_case
-    @case = Case.find_by(id: params[:id])
+    @case = current_user.cases_involved_with.find_by(id: params[:id])
   end
 end

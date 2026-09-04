@@ -1,7 +1,9 @@
 'use strict';
 
 // uib-popover replacement — BS5 via quepidDom.popover (utils/bs_popover.js).
-// Fixed `?` help icons: use bs-static-popover instead.
+// Fixed `?` help icons: use bs-static-popover instead; plain-text popovers
+// use the Stimulus bs-popover controller instead (core_stimulus.js). Only
+// template-backed popovers (ratings, match detail) still live here.
 // outsideClick → manual trigger + capture listener; do not add our click
 // toggle when the element already has ng-click.
 // uib triggers: mouseenter → hover focus; outsideClick → manual.
@@ -31,7 +33,7 @@
       placement: placement,
       delayMs: delayMs,
       title: attrs.popoverTitle,
-      body: opts.mode === 'text' ? (attrs.quepidPopover || '') : '',
+      body: '',
       html: opts.html !== false,
       hasIsOpen: hasIsOpen,
       hasNgClick: !!attrs.ngClick,
@@ -54,12 +56,6 @@
       });
     }
 
-    if (opts.mode === 'text') {
-      attrs.$observe('quepidPopover', function (val) {
-        handle.setBody(val);
-      });
-    }
-
     if (hasIsOpen && isOpenGet) {
       scope.$watch(function () { return isOpenGet(scope); }, function (val) {
         handle.showFromIsOpen(val);
@@ -70,17 +66,6 @@
       handle.dispose();
     });
   }
-
-  QUEPID.directive('quepidPopover', ['$parse',
-    function ($parse) {
-      return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-          linkPopover(scope, element, attrs, { mode: 'text', html: false }, $parse);
-        }
-      };
-    }
-  ]);
 
   QUEPID.directive('quepidPopoverTemplate', ['$parse', '$compile', '$templateRequest', '$templateCache',
     function ($parse, $compile, $templateRequest, $templateCache) {
