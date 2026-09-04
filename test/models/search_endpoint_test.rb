@@ -190,6 +190,28 @@ class SearchEndpointTest < ActiveSupport::TestCase
       assert_predicate found, :persisted?
     end
 
+    # The lookup fields do not identify an endpoint uniquely, so more than one
+    # row can match. Which one a database returns without an ORDER BY is not
+    # defined and does differ between adapters, so the oldest is chosen.
+    it 'returns the oldest match when several endpoints share the lookup fields' do
+      shared = {
+        search_engine:  'solr',
+        endpoint_url:   'https://duplicated.example.com/solr/select',
+        api_method:     'GET',
+        proxy_requests: false,
+      }
+
+      older = SearchEndpoint.create!(shared.merge(owner: joey, options: { 'corpusId' => 1 }))
+      newer = SearchEndpoint.create!(shared.merge(owner: joey, options: nil))
+
+      assert_operator older.id, :<, newer.id, 'fixture ids should be ordered for this to mean anything'
+
+      found = SearchEndpoint.find_or_initialize_for_user(joey, **shared)
+
+      assert_equal older, found
+      assert_equal({ 'corpusId' => 1 }, found.options)
+    end
+
     it 'builds a new endpoint when no match exists' do
       endpoint = SearchEndpoint.find_or_initialize_for_user(
         joey,

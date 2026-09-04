@@ -96,7 +96,12 @@ class SearchEndpoint < ApplicationRecord
     lookup_params = normalized.slice(*lookup_keys)
 
     if lookup_keys.all? { |key| lookup_params.key?(key) }
-      endpoint = user.search_endpoints_involved_with.find_by(lookup_params)
+      # These four fields do not identify an endpoint uniquely - the same URL
+      # can be registered more than once with different options or credentials.
+      # find_by would take whichever row the database happened to return first,
+      # which is not defined and does differ between adapters. Take the oldest
+      # match instead, so the same import always attaches the same endpoint.
+      endpoint = user.search_endpoints_involved_with.where(lookup_params).order(:id).first
       return endpoint if endpoint
     end
 
