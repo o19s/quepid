@@ -9,8 +9,7 @@
  *   'outsideClick' → manual + document capture listener
  */
 
-export const POPOVER_SELECTOR =
-  "[quepid-popover], [quepid-popover-template], [bs-static-popover]"
+export const POPOVER_SELECTOR = "[quepid-popover], [quepid-popover-template], [bs-static-popover]"
 
 export function parsePopoverTrigger(raw) {
   if (!raw) return "click"
@@ -87,10 +86,9 @@ export function createBsPopover(element, options = {}) {
   const setIsOpen = options.setIsOpen
   const scopeApply = options.scopeApply || ((fn) => fn())
 
-  const bsTrigger =
-    hasIsOpen || trigger === "outsideClick"
-      ? "manual"
-      : toBsPopoverTrigger(trigger)
+  // toBsPopoverTrigger already maps "outsideClick" -> "manual", so hasIsOpen
+  // is the only extra case this needs to force.
+  const bsTrigger = hasIsOpen ? "manual" : toBsPopoverTrigger(trigger)
 
   let currentTitle = options.title || ""
   let currentBody = mode === "text" ? options.body || "" : ""
@@ -150,7 +148,7 @@ export function createBsPopover(element, options = {}) {
 
   let docHandler = null
   if (trigger === "outsideClick") {
-    docHandler = ev => {
+    docHandler = (ev) => {
       const tipId = element.getAttribute("aria-describedby")
       const tip = tipId ? document.getElementById(tipId) : null
       if (!tip) return
