@@ -74,6 +74,9 @@
   </div>
 
   <div ng-if="this.docFinder.numFound > 0">
+    <h4 ng-if="defaultList">Already Rated Documents</h4>
+    <h4 ng-if="!defaultList">Query Results</h4>
+
     <p ng-if="!defaultList">
       Your query <em>{{docFinder.lastQuery}}</em> returned
       <ng-pluralize count="docFinder.numFound"
