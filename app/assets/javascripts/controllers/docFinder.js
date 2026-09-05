@@ -33,15 +33,18 @@ angular.module('QuepidApp')
 
       $scope.docFinder.queryParams = resolveQueryPlaceholder(currSettings.selectedTry.queryParams);
 
-      // Solr/ES/OpenSearch: the query box is now the same kind of full query-params editor as
-      // the Query Sandbox (pre-filled from the try's current query), rather than a Lucene
-      // keyword fragment merged into the configured query via explainOther(). We resolve the
-      // edited text into args via settingsSvc.previewArgs() (server-side, non-persisting —
-      // reuses Try#args/SolrArgParser/EsArgParser so curator vars etc. behave identically to
-      // the real Sandbox), then run a real search and explain it the same way normal results
-      // are explained (queriesSvc.normalizeDocExplains), instead of the old solr/es/os-only
-      // explainOther dispatch below (which has no case for searchapi/vectara/algolia at all).
-      var ENGINES_WITH_QUERY_PARAMS_EDITOR = [ 'solr', 'es', 'os' ];
+      // Solr/ES/OpenSearch/searchapi (e.g. Vespa): the query box is now the same kind of full
+      // query-params editor as the Query Sandbox (pre-filled from the try's current query),
+      // rather than a Lucene keyword fragment merged into the configured query via
+      // explainOther(). We resolve the edited text into args via settingsSvc.previewArgs()
+      // (server-side, non-persisting — reuses Try#args/SolrArgParser/EsArgParser so curator
+      // vars etc. behave identically to the real Sandbox), then run a real search and explain
+      // it the same way normal results are explained (queriesSvc.normalizeDocExplains),
+      // instead of the old solr/es/os-only explainOther dispatch below (which has no case for
+      // searchapi/vectara/algolia at all).
+      var ENGINES_WITH_QUERY_PARAMS_EDITOR = [ 'solr', 'es', 'os', 'searchapi' ];
+
+      $scope.usesQueryParamsEditor = ENGINES_WITH_QUERY_PARAMS_EDITOR.indexOf(currSettings.searchEngine) !== -1;
 
       function findDocsByPreviewingQueryParams() {
         var settings  = settingsSvc.editableSettings();
@@ -49,6 +52,7 @@ angular.module('QuepidApp')
         var fieldSpec = settings.createFieldSpec();
 
         $scope.docFinder.searching = true;
+        $scope.docFinder.searchApiPageArgs = null;
 
         return settingsSvc.previewArgs(settings.selectedTry.tryNo, $scope.docFinder.queryParams).then(function(resolvedArgs) {
           $scope.docFinder.searching = false;
@@ -129,12 +133,37 @@ angular.module('QuepidApp')
         var settings = settingsSvc.editableSettings();
 
         if (ENGINES_WITH_QUERY_PARAMS_EDITOR.indexOf(settings.searchEngine) !== -1) {
-          $scope.docFinder.searcher = $scope.docFinder.searcher.pager();
           $scope.docFinder.paging = true;
 
-          if ( $scope.docFinder.searcher === null ) {
-            $scope.docFinder.paging = false;
-            return;
+          if (settings.searchEngine === 'searchapi') {
+            // searchApiSearcherFactory's pager() always returns null - Vespa/generic search
+            // APIs have no built-in offset concept, so widen the request ourselves the same
+            // way queriesSvc.js's paginate() does: bump hits/offset on the args the last
+            // search actually used.
+            var hitsParam   = settings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
+            var offsetParam = settings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
+
+            if (!hitsParam || !offsetParam) {
+              $scope.docFinder.paging = false;
+              return;
+            }
+
+            $scope.docFinder.searchApiPageArgs = queriesSvc.nextSearchApiPageArgs(
+              $scope.docFinder.searchApiPageArgs || $scope.docFinder.searcher.args,
+              settings.numberOfRows, hitsParam, offsetParam);
+
+            var tempSettings = angular.extend({}, settings, {
+              selectedTry: angular.extend({}, settings.selectedTry, { args: $scope.docFinder.searchApiPageArgs })
+            });
+
+            $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(tempSettings, $scope.query);
+          } else {
+            $scope.docFinder.searcher = $scope.docFinder.searcher.pager();
+
+            if ( $scope.docFinder.searcher === null ) {
+              $scope.docFinder.paging = false;
+              return;
+            }
           }
 
           var previewFieldSpec = settings.createFieldSpec();
@@ -255,6 +284,7 @@ angular.module('QuepidApp')
         $scope.docFinder.queryText = '';
         $scope.docFinder.queryParams = resolveQueryPlaceholder(currSettings.selectedTry.queryParams);
         $scope.docFinder.parseError = false;
+        $scope.docFinder.searchApiPageArgs = null;
         $scope.docFinder.docs = [];
         $scope.initializeToRatedDocs();
 
@@ -273,10 +303,24 @@ angular.module('QuepidApp')
           return;
         }
 
+        $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query);
+
+        // filterToRatings() (queriesSvc.js) has no generic implementation for searchapi/
+        // vectara/algolia engines - there's no one query syntax to build a "just these rated
+        // doc IDs" filter across arbitrary search APIs. A searchapi/mapper-based engine can
+        // opt in anyway by defining its own ratedDocsQueryParamsMapper (see the searchapi
+        // branch below and db/mapper_based_search_engines/vespa.js for an example); anything
+        // else leaves numFound unset rather than show "There are N ratings" with nothing to
+        // show for it (see the start-offset fix above for why that's worth avoiding).
+        var supportsSearchApiRatedLookup = $scope.docFinder.searcher.type === 'searchapi' &&
+          currSettings.selectedTry.mapperBasedSearchEngineSupportsRatedDocsLookup;
+
+        if ([ 'es', 'os', 'solr' ].indexOf($scope.docFinder.searcher.type) === -1 && !supportsSearchApiRatedLookup) {
+          return;
+        }
+
         $scope.docFinder.numFound = ratedIDs.length;
         $scope.docFinder.totalRatings = ratedIDs.length;
-
-        $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query);
 
         if ($scope.docFinder.searcher.type === 'es' || $scope.docFinder.searcher.type === 'os') {
           var filter = {
@@ -324,6 +368,33 @@ angular.module('QuepidApp')
               $scope.docFinder.docs = normed;
 
               $scope.defaultList = true;
+          });
+        } else if (supportsSearchApiRatedLookup) {
+          var ratedQueryParams = queriesSvc.buildSearchApiRatedDocsQueryParams(currSettings.selectedTry.mapperCode, ratedIDs);
+
+          if (!ratedQueryParams) {
+            return;
+          }
+
+          // Same non-persisting preview-then-search technique as findDocsByPreviewingQueryParams()
+          // above, just with a mapper-built ID-filter query instead of the user's edited text.
+          settingsSvc.previewArgs(currSettings.selectedTry.tryNo, ratedQueryParams).then(function(resolvedArgs) {
+            if (resolvedArgs === null) {
+              return;
+            }
+
+            var tempSettings = angular.extend({}, currSettings, {
+              selectedTry: angular.extend({}, currSettings.selectedTry, { args: resolvedArgs })
+            });
+
+            $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(tempSettings, $scope.query);
+
+            return $scope.docFinder.searcher.search().then(function() {
+              var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
+              $scope.docFinder.docs = normed;
+
+              $scope.defaultList = true;
+            });
           });
         }
       };

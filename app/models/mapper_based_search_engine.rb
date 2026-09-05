@@ -2,8 +2,9 @@
 
 # A search engine the Create-a-Case wizard can offer as a tile beyond the built-in ones
 # (Solr, Elasticsearch, OpenSearch, ...). Every instance drives the wizard's generic
-# search_engine: 'searchapi' type, differentiated by mapper_code: a pair of JS functions
-# (numberOfResultsMapper/docsMapper) that translate the target API's response into
+# search_engine: 'searchapi' type, differentiated by mapper_code: JS functions
+# (numberOfResultsMapper/docsMapper, and optionally ratedDocsQueryParamsMapper - see
+# supports_rated_docs_lookup below) that translate the target API's response into
 # Quepid's expected shape. A definition may point at a real, live demo endpoint with
 # real credentials (as Vespa does below) so its tile works with zero setup; GET
 # /api/mapper_based_search_engines serves every attribute here verbatim to any
@@ -30,6 +31,14 @@ class MapperBasedSearchEngine
   # guess a key name), not silently fall back to some other engine's convention.
   attribute :pagination_hits_param,   :string
   attribute :pagination_offset_param, :string
+  # Whether "Already Rated Documents" (the Find-and-Rate-Missing-Documents modal) can look
+  # up a query's already-rated doc IDs directly. Not every search API has a query syntax
+  # Quepid can use to build a "just these IDs" filter generically (unlike Solr's
+  # {!terms f=id} or ES's terms query), so this defaults to false rather than assume one.
+  # When true, mapper_file must define a ratedDocsQueryParamsMapper(ratedIds) function
+  # (queriesSvc.js's buildSearchApiRatedDocsQueryParams evaluates it) - the actual ID-filter
+  # query syntax is the mapper's job, same as numberOfResultsMapper/docsMapper above.
+  attribute :supports_rated_docs_lookup, :boolean, default: false
   attribute :search_url,          :string, default: ''
   attribute :url_format,          :string
   attribute :query_params,        :string
@@ -44,35 +53,38 @@ class MapperBasedSearchEngine
 
   DEFINITIONS = [
     {
-      id:                      'vespa',
-      name:                    'Vespa',
-      logo:                    'vespa',
-      api_method:              'GET',
-      proxy_requests:          true,
-      supports_basic_auth:     false,
+      id:                         'vespa',
+      name:                       'Vespa',
+      logo:                       'vespa',
+      api_method:                 'GET',
+      proxy_requests:             true,
+      supports_basic_auth:        false,
       # Vespa's query API takes hits/offset as plain top-level params alongside yql, so
       # queriesSvc.js's paginate() can widen the request by bumping offset on each click.
-      supports_pagination:     true,
-      pagination_hits_param:   'hits',
-      pagination_offset_param: 'offset',
-      search_url:              'https://a119b8dc.eb5f2dd2.z.vespa-app.cloud/search/',
-      url_format:              'https://<app>.<tenant>.z.vespa-app.cloud/search/',
+      supports_pagination:        true,
+      pagination_hits_param:      'hits',
+      pagination_offset_param:    'offset',
+      search_url:                 'https://a119b8dc.eb5f2dd2.z.vespa-app.cloud/search/',
+      url_format:                 'https://<app>.<tenant>.z.vespa-app.cloud/search/',
       # hits/offset are deliberately not baked in here — they'd show up in the editable
       # Query Sandbox as if they were part of the query. queriesSvc.js's
       # createSearcherFromSettings() injects them at request-build time instead (using
       # pagination_hits_param/pagination_offset_param below), the same way it already
       # injects Solr's echoParams=all without persisting it into query_params.
-      query_params:            'yql=select * from movies where title contains "#$query##" or overview contains "#$query##"&ranking.profile=bm25',
+      query_params:               'yql=select * from movies where title contains "#$query##" or overview contains "#$query##"&ranking.profile=bm25',
+      # Vespa's document id (e.g. "id:movies:movies::603") is directly matchable in YQL - see
+      # ratedDocsQueryParamsMapper in the mapper_file below for the actual filter query.
+      supports_rated_docs_lookup: true,
       # Read-only Vespa Cloud data-plane token for the o19s demo tenant; scoped to query
       # access only, so exposure is bounded to someone running extra queries against the
       # demo index, not writing/deleting data.
-      custom_headers:          { Authorization: 'Bearer vespa_cloud_TR8wpJb6M2x0TltmxqTdupqA20rcAI5tAEfqHWbvsx5' }.to_json,
-      header_type:             'Custom',
-      id_field:                'id',
-      title_field:             'title',
-      test_query:              'yql=select * from sources * where true',
-      additional_fields:       [ 'overview', 'cast', 'thumb:poster_path' ],
-      mapper_file:             'db/mapper_based_search_engines/vespa.js',
+      custom_headers:             { Authorization: 'Bearer vespa_cloud_TR8wpJb6M2x0TltmxqTdupqA20rcAI5tAEfqHWbvsx5' }.to_json,
+      header_type:                'Custom',
+      id_field:                   'id',
+      title_field:                'title',
+      test_query:                 'yql=select * from sources * where true',
+      additional_fields:          [ 'overview', 'cast', 'thumb:poster_path' ],
+      mapper_file:                'db/mapper_based_search_engines/vespa.js',
     }
   ].freeze
 

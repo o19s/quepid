@@ -109,6 +109,7 @@ angular.module('QuepidApp')
       this.createSearcherFromSettings = createSearcherFromSettings;
       this.createSearcherFromSnapshot = createSearcherFromSnapshot;
       this.nextSearchApiPageArgs = nextSearchApiPageArgs;
+      this.buildSearchApiRatedDocsQueryParams = buildSearchApiRatedDocsQueryParams;
       this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
 
@@ -284,6 +285,30 @@ angular.module('QuepidApp')
         nextArgs[offsetParam] = [ String(currentOffset + pageSize) ];
 
         return nextArgs;
+      }
+
+      /**
+       * filterToRatings() below has no generic "just these doc IDs" query syntax for a
+       * searchapi engine (unlike Solr's {!terms f=id} or ES's terms query) - every mapper-based
+       * engine's query language is different, so that's left to the mapper itself. If
+       * mapperCode defines a ratedDocsQueryParamsMapper(ratedIds) function (see
+       * db/mapper_based_search_engines/vespa.js for an example), this evaluates it the same
+       * way createSearcherFromSettings evaluates numberOfResultsMapper/docsMapper, and returns
+       * the query_params string it builds. Returns null if the mapper doesn't define one -
+       * callers should treat that the same as MapperBasedSearchEngine#supports_rated_docs_lookup
+       * being false.
+       */
+      function buildSearchApiRatedDocsQueryParams(mapperCode, ratedIds) {
+        /*jshint evil:true */
+        /* jshint undef: false */
+        var mapperFunction = new Function(mapperCode);
+        mapperFunction.call(window);
+
+        var mapper = window.ratedDocsQueryParamsMapper;
+        /*jshint evil:false */
+        /* jshint undef: true */
+
+        return typeof mapper === 'function' ? mapper(ratedIds) : null;
       }
 
       /**

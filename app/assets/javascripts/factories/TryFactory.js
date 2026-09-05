@@ -46,6 +46,7 @@
       self.mapperBasedSearchEngineSupportsPagination = data.mapper_based_search_engine_supports_pagination;
       self.mapperBasedSearchEnginePaginationHitsParam = data.mapper_based_search_engine_pagination_hits_param;
       self.mapperBasedSearchEnginePaginationOffsetParam = data.mapper_based_search_engine_pagination_offset_param;
+      self.mapperBasedSearchEngineSupportsRatedDocsLookup = data.mapper_based_search_engine_supports_rated_docs_lookup;
       self.searchEndpointId = data.search_endpoint_id;
       self.endpointName  = data.endpoint_name;
       self.searchUrl     = data.search_url;
