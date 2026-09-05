@@ -76,6 +76,14 @@
 
 <body class="d-flex flex-column min-vh-100" data-quepid-root-url="<%= quepid_root_url %>">
 
+<!-- Request Headers:
+<%
+request.headers.each do |key, value|
+%>
+  <%= key %>: <%= value %>
+<% end %>
+-->
+
 <%= render 'layouts/header' %>
 
 <div class="container-fluid flex-shrink-0">
