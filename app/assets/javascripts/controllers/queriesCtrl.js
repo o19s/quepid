@@ -24,6 +24,7 @@ angular.module('QuepidApp')
     'configurationSvc',
     'annotationsSvc',
     'qscoreSvc',
+    'settingsSvc',
     function (
       $scope,
       $rootScope,
@@ -40,6 +41,7 @@ angular.module('QuepidApp')
       configurationSvc,
       annotationsSvc,
       qscoreSvc,
+      settingsSvc,
     ) {
       console.log('QueriesCtrl instantiated');
       $scope.queriesSvc = queriesSvc;
@@ -516,6 +518,21 @@ angular.module('QuepidApp')
 
       $scope.collapseAll = function() {
         queryViewSvc.collapseAll();
+      };
+
+      // "Show only rated" needs a query-language-specific ID filter (queriesSvc.js'
+      // filterToRatings/createSearcherFromSettings) - a searchapi/mapper-based engine only has
+      // one if it opts in via mapperBasedSearchEngineSupportsRatedDocsLookup (see
+      // db/mapper_based_search_engines/vespa.js's ratedDocsQueryParamsMapper for an example).
+      // Every other engine (es/os/solr/vectara/algolia/static) keeps working as before.
+      $scope.showOnlyRatedUnsupported = function() {
+        if (!settingsSvc.isTrySelected()) {
+          return false;
+        }
+
+        var settings = settingsSvc.editableSettings();
+        return settings.searchEngine === 'searchapi' &&
+          !settings.selectedTry.mapperBasedSearchEngineSupportsRatedDocsLookup;
       };
 
       function getScorer() {

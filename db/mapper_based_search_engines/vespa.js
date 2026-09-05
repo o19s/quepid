@@ -44,14 +44,48 @@ docsMapper = function (data) {
 //
 // Unlike numberOfResultsMapper/docsMapper above, this IS specific to the "movies" schema
 // (same coupling as additional_fields in MapperBasedSearchEngine's Vespa definition):
-// Vespa's own document id (e.g. "id:movies:movies::603", the same string docsMapper puts
-// on doc.id above) isn't itself a queryable field - "where id == ..." 400s with "Field
-// 'id' does not exist" - so this filters on the schema's movie_id field instead, using
-// the local id after the last "::".
+// Vespa's own document id (e.g. "id:movies:movies::603") isn't itself a queryable field -
+// "where id == ..." 400s with "Field 'id' does not exist" - only the schema's movie_id
+// attribute is filterable. MapperBasedSearchEngine's id_field ('movie_id') makes this the
+// case's doc id going forward, so ratedIds normally arrive already bare (e.g. "603");
+// .split('::').pop() is a no-op then, and only actually strips anything for a case still
+// using the old id_field: 'id' default (doc ids like "id:movies:movies::603").
+//
+// Returns JSON (matching MapperBasedSearchEngine's api_method: 'POST' + JSON query_params
+// above) rather than a "yql=..." query string - this list of IDs has no fixed upper bound
+// (it grows with however many docs are rated), so it's exactly the case a GET's URL-length
+// limit would eventually break; POST's JSON body has no such limit.
 ratedDocsQueryParamsMapper = function (ratedIds) {
-  const movieIds = ratedIds
-    .map(function (id) { return '"' + id.split('::').pop() + '"'; })
+  const idList = ratedIds
+    .map(function (id) { return JSON.stringify(id.split('::').pop()); })
     .join(',');
 
-  return 'yql=select * from sources * where movie_id in (' + movieIds + ')';
+  return JSON.stringify({ yql: 'select * from sources * where movie_id in (' + idList + ')' });
+};
+
+// nextPageArgsMapper - Given the resolved args used for the current page (already
+// curator-var/placeholder-resolved - see Try#args/settingsSvc.previewArgs), returns the
+// args for the next page. queriesSvc.js has no generic "advance to the next page" logic
+// for a searchapi engine (splainer-search's searchApiSearcherFactory has no pager()
+// implementation, unlike Solr/ES/Algolia/Vectara) since different mapper-based engines
+// could paginate in entirely different ways - a numeric offset (Vespa's own convention,
+// bumped here), a cursor/scroll token from the previous response, etc. - so that's left to
+// whichever mapper actually knows its target API's pagination style. The UI only ever
+// calls this when it already knows there's a next page (numFound > docs fetched so far),
+// so no "is there more?" check is needed here - but a mapper that can't tell may return
+// null instead, same contract as splainer-search's own pager().
+//
+// pageSize is only a fallback for when currentArgs has no hits of its own (e.g. a fresh
+// try's args, before any search has run) - once a page has actually been fetched, its own
+// hits value wins, so an explicit hits=.. a user typed into the Find Missing Docs query box
+// (or the Query Sandbox) keeps being honored on every subsequent page instead of snapping
+// back to the case's configured page size.
+nextPageArgsMapper = function (currentArgs, pageSize) {
+  const currentHits = currentArgs.hits ? parseInt(currentArgs.hits, 10) : pageSize;
+  const currentOffset = currentArgs.offset ? parseInt(currentArgs.offset, 10) : 0;
+
+  return Object.assign({}, currentArgs, {
+    hits: String(currentHits),
+    offset: String(currentOffset + currentHits)
+  });
 };

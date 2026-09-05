@@ -27,6 +27,7 @@ angular.module('QuepidApp')
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
     'normalDocsSvc',
+    'settingsSvc',
     function queriesSvc(
       $scope,
       $http,
@@ -45,7 +46,8 @@ angular.module('QuepidApp')
       searchErrorTranslatorSvc,
       esExplainExtractorSvc,
       solrExplainExtractorSvc,
-      normalDocsSvc
+      normalDocsSvc,
+      settingsSvc
     ) {
 
       let caseNo = -1;
@@ -108,7 +110,7 @@ angular.module('QuepidApp')
       this.getCaseNo = getCaseNo;
       this.createSearcherFromSettings = createSearcherFromSettings;
       this.createSearcherFromSnapshot = createSearcherFromSnapshot;
-      this.nextSearchApiPageArgs = nextSearchApiPageArgs;
+      this.buildNextPageArgs = buildNextPageArgs;
       this.buildSearchApiRatedDocsQueryParams = buildSearchApiRatedDocsQueryParams;
       this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
@@ -200,7 +202,7 @@ angular.module('QuepidApp')
           else if (passedInSettings.searchEngine === 'searchapi') {
             // For engines that support pagination (e.g. Vespa's hits/offset), inject the
             // page-size param on every request — including this first one, not just
-            // paginate()'s follow-ups (see nextSearchApiPageArgs) — so numberOfRows is
+            // paginate()'s follow-ups (see buildNextPageArgs) — so numberOfRows is
             // honored from page 1 without baking hits/offset into the editable
             // query_params template. Only fills in what the user's own template doesn't
             // already set, so an explicit hits=/offset= in query_params still wins.
@@ -208,11 +210,15 @@ angular.module('QuepidApp')
             let offsetParam = passedInSettings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
 
             if (hitsParam && offsetParam) {
+              // Vespa (the only mapper-based engine using this today) is POST + JSON-parsed
+              // (EsArgParser => plain scalar values, unlike SolrArgParser's single-element
+              // arrays) - these are plain values too. Revisit if a GET-based mapper-based
+              // engine with pagination ever gets added.
               if (args[hitsParam] === undefined) {
-                args[hitsParam] = [ String(passedInSettings.numberOfRows) ];
+                args[hitsParam] = String(passedInSettings.numberOfRows);
               }
               if (args[offsetParam] === undefined) {
-                args[offsetParam] = [ '0' ];
+                args[offsetParam] = '0';
               }
             }
           }
@@ -266,25 +272,27 @@ angular.module('QuepidApp')
       /**
        * splainer-search's generic Search API engine has no pager() implementation (see
        * searchApiSearcherFactory.js — it always returns null, unlike Solr/ES/Algolia/Vectara),
-       * since it has no built-in offset concept. For engines that do support it (e.g. Vespa,
-       * whose query API takes hits/offset as plain params), we drive the same "next page" widening
-       * ourselves: bump the page-size/offset key-value pairs already present (or default to them)
-       * in the try's parsed args, and let createSearcherFromSettings build a fresh request from
-       * that — no vendored code touched.
-       *
-       * hitsParam/offsetParam name the actual query_params keys (e.g. Vespa's 'hits'/'offset',
-       * see MapperBasedSearchEngine#pagination_hits_param/#pagination_offset_param) — there's no
-       * universal convention across search APIs, so callers must supply both explicitly.
+       * since it has no built-in offset concept, and different mapper-based engines could
+       * paginate in entirely different ways (a numeric offset, a cursor/scroll token from the
+       * previous response, ...) - so unlike createSearcherFromSettings's page-1 sizing
+       * (MapperBasedSearchEngine#pagination_hits_param/#pagination_offset_param, a simple "set
+       * these keys if the user's template hasn't already"), computing the NEXT page is left to
+       * the mapper's own nextPageArgsMapper(currentArgs, pageSize) function (see
+       * db/mapper_based_search_engines/vespa.js for an example) - evaluated the same way
+       * createSearcherFromSettings evaluates numberOfResultsMapper/docsMapper. Returns null if
+       * the mapper doesn't define one, same contract as splainer-search's own pager().
        */
-      function nextSearchApiPageArgs(existingArgs, defaultRows, hitsParam, offsetParam) {
-        let nextArgs = angular.copy(existingArgs) || {};
-        let pageSize = nextArgs[hitsParam] ? parseInt(nextArgs[hitsParam][0], 10) : defaultRows;
-        let currentOffset = nextArgs[offsetParam] ? parseInt(nextArgs[offsetParam][0], 10) : 0;
+      function buildNextPageArgs(mapperCode, currentArgs, pageSize) {
+        /*jshint evil:true */
+        /* jshint undef: false */
+        var mapperFunction = new Function(mapperCode);
+        mapperFunction.call(window);
 
-        nextArgs[hitsParam] = [ String(pageSize) ];
-        nextArgs[offsetParam] = [ String(currentOffset + pageSize) ];
+        var mapper = window.nextPageArgsMapper;
+        /*jshint evil:false */
+        /* jshint undef: true */
 
-        return nextArgs;
+        return typeof mapper === 'function' ? mapper(currentArgs, pageSize) : null;
       }
 
       /**
@@ -400,6 +408,8 @@ angular.module('QuepidApp')
         self.docs           = [];
         self.ratedDocs      = [];
         self.ratedDocsFound = 0;
+        self.ratedDocsUnsupported  = false;
+        self.ratedSearchApiBaseArgs = null;
         self.numFound       = 0;
         self.options        = queryWithRatings.options == null ? {} : queryWithRatings.options;
         self.notes          = queryWithRatings.notes;
@@ -568,6 +578,10 @@ angular.module('QuepidApp')
             settings.numberOfRows = pageSize;
           }
 
+          if (settings.searchEngine === 'searchapi') {
+            return refreshRatedDocsForSearchApi(settings);
+          }
+
           self.ratedSearcher = svc.createSearcherFromSettings(
               settings,
               self,
@@ -591,6 +605,89 @@ angular.module('QuepidApp')
             self.ratingsPromise = null;
           });
         };
+
+        // filterToRatings() (createSearcherFromSettings' filterToRated option, above) has no
+        // generic ID-filter syntax for a searchapi/mapper-based engine - unlike Solr's
+        // {!terms f=id} or ES's terms query, there's no one query language to target across
+        // arbitrary search APIs. Building the filter is also inherently async (mapper ->
+        // settingsSvc.previewArgs), unlike the other engines' synchronous filterToRated
+        // branches. This mirrors docFinder.js's initializeToRatedDocs() searchapi branch
+        // ("Already Rated Documents"), the other place that needs the same lookup.
+        //
+        // An engine that hasn't opted in via mapperBasedSearchEngineSupportsRatedDocsLookup
+        // (no ratedDocsQueryParamsMapper) can't support "Show only rated" at all - rather than
+        // silently show unfiltered results mislabeled as "rated", self.ratedDocsUnsupported is
+        // set so the UI can disable the control and say why (see queriesCtrl.js/queries.html).
+        function refreshRatedDocsForSearchApi(settings) {
+          self.ratedDocsUnsupported = !settings.selectedTry.mapperBasedSearchEngineSupportsRatedDocsLookup;
+
+          if (self.ratedDocsUnsupported) {
+            return resolveUnsupportedRatedDocs();
+          }
+
+          let ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
+          ratedIDs = ratedIDs.filter(function(id) { return id.length > 0; });
+
+          if (ratedIDs.length === 0) {
+            self.ratedSearcher = null;
+            self.ratedSearchApiBaseArgs = null;
+            self.ratedDocs = [];
+            self.ratedDocsFound = 0;
+            self.ratingsReady = true;
+            self.ratingsPromise = null;
+            return $q.resolve();
+          }
+
+          let ratedQueryParams = svc.buildSearchApiRatedDocsQueryParams(settings.selectedTry.mapperCode, ratedIDs);
+
+          if (!ratedQueryParams) {
+            self.ratedDocsUnsupported = true;
+            return resolveUnsupportedRatedDocs();
+          }
+
+          return settingsSvc.previewArgs(settings.selectedTry.tryNo, ratedQueryParams).then(function(resolvedArgs) {
+            if (resolvedArgs === null) {
+              self.ratedDocsUnsupported = true;
+              return resolveUnsupportedRatedDocs();
+            }
+
+            self.ratedSearchApiBaseArgs = resolvedArgs;
+
+            let tempSettings = angular.extend({}, settings, {
+              selectedTry: angular.extend({}, settings.selectedTry, { args: resolvedArgs })
+            });
+
+            self.ratedSearcher = svc.createSearcherFromSettings(tempSettings, self);
+
+            return self.ratedSearcher.search().then(function() {
+              self.ratedUrl = self.ratedSearcher.linkUrl;
+
+              let normed = normalizeDocExplains(self, self.ratedSearcher, settings.createFieldSpec());
+              let ratedDocsStaging = [];
+              angular.forEach(normed, function(doc) {
+                ratedDocsStaging.push(self.ratingsStore.createRateableDoc(doc));
+              });
+
+              self.ratedDocs = ratedDocsStaging;
+              // Vespa's own totalCount (unlike normed.length, a page's worth) covers every rated
+              // doc the "in (...)" filter matched, not just this page - needed so the "peek at
+              // next page" link (searchResults.html) knows there's more to fetch via ratedPaginate().
+              self.ratedDocsFound = self.ratedSearcher.numFound;
+              self.ratingsReady = true;
+              self.ratingsPromise = null;
+            });
+          });
+        }
+
+        function resolveUnsupportedRatedDocs() {
+          self.ratedSearcher = null;
+          self.ratedSearchApiBaseArgs = null;
+          self.ratedDocs = [];
+          self.ratedDocsFound = 0;
+          self.ratingsReady = true;
+          self.ratingsPromise = null;
+          return $q.resolve();
+        }
 
         this.setDocs = function(newDocs, numFound) {
           that.docs.length = 0;
@@ -644,6 +741,7 @@ angular.module('QuepidApp')
             // A fresh search restarts pagination from page 1 — see paginate()/ratedPaginate().
             self.searchApiPageArgs = null;
             self.ratedSearchApiPageArgs = null;
+            self.ratedSearchApiBaseArgs = null;
 
             self.searcher = svc.createSearcherFromSettings(
               currSettings,
@@ -767,23 +865,24 @@ angular.module('QuepidApp')
           }
 
           if (currSettings.searchEngine === 'searchapi') {
-            let hitsParam = currSettings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
-            let offsetParam = currSettings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
-
-            if (hitsParam && offsetParam) {
+            if (currSettings.selectedTry.mapperBasedSearchEngineSupportsPagination) {
               let originalArgs = currSettings.selectedTry.args;
-              // Track this query's own running offset on self.searchApiPageArgs, rather than
-              // on the shared currSettings.selectedTry.args — that object is reused by every
-              // query in the try, so mutating it in place would either leak a stale offset
-              // into other queries' fresh searches, or, if reset after each call, forget the
-              // offset entirely and refetch the same page on every subsequent click instead
-              // of advancing.
+              // Track this query's own running page state on self.searchApiPageArgs, rather
+              // than on the shared currSettings.selectedTry.args — that object is reused by
+              // every query in the try, so mutating it in place would either leak stale
+              // pagination state into other queries' fresh searches, or, if reset after each
+              // call, forget how far we'd paginated and refetch the same page on every
+              // subsequent click instead of advancing.
               let baseArgs = self.searchApiPageArgs || originalArgs;
-              self.searchApiPageArgs = svc.nextSearchApiPageArgs(baseArgs, currSettings.numberOfRows, hitsParam, offsetParam);
+              self.searchApiPageArgs = svc.buildNextPageArgs(currSettings.selectedTry.mapperCode, baseArgs, currSettings.numberOfRows);
 
-              currSettings.selectedTry.args = self.searchApiPageArgs;
-              self.searcher = svc.createSearcherFromSettings(currSettings, self);
-              currSettings.selectedTry.args = originalArgs;
+              if (self.searchApiPageArgs) {
+                currSettings.selectedTry.args = self.searchApiPageArgs;
+                self.searcher = svc.createSearcherFromSettings(currSettings, self);
+                currSettings.selectedTry.args = originalArgs;
+              } else {
+                self.searcher = null;
+              }
             } else {
               self.searcher = null;
             }
@@ -819,17 +918,23 @@ angular.module('QuepidApp')
             }
 
             if (currSettings.searchEngine === 'searchapi') {
-              let hitsParam = currSettings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
-              let offsetParam = currSettings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
+              // Unlike paginate(), the base args here are the resolved rated-docs-filter args
+              // built by refreshRatedDocsForSearchApi() (an "in (...)" ID-list query), not the
+              // main query's own args/template - the two are unrelated queries for a
+              // mapper-based engine, since there's no generic ID-filter syntax to graft onto
+              // the main query the way filterToRated does for es/os/solr.
+              if (currSettings.selectedTry.mapperBasedSearchEngineSupportsPagination && self.ratedSearchApiBaseArgs) {
+                let baseArgs = self.ratedSearchApiPageArgs || self.ratedSearchApiBaseArgs;
+                self.ratedSearchApiPageArgs = svc.buildNextPageArgs(currSettings.selectedTry.mapperCode, baseArgs, currSettings.numberOfRows);
 
-              if (hitsParam && offsetParam) {
-                let originalArgs = currSettings.selectedTry.args;
-                let baseArgs = self.ratedSearchApiPageArgs || originalArgs;
-                self.ratedSearchApiPageArgs = svc.nextSearchApiPageArgs(baseArgs, currSettings.numberOfRows, hitsParam, offsetParam);
-
-                currSettings.selectedTry.args = self.ratedSearchApiPageArgs;
-                self.ratedSearcher = svc.createSearcherFromSettings(currSettings, self, { filterToRated: true });
-                currSettings.selectedTry.args = originalArgs;
+                if (self.ratedSearchApiPageArgs) {
+                  let tempSettings = angular.extend({}, currSettings, {
+                    selectedTry: angular.extend({}, currSettings.selectedTry, { args: self.ratedSearchApiPageArgs })
+                  });
+                  self.ratedSearcher = svc.createSearcherFromSettings(tempSettings, self);
+                } else {
+                  self.ratedSearcher = null;
+                }
               } else {
                 self.ratedSearcher = null;
               }

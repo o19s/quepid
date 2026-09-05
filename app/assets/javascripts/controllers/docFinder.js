@@ -107,19 +107,23 @@ angular.module('QuepidApp')
         if (settings.searchEngine === 'searchapi') {
           // searchApiSearcherFactory's pager() always returns null - Vespa/generic search
           // APIs have no built-in offset concept, so widen the request ourselves the same
-          // way queriesSvc.js's paginate() does: bump hits/offset on the args the last
-          // search actually used.
-          var hitsParam   = settings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
-          var offsetParam = settings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
-
-          if (!hitsParam || !offsetParam) {
+          // way queriesSvc.js's paginate() does: ask the mapper (it may paginate however its
+          // target API actually works - see nextPageArgsMapper in
+          // db/mapper_based_search_engines/vespa.js) for the args to use for the next page.
+          if (!settings.selectedTry.mapperBasedSearchEngineSupportsPagination) {
             $scope.docFinder.paging = false;
             return;
           }
 
-          $scope.docFinder.searchApiPageArgs = queriesSvc.nextSearchApiPageArgs(
+          $scope.docFinder.searchApiPageArgs = queriesSvc.buildNextPageArgs(
+            settings.selectedTry.mapperCode,
             $scope.docFinder.searchApiPageArgs || $scope.docFinder.searcher.args,
-            settings.numberOfRows, hitsParam, offsetParam);
+            settings.numberOfRows);
+
+          if (!$scope.docFinder.searchApiPageArgs) {
+            $scope.docFinder.paging = false;
+            return;
+          }
 
           var tempSettings = angular.extend({}, settings, {
             selectedTry: angular.extend({}, settings.selectedTry, { args: $scope.docFinder.searchApiPageArgs })

@@ -31,13 +31,15 @@ class MapperBasedSearchEngine
   # guess a key name), not silently fall back to some other engine's convention.
   attribute :pagination_hits_param,   :string
   attribute :pagination_offset_param, :string
-  # Whether "Already Rated Documents" (the Find-and-Rate-Missing-Documents modal) can look
-  # up a query's already-rated doc IDs directly. Not every search API has a query syntax
-  # Quepid can use to build a "just these IDs" filter generically (unlike Solr's
-  # {!terms f=id} or ES's terms query), so this defaults to false rather than assume one.
-  # When true, mapper_file must define a ratedDocsQueryParamsMapper(ratedIds) function
-  # (queriesSvc.js's buildSearchApiRatedDocsQueryParams evaluates it) - the actual ID-filter
-  # query syntax is the mapper's job, same as numberOfResultsMapper/docsMapper above.
+  # Whether "Already Rated Documents" (the Find-and-Rate-Missing-Documents modal) and
+  # "Show only rated" (the queries list toggle) can look up a query's already-rated doc IDs
+  # directly. Not every search API has a query syntax Quepid can use to build a "just these
+  # IDs" filter generically (unlike Solr's {!terms f=id} or ES's terms query), so this
+  # defaults to false rather than assume one - queriesCtrl.js/queries.html disable "Show only
+  # rated" and explain why when false. When true, mapper_file must define a
+  # ratedDocsQueryParamsMapper(ratedIds) function (queriesSvc.js's
+  # buildSearchApiRatedDocsQueryParams evaluates it) - the actual ID-filter query syntax is
+  # the mapper's job, same as numberOfResultsMapper/docsMapper above.
   attribute :supports_rated_docs_lookup, :boolean, default: false
   attribute :search_url,          :string, default: ''
   attribute :url_format,          :string
@@ -56,7 +58,7 @@ class MapperBasedSearchEngine
       id:                         'vespa',
       name:                       'Vespa',
       logo:                       'vespa',
-      api_method:                 'GET',
+      api_method:                 'POST',
       proxy_requests:             true,
       supports_basic_auth:        false,
       # Vespa's query API takes hits/offset as plain top-level params alongside yql, so
@@ -71,18 +73,30 @@ class MapperBasedSearchEngine
       # createSearcherFromSettings() injects them at request-build time instead (using
       # pagination_hits_param/pagination_offset_param below), the same way it already
       # injects Solr's echoParams=all without persisting it into query_params.
-      query_params:               'yql=select * from movies where title contains "#$query##" or overview contains "#$query##"&ranking.profile=bm25',
-      # Vespa's document id (e.g. "id:movies:movies::603") is directly matchable in YQL - see
-      # ratedDocsQueryParamsMapper in the mapper_file below for the actual filter query.
+      #
+      # JSON, not a query string: POST avoids the URL-length limits a GET request risks
+      # once the query grows (e.g. ratedDocsQueryParamsMapper's "movie_id in (...)" list
+      # gets long with many ratings). Try#searchapi_args only picks EsArgParser (plain
+      # scalar values) over SolrArgParser (array-per-key values) when query_params starts
+      # with '{', so this has to be real JSON - not the query-string GET used before -
+      # for api_method: 'POST' to send a body Vespa actually accepts.
+      query_params:               '{"yql": "select * from movies where title contains \"#$query##\" or overview contains \"#$query##\"", "ranking.profile": "bm25"}',
+      # Vespa's own document id (e.g. "id:movies:movies::603") isn't a queryable field in
+      # this schema ("where id = ..." 400s with "Field 'id' does not exist" - confirmed
+      # against the live endpoint), so id_field points at movie_id instead: the schema's own
+      # attribute field, which IS filterable and happens to hold the same value as the local
+      # part of that envelope id. wizardModal.js builds field_spec as "id:#{id_field}, ..."
+      # from this, so every new Vespa case picks up movie_id as its doc id automatically -
+      # which is what ratedDocsQueryParamsMapper (mapper_file below) filters on.
       supports_rated_docs_lookup: true,
       # Read-only Vespa Cloud data-plane token for the o19s demo tenant; scoped to query
       # access only, so exposure is bounded to someone running extra queries against the
       # demo index, not writing/deleting data.
       custom_headers:             { Authorization: 'Bearer vespa_cloud_TR8wpJb6M2x0TltmxqTdupqA20rcAI5tAEfqHWbvsx5' }.to_json,
       header_type:                'Custom',
-      id_field:                   'id',
+      id_field:                   'movie_id',
       title_field:                'title',
-      test_query:                 'yql=select * from sources * where true',
+      test_query:                 '{"yql": "select * from sources * where true"}',
       additional_fields:          [ 'overview', 'cast', 'thumb:poster_path' ],
       mapper_file:                'db/mapper_based_search_engines/vespa.js',
     }
