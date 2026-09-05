@@ -52,7 +52,15 @@ class Case < ApplicationRecord
              dependent:  :destroy
 
   # rubocop:disable Rails/InverseOf
-  has_many   :queries,  -> { order(arranged_at: :asc) },
+  # `arranged_at` is nullable, and two things about ordering on it are not
+  # portable. Adapters disagree on where NULLs land - MySQL and SQLite sort
+  # them first under ASC, PostgreSQL sorts them last - so nullness is ordered
+  # explicitly (`IS NULL` yields 0/1 or false/true, so DESC keeps nulls first,
+  # which is what MySQL has always done here). And rows that tie, including
+  # every row when none of them are arranged, have no defined order at all
+  # without a tie breaker; MySQL happens to return them by id, so say so.
+  has_many   :queries,
+             -> { order(Arel.sql('queries.arranged_at IS NULL DESC'), arranged_at: :asc, id: :asc) },
              autosave:  true,
              dependent: :destroy
   # rubocop:enable Rails/InverseOf
