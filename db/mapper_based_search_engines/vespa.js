@@ -34,3 +34,24 @@ docsMapper = function (data) {
 
   return docs;
 };
+
+// ratedDocsQueryParamsMapper - Builds a one-off query_params string that looks up exactly
+// the given rated doc IDs, for the "Already Rated Documents" section of the
+// Find-and-Rate-Missing-Documents modal. queriesSvc.js's filterToRatings() has no generic
+// ID-filter syntax for a searchapi engine (unlike Solr's {!terms f=id} or ES's terms
+// query), so that's left to whichever mapper actually knows its target API's query
+// language.
+//
+// Unlike numberOfResultsMapper/docsMapper above, this IS specific to the "movies" schema
+// (same coupling as additional_fields in MapperBasedSearchEngine's Vespa definition):
+// Vespa's own document id (e.g. "id:movies:movies::603", the same string docsMapper puts
+// on doc.id above) isn't itself a queryable field - "where id == ..." 400s with "Field
+// 'id' does not exist" - so this filters on the schema's movie_id field instead, using
+// the local id after the last "::".
+ratedDocsQueryParamsMapper = function (ratedIds) {
+  const movieIds = ratedIds
+    .map(function (id) { return '"' + id.split('::').pop() + '"'; })
+    .join(',');
+
+  return 'yql=select * from sources * where movie_id in (' + movieIds + ')';
+};

@@ -4,7 +4,7 @@
     <div class="btn-group me-2">
       <%= link_to 'Edit', edit_search_endpoint_path(@search_endpoint), class: "btn btn-sm btn-outline-primary " %>
       <%= link_to 'Clone', clone_search_endpoint_path(@search_endpoint), method: :post, data: { turbo: false }, class: "btn btn-sm btn-outline-secondary" %>
-      <% if @search_endpoint.search_engine == 'searchapi' %>
+      <% if @search_endpoint.search_engine == 'searchapi' && @search_endpoint.mapper_based_search_engine_id.blank? %>
         <%= link_to mapper_wizard_path(@search_endpoint), class: "btn btn-sm btn-outline-info" do %>
           <i class="bi bi-stars"></i> Mapper Wizard
         <% end %>

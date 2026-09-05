@@ -66,6 +66,7 @@ class SearchEndpoint < ApplicationRecord
   validates :custom_headers, json_format: { normalize_values: true }, allow_blank: true
   validate :validate_proxy_requests_api_method
   validate :validate_proxy_required_for_hidden_credentials
+  validate :validate_mapper_code_immutable_for_preset
 
   def fullname
     name.presence || middle_truncate("#{search_engine.titleize} #{endpoint_url}")
@@ -79,6 +80,33 @@ class SearchEndpoint < ApplicationRecord
 
   def mark_archived
     self.archived = true
+  end
+
+  # Keeps every preset-linked endpoint's mapper_code in sync with the current
+  # db/mapper_based_search_engines/*.js it was created from - see
+  # validate_mapper_code_immutable_for_preset below for why mapper_code otherwise can't
+  # change for these endpoints. Run once at boot (config/initializers/
+  # sync_mapper_based_search_engine_code.rb) so updating a mapper file (e.g. adding Vespa's
+  # ratedDocsQueryParamsMapper) reaches every existing endpoint automatically, not just ones
+  # created afterward.
+  #
+  # No dedicated "last synced" column: mapper_code can only change here or at creation (see
+  # validate_mapper_code_immutable_for_preset), so an endpoint's own updated_at already says
+  # when that last happened - anything older than the mapper file itself is stale. update_all
+  # bypasses validations/callbacks (mapper_code is otherwise immutable) and sets updated_at
+  # itself, so a synced endpoint isn't seen as stale again next boot.
+  def self.sync_stale_mapper_based_search_engine_code!
+    # MapperBasedSearchEngine.all returns a plain in-memory Array (see its DEFINITIONS
+    # constant), not an ActiveRecord relation, so find_each doesn't apply here.
+    # rubocop:disable Rails/FindEach
+    MapperBasedSearchEngine.all.each do |definition|
+      # rubocop:enable Rails/FindEach
+      mtime = File.mtime(Rails.root.join(definition.mapper_file))
+
+      where(mapper_based_search_engine_id: definition.id)
+        .where(updated_at: ...mtime)
+        .update_all(mapper_code: definition.mapper_code, updated_at: Time.current)
+    end
   end
 
   def mark_archived!
@@ -127,5 +155,16 @@ class SearchEndpoint < ApplicationRecord
     return if basic_auth_credential.blank?
 
     errors.add(:proxy_requests, 'must be enabled when basic auth credentials are present') unless proxy_requests?
+  end
+
+  # mapper_code is copied in once from MapperBasedSearchEngine when a preset-linked endpoint
+  # is created; after that it's kept in sync automatically (see
+  # self.sync_stale_mapper_based_search_engine_code!), so direct edits (e.g. via the Mapper
+  # Wizard) would just get silently overwritten - block them instead. Only applies to
+  # existing records: the initial copy on creation must go through untouched.
+  def validate_mapper_code_immutable_for_preset
+    return unless persisted? && mapper_based_search_engine_id.present? && mapper_code_changed?
+
+    errors.add(:mapper_code, 'is managed automatically for this search endpoint and cannot be edited directly')
   end
 end
