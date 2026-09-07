@@ -38,8 +38,8 @@ class UserTeamFinderTest < ActiveSupport::TestCase
     test 'returns an empty array if no results match' do
       result = user.teams.where(id: 123).all
 
-      assert_equal        'Team::ActiveRecord_AssociationRelation', result.class.to_s
-      assert_equal        0, result.length
+      assert_equal 'Team::ActiveRecord_AssociationRelation', result.class.to_s
+      assert_equal 0, result.length
     end
 
     test 'works when filtering by id' do

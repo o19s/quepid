@@ -33,10 +33,9 @@
 class Case < ApplicationRecord
   # Associations
   # too late now!
-  # rubocop:disable Rails/HasAndBelongsToMany
+  # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
                           join_table: 'teams_cases'
-  # rubocop:enable Rails/HasAndBelongsToMany
 
   belongs_to :scorer, optional: true
 
@@ -51,11 +50,10 @@ class Case < ApplicationRecord
              class_name: 'CaseMetadatum',
              dependent:  :destroy
 
-  # rubocop:disable Rails/InverseOf
-  has_many   :queries,  -> { order(arranged_at: :asc) },
+  # rubocop:disable-next Rails/InverseOf
+  has_many   :queries, -> { order(arranged_at: :asc) },
              autosave:  true,
              dependent: :destroy
-  # rubocop:enable Rails/InverseOf
 
   has_many   :ratings,
              through: :queries

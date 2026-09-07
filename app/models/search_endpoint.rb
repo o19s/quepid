@@ -30,10 +30,9 @@
 class SearchEndpoint < ApplicationRecord
   # Associations
   # too late now!
-  # rubocop:disable Rails/HasAndBelongsToMany
+  # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
                           join_table: 'teams_search_endpoints'
-  # rubocop:enable Rails/HasAndBelongsToMany
 
   belongs_to :owner,
              class_name: 'User', optional: true

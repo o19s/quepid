@@ -5,7 +5,7 @@ class V8MapperExecutor
 
   attr_reader :logs
 
-  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable-next Metrics/MethodLength
   def initialize js_file_path
     @context = MiniRacer::Context.new
     @logs = []
@@ -62,13 +62,12 @@ class V8MapperExecutor
     # Load your code_mapper JavaScript
     @context.eval(File.read(js_file_path))
   end
-  # rubocop:enable Metrics/MethodLength
 
   def clear_logs
     @logs = []
   end
 
-  # rubocop:disable Style/DocumentDynamicEvalDefinition
+  # rubocop:disable-next Style/DocumentDynamicEvalDefinition
   def extract_docs code_mapper, response_body
     @context.eval('var docs = [];')
 
@@ -101,9 +100,8 @@ class V8MapperExecutor
   rescue MiniRacer::Error => e
     raise MapperError, "JavaScript execution error: #{e.message}"
   end
-  # rubocop:enable Style/DocumentDynamicEvalDefinition
 
-  # rubocop:disable Style/DocumentDynamicEvalDefinition
+  # rubocop:disable-next Style/DocumentDynamicEvalDefinition
   def extract_number_of_results code_mapper, response_body
     @context.eval('var numberOfResults = 0;')
 
@@ -132,7 +130,6 @@ class V8MapperExecutor
   rescue MiniRacer::Error => e
     raise MapperError, "JavaScript execution error: #{e.message}"
   end
-  # rubocop:enable Style/DocumentDynamicEvalDefinition
 
   private
 

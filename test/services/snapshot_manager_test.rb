@@ -210,8 +210,8 @@ class SnapshotManagerTest < ActiveSupport::TestCase
       first_snapshot_query  = queries.where(query_id: first_query.id).first
       second_snapshot_query = queries.where(query_id: second_query.id).first
 
-      assert_not_nil  first_snapshot_query
-      assert_not_nil  second_snapshot_query
+      assert_not_nil first_snapshot_query
+      assert_not_nil second_snapshot_query
 
       data_doc     = data[first_query.id][:docs]
       response_doc = first_snapshot_query.snapshot_docs
@@ -248,8 +248,8 @@ class SnapshotManagerTest < ActiveSupport::TestCase
       first_snapshot_query  = queries.where(query_id: first_query.id).first
       second_snapshot_query = queries.where(query_id: second_query.id).first
 
-      assert_not_nil  first_snapshot_query
-      assert_not_nil  second_snapshot_query
+      assert_not_nil first_snapshot_query
+      assert_not_nil second_snapshot_query
 
       response_doc = first_snapshot_query.snapshot_docs
 

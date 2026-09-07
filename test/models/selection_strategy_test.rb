@@ -15,7 +15,7 @@ class SelectionStrategyTest < ActiveSupport::TestCase
     counter
   end
 
-  # rubocop:disable Style/CombinableLoops
+  # rubocop:disable-next Style/CombinableLoops
   describe 'multiple raters per query doc pair strategy' do
     describe 'we rate wide each query' do
       let(:book)                { books(:james_bond_movies) }
@@ -302,7 +302,6 @@ class SelectionStrategyTest < ActiveSupport::TestCase
       end
     end
   end
-  # rubocop:enable Style/CombinableLoops
 
   private
 

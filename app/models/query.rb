@@ -31,13 +31,13 @@ class Query < ApplicationRecord
   include Arrangement::Item
 
   # Associations
-  belongs_to  :case, autosave: true, optional: false, touch: true
+  belongs_to :case, autosave: true, optional: false, touch: true
 
-  has_many    :ratings,
-              dependent: :destroy
+  has_many :ratings,
+           dependent: :destroy
 
-  has_many    :snapshot_queries,
-              dependent: :destroy
+  has_many :snapshot_queries,
+           dependent: :destroy
 
   # Concerns
 

@@ -3,7 +3,7 @@
 require 'colorize'
 require 'zip'
 
-# rubocop:disable Style/StringConcatenation
+# rubocop:disable-next Style/StringConcatenation
 class SampleData < Thor
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
@@ -775,4 +775,3 @@ class SampleData < Thor
     }
   end
 end
-# rubocop:enable Style/StringConcatenation
