@@ -16,11 +16,10 @@ module Api
       def update
         scorer_id = params[:id]
 
-        # rubocop:disable Style/IfUnlessModifier
+        # rubocop:disable-next Style/IfUnlessModifier
         if scorer_removed?
           scorer_id = nil
         end
-        # rubocop:enable Style/IfUnlessModifier
 
         if @case.update scorer_id: scorer_id
           Analytics::Tracker.track_case_updated_event current_user, @case

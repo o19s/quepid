@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/BlockLength
+# rubocop:disable-next Metrics/BlockLength
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -346,4 +346,3 @@ Rails.application.routes.draw do
   # Static pages
   get '/cookies' => 'pages#show', defaults: { page: 'cookies' }
 end
-# rubocop:enable Metrics/BlockLength

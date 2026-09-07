@@ -31,8 +31,8 @@ class RatingsImporterTest < ActiveSupport::TestCase
     test 'strips header row when configured with :drop_header true' do
       ratings = [
         { query_text: 'query_text', doc_id: 'doc_id', rating: 'rating' },
-        { query_text: 'Mexican Food2',   doc_id: ' 720784-021190', rating: ' 5' },
-        { query_text: 'Mexican Food2',   doc_id: ' 843075-031090', rating: ' 6' },
+        { query_text: 'Mexican Food2', doc_id: ' 720784-021190', rating: ' 5' },
+        { query_text: 'Mexican Food2', doc_id: ' 843075-031090', rating: ' 6' },
         { query_text: 'Mexican Food2', doc_id: '748785-005680', rating: ' 2' }
       ]
 

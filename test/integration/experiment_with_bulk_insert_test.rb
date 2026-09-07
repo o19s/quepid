@@ -10,9 +10,8 @@ class ExperimentWithBulkInsertTest < ActionDispatch::IntegrationTest
   let(:scorer) { scorers(:quepid_default_scorer) }
   let(:selection_strategy) { selection_strategies(:multiple_raters) }
 
-  # rubocop:disable Style/ClassVars
+  # rubocop:disable-next Style/ClassVars
   @@skip_tests = true
-  # rubocop:enable Style/ClassVars
 
   test 'generate and import query/doc pairs with traditional AR' do
     skip('Ignoring all tests in ExperimentWithBulkInsertTest') if @@skip_tests

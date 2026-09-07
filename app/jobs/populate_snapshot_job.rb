@@ -3,7 +3,7 @@
 class PopulateSnapshotJob < ApplicationJob
   queue_as :default
 
-  # rubocop:disable Security/MarshalLoad
+  # rubocop:disable-next Security/MarshalLoad
   def perform snapshot
     # Using Rails' bulk insert methods for better performance.
 
@@ -22,5 +22,4 @@ class PopulateSnapshotJob < ApplicationJob
 
     snapshot.snapshot_file.purge
   end
-  # rubocop:enable Security/MarshalLoad
 end

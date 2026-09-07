@@ -81,8 +81,8 @@ class CaseTest < ActiveSupport::TestCase
 
       acase = Case.create(case_name: 'with default scorer', owner: user)
 
-      assert_equal acase.scorer_id,       user_scorer.id
-      assert_equal acase.scorer_id,       user.default_scorer_id
+      assert_equal acase.scorer_id, user_scorer.id
+      assert_equal acase.scorer_id, user.default_scorer_id
       assert_not acase.scorer.communal
     end
 

@@ -3,8 +3,8 @@
 require 'test_helper'
 
 class TrackBookViewedJobTest < ActiveJob::TestCase
-  let(:doug)                  { users(:doug) }
-  let(:matt)                  { users(:matt) }
+  let(:doug) { users(:doug) }
+  let(:matt) { users(:matt) }
   let(:book) { books(:book_of_star_wars_judgements) }
 
   test 'creates a new metadatum when one does not exist' do

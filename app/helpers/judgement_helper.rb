@@ -5,7 +5,7 @@ module JudgementHelper
   # Generate rating buttons based on the book's scale
   # @param book [Book] The book containing the scale
   # @return [Array] Array of button configuration hashes, with :use_backup_labels indicating if fallbacks were used
-  # rubocop:disable Metrics/MethodLength, Metrics/BlockLength
+  # rubocop:disable-next Metrics/MethodLength, Metrics/BlockLength
   def generate_rating_buttons book
     max_score = book.scale.max
 
@@ -55,7 +55,6 @@ module JudgementHelper
     # Return both the buttons and whether fallbacks were used
     buttons
   end
-  # rubocop:enable Metrics/MethodLength, Metrics/BlockLength
 
   # Calculate the CSS class for a rating button based on its score
   # @param score [Integer] The rating value

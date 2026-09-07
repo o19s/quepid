@@ -42,9 +42,9 @@ class Try < ApplicationRecord
 
   belongs_to :search_endpoint, optional: true # see above too!#dependent: :nullify
 
-  has_many    :curator_variables,
-              dependent:  :destroy,
-              inverse_of: :try
+  has_many :curator_variables,
+           dependent:  :destroy,
+           inverse_of: :try
 
   has_many   :snapshots,
              dependent: :nullify

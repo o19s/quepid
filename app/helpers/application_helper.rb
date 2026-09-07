@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ModuleLength
+# rubocop:disable-next Metrics/ModuleLength
 module ApplicationHelper
   # Returns the Quepid application root URL (no trailing slash).
   # Respects RAILS_RELATIVE_URL_ROOT so deployment under a subpath works.
@@ -56,7 +56,7 @@ module ApplicationHelper
     button_to(name, options, html_options) if condition
   end
 
-  # rubocop:disable Lint/EmptyBlock
+  # rubocop:disable-next Lint/EmptyBlock
   def flash_messages _opts = {}
     flash.each do |msg_type, message|
       next if 'unfurl' == msg_type # we don't show unfurl's in the flash notice UI.
@@ -83,13 +83,12 @@ module ApplicationHelper
 
     nil
   end
-  # rubocop:enable Lint/EmptyBlock
 
   # Override default form_for to disable Turbo Drive on
   # Forms.  Maybe should be an ENV variable?
   # caused by https on front end attempting to make http
   # call by Turbo Drive and getting mix mode errros
-  # rubocop:disable Naming/BlockForwarding
+  # rubocop:disable-next Naming/BlockForwarding
   def form_for record, options = {}, &block
     if options[:html].nil?
       options[:html] = { data: { turbo: false } }
@@ -98,7 +97,6 @@ module ApplicationHelper
     end
     super
   end
-  # rubocop:enable Naming/BlockForwarding
 
   def form_with_disabled( **options, &)
     if options[:html].nil?
@@ -145,4 +143,3 @@ module ApplicationHelper
     nil
   end
 end
-# rubocop:enable Metrics/ModuleLength
