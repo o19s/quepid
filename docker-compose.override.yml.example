@@ -1,5 +1,5 @@
 # Demonstrate how to load your own local copy of a node package into Quepid.
-# Commonly used when you are developing against an unreleased package.
+# Commonly used when you are developing against an unreleased splainer-search package.
 #
 # With bin/docker s, Foreman rebuilds the AngularJS bundles just hard-refresh the browser.
 #
@@ -10,12 +10,10 @@
 # Vendor CSS for the core layout (wizard, ng-tags-input, etc.) is refreshed separately via:
 #   bin/docker r yarn build:css
 #
-# splainer-search (3.0.0+) is consumed as plain ESM - Quepid's adapter imports
+# splainer-search is consumed as plain ESM - Quepid's adapter imports
 # 'splainer-search/wired.js' directly (app/javascript/splainer_search_adapter.js), which in
 # turn imports from splainer-search's factories/, services/, and values/ directories via
-# relative paths. Mounting only a single bundled file (the pre-3.0 layout) is not enough -
-# every directory wired.js can reach must be mounted too, or Node's module resolution will
-# fall through to the npm-installed copy for whatever's missing.
+# relative paths.
 
 services:
   app:
