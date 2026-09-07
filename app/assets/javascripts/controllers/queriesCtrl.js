@@ -530,9 +530,8 @@ angular.module('QuepidApp')
           return false;
         }
 
-        var settings = settingsSvc.editableSettings();
-        return settings.searchEngine === 'searchapi' &&
-          !settings.selectedTry.mapperBasedSearchEngineSupportsRatedDocsLookup;
+        var aTry = settingsSvc.applicableSettings();
+        return aTry.searchEngine === 'searchapi' && !queriesSvc.trySupportsSearchApiRatedDocsLookup(aTry);
       };
 
       function getScorer() {

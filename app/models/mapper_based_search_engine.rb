@@ -37,9 +37,10 @@ class MapperBasedSearchEngine
   # IDs" filter generically (unlike Solr's {!terms f=id} or ES's terms query), so this
   # defaults to false rather than assume one - queriesCtrl.js/queries.html disable "Show only
   # rated" and explain why when false. When true, mapper_file must define a
-  # ratedDocsQueryParamsMapper(ratedIds) function (queriesSvc.js's
-  # buildSearchApiRatedDocsQueryParams evaluates it) - the actual ID-filter query syntax is
-  # the mapper's job, same as numberOfResultsMapper/docsMapper above.
+  # ratedDocsQueryParamsMapper(ratedIds, idField) function (queriesSvc.js's
+  # buildSearchApiRatedDocsQueryParams evaluates it, passing the case's own id field -
+  # fieldSpec.id - as idField) - the actual ID-filter query syntax is the mapper's job, same
+  # as numberOfResultsMapper/docsMapper above.
   attribute :supports_rated_docs_lookup, :boolean, default: false
   attribute :search_url,          :string, default: ''
   attribute :url_format,          :string
@@ -87,7 +88,9 @@ class MapperBasedSearchEngine
       # attribute field, which IS filterable and happens to hold the same value as the local
       # part of that envelope id. wizardModal.js builds field_spec as "id:#{id_field}, ..."
       # from this, so every new Vespa case picks up movie_id as its doc id automatically -
-      # which is what ratedDocsQueryParamsMapper (mapper_file below) filters on.
+      # queriesSvc.js passes that same id_field (as fieldSpec.id) into
+      # ratedDocsQueryParamsMapper (mapper_file below), so it filters on whatever field a
+      # given case's field_spec actually names, not a value hardcoded in the mapper.
       supports_rated_docs_lookup: true,
       # Read-only Vespa Cloud data-plane token for the o19s demo tenant; scoped to query
       # access only, so exposure is bounded to someone running extra queries against the

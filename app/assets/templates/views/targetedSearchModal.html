@@ -65,8 +65,17 @@
         Couldn't parse that query &mdash; check the syntax and try again.
       </div>
 
-      <div class="row alert alert-warning" ng-if="this.docFinder.numFound == 0 && !docFinder.parseError">
+      <div class="row alert alert-warning" ng-if="this.docFinder.numFound == 0 && !docFinder.parseError && !docFinder.ratedDocsLookupUnsupported">
         Your query <em>{{docFinder.lastQuery}}</em> returned no results
+      </div>
+
+      <div class="row alert alert-warning" ng-if="defaultList && docFinder.ratedDocsLookupUnsupported">
+        <ng-pluralize count="docFinder.totalRatings"
+               when="{'0': 'There are no ratings yet',
+                   '1': 'There is one rating',
+                   'other': 'There are {} ratings'}">
+        </ng-pluralize>
+        for your original query <em>{{query.queryText}}</em>, but looking up already-rated documents by ID isn't supported for the <strong>{{settings.searchEngine | searchEngineName}}</strong> search engine.
       </div>
 
       <div ng-if="this.docFinder.numFound > 0">

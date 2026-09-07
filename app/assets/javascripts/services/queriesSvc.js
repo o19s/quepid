@@ -55,6 +55,11 @@ angular.module('QuepidApp')
       this.error = false;
       let svcVersion = 0;
 
+      // Keyed by the mapper_code string itself, so a re-eval is only ever skipped for the
+      // exact same code (editing a mapper - or switching to a different mapper-based try -
+      // naturally busts the cache via a different key). See evaluateMapperFunctions() below.
+      let mapperFunctionsCache = {};
+
       let svc = this;
       this.displayOrder = [];
       this.queries = {};
@@ -110,10 +115,22 @@ angular.module('QuepidApp')
       this.getCaseNo = getCaseNo;
       this.createSearcherFromSettings = createSearcherFromSettings;
       this.createSearcherFromSnapshot = createSearcherFromSnapshot;
-      this.buildNextPageArgs = buildNextPageArgs;
       this.buildSearchApiRatedDocsQueryParams = buildSearchApiRatedDocsQueryParams;
+      this.searchApiRatedDocs = searchApiRatedDocs;
+      this.trySupportsSearchApiRatedDocsLookup = trySupportsSearchApiRatedDocsLookup;
       this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
+
+      /**
+       * Single source of truth for "can this try's engine look up already-rated docs by ID?"
+       * (MapperBasedSearchEngine#supports_rated_docs_lookup, exposed on the try as
+       * mapperBasedSearchEngineSupportsRatedDocsLookup) - used to gate "Show only rated"
+       * (queriesCtrl.js), the Find-and-Rate-Missing-Documents "Already Rated Documents" section
+       * (docFinder.js), and refreshRatedDocsForSearchApi() below, so the three stay in sync.
+       */
+      function trySupportsSearchApiRatedDocsLookup(aTry) {
+        return !!aTry && aTry.searchEngine === 'searchapi' && !!aTry.mapperBasedSearchEngineSupportsRatedDocsLookup;
+      }
 
       svc.bootstrapQueries = bootstrapQueries;
       svc.showOnlyRated = false;
@@ -123,6 +140,49 @@ angular.module('QuepidApp')
       $scope.$on('rating-changed', () => {
         svc.scoreAll();
       });
+
+      /**
+       * mapper_code (a try's JS source defining numberOfResultsMapper/docsMapper/
+       * nextPageArgsMapper/ratedDocsQueryParamsMapper - see
+       * db/mapper_based_search_engines/vespa.js) gets evaluated from two separate call sites
+       * (createSearcherFromSettings below, and buildSearchApiRatedDocsQueryParams) that often
+       * run back-to-back for the same try. Caching by the mapper_code string itself avoids
+       * redundant `new Function` eval + window-global churn on every search/page/rated-lookup.
+       *
+       * The eval technique itself (Function constructor, called against `window`) only works
+       * because mapper_code assigns to bare identifiers (`docsMapper = function...`, no `var`),
+       * which in non-strict, non-module code are just `window.docsMapper` - so a mapper that
+       * doesn't define one of these four functions would otherwise silently inherit whatever a
+       * PREVIOUS, unrelated try's mapper_code last left on window. Clearing all four before
+       * each eval (only reached on a cache miss) avoids that cross-contamination.
+       */
+      var MAPPER_FUNCTION_NAMES = [
+        'numberOfResultsMapper', 'docsMapper', 'nextPageArgsMapper', 'ratedDocsQueryParamsMapper'
+      ];
+
+      function evaluateMapperFunctions(mapperCode) {
+        if (Object.hasOwn(mapperFunctionsCache, mapperCode)) {
+          return mapperFunctionsCache[mapperCode];
+        }
+
+        /*jshint evil:true */
+        /* jshint undef: false */
+        MAPPER_FUNCTION_NAMES.forEach(function(name) { delete window[name]; });
+
+        var mapperFunction = new Function(mapperCode);
+        mapperFunction.call(window);
+
+        var functions = {};
+        MAPPER_FUNCTION_NAMES.forEach(function(name) {
+          functions[name] = typeof window[name] === 'function' ? window[name] : undefined;
+        });
+        /*jshint evil:false */
+        /* jshint undef: true */
+
+        mapperFunctionsCache[mapperCode] = functions;
+
+        return functions;
+      }
 
       /**
        * Builds a splainer-search Searcher from the active try's settings and a `Query`, including
@@ -162,64 +222,33 @@ angular.module('QuepidApp')
             passedInSettings.searchEngine = 'solr';
           }
           else if (passedInSettings.searchEngine === 'searchapi'){
-            /*jshint evil:true */
-            /* jshint undef: false */
-            console.log('About to evaluate mapper code...');
-            
-            // Alternative approach: Use Function constructor which runs in non-strict mode
-            // and has access to global scope
-            var mapperFunction = new Function(passedInSettings.mapperCode);
-            mapperFunction.call(window);
-            
-            // The functions should now be available on the window object
-            //var numberOfResultsMapper, docsMapper;
-            if (window.numberOfResultsMapper) {
-              numberOfResultsMapper = window.numberOfResultsMapper;
-            }
-            if (window.docsMapper) {
-              docsMapper = window.docsMapper;
-            }
-            /*jshint evil:false */
-            /* jshint undef: true */
+            let mapperFunctions = evaluateMapperFunctions(passedInSettings.mapperCode);
 
+            if (mapperFunctions.docsMapper) {
+              searcherOptions.docsMapper = mapperFunctions.docsMapper;
+            }
+            if (mapperFunctions.numberOfResultsMapper) {
+              searcherOptions.numberOfResultsMapper = mapperFunctions.numberOfResultsMapper;
+            }
+            if (mapperFunctions.nextPageArgsMapper) {
+              // splainer-search's searchApiSearcherFactory.pager() calls this directly to
+              // build the next page's args - see nextPageArgsMapper in
+              // db/mapper_based_search_engines/vespa.js for the contract.
+              searcherOptions.nextPageArgsMapper = mapperFunctions.nextPageArgsMapper;
+            }
 
-            if (typeof docsMapper === 'function') {
-              // jshint -W117
-              searcherOptions.docsMapper = docsMapper;
-            }
-            if (typeof numberOfResultsMapper === 'function') {
-              // jshint -W117
-              searcherOptions.numberOfResultsMapper = numberOfResultsMapper;
-            }
+            // splainer-search's searchApiSearcherPreprocessorSvc can't hardcode a page-size
+            // param name (unlike Solr's rows/ES's size) since that's whatever the target
+            // API/mapper calls it - these two names are all it needs to default hits/offset
+            // from numberOfRows on page 1, the same way Solr/ES already do internally.
+            searcherOptions.paginationHitsParam = passedInSettings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
+            searcherOptions.paginationOffsetParam = passedInSettings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
           }
 
           if (passedInSettings.searchEngine === 'solr') {
             // add echoParams=all if we don't have it defined to provide query details.
             if (args['echoParams'] === undefined) {
               args['echoParams'] = 'all';
-            }
-          }
-          else if (passedInSettings.searchEngine === 'searchapi') {
-            // For engines that support pagination (e.g. Vespa's hits/offset), inject the
-            // page-size param on every request — including this first one, not just
-            // paginate()'s follow-ups (see buildNextPageArgs) — so numberOfRows is
-            // honored from page 1 without baking hits/offset into the editable
-            // query_params template. Only fills in what the user's own template doesn't
-            // already set, so an explicit hits=/offset= in query_params still wins.
-            let hitsParam = passedInSettings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
-            let offsetParam = passedInSettings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
-
-            if (hitsParam && offsetParam) {
-              // Vespa (the only mapper-based engine using this today) is POST + JSON-parsed
-              // (EsArgParser => plain scalar values, unlike SolrArgParser's single-element
-              // arrays) - these are plain values too. Revisit if a GET-based mapper-based
-              // engine with pagination ever gets added.
-              if (args[hitsParam] === undefined) {
-                args[hitsParam] = String(passedInSettings.numberOfRows);
-              }
-              if (args[offsetParam] === undefined) {
-                args[offsetParam] = '0';
-              }
             }
           }
           // Modify query if ratings were passed in
@@ -270,53 +299,57 @@ angular.module('QuepidApp')
       }
 
       /**
-       * splainer-search's generic Search API engine has no pager() implementation (see
-       * searchApiSearcherFactory.js — it always returns null, unlike Solr/ES/Algolia/Vectara),
-       * since it has no built-in offset concept, and different mapper-based engines could
-       * paginate in entirely different ways (a numeric offset, a cursor/scroll token from the
-       * previous response, ...) - so unlike createSearcherFromSettings's page-1 sizing
-       * (MapperBasedSearchEngine#pagination_hits_param/#pagination_offset_param, a simple "set
-       * these keys if the user's template hasn't already"), computing the NEXT page is left to
-       * the mapper's own nextPageArgsMapper(currentArgs, pageSize) function (see
-       * db/mapper_based_search_engines/vespa.js for an example) - evaluated the same way
-       * createSearcherFromSettings evaluates numberOfResultsMapper/docsMapper. Returns null if
-       * the mapper doesn't define one, same contract as splainer-search's own pager().
-       */
-      function buildNextPageArgs(mapperCode, currentArgs, pageSize) {
-        /*jshint evil:true */
-        /* jshint undef: false */
-        var mapperFunction = new Function(mapperCode);
-        mapperFunction.call(window);
-
-        var mapper = window.nextPageArgsMapper;
-        /*jshint evil:false */
-        /* jshint undef: true */
-
-        return typeof mapper === 'function' ? mapper(currentArgs, pageSize) : null;
-      }
-
-      /**
        * filterToRatings() below has no generic "just these doc IDs" query syntax for a
        * searchapi engine (unlike Solr's {!terms f=id} or ES's terms query) - every mapper-based
        * engine's query language is different, so that's left to the mapper itself. If
-       * mapperCode defines a ratedDocsQueryParamsMapper(ratedIds) function (see
-       * db/mapper_based_search_engines/vespa.js for an example), this evaluates it the same
-       * way createSearcherFromSettings evaluates numberOfResultsMapper/docsMapper, and returns
-       * the query_params string it builds. Returns null if the mapper doesn't define one -
-       * callers should treat that the same as MapperBasedSearchEngine#supports_rated_docs_lookup
-       * being false.
+       * mapperCode defines a ratedDocsQueryParamsMapper(ratedIds, idField) function (see
+       * db/mapper_based_search_engines/vespa.js for an example), this returns the query_params
+       * string it builds (evaluated via the same cache as createSearcherFromSettings - see
+       * evaluateMapperFunctions above). idField is the case's own id field (fieldSpec.id, i.e.
+       * whatever follows "id:" in the try's field_spec) - passed through rather than left for
+       * the mapper to hardcode, since it's schema-specific and user-editable per case. Returns
+       * null if the mapper doesn't define one - callers should treat that the same as
+       * MapperBasedSearchEngine#supports_rated_docs_lookup being false.
        */
-      function buildSearchApiRatedDocsQueryParams(mapperCode, ratedIds) {
-        /*jshint evil:true */
-        /* jshint undef: false */
-        var mapperFunction = new Function(mapperCode);
-        mapperFunction.call(window);
+      function buildSearchApiRatedDocsQueryParams(mapperCode, ratedIds, idField) {
+        let mapper = evaluateMapperFunctions(mapperCode).ratedDocsQueryParamsMapper;
 
-        var mapper = window.ratedDocsQueryParamsMapper;
-        /*jshint evil:false */
-        /* jshint undef: true */
+        return typeof mapper === 'function' ? mapper(ratedIds, idField) : null;
+      }
 
-        return typeof mapper === 'function' ? mapper(ratedIds) : null;
+      /**
+       * Shared "look up already-rated docs via the mapper" pipeline for a searchapi/mapper-based
+       * engine - used by both docFinder.js's "Already Rated Documents" section and
+       * refreshRatedDocsForSearchApi() below (Query's "Show only rated" toggle), which otherwise
+       * duplicated this same build-query-params -> previewArgs -> search -> normalize sequence.
+       * Callers are expected to have already checked trySupportsSearchApiRatedDocsLookup(); this
+       * resolves to null when the mapper doesn't build a query (or previewArgs can't resolve it),
+       * which callers should treat as "can't show rated docs, disable/message accordingly."
+       */
+      function searchApiRatedDocs(settings, query, ratedIds) {
+        let idField = settings.createFieldSpec().id;
+        let ratedQueryParams = buildSearchApiRatedDocsQueryParams(settings.selectedTry.mapperCode, ratedIds, idField);
+
+        if (!ratedQueryParams) {
+          return $q.resolve(null);
+        }
+
+        return settingsSvc.previewArgs(settings.selectedTry.tryNo, ratedQueryParams).then(function(resolvedArgs) {
+          if (resolvedArgs === null) {
+            return null;
+          }
+
+          let tempSettings = angular.extend({}, settings, {
+            selectedTry: angular.extend({}, settings.selectedTry, { args: resolvedArgs })
+          });
+
+          let searcher = createSearcherFromSettings(tempSettings, query);
+
+          return searcher.search().then(function() {
+            let normed = normalizeDocExplains(query, searcher, settings.createFieldSpec());
+            return { searcher: searcher, docs: normed };
+          });
+        });
       }
 
       /**
@@ -409,7 +442,6 @@ angular.module('QuepidApp')
         self.ratedDocs      = [];
         self.ratedDocsFound = 0;
         self.ratedDocsUnsupported  = false;
-        self.ratedSearchApiBaseArgs = null;
         self.numFound       = 0;
         self.options        = queryWithRatings.options == null ? {} : queryWithRatings.options;
         self.notes          = queryWithRatings.notes;
@@ -611,77 +643,56 @@ angular.module('QuepidApp')
         // {!terms f=id} or ES's terms query, there's no one query language to target across
         // arbitrary search APIs. Building the filter is also inherently async (mapper ->
         // settingsSvc.previewArgs), unlike the other engines' synchronous filterToRated
-        // branches. This mirrors docFinder.js's initializeToRatedDocs() searchapi branch
-        // ("Already Rated Documents"), the other place that needs the same lookup.
+        // branches - svc.searchApiRatedDocs() is the shared pipeline for that, also used by
+        // docFinder.js's initializeToRatedDocs() ("Already Rated Documents").
         //
         // An engine that hasn't opted in via mapperBasedSearchEngineSupportsRatedDocsLookup
         // (no ratedDocsQueryParamsMapper) can't support "Show only rated" at all - rather than
         // silently show unfiltered results mislabeled as "rated", self.ratedDocsUnsupported is
         // set so the UI can disable the control and say why (see queriesCtrl.js/queries.html).
         function refreshRatedDocsForSearchApi(settings) {
-          self.ratedDocsUnsupported = !settings.selectedTry.mapperBasedSearchEngineSupportsRatedDocsLookup;
+          self.ratedDocsUnsupported = !svc.trySupportsSearchApiRatedDocsLookup(settings.selectedTry);
 
           if (self.ratedDocsUnsupported) {
-            return resolveUnsupportedRatedDocs();
+            return resetRatedDocsToEmpty();
           }
 
           let ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
           ratedIDs = ratedIDs.filter(function(id) { return id.length > 0; });
 
           if (ratedIDs.length === 0) {
-            self.ratedSearcher = null;
-            self.ratedSearchApiBaseArgs = null;
-            self.ratedDocs = [];
-            self.ratedDocsFound = 0;
-            self.ratingsReady = true;
-            self.ratingsPromise = null;
-            return $q.resolve();
+            return resetRatedDocsToEmpty();
           }
 
-          let ratedQueryParams = svc.buildSearchApiRatedDocsQueryParams(settings.selectedTry.mapperCode, ratedIDs);
-
-          if (!ratedQueryParams) {
-            self.ratedDocsUnsupported = true;
-            return resolveUnsupportedRatedDocs();
-          }
-
-          return settingsSvc.previewArgs(settings.selectedTry.tryNo, ratedQueryParams).then(function(resolvedArgs) {
-            if (resolvedArgs === null) {
+          return svc.searchApiRatedDocs(settings, self, ratedIDs).then(function(result) {
+            if (result === null) {
               self.ratedDocsUnsupported = true;
-              return resolveUnsupportedRatedDocs();
+              return resetRatedDocsToEmpty();
             }
 
-            self.ratedSearchApiBaseArgs = resolvedArgs;
+            self.ratedSearcher = result.searcher;
+            self.ratedUrl = result.searcher.linkUrl;
 
-            let tempSettings = angular.extend({}, settings, {
-              selectedTry: angular.extend({}, settings.selectedTry, { args: resolvedArgs })
+            let ratedDocsStaging = [];
+            angular.forEach(result.docs, function(doc) {
+              ratedDocsStaging.push(self.ratingsStore.createRateableDoc(doc));
             });
 
-            self.ratedSearcher = svc.createSearcherFromSettings(tempSettings, self);
-
-            return self.ratedSearcher.search().then(function() {
-              self.ratedUrl = self.ratedSearcher.linkUrl;
-
-              let normed = normalizeDocExplains(self, self.ratedSearcher, settings.createFieldSpec());
-              let ratedDocsStaging = [];
-              angular.forEach(normed, function(doc) {
-                ratedDocsStaging.push(self.ratingsStore.createRateableDoc(doc));
-              });
-
-              self.ratedDocs = ratedDocsStaging;
-              // Vespa's own totalCount (unlike normed.length, a page's worth) covers every rated
-              // doc the "in (...)" filter matched, not just this page - needed so the "peek at
-              // next page" link (searchResults.html) knows there's more to fetch via ratedPaginate().
-              self.ratedDocsFound = self.ratedSearcher.numFound;
-              self.ratingsReady = true;
-              self.ratingsPromise = null;
-            });
+            self.ratedDocs = ratedDocsStaging;
+            // Vespa's own totalCount (unlike result.docs.length, a page's worth) covers every
+            // rated doc the "in (...)" filter matched, not just this page - needed so the "peek
+            // at next page" link (searchResults.html) knows there's more via ratedPaginate().
+            self.ratedDocsFound = result.searcher.numFound;
+            self.ratingsReady = true;
+            self.ratingsPromise = null;
           });
         }
 
-        function resolveUnsupportedRatedDocs() {
+        // Shared "nothing to show" reset - used both when the engine can't look up rated docs
+        // at all, and when it can but there simply are none yet (self.ratedDocsUnsupported is
+        // left as whatever the caller already set, not touched here).
+        function resetRatedDocsToEmpty() {
           self.ratedSearcher = null;
-          self.ratedSearchApiBaseArgs = null;
           self.ratedDocs = [];
           self.ratedDocsFound = 0;
           self.ratingsReady = true;
@@ -738,10 +749,6 @@ angular.module('QuepidApp')
 
           return $q(function(resolve, reject) {
             self.hasBeenScored = false;
-            // A fresh search restarts pagination from page 1 — see paginate()/ratedPaginate().
-            self.searchApiPageArgs = null;
-            self.ratedSearchApiPageArgs = null;
-            self.ratedSearchApiBaseArgs = null;
 
             self.searcher = svc.createSearcherFromSettings(
               currSettings,
@@ -864,31 +871,12 @@ angular.module('QuepidApp')
             return;
           }
 
-          if (currSettings.searchEngine === 'searchapi') {
-            if (currSettings.selectedTry.mapperBasedSearchEngineSupportsPagination) {
-              let originalArgs = currSettings.selectedTry.args;
-              // Track this query's own running page state on self.searchApiPageArgs, rather
-              // than on the shared currSettings.selectedTry.args — that object is reused by
-              // every query in the try, so mutating it in place would either leak stale
-              // pagination state into other queries' fresh searches, or, if reset after each
-              // call, forget how far we'd paginated and refetch the same page on every
-              // subsequent click instead of advancing.
-              let baseArgs = self.searchApiPageArgs || originalArgs;
-              self.searchApiPageArgs = svc.buildNextPageArgs(currSettings.selectedTry.mapperCode, baseArgs, currSettings.numberOfRows);
-
-              if (self.searchApiPageArgs) {
-                currSettings.selectedTry.args = self.searchApiPageArgs;
-                self.searcher = svc.createSearcherFromSettings(currSettings, self);
-                currSettings.selectedTry.args = originalArgs;
-              } else {
-                self.searcher = null;
-              }
-            } else {
-              self.searcher = null;
-            }
-          } else {
-            self.searcher = self.searcher.pager();
-          }
+          // searchApiSearcherFactory.pager() (splainer-search) defers to
+          // config.nextPageArgsMapper - set on the searcher by createSearcherFromSettings from
+          // whatever the try's mapper_code defines (see nextPageArgsMapper in
+          // db/mapper_based_search_engines/vespa.js) - and returns null the same way
+          // Solr/ES/Algolia/Vectara's own pager() do when there's no mapper or no more pages.
+          self.searcher = self.searcher.pager();
 
           if (self.searcher === null) {
             return;
@@ -917,30 +905,11 @@ angular.module('QuepidApp')
               return;
             }
 
-            if (currSettings.searchEngine === 'searchapi') {
-              // Unlike paginate(), the base args here are the resolved rated-docs-filter args
-              // built by refreshRatedDocsForSearchApi() (an "in (...)" ID-list query), not the
-              // main query's own args/template - the two are unrelated queries for a
-              // mapper-based engine, since there's no generic ID-filter syntax to graft onto
-              // the main query the way filterToRated does for es/os/solr.
-              if (currSettings.selectedTry.mapperBasedSearchEngineSupportsPagination && self.ratedSearchApiBaseArgs) {
-                let baseArgs = self.ratedSearchApiPageArgs || self.ratedSearchApiBaseArgs;
-                self.ratedSearchApiPageArgs = svc.buildNextPageArgs(currSettings.selectedTry.mapperCode, baseArgs, currSettings.numberOfRows);
-
-                if (self.ratedSearchApiPageArgs) {
-                  let tempSettings = angular.extend({}, currSettings, {
-                    selectedTry: angular.extend({}, currSettings.selectedTry, { args: self.ratedSearchApiPageArgs })
-                  });
-                  self.ratedSearcher = svc.createSearcherFromSettings(tempSettings, self);
-                } else {
-                  self.ratedSearcher = null;
-                }
-              } else {
-                self.ratedSearcher = null;
-              }
-            } else {
-              self.ratedSearcher = self.ratedSearcher.pager();
-            }
+            // Same pager() as paginate() above - self.ratedSearcher already carries
+            // config.nextPageArgsMapper from however it was built (refreshRatedDocsForSearchApi's
+            // resolved rated-docs-filter args for searchapi, or the main query's args for
+            // es/os/solr/vectara/algolia), so it bumps whichever args it already has.
+            self.ratedSearcher = self.ratedSearcher.pager();
 
             if (self.ratedSearcher === null) {
               return;

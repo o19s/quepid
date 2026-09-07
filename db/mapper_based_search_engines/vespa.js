@@ -42,25 +42,26 @@ docsMapper = function (data) {
 // query), so that's left to whichever mapper actually knows its target API's query
 // language.
 //
-// Unlike numberOfResultsMapper/docsMapper above, this IS specific to the "movies" schema
-// (same coupling as additional_fields in MapperBasedSearchEngine's Vespa definition):
-// Vespa's own document id (e.g. "id:movies:movies::603") isn't itself a queryable field -
-// "where id == ..." 400s with "Field 'id' does not exist" - only the schema's movie_id
-// attribute is filterable. MapperBasedSearchEngine's id_field ('movie_id') makes this the
-// case's doc id going forward, so ratedIds normally arrive already bare (e.g. "603");
-// .split('::').pop() is a no-op then, and only actually strips anything for a case still
-// using the old id_field: 'id' default (doc ids like "id:movies:movies::603").
+// idField is the case's own id field (queriesSvc.js passes fieldSpec.id, i.e. whatever
+// follows "id:" in the try's field_spec - "movie_id" by default here, but a case can
+// repoint it at any indexed/attribute field in its Vespa schema) - not hardcoded, since
+// Vespa's own document id (e.g. "id:movies:movies::603") isn't itself a queryable field:
+// "where id == ..." 400s with "Field 'id' does not exist", only a real attribute is
+// filterable. ratedIds normally arrive already bare (e.g. "603") once a case's id_field
+// points at that attribute directly; .split('::').pop() is then a no-op, and only strips
+// anything for a case still using Vespa's own doc id (e.g. "id:movies:movies::603") as its
+// id field.
 //
 // Returns JSON (matching MapperBasedSearchEngine's api_method: 'POST' + JSON query_params
 // above) rather than a "yql=..." query string - this list of IDs has no fixed upper bound
 // (it grows with however many docs are rated), so it's exactly the case a GET's URL-length
 // limit would eventually break; POST's JSON body has no such limit.
-ratedDocsQueryParamsMapper = function (ratedIds) {
+ratedDocsQueryParamsMapper = function (ratedIds, idField) {
   const idList = ratedIds
     .map(function (id) { return JSON.stringify(id.split('::').pop()); })
     .join(',');
 
-  return JSON.stringify({ yql: 'select * from sources * where movie_id in (' + idList + ')' });
+  return JSON.stringify({ yql: 'select * from sources * where ' + idField + ' in (' + idList + ')' });
 };
 
 // nextPageArgsMapper - Given the resolved args used for the current page (already
