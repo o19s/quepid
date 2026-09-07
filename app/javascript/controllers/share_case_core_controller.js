@@ -313,15 +313,17 @@ export default class extends Controller {
         throw new Error(`Failed to load teams (${response.status})`)
       }
       const data = await response.json()
+      if (caseId !== this.currentCaseId) return
       const teams = Array.isArray(data.teams) ? data.teams : []
       const { allTeams, sharedTeams } = partitionTeams(teams, caseId)
       this.applyTeamLists(allTeams, sharedTeams)
     } catch (error) {
+      if (caseId !== this.currentCaseId) return
       console.error("share-case-core: load teams failed", error)
       this.showAlert("Unable to load teams. Please try again.", "danger")
       this.resetTeamListsForError()
     } finally {
-      this.setLoading(false)
+      if (caseId === this.currentCaseId) this.setLoading(false)
     }
   }
 
