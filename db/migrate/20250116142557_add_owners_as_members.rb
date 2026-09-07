@@ -4,10 +4,9 @@ class AddOwnersAsMembers < ActiveRecord::Migration[8.0]
   def change
     teams = Team.all
     teams.each do |team|
-      results = ActiveRecord::Base.connection.execute(
+      owner_id = ActiveRecord::Base.connection.select_value(
         "SELECT owner_id FROM teams WHERE id = #{team.id}"
       )
-      owner_id = results.first.first
       owner = User.find(owner_id)
       unless team.members.include?(owner)
         puts "Adding previous owner #{owner.name} to team #{team.name} as new member"

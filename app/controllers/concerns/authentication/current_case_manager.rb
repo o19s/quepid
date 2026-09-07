@@ -42,7 +42,7 @@ module Authentication
                 # cases = cases.sort_by { |x| case_ids.index x.id }
                 current_user.cases_involved_with.not_archived.with_counts
                   .includes([ :metadata ])
-                  .order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
+                  .order('case_metadata.last_viewed_at DESC, cases.id DESC')
                   .limit(count)
               else
                 []

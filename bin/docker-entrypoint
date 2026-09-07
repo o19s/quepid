@@ -1,12 +1,25 @@
 #!/bin/bash -e
-# 
+#
 # This file is loaded into the Dockerfile.prod Dockerfile
 # to faciliate startup steps.
+
+# Falls back to a known, public placeholder so a bare `docker run` with no flags works
+# for a quick demo. It's not a real secret - every deployment relying on it shares the
+# same forgeable session/CSRF signing key. Set your own SECRET_KEY_BASE (e.g.
+# `openssl rand -hex 64`) for anything with real users or data. Skipped when
+# RAILS_MASTER_KEY is set so Rails credentials supply the real secret instead.
+if [ -z "${SECRET_KEY_BASE}" ] && [ -z "${RAILS_MASTER_KEY}" ]; then
+  export SECRET_KEY_BASE="some_value_needed_here"
+fi
 
 # If running foreman or rails server, handle database setup
 if [ "${1}" == "foreman" ] || ([ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]); then
   echo "Checking if database exists..."
-  if bin/rails runner "ActiveRecord::Base.connection.execute('SELECT 1')" > /dev/null 2>&1; then
+  # Query schema_migrations specifically, not just SELECT 1 - a bare SELECT 1
+  # succeeds trivially against an empty-but-connectable database (which SQLite
+  # auto-creates on connect even when the file didn't exist a moment ago), so
+  # it can't distinguish "never set up" from "already set up".
+  if bin/rails runner "ActiveRecord::Base.connection.execute('SELECT 1 FROM schema_migrations LIMIT 1')" > /dev/null 2>&1; then
     echo "Database already exists, skipping creation..."
   else
     echo "Database does not exist, creating and setting up..."

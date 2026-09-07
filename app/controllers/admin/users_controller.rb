@@ -17,8 +17,8 @@ module Admin
       query = User.order(created_at: :desc)
 
       if params[:q].present?
-        query = query.where('users.name LIKE ? OR users.email LIKE ?',
-                            "%#{params[:q]}%", "%#{params[:q]}%")
+        q = "%#{params[:q].to_s.downcase}%"
+        query = query.where('LOWER(users.name) LIKE ? OR LOWER(users.email) LIKE ?', q, q)
       end
 
       respond_to do |format|

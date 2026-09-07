@@ -18,11 +18,11 @@
 #
 # Indexes
 #
-#  case_id                          (case_id)
 #  index_case_scores_annotation_id  (annotation_id) UNIQUE
+#  index_case_scores_on_case_id     (case_id)
 #  index_case_scores_on_scorer_id   (scorer_id)
+#  index_case_scores_on_user_id     (user_id)
 #  support_last_score               (updated_at,created_at,id)
-#  user_id                          (user_id)
 #
 # Foreign Keys
 #
@@ -57,6 +57,24 @@ class ScoreTest < ActiveSupport::TestCase
 
     it 'returns queries scores as a hash' do
       assert_instance_of Hash, score_with_queries.queries
+    end
+  end
+
+  describe '.sampled' do
+    let(:kase) { cases(:one) }
+
+    it 'returns the requested number of scores for the case' do
+      # fixtures give case :one 11 scores (one + valid_1..valid_10)
+      sampled = Score.sampled(kase.id, 5)
+
+      assert_equal 5, sampled.count
+      assert(sampled.all? { |score| score.case_id == kase.id })
+    end
+
+    it 'returns every score for the case when the sample size exceeds the total' do
+      sampled = Score.sampled(kase.id, 100)
+
+      assert_equal kase.scores.count, sampled.count
     end
   end
 end

@@ -15,7 +15,7 @@ module Api
         if user_params_to_save[:email].blank?
           @user = User.new user_params_to_save
         else
-          @user = User.where(email: user_params_to_save[:email]).where.not(invitation_token: nil).first
+          @user = User.by_email(user_params_to_save[:email]).where.not(invitation_token: nil).first
           if @user
             @user.assign_attributes(user_params_to_save)
           else

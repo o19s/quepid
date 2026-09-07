@@ -80,7 +80,7 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for owned cases' do
-      result = user.cases_involved_with.where('`cases`.`case_name` LIKE ?', '%owned by%').all
+      result = user.cases_involved_with.where('cases.case_name LIKE ?', '%owned by%').all
 
       assert_equal        'Case::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
@@ -88,7 +88,7 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     end
 
     test "works with complex where clause for cases from user's owned team" do
-      result = user.cases_involved_with.where('`cases`.`case_name` LIKE ?', '%owned team%').all
+      result = user.cases_involved_with.where('cases.case_name LIKE ?', '%owned team%').all
 
       assert_equal        'Case::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
@@ -96,7 +96,7 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     end
 
     test "works with complex where clause for cases from user's shared team" do
-      result = user.cases_involved_with.where('`cases`.`case_name` LIKE ?', '%shared team%').all
+      result = user.cases_involved_with.where('cases.case_name LIKE ?', '%shared team%').all
 
       assert_equal        'Case::ActiveRecord_Relation', result.class.to_s
       assert_equal        1,      result.length
@@ -145,21 +145,21 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for owned cases' do
-      result = user.cases_involved_with.where('`cases`.`case_name` LIKE ?', '%owned by%').first
+      result = user.cases_involved_with.where('cases.case_name LIKE ?', '%owned by%').first
 
       assert_instance_of  Case, result
       assert_equal        result, owned_case
     end
 
     test "works with complex where clause for cases from user's owned team" do
-      result = user.cases_involved_with.where('`cases`.`case_name` LIKE ?', '%owned team%').first
+      result = user.cases_involved_with.where('cases.case_name LIKE ?', '%owned team%').first
 
       assert_instance_of  Case, result
       assert_equal        result, owned_team_case
     end
 
     test "works with complex where clause for cases from user's shared team" do
-      result = user.cases_involved_with.where('`cases`.`case_name` LIKE ?', '%shared team%').first
+      result = user.cases_involved_with.where('cases.case_name LIKE ?', '%shared team%').first
 
       assert_instance_of  Case, result
       assert_equal        result, shared_team_case
@@ -204,21 +204,21 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for owned cases' do
-      result = user.cases_involved_with.where('`cases`.`case_name` LIKE ?', '%owned by%').last
+      result = user.cases_involved_with.where('cases.case_name LIKE ?', '%owned by%').last
 
       assert_instance_of  Case, result
       assert_equal        result, owned_case
     end
 
     test "works with complex where clause for cases from user's owned team" do
-      result = user.cases_involved_with.where('`cases`.`case_name` LIKE ?', '%owned team%').last
+      result = user.cases_involved_with.where('cases.case_name LIKE ?', '%owned team%').last
 
       assert_instance_of  Case, result
       assert_equal        result, owned_team_case
     end
 
     test "works with complex where clause for cases from user's shared team" do
-      result = user.cases_involved_with.where('`cases`.`case_name` LIKE ?', '%shared team%').last
+      result = user.cases_involved_with.where('cases.case_name LIKE ?', '%shared team%').last
 
       assert_instance_of  Case, result
       assert_equal        result, shared_team_case

@@ -48,7 +48,7 @@ describe("ImportCaseController submit redirect", () => {
 
     apiFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ case_id: 42 }),
+      json: () => Promise.resolve({ id: 42 }),
     })
 
     const submitPromise = ImportCaseController.prototype.submit.call(controller, {

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quepid screenshot viewer</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #12141a;
+        --panel: #1a1e28;
+        --border: #2c3344;
+        --text: #e8ecf4;
+        --muted: #9aa3b5;
+        --accent: #5b9fd4;
+        --accent-soft: #243548;
+        --ok: #3ecf8e;
+        --warn: #f0b429;
+        --diff: #ff4d8d;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        min-height: 100vh;
+      }
+
+      aside {
+        border-right: 1px solid var(--border);
+        background: var(--panel);
+        padding: 1rem;
+        overflow: auto;
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1.5rem;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+
+      .search {
+        width: min(320px, 100%);
+        padding: 0.45rem 0.65rem;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .nav-section {
+        margin-bottom: 1.25rem;
+      }
+
+      .nav-section h2 {
+        margin: 0 0 0.5rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .nav-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 0.25rem;
+      }
+
+      .nav-list button {
+        width: 100%;
+        text-align: left;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text);
+        padding: 0.45rem 0.55rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+
+      .nav-list button:hover,
+      .nav-list button:focus-visible {
+        background: var(--accent-soft);
+        outline: none;
+      }
+
+      .nav-list button[aria-current="true"] {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .badge {
+        display: inline-block;
+        flex-shrink: 0;
+        padding: 0.05rem 0.4rem;
+        border-radius: 999px;
+        font-size: 0.68rem;
+        border: 1px solid var(--border);
+        white-space: nowrap;
+      }
+
+      .badge.identical {
+        color: var(--ok);
+        border-color: color-mix(in srgb, var(--ok) 50%, var(--border));
+      }
+
+      .badge.diff {
+        color: var(--diff);
+        border-color: color-mix(in srgb, var(--diff) 50%, var(--border));
+      }
+
+      .badge.pending {
+        color: var(--muted);
+      }
+
+      .badge.single {
+        color: var(--muted);
+      }
+
+      .report {
+        margin-bottom: 1rem;
+        padding: 0.85rem 1rem;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      .report strong {
+        font-size: 0.95rem;
+      }
+
+      .report.identical {
+        border-color: color-mix(in srgb, var(--ok) 40%, var(--border));
+      }
+
+      .report.diff {
+        border-color: color-mix(in srgb, var(--diff) 40%, var(--border));
+      }
+
+      .report.warn {
+        border-color: color-mix(in srgb, var(--warn) 40%, var(--border));
+      }
+
+      .report dl {
+        margin: 0;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.2rem 1rem;
+        font-size: 0.85rem;
+      }
+
+      .report dt {
+        color: var(--muted);
+      }
+
+      .report dd {
+        margin: 0;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1.25rem;
+        align-items: center;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .controls label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .stage {
+        flex: 1;
+        padding: 1rem 1.25rem 1.5rem;
+        overflow: auto;
+      }
+
+      .compare {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .compare.single {
+        grid-template-columns: 1fr;
+        max-width: 960px;
+      }
+
+      .compare.diff-row {
+        grid-template-columns: 1fr;
+        margin-top: 1rem;
+      }
+
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        background: #0d0f14;
+      }
+
+      .panel header {
+        padding: 0.55rem 0.75rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.8rem;
+        color: var(--muted);
+        justify-content: flex-start;
+      }
+
+      .panel img,
+      .panel canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+        cursor: zoom-in;
+        background: #0a0c10;
+      }
+
+      .panel .img-error {
+        padding: 1rem;
+        color: var(--diff);
+        font-size: 0.85rem;
+      }
+
+      .empty {
+        color: var(--muted);
+        padding: 2rem;
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+      }
+
+      .hint {
+        margin-top: 0.75rem;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+
+      @media (max-width: 900px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        aside {
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+          max-height: 40vh;
+        }
+
+        .compare {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside>
+        <div class="nav-section" id="pairs-nav">
+          <h2>Before / after</h2>
+          <ul class="nav-list" id="pairs-list"></ul>
+        </div>
+        <div class="nav-section" id="singles-nav">
+          <h2>Single shots</h2>
+          <ul class="nav-list" id="singles-list"></ul>
+        </div>
+      </aside>
+      <main>
+        <header>
+          <div>
+            <h1 id="title">Screenshot viewer</h1>
+            <div class="meta" id="subtitle">Loading manifest…</div>
+          </div>
+          <input class="search" id="search" type="search" placeholder="Filter screenshots…" />
+        </header>
+        <div class="stage" id="stage">
+          <div class="empty">Pick a screenshot set from the sidebar.</div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const manifestUrl = "screenshot-manifest.json"
+      const shotPrefix = "/.playwright-mcp/"
+      const PIXEL_THRESHOLD = 8
+
+      let manifest = { groups: [], singles: [], summary: {} }
+      let items = []
+      let activeId = null
+      const pixelCache = new Map()
+
+      function shotSrc(name) {
+        return `${shotPrefix}${encodeURIComponent(name)}`
+      }
+
+      function formatBytes(bytes) {
+        if (bytes < 1024) return `${bytes} B`
+        return `${(bytes / 1024).toFixed(1)} KB`
+      }
+
+      function pairBadge(item) {
+        if (item.byteIdentical) {
+          return '<span class="badge identical">byte =</span>'
+        }
+        if (item.byteIdentical === false) {
+          const pixel = pixelCache.get(item.id)
+          if (pixel?.pixelIdentical) return '<span class="badge identical">pixel =</span>'
+          if (pixel && !pixel.pending) return '<span class="badge diff">diff</span>'
+          return '<span class="badge diff">bytes ≠</span>'
+        }
+        return '<span class="badge pending">…</span>'
+      }
+
+      function renderNav(filter = "") {
+        const q = filter.trim().toLowerCase()
+        const match = (item) => !q || item.title.toLowerCase().includes(q) || item.id.toLowerCase().includes(q)
+
+        const pairsList = document.getElementById("pairs-list")
+        const singlesList = document.getElementById("singles-list")
+        pairsList.innerHTML = ""
+        singlesList.innerHTML = ""
+
+        const pairs = items.filter((item) => item.kind === "pair" && match(item))
+        const singles = items.filter((item) => item.kind === "single" && match(item))
+
+        document.getElementById("pairs-nav").hidden = pairs.length === 0
+        document.getElementById("singles-nav").hidden = singles.length === 0
+
+        for (const item of pairs) {
+          const li = document.createElement("li")
+          const btn = document.createElement("button")
+          btn.type = "button"
+          btn.innerHTML = `<span>${item.title}</span>${pairBadge(item)}`
+          btn.setAttribute("aria-current", item.id === activeId ? "true" : "false")
+          btn.addEventListener("click", () => select(item.id))
+          li.appendChild(btn)
+          pairsList.appendChild(li)
+        }
+
+        for (const item of singles) {
+          const li = document.createElement("li")
+          const btn = document.createElement("button")
+          btn.innerHTML = `<span>${item.title}</span><span class="badge single">${item.note || "single"}</span>`
+          btn.setAttribute("aria-current", item.id === activeId ? "true" : "false")
+          btn.addEventListener("click", () => select(item.id))
+          li.appendChild(btn)
+          singlesList.appendChild(li)
+        }
+      }
+
+      function panel(label, src, alt) {
+        const safeAlt = alt.replaceAll('"', "&quot;")
+        return `
+          <figure class="panel">
+            <header>${label}</header>
+            <a href="${src}" target="_blank" rel="noopener noreferrer">
+              <img src="${src}" alt="${safeAlt}" loading="lazy"
+                onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'img-error',textContent:'Failed to load: ${src}'}))" />
+            </a>
+          </figure>
+        `
+      }
+
+      function reportHtml(item, pixel = null) {
+        if (item.kind !== "pair") return ""
+
+        if (item.byteIdentical) {
+          return `
+            <div class="report identical">
+              <strong>Byte identical</strong>
+              <dl>
+                <dt>Files</dt><dd>${item.before} ↔ ${item.after}</dd>
+                <dt>Size</dt><dd>${formatBytes(item.beforeSize)} each</dd>
+                <dt>Pixels</dt><dd>Identical (same file bytes ⇒ same decoded image)</dd>
+              </dl>
+            </div>
+          `
+        }
+
+        if (!pixel || pixel.pending) {
+          return `
+            <div class="report warn" id="diff-report">
+              <strong>Comparing pixels…</strong>
+              <dl>
+                <dt>Bytes</dt><dd>Different (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>
+              </dl>
+            </div>
+          `
+        }
+
+        if (pixel.dimensionMismatch) {
+          return `
+            <div class="report diff">
+              <strong>Different dimensions</strong>
+              <dl>
+                <dt>Bytes</dt><dd>Different (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>
+                <dt>Before</dt><dd>${pixel.beforeWidth}×${pixel.beforeHeight}</dd>
+                <dt>After</dt><dd>${pixel.afterWidth}×${pixel.afterHeight}</dd>
+              </dl>
+            </div>
+          `
+        }
+
+        if (pixel.pixelIdentical) {
+          return `
+            <div class="report identical">
+              <strong>Pixel identical (bytes differ)</strong>
+              <dl>
+                <dt>Bytes</dt><dd>Different PNG encoding (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>
+                <dt>Dimensions</dt><dd>${pixel.width}×${pixel.height}</dd>
+                <dt>Pixels</dt><dd>All channels match within threshold ${PIXEL_THRESHOLD}</dd>
+              </dl>
+            </div>
+          `
+        }
+
+        return `
+          <div class="report diff">
+            <strong>Visual diff detected</strong>
+            <dl>
+              <dt>Bytes</dt><dd>Different (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>
+              <dt>Dimensions</dt><dd>${pixel.width}×${pixel.height}</dd>
+              <dt>Changed pixels</dt><dd>${pixel.changedPixels.toLocaleString()} (${pixel.changedPercent}%)</dd>
+              <dt>Threshold</dt><dd>±${PIXEL_THRESHOLD} per RGBA channel</dd>
+            </dl>
+          </div>
+          <div class="controls">
+            <label><input type="checkbox" id="diff-only" /> Diff only (hide unchanged pixels)</label>
+            <label><input type="checkbox" id="diff-overlay" checked /> Tint changed pixels on before/after</label>
+          </div>
+        `
+      }
+
+      async function loadImage(url) {
+        const img = new Image()
+        img.decoding = "async"
+        img.src = url
+        await img.decode()
+        return img
+      }
+
+      function readPixels(img) {
+        const canvas = document.createElement("canvas")
+        canvas.width = img.naturalWidth
+        canvas.height = img.naturalHeight
+        const ctx = canvas.getContext("2d", { willReadFrequently: true })
+        ctx.drawImage(img, 0, 0)
+        return ctx.getImageData(0, 0, canvas.width, canvas.height)
+      }
+
+      function pixelDiff(beforeData, afterData, threshold) {
+        const { width, height, data: a } = beforeData
+        const b = afterData.data
+        const diff = new Uint8ClampedArray(a.length)
+        let changedPixels = 0
+
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            const i = (y * width + x) * 4
+            const dr = Math.abs(a[i] - b[i])
+            const dg = Math.abs(a[i + 1] - b[i + 1])
+            const db = Math.abs(a[i + 2] - b[i + 2])
+            const da = Math.abs(a[i + 3] - b[i + 3])
+            const changed = dr > threshold || dg > threshold || db > threshold || da > threshold
+
+            if (changed) {
+              changedPixels++
+              diff[i] = 255
+              diff[i + 1] = 77
+              diff[i + 2] = 141
+              diff[i + 3] = 255
+            } else {
+              diff[i] = 24
+              diff[i + 1] = 28
+              diff[i + 2] = 36
+              diff[i + 3] = 255
+            }
+          }
+        }
+
+        const totalPixels = width * height
+        return {
+          width,
+          height,
+          changedPixels,
+          changedPercent: ((changedPixels / totalPixels) * 100).toFixed(2),
+          pixelIdentical: changedPixels === 0,
+          imageData: new ImageData(diff, width, height)
+        }
+      }
+
+      function overlayDiff(baseData, diffData, tintChanged) {
+        const out = new Uint8ClampedArray(baseData.data)
+        if (!tintChanged) return new ImageData(out, baseData.width, baseData.height)
+
+        for (let i = 0; i < out.length; i += 4) {
+          const changed =
+            diffData.data[i] === 255 &&
+            diffData.data[i + 1] === 77 &&
+            diffData.data[i + 2] === 141
+
+          if (changed) {
+            out[i] = Math.min(255, out[i] * 0.35 + 255 * 0.65)
+            out[i + 1] = Math.min(255, out[i + 1] * 0.35)
+            out[i + 2] = Math.min(255, out[i + 2] * 0.35 + 141 * 0.35)
+          }
+        }
+
+        return new ImageData(out, baseData.width, baseData.height)
+      }
+
+      // IMPORTANT: never assign canvas via innerHTML/outerHTML — that drops
+      // putImageData pixels and leaves a blank canvas (broke pairs 05–08).
+      function mountCanvas(container, imageData, label) {
+        container.replaceChildren()
+        const figure = document.createElement("figure")
+        figure.className = "panel"
+        const header = document.createElement("header")
+        header.textContent = label
+        const canvas = document.createElement("canvas")
+        canvas.width = imageData.width
+        canvas.height = imageData.height
+        // Keep CSS from collapsing the canvas before layout.
+        canvas.style.aspectRatio = `${imageData.width} / ${imageData.height}`
+        canvas.getContext("2d").putImageData(imageData, 0, 0)
+        figure.append(header, canvas)
+        container.appendChild(figure)
+        return canvas
+      }
+
+      async function comparePair(item) {
+        if (item.byteIdentical) {
+          return { pending: false, byteIdentical: true, pixelIdentical: true }
+        }
+
+        if (pixelCache.has(item.id)) return pixelCache.get(item.id)
+
+        const pending = { pending: true }
+        pixelCache.set(item.id, pending)
+
+        const beforeUrl = shotSrc(item.before)
+        const afterUrl = shotSrc(item.after)
+        const [beforeImg, afterImg] = await Promise.all([loadImage(beforeUrl), loadImage(afterUrl)])
+
+        if (beforeImg.naturalWidth !== afterImg.naturalWidth || beforeImg.naturalHeight !== afterImg.naturalHeight) {
+          const result = {
+            pending: false,
+            dimensionMismatch: true,
+            beforeWidth: beforeImg.naturalWidth,
+            beforeHeight: beforeImg.naturalHeight,
+            afterWidth: afterImg.naturalWidth,
+            afterHeight: afterImg.naturalHeight
+          }
+          pixelCache.set(item.id, result)
+          return result
+        }
+
+        const beforeData = readPixels(beforeImg)
+        const afterData = readPixels(afterImg)
+        const result = {
+          pending: false,
+          ...pixelDiff(beforeData, afterData, PIXEL_THRESHOLD),
+          beforeData,
+          afterData
+        }
+        pixelCache.set(item.id, result)
+        return result
+      }
+
+      function wireDiffControls(pixel) {
+        const diffOnly = document.getElementById("diff-only")
+        const diffOverlay = document.getElementById("diff-overlay")
+        const diffHost = document.getElementById("diff-canvas-host")
+        const beforeHost = document.getElementById("before-canvas-host")
+        const afterHost = document.getElementById("after-canvas-host")
+
+        function redraw() {
+          const showOverlay = diffOverlay?.checked ?? true
+          const onlyDiff = diffOnly?.checked ?? false
+
+          let diffImage = pixel.imageData
+          if (onlyDiff) {
+            const masked = new Uint8ClampedArray(pixel.imageData.data)
+            for (let i = 0; i < masked.length; i += 4) {
+              const changed = masked[i] === 255 && masked[i + 1] === 77
+              if (!changed) masked[i + 3] = 0
+            }
+            diffImage = new ImageData(masked, pixel.width, pixel.height)
+          }
+
+          if (diffHost) {
+            mountCanvas(diffHost, diffImage, `Diff map (${pixel.changedPercent}% changed)`)
+          }
+
+          if (beforeHost && afterHost) {
+            mountCanvas(
+              beforeHost,
+              overlayDiff(pixel.beforeData, pixel.imageData, showOverlay),
+              "Before (highlighted)"
+            )
+            mountCanvas(
+              afterHost,
+              overlayDiff(pixel.afterData, pixel.imageData, showOverlay),
+              "After (highlighted)"
+            )
+          }
+        }
+
+        diffOnly?.addEventListener("change", redraw)
+        diffOverlay?.addEventListener("change", redraw)
+        redraw()
+      }
+
+      async function renderStage(item) {
+        const stage = document.getElementById("stage")
+        document.getElementById("title").textContent = item.title
+
+        if (item.kind === "pair") {
+          // Always keep the real <img> panels visible. Diff highlighting is
+          // an extra row — never replace the photos with canvases.
+          stage.innerHTML = `
+            <div id="diff-report-wrap">${reportHtml(item, { pending: !item.byteIdentical })}</div>
+            <div class="compare">
+              ${panel("Before", shotSrc(item.before), `${item.title} before`)}
+              ${panel("After", shotSrc(item.after), `${item.title} after`)}
+            </div>
+            <div class="compare" id="highlight-row" hidden>
+              <div id="before-canvas-host"></div>
+              <div id="after-canvas-host"></div>
+            </div>
+            <div class="compare diff-row" id="diff-row" hidden>
+              <div id="diff-canvas-host"></div>
+            </div>
+            <p class="hint">Magenta = changed pixels (±${PIXEL_THRESHOLD} per channel). Arrow keys: previous / next set.</p>
+          `
+
+          renderNav(document.getElementById("search").value)
+
+          if (item.byteIdentical) return
+
+          const pixel = await comparePair(item)
+          document.getElementById("diff-report-wrap").innerHTML = reportHtml(item, pixel)
+          renderNav(document.getElementById("search").value)
+
+          if (pixel.dimensionMismatch || pixel.pixelIdentical) return
+
+          document.getElementById("highlight-row").hidden = false
+          document.getElementById("diff-row").hidden = false
+          wireDiffControls(pixel)
+          return
+        }
+
+        stage.innerHTML = `
+          <div class="compare single">
+            ${panel(item.note || "Image", shotSrc(item.image), item.title)}
+          </div>
+          <p class="hint">Single image — no pair to compare. Arrow keys: previous / next set.</p>
+        `
+      }
+
+      function select(id) {
+        const item = items.find((entry) => entry.id === id)
+        if (!item) return
+        activeId = id
+        renderNav(document.getElementById("search").value)
+        renderStage(item)
+      }
+
+      function selectRelative(delta) {
+        const visible = items.filter((item) => {
+          const q = document.getElementById("search").value.trim().toLowerCase()
+          return !q || item.title.toLowerCase().includes(q) || item.id.toLowerCase().includes(q)
+        })
+        if (!visible.length) return
+        const idx = Math.max(0, visible.findIndex((item) => item.id === activeId))
+        const next = visible[(idx + delta + visible.length) % visible.length]
+        select(next.id)
+      }
+
+      async function init() {
+        const res = await fetch(manifestUrl)
+        if (!res.ok) {
+          document.getElementById("subtitle").textContent = "Manifest missing — run: yarn screenshots:view"
+          document.getElementById("stage").innerHTML =
+            '<div class="empty">Run <code>yarn screenshots:view</code> from the repo root to generate the manifest and start the local server.</div>'
+          return
+        }
+
+        manifest = await res.json()
+        items = [
+          ...manifest.groups.map((group) => ({ kind: "pair", ...group })),
+          ...manifest.singles.map((single) => ({ kind: "single", ...single }))
+        ]
+
+        const summary = manifest.summary || {}
+        document.getElementById("subtitle").textContent =
+          `${summary.pairs || manifest.groups.length} pairs (${summary.byteIdentical || 0} byte-identical, ${summary.byteDifferent || 0} different), ${manifest.singles.length} singles — ${manifest.shotDir}/`
+
+        renderNav()
+        if (items.length) select(items[0].id)
+      }
+
+      document.getElementById("search").addEventListener("input", (event) => {
+        renderNav(event.target.value)
+      })
+
+      window.addEventListener("keydown", (event) => {
+        if (event.target.matches("input, textarea")) return
+        if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+          event.preventDefault()
+          selectRelative(1)
+        }
+        if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+          event.preventDefault()
+          selectRelative(-1)
+        }
+      })
+
+      init()
+    </script>
+  </body>
+</html>

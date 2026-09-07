@@ -47,6 +47,7 @@ gem 'jsbundling-rails' # For bundling the Angular 1 app
 gem 'scout_apm' # using on Heroku to look at memory issues
 gem 'solid_cable'
 gem 'solid_queue'
+gem 'sqlite3'
 gem 'stimulus-rails'
 gem 'thor'
 gem 'turbo-rails'

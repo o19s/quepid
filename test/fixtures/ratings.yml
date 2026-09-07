@@ -12,8 +12,8 @@
 #
 # Indexes
 #
-#  index_ratings_on_doc_id  (doc_id)
-#  query_id                 (query_id)
+#  index_ratings_on_doc_id    (doc_id)
+#  index_ratings_on_query_id  (query_id)
 #
 # Foreign Keys
 #
@@ -64,3 +64,18 @@ b_query_rating:
   query: :b_query
   doc_id: "doc_b"
   rating: 0
+
+james_bond_case_rating_1:
+  query: :query_for_james_bond_case
+  doc_id: "doc_bond_1"
+  rating: 3
+
+james_bond_case_rating_2:
+  query: :query_for_james_bond_case
+  doc_id: "doc_bond_2"
+  rating: 1
+
+james_bond_case_rating_3:
+  query: :query_for_james_bond_case
+  doc_id: "doc_bond_3"
+  rating: 5

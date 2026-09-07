@@ -9,13 +9,12 @@ const CONNECT_TIMEOUT_MS = 10_000;
  */
 export default async function globalSetup(_config: FullConfig): Promise<void> {
   const baseURL = playwrightBaseURL();
-  const url = baseURL.replace(/\/$/, '') + '/';
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), CONNECT_TIMEOUT_MS);
 
   try {
-    const res = await fetch(url, {
+    const res = await fetch(baseURL, {
       method: 'GET',
       redirect: 'follow',
       signal: controller.signal,

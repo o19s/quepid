@@ -14,7 +14,7 @@
 #
 # Indexes
 #
-#  case_id                       (case_id)
+#  index_snapshots_on_case_id    (case_id)
 #  index_snapshots_on_scorer_id  (scorer_id)
 #  index_snapshots_on_try_id     (try_id)
 #

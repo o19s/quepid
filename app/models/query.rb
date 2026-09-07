@@ -17,7 +17,7 @@
 #
 # Indexes
 #
-#  case_id  (case_id)
+#  index_queries_on_case_id  (case_id)
 #
 # Foreign Keys
 #

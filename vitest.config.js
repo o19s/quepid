@@ -21,6 +21,10 @@ export default defineConfig({
       "@hotwired/stimulus": path.resolve(repoRoot, "app/javascript/test/stimulus_stub.js"),
       "api/fetch": path.resolve(repoRoot, "app/javascript/api/fetch.js"),
       "utils/quepid_root": path.resolve(repoRoot, "app/javascript/utils/quepid_root.js"),
+      "utils/bs_tooltip": path.resolve(repoRoot, "app/javascript/utils/bs_tooltip.js"),
+      "utils/bs_popover": path.resolve(repoRoot, "app/javascript/utils/bs_popover.js"),
+      "utils/text_paste": path.resolve(repoRoot, "app/javascript/utils/text_paste.js"),
+      "utils/count_up": path.resolve(repoRoot, "app/javascript/utils/count_up.js")
     },
   },
 })

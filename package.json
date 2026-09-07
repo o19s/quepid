@@ -17,6 +17,7 @@
     "bootstrap": "^5.3.0",
     "bootstrap-icons": "^1.10.3",
     "clipboard": "^2.0.11",
+    "curl-generator": "^0.5.0",
     "esbuild": "^0.28.0",
     "file-saver": "^2.0.5",
     "jquery": "^3.7.1",
@@ -35,6 +36,7 @@
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.0.0",
+    "happy-dom": "^20.0.10",
     "jasmine-core": "7.0.2",
     "jshint": "2.13.6",
     "karma": "^6.4.1",
@@ -45,7 +47,6 @@
     "purgecss": "^8.0.0",
     "stylelint": "^17.0.0",
     "stylelint-config-standard": "^40.0.0",
-    "happy-dom": "^20.0.10",
     "vitest": "^4.0.0"
   },
   "resolutions": {},
@@ -54,7 +55,7 @@
     "build:angular-vendor": "esbuild app/javascript/angular_app.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets --loader:.css=css --loader:.png=dataurl --loader:.svg=dataurl --loader:.woff=dataurl --loader:.woff2=dataurl --loader:.ttf=dataurl --loader:.eot=dataurl --external:jquery",
     "build:angular-app": "node build_angular_app.js",
     "build:angular-app:watch": "node build_angular_app.js --watch",
-    "build:angular": "npm run build:angular-vendor && npm run build:angular-app",
+    "build:angular": "yarn build:angular-vendor && yarn build:angular-app",
     "build:angular-templates": "node build_templates.js",
     "build:angular-templates:watch": "node build_templates.js --watch",
     "build:analytics": "esbuild app/javascript/analytics.js --bundle --sourcemap --format=iife --outdir=app/assets/builds --public-path=/assets",
@@ -72,6 +73,7 @@
     "test:unit:watch": "vitest",
     "test:e2e": "playwright test --config test/playwright/playwright.config.ts",
     "test:e2e:update-baselines": "playwright test --config test/playwright/playwright.config.ts --update-snapshots",
-    "test:e2e:ui": "playwright test --config test/playwright/playwright.config.ts --ui"
+    "test:e2e:ui": "playwright test --config test/playwright/playwright.config.ts --ui",
+    "screenshots:view": "node test/playwright/screenshot-viewer-server.mjs"
   }
 }

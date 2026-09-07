@@ -191,11 +191,7 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :announcements, except: [ :show ] do
-      member do
-        post :publish
-      end
-    end
+    resources :announcements, except: [ :show ]
     resources :websocket_tester, only: [ :index ] do
       post 'test_background_job', on: :collection
     end
@@ -295,6 +291,7 @@ Rails.application.routes.draw do
       end
 
       resources :search_endpoints, except: [ :new, :edit ]
+      resources :mapper_based_search_engines, only: [ :index ]
       resources :scorers, except: [ :new, :edit ]
 
       resources :teams, except: [ :new, :edit ], param: :team_id

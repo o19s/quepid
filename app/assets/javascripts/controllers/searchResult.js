@@ -102,5 +102,19 @@ angular.module('QuepidApp')
         return ( /^\s*http[s]?:.*/.test(value));
       };
 
+      // fieldName may be a field_spec dotted path (e.g. "fields.url"), which isn't a
+      // literal key on the raw doc. Mirrors the dotted-path traversal splainer-search's
+      // normalDocsSvc already uses to populate fieldValue, so links use the un-escaped
+      // original value instead of the (possibly HTML-escaped/truncated) snippet.
+      $scope.resolveFieldValue = function(fieldName) {
+        var raw = $scope.doc.doc.origin();
+        if (Object.prototype.hasOwnProperty.call(raw, fieldName)) {
+          return raw[fieldName];
+        }
+        return fieldName.split('.').reduce(function(acc, key) {
+          return (acc && typeof acc === 'object') ? acc[key] : undefined;
+        }, raw);
+      };
+
     }
   ]);

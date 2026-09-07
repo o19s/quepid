@@ -6,6 +6,7 @@
 #
 #  id                :integer          not null, primary key
 #  all_rated         :boolean
+#  error             :text(65535)
 #  number_of_results :integer
 #  response_status   :integer
 #  score             :float(24)
@@ -14,8 +15,8 @@
 #
 # Indexes
 #
-#  query_id     (query_id)
-#  snapshot_id  (snapshot_id)
+#  index_snapshot_queries_on_query_id  (query_id)
+#  snapshot_id                         (snapshot_id)
 #
 # Foreign Keys
 #

@@ -1,5 +1,9 @@
 class RemoveSoftDeletedQueries < ActiveRecord::Migration[5.2]
   def change
+    # The DELETE ... USING syntax below is MySQL-only; nothing to migrate away
+    # from on a fresh SQLite database (soft-deleted queries were only ever a
+    # MySQL production concern).
+    return unless connection.adapter_name == 'Mysql2'
 
     # Delete from the database any snapshot related data for soft deleted queries.
     RemoveSoftDeletedQueries.connection.execute(

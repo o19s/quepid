@@ -134,10 +134,11 @@
 <p class="form-text">
   Remap existing rating values to new values. For example, convert a 5-point scale (5,4,3,2,1) to a binary scale by mapping 5&rarr;1, 4&rarr;1, 3&rarr;0, 2&rarr;0, 1&rarr;0.
   Only entries whose value differs from the current rating will be updated.
+  This remaps both the book&rsquo;s judgements and the ratings in all associated cases.
 </p>
-<%= form_for(@book, url: remap_judgement_ratings_book_path(@book), method: :patch, data: { confirm: "Are you sure? This will update all matching judgement ratings." }) do |form| %>
+<%= form_for(@book, url: remap_judgement_ratings_book_path(@book), method: :patch, data: { confirm: "Are you sure? This will update all matching judgement and case ratings." }) do |form| %>
   <% if @current_ratings.empty? %>
-    <p class="text-muted">No rated judgements found in this book.</p>
+    <p class="text-muted">No rated judgements or case ratings found in this book.</p>
   <% else %>
     <table class="table table-sm w-auto">
       <thead>

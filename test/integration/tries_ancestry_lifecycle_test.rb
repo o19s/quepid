@@ -4,6 +4,11 @@ require 'test_helper'
 
 class TriesAncestryLifecycleTest < ActionDispatch::IntegrationTest
   test 'Creates a new root try when ancestry tree gets to be too much' do
+    # SQLite doesn't enforce VARCHAR length limits at all (it's a hint, not a
+    # constraint), so the ancestry column never overflows there and this
+    # MySQL-specific safety net can't be exercised.
+    skip 'ancestry column length is only enforced by MySQL' unless AdapterFunctions.mysql?
+
     root_tries = []
     root = Try.new(name: 'Try Root')
     root.save!

@@ -34,7 +34,7 @@ class CaseImporter
     end
 
     list_of_emails_of_users.uniq.each do |email|
-      unless User.exists?(email: email)
+      unless User.by_email(email).exists?
         if options[:force_create_users]
           User.invite!({ email: email, password: '', skip_invitation: true }, @current_user)
         else
@@ -83,7 +83,7 @@ class CaseImporter
       next unless query[:ratings]
 
       query[:ratings].each do |rating|
-        rating[:user] = User.find_by(email: rating[:user_email]) if rating[:user_email].present?
+        rating[:user] = User.by_email(rating[:user_email]).first if rating[:user_email].present?
         new_query.ratings.build(rating.except(:user_email))
       end
     end

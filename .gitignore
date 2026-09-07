@@ -33,6 +33,9 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+# Ignore local database config (generated from config/database.yml.sample).
+/config/database.yml
+
 venv
 
 # puppeteer testing
@@ -42,6 +45,7 @@ venv
 /test/playwright/.auth
 /test/playwright/test-results
 /test/playwright/playwright-report
+/test/playwright/screenshot-manifest.json
 /playwright/.cache
 
 # VIM swp

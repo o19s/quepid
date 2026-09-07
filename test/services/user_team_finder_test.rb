@@ -51,7 +51,7 @@ class UserTeamFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for owned teams' do
-      result = user.teams.where('`teams`.`name` LIKE ?', '%owned by%').all
+      result = user.teams.where('teams.name LIKE ?', '%owned by%').all
 
       assert_equal        'Team::ActiveRecord_AssociationRelation', result.class.to_s
       assert_equal        1,      result.length
@@ -59,7 +59,7 @@ class UserTeamFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for teams the user is a member of' do
-      result = user.teams.where('`teams`.`name` LIKE ?', '%shared with%').all
+      result = user.teams.where('teams.name LIKE ?', '%shared with%').all
 
       assert_equal        'Team::ActiveRecord_AssociationRelation', result.class.to_s
       assert_equal        1,      result.length
@@ -100,14 +100,14 @@ class UserTeamFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for owned teams' do
-      result = user.teams.where('`teams`.`name` LIKE ?', '%owned by%').first
+      result = user.teams.where('teams.name LIKE ?', '%owned by%').first
 
       assert_instance_of  Team, result
       assert_equal        result, owned_team
     end
 
     test 'works with complex where clause for teams the user is a member of' do
-      result = user.teams.where('`teams`.`name` LIKE ?', '%shared with%').first
+      result = user.teams.where('teams.name LIKE ?', '%shared with%').first
 
       assert_instance_of  Team, result
       assert_equal        result, shared_team
@@ -145,14 +145,14 @@ class UserTeamFinderTest < ActiveSupport::TestCase
     end
 
     test 'works with complex where clause for owned teams' do
-      result = user.teams.where('`teams`.`name` LIKE ?', '%owned by%').last
+      result = user.teams.where('teams.name LIKE ?', '%owned by%').last
 
       assert_instance_of  Team, result
       assert_equal        result, owned_team
     end
 
     test 'works with complex where clause for teams the user is a member of' do
-      result = user.teams.where('`teams`.`name` LIKE ?', '%shared with%').last
+      result = user.teams.where('teams.name LIKE ?', '%shared with%').last
 
       assert_instance_of  Team, result
       assert_equal        result, shared_team

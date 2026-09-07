@@ -19,9 +19,10 @@ Rails.application.configure do
 
   config.action_controller.default_protect_from_forgery = false
 
-  # This may not be needed
-  # Disable serving static files from `public/`, relying on NGINX/Apache to do so instead.
-  config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
+  # Serves assets by default so a bare `docker run` with no reverse proxy in front
+  # still works. Set RAILS_SERVE_STATIC_FILES=false to disable it when something
+  # else (NGINX/Apache) serves `/assets` directly.
+  config.public_file_server.enabled = 'false' != ENV['RAILS_SERVE_STATIC_FILES']
 
   # Cache assets for far-future expiry since they are all digest stamped.
   config.public_file_server.headers = { 'cache-control' => "public, max-age=#{1.year.to_i}" }

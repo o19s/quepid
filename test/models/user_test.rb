@@ -185,6 +185,32 @@ class UserTest < ActiveSupport::TestCase
       new_user = User.create(email: 'DeFaultS@emaiL.COM', password: 'password')
       assert_includes new_user.errors.messages[:email], 'has already been taken'
     end
+
+    describe 'by_email' do
+      test 'folds the case of the value being looked up' do
+        user = users(:random)
+
+        assert_equal user, User.by_email(user.email.upcase).first
+        assert_equal user, User.by_email(" #{user.email.upcase} ").first
+      end
+
+      # Fixtures skip validations, so this row keeps the casing it was written
+      # with - the same way a row inserted by insert_all or raw SQL would.
+      # Folding only the input would never find it once the database compares
+      # byte for byte, which is what PostgreSQL and SQLite do.
+      test 'finds a stored address that is not itself lowercase' do
+        stored = users(:autocomplete_uppercase)
+
+        assert_equal 'UpperCase@example.com', stored.email
+        assert_equal stored, User.by_email('uppercase@example.com').first
+      end
+
+      test 'returns nothing for a blank or unknown address' do
+        assert_nil User.by_email('').first
+        assert_nil User.by_email(nil).first
+        assert_nil User.by_email('nobody@example.com').first
+      end
+    end
   end
 
   describe 'Name' do

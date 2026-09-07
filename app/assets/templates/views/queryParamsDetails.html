@@ -26,7 +26,7 @@
       <div>
         <a ng-href="search_endpoints/{{ aTry.searchEndpointId }}" target="_self">
         <img ng-if="aTry.searchEngine"
-          ng-src="images/{{ aTry.searchEngine }}-icon.png" width="16px" /> 
+          ng-src="images/{{ aTry.mapperBasedSearchEngineId || aTry.searchEngine }}-icon.png" width="16px" />
         {{aTry.endpointName}}
         </a>
         --

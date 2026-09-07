@@ -9,6 +9,41 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test @user
   end
 
+  describe 'cases search' do
+    # `id` is an integer column. Matching it with LIKE made a search for "5"
+    # return cases 15, 25 and 51 as well, and is a type error on PostgreSQL.
+    it 'matches a numeric term against the case id exactly, not as a substring' do
+      owner = users(:doug)
+      wanted = nil
+      [ 5, 15, 25 ].each do |id|
+        Case.where(id: id).delete_all
+        kase = Case.new(id: id, case_name: "Team search case #{('A'.ord + (id % 26)).chr}", owner: owner)
+        kase.save!(validate: false)
+        @team.cases << kase
+        wanted = kase if 5 == id
+      end
+
+      Bullet.enable = false # narrowing to one case makes the view's eager load look unused
+      get team_path(@team), params: { cases_q: '5' }
+      Bullet.enable = true
+
+      assert_response :success
+      found = assigns(:cases).map(&:id)
+      assert_includes found, wanted.id
+      assert_not_includes found, 15
+      assert_not_includes found, 25
+    end
+
+    it 'still matches on the case name and survives a non numeric term' do
+      Bullet.enable = false
+      get team_path(@team), params: { cases_q: 'definitely-no-such-case' }
+      Bullet.enable = true
+
+      assert_response :success
+      assert_empty assigns(:cases)
+    end
+  end
+
   describe 'suggest_members' do
     it 'returns users with matching email from same teams' do
       # random user is already in the 'shared' team with random_1

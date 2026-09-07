@@ -1,186 +1,73 @@
 'use strict';
 
-// Replacement for angular-ui-bootstrap's `uib-popover` and `uib-popover-template`
-// using Bootstrap 5's native Popover. Bootstrap is imported in
-// app/javascript/angular_app.js so window.bootstrap.Popover is available here.
-//
-// Usage:
-//   <span quepid-popover="Plain text"></span>
-//   <span quepid-popover="..." popover-trigger="'mouseenter'" popover-placement="right"></span>
-//   <div  quepid-popover-template="'views/ratings/popover.html'"
-//         popover-trigger="outsideClick"
-//         popover-placement="auto right"
-//         popover-is-open="ratings.ratingsOn"></div>
-//
-//   popover-title="..."          (interpolation supported)
-//   popover-popup-delay="500"    (ms; show delay only)
-//
-// Trigger mapping (uib → BS5):
-//   'mouseenter'   → hover focus
-//   'click'        → click            (BS5 default)
-//   'focus'        → focus
-//   'outsideClick' → manual + custom click toggle + document outside-click hide
+// uib-popover replacement — BS5 via quepidDom.popover (utils/bs_popover.js).
+// Fixed `?` help icons: use bs-static-popover instead.
+// outsideClick → manual trigger + capture listener; do not add our click
+// toggle when the element already has ng-click.
+// uib triggers: mouseenter → hover focus; outsideClick → manual.
 
 (function () {
   const QUEPID = angular.module('QuepidApp');
 
-  function parseTriggerAttr(raw) {
-    if (!raw) { return 'click'; }
-    return raw.trim().replace(/^['"]|['"]$/g, '');
-  }
-
-  function toBsTrigger(t) {
-    switch (t) {
-      case 'mouseenter':   return 'hover focus';
-      case 'focus':        return 'focus';
-      case 'click':        return 'click';
-      case 'outsideClick': return 'manual';
-      default:             return 'click';
-    }
-  }
-
   function linkPopover(scope, element, attrs, opts, $parse) {
-    const Popover = window.bootstrap && window.bootstrap.Popover;
-    if (!Popover) {
-      console.warn('quepidPopover: window.bootstrap.Popover not available; popover will not render', element[0]);
+    const dom = window.quepidDom && window.quepidDom.popover;
+    if (!dom) {
+      console.warn('quepidPopover: window.quepidDom.popover not available', element[0]);
       return;
     }
 
-    const el      = element[0];
-    const trigger = parseTriggerAttr(attrs.popoverTrigger);
-
-    // BS5 placement does not accept compound 'auto right' from uib;
-    // keep the directional half so 'auto right' becomes 'right'.
-    const placement = (attrs.popoverPlacement || 'top').split(/\s+/).pop();
-    const delayMs   = parseInt(attrs.popoverPopupDelay, 10);
+    const el = element[0];
+    const trigger = dom.parseTrigger(attrs.popoverTrigger);
+    const placement = dom.normalizePlacement(attrs.popoverPlacement);
+    const delayMs = parseInt(attrs.popoverPopupDelay, 10);
 
     const hasIsOpen = !!attrs.popoverIsOpen;
     const isOpenGet = hasIsOpen ? $parse(attrs.popoverIsOpen) : null;
     const isOpenSet = (hasIsOpen && isOpenGet.assign) ? isOpenGet.assign : null;
 
-    // popover-is-open and outsideClick both need us to drive show/hide,
-    // so override BS5's trigger to manual in those cases.
-    const bsTrigger = (hasIsOpen || trigger === 'outsideClick') ?
-      'manual' :
-      toBsTrigger(trigger);
-
-    // Track current header/body in closures and always pass both to setContent.
-    // Required because BS5's templateFactory merges via Object spread, so
-    // partial updates accumulate — but our `null`-removes-element trick for
-    // empty headers depends on every rebuild seeing a fresh map.
-    let currentTitle = '';
-    let currentBody  = opts.mode === 'text' ? (attrs.quepidPopover || '') : '';
-
-    const instance = new Popover(el, {
+    const handle = dom.create(el, {
+      mode: opts.mode,
+      trigger: trigger,
       placement: placement,
-      trigger:   bsTrigger,
-      html:      opts.html !== false,
-      delay:     isFinite(delayMs) ? { show: delayMs, hide: 0 } : 0,
-      container: 'body',
-      animation: false,
-      title:     ' ',
-      content:   currentBody || ' '
-    });
-
-    function refreshContent() {
-      instance.setContent({
-        '.popover-header': currentTitle || null,
-        '.popover-body':   currentBody || ' '
-      });
-    }
-
-    if (attrs.popoverTitle !== undefined) {
-      attrs.$observe('popoverTitle', function (val) {
-        currentTitle = val || '';
-        refreshContent();
-      });
-    }
-
-    let onShow   = null;
-    let onShown  = null;
-    let onHidden = null;
-
-    if (opts.mode === 'text') {
-      attrs.$observe('quepidPopover', function (val) {
-        currentBody = val || '';
-        refreshContent();
-      });
-    } else {
-      // Template mode: compile lazily on first show (see quepidPopoverTemplate),
-      // then re-attach the same compiled element on every subsequent show so
-      // Angular bindings stay live.
-      onShow = function () {
+      delayMs: delayMs,
+      title: attrs.popoverTitle,
+      body: opts.mode === 'text' ? (attrs.quepidPopover || '') : '',
+      html: opts.html !== false,
+      hasIsOpen: hasIsOpen,
+      hasNgClick: !!attrs.ngClick,
+      getIsOpen: function () { return isOpenGet(scope); },
+      setIsOpen: isOpenSet ? function (val) { isOpenSet(scope, val); } : null,
+      scopeApply: function (fn) { scope.$apply(fn); },
+      onTemplateShow: opts.mode === 'template' ? function () {
         opts.ensureCompiled(function () {
           const compiled = opts.getElement();
           if (compiled) {
-            currentBody = compiled;
-            refreshContent();
+            handle.setBody(compiled);
           }
         });
-      };
-      el.addEventListener('show.bs.popover', onShow);
-    }
+      } : null
+    });
 
-    // popover-is-open two-way binding.
-    let suppress = false;
-    if (hasIsOpen) {
-      scope.$watch(function () { return isOpenGet(scope); }, function (val) {
-        suppress = true;
-        if (val) { instance.show(); }
-        else     { instance.hide(); }
-        suppress = false;
+    if (attrs.popoverTitle !== undefined) {
+      attrs.$observe('popoverTitle', function (val) {
+        handle.setTitle(val);
       });
-
-      onShown = function () {
-        if (suppress || !isOpenSet || isOpenGet(scope) === true) { return; }
-        scope.$apply(function () { isOpenSet(scope, true); });
-      };
-      onHidden = function () {
-        if (suppress || !isOpenSet || isOpenGet(scope) === false) { return; }
-        scope.$apply(function () { isOpenSet(scope, false); });
-      };
-      el.addEventListener('shown.bs.popover',  onShown);
-      el.addEventListener('hidden.bs.popover', onHidden);
     }
 
-    // outsideClick: hide whenever a click lands outside the trigger AND
-    // outside the rendered popover. BS5 has no built-in equivalent.
-    let docHandler = null;
-    if (trigger === 'outsideClick') {
-      docHandler = function (ev) {
-        const tipId = el.getAttribute('aria-describedby');
-        const tip   = tipId ? document.getElementById(tipId) : null;
-        if (!tip) { return; }
-        if (el.contains(ev.target) || tip.contains(ev.target)) { return; }
-        if (hasIsOpen && isOpenSet) {
-          scope.$apply(function () { isOpenSet(scope, false); });
-        } else {
-          instance.hide();
-        }
-      };
-      // Capture phase so we beat handlers that stopPropagation.
-      document.addEventListener('click', docHandler, true);
+    if (opts.mode === 'text') {
+      attrs.$observe('quepidPopover', function (val) {
+        handle.setBody(val);
+      });
     }
 
-    // outsideClick: BS5 trigger is manual, so the trigger element needs its
-    // own click handler. Skip wiring if the markup already has ng-click —
-    // that callback is the user's open path, and adding our own would race
-    // with it on the same click event.
-    let elClickHandler = null;
-    if (trigger === 'outsideClick' && !attrs.ngClick) {
-      elClickHandler = (hasIsOpen && isOpenSet) ?
-        function () { scope.$apply(function () { isOpenSet(scope, !isOpenGet(scope)); }); } :
-        function () { instance.toggle(); };
-      el.addEventListener('click', elClickHandler);
+    if (hasIsOpen && isOpenGet) {
+      scope.$watch(function () { return isOpenGet(scope); }, function (val) {
+        handle.showFromIsOpen(val);
+      });
     }
 
     scope.$on('$destroy', function () {
-      if (docHandler)     { document.removeEventListener('click', docHandler, true); }
-      if (elClickHandler) { el.removeEventListener('click', elClickHandler); }
-      if (onShow)         { el.removeEventListener('show.bs.popover', onShow); }
-      if (onShown)        { el.removeEventListener('shown.bs.popover', onShown); }
-      if (onHidden)       { el.removeEventListener('hidden.bs.popover', onHidden); }
-      instance.dispose();
+      handle.dispose();
     });
   }
 
@@ -202,14 +89,10 @@
         link: function (scope, element, attrs) {
           const templateUrl = scope.$eval(attrs.quepidPopoverTemplate);
           let contentScope = null;
-          let contentEl    = null;
+          let contentEl = null;
 
-          // Compiled + linked lazily on first show rather than at link time.
-          // quepid-popover-template sits on every search-result row
-          // (trigger is always 'outsideClick', never hover), so on a results
-          // page most instances are never opened — eager compilation would
-          // register a live scope + ng-repeat watchers (ratings/popover.html)
-          // per row regardless of whether the user ever clicks it.
+          // Compile lazily on first show — rating rows mount this on every result
+          // but most popovers are never opened.
           function ensureCompiled(onReady) {
             if (contentEl) { onReady(); return; }
             const compileTemplate = function (html) {
@@ -218,11 +101,6 @@
               $compile(wrap)(contentScope);
               contentEl = wrap[0];
               onReady();
-              // Some call sites (e.g. stackedChart.html's matches popover)
-              // toggle the popover from a plain click handler with no
-              // surrounding $apply, so the newly-linked ng-repeat/interpolation
-              // bindings above wouldn't otherwise render until some unrelated
-              // digest happens to run later.
               if (!scope.$root.$$phase) { scope.$apply(); }
             };
             const cached = $templateCache.get(templateUrl);

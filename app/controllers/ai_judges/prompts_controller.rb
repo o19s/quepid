@@ -18,7 +18,7 @@ module AiJudges
                           QueryDocPair
                             .joins(book: { teams: :members })
                             .where(teams: { teams_members: { member_id: @ai_judge.id } })
-                            .order('RAND()')
+                            .order(AdapterFunctions.mysql? ? 'RAND()' : 'RANDOM()')
                             .first
                         end
 

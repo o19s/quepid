@@ -36,7 +36,12 @@ bin/docker r bundle config set --local no-document true
 
 bin/docker r yarn
 bin/docker r yarn build
-bin/docker r ./wait-for mysql:3306 --timeout=60 -- bin/rake db:setup
+
+if [ "${DB_ADAPTER:-mysql2}" = "mysql2" ]; then
+  bin/docker r ./wait-for mysql:3306 --timeout=60 -- bin/rake db:setup
+else
+  bin/docker r bin/rake db:setup
+fi
 bin/docker r bin/rake db:migrate
 
 echo -e "\n== Removing old logs and tempfiles =="

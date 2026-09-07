@@ -47,7 +47,7 @@ class SessionsController < ApplicationController
   private
 
   def login email, password
-    user = User.where(email: email.downcase).first
+    user = User.by_email(email).first
 
     return nil unless user
 

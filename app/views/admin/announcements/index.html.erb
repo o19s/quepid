@@ -43,25 +43,34 @@
           <th>Text</th>
           <th>Author</th>
           <th>Created</th>
+          <th>Publishes</th>
+          <th>Expires</th>
           <th>Views</th>
           <th></th>
         </tr>
       </thead>
-  
-      <tbody>      
+
+      <tbody>
         <% @announcements.each do |announcement| %>
-          <tr class="<%= announcement.live? ? 'table-success' : '' %>">
+          <tr class="<%= announcement.active? ? 'table-success' : (announcement.expired? ? 'table-secondary' : '') %>">
             <td><%= announcement.text.html_safe %></td>
             <td><%= announcement.author.name %> </td>
             <td><%= announcement.created_at.strftime("%B %d %Y, %l:%M%P") %> </td>
+            <td>
+              <%= announcement.publish_date.strftime("%B %d %Y") %>
+              <% unless announcement.published? %>
+                <span class="badge bg-info text-dark">Scheduled</span>
+              <% end %>
+            </td>
+            <td>
+              <%= announcement.expiration_date.strftime("%B %d %Y") %>
+              <% if announcement.expired? %>
+                <span class="badge bg-secondary">Expired</span>
+              <% end %>
+            </td>
             <td><%= announcement.announcement_viewed.size %> </td>
-            <td class="d-flex gap-2">
-              <%= link_to 'Edit', edit_admin_announcement_path(announcement) %>              
-              <% if announcement.live? %>
-                <%= button_to 'Turn Off', publish_admin_announcement_path(announcement), method: :post, class: 'btn btn-sm btn-primary' %>
-              <% else %>
-                <%= button_to 'Make Live', publish_admin_announcement_path(announcement), method: :post, class: 'btn btn-sm btn-outline-primary' %>
-              <% end %>              
+            <td>
+              <%= link_to 'Edit', edit_admin_announcement_path(announcement) %>
             </td>
           </tr>
         <% end %>

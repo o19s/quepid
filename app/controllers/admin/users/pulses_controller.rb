@@ -40,10 +40,8 @@ module Admin
           # this doesn't handle situation where you create queries for a case that you partipate in but don't own.
           @data = Query.joins(:case)
             .where(cases: { owner_id: @user.id })
-            .where('`queries`.`created_at` >= :start AND `queries`.`created_at` <= :end',
-                   start: params[:start],
-                   end:   params[:end])
-            .group('`queries`.`created_at`')
+            .where(queries: { created_at: (params[:start])..(params[:end]) })
+            .group('queries.created_at')
             .count
         when 'books-created'
           @data = current_user.books_involved_with

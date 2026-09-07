@@ -19,7 +19,7 @@
 #
 # Indexes
 #
-#  case_id                            (case_id)
+#  index_tries_on_case_id             (case_id)
 #  index_tries_on_search_endpoint_id  (search_endpoint_id)
 #  ix_queryparam_tryNo                (try_number)
 #
