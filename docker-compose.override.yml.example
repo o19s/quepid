@@ -9,10 +9,22 @@
 # the build process, so any changes you make locally will be included after rebuilding.
 # Vendor CSS for the core layout (wizard, ng-tags-input, etc.) is refreshed separately via:
 #   bin/docker r yarn build:css
+#
+# splainer-search (3.0.0+) is consumed as plain ESM - Quepid's adapter imports
+# 'splainer-search/wired.js' directly (app/javascript/splainer_search_adapter.js), which in
+# turn imports from splainer-search's factories/, services/, and values/ directories via
+# relative paths. Mounting only a single bundled file (the pre-3.0 layout) is not enough -
+# every directory wired.js can reach must be mounted too, or Node's module resolution will
+# fall through to the npm-installed copy for whatever's missing.
 
 services:
   app:
     volumes:
       - /Users/epugh/Documents/projects/splainer-search/package.json:/srv/app/node_modules/splainer-search/package.json
-      - /Users/epugh/Documents/projects/splainer-search/splainer-search.js:/srv/app/node_modules/splainer-search/splainer-search.js
+      - /Users/epugh/Documents/projects/splainer-search/index.js:/srv/app/node_modules/splainer-search/index.js
+      - /Users/epugh/Documents/projects/splainer-search/wired.js:/srv/app/node_modules/splainer-search/wired.js
+      - /Users/epugh/Documents/projects/splainer-search/factories:/srv/app/node_modules/splainer-search/factories
+      - /Users/epugh/Documents/projects/splainer-search/services:/srv/app/node_modules/splainer-search/services
+      - /Users/epugh/Documents/projects/splainer-search/values:/srv/app/node_modules/splainer-search/values
+      - /Users/epugh/Documents/projects/splainer-search/wired:/srv/app/node_modules/splainer-search/wired
       - /Users/epugh/Documents/projects/quepid-jupyterlite/notebooks:/srv/app/public/notebooks
