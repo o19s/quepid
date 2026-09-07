@@ -26,7 +26,10 @@ angular.module('QuepidApp')
       // actual query being tested (the same substitution fetch_service.rb does at search time)
       // so the editor shows e.g. 'q=news&magicBoost=15' instead of 'q=#$query##&magicBoost=15'.
       function resolveQueryPlaceholder(queryParams) {
-        return queryParams ? queryParams.replace(/#\$query##/g, $scope.query.queryText) : queryParams;
+        // Use a replacer function (not a raw replacement string) - a plain string arg makes
+        // String.replace() treat "$&", "$$", "$1", etc. in the query text as special patterns
+        // instead of literal characters.
+        return queryParams ? queryParams.replace(/#\$query##/g, function() { return $scope.query.queryText; }) : queryParams;
       }
 
       $scope.docFinder.queryParams = resolveQueryPlaceholder(currSettings.selectedTry.queryParams);
@@ -61,11 +64,9 @@ angular.module('QuepidApp')
 
           $scope.docFinder.parseError = false;
 
-          var tempSettings = angular.extend({}, settings, {
-            selectedTry: angular.extend({}, settings.selectedTry, {
-              args:        resolvedArgs,
-              queryParams: $scope.docFinder.queryParams
-            })
+          var tempSettings = queriesSvc.settingsWithTryOverrides(settings, {
+            args:        resolvedArgs,
+            queryParams: $scope.docFinder.queryParams
           });
 
           $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(tempSettings, query);
@@ -235,12 +236,12 @@ angular.module('QuepidApp')
         // (e.g. SEARCHAPI CASE's Edinburgh University endpoint) without one can't look these up
         // at all - rather than silently show nothing, ratedDocsLookupUnsupported (with
         // totalRatings, set below regardless of support) drives an explicit message in
-        // targetedSearchModal.html instead.
-        var supportsSearchApiRatedLookup = queriesSvc.trySupportsSearchApiRatedDocsLookup(currSettings.selectedTry);
-
+        // targetedSearchModal.html instead. trySupportsRatedDocsLookup (queriesSvc.js) is the
+        // single source of truth for this - true for es/os/solr always, conditional for
+        // searchapi - shared with queriesCtrl.js's "Show only rated" gating.
         $scope.docFinder.totalRatings = ratedIDs.length;
 
-        if ([ 'es', 'os', 'solr' ].indexOf($scope.docFinder.searcher.type) === -1 && !supportsSearchApiRatedLookup) {
+        if (!queriesSvc.trySupportsRatedDocsLookup(currSettings.selectedTry)) {
           $scope.docFinder.ratedDocsLookupUnsupported = true;
           $scope.docFinder.numFound = 0;
           $scope.defaultList = true;
@@ -296,8 +297,10 @@ angular.module('QuepidApp')
 
               $scope.defaultList = true;
           });
-        } else if (supportsSearchApiRatedLookup) {
-          // Shared with refreshRatedDocsForSearchApi() (queriesSvc.js) - same mapper-built
+        } else if ($scope.docFinder.searcher.type === 'searchapi') {
+          // Reached only when trySupportsRatedDocsLookup() already confirmed this searchapi
+          // try's mapper supports it (checked above). Shared with refreshRatedDocsForSearchApi()
+          // (queriesSvc.js) - same mapper-built
           // ID-filter query_params -> non-persisting preview-then-search technique as
           // findDocsByPreviewingQueryParams() above uses for the user's edited text.
           queriesSvc.searchApiRatedDocs(currSettings, $scope.query, ratedIDs).then(function(result) {

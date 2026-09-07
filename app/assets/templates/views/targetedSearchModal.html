@@ -21,15 +21,7 @@
             <textarea class="form-control" ng-if="settings.searchEngine == 'solr' || settings.searchEngine == 'searchapi'" name="docFinderQueryParams"
               rows="4" ng-model="docFinder.queryParams"></textarea>
 
-            <div id='docfinder-es-query-params-editor' class='es-query-params' ng-if="settings.searchEngine == 'es'" ui-ace="{
-                require:      ['ace/ext/language_tools'],
-                useWrapMode:  true,
-                mode:         'json',
-                theme:        'chrome'
-              }" ng-model="docFinder.queryParams">
-            </div>
-
-            <div id='docfinder-os-query-params-editor' class='os-query-params' ng-if="settings.searchEngine == 'os'" ui-ace="{
+            <div id='docfinder-es-os-query-params-editor' class='es-query-params os-query-params' ng-if="settings.searchEngine == 'es' || settings.searchEngine == 'os'" ui-ace="{
                 require:      ['ace/ext/language_tools'],
                 useWrapMode:  true,
                 mode:         'json',

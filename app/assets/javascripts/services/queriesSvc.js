@@ -118,18 +118,48 @@ angular.module('QuepidApp')
       this.buildSearchApiRatedDocsQueryParams = buildSearchApiRatedDocsQueryParams;
       this.searchApiRatedDocs = searchApiRatedDocs;
       this.trySupportsSearchApiRatedDocsLookup = trySupportsSearchApiRatedDocsLookup;
+      this.trySupportsRatedDocsLookup = trySupportsRatedDocsLookup;
+      this.settingsWithTryOverrides = settingsWithTryOverrides;
       this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
 
       /**
-       * Single source of truth for "can this try's engine look up already-rated docs by ID?"
-       * (MapperBasedSearchEngine#supports_rated_docs_lookup, exposed on the try as
-       * mapperBasedSearchEngineSupportsRatedDocsLookup) - used to gate "Show only rated"
-       * (queriesCtrl.js), the Find-and-Rate-Missing-Documents "Already Rated Documents" section
-       * (docFinder.js), and refreshRatedDocsForSearchApi() below, so the three stay in sync.
+       * Single source of truth for "can this try's engine look up already-rated docs by ID via
+       * a mapper?" (MapperBasedSearchEngine#supports_rated_docs_lookup, exposed on the try as
+       * mapperBasedSearchEngineSupportsRatedDocsLookup) - only meaningful for searchapi; see
+       * trySupportsRatedDocsLookup below for the general "any engine" version of this question.
        */
       function trySupportsSearchApiRatedDocsLookup(aTry) {
-        return !!aTry && aTry.searchEngine === 'searchapi' && !!aTry.mapperBasedSearchEngineSupportsRatedDocsLookup;
+        if (!aTry || aTry.searchEngine !== 'searchapi') {
+          return false;
+        }
+
+        return !!aTry.mapperBasedSearchEngineSupportsRatedDocsLookup;
+      }
+
+      // es/os/solr always have a generic ID-filter query syntax (filterToRatings below), so
+      // they always support this; searchapi is conditional on its mapper (above). Single
+      // source of truth for "does this try support rated-docs lookup at all" - used to gate
+      // "Show only rated" (queriesCtrl.js) and the Find-and-Rate-Missing-Documents
+      // "Already Rated Documents" section (docFinder.js), so the two stay in sync.
+      var NATIVELY_RATED_DOCS_LOOKUP_ENGINES = [ 'es', 'os', 'solr' ];
+
+      function trySupportsRatedDocsLookup(aTry) {
+        if (!aTry) {
+          return false;
+        }
+        return NATIVELY_RATED_DOCS_LOOKUP_ENGINES.indexOf(aTry.searchEngine) !== -1 ||
+          trySupportsSearchApiRatedDocsLookup(aTry);
+      }
+
+      // Shared "clone settings with the selectedTry overridden" pattern for a one-off preview
+      // search - used by both docFinder.js's findDocsByPreviewingQueryParams() (overriding args
+      // and queryParams) and searchApiRatedDocs() below (overriding just args), so a resolved
+      // query doesn't have to be spliced into settings by hand at each call site.
+      function settingsWithTryOverrides(settings, tryOverrides) {
+        return angular.extend({}, settings, {
+          selectedTry: angular.extend({}, settings.selectedTry, tryOverrides)
+        });
       }
 
       svc.bootstrapQueries = bootstrapQueries;
@@ -339,9 +369,7 @@ angular.module('QuepidApp')
             return null;
           }
 
-          let tempSettings = angular.extend({}, settings, {
-            selectedTry: angular.extend({}, settings.selectedTry, { args: resolvedArgs })
-          });
+          let tempSettings = settingsWithTryOverrides(settings, { args: resolvedArgs });
 
           let searcher = createSearcherFromSettings(tempSettings, query);
 

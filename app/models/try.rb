@@ -152,7 +152,7 @@ class Try < ApplicationRecord
   end
 
   def searchapi_args
-    if query_params.starts_with?('{')
+    if query_params.to_s.starts_with?('{')
       EsArgParser.parse(query_params,
                         curator_vars_map)
     else
