@@ -84,7 +84,7 @@ class Book < ApplicationRecord
   # column, and comparing whole rows is both more work than the question needs
   # and something not every database can do.
   def judges
-    User.where(id: judgements.select(:user_id))
+    User.where(id: judgements.select(:user_id).distinct)
   end
 
   has_many :cases, dependent: :nullify
