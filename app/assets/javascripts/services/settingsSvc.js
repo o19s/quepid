@@ -364,7 +364,7 @@ angular.module('QuepidApp')
       var TROUBLESHOOTING_WIKI_PAGES = {
         solr:      'Troubleshooting-Solr-and-Quepid',
         es:        'Troubleshooting-Elasticsearch-and-Quepid',
-        os:        'Troubleshooting-Opensearch-and-Quepid',
+        os:        'Troubleshooting-OpenSearch-and-Quepid',
         vectara:   'Troubleshooting-Vectara-and-Quepid',
         searchapi: 'Troubleshooting-SearchAPI-and-Quepid',
         // Keyed by mapperBasedSearchEngineId - takes priority over the generic 'searchapi'

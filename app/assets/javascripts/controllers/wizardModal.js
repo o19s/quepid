@@ -353,6 +353,8 @@ angular.module('QuepidApp')
       $scope.readyToContinue = readyToContinue;
       $scope.setupDefaults  = setupDefaults;
       $scope.linkToSearchEndpointUrl  = linkToSearchEndpointUrl;
+      $scope.searchEngineDisplayName = searchEngineDisplayName;
+      $scope.troubleshootingWikiUrl  = troubleshootingWikiUrl;
       $scope.submit         = submit;
       $scope.reset          = reset;
       $scope.resetUrlValid  = resetUrlValid;
@@ -389,6 +391,23 @@ angular.module('QuepidApp')
         }
       }
       
+      // pendingWizardSettings.searchEnginePreset is the mapper-based engine's raw id
+      // (e.g. 'vespa') when one is selected - the searchEngineName filter only knows the
+      // built-in engines, so a mapper preset would otherwise pass through it unchanged
+      // (lowercase, un-cased). Resolve it against the registered engines first; anything
+      // it doesn't recognise (a built-in engine) is handed to searchEngineName as-is.
+      function searchEngineDisplayName(preset) {
+        var mapperEngine = ($scope.mapperBasedSearchEngines || []).find(function(engine) {
+          return engine.id === preset;
+        });
+
+        return mapperEngine ? mapperEngine.name : preset;
+      }
+
+      function troubleshootingWikiUrl(searchEngine, mapperBasedSearchEngineId) {
+        return settingsSvc.troubleshootingWikiUrl(searchEngine, mapperBasedSearchEngineId);
+      }
+
       function linkToSearchEndpointUrl() {
         if ($scope.pendingWizardSettings.proxyRequests === true){
           return caseTryNavSvc.getQuepidProxyUrl($scope.pendingWizardSettings.searchEndpointId) + $scope.pendingWizardSettings.searchUrl;

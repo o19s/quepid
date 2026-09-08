@@ -151,7 +151,7 @@
             </p>
             <p ng-if="troubleshootingWikiUrl()">
               <a ng-href="{{troubleshootingWikiUrl()}}" target="_blank" rel="noopener noreferrer">
-                Troubleshooting {{ settings.selectedTry.mapperBasedSearchEngineName || settings.selectedTry.searchEngine }} and Quepid
+                Troubleshooting {{ (settings.selectedTry.mapperBasedSearchEngineName || settings.selectedTry.searchEngine) | searchEngineName }} and Quepid
                 <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
               </a>
             </p>

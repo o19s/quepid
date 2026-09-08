@@ -103,4 +103,46 @@ describe('Controller: QueryparamsCtrl', function () {
     //expect(scope.quepidUrlToSwitchTo).toEqual('http://server/')
   });
 
+  it('preserves mapper-based search engine fields across tab switches', function (){
+    inject(function (TryFactory) {
+      scope.settings.selectedTry = new TryFactory({
+        try_number:                                            1,
+        query_params:                                           '{}',
+        curator_vars:                                           {},
+        mapper_based_search_engine_id:                          'vespa',
+        mapper_based_search_engine_name:                        'Vespa',
+        mapper_based_search_engine_supports_pagination:         true,
+        mapper_based_search_engine_pagination_hits_param:       'hits',
+        mapper_based_search_engine_pagination_offset_param:     'offset',
+        mapper_based_search_engine_supports_rated_docs_lookup:  true
+      });
+
+      scope.qp.toggleTab();
+
+      expect(scope.settings.selectedTry.mapperBasedSearchEngineId).toEqual('vespa');
+      expect(scope.settings.selectedTry.mapperBasedSearchEngineName).toEqual('Vespa');
+      expect(scope.settings.selectedTry.mapperBasedSearchEngineSupportsPagination).toEqual(true);
+      expect(scope.settings.selectedTry.mapperBasedSearchEnginePaginationHitsParam).toEqual('hits');
+      expect(scope.settings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam).toEqual('offset');
+      expect(scope.settings.selectedTry.mapperBasedSearchEngineSupportsRatedDocsLookup).toEqual(true);
+    });
+  });
+
+  describe('queryParamsMode', function () {
+    it('detects json mode for valid JSON query params', function () {
+      scope.settings.selectedTry.queryParams = '{"yql": "select * from movies"}';
+      expect(scope.queryParamsMode()).toEqual('json');
+    });
+
+    it('detects text mode for a plain query string like YQL', function () {
+      scope.settings.selectedTry.queryParams = 'select * from movies where true';
+      expect(scope.queryParamsMode()).toEqual('text');
+    });
+
+    it('defaults to text mode when there is no selected try', function () {
+      scope.settings.selectedTry = null;
+      expect(scope.queryParamsMode()).toEqual('text');
+    });
+  });
+
 });
