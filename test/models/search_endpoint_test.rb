@@ -204,7 +204,7 @@ class SearchEndpointTest < ActiveSupport::TestCase
       older = SearchEndpoint.create!(shared.merge(owner: joey, options: { 'corpusId' => 1 }))
       newer = SearchEndpoint.create!(shared.merge(owner: joey, options: nil))
 
-      assert_operator older.id, :<, newer.id, 'fixture ids should be ordered for this to mean anything'
+      assert_operator older.id, :<, newer.id, 'created ids should be ordered for this to mean anything'
 
       found = SearchEndpoint.find_or_initialize_for_user(joey, **shared)
 
