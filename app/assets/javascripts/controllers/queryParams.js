@@ -4,10 +4,10 @@ angular.module('QuepidApp')
   .controller('QueryParamsCtrl', [
     '$scope', '$window',
     'esUrlSvc', 'caseTryNavSvc', 'searchEndpointSvc', 'caseSvc',
-    'TryFactory',
+    'settingsSvc', 'TryFactory',
     function ($scope, $window,
       esUrlSvc, caseTryNavSvc, searchEndpointSvc, caseSvc,
-      TryFactory) {
+      settingsSvc, TryFactory) {
 
       $scope.qp = {};
       $scope.qp.curTab = 'developer';
@@ -47,7 +47,16 @@ angular.module('QuepidApp')
       $scope.createSearchEndpointLink = function(searchEndpointId) {
         return caseTryNavSvc.createSearchEndpointLink(searchEndpointId);
       };
-      
+
+      $scope.troubleshootingWikiUrl = function() {
+        var selectedTry = $scope.settings.selectedTry;
+        if (!selectedTry) {
+          return null;
+        }
+
+        return settingsSvc.troubleshootingWikiUrl(selectedTry.searchEngine, selectedTry.mapperBasedSearchEngineId);
+      };
+
 
       $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){

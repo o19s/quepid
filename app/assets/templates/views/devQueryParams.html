@@ -120,47 +120,8 @@
 
     <!-- Settings -->
     <div class="settings-tab" ng-show="qp.curTab == 'engineSettings'"
-      ng-init="devSettingsFields.toggle = devSettingsEndpointDetails.toggle = devSettingsSearchEndpoint.toggle = devSettingsNumResults.toggle = true">
+      ng-init="devSettingsFields.toggle = devSettingsEndpointDetails.toggle = devSettingsNumResults.toggle = true; devSettingsSearchEndpoint.toggle = false">
       <div class="rerunnable-settings-tab">
-        <!-- Search Engine -->
-        <div class="setting-div">
-          <div class="dev-header" ng-click="devSettingsSearchEndpoint.toggle = !devSettingsSearchEndpoint.toggle">
-            Search Endpoints <i
-              ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsSearchEndpoint.toggle]"
-              class="bi"></i>
-          </div>
-
-
-          <div class="dev-body" ng-show="devSettingsSearchEndpoint.toggle">
-            Pick Shared Endpoints:<br />
-            <span ng-show="listSearchEndpoints().length == 0">
-              You do not have any search endpoints shared with this case.  Share the case with a team first.
-            </span>
-            <div>
-              <select ng-model="settings.searchEndpointId"
-                ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
-                class="form-select">
-              </select>
-              <br />OR<br />
-
-              <input type="text" ng-model="selectedItem" placeholder="Select endpoint to use"
-                quepid-typeahead="searchOptions($viewValue)"
-                quepid-typeahead-label-field="name"
-                quepid-typeahead-template-url="'views/searchEndpoint_popup.html'"
-                quepid-typeahead-min-length="0"
-                quepid-typeahead-limit="0"
-                quepid-typeahead-editable="false"
-                quepid-typeahead-on-select="onSelectSearchEndpoint($item)"
-                quepid-typeahead-no-results="noResults"
-                class="form-control"/>
-              <div ng-if="noResults">
-                No search endpoints found. Check your spelling!
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- end of Search Engine -->
-
         <!-- Search Endpoint -->
         <div class="setting-div">
           <div class="dev-header" ng-click="devSettingsEndpointDetails.toggle = !devSettingsEndpointDetails.toggle">
@@ -187,6 +148,12 @@
             </p>
             <p>
               <a ng-href="{{createSearchEndpointLink(settings.selectedTry.searchEndpointId)}}" target="_self">More</a>
+            </p>
+            <p ng-if="troubleshootingWikiUrl()">
+              <a ng-href="{{troubleshootingWikiUrl()}}" target="_blank" rel="noopener noreferrer">
+                Troubleshooting {{ settings.selectedTry.mapperBasedSearchEngineName || settings.selectedTry.searchEngine }} and Quepid
+                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+              </a>
             </p>
             <p>
               <span ng-show="showTLSChangeWarning">
@@ -294,6 +261,45 @@
           </div>
         </div>
         <!-- end of Escape Queries -->
+
+        <!-- Search Engine -->
+        <div class="setting-div">
+          <div class="dev-header" ng-click="devSettingsSearchEndpoint.toggle = !devSettingsSearchEndpoint.toggle">
+            Search Endpoints <i
+              ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsSearchEndpoint.toggle]"
+              class="bi"></i>
+          </div>
+
+
+          <div class="dev-body" ng-show="devSettingsSearchEndpoint.toggle">
+            Pick Shared Endpoints:<br />
+            <span ng-show="listSearchEndpoints().length == 0">
+              You do not have any search endpoints shared with this case.  Share the case with a team first.
+            </span>
+            <div>
+              <select ng-model="settings.searchEndpointId"
+                ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
+                class="form-select">
+              </select>
+              <br />OR<br />
+
+              <input type="text" ng-model="selectedItem" placeholder="Select endpoint to use"
+                quepid-typeahead="searchOptions($viewValue)"
+                quepid-typeahead-label-field="name"
+                quepid-typeahead-template-url="'views/searchEndpoint_popup.html'"
+                quepid-typeahead-min-length="0"
+                quepid-typeahead-limit="0"
+                quepid-typeahead-editable="false"
+                quepid-typeahead-on-select="onSelectSearchEndpoint($item)"
+                quepid-typeahead-no-results="noResults"
+                class="form-control"/>
+              <div ng-if="noResults">
+                No search endpoints found. Check your spelling!
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end of Search Engine -->
 
       </div> <!-- end .rerunnable-settings-tab -->
     </div> <!-- end .settings-tab (Settings) -->

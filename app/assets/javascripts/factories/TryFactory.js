@@ -199,6 +199,12 @@
           options:               self.options,
           endpoint_archived:     self.endpointArchived,
           requests_per_minute:   self.requestsPerMinute,
+          mapper_based_search_engine_id:                       self.mapperBasedSearchEngineId,
+          mapper_based_search_engine_name:                     self.mapperBasedSearchEngineName,
+          mapper_based_search_engine_supports_pagination:      self.mapperBasedSearchEngineSupportsPagination,
+          mapper_based_search_engine_pagination_hits_param:    self.mapperBasedSearchEnginePaginationHitsParam,
+          mapper_based_search_engine_pagination_offset_param:  self.mapperBasedSearchEnginePaginationOffsetParam,
+          mapper_based_search_engine_supports_rated_docs_lookup: self.mapperBasedSearchEngineSupportsRatedDocsLookup,
         };
       }
     };

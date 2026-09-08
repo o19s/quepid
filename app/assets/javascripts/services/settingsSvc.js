@@ -359,6 +359,26 @@ angular.module('QuepidApp')
         return supportLookupById;
       };
 
+      // Only the search engines with an actual wiki page get a link here - no page exists yet
+      // for algolia/static, so those (and anything unrecognized) return null.
+      var TROUBLESHOOTING_WIKI_PAGES = {
+        solr:      'Troubleshooting-Solr-and-Quepid',
+        es:        'Troubleshooting-Elasticsearch-and-Quepid',
+        os:        'Troubleshooting-Opensearch-and-Quepid',
+        vectara:   'Troubleshooting-Vectara-and-Quepid',
+        searchapi: 'Troubleshooting-SearchAPI-and-Quepid',
+        // Keyed by mapperBasedSearchEngineId - takes priority over the generic 'searchapi'
+        // page above when a mapper-based engine (e.g. Vespa) has its own dedicated page.
+        vespa:     'Troubleshooting-Vespa-and-Quepid'
+      };
+
+      this.troubleshootingWikiUrl = function(searchEngine, mapperBasedSearchEngineId) {
+        var page = TROUBLESHOOTING_WIKI_PAGES[mapperBasedSearchEngineId] ||
+          TROUBLESHOOTING_WIKI_PAGES[searchEngine];
+
+        return page ? 'https://github.com/o19s/quepid/wiki/' + page : null;
+      };
+
       this.demoSettingsChosen = function(searchEngine, newUrl) {
         var useTMDBDemoSettings = false;
         if (angular.isUndefined(this.tmdbSettings[searchEngine])) {
