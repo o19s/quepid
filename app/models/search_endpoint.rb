@@ -99,7 +99,7 @@ class SearchEndpoint < ApplicationRecord
       # These four fields do not identify an endpoint uniquely - the same URL
       # can be registered more than once with different options or credentials.
       # find_by would take whichever row the database happened to return first,
-      # which is not defined and does differ between adapters. Take the oldest
+      # which is not defined and does differ between adapters. Take the lowest-id
       # match instead, so the same import always attaches the same endpoint.
       endpoint = user.search_endpoints_involved_with.where(lookup_params).order(:id).first
       return endpoint if endpoint
