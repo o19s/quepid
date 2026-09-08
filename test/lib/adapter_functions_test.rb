@@ -34,7 +34,7 @@ class AdapterFunctionsTest < ActiveSupport::TestCase
       case AdapterFunctions.adapter
       when :mysql      then assert_equal 'RAND()', AdapterFunctions.uniform_random
       when :postgresql then assert_equal 'RANDOM()', AdapterFunctions.uniform_random
-      when :sqlite     then assert_includes AdapterFunctions.uniform_random, '9223372036854775807.0'
+      when :sqlite     then assert_includes AdapterFunctions.uniform_random, '9223372036854775808.0'
       end
     end
 
