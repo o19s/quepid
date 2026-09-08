@@ -29,7 +29,7 @@
             <p class="mb-3">
               No teams to share with? Why not go ahead and create a new team!
             </p>
-            <a href="<%= new_team_path %>" class="btn btn-primary btn-lg">
+            <a href="<%= new_team_path %>" target="_self" class="btn btn-primary btn-lg">
               <i class="bi bi-plus-lg" aria-hidden="true"></i>
               Create a team
             </a>
@@ -58,7 +58,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <a href="<%= new_team_path %>" class="btn btn-primary me-auto">+ Create a team</a>
+        <a href="<%= new_team_path %>" target="_self" class="btn btn-primary me-auto">+ Create a team</a>
         <button type="submit" form="share-case-form" id="share-case-submit" class="btn btn-success d-none" data-share-case-core-target="submitButton">Share with team</button>
         <button type="submit" form="unshare-case-form" id="unshare-case-submit" class="btn btn-success d-none" data-share-case-core-target="unshareButton">Unshare from team</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
