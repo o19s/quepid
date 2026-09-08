@@ -126,6 +126,83 @@ class FetchServiceTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'AUTO api_method (mapper-based search engines, e.g. Vespa)' do
+    let(:atry) { tries(:for_case_queries_case) }
+    let(:first_query) { queries(:first_query) }
+
+    it 'treats AUTO as POST when normalizing the HTTP verb' do
+      fetch_service = FetchService.new options
+      assert_equal :post, fetch_service.send(:normalize_http_verb, 'AUTO')
+    end
+
+    it 'POSTs a JSON query_params try even when its endpoint is AUTO' do
+      fetch_service = FetchService.new options
+      atry.search_endpoint.api_method = 'AUTO'
+      atry.query_params = '{"q": "#$query##"}'
+      stub_request(:post, 'http://test.com/solr/tmdb/select').to_return(status: 200, body: '{}')
+
+      response = fetch_service.make_request(atry, first_query)
+      assert_equal 200, response.status
+    end
+
+    it 'POSTs a bare-text query_params try when its endpoint is AUTO' do
+      fetch_service = FetchService.new options
+      atry.search_endpoint.api_method = 'AUTO'
+      # atry.query_params is already bare text ('q=#$query##') via the fixture.
+      stub_request(:post, 'http://test.com/solr/tmdb/select').to_return(status: 200, body: '{}')
+
+      response = fetch_service.make_request(atry, first_query)
+      assert_equal 200, response.status
+    end
+
+    it 'substitutes the real query text into a bare-YQL body, not the literal placeholder' do
+      fetch_service = FetchService.new options
+      atry.search_endpoint.api_method = 'AUTO'
+      atry.search_endpoint.search_engine = 'searchapi'
+      atry.search_endpoint.mapper_based_search_engine_id = 'vespa'
+      atry.query_params = 'select * from movies where title contains "#$query##"'
+
+      stub_request(:post, 'http://test.com/solr/tmdb/select')
+        .with(body: { 'yql' => 'select * from movies where title contains "First Query"' })
+        .to_return(status: 200, body: '{}')
+
+      response = fetch_service.make_request(atry, first_query)
+      assert_equal 200, response.status
+    end
+  end
+
+  describe '#replace_values' do
+    it 'substitutes #$query## when it is the entire value (e.g. ES-style templates)' do
+      fetch_service = FetchService.new options
+      data = { 'query' => '#$query##' }
+
+      result = fetch_service.send(:replace_values, data, 'matrix')
+
+      assert_equal({ 'query' => 'matrix' }, result)
+    end
+
+    it 'substitutes #$query## when it is embedded in a longer string (e.g. Vespa YQL)' do
+      fetch_service = FetchService.new options
+      data = { 'yql' => 'select * from movies where title contains "#$query##" or overview contains "#$query##"' }
+
+      result = fetch_service.send(:replace_values, data, 'matrix')
+
+      assert_equal(
+        { 'yql' => 'select * from movies where title contains "matrix" or overview contains "matrix"' },
+        result
+      )
+    end
+
+    it 'treats the replacement text literally, even if it looks like a backreference' do
+      fetch_service = FetchService.new options
+      data = { 'yql' => 'select * from movies where title contains "#$query##"' }
+
+      result = fetch_service.send(:replace_values, data, '\1 not a backreference')
+
+      assert_equal({ 'yql' => 'select * from movies where title contains "\1 not a backreference"' }, result)
+    end
+  end
+
   describe 'Running a fetch cycle produces a snapshot' do
     let(:acase)         { cases(:queries_case) }
     let(:atry)          { tries(:for_case_queries_case) }

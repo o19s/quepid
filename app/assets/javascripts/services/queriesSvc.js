@@ -239,6 +239,13 @@ angular.module('QuepidApp')
           if (passedInSettings.apiMethod !== undefined) {
             searcherOptions.apiMethod = passedInSettings.apiMethod;
           }
+          // Overrides the try's own apiMethod (which may be 'AUTO' for a mapper-based search
+          // engine like Vespa) - used by docFinder.js so "Find and Rate Missing Documents"
+          // always posts its (often long) rated-docs-lookup query rather than risking an
+          // oversized GET.
+          if (options.forceApiMethod !== undefined) {
+            searcherOptions.apiMethod = options.forceApiMethod;
+          }
 
           if (passedInSettings.proxyRequests === true) {
             searcherOptions.proxyUrl = caseTryNavSvc.getQuepidProxyUrl(passedInSettings.searchEndpointId);
@@ -371,7 +378,11 @@ angular.module('QuepidApp')
 
           let tempSettings = settingsWithTryOverrides(settings, { args: resolvedArgs });
 
-          let searcher = createSearcherFromSettings(tempSettings, query);
+          // Force POST regardless of the try's own apiMethod (which may be 'AUTO' for a
+          // mapper-based search engine) - a rated-docs ID filter can grow arbitrarily long as
+          // more docs get rated, so this always sends it as a body rather than gambling on it
+          // fitting in a GET querystring.
+          let searcher = createSearcherFromSettings(tempSettings, query, { forceApiMethod: 'POST' });
 
           return searcher.search().then(function() {
             let normed = normalizeDocExplains(query, searcher, settings.createFieldSpec());

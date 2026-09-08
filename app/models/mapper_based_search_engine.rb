@@ -45,6 +45,11 @@ class MapperBasedSearchEngine
   attribute :search_url,          :string, default: ''
   attribute :url_format,          :string
   attribute :query_params,        :string
+  # The query_params key to wrap bare (non-JSON) query text into when a user types plain
+  # text directly into the Query Sandbox instead of JSON (e.g. Vespa's YQL: 'select * from
+  # ...' rather than '{"yql": "select * from ..."}'). Nil means this engine only accepts
+  # query_params as JSON - see Try#searchapi_args.
+  attribute :bare_query_param,    :string
   attribute :custom_headers,      :string, default: ''
   attribute :header_type,         :string, default: 'None'
   attribute :field_spec,          :string
@@ -59,7 +64,7 @@ class MapperBasedSearchEngine
       id:                         'vespa',
       name:                       'Vespa',
       logo:                       'vespa',
-      api_method:                 'POST',
+      api_method:                 'AUTO',
       proxy_requests:             true,
       supports_basic_auth:        false,
       # Vespa's query API takes hits/offset as plain top-level params alongside yql, so
@@ -75,13 +80,17 @@ class MapperBasedSearchEngine
       # pagination_hits_param/pagination_offset_param below), the same way it already
       # injects Solr's echoParams=all without persisting it into query_params.
       #
-      # JSON, not a query string: POST avoids the URL-length limits a GET request risks
-      # once the query grows (e.g. ratedDocsQueryParamsMapper's "movie_id in (...)" list
-      # gets long with many ratings). Try#searchapi_args only picks EsArgParser (plain
-      # scalar values) over SolrArgParser (array-per-key values) when query_params starts
-      # with '{', so this has to be real JSON - not the query-string GET used before -
-      # for api_method: 'POST' to send a body Vespa actually accepts.
+      # api_method: 'AUTO' lets splainer-search pick GET or POST per request, based on the
+      # hydrated query's length (searchApiSearcherPreprocessorSvc.js in splainer-search) -
+      # a short query rides as a GET querystring (nicer to read/share), a long one (e.g.
+      # ratedDocsQueryParamsMapper's "movie_id in (...)" list with many ratings) falls back
+      # to POST so it isn't truncated by URL-length limits. Try#searchapi_args only picks
+      # EsArgParser (plain scalar values) over SolrArgParser (array-per-key values) when
+      # query_params starts with '{', so this has to be real JSON for that path - or, since
+      # bare_query_param above is set, plain YQL text typed directly into the Query Sandbox
+      # works too.
       query_params:               '{"yql": "select * from movies where title contains \"#$query##\" or overview contains \"#$query##\"", "ranking.profile": "bm25"}',
+      bare_query_param:           'yql',
       # Vespa's own document id (e.g. "id:movies:movies::603") isn't a queryable field in
       # this schema ("where id = ..." 400s with "Field 'id' does not exist" - confirmed
       # against the live endpoint), so id_field points at movie_id instead: the schema's own

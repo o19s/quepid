@@ -64,6 +64,7 @@ class SearchEndpoint < ApplicationRecord
   validates :options, json_format: true, allow_blank: true
   validates :custom_headers, json_format: { normalize_values: true }, allow_blank: true
   validate :validate_proxy_requests_api_method
+  validate :validate_auto_api_method_requires_searchapi
   validate :validate_proxy_required_for_hidden_credentials
   validate :validate_mapper_code_immutable_for_preset
 
@@ -148,6 +149,14 @@ class SearchEndpoint < ApplicationRecord
 
   def validate_proxy_requests_api_method
     errors.add(:api_method, 'cannot be JSONP when proxy_request is enabled') if proxy_requests? && 'JSONP' == api_method
+  end
+
+  # AUTO only resolves to a concrete GET/POST for mapper-based search engines (see
+  # Try#resolved_api_method and MapperBasedSearchEngine) - splainer-search's other
+  # preprocessors (Solr/ES/etc.) don't understand it, so allowing it there would silently
+  # break every search against that endpoint.
+  def validate_auto_api_method_requires_searchapi
+    errors.add(:api_method, 'AUTO is only supported for Search API (mapper-based) endpoints') if 'AUTO' == api_method && 'searchapi' != search_engine
   end
 
   def validate_proxy_required_for_hidden_credentials

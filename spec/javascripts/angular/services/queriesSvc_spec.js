@@ -145,11 +145,12 @@ describe('Service: queriesSvc', function () {
       return searchers;
     };
 
-    this.createSearcher = function(fieldList, searchUrl, args, queryText) {
+    this.createSearcher = function(fieldList, searchUrl, args, queryText, searcherOptions) {
       var settings = {};
       settings.searchUrl = searchUrl;
       settings.args = args;
       settings.queryText = queryText;
+      settings.searcherOptions = searcherOptions;
 
       var newSearcher = new MockSearcher(settings, queryText, {});
 
@@ -237,6 +238,32 @@ describe('Service: queriesSvc', function () {
     $httpBackend.verifyNoOutstandingExpectation();
     return promise;
   };
+
+  describe('createSearcherFromSettings', function() {
+    var query;
+    var searchapiSettings;
+
+    beforeEach(function() {
+      query = { queryText: 'test', options: {} };
+      searchapiSettings = angular.extend({}, mockSettings, {
+        apiMethod: 'AUTO',
+        searchEngine: 'searchapi',
+        selectedTry: angular.extend({}, mockTry, { args: { yql: '#$query##' } })
+      });
+    });
+
+    it('passes the settings apiMethod through by default', function() {
+      var searcher = queriesSvc.createSearcherFromSettings(searchapiSettings, query);
+
+      expect(searcher.settings.searcherOptions.apiMethod).toBe('AUTO');
+    });
+
+    it('overrides apiMethod with options.forceApiMethod when provided', function() {
+      var searcher = queriesSvc.createSearcherFromSettings(searchapiSettings, query, { forceApiMethod: 'POST' });
+
+      expect(searcher.settings.searcherOptions.apiMethod).toBe('POST');
+    });
+  });
 
   describe('show rated only', function() {
     var query;

@@ -152,13 +152,35 @@ class Try < ApplicationRecord
   end
 
   def searchapi_args
-    if query_params.to_s.starts_with?('{')
+    if json_query_params?
       EsArgParser.parse(query_params,
+                        curator_vars_map)
+    elsif bare_query_param.present?
+      # The mapper-based search engine (e.g. Vespa) opted into a bare-text authoring mode -
+      # a user typed plain query text (e.g. YQL) straight into the Query Sandbox instead of
+      # JSON, so wrap it under that engine's param name and parse it the same way as the
+      # JSON case above (reusing EsArgParser's curator-var substitution).
+      EsArgParser.parse({ bare_query_param => query_params }.to_json,
                         curator_vars_map)
     else
       SolrArgParser.parse(query_params,
                           curator_vars_map)
     end
+  end
+
+  def bare_query_param
+    search_endpoint&.mapper_based_search_engine&.bare_query_param
+  end
+
+  # AUTO (see MapperBasedSearchEngine) only makes sense for bare-text authoring (e.g. YQL) -
+  # GET's benefit is making that nicer to read/share as a URL, not JSON. A JSON query_params
+  # (the EsArgParser branch in #searchapi_args above) always POSTs, matching pre-AUTO
+  # behavior, regardless of length.
+  def resolved_api_method
+    method = search_endpoint&.api_method
+    return method unless 'AUTO' == method
+
+    json_query_params? ? 'POST' : 'AUTO'
   end
 
   def id_from_field_spec
@@ -200,6 +222,10 @@ class Try < ApplicationRecord
   end
 
   private
+
+  def json_query_params?
+    query_params.to_s.starts_with?('{')
+  end
 
   def set_defaults
     self.try_number = 1 if try_number.blank?

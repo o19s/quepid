@@ -48,8 +48,8 @@
 
       <div class="mb-3">
         <%= form.label :api_method, class: 'form-label' %>
-        <%= form.collection_select :api_method, [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT']], :last, :first, required: true, prompt:true,  class: 'form-control' %>
-        <div class="form-text">Typically this is a POST for JSON apis, and GET for passing parameters via the URL</div>
+        <%= form.collection_select :api_method, [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT'], ['AUTO', 'AUTO']], :last, :first, required: true, prompt:true,  class: 'form-control' %>
+        <div class="form-text">Typically this is a POST for JSON apis, and GET for passing parameters via the URL. AUTO (mapper-based search engines only) picks GET for short queries and POST for long ones.</div>
       </div>
 
       <div class="mb-3">

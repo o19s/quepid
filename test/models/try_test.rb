@@ -144,6 +144,27 @@ class TryTest < ActiveSupport::TestCase
         assert_equal args, expected_vars
       end
 
+      test 'wraps bare query text under the mapper-based search engine\'s bare_query_param' do
+        try = tries(:one)
+        try.search_endpoint.search_engine = 'searchapi'
+        try.search_endpoint.mapper_based_search_engine_id = 'vespa'
+        try.query_params = 'select * from movies where true'
+
+        args = try.args
+
+        assert_equal({ 'yql' => 'select * from movies where true' }, args)
+      end
+
+      test 'still uses SolrArgParser for bare text when the endpoint has no mapper-based search engine' do
+        try = tries(:one)
+        try.search_endpoint.search_engine = 'searchapi'
+        try.search_endpoint.mapper_based_search_engine_id = nil
+
+        args = try.args
+
+        assert_equal({ 'q' => [ "\#$query##" ] }, args)
+      end
+
       test 'handles when the search_engine is not defined' do
         try = tries(:one)
         try.search_endpoint.search_engine = nil
@@ -161,6 +182,39 @@ class TryTest < ActiveSupport::TestCase
 
         assert_nil args
       end
+    end
+  end
+
+  describe '#resolved_api_method' do
+    test 'resolves AUTO to POST when query_params is JSON' do
+      try = tries(:one)
+      try.search_endpoint.api_method = 'AUTO'
+      try.query_params = '{"yql": "select * from movies where true"}'
+
+      assert_equal 'POST', try.resolved_api_method
+    end
+
+    test 'leaves AUTO as AUTO when query_params is bare text' do
+      try = tries(:one)
+      try.search_endpoint.api_method = 'AUTO'
+      try.query_params = 'select * from movies where true'
+
+      assert_equal 'AUTO', try.resolved_api_method
+    end
+
+    test 'leaves non-AUTO api_method untouched regardless of query_params' do
+      try = tries(:one)
+      try.search_endpoint.api_method = 'POST'
+      try.query_params = 'select * from movies where true'
+
+      assert_equal 'POST', try.resolved_api_method
+    end
+
+    test 'returns nil when there is no search_endpoint' do
+      try = tries(:one)
+      try.search_endpoint = nil
+
+      assert_nil try.resolved_api_method
     end
   end
 
