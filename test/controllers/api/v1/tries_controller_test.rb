@@ -131,6 +131,73 @@ module Api
         end
       end
 
+      describe 'Previews args without persisting' do
+        let(:case_with_two_tries)             { cases(:case_with_two_tries) }
+        let(:first_for_case_with_two_tries)   { tries(:first_for_case_with_two_tries) }
+
+        test 'returns a not found error when try does not exist' do
+          post :preview_args, params: { case_id: case_with_two_tries.id, try_number: 1234, query_params: 'q=foo' }
+
+          assert_response :not_found
+        end
+
+        test 'parses solr args without persisting the edited query_params' do
+          original_query_params = first_for_case_with_two_tries.query_params
+
+          post :preview_args, params: {
+            case_id:      case_with_two_tries.id,
+            try_number:   first_for_case_with_two_tries.try_number,
+            query_params: 'q=governor&rows=5',
+          }
+
+          assert_response :ok
+          assert_equal({ 'q' => [ 'governor' ], 'rows' => [ '5' ] }, response.parsed_body['args'])
+
+          assert_equal original_query_params, first_for_case_with_two_tries.reload.query_params
+        end
+
+        test 'substitutes the try\'s real curator vars, same as the Query Sandbox would' do
+          first_for_case_with_two_tries.curator_variables.create!(name: 'boost', value: 2)
+
+          post :preview_args, params: {
+            case_id:      case_with_two_tries.id,
+            try_number:   first_for_case_with_two_tries.try_number,
+            query_params: 'q=governor&boost=##boost##',
+          }
+
+          assert_response :ok
+          assert_equal({ 'q' => [ 'governor' ], 'boost' => [ '2' ] }, response.parsed_body['args'])
+        end
+
+        test 'parses es args and reports bad JSON as a null args without erroring, without persisting' do
+          es_try = case_with_two_tries.tries.create!(
+            query_params:    '{ "query": "#$query##" }',
+            try_number:      99,
+            search_endpoint: search_endpoints(:es_try)
+          )
+
+          post :preview_args, params: {
+            case_id:      case_with_two_tries.id,
+            try_number:   es_try.try_number,
+            query_params: '{ "query": "governor" }',
+          }
+
+          assert_response :ok
+          assert_equal({ 'query' => 'governor' }, response.parsed_body['args'])
+
+          post :preview_args, params: {
+            case_id:      case_with_two_tries.id,
+            try_number:   es_try.try_number,
+            query_params: '{ bad json',
+          }
+
+          assert_response :ok
+          assert_nil response.parsed_body['args']
+
+          assert_equal '{ "query": "#$query##" }', es_try.reload.query_params
+        end
+      end
+
       describe 'Updates case tries' do
         let(:the_case)  { cases(:case_with_two_tries) }
         let(:the_try)   { tries(:first_for_case_with_two_tries) }
@@ -172,6 +239,58 @@ search_endpoint: es_endpoint.attributes }
           the_try.reload
           assert_equal 'New field_spec', the_try.field_spec
           assert_equal 'es', the_try.search_endpoint.search_engine
+        end
+
+        test 'records which mapper based search engine a new search endpoint came from' do
+          put :update,
+              params: {
+                case_id:         the_case.id,
+                try_number:      the_try.try_number,
+                try:             { query_params: 'yql=select * from news where title contains "#$query##"' },
+                search_endpoint: {
+                  search_engine:                 'searchapi',
+                  endpoint_url:                  'https://example.vespa-app.cloud/search/',
+                  api_method:                    'GET',
+                  proxy_requests:                true,
+                  mapper_based_search_engine_id: 'vespa',
+                },
+              }
+
+          assert_response :ok
+
+          the_try.reload
+          assert_equal 'vespa', the_try.search_endpoint.mapper_based_search_engine_id
+        end
+
+        test 'backfills the preset id on an existing endpoint matched by connection details' do
+          existing = SearchEndpoint.create!(
+            search_engine:  'searchapi',
+            endpoint_url:   'https://example.vespa-app.cloud/search/',
+            api_method:     'GET',
+            proxy_requests: true,
+            owner:          joey
+          )
+          assert_nil existing.mapper_based_search_engine_id
+
+          put :update,
+              params: {
+                case_id:         the_case.id,
+                try_number:      the_try.try_number,
+                try:             { query_params: 'yql=select * from news where title contains "#$query##"' },
+                search_endpoint: {
+                  search_engine:                 'searchapi',
+                  endpoint_url:                  'https://example.vespa-app.cloud/search/',
+                  api_method:                    'GET',
+                  proxy_requests:                true,
+                  mapper_based_search_engine_id: 'vespa',
+                },
+              }
+
+          assert_response :ok
+
+          existing.reload
+          assert_equal 'vespa', existing.mapper_based_search_engine_id
+          assert_equal existing.id, the_try.reload.search_endpoint.id
         end
 
         test 'creates opensearch endpoint with basic auth and proxy on wizard finish' do

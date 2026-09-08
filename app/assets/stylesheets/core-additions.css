@@ -668,3 +668,17 @@ li.annotation {
 .annotation > div {
   margin: 5px 0;
 }
+
+/* Wizard: "Create a new Search Endpoint" engine tiles.
+   Source logos have wildly different native aspect ratios (Solr is ~2:1,
+   Algolia is ~4.4:1), so a fixed width alone leaves every row a different
+   height. Fixing the height and letting width follow, with object-fit to
+   avoid distortion, keeps every tile - and so every row - a consistent size,
+   including mapper-based ones added dynamically. */
+.wizard-engine-logo {
+  height:         50px;
+  width:          auto;
+  max-width:      150px;
+  object-fit:     contain;
+  vertical-align: middle;
+}

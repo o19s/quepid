@@ -13,7 +13,7 @@ const narrowViewportSpec = '**/angular_pages_narrow_viewport.spec.ts';
 export default defineConfig({
   globalSetup: path.join(__dirname, 'global-setup.ts'),
   testDir: __dirname,
-  outputDir: 'test-results/runs',
+  outputDir: path.join(__dirname, 'test-results', 'runs'),
   snapshotDir: 'baselines',
   snapshotPathTemplate: '{snapshotDir}/{testFilePath}/{arg}{ext}',
 

@@ -23,6 +23,12 @@ window.autocompleter = autocomplete;
 import Sortable from 'sortablejs';
 window.Sortable = Sortable;
 
+// curl-generator — builds the curl snippet shown in the "Browse Results" modal.
+// Pinned to window so BrowseQueryModalInstanceCtrl can use it without importing
+// into the Angular bundle (matches the pattern above).
+import { CurlGenerator } from 'curl-generator';
+window.CurlGenerator = CurlGenerator;
+
 // Angular third-party modules (vendored sources; see vendor/README.md)
 import './vendor/angular-wizard/angular-wizard.js';
 import './vendor/angular-utils-pagination';

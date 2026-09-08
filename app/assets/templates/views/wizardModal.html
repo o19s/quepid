@@ -55,36 +55,40 @@
               <div class="accordion-body">
           <div style="text-align: center;">
             <label style="margin-right: 25px;">
-              <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-              <img ng-src="images/solr.png" alt='Solr' width="100px" />
+              <input type="radio" value="solr" ng-model="pendingWizardSettings.searchEnginePreset" ng-change="changeSearchEngine()">
+              <img ng-src="images/solr.png" alt='Solr' class="wizard-engine-logo" />
             </label>
             <label style="margin-right: 25px;">
-              <input type="radio" value="es" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-              <img ng-src="images/es.png" alt='Elasticsearch' width="150px" />
+              <input type="radio" value="es" ng-model="pendingWizardSettings.searchEnginePreset" ng-change="changeSearchEngine()">
+              <img ng-src="images/es.png" alt='Elasticsearch' class="wizard-engine-logo" />
             </label>
             <label>
-              <input type="radio" value="os" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-              <img ng-src="images/os.png" alt='OpenSearch' width="150px" />
+              <input type="radio" value="os" ng-model="pendingWizardSettings.searchEnginePreset" ng-change="changeSearchEngine()">
+              <img ng-src="images/os.png" alt='OpenSearch' class="wizard-engine-logo" />
             </label>
           </div>
           <div style="text-align: center;">
             <label style="margin-right: 25px;">
-              <input type="radio" value="vectara" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-              <img ng-src="images/vectara.png" alt='Vectara' width="150px" />
+              <input type="radio" value="vectara" ng-model="pendingWizardSettings.searchEnginePreset" ng-change="changeSearchEngine()">
+              <img ng-src="images/vectara.png" alt='Vectara' class="wizard-engine-logo" />
             </label>
             <label style="margin-right: 25px;">
-              <input type="radio" value="static" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-              <img ng-src="images/static.png" alt='Static' width="100px" height="50px" />
+              <input type="radio" value="algolia" ng-model="pendingWizardSettings.searchEnginePreset" ng-change="changeSearchEngine()">
+              <img ng-src="images/algolia.png" alt='Algolia' class="wizard-engine-logo" />
             </label>
-            <label>
-              <input type="radio" value="searchapi" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-              <img ng-src="images/searchapi.png" alt='Search API' width="100px" height="50px" />
+            <label style="margin-right: 25px;" ng-repeat="engine in mapperBasedSearchEngines">
+              <input type="radio" ng-value="engine.id" ng-model="pendingWizardSettings.searchEnginePreset" ng-change="changeSearchEngine()">
+              <img ng-src="images/{{engine.logo}}.png" ng-attr-alt="{{engine.name}}" class="wizard-engine-logo" />
             </label>
           </div>
           <div style="text-align: center;">
             <label style="margin-right: 25px;">
-              <input type="radio" value="algolia" ng-model="pendingWizardSettings.searchEngine" ng-change="changeSearchEngine()">
-              <img ng-src="images/algolia.png" alt='Algolia' width="150px" />
+              <input type="radio" value="static" ng-model="pendingWizardSettings.searchEnginePreset" ng-change="changeSearchEngine()">
+              <img ng-src="images/static.png" alt='Static' class="wizard-engine-logo" />
+            </label>
+            <label>
+              <input type="radio" value="searchapi" ng-model="pendingWizardSettings.searchEnginePreset" ng-change="changeSearchEngine()">
+              <img ng-src="images/searchapi.png" alt='Search API' class="wizard-engine-logo" />
             </label>
           </div>
 
@@ -261,7 +265,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
             </span>
 
-            <span ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
+            <span ng-if="pendingWizardSettings.searchEnginePreset === 'searchapi'">
               <div class="bg-light p-2 rounded border">
                 <div class="alert alert-info">
                   <h4><i class="bi bi-magic"></i> Custom Mapper Required</h4>
@@ -300,8 +304,8 @@ star wars,1921,3, Star Wars: Return of the Jedi
                     </div>
                   </div>
 
-                  <label class="col-sm-3 col-form-label">Basic Authentication</label>
-                  <div class="col-sm-9">
+                  <label ng-if="pendingWizardSettings.supportsBasicAuth !== false" class="col-sm-3 col-form-label">Basic Authentication</label>
+                  <div ng-if="pendingWizardSettings.supportsBasicAuth !== false" class="col-sm-9">
                     <input type="text" class="form-control"
                       ng-model="pendingWizardSettings.basicAuthCredential"
                       ng-change="resetUrlValid()"
@@ -316,7 +320,7 @@ star wars,1921,3, Star Wars: Return of the Jedi
             </div>
             </span>
 
-            <div ng-if="pendingWizardSettings.searchEngine !== 'searchapi'" class="mb-3" style="width: 100%">
+            <div ng-if="pendingWizardSettings.searchEnginePreset !== 'searchapi'" class="mb-3" style="width: 100%">
               <div class="row" style="margin-top: 50px;">
                 <div class="float-end text-end">
 

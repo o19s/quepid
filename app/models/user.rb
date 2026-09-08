@@ -79,11 +79,10 @@ class User < ApplicationRecord
            dependent:   :destroy
 
   # too late now!
-  # rubocop:disable Rails/HasAndBelongsToMany
+  # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
                           join_table:  'teams_members',
                           foreign_key: 'member_id'
-  # rubocop:enable Rails/HasAndBelongsToMany
 
   has_many :shared_team_cases,
            through: :teams,

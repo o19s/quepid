@@ -2,7 +2,7 @@
 
 require_relative '../../lib/analytics'
 
-# rubocop:disable Rails/ApplicationController
+# rubocop:disable-next Rails/ApplicationController
 module Api
   class ApiController < ActionController::Base
     include Authentication::CurrentUserManager
@@ -50,4 +50,3 @@ module Api
     end
   end
 end
-# rubocop:enable Rails/ApplicationController

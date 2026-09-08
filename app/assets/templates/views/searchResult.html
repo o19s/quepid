@@ -81,8 +81,10 @@
 
           <span
             ng-if="isUrl(fieldValue)">
-            <!-- Format a HREF link.  Use the original value, not the html escaped snippet. -->
-            <a ng-href="{{ doc.doc[fieldName] }}" target="_blank" rel="noopener noreferrer">{{ doc.doc[fieldName] }}</a>
+            <!-- Format a HREF link.  Use the original value, not the html escaped snippet.
+                 fieldName may be a field_spec dotted path (e.g. "fields.url"), so resolve
+                 it against the raw doc rather than indexing doc.doc by the literal key. -->
+            <a ng-href="{{ resolveFieldValue(fieldName) }}" target="_blank" rel="noopener noreferrer">{{ resolveFieldValue(fieldName) }}</a>
           </span>
 
           <span

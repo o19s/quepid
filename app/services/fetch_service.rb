@@ -132,11 +132,12 @@ class FetchService
   end
 
   # This maybe should be split out into a snapshot_query and a snapshot_docs?
-  def store_query_results query, docs, response_status, response_body
+  def store_query_results query, docs, response_status, response_body, error: nil
     snapshot_query = @snapshot.snapshot_queries.create(
       query:             query,
       number_of_results: docs.count,
-      response_status:   response_status
+      response_status:   response_status,
+      error:             error
     )
     if @options[:track_web_requests]
       snapshot_query.create_web_request(

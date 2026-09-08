@@ -245,7 +245,7 @@ export function fromTextArea(textarea, options = {}) {
   textarea.style.display = 'none';
   
   // Choose language extension based on mode
-  let languageExtension = null;
+  let languageExtension;
   let isJsonMode = false;
   if (options.mode === 'javascript') {
     languageExtension = javascript();
@@ -258,7 +258,7 @@ export function fromTextArea(textarea, options = {}) {
   }
   
   // Choose appropriate linter
-  let linterExtension = null;
+  let linterExtension;
   if (options.mode === 'javascript') {
     linterExtension = javascriptLinter;
   } else if (options.mode === 'application/json' || options.mode === 'json') {

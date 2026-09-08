@@ -42,9 +42,9 @@ class Try < ApplicationRecord
 
   belongs_to :search_endpoint, optional: true # see above too!#dependent: :nullify
 
-  has_many    :curator_variables,
-              dependent:  :destroy,
-              inverse_of: :try
+  has_many :curator_variables,
+           dependent:  :destroy,
+           inverse_of: :try
 
   has_many   :snapshots,
              dependent: :nullify
@@ -152,7 +152,7 @@ class Try < ApplicationRecord
   end
 
   def searchapi_args
-    if query_params.starts_with?('{')
+    if query_params.to_s.starts_with?('{')
       EsArgParser.parse(query_params,
                         curator_vars_map)
     else

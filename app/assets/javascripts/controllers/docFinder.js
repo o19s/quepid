@@ -4,51 +4,87 @@ angular.module('QuepidApp')
   .controller('DocFinderCtrl', [
     '$scope',
     'queriesSvc', 'settingsSvc',
-    'solrExplainExtractorSvc', 'esExplainExtractorSvc',
     'rateBulkSvc',
     function (
       $scope,
       queriesSvc, settingsSvc,
-      solrExplainExtractorSvc, esExplainExtractorSvc,
       rateBulkSvc
     ) {
       $scope.defaultList = false;
       $scope.docFinder = {
-        docs:       [],
-        lastQuery:  '',
-        queryText:  '',
+        docs:        [],
+        lastQuery:   '',
+        queryText:   '',
+        queryParams: '',
+        parseError:  false,
       };
 
       var currSettings = settingsSvc.editableSettings();
+      $scope.settings = currSettings;
 
-      $scope.findDocs = function() {
-        var settings      = settingsSvc.editableSettings();
-        var query         = $scope.query;
-        var ratingsStore  = $scope.query.ratingsStore;
-        var fieldSpec     = settings.createFieldSpec();
+      // The try's saved queryParams still has the '#$query##' placeholder in it - swap in the
+      // actual query being tested (the same substitution fetch_service.rb does at search time)
+      // so the editor shows e.g. 'q=news&magicBoost=15' instead of 'q=#$query##&magicBoost=15'.
+      function resolveQueryPlaceholder(queryParams) {
+        // Use a replacer function (not a raw replacement string) - a plain string arg makes
+        // String.replace() treat "$&", "$$", "$1", etc. in the query text as special patterns
+        // instead of literal characters.
+        return queryParams ? queryParams.replace(/#\$query##/g, function() { return $scope.query.queryText; }) : queryParams;
+      }
 
-        $scope.defaultList = false;
+      $scope.docFinder.queryParams = resolveQueryPlaceholder(currSettings.selectedTry.queryParams);
 
-        $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(settings, query);
+      // Finding and rating missing documents is only supported for engines where we can
+      // resolve an edited query-params string into real args server-side (settingsSvc.
+      // previewArgs(), reusing Try#args/SolrArgParser/EsArgParser so curator vars etc. behave
+      // identically to the real Query Sandbox) and then run a real search against them. There's
+      // no generic way to do this for vectara/algolia/static (no shared query-params shape to
+      // preview), so the modal shows an unsupported message for those instead - see
+      // usesQueryParamsEditor below and targetedSearchModal.html.
+      var SUPPORTED_SEARCH_ENGINES = [ 'solr', 'es', 'os', 'searchapi' ];
 
-        $scope.docFinder.docs = []; // reset the array for a new search
-        $scope.docFinder.searcher.explainOther($scope.docFinder.queryText, fieldSpec)
-          .then(function() {
-            $scope.docFinder.numFound   = $scope.docFinder.searcher.numFound;
-            $scope.docFinder.lastQuery  = $scope.docFinder.queryText;
+      $scope.usesQueryParamsEditor = SUPPORTED_SEARCH_ENGINES.indexOf(currSettings.searchEngine) !== -1;
 
-            var normalizedDocs;
-            if ( $scope.docFinder.searcher.type === 'solr' ) {
-              normalizedDocs = solrExplainExtractorSvc.docsWithExplainOther($scope.docFinder.searcher.docs, fieldSpec, $scope.docFinder.searcher.othersExplained);
-            } else if ( $scope.docFinder.searcher.type === 'es' || $scope.docFinder.searcher.type === 'os') {
-              normalizedDocs = esExplainExtractorSvc.docsWithExplainOther($scope.docFinder.searcher.docs, fieldSpec);
-            }
+      function findDocsByPreviewingQueryParams() {
+        var settings  = settingsSvc.editableSettings();
+        var query     = $scope.query;
+        var fieldSpec = settings.createFieldSpec();
 
-            angular.forEach(normalizedDocs, function(doc) {
-              var rateableDoc = ratingsStore.createRateableDoc(doc);
-              $scope.docFinder.docs.push(rateableDoc);
-            });
+        $scope.docFinder.searching = true;
+
+        return settingsSvc.previewArgs(settings.selectedTry.tryNo, $scope.docFinder.queryParams).then(function(resolvedArgs) {
+          $scope.docFinder.searching = false;
+          $scope.docFinder.lastQuery = $scope.docFinder.queryParams;
+
+          if (resolvedArgs === null) {
+            $scope.docFinder.numFound   = 0;
+            $scope.docFinder.parseError = true;
+            return;
+          }
+
+          $scope.docFinder.parseError = false;
+
+          var tempSettings = queriesSvc.settingsWithTryOverrides(settings, {
+            args:        resolvedArgs,
+            queryParams: $scope.docFinder.queryParams
           });
+
+          $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(tempSettings, query);
+
+          return $scope.docFinder.searcher.search().then(function() {
+            $scope.docFinder.numFound = $scope.docFinder.searcher.numFound;
+            $scope.docFinder.docs     = queriesSvc.normalizeDocExplains(query, $scope.docFinder.searcher, fieldSpec);
+          });
+        });
+      }
+
+      // Only reachable when usesQueryParamsEditor is true - the search form is hidden
+      // otherwise (see targetedSearchModal.html).
+      $scope.findDocs = function() {
+        $scope.defaultList     = false;
+        $scope.docFinder.docs  = [];
+
+        return findDocsByPreviewingQueryParams();
       };
 
       $scope.paginate = function() {
@@ -64,37 +100,30 @@ angular.module('QuepidApp')
           return;
         }
 
-        $scope.docFinder.searcher = $scope.docFinder.searcher.pager();
+        var settings = settingsSvc.editableSettings();
+
         $scope.docFinder.paging = true;
+
+        // searchApiSearcherFactory.pager() (splainer-search) defers to
+        // config.nextPageArgsMapper - set on the searcher by createSearcherFromSettings from
+        // whatever the try's mapper_code defines (see nextPageArgsMapper in
+        // db/mapper_based_search_engines/vespa.js) - and returns null the same way every other
+        // engine's pager() does when there's no mapper or no more pages.
+        $scope.docFinder.searcher = $scope.docFinder.searcher.pager();
 
         if ( $scope.docFinder.searcher === null ) {
           $scope.docFinder.paging = false;
           return;
         }
 
-        var settings      = settingsSvc.editableSettings();
-        var fieldSpec     = settings.createFieldSpec();
-        var ratingsStore  = $scope.query.ratingsStore;
+        var previewFieldSpec = settings.createFieldSpec();
 
-        $scope.docFinder.searcher.explainOther($scope.docFinder.queryText, fieldSpec)
-          .then(function() {
-            $scope.docFinder.numFound   = $scope.docFinder.searcher.numFound;
-            $scope.docFinder.lastQuery  = $scope.docFinder.queryText;
-
-            var normalizedDocs;
-            if ( $scope.docFinder.searcher.type === 'solr' ) {
-              normalizedDocs = solrExplainExtractorSvc.docsWithExplainOther($scope.docFinder.searcher.docs, fieldSpec, $scope.docFinder.searcher.othersExplained);
-            } else if ( $scope.docFinder.searcher.type === 'es' || $scope.docFinder.searcher.type === 'os' ) {
-              normalizedDocs = esExplainExtractorSvc.docsWithExplainOther($scope.docFinder.searcher.docs, fieldSpec);
-            }
-
-            angular.forEach(normalizedDocs, function(doc) {
-              var rateableDoc = ratingsStore.createRateableDoc(doc);
-              $scope.docFinder.docs.push(rateableDoc);
-            });
-
-            $scope.docFinder.paging = false;
-          });
+        $scope.docFinder.searcher.search().then(function() {
+          $scope.docFinder.numFound = $scope.docFinder.searcher.numFound;
+          var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, previewFieldSpec);
+          $scope.docFinder.docs = $scope.docFinder.docs.concat(normed);
+          $scope.docFinder.paging = false;
+        });
       };
 
       $scope.paginateRatedQuery = function() {
@@ -109,8 +138,12 @@ angular.module('QuepidApp')
           var filter = {
             'query': $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length)
           };
-          $scope.docFinder.searcher.explainOther(
-            filter, fieldSpec)
+          // explainOther() doesn't reliably route through Quepid's proxy (unlike search()),
+          // so it 400s/CORS-fails whenever the endpoint requires proxying - reuse the same
+          // "swap in this query, then just search()" technique the templated-call branch
+          // below already relies on instead.
+          $scope.docFinder.searcher.queryDsl = filter;
+          $scope.docFinder.searcher.search()
             .then(function() {
               var normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
               $scope.docFinder.docs = $scope.docFinder.docs.concat(normed);
@@ -165,12 +198,22 @@ angular.module('QuepidApp')
 
       $scope.resetToAllRatedDocs = function(){
         $scope.docFinder.queryText = '';
+        $scope.docFinder.queryParams = resolveQueryPlaceholder(currSettings.selectedTry.queryParams);
+        $scope.docFinder.parseError = false;
         $scope.docFinder.docs = [];
         $scope.initializeToRatedDocs();
 
       };
 
       $scope.initializeToRatedDocs = function() {
+        $scope.docFinder.ratedDocsLookupUnsupported = false;
+
+        // vectara/algolia/static aren't supported at all in this modal (see
+        // usesQueryParamsEditor above) - nothing to look up.
+        if (!$scope.usesQueryParamsEditor) {
+          return;
+        }
+
         // Initialize to rated docs
         var fieldSpec = currSettings.createFieldSpec();
         var ratedIDs = $scope.query.ratings ? Object.keys($scope.query.ratings) : [];
@@ -183,10 +226,29 @@ angular.module('QuepidApp')
           return;
         }
 
-        $scope.docFinder.numFound = ratedIDs.length;
+        $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query);
+
+        // filterToRatings() (queriesSvc.js) has no generic implementation for searchapi -
+        // there's no one query syntax to build a "just these rated doc IDs" filter across
+        // arbitrary search APIs. A searchapi/mapper-based engine can opt in anyway by defining
+        // its own ratedDocsQueryParamsMapper (see the searchapi branch below and
+        // db/mapper_based_search_engines/vespa.js for an example); a plain searchapi engine
+        // (e.g. SEARCHAPI CASE's Edinburgh University endpoint) without one can't look these up
+        // at all - rather than silently show nothing, ratedDocsLookupUnsupported (with
+        // totalRatings, set below regardless of support) drives an explicit message in
+        // targetedSearchModal.html instead. trySupportsRatedDocsLookup (queriesSvc.js) is the
+        // single source of truth for this - true for es/os/solr always, conditional for
+        // searchapi - shared with queriesCtrl.js's "Show only rated" gating.
         $scope.docFinder.totalRatings = ratedIDs.length;
 
-        $scope.docFinder.searcher = queriesSvc.createSearcherFromSettings(currSettings, $scope.query);
+        if (!queriesSvc.trySupportsRatedDocsLookup(currSettings.selectedTry)) {
+          $scope.docFinder.ratedDocsLookupUnsupported = true;
+          $scope.docFinder.numFound = 0;
+          $scope.defaultList = true;
+          return;
+        }
+
+        $scope.docFinder.numFound = ratedIDs.length;
 
         if ($scope.docFinder.searcher.type === 'es' || $scope.docFinder.searcher.type === 'os') {
           var filter = {
@@ -205,8 +267,12 @@ angular.module('QuepidApp')
             });
           }
           else {
-            $scope.docFinder.searcher.explainOther(
-              filter, fieldSpec)
+            // explainOther() doesn't reliably route through Quepid's proxy (unlike
+            // search()), so it 400s/CORS-fails whenever the endpoint requires proxying -
+            // reuse the same "swap in this query, then just search()" technique the
+            // templated-call branch above already relies on instead.
+            $scope.docFinder.searcher.queryDsl = filter;
+            $scope.docFinder.searcher.search()
               .then(function() {
                 let normed = queriesSvc.normalizeDocExplains($scope.query, $scope.docFinder.searcher, fieldSpec);
                 $scope.docFinder.docs = normed;
@@ -216,6 +282,13 @@ angular.module('QuepidApp')
           }
 
         } else if ($scope.docFinder.searcher.type === 'solr') {
+          // explainOther() reuses the try's own args.start as the offset for its second
+          // (metadata-fetch) query - fine when listing a page of real results, but wrong
+          // here: we're looking up a specific handful of already-rated doc IDs, so a try
+          // saved mid-page (e.g. start=800) makes it look past all of them and find nothing,
+          // even though the ratings themselves were found just fine.
+          delete $scope.docFinder.searcher.args.start;
+
           $scope.docFinder.searcher.explainOther(
             $scope.query.filterToRatings(currSettings, $scope.docFinder.docs.length), fieldSpec, 'lucene')
             .then(function() {
@@ -223,6 +296,21 @@ angular.module('QuepidApp')
               $scope.docFinder.docs = normed;
 
               $scope.defaultList = true;
+          });
+        } else if ($scope.docFinder.searcher.type === 'searchapi') {
+          // Reached only when trySupportsRatedDocsLookup() already confirmed this searchapi
+          // try's mapper supports it (checked above). Shared with refreshRatedDocsForSearchApi()
+          // (queriesSvc.js) - same mapper-built
+          // ID-filter query_params -> non-persisting preview-then-search technique as
+          // findDocsByPreviewingQueryParams() above uses for the user's edited text.
+          queriesSvc.searchApiRatedDocs(currSettings, $scope.query, ratedIDs).then(function(result) {
+            if (result === null) {
+              return;
+            }
+
+            $scope.docFinder.searcher = result.searcher;
+            $scope.docFinder.docs = result.docs;
+            $scope.defaultList = true;
           });
         }
       };

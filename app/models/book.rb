@@ -54,10 +54,9 @@ class Book < ApplicationRecord
     [Judgement Rating Best Practices](https://github.com/o19s/quepid/wiki/Judgement-Rating-Best-Practices)
   MARKDOWN
   # Associations
-  # rubocop:disable Rails/HasAndBelongsToMany
+  # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
                           join_table: 'teams_books'
-  # rubocop:enable Rails/HasAndBelongsToMany
 
   belongs_to :owner,
              class_name: 'User', optional: true
@@ -68,11 +67,10 @@ class Book < ApplicationRecord
   # has_many :users, dependent: :destroy
   # has_many :ai_judges, through: :ai_judges
 
-  # rubocop:disable Rails/HasAndBelongsToMany
+  # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :ai_judges,
                           class_name: 'User',
                           join_table: 'books_ai_judges'
-  # rubocop:enable Rails/HasAndBelongsToMany
 
   has_many :query_doc_pairs, dependent: :delete_all, autosave: true
 

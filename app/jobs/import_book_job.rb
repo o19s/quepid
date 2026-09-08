@@ -3,7 +3,7 @@
 class ImportBookJob < ApplicationJob
   queue_as :bulk_processing
 
-  # rubocop:disable Security/MarshalLoad
+  # rubocop:disable-next Security/MarshalLoad
   def perform user, book
     book.update(import_job: "import started at #{Time.zone.now}")
     options = {}
@@ -19,5 +19,4 @@ class ImportBookJob < ApplicationJob
     book.import_job = nil
     book.save
   end
-  # rubocop:enable Security/MarshalLoad
 end

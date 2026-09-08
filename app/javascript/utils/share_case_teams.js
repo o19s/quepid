@@ -1,0 +1,30 @@
+export function parseTeamsJson(rawJson) {
+  try {
+    if (typeof rawJson === "string" && rawJson.trim() !== "") {
+      const parsed = JSON.parse(rawJson)
+      if (Array.isArray(parsed)) return parsed
+    }
+  } catch (e) {
+    console.error("share-case: invalid teams JSON", e)
+  }
+  return []
+}
+
+export function partitionTeams(teams, caseId) {
+  const caseNo = Number(caseId)
+  const allTeams = []
+  const sharedTeams = []
+
+  teams.forEach((team) => {
+    const entry = { id: team.id, name: team.name }
+    allTeams.push(entry)
+    const cases = Array.isArray(team.cases) ? team.cases : []
+    const hasCase = cases.some((c) => {
+      const id = c.case_id ?? c.caseNo ?? c.id
+      return Number(id) === caseNo
+    })
+    if (hasCase) sharedTeams.push(entry)
+  })
+
+  return { allTeams, sharedTeams }
+}

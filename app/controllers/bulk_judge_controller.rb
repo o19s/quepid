@@ -7,7 +7,7 @@ class BulkJudgeController < ApplicationController
   before_action :check_book
 
   # GET /books/:book_id/judge/bulk
-  # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
+  # rubocop:disable-next Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
   def new
     @query_text = params[:query_text]
     @rank_depth = params[:rank_depth].presence&.to_i
@@ -59,9 +59,8 @@ class BulkJudgeController < ApplicationController
     # then you may not have enough docs left to fill the last page.  In that we
     # just back up a page, and render.  And the pagy navbar is just skipped in
     # the footer.
-    if paginated_query_doc_pairs.nil?
-      page = params[:page].to_i
-      page -= 1
+    unless @pagy.in_range?
+      page = @pagy.page - 1
       @pagy, paginated_query_doc_pairs = pagy(randomized_results, items: 25, page: page)
     end
 
@@ -78,7 +77,6 @@ class BulkJudgeController < ApplicationController
     @total_count = randomized_results.size
     @total_queries = grouped.keys.size
   end
-  # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
 
   # POST /books/:book_id/judge/bulk/save
   # Save individual judgement via AJAX

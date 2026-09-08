@@ -33,10 +33,9 @@
 class Case < ApplicationRecord
   # Associations
   # too late now!
-  # rubocop:disable Rails/HasAndBelongsToMany
+  # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
                           join_table: 'teams_cases'
-  # rubocop:enable Rails/HasAndBelongsToMany
 
   belongs_to :scorer, optional: true
 
@@ -51,7 +50,6 @@ class Case < ApplicationRecord
              class_name: 'CaseMetadatum',
              dependent:  :destroy
 
-  # rubocop:disable Rails/InverseOf
   # `arranged_at` is nullable, and two things about ordering on it are not
   # portable. Adapters disagree on where NULLs land - MySQL and SQLite sort
   # them first under ASC, PostgreSQL sorts them last - so nullness is ordered
@@ -59,11 +57,11 @@ class Case < ApplicationRecord
   # which is what MySQL has always done here). And rows that tie, including
   # every row when none of them are arranged, have no defined order at all
   # without a tie breaker; MySQL happens to return them by id, so say so.
+  # rubocop:disable-next Rails/InverseOf
   has_many   :queries,
              -> { order(Arel.sql('queries.arranged_at IS NULL DESC'), arranged_at: :asc, id: :asc) },
              autosave:  true,
              dependent: :destroy
-  # rubocop:enable Rails/InverseOf
 
   has_many   :ratings,
              through: :queries

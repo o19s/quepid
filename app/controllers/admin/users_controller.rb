@@ -81,9 +81,8 @@ module Admin
         if @user.update(params_to_use)
           if params[:password_encrypted].present?
             # avoid the encrypt call back
-            # rubocop:disable Rails/SkipsModelValidations
+            # rubocop:disable-next Rails/SkipsModelValidations
             @user.update_column(:password, params[:password_encrypted])
-            # rubocop:enable Rails/SkipsModelValidations
           end
           Analytics::Tracker.track_user_updated_by_admin_event @user
 

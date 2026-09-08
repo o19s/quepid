@@ -30,7 +30,7 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
     invitee.reload
     assert_not invitee.invitation_accepted?
 
-    # rubocop:disable Layout/HashAlignment
+    # rubocop:disable-next Layout/HashAlignment
     put user_invitation_url(
       params: {
         user: {
@@ -43,7 +43,6 @@ class UserInviteFlowTest < ActionDispatch::IntegrationTest
         },
       }
     )
-    # rubocop:enable Layout/HashAlignment
     assert_response :redirect
 
     # confirm a hand off to the angular app to drop you on your team page.

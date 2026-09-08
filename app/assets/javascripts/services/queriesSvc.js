@@ -27,6 +27,7 @@ angular.module('QuepidApp')
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
     'normalDocsSvc',
+    'settingsSvc',
     function queriesSvc(
       $scope,
       $http,
@@ -45,13 +46,19 @@ angular.module('QuepidApp')
       searchErrorTranslatorSvc,
       esExplainExtractorSvc,
       solrExplainExtractorSvc,
-      normalDocsSvc
+      normalDocsSvc,
+      settingsSvc
     ) {
 
       let caseNo = -1;
       let currSettings = {};
       this.error = false;
       let svcVersion = 0;
+
+      // Keyed by the mapper_code string itself, so a re-eval is only ever skipped for the
+      // exact same code (editing a mapper - or switching to a different mapper-based try -
+      // naturally busts the cache via a different key). See evaluateMapperFunctions() below.
+      let mapperFunctionsCache = {};
 
       let svc = this;
       this.displayOrder = [];
@@ -108,8 +115,52 @@ angular.module('QuepidApp')
       this.getCaseNo = getCaseNo;
       this.createSearcherFromSettings = createSearcherFromSettings;
       this.createSearcherFromSnapshot = createSearcherFromSnapshot;
+      this.buildSearchApiRatedDocsQueryParams = buildSearchApiRatedDocsQueryParams;
+      this.searchApiRatedDocs = searchApiRatedDocs;
+      this.trySupportsSearchApiRatedDocsLookup = trySupportsSearchApiRatedDocsLookup;
+      this.trySupportsRatedDocsLookup = trySupportsRatedDocsLookup;
+      this.settingsWithTryOverrides = settingsWithTryOverrides;
       this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
+
+      /**
+       * Single source of truth for "can this try's engine look up already-rated docs by ID via
+       * a mapper?" (MapperBasedSearchEngine#supports_rated_docs_lookup, exposed on the try as
+       * mapperBasedSearchEngineSupportsRatedDocsLookup) - only meaningful for searchapi; see
+       * trySupportsRatedDocsLookup below for the general "any engine" version of this question.
+       */
+      function trySupportsSearchApiRatedDocsLookup(aTry) {
+        if (!aTry || aTry.searchEngine !== 'searchapi') {
+          return false;
+        }
+
+        return !!aTry.mapperBasedSearchEngineSupportsRatedDocsLookup;
+      }
+
+      // es/os/solr always have a generic ID-filter query syntax (filterToRatings below), so
+      // they always support this; searchapi is conditional on its mapper (above). Single
+      // source of truth for "does this try support rated-docs lookup at all" - used to gate
+      // "Show only rated" (queriesCtrl.js) and the Find-and-Rate-Missing-Documents
+      // "Already Rated Documents" section (docFinder.js), so the two stay in sync.
+      var NATIVELY_RATED_DOCS_LOOKUP_ENGINES = [ 'es', 'os', 'solr' ];
+
+      function trySupportsRatedDocsLookup(aTry) {
+        if (!aTry) {
+          return false;
+        }
+        return NATIVELY_RATED_DOCS_LOOKUP_ENGINES.indexOf(aTry.searchEngine) !== -1 ||
+          trySupportsSearchApiRatedDocsLookup(aTry);
+      }
+
+      // Shared "clone settings with the selectedTry overridden" pattern for a one-off preview
+      // search - used by both docFinder.js's findDocsByPreviewingQueryParams() (overriding args
+      // and queryParams) and searchApiRatedDocs() below (overriding just args), so a resolved
+      // query doesn't have to be spliced into settings by hand at each call site.
+      function settingsWithTryOverrides(settings, tryOverrides) {
+        return angular.extend({}, settings, {
+          selectedTry: angular.extend({}, settings.selectedTry, tryOverrides)
+        });
+      }
 
       svc.bootstrapQueries = bootstrapQueries;
       svc.showOnlyRated = false;
@@ -119,6 +170,49 @@ angular.module('QuepidApp')
       $scope.$on('rating-changed', () => {
         svc.scoreAll();
       });
+
+      /**
+       * mapper_code (a try's JS source defining numberOfResultsMapper/docsMapper/
+       * nextPageArgsMapper/ratedDocsQueryParamsMapper - see
+       * db/mapper_based_search_engines/vespa.js) gets evaluated from two separate call sites
+       * (createSearcherFromSettings below, and buildSearchApiRatedDocsQueryParams) that often
+       * run back-to-back for the same try. Caching by the mapper_code string itself avoids
+       * redundant `new Function` eval + window-global churn on every search/page/rated-lookup.
+       *
+       * The eval technique itself (Function constructor, called against `window`) only works
+       * because mapper_code assigns to bare identifiers (`docsMapper = function...`, no `var`),
+       * which in non-strict, non-module code are just `window.docsMapper` - so a mapper that
+       * doesn't define one of these four functions would otherwise silently inherit whatever a
+       * PREVIOUS, unrelated try's mapper_code last left on window. Clearing all four before
+       * each eval (only reached on a cache miss) avoids that cross-contamination.
+       */
+      var MAPPER_FUNCTION_NAMES = [
+        'numberOfResultsMapper', 'docsMapper', 'nextPageArgsMapper', 'ratedDocsQueryParamsMapper'
+      ];
+
+      function evaluateMapperFunctions(mapperCode) {
+        if (Object.hasOwn(mapperFunctionsCache, mapperCode)) {
+          return mapperFunctionsCache[mapperCode];
+        }
+
+        /*jshint evil:true */
+        /* jshint undef: false */
+        MAPPER_FUNCTION_NAMES.forEach(function(name) { delete window[name]; });
+
+        var mapperFunction = new Function(mapperCode);
+        mapperFunction.call(window);
+
+        var functions = {};
+        MAPPER_FUNCTION_NAMES.forEach(function(name) {
+          functions[name] = typeof window[name] === 'function' ? window[name] : undefined;
+        });
+        /*jshint evil:false */
+        /* jshint undef: true */
+
+        mapperFunctionsCache[mapperCode] = functions;
+
+        return functions;
+      }
 
       /**
        * Builds a splainer-search Searcher from the active try's settings and a `Query`, including
@@ -158,35 +252,27 @@ angular.module('QuepidApp')
             passedInSettings.searchEngine = 'solr';
           }
           else if (passedInSettings.searchEngine === 'searchapi'){
-            /*jshint evil:true */
-            /* jshint undef: false */
-            console.log('About to evaluate mapper code...');
-            
-            // Alternative approach: Use Function constructor which runs in non-strict mode
-            // and has access to global scope
-            var mapperFunction = new Function(passedInSettings.mapperCode);
-            mapperFunction.call(window);
-            
-            // The functions should now be available on the window object
-            //var numberOfResultsMapper, docsMapper;
-            if (window.numberOfResultsMapper) {
-              numberOfResultsMapper = window.numberOfResultsMapper;
-            }
-            if (window.docsMapper) {
-              docsMapper = window.docsMapper;
-            }
-            /*jshint evil:false */
-            /* jshint undef: true */
+            let mapperFunctions = evaluateMapperFunctions(passedInSettings.mapperCode);
 
+            if (mapperFunctions.docsMapper) {
+              searcherOptions.docsMapper = mapperFunctions.docsMapper;
+            }
+            if (mapperFunctions.numberOfResultsMapper) {
+              searcherOptions.numberOfResultsMapper = mapperFunctions.numberOfResultsMapper;
+            }
+            if (mapperFunctions.nextPageArgsMapper) {
+              // splainer-search's searchApiSearcherFactory.pager() calls this directly to
+              // build the next page's args - see nextPageArgsMapper in
+              // db/mapper_based_search_engines/vespa.js for the contract.
+              searcherOptions.nextPageArgsMapper = mapperFunctions.nextPageArgsMapper;
+            }
 
-            if (typeof docsMapper === 'function') {
-              // jshint -W117
-              searcherOptions.docsMapper = docsMapper;
-            }
-            if (typeof numberOfResultsMapper === 'function') {
-              // jshint -W117
-              searcherOptions.numberOfResultsMapper = numberOfResultsMapper;
-            }
+            // splainer-search's searchApiSearcherPreprocessorSvc can't hardcode a page-size
+            // param name (unlike Solr's rows/ES's size) since that's whatever the target
+            // API/mapper calls it - these two names are all it needs to default hits/offset
+            // from numberOfRows on page 1, the same way Solr/ES already do internally.
+            searcherOptions.paginationHitsParam = passedInSettings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
+            searcherOptions.paginationOffsetParam = passedInSettings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
           }
 
           if (passedInSettings.searchEngine === 'solr') {
@@ -242,6 +328,84 @@ angular.module('QuepidApp')
         return snapshotSearcherSvc.createSearcherFromSnapshot(snapshotId, query, settings);
       }
 
+      /**
+       * filterToRatings() below has no generic "just these doc IDs" query syntax for a
+       * searchapi engine (unlike Solr's {!terms f=id} or ES's terms query) - every mapper-based
+       * engine's query language is different, so that's left to the mapper itself. If
+       * mapperCode defines a ratedDocsQueryParamsMapper(ratedIds, idField) function (see
+       * db/mapper_based_search_engines/vespa.js for an example), this returns the query_params
+       * string it builds (evaluated via the same cache as createSearcherFromSettings - see
+       * evaluateMapperFunctions above). idField is the case's own id field (fieldSpec.id, i.e.
+       * whatever follows "id:" in the try's field_spec) - passed through rather than left for
+       * the mapper to hardcode, since it's schema-specific and user-editable per case. Returns
+       * null if the mapper doesn't define one - callers should treat that the same as
+       * MapperBasedSearchEngine#supports_rated_docs_lookup being false.
+       */
+      function buildSearchApiRatedDocsQueryParams(mapperCode, ratedIds, idField) {
+        let mapper = evaluateMapperFunctions(mapperCode).ratedDocsQueryParamsMapper;
+
+        return typeof mapper === 'function' ? mapper(ratedIds, idField) : null;
+      }
+
+      /**
+       * Shared "look up already-rated docs via the mapper" pipeline for a searchapi/mapper-based
+       * engine - used by both docFinder.js's "Already Rated Documents" section and
+       * refreshRatedDocsForSearchApi() below (Query's "Show only rated" toggle), which otherwise
+       * duplicated this same build-query-params -> previewArgs -> search -> normalize sequence.
+       * Callers are expected to have already checked trySupportsSearchApiRatedDocsLookup(); this
+       * resolves to null when the mapper doesn't build a query (or previewArgs can't resolve it),
+       * which callers should treat as "can't show rated docs, disable/message accordingly."
+       */
+      function searchApiRatedDocs(settings, query, ratedIds) {
+        let idField = settings.createFieldSpec().id;
+        let ratedQueryParams = buildSearchApiRatedDocsQueryParams(settings.selectedTry.mapperCode, ratedIds, idField);
+
+        if (!ratedQueryParams) {
+          return $q.resolve(null);
+        }
+
+        return settingsSvc.previewArgs(settings.selectedTry.tryNo, ratedQueryParams).then(function(resolvedArgs) {
+          if (resolvedArgs === null) {
+            return null;
+          }
+
+          let tempSettings = settingsWithTryOverrides(settings, { args: resolvedArgs });
+
+          let searcher = createSearcherFromSettings(tempSettings, query);
+
+          return searcher.search().then(function() {
+            let normed = normalizeDocExplains(query, searcher, settings.createFieldSpec());
+            return { searcher: searcher, docs: normed };
+          });
+        });
+      }
+
+      /**
+       * A mapper (e.g. db/mapper_based_search_engines/vespa.js) may spread a per-field score
+       * breakdown onto each doc as matchfeatures (Vespa's convention, e.g. {"bm25(overview)":
+       * 5.07, "bm25(title)": 2.64}). The generic searchapi engine has no explain concept of
+       * its own (SearchApiDocFactory#explain always returns {}), so build a synthetic explain
+       * tree in the same {description, value, details} shape Solr/ES explains use — the
+       * engine-agnostic bar rendering (explainSvc/normalDocsSvc) picks it up identically to
+       * how it already does for Solr's real explain output. Returns undefined (falling back
+       * to "no explain for doc") when a doc has no matchfeatures to show.
+       */
+      function matchFeaturesExplain(doc) {
+        let matchFeatures = doc.matchfeatures;
+
+        if (!matchFeatures || Object.keys(matchFeatures).length === 0) {
+          return undefined;
+        }
+
+        return {
+          description: 'sum of matched fields:',
+          value: doc.fields ? doc.fields.score : undefined,
+          details: Object.keys(matchFeatures).map(function(fieldName) {
+            return { description: fieldName, value: matchFeatures[fieldName], details: [] };
+          })
+        };
+      }
+
       function normalizeDocExplains(query, searcher, fieldSpec) {
         let normed = [];
 
@@ -249,6 +413,10 @@ angular.module('QuepidApp')
           normed = esExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec);
         } else if (searcher.type === 'solr') {
           normed = solrExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec, searcher.othersExplained);
+        } else if (searcher.type === 'searchapi') {
+          normed = searcher.docs.map(function(doc) {
+            return normalDocsSvc.createNormalDoc(fieldSpec, doc, matchFeaturesExplain(doc));
+          });
         } else {
           // search engine with no explain output
           normed = searcher.docs.map(function(doc) {
@@ -301,6 +469,7 @@ angular.module('QuepidApp')
         self.docs           = [];
         self.ratedDocs      = [];
         self.ratedDocsFound = 0;
+        self.ratedDocsUnsupported  = false;
         self.numFound       = 0;
         self.options        = queryWithRatings.options == null ? {} : queryWithRatings.options;
         self.notes          = queryWithRatings.notes;
@@ -469,6 +638,10 @@ angular.module('QuepidApp')
             settings.numberOfRows = pageSize;
           }
 
+          if (settings.searchEngine === 'searchapi') {
+            return refreshRatedDocsForSearchApi(settings);
+          }
+
           self.ratedSearcher = svc.createSearcherFromSettings(
               settings,
               self,
@@ -493,6 +666,68 @@ angular.module('QuepidApp')
           });
         };
 
+        // filterToRatings() (createSearcherFromSettings' filterToRated option, above) has no
+        // generic ID-filter syntax for a searchapi/mapper-based engine - unlike Solr's
+        // {!terms f=id} or ES's terms query, there's no one query language to target across
+        // arbitrary search APIs. Building the filter is also inherently async (mapper ->
+        // settingsSvc.previewArgs), unlike the other engines' synchronous filterToRated
+        // branches - svc.searchApiRatedDocs() is the shared pipeline for that, also used by
+        // docFinder.js's initializeToRatedDocs() ("Already Rated Documents").
+        //
+        // An engine that hasn't opted in via mapperBasedSearchEngineSupportsRatedDocsLookup
+        // (no ratedDocsQueryParamsMapper) can't support "Show only rated" at all - rather than
+        // silently show unfiltered results mislabeled as "rated", self.ratedDocsUnsupported is
+        // set so the UI can disable the control and say why (see queriesCtrl.js/queries.html).
+        function refreshRatedDocsForSearchApi(settings) {
+          self.ratedDocsUnsupported = !svc.trySupportsSearchApiRatedDocsLookup(settings.selectedTry);
+
+          if (self.ratedDocsUnsupported) {
+            return resetRatedDocsToEmpty();
+          }
+
+          let ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
+          ratedIDs = ratedIDs.filter(function(id) { return id.length > 0; });
+
+          if (ratedIDs.length === 0) {
+            return resetRatedDocsToEmpty();
+          }
+
+          return svc.searchApiRatedDocs(settings, self, ratedIDs).then(function(result) {
+            if (result === null) {
+              self.ratedDocsUnsupported = true;
+              return resetRatedDocsToEmpty();
+            }
+
+            self.ratedSearcher = result.searcher;
+            self.ratedUrl = result.searcher.linkUrl;
+
+            let ratedDocsStaging = [];
+            angular.forEach(result.docs, function(doc) {
+              ratedDocsStaging.push(self.ratingsStore.createRateableDoc(doc));
+            });
+
+            self.ratedDocs = ratedDocsStaging;
+            // Vespa's own totalCount (unlike result.docs.length, a page's worth) covers every
+            // rated doc the "in (...)" filter matched, not just this page - needed so the "peek
+            // at next page" link (searchResults.html) knows there's more via ratedPaginate().
+            self.ratedDocsFound = result.searcher.numFound;
+            self.ratingsReady = true;
+            self.ratingsPromise = null;
+          });
+        }
+
+        // Shared "nothing to show" reset - used both when the engine can't look up rated docs
+        // at all, and when it can but there simply are none yet (self.ratedDocsUnsupported is
+        // left as whatever the caller already set, not touched here).
+        function resetRatedDocsToEmpty() {
+          self.ratedSearcher = null;
+          self.ratedDocs = [];
+          self.ratedDocsFound = 0;
+          self.ratingsReady = true;
+          self.ratingsPromise = null;
+          return $q.resolve();
+        }
+
         this.setDocs = function(newDocs, numFound) {
           that.docs.length = 0;
           that.numFound    = numFound;
@@ -505,7 +740,8 @@ angular.module('QuepidApp')
           let docList   = new DocListFactory(
             newDocs,
             fieldSpec,
-            that.ratingsStore
+            that.ratingsStore,
+            matchFeaturesExplain
           );
 
           that.docs = docList.list();
@@ -567,10 +803,15 @@ angular.module('QuepidApp')
             promises.push(self.searcher.search()
               .then(function() {
                             }, function(response) {
-                self.linkUrl = self.searcher.linkUrl;
+                // splainer-search only ever sets searcher.linkUrl for Solr (see
+                // solrSearcherPreprocessorSvc.js); for a GET-method searchapi engine
+                // (e.g. Vespa), searcher.url already holds the same fully-resolved,
+                // real request URL by the time search() settles, so fall back to it
+                // rather than patching the vendored library for one more engine.
+                self.linkUrl = self.searcher.linkUrl || self.searcher.url;
                 self.setDocs([], 0);
 
-                let msg = searchErrorTranslatorSvc.parseResponseObject(response, self.searcher.linkUrl, currSettings.searchEngine);
+                let msg = searchErrorTranslatorSvc.parseResponseObject(response, self.linkUrl, currSettings.searchEngine);
 
                 self.onError(msg);
                 reject(msg);
@@ -584,7 +825,7 @@ angular.module('QuepidApp')
             //promises.push(self.refreshRatedDocs());
 
             $q.all(promises).then( () => {
-              self.linkUrl = self.searcher.linkUrl;
+              self.linkUrl = self.searcher.linkUrl || self.searcher.url;
 
               if (self.searcher.inError) {
                 //self.docs.length = 0;
@@ -630,9 +871,10 @@ angular.module('QuepidApp')
                 self.linkUrl = self.searcher.linkUrl;
 
                 if (self.searcher.inError) {
+                  let msg = self.searcher.searchError || 'Error loading snapshot results';
                   self.setDocs([], 0);
-                  self.onError('Error loading snapshot results');
-                  reject('Error loading snapshot results');
+                  self.onError(msg);
+                  reject(msg);
                 } else {
                   let error = self.setDocs(self.searcher.docs, self.searcher.numFound);
                   if (error) {
@@ -657,14 +899,23 @@ angular.module('QuepidApp')
             return;
           }
 
+          // searchApiSearcherFactory.pager() (splainer-search) defers to
+          // config.nextPageArgsMapper - set on the searcher by createSearcherFromSettings from
+          // whatever the try's mapper_code defines (see nextPageArgsMapper in
+          // db/mapper_based_search_engines/vespa.js) - and returns null the same way
+          // Solr/ES/Algolia/Vectara's own pager() do when there's no mapper or no more pages.
           self.searcher = self.searcher.pager();
+
+          if (self.searcher === null) {
+            return;
+          }
 
           return self.searcher.search()
             .then(function() {
               let ratingsStore  = self.ratingsStore;
               let docs          = self.searcher.docs;
               let fieldSpec     = currSettings.createFieldSpec();
-              let docList       = new DocListFactory(docs, fieldSpec, ratingsStore);
+              let docList       = new DocListFactory(docs, fieldSpec, ratingsStore, matchFeaturesExplain);
               self.docs         = self.docs.concat(docList.list());
             }, function(response) {
               $log.debug('Failed to load search: ', response);
@@ -682,7 +933,16 @@ angular.module('QuepidApp')
               return;
             }
 
+            // Same pager() as paginate() above - self.ratedSearcher already carries
+            // config.nextPageArgsMapper from however it was built (refreshRatedDocsForSearchApi's
+            // resolved rated-docs-filter args for searchapi, or the main query's args for
+            // es/os/solr/vectara/algolia), so it bumps whichever args it already has.
             self.ratedSearcher = self.ratedSearcher.pager();
+
+            if (self.ratedSearcher === null) {
+              return;
+            }
+
             return self.ratedSearcher.search()
               .then(function() {
                 let normed = svc.normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());

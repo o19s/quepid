@@ -7,6 +7,12 @@ class MapperWizardsController < ApplicationController
   # GET /search_endpoints/mapper_wizard (new)
   # GET /search_endpoints/:search_endpoint_id/mapper_wizard (existing)
   def show
+    if @search_endpoint&.mapper_based_search_engine_id.present?
+      redirect_to search_endpoint_path(@search_endpoint),
+                  alert: "This endpoint's mapper code is managed automatically and can't be edited here."
+      return
+    end
+
     @search_endpoint ||= SearchEndpoint.new
 
     # Reset wizard state when entering the wizard to start fresh
@@ -34,7 +40,7 @@ class MapperWizardsController < ApplicationController
   # Supports both GET and POST requests using test_query field:
   # - For GET: test_query contains query params (e.g., "q=test&rows=10")
   # - For POST: test_query contains JSON body (e.g., '{"query": "test"}')
-  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable-next Metrics/MethodLength
   def fetch_html
     http_method = params[:http_method] || 'GET'
 
@@ -94,7 +100,6 @@ class MapperWizardsController < ApplicationController
       render json: { success: false, error: result[:error] }, status: :unprocessable_content
     end
   end
-  # rubocop:enable Metrics/MethodLength
 
   # POST /search_endpoints/:search_endpoint_id/mapper_wizard/generate_mappers
   def generate_mappers
@@ -280,7 +285,7 @@ class MapperWizardsController < ApplicationController
 
   # Extract a JavaScript function from combined mapper code
   # Handles complex function bodies with nested structures, strings, and template literals
-  # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Metrics/BlockNesting
+  # rubocop:disable-next Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Metrics/BlockNesting
   def extract_function source, function_name
     functions = {}
     pattern = /(\w+)\s*=\s*function\s*\([^)]*\)\s*\{/
@@ -337,11 +342,10 @@ class MapperWizardsController < ApplicationController
 
     functions[function_name]
   end
-  # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Metrics/BlockNesting
 
   # Find the index of the closing brace that matches the opening brace at start_index
   # Handles strings (single/double quotes), template literals, and escaped characters
-  # rubocop:disable Metrics/PerceivedComplexity
+  # rubocop:disable-next Metrics/PerceivedComplexity
   def find_matching_brace code, start_index
     raise ArgumentError, "Character at start_index must be '{'" unless '{' == code[start_index]
 
@@ -384,5 +388,4 @@ class MapperWizardsController < ApplicationController
     # If we get here, matching brace was not found
     start_index
   end
-  # rubocop:enable Metrics/PerceivedComplexity
 end

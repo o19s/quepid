@@ -300,10 +300,7 @@
   <body>
     <div class="layout">
       <aside>
-        <div class="nav-section" id="pairs-nav">
-          <h2>Before / after</h2>
-          <ul class="nav-list" id="pairs-list"></ul>
-        </div>
+        <div id="topic-navs"></div>
         <div class="nav-section" id="singles-nav">
           <h2>Single shots</h2>
           <ul class="nav-list" id="singles-list"></ul>
@@ -333,13 +330,26 @@
       let activeId = null
       const pixelCache = new Map()
 
-      function shotSrc(name) {
-        return `${shotPrefix}${encodeURIComponent(name)}`
+      function shotSrc(relPath) {
+        return (
+          shotPrefix +
+          String(relPath)
+            .split("/")
+            .map((part) => encodeURIComponent(part))
+            .join("/")
+        )
       }
 
       function formatBytes(bytes) {
         if (bytes < 1024) return `${bytes} B`
         return `${(bytes / 1024).toFixed(1)} KB`
+      }
+
+      function topicRank(topic) {
+        if (topic === "share-case") return 0
+        if (topic === "(root)") return 90
+        if (topic === "prior") return 100
+        return 50
       }
 
       function pairBadge(item) {
@@ -357,34 +367,53 @@
 
       function renderNav(filter = "") {
         const q = filter.trim().toLowerCase()
-        const match = (item) => !q || item.title.toLowerCase().includes(q) || item.id.toLowerCase().includes(q)
+        const match = (item) =>
+          !q ||
+          item.title.toLowerCase().includes(q) ||
+          item.id.toLowerCase().includes(q) ||
+          (item.topic || "").toLowerCase().includes(q)
 
-        const pairsList = document.getElementById("pairs-list")
+        const topicNavs = document.getElementById("topic-navs")
         const singlesList = document.getElementById("singles-list")
-        pairsList.innerHTML = ""
+        topicNavs.innerHTML = ""
         singlesList.innerHTML = ""
 
         const pairs = items.filter((item) => item.kind === "pair" && match(item))
         const singles = items.filter((item) => item.kind === "single" && match(item))
 
-        document.getElementById("pairs-nav").hidden = pairs.length === 0
-        document.getElementById("singles-nav").hidden = singles.length === 0
+        const topics = [...new Set(pairs.map((p) => p.topic || "(root)"))].sort(
+          (a, b) => topicRank(a) - topicRank(b) || a.localeCompare(b)
+        )
 
-        for (const item of pairs) {
-          const li = document.createElement("li")
-          const btn = document.createElement("button")
-          btn.type = "button"
-          btn.innerHTML = `<span>${item.title}</span>${pairBadge(item)}`
-          btn.setAttribute("aria-current", item.id === activeId ? "true" : "false")
-          btn.addEventListener("click", () => select(item.id))
-          li.appendChild(btn)
-          pairsList.appendChild(li)
+        for (const topic of topics) {
+          const section = document.createElement("div")
+          section.className = "nav-section"
+          const h2 = document.createElement("h2")
+          h2.textContent = topic === "(root)" ? "Before / after (root)" : topic
+          const ul = document.createElement("ul")
+          ul.className = "nav-list"
+          for (const item of pairs.filter((p) => (p.topic || "(root)") === topic)) {
+            const li = document.createElement("li")
+            const btn = document.createElement("button")
+            btn.type = "button"
+            btn.innerHTML = `<span>${item.title}</span>${pairBadge(item)}`
+            btn.setAttribute("aria-current", item.id === activeId ? "true" : "false")
+            btn.addEventListener("click", () => select(item.id))
+            li.appendChild(btn)
+            ul.appendChild(li)
+          }
+          section.appendChild(h2)
+          section.appendChild(ul)
+          topicNavs.appendChild(section)
         }
+
+        document.getElementById("singles-nav").hidden = singles.length === 0
 
         for (const item of singles) {
           const li = document.createElement("li")
           const btn = document.createElement("button")
-          btn.innerHTML = `<span>${item.title}</span><span class="badge single">${item.note || "single"}</span>`
+          const topicLabel = item.topic && item.topic !== "(root)" ? `${item.topic}/` : ""
+          btn.innerHTML = `<span>${topicLabel}${item.title}</span><span class="badge single">${item.note || "single"}</span>`
           btn.setAttribute("aria-current", item.id === activeId ? "true" : "false")
           btn.addEventListener("click", () => select(item.id))
           li.appendChild(btn)
