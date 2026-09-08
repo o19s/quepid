@@ -675,5 +675,20 @@ angular.module('QuepidApp')
         currSettings = new Settings(tries);
         currSettings.selectTry(selectedTryNo);
       };
+
+      // Parses queryParams into the args a search would actually use, without persisting a
+      // new/changed Try — lets a caller (e.g. the "Find and Rate Missing Documents" modal)
+      // preview an ad-hoc query using the current try's real search engine + curator vars.
+      // tryNo is taken as a param (rather than caseTryNavSvc.getTryNo()) since that only
+      // reflects an explicit /try/:tryNo in the URL - viewing a case without one leaves it
+      // unset, whereas settings.selectedTry.tryNo is always the try actually in use.
+      this.previewArgs = function(tryNo, queryParams) {
+        const currCaseNo = caseTryNavSvc.getCaseNo();
+
+        return $http.post(`api/cases/${currCaseNo}/tries/${tryNo}/preview_args`, { query_params: queryParams })
+          .then(function(response) {
+            return response.data.args;
+          });
+      };
     }
   ]);

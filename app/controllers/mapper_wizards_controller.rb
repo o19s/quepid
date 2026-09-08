@@ -7,6 +7,12 @@ class MapperWizardsController < ApplicationController
   # GET /search_endpoints/mapper_wizard (new)
   # GET /search_endpoints/:search_endpoint_id/mapper_wizard (existing)
   def show
+    if @search_endpoint&.mapper_based_search_engine_id.present?
+      redirect_to search_endpoint_path(@search_endpoint),
+                  alert: "This endpoint's mapper code is managed automatically and can't be edited here."
+      return
+    end
+
     @search_endpoint ||= SearchEndpoint.new
 
     # Reset wizard state when entering the wizard to start fresh

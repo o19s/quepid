@@ -7,7 +7,7 @@ module Api
     class TriesController < Api::ApiController
       before_action :set_case
       before_action :check_case
-      before_action :set_try, only: [ :show, :update, :destroy ]
+      before_action :set_try, only: [ :show, :update, :destroy, :preview_args ]
 
       def index
         @tries = @case.tries
@@ -15,6 +15,15 @@ module Api
 
       def show
         respond_with @try
+      end
+
+      # Parses query_params into the args a search would use, WITHOUT persisting anything —
+      # lets the frontend preview a one-off/ad-hoc query (e.g. the "Find and Rate Missing
+      # Documents" modal) using the try's real search_engine + curator vars, without creating
+      # a new Try the way #create does.
+      def preview_args
+        @try.query_params = params[:query_params]
+        render json: { args: @try.args }
       end
 
       # @request_body Try to be created [Reference:#/components/schemas/Try]

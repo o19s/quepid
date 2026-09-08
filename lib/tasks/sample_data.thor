@@ -31,7 +31,8 @@ class SampleData < Thor
                                                             endpoint_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select', api_method: 'JSONP'
 
     tmdb_es_endpoint = ::SearchEndpoint.find_or_create_by   search_engine: :es,
-                                                            endpoint_url: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search', api_method: 'POST'
+                                                            endpoint_url: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search', api_method: 'POST',
+                                                            proxy_requests: true
 
     ::SearchEndpoint.find_or_create_by search_engine:  :search_api,
                                        endpoint_url:   'https://opensourceconnections.com/?s=eric',
