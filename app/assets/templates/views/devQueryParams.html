@@ -77,7 +77,7 @@
         <div id='searchapi-query-params-editor' class='searchapi-query-params' ng-show="settings.searchEngine == 'searchapi'" ui-ace="{
             require:      ['ace/ext/language_tools'],
             useWrapMode:  true,
-            mode:         'json',
+            mode:         queryParamsMode(),
             theme:        'chrome',
             showGutter:   settings.apiMethod == 'POST'
           }" ng-model="settings.selectedTry.queryParams">

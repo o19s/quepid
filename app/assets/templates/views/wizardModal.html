@@ -116,7 +116,7 @@
               </span>
             </div>
             <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">
-              Sorry, we're not getting any search results from your {{ pendingWizardSettings.searchEngine | searchEngineName }}.
+              Sorry, we're not getting any search results from your {{ (pendingWizardSettings.searchEnginePreset || pendingWizardSettings.searchEngine) | searchEngineName }}.
 
               <ul ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
                 <li ng-if="!pendingWizardSettings.proxyRequests"><strong>Quick fix:</strong> check <strong>Proxy Requests</strong> below so Quepid's server talks to your Search API instead of your browser.</li>
