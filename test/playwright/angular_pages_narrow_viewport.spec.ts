@@ -59,7 +59,7 @@ test.describe('Angular core — narrow viewport slice (768×900)', () => {
     await page.getByText('Share case', { exact: true }).click();
     await expect(page.locator('.modal.show')).toContainText(/Share Case/i);
     await expect(page).toHaveScreenshot('narrow-04-share-case-modal.png', expandedCaseScreenshotOpts(page));
-    await page.locator('.modal.show').locator('.btn-core-close').first().click();
+    await page.locator('.modal.show').locator('.btn-close').click();
     await expect(page.locator('.modal.show')).toHaveCount(0);
   });
 });

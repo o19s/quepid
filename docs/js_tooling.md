@@ -7,7 +7,7 @@ Quepid runs **two parallel JavaScript worlds** during the Angular → Hotwire mi
 | `app/assets/javascripts/` | Legacy Angular case app (esbuild → `app/assets/builds/`) | **JSHint** (`.jshintrc`) | **Karma + Jasmine** (`spec/javascripts/`) |
 | `app/javascript/` | Importmap + Stimulus + Turbo (`application_modern.js`, controllers) | **ESLint** (full modern tree); **Prettier** (`api/`, `utils/` only) | **Vitest** (`app/javascript/**/*.test.js`, `vitest.config.js`) |
 
-Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; it is not a substitute for fast unit tests.
+Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; it is not a substitute for fast unit tests. Specs are TypeScript; `test/playwright/tsconfig.json` enables Node typings (`@types/node`) for `node:fs` / `node:path` imports.
 
 ## ESLint + Prettier (`app/javascript`)
 
@@ -23,7 +23,7 @@ Lint/format scope is defined once in **`config/javascript_lint_scope.mjs`** and 
 That tree includes:
 
 - `app/javascript/controllers/`, `api/`, `utils/`, `modules/`
-- Entry bundles: `application.js`, `application_modern.js`, `bootstrap_globals.js`, `vega_globals.js`, `analytics.js`
+- Entry bundles: `application.js`, `application_modern.js`, `core_stimulus.js`, `bootstrap_globals.js`, `vega_globals.js`, `analytics.js`
 
 **Excluded** (esbuild bridges / vendor — not importmap Stimulus):
 
@@ -127,6 +127,7 @@ Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests 
 - **Vitest + happy-dom** — `app/javascript/**/*.test.js` (shared modules plus Stimulus controller tests where behavior changes, e.g. `controllers/import_case_controller.test.js`).
 - **Karma + Jasmine + angular-mocks** — ~41 specs under `spec/javascripts/`, all Angular.
 - Karma loads **pre-built esbuild bundles**; every `karma:run` runs `yarn build` first.
+- **share-case migration:** Vitest `share_case_controller.test.js` (Rails index/teams) and `share_case_core_controller.test.js` (core toolbar API stay-on-page). Judgements opens share via `quepid:open-share-case-core`. HTTP/broadcast contracts in Karma `teamSvc_spec.js`; `caseSvc_spec.js` covers `quepid:case-team-changed`.
 
 ---
 

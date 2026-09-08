@@ -250,4 +250,3 @@ Current test only asserts `root_url.chomp('/')`. Add a case with `RAILS_RELATIVE
 Migrate to `apiFetch` when touched: `import_snapshot_controller.js`, `confirm_delete_controller.js` (form submit — keep as-is unless moving to fetch).
 
 **Also:** add `data-quepid-root-url` to `analytics.html.erb` if that layout ever loads Stimulus HTTP code.
-

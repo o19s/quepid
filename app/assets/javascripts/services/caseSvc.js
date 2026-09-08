@@ -112,6 +112,31 @@ angular.module('QuepidApp')
         }
       });
 
+      // Stimulus share-case on the core toolbar (stay-on-page).
+      document.addEventListener('quepid:case-team-changed', function(event) {
+        var detail = event.detail || {};
+        var selected = svc.getSelectedCase();
+        if (!svc.isCaseSelected() || !selected || Number(detail.caseNo) !== Number(selected.caseNo)) {
+          return;
+        }
+
+        $rootScope.$applyAsync(function() {
+          selected.teams = selected.teams || [];
+          if (detail.action === 'added' && detail.team) {
+            var already = selected.teams.some(function(t) {
+              return Number(t.id) === Number(detail.team.id);
+            });
+            if (!already) {
+              selected.teams.push(detail.team);
+            }
+          } else if (detail.action === 'removed' && detail.team) {
+            selected.teams = selected.teams.filter(function(t) {
+              return Number(t.id) !== Number(detail.team.id);
+            });
+          }
+        });
+      });
+
       this.selectCase = function(caseNo) {
         var cases = this.allCases.slice(); // shallow copy (dont create new cases)
         angular.forEach(cases, function(aCase) {

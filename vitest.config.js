@@ -24,7 +24,8 @@ export default defineConfig({
       "utils/bs_tooltip": path.resolve(repoRoot, "app/javascript/utils/bs_tooltip.js"),
       "utils/bs_popover": path.resolve(repoRoot, "app/javascript/utils/bs_popover.js"),
       "utils/text_paste": path.resolve(repoRoot, "app/javascript/utils/text_paste.js"),
-      "utils/count_up": path.resolve(repoRoot, "app/javascript/utils/count_up.js")
+      "utils/count_up": path.resolve(repoRoot, "app/javascript/utils/count_up.js"),
+      "utils/share_case_teams": path.resolve(repoRoot, "app/javascript/utils/share_case_teams.js")
     },
   },
 })
