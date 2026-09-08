@@ -44,8 +44,12 @@ case "${DB_ADAPTER:-mysql2}" in
   postgresql)
     bin/docker r ./wait-for postgres:5432 --timeout=60 -- bin/rake db:reset
     ;;
-  *)
+  sqlite3)
     bin/docker r bin/rake db:reset
+    ;;
+  *)
+    echo "Unsupported DB_ADAPTER: ${DB_ADAPTER}. Choose mysql2, postgresql, or sqlite3." >&2
+    exit 1
     ;;
 esac
 bin/docker r bin/rake db:migrate
