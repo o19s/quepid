@@ -34,13 +34,10 @@ module AdapterFunctions
     :mysql == adapter ? 'RAND()' : 'RANDOM()'
   end
 
-  # A uniform random float in [0, 1). MySQL's RAND() and PostgreSQL's RANDOM()
-  # already return one; SQLite's RANDOM() is a signed 64 bit integer and has to
-  # be scaled down into that range.
   UNIFORM_RANDOM = {
     mysql:      'RAND()',
     postgresql: 'RANDOM()',
-    sqlite:     '(ABS(RANDOM()) / 9223372036854775807.0)',
+    sqlite:     '((RANDOM() & 9223372036854775807) / 9223372036854775808.0)',
   }.freeze
 
   def self.uniform_random
