@@ -22,7 +22,7 @@ module Authentication
     def recent_books count
       if current_user
         book_ids = current_user.book_metadata
-          .order(Arel.sql('book_metadata.last_viewed_at IS NULL ASC'), last_viewed_at: :desc)
+          .order(Arel.sql('book_metadata.last_viewed_at IS NULL ASC'), last_viewed_at: :desc, book_id: :desc)
           .limit(count).pluck(:book_id)
 
         # map to objects

@@ -192,8 +192,11 @@ module Api
         base_query.includes(:owner, :book).preload(:tries, :teams, :cases_teams)
           .left_outer_joins(:metadata) # this is slow!
           .select('cases.*, case_metadata.last_viewed_at')
-          .order(Arel.sql('case_metadata.last_viewed_at IS NULL ASC, ' \
-                          'case_metadata.last_viewed_at DESC, cases.updated_at DESC'))
+          # base_query already ends in .order(:updated_at) - .order here would just append to
+          # that instead of taking over, so updated_at ASC would keep winning ties over the
+          # last_viewed_at ordering below. reorder replaces it outright.
+          .reorder(Arel.sql('case_metadata.last_viewed_at IS NULL ASC, ' \
+                            'case_metadata.last_viewed_at DESC, cases.updated_at DESC, cases.id DESC'))
       end
 
       def base_query
