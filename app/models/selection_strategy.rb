@@ -70,14 +70,12 @@ module SelectionStrategy
   def self.random_query_doc_pair_for_multiple_judges book, user
     # Exponential-race weighted sampling: -ln(1 - U) * scale, U ~ Uniform(0, 1),
     # sorted ascending. Choosing the minimum favors smaller scales, so lower numeric
-    # positions (higher-ranked pairs) are more likely to be selected. MySQL's RAND()
-    # is a signed 64-bit integer, so it has to be normalized into that same range
-    # first. LOG() is natural log on MySQL but base-10 on SQLite, hence LN() there.
-    weighted_random_order = if AdapterFunctions.mysql?
-                              '-LOG(1.0 - RAND()) * (COALESCE(position, 1000) + 1)'
-                            else
-                              '-LN(1.0 - (ABS(RANDOM()) / 9223372036854775807.0)) * (COALESCE(position, 1000) + 1)'
-                            end
+    # positions (higher-ranked pairs) are more likely to be selected. Both the
+    # uniform draw and the natural log are spelled differently per adapter - see
+    # AdapterFunctions - and getting either wrong flattens the weighting instead
+    # of raising.
+    weighted_random_order = "-#{AdapterFunctions.natural_log}" \
+                            "(1.0 - #{AdapterFunctions.uniform_random}) * (COALESCE(position, 1000) + 1)"
 
     book.query_doc_pairs
       .left_joins(:judgements)
