@@ -4,9 +4,9 @@
 
 # Annotations are generated from the live connection, and db/schema.rb is
 # authored against MySQL, so annotating from another adapter rewrites every
-# model's schema comment to that adapter's idea of the types - PostgreSQL
-# reports a varchar with no limit, so `:string(255)` becomes `:string` across
-# 46 files. Same rule as dump_schema_after_migration in config/application.rb:
+# model's schema comment to that adapter's idea of the types (e.g. adapters that
+# don't report varchar limits will rewrite `:string(255)` as `:string` across many
+# files). Same rule as dump_schema_after_migration in config/application.rb:
 # only MySQL gets to regenerate what was authored against MySQL.
 db_adapter = ENV.fetch('DB_ADAPTER', nil)
 database_url = ENV.fetch('DATABASE_URL', '')
