@@ -29,7 +29,7 @@ class CasesController < ApplicationController
     # build the query we actually render from a clean scope. Selecting DISTINCT
     # over every column would ask the database to compare whole `cases` rows,
     # including a json options column.
-    query = Case.where(id: query.select(:id).distinct)
+    query = Case.where(id: query.reselect(:id).distinct)
 
     # Include associations and counts for efficient loading
     query = query.with_counts
