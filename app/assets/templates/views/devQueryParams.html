@@ -224,7 +224,7 @@
             <p class="float-end">
               <span class="badge bg-info">
                 <a href="#"
-                  quepid-tooltip="Run all the queries every night and store the results<br/> and the scores as a snapshot."
+                  quepid-tooltip="Run all the queries every night and store the results and the scores as a snapshot."
                   quepid-tooltip-html
                   tooltip-placement="left">
                   <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
@@ -242,8 +242,10 @@
         </div>
         <!-- end of Nightly Queries -->
         
-        <!-- Escape Queries -->
-        <div class="setting-div">
+        <!-- Escape Queries: only Solr/ES/OS honor settings.escapeQuery (see
+             supportsEscapeQuery in settingsSvc.js, wrapped for this template by
+             queryParams.js) - shown for other engines it would be a no-op checkbox. -->
+        <div class="setting-div" ng-show="supportsEscapeQuery()">
           <div class="dev-header" ng-click="devSettingsEscapeQueries.toggle = !devSettingsEscapeQueries.toggle">
             Escape Queries <i
               ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsEscapeQueries.toggle]"
@@ -257,7 +259,7 @@
             <p class="float-end">
               <span class="badge bg-info">
                 <a href="#"
-                  quepid-tooltip="(advanced) -- If your queries use Solr|Elasticsearch|OpenSearch <br/>query syntax (like text:law) then disable this feature"
+                  quepid-tooltip="(advanced) -- To use {{ settings.searchEngine | searchEngineName }} query syntax (e.g. text:law, +required, -excluded), disable this feature -- otherwise special characters are escaped and treated as literal text"
                   quepid-tooltip-html
                   tooltip-placement="left">
                   <i class="bi bi-question-circle-fill" aria-hidden="true"></i>

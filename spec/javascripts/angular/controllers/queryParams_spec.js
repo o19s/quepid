@@ -128,6 +128,38 @@ describe('Controller: QueryparamsCtrl', function () {
     });
   });
 
+  describe('supportsEscapeQuery', function () {
+    it('is true for solr', function () {
+      scope.settings.searchEngine = 'solr';
+      expect(scope.supportsEscapeQuery()).toBe(true);
+    });
+
+    it('is true for es', function () {
+      scope.settings.searchEngine = 'es';
+      expect(scope.supportsEscapeQuery()).toBe(true);
+    });
+
+    it('is true for os', function () {
+      scope.settings.searchEngine = 'os';
+      expect(scope.supportsEscapeQuery()).toBe(true);
+    });
+
+    it('is false for searchapi', function () {
+      scope.settings.searchEngine = 'searchapi';
+      expect(scope.supportsEscapeQuery()).toBe(false);
+    });
+
+    it('is false for vectara', function () {
+      scope.settings.searchEngine = 'vectara';
+      expect(scope.supportsEscapeQuery()).toBe(false);
+    });
+
+    it('is false for algolia', function () {
+      scope.settings.searchEngine = 'algolia';
+      expect(scope.supportsEscapeQuery()).toBe(false);
+    });
+  });
+
   describe('queryParamsMode', function () {
     it('detects json mode for valid JSON query params', function () {
       scope.settings.selectedTry.queryParams = '{"yql": "select * from movies"}';

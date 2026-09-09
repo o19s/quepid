@@ -109,6 +109,20 @@ describe('Service: settingsSvc', function () {
   });
 
 
+  describe('supportsEscapeQuery', function () {
+    it('is true for solr, es, and os', function () {
+      expect(settingsSvc.supportsEscapeQuery('solr')).toBe(true);
+      expect(settingsSvc.supportsEscapeQuery('es')).toBe(true);
+      expect(settingsSvc.supportsEscapeQuery('os')).toBe(true);
+    });
+
+    it('is false for searchapi, vectara, and algolia', function () {
+      expect(settingsSvc.supportsEscapeQuery('searchapi')).toBe(false);
+      expect(settingsSvc.supportsEscapeQuery('vectara')).toBe(false);
+      expect(settingsSvc.supportsEscapeQuery('algolia')).toBe(false);
+    });
+  });
+
   it(' gets settings on case change', function () {
     $httpBackend.expectGET('api/cases/0/tries')
                 .respond(200,  mockSettings0);

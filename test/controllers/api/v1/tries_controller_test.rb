@@ -31,7 +31,7 @@ module Api
         assert_equal try.query_params, params[:query_params] if params[:query_params]
         assert_equal try.field_spec, params[:field_spec] if params[:field_spec]
         assert_equal try.search_endpoint.endpoint_url, params[:search_url] if params[:search_url]
-        assert_equal try.name,         params[:name]         if params[:name]
+        assert_equal try.name, params[:name] if params[:name]
         assert_equal try.escape_query, params[:escape_query] if params[:escape_query]
         assert_equal try.search_endpoint.api_method, params[:api_method] if params[:api_method]
       end

@@ -80,6 +80,10 @@ angular.module('QuepidApp')
       };
 
 
+      $scope.supportsEscapeQuery = function() {
+        return settingsSvc.supportsEscapeQuery($scope.settings.searchEngine);
+      };
+
       $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){
           if ($scope.settings.searchEngine === 'es' || $scope.settings.searchEngine === 'os'){

@@ -359,6 +359,12 @@ angular.module('QuepidApp')
         return supportLookupById;
       };
 
+      // Disable escaping is key when you have lucene syntax like +,-,: in the query strings.
+      var ESCAPE_QUERY_ENGINES = [ 'solr', 'es', 'os' ];
+      this.supportsEscapeQuery = function(searchEngine) {
+        return ESCAPE_QUERY_ENGINES.indexOf(searchEngine) !== -1;
+      };
+
       // Only the search engines with an actual wiki page get a link here - no page exists yet
       // for algolia/static, so those (and anything unrecognized) return null.
       var TROUBLESHOOTING_WIKI_PAGES = {
