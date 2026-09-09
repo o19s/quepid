@@ -28,6 +28,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
       keycloak:
         condition: service_started
       ollama:
