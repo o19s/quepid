@@ -85,7 +85,7 @@ class MapperBasedSearchEngine
       # a short query rides as a GET querystring (nicer to read/share), a long one (e.g.
       # ratedDocsQueryParamsMapper's "movie_id in (...)" list with many ratings) falls back
       # to POST so it isn't truncated by URL-length limits. Try#searchapi_args only picks
-      # EsArgParser (plain scalar values) over SolrArgParser (array-per-key values) when
+      # JsonArgParser (plain scalar values) over SolrArgParser (array-per-key values) when
       # query_params starts with '{', so this has to be real JSON for that path - or, since
       # bare_query_param above is set, plain YQL text typed directly into the Query Sandbox
       # works too.

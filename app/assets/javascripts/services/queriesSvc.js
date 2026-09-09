@@ -222,6 +222,10 @@ angular.module('QuepidApp')
         let queryText = query.queryText;
         let args = angular.copy(passedInSettings.selectedTry.args) || {};
         options = options == null ? {} : options;
+        // Only meaningful (and set) when searchEngine === 'solr' - hoisted out of that block
+        // below so the ratings filter branch further down can reuse the same resolved value
+        // instead of re-deriving it.
+        let solrQueryParamsIsJson = false;
 
         if (passedInSettings && passedInSettings.selectedTry) {
 
@@ -283,9 +287,29 @@ angular.module('QuepidApp')
           }
 
           if (passedInSettings.searchEngine === 'solr') {
-            // add echoParams=all if we don't have it defined to provide query details.
-            if (args['echoParams'] === undefined) {
-              args['echoParams'] = 'all';
+            // Try#json_query_params? (Rails) already knows which parser (SolrArgParser vs
+            // JsonArgParser) produced args - trust that explicit signal instead of
+            // re-deriving it here. Passed on to splainer-search as config.jsonQueryDsl, which
+            // it requires (defaults to false, no shape-based fallback) - so this is the only
+            // place that ever needs to guess, if the server-sent value is ever missing.
+            solrQueryParamsIsJson = passedInSettings.selectedTry.jsonQueryParams;
+            if (solrQueryParamsIsJson === undefined) {
+              solrQueryParamsIsJson = !Object.keys(args).every(function(key) {
+                return Array.isArray(args[key]);
+              });
+            }
+            searcherOptions.jsonQueryDsl = solrQueryParamsIsJson;
+
+            // add echoParams=all if we don't have it defined to provide query details. Solr's
+            // JSON Query DSL has no bare top-level echoParams key - classic request-handler
+            // params like this nest under "params" instead for JSON requests
+            // (https://solr.apache.org/guide/solr/latest/query-guide/json-request-api.html).
+            if (solrQueryParamsIsJson) {
+              args.params = args.params || {};
+            }
+            let echoParamsTarget = solrQueryParamsIsJson ? args.params : args;
+            if (echoParamsTarget['echoParams'] === undefined) {
+              echoParamsTarget['echoParams'] = 'all';
             }
           }
           // Modify query if ratings were passed in
@@ -299,10 +323,16 @@ angular.module('QuepidApp')
                 }
               };
             } else if (passedInSettings.searchEngine === 'solr') {
-              if (args['fq'] === undefined) {
-                args['fq'] = [];
+              // Solr's JSON Query DSL has no fq key - it uses "filter" instead (a string or
+              // array of strings/objects, same query syntax filterToRatings() already
+              // produces, e.g. "{!terms f=id}doc1,doc2").
+              let filterKey = solrQueryParamsIsJson ? 'filter' : 'fq';
+              if (args[filterKey] === undefined) {
+                args[filterKey] = [];
+              } else if (!Array.isArray(args[filterKey])) {
+                args[filterKey] = [ args[filterKey] ];
               }
-              args['fq'].push(query.filterToRatings(passedInSettings));
+              args[filterKey].push(query.filterToRatings(passedInSettings));
             } else if (passedInSettings.searchEngine === 'vectara') {
               // currently doc id filtering frequently produces 0 results
               // args['query'] = args['query'].map(function addFilter(query) {

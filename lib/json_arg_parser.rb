@@ -2,7 +2,7 @@
 
 require 'json'
 
-module EsArgParser
+module JsonArgParser
   def self.parse query_string, vars = {}
     query_string = '{}' if query_string.nil?
     # Remove new line characters

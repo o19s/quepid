@@ -171,6 +171,33 @@ class FetchServiceTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'Solr JSON Query DSL' do
+    let(:atry) { tries(:for_case_queries_case) }
+    let(:first_query) { queries(:first_query) }
+
+    it 'POSTs a JSON body even though the endpoint is configured for GET' do
+      fetch_service = FetchService.new options
+      atry.query_params = '{"query": "title:#$query##"}'
+      # atry.search_endpoint.api_method is GET via the fixture - Try#resolved_api_method
+      # forces POST for JSON query_params regardless.
+
+      stub_request(:post, 'http://test.com/solr/tmdb/select')
+        .with(body: { 'query' => 'title:First Query' })
+        .to_return(status: 200, body: '{}')
+
+      response = fetch_service.make_request(atry, first_query)
+      assert_equal 200, response.status
+    end
+
+    it 'still GETs a classic bare-text Solr query' do
+      fetch_service = FetchService.new options
+      # atry.query_params is already bare text ('q=#$query##') via the fixture.
+
+      response = fetch_service.make_request(atry, first_query)
+      assert_equal 200, response.status
+    end
+  end
+
   describe '#replace_values' do
     it 'substitutes #$query## when it is the entire value (e.g. ES-style templates)' do
       fetch_service = FetchService.new options

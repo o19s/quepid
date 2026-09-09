@@ -22,6 +22,7 @@ module Api
         assert_equal try.solr_args,    response['args']
         assert_equal try.escape_query, response['escape_query']
         assert_nil_or_equal try.search_endpoint.api_method, response['api_method']
+        assert_equal try.json_query_params?, response['json_query_params']
 
         assert_curator_vars_equal try.curator_vars_map, response['curator_vars']
       end

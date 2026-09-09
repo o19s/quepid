@@ -35,6 +35,9 @@
       self.deleted       = false;
       self.escapeQuery   = data.escape_query;
       self.apiMethod     = data.api_method;
+      // Server-derived and always recomputed fresh - read-only, so deliberately not
+      // round-tripped in toApiFormat() below.
+      self.jsonQueryParams = data.json_query_params;
       self.customHeaders = data.custom_headers;
       self.fieldSpec     = data.field_spec;
       self.name          = data.name;

@@ -263,6 +263,131 @@ describe('Service: queriesSvc', function () {
 
       expect(searcher.settings.searcherOptions.apiMethod).toBe('POST');
     });
+
+    describe('Solr echoParams', function() {
+      it('adds a flat echoParams=all for classic (non-JSON) query_params', function() {
+        var settings = angular.extend({}, mockSettings, {
+          searchEngine: 'solr',
+          selectedTry: angular.extend({}, mockTry, { queryParams: 'q=#$query##', args: { q: ['#$query##'] } })
+        });
+
+        var searcher = queriesSvc.createSearcherFromSettings(settings, query);
+
+        expect(searcher.settings.args.echoParams).toBe('all');
+      });
+
+      it('nests echoParams under params for Solr JSON Query DSL query_params', function() {
+        var settings = angular.extend({}, mockSettings, {
+          searchEngine: 'solr',
+          selectedTry: angular.extend({}, mockTry, { queryParams: '{"query": "#$query##"}', args: { query: '#$query##' } })
+        });
+
+        var searcher = queriesSvc.createSearcherFromSettings(settings, query);
+
+        expect(searcher.settings.args.echoParams).toBeUndefined();
+        expect(searcher.settings.args.params.echoParams).toBe('all');
+      });
+
+      it('does not override an explicit echoParams already in classic query_params', function() {
+        var settings = angular.extend({}, mockSettings, {
+          searchEngine: 'solr',
+          selectedTry: angular.extend({}, mockTry, { queryParams: 'q=#$query##&echoParams=none', args: { q: ['#$query##'], echoParams: ['none'] } })
+        });
+
+        var searcher = queriesSvc.createSearcherFromSettings(settings, query);
+
+        expect(searcher.settings.args.echoParams).toEqual([ 'none' ]);
+      });
+
+      it('passes jsonQueryDsl through to searcherOptions for splainer-search to trust', function() {
+        var settings = angular.extend({}, mockSettings, {
+          searchEngine: 'solr',
+          selectedTry: angular.extend({}, mockTry, { queryParams: '{"query": "#$query##"}', args: { query: '#$query##' }, jsonQueryParams: true })
+        });
+
+        var searcher = queriesSvc.createSearcherFromSettings(settings, query);
+
+        expect(searcher.settings.searcherOptions.jsonQueryDsl).toBe(true);
+      });
+
+      it('trusts selectedTry.jsonQueryParams over args shape when explicitly set', function() {
+        // args here look classic (array-valued), but the server-resolved flag says JSON -
+        // the explicit signal should win over re-deriving it from args' shape.
+        var settings = angular.extend({}, mockSettings, {
+          searchEngine: 'solr',
+          selectedTry: angular.extend({}, mockTry, { queryParams: 'irrelevant', args: { q: ['#$query##'] }, jsonQueryParams: true })
+        });
+
+        var searcher = queriesSvc.createSearcherFromSettings(settings, query);
+
+        expect(searcher.settings.searcherOptions.jsonQueryDsl).toBe(true);
+        expect(searcher.settings.args.echoParams).toBeUndefined();
+        expect(searcher.settings.args.params.echoParams).toBe('all');
+      });
+
+      it('falls back to the args-shape heuristic when selectedTry.jsonQueryParams is unset', function() {
+        var settings = angular.extend({}, mockSettings, {
+          searchEngine: 'solr',
+          selectedTry: angular.extend({}, mockTry, { queryParams: 'q=#$query##', args: { q: ['#$query##'] } })
+        });
+        expect(settings.selectedTry.jsonQueryParams).toBeUndefined();
+
+        var searcher = queriesSvc.createSearcherFromSettings(settings, query);
+
+        expect(searcher.settings.searcherOptions.jsonQueryDsl).toBe(false);
+      });
+    });
+
+    describe('Solr ratings filter (options.filterToRated)', function() {
+      var ratingsQuery;
+
+      beforeEach(function() {
+        ratingsQuery = angular.extend({}, query, {
+          filterToRatings: function() {
+            return '{!terms f=id}doc1,doc2';
+          }
+        });
+      });
+
+      it('pushes into fq for classic query_params', function() {
+        var settings = angular.extend({}, mockSettings, {
+          searchEngine: 'solr',
+          selectedTry: angular.extend({}, mockTry, { queryParams: 'q=#$query##', args: { q: ['#$query##'] } })
+        });
+
+        var searcher = queriesSvc.createSearcherFromSettings(settings, ratingsQuery, { filterToRated: true });
+
+        expect(searcher.settings.args.fq).toEqual([ '{!terms f=id}doc1,doc2' ]);
+        expect(searcher.settings.args.filter).toBeUndefined();
+      });
+
+      it('pushes into filter (not fq) for Solr JSON Query DSL query_params', function() {
+        var settings = angular.extend({}, mockSettings, {
+          searchEngine: 'solr',
+          selectedTry: angular.extend({}, mockTry, { queryParams: '{"query": "#$query##"}', args: { query: '#$query##' }, jsonQueryParams: true })
+        });
+
+        var searcher = queriesSvc.createSearcherFromSettings(settings, ratingsQuery, { filterToRated: true });
+
+        expect(searcher.settings.args.filter).toEqual([ '{!terms f=id}doc1,doc2' ]);
+        expect(searcher.settings.args.fq).toBeUndefined();
+      });
+
+      it('wraps an existing scalar filter into an array before appending, for JSON Query DSL', function() {
+        var settings = angular.extend({}, mockSettings, {
+          searchEngine: 'solr',
+          selectedTry: angular.extend({}, mockTry, {
+            queryParams: '{"query": "#$query##", "filter": "inStock:true"}',
+            args: { query: '#$query##', filter: 'inStock:true' },
+            jsonQueryParams: true
+          })
+        });
+
+        var searcher = queriesSvc.createSearcherFromSettings(settings, ratingsQuery, { filterToRated: true });
+
+        expect(searcher.settings.args.filter).toEqual([ 'inStock:true', '{!terms f=id}doc1,doc2' ]);
+      });
+    });
   });
 
   describe('show rated only', function() {
