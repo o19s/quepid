@@ -8,7 +8,7 @@ services:
       - .env
     environment:
       #- RAILS_RELATIVE_URL_ROOT=/quepid-app # Use to nest under a context path like tools.mycompany.com/quepid-app
-      - DB_ADAPTER=${DB_ADAPTER:-mysql2} # mysql2 (default) or sqlite3; see config/database.yml
+      - DB_ADAPTER=${DB_ADAPTER:-mysql2} # mysql2 (default), postgresql, or sqlite3; see config/database.yml
       - DOCKER_CONTAINER=true
       - QUEPID_DOMAIN=tools.dev.mycorp.com
       - LAUNCHY_DRY_RUN=true # dev only letter_opener gem wants to open a browser when sending emails.
@@ -22,10 +22,13 @@ services:
       - "${APP_PORT:-3000}:3000"
     links:
       - mysql
+      - postgres
       - keycloak
       - ollama
     depends_on:
       mysql:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
       keycloak:
         condition: service_started
@@ -43,6 +46,21 @@ services:
       - ./volumes/mysql/data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  postgres:
+    container_name: quepid_postgres
+    image: postgres:17-alpine
+    ports:
+      - 35432:5432
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=root
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root"]
       interval: 10s
       timeout: 5s
       retries: 5
