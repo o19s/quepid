@@ -4,7 +4,7 @@
 # (config/application.rb, config/initializers/*) before any ActiveRecord connection exists.
 # AdapterFunctions (lib/adapter_functions.rb) covers the same three adapters but introspects
 # a live connection, so it can't run this early.
-module DbAdapterEnv
+module DBAdapterEnv
   def self.adapter
     database_url = ENV.fetch('DATABASE_URL', '')
     return :sqlite3    if 'sqlite3' == ENV.fetch('DB_ADAPTER', nil) || database_url.start_with?('sqlite3:')

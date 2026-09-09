@@ -50,7 +50,7 @@ module Quepid
     config.active_record.encryption.support_unencrypted_data = true
     # schema.rb is dumped from MySQL and carries MySQL-only options that the
     # other adapters cannot reproduce, so only MySQL may re-dump it.
-    config.active_record.dump_schema_after_migration = false unless :mysql2 == DbAdapterEnv.adapter
+    config.active_record.dump_schema_after_migration = false unless :mysql2 == DBAdapterEnv.adapter
 
     # Encryption keys must be set here (not in config/initializers/) so they are in
     # place before the active_record.encryption Railtie initializer copies them into

@@ -11,7 +11,7 @@
 #   * table-level `charset:` / `collation:` - swallowed by TableDefinition's
 #     keyword catch-all, exactly as under SQLite.
 require 'db_adapter_env'
-return unless :postgresql == DbAdapterEnv.adapter
+return unless :postgresql == DBAdapterEnv.adapter
 
 # The PostgreSQL3 TableDefinition class loads lazily, so require the adapter to
 # force the class to exist before prepending onto it.
