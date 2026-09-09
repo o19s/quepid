@@ -929,6 +929,8 @@ Both Docker images install all three adapter gems during the image build. For a 
 
 `DB_ADAPTER=postgresql` selects PostgreSQL. The `postgres` container exposes port 35432 on the host; other containers connect to `postgres:5432`.
 
+For a step-by-step runbook - setup, day-to-day commands, psql access, and troubleshooting - see [docs/running_with_postgresql.md](docs/running_with_postgresql.md).
+
 Adapter-specific behavior:
 
 - `config/initializers/postgresql_schema_compatibility.rb` makes `db/schema.rb`'s MySQL-only column options loadable: it allows `size:` (a MySQL text/blob width hint that means nothing to PostgreSQL) and maps MySQL collation names, `_bin` to `"C"` and dropping the case-insensitive ones. **Columns that are case-insensitive on MySQL are therefore case-sensitive on PostgreSQL.** Application code no longer depends on that - email lookups and searches fold case in SQL - but keep it in mind when adding queries. Making the columns themselves behave as they do on MySQL would need `citext` or a nondeterministic ICU collation, which is a schema decision rather than a compatibility shim.
