@@ -212,7 +212,6 @@
       }
     };
 
-    // Return factory object
     return Try;
   }
 })();

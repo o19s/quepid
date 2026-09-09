@@ -294,10 +294,7 @@ class User < ApplicationRecord
   end
 
   def judge_options= value
-    # Initialize options as empty hash if nil
     self.options ||= {}
-
-    # Set the judge_options within options
     self.options = options.merge(judge_options: value)
   end
 

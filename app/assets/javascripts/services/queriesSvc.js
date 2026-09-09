@@ -1505,21 +1505,11 @@ angular.module('QuepidApp')
               console.log('Skipping null score in scoreAll calculation');
               return; // Skip this scorable and continue with others
             }
-            // Treat non-rated queries as zeroes when calculating case score
-            // This if means we are skipping over zsr as part of the case score
+            // 'zsr' and '--' are not-yet-rated sentinel values; exclude them from the average.
             if (scoreInfo.score !== 'zsr' && scoreInfo.score !== '--'){
-            //if (scoreInfo.score !== 'zsr'){
-              // Treat non-rated queries as zeroes when calculating case score
-            //   avg += scoreInfo.score === '--' ? 0 : scoreInfo.score;
-            //  tot++;
               avg += scoreInfo.score;
               tot++;
             }
-            // include this else statement to have zsr and non rated count as a zero against the case score.
-            //else {
-            //  avg +=  0
-            //  tot++;
-            //}
             //TODO: make text be queryText
             queryScores[scorable.queryId] = {
               score:    scoreInfo.score,

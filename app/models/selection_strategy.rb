@@ -4,7 +4,6 @@
 # to be judged. This implementation supports only the "Multiple Raters" strategy,
 # which allows up to three ratings for each query/doc pair.
 module SelectionStrategy
-  # Returns whether more judgements are needed for the given book
   # Under the Multiple Raters strategy, we need up to 3 judgements per query/doc pair
   def self.moar_judgements_needed? book
     !every_query_doc_pair_has_three_judgements?(book)
