@@ -10,8 +10,8 @@
 #     around in the first place.
 #   * table-level `charset:` / `collation:` - swallowed by TableDefinition's
 #     keyword catch-all, exactly as under SQLite.
-return unless 'postgresql' == ENV.fetch('DB_ADAPTER', nil) ||
-              ENV.fetch('DATABASE_URL', '').start_with?('postgres')
+require 'db_adapter_env'
+return unless :postgresql == DbAdapterEnv.adapter
 
 # The PostgreSQL3 TableDefinition class loads lazily, so require the adapter to
 # force the class to exist before prepending onto it.
@@ -46,15 +46,17 @@ ActiveRecord::ConnectionAdapters::PostgreSQL::TableDefinition.prepend(
 #
 # This has to be idempotent: maintain_test_schema! derives the test schema from
 # the just-loaded connection, running every column through a second time, by
-# which point the value is already "C" or absent.
+# which point the value is already "C" or absent - so, as with the SQLite shim,
+# check against the small set of already-mapped target values rather than the
+# open-ended set of MySQL charset prefixes that might appear.
+postgresql_builtin_collations = %w[C].freeze
+
 ActiveRecord::ConnectionAdapters::PostgreSQL::SchemaCreation.prepend(
   Module.new do
     define_method(:add_column_options!) do |sql, options|
-      collation = options[:collation].to_s
-
-      if collation.start_with?('utf8', 'latin1')
+      if options[:collation] && postgresql_builtin_collations.exclude?(options[:collation])
         options = options.dup
-        if collation.end_with?('_bin')
+        if options[:collation].end_with?('_bin')
           options[:collation] = 'C'
         else
           options.delete(:collation)

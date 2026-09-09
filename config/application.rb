@@ -31,6 +31,9 @@ module Quepid
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # lib is only guaranteed to be on the load path once autoload_lib above has run.
+    require 'db_adapter_env'
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
@@ -47,11 +50,7 @@ module Quepid
     config.active_record.encryption.support_unencrypted_data = true
     # schema.rb is dumped from MySQL and carries MySQL-only options that the
     # other adapters cannot reproduce, so only MySQL may re-dump it.
-    db_adapter = ENV.fetch('DB_ADAPTER', nil)
-    database_url = ENV.fetch('DATABASE_URL', '')
-    non_mysql_adapter = %w[sqlite3 postgresql].include?(db_adapter) ||
-                        database_url.start_with?('sqlite3:', 'postgres')
-    config.active_record.dump_schema_after_migration = false if non_mysql_adapter
+    config.active_record.dump_schema_after_migration = false unless :mysql2 == DbAdapterEnv.adapter
 
     # Encryption keys must be set here (not in config/initializers/) so they are in
     # place before the active_record.encryption Railtie initializer copies them into
