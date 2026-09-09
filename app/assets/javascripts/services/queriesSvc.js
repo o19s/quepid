@@ -287,11 +287,8 @@ angular.module('QuepidApp')
           }
 
           if (passedInSettings.searchEngine === 'solr') {
-            // Try#json_query_params? (Rails) already knows which parser (SolrArgParser vs
-            // JsonArgParser) produced args - trust that explicit signal instead of
-            // re-deriving it here. Passed on to splainer-search as config.jsonQueryDsl, which
-            // it requires (defaults to false, no shape-based fallback) - so this is the only
-            // place that ever needs to guess, if the server-sent value is ever missing.
+            // Trust the server's explicit signal over re-deriving it from args' shape; the
+            // shape check below only covers the case where that signal is missing.
             solrQueryParamsIsJson = passedInSettings.selectedTry.jsonQueryParams;
             if (solrQueryParamsIsJson === undefined) {
               solrQueryParamsIsJson = !Object.keys(args).every(function(key) {

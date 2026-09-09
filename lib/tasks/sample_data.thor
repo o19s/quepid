@@ -463,12 +463,8 @@ class SampleData < Thor
 
       days_of_experimentation = rand(3..20) # somewhere between
 
-      # Demonstrates Solr's JSON Query DSL
-      # (https://solr.apache.org/guide/solr/latest/query-guide/json-query-dsl.html) - a JSON
-      # POST body against the same Solr endpoint the other Typeahead cases use below, instead
-      # of their classic q=...&magicBoost=... key=value params. Try#resolved_api_method forces
-      # this to POST automatically since it's JSON, regardless of the shared endpoint's own
-      # (JSONP) api_method.
+      # Dessert alone demonstrates Solr's JSON Query DSL (a JSON POST body) against the same
+      # endpoint the other Typeahead cases hit with classic q=...&magicBoost=... params.
       dessert_case = ('Typeahead: Dessert' == case_name)
 
       days_of_experimentation.times do |counter|
