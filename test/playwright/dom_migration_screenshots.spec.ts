@@ -1,13 +1,14 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
+import { DEFAULT_RICH_CASE_ID } from './angular_case_helpers';
 
 /** Set MIGRATION_SHOT_PHASE=before|after (default after). */
 const PHASE = process.env.MIGRATION_SHOT_PHASE === 'before' ? 'before' : 'after';
 /** Case with a team the seeded user belongs to (used to set up judgements-popover sharing). */
 const SHARE_CASE_ID = Number(process.env.QUEPID_E2E_SHARE_CASE_ID || 1);
-/** Case with queries in DB for hit-count / annotations (seed: case 5 has 20 queries). */
-const QUERIES_CASE_ID = Number(process.env.QUEPID_E2E_QUERIES_CASE_ID || 5);
+/** Case with queries in DB for hit-count / annotations — see DEFAULT_RICH_CASE_ID's comment. */
+const QUERIES_CASE_ID = Number(process.env.QUEPID_E2E_QUERIES_CASE_ID || DEFAULT_RICH_CASE_ID);
 const outDir = path.join(__dirname, '../../.playwright-mcp');
 
 // NOTE: the share-case migration-diff tests that used to live here were moved to

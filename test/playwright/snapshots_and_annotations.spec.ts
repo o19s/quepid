@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { DEFAULT_RICH_CASE_ID } from './angular_case_helpers';
 
 /**
  * Behavioral (non-visual) coverage for snapshots and annotations on the
@@ -6,18 +7,16 @@ import { test, expect, type Page } from '@playwright/test';
  * the annotation timeAgo display, but nothing previously asserted that a
  * snapshot actually gets created/listed, or exercised annotation creation.
  *
- * These use a case with a *working* search endpoint and existing queries
- * (case 5, "10s of Queries" in the shared dev DB) rather than the suite's
- * default CASE_ID (1, "SOLR CASE"). Case 1 has zero queries in this
- * environment, which is why core_smoke.spec.ts's query-results-dependent
- * tests are flagged as failing here — snapshot creation doesn't strictly
- * require live results (it posts whatever query docs are in memory, even
- * none), but annotation creation does: AnnotationsCtrl#create refuses with
- * "Can't create a new annotation until searches have been run!" unless the
- * case already has a last score, which case 5 does.
+ * These use a case with a *working* search endpoint and existing queries —
+ * DEFAULT_RICH_CASE_ID (angular_case_helpers.ts), same case the suite's own
+ * default CASE_ID now points at. Snapshot creation doesn't strictly require
+ * live results (it posts whatever query docs are in memory, even none), but
+ * annotation creation does: AnnotationsCtrl#create refuses with "Can't create
+ * a new annotation until searches have been run!" unless the case already has
+ * a last score, which this one does.
  */
 
-const SNAPSHOT_CASE_ID = Number(process.env.QUEPID_E2E_SNAPSHOT_CASE_ID || 5);
+const SNAPSHOT_CASE_ID = Number(process.env.QUEPID_E2E_SNAPSHOT_CASE_ID || DEFAULT_RICH_CASE_ID);
 
 async function gotoSnapshotCase(page: Page): Promise<void> {
   await page.goto(`case/${SNAPSHOT_CASE_ID}`);
