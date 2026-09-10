@@ -26,7 +26,6 @@ export default class extends Controller {
 
   open(event) {
     event.preventDefault()
-    // set message and remember url/method from values (data attrs)
     const msg = this.messageValue || this.element.dataset.confirmMessage || this.element.getAttribute('aria-label') || 'Are you sure?'
     this.messageEl.textContent = msg
     this.currentUrl = this.urlValue || this.element.dataset.confirmDeleteUrlValue || this.element.dataset.url

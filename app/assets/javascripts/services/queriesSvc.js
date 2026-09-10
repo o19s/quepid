@@ -222,6 +222,10 @@ angular.module('QuepidApp')
         let queryText = query.queryText;
         let args = angular.copy(passedInSettings.selectedTry.args) || {};
         options = options == null ? {} : options;
+        // Only meaningful (and set) when searchEngine === 'solr' - hoisted out of that block
+        // below so the ratings filter branch further down can reuse the same resolved value
+        // instead of re-deriving it.
+        let solrQueryParamsIsJson = false;
 
         if (passedInSettings && passedInSettings.selectedTry) {
 
@@ -239,13 +243,20 @@ angular.module('QuepidApp')
           if (passedInSettings.apiMethod !== undefined) {
             searcherOptions.apiMethod = passedInSettings.apiMethod;
           }
+          // Overrides the try's own apiMethod (which may be 'AUTO' for a mapper-based search
+          // engine like Vespa) - used by docFinder.js so "Find and Rate Missing Documents"
+          // always posts its (often long) rated-docs-lookup query rather than risking an
+          // oversized GET.
+          if (options.forceApiMethod !== undefined) {
+            searcherOptions.apiMethod = options.forceApiMethod;
+          }
 
           if (passedInSettings.proxyRequests === true) {
             searcherOptions.proxyUrl = caseTryNavSvc.getQuepidProxyUrl(passedInSettings.searchEndpointId);
           }
 
           if (passedInSettings.searchEngine === 'static'){
-            // Similar to logic in Splainer-searches SettingsValidatorFactory for snapshots.
+            // Similar to logic in Splainer-search's searchSvc.createValidator for snapshots.
             // we need a better way of handling this.   Basically we are saying a static search engine is
             // treated like Solr.   But if we have more generic search apis, they will need a
             // custom parser...
@@ -276,9 +287,26 @@ angular.module('QuepidApp')
           }
 
           if (passedInSettings.searchEngine === 'solr') {
-            // add echoParams=all if we don't have it defined to provide query details.
-            if (args['echoParams'] === undefined) {
-              args['echoParams'] = 'all';
+            // Trust the server's explicit signal over re-deriving it from args' shape; the
+            // shape check below only covers the case where that signal is missing.
+            solrQueryParamsIsJson = passedInSettings.selectedTry.jsonQueryParams;
+            if (solrQueryParamsIsJson === undefined) {
+              solrQueryParamsIsJson = !Object.keys(args).every(function(key) {
+                return Array.isArray(args[key]);
+              });
+            }
+            searcherOptions.jsonQueryDsl = solrQueryParamsIsJson;
+
+            // add echoParams=all if we don't have it defined to provide query details. Solr's
+            // JSON Query DSL has no bare top-level echoParams key - classic request-handler
+            // params like this nest under "params" instead for JSON requests
+            // (https://solr.apache.org/guide/solr/latest/query-guide/json-request-api.html).
+            if (solrQueryParamsIsJson) {
+              args.params = args.params || {};
+            }
+            let echoParamsTarget = solrQueryParamsIsJson ? args.params : args;
+            if (echoParamsTarget['echoParams'] === undefined) {
+              echoParamsTarget['echoParams'] = 'all';
             }
           }
           // Modify query if ratings were passed in
@@ -292,10 +320,16 @@ angular.module('QuepidApp')
                 }
               };
             } else if (passedInSettings.searchEngine === 'solr') {
-              if (args['fq'] === undefined) {
-                args['fq'] = [];
+              // Solr's JSON Query DSL has no fq key - it uses "filter" instead (a string or
+              // array of strings/objects, same query syntax filterToRatings() already
+              // produces, e.g. "{!terms f=id}doc1,doc2").
+              let filterKey = solrQueryParamsIsJson ? 'filter' : 'fq';
+              if (args[filterKey] === undefined) {
+                args[filterKey] = [];
+              } else if (!Array.isArray(args[filterKey])) {
+                args[filterKey] = [ args[filterKey] ];
               }
-              args['fq'].push(query.filterToRatings(passedInSettings));
+              args[filterKey].push(query.filterToRatings(passedInSettings));
             } else if (passedInSettings.searchEngine === 'vectara') {
               // currently doc id filtering frequently produces 0 results
               // args['query'] = args['query'].map(function addFilter(query) {
@@ -371,7 +405,11 @@ angular.module('QuepidApp')
 
           let tempSettings = settingsWithTryOverrides(settings, { args: resolvedArgs });
 
-          let searcher = createSearcherFromSettings(tempSettings, query);
+          // Force POST regardless of the try's own apiMethod (which may be 'AUTO' for a
+          // mapper-based search engine) - a rated-docs ID filter can grow arbitrarily long as
+          // more docs get rated, so this always sends it as a body rather than gambling on it
+          // fitting in a GET querystring.
+          let searcher = createSearcherFromSettings(tempSettings, query, { forceApiMethod: 'POST' });
 
           return searcher.search().then(function() {
             let normed = normalizeDocExplains(query, searcher, settings.createFieldSpec());
@@ -1467,21 +1505,11 @@ angular.module('QuepidApp')
               console.log('Skipping null score in scoreAll calculation');
               return; // Skip this scorable and continue with others
             }
-            // Treat non-rated queries as zeroes when calculating case score
-            // This if means we are skipping over zsr as part of the case score
+            // 'zsr' and '--' are not-yet-rated sentinel values; exclude them from the average.
             if (scoreInfo.score !== 'zsr' && scoreInfo.score !== '--'){
-            //if (scoreInfo.score !== 'zsr'){
-              // Treat non-rated queries as zeroes when calculating case score
-            //   avg += scoreInfo.score === '--' ? 0 : scoreInfo.score;
-            //  tot++;
               avg += scoreInfo.score;
               tot++;
             }
-            // include this else statement to have zsr and non rated count as a zero against the case score.
-            //else {
-            //  avg +=  0
-            //  tot++;
-            //}
             //TODO: make text be queryText
             queryScores[scorable.queryId] = {
               score:    scoreInfo.score,

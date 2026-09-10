@@ -25,7 +25,7 @@ module Api
           assert vespa
           assert_equal 'Vespa', vespa['name']
           assert_equal 'searchapi', vespa['search_engine']
-          assert_equal 'POST', vespa['api_method']
+          assert_equal 'AUTO', vespa['api_method']
           assert_predicate vespa['mapper_code'], :present?
         end
       end

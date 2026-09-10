@@ -36,7 +36,7 @@ angular.module('QuepidApp')
 
       // Finding and rating missing documents is only supported for engines where we can
       // resolve an edited query-params string into real args server-side (settingsSvc.
-      // previewArgs(), reusing Try#args/SolrArgParser/EsArgParser so curator vars etc. behave
+      // previewArgs(), reusing Try#args/SolrArgParser/JsonArgParser so curator vars etc. behave
       // identically to the real Query Sandbox) and then run a real search against them. There's
       // no generic way to do this for vectara/algolia/static (no shared query-params shape to
       // preview), so the modal shows an unsupported message for those instead - see

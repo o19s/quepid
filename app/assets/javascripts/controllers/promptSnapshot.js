@@ -15,7 +15,8 @@ angular.module('QuepidApp')
 
       $scope.fieldSpec = settingsSvc.applicableSettings().fieldSpec;
       $scope.searchEngine = settingsSvc.applicableSettings().searchEngine;
-      
+      $scope.mapperBasedSearchEngineName = settingsSvc.applicableSettings().mapperBasedSearchEngineName;
+
       $scope.supportLookupById = settingsSvc.supportLookupById(settingsSvc.applicableSettings().searchEngine);      
 
       $scope.ok = function() {

@@ -97,9 +97,9 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
               <td><%= link_to search_endpoint.fullname, search_endpoint_path(search_endpoint) %></td>
               <td>
                 <% if search_endpoint.search_engine %>
-                  <%= image_tag "#{search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %> 
+                  <%= image_tag "#{search_endpoint.mapper_based_search_engine&.id || search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %>
                 <% end %>
-                <%= search_endpoint.search_engine %>
+                <%= search_endpoint.mapper_based_search_engine&.name || search_endpoint.search_engine %>
               </td>
               <td><%= search_endpoint.endpoint_url %> </td>
               <td class="text-end">

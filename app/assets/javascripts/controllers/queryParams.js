@@ -4,10 +4,10 @@ angular.module('QuepidApp')
   .controller('QueryParamsCtrl', [
     '$scope', '$window',
     'esUrlSvc', 'caseTryNavSvc', 'searchEndpointSvc', 'caseSvc',
-    'TryFactory',
+    'settingsSvc', 'TryFactory',
     function ($scope, $window,
       esUrlSvc, caseTryNavSvc, searchEndpointSvc, caseSvc,
-      TryFactory) {
+      settingsSvc, TryFactory) {
 
       $scope.qp = {};
       $scope.qp.curTab = 'developer';
@@ -47,7 +47,42 @@ angular.module('QuepidApp')
       $scope.createSearchEndpointLink = function(searchEndpointId) {
         return caseTryNavSvc.createSearchEndpointLink(searchEndpointId);
       };
-      
+
+      $scope.troubleshootingWikiUrl = function() {
+        var selectedTry = $scope.settings.selectedTry;
+        if (!selectedTry) {
+          return null;
+        }
+
+        return settingsSvc.troubleshootingWikiUrl(selectedTry.searchEngine, selectedTry.mapperBasedSearchEngineId);
+      };
+
+      // A Custom Search API's query_params can be JSON (e.g. Vespa's YQL wrapped in
+      // {"yql": "..."}) or a plain query string/language (e.g. bare YQL, or - in the future -
+      // Solr's JSON Query Query DSL vs. its classic q=... string). Rather than make the user
+      // pick a mode, the ace editor's own mode just follows whatever they've actually typed:
+      // valid JSON gets JSON syntax highlighting/folding, anything else is treated as plain
+      // text so it isn't mangled trying to apply JSON semantics to it. Re-evaluated on every
+      // digest (see the ui-ace config's mode: queryParamsMode() in devQueryParams.html), so it
+      // flips live as the content crosses the JSON/not-JSON line.
+      $scope.queryParamsMode = function() {
+        if (!$scope.settings.selectedTry) {
+          return 'text';
+        }
+
+        try {
+          JSON.parse($scope.settings.selectedTry.queryParams);
+          return 'json';
+        }
+        catch (error) {
+          return 'text';
+        }
+      };
+
+
+      $scope.supportsEscapeQuery = function() {
+        return settingsSvc.supportsEscapeQuery($scope.settings.searchEngine);
+      };
 
       $scope.validateSearchEngineUrl  = function() {
         if (!angular.isUndefined($scope.settings.searchUrl)){

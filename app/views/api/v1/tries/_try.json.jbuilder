@@ -10,8 +10,9 @@ json.query_params   try.query_params
 json.search_endpoint_id try.search_endpoint&.id
 json.endpoint_name  try.search_endpoint&.fullname
 json.custom_headers try.search_endpoint&.custom_headers
-json.api_method     try.search_endpoint&.api_method
-json.search_engine  try.search_endpoint&.search_engine
+json.api_method     try.resolved_api_method
+json.json_query_params try.json_query_params?
+json.search_engine try.search_endpoint&.search_engine
 json.mapper_based_search_engine_id try.search_endpoint&.mapper_based_search_engine_id
 json.mapper_based_search_engine_name try.search_endpoint&.mapper_based_search_engine&.name
 json.mapper_based_search_engine_supports_pagination try.search_endpoint&.mapper_based_search_engine&.supports_pagination

@@ -77,9 +77,6 @@ module Users
       user.num_logins  += 1
 
       user.profile_pic = auth['info']['image']
-      # user.access_token = auth['credentials']['token']
-      # user.refresh_token = auth['credentials']['refresh_token'] unless auth['credentials']['refresh_token'].nil?
-      # user.expires_at = auth['credentials']['expires_at'] unless auth['credentials']['refresh_token'].nil?
 
       if user.errors.empty?
         user.save!

@@ -239,7 +239,6 @@ const jsonLinter = linter(view => {
  * Create a CodeMirror editor from a textarea
  */
 export function fromTextArea(textarea, options = {}) {
-  // Create wrapper div
   const wrapper = document.createElement('div');
   textarea.parentNode.insertBefore(wrapper, textarea);
   textarea.style.display = 'none';

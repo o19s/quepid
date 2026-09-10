@@ -29,7 +29,7 @@
 #
 
 require 'solr_arg_parser'
-require 'es_arg_parser'
+require 'json_arg_parser'
 
 class Try < ApplicationRecord
   has_ancestry orphan_strategy: :adopt
@@ -124,16 +124,22 @@ class Try < ApplicationRecord
   end
 
   def solr_args
-    SolrArgParser.parse(query_params, curator_vars_map)
+    if json_query_params?
+      # Solr's JSON Query DSL (https://solr.apache.org/guide/solr/latest/query-guide/json-query-dsl.html)
+      # is a JSON POST body, so it parses like ES/searchapi's JSON args, not classic q=...&fq=....
+      JsonArgParser.parse(query_params, curator_vars_map)
+    else
+      SolrArgParser.parse(query_params, curator_vars_map)
+    end
   end
 
   def es_args
-    EsArgParser.parse(query_params, curator_vars_map)
+    JsonArgParser.parse(query_params, curator_vars_map)
   end
 
   def os_args
-    # Use the EsArgParser as currently queries are the same
-    EsArgParser.parse(query_params, curator_vars_map)
+    # Use the JsonArgParser as currently queries are the same
+    JsonArgParser.parse(query_params, curator_vars_map)
   end
 
   def static_args
@@ -142,23 +148,57 @@ class Try < ApplicationRecord
   end
 
   def vectara_args
-    # Use the EsArgParser as currently queries are the same
-    EsArgParser.parse(query_params, curator_vars_map)
+    # Use the JsonArgParser as currently queries are the same
+    JsonArgParser.parse(query_params, curator_vars_map)
   end
 
   def algolia_args
-    # Use the EsArgParser as currently queries are the same
-    EsArgParser.parse(query_params, curator_vars_map)
+    # Use the JsonArgParser as currently queries are the same
+    JsonArgParser.parse(query_params, curator_vars_map)
   end
 
+  # This JSON-vs-bare-text split (and the bare-text wrapping below) is mirrored in
+  # app/assets/javascripts/controllers/wizardModal.js's validate() function, which has to
+  # apply the same rule client-side before a Try exists to call this method on - keep both
+  # in sync if this logic changes.
   def searchapi_args
-    if query_params.to_s.starts_with?('{')
-      EsArgParser.parse(query_params,
-                        curator_vars_map)
+    if json_query_params?
+      # Same JSON-vs-bare-text split as #solr_args above, just with a third option (below) for
+      # engines - e.g. Vespa - that also accept bare text.
+      JsonArgParser.parse(query_params,
+                          curator_vars_map)
+    elsif bare_query_param.present?
+      # The mapper-based search engine (e.g. Vespa) opted into a bare-text authoring mode -
+      # a user typed plain query text (e.g. YQL) straight into the Query Sandbox instead of
+      # JSON, so wrap it under that engine's param name and parse it the same way as the
+      # JSON case above (reusing JsonArgParser's curator-var substitution).
+      JsonArgParser.parse({ bare_query_param => query_params }.to_json,
+                          curator_vars_map)
     else
       SolrArgParser.parse(query_params,
                           curator_vars_map)
     end
+  end
+
+  def bare_query_param
+    search_endpoint&.mapper_based_search_engine&.bare_query_param
+  end
+
+  # Public so it can be served on the try's JSON representation (see _try.json.jbuilder),
+  # not just used internally by #solr_args/#searchapi_args/#resolved_api_method above.
+  def json_query_params?
+    query_params.to_s.starts_with?('{')
+  end
+
+  # A JSON query_params always POSTs, regardless of how api_method is configured - GET's
+  # benefit (a query that reads/shares nicely as a URL) only applies to bare-text authoring,
+  # not a JSON structure. A bare-text 'AUTO' passes through unresolved: that's a GET-vs-POST
+  # length judgment left to the client (see MapperBasedSearchEngine).
+  def resolved_api_method
+    return nil if search_endpoint.nil?
+    return 'POST' if json_query_params?
+
+    search_endpoint.api_method
   end
 
   def id_from_field_spec

@@ -109,7 +109,6 @@ angular.module('QuepidApp')
         return deferred.promise;
       };
 
-      // Get the name of this searcher (for display purposes)
       SnapshotSearcher.prototype.name = function() {
         return this.snapshot.name();
       };

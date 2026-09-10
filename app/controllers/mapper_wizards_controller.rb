@@ -68,8 +68,6 @@ class MapperWizardsController < ApplicationController
       }, status: :unprocessable_content
     end
 
-    # Now custom_headers is a normalized Hash, ready to use
-    # Build fetch URL and request body based on HTTP method
     if 'POST' == http_method
       fetch_url = @wizard_state.search_url
       request_body = @wizard_state.test_query

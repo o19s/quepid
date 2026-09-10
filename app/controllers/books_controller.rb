@@ -119,7 +119,6 @@ class BooksController < ApplicationController
       if scorer
         @book.scale = scorer.scale
         @book.scale_with_labels = scorer.scale_with_labels
-        # Set scorer_id to the one that would appear in dropdown for this scale combination
         @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
         @book.scoring_guidelines = @book.default_scoring_guidelines
       end
@@ -140,7 +139,6 @@ class BooksController < ApplicationController
   def edit
     @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
 
-    # Set scorer_id virtual attribute to preselect matching scorer in dropdown
     @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
 
     # Bullet really wants :rated_query_doc_pairs to be included, however that kills our performance!
@@ -327,12 +325,6 @@ class BooksController < ApplicationController
         judgement.save!
       end
     end
-    # @book.cases.each do |kase|
-    #  kase.ratings.where(user: nil).find_each do |rating|
-    #    rating.user = assignee
-    #    rating.save!
-    #  end
-    # end
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements."

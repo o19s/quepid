@@ -342,11 +342,17 @@ class FetchService
     response
   end
 
+  # Substitutes #$query## wherever it appears in a string value - not just when the whole
+  # value equals it, since some POST-body templates (e.g. Vespa's YQL: 'select * from movies
+  # where title contains "#$query##"') embed the placeholder inside a longer string rather
+  # than using it as a standalone value like ES's {"query": "#$query##"} does. The block form
+  # of gsub (not a plain replacement string) avoids Ruby treating a literal "\1"-style
+  # sequence in query_text as a backreference.
   def replace_values data, query_text
     if data.is_a?(Hash)
       data.each do |key, value|
-        if '#$query##' == value
-          data[key] = query_text
+        if value.is_a?(String)
+          data[key] = value.gsub('#$query##') { query_text }
         elsif value.is_a?(Hash) || value.is_a?(Array)
           replace_values(value, query_text)
         end
@@ -460,7 +466,13 @@ class FetchService
 
   def execute_request atry, query
     endpoint = atry.search_endpoint
-    http_verb = normalize_http_verb(endpoint.api_method)
+    # atry.resolved_api_method, not endpoint.api_method: an 'AUTO' endpoint (mapper-based
+    # search engines like Vespa) only resolves to a concrete GET/POST client-side, based on
+    # the hydrated query's length (see splainer-search's searchApiSearcherPreprocessorSvc.js) -
+    # this batch/background path has no such per-request length check, so it defers to the
+    # same JSON-vs-bare-text resolution Try#resolved_api_method already does, and
+    # normalize_http_verb below treats any still-unresolved 'AUTO' (bare text) as POST.
+    http_verb = normalize_http_verb(atry.resolved_api_method)
 
     case http_verb
     when :get  then execute_get_request(endpoint, atry, query)
@@ -474,8 +486,8 @@ class FetchService
   def normalize_http_verb verb
     case verb.upcase
     when 'JSONP', 'GET' then :get
-    when 'POST' then :post
-    when 'PUT'  then :put
+    when 'POST', 'AUTO' then :post
+    when 'PUT' then :put
     else verb.downcase.to_sym
     end
   end
