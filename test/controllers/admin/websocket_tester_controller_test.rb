@@ -16,5 +16,16 @@ module Admin
       get admin_websocket_tester_index_url
       assert_response :success
     end
+
+    test 'a non-administrator should NOT gain access' do
+      get root_url
+      assert_response :redirect
+      follow_redirect!
+
+      login_user_for_integration_test users(:random)
+
+      get admin_websocket_tester_index_url
+      assert_redirected_to root_path
+    end
   end
 end

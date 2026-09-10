@@ -1,0 +1,49 @@
+<style>
+/* Mirrors layouts/_sidebar.html.erb's .sidebar treatment (sticky, bordered,
+   edge-to-edge active block) but with text labels instead of icons, and a
+   width that fits them instead of a fixed icon-rail width. */
+.admin-sidebar {
+  position: sticky;
+  top: 0;
+  align-self: stretch;
+  width: 11rem;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+/* Matches the icon colors in layouts/_sidebar.html.erb: cornflowerblue when
+   inactive, white when active (on the nav-pills blue active background). */
+.admin-sidebar .nav-link {
+  color: cornflowerblue;
+}
+
+.admin-sidebar .nav-link.active {
+  color: #fff;
+}
+</style>
+<div class="admin-sidebar d-flex flex-column flex-shrink-0 bg-body-tertiary">
+  <div class="px-3 py-3 text-uppercase text-muted small fw-bold">Admin</div>
+  <ul class="nav nav-pills nav-flush flex-column">
+    <li class="nav-item">
+      <%= link_to 'Overview', admin_path, class: "nav-link rounded-0 py-2 px-3 border-bottom #{'active' if current_page?(admin_path)}" %>
+    </li>
+    <li class="nav-item">
+      <%= link_to 'Users', admin_users_path, class: "nav-link rounded-0 py-2 px-3 border-bottom #{'active' if request.path.start_with?(admin_users_path)}" %>
+    </li>
+    <li class="nav-item">
+      <%= link_to 'Announcements', admin_announcements_path, class: "nav-link rounded-0 py-2 px-3 border-bottom #{'active' if request.path.start_with?(admin_announcements_path)}" %>
+    </li>
+    <li class="nav-item">
+      <%= link_to 'Websocket Tester', admin_websocket_tester_index_path, class: "nav-link rounded-0 py-2 px-3 border-bottom #{'active' if current_page?(admin_websocket_tester_index_path)}" %>
+    </li>
+  </ul>
+  <ul class="nav nav-pills nav-flush flex-column">
+    <%# Blazer and Mission Control Jobs are separately mounted engines with their own UI/layout, %>
+    <%# so they're linked here for discoverability but won't show this sidebar themselves. %>
+    <li class="nav-item">
+      <%= link_to 'SQL Analytics', blazer_path, class: 'nav-link rounded-0 py-2 px-3 border-bottom', target: '_self' %>
+    </li>
+    <li class="nav-item">
+      <%= link_to 'Job Manager', mission_control_jobs_path, class: 'nav-link rounded-0 py-2 px-3 border-bottom', target: '_self' %>
+    </li>
+  </ul>
+</div>
