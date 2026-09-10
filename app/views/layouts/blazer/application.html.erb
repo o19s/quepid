@@ -1,0 +1,47 @@
+<!--
+Quepid override of Blazer's own layout, so the "SQL Analytics" admin section
+isn't a dead end with no way back to the rest of the admin UI. Rails resolves
+this file (app/views/layouts/blazer/application.html.erb, same logical path
+Blazer::BaseController's `layout "blazer/application"` looks up) before the
+gem's own copy, since the host app's view paths take precedence over a
+mounted engine's.
+
+This is a copy of blazer-3.5.1's app/views/layouts/blazer/application.html.erb
+with one addition: a link back to Quepid's own /admin. Deliberately NOT
+wrapping Blazer's content in Quepid's own admin sidebar/header - Blazer ships
+its own bundled Bootstrap/jQuery/Chart.js/Ace-editor stack tied to these exact
+asset tags, and loading a second Bootstrap/jQuery alongside it (Quepid's own
+"admin" pack) risks breaking Blazer's charts, SQL editor, or dropdowns. Keep
+the <head> asset tags and csrf_meta_tags intact if you ever touch this file -
+Blazer's JS depends on them (async query running polls via `run_id`, using
+blazer_js_var "rootPath" to build its own AJAX URLs).
+
+If Blazer is upgraded, diff this against the new version's own layout file to
+pick up any new asset tags.
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= blazer_title ? blazer_title : "Blazer" %></title>
+
+    <meta charset="utf-8" />
+    <%= favicon_link_tag "blazer/favicon.png" %>
+    <% if defined?(Propshaft::Railtie) && Rails.application.assets.is_a?(Propshaft::Assembly) %>
+      <%= stylesheet_link_tag "blazer/bootstrap-propshaft", "blazer/bootstrap", "blazer/tom-select", "blazer/github", "blazer/daterangepicker", "blazer/application", nonce: true %>
+      <%= javascript_include_tag "blazer/tablesort", "blazer/tom-select.base", "blazer/highlight.min", "blazer/moment", "blazer/moment-timezone-with-data", "blazer/daterangepicker", "blazer/chart.umd", "blazer/chartjs-adapter-date-fns.bundle", "blazer/chartkick", "blazer/mapkick.bundle", "blazer/ace/ace", "blazer/ace/ext-language_tools", "blazer/ace/theme-twilight", "blazer/ace/mode-sql", "blazer/ace/snippets/text", "blazer/ace/snippets/sql", "blazer/Sortable", "blazer/routes", "blazer/queries", "blazer/fuzzysearch", "blazer/application", nonce: true %>
+    <% else %>
+      <%= stylesheet_link_tag "blazer/application", nonce: true %>
+      <%= javascript_include_tag "blazer/application", nonce: true %>
+    <% end %>
+    <%= javascript_tag nonce: true do %>
+      <%= blazer_js_var "rootPath", root_path %>
+    <% end %>
+    <%= csrf_meta_tags %>
+  </head>
+  <body>
+    <div class="container">
+      <%= link_to "← Back to Quepid Admin", main_app.admin_path, class: "btn btn-sm btn-secondary my-2" %>
+      <%= yield %>
+    </div>
+  </body>
+</html>
