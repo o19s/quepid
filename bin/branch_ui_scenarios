@@ -1,0 +1,120 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Finds which docs/manual-testing/*.md scenarios are affected by the changes on the current
+# branch (relative to a base ref), by cross-referencing docs/manual-testing/tracking.yml `paths`
+# against `git diff`. Sibling to bin/manual_test_status, but diffs a branch instead of just the
+# dirty working tree.
+#
+# Usage:
+#   bin/branch_ui_scenarios                    # diff HEAD against merge-base with main
+#   bin/branch_ui_scenarios --base origin/main  # diff against a specific base ref
+#   bin/branch_ui_scenarios --json              # machine-readable output
+
+require 'yaml'
+require 'optparse'
+require 'open3'
+require 'json'
+
+ROOT = File.expand_path('..', __dir__)
+TRACKING_FILE = File.join(ROOT, 'docs/manual-testing/tracking.yml')
+
+options = { base: nil, json: false }
+OptionParser.new do |opts|
+  opts.banner = 'Usage: bin/branch_ui_scenarios [options]'
+  opts.on('--base REF', 'Base ref to diff against (default: merge-base with main)') { |v| options[:base] = v }
+  opts.on('--json', 'Emit JSON instead of a human-readable report') { options[:json] = true }
+end.parse!
+
+def sh(*cmd)
+  out, status = Open3.capture2(*cmd)
+  # rstrip only: git status --porcelain lines carry meaningful leading whitespace
+  # (the "XY " status columns), so a leading .strip would eat the first line's
+  # indentation and shift its 3-char slice, truncating that filename.
+  [out.rstrip, status.success?]
+end
+
+def default_base
+  %w[main origin/main].each do |ref|
+    out, ok = sh('git', 'merge-base', 'HEAD', ref)
+    return out if ok && !out.empty?
+  end
+  abort "Couldn't find a merge-base with main or origin/main. Pass --base explicitly."
+end
+
+base = options[:base] || default_base
+
+committed, ok = sh('git', '-C', ROOT, 'diff', '--name-only', "#{base}...HEAD")
+abort "git diff against #{base} failed" unless ok
+
+dirty, _ok = sh('git', '-C', ROOT, 'status', '--porcelain')
+dirty_files = dirty.lines.map { |l| l[3..].to_s.strip.split(' -> ').last }.compact
+
+changed_files = (committed.lines.map(&:strip) + dirty_files).reject(&:empty?).uniq
+
+unless File.exist?(TRACKING_FILE)
+  warn "No tracking file at #{TRACKING_FILE}"
+  exit 1
+end
+
+data = YAML.safe_load(File.read(TRACKING_FILE), permitted_classes: [Date], aliases: true)
+
+def path_matches?(tracked_path, changed_file)
+  return true if tracked_path == changed_file
+  return true if changed_file.start_with?(tracked_path.end_with?('/') ? tracked_path : "#{tracked_path}/")
+  return true if tracked_path.include?('*') && File.fnmatch(tracked_path, changed_file)
+
+  false
+end
+
+def matched_paths(tracked_paths, changed_files)
+  return [] if tracked_paths.nil?
+
+  tracked_paths.select { |tp| changed_files.any? { |cf| path_matches?(tp, cf) } }
+end
+
+matches = []
+(data['parts'] || {}).each do |part_id, part|
+  (part['scenarios'] || {}).each do |scenario_id, s|
+    hit_paths = matched_paths(s['paths'], changed_files)
+    next if hit_paths.empty?
+
+    matches << {
+      part: part_id,
+      file: part['file'],
+      id: scenario_id,
+      title: s['title'],
+      matched_paths: hit_paths
+    }
+  end
+end
+
+def natural_sort_key(scenario_id)
+  scenario_id.to_s.split('.').map do |segment|
+    m = segment.match(/\A(\d+)([a-z]*)\z/)
+    m ? [m[1].to_i, m[2]] : [0, segment]
+  end
+end
+
+matches.sort_by! { |m| [m[:part], natural_sort_key(m[:id])] }
+
+if options[:json]
+  puts JSON.generate(base: base, changed_files: changed_files, scenarios: matches)
+  exit 0
+end
+
+puts "Base ref: #{base}"
+puts "Changed files (#{changed_files.size}):"
+changed_files.each { |f| puts "  #{f}" }
+puts
+
+if matches.empty?
+  puts 'No manual-testing scenarios matched these changes.'
+else
+  puts "#{matches.size} affected scenario(s):"
+  matches.each do |m|
+    puts
+    puts "  #{m[:id]} #{m[:title]}  (docs/manual-testing/#{m[:file]})"
+    m[:matched_paths].each { |p| puts "      matched: #{p}" }
+  end
+end

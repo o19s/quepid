@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Brings up a second, throwaway Quepid app instance running a BASE ref's code, on its own port,
+# sharing the same mysql/keycloak/ollama containers as your primary `bin/docker s` dev server —
+# so you can screenshot "before" (this instance) vs "after" (your live dev server) without ever
+# touching your working tree. Pairs with bin/ui_diff_down.
+#
+# Usage:
+#   bin/ui_diff_up [BASE_REF] [PORT]
+#   bin/ui_diff_up main            # port defaults to 3001
+#   bin/ui_diff_up main 3002
+#
+# The old-code checkout lives in a sibling git worktree (../quepid-ui-diff-worktree) that's
+# reused across invocations; it's only rebuilt (bundle/yarn install + yarn build) when the base
+# ref actually changed, so repeat runs against the same base ref are fast.
+
+APP_ROOT=$(cd "$(dirname "$0")/.." && pwd)
+cd "$APP_ROOT"
+
+BASE_REF="${1:-}"
+PORT="${2:-3001}"
+
+if [ -z "$BASE_REF" ]; then
+  BASE_REF=$(git merge-base HEAD main 2>/dev/null || git merge-base HEAD origin/main 2>/dev/null || true)
+  if [ -z "$BASE_REF" ]; then
+    echo "Couldn't determine a default base ref (no merge-base with main/origin/main). Pass one explicitly: bin/ui_diff_up <ref> [port]" >&2
+    exit 1
+  fi
+fi
+BASE_SHA=$(git rev-parse "$BASE_REF")
+
+WORKTREE_DIR="$(dirname "$APP_ROOT")/quepid-ui-diff-worktree"
+STATE_DIR="$APP_ROOT/tmp/ui_diff"
+MARKER_FILE="$STATE_DIR/built_sha"
+LOG_FILE="$STATE_DIR/server.log"
+PID_FILE="$STATE_DIR/server.pid"
+OVERRIDE_FILE="$STATE_DIR/docker-compose.override.yml"
+CONTAINER_NAME="quepid_app_ui_diff"
+
+mkdir -p "$STATE_DIR"
+
+echo "==> Base ref: $BASE_REF ($BASE_SHA)"
+echo "==> Worktree: $WORKTREE_DIR"
+echo "==> Port:     $PORT"
+
+# --- worktree: create or move to the requested ref ---------------------------------------------
+if git worktree list --porcelain | grep -qxF "worktree $WORKTREE_DIR"; then
+  echo "==> Reusing existing worktree"
+  git -C "$WORKTREE_DIR" checkout --force --quiet "$BASE_SHA" || {
+    echo "Failed to check out $BASE_SHA in existing worktree; remove it and retry: git worktree remove --force $WORKTREE_DIR" >&2
+    exit 1
+  }
+else
+  echo "==> Creating worktree"
+  git worktree add --quiet --force "$WORKTREE_DIR" "$BASE_SHA"
+fi
+
+# --- seed untracked config files a fresh checkout won't have (mirrors bin/setup_docker) ---------
+if [ ! -f "$WORKTREE_DIR/config/database.yml" ]; then
+  echo "==> Seeding config/database.yml from .sample (gitignored, absent in a fresh worktree)"
+  cp "$WORKTREE_DIR/config/database.yml.sample" "$WORKTREE_DIR/config/database.yml"
+fi
+
+# --- stop any previous ui_diff instance before starting a new one -------------------------------
+if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+  echo "==> Stopping previous ui_diff instance (pid $(cat "$PID_FILE"))"
+  kill "$(cat "$PID_FILE")" 2>/dev/null || true
+  sleep 1
+fi
+docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
+
+# --- compose override: point the `app` service's volume at the worktree instead of `.` ---------
+cat > "$OVERRIDE_FILE" <<YAML
+services:
+  app:
+    volumes:
+      - $WORKTREE_DIR:/srv/app:cached
+      - ./log:/log
+YAML
+
+NEEDS_BUILD=1
+if [ -f "$MARKER_FILE" ] && [ "$(cat "$MARKER_FILE")" = "$BASE_SHA" ]; then
+  NEEDS_BUILD=0
+fi
+
+BUILD_CMD=""
+if [ "$NEEDS_BUILD" = "1" ]; then
+  echo "==> Base ref changed (or first run) — installing deps and building assets in the worktree"
+  BUILD_CMD="bundle check || bundle install && yarn install --silent && yarn build && "
+fi
+
+echo "==> Starting app container ($CONTAINER_NAME) on port $PORT"
+APP_PORT="$PORT" docker compose \
+  -f docker-compose.yml -f "$OVERRIDE_FILE" \
+  run --rm --service-ports --name "$CONTAINER_NAME" \
+  app bash -c "${BUILD_CMD}bundle exec puma -C config/puma.rb" \
+  > "$LOG_FILE" 2>&1 &
+
+SERVER_PID=$!
+echo "$SERVER_PID" > "$PID_FILE"
+
+echo "==> Waiting for http://localhost:$PORT to respond (log: $LOG_FILE)"
+for _ in $(seq 1 180); do
+  if curl -sf -o /dev/null "http://localhost:$PORT" 2>/dev/null; then
+    echo "$BASE_SHA" > "$MARKER_FILE"
+    echo "==> Ready: http://localhost:$PORT  (base ref $BASE_REF)"
+    exit 0
+  fi
+  if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+    echo "Server process exited early — check $LOG_FILE" >&2
+    tail -n 60 "$LOG_FILE" >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+echo "Timed out waiting for http://localhost:$PORT — check $LOG_FILE" >&2
+tail -n 60 "$LOG_FILE" >&2
+exit 1

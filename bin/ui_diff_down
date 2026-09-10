@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Tears down the throwaway old-code app instance started by bin/ui_diff_up.
+# By default the worktree is left in place (so the next ui_diff_up against the same base ref is
+# fast); pass --remove-worktree to also delete it.
+
+APP_ROOT=$(cd "$(dirname "$0")/.." && pwd)
+cd "$APP_ROOT"
+
+STATE_DIR="$APP_ROOT/tmp/ui_diff"
+PID_FILE="$STATE_DIR/server.pid"
+CONTAINER_NAME="quepid_app_ui_diff"
+WORKTREE_DIR="$(dirname "$APP_ROOT")/quepid-ui-diff-worktree"
+
+REMOVE_WORKTREE=0
+[ "${1:-}" = "--remove-worktree" ] && REMOVE_WORKTREE=1
+
+echo "==> Stopping $CONTAINER_NAME"
+docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
+
+if [ -f "$PID_FILE" ]; then
+  if kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+    kill "$(cat "$PID_FILE")" 2>/dev/null || true
+  fi
+  rm -f "$PID_FILE"
+fi
+
+if [ "$REMOVE_WORKTREE" = "1" ] && [ -d "$WORKTREE_DIR" ]; then
+  echo "==> Removing worktree $WORKTREE_DIR"
+  git worktree remove --force "$WORKTREE_DIR" || rm -rf "$WORKTREE_DIR"
+  rm -f "$STATE_DIR/built_sha"
+fi
+
+echo "==> Done"
