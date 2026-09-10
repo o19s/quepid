@@ -35,8 +35,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | Vendored Angular libraries (`app/javascript/vendor`) | 10 packages (+ `angular` core from npm) |
 | Karma unit specs (`spec/javascripts/angular`) | 39 |
 | Vitest unit specs (`app/javascript/**/*.test.js`) | 21 |
-| Playwright specs for the case UI | 2 Angular page specs + helpers + baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` |
-| Playwright specs for Stimulus pages | `stimulus_pages.spec.ts` (cases index import-case, bulk judge, mapper wizard); core + Rails share-case: `share_case.spec.ts` (not exhaustive — non-Angular Rails-page specs like `admin`, `teams`, `judging`, `signup`, etc. aren't Angular-migration-relevant and aren't tracked here) |
+| Playwright specs | See [Other inventory § Tests](#tests) for the Angular-core and Stimulus spec breakdown |
 
 ---
 
@@ -44,7 +43,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Priority | Item | Notes |
 |----------|------|-------|
-| **P0** | AngularJS 1.8.3 EOL | ~143 JS files, 54 templates on the core case UI — no patches since Dec 2021 |
+| **P0** | AngularJS 1.8.3 EOL | 140 JS files, 52 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
 | **P0** | `queriesSvc` god object (~1,386 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
 | **P0** | `eval()` scorers | Inside `$timeout()`, no sandbox; Web Worker timeout commented out |
 | **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
@@ -147,13 +146,12 @@ Use when sizing a PR:
 Actionable incremental wins — do these before touching query/search state:
 
 1. **DOM utilities → Stimulus or BS5 data API** — **Partially done:** plain-text tooltips (`quepid-tooltip`) and plain-text popovers (`quepid-popover`) migrated to Stimulus `bs-tooltip` / `bs-popover` (registered in `core_stimulus.js`); the Angular `quepidTooltip` directive and the text-mode `quepidPopover` directive are deleted. Angular `quepidPopoverTemplate` remains — it backs the ratings and search-match popovers (`views/ratings/popover.html`, `matches/matches.html`), which lazily `$compile` live interactive Angular content into the popover body and need their own migration, not just an attribute swap. `bs-static-popover` (fixed help-icon popovers) also remains Angular for now (new Stimulus UI, e.g. `clone-case-core`'s help icons, uses the Stimulus `bs-popover` controller instead of adding new Angular attributes).
-2. **`clone-case`** — **Done:** Modal + API, stay-on-page while cloning then navigate to the new case (`clone-case-core` Stimulus controller + `_clone_case_core_modal.html.erb`, posting to the existing `api/clone/cases` endpoint). Intentional delta from Angular: the modal stays open with an inline alert on failure instead of Angular's close-then-global-flash (same delta already made for `share-case-core`).
-3. **`export-case`** — Larger modal + job polling; still a management action, not live search state.
-4. **Defer** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks until a deliberate case-page redesign.
+2. **`export-case`** — Larger modal + job polling; still a management action, not live search state.
+3. **Defer** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks until a deliberate case-page redesign.
 
 Optional when touching nearby code:
 
-- **`ngclipboard`** — Four copy buttons (search results + explain modal). Prefer `navigator.clipboard` (see Stimulus invite / mapper-wizard). Fix the Explain Query race below.
+- **`ngclipboard`** — Four copy buttons (search results + explain modal). Prefer `navigator.clipboard` (see Stimulus invite / mapper-wizard). See [Known bug (copy / explain migration)](#known-bug-copy--explain-migration) for the Explain Query race this needs to fix.
 - **`debug-matches`**, **`expand-content`** — Small markup; migrate with the matches/explain popover stack.
 
 Prefer **Rails view + route + Stimulus** for management actions over embedding new Stimulus inside the Angular bundle.
@@ -278,7 +276,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 3. **Multi-snapshot diff + scoring** — ≤5 snapshots, snapshot-as-searcher, client `scoreOthers()`, per-position diff, case averages. `diffResultsSvc.js` is ~225 lines but sits on fake-Solr snapshots and rating-driven refetch — line count understates the work.
 
-4. **Angular templates → target syntax** — 58 templates (`ng-repeat`, `ng-if`, `ng-model`, `dir-paginate`, `quepid-sortable`, `ui-ace`, …). Stimulus partials or React JSX depending on chosen stack.
+4. **Angular templates → target syntax** — 52 templates (`ng-repeat`, `ng-if`, `ng-model`, `dir-paginate`, `quepid-sortable`, `ui-ace`, …). Stimulus partials or React JSX depending on chosen stack.
 
 5. **Field spec parsing and display** — `id:id title:name …` — type detection (JSON / URL / text), thumb prefixes, media by extension, snippet `<strong>` wrapping. Domain logic in splainer-search + Quepid display code, not framework glue.
 
@@ -326,7 +324,7 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 
 **Explain Query “Copy” buttons** (`query_explain/_modal.html`): each button has both `ng-click="ctrl.cancel()"` and `ngclipboard`. Cancel dismisses the modal before ClipboardJS commits — copy silently fails. The standalone copy on `searchResults.html` works.
 
-**Fix:** drop `cancel()` from Copy buttons, or defer cancel until after copy success. Prefer `navigator.clipboard` when replacing ngclipboard.
+**Fix:** drop `cancel()` from Copy buttons, or defer cancel until after copy success (see [Suggested PR order](#suggested-pr-order-start-here) for the broader `ngclipboard` → `navigator.clipboard` move).
 
 ---
 
@@ -522,9 +520,9 @@ These Angular-specific wrappers are used across many templates:
 
 | Primitive | File | Replaces |
 |-----------|------|----------|
-| `$quepidModal` | `services/quepidModalSvc.js` | Bootstrap 5 modals (already BS5-backed shim; ~22 `.open()` sites) |
-| `quepidPopover` / `quepidPopoverTemplate` | `directives/quepidPopover.js` (~128 LOC thin shell) | `utils/bs_popover.js`; drop Angular attrs when templates migrate |
-| `bsStaticPopover` | `directives/bsStaticPopover.js` | Static help-icon popovers via shared `bs_popover` util |
+| `$quepidModal` | `services/quepidModalSvc.js` | Bootstrap 5 modals (already BS5-backed shim; call-site count in [Hardest § By file (LOC)](#by-file-loc)) |
+| `quepidPopover` / `quepidPopoverTemplate` | `directives/quepidPopover.js` (~128 LOC thin shell) | `utils/bs_popover.js`; current status/blockers in [Suggested PR order §1](#suggested-pr-order-start-here) |
+| `bsStaticPopover` | `directives/bsStaticPopover.js` | Static help-icon popovers via shared `bs_popover` util; current status in [Suggested PR order §1](#suggested-pr-order-start-here) |
 | `quepidCollapse` | `directives/quepidCollapse.js` | Bootstrap collapse |
 | `quepidTypeahead` | `directives/quepidTypeahead.js` | `autocompleter` (already vanilla; wired via Angular directive) |
 | `vega` | `directives/angular-vega.js` | Vega embed (Vega loaded via importmap `vega_globals`) |
@@ -642,7 +640,7 @@ Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (10 packages; see [vend
 
 ### Tests
 
-- **Karma:** 37 specs in `spec/javascripts/angular/` (incl. `bsStaticPopover`, `timeAgo`); loads all three Angular bundles + `angular-mocks`
+- **Karma:** 39 specs in `spec/javascripts/angular/` (incl. `bsStaticPopover`, `timeAgo`); loads all three Angular bundles + `angular-mocks`
 - **Vitest:** incl. `controllers/{share_case,share_case_core}_controller.test.js` and `utils/share_case_teams.js`
 - **Playwright (Angular core):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
 - **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case.spec.ts` — permanent regression coverage for core toolbar share/unshare and the Rails cases-index/teams share modal (baseline screenshots + behavioral assertions, no before/after phase); `dom_migration_screenshots.spec.ts` — remaining per-surface before/after shots (hit count, clone-case/judgements/import-ratings popovers, annotation timeAgo)
@@ -656,7 +654,7 @@ The core case UI at `/case/...` still uses AngularJS `$http`. **Do not copy thes
 |---------|---------|
 | API paths | Relative `api/...` (no leading slash), e.g. `$http.get('api/cases/' + caseNo)` |
 | CSRF | Automatic via `ng-rails-csrf` (`interceptors/rails-csrf.js`) for URLs containing `api/` |
-| Navigation / subpaths | `caseTryNavSvc.getQuepidRootUrl()` — never `$window.location.href = '/'` |
+| Navigation / subpaths | `caseTryNavSvc.getQuepidRootUrl()` (rule: see root `CLAUDE.md`) |
 | Route param | Cases use `:case_id` in `config/routes.rb` |
 
 ```javascript

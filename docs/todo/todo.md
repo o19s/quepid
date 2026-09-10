@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-08-27
+**Last updated:** 2026-09-09
 
 Outstanding bugs, hardening, and cleanup on `main` only. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -17,7 +17,6 @@ These affect the core case UI (`/case/...`) today but **should not be patched in
 | Item | Why not patch Angular | Where it moves |
 |------|----------------------|----------------|
 | Try delete bricks case (frontend) | `settingsSvc.editableSettings()` null guard, confirm dialog, console rejection noise | [inventory § try delete](./angularjs_removal_inventory.md#try-delete-bricks-case-on-reload) |
-| First-run Shepherd tour | `tour.js` + `angular_app.js` bundle wiring | [inventory § Shepherd tour](./angularjs_removal_inventory.md#first-run-shepherd-tour-shepherd-is-not-defined) |
 | Wizard Esc orphans empty cases | `angular-wizard` modal | [inventory § wizard Esc](./angularjs_removal_inventory.md#wizard-esc-orphans-empty-cases) |
 | Static CSV missing required headers | `caseCSVSvc.arrayContains` | [inventory § static CSV](./angularjs_removal_inventory.md#static-csv-missing-required-headers) |
 | Icon-only controls lack accessible names | Copy-query; snapshot delete/clear in Compare | [inventory § a11y](./angularjs_removal_inventory.md#icon-only-controls-lack-accessible-names) |
@@ -105,19 +104,23 @@ Deleting a rating that was already removed can error; races (tabs, double clicks
 
 ### Judgement rating not validated against book's scale (outside AI judging)
 
-**Observed:** `Judgement#rating` only validates presence, never that the value is actually one of the book's configured scale values. `Api::V1::JudgementsController#update` (writes `judgement_params[:rating]` directly) and `JudgementsController` can both persist a rating outside the book's scale. The AI-judging path (`app/jobs/run_judge_judy_job.rb`) was hardened against this (LLM-returned out-of-scale ratings get marked `unrateable`), but that guard is job-local — the human/API paths were never covered.
+**Observed:** `Judgement#rating` only validates presence, never that the value is actually one of the book's configured scale values. `Api::V1::JudgementsController#update`, `JudgementsController`, and `BulkJudgeController#save` (`judgement.rating = params[:rating]`, no scale check) all write a client-supplied rating with no scale check — they're only "safe" today because the judging UI happens to render buttons limited to the book's actual scale values; nothing stops a raw form/API POST from bypassing that. The AI-judging path (`app/jobs/run_judge_judy_job.rb`, hardened in `37840b47`) is the only one with a guard, and it's job-local.
 
 **Cause:** No model-level validation ties `Judgement#rating` to `query_doc_pair.book.scale`.
 
-**Fix direction:** Add a conditional `inclusion` validation on `Judgement` scoped to `query_doc_pair.book.scale`, and retire the job-local check in `run_judge_judy_job.rb` in favor of it (the job would need to catch the validation failure and call `mark_unrateable` instead of letting `save!` raise). Audit `BookImporter`/`RatingsImporter` and the book-combine flow first — confirm none of them legitimately rely on writing out-of-scale ratings today before making this a hard validation.
+**Audit result (done):** Two call sites *legitimately* write ratings outside the discrete scale, both gated on `book.support_implicit_judgements?`:
+- `BooksController#combine` (`app/controllers/books_controller.rb:277`) averages two existing ratings — `(judgement.rating + j.rating) / 2` — and explicitly skips rounding when `support_implicit_judgements` is true (e.g. `(0+3)/2 = 1.5` on a `[0,1,2,3]` scale).
+- `JudgementFromRatingJob#perform` (`app/jobs/judgement_from_rating_job.rb:24`) copies a case-level `Rating#rating` straight into `judgement.rating` via `judgement.save!` (raises on failure) — that value comes from the case's scorer scale, which has no guaranteed relationship to the book's judgement scale.
+
+`BookImporter`/`RatingsImporter` are fine: `RatingsImporter` writes the unrelated `Rating` model, and `BookImporter#import_judgement` already silently no-ops on failed saves.
+
+**Fix direction:** Add an `inclusion` validation on `Judgement` scoped to `query_doc_pair.book.scale`, conditioned `unless: -> { query_doc_pair&.book&.support_implicit_judgements? }` (safe-navigate — `query_doc_pair` is a required `belongs_to` but its own presence validation runs independently, so a blank `query_doc_pair` must not blow up this lambda with a `NoMethodError`) so the two legitimate continuous-rating paths above stay unaffected. Change `JudgementFromRatingJob` to `save` + handle a validation failure instead of `save!` (a case rating can legitimately be off-scale for an explicit-only book). Retire the job-local check in `run_judge_judy_job.rb` in favor of the model validation (catch the failure, call `mark_unrateable`).
 
 ---
 
 ## P2 — Test coverage
 
-- Add `test/controllers/cases_controller_test.rb` — HTML archive/unarchive authorization
-- Add cross-book IDOR test in `query_doc_pairs_controller_test.rb`
-- Add explicit cross-book judgement IDOR test in `judgements_controller_test.rb`
+- Add `test/controllers/cases_controller_test.rb` — HTML **unarchive** authorization test (`archive` already has coverage at lines 68-84; `unarchive` has no test at all)
 
 ---
 
@@ -137,7 +140,9 @@ Uses `'true' == params[:proxy_debug]` instead of `deserialize_bool_param`. Low r
 
 Manual `split('?')` / `split('=')` only captures the first embedded query param (e.g. loses `rows` from `?q=test&rows=10`).
 
-Fix together with URL extraction deduplication below. Experimental branch used `UrlParserService` — not merged here.
+Fix together with URL extraction deduplication below.
+
+**Recommendation:** Cherry-pick `UrlParserService` from `origin/deangularjs-experimental` (commit `db1c4e50`) as its own small PR rather than reimplementing from scratch. That branch is a 1092-file, big-bang AngularJS→Rails rewrite that changed core architecture (server-side search execution, two-tier scoring, dropped/relocated features) — almost certainly why it was never merged, since it conflicts with this project's incremental per-surface migration strategy (see `angular-case-migration` skill). But `UrlParserService` itself is small, self-contained, and clean: wraps `Addressable::URI` (already a `Gemfile` dependency — no new gem needed), has 9 focused unit tests, and its `query_values` method fixes exactly this bug. Note that branch's `ProxyController` still had the CSRF-skip issue above — that fix wasn't part of the same effort and needs doing separately regardless.
 
 ---
 
@@ -145,7 +150,7 @@ Fix together with URL extraction deduplication below. Experimental branch used `
 
 **Locations:** `proxy_controller.rb`, `api/v1/search_endpoints/validations_controller.rb`, `application_helper.rb` (`get_protocol_from_url`)
 
-Overlapping parse logic; extract shared helper when fixing proxy URL parsing.
+Overlapping parse logic. Same fix as "Proxy URL parsing bug" above — `UrlParserService` (cherry-picked from `deangularjs-experimental`) was purpose-built as the shared helper for exactly these three call sites (per its own docstring); use it here too rather than writing a separate helper.
 
 ---
 
@@ -171,7 +176,17 @@ Defined but unused (no `before_action`). Safe to delete.
 
 **Location:** `app/models/selection_strategy.rb`
 
-Rename `user_has_judged_all_available_pairs?` → `user_judged_all_available_pairs?` (style-only; project convention).
+Rename `user_has_judged_all_available_pairs?` → `user_judged_all_available_pairs?` (style-only; project convention — see `credentials?` vs `has_credentials?` in CLAUDE.md, already followed by `HttpClientService#credentials?`).
+
+**Also found:** `every_query_doc_pair_has_three_judgements?` (same file, line 56) has the same `has_` prefix. Different grammatical shape though — it's "has N of a noun" (a count check), not "has verbed" (where the participle alone already reads as a fine predicate, as in `judged`). Dropping `has_` here reads badly (`every_query_doc_pair_three_judgements?`); it would need a rephrase (e.g. `every_query_doc_pair_judged_three_times?`) rather than a straight deletion. Worth a call when touching this file rather than bundling blindly with the first rename.
+
+---
+
+### BookImporter: unsaved records aren't reported back to the user
+
+**Location:** `app/services/book_importer.rb` — `import_query_doc_pairs`, `import_all_judgements`, `import_judgement`, `upsert_nested_query_doc_pair`
+
+None of these check the return value of `qdp.save` / `judgement.save`. If a row fails validation during an "add more data" import (`Books::ImportController#update`), it's silently dropped — `ImportBookJob` still clears `book.import_job` and reports success, with no indication some rows didn't make it in. Pre-existing gap (the original code didn't check `.create`'s success either), just calling it out now that this path is being hardened for repeated/production re-imports. Fixing it well means deciding how partial failures should surface to the user (job status field? notification?) — a small design call, not a drive-by fix.
 
 ---
 
@@ -184,14 +199,6 @@ Rename `user_has_judged_all_available_pairs?` → `user_judged_all_available_pai
 3. **`app/controllers/api/v1/cases_controller.rb:192`** — watch for extra associations in serializers beyond `preload(:tries, :teams, :cases_teams)`.
 
 Bullet is enabled in dev/test — fix as surfaced; review views for missing eager loads.
-
----
-
-### Inefficient query in API cases index
-
-**Location:** `app/controllers/api/v1/cases_controller.rb:192-195`
-
-`fetch_full_cases` uses `left_outer_joins(:metadata)` (commented "this is slow!") and orders by `case_metadata.last_viewed_at`. Index `idx_last_viewed_case` exists. If slowness persists with 50+ cases, consider denormalizing `last_viewed_at` onto `cases` or `includes(:metadata)`.
 
 ---
 
@@ -231,14 +238,6 @@ Still builds `` `books/${bookId}/judge/bulk/save` `` / `delete` in JS. Pass `sav
 
 ---
 
-### `import_snapshot` — `apiFetch` and subpath-safe URLs
-
-**Location:** `app/javascript/controllers/import_snapshot_controller.js`
-
-Inline CSRF + hardcoded `` `/api/cases/${caseId}/snapshots/imports` ``. Switch to `apiFetch`; prefer server-rendered URL or root-aware path (same class of fix as `import_case` redirect).
-
----
-
 ### Import case API — return `redirect_url`
 
 **Location:** `app/controllers/api/v1/import/cases_controller.rb`, `import_case_controller.js`
@@ -247,17 +246,9 @@ Post-import navigation still built client-side: `` `${getQuepidRootUrl()}/case/$
 
 ---
 
-### `quepid_root_url` — subpath integration test (optional)
-
-**Location:** `test/helpers/application_helper_test.rb`
-
-Current test only asserts `root_url.chomp('/')`. Add a case with `RAILS_RELATIVE_URL_ROOT` set to verify subpath deployments.
-
----
-
 ### Remaining inline CSRF controllers
 
-Migrate to `apiFetch` when touched: `import_snapshot_controller.js`, `confirm_delete_controller.js` (form submit — keep as-is unless moving to fetch).
+Migrate to `apiFetch` when touched: `confirm_delete_controller.js` (form submit — keep as-is unless moving to fetch).
 
 **Also:** add `data-quepid-root-url` to `analytics.html.erb` if that layout ever loads Stimulus HTTP code.
 
