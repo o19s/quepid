@@ -14,6 +14,7 @@ json.mapper_based_search_engines @mapper_based_search_engines do |engine|
   json.search_url engine.search_url
   json.url_format engine.url_format
   json.query_params engine.query_params
+  json.bare_query_param engine.bare_query_param
   json.mapper_code engine.mapper_code
   json.custom_headers engine.custom_headers
   json.header_type engine.header_type

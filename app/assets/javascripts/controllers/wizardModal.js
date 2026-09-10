@@ -160,8 +160,9 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
         $scope.pendingWizardSettings.headerType               = settings.headerType;
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
+        $scope.pendingWizardSettings.bareQueryParam           = settings.bareQueryParam;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
-        $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;    
+        $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
         $scope.pendingWizardSettings.searchEndpointId         = null;
         $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
         $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;
@@ -264,6 +265,7 @@ angular.module('QuepidApp')
         } else {
           $scope.pendingWizardSettings.queryParams            = settings.queryParams;
         }
+        $scope.pendingWizardSettings.bareQueryParam           = settings.bareQueryParam;
 
         $scope.reset();
       };
@@ -298,6 +300,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
         $scope.pendingWizardSettings.headerType               = settings.headerType;
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
+        $scope.pendingWizardSettings.bareQueryParam           = settings.bareQueryParam;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
         $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
@@ -526,7 +529,16 @@ angular.module('QuepidApp')
               // validateUrl() surface the resulting request failure.
             }
           }
-        
+          else if ($scope.pendingWizardSettings.bareQueryParam) {
+            // Bare-text authoring mode (e.g. Vespa YQL typed directly instead of JSON) -
+            // Try#searchapi_args wraps this under the engine's own param name
+            // (MapperBasedSearchEngine#bare_query_param) server-side before a real query
+            // ever runs; the wizard's pre-save validation has to do the same wrapping
+            // itself here, or splainer-search sends the bare string with no param name at
+            // all - Vespa (and likely others) then reject the request as having no query.
+            settingsForValidation.args = { [$scope.pendingWizardSettings.bareQueryParam]: settingsForValidation.args };
+          }
+
           try {
             /*jshint evil:true */
             /* jshint undef: false */

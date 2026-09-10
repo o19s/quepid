@@ -157,6 +157,10 @@ class Try < ApplicationRecord
     JsonArgParser.parse(query_params, curator_vars_map)
   end
 
+  # This JSON-vs-bare-text split (and the bare-text wrapping below) is mirrored in
+  # app/assets/javascripts/controllers/wizardModal.js's validate() function, which has to
+  # apply the same rule client-side before a Try exists to call this method on - keep both
+  # in sync if this logic changes.
   def searchapi_args
     if json_query_params?
       # Same JSON-vs-bare-text split as #solr_args above, just with a third option (below) for
