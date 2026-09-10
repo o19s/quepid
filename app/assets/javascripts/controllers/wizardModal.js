@@ -508,6 +508,24 @@ angular.module('QuepidApp')
           else {
             settingsForValidation.args = queryParams;
           }
+
+          // Same JSON-vs-bare-text split as Try#json_query_params?/#searchapi_args
+          // (try.rb) - a JSON-bodied search API (e.g. Vespa's {"yql": ...}) has to reach
+          // the searcher as a parsed object, not a string, or splainer-search's GET
+          // request builder (searchApiSearcherPreprocessorSvc.buildGetParamsString)
+          // treats the whole string as an already-formed querystring fragment and
+          // appends it to the URL verbatim - producing an invalid URL for any search
+          // API using this JSON-body convention, not just Vespa. A real (non-wizard)
+          // query never hits this: Try#args parses query_params server-side via
+          // JsonArgParser before the client ever sees it.
+          if (settingsForValidation.args.trim().charAt(0) === '{') {
+            try {
+              settingsForValidation.args = JSON.parse(settingsForValidation.args);
+            } catch (e) {
+              // Not valid JSON despite looking like it - leave as a string and let
+              // validateUrl() surface the resulting request failure.
+            }
+          }
         
           try {
             /*jshint evil:true */
