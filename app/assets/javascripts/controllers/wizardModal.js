@@ -11,12 +11,12 @@ angular.module('QuepidApp')
   .controller('WizardModalCtrl', [
     '$rootScope', '$scope', '$quepidModalInstance', '$log', '$window', '$location',
     'WizardHandler',
-    'settingsSvc', 'SettingsValidatorFactory',
+    'settingsSvc', 'searchSvc',
     'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc','searchEndpointSvc','mapperBasedSearchEngineSvc','caseCSVSvc','querySnapshotSvc',
     function (
       $rootScope, $scope, $quepidModalInstance, $log, $window, $location,
       WizardHandler,
-      settingsSvc, SettingsValidatorFactory,
+      settingsSvc, searchSvc,
       docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc, searchEndpointSvc, mapperBasedSearchEngineSvc, caseCSVSvc, querySnapshotSvc
     ) {
       $log.debug('Init Wizard settings ctrl');
@@ -447,7 +447,7 @@ angular.module('QuepidApp')
       }
 
       function skipValidation() {
-        var validator = new SettingsValidatorFactory($scope.pendingWizardSettings);
+        var validator = searchSvc.createValidator($scope.pendingWizardSettings);
 
         setupDefaults(validator);
 
@@ -614,7 +614,7 @@ angular.module('QuepidApp')
           // Pass in the Quepid specific proxy url
           settingsForValidation.proxyUrl = caseTryNavSvc.getQuepidProxyUrl(settingsForValidation.searchEndpointId);
         }
-        var validator = new SettingsValidatorFactory(settingsForValidation);
+        var validator = searchSvc.createValidator(settingsForValidation);
       
         validator.validateUrl()
         .then(function () {

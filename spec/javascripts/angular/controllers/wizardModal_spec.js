@@ -279,9 +279,14 @@ describe('Controller: WizardModalCtrl — validating flag lifecycle', function (
       $provide.value('userSvc', { getUser: function () { return { completedCaseWizard: true }; } });
       $provide.value('WizardHandler', { wizard: function () { return { next: nextSpy, goTo: function () {} }; } });
 
-      $provide.value('SettingsValidatorFactory', function () {
-        this.validateUrl = function () { return validatorDeferred.promise; };
-        this.fieldSpec   = function () { return { fieldList: function () { return []; } }; };
+      $provide.value('searchSvc', {
+        createValidator: function () {
+          return {
+            validateUrl: function () { return validatorDeferred.promise; },
+            fields:      [],
+            idFields:    [],
+          };
+        },
       });
     });
 
