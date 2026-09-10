@@ -134,7 +134,7 @@ Rails.application.routes.draw do
   end
 
   namespace :books do
-    resources :import, only: [ :new, :create, :edit ]
+    resources :import, only: [ :new, :create, :edit, :update ]
     resources :export, only: [ :update ], param: :book_id
   end
 

@@ -13,8 +13,8 @@
   <div class="card-body">
     <h5 class="card-title">Import Query Doc Pairs</h5>
     <p class="card-text">
-      The format for importing query doc pair data is the same as that for exporting it: <code><%= link_to api_book_query_doc_pairs_path(@book), api_book_query_doc_pairs_path(@book) %></code>. 
-      
+      The format for importing query doc pair data is the same as that for exporting it: <code><%= link_to api_book_query_doc_pairs_path(@book), api_book_query_doc_pairs_path(@book) %></code>.
+
       <code>
         <pre>
   {
@@ -41,22 +41,22 @@
       </code>
       If you do NOT provide a <code>query_doc_pair_id</code> then the <code>query_text</code> and <code>doc_id</code> must both be present and will be used to upsert the query doc pair.
     </p>
-  
+
     <%= render "shared/error_messages", record: @book, subject: "book" %>
 
     <% if @book.errors.any? %>
-      <div class="alert alert-warning" role="alert" >
+      <div class="alert alert-warning" role="alert">
         You will need to pick the file to be imported again.
       </div>
     <% end %>
-    
-    <%= form_with model: @book, url: books_import_index_path do |form| %>
-      <div class="mb-3">        
+
+    <%= form_with model: @book, url: books_import_path(@book), method: :patch do |form| %>
+      <div class="mb-3">
         <%= form.label :import_file,'Select JSON file to import', class:'form-check-label' %>
         <%= form.file_field :import_file, class:'form-control' %>
         <div class="form-text">You can upload either a <code>.json</code> or a zipped JSON file in the format of <code>.json.zip</code>.</div>
       </div>
-      
+
       <%= form.submit "Upload", class: 'btn btn-primary' %>
     <% end %>
 
@@ -67,8 +67,8 @@
   <div class="card-body">
     <h5 class="card-title">Import Judgements</h5>
     <p class="card-text">
-      The format for importing Judgement data is the same as that for exporting it: <code><%= link_to api_book_judgements_path(@book), api_book_judgements_path(@book) %></code>. 
-      
+      The format for importing Judgement data is the same as that for exporting it: <code><%= link_to api_book_judgements_path(@book), api_book_judgements_path(@book) %></code>.
+
       <code>
         <pre>
           {
@@ -85,15 +85,15 @@
             ]
           }
         </pre>
-      </code>    
-      
+      </code>
+
         If you provide a <code>email</code> instead of <code>user_id</code> then that will be used to identify the judge.
         If you do NOT provide a <code>query_doc_pair_id</code> then you must provide <code>query_text</code> and <code>doc_id</code> to be used to upsert the query doc pair.
     </p>
-    
+
     <p>
       You may want to import Query Doc Pair information with your Judgements.   You can do this by specifying a <code>query_doc_pair</code> JSON object:
-      
+
       <code>
         <pre>
           {
@@ -111,24 +111,24 @@
             ]
           }
         </pre>
-      </code>       
+      </code>
     </p>
-  
+
     <%= render "shared/error_messages", record: @book, subject: "book" %>
 
     <% if @book.errors.any? %>
-      <div class="alert alert-warning" role="alert" >
+      <div class="alert alert-warning" role="alert">
         You will need to pick the file to be imported again.
       </div>
     <% end %>
-    
-    <%= form_with model: @book, url: books_import_index_path do |form| %>
-      <div class="mb-3">        
+
+    <%= form_with model: @book, url: books_import_path(@book), method: :patch do |form| %>
+      <div class="mb-3">
         <%= form.label :import_file,'Select JSON file to import', class:'form-check-label' %>
         <%= form.file_field :import_file, class:'form-control' %>
         <div class="form-text">You can upload either a <code>.json</code> or a zipped JSON file in the format of <code>.json.zip</code>.</div>
       </div>
-      
+
       <div class="mb-3">
         <div class="form-check form-switch">
           <%= form.label :force_create_users, class:'form-check-label' %>
@@ -136,7 +136,7 @@
         </div>
         <div class="form-text">Create user records for any judges that don't already exist in this instance of Quepid.</div>
       </div>
-      
+
       <%= form.submit "Upload", class: 'btn btn-primary' %>
     <% end %>
 
