@@ -463,10 +463,20 @@ class SampleData < Thor
 
       days_of_experimentation = rand(3..20) # somewhere between
 
+      # Dessert alone demonstrates Solr's JSON Query DSL (a JSON POST body) against the same
+      # endpoint the other Typeahead cases hit with classic q=...&magicBoost=... params.
+      dessert_case = ('Typeahead: Dessert' == case_name)
+
       days_of_experimentation.times do |counter|
+        query_params = if dessert_case
+                         { query: '#$query##', limit: 10 + counter }.to_json
+                       else
+                         'q=#$query##' + "&magicBoost=#{counter + 2}"
+                       end
+
         try_specifics = {
           try_number:   counter,
-          query_params: 'q=#$query##' + "&magicBoost=#{counter + 2}",
+          query_params: query_params,
         }
 
         try_params = try_defaults.merge(try_specifics)

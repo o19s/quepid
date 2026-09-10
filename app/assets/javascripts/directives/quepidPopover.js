@@ -1,7 +1,7 @@
 'use strict';
 
 // uib-popover replacement — BS5 via quepidDom.popover (utils/bs_popover.js).
-// Fixed `?` help icons: use bs-static-popover instead.
+// Static `?` help icons use bs-static-popover, not this directive.
 // outsideClick → manual trigger + capture listener; do not add our click
 // toggle when the element already has ng-click.
 // uib triggers: mouseenter → hover focus; outsideClick → manual.

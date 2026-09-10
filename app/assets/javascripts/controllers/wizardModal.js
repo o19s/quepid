@@ -11,12 +11,12 @@ angular.module('QuepidApp')
   .controller('WizardModalCtrl', [
     '$rootScope', '$scope', '$quepidModalInstance', '$log', '$window', '$location',
     'WizardHandler',
-    'settingsSvc', 'SettingsValidatorFactory',
+    'settingsSvc', 'searchSvc',
     'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc','searchEndpointSvc','mapperBasedSearchEngineSvc','caseCSVSvc','querySnapshotSvc',
     function (
       $rootScope, $scope, $quepidModalInstance, $log, $window, $location,
       WizardHandler,
-      settingsSvc, SettingsValidatorFactory,
+      settingsSvc, searchSvc,
       docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc, searchEndpointSvc, mapperBasedSearchEngineSvc, caseCSVSvc, querySnapshotSvc
     ) {
       $log.debug('Init Wizard settings ctrl');
@@ -160,8 +160,9 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
         $scope.pendingWizardSettings.headerType               = settings.headerType;
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
+        $scope.pendingWizardSettings.bareQueryParam           = settings.bareQueryParam;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
-        $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;    
+        $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
         $scope.pendingWizardSettings.searchEndpointId         = null;
         $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
         $scope.pendingWizardSettings.basicAuthCredential      = settings.basicAuthCredential;
@@ -264,6 +265,7 @@ angular.module('QuepidApp')
         } else {
           $scope.pendingWizardSettings.queryParams            = settings.queryParams;
         }
+        $scope.pendingWizardSettings.bareQueryParam           = settings.bareQueryParam;
 
         $scope.reset();
       };
@@ -298,6 +300,7 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.customHeaders            = settings.customHeaders;
         $scope.pendingWizardSettings.headerType               = settings.headerType;
         $scope.pendingWizardSettings.queryParams              = settings.queryParams;
+        $scope.pendingWizardSettings.bareQueryParam           = settings.bareQueryParam;
         $scope.pendingWizardSettings.titleField               = settings.titleField;
         $scope.pendingWizardSettings.urlFormat                = settings.urlFormat;
         $scope.pendingWizardSettings.proxyRequests            = settings.proxyRequests;
@@ -353,6 +356,8 @@ angular.module('QuepidApp')
       $scope.readyToContinue = readyToContinue;
       $scope.setupDefaults  = setupDefaults;
       $scope.linkToSearchEndpointUrl  = linkToSearchEndpointUrl;
+      $scope.searchEngineDisplayName = searchEngineDisplayName;
+      $scope.troubleshootingWikiUrl  = troubleshootingWikiUrl;
       $scope.submit         = submit;
       $scope.reset          = reset;
       $scope.resetUrlValid  = resetUrlValid;
@@ -389,6 +394,23 @@ angular.module('QuepidApp')
         }
       }
       
+      // pendingWizardSettings.searchEnginePreset is the mapper-based engine's raw id
+      // (e.g. 'vespa') when one is selected - the searchEngineName filter only knows the
+      // built-in engines, so a mapper preset would otherwise pass through it unchanged
+      // (lowercase, un-cased). Resolve it against the registered engines first; anything
+      // it doesn't recognise (a built-in engine) is handed to searchEngineName as-is.
+      function searchEngineDisplayName(preset) {
+        var mapperEngine = ($scope.mapperBasedSearchEngines || []).find(function(engine) {
+          return engine.id === preset;
+        });
+
+        return mapperEngine ? mapperEngine.name : preset;
+      }
+
+      function troubleshootingWikiUrl(searchEngine, mapperBasedSearchEngineId) {
+        return settingsSvc.troubleshootingWikiUrl(searchEngine, mapperBasedSearchEngineId);
+      }
+
       function linkToSearchEndpointUrl() {
         if ($scope.pendingWizardSettings.proxyRequests === true){
           return caseTryNavSvc.getQuepidProxyUrl($scope.pendingWizardSettings.searchEndpointId) + $scope.pendingWizardSettings.searchUrl;
@@ -425,7 +447,7 @@ angular.module('QuepidApp')
       }
 
       function skipValidation() {
-        var validator = new SettingsValidatorFactory($scope.pendingWizardSettings);
+        var validator = searchSvc.createValidator($scope.pendingWizardSettings);
 
         setupDefaults(validator);
 
@@ -489,7 +511,34 @@ angular.module('QuepidApp')
           else {
             settingsForValidation.args = queryParams;
           }
-        
+
+          // Same JSON-vs-bare-text split as Try#json_query_params?/#searchapi_args
+          // (try.rb) - a JSON-bodied search API (e.g. Vespa's {"yql": ...}) has to reach
+          // the searcher as a parsed object, not a string, or splainer-search's GET
+          // request builder (searchApiSearcherPreprocessorSvc.buildGetParamsString)
+          // treats the whole string as an already-formed querystring fragment and
+          // appends it to the URL verbatim - producing an invalid URL for any search
+          // API using this JSON-body convention, not just Vespa. A real (non-wizard)
+          // query never hits this: Try#args parses query_params server-side via
+          // JsonArgParser before the client ever sees it.
+          if (settingsForValidation.args.trim().charAt(0) === '{') {
+            try {
+              settingsForValidation.args = JSON.parse(settingsForValidation.args);
+            } catch (e) {
+              // Not valid JSON despite looking like it - leave as a string and let
+              // validateUrl() surface the resulting request failure.
+            }
+          }
+          else if ($scope.pendingWizardSettings.bareQueryParam) {
+            // Bare-text authoring mode (e.g. Vespa YQL typed directly instead of JSON) -
+            // Try#searchapi_args wraps this under the engine's own param name
+            // (MapperBasedSearchEngine#bare_query_param) server-side before a real query
+            // ever runs; the wizard's pre-save validation has to do the same wrapping
+            // itself here, or splainer-search sends the bare string with no param name at
+            // all - Vespa (and likely others) then reject the request as having no query.
+            settingsForValidation.args = { [$scope.pendingWizardSettings.bareQueryParam]: settingsForValidation.args };
+          }
+
           try {
             /*jshint evil:true */
             /* jshint undef: false */
@@ -565,7 +614,7 @@ angular.module('QuepidApp')
           // Pass in the Quepid specific proxy url
           settingsForValidation.proxyUrl = caseTryNavSvc.getQuepidProxyUrl(settingsForValidation.searchEndpointId);
         }
-        var validator = new SettingsValidatorFactory(settingsForValidation);
+        var validator = searchSvc.createValidator(settingsForValidation);
       
         validator.validateUrl()
         .then(function () {

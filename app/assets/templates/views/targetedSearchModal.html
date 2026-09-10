@@ -4,7 +4,7 @@
 </div>
 <div class="modal-body" id="targeted-search-modal" ng-controller="DocFinderCtrl">
   <div ng-if="!usesQueryParamsEditor" class="alert alert-warning">
-    Finding and rating missing documents isn't supported for the <strong>{{settings.searchEngine | searchEngineName}}</strong> search engine yet.
+    Finding and rating missing documents isn't supported for the <strong>{{(settings.selectedTry.mapperBasedSearchEngineName || settings.searchEngine) | searchEngineName}}</strong> search engine yet.
   </div>
 
   <div ng-if="usesQueryParamsEditor">
@@ -67,7 +67,7 @@
                    '1': 'There is one rating',
                    'other': 'There are {} ratings'}">
         </ng-pluralize>
-        for your original query <em>{{query.queryText}}</em>, but looking up already-rated documents by ID isn't supported for the <strong>{{settings.searchEngine | searchEngineName}}</strong> search engine.
+        for your original query <em>{{query.queryText}}</em>, but looking up already-rated documents by ID isn't supported for the <strong>{{(settings.selectedTry.mapperBasedSearchEngineName || settings.searchEngine) | searchEngineName}}</strong> search engine.
       </div>
 
       <div ng-if="this.docFinder.numFound > 0">

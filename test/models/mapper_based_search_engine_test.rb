@@ -16,5 +16,12 @@ class MapperBasedSearchEngineTest < ActiveSupport::TestCase
       assert_equal 'searchapi', vespa.search_engine
       assert_equal File.read(Rails.root.join('db/mapper_based_search_engines/vespa.js')), vespa.mapper_code
     end
+
+    it 'lets Vespa auto-switch between GET and POST, wrapping bare text under yql' do
+      vespa = MapperBasedSearchEngine.find('vespa')
+
+      assert_equal 'AUTO', vespa.api_method
+      assert_equal 'yql', vespa.bare_query_param
+    end
   end
 end

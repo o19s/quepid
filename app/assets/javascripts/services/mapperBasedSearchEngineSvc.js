@@ -25,6 +25,7 @@ angular.module('QuepidApp')
           searchUrl:             data.search_url,
           urlFormat:             data.url_format,
           queryParams:           data.query_params,
+          bareQueryParam:        data.bare_query_param,
           mapperCode:            data.mapper_code,
           customHeaders:         data.custom_headers,
           headerType:            data.header_type,

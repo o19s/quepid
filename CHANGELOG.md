@@ -1,5 +1,54 @@
 # Changelog
 
+## 8.7.0 -- 2026-??-??
+
+Three big things in this release: **Quepid now runs on SQLite or PostgreSQL, not just MySQL**; **Vespa is a fully worked-out example search engine**, backed by a coordinated `splainer-search` refactor and upgrade to 3.2.2; and **the Bootstrap 5 migration crossed the finish line**, alongside two more phases of AngularJS removal. On top of that, a batch of SQL correctness/security hardening from @frutik.
+
+## 🗄️ SQLite and PostgreSQL Support
+Quepid now runs against three database adapters. SQLite (`DB_ADAPTER=sqlite3`) is the new zero-setup default for solo Search Practitioners who don't need a separate database server — production Docker images fall back to it automatically when no `DATABASE_URL` is set. https://github.com/o19s/quepid/pull/1763 by @epugh. PostgreSQL support followed close behind: a `postgresql_schema_compatibility.rb` shim (mirroring the existing SQLite one), a Docker service, and a CI job. https://github.com/o19s/quepid/pull/1777 by @frutik. Its data now persists at `./volumes/postgres/data` instead of an anonymous Docker volume that a container recreation could silently lose (https://github.com/o19s/quepid/pull/1778 by @frutik), and the sample data seeder is safe to re-run repeatedly against it after a `books_ai_judges` uniqueness bug was fixed in four spots (https://github.com/o19s/quepid/pull/1779 by @frutik).
+
+Running Quepid on your laptop with no database server to set up is now just:
+
+```bash
+docker build -f Dockerfile.prod -t quepid .
+docker run -d -p 3000:3000 --name quepid quepid
+```
+
+No `DATABASE_URL` means production defaults to SQLite automatically — the container creates `storage/production.sqlite3`, runs migrations, and starts serving on port 3000 on first boot.
+
+## 🔎 Vespa Search Engine Support
+Quepid now ships a fully worked-out Vespa integration, riding on the existing "Search API" (mapper-based) endpoint type: a Vespa-flavored JavaScript mapper makes it show up and behave like a first-class splainer-search-based engine, including bare-YQL query support and mapper error surfacing. https://github.com/o19s/quepid/pull/1760 by @epugh. A follow-up revamp of the "Find and Rate Missing Documents" modal and the mapper plumbing pushed several fixes down into `splainer-search` itself (see below). https://github.com/o19s/quepid/pull/1774 by @epugh.
+
+A large follow-up, https://github.com/o19s/quepid/pull/1775 by @epugh, rounds out Vespa support end-to-end:
+- **Solr JSON Query DSL support in Quepid itself**, not just splainer-search: `Try`, `TryFactory.js`, and `queriesSvc.js` now carry a query through as structured JSON instead of forcing it through the classic `q=`/`fq=` string path, and `lib/es_arg_parser.rb` was renamed to `lib/json_arg_parser.rb` to reflect that it's no longer ES-specific.
+- **Automatic GET/POST switching**, threaded from `mapper_based_search_engine.rb`/`search_endpoint.rb` down through `Try#searchapi_args` and `fetch_service.rb`, mirroring splainer-search's own `apiMethod: 'AUTO'` support above.
+- **Fixed: wizard "ping it" validation sent bare query text (e.g. Vespa's YQL) with no param key at all.** The wizard validates before any `Try` is saved, so it never went through `Try#searchapi_args`'s `bare_query_param` wrapping — Vespa rejected the resulting request as having no query. `bare_query_param` is now threaded through the mapper-engine API response and wizard settings so the same wrapping happens client-side too.
+- **Fixed:** a `TryFactory.js#toApiFormat()` bug silently dropped all six `mapperBasedSearchEngine*` fields on the reverse mapping, breaking the engine's icon, pagination, and rated-doc lookup after any settings-tab switch.
+- The **Escape Queries checkbox** (only meaningful for Solr/ES/OS) is now hidden for engines it doesn't apply to, with its tooltip polarity corrected and a BS5/legacy-CSS layout conflict fixed.
+- **Settings page rework:** Endpoint Details now comes first and Search Endpoints last (collapsed by default); a generic "Searchapi" label/icon was swept and replaced with the specific mapper-based engine's own name/icon (Vespa) across 8 templates/views; and a wiki troubleshooting link was added via a new `settingsSvc.troubleshootingWikiUrl()`.
+- The Query Sandbox now adapts between JSON and plain-text editing modes depending on the query shape.
+
+### `splainer-search` changes relevant to Quepid
+Quepid's `splainer-search` pin moved from 3.0.0 (at 8.6.0) to **3.2.2**, picking up:
+- **Custom Search API pagination and `AUTO` GET/POST switching** (3.1.0): `pager()` now builds real next-page requests from a `nextPageArgsMapper` instead of being a no-op, and `apiMethod: 'AUTO'` picks GET vs. POST based on the built URL's length — this is what powers Vespa's paging in Quepid. https://github.com/o19s/splainer-search/pull/162 by @epugh.
+- **Solr JSON Query DSL support** (3.2.0): `config.jsonQueryDsl: true` lets Solr requests use nested `bool`/`edismax` clauses that don't map onto classic `q=`/`fq=` query strings, plus a fix for `escapeQuery`'s Lucene escaping being double-applied on top of `hydrateSearchQuery`'s own. https://github.com/o19s/splainer-search/pull/163 by @epugh.
+- **Breaking (internal, absorbed by the adapter):** `SettingsValidatorFactory` and `ResolverFactory` were removed in favor of each engine's own `fetchDocs()`/`validateUrl()` (inherited from a shared `SearcherFactory` base). Quepid's side of this, also in https://github.com/o19s/quepid/pull/1775, updates `app/javascript/splainer_search_adapter.js` and `wizardModal.js` to call `searchSvc.createValidator(settings)` instead of `new SettingsValidatorFactory(settings)`; `docResolverSvc.createResolver()` keeps its existing `{docs, fetchDocs()}` contract unchanged, so `docCacheSvc.js` needed no changes at all. Verified end-to-end against the real published `splainer-search@3.2.2` npm package (not just the local dev mount) via a live Playwright sweep across every engine tile in the Create-a-Case wizard.
+
+## 🎨 Bootstrap 5 Migration Complete, Continued AngularJS Removal
+Bootstrap 3 is gone from the UI entirely — the core stylesheet bundle is npm Bootstrap 5 plus Quepid's own compat/additions layers, with Angular components that depended on angular-ui-bootstrap (modals, popovers, tooltips, typeahead, collapse/accordion) rewritten against native BS5 APIs. https://github.com/o19s/quepid/pull/1703 by @davidshq. This was followed by continued incremental AngularJS removal: shared DOM helpers extracted for both stacks and two vendored Angular plugins dropped (https://github.com/o19s/quepid/pull/1752 and https://github.com/o19s/quepid/pull/1761 by @davidshq), and the share-case modal on the Angular `core` surface replaced with a Stimulus controller while the Rails-surface UX stayed put (https://github.com/o19s/quepid/pull/1764 by @davidshq).
+
+### Features
+
+* Ratings can now be remapped in bulk — handy for teams migrating off a legacy scale (e.g. a 10-point scale down to 3,2,1,0). https://github.com/o19s/quepid/pull/1751 by @epugh.
+* A nightly-run icon now shows next to "Last run by" on the case listing. https://github.com/o19s/quepid/pull/1750 by @epugh.
+* Announcements now support a publish date and an expiration date, so multiple announcements can be queued up in advance without needing to be manually disabled later. https://github.com/o19s/quepid/pull/1762 by @epugh.
+
+### Improvements
+
+* Duplicate book-sync jobs are no longer queued while a sync is already in progress — previously reopening a case repeatedly could pile up background jobs and max out the database. https://github.com/o19s/quepid/pull/1749 by @epugh.
+* A batch of SQL correctness and security hardening from @frutik: match email case-insensitively in SQL instead of relying on collation (https://github.com/o19s/quepid/pull/1766), compare numeric columns with `=` instead of `LIKE` in search filters (https://github.com/o19s/quepid/pull/1767), match `for_user` by id instead of `SELECT DISTINCT` over every column (https://github.com/o19s/quepid/pull/1768), deduplicate by id instead of `SELECT DISTINCT` in three more queries (https://github.com/o19s/quepid/pull/1770), order query results explicitly instead of relying on the database's incidental ordering (https://github.com/o19s/quepid/pull/1771), pick the oldest match when a search endpoint lookup is ambiguous (https://github.com/o19s/quepid/pull/1772), and dispatch SQL function names per-adapter instead of a MySQL-or-not check (https://github.com/o19s/quepid/pull/1773) — the last enabling the PostgreSQL support above. Model annotations now only regenerate when running against MySQL. https://github.com/o19s/quepid/pull/1769 by @frutik. Further query optimization in https://github.com/o19s/quepid/pull/1776 by @epugh.
+* Dependencies: Node.js v24.20.0, nginx v1.31.4, and assorted other JavaScript and Ruby gem updates via Renovate. https://github.com/o19s/quepid/pull/1755, https://github.com/o19s/quepid/pull/1756, https://github.com/o19s/quepid/pull/1757, https://github.com/o19s/quepid/pull/1758, https://github.com/o19s/quepid/pull/1759.
+
 ## 8.6.0 -- 2026-08-16
 
 A hefty release packed with security improvements, new authentication options, AI Judge enhancements, and continued progress on moving Quepid away from AngularJS.

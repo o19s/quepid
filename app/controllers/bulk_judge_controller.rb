@@ -18,7 +18,6 @@ class BulkJudgeController < ApplicationController
     # Default to hiding explanations unless explicitly set to true
     @show_explanations = params[:show_explanations].present? ? deserialize_bool_param(params[:show_explanations]) : false
 
-    # Get available position options for the dropdown
     @available_positions = @book.query_doc_pairs.distinct.pluck(:position).compact.sort
 
     # Get all query_doc_pairs for this query_text
@@ -73,7 +72,6 @@ class BulkJudgeController < ApplicationController
       [ qdp.id, judgement ]
     end
 
-    # Get total counts for display (before pagination)
     @total_count = randomized_results.size
     @total_queries = grouped.keys.size
   end

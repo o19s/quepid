@@ -78,6 +78,15 @@ class TryTest < ActiveSupport::TestCase
         assert_equal [ '#$query##' ], args['q']
         assert_equal [ 'text^1 catch_line^2' ], args['qf']
       end
+
+      test 'parses Solr JSON Query DSL query_params via JsonArgParser instead of SolrArgParser' do
+        try = tries(:one)
+        try.query_params = '{"query": "title:#$query##", "limit": 5}'
+
+        args = try.args
+
+        assert_equal({ 'query' => 'title:#$query##', 'limit' => 5 }, args)
+      end
     end
 
     describe 'for ES params' do
@@ -144,6 +153,27 @@ class TryTest < ActiveSupport::TestCase
         assert_equal args, expected_vars
       end
 
+      test 'wraps bare query text under the mapper-based search engine\'s bare_query_param' do
+        try = tries(:one)
+        try.search_endpoint.search_engine = 'searchapi'
+        try.search_endpoint.mapper_based_search_engine_id = 'vespa'
+        try.query_params = 'select * from movies where true'
+
+        args = try.args
+
+        assert_equal({ 'yql' => 'select * from movies where true' }, args)
+      end
+
+      test 'still uses SolrArgParser for bare text when the endpoint has no mapper-based search engine' do
+        try = tries(:one)
+        try.search_endpoint.search_engine = 'searchapi'
+        try.search_endpoint.mapper_based_search_engine_id = nil
+
+        args = try.args
+
+        assert_equal({ 'q' => [ "\#$query##" ] }, args)
+      end
+
       test 'handles when the search_engine is not defined' do
         try = tries(:one)
         try.search_endpoint.search_engine = nil
@@ -161,6 +191,77 @@ class TryTest < ActiveSupport::TestCase
 
         assert_nil args
       end
+    end
+  end
+
+  describe '#json_query_params?' do
+    test 'is public, not a private predicate, so it can be served on the try JSON' do
+      try = tries(:one)
+
+      assert_respond_to try, :json_query_params?
+    end
+
+    test 'true for JSON query_params' do
+      try = tries(:one)
+      try.query_params = '{"query": "#$query##"}'
+
+      assert_predicate try, :json_query_params?
+    end
+
+    test 'false for bare text query_params' do
+      try = tries(:one)
+      try.query_params = 'q=#$query##'
+
+      assert_not try.json_query_params?
+    end
+  end
+
+  describe '#resolved_api_method' do
+    test 'resolves AUTO to POST when query_params is JSON' do
+      try = tries(:one)
+      try.search_endpoint.api_method = 'AUTO'
+      try.query_params = '{"yql": "select * from movies where true"}'
+
+      assert_equal 'POST', try.resolved_api_method
+    end
+
+    test 'leaves AUTO as AUTO when query_params is bare text' do
+      try = tries(:one)
+      try.search_endpoint.api_method = 'AUTO'
+      try.query_params = 'select * from movies where true'
+
+      assert_equal 'AUTO', try.resolved_api_method
+    end
+
+    test 'leaves non-AUTO api_method untouched regardless of query_params' do
+      try = tries(:one)
+      try.search_endpoint.api_method = 'POST'
+      try.query_params = 'select * from movies where true'
+
+      assert_equal 'POST', try.resolved_api_method
+    end
+
+    test 'returns nil when there is no search_endpoint' do
+      try = tries(:one)
+      try.search_endpoint = nil
+
+      assert_nil try.resolved_api_method
+    end
+
+    test 'forces POST for a JSON query_params even when api_method is fixed to GET (Solr JSON Query DSL)' do
+      try = tries(:one)
+      try.search_endpoint.api_method = 'GET'
+      try.query_params = '{"query": "title:#$query##"}'
+
+      assert_equal 'POST', try.resolved_api_method
+    end
+
+    test 'leaves classic bare-text Solr query_params on whatever api_method is configured' do
+      try = tries(:one)
+      try.search_endpoint.api_method = 'GET'
+      try.query_params = 'q=#$query##'
+
+      assert_equal 'GET', try.resolved_api_method
     end
   end
 

@@ -555,6 +555,23 @@ header .dropdown-toggle .bi {
   color: inherit;
 }
 
+/* Checkbox settings ("Evaluate Nightly?" / "Escape Queries") reuse
+ * `.dev-body` as their accordion body, giving that element both
+ * `.dev-body` and `.form-check`. BS5's default `.form-check` layout floats
+ * `.form-check-input` with `margin-left: -1.5em` against a `padding-left:
+ * 1.5em` on the container, so the checkbox always renders flush with the
+ * container's own left edge — one panel-padding's-width (15px, see
+ * `#dev-settings .dev-body` in core-additions.css) to the left of every
+ * other control in the panel ("Number of Results to Show"'s input,
+ * "Evaluate Nightly?"'s header text). Drop BS5's float/negative-margin
+ * trick and just flow the checkbox inline before its label, so it lines
+ * up with the panel's normal 15px inset like everything else. */
+#dev-settings .dev-body.form-check .form-check-input {
+  float: none;
+  margin-left: 0;
+  margin-right: 0.5em;
+}
+
 /* Annotation dropdown — markup in components/annotation/annotation.html. */
 .annotation .dropdown > a.dropdown-toggle:hover {
 	color: #888;

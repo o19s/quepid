@@ -116,7 +116,7 @@
               </span>
             </div>
             <div ng-if="urlInvalid && !showTLSChangeWarning" class="alert alert-danger">
-              Sorry, we're not getting any search results from your {{ pendingWizardSettings.searchEngine | searchEngineName }}.
+              Sorry, we're not getting any search results from your {{ searchEngineDisplayName(pendingWizardSettings.searchEnginePreset || pendingWizardSettings.searchEngine) | searchEngineName }}.
 
               <ul ng-if="pendingWizardSettings.searchEngine === 'searchapi'">
                 <li ng-if="!pendingWizardSettings.proxyRequests"><strong>Quick fix:</strong> check <strong>Proxy Requests</strong> below so Quepid's server talks to your Search API instead of your browser.</li>
@@ -124,7 +124,7 @@
                 <li>Can you open the <a target="_blank" rel="noopener noreferrer" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li>
                 <li>Do you need an API Key?  If so, set one up in <strong>Custom Headers</strong> below.</li>
                 <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
-                <li>See the <a target="_blank" rel="noopener noreferrer" href="https://github.com/o19s/quepid/wiki/Troubleshooting-SearchAPI-and-Quepid/">Troubleshooting Search API and Quepid</a> wiki page for more help!</li>
+                <li>See the <a target="_blank" rel="noopener noreferrer" ng-href="{{troubleshootingWikiUrl(pendingWizardSettings.searchEngine, pendingWizardSettings.searchEnginePreset)}}">Troubleshooting {{ searchEngineDisplayName(pendingWizardSettings.searchEnginePreset || pendingWizardSettings.searchEngine) | searchEngineName }} and Quepid</a> wiki page for more help!</li>
               </ul>
 
               <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
@@ -134,7 +134,7 @@
                 <li>Does your Elasticsearch accept HTTP POST requests?</li>
                 <li>Do you need an API Key?  If so, set one up in <strong>Custom Headers</strong> below.</li>
                 <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
-                <li>See the <a target="_blank" rel="noopener noreferrer" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid/">Troubleshooting Elasticsearch and Quepid</a> wiki page for more help!</li>
+                <li>See the <a target="_blank" rel="noopener noreferrer" ng-href="{{troubleshootingWikiUrl(pendingWizardSettings.searchEngine, pendingWizardSettings.searchEnginePreset)}}">Troubleshooting Elasticsearch and Quepid</a> wiki page for more help!</li>
               </ul>
 
               <ul ng-if="pendingWizardSettings.searchEngine === 'os'">
@@ -143,7 +143,7 @@
                 <li>Can you open the <a target="_blank" rel="noopener noreferrer" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li>
                 <li>Does your OpenSearch accept HTTP POST requests?</li>
                 <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
-                <li>See the <a target="_blank" rel="noopener noreferrer" href="https://github.com/o19s/quepid/wiki/Troubleshooting-OpenSearch-and-Quepid/">Troubleshooting OpenSearch and Quepid</a> wiki page for more help!</li>
+                <li>See the <a target="_blank" rel="noopener noreferrer" ng-href="{{troubleshootingWikiUrl(pendingWizardSettings.searchEngine, pendingWizardSettings.searchEnginePreset)}}">Troubleshooting OpenSearch and Quepid</a> wiki page for more help!</li>
               </ul>
 
               <ul ng-if="pendingWizardSettings.searchEngine === 'solr'">
@@ -161,7 +161,7 @@
                 <li ng-if="isChrome">Chrome does not accept self signed certificates on Solr, try Firefox.</li>
                 <li ng-if="isChrome">Chrome does not allow basic auth to Solr, try Firefox.</li>
                 <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
-                <li>See the <a target="_blank" rel="noopener noreferrer" href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid">Troubleshooting Solr and Quepid</a> wiki page for more help!</li>
+                <li>See the <a target="_blank" rel="noopener noreferrer" ng-href="{{troubleshootingWikiUrl(pendingWizardSettings.searchEngine, pendingWizardSettings.searchEnginePreset)}}">Troubleshooting Solr and Quepid</a> wiki page for more help!</li>
               </ul>
 
             </div>
