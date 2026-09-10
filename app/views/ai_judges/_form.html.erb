@@ -45,7 +45,7 @@
     <div class="tab-content" id="pills-tabContent">
       <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
 
-        <% sorted_judge_options = @ai_judge.judge_options.sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
+        <% sorted_judge_options = ai_judge.judge_options.sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
         <% sorted_judge_options.each do |key, value| %>
           <div class="row mb-3">
             <%= label_tag "judge_options[#{key}]", key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
@@ -83,7 +83,7 @@
             This the raw JSON stored as <code>options</code> for the Judge.
             Make sure you are editing under the <code>judge_options</code> key.
           </div>
-          <%= form.text_area :options, value: format_json(@ai_judge.options),
+          <%= form.text_area :options, value: format_json(ai_judge.options),
             class: 'form-control json-field', rows: 10, disabled: true %>
         </div>
       </div>
@@ -98,7 +98,7 @@
 
   <div class="card-footer">
     <%= form.submit 'Save', class: 'btn btn-primary float-start' %>
-    <%= link_to 'Back to Team', team_path(@team), class: "btn btn-outline-secondary float-end" %>
+    <%= link_to 'Back to Team', team_path(team), class: "btn btn-outline-secondary float-end" %>
   </div>
 </div>
 

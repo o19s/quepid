@@ -175,6 +175,7 @@ class BooksController < ApplicationController
 
       redirect_to @book, notice: 'Book was successfully created.'
     else
+      @ai_judges = []
       render :new
     end
   end

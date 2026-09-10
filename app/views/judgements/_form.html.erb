@@ -1,10 +1,10 @@
 <% content_for :debug_info do %>
   <!--
-  BOOK_ID: <%= @book.id %>
+  BOOK_ID: <%= book.id %>
   QUERY_DOC_PAIR_ID: <%= query_doc_pair.id %>
   JUDGEMENT_ID: <%= judgement.id %>
   JUDGEMENT USER ID: <%= judgement&.user_id %>
-  CURRENT USER ID: <%= @current_user.id %>
+  CURRENT USER ID: <%= current_user.id %>
   -->
 <% end %>
 
@@ -158,17 +158,17 @@
 
 
 <%
-  @show_keyboard_shortcuts = true
+  show_keyboard_shortcuts = true
   # Use enhanced JudgementHelper to generate rating buttons with scorer labels
-  @rating_buttons = generate_rating_buttons(@book)
+  rating_buttons = generate_rating_buttons(book)
 
-  @document_fields = query_doc_pair.document_fields
+  document_fields = query_doc_pair.document_fields
 
   image_url = nil
-  if @document_fields.has_key?('thumb')
-    image_url = @document_fields['thumb']
-  elsif @document_fields.has_key?('image')
-    image_url = @document_fields['image']
+  if document_fields.has_key?('thumb')
+    image_url = document_fields['thumb']
+  elsif document_fields.has_key?('image')
+    image_url = document_fields['image']
   end
 
 %>
@@ -176,7 +176,7 @@
 <%= form_for(judgement, url: url_for_form) do |form| %>
   <%= render "shared/error_messages", record: judgement, subject: "judgement" %>
 
-  <% if judgement.user_id != @current_user.id %>
+  <% if judgement.user_id != current_user.id %>
     <div class="alert alert-warning" role="alert">
       This judgement was made by <%= judgement.user.fullname %>!
     </div>
@@ -205,13 +205,13 @@
     </p>
     <div class="collapse pb-3" id="collapseExample">
       <div class="card card-body scoring-guidelines-content">
-        <%= render_markdown(@book.effective_scoring_guidelines) %>
+        <%= render_markdown(book.effective_scoring_guidelines) %>
       </div>
     </div>
 
 
     <div class="float-end">
-      <%= link_to 'I will Judge Later', book_query_doc_pair_judge_later_path(@book, query_doc_pair), class: 'btn btn-info m-1', role: 'button' %>
+      <%= link_to 'I will Judge Later', book_query_doc_pair_judge_later_path(book, query_doc_pair), class: 'btn btn-info m-1', role: 'button' %>
       <br/>
       <button type="button" class="btn btn-warning m-1" data-bs-toggle="modal" data-bs-target="#explanationModal">
         I Can't Tell
@@ -219,7 +219,7 @@
     </div>
 
     <p class="card-text">
-      <%= render 'query_doc_pairs/document_fields', document_fields: @document_fields %>
+      <%= render 'query_doc_pairs/document_fields', document_fields: document_fields %>
     </p>
 
     <div class="mt-3">
@@ -227,48 +227,48 @@
       <%= form.text_area :explanation, class: 'form-control', rows: 2, placeholder: 'Why did you choose this rating?' %>
     </div>
 
-    <% if @book.show_rank? %>
+    <% if book.show_rank? %>
     <p class="card-text">
       <b>Document Rank: </b><%= judgement.query_doc_pair.position %>
     </p>
     <% end %>
 
-    <% if @show_keyboard_shortcuts %>
+    <% if show_keyboard_shortcuts %>
       <table class="padded">
         <tr>
           <td></td>
-          <% @rating_buttons.each do |b| %>
+          <% rating_buttons.each do |b| %>
             <%
-              @button_classes = "btn "
+              button_classes = "btn "
               if judgement.rating == b["value"].to_i
-                @button_classes = @button_classes + "btn-preselected "
+                button_classes = button_classes + "btn-preselected "
               end
             %>
             <td class="padded">
 
-              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: @button_classes, id:"button-for-#{b["key"][:name]}" %>
+              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: button_classes, id:"button-for-#{b["key"][:name]}" %>
             </td>
           <% end %>
         </tr>
         <tr>
           <td><i class="bi-keyboard"></i></td>
-          <% @rating_buttons.each do |b| %>
-              <td class="keyboard-shortcuts-td"><span class="<%= judgement.rating == b["value"].to_i ? 'bold-and-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
+          <% rating_buttons.each do |b| %>
+              <td class="keyboard-shortcuts-td"><span class="<%= judgement.rating == b["value"].to_i ? 'text-black fw-bold' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
           <% end %>
         </tr>
       </table>
     <% else %>
       <table class="padded">
         <tr>
-          <% @rating_buttons.each do |b| %>
+          <% rating_buttons.each do |b| %>
             <%
-              @button_classes = "btn "
+              button_classes = "btn "
               if judgement.rating == b["value"].to_i
-                @button_classes = @button_classes + "btn-preselected "
+                button_classes = button_classes + "btn-preselected "
               end
             %>
             <td class="padded">
-              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"].to_s + "\")", style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: @button_classes, id:"button-for-"+b["key"].to_s %>
+              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"].to_s + "\")", style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: button_classes, id:"button-for-"+b["key"].to_s %>
             </td>
           <% end %>
         </tr>
@@ -294,7 +294,7 @@
 <!-- Modal -->
 <div class="modal fade" id="explanationModal" tabindex="-1" aria-labelledby="explanationModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-right">
-    <%= form_for(judgement, url: book_query_doc_pair_unrateable_path(@book, query_doc_pair), data: { turbo: false }) do |f| %>
+    <%= form_for(judgement, url: book_query_doc_pair_unrateable_path(book, query_doc_pair), data: { turbo: false }) do |f| %>
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="modal-title fs-5" id="explanationModalLabel">Record Explanation</h1>

@@ -15,25 +15,27 @@
   <div class="alert alert-warning" role="alert">
     <h5><i class="bi bi-exclamation-triangle"></i> No Query/Doc Pairs Available</h5>
     <p class="mb-2">You don't have any query/doc pairs created yet.</p>
-    <% if book.cases.empty? %>
-      <p>You can populate this Book with query/doc pairs for judging by <%= link_to 'picking a Case', cases_path, class: 'alert-link' %> and using the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this book with query/doc pairs from your search engine.</p>
-    <% else %>
-      <p>Return to the linked Case
-      <% book.cases.each do |kase| %>
-        <%= link_to_core_case case_title(kase), kase, kase.last_try_number, class: 'alert-link' %>
+    <p>
+      <% if book.cases.empty? %>
+        You can populate this Book with query/doc pairs for judging by <%= link_to 'picking a Case', cases_path, class: 'alert-link' %> and using the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this book with query/doc pairs from your search engine.
+      <% else %>
+        Return to the linked Case
+        <% book.cases.each do |kase| %>
+          <%= link_to_core_case case_title(kase), kase, kase.last_try_number, class: 'alert-link' %>
+        <% end %>
+        and use the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this Book with query/doc pairs for judging.
       <% end %>
-      and use the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this Book with query/doc pairs for judging.</p>
-    <% end %>
+    </p>
   </div>
 
-<% elsif current_user_has_judged_all && !@moar_judgements_needed %>
+<% elsif current_user_has_judged_all && !moar_judgements_needed %>
   <!-- User has judged everything and book is complete -->
   <div class="alert alert-success" role="alert">
     <h5><i class="bi bi-check-circle"></i> All Done!</h5>
     <p class="mb-0">Congratulations! You have judged all <%= pluralize(total_pairs, 'query/doc pair') %>, and all pairs have been judged by three separate judges. This book is complete!</p>
   </div>
 
-<% elsif current_user_has_judged_all && @moar_judgements_needed %>
+<% elsif current_user_has_judged_all && moar_judgements_needed %>
   <!-- User has judged all their available pairs but book needs more judgements from others -->
   <div class="alert alert-info" role="alert">
     <h5><i class="bi bi-person-check"></i> You Have Judged All Available Pairs</h5>
@@ -41,13 +43,14 @@
     <p class="mb-0">Some pairs still need additional judgements from other judges to reach the best practice of 3 judgements each.</p>
   </div>
 
-<% elsif @moar_judgements_needed %>
+<% elsif moar_judgements_needed %>
   <!-- More judgements are needed and user can contribute -->
-  <% if unjudged_pairs %>
-    <div class="alert alert-warning" role="alert">
+  <div class="alert alert-warning" role="alert">
+    <% if unjudged_pairs %>
+
       <h5><i class="bi bi-exclamation-circle"></i> Critical: Unjudged Pairs Need Attention</h5>
       <% if user_has_judged_some %>
-          <p class="mb-2">You have judged <%= user_judgement_count %> out of <%= pluralize(total_pairs, 'query/doc pair') %>.</p>
+        <p class="mb-2">You have judged <%= user_judgement_count %> out of <%= pluralize(total_pairs, 'query/doc pair') %>.</p>
       <% end %>
       <p class="mb-3">
         <strong>High Priority:</strong> There <%= (total_pairs - partially_judged_pairs) == 1 ? 'is' : 'are' %> <%= pluralize(total_pairs - partially_judged_pairs, 'pair') %> that <%= (total_pairs - partially_judged_pairs) == 1 ? 'has' : 'have' %> <strong>no judgements yet</strong> and need immediate attention.
@@ -56,7 +59,7 @@
           Additionally, <%= pluralize(partially_judged_pairs, 'pair') %> <%= partially_judged_pairs == 1 ? 'has' : 'have' %> fewer than 3 judgements each, with 3 being best practice.
         <% end %>
       </p>
-      
+
       <div class="d-grid gap-2 d-md-flex">
         <%= link_to book_judge_path(book), class: 'btn btn-primary', role: 'button' do %>
           <i class="bi bi-lightning-fill"></i> Start with Unjudged Pairs
@@ -65,9 +68,9 @@
           <i class="bi bi-lightning"></i> Judge in Bulk
         <% end %>
       </div>
-    </div>
-  <% else %>
-    <div class="alert alert-warning" role="alert">
+
+    <% else %>
+
       <h5><i class="bi bi-clipboard-check"></i> Finishing Up Judgements</h5>
       <% if user_has_judged_some %>
         <p class="mb-2">You have judged <%= user_judgement_count %> out of <%= pluralize(total_pairs, 'query/doc pair') %>.</p>
@@ -75,7 +78,7 @@
       <p class="mb-3">
         Good progress! All pairs have at least one judgement, but <%= pluralize(partially_judged_pairs, 'pair') %> still <%= partially_judged_pairs == 1 ? 'needs' : 'need' %> additional judgements to reach our target of 3 judgements each for quality assurance.
       </p>
-      
+
       <div class="d-grid gap-2 d-md-flex">
         <%= link_to book_judge_path(book), class: 'btn btn-primary', role: 'button' do %>
           <i class="bi bi-play-circle"></i> Continue Judging
@@ -84,8 +87,9 @@
           <i class="bi bi-lightning"></i> Judge in Bulk
         <% end %>
       </div>
-    </div>
-  <% end %>
+
+    <% end %>
+  </div>
 
 <% else %>
   <!-- All judgements complete -->

@@ -3,7 +3,7 @@
     <div class="card-body">
       <%= render "shared/error_messages", record: search_endpoint, subject: "Search Endpoint" %>
 
-      <% if @current_user.teams.empty? %>
+      <% if current_user.teams.empty? %>
         <div class="alert alert-warning" role="alert">
           Search Endpoints are meant to be shared with Teams, and you have not created any yet.
           <%= link_to 'Create a Team', teams_path, method: :get, class:'btn btn-primary' %>
@@ -99,7 +99,7 @@
 
       <div class="mb-3">
         <%= form.label :teams, "Teams to Share this Endpoint With", class: 'form-label' %>
-        <%= form.collection_check_boxes(:team_ids, @current_user.teams, :id, :name) do |b| %>
+        <%= form.collection_check_boxes(:team_ids, current_user.teams, :id, :name) do |b| %>
           <div class="collection-check-box">
             <%= b.check_box %>
             <%= b.label %>

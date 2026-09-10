@@ -17,7 +17,7 @@
 <div class="card">
   <div class="card-body">
 
-    <h5 class="card-title" href="#collapseExample">Leaderboard</h3>
+    <h5 class="card-title" href="#collapseExample">Leaderboard</h5>
     <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
     <%=
     Vega.lite
@@ -34,7 +34,7 @@
   </div>
 </div>
 
-<%= render partial: 'unleash_modal', collection: @ai_judges, as: :ai_judge%>
+<%= render partial: 'unleash_modal', collection: @ai_judges, as: :ai_judge, locals: { book: @book } %>
 
 <p/>
 <h3>Judging Stats</h3>

@@ -4,8 +4,8 @@
     <p class="form-text">
       Manage the basic attributes of a user.
     </p>
-    <%= form_for(@user, url: {action: passed_in_action}) do |f| %>
-      <%= render "shared/error_messages", record: @user, subject: "user" %>
+    <%= form_for(user, url: {action: passed_in_action}) do |f| %>
+      <%= render "shared/error_messages", record: user, subject: "user" %>
 
       <div class="row mb-3">
         <%= f.label :email, class: 'col-sm-2 col-form-label' %>
@@ -88,8 +88,8 @@
       <p class="form-text">
         You can either set the user's password in plain text, or, if you know their encrypted password then you provide it.
       </p>
-      <%= form_for(@user, url: {action: passed_in_action}) do |f| %>
-        <%= render "shared/error_messages", record: @user, subject: "" %>
+      <%= form_for(user, url: {action: passed_in_action}) do |f| %>
+        <%= render "shared/error_messages", record: user, subject: "" %>
 
         <div class="mb-3">
           <%= f.label :password, class: 'form-label' %>

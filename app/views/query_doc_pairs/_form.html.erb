@@ -1,4 +1,4 @@
-<%= form_with(model: [@book, query_doc_pair]) do |form| %>
+<%= form_with(model: [book, query_doc_pair]) do |form| %>
   <div class="card">
     <div class="card-body">
       <%= render "shared/error_messages", record: query_doc_pair, subject: "Query Doc Pair" %>
