@@ -124,7 +124,7 @@
                 <li>Can you open the <a target="_blank" rel="noopener noreferrer" ng-href="{{linkToSearchEndpointUrl()}}">URL directly</a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li>
                 <li>Do you need an API Key?  If so, set one up in <strong>Custom Headers</strong> below.</li>
                 <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
-                <li>See the <a target="_blank" rel="noopener noreferrer" ng-href="{{troubleshootingWikiUrl(pendingWizardSettings.searchEngine, pendingWizardSettings.searchEnginePreset)}}">Troubleshooting Search API and Quepid</a> wiki page for more help!</li>
+                <li>See the <a target="_blank" rel="noopener noreferrer" ng-href="{{troubleshootingWikiUrl(pendingWizardSettings.searchEngine, pendingWizardSettings.searchEnginePreset)}}">Troubleshooting {{ searchEngineDisplayName(pendingWizardSettings.searchEnginePreset || pendingWizardSettings.searchEngine) | searchEngineName }} and Quepid</a> wiki page for more help!</li>
               </ul>
 
               <ul ng-if="pendingWizardSettings.searchEngine === 'es'">
