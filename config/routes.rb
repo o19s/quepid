@@ -66,6 +66,7 @@ Rails.application.routes.draw do
 
   get  'login' => 'sessions#new'
   get  'logout' => 'sessions#destroy'
+  get  'users/sign_in' => redirect('/login') # Devise's conventional path; we use our own sessions controller
 
   resources :sessions, except: [ :edit, :show, :update ]
   resource :account, only: [ :update, :destroy ]
