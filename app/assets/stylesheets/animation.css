@@ -55,8 +55,6 @@
 
 /* Get the spinner to align nicer */
 .vertically-centered {
-    display: flex;
-    align-items: center; /* Center vertically */
     margin: 2px;
 }
 

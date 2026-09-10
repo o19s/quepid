@@ -424,6 +424,17 @@ header.navbar-secondary .navbar-nav .nav-link {
   line-height: 24px;
 }
 
+/* Below `lg`, `.navbar-collapse` stacks nav items into a vertical list —
+ * the 18px/24px pair above (sized to center a link against the horizontal
+ * 56px bar) turns into large, loose gaps once every item is its own row.
+ * Tighten to a normal stacked-list size only in the collapsed/mobile state. */
+@media (max-width: 991.98px) {
+  header.navbar-secondary .navbar-nav .nav-link {
+    padding: 8px 15px;
+    line-height: 1.5;
+  }
+}
+
 /* Row + center the secondary navbar's dropdown and breadcrumb siblings.
  * Only this header has a `.container-home` sibling to center. */
 .navbar-secondary .container-home {
@@ -588,11 +599,17 @@ header .dropdown-toggle .bi {
 }
 
 /* Sub-results panel — toolbar absolutely top-right of the per-query
- * panel, row borders between <search-result> items. */
+ * panel, row borders between <search-result> items. `left` reserves the
+ * space core-additions.css's `.col-ratings.query-rating` occupies
+ * (--score-col-end, set on .sub-results there) plus a small gap, so the
+ * toolbar's own `flex-wrap: wrap` (Bootstrap's `.btn-toolbar` default) wraps
+ * its buttons onto a second row at narrow viewports instead of the
+ * shrink-to-fit right-anchored box overlapping the "Score All" dropdown. */
 .sub-results .btn-toolbar {
 	position: absolute;
 	top: 20px;
 	right: 20px;
+	left: calc(var(--score-col-end) + 20px);
 }
 
 .sub-results .btn-toolbar .active {

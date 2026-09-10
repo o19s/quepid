@@ -1,5 +1,5 @@
 <% email_login_only = true %>
-<div class="row m-t-20">
+<div class="row mt-4">
   <div class="col-md-5">
     <div class="h-100 p-5 bg-light border rounded-3">
       <h2>Sign in</h2>
@@ -39,11 +39,11 @@
 
       </div>
       <% if Rails.application.config.email_login_enabled or email_login_only %>
-        <hr/>
+        <hr>
       <% end %>
       <div>
 
-        <% if Rails.application.config.email_login_enabled or email_login_only  %>
+        <% if Rails.application.config.email_login_enabled or email_login_only %>
         <h4>Sign in via email:</h4>
         <% end %>
 
@@ -66,9 +66,9 @@
             <div>
               <%= link_to 'Forgot Password?', new_user_password_path %>
             </div>
-            <br/>
+            <br>
             <%= f.submit 'Sign in', class: 'btn btn-primary login' %>
-            <br/>
+            <br>
 
           <% end %>
         <% end %>

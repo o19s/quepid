@@ -16,30 +16,32 @@
     <header>
       <%= render 'layouts/header' %>
       <% if @case.public? %>
-        <!-- This is probably not the best place for this label long term, but for now -->
         <script>
           document.addEventListener('DOMContentLoaded', function() {
             new ClipboardJS('#public-url');
           });
         </script>
-
-        <h3 class="public-share">
-          <a id='public-url' href="#" data-clipboard-text="<%= analytics_tries_visualization_path(@case.public_id) %>">
-            <span class="badge bg-success">Public</span>
-            <i
-              class="clipboard-icon bi bi-clipboard"
-              aria-hidden="true"
-              title="Copy public url to your clipboard"
-              alt="Copy public url to your clipboard"
-            ></i>
-          </a>
-        </h3>
       <% end %>
-      <p>
-        <% if @current_user %>
-          <%= button_to (@case.public? ? 'Make Private' : 'Make public'), analytics_case_visibility_path(@case), method: :patch, class: 'btn btn-outline-warning btn-sm' %>
-        <% end %>
-      </p>
+      <% if @case.public? || @current_user %>
+        <div class="container d-flex align-items-center gap-2 py-2">
+          <% if @case.public? %>
+            <h3 class="public-share mb-0">
+              <a id="public-url" href="#" data-clipboard-text="<%= analytics_tries_visualization_path(@case.public_id) %>">
+                <span class="badge bg-success">Public</span>
+                <i
+                  class="clipboard-icon bi bi-clipboard"
+                  aria-hidden="true"
+                  title="Copy public url to your clipboard"
+                  alt="Copy public url to your clipboard"
+                ></i>
+              </a>
+            </h3>
+          <% end %>
+          <% if @current_user %>
+            <%= button_to (@case.public? ? 'Make Private' : 'Make public'), analytics_case_visibility_path(@case), method: :patch, class: 'btn btn-outline-warning btn-sm mb-0' %>
+          <% end %>
+        </div>
+      <% end %>
     </header>
 
     <!-- Begin page content -->

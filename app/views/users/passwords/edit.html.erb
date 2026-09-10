@@ -1,4 +1,4 @@
-<div class="m-t-20 p-5 mb-4 bg-light rounded-3">
+<div class="mt-4 p-5 mb-4 bg-light rounded-3">
   <div class="container-fluid py-5">
     <h2>Change your password</h2>
 
@@ -12,7 +12,7 @@
       <div class="mb-3">
         <%= f.label :password, "New password", class: 'form-label' %>
         <% if @minimum_password_length %>
-          <em>(<%= @minimum_password_length %> characters minimum)</em><br />
+          <em>(<%= @minimum_password_length %> characters minimum)</em><br>
         <% end %>
         <%= f.password_field :password, autofocus: true, autocomplete: "off", class: 'form-control', placeholder: 'New password' %>
       </div>

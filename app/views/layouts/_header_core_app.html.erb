@@ -1,4 +1,4 @@
-<header id="header" class="navbar-secondary navbar-expand">
+<header id="header" class="navbar navbar-secondary navbar-expand-lg navbar-dark">
   <div class="container-fluid container-home">
     <%= link_to root_path, class: "navbar-brand", target: "_self" do %>
       Quepid
@@ -6,6 +6,10 @@
     <% end %>
 
     <% if current_user.present? %>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#coreNavbarContent" aria-controls="coreNavbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="coreNavbarContent">
       <ul class="navbar-nav me-auto" ng-controller="HeaderCtrl">
         <!-- Begin case selector -->
         <li class="nav-item dropdown">
@@ -22,7 +26,7 @@
             <li ng-repeat="case in headerScope.dropdownCases | limitTo:5 track by $index">
               <a href="#" class="dropdown-item" ng-click="headerScope.goToCase($event, case)">{{ case.caseName }}</a>
             </li>
-            
+
             <li class="actions">
               <a href="cases" class="btn btn-outline-secondary w-100" target="_self">
                 View all cases
@@ -67,17 +71,17 @@
               >
                 <i class="bi bi-plus-lg"></i>
                 Create a book
-              </a>              
+              </a>
             </li>
           </ul>
         </li>
-        <!-- End book selector -->        
+        <!-- End book selector -->
 
         <li class="nav-item"><a class="nav-link" href="teams" target="_self">Teams</a></li>
         <li class="nav-item"><a class="nav-link" href="scorers" target="_self">Scorers</a></li>
         <li class="nav-item"><a class="nav-link" href="notebooks/lab/index.html" target="_blank" rel="noopener noreferrer">Notebooks</a></li>
       </ul>
-    
+
       <ul class="navbar-nav">
         <li class="nav-item">
           <a class="nav-link" href='https://quepid-docs.dev.o19s.com/2/quepid' target="_blank" rel="noopener noreferrer">
@@ -105,7 +109,7 @@
           </ul>
         </li> <!-- End account management -->
       </ul>
-
+      </div>
     <% end %>
   </div>
 </header>

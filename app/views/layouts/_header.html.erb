@@ -1,14 +1,17 @@
-<nav class="navbar navbar-expand-lg navbar-secondary">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-secondary">
   <div class="container-fluid">
     <%= link_to root_path, class: "navbar-brand", data: { turbo: false } do %>
       Quepid
       <span class="hover"><%= image_tag 'tagline-sm.png', title: "Give your queries some love" %></span>
     <% end %>
     <% if current_user.present? %>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto">
           <li class="nav-item dropdown">
-  
+
             <a class="nav-link dropdown-toggle" href="#" id="dropdownCases" role="button" data-bs-toggle="dropdown">
               <span class="nav-label">Relevancy Cases</span>
             </a>
@@ -17,19 +20,19 @@
                 RECENT CASES
               </li>
               <li><hr class="dropdown-divider"></li>
-              
+
               <turbo-frame id="dropdown_cases" src="<%= dropdown_cases_path() %>" loading="lazy">
               </turbo-frame>
-            
+
               <li class="actions">
                 <div class="d-grid gap-2">
                 <%= link_to "View all cases", cases_path, class: "btn btn-outline-secondary", data: { turbo: false } %>
                 <%= link_to 'Create a case', case_new_path, class: 'btn btn-success', data: { turbo: false } %>
                 </div>
-              </li>              
+              </li>
             </ul>
           </li>
-          <li class="nav-item dropdown">  
+          <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="dropdownBooks" role="button" data-bs-toggle="dropdown">
               <span class="nav-label">Books</span>
             </a>
@@ -38,30 +41,30 @@
                 RECENT BOOKS
               </li>
               <li><hr class="dropdown-divider"></li>
-       
+
               <turbo-frame id="dropdown_books" src="<%= dropdown_books_path() %>" loading="lazy">
               </turbo-frame>
-              
+
               <li class="actions">
                 <div class="d-grid gap-2">
                 <%= link_to "View all books", books_path, class: "btn btn-outline-secondary" %>
                 <%= link_to 'Create a book', new_book_path, class: 'btn btn-success' %>
                 </div>
               </li>
-              
+
             </ul>
-          </li>        
+          </li>
           <li class="nav-item">
             <%= link_to "Teams", teams_path, class: "nav-link" %>
           </li>
           <li class="nav-item">
             <%= link_to "Scorers", scorers_path, class: "nav-link" %>
-          </li>        
+          </li>
           <li class="nav-item">
             <%= link_to "Notebooks", "#{root_path}notebooks/lab/index.html", target: '_blank', rel: 'noopener noreferrer', class: "nav-link" %>
-          </li>          
+          </li>
         </ul>
-  
+
         <ul class="navbar-right nav navbar-nav">
           <li class="nav-item">
             <a class="nav-link" href='https://quepid-docs.dev.o19s.com/2/quepid' target="_blank" rel="noopener noreferrer">
@@ -81,7 +84,7 @@
             <ul class="dropdown-menu navbar-right" style="right: 0; left: auto;" aria-labelledby="navbarDropdown">
               <%= render 'shared/account_dropdown', divider: account_dropdown_divider(:hr) %>
             </ul>
-          </li>  
+          </li>
         </ul>
       </div>
     <% end %>
@@ -91,10 +94,10 @@
 <div id='flash'>
   <% if @announcement&.persisted? %>
     <div class="alert alert-light alert-dismissible text-center fade show" role="alert">
-      <%= @announcement.text.html_safe %>      
+      <%= @announcement.text.html_safe %>
       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
   <% end %>
-  
+
   <%= flash_messages -%>
 </div>

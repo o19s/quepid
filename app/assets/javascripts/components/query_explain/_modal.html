@@ -29,7 +29,7 @@
   <div class="tab-content">
     <div class="tab-pane active" id="query-explain-pane-params"
          role="tabpanel" aria-labelledby="query-explain-tab-params">
-      <p class='bg-warning text-warning padded-text' ng-show="ctrl.queryDetailsMessage">
+      <p class="bg-warning text-warning p-3" ng-show="ctrl.queryDetailsMessage">
         <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
         {{ctrl.queryDetailsMessage}}
       </p>
@@ -54,7 +54,7 @@
       <p ng-hide="ctrl.isTemplatedQuery">This is not a templated query.</p>
       <span ng-show="ctrl.isTemplatedQuery">
         <p>This is what the populated query template looks like</p>
-        <div id='render-template' class='es-query-params' ui-ace="{
+        <div id="render-template" class="es-query-params" ui-ace="{
             require:      ['ace/ext/language_tools'],
             useWrapMode:  false,
             mode:         'json',
