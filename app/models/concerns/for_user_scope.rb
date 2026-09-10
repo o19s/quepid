@@ -12,7 +12,7 @@ module ForUserScope
       # return a row per team member, so the duplicates are real, but `IN` folds
       # them without asking the database to compare whole rows - which it cannot
       # do here anyway once a json column is in the table.
-      where(id: by_team.or(direct).select(:id))
+      where(id: by_team.or(direct).reselect(:id))
     end
   end
 end

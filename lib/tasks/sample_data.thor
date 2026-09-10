@@ -262,7 +262,7 @@ class SampleData < Thor
     searchapi_try.search_endpoint = search_api_endpoint
     searchapi_try.update searchapi_params
 
-    searchapi_case.queries.create(query_text: 'student accomodation')
+    searchapi_case.queries.find_or_create_by(query_text: 'student accomodation')
     print_case_info searchapi_case
 
     ######################################
@@ -419,10 +419,10 @@ class SampleData < Thor
     book.scale = Scorer.system_default_scorer.scale
     book.scale_with_labels = Scorer.system_default_scorer.scale_with_labels
 
-    book.teams << osc
-    book.ai_judges << osc_ai_judge
-    book.ai_judges << azure_openai_judge
-    book.ai_judges << azure_anthropic_judge
+    book.teams << osc unless book.teams.include?(osc)
+    book.ai_judges << osc_ai_judge unless book.ai_judges.include?(osc_ai_judge)
+    book.ai_judges << azure_openai_judge unless book.ai_judges.include?(azure_openai_judge)
+    book.ai_judges << azure_anthropic_judge unless book.ai_judges.include?(azure_anthropic_judge)
     book.save
 
     # this code copied from populate_controller.rb and should be in a service...
@@ -571,10 +571,10 @@ class SampleData < Thor
     print_user_info user_params
 
     osc = ::Team.where(name: 'OSC').first_or_create
-    osc.members << hundreds_of_queries_user
-    osc.members << thousands_of_queries_user
+    osc.members << hundreds_of_queries_user unless osc.members.include?(hundreds_of_queries_user)
+    osc.members << thousands_of_queries_user unless osc.members.include?(thousands_of_queries_user)
 
-    osc.search_endpoints << statedecoded_solr_endpoint
+    osc.search_endpoints << statedecoded_solr_endpoint unless osc.search_endpoints.include?(statedecoded_solr_endpoint)
     osc.save!
 
     hundreds_of_queries_case = hundreds_of_queries_user.cases.create case_name: '100s of Queries'
