@@ -11,37 +11,15 @@
     <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
   </p>
 
-  <div ng-if="hots.length <= 3">
-    <div ng-click="showDetailed()" class="graph-explain" ng-repeat="match in hots">
-      <div class="graph-label">{{match.description}}</div>
-      <div class="progress">
-        <div
-          class="progress-bar"
-          role="progressbar"
-          aria-valuemin="0"
-          aria-valuemax="100"
-          ng-attr-aria-valuenow="{{ (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) }}"
-          ng-style="{ width: (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) + '%' }"
-        ></div>
-      </div>
-    </div>
+  <!-- splainer-search's explain() carries no user-facing copy for "nothing to break down" (just
+       an empty details/children list) - Quepid owns that message itself, rather than rendering
+       a meaningless single 0%-width bar for it. -->
+  <div ng-if="doc.explain().children.length === 0" class="graph-explain">
+    <div class="graph-label">no per-term score breakdown for doc</div>
   </div>
-  <div ng-if="hots.length > 3">
-    <div ng-click="showDetailed()" class="graph-explain" ng-repeat="match in hots.slice(0,3)">
-      <div class="graph-label">{{match.description}}</div>
-      <div class="progress">
-        <div
-          class="progress-bar"
-          role="progressbar"
-          aria-valuemin="0"
-          aria-valuemax="100"
-          ng-attr-aria-valuenow="{{ (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) }}"
-          ng-style="{ width: (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) + '%' }"
-        ></div>
-      </div>
-    </div>
-    <div quepid-collapse="!showAll">
-      <div ng-click="showDetailed()" class="graph-explain" ng-repeat="match in hots.slice(3)">
+  <div ng-if="doc.explain().children.length > 0">
+    <div ng-if="hots.length <= 3">
+      <div ng-click="showDetailed()" class="graph-explain" ng-repeat="match in hots">
         <div class="graph-label">{{match.description}}</div>
         <div class="progress">
           <div
@@ -55,7 +33,37 @@
         </div>
       </div>
     </div>
+    <div ng-if="hots.length > 3">
+      <div ng-click="showDetailed()" class="graph-explain" ng-repeat="match in hots.slice(0,3)">
+        <div class="graph-label">{{match.description}}</div>
+        <div class="progress">
+          <div
+            class="progress-bar"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            ng-attr-aria-valuenow="{{ (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) }}"
+            ng-style="{ width: (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) + '%' }"
+          ></div>
+        </div>
+      </div>
+      <div quepid-collapse="!showAll">
+        <div ng-click="showDetailed()" class="graph-explain" ng-repeat="match in hots.slice(3)">
+          <div class="graph-label">{{match.description}}</div>
+          <div class="progress">
+            <div
+              class="progress-bar"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              ng-attr-aria-valuenow="{{ (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) }}"
+              ng-style="{ width: (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) + '%' }"
+            ></div>
+          </div>
+        </div>
+      </div>
 
-    <a href="" style="font-size: 10px" ng-click="showAll=!showAll">Show {{showAll ? 'Less' : howMuchMore}}</a>
+      <a href="" style="font-size: 10px" ng-click="showAll=!showAll">Show {{showAll ? 'Less' : howMuchMore}}</a>
+    </div>
   </div>
 </div>

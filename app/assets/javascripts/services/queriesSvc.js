@@ -425,8 +425,10 @@ angular.module('QuepidApp')
        * its own (SearchApiDocFactory#explain always returns {}), so build a synthetic explain
        * tree in the same {description, value, details} shape Solr/ES explains use — the
        * engine-agnostic bar rendering (explainSvc/normalDocsSvc) picks it up identically to
-       * how it already does for Solr's real explain output. Returns undefined (falling back
-       * to "no explain for doc") when a doc has no matchfeatures to show.
+       * how it already does for Solr's real explain output. Returns undefined (falling back to
+       * splainer-search's empty-explain placeholder - doc.explain().children.length === 0 - which
+       * stackedChart.html/matches.html render as "no per-term score breakdown/explanation
+       * available") when a doc has no matchfeatures to show.
        */
       function matchFeaturesExplain(doc) {
         let matchFeatures = doc.matchfeatures;
