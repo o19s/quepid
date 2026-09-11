@@ -6,7 +6,6 @@
   
   # Book statistics
   total_pairs = book.query_doc_pairs.count
-  unjudged_pairs = SelectionStrategy.unjudged_pairs_count(book)
   partially_judged_pairs = SelectionStrategy.partially_judged_pairs_count(book)
   unjudged_pairs = SelectionStrategy.unjudged_pairs?(book)
 %>
