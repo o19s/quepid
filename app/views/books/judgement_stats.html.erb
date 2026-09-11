@@ -42,10 +42,11 @@
     <%=
     Vega.lite
       .data(@rating_distribution_data)
-      .mark(type: "bar", tooltip: true)
+      .mark(type: "line", point: true, tooltip: true)
       .encoding(
         x: {field: "rating", type: "ordinal", sort: nil, "axis": {"labelAngle": 0}, "title": "Rating"},
-        y: {field: "count", type: "quantitative", "title": "Judgements"}
+        y: {field: "count", type: "quantitative", "title": "Judgements"},
+        order: {field: "rating", type: "ordinal", sort: nil}
       )
     %>
   </div>
