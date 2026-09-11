@@ -520,18 +520,20 @@ angular.module('QuepidApp')
         queryViewSvc.collapseAll();
       };
 
-      // "Show only rated" needs a query-language-specific ID filter (queriesSvc.js'
-      // filterToRatings/createSearcherFromSettings) - a searchapi/mapper-based engine only has
-      // one if it opts in via mapperBasedSearchEngineSupportsRatedDocsLookup (see
-      // db/mapper_based_search_engines/vespa.js's ratedDocsQueryParamsMapper for an example).
-      // Every other engine (es/os/solr/vectara/algolia/static) keeps working as before.
+      // Delegates to queriesSvc.trySupportsRatedDocsLookup(), the single source of truth also
+      // used by docFinder.js's "Already Rated Documents" section - keeping both gates on the
+      // same function is what keeps them in sync. (This file previously kept its own copy of
+      // the engine list, which drifted: algolia's filterToRated branch in queriesSvc.js is a
+      // no-op, but this gate didn't know that, so the checkbox stayed enabled and toggling it
+      // silently filtered nothing while the results counter still switched to the rated-doc
+      // count - looking like it worked when it didn't.)
       $scope.showOnlyRatedUnsupported = function() {
         if (!settingsSvc.isTrySelected()) {
           return false;
         }
 
         var aTry = settingsSvc.applicableSettings();
-        return aTry.searchEngine === 'searchapi' && !queriesSvc.trySupportsSearchApiRatedDocsLookup(aTry);
+        return !queriesSvc.trySupportsRatedDocsLookup(aTry);
       };
 
       function getScorer() {

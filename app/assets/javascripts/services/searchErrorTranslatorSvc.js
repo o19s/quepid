@@ -121,8 +121,15 @@ angular.module('QuepidApp')
           if (response.data) {
             if ( angular.isObject(response.data.error) ) {
               error += ': ' + angular.toJson(response.data.error);
-            } else {
+            } else if ( response.data.error ) {
               error += ': ' + response.data.error;
+            } else if ( response.data.message ) {
+              // Not every API nests its error detail under "error" (the Solr/ES convention
+              // this function was originally written for) - Algolia, for one, returns
+              // {"message": "...", "status": 400}. Falling through to the unconditional
+              // `response.data.error` string-append below would otherwise literally render
+              // the word "undefined" as if it were the error detail.
+              error += ': ' + response.data.message;
             }
           }
         }

@@ -45,5 +45,26 @@ describe('Service: searchErrorTranslatorSvc', function () {
 
       expect(msg).toContain('typo in your URL');
     });
+
+    it('surfaces response.data.message (e.g. Algolia\'s {message, status} error shape)', function () {
+      var response = {
+        status: 400,
+        statusText: 'Bad Request',
+        data: { message: 'invalid setting for restrictSearchableAttributes, attribute cast is not in searchableAttributes setting', status: 400 }
+      };
+
+      var msg = searchErrorTranslatorSvc.parseResponseObject(response, 'http://example.com', 'algolia');
+
+      expect(msg).toContain('invalid setting for restrictSearchableAttributes');
+      expect(msg).not.toContain('undefined');
+    });
+
+    it('does not append the literal string "undefined" when response.data has neither .error nor .message', function () {
+      var response = { status: 400, statusText: 'Bad Request', data: { status: 400 } };
+
+      var msg = searchErrorTranslatorSvc.parseResponseObject(response, 'http://example.com', 'algolia');
+
+      expect(msg).not.toContain('undefined');
+    });
   });
 });
