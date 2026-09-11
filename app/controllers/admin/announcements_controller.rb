@@ -7,8 +7,8 @@ module Admin
     def index
       query = Announcement.order(updated_at: :desc)
       if params[:q].present?
-        query = query.where('text LIKE ?',
-                            "%#{params[:q]}%")
+        query = query.where('LOWER(text) LIKE ?',
+                            "%#{params[:q].to_s.downcase}%")
       end
 
       @pagy, @announcements = pagy(query)
