@@ -65,6 +65,8 @@ class BooksController < ApplicationController
   def judgement_stats
     @moar_judgements_needed = SelectionStrategy.moar_judgements_needed? @book
 
+    @rating_distribution_data = rating_distribution_for @book
+
     @leaderboard_data = []
     @stats_data = []
 
@@ -447,6 +449,21 @@ class BooksController < ApplicationController
     array.compact!
     array << nil if has_nil
     array
+  end
+
+  # Counts rateable judgements per scale value, so the chart shows every
+  # scale value (even ones with zero judgements) in the book's scale order.
+  def rating_distribution_for book
+    counts = book.judgements.rateable.group(:rating).count
+    scale_values = book.scale.presence || counts.keys.compact.map(&:to_i).sort
+
+    scale_values.map do |value|
+      label = book.scale_with_labels && book.scale_with_labels[value.to_s]
+      {
+        rating: label.present? ? "#{value} - #{label}" : value.to_s,
+        count:  counts[value.to_f].to_i,
+      }
+    end
   end
 
   def book_params

@@ -32,6 +32,28 @@
   </div>
 </div>
 
+<p/>
+<h3>Judgement Distribution</h3>
+<div class="card">
+  <div class="card-body">
+
+    <h5 class="card-title">Judgement Distribution</h5>
+    <h6 class="card-subtitle mb-2 text-body-secondary">How are judgement values distributed across the scale?</h6>
+    <%=
+    Vega.lite
+      .data(@rating_distribution_data)
+      .mark(type: "bar", tooltip: true)
+      .encoding(
+        x: {field: "rating", type: "ordinal", sort: nil, "axis": {"labelAngle": 0}, "title": "Rating"},
+        y: {field: "count", type: "quantitative", "title": "Judgements"}
+      )
+    %>
+  </div>
+  <div class="card-footer text-muted">
+    * Excludes judgements marked as unrateable or judge later.
+  </div>
+</div>
+
 <%= render partial: 'unleash_modal', collection: @ai_judges, as: :ai_judge%>
 
 <p/>
