@@ -17,14 +17,42 @@
 
     <h5 class="card-title" href="#collapseExample">Leaderboard</h3>
     <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
+    <%
+      total_pairs = @book.query_doc_pairs.count
+    %>
     <%=
     Vega.lite
       .data(@leaderboard_data)
-      .mark(type: "bar", tooltip: true)
-      .encoding(
-        x: {field: "judge", type: "nominal", "axis": {"labelAngle": 0}},
-        y: {field: "judgements", type: "quantitative"}
-      )
+      .layer([
+        {
+          mark: { type: "bar", tooltip: true },
+          encoding: {
+            x: { field: "judge", type: "nominal", axis: { labelAngle: 0 }, title: "Judge" },
+            y: { field: "judgements", type: "quantitative",
+                 scale: { domainMax: total_pairs },
+                 axis: { title: "Query/Doc Pairs Judged" } },
+            tooltip: [
+              { field: "judge", type: "nominal", title: "Judge" },
+              { field: "judgements", type: "quantitative", title: "Judged" }
+            ]
+          }
+        },
+        {
+          mark: { type: "rule", color: "red", strokeDash: [4, 4], size: 2, tooltip: true },
+          encoding: {
+            y: { datum: total_pairs },
+            tooltip: [{ value: "Total pairs: #{total_pairs}" }]
+          }
+        },
+        {
+          mark: { type: "text", align: "right", dx: -4, dy: -6, color: "red", fontSize: 11 },
+          encoding: {
+            y: { datum: total_pairs },
+            x: { value: "width" },
+            text: { value: "#{total_pairs} total" }
+          }
+        }
+      ])
     %>
   </div>
   <div class="card-footer text-muted">
