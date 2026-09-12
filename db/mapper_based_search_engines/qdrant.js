@@ -40,7 +40,7 @@ numberOfResultsMapper = function (data) {
 docsMapper = function (data) {
   const docs = [];
 
-  if (data.result && data.result.points) {
+  if (data.result?.points) {
     data.result.points.forEach(function (point) {
       const fields = Object.assign({}, point.payload);
       fields.score = point.score;
@@ -77,21 +77,16 @@ docsMapper = function (data) {
 // limit is set explicitly because Qdrant defaults it to 10 - without it a query with more
 // than ten ratings would only get its first ten back.
 ratedDocsQueryParamsMapper = function (ratedIds, idField) {
-  let condition;
-
-  if ('id' === idField) {
-    condition = {
+  const condition = idField === 'id' ?
+    {
       has_id: ratedIds.map(function (id) {
         return /^\d+$/.test(id) ? Number(id) : id;
       })
-    };
-  }
-  else {
-    condition = {
+    } :
+    {
       key:   idField,
       match: { any: ratedIds.map(function (id) { return String(id); }) }
     };
-  }
 
   return JSON.stringify({
     filter:       { must: [ condition ] },
