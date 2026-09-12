@@ -24,7 +24,7 @@ class BulkJudgeController < ApplicationController
     query = @book.query_doc_pairs.includes(:judgements)
 
     # Use LIKE search if query_text is provided to match partial queries
-    query = query.where('query_text LIKE ?', "%#{@query_text}%") if @query_text.present?
+    query = query.where('LOWER(query_text) LIKE ?', "%#{@query_text.to_s.downcase}%") if @query_text.present?
 
     # Filter by rank depth if specified
     query = query.where(position: ..@rank_depth) if @rank_depth.present?

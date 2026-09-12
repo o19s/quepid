@@ -21,7 +21,7 @@ class ScorersController < ApplicationController
         combined_query = combined_query.where(communal: false)
       end
     end
-    combined_query = combined_query.where('scorers.name LIKE ?', "%#{@q}%") if @q.present?
+    combined_query = combined_query.where('LOWER(scorers.name) LIKE ?', "%#{@q.to_s.downcase}%") if @q.present?
     # Order so that communal (true) comes after custom (false)
     combined_query = combined_query.order(Arel.sql('communal ASC, name'))
 

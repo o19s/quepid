@@ -37,8 +37,8 @@ class BooksController < ApplicationController
     query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
 
     if params[:q].present?
-      query = query.where('books.name LIKE ? OR teams.name LIKE ?',
-                          "%#{params[:q]}%", "%#{params[:q]}%")
+      q = "%#{params[:q].to_s.downcase}%"
+      query = query.where('LOWER(books.name) LIKE ? OR LOWER(teams.name) LIKE ?', q, q)
     end
 
     @pagy, @books = pagy(query)

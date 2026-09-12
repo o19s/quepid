@@ -10,8 +10,9 @@ class RatingsController < ApplicationController
     query = @case.ratings.includes([ :query, :user ])
 
     if params[:q].present?
-      query = query.where('query_text LIKE ? OR doc_id LIKE ? OR rating = ?',
-                          "%#{params[:q]}%", "%#{params[:q]}%", params[:q].to_f)
+      q = "%#{params[:q].to_s.downcase}%"
+      query = query.where('LOWER(query_text) LIKE ? OR LOWER(doc_id) LIKE ? OR rating = ?',
+                          q, q, params[:q].to_f)
     end
 
     @pagy, @ratings = pagy(query.order(:updated_at))

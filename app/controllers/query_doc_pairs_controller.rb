@@ -13,9 +13,10 @@ class QueryDocPairsController < ApplicationController
     query = @book.query_doc_pairs
 
     if params[:q].present?
+      q = "%#{params[:q].to_s.downcase}%"
       query = query.where(
-        'query_text LIKE ? OR query_doc_pairs.id = ? OR doc_id LIKE ? OR document_fields LIKE ?',
-        "%#{params[:q]}%", params[:q].to_i, "%#{params[:q]}%", "%#{params[:q]}%"
+        'LOWER(query_text) LIKE ? OR query_doc_pairs.id = ? OR LOWER(doc_id) LIKE ? OR LOWER(document_fields) LIKE ?',
+        q, params[:q].to_i, q, q
       )
     end
 
