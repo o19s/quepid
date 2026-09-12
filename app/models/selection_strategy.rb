@@ -35,20 +35,12 @@ module SelectionStrategy
 
   # Returns count of query-doc pairs with no judgements
   def self.unjudged_pairs_count book
-    book.query_doc_pairs
-      .left_joins(:judgements)
-      .group('query_doc_pairs.id')
-      .having('COUNT(judgements.id) = 0')
-      .count.size
+    grouped_pair_count(book, 'COUNT(judgements.id) = 0')
   end
 
   # Returns count of query-doc pairs with 1-2 judgements (partially judged)
   def self.partially_judged_pairs_count book
-    book.query_doc_pairs
-      .left_joins(:judgements)
-      .group('query_doc_pairs.id')
-      .having('COUNT(judgements.id) BETWEEN 1 AND 2')
-      .count.size
+    grouped_pair_count(book, 'COUNT(judgements.id) BETWEEN 1 AND 2')
   end
 
   # Checks if every query-document pair in the book has at least 3 judgements
@@ -85,4 +77,19 @@ module SelectionStrategy
       .order(Arel.sql(weighted_random_order))
       .first
   end
+
+  # Counts query-doc-pair groups matching the given HAVING clause without
+  # materializing one row per group in Ruby. Rails' grouped .count returns a
+  # Hash keyed by group id, which is expensive to build at scale since every
+  # matching row has to cross into Ruby just to be counted; wrapping the
+  # grouped query as a subquery lets the database return a single row.
+  def self.grouped_pair_count book, having_clause
+    matching_ids = book.query_doc_pairs
+      .left_joins(:judgements)
+      .group('query_doc_pairs.id')
+      .having(having_clause)
+      .select('query_doc_pairs.id')
+    QueryDocPair.from(matching_ids, :matching_pairs).count
+  end
+  private_class_method :grouped_pair_count
 end
