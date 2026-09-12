@@ -123,13 +123,21 @@ COPY --chown=rails:rails --from=build /rails /rails
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Holds the SQLite database (when DATABASE_URL selects sqlite3) and local Active Storage
-# uploads. Without an explicit -v/--mount for this path, Docker still gives it a managed
+# Holds legacy Active Storage uploads (kept for backwards compatibility with existing
+# deployments that mount /rails/storage).
+# Without an explicit -v/--mount for this path, Docker still gives it a managed
 # anonymous volume rather than the container's own writable layer - so data written here
 # survives a `docker rm` by accident, recoverable via `docker volume ls`, instead of being
 # silently gone. For real persistence across container recreation you still want an
 # explicit named volume or bind mount; this is a safety net, not a substitute for that.
 VOLUME /rails/storage
+
+# Holds the SQLite database when running without DATABASE_URL (the default bare docker run).
+# Mount your own directory here for persistence:
+#   docker run -p 3000:3000 -v ./quepid_db:/quepid_db o19s/quepid:latest
+# Without an explicit mount, Docker provides an anonymous managed volume so data
+# is not silently lost on container stop, but you'll want a bind mount for real persistence.
+VOLUME /quepid_db
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
