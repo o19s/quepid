@@ -37,6 +37,11 @@ class HomeController < ApplicationController
 
     @most_recent_books = @most_recent_books.sort_by { |b| b.name.downcase }
 
+    # First login for the very first (automatically-promoted) administrator - see
+    # User#promote_to_first_administrator?. Swaps the usual date/greeting header and
+    # empty-state hero for a one-time, personalized welcome.
+    @first_time_admin = @current_user.administrator? && @cases.empty? && @most_recent_books.empty?
+
     # Homepage is too slow so we have to cut some stuff out ;-(
     # candidate_cases = @cases.select { |kase| kase.scores.scored.count.positive? }
     # @grouped_cases = candidate_cases.group_by { |kase| kase.case_name.split(':').first }
