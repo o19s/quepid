@@ -2756,10 +2756,10 @@ spark-md5@^3.0.1:
   resolved "https://registry.yarnpkg.com/spark-md5/-/spark-md5-3.0.2.tgz#7952c4a30784347abcee73268e473b9c0167e3fc"
   integrity sha512-wcFzz9cDfbuqe0FZzfi2or1sgyIrsDwmPwfZC4hiNidPdPINjeUwNfv5kldczoEAcjl9Y1L3SM7Uz2PUEQzxQw==
 
-splainer-search@3.2.2:
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-3.2.2.tgz#8fa541588ec601a7e82a9dd14d2463fc1115094d"
-  integrity sha512-FO8iVn48LAX/T5jIMot70UIxTGchfrv2e5jd+axNFsDOwgeNqb1iXR64eXOZ5KKwoo6fpS9lxADGKDX7Dksh5g==
+splainer-search@3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/splainer-search/-/splainer-search-3.3.0.tgz#9ee1a4b4853748b74ae4bfc7144f02be5e0d3209"
+  integrity sha512-8PjIuFUMaWRv4B9e6byumxgcGyE8U4Fet+0croMhL6Eb6/43NPppC84nM6Na2XNyJK/Q4zyQ2RjTguGJ0nqnCg==
   dependencies:
     urijs "^1.19.7"
 
