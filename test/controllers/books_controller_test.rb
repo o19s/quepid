@@ -81,6 +81,66 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'judgement stats' do
+    before do
+      james_bond_movies.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
+    end
+
+    test 'shows the distribution of judgement ratings across the book scale' do
+      login_user_for_integration_test user
+
+      pairs = james_bond_movies.query_doc_pairs.limit(3).to_a
+      pairs[0].judgements.create! rating: 0, user: user
+      pairs[1].judgements.create! rating: 1, user: user
+      pairs[2].judgements.create! rating: 1, user: user
+
+      get "/books/#{james_bond_movies.id}/judgement_stats"
+
+      assert_response :success
+      assert_equal(
+        [
+          { rating: '0 - Not Relevant', count: 1 },
+          { rating: '1 - Relevant', count: 2 }
+        ],
+        assigns(:rating_distribution_data)
+      )
+    end
+
+    test 'includes scale values with zero judgements' do
+      login_user_for_integration_test user
+
+      get "/books/#{james_bond_movies.id}/judgement_stats"
+
+      assert_response :success
+      assert_equal(
+        [
+          { rating: '0 - Not Relevant', count: 0 },
+          { rating: '1 - Relevant', count: 0 }
+        ],
+        assigns(:rating_distribution_data)
+      )
+    end
+
+    test 'excludes judgements marked unrateable or judge later' do
+      login_user_for_integration_test user
+
+      pairs = james_bond_movies.query_doc_pairs.limit(2).to_a
+      pairs[0].judgements.create! rating: 1, user: user
+      pairs[1].judgements.new(user: user).mark_unrateable!
+
+      get "/books/#{james_bond_movies.id}/judgement_stats"
+
+      assert_response :success
+      assert_equal(
+        [
+          { rating: '0 - Not Relevant', count: 0 },
+          { rating: '1 - Relevant', count: 1 }
+        ],
+        assigns(:rating_distribution_data)
+      )
+    end
+  end
+
   # rubocop:disable Metrics/AbcSize
   def test_functionality
     # definitly an opportunity for refactoring!
