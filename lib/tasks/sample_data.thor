@@ -233,6 +233,7 @@ class SampleData < Thor
     }
     solr_try.search_endpoint = tmdb_solr_endpoint
     solr_try.update solr_params
+    solr_case.queries.find_or_create_by(query_text: 'star wars')
     print_case_info solr_case
 
     ######################################
@@ -247,6 +248,7 @@ class SampleData < Thor
     }
     es_try.search_endpoint = tmdb_es_endpoint
     es_try.update es_params
+    es_case.queries.find_or_create_by(query_text: 'love')
     print_case_info es_case
 
     ######################################

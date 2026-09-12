@@ -220,7 +220,7 @@ class TeamsController < ApplicationController
 
     query = query.joins(:members).where(users: { id: current_user.id }).distinct if params[:member].present?
 
-    query = query.where('teams.name LIKE ?', "%#{params[:q]}%") if params[:q].present?
+    query = query.where('LOWER(teams.name) LIKE ?', "%#{params[:q].to_s.downcase}%") if params[:q].present?
 
     @pagy, @teams = pagy(query.order(:name))
   end
@@ -241,8 +241,8 @@ class TeamsController < ApplicationController
     # Cases filtering
     cases_query = @team.cases
     if @cases_q.present?
-      cases_query = cases_query.where('case_name LIKE ? OR id = ?',
-                                      "%#{@cases_q}%", @cases_q.to_i)
+      cases_query = cases_query.where('LOWER(case_name) LIKE ? OR id = ?',
+                                      "%#{@cases_q.to_s.downcase}%", @cases_q.to_i)
     end
     cases_query = @cases_archived ? cases_query.archived : cases_query.active
     @pagy_cases, @cases = pagy(cases_query.order(:id).includes(:owner, :teams))
@@ -254,14 +254,14 @@ class TeamsController < ApplicationController
     books_query = @team.books
     books_query = @books_archived ? books_query.archived : books_query.active
     books_query = books_query.with_counts if books_query.respond_to?(:with_counts)
-    books_query = books_query.where('name LIKE ?', "%#{@books_q}%") if @books_q.present?
+    books_query = books_query.where('LOWER(name) LIKE ?', "%#{@books_q.to_s.downcase}%") if @books_q.present?
 
     @pagy_books, @books = pagy(books_query.order(:id))
 
     # Scorers filtering
     @scorers_q = params[:scorers_q].to_s.strip
     scorers_query = @team.scorers
-    scorers_query = scorers_query.where('name LIKE ?', "%#{@scorers_q}%") if @scorers_q.present?
+    scorers_query = scorers_query.where('LOWER(name) LIKE ?', "%#{@scorers_q.to_s.downcase}%") if @scorers_q.present?
     @pagy_scorers, @scorers = pagy(scorers_query.order(:name), page_param: :scorers_page)
 
     # Search Endpoints filtering
@@ -271,9 +271,10 @@ class TeamsController < ApplicationController
     search_endpoints_query = @team.search_endpoints.includes(:teams)
     search_endpoints_query = @search_endpoints_archived ? search_endpoints_query.where(archived: true) : search_endpoints_query.not_archived
     if @search_endpoints_q.present?
-      search_endpoints_query = search_endpoints_query.where('name LIKE ? OR endpoint_url LIKE ?',
-                                                            "%#{@search_endpoints_q}%",
-                                                            "%#{@search_endpoints_q}%")
+      search_endpoints_q = "%#{@search_endpoints_q.to_s.downcase}%"
+      search_endpoints_query = search_endpoints_query.where('LOWER(name) LIKE ? OR LOWER(endpoint_url) LIKE ?',
+                                                            search_endpoints_q,
+                                                            search_endpoints_q)
     end
     @pagy_search_endpoints, @search_endpoints = pagy(search_endpoints_query.order(:id), page_param: :search_endpoints_page)
   end

@@ -44,6 +44,25 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'index' do
+    it 'filters teams by name using the q param' do
+      get teams_path, params: { q: 'valid' }
+
+      assert_response :success
+      assert_includes assigns(:teams), @team
+    end
+
+    it 'filters teams by name case insensitively' do
+      acme = Team.create!(name: 'Acme')
+      acme.members << @user
+
+      get teams_path, params: { q: 'ACME' }
+
+      assert_response :success
+      assert_includes assigns(:teams), acme
+    end
+  end
+
   describe 'suggest_members' do
     it 'returns users with matching email from same teams' do
       # random user is already in the 'shared' team with random_1

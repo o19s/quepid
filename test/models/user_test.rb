@@ -86,6 +86,46 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'First administrator bootstrap' do
+    def with_no_real_users_yet
+      original = User.method(:no_real_users_yet?)
+      User.define_singleton_method(:no_real_users_yet?) { true }
+      yield
+    ensure
+      User.define_singleton_method(:no_real_users_yet?, &original)
+    end
+
+    test 'the first real user ever created becomes administrator automatically' do
+      with_no_real_users_yet do
+        user = User.create(email: 'first@email.com', password: 'password')
+
+        assert_predicate user, :administrator
+      end
+    end
+
+    test 'an explicit administrator: false is still overridden for the first user' do
+      with_no_real_users_yet do
+        user = User.create(email: 'first@email.com', password: 'password', administrator: false)
+
+        assert_predicate user, :administrator
+      end
+    end
+
+    test 'does not promote a signup once a real user already exists' do
+      user = User.create(email: 'second@email.com', password: 'password')
+
+      assert_not user.administrator
+    end
+
+    test 'an AI judge is never promoted, even when no real users exist yet' do
+      with_no_real_users_yet do
+        judge = User.create(llm_key: '1234', name: 'Judge Judy')
+
+        assert_not judge.administrator
+      end
+    end
+  end
+
   describe 'Password' do
     let(:user) { users(:doug) }
 
