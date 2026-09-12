@@ -73,7 +73,7 @@
               <h6 class="fw-bold">Case <i class="bi bi-arrow-right"></i> Book: Query/Doc Pairs</h6>
               <div class="form-check form-switch">
                 <%= form.label :auto_populate_book_pairs, class:'form-check-label' %>
-                <%= form.check_box :auto_populate_book_pairs, class:'form-check-input', checked: false %>
+                <%= form.check_box :auto_populate_book_pairs, class:'form-check-input', checked: book.new_record? %>
               </div>
               <div class="form-text">
                 <strong>On:</strong> New query/doc pairs automatically added to Book when Case runs.

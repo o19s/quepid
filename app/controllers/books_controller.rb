@@ -117,11 +117,11 @@ class BooksController < ApplicationController
             end
 
     if params[:scorer_id]
-      scorer = Scorer.find_by(id: params[:scorer_id])
+      scorer = current_user.scorers_involved_with.find_by(id: params[:scorer_id])
       if scorer
         @book.scale = scorer.scale
         @book.scale_with_labels = scorer.scale_with_labels
-        @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
+        @book.scorer_id = scorer.id
         @book.scoring_guidelines = @book.default_scoring_guidelines
       end
     end
