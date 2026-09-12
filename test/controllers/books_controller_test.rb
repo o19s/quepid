@@ -138,7 +138,6 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
         ],
         assigns(:rating_distribution_data)
       )
-
     end
   end
 
