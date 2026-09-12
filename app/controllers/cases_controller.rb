@@ -18,8 +18,8 @@ class CasesController < ApplicationController
 
     # Apply search filter
     if @filter_q.present?
-      query = query.where('case_name LIKE ? OR cases.id = ?',
-                          "%#{@filter_q}%", @filter_q.to_i)
+      query = query.where('LOWER(case_name) LIKE ? OR cases.id = ?',
+                          "%#{@filter_q.to_s.downcase}%", @filter_q.to_i)
     end
 
     # Apply archived filter

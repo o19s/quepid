@@ -36,7 +36,7 @@ services:
         condition: service_healthy
 
   mysql:
-    container_name: quepid_db
+    container_name: quepid_mysql
     image: mysql:8.4.3
     ports:
       - 33306:3306

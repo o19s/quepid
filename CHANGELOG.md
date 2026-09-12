@@ -10,8 +10,7 @@ Quepid now runs against three database adapters. SQLite (`DB_ADAPTER=sqlite3`) i
 Running Quepid on your laptop with no database server to set up is now just:
 
 ```bash
-docker build -f Dockerfile.prod -t quepid .
-docker run -d -p 3000:3000 --name quepid quepid
+docker run -p 3000:3000 --name quepid quepid
 ```
 
 No `DATABASE_URL` means production defaults to SQLite automatically — the container creates `storage/production.sqlite3`, runs migrations, and starts serving on port 3000 on first boot.

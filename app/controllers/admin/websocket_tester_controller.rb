@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Admin
-  class WebsocketTesterController < ApplicationController
+  class WebsocketTesterController < Admin::AdminController
     def index
       @action_cable_settings = {
         'config/cable.yml'          => Rails.configuration.action_cable.to_hash,
