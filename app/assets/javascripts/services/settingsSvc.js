@@ -160,7 +160,7 @@ angular.module('QuepidApp')
           customHeaders: [
             '{',
             '  "x-algolia-application-id": "OKF83BFQS4",',
-            '  "x-algolia-api-key": "2ee1381ed11d3fe70b60605b1e2cd3f4"',
+            '  "x-algolia-api-key": "eb78e83af76a1d9a0dd2a5be4f635296"',
             '}'
           ].join('\n'),
           idField: 'objectID',
