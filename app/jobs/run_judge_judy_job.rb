@@ -64,9 +64,6 @@ class RunJudgeJudyJob < ApplicationJob
   #   RunJudgeJudyJob.perform_later(book, ai_judge, nil)
   def perform book, judge, number_of_pairs
     counter = 0
-    # Doesn't change over the life of this run - compute once rather than
-    # re-querying it on every broadcast below.
-    is_auto_run = book.books_ai_judges.auto_run.exists?(user_id: judge.id)
     llm_service = LlmService.new judge.llm_key, judge.judge_options
     # Only jobs actually dispatched through SolidQueue have a row to poll for
     # cancellation - under the :test adapter (or inline execution) there's
@@ -97,7 +94,7 @@ class RunJudgeJudyJob < ApplicationJob
       # than a full-book UpdateCaseJob resync at the end, and keeps case
       # ratings current even if a long "judge all" run gets cancelled partway.
       UpdateCaseRatingsJob.perform_later(query_doc_pair)
-      BroadcastJudgeActivityJob.perform_later(book, judge, auto_run: is_auto_run)
+      BroadcastJudgeActivityJob.perform_later(book, judge)
       broadcast_judging_detail(book, judge, query_doc_pair, counter, judgement)
 
       if number_of_pairs.nil?
@@ -107,7 +104,7 @@ class RunJudgeJudyJob < ApplicationJob
       end
     end
     broadcast_complete(book, judge)
-    BroadcastJudgeActivityJob.perform_later(book, judge, actively_judging: false, auto_run: is_auto_run)
+    BroadcastJudgeActivityJob.perform_later(book, judge)
   end
 
   private

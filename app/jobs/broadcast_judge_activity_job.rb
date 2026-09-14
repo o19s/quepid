@@ -1,31 +1,24 @@
 # frozen_string_literal: true
 
-# Broadcasts a real-time judge activity row update to anyone viewing the book overview page.
-# Fired after a judgement is saved so the RE overview updates without a page reload.
+# Broadcasts a real-time refresh of the whole Judge Activity table to anyone
+# viewing the book overview page. Fired after a judgement is saved so the RE
+# overview updates without a page reload.
 class BroadcastJudgeActivityJob < ApplicationJob
   queue_as :default
 
-  def perform book, judge, actively_judging: nil, auto_run: nil
-    activity = book.judge_activity_for([ judge.id ]).fetch(judge.id, { sparkline: [], count: 0, last_judged_at: nil })
-    is_actively_judging = actively_judging.nil? ? RunJudgeJudyJob.actively_judging?(book, judge) : actively_judging
-    is_auto_run = auto_run.nil? ? book.books_ai_judges.auto_run.exists?(user_id: judge.id) : auto_run
-
-    Turbo::StreamsChannel.broadcast_replace_to(
+  # judge identifies who triggered this update, but the whole table is
+  # re-rendered fresh (not just that judge's row) - re-rendering a single row
+  # via Turbo's "replace" silently no-ops if that row didn't exist yet in a
+  # viewer's DOM (e.g. a book's very first-ever judgement), so a viewer would
+  # never see it appear until a reload. Updating the whole tbody's contents
+  # instead means the target (the tbody itself) always exists once the page
+  # has rendered at all, so a brand new judge's row always shows up live.
+  def perform book, _judge
+    Turbo::StreamsChannel.broadcast_update_to(
       "book_#{book.id}_judgements",
-      target:  "judge-row-#{judge.id}",
-      partial: 'books/judge_activity_row',
-      locals:  {
-        book:         book,
-        row:          {
-          judge:            judge,
-          sparkline:        activity[:sparkline],
-          last_judged_at:   activity[:last_judged_at],
-          count:            activity[:count],
-          actively_judging: is_actively_judging,
-          auto_run:         is_auto_run,
-        },
-        flash_active: true,
-      }
+      target:  'judge-activity-table',
+      partial: 'books/judge_activity_table_body',
+      locals:  { judge_activity: book.judge_activity_rows, book: book, flash_active: true }
     )
   end
 end

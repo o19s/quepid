@@ -1,0 +1,10 @@
+<%# locals: (judge_activity:, book:, flash_active: false) %>
+<% if judge_activity.any? %>
+  <% judge_activity.each do |row| %>
+    <%= render 'books/judge_activity_row', row: row, flash_active: flash_active, book: book %>
+  <% end %>
+<% else %>
+  <tr id="judge-activity-empty">
+    <td colspan="4" class="text-center text-muted py-3">No judging activity yet.</td>
+  </tr>
+<% end %>

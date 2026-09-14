@@ -203,6 +203,34 @@ class Book < ApplicationRecord
     end
   end
 
+  # One row per judge for the book overview's Judge Activity table: every
+  # human judge who has judged anything, plus every assigned AI judge (shown
+  # even at zero judgements, since being assigned is itself worth showing).
+  # Shared by the initial page render and the live broadcast (which
+  # re-renders the whole table on every change) so a judge's row is never
+  # missing just because it didn't exist yet when a viewer's page loaded.
+  def judge_activity_rows
+    judge_ids = (judgements.where.not(user_id: nil).distinct.pluck(:user_id) + ai_judges.pluck(:id)).uniq
+    return [] if judge_ids.empty?
+
+    actively_judging_ids = RunJudgeJudyJob.actively_judging_user_ids(self)
+    judges_by_id = User.where(id: judge_ids).index_by(&:id)
+    activity = judge_activity_for(judge_ids)
+    auto_run_ids = books_ai_judges.auto_run.pluck(:user_id)
+
+    rows = judge_ids.filter_map do |uid|
+      judge = judges_by_id[uid]
+      next unless judge
+
+      stats = activity.fetch(uid, { sparkline: [], count: 0, last_judged_at: nil })
+      { judge: judge, sparkline: stats[:sparkline], last_judged_at: stats[:last_judged_at],
+        count: stats[:count], actively_judging: actively_judging_ids.include?(judge.id),
+        auto_run: auto_run_ids.include?(judge.id) }
+    end
+
+    rows.sort_by { |row| row[:judge].fullname }
+  end
+
   # Not proud of this method, but it's the only way I can get the dependent
   # objects of a Book to actually delete!
   # Otherwise our foreign key on judgements to query_doc_pairs gets violated with

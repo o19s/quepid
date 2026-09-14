@@ -46,7 +46,6 @@ class BooksController < ApplicationController
     @pagy, @books = pagy(query)
   end
 
-  # rubocop:disable-next Metrics/AbcSize
   def show
     @kraken_unleashed = flash[:kraken_unleashed]
 
@@ -70,23 +69,7 @@ class BooksController < ApplicationController
     @coverage_pct   = @total_pairs.positive? ? ((@complete_count.to_f / @total_pairs) * 100).round : 0
 
     # ── Per-judge activity: last 7 days sparkline + last judged timestamp ─────
-    judge_ids = (@book.judgements.where.not(user_id: nil).distinct.pluck(:user_id) + @book.ai_judges.pluck(:id)).uniq
-
-    @actively_judging_ids = RunJudgeJudyJob.actively_judging_user_ids(@book)
-    judges_by_id = User.where(id: judge_ids).index_by(&:id)
-    activity     = @book.judge_activity_for(judge_ids)
-    auto_run_ids = @book.books_ai_judges.auto_run.pluck(:user_id)
-
-    @judge_activity = judge_ids.filter_map do |uid|
-      judge = judges_by_id[uid]
-      next unless judge
-
-      stats = activity.fetch(uid, { sparkline: [], count: 0, last_judged_at: nil })
-      { judge: judge, sparkline: stats[:sparkline], last_judged_at: stats[:last_judged_at],
-        count: stats[:count], actively_judging: @actively_judging_ids.include?(judge.id),
-        auto_run: auto_run_ids.include?(judge.id) }
-    end
-    @judge_activity = @judge_activity.sort_by { |j| j[:judge].fullname }
+    @judge_activity = @book.judge_activity_rows
 
     respond_with(@book)
   end

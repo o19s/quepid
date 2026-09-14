@@ -128,7 +128,6 @@ function updateModalTitle(judgeId) {
 <% end %>
 
 <%# ── Judge activity table with sparklines ────────────────────────────────── %>
-<% if @judge_activity.any? %>
 <div class="card mb-4">
   <div class="card-header d-flex justify-content-between align-items-center">
     <h5 class="mb-0"><i class="bi bi-people"></i> Judge Activity</h5>
@@ -145,14 +144,11 @@ function updateModalTitle(judgeId) {
         </tr>
       </thead>
       <tbody id="judge-activity-table">
-        <% @judge_activity.each do |row| %>
-          <%= render 'books/judge_activity_row', row: row, flash_active: false, book: @book %>
-        <% end %>
+        <%= render 'books/judge_activity_table_body', judge_activity: @judge_activity, book: @book %>
       </tbody>
     </table>
   </div>
 </div>
-<% end %>
 
 <%# ── AI judges available ──────────────────────────────────────────────────── %>
 <% if @book.ai_judges.present? %>
