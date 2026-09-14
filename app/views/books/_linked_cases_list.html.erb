@@ -13,7 +13,7 @@
               <% sends_pairs = kase.auto_populate_book_pairs? %>
               <% receives_ratings = kase.auto_populate_case_judgements? %>
               <% populating_book = PopulateBookJob.actively_populating?(book, kase) %>
-              <% syncing_case = UpdateCaseJob.actively_syncing?(book, kase) %>
+              <% syncing_case = UpdateCaseJob.actively_syncing?(book, kase) || UpdateCaseRatingsJob.actively_syncing?(book, kase) %>
               <% if sends_pairs && receives_ratings %>
                 <i class="bi bi-arrow-left-right text-success <%= 'icon-pulse' if populating_book || syncing_case %>" title="Sends query/doc pairs to book and receives judgement ratings back"></i>
               <% elsif sends_pairs %>

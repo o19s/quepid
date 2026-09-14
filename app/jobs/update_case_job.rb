@@ -49,7 +49,7 @@ class UpdateCaseJob < ApplicationJob
                       [ specific_case ]
                     else
                       # Bulk update from book-level operations — respect the auto-populate flag
-                      book.cases.where(auto_populate_case_judgements: true)
+                      book.cases.includes(:owner).where(auto_populate_case_judgements: true)
                     end
 
     BroadcastLinkedCasesJob.perform_later(book)

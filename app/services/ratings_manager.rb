@@ -16,7 +16,7 @@ class RatingsManager
   end
 
   def sync_ratings_for_query_doc_pair query_doc_pair
-    @book.cases.where(auto_populate_case_judgements: true).find_each do |kase|
+    @book.cases.includes(:owner).where(auto_populate_case_judgements: true).find_each do |kase|
       sync_judgements_to_ratings kase, query_doc_pair
     end
   end

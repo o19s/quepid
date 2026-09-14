@@ -113,6 +113,10 @@ class PopulateBookJob < ApplicationJob
         partial: 'books/blah',
         locals:  { book: book, counter: counter, percent: percent, qdp: query_doc_pair }
       )
+      # Keeps the Linked Cases pulse (finite-iteration, see judgements.css)
+      # alive for the length of a large book's populate run, not just its
+      # first few seconds.
+      BroadcastLinkedCasesJob.perform_later(book)
     end
 
     fix_duplicate_positions book
