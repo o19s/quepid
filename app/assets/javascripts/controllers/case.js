@@ -23,6 +23,10 @@ angular.module('QuepidApp')
         name: null,
         startRename: false,
         rename: function() {
+          if (!$scope.caseName.name || !$scope.caseName.name.trim()) {
+            return;
+          }
+
           caseSvc.renameCase($scope.theCase, $scope.caseName.name)
           .then(function() {
             $scope.caseName.startRename = false;

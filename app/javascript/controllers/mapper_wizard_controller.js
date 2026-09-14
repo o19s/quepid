@@ -63,6 +63,14 @@ export default class extends Controller {
     }
   }
 
+  // Lets a user without an OpenAI key (or who just prefers to write the mapper by hand) reach
+  // Step 3 directly, instead of it only ever being revealed by a successful AI generation.
+  showStep3Manually(event) {
+    event.preventDefault()
+    this.step3Target.style.display = "block"
+    this.step3Target.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
   captureEditors() {
     if (this.hasNumberOfResultsMapperTarget && this.numberOfResultsMapperTarget.editor) {
       this.numberOfResultsEditor = this.numberOfResultsMapperTarget.editor

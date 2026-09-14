@@ -1,0 +1,165 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Reports which docs/manual-testing/*.md scenarios are due for a re-run, by cross-referencing
+# docs/manual-testing/tracking.yml against git history. Plain Ruby + git — no Rails boot, no Docker
+# needed, so it's fast enough to run before/after any change.
+#
+# A scenario is DUE when any of:
+#   - it has never been run (last_run: null)
+#   - a file under its `paths` has a commit newer than last_run ("code changed since last verified")
+#   - last_run is older than policy.default_max_age_days ("stale by pure time")
+#
+# Usage:
+#   bin/manual_test_status                 # full report, grouped by part
+#   bin/manual_test_status --due-only       # only scenarios needing attention
+#   bin/manual_test_status --part 07        # limit to one part
+#   bin/manual_test_status --paths-for 3.2  # show the exact files tracked for one scenario
+
+require 'yaml'
+require 'date'
+require 'optparse'
+require 'open3'
+
+ROOT = File.expand_path('..', __dir__)
+TRACKING_FILE = File.join(ROOT, 'docs/manual-testing/tracking.yml')
+
+options = { due_only: false, part: nil, paths_for: nil }
+OptionParser.new do |opts|
+  opts.banner = 'Usage: bin/manual_test_status [options]'
+  opts.on('--due-only', 'Only print scenarios that need a rerun') { options[:due_only] = true }
+  opts.on('--part PART', 'Limit to one part, e.g. 07') { |v| options[:part] = v }
+  opts.on('--paths-for SCENARIO', 'Print tracked paths for one scenario id, e.g. 3.2') { |v| options[:paths_for] = v }
+end.parse!
+
+unless File.exist?(TRACKING_FILE)
+  warn "No tracking file at #{TRACKING_FILE}"
+  exit 1
+end
+
+data = YAML.safe_load(File.read(TRACKING_FILE), permitted_classes: [Date], aliases: true)
+default_max_age = (data['policy'] || {})['default_max_age_days'] || 90
+
+# Cache one git-log lookup per unique path so we don't shell out per scenario.
+last_change_cache = {}
+
+def last_change_for(paths, root, cache)
+  return nil if paths.nil? || paths.empty?
+
+  key = paths.sort.join('|')
+  return cache[key] if cache.key?(key)
+
+  existing = paths.select { |p| File.exist?(File.join(root, p)) || Dir.glob(File.join(root, p)).any? }
+  if existing.empty?
+    cache[key] = nil
+    return nil
+  end
+
+  cmd = ['git', '-C', root, 'log', '-1', '--format=%cI', '--'] + existing
+  out, status = Open3.capture2(*cmd)
+  cache[key] = status.success? && !out.strip.empty? ? DateTime.iso8601(out.strip).to_date : nil
+end
+
+# `git log` only sees committed history — this repo often carries uncommitted work-in-progress,
+# so also flag scenarios whose paths overlap the current dirty working tree (staged, unstaged, or
+# untracked), since that's an even stronger "this needs a rerun" signal than an old commit.
+def dirty_files_for(root)
+  out, status = Open3.capture2('git', '-C', root, 'status', '--porcelain')
+  return [] unless status.success?
+
+  out.lines.map { |line| line[3..].to_s.strip.split(' -> ').last }.compact
+end
+
+def dirty_match(paths, dirty_files)
+  return nil if paths.nil? || paths.empty?
+
+  paths.each do |p|
+    hit = dirty_files.find { |d| d == p || d.start_with?(p.end_with?('/') ? p : "#{p}/") || p == d }
+    return hit if hit
+  end
+  nil
+end
+
+def days_since(date)
+  (Date.today - date).to_i
+end
+
+dirty_files = dirty_files_for(ROOT)
+
+rows = []
+(data['parts'] || {}).each do |part_id, part|
+  next if options[:part] && options[:part] != part_id
+
+  (part['scenarios'] || {}).each do |scenario_id, s|
+    next if options[:paths_for] && options[:paths_for] != scenario_id
+
+    last_run = s['last_run'] ? Date.parse(s['last_run'].to_s) : nil
+    code_changed = last_change_for(s['paths'], ROOT, last_change_cache)
+    dirty_hit = dirty_match(s['paths'], dirty_files)
+
+    reasons = []
+    reasons << 'never run' if last_run.nil?
+    reasons << "uncommitted changes in #{dirty_hit}" if dirty_hit
+    if last_run && code_changed && code_changed > last_run
+      reasons << "code changed #{code_changed} (after last_run #{last_run})"
+    end
+    if last_run && days_since(last_run) > default_max_age
+      reasons << "stale (#{days_since(last_run)}d > #{default_max_age}d)"
+    end
+
+    rows << {
+      part: part_id,
+      file: part['file'],
+      id: scenario_id,
+      title: s['title'],
+      last_run: last_run,
+      result: s['result'],
+      due: !reasons.empty?,
+      reasons: reasons,
+      paths: s['paths'] || []
+    }
+  end
+end
+
+if options[:paths_for]
+  row = rows.first
+  if row
+    puts "#{row[:id]} #{row[:title]}"
+    row[:paths].each { |p| puts "  #{p}" }
+  else
+    warn "No scenario #{options[:paths_for]} found"
+  end
+  exit 0
+end
+
+def natural_sort_key(scenario_id)
+  # "10.6a" -> [10, 6, "a"], "4.2" -> [4, 2, ""] — sorts numeric parts numerically.
+  scenario_id.to_s.split('.').map do |segment|
+    match = segment.match(/\A(\d+)([a-z]*)\z/)
+    match ? [match[1].to_i, match[2]] : [0, segment]
+  end
+end
+
+rows.sort_by! { |r| [r[:part], natural_sort_key(r[:id])] }
+due_count = rows.count { |r| r[:due] }
+
+current_part = nil
+rows.each do |r|
+  next if options[:due_only] && !r[:due]
+
+  if r[:part] != current_part
+    puts
+    puts "== Part #{r[:part]} (#{r[:file]}) =="
+    current_part = r[:part]
+  end
+
+  status = if r[:due]
+             "DUE  — #{r[:reasons].join('; ')}"
+           else
+             "ok   — last run #{r[:last_run]} (#{r[:result]})"
+           end
+  printf("  %-6s %-55s %s\n", r[:id], r[:title][0, 55], status)
+end
+
+puts
+puts "#{due_count} / #{rows.size} scenarios due for a rerun (never run, code changed since last_run, or stale > #{default_max_age}d)."

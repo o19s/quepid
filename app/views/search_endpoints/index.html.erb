@@ -15,8 +15,8 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
 
 <p id="notice"><%= notice %></p>
 
-<% if @search_endpoints.empty? %>
-  Create your first book by clicking on the New Search Endpoint button above.
+<% if @search_endpoints.empty? && params[:q].blank? && params[:owned].blank? && params[:team_id].blank? && !@archived %>
+  Create your first search endpoint by clicking on the New Search Endpoint button above.
   <br>
 <% end %>
 

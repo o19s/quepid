@@ -35,6 +35,19 @@ export function dynamicRegions(page: Page) {
   return [page.locator('#flash-messages')];
 }
 
+/**
+ * Header nav dropdown menu (e.g. "Relevancy Cases", "Books"), found by its
+ * toggle button's own label text rather than list position. `#header li.dropdown`
+ * has no id/data-* attribute distinguishing the case picker from the books
+ * picker from the account menu, and previously these were addressed via
+ * `.nth(0)` / `.nth(1)` — brittle, since a reordered or added dropdown would
+ * silently point tests at the wrong menu. Filtering by the toggle text (unique
+ * to each dropdown's `<li>`, including its menu contents) is stable instead.
+ */
+export function headerDropdownMenu(page: Page, toggleLabel: string) {
+  return page.locator('#header li.dropdown').filter({ hasText: toggleLabel }).locator('.dropdown-menu');
+}
+
 export function expandedCaseScreenshotOpts(page: Page) {
   // Align with migration-tour specs: mask flash + allow small font/layout drift.
   // Playwright config defaults expect.toHaveScreenshot.maxDiffPixelRatio to 0.01;

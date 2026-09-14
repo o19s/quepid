@@ -26,8 +26,8 @@ Cases are a group of queries that you are evaluating and experimenting with.
 
 <p id="notice"><%= notice %></p>
 
-<% if @cases.empty? %>
-  Create your first case by clicking on the New Case button above.
+<% if @cases.empty? && @filter_q.blank? && @filter_team_id.blank? && !@archived %>
+  Create your first case by clicking on Relevancy Cases &gt; Create a case in the navigation bar above.
   <br>
 <% end %>
 
