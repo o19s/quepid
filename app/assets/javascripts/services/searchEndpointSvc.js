@@ -8,7 +8,7 @@ angular.module('QuepidApp')
     function searchEndpointSvc($http) {
       this.searchEndpoints = [];
 
-      var SearchEndpoint = function(id, name, searchEngine, endpointUrl, apiMethod, customHeaders, proxyRequests, basicAuthCredential, mapperCode, testQuery) {
+      var SearchEndpoint = function(id, name, searchEngine, endpointUrl, apiMethod, customHeaders, proxyRequests, basicAuthCredential, mapperCode, testQuery, mapperBasedSearchEngineId) {
         this.id           = id;
         this.name         = name;
         this.searchEngine = searchEngine;
@@ -19,6 +19,7 @@ angular.module('QuepidApp')
         this.basicAuthCredential  = basicAuthCredential;
         this.mapperCode           = mapperCode;
         this.testQuery            = testQuery;
+        this.mapperBasedSearchEngineId = mapperBasedSearchEngineId;
       };
 
       this.constructFromData = function(data) {
@@ -32,7 +33,8 @@ angular.module('QuepidApp')
           data.proxy_requests,
           data.basic_auth_credential,
           data.mapper_code,
-          data.test_query
+          data.test_query,
+          data.mapper_based_search_engine_id
         );
       };
 

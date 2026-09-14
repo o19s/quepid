@@ -4,7 +4,6 @@
 # to be judged. This implementation supports only the "Multiple Raters" strategy,
 # which allows up to three ratings for each query/doc pair.
 module SelectionStrategy
-  # Returns whether more judgements are needed for the given book
   # Under the Multiple Raters strategy, we need up to 3 judgements per query/doc pair
   def self.moar_judgements_needed? book
     !every_query_doc_pair_has_three_judgements?(book)
@@ -36,20 +35,12 @@ module SelectionStrategy
 
   # Returns count of query-doc pairs with no judgements
   def self.unjudged_pairs_count book
-    book.query_doc_pairs
-      .left_joins(:judgements)
-      .group('query_doc_pairs.id')
-      .having('COUNT(judgements.id) = 0')
-      .count.size
+    grouped_pair_count(book, 'COUNT(judgements.id) = 0')
   end
 
   # Returns count of query-doc pairs with 1-2 judgements (partially judged)
   def self.partially_judged_pairs_count book
-    book.query_doc_pairs
-      .left_joins(:judgements)
-      .group('query_doc_pairs.id')
-      .having('COUNT(judgements.id) BETWEEN 1 AND 2')
-      .count.size
+    grouped_pair_count(book, 'COUNT(judgements.id) BETWEEN 1 AND 2')
   end
 
   # Checks if every query-document pair in the book has at least 3 judgements
@@ -70,14 +61,12 @@ module SelectionStrategy
   def self.random_query_doc_pair_for_multiple_judges book, user
     # Exponential-race weighted sampling: -ln(1 - U) * scale, U ~ Uniform(0, 1),
     # sorted ascending. Choosing the minimum favors smaller scales, so lower numeric
-    # positions (higher-ranked pairs) are more likely to be selected. MySQL's RAND()
-    # is a signed 64-bit integer, so it has to be normalized into that same range
-    # first. LOG() is natural log on MySQL but base-10 on SQLite, hence LN() there.
-    weighted_random_order = if AdapterFunctions.mysql?
-                              '-LOG(1.0 - RAND()) * (COALESCE(position, 1000) + 1)'
-                            else
-                              '-LN(1.0 - (ABS(RANDOM()) / 9223372036854775807.0)) * (COALESCE(position, 1000) + 1)'
-                            end
+    # positions (higher-ranked pairs) are more likely to be selected. Both the
+    # uniform draw and the natural log are spelled differently per adapter - see
+    # AdapterFunctions - and getting either wrong flattens the weighting instead
+    # of raising.
+    weighted_random_order = "-#{AdapterFunctions.natural_log}" \
+                            "(1.0 - #{AdapterFunctions.uniform_random}) * (COALESCE(position, 1000) + 1)"
 
     book.query_doc_pairs
       .left_joins(:judgements)
@@ -88,4 +77,19 @@ module SelectionStrategy
       .order(Arel.sql(weighted_random_order))
       .first
   end
+
+  # Counts query-doc-pair groups matching the given HAVING clause without
+  # materializing one row per group in Ruby. Rails' grouped .count returns a
+  # Hash keyed by group id, which is expensive to build at scale since every
+  # matching row has to cross into Ruby just to be counted; wrapping the
+  # grouped query as a subquery lets the database return a single row.
+  def self.grouped_pair_count book, having_clause
+    matching_ids = book.query_doc_pairs
+      .left_joins(:judgements)
+      .group('query_doc_pairs.id')
+      .having(having_clause)
+      .select('query_doc_pairs.id')
+    QueryDocPair.from(matching_ids, :matching_pairs).count
+  end
+  private_class_method :grouped_pair_count
 end

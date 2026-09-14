@@ -5,8 +5,8 @@ require 'test_helper'
 module Analytics
   module Cases
     class DuplicateScoresControllerTest < ActionController::TestCase
-      let(:user)        { users(:random) }
-      let(:kase)        { cases(:case_with_score) }
+      let(:user) { users(:random) }
+      let(:kase) { cases(:case_with_score) }
 
       setup do
         @controller = Analytics::Cases::DuplicateScoresController.new

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/BlockLength
+# rubocop:disable-next Metrics/BlockLength
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -64,9 +64,9 @@ Rails.application.routes.draw do
   post 'users/login' => 'sessions#create' # , #defaults: { format: :json
   post 'users/signup' => 'users/signups#create'
 
-  get  'login' => 'sessions#new'
-  get  'logout' => 'sessions#destroy'
-  get  'users/sign_in' => redirect('login') # Devise's conventional path; we use our own sessions controller
+  get 'login' => 'sessions#new'
+  get 'logout' => 'sessions#destroy'
+  get 'users/sign_in' => redirect('login') # Devise's conventional path; we use our own sessions controller
 
   resources :sessions, except: [ :edit, :show, :update ]
   resource :account, only: [ :update, :destroy ]
@@ -235,7 +235,11 @@ Rails.application.routes.draw do
       end
       resources :cases, only: [] do
         # Case Tries
-        resources :tries, param: :try_number, except: [ :new, :edit ]
+        resources :tries, param: :try_number, except: [ :new, :edit ] do
+          member do
+            post 'preview_args'
+          end
+        end
 
         # Case Scorers
         resources :scorers, only: [ :index, :update ], controller: :case_scorers
@@ -293,6 +297,7 @@ Rails.application.routes.draw do
       end
 
       resources :search_endpoints, except: [ :new, :edit ]
+      resources :mapper_based_search_engines, only: [ :index ]
       resources :scorers, except: [ :new, :edit ]
 
       resources :teams, except: [ :new, :edit ], param: :team_id
@@ -349,4 +354,3 @@ Rails.application.routes.draw do
   # Static pages
   get '/cookies' => 'pages#show', defaults: { page: 'cookies' }
 end
-# rubocop:enable Metrics/BlockLength

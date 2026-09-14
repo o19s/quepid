@@ -19,7 +19,8 @@ class HomeController < ApplicationController
     # @cases = recent_cases(30)
     @cases = @current_user.cases_involved_with.not_archived.with_counts
       .includes([ :metadata ])
-      .order('case_metadata.last_viewed_at DESC, cases.id DESC')
+      .order(Arel.sql('case_metadata.last_viewed_at IS NULL ASC, ' \
+                      'case_metadata.last_viewed_at DESC, cases.id DESC'))
       .limit(10)
 
     @most_recent_cases = @cases[0...4].sort_by { |c| c.case_name.downcase }
@@ -35,6 +36,11 @@ class HomeController < ApplicationController
     # end
 
     @most_recent_books = @most_recent_books.sort_by { |b| b.name.downcase }
+
+    # First login for the very first (automatically-promoted) administrator - see
+    # User#promote_to_first_administrator?. Swaps the usual date/greeting header and
+    # empty-state hero for a one-time, personalized welcome.
+    @first_time_admin = @current_user.administrator? && @cases.empty? && @most_recent_books.empty?
 
     # Homepage is too slow so we have to cut some stuff out ;-(
     # candidate_cases = @cases.select { |kase| kase.scores.scored.count.positive? }

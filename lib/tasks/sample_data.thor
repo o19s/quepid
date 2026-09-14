@@ -3,7 +3,7 @@
 require 'colorize'
 require 'zip'
 
-# rubocop:disable Style/StringConcatenation
+# rubocop:disable-next Style/StringConcatenation
 class SampleData < Thor
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
@@ -31,7 +31,8 @@ class SampleData < Thor
                                                             endpoint_url: 'http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select', api_method: 'JSONP'
 
     tmdb_es_endpoint = ::SearchEndpoint.find_or_create_by   search_engine: :es,
-                                                            endpoint_url: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search', api_method: 'POST'
+                                                            endpoint_url: 'http://quepid-elasticsearch.dev.o19s.com:9206/tmdb/_search', api_method: 'POST',
+                                                            proxy_requests: true
 
     ::SearchEndpoint.find_or_create_by search_engine:  :search_api,
                                        endpoint_url:   'https://opensourceconnections.com/?s=eric',
@@ -48,6 +49,18 @@ class SampleData < Thor
     static_endpoint = ::SearchEndpoint.find_or_create_by search_engine: :static,
                                                          name: 'Static Endpoint',
                                                          endpoint_url: 'TO_BE_UPDATED', api_method: 'GET'
+
+    # Mirrors the wizard's Vespa tile (MapperBasedSearchEngine) instead of hardcoding its
+    # config here, so the demo endpoint always matches whatever the wizard currently offers.
+    vespa_engine = ::MapperBasedSearchEngine.find('vespa')
+
+    vespa_endpoint = ::SearchEndpoint.find_or_create_by search_engine:                 :searchapi,
+                                                        mapper_based_search_engine_id: vespa_engine.id,
+                                                        endpoint_url:                  vespa_engine.search_url,
+                                                        api_method:                    vespa_engine.api_method,
+                                                        proxy_requests:                vespa_engine.proxy_requests,
+                                                        custom_headers:                vespa_engine.custom_headers,
+                                                        mapper_code:                   vespa_engine.mapper_code
 
     print_step 'End of seeding search endpoints................'
 
@@ -107,12 +120,14 @@ class SampleData < Thor
     tmdb_es_endpoint.owner = realistic_activity_user
     search_api_endpoint.owner = realistic_activity_user
     static_endpoint.owner = realistic_activity_user
+    vespa_endpoint.owner = realistic_activity_user
 
     statedecoded_solr_endpoint.save
     tmdb_solr_endpoint.save
     tmdb_es_endpoint.save
     search_api_endpoint.save
     static_endpoint.save
+    vespa_endpoint.save
 
     ######################################
     # OSC Team Owner
@@ -218,6 +233,7 @@ class SampleData < Thor
     }
     solr_try.search_endpoint = tmdb_solr_endpoint
     solr_try.update solr_params
+    solr_case.queries.find_or_create_by(query_text: 'star wars')
     print_case_info solr_case
 
     ######################################
@@ -232,6 +248,7 @@ class SampleData < Thor
     }
     es_try.search_endpoint = tmdb_es_endpoint
     es_try.update es_params
+    es_case.queries.find_or_create_by(query_text: 'love')
     print_case_info es_case
 
     ######################################
@@ -247,7 +264,7 @@ class SampleData < Thor
     searchapi_try.search_endpoint = search_api_endpoint
     searchapi_try.update searchapi_params
 
-    searchapi_case.queries.create(query_text: 'student accomodation')
+    searchapi_case.queries.find_or_create_by(query_text: 'student accomodation')
     print_case_info searchapi_case
 
     ######################################
@@ -287,6 +304,25 @@ class SampleData < Thor
     static_endpoint.save
 
     print_case_info static_case
+
+    ######################################
+    # Vespa Case
+    ######################################
+
+    vespa_case = realistic_activity_user.cases.find_or_create_by case_name: 'VESPA CASE'
+    vespa_try = vespa_case.tries.latest
+    vespa_params = {
+      field_spec:   "id:#{vespa_engine.id_field}, title:#{vespa_engine.title_field}, #{vespa_engine.additional_fields.join(', ')}",
+      query_params: vespa_engine.query_params,
+    }
+    vespa_try.search_endpoint = vespa_endpoint
+    vespa_try.update vespa_params
+
+    %w[star matrix love].each do |query_text|
+      vespa_case.queries.find_or_create_by(query_text: query_text)
+    end
+
+    print_case_info vespa_case
 
     print_step 'End of seeding cases................'
 
@@ -385,10 +421,10 @@ class SampleData < Thor
     book.scale = Scorer.system_default_scorer.scale
     book.scale_with_labels = Scorer.system_default_scorer.scale_with_labels
 
-    book.teams << osc
-    book.ai_judges << osc_ai_judge
-    book.ai_judges << azure_openai_judge
-    book.ai_judges << azure_anthropic_judge
+    book.teams << osc unless book.teams.include?(osc)
+    book.ai_judges << osc_ai_judge unless book.ai_judges.include?(osc_ai_judge)
+    book.ai_judges << azure_openai_judge unless book.ai_judges.include?(azure_openai_judge)
+    book.ai_judges << azure_anthropic_judge unless book.ai_judges.include?(azure_anthropic_judge)
     book.save
 
     # this code copied from populate_controller.rb and should be in a service...
@@ -429,10 +465,20 @@ class SampleData < Thor
 
       days_of_experimentation = rand(3..20) # somewhere between
 
+      # Dessert alone demonstrates Solr's JSON Query DSL (a JSON POST body) against the same
+      # endpoint the other Typeahead cases hit with classic q=...&magicBoost=... params.
+      dessert_case = ('Typeahead: Dessert' == case_name)
+
       days_of_experimentation.times do |counter|
+        query_params = if dessert_case
+                         { query: '#$query##', limit: 10 + counter }.to_json
+                       else
+                         'q=#$query##' + "&magicBoost=#{counter + 2}"
+                       end
+
         try_specifics = {
           try_number:   counter,
-          query_params: 'q=#$query##' + "&magicBoost=#{counter + 2}",
+          query_params: query_params,
         }
 
         try_params = try_defaults.merge(try_specifics)
@@ -527,10 +573,10 @@ class SampleData < Thor
     print_user_info user_params
 
     osc = ::Team.where(name: 'OSC').first_or_create
-    osc.members << hundreds_of_queries_user
-    osc.members << thousands_of_queries_user
+    osc.members << hundreds_of_queries_user unless osc.members.include?(hundreds_of_queries_user)
+    osc.members << thousands_of_queries_user unless osc.members.include?(thousands_of_queries_user)
 
-    osc.search_endpoints << statedecoded_solr_endpoint
+    osc.search_endpoints << statedecoded_solr_endpoint unless osc.search_endpoints.include?(statedecoded_solr_endpoint)
     osc.save!
 
     hundreds_of_queries_case = hundreds_of_queries_user.cases.create case_name: '100s of Queries'
@@ -586,7 +632,7 @@ class SampleData < Thor
     data = JSON.parse(contents)
     case_params = data.to_h.deep_symbolize_keys
 
-    realistic_activity_user = ::User.find_by(email: 'quepid+realisticActivity@o19s.com')
+    realistic_activity_user = ::User.by_email('quepid+realisticActivity@o19s.com').first
 
     @case = ::Case.find_by(id: 6789)
     @case&.destroy
@@ -682,8 +728,8 @@ class SampleData < Thor
   private
 
   def seed_user hash
-    if hash[:email] && ::User.exists?(email: hash[:email].downcase)
-      ::User.where(email: hash[:email].downcase).first
+    if hash[:email] && ::User.by_email(hash[:email]).exists?
+      ::User.by_email(hash[:email]).first
     elsif hash[:name] && ::User.exists?(name: hash[:name])
       ::User.where(name: hash[:name]).first
     else
@@ -742,4 +788,3 @@ class SampleData < Thor
     }
   end
 end
-# rubocop:enable Style/StringConcatenation

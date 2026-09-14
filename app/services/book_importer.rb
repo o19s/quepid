@@ -47,7 +47,7 @@ class BookImporter
     @book.scale_with_labels = params_to_use[:scale_with_labels] if params_to_use[:scale_with_labels].present?
 
     emails_of_judges(params_to_use).each do |email|
-      unless User.exists?(email: email)
+      unless User.by_email(email).exists?
         if true == options[:force_create_users]
           User.invite!({ email: email, password: '', skip_invitation: true }, @current_user)
         else
@@ -60,7 +60,7 @@ class BookImporter
   # Returns true on success, so Api::V1::Import::BooksController#create's `if book_importer.import`
   # check doesn't depend on which of the branches below happened to run last (some callers - e.g.
   # a payload with only query_doc_pairs and no all_judgements - would otherwise see a falsy nil).
-  # rubocop:disable Naming/PredicateMethod
+  # rubocop:disable-next Naming/PredicateMethod
   def import
     params_to_use = @data_to_process
 
@@ -69,7 +69,7 @@ class BookImporter
 
     # A book nobody owns gets claimed by whoever is importing, so it can't get lost - including
     # an old book whose owner was deleted.
-    @book.owner ||= User.find_by(email: @current_user.email)
+    @book.owner ||= User.by_email(@current_user.email).first
 
     @book.save
 
@@ -78,7 +78,6 @@ class BookImporter
 
     true
   end
-  # rubocop:enable Naming/PredicateMethod
 
   private
 
@@ -211,6 +210,6 @@ class BookImporter
     return by_id if by_id
 
     email = attrs[:user_email].presence || attrs[:email].presence
-    User.find_by(email: email) if email
+    User.by_email(email).first if email
   end
 end

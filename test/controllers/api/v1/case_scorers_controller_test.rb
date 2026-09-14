@@ -40,6 +40,20 @@ module Api
 
           assert_equal expected_response, data['default']
         end
+
+        test 'returns a null default instead of erroring when the case has no scorer at all' do
+          acase    = cases(:shared_with_team)
+          original = Rails.application.config.quepid_default_scorer
+          Rails.application.config.quepid_default_scorer = 'a-scorer-name-that-does-not-exist'
+
+          login_user acase.owner
+          get :index, params: { case_id: acase.id }
+
+          assert_response :ok
+          assert_nil response.parsed_body['default']
+        ensure
+          Rails.application.config.quepid_default_scorer = original
+        end
       end
 
       describe 'Updates case scorer' do

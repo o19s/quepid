@@ -74,6 +74,33 @@ class BookTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'judges' do
+    let(:book) { books(:james_bond_movies) }
+    let(:judge) { users(:random) }
+
+    it 'returns each judge once however many judgements they made' do
+      pairs = book.query_doc_pairs.limit(3)
+      assert_operator pairs.size, :>, 1, 'need several pairs to create duplicates'
+
+      pairs.each do |pair|
+        Judgement.find_or_create_by!(query_doc_pair: pair, user: judge) { |j| j.rating = 1 }
+      end
+
+      judge_ids = book.judges.map(&:id)
+
+      assert_includes judge_ids, judge.id
+      assert_equal judge_ids, judge_ids.uniq
+    end
+
+    it 'returns a relation so callers can chain onto it' do
+      assert_kind_of ActiveRecord::Relation, book.judges
+    end
+
+    it 'is empty for a book nobody has judged' do
+      assert_empty books(:empty_book).judges
+    end
+  end
+
   describe 'sampling random query doc pairs' do
     let(:user) { users(:random) }
     let(:book) { books(:book_of_star_wars_judgements) }

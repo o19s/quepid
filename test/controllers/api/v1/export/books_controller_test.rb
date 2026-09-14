@@ -15,8 +15,8 @@ module Api
         end
 
         describe 'Exporting a book in triggers a job' do
-          let(:book)        { books(:james_bond_movies) }
-          let(:doug)        { users(:doug) }
+          let(:book) { books(:james_bond_movies) }
+          let(:doug) { users(:doug) }
 
           test 'the book returns a message on start' do
             assert_includes doug.books, book

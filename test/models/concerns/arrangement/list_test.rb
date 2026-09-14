@@ -4,10 +4,9 @@ require 'test_helper'
 require 'ostruct'
 # require 'arrangement/list'
 
-# rubocop:disable Style/StructInheritance
+# rubocop:disable-next Style/StructInheritance
 class Node < Struct.new(:id, :arranged_at, :arranged_next)
 end
-# rubocop:enable Style/StructInheritance
 
 module Arrangement
   class ListTest < ActiveSupport::TestCase

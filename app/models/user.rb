@@ -79,11 +79,10 @@ class User < ApplicationRecord
            dependent:   :destroy
 
   # too late now!
-  # rubocop:disable Rails/HasAndBelongsToMany
+  # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
                           join_table:  'teams_members',
                           foreign_key: 'member_id'
-  # rubocop:enable Rails/HasAndBelongsToMany
 
   has_many :shared_team_cases,
            through: :teams,
@@ -121,7 +120,7 @@ class User < ApplicationRecord
   # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
   validates :email,
             presence:   true,
-            uniqueness: true,
+            uniqueness: { case_sensitive: false },
             format:     { with: URI::MailTo::EMAIL_REGEXP },
             length:     { maximum: 80 },
             unless:     :ai_judge?
@@ -215,6 +214,20 @@ class User < ApplicationRecord
   # default_scope -> { includes(:permissions) }
   scope :only_ai_judges, -> { where.not(llm_key: nil) }
 
+  # A fresh install (e.g. SQLite with no seed data) has no real users - and so no
+  # administrator to grant one via the admin UI or `thor user:grant_administrator`.
+  # Used by promote_to_first_administrator? below to make the first real signup an
+  # administrator automatically, so there's always a way in.
+  def self.no_real_users_yet?
+    where(llm_key: nil).none?
+  end
+
+  # Email matching is case insensitive on MySQL only because the users table
+  # inherits latin1_swedish_ci; PostgreSQL and SQLite compare byte for byte.
+  # Fold both sides in SQL so lookups behave the same on every adapter and
+  # don't depend on every stored address already being lowercase.
+  scope :by_email, ->(email) { where('LOWER(users.email) = ?', email.to_s.strip.downcase) }
+
   # Lets get STI in and have actual AiJudge and User objects!
   # Reads the raw column to avoid triggering Active Record encryption, which
   # would fail (and break unrelated views) if encryption credentials aren't
@@ -292,10 +305,7 @@ class User < ApplicationRecord
   end
 
   def judge_options= value
-    # Initialize options as empty hash if nil
     self.options ||= {}
-
-    # Set the judge_options within options
     self.options = options.merge(judge_options: value)
   end
 
@@ -306,7 +316,14 @@ class User < ApplicationRecord
     self.completed_case_wizard = false if completed_case_wizard.nil?
     self.num_logins       = 0 if num_logins.nil?
     self.default_scorer   = Scorer.system_default_scorer if self.default_scorer.nil?
+    self.administrator = true if promote_to_first_administrator?
     # rubocop:enable Style/RedundantSelf
+  end
+
+  # AI judges are User rows too (see ai_judge? above) but should never be promoted, or
+  # count towards there being "real" users yet - see no_real_users_yet? above.
+  def promote_to_first_administrator?
+    !ai_judge? && self.class.no_real_users_yet?
   end
 
   def encrypt_password

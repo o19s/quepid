@@ -15,7 +15,8 @@ module Api
       # @summary Add user to team
       # @parameter id(query) [!Integer] The id of the user to be added to the team.
       def create
-        @member = User.where('email = ? OR id = ?', params[:id].to_s.downcase, params[:id] ).first
+        @member = User.where('LOWER(users.email) = ? OR users.id = ?',
+                             params[:id].to_s.strip.downcase, params[:id].to_i).first
 
         unless @member
           render json: { error: 'User Not Found!' }, status: :not_found
@@ -69,7 +70,8 @@ module Api
       # @summary Remove user from team
       # @parameter id(query) [!Integer] The id of the user to be removed from the team.
       def destroy
-        member = @team.members.where('email = ? OR id = ?', params[:id].to_s.downcase, params[:id])
+        member = @team.members.where('LOWER(users.email) = ? OR users.id = ?',
+                                     params[:id].to_s.strip.downcase, params[:id].to_i)
 
         @team.members.delete(member) if member
 

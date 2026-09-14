@@ -1,42 +1,40 @@
-<div class="container centered-form">
-  <div class="row mb-3">
-    <h2>
-      Admin Panel
-    </h2>
-    
-    <div class="card" style="">
-      <div class="card-body">
-        <h5 class="card-title">Managing Quepid</h5>
-        <p class="card-text">Configure Quepid to work for your users.</p>
-        
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item"><%= link_to 'Users', admin_users_path %>
-          <li class="list-group-item"><%= link_to 'Announcements', admin_announcements_path %>
-        </ul>
-      </div>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1>Admin Settings</h1>
+</div>
+
+<div style="max-width: 960px;">
+  <div class="card" style="">
+    <div class="card-body">
+      <h5 class="card-title">Managing Quepid</h5>
+      <p class="card-text">Configure Quepid to work for your users.</p>
+
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><%= link_to 'Users', admin_users_path %>
+        <li class="list-group-item"><%= link_to 'Announcements', admin_announcements_path %>
+      </ul>
     </div>
-    <p/>
-    <div class="card" style="">
-      <div class="card-body">
-        <h5 class="card-title">Analytics</h5>
-        <p class="card-text">Dig into the data being collected by users.</p>
-        
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item"><%= link_to 'SQL Analytics', blazer_path %>
-        </ul>
-      </div>
+  </div>
+  <p/>
+  <div class="card" style="">
+    <div class="card-body">
+      <h5 class="card-title">Analytics</h5>
+      <p class="card-text">Dig into the data being collected by users.</p>
+
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><%= link_to 'SQL Analytics', blazer_path %>
+      </ul>
     </div>
-    <p/>
-    <div class="card" style="">
-      <div class="card-body">
-        <h5 class="card-title">Background Jobs</h5>
-        <p class="card-text">These tools are to help you manage the various background jobs in Quepid.</p>
-        
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item"><%= link_to 'Job Manager', mission_control_jobs_path %></li>
-          <li class="list-group-item"><%= link_to 'Websocket Tester', admin_websocket_tester_index_path %></li>
-        </ul>
-      </div>
+  </div>
+  <p/>
+  <div class="card" style="">
+    <div class="card-body">
+      <h5 class="card-title">Background Jobs</h5>
+      <p class="card-text">These tools are to help you manage the various background jobs in Quepid.</p>
+
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><%= link_to 'Job Manager', mission_control_jobs_path %></li>
+        <li class="list-group-item"><%= link_to 'Websocket Tester', admin_websocket_tester_index_path %></li>
+      </ul>
     </div>
   </div>
 </div>

@@ -114,7 +114,7 @@ module Books
     # Returns true on success; false so the caller can render the failure view when
     # validation added errors. Named like `save`/`update` (bool return, no `?`) since,
     # like them, it has side effects rather than being a pure predicate.
-    # rubocop:disable Naming/PredicateMethod
+    # rubocop:disable-next Naming/PredicateMethod
     def queue_import book, params_to_use
       return false unless params_to_use && book.errors.empty?
 
@@ -136,7 +136,6 @@ module Books
 
       true
     end
-    # rubocop:enable Naming/PredicateMethod
 
     def validate_import book, service
       service.validate

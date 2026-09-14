@@ -238,7 +238,8 @@ autocomplete_different_domain:
   name: Different Domain User
   administrator: false
 
-# Autocomplete test user - uppercase email for case sensitivity test
+# Stored with mixed case on purpose: fixtures skip validations, so this row
+# exercises User.by_email folding the column and not just the input.
 autocomplete_uppercase:
   <<: *default
   email: UpperCase@example.com

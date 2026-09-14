@@ -38,8 +38,8 @@
 
       <div class="mb-3">
         <%= form.label :api_method, class: 'form-label' %>
-        <%= form.collection_select :api_method, [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT']], :last, :first, required: true, prompt:true,  class: 'form-control' %>
-        <div class="form-text">Typically this is a POST for JSON apis, and GET for passing parameters via the URL</div>
+        <%= form.collection_select :api_method, [['GET', 'GET'], ['POST', 'POST'], ['JSONP', 'JSONP'], ['PUT', 'PUT'], ['AUTO', 'AUTO']], :last, :first, required: true, prompt:true,  class: 'form-control' %>
+        <div class="form-text">Typically this is a POST for JSON apis, and GET for passing parameters via the URL. AUTO (mapper-based search engines only) picks GET for short queries and POST for long ones.</div>
       </div>
 
       <div class="mb-3">
@@ -85,8 +85,17 @@
 
       <div class="mb-3">
         <%= form.label :mapper_code, class: 'form-label' %>
-        <div class="form-text">This Javascript is run in the browser to map custom search api responses to what Quepid understands.</div>
-        <%= form.text_area :mapper_code, data: { codemirror_mode: "javascript", codemirror_line_numbers: true, codemirror_height: 600 } %>
+        <% if search_endpoint.mapper_based_search_engine_id.present? %>
+          <div class="form-text">
+            This endpoint was created from the <strong><%= search_endpoint.mapper_based_search_engine&.name || search_endpoint.mapper_based_search_engine_id %></strong>
+            preset, so its mapper code is kept in sync automatically and can't be edited here.
+          </div>
+          <%= form.text_area :mapper_code, disabled: true,
+                data: { codemirror_mode: "javascript", codemirror_line_numbers: true, codemirror_height: 600, codemirror_readonly: true } %>
+        <% else %>
+          <div class="form-text">This Javascript is run in the browser to map custom search api responses to what Quepid understands.</div>
+          <%= form.text_area :mapper_code, data: { codemirror_mode: "javascript", codemirror_line_numbers: true, codemirror_height: 600 } %>
+        <% end %>
       </div>
 
       <div class="mb-3">

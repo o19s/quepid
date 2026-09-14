@@ -148,6 +148,13 @@ class DocGeneratorTest < ActiveSupport::TestCase
       assert_not generator.send(:retryable_solr_http_response?, Net::HTTPNotFound.new('1.1', '404', 'No'))
     end
 
+    test 'treats 3xx as retryable' do
+      # Solr's JSON API never legitimately redirects; a 3xx means something in the
+      # network path (e.g. a firewall) intercepted the request.
+      assert generator.send(:retryable_solr_http_response?, Net::HTTPFound.new('1.1', '302', 'Found'))
+      assert generator.send(:retryable_solr_http_response?, Net::HTTPMovedPermanently.new('1.1', '301', 'Moved'))
+    end
+
     test 'returns false for nil response' do
       assert_not generator.send(:retryable_solr_http_response?, nil)
     end

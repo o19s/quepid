@@ -2,7 +2,7 @@
 
 require 'json'
 
-module EsArgParser
+module JsonArgParser
   def self.parse query_string, vars = {}
     query_string = '{}' if query_string.nil?
     # Remove new line characters
@@ -19,12 +19,11 @@ module EsArgParser
     converted_string.gsub!('%%', '%')
 
     # Parse the JSON string
-    # rubocop:disable Style/RedundantReturn
+    # rubocop:disable-next Style/RedundantReturn
     begin
       return JSON.parse(converted_string)
     rescue JSON::ParserError
       return nil
     end
-    # rubocop:enable Style/RedundantReturn
   end
 end

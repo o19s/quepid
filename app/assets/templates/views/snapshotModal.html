@@ -26,7 +26,7 @@
   
   <span ng-hide="supportLookupById">
   <p>
-  To power comparisons when using {{ searchEngine | searchEngineName }} the fields of your documents will be stored in Quepid.
+  To power comparisons when using {{ (mapperBasedSearchEngineName || searchEngine) | searchEngineName }} the fields of your documents will be stored in Quepid.
   </p>
   </span>
 

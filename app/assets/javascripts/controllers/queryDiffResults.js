@@ -16,7 +16,6 @@ angular.module('QuepidApp')
         howManyToDisplay = 10;
       }
 
-      // Initialize doc tuples for multi-diff comparison
       for (var j = 0; j < howManyToDisplay; j++) {
         returnValue[j] = { 
           doc: null, 
@@ -40,7 +39,6 @@ angular.module('QuepidApp')
         }
 
         for (var i = 0; i < howManyToDisplay; i++) {
-          // Set current search result
           if (docSource()[i]) {
             returnValue[i].doc = docSource()[i];
           } else {

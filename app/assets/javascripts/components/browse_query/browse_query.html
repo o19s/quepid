@@ -1,0 +1,12 @@
+<a
+  ng-show="ctrl.query.state() !== 'error'"
+  class="btn btn-primary"
+  href=""
+  ng-click="ctrl.prompt()"
+>
+  <ng-pluralize count="ctrl.query.getNumFound()"
+      when="{'0': 'Browse {} Results on ' + ctrl.engineName,
+             'one': 'Browse {} Result on ' + ctrl.engineName,
+             'other': 'Browse {} Results on ' + ctrl.engineName}">
+  </ng-pluralize>
+</a>

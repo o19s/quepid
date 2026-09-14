@@ -3,7 +3,7 @@
 require 'colorize'
 require 'jshint/lint'
 
-# rubocop:disable Metrics/BlockLength
+# rubocop:disable-next Metrics/BlockLength
 namespace :test do
   desc 'Report failed tests from JUnit XML reports'
   task report_failed_tests: :environment do
@@ -178,7 +178,6 @@ namespace :test do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength
 
 namespace :erd do
   desc 'Generate Entity Relationship Diagram image at docs/erd.png'

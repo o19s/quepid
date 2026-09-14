@@ -94,9 +94,9 @@ angular.module('QuepidApp')
           });
       };
       
-      // Now that we process snapshots async, we 
-      // don't want to cache the data
-      this.getSnapshots = function() {       
+      // Snapshots are processed asynchronously, so a cached list can go stale;
+      // always re-fetch from the server rather than caching.
+      this.getSnapshots = function() {
         this.snapshots = {};
 
         return $http.get('api/cases/' + caseNo + '/snapshots?shallow=true')

@@ -4,9 +4,9 @@
       <add-query class="float-start mb-2"></add-query>
 
       <ul class="list-inline d-flex justify-content-end flex-wrap mb-0 float-end">
-        <li class="list-inline-item">
-          <input type="checkbox" class="align-top" ng-checked="queriesSvc.showOnlyRated" ng-click="queriesSvc.toggleShowOnlyRated()" />
-          <a href="" ng-click="queriesSvc.toggleShowOnlyRated()">Show only rated</a>
+        <li class="list-inline-item" title="{{ showOnlyRatedUnsupported() ? 'Not supported for this search engine yet' : '' }}">
+          <input type="checkbox" class="align-top" ng-checked="queriesSvc.showOnlyRated" ng-click="!showOnlyRatedUnsupported() && queriesSvc.toggleShowOnlyRated()" ng-disabled="showOnlyRatedUnsupported()" />
+          <a href="" ng-click="!showOnlyRatedUnsupported() && queriesSvc.toggleShowOnlyRated()" ng-class="{ 'text-muted': showOnlyRatedUnsupported() }">Show only rated</a>
         </li>
 
         <li class="list-inline-item text-muted">

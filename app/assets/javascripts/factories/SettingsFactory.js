@@ -194,7 +194,6 @@
       }
     };
 
-    // Return factory object
     return Settings;
   }
 })();

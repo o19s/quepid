@@ -327,4 +327,3 @@ Post-import navigation still built client-side: `` `${getQuepidRootUrl()}/case/$
 Migrate to `apiFetch` when touched: `confirm_delete_controller.js` (form submit — keep as-is unless moving to fetch).
 
 **Also:** add `data-quepid-root-url` to `analytics.html.erb` if that layout ever loads Stimulus HTTP code.
-

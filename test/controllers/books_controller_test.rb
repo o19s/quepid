@@ -42,6 +42,111 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'show' do
+    let(:matt) { users(:matt) }
+    let(:joe)  { users(:joe) }
+    let(:jane) { users(:jane) }
+
+    before do
+      james_bond_movies.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
+    end
+
+    test 'flags unjudged pairs needing attention' do
+      login_user_for_integration_test user
+
+      get "/books/#{james_bond_movies.id}"
+
+      assert_response :success
+      assert_match 'Critical: Unjudged Pairs Need Attention', response.body
+      assert_match 'no judgements yet', response.body
+    end
+
+    test 'shows the book as complete once every pair has three judgements' do
+      login_user_for_integration_test user
+
+      [ matt, joe, jane ].each do |judge|
+        james_bond_movies.query_doc_pairs.each do |qdp|
+          qdp.judgements.create! rating: 1, user: judge
+        end
+      end
+
+      get "/books/#{james_bond_movies.id}"
+
+      assert_response :success
+      assert_match 'All Done!', response.body
+    end
+
+    test 'prompts to populate the book when it has no query/doc pairs' do
+      login_user_for_integration_test user
+      james_bond_movies.query_doc_pairs.delete_all
+
+      get "/books/#{james_bond_movies.id}"
+
+      assert_response :success
+      assert_match 'No Query/Doc Pairs Available', response.body
+    end
+  end
+
+  describe 'judgement stats' do
+    before do
+      james_bond_movies.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
+    end
+
+    test 'shows the distribution of judgement ratings across the book scale' do
+      login_user_for_integration_test user
+
+      pairs = james_bond_movies.query_doc_pairs.limit(3).to_a
+      pairs[0].judgements.create! rating: 0, user: user
+      pairs[1].judgements.create! rating: 1, user: user
+      pairs[2].judgements.create! rating: 1, user: user
+
+      get "/books/#{james_bond_movies.id}/judgement_stats"
+
+      assert_response :success
+      assert_equal(
+        [
+          { rating: '0 - Not Relevant', count: 1 },
+          { rating: '1 - Relevant', count: 2 }
+        ],
+        assigns(:rating_distribution_data)
+      )
+    end
+
+    test 'includes scale values with zero judgements' do
+      login_user_for_integration_test user
+
+      get "/books/#{james_bond_movies.id}/judgement_stats"
+
+      assert_response :success
+      assert_equal(
+        [
+          { rating: '0 - Not Relevant', count: 0 },
+          { rating: '1 - Relevant', count: 0 }
+        ],
+        assigns(:rating_distribution_data)
+      )
+    end
+
+    test 'excludes judgements marked unrateable or judge later' do
+      login_user_for_integration_test user
+
+      pairs = james_bond_movies.query_doc_pairs.limit(2).to_a
+      pairs[0].judgements.create! rating: 1, user: user
+      pairs[1].judgements.new(user: user).mark_unrateable!
+
+      get "/books/#{james_bond_movies.id}/judgement_stats"
+
+      assert_response :success
+      assert_equal(
+        [
+          { rating: '0 - Not Relevant', count: 0 },
+          { rating: '1 - Relevant', count: 1 }
+        ],
+        assigns(:rating_distribution_data)
+      )
+    end
+  end
+
   # rubocop:disable Metrics/AbcSize
   def test_functionality
     # definitly an opportunity for refactoring!

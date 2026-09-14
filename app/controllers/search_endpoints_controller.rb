@@ -18,8 +18,8 @@ class SearchEndpointsController < ApplicationController
     query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
 
     if params[:q].present?
-      query = query.where('search_endpoints.name LIKE ? OR endpoint_url LIKE ?',
-                          "%#{params[:q]}%", "%#{params[:q]}%")
+      q = "%#{params[:q].to_s.downcase}%"
+      query = query.where('LOWER(search_endpoints.name) LIKE ? OR LOWER(endpoint_url) LIKE ?', q, q)
     end
 
     @pagy, @search_endpoints = pagy(query)

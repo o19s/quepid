@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-100">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <title>Quepid -- Relevant Search Solved</title>
@@ -13,17 +13,27 @@
     <%= javascript_importmap_tags 'application_modern' %>
 
   </head>
-  <body class="d-flex flex-column h-100" data-quepid-root-url="<%= quepid_root_url %>">
+  <body class="d-flex flex-column min-vh-100" data-quepid-root-url="<%= quepid_root_url %>">
     <header>
       <%= render 'layouts/header' %>
     </header>
 
     <!-- Begin page content -->
-    <main class="flex-shrink-0">
-      <div class="container">
+    <%# Deliberately d-flex directly on container-fluid, not a nested .row: .row's
+        "> *" rule forces width:100%/flex-shrink:0 on every direct child (assuming
+        Bootstrap grid .col-* children), which fights a fixed-width sidebar +
+        flex-grow content pane that isn't using grid columns. flex-grow-1 (on a
+        flex-column body) lets this reach all the way down to the footer instead of
+        only matching short page content - a child height:100% percentage wouldn't
+        reliably resolve against that flexed height, so sidebar/main are direct
+        flex children here rather than nested inside another block-level wrapper. %>
+    <div class="container-fluid flex-grow-1 d-flex px-0">
+      <%= render 'layouts/admin_sidebar' %>
+
+      <main class="flex-grow-1 px-md-4 py-3" style="min-width: 0;">
         <%= yield %>
-      </div>
-    </main>
+      </main>
+    </div>
 
     <%= render 'layouts/footer' %>
 

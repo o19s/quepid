@@ -35,12 +35,21 @@
       self.deleted       = false;
       self.escapeQuery   = data.escape_query;
       self.apiMethod     = data.api_method;
+      // Server-derived and always recomputed fresh - read-only, so deliberately not
+      // round-tripped in toApiFormat() below.
+      self.jsonQueryParams = data.json_query_params;
       self.customHeaders = data.custom_headers;
       self.fieldSpec     = data.field_spec;
       self.name          = data.name;
       self.numberOfRows  = data.number_of_rows;
       self.queryParams   = data.query_params;
       self.searchEngine  = data.search_engine;
+      self.mapperBasedSearchEngineId = data.mapper_based_search_engine_id;
+      self.mapperBasedSearchEngineName = data.mapper_based_search_engine_name;
+      self.mapperBasedSearchEngineSupportsPagination = data.mapper_based_search_engine_supports_pagination;
+      self.mapperBasedSearchEnginePaginationHitsParam = data.mapper_based_search_engine_pagination_hits_param;
+      self.mapperBasedSearchEnginePaginationOffsetParam = data.mapper_based_search_engine_pagination_offset_param;
+      self.mapperBasedSearchEngineSupportsRatedDocsLookup = data.mapper_based_search_engine_supports_rated_docs_lookup;
       self.searchEndpointId = data.search_endpoint_id;
       self.endpointName  = data.endpoint_name;
       self.searchUrl     = data.search_url;
@@ -193,11 +202,16 @@
           options:               self.options,
           endpoint_archived:     self.endpointArchived,
           requests_per_minute:   self.requestsPerMinute,
+          mapper_based_search_engine_id:                       self.mapperBasedSearchEngineId,
+          mapper_based_search_engine_name:                     self.mapperBasedSearchEngineName,
+          mapper_based_search_engine_supports_pagination:      self.mapperBasedSearchEngineSupportsPagination,
+          mapper_based_search_engine_pagination_hits_param:    self.mapperBasedSearchEnginePaginationHitsParam,
+          mapper_based_search_engine_pagination_offset_param:  self.mapperBasedSearchEnginePaginationOffsetParam,
+          mapper_based_search_engine_supports_rated_docs_lookup: self.mapperBasedSearchEngineSupportsRatedDocsLookup,
         };
       }
     };
 
-    // Return factory object
     return Try;
   }
 })();

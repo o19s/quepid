@@ -1,0 +1,29 @@
+<div class="modal-header">
+  <h3 class="modal-title" id="browse-query-modal-title">Browse Results on {{ctrl.engineName}}</h3>
+  <button type="button" class="btn-core-close" ng-click="ctrl.cancel()" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+  <p>Run this in a terminal, or paste it into a tool like Postman, to see the raw response from {{ctrl.engineName}} for this query.</p>
+
+  <pre class="p-2 bg-light border rounded">{{ctrl.curlCommand}}</pre>
+
+  <p class="text-muted mb-0" ng-if="ctrl.hasHeaders">
+    <i class="bi bi-info-circle" aria-hidden="true"></i>
+    This includes the endpoint's configured headers/credentials — treat it like a secret.
+  </p>
+  <p class="text-muted mb-0" ng-if="!ctrl.hasHeaders">
+    <i class="bi bi-info-circle" aria-hidden="true"></i>
+    No headers or credentials are configured for this endpoint, so you can also open the URL directly below.
+  </p>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-outline-secondary float-start me-auto" ngclipboard data-clipboard-text="{{ctrl.curlCommand}}" ngclipboard-success="ctrl.onCopySuccess()">
+    <i class="bi" ng-class="ctrl.copied ? 'bi-check-lg' : 'bi-copy'"></i> {{ctrl.copied ? 'Copied!' : 'Copy curl command'}}
+  </button>
+  <a ng-if="!ctrl.hasHeaders" class="btn btn-outline-secondary float-start me-2" ng-href="{{ctrl.url}}" target="_blank" rel="noopener noreferrer">
+    <i class="bi bi-box-arrow-up-right"></i> Open URL directly
+  </a>
+  <button class="btn btn-primary" ng-click="ctrl.cancel()">Close</button>
+</div>

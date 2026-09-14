@@ -4,22 +4,23 @@
 #
 # Table name: search_endpoints
 #
-#  id                    :bigint           not null, primary key
-#  api_method            :string(255)
-#  archived              :boolean          default(FALSE)
-#  basic_auth_credential :string(4000)
-#  custom_headers        :string(6000)
-#  endpoint_url          :string(500)
-#  mapper_code           :text(65535)
-#  name                  :string(255)
-#  options               :json
-#  proxy_requests        :boolean          default(FALSE)
-#  requests_per_minute   :integer          default(0)
-#  search_engine         :string(50)
-#  test_query            :text(65535)
-#  created_at            :datetime         not null
-#  updated_at            :datetime         not null
-#  owner_id              :integer
+#  id                            :bigint           not null, primary key
+#  api_method                    :string(255)
+#  archived                      :boolean          default(FALSE)
+#  basic_auth_credential         :string(4000)
+#  custom_headers                :string(6000)
+#  endpoint_url                  :string(500)
+#  mapper_code                   :text(65535)
+#  name                          :string(255)
+#  options                       :json
+#  proxy_requests                :boolean          default(FALSE)
+#  requests_per_minute           :integer          default(0)
+#  search_engine                 :string(50)
+#  test_query                    :text(65535)
+#  created_at                    :datetime         not null
+#  updated_at                    :datetime         not null
+#  mapper_based_search_engine_id :string(255)
+#  owner_id                      :integer
 #
 # Indexes
 #
@@ -29,10 +30,9 @@
 class SearchEndpoint < ApplicationRecord
   # Associations
   # too late now!
-  # rubocop:disable Rails/HasAndBelongsToMany
+  # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
                           join_table: 'teams_search_endpoints'
-  # rubocop:enable Rails/HasAndBelongsToMany
 
   belongs_to :owner,
              class_name: 'User', optional: true
@@ -64,14 +64,50 @@ class SearchEndpoint < ApplicationRecord
   validates :options, json_format: true, allow_blank: true
   validates :custom_headers, json_format: { normalize_values: true }, allow_blank: true
   validate :validate_proxy_requests_api_method
+  validate :validate_auto_api_method_requires_searchapi
   validate :validate_proxy_required_for_hidden_credentials
+  validate :validate_mapper_code_immutable_for_preset
 
   def fullname
-    name.presence || middle_truncate("#{search_engine.titleize} #{endpoint_url}")
+    label = mapper_based_search_engine&.name || search_engine.titleize
+    name.presence || middle_truncate("#{label} #{endpoint_url}")
+  end
+
+  # mapper_based_search_engine_id is a plain string column (see DEFINITIONS in
+  # MapperBasedSearchEngine), not a foreign key, so this can't be a real belongs_to.
+  def mapper_based_search_engine
+    MapperBasedSearchEngine.find(mapper_based_search_engine_id)
   end
 
   def mark_archived
     self.archived = true
+  end
+
+  # Keeps every preset-linked endpoint's mapper_code in sync with the current
+  # db/mapper_based_search_engines/*.js it was created from - see
+  # validate_mapper_code_immutable_for_preset below for why mapper_code otherwise can't
+  # change for these endpoints. Run once at boot (config/initializers/
+  # sync_mapper_based_search_engine_code.rb) so updating a mapper file (e.g. adding Vespa's
+  # ratedDocsQueryParamsMapper) reaches every existing endpoint automatically, not just ones
+  # created afterward.
+  #
+  # No dedicated "last synced" column: mapper_code can only change here or at creation (see
+  # validate_mapper_code_immutable_for_preset), so an endpoint's own updated_at already says
+  # when that last happened - anything older than the mapper file itself is stale. update_all
+  # bypasses validations/callbacks (mapper_code is otherwise immutable) and sets updated_at
+  # itself, so a synced endpoint isn't seen as stale again next boot.
+  def self.sync_stale_mapper_based_search_engine_code!
+    # MapperBasedSearchEngine.all returns a plain in-memory Array (see its DEFINITIONS
+    # constant), not an ActiveRecord relation, so find_each doesn't apply here.
+    # rubocop:disable Rails/FindEach
+    MapperBasedSearchEngine.all.each do |definition|
+      # rubocop:enable Rails/FindEach
+      mtime = File.mtime(Rails.root.join(definition.mapper_file))
+
+      where(mapper_based_search_engine_id: definition.id)
+        .where(updated_at: ...mtime)
+        .update_all(mapper_code: definition.mapper_code, updated_at: Time.current)
+    end
   end
 
   def mark_archived!
@@ -96,7 +132,12 @@ class SearchEndpoint < ApplicationRecord
     lookup_params = normalized.slice(*lookup_keys)
 
     if lookup_keys.all? { |key| lookup_params.key?(key) }
-      endpoint = user.search_endpoints_involved_with.find_by(lookup_params)
+      # These four fields do not identify an endpoint uniquely - the same URL
+      # can be registered more than once with different options or credentials.
+      # find_by would take whichever row the database happened to return first,
+      # which is not defined and does differ between adapters. Take the lowest-id
+      # match instead, so the same import always attaches the same endpoint.
+      endpoint = user.search_endpoints_involved_with.where(lookup_params).order(:id).first
       return endpoint if endpoint
     end
 
@@ -115,10 +156,29 @@ class SearchEndpoint < ApplicationRecord
     errors.add(:api_method, 'cannot be JSONP when proxy_request is enabled') if proxy_requests? && 'JSONP' == api_method
   end
 
+  # AUTO only resolves to a concrete GET/POST for mapper-based search engines (see
+  # Try#resolved_api_method and MapperBasedSearchEngine) - splainer-search's other
+  # preprocessors (Solr/ES/etc.) don't understand it, so allowing it there would silently
+  # break every search against that endpoint.
+  def validate_auto_api_method_requires_searchapi
+    errors.add(:api_method, 'AUTO is only supported for Search API (mapper-based) endpoints') if 'AUTO' == api_method && 'searchapi' != search_engine
+  end
+
   def validate_proxy_required_for_hidden_credentials
     return unless Rails.application.config.require_proxy_with_basic_auth_credentials
     return if basic_auth_credential.blank?
 
     errors.add(:proxy_requests, 'must be enabled when basic auth credentials are present') unless proxy_requests?
+  end
+
+  # mapper_code is copied in once from MapperBasedSearchEngine when a preset-linked endpoint
+  # is created; after that it's kept in sync automatically (see
+  # self.sync_stale_mapper_based_search_engine_code!), so direct edits (e.g. via the Mapper
+  # Wizard) would just get silently overwritten - block them instead. Only applies to
+  # existing records: the initial copy on creation must go through untouched.
+  def validate_mapper_code_immutable_for_preset
+    return unless persisted? && mapper_based_search_engine_id.present? && mapper_code_changed?
+
+    errors.add(:mapper_code, 'is managed automatically for this search endpoint and cannot be edited directly')
   end
 end

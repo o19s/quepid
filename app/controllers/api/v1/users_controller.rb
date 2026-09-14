@@ -11,8 +11,8 @@ module Api
         @users = []
         if params[:prefix]
           prefix = params.expect(:prefix).downcase
-          @users = User.where('email LIKE :prefix',
-                              prefix: "#{prefix}%").or(User.where('name LIKE :prefix', prefix: "#{prefix}%")).limit(8)
+          @users = User.where('LOWER(email) LIKE :prefix', prefix: "#{prefix}%")
+            .or(User.where('LOWER(name) LIKE :prefix', prefix: "#{prefix}%")).limit(8)
         end
         respond_with @users
       end
@@ -36,7 +36,8 @@ module Api
       private
 
       def set_user
-        @user = User.where('email = ? OR id = ?', params[:id].to_s.downcase, params[:id] ).first
+        @user = User.where('LOWER(users.email) = ? OR users.id = ?',
+                           params[:id].to_s.strip.downcase, params[:id].to_i).first
         render json: { message: 'User not found!' }, status: :not_found unless @user
       end
 

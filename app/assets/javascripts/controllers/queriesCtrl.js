@@ -24,6 +24,7 @@ angular.module('QuepidApp')
     'configurationSvc',
     'annotationsSvc',
     'qscoreSvc',
+    'settingsSvc',
     function (
       $scope,
       $rootScope,
@@ -40,6 +41,7 @@ angular.module('QuepidApp')
       configurationSvc,
       annotationsSvc,
       qscoreSvc,
+      settingsSvc,
     ) {
       console.log('QueriesCtrl instantiated');
       $scope.queriesSvc = queriesSvc;
@@ -516,6 +518,22 @@ angular.module('QuepidApp')
 
       $scope.collapseAll = function() {
         queryViewSvc.collapseAll();
+      };
+
+      // Delegates to queriesSvc.trySupportsRatedDocsLookup(), the single source of truth also
+      // used by docFinder.js's "Already Rated Documents" section - keeping both gates on the
+      // same function is what keeps them in sync. (This file previously kept its own copy of
+      // the engine list, which drifted: algolia's filterToRated branch in queriesSvc.js is a
+      // no-op, but this gate didn't know that, so the checkbox stayed enabled and toggling it
+      // silently filtered nothing while the results counter still switched to the rated-doc
+      // count - looking like it worked when it didn't.)
+      $scope.showOnlyRatedUnsupported = function() {
+        if (!settingsSvc.isTrySelected()) {
+          return false;
+        }
+
+        var aTry = settingsSvc.applicableSettings();
+        return !queriesSvc.trySupportsRatedDocsLookup(aTry);
       };
 
       function getScorer() {

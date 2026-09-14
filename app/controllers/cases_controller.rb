@@ -18,18 +18,24 @@ class CasesController < ApplicationController
 
     # Apply search filter
     if @filter_q.present?
-      query = query.where('case_name LIKE ? OR cases.id = ?',
-                          "%#{@filter_q}%", @filter_q.to_i)
+      query = query.where('LOWER(case_name) LIKE ? OR cases.id = ?',
+                          "%#{@filter_q.to_s.downcase}%", @filter_q.to_i)
     end
 
     # Apply archived filter
     query = query.where(archived: @archived)
 
+    # Collapse any duplicates the team join produced by matching on ids, then
+    # build the query we actually render from a clean scope. Selecting DISTINCT
+    # over every column would ask the database to compare whole `cases` rows,
+    # including a json options column.
+    query = Case.where(id: query.reselect(:id).distinct)
+
     # Include associations and counts for efficient loading
     query = query.with_counts
     # query = query.includes([ :metadata ])
     # query = query.order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
-    query = query.includes(:owner, :teams, scores: :user).distinct
+    query = query.includes(:owner, :teams, scores: :user)
 
     # Paginate results
     @pagy, @cases = pagy(query)

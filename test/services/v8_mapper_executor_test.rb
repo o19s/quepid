@@ -31,6 +31,38 @@ class V8MapperExecutorTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'a mapper that throws at runtime' do
+    let(:code_mapper) do
+      <<~JS
+        numberOfResultsMapper = function(data) {
+          return data.root.fields.totalCount;
+        }
+        docsMapper = function(data) {
+          return data.root.children.map(function(child) { return child.fields; });
+        }
+      JS
+    end
+
+    # response with no "root" key at all, e.g. a Vespa query-error body
+    let(:error_response) { { errors: [ { message: 'boom' } ] }.to_json }
+
+    test 'extract_number_of_results raises MapperError instead of silently returning 0' do
+      error = assert_raises(V8MapperExecutor::MapperError) do
+        v8_executor.extract_number_of_results(code_mapper, error_response)
+      end
+
+      assert_includes error.message, 'JavaScript execution error'
+    end
+
+    test 'extract_docs raises MapperError instead of silently returning []' do
+      error = assert_raises(V8MapperExecutor::MapperError) do
+        v8_executor.extract_docs(code_mapper, error_response)
+      end
+
+      assert_includes error.message, 'JavaScript execution error'
+    end
+  end
+
   describe 'parsing JSON' do
     describe 'conversion' do
       test 'runs simple' do

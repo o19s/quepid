@@ -48,13 +48,13 @@ class RunCaseEvaluationJob < ApplicationJob
     response_code = response.status
     response_body = response.body
 
-    docs = extract_docs_if_successful(response_code, response_body, atry)
+    docs, error = extract_docs_if_successful(response_code, response_body, atry)
 
-    @fetch_service.store_query_results(query, docs, response_code, response_body)
+    @fetch_service.store_query_results(query, docs, response_code, response_body, error: error)
   end
 
   def extract_docs_if_successful response_code, response_body, atry
-    return [] unless 200 == response_code
+    return [ [], nil ] unless 200 == response_code
 
     search_endpoint = atry.search_endpoint
     extract_docs_based_on_engine(search_endpoint, response_body)
@@ -63,20 +63,30 @@ class RunCaseEvaluationJob < ApplicationJob
   def extract_docs_based_on_engine search_endpoint, response_body
     case search_endpoint.search_engine.to_sym
     when :solr
-      @fetch_service.extract_docs_from_response_body_for_solr(response_body)
+      [ @fetch_service.extract_docs_from_response_body_for_solr(response_body), nil ]
     when :es
-      @fetch_service.extract_docs_from_response_body_for_es(response_body)
+      [ @fetch_service.extract_docs_from_response_body_for_es(response_body), nil ]
     when :os
-      @fetch_service.extract_docs_from_response_body_for_os(response_body)
+      [ @fetch_service.extract_docs_from_response_body_for_os(response_body), nil ]
 
     when :searchapi
-      @fetch_service.extract_docs_from_response_body_for_searchapi(
-        search_endpoint.mapper_code,
-        response_body
-      )
+      extract_docs_for_searchapi(search_endpoint, response_body)
     else
       raise "Search engine #{search_endpoint.search_engine} is not supported."
     end
+  end
+
+  # A mapper that throws (malformed/unexpected response shape, a bug in the mapper
+  # itself, etc.) shouldn't abort the whole evaluation run - record it against this one
+  # query's result instead, distinguishable from a legitimate zero-result query.
+  def extract_docs_for_searchapi search_endpoint, response_body
+    docs = @fetch_service.extract_docs_from_response_body_for_searchapi(
+      search_endpoint.mapper_code,
+      response_body
+    )
+    [ docs, nil ]
+  rescue V8MapperExecutor::MapperError => e
+    [ [], e.message ]
   end
 
   def broadcast_progress_notifications acase, query, query_count, counter

@@ -35,10 +35,9 @@ class Scorer < ApplicationRecord
   has_many :scores, dependent: :nullify
 
   # too late now!
-  # rubocop:disable Rails/HasAndBelongsToMany
+  # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
                           join_table: 'teams_scorers'
-  # rubocop:enable Rails/HasAndBelongsToMany
 
   # Validations
   validates_with ScaleValidator

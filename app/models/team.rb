@@ -39,9 +39,8 @@ class Team < ApplicationRecord
   # rubocop:enable Rails/HasAndBelongsToMany
 
   # Validations
-  # rubocop:disable Rails/UniqueValidationWithoutIndex
+  # rubocop:disable-next Rails/UniqueValidationWithoutIndex
   validates :name,
             presence:   true,
             uniqueness: true
-  # rubocop:enable Rails/UniqueValidationWithoutIndex
 end

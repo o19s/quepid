@@ -51,7 +51,4 @@ const ngModule = angular.module('o19s.splainer-search', []);
   ngModule.value(name, api[name]);
 });
 
-// Quepid injects this under the PascalCase name and uses it as a constructor.
-ngModule.value('SettingsValidatorFactory', api.settingsValidatorFactory);
-
 ngModule.constant('isAbortError', isAbortError);

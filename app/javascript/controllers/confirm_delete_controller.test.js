@@ -31,6 +31,9 @@ describe("ConfirmDeleteController", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    // happy-dom doesn't implement window.confirm; stub it so vi.spyOn has a
+    // function to wrap (real browsers always have one).
+    window.confirm ??= () => false
     confirmSpy = vi.spyOn(window, "confirm")
   })
 

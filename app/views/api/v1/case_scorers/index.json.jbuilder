@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-# I think this isn't required anymore.
-if @default.communal?
+if @default.nil?
+  json.default nil
+elsif @default.communal?
   json.default @default, partial: 'api/v1/scorers/communal_scorer', as: :scorer
 else
   json.default @default, partial: 'api/v1/scorers/scorer', as: :scorer

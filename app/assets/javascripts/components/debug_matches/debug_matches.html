@@ -1,1 +1,6 @@
-<a class="btn btn-outline-secondary" ng-click="ctrl.showDetailed()">Debug</a>
+<a
+  class="btn btn-outline-secondary"
+  ng-class="{disabled: ctrl.doc.explain().children.length === 0}"
+  aria-disabled="{{ctrl.doc.explain().children.length === 0}}"
+  ng-click="ctrl.doc.explain().children.length > 0 && ctrl.showDetailed()"
+>Debug</a>

@@ -46,6 +46,16 @@ angular.module('QuepidApp')
       }
 
       ctrl.renderQueryTemplate = function(){
+        // Templated queries (the /template call format) are an ES/OS-only concept - other
+        // engines' searchers don't define isTemplateCall/renderTemplate at all, so calling them
+        // unconditionally throws. ctrl.isTemplatedQuery already defaults to false, which the
+        // template correctly renders as "This is not a templated query."
+        // Not in settingsSvc (unlike queriesSvc.trySupportsRatedDocsLookup): isTemplateCall is a
+        // method on the already-built searcher instance, not a static per-engine setting.
+        if (!angular.isDefined(query.searcher.isTemplateCall)) {
+          return;
+        }
+
         ctrl.isTemplatedQuery = query.searcher.isTemplateCall(query.searcher.args);
 
         query.searcher.renderTemplate().then(function() {

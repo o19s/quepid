@@ -17,8 +17,8 @@ module Admin
       query = User.order(created_at: :desc)
 
       if params[:q].present?
-        query = query.where('users.name LIKE ? OR users.email LIKE ?',
-                            "%#{params[:q]}%", "%#{params[:q]}%")
+        q = "%#{params[:q].to_s.downcase}%"
+        query = query.where('LOWER(users.name) LIKE ? OR LOWER(users.email) LIKE ?', q, q)
       end
 
       respond_to do |format|
@@ -81,9 +81,8 @@ module Admin
         if @user.update(params_to_use)
           if params[:password_encrypted].present?
             # avoid the encrypt call back
-            # rubocop:disable Rails/SkipsModelValidations
+            # rubocop:disable-next Rails/SkipsModelValidations
             @user.update_column(:password, params[:password_encrypted])
-            # rubocop:enable Rails/SkipsModelValidations
           end
           Analytics::Tracker.track_user_updated_by_admin_event @user
 

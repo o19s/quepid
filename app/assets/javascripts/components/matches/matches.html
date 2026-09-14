@@ -1,12 +1,16 @@
 <div>
   <div class="doc-score-explanation">
-    <pre>{{doc.explain().toStr()}}</pre>
+    <!-- splainer-search's explain() carries no user-facing copy for "nothing to explain" (just
+         an empty details/children list) - when there's no per-term breakdown, show the raw
+         explain data (e.g. Algolia's _rankingInfo) instead of the usual toStr() tree. -->
+    <pre ng-if="doc.explain().children.length > 0">{{doc.explain().toStr()}}</pre>
+    <pre ng-if="doc.explain().children.length === 0">{{doc.explain().asJson | json}}</pre>
   </div>
 
   <div class="actions">
     <debug-matches doc='doc' max-doc-score='maxDocScore'></debug-matches>
     <expand-content
-      content='"<pre>" + doc.explain().toStr() + "</pre>"'
+      content='"<pre>" + (doc.explain().children.length > 0 ? doc.explain().toStr() : (doc.explain().asJson | json)) + "</pre>"'
       title='"Relevancy Score: " + doc.score()'
     >
     </expand-content>

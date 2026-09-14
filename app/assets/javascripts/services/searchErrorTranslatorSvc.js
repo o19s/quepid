@@ -92,6 +92,15 @@ angular.module('QuepidApp')
                  '" target="_blank" rel="noopener noreferrer">Solr instance directly</a> to confirm Solr is accessible and to inspect the error.   If Solr responds, check if you have an ad blocker blocking your queries.  With Solr 8.4.1 and later you need to allow Quepid access to Solr.  Learn more <a href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid#compatibility-with-nosniff" target="_blank" rel="noopener noreferrer">on the troubleshooting Solr wiki page</a>.';
         }
 
+        // A thrown numberOfResultsMapper/docsMapper error (searchApiSearcherFactory.js
+        // re-throws `new Error('MapperError: ...')`) is a plain Error, not an HTTP
+        // response object - it has no .status/.statusText/.data, so the generic
+        // response-parsing logic below would otherwise report a useless
+        // "An unexpected error was returned: undefined".
+        if (response instanceof Error) {
+          return 'Search API mapper error: ' + response.message;
+        }
+
         var error = 'An unexpected error was returned: ';
 
         if ( response.status === -1 ) {
@@ -112,8 +121,15 @@ angular.module('QuepidApp')
           if (response.data) {
             if ( angular.isObject(response.data.error) ) {
               error += ': ' + angular.toJson(response.data.error);
-            } else {
+            } else if ( response.data.error ) {
               error += ': ' + response.data.error;
+            } else if ( response.data.message ) {
+              // Not every API nests its error detail under "error" (the Solr/ES convention
+              // this function was originally written for) - Algolia, for one, returns
+              // {"message": "...", "status": 400}. Falling through to the unconditional
+              // `response.data.error` string-append below would otherwise literally render
+              // the word "undefined" as if it were the error detail.
+              error += ': ' + response.data.message;
             }
           }
         }

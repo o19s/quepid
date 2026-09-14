@@ -4,7 +4,7 @@
 # Module that wraps the GA events API to create Quepid specific
 # events related to Quepid actions.
 #
-# rubocop:disable Metrics/ModuleLength
+# rubocop:disable-next Metrics/ModuleLength
 module Analytics
   module Ahoy
     module Events
@@ -726,4 +726,3 @@ module Analytics
     end
   end
 end
-# rubocop:enable Metrics/ModuleLength

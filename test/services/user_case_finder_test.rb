@@ -67,8 +67,8 @@ class UserCaseFinderTest < ActiveSupport::TestCase
     test 'returns an empty array if no results match' do
       result = user.cases_involved_with.where(id: 123).all
 
-      assert_equal        'Case::ActiveRecord_Relation', result.class.to_s
-      assert_equal        0, result.length
+      assert_equal 'Case::ActiveRecord_Relation', result.class.to_s
+      assert_equal 0, result.length
     end
 
     test 'works when filtering by id' do

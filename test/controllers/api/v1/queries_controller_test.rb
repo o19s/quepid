@@ -309,8 +309,8 @@ module Api
 
           query.reload
 
-          assert_equal      query.case_id, other_case.id
-          assert_equal      0, query.arranged_at
+          assert_equal query.case_id, other_case.id
+          assert_equal 0, query.arranged_at
         end
 
         describe 'analytics' do

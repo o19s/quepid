@@ -81,8 +81,8 @@ class CaseTest < ActiveSupport::TestCase
 
       acase = Case.create(case_name: 'with default scorer', owner: user)
 
-      assert_equal acase.scorer_id,       user_scorer.id
-      assert_equal acase.scorer_id,       user.default_scorer_id
+      assert_equal acase.scorer_id, user_scorer.id
+      assert_equal acase.scorer_id, user.default_scorer_id
       assert_not acase.scorer.communal
     end
 
@@ -141,6 +141,32 @@ class CaseTest < ActiveSupport::TestCase
 
       assert_equal 'Try 1', default_try.name
       assert default_try.escape_query
+    end
+  end
+
+  describe 'ordering queries' do
+    # Ordering on `arranged_at` alone is not portable. Rows that tie - which is
+    # every row in a case nobody has arranged - have no defined order, and
+    # adapters disagree about where NULLs sort. Both are pinned here.
+    #
+    # Note this only bites on PostgreSQL: MySQL and SQLite already return these
+    # rows in id order by luck, so the assertions hold there with or without the
+    # explicit ordering.
+    it 'orders unarranged queries deterministically by id' do
+      kase = cases(:one)
+      queries = kase.queries.to_a
+
+      assert_operator queries.size, :>, 1, 'need several queries to have a tie'
+      assert queries.all? { |q| q.arranged_at.nil? }, 'fixtures should leave arranged_at unset'
+      assert_equal queries.map(&:id), queries.map(&:id).sort
+    end
+
+    it 'sorts arranged queries by arranged_at' do
+      kase = cases(:queries_case)
+      arranged = kase.queries.reject { |q| q.arranged_at.nil? }
+
+      assert_operator arranged.size, :>, 1
+      assert_equal arranged.map(&:arranged_at), arranged.map(&:arranged_at).sort
     end
   end
 

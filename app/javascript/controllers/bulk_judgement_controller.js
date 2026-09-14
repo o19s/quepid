@@ -96,7 +96,6 @@ export default class extends Controller {
     // Show saving status
     this.showStatus(queryDocPairId, "saving")
 
-    // Get explanation if it exists
     const explanationField = this.element.querySelector(`#explanation_${queryDocPairId}`)
     const explanation = explanationField ? explanationField.value : ""
 
@@ -206,7 +205,6 @@ export default class extends Controller {
   }
 
   showResetButton(queryDocPairId) {
-    // Check if reset button already exists
     const existingButton = this.element.querySelector(`button[data-query-doc-pair-id="${queryDocPairId}"][data-action*="resetRating"]`)
 
     if (!existingButton) {

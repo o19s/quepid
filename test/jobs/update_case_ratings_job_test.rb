@@ -3,8 +3,8 @@
 require 'test_helper'
 
 class UpdateCaseRatingsJobTest < ActiveJob::TestCase
-  let(:user)                  { users(:random_1) }
-  let(:matt)                  { users(:matt) }
+  let(:user) { users(:random_1) }
+  let(:matt) { users(:matt) }
   let(:case_with_book) { cases(:case_with_book) }
   let(:book) { books(:book_of_star_wars_judgements) }
 

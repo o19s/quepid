@@ -18,7 +18,7 @@ module Admin
       end
 
       # rubocop:disable Metrics/MethodLength
-      # rubocop:disable Metrics/AbcSize
+      # rubocop:disable-next Metrics/AbcSize
       def set_data
         case params[:data]
         when 'metadata'
@@ -58,7 +58,6 @@ module Admin
           [ k.to_i, v ]
         end
       end
-      # rubocop:enable Metrics/AbcSize
       # rubocop:enable Metrics/MethodLength
     end
   end

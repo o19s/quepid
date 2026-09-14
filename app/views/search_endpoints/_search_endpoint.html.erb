@@ -7,9 +7,9 @@
   <p>
     <strong>Search engine:</strong>
     <% if search_endpoint.search_engine %>
-      <%= image_tag "#{search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %> 
+      <%= image_tag "#{search_endpoint.mapper_based_search_engine&.id || search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %>
     <% end %>
-    <%= search_endpoint.search_engine %>
+    <%= search_endpoint.mapper_based_search_engine&.name || search_endpoint.search_engine %>
   </p>
   
   <p>

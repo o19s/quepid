@@ -122,7 +122,6 @@ angular.module('QuepidApp')
         return [quepidUrlToSwitchTo, protocolToSwitchTo];
       };
       
-      // Return the protocol Quepid is on
       this.getQuepidProtocol = function () {
         // Grab just the absolute url without any trailing query parameters
         var absUrl = $location.absUrl();

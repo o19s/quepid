@@ -65,6 +65,18 @@ class BookImporterTest < ActiveSupport::TestCase
       assert_equal [ 0, 1 ], book.scale
       assert_equal({ '0' => 'Not Relevant', '1' => 'Relevant' }, book.scale_with_labels)
     end
+
+    # An uploaded file's casing is outside our control (see User#by_email); a byte-exact lookup
+    # here would flag an existing user as missing on any adapter that isn't MySQL.
+    test 'does not add an error when a judgement user email differs only in case' do
+      data[:query_doc_pairs].first[:judgements] << { rating: 3.0, user_email: user.email.upcase }
+
+      importer = BookImporter.new book, user, data
+
+      importer.validate
+
+      assert_empty book.errors
+    end
   end
 
   describe '#import' do
@@ -106,6 +118,20 @@ class BookImporterTest < ActiveSupport::TestCase
 
       qdp = book.query_doc_pairs.find_by(doc_id: '234')
       assert_empty qdp.judgements
+    end
+
+    # A byte-exact lookup here would leave the judgement orphaned (nil user) instead of
+    # attributed to the existing user - silent data corruption, not an error. See User#by_email.
+    test 'attributes a judgement to the existing user even when the email case differs' do
+      data[:query_doc_pairs].first[:judgements] = [
+        { rating: 1.0, unrateable: false, user_email: user.email.upcase }
+      ]
+
+      importer = BookImporter.new book, user, data
+      importer.import
+
+      qdp = book.query_doc_pairs.find_by(doc_id: '123')
+      assert_equal user, qdp.judgements.first.user
     end
 
     # The exporter omits user_email for a nil-user judgement, and Judgement's uniqueness

@@ -55,12 +55,16 @@ module Users
     private
 
     def create_user_from_omniauth auth
+      # The identity provider decides how it cases the address, so match on the
+      # folded value rather than relying on the database collation to do it.
+      email = auth['info']['email'].to_s.strip.downcase
+
       if Rails.application.config.signup_enabled
-        user = User.find_or_initialize_by(email: auth['info']['email'])
+        user = User.by_email(email).first || User.new(email: email)
       else
-        user = User.find_by(email: auth['info']['email'])
+        user = User.by_email(email).first
         if user.nil? # we looked for a existing user account and didn't find it
-          user = User.new(email: auth['info']['email'])
+          user = User.new(email: email)
           user.errors.add(:base, 'You can only sign in with already created users.' )
         end
       end
@@ -73,9 +77,6 @@ module Users
       user.num_logins  += 1
 
       user.profile_pic = auth['info']['image']
-      # user.access_token = auth['credentials']['token']
-      # user.refresh_token = auth['credentials']['refresh_token'] unless auth['credentials']['refresh_token'].nil?
-      # user.expires_at = auth['credentials']['expires_at'] unless auth['credentials']['refresh_token'].nil?
 
       if user.errors.empty?
         user.save!

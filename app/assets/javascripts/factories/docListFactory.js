@@ -6,7 +6,11 @@
     .factory('DocListFactory', ['normalDocsSvc', DocListFactory]);
 
   function DocListFactory(normalDocsSvc) {
-    var DocList = function(newDocs, fieldSpec, ratingsStore) {
+    // altExplainJsonFor is an optional function(doc) -> explain JSON (or undefined), used to
+    // feed a mapper-supplied explain breakdown (e.g. Vespa's matchfeatures, see
+    // queriesSvc.js's matchFeaturesExplain) into the same {description, value, details} shape
+    // Solr/ES explains use, when the search engine itself has no explain concept.
+    var DocList = function(newDocs, fieldSpec, ratingsStore, altExplainJsonFor) {
       var self = this;
 
       self.list = docList;
@@ -23,7 +27,8 @@
         var i = 0;
 
         angular.forEach(newDocs, function(doc) {
-          var normalDoc = normalDocsSvc.createNormalDoc(fieldSpec, doc);
+          var altExplainJson = altExplainJsonFor ? altExplainJsonFor(doc) : undefined;
+          var normalDoc = normalDocsSvc.createNormalDoc(fieldSpec, doc, altExplainJson);
           var rateableDoc = ratingsStore.createRateableDoc(normalDoc);
           if (normalDoc.id === undefined || normalDoc.id === 'undefined') {
             error = 'Your selected id field <strong>' + fieldSpec.id + '</strong> is missing on one or more results.' +

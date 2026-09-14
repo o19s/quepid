@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # config/initializers/oas_rails.rb
-# rubocop:disable Metrics/BlockLength
+# rubocop:disable-next Metrics/BlockLength
 OasRails.configure do |config|
   config.source_oas_path = 'lib/assets/source_oas.json'
   # Basic Information about the API
@@ -108,4 +108,3 @@ OasRails.configure do |config|
 
   config.include_mode = :with_tags
 end
-# rubocop:enable Metrics/BlockLength

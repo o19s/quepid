@@ -37,11 +37,21 @@ bin/docker r bundle config set --local no-document true
 bin/docker r yarn
 bin/docker r yarn build
 
-if [ "${DB_ADAPTER:-mysql2}" = "mysql2" ]; then
-  bin/docker r ./wait-for mysql:3306 --timeout=60 -- bin/rake db:setup
-else
-  bin/docker r bin/rake db:setup
-fi
+case "${DB_ADAPTER:-mysql2}" in
+  mysql2)
+    bin/docker r ./wait-for mysql:3306 --timeout=60 -- bin/rake db:reset
+    ;;
+  postgresql)
+    bin/docker r ./wait-for postgres:5432 --timeout=60 -- bin/rake db:reset
+    ;;
+  sqlite3)
+    bin/docker r bin/rake db:reset
+    ;;
+  *)
+    echo "Unsupported DB_ADAPTER: ${DB_ADAPTER}. Choose mysql2, postgresql, or sqlite3." >&2
+    exit 1
+    ;;
+esac
 bin/docker r bin/rake db:migrate
 
 echo -e "\n== Removing old logs and tempfiles =="

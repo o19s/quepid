@@ -5,7 +5,6 @@
 angular.module('QuepidApp')
   .service('queryViewSvc', [
     function() {
-      // Initialize properties
       this.diffSettings = [];
       this.comparisonsDisabled = false;
       this.queryToggles = {};

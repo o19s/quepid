@@ -7,7 +7,7 @@ class BulkJudgeController < ApplicationController
   before_action :check_book
 
   # GET /books/:book_id/judge/bulk
-  # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
+  # rubocop:disable-next Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
   def new
     @query_text = params[:query_text]
     @rank_depth = params[:rank_depth].presence&.to_i
@@ -18,14 +18,13 @@ class BulkJudgeController < ApplicationController
     # Default to hiding explanations unless explicitly set to true
     @show_explanations = params[:show_explanations].present? ? deserialize_bool_param(params[:show_explanations]) : false
 
-    # Get available position options for the dropdown
     @available_positions = @book.query_doc_pairs.distinct.pluck(:position).compact.sort
 
     # Get all query_doc_pairs for this query_text
     query = @book.query_doc_pairs.includes(:judgements)
 
     # Use LIKE search if query_text is provided to match partial queries
-    query = query.where('query_text LIKE ?', "%#{@query_text}%") if @query_text.present?
+    query = query.where('LOWER(query_text) LIKE ?', "%#{@query_text.to_s.downcase}%") if @query_text.present?
 
     # Filter by rank depth if specified
     query = query.where(position: ..@rank_depth) if @rank_depth.present?
@@ -59,9 +58,8 @@ class BulkJudgeController < ApplicationController
     # then you may not have enough docs left to fill the last page.  In that we
     # just back up a page, and render.  And the pagy navbar is just skipped in
     # the footer.
-    if paginated_query_doc_pairs.nil?
-      page = params[:page].to_i
-      page -= 1
+    unless @pagy.in_range?
+      page = @pagy.page - 1
       @pagy, paginated_query_doc_pairs = pagy(randomized_results, items: 25, page: page)
     end
 
@@ -74,11 +72,9 @@ class BulkJudgeController < ApplicationController
       [ qdp.id, judgement ]
     end
 
-    # Get total counts for display (before pagination)
     @total_count = randomized_results.size
     @total_queries = grouped.keys.size
   end
-  # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
 
   # POST /books/:book_id/judge/bulk/save
   # Save individual judgement via AJAX

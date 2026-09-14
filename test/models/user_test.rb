@@ -86,6 +86,46 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'First administrator bootstrap' do
+    def with_no_real_users_yet
+      original = User.method(:no_real_users_yet?)
+      User.define_singleton_method(:no_real_users_yet?) { true }
+      yield
+    ensure
+      User.define_singleton_method(:no_real_users_yet?, &original)
+    end
+
+    test 'the first real user ever created becomes administrator automatically' do
+      with_no_real_users_yet do
+        user = User.create(email: 'first@email.com', password: 'password')
+
+        assert_predicate user, :administrator
+      end
+    end
+
+    test 'an explicit administrator: false is still overridden for the first user' do
+      with_no_real_users_yet do
+        user = User.create(email: 'first@email.com', password: 'password', administrator: false)
+
+        assert_predicate user, :administrator
+      end
+    end
+
+    test 'does not promote a signup once a real user already exists' do
+      user = User.create(email: 'second@email.com', password: 'password')
+
+      assert_not user.administrator
+    end
+
+    test 'an AI judge is never promoted, even when no real users exist yet' do
+      with_no_real_users_yet do
+        judge = User.create(llm_key: '1234', name: 'Judge Judy')
+
+        assert_not judge.administrator
+      end
+    end
+  end
+
   describe 'Password' do
     let(:user) { users(:doug) }
 
@@ -184,6 +224,32 @@ class UserTest < ActiveSupport::TestCase
 
       new_user = User.create(email: 'DeFaultS@emaiL.COM', password: 'password')
       assert_includes new_user.errors.messages[:email], 'has already been taken'
+    end
+
+    describe 'by_email' do
+      test 'folds the case of the value being looked up' do
+        user = users(:random)
+
+        assert_equal user, User.by_email(user.email.upcase).first
+        assert_equal user, User.by_email(" #{user.email.upcase} ").first
+      end
+
+      # Fixtures skip validations, so this row keeps the casing it was written
+      # with - the same way a row inserted by insert_all or raw SQL would.
+      # Folding only the input would never find it once the database compares
+      # byte for byte, which is what PostgreSQL and SQLite do.
+      test 'finds a stored address that is not itself lowercase' do
+        stored = users(:autocomplete_uppercase)
+
+        assert_equal 'UpperCase@example.com', stored.email
+        assert_equal stored, User.by_email('uppercase@example.com').first
+      end
+
+      test 'returns nothing for a blank or unknown address' do
+        assert_nil User.by_email('').first
+        assert_nil User.by_email(nil).first
+        assert_nil User.by_email('nobody@example.com').first
+      end
     end
   end
 
