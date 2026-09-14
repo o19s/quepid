@@ -50,7 +50,12 @@
           Pairs still available for you to judge.
         </p>
 
-        <% if @user_has_judged_all && !@moar_judgements_needed %>
+        <% if @total_pairs.zero? %>
+          <div class="alert alert-warning text-start mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            No query/doc pairs set up yet.
+          </div>
+        <% elsif @user_has_judged_all && !@moar_judgements_needed %>
           <div class="alert alert-success text-start mb-3" role="alert">
             <i class="bi bi-trophy"></i> <strong>All done!</strong>
             You've judged everything available and this book is complete.
@@ -67,7 +72,8 @@
                 aria: { disabled: @user_has_judged_all } do %>
             <i class="bi bi-lightning-fill"></i> Start Judging
           <% end %>
-          <%= link_to book_judge_bulk_path(@book), class: "btn btn-outline-primary", role: "button" do %>
+          <%= link_to book_judge_bulk_path(@book), class: "btn btn-outline-primary #{'disabled' if @user_has_judged_all}", role: "button",
+                aria: { disabled: @user_has_judged_all } do %>
             <i class="bi bi-lightning"></i> Bulk Judging
           <% end %>
         </div>
