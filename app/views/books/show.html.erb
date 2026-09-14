@@ -155,47 +155,44 @@ function updateModalTitle(judgeId) {
     <h5 class="mb-0"><i class="bi bi-briefcase"></i> Linked Cases</h5>
   </div>
   <% if @cases.any? %>
-    <div class="card-body p-0">
-      <table class="table table-hover mb-0 align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Case</th>
-            <th class="text-center" title="Case → Book: auto-populate query/doc pairs">
-              <i class="bi bi-arrow-right"></i> Pairs
-            </th>
-            <th class="text-center" title="Book → Case: auto-populate judgement ratings">
-              <i class="bi bi-arrow-left"></i> Ratings
-            </th>
-            <th>Last Updated</th>
-          </tr>
-        </thead>
-        <tbody>
+    <div class="card-body">
+      <div class="d-inline-flex align-items-stretch">
+        <div>
           <% @cases.each do |kase| %>
-            <tr>
-              <td><%= link_to_core_case case_title(kase), kase, kase.last_try_number %></td>
-              <td class="text-center">
-                <% if kase.auto_populate_book_pairs? %>
-                  <i class="bi bi-check-circle-fill text-success" title="Auto-populating pairs into book"></i>
+            <div class="d-flex align-items-center justify-content-between py-2 <%= 'border-bottom' unless kase == @cases.last %>">
+              <div>
+                <%= link_to_core_case case_title(kase), kase, kase.last_try_number %>
+                <div class="text-muted small">Updated <%= time_ago_in_words(kase.updated_at) %> ago</div>
+              </div>
+              <div class="fs-4 mx-3">
+                <% sends_pairs = kase.auto_populate_book_pairs? %>
+                <% receives_ratings = kase.auto_populate_case_judgements? %>
+                <% if sends_pairs && receives_ratings %>
+                  <i class="bi bi-arrow-left-right text-success" title="Sends query/doc pairs to book and receives judgement ratings back"></i>
+                <% elsif sends_pairs %>
+                  <i class="bi bi-arrow-right text-success" title="Sends query/doc pairs to book"></i>
+                <% elsif receives_ratings %>
+                  <i class="bi bi-arrow-left text-success" title="Receives judgement ratings from book"></i>
                 <% else %>
-                  <i class="bi bi-dash-circle text-muted" title="Manual only"></i>
+                  <i class="bi bi-circle text-muted" title="Linked, but no automatic sync"></i>
                 <% end %>
-              </td>
-              <td class="text-center">
-                <% if kase.auto_populate_case_judgements? %>
-                  <i class="bi bi-check-circle-fill text-success" title="Judgements flow back to case ratings"></i>
-                <% else %>
-                  <i class="bi bi-dash-circle text-muted" title="Manual only"></i>
-                <% end %>
-              </td>
-              <td class="text-muted small"><%= time_ago_in_words(kase.updated_at) %> ago</td>
-            </tr>
+              </div>
+            </div>
           <% end %>
-        </tbody>
-      </table>
+        </div>
+        <div class="d-flex align-items-center justify-content-center border-start ps-4 ms-3">
+          <div class="text-center text-nowrap">
+            <i class="bi bi-book fs-2 text-body"></i>
+            <div class="fw-semibold"><%= book_title @book %></div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="card-footer text-muted small">
-      <i class="bi bi-arrow-right"></i> Case → Book: pairs auto-populated when case runs &nbsp;|&nbsp;
-      <i class="bi bi-arrow-left"></i> Book → Case: judgement ratings synced back automatically
+      <i class="bi bi-arrow-right"></i> Sends pairs &nbsp;|&nbsp;
+      <i class="bi bi-arrow-left"></i> Receives ratings &nbsp;|&nbsp;
+      <i class="bi bi-arrow-left-right"></i> Both &nbsp;|&nbsp;
+      <i class="bi bi-circle"></i> Linked, no auto-sync
     </div>
   <% else %>
     <div class="card-body text-muted">
