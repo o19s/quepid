@@ -2,7 +2,7 @@
 
 class AiJudgesController < ApplicationController
   before_action :set_team
-  before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy, :clone ]
 
   DEFAULT_SYSTEM_PROMPT = <<~TEXT
     You are evaluating the results from a search engine. For each query, you will be provided with multiple documents. Your task is to evaluate each document and assign a judgment on a scale of 0 to 3, where:
@@ -76,6 +76,11 @@ class AiJudgesController < ApplicationController
   end
 
   def edit; end
+
+  def clone
+    @ai_judge = @ai_judge.dup
+    @ai_judge.name = "Clone of #{@ai_judge.name}"
+  end
 
   def create
     @ai_judge = User.new(ai_judge_params)

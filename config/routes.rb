@@ -81,7 +81,11 @@ Rails.application.routes.draw do
   get '/dropdown/books' => 'dropdown#books'
 
   resources :teams, only: [] do
-    resources :ai_judges, controller: :ai_judges, except: [ :index ]
+    resources :ai_judges, controller: :ai_judges, except: [ :index ] do
+      member do
+        get 'clone'
+      end
+    end
   end
 
   resources :ai_judges, only: [] do
