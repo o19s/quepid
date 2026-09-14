@@ -75,7 +75,7 @@ class BooksController < ApplicationController
     @actively_judging_ids = RunJudgeJudyJob.actively_judging_user_ids(@book)
     judges_by_id = User.where(id: judge_ids).index_by(&:id)
     activity     = @book.judge_activity_for(judge_ids)
-    auto_run_ids = @book.books_ai_judges.where(auto_run: true).pluck(:user_id)
+    auto_run_ids = @book.books_ai_judges.auto_run.pluck(:user_id)
 
     @judge_activity = judge_ids.filter_map do |uid|
       judge = judges_by_id[uid]
@@ -213,7 +213,7 @@ class BooksController < ApplicationController
   end
 
   def create
-    @book = Book.new(book_params)
+    @book = Book.new(book_params.except(:auto_run_ai_judge_ids))
     @book.owner = current_user
 
     # Handle scorer selection
@@ -571,8 +571,7 @@ class BooksController < ApplicationController
     params_to_use[:ai_judge_ids]&.compact_blank!
 
     params_to_use[:auto_run_ai_judge_ids] = params[:auto_run_ai_judge_ids] if params[:auto_run_ai_judge_ids]
-    params_to_use[:auto_run_ai_judge_ids] ||= []
-    params_to_use[:auto_run_ai_judge_ids].compact_blank!
+    params_to_use[:auto_run_ai_judge_ids]&.compact_blank!
 
     params_to_use.except(:link_the_case, :origin_case_id,
                          :auto_populate_book_pairs,

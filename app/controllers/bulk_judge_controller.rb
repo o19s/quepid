@@ -20,14 +20,11 @@ class BulkJudgeController < ApplicationController
 
     @available_positions = @book.query_doc_pairs.distinct.pluck(:position).compact.sort
 
-    # Get all query_doc_pairs for this query_text
-    query = @book.query_doc_pairs.includes(:judgements)
+    # Get all query_doc_pairs for this query_text, already scoped to rank depth
+    query = @book.query_doc_pairs_within_rank_depth(@rank_depth).includes(:judgements)
 
     # Use LIKE search if query_text is provided to match partial queries
     query = query.where('LOWER(query_text) LIKE ?', "%#{@query_text.to_s.downcase}%") if @query_text.present?
-
-    # Filter by rank depth if specified
-    query = query.where(position: ..@rank_depth) if @rank_depth.present?
 
     # Filter for unrated items if checkbox is checked
     if @only_unrated

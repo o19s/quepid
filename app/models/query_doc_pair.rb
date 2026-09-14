@@ -49,7 +49,7 @@ class QueryDocPair < ApplicationRecord
   private
 
   def queue_auto_run_ai_judges
-    book.books_ai_judges.where(auto_run: true).find_each do |bai|
+    book.books_ai_judges.auto_run.find_each do |bai|
       RunJudgeJudyJob.perform_later(book, bai.ai_judge, nil)
     end
   end

@@ -101,12 +101,6 @@ class Book < ApplicationRecord
   # Virtual attribute for form display - allows selecting a scorer to copy scale from
   attr_accessor :scorer_id
 
-  # Virtual attribute: which of the checked ai_judge_ids should also have
-  # auto_run enabled. Only meaningful on #update (see BooksController#update),
-  # but must be a real writer so mass-assignment via Book.new(book_params)
-  # doesn't blow up on #create.
-  attr_accessor :auto_run_ai_judge_ids
-
   # Transform scale from array to a string
   serialize :scale, coder: ScaleSerializer
   serialize :scale_with_labels, coder: JSON
@@ -174,10 +168,13 @@ class Book < ApplicationRecord
   end
 
   # Book-level cap on how deep (by QueryDocPair#position, 1-indexed, lower =
-  # higher-ranked) judging and coverage metrics look. A nil rank_depth means
+  # higher-ranked) judging and coverage metrics look. A nil depth means
   # unlimited - matches how position itself is nullable/unranked today.
-  def query_doc_pairs_within_rank_depth
-    rank_depth.present? ? query_doc_pairs.where(position: ..rank_depth) : query_doc_pairs
+  # Defaults to this book's own rank_depth, but callers (e.g. the bulk judging
+  # screen) can pass an explicit depth to override it for one request without
+  # duplicating this filter.
+  def query_doc_pairs_within_rank_depth depth = rank_depth
+    depth.present? ? query_doc_pairs.where(position: ..depth) : query_doc_pairs
   end
 
   # Per-judge activity stats (sparkline of daily counts, total count, last

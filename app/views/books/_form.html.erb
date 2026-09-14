@@ -102,8 +102,13 @@
       <div class="mb-3">
         <i class="bi bi-robot"></i>
         <%= form.label :teams, "AI Judges Assigned to this Book", class: 'form-label' %>
-        <% books_ai_judges_by_user_id = book.new_record? ? {} : book.books_ai_judges.index_by(&:user_id) %>
+        <% books_ai_judges_by_user_id = book.books_ai_judges.index_by(&:user_id) %>
+        <%# Guarantees book[auto_run_ai_judge_ids] is always submitted as an array, even
+            with every auto-run box unchecked - collection_check_boxes does this automatically
+            for ai_judge_ids above, but these hand-rolled checkboxes need it spelled out. %>
+        <%= hidden_field_tag "book[auto_run_ai_judge_ids][]", "" %>
         <%= form.collection_check_boxes(:ai_judge_ids, @ai_judges, :id, :name) do |b| %>
+          <% auto_run_checkbox_id = "book_auto_run_ai_judge_ids_#{b.object.id}" %>
           <div class="collection-check-box d-flex align-items-center gap-3">
             <span>
               <%= b.check_box %>
@@ -112,8 +117,8 @@
             <span class="form-check form-switch mb-0">
               <%= check_box_tag "book[auto_run_ai_judge_ids][]", b.object.id,
                     books_ai_judges_by_user_id[b.object.id]&.auto_run || false,
-                    id: "book_auto_run_ai_judge_ids_#{b.object.id}", class: 'form-check-input' %>
-              <%= label_tag "book_auto_run_ai_judge_ids_#{b.object.id}", class: 'form-check-label' do %>
+                    id: auto_run_checkbox_id, class: 'form-check-input' %>
+              <%= label_tag auto_run_checkbox_id, class: 'form-check-label' do %>
                 <i class="bi bi-repeat"></i> Auto-run
               <% end %>
             </span>

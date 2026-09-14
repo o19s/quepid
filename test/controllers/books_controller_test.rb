@@ -111,9 +111,10 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
       patch "/books/#{james_bond_movies.id}", params: {
         book: {
-          name:         james_bond_movies.name,
-          team_ids:     [],
-          ai_judge_ids: [ judge_judy.id ],
+          name:                  james_bond_movies.name,
+          team_ids:              [],
+          ai_judge_ids:          [ judge_judy.id ],
+          auto_run_ai_judge_ids: [],
         },
       }
 
@@ -128,9 +129,10 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
       patch "/books/#{james_bond_movies.id}", params: {
         book: {
-          name:         james_bond_movies.name,
-          team_ids:     [],
-          ai_judge_ids: [],
+          name:                  james_bond_movies.name,
+          team_ids:              [],
+          ai_judge_ids:          [],
+          auto_run_ai_judge_ids: [],
         },
       }
 
