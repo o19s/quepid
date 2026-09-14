@@ -149,116 +149,122 @@ function updateModalTitle(judgeId) {
   <% end %>
 </div>
 
-<%# ── Case management ──────────────────────────────────────────────────────── %>
-<div class="card mb-4">
-  <div class="card-header">
-    <h5 class="mb-0"><i class="bi bi-briefcase"></i> Linked Cases</h5>
-  </div>
-  <% if @cases.any? %>
-    <div class="card-body">
-      <div class="d-inline-flex align-items-stretch">
-        <div>
-          <% @cases.each do |kase| %>
-            <div class="d-flex align-items-center justify-content-between py-2 <%= 'border-bottom' unless kase == @cases.last %>">
-              <div>
-                <%= link_to_core_case case_title(kase), kase, kase.last_try_number %>
-                <div class="text-muted small">Updated <%= time_ago_in_words(kase.updated_at) %> ago</div>
-              </div>
-              <div class="fs-4 mx-3">
-                <% sends_pairs = kase.auto_populate_book_pairs? %>
-                <% receives_ratings = kase.auto_populate_case_judgements? %>
-                <% if sends_pairs && receives_ratings %>
-                  <i class="bi bi-arrow-left-right text-success" title="Sends query/doc pairs to book and receives judgement ratings back"></i>
-                <% elsif sends_pairs %>
-                  <i class="bi bi-arrow-right text-success" title="Sends query/doc pairs to book"></i>
-                <% elsif receives_ratings %>
-                  <i class="bi bi-arrow-left text-success" title="Receives judgement ratings from book"></i>
-                <% else %>
-                  <i class="bi bi-circle text-muted" title="Linked, but no automatic sync"></i>
-                <% end %>
+<div class="row">
+  <%# ── Case management ────────────────────────────────────────────────────── %>
+  <div class="col-md-6">
+    <div class="card mb-4 h-100">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-briefcase"></i> Linked Cases</h5>
+      </div>
+      <% if @cases.any? %>
+        <div class="card-body">
+          <div class="d-inline-flex align-items-stretch">
+            <div>
+              <% @cases.each do |kase| %>
+                <div class="d-flex align-items-center justify-content-between py-2 <%= 'border-bottom' unless kase == @cases.last %>">
+                  <div>
+                    <%= link_to_core_case case_title(kase), kase, kase.last_try_number %>
+                    <div class="text-muted small">Updated <%= time_ago_in_words(kase.updated_at) %> ago</div>
+                  </div>
+                  <div class="fs-4 mx-3">
+                    <% sends_pairs = kase.auto_populate_book_pairs? %>
+                    <% receives_ratings = kase.auto_populate_case_judgements? %>
+                    <% if sends_pairs && receives_ratings %>
+                      <i class="bi bi-arrow-left-right text-success" title="Sends query/doc pairs to book and receives judgement ratings back"></i>
+                    <% elsif sends_pairs %>
+                      <i class="bi bi-arrow-right text-success" title="Sends query/doc pairs to book"></i>
+                    <% elsif receives_ratings %>
+                      <i class="bi bi-arrow-left text-success" title="Receives judgement ratings from book"></i>
+                    <% else %>
+                      <i class="bi bi-circle text-muted" title="Linked, but no automatic sync"></i>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+            <div class="d-flex align-items-center justify-content-center border-start ps-4 ms-3">
+              <div class="text-center text-nowrap">
+                <i class="bi bi-book fs-2 text-body"></i>
+                <div class="fw-semibold"><%= book_title @book %></div>
               </div>
             </div>
-          <% end %>
-        </div>
-        <div class="d-flex align-items-center justify-content-center border-start ps-4 ms-3">
-          <div class="text-center text-nowrap">
-            <i class="bi bi-book fs-2 text-body"></i>
-            <div class="fw-semibold"><%= book_title @book %></div>
           </div>
         </div>
+        <div class="card-footer text-muted small">
+          <i class="bi bi-arrow-right"></i> Sends pairs &nbsp;|&nbsp;
+          <i class="bi bi-arrow-left"></i> Receives ratings &nbsp;|&nbsp;
+          <i class="bi bi-arrow-left-right"></i> Both &nbsp;|&nbsp;
+          <i class="bi bi-circle"></i> Linked, no auto-sync
+        </div>
+      <% else %>
+        <div class="card-body text-muted">
+          No cases linked. Link a case via <a href="<%= edit_book_path(@book) %>">Settings</a> or create a book directly from a case.
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Book metadata ──────────────────────────────────────────────────────── %>
+  <div class="col-md-6">
+    <div class="card mb-4 h-100">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-gear"></i> Book Settings</h5>
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-3">Teams</dt>
+          <dd class="col-sm-9">
+            <% if @book.teams.any? %>
+              <% @book.teams.each do |team| %>
+                <%= link_to team.name, team_path(team) %>&nbsp;
+              <% end %>
+            <% else %>
+              <span class="text-muted">No teams</span>
+            <% end %>
+          </dd>
+
+          <% if @book.scale_with_labels.present? %>
+            <dt class="col-sm-3">Scale Labels</dt>
+            <dd class="col-sm-9">
+              <% @book.scale_with_labels.each do |value, label| %>
+                <span class="badge bg-secondary me-1"><%= label %>: <%= value %></span>
+              <% end %>
+            </dd>
+          <% end %>
+
+          <dt class="col-sm-3">Implicit Judgements</dt>
+          <dd class="col-sm-9"><%= @book.support_implicit_judgements? ? 'Enabled' : 'Disabled' %></dd>
+
+          <dt class="col-sm-3">Show Rank</dt>
+          <dd class="col-sm-9"><%= @book.show_rank? ? 'Visible to judges' : 'Hidden from judges' %></dd>
+
+          <dt class="col-sm-3">Rank Depth</dt>
+          <dd class="col-sm-9">
+            <% if @book.rank_depth.present? %>
+              Top <%= @book.rank_depth %> — coverage metrics and judging above only consider pairs ranked <%= @book.rank_depth %> or better.
+            <% else %>
+              <span class="text-muted">No limit</span>
+            <% end %>
+          </dd>
+
+          <% if @book.import_file.attached? %>
+            <dt class="col-sm-3">Import File</dt>
+            <dd class="col-sm-9">
+              <%= link_to 'Download', rails_blob_path(@book.import_file.blob, only_path: true) %>
+              <span class="text-muted small">(uploaded <%= time_ago_in_words @book.import_file.created_at %> ago)</span>
+            </dd>
+          <% end %>
+
+          <% if @book.export_file.attached? %>
+            <dt class="col-sm-3">Export File</dt>
+            <dd class="col-sm-9">
+              <%= link_to 'Download JSON', rails_blob_path(@book.export_file.blob, only_path: true) %>
+              <span class="text-muted small">(exported <%= time_ago_in_words @book.export_file.created_at %> ago)</span>
+            </dd>
+          <% end %>
+        </dl>
       </div>
     </div>
-    <div class="card-footer text-muted small">
-      <i class="bi bi-arrow-right"></i> Sends pairs &nbsp;|&nbsp;
-      <i class="bi bi-arrow-left"></i> Receives ratings &nbsp;|&nbsp;
-      <i class="bi bi-arrow-left-right"></i> Both &nbsp;|&nbsp;
-      <i class="bi bi-circle"></i> Linked, no auto-sync
-    </div>
-  <% else %>
-    <div class="card-body text-muted">
-      No cases linked. Link a case via <a href="<%= edit_book_path(@book) %>">Settings</a> or create a book directly from a case.
-    </div>
-  <% end %>
-</div>
-
-<%# ── Book metadata ────────────────────────────────────────────────────────── %>
-<div class="card mb-4">
-  <div class="card-header">
-    <h5 class="mb-0"><i class="bi bi-gear"></i> Book Settings</h5>
-  </div>
-  <div class="card-body">
-    <dl class="row mb-0">
-      <dt class="col-sm-3">Teams</dt>
-      <dd class="col-sm-9">
-        <% if @book.teams.any? %>
-          <% @book.teams.each do |team| %>
-            <%= link_to team.name, team_path(team) %>&nbsp;
-          <% end %>
-        <% else %>
-          <span class="text-muted">No teams</span>
-        <% end %>
-      </dd>
-
-      <% if @book.scale_with_labels.present? %>
-        <dt class="col-sm-3">Scale Labels</dt>
-        <dd class="col-sm-9">
-          <% @book.scale_with_labels.each do |value, label| %>
-            <span class="badge bg-secondary me-1"><%= label %>: <%= value %></span>
-          <% end %>
-        </dd>
-      <% end %>
-
-      <dt class="col-sm-3">Implicit Judgements</dt>
-      <dd class="col-sm-9"><%= @book.support_implicit_judgements? ? 'Enabled' : 'Disabled' %></dd>
-
-      <dt class="col-sm-3">Show Rank</dt>
-      <dd class="col-sm-9"><%= @book.show_rank? ? 'Visible to judges' : 'Hidden from judges' %></dd>
-
-      <dt class="col-sm-3">Rank Depth</dt>
-      <dd class="col-sm-9">
-        <% if @book.rank_depth.present? %>
-          Top <%= @book.rank_depth %> — coverage metrics and judging above only consider pairs ranked <%= @book.rank_depth %> or better.
-        <% else %>
-          <span class="text-muted">No limit</span>
-        <% end %>
-      </dd>
-
-      <% if @book.import_file.attached? %>
-        <dt class="col-sm-3">Import File</dt>
-        <dd class="col-sm-9">
-          <%= link_to 'Download', rails_blob_path(@book.import_file.blob, only_path: true) %>
-          <span class="text-muted small">(uploaded <%= time_ago_in_words @book.import_file.created_at %> ago)</span>
-        </dd>
-      <% end %>
-
-      <% if @book.export_file.attached? %>
-        <dt class="col-sm-3">Export File</dt>
-        <dd class="col-sm-9">
-          <%= link_to 'Download JSON', rails_blob_path(@book.export_file.blob, only_path: true) %>
-          <span class="text-muted small">(exported <%= time_ago_in_words @book.export_file.created_at %> ago)</span>
-        </dd>
-      <% end %>
-    </dl>
   </div>
 </div>
 
