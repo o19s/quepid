@@ -87,6 +87,7 @@ class BulkJudgeController < ApplicationController
       if judgement.persisted?
         judgement.destroy
         UpdateCaseRatingsJob.perform_later query_doc_pair
+        BroadcastJudgeActivityJob.perform_later(@book, current_user)
       end
       render json: { status: 'success' }
     else
@@ -102,6 +103,7 @@ class BulkJudgeController < ApplicationController
 
       if judgement.save
         UpdateCaseRatingsJob.perform_later query_doc_pair
+        BroadcastJudgeActivityJob.perform_later(@book, current_user)
         render json: { status: 'success', judgement_id: judgement.id }
       else
         render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_content
@@ -117,6 +119,7 @@ class BulkJudgeController < ApplicationController
 
     if judgement&.destroy
       UpdateCaseRatingsJob.perform_later judgement.query_doc_pair
+      BroadcastJudgeActivityJob.perform_later(@book, current_user)
       render json: { status: 'success' }
     else
       render json: { status: 'error', message: 'Judgement not found or could not be deleted' }, status: :not_found

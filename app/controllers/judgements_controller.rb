@@ -101,6 +101,7 @@ class JudgementsController < ApplicationController
 
     @judgement.mark_unrateable!
     UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
+    BroadcastJudgeActivityJob.perform_later(@book, current_user)
     redirect_to book_judge_path(@book)
   end
 
@@ -109,6 +110,7 @@ class JudgementsController < ApplicationController
 
     @judgement.mark_judge_later!
     UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
+    BroadcastJudgeActivityJob.perform_later(@book, current_user)
     redirect_to book_judge_path(@book)
   end
 
@@ -118,6 +120,7 @@ class JudgementsController < ApplicationController
     @judgement.unrateable = false
     if @judgement.save
       UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
+      BroadcastJudgeActivityJob.perform_later(@book, current_user)
       redirect_to book_judge_path(@book)
     else
       render action: :edit
@@ -125,8 +128,10 @@ class JudgementsController < ApplicationController
   end
 
   def destroy
+    judge = @judgement.user
     @judgement.destroy
     UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
+    BroadcastJudgeActivityJob.perform_later(@book, judge) if judge
     redirect_to book_judge_path(@book), notice: "Removed rating for query '#{@judgement.query_doc_pair.query_text}'."
   end
 
