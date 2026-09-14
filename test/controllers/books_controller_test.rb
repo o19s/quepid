@@ -138,6 +138,21 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
       assert_nil james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy)
     end
+
+    test 'does not crash when ai_judge_ids and auto_run_ai_judge_ids are omitted entirely' do
+      login_user_for_integration_test user
+      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:     james_bond_movies.name,
+          team_ids: [],
+        },
+      }
+
+      assert_response :redirect
+      assert_nil james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy)
+    end
   end
 
   describe 'show' do

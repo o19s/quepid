@@ -256,8 +256,11 @@ class BooksController < ApplicationController
     # checkboxes suck, but we diff (rather than clear-and-recreate) so an
     # unrelated book save doesn't reset every judge's auto_run flag back to
     # false.
-    ai_judge_ids = book_params[:ai_judge_ids].compact_blank.map(&:to_i)
-    auto_run_ai_judge_ids = book_params[:auto_run_ai_judge_ids].compact_blank.map(&:to_i)
+    # Array() guards against a non-standard caller (API client, curl) omitting
+    # the key entirely - the standard form always submits both as arrays via
+    # hidden fields, but nothing at the request layer guarantees that.
+    ai_judge_ids = Array(book_params[:ai_judge_ids]).compact_blank.map(&:to_i)
+    auto_run_ai_judge_ids = Array(book_params[:auto_run_ai_judge_ids]).compact_blank.map(&:to_i)
 
     @book.books_ai_judges.where.not(user_id: ai_judge_ids).destroy_all
     ai_judge_ids.each do |ai_judge_id|
