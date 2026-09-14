@@ -98,3 +98,7 @@ volumes
 
 yarn-error.log
 /.playwright-mcp
+
+# Personal Claude Code overrides (permissions etc.) — .claude/skills, .claude/commands
+# and other shared project config stay committed.
+/.claude/settings.local.json
