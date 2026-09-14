@@ -89,11 +89,12 @@ class BooksController < ApplicationController
     # Last judging timestamp for this user in this book
     @last_judged_at = @book.judgements.where(user: current_user).maximum(:updated_at)
 
-    # Pairs with zero judgements total (highest priority — no one has touched them)
-    @zero_judgement_pairs_count = SelectionStrategy.unjudged_pairs_count(@book)
-
-    # Pairs with 1-2 judgements total that the current user has NOT judged yet
-    @needs_more_not_yet_judged_by_user =
+    # Pairs still available for this user to judge: either no one has touched
+    # them yet, or someone has but not this user (and it's under 3 total
+    # judgements) - matches exactly what SelectionStrategy would still hand
+    # this user via the "judge next" flow.
+    @pairs_needing_judgment_by_user =
+      SelectionStrategy.unjudged_pairs_count(@book) +
       SelectionStrategy.partially_judged_pairs_not_yet_judged_by_count(@book, current_user)
 
     # 7-day sparkline: judgements per day for this user in this book

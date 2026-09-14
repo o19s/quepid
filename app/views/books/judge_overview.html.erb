@@ -36,38 +36,62 @@
   </div>
 </div>
 
-<%# ── Three metric cards ──────────────────────────────────────────────────── %>
+<%# ── Row 1: what's left to do, and how to rate it ──────────────────────────── %>
 <div class="row g-3 mb-4">
 
-  <div class="col-md-4">
-    <div class="card h-100 border-danger">
-      <div class="card-body text-center">
-        <div class="display-4 fw-bold text-danger"><%= @zero_judgement_pairs_count %></div>
-        <h6 class="card-title mt-2">
-          <i class="bi bi-exclamation-circle text-danger"></i> Completely Unjudged
-        </h6>
-        <p class="card-text text-muted small">
-          Pairs no one has touched yet — highest priority.
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-4">
+  <div class="col-md-6">
     <div class="card h-100 border-warning">
       <div class="card-body text-center">
-        <div class="display-4 fw-bold text-warning"><%= @needs_more_not_yet_judged_by_user %></div>
+        <div class="display-4 fw-bold text-warning"><%= @pairs_needing_judgment_by_user %></div>
         <h6 class="card-title mt-2">
-          <i class="bi bi-hourglass-split text-warning"></i> Need More (Not By You)
+          <i class="bi bi-hourglass-split text-warning"></i> Need Judging
         </h6>
         <p class="card-text text-muted small">
-          Pairs judged by others but not yet by you, with fewer than 3 judgements.
+          Pairs still available for you to judge.
         </p>
+
+        <% if @user_has_judged_all && !@moar_judgements_needed %>
+          <div class="alert alert-success text-start mb-3" role="alert">
+            <i class="bi bi-trophy"></i> <strong>All done!</strong>
+            You've judged everything available and this book is complete.
+          </div>
+        <% elsif @user_has_judged_all %>
+          <div class="alert alert-info text-start mb-3" role="alert">
+            <i class="bi bi-person-check"></i>
+            You've judged all pairs available to you. Other judges still need to cover some pairs.
+          </div>
+        <% end %>
+
+        <div class="d-flex gap-2 flex-wrap justify-content-center">
+          <%= link_to book_judge_path(@book), class: "btn btn-primary #{'disabled' if @user_has_judged_all}", role: "button",
+                aria: { disabled: @user_has_judged_all } do %>
+            <i class="bi bi-lightning-fill"></i> Start Judging
+          <% end %>
+          <%= link_to book_judge_bulk_path(@book), class: "btn btn-outline-primary", role: "button" do %>
+            <i class="bi bi-lightning"></i> Bulk Judging
+          <% end %>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="col-md-4">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-clipboard-check"></i> Judging Rubric</h5>
+        <div class="scoring-guidelines-content">
+          <%= render_markdown(@book.effective_scoring_guidelines) %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<%# ── Row 2: your stats ──────────────────────────────────────────────────── %>
+<div class="row g-3 mb-4">
+
+  <div class="col-md-6">
     <div class="card h-100 border-success">
       <div class="card-body text-center">
         <div class="display-4 fw-bold text-success"><%= @user_judgement_count %></div>
@@ -81,63 +105,33 @@
     </div>
   </div>
 
-</div>
-
-<%# ── 7-day activity sparkline ───────────────────────────────────────────── %>
-<div class="card mb-4">
-  <div class="card-body">
-    <h5 class="card-title">Your Activity — Last 7 Days</h5>
-    <% if @sparkline_data.sum { |d| d[:count] }.positive? %>
-      <%=
-        Vega.lite
-          .data(@sparkline_data)
-          .width(600)
-          .height(80)
-          .mark(type: "line", point: true, color: "#0d6efd")
-          .encoding(
-            x: { field: "date", type: "ordinal", axis: { labelAngle: 0, title: nil }, sort: nil },
-            y: { field: "count", type: "quantitative",
-                 axis: { title: "Judgements", tickMinStep: 1 } },
-            tooltip: [
-              { field: "date",  type: "ordinal",      title: "Day" },
-              { field: "count", type: "quantitative", title: "Judgements" }
-            ]
-          )
-          .config(view: { stroke: nil })
-      %>
-    <% else %>
-      <p class="text-muted mb-0">No judging activity in the last 7 days yet.</p>
-    <% end %>
-  </div>
-</div>
-
-<%# ── Call to action buttons ─────────────────────────────────────────────── %>
-<div class="card mb-4">
-  <div class="card-body">
-    <h5 class="card-title">Ready to Judge?</h5>
-    <% if @user_has_judged_all && !@moar_judgements_needed %>
-      <div class="alert alert-success mb-3" role="alert">
-        <i class="bi bi-trophy"></i> <strong>All done!</strong>
-        You've judged everything available and this book is complete.
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Your Activity — Last 7 Days</h5>
+        <% if @sparkline_data.sum { |d| d[:count] }.positive? %>
+          <%=
+            Vega.lite
+              .data(@sparkline_data)
+              .width(400)
+              .height(140)
+              .mark(type: "line", point: true, color: "#0d6efd")
+              .encoding(
+                x: { field: "date", type: "ordinal", axis: { labelAngle: 0, title: nil }, sort: nil },
+                y: { field: "count", type: "quantitative",
+                     axis: { title: "Judgements", tickMinStep: 1 } },
+                tooltip: [
+                  { field: "date",  type: "ordinal",      title: "Day" },
+                  { field: "count", type: "quantitative", title: "Judgements" }
+                ]
+              )
+              .config(view: { stroke: nil })
+          %>
+        <% else %>
+          <p class="text-muted mb-0">No judging activity in the last 7 days yet.</p>
+        <% end %>
       </div>
-    <% elsif @user_has_judged_all %>
-      <div class="alert alert-info mb-3" role="alert">
-        <i class="bi bi-person-check"></i>
-        You've judged all pairs available to you. Other judges still need to cover some pairs.
-      </div>
-    <% end %>
-
-    <div class="d-flex gap-2 flex-wrap">
-      <%= link_to book_judge_path(@book), class: "btn btn-primary #{'disabled' if @user_has_judged_all}", role: "button",
-            aria: { disabled: @user_has_judged_all } do %>
-        <i class="bi bi-lightning-fill"></i> Start Judging
-      <% end %>
-      <%= link_to book_judge_bulk_path(@book), class: "btn btn-outline-primary", role: "button" do %>
-        <i class="bi bi-lightning"></i> Judge in Bulk
-      <% end %>
-      <%= link_to book_judgements_path(@book), class: "btn btn-outline-secondary", role: "button" do %>
-        <i class="bi bi-list-check"></i> Browse All Judgements
-      <% end %>
     </div>
   </div>
+
 </div>
