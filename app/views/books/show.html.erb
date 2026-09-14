@@ -260,6 +260,15 @@ function updateModalTitle(judgeId) {
       <dt class="col-sm-3">Show Rank</dt>
       <dd class="col-sm-9"><%= @book.show_rank? ? 'Visible to judges' : 'Hidden from judges' %></dd>
 
+      <dt class="col-sm-3">Rank Depth</dt>
+      <dd class="col-sm-9">
+        <% if @book.rank_depth.present? %>
+          Top <%= @book.rank_depth %> — coverage metrics and judging above only consider pairs ranked <%= @book.rank_depth %> or better.
+        <% else %>
+          <span class="text-muted">No limit</span>
+        <% end %>
+      </dd>
+
       <% if @book.import_file.attached? %>
         <dt class="col-sm-3">Import File</dt>
         <dd class="col-sm-9">

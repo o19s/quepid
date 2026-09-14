@@ -8,6 +8,7 @@ class BroadcastJudgeActivityJob < ApplicationJob
   def perform book, judge, actively_judging: nil
     activity = book.judge_activity_for([ judge.id ]).fetch(judge.id, { sparkline: [], count: 0, last_judged_at: nil })
     is_actively_judging = actively_judging.nil? ? RunJudgeJudyJob.actively_judging?(book, judge) : actively_judging
+    is_auto_run = book.books_ai_judges.exists?(user_id: judge.id, auto_run: true)
 
     Turbo::StreamsChannel.broadcast_replace_to(
       "book_#{book.id}_judgements",
@@ -21,6 +22,7 @@ class BroadcastJudgeActivityJob < ApplicationJob
           last_judged_at:   activity[:last_judged_at],
           count:            activity[:count],
           actively_judging: is_actively_judging,
+          auto_run:         is_auto_run,
         },
         flash_active: true,
       }

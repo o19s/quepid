@@ -61,7 +61,7 @@ class BooksController < ApplicationController
     # even while this book is being actively judged.
     @total_pairs, @zero_judgement_count, @partial_count = ActiveRecord::Base.transaction do
       [
-        @book.query_doc_pairs.count,
+        @book.query_doc_pairs_within_rank_depth.count,
         SelectionStrategy.unjudged_pairs_count(@book),
         SelectionStrategy.partially_judged_pairs_count(@book)
       ]
@@ -75,6 +75,7 @@ class BooksController < ApplicationController
     @actively_judging_ids = RunJudgeJudyJob.actively_judging_user_ids(@book)
     judges_by_id = User.where(id: judge_ids).index_by(&:id)
     activity     = @book.judge_activity_for(judge_ids)
+    auto_run_ids = @book.books_ai_judges.where(auto_run: true).pluck(:user_id)
 
     @judge_activity = judge_ids.filter_map do |uid|
       judge = judges_by_id[uid]
@@ -82,7 +83,8 @@ class BooksController < ApplicationController
 
       stats = activity.fetch(uid, { sparkline: [], count: 0, last_judged_at: nil })
       { judge: judge, sparkline: stats[:sparkline], last_judged_at: stats[:last_judged_at],
-        count: stats[:count], actively_judging: @actively_judging_ids.include?(judge.id) }
+        count: stats[:count], actively_judging: @actively_judging_ids.include?(judge.id),
+        auto_run: auto_run_ids.include?(judge.id) }
     end
     @judge_activity = @judge_activity.sort_by { |j| j[:judge].fullname }
 
@@ -97,7 +99,7 @@ class BooksController < ApplicationController
   # rubocop:disable Metrics/MethodLength
   def judge_overview
     # Personal progress
-    @total_pairs           = @book.query_doc_pairs.count
+    @total_pairs           = @book.query_doc_pairs_within_rank_depth.count
     @user_judgement_count  = @book.judgements.where(user: current_user).count
     @user_progress_pct     = @total_pairs.positive? ? ((@user_judgement_count.to_f / @total_pairs) * 100).round : 0
 
@@ -251,18 +253,24 @@ class BooksController < ApplicationController
 
     @book.teams.replace(teams)
 
-    # checkboxes suck
-    @book.ai_judges.clear
-    ai_judge_ids = book_params[:ai_judge_ids].compact_blank
+    # checkboxes suck, but we diff (rather than clear-and-recreate) so an
+    # unrelated book save doesn't reset every judge's auto_run flag back to
+    # false.
+    ai_judge_ids = book_params[:ai_judge_ids].compact_blank.map(&:to_i)
+    auto_run_ai_judge_ids = book_params[:auto_run_ai_judge_ids].compact_blank.map(&:to_i)
+
+    @book.books_ai_judges.where.not(user_id: ai_judge_ids).destroy_all
     ai_judge_ids.each do |ai_judge_id|
-      @book.ai_judges << User.find(ai_judge_id)
+      books_ai_judge = @book.books_ai_judges.find_or_initialize_by(user_id: ai_judge_id)
+      books_ai_judge.auto_run = auto_run_ai_judge_ids.include?(ai_judge_id)
+      books_ai_judge.save
     end
 
     # Handle scorer selection
     apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
 
     @book.update(book_params.except(
-                   :team_ids, :ai_judges, :link_the_case, :origin_case_id, :scorer_id,
+                   :team_ids, :ai_judge_ids, :auto_run_ai_judge_ids, :link_the_case, :origin_case_id, :scorer_id,
                    :delete_export_file, :delete_import_file,
                    :auto_populate_book_pairs,
                    :auto_populate_case_judgements
@@ -552,8 +560,8 @@ class BooksController < ApplicationController
                                           :auto_populate_book_pairs,
                                           :auto_populate_case_judgements,
                                           :delete_export_file, :delete_import_file,
-                                          :show_rank, :scoring_guidelines,
-                                          { team_ids: [], ai_judge_ids: [] } ])
+                                          :show_rank, :scoring_guidelines, :rank_depth,
+                                          { team_ids: [], ai_judge_ids: [], auto_run_ai_judge_ids: [] } ])
 
     # Crafting a book[team_ids] parameter from the AngularJS side didn't work, so using top level parameter
     params_to_use[:team_ids] = params[:team_ids] if params[:team_ids]
@@ -561,6 +569,10 @@ class BooksController < ApplicationController
 
     params_to_use[:ai_judge_ids] = params[:ai_judge_ids] if params[:ai_judge_ids]
     params_to_use[:ai_judge_ids]&.compact_blank!
+
+    params_to_use[:auto_run_ai_judge_ids] = params[:auto_run_ai_judge_ids] if params[:auto_run_ai_judge_ids]
+    params_to_use[:auto_run_ai_judge_ids] ||= []
+    params_to_use[:auto_run_ai_judge_ids].compact_blank!
 
     params_to_use.except(:link_the_case, :origin_case_id,
                          :auto_populate_book_pairs,

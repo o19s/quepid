@@ -10,7 +10,7 @@ class BulkJudgeController < ApplicationController
   # rubocop:disable-next Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
   def new
     @query_text = params[:query_text]
-    @rank_depth = params[:rank_depth].presence&.to_i
+    @rank_depth = params[:rank_depth].presence&.to_i || @book.rank_depth
 
     # Default to showing only unrated items unless explicitly set to false
     @only_unrated = params[:only_unrated].nil? || deserialize_bool_param(params[:only_unrated])

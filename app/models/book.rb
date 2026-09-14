@@ -10,6 +10,7 @@
 #  import_job                  :string(255)
 #  name                        :string(255)
 #  populate_job                :string(255)
+#  rank_depth                  :integer
 #  scale                       :string(255)
 #  scale_with_labels           :text(65535)
 #  scoring_guidelines          :text(65535)
@@ -67,10 +68,8 @@ class Book < ApplicationRecord
   # has_many :users, dependent: :destroy
   # has_many :ai_judges, through: :ai_judges
 
-  # rubocop:disable-next Rails/HasAndBelongsToMany
-  has_and_belongs_to_many :ai_judges,
-                          class_name: 'User',
-                          join_table: 'books_ai_judges'
+  has_many :books_ai_judges, dependent: :destroy
+  has_many :ai_judges, through: :books_ai_judges, source: :ai_judge
 
   has_many :query_doc_pairs, dependent: :delete_all, autosave: true
 
@@ -101,6 +100,12 @@ class Book < ApplicationRecord
 
   # Virtual attribute for form display - allows selecting a scorer to copy scale from
   attr_accessor :scorer_id
+
+  # Virtual attribute: which of the checked ai_judge_ids should also have
+  # auto_run enabled. Only meaningful on #update (see BooksController#update),
+  # but must be a real writer so mass-assignment via Book.new(book_params)
+  # doesn't blow up on #create.
+  attr_accessor :auto_run_ai_judge_ids
 
   # Transform scale from array to a string
   serialize :scale, coder: ScaleSerializer
@@ -166,6 +171,13 @@ class Book < ApplicationRecord
 
   def queries_count
     query_doc_pairs.select(:query_text).distinct.count
+  end
+
+  # Book-level cap on how deep (by QueryDocPair#position, 1-indexed, lower =
+  # higher-ranked) judging and coverage metrics look. A nil rank_depth means
+  # unlimited - matches how position itself is nullable/unranked today.
+  def query_doc_pairs_within_rank_depth
+    rank_depth.present? ? query_doc_pairs.where(position: ..rank_depth) : query_doc_pairs
   end
 
   # Per-judge activity stats (sparkline of daily counts, total count, last

@@ -88,6 +88,56 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'updating' do
+    test "keeps an AI judge's auto_run flag set when the judge stays checked across an unrelated save" do
+      login_user_for_integration_test user
+      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:                  'James Bond Movies (renamed)',
+          team_ids:              [],
+          ai_judge_ids:          [ judge_judy.id ],
+          auto_run_ai_judge_ids: [ judge_judy.id ],
+        },
+      }
+
+      assert_predicate james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy), :auto_run?
+    end
+
+    test 'turns auto_run off for an AI judge unchecked from auto-run while staying assigned' do
+      login_user_for_integration_test user
+      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:         james_bond_movies.name,
+          team_ids:     [],
+          ai_judge_ids: [ judge_judy.id ],
+        },
+      }
+
+      books_ai_judge = james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy)
+      assert_not_nil books_ai_judge
+      assert_not books_ai_judge.auto_run?
+    end
+
+    test 'removes the AI judge assignment entirely when unchecked from ai_judge_ids' do
+      login_user_for_integration_test user
+      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:         james_bond_movies.name,
+          team_ids:     [],
+          ai_judge_ids: [],
+        },
+      }
+
+      assert_nil james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy)
+    end
+  end
+
   describe 'show' do
     let(:matt) { users(:matt) }
     let(:joe)  { users(:joe) }

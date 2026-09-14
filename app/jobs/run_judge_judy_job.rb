@@ -3,6 +3,15 @@
 class RunJudgeJudyJob < ApplicationJob
   queue_as :default
 
+  # Guarantees only one judging run per (book, judge) is ever in flight -
+  # whether triggered manually or via QueryDocPair's auto-run callback.
+  # Discarding (rather than queueing behind the running job) matches how
+  # QueryDocPair#queue_auto_run_ai_judges can fan out one enqueue per row in a
+  # large bulk population: only the first wins, the rest are redundant no-ops.
+  limits_concurrency to:          1,
+                     key:         ->(book, judge, *) { "run_judge_judy_#{book.id}_#{judge.id}" },
+                     on_conflict: :discard
+
   # Finds the in-flight (not finished) SolidQueue rows for this job class
   # matching the given book + judge. This is the one place that reaches into
   # SolidQueue's serialized arguments to answer "is this book+judge combo

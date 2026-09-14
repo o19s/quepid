@@ -10,6 +10,7 @@
 #  import_job                  :string(255)
 #  name                        :string(255)
 #  populate_job                :string(255)
+#  rank_depth                  :integer
 #  scale                       :string(255)
 #  scale_with_labels           :text(65535)
 #  scoring_guidelines          :text(65535)
@@ -253,6 +254,40 @@ class BookTest < ActiveSupport::TestCase
       book.scale = original_scale.dup
       assert_predicate book, :valid?
       assert book.save
+    end
+  end
+
+  describe 'query_doc_pairs_within_rank_depth' do
+    let(:book) { books(:james_bond_movies) }
+
+    it 'returns all query_doc_pairs when rank_depth is nil' do
+      assert_nil book.rank_depth
+      assert_equal book.query_doc_pairs.to_a.sort, book.query_doc_pairs_within_rank_depth.to_a.sort
+    end
+
+    it 'excludes pairs ranked below rank_depth' do
+      book.update!(rank_depth: 2)
+
+      doc_ids = book.query_doc_pairs_within_rank_depth.pluck(:doc_id)
+
+      assert_includes doc_ids, 'SeanConnery'   # position 1
+      assert_includes doc_ids, 'DanielCraig'   # position 2
+      assert_not_includes doc_ids, 'TimothyDalton' # position 3
+      assert_not_includes doc_ids, 'GeorgeLazenby' # position 6
+    end
+
+    it 'excludes a nil-position pair even when rank_depth is set' do
+      nil_position_pair = book.query_doc_pairs.create!(
+        query_text:      'Nil Position Rank Depth Test',
+        doc_id:          'NilPositionRankDepthDoc',
+        position:        nil,
+        document_fields: '{"title":"Test"}'
+      )
+      book.update!(rank_depth: 100)
+
+      assert_not_includes book.query_doc_pairs_within_rank_depth, nil_position_pair
+    ensure
+      nil_position_pair&.destroy
     end
   end
 

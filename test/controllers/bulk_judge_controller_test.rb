@@ -37,6 +37,36 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
       Bullet.enable = true
     end
 
+    test 'defaults rank depth to the book setting when no param is given' do
+      book.update!(rank_depth: 5)
+
+      Bullet.enable = false
+      get book_judge_bulk_path(book)
+      assert_response :success
+      assert_equal 5, assigns(:rank_depth)
+      Bullet.enable = true
+    end
+
+    test 'an explicit rank_depth param overrides the book default' do
+      book.update!(rank_depth: 5)
+
+      Bullet.enable = false
+      get book_judge_bulk_path(book), params: { rank_depth: 10 }
+      assert_response :success
+      assert_equal 10, assigns(:rank_depth)
+      Bullet.enable = true
+    end
+
+    test 'has no rank depth limit when neither the book nor the param set one' do
+      assert_nil book.rank_depth
+
+      Bullet.enable = false
+      get book_judge_bulk_path(book)
+      assert_response :success
+      assert_nil assigns(:rank_depth)
+      Bullet.enable = true
+    end
+
     test 'defaults to showing only unrated items' do
       Bullet.enable = false
       get book_judge_bulk_path(book)

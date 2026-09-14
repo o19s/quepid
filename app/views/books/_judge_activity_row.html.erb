@@ -8,6 +8,9 @@
          id="judge-icon-<%= row[:judge].id %>"></i>
     <% end %>
     <%= row[:judge].fullname %>
+    <% if row[:judge].ai_judge? && row[:auto_run] %>
+      <i class="bi bi-repeat text-muted" title="Auto-runs when new query/doc pairs are added"></i>
+    <% end %>
     <% if row[:judge].ai_judge? %>
       <% if row[:actively_judging] %>
         <span class="d-inline-flex align-items-center gap-1 ms-1">

@@ -55,7 +55,7 @@ module SelectionStrategy
 
   # Checks if every query-document pair in the book has at least 3 judgements
   def self.every_query_doc_pair_has_three_judgements? book
-    query_doc_pair = book.query_doc_pairs
+    query_doc_pair = book.query_doc_pairs_within_rank_depth
       .left_joins(:judgements)
       .group('query_doc_pairs.id')
       .having('COUNT(judgements.id) < 3')
@@ -78,7 +78,7 @@ module SelectionStrategy
     weighted_random_order = "-#{AdapterFunctions.natural_log}" \
                             "(1.0 - #{AdapterFunctions.uniform_random}) * (COALESCE(position, 1000) + 1)"
 
-    book.query_doc_pairs
+    book.query_doc_pairs_within_rank_depth
       .left_joins(:judgements)
       .group('query_doc_pairs.id')
       .having('COUNT(CASE WHEN judgements.user_id = ? THEN 1 END) = 0', user.id)
@@ -94,7 +94,7 @@ module SelectionStrategy
   # matching row has to cross into Ruby just to be counted; wrapping the
   # grouped query as a subquery lets the database return a single row.
   def self.grouped_pair_count book, having_clause
-    matching_ids = book.query_doc_pairs
+    matching_ids = book.query_doc_pairs_within_rank_depth
       .left_joins(:judgements)
       .group('query_doc_pairs.id')
       .having(having_clause)
