@@ -67,20 +67,20 @@ function updateModalTitle(judgeId) {
 <% if @total_pairs > 0 %>
 <div class="row g-3 mb-4">
 
-  <div class="col-md-3">
-    <div class="card h-100 text-center">
+  <div class="col-md-4">
+    <div class="card h-100 text-center border-success">
       <div class="card-body">
-        <div class="display-5 fw-bold text-primary"><%= @coverage_pct %>%</div>
-        <h6 class="card-title mt-1"><i class="bi bi-trophy text-primary"></i> Fully Judged</h6>
-        <p class="card-text text-muted small"><%= @complete_count %> of <%= @total_pairs %> pairs have 3+ judgements</p>
+        <div class="display-5 fw-bold text-success"><%= @coverage_pct %>%</div>
+        <h6 class="card-title mt-1"><i class="bi bi-trophy text-success"></i> Fully Judged</h6>
+        <p class="card-text text-muted small"><%= @complete_count %> of <%= @total_pairs %> pairs have 3+ judgements — best practice met</p>
         <div class="progress mt-2" style="height:6px;">
-          <div class="progress-bar bg-primary" style="width:<%= @coverage_pct %>%"></div>
+          <div class="progress-bar bg-success" style="width:<%= @coverage_pct %>%"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="card h-100 text-center border-danger">
       <div class="card-body">
         <div class="display-5 fw-bold text-danger"><%= @zero_judgement_count %></div>
@@ -90,22 +90,12 @@ function updateModalTitle(judgeId) {
     </div>
   </div>
 
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="card h-100 text-center border-warning">
       <div class="card-body">
         <div class="display-5 fw-bold text-warning"><%= @partial_count %></div>
         <h6 class="card-title mt-1"><i class="bi bi-hourglass-split text-warning"></i> In Progress</h6>
         <p class="card-text text-muted small">Pairs with 1–2 judgements, need more</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card h-100 text-center border-success">
-      <div class="card-body">
-        <div class="display-5 fw-bold text-success"><%= @complete_count %></div>
-        <h6 class="card-title mt-1"><i class="bi bi-check-circle text-success"></i> Complete</h6>
-        <p class="card-text text-muted small">Pairs with 3+ judgements — best practice met</p>
       </div>
     </div>
   </div>
