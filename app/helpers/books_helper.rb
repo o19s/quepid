@@ -56,6 +56,19 @@ module BooksHelper
     "#{scale_display}#{labels_preview}"
   end
 
+  # True when the current page is part of the "Overview" tab family - the
+  # Relevancy Engineer-facing pages nested as sub-tabs under Overview (as
+  # opposed to Judge Overview, which is judge-facing and has no sub-tabs).
+  def book_overview_family_active?
+    make_active?({ action: 'show' }) ||
+      make_active?({ action: 'judgement_stats' }) ||
+      make_active?({ action: 'edit' }) ||
+      make_active?({ action: 'export' }) ||
+      make_active?({ controller: 'query_doc_pairs' }) ||
+      make_active?({ controller: 'judgements' }) ||
+      make_active?({ controller: 'import' })
+  end
+
   # Returns AI judges that are available to add to this book
   # (AI judges that belong to the book's teams but aren't already assigned to the book)
   def available_ai_judges_for_book book
