@@ -67,6 +67,31 @@ async function deleteCase(page: Page, caseId: number) {
   expect(response.ok()).toBeTruthy();
 }
 
+/**
+ * Finishing the wizard below permanently flips this account's
+ * `completed_case_wizard` to true (WizardModalCtrl#submit -> userSvc's
+ * shownIntroWizard(), PUT api/users/:id), which is account state, not case
+ * state -- it survives this test and this process, since it's persisted in
+ * the shared dev DB. Once set, every later `?showWizard=true` load for this
+ * same account skips the Welcome step and lands directly on Name (see
+ * wizardModal.js's `WizardHandler.wizard().goTo(1)` branch), which broke
+ * angular_pages.spec.ts and angular_pages_narrow_viewport.spec.ts's wizard
+ * specs when this spec ran first. Reset it back so later specs (and later
+ * runs) see the same first-time Welcome step this test itself started from.
+ */
+async function resetCompletedCaseWizard(page: Page) {
+  const headers = { ...(await apiHeaders(page)), 'Content-Type': 'application/json' };
+  const me = await page.request.get('api/users/current', { headers });
+  expect(me.ok()).toBeTruthy();
+  const { id } = await me.json();
+
+  const response = await page.request.put(`api/users/${id}`, {
+    data: { user: { completed_case_wizard: false } },
+    headers
+  });
+  expect(response.ok()).toBeTruthy();
+}
+
 test.describe('Case creation wizard', () => {
   test('runs every step and lands back on the newly created case', async ({ page }) => {
     const caseId = await createDisposableCase(page);
@@ -141,7 +166,14 @@ test.describe('Case creation wizard', () => {
       // The query we added during the wizard was persisted onto this case.
       await expect(page.getByText('star wars', { exact: false }).first()).toBeVisible({ timeout: 15_000 });
     } finally {
-      await deleteCase(page, caseId);
+      // Nested try/finally so a deleteCase failure (e.g. a transient API
+      // error) can't skip resetCompletedCaseWizard -- these are independent
+      // cleanups and a failure in one shouldn't leave the other undone.
+      try {
+        await deleteCase(page, caseId);
+      } finally {
+        await resetCompletedCaseWizard(page);
+      }
     }
   });
 });

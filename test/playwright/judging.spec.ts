@@ -44,67 +44,77 @@ async function deleteJudgement(page: Page, bookId: number, judgementId: string) 
 
 test.describe('Single-item judging', () => {
   test('submitting a rating records a judgement and advances to the next pair', async ({ page }) => {
-    await page.goto(`books/${BOOK_ID}/judge`);
+    // Rating the button below immediately persists a judgement server-side,
+    // consuming BOOK_ID's one unrated pair -- everything from here on must
+    // clean it up even if a later assertion throws, or every subsequent run
+    // of this spec (and judging.spec.ts's own second test) loses its fixture.
+    let judgementId: string | undefined;
+    try {
+      await page.goto(`books/${BOOK_ID}/judge`);
 
-    const queryDocPairId = await page.locator('#judgement_query_doc_pair_id').getAttribute('value');
-    expect(Number(queryDocPairId)).toBeGreaterThan(0);
+      const queryDocPairId = await page.locator('#judgement_query_doc_pair_id').getAttribute('value');
+      expect(Number(queryDocPairId)).toBeGreaterThan(0);
 
-    // _form.html.erb renders one rating button per scorer scale value
-    // (e.g. "Irrelevant" / "Relevant" for this book's 0/1 scale), each
-    // wired to rate(value, key) which sets the hidden rating field and
-    // submits the form.
-    const ratingButton = page.getByRole('button', { name: 'Relevant', exact: true });
-    await expect(ratingButton).toBeVisible({ timeout: 10_000 });
-    await ratingButton.click();
+      // _form.html.erb renders one rating button per scorer scale value
+      // (e.g. "Irrelevant" / "Relevant" for this book's 0/1 scale), each
+      // wired to rate(value, key) which sets the hidden rating field and
+      // submits the form.
+      const ratingButton = page.getByRole('button', { name: 'Relevant', exact: true });
+      await expect(ratingButton).toBeVisible({ timeout: 10_000 });
+      await ratingButton.click();
 
-    // JudgementsController#create redirects to book_judge_path — same URL,
-    // now showing either the next unrated pair or the "all judged" state.
-    await expect(page).toHaveURL(new RegExp(`/books/${BOOK_ID}/judge$`));
-    await expect(page.locator('#judgement_query_doc_pair_id')).not.toHaveValue(queryDocPairId as string, {
-      timeout: 10_000
-    });
+      // JudgementsController#create redirects to book_judge_path — same URL,
+      // now showing either the next unrated pair or the "all judged" state.
+      await expect(page).toHaveURL(new RegExp(`/books/${BOOK_ID}/judge$`));
+      await expect(page.locator('#judgement_query_doc_pair_id')).not.toHaveValue(queryDocPairId as string, {
+        timeout: 10_000
+      });
 
-    // Confirm the judgement landed against the query_doc_pair we rated,
-    // attributed to the signed-in user, with the rating we clicked.
-    await page.goto(`books/${BOOK_ID}/judgements?filtered=1&q=query_doc_pair_id:${queryDocPairId}`);
-    const rows = page.locator('table tbody tr');
-    const newRow = rows.filter({ has: page.getByText('User With Realistic Activity In Quepid') });
-    await expect(newRow).toHaveCount(1);
-    await expect(newRow.getByRole('cell', { name: '1.0' })).toBeVisible();
+      // Confirm the judgement landed against the query_doc_pair we rated,
+      // attributed to the signed-in user, with the rating we clicked.
+      await page.goto(`books/${BOOK_ID}/judgements?filtered=1&q=query_doc_pair_id:${queryDocPairId}`);
+      const rows = page.locator('table tbody tr');
+      const newRow = rows.filter({ has: page.getByText('User With Realistic Activity In Quepid') });
+      await expect(newRow).toHaveCount(1);
+      await expect(newRow.getByRole('cell', { name: '1.0' })).toBeVisible();
 
-    const judgementLink = newRow.locator('a').first();
-    const judgementHref = await judgementLink.getAttribute('href');
-    const judgementId = judgementHref?.match(/judgements\/(\d+)\/edit/)?.[1];
-    expect(judgementId).toBeTruthy();
-
-    // Clean up so re-running this spec always finds an unrated pair again.
-    await deleteJudgement(page, BOOK_ID, judgementId as string);
+      const judgementLink = newRow.locator('a').first();
+      const judgementHref = await judgementLink.getAttribute('href');
+      judgementId = judgementHref?.match(/judgements\/(\d+)\/edit/)?.[1];
+      expect(judgementId).toBeTruthy();
+    } finally {
+      // Clean up so re-running this spec always finds an unrated pair again.
+      if (judgementId) await deleteJudgement(page, BOOK_ID, judgementId);
+    }
   });
 
   test('marking a pair "I Can\'t Tell" records it as unrateable', async ({ page }) => {
-    await page.goto(`books/${BOOK_ID}/judge`);
+    let judgementId: string | undefined;
+    try {
+      await page.goto(`books/${BOOK_ID}/judge`);
 
-    const queryDocPairId = await page.locator('#judgement_query_doc_pair_id').getAttribute('value');
-    expect(Number(queryDocPairId)).toBeGreaterThan(0);
+      const queryDocPairId = await page.locator('#judgement_query_doc_pair_id').getAttribute('value');
+      expect(Number(queryDocPairId)).toBeGreaterThan(0);
 
-    await page.getByRole('button', { name: "I Can't Tell" }).click();
-    const modal = page.locator('#explanationModal');
-    await expect(modal).toBeVisible();
+      await page.getByRole('button', { name: "I Can't Tell" }).click();
+      const modal = page.locator('#explanationModal');
+      await expect(modal).toBeVisible();
 
-    await modal.locator('textarea').fill('Playwright: cannot judge this pair.');
-    await modal.getByRole('button', { name: 'Skip Judging' }).click();
+      await modal.locator('textarea').fill('Playwright: cannot judge this pair.');
+      await modal.getByRole('button', { name: 'Skip Judging' }).click();
 
-    await expect(page).toHaveURL(new RegExp(`/books/${BOOK_ID}/judge$`));
+      await expect(page).toHaveURL(new RegExp(`/books/${BOOK_ID}/judge$`));
 
-    await page.goto(`books/${BOOK_ID}/judgements?filtered=1&compact=&q=query_doc_pair_id:${queryDocPairId}&unrateable=1`);
-    const row = page.locator('table tbody tr').first();
-    await expect(row).toBeVisible();
+      await page.goto(`books/${BOOK_ID}/judgements?filtered=1&compact=&q=query_doc_pair_id:${queryDocPairId}&unrateable=1`);
+      const row = page.locator('table tbody tr').first();
+      await expect(row).toBeVisible();
 
-    const judgementLink = row.locator('a').first();
-    const judgementHref = await judgementLink.getAttribute('href');
-    const judgementId = judgementHref?.match(/judgements\/(\d+)\/edit/)?.[1];
-    expect(judgementId).toBeTruthy();
-
-    await deleteJudgement(page, BOOK_ID, judgementId as string);
+      const judgementLink = row.locator('a').first();
+      const judgementHref = await judgementLink.getAttribute('href');
+      judgementId = judgementHref?.match(/judgements\/(\d+)\/edit/)?.[1];
+      expect(judgementId).toBeTruthy();
+    } finally {
+      if (judgementId) await deleteJudgement(page, BOOK_ID, judgementId);
+    }
   });
 });

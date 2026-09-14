@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { playwrightBaseURL } from './env';
 
 // Coverage for team management (TeamsController): index listing, create, add/remove
 // member, and sharing a case with a team. Tests run serially (playwright.config.ts:
@@ -14,6 +15,39 @@ const MEMBER_EMAIL = 'quepid+admin@o19s.com';
 const MEMBER_FULLNAME = 'Admin User';
 
 let newTeamId: string;
+
+/**
+ * The team created below (and the case-share it picks up in the last test)
+ * used to be left behind in the shared dev DB with no teardown. Every run
+ * added another "Playwright Team <timestamp>" row that never went away, so
+ * the team list other specs render (e.g. share_case.spec.ts's "select a
+ * team to share this case with" list) grew a little on every run, eventually
+ * changing that modal's height enough to break its screenshot baselines.
+ * Delete it once this file's tests are done, however they ended.
+ */
+test.afterAll(async ({ browser }) => {
+  if (!newTeamId) return;
+
+  const page: Page = await browser.newPage({
+    baseURL: playwrightBaseURL(),
+    storageState: 'test/playwright/.auth/user.json'
+  });
+  try {
+    await page.goto('teams');
+    const csrf = await page.evaluate(() =>
+      document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
+    );
+    const response = await page.request.delete(`api/teams/${newTeamId}`, {
+      headers: { Accept: 'application/json', 'X-CSRF-Token': csrf }
+    });
+    // Assert like every other cleanup in this suite: a silent failure here
+    // (e.g. an empty CSRF token nulling the session) would let this exact
+    // team leak right back in on the next run with no signal.
+    expect(response.ok()).toBeTruthy();
+  } finally {
+    await page.close();
+  }
+});
 
 test.describe('team management', () => {
   test('teams index lists existing teams', async ({ page }) => {

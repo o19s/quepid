@@ -182,7 +182,14 @@ test.describe('Angular pages — interaction screenshots', () => {
     await expect(page).toHaveScreenshot('wizard-03-case-name-focused.png', expandedCaseScreenshotOpts(page));
 
     await nameInput.fill('Playwright wizard tour', { force: true });
-    await expect(modal.getByRole('heading', { name: /What Search Endpoint/i })).toBeVisible({ timeout: 15_000 });
+    // angular-wizard sometimes auto-advances on the input event and sometimes doesn't.
+    // If it didn't, click Continue; either way we end up on the Endpoint step.
+    const endpointHeading = modal.getByRole('heading', { name: /What Search Endpoint/i });
+    const visibleContinue = modal.getByRole('button', { name: /^Continue$/i }).filter({ visible: true });
+    if (!(await endpointHeading.isVisible())) {
+      await visibleContinue.click();
+    }
+    await expect(endpointHeading).toBeVisible({ timeout: 15_000 });
     await modal.getByRole('button', { name: 'Create a new Search Endpoint' }).click();
     await expect(page).toHaveScreenshot('wizard-04-endpoint-accordion.png', expandedCaseScreenshotOpts(page));
 

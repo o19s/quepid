@@ -31,9 +31,12 @@ test.describe('admin namespace', () => {
     await loginAs(page, ADMIN_EMAIL, ADMIN_PASSWORD);
 
     await page.goto('admin');
-    await expect(page.getByRole('heading', { name: 'Admin Panel' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Users' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Announcements' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Admin Settings' })).toBeVisible();
+    // "Users" and "Announcements" links appear both in the sidebar nav and in
+    // the main content's management cards -- .first() just confirms one is
+    // visible rather than asserting anything about which.
+    await expect(page.getByRole('link', { name: 'Users' }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Announcements' }).first()).toBeVisible();
   });
 
   test('admin users index lists existing users', async ({ page }) => {

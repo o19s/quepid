@@ -149,15 +149,15 @@ parts:
     scenarios:
       "3.1":
         title: "Cases list — browsing and filtering"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:42:47Z
         result: pass
-        notes: "Re-verified name/id filter (typed 'SOLR', got only SOLR CASE) and the Team dropdown filter (selected OSC, correctly narrowed to the 3 cases actually shared with OSC — case 1, 5, 6789 — matching the Teams column). Note for future runs: selecting the Team dropdown triggers a full page navigation: don't snapshot immediately after browser_select_option on it, or you'll capture the stale pre-navigation page (title still says 'Loading ...' — wait briefly first). Pagination and multi-account isolation not tested. (2026-09-02's empty-state fix — 'create your first case' no longer shows when a filter, not lack of data, produces zero rows — wasn't re-triggered this pass since every filter tried above returned real rows.)"
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Partial-name filter ('Typeahead') correctly narrowed to the 3 Typeahead cases; exact-ID filter ('6789') correctly returned just that one case; a filter matching nothing ('zzznomatch') rendered an empty table with no error and correctly did NOT show the 'create your first case' message (cases exist overall, just none matching); Archived checkbox toggled and re-submitted the list (no archived cases existed to show, but the checkbox state and query param round-tripped correctly). Pagination and multi-account isolation not tested this pass."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
       "3.2":
         title: "Create a new case (setup wizard)"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:45:01Z
         result: pass
-        notes: "Re-verified specifically because wizardModal.js/queryParams.js/settings.js were refactored to route 'es'/'os' engine checks through the new searchEndpointSvc.isEsOrOsEngine()/usesJsonQueryParams() helpers, and this was the one untested path in the wizard (2026-09-02 only used Solr). Ran the full wizard end-to-end choosing Elasticsearch as the engine: blank-name guard on the Name step still blocks Continue; Endpoint step correctly showed the ES-specific query-params JSON editor; the demo ES server's ping failed with a CORS error (expected in this dev environment — direct browser-to-ES CORS is blocked), and the wizard's troubleshooting panel ('Sorry, we're not getting any search results...', Proxy Requests suggestion, Skip Validation button) handled it gracefully and let me continue; Fields/Query/Finish steps all worked, case was renamed correctly on Finish. Deleted the test case afterward. Did not test invalid-endpoint-URL or HTTPS/HTTP protocol-mismatch messaging."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main (wizardModal.js and related templates touched). Navigated via Relevancy Cases > Create a case — a new case (6816) was created immediately and the wizard auto-triggered on /case/6816/try/1?showWizard=true, per documented behavior. Blank case-name correctly disabled Continue; picked an existing Solr endpoint, clicked 'ping it' — got 'Quepid can search this! Hit Continue to keep working through setup.'; Fields step blocked Continue with 'This field is required. Please select a title field.' until filled, then a confirm() dialog warned about using a custom field for title/ID (accepted); Query step accepted a test query; Finish completed the wizard and landed in the workbench with showWizard stripped from the URL. Deleted the test case afterward. Did not test invalid-endpoint-URL or HTTPS/HTTP protocol-mismatch messaging, or the /cases/new direct-URL re-trigger edge case.\n\nFollow-up code investigation of the product-tour popup ('Case Header') appearing on a non-brand-new account (9+ existing cases): the tour is NOT actually gated on account age or case count. It's gated purely on the per-user `completed_case_wizard` boolean (app/models/user.rb; checked at app/assets/javascripts/controllers/wizardCtrl.js:24-29 and app/assets/javascripts/components/new_case/new_case_controller.js:42-47). That flag only flips to true when a wizard run is completed via Finish (wizardModal.js:928 → userSvc.js's shownIntroWizard() → PUT /api/users/:id); dismissing/cancelling a wizard never sets it. So the tour fires again for any account whose flag is still false, regardless of how many cases it has — the doc's 'brand-new account' framing described the wrong trigger. Not a code bug; updated 03-case-management.md's edge-case wording to describe the real `completed_case_wizard` gate instead."
         paths: ["app/controllers/core_controller.rb", "app/assets/javascripts/controllers/wizardCtrl.js", "app/assets/javascripts/controllers/wizardModal.js", "app/assets/templates/views/wizardModal.html", "app/javascript/angular_app.js"]
       "3.3":
         title: "Import a case from JSON"
@@ -173,15 +173,15 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "app/javascript/controllers/import_snapshot_controller.test.js"]
       "3.5":
         title: "Archive / unarchive a case from the list"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:43:07Z
         result: pass
-        notes: "Re-verified after confirm_delete_controller.js was rewritten on top of the new destructive_form.js/bs_modal.js utils (previously a raw window.confirm-style flow, now a real Bootstrap modal). Archived ES CASE from the list: modal opened with heading 'Confirm' and text 'Archive ES CASE?', confirming showed flash 'Case #ES CASE archived.' and removed it from the active list; found it under the Archived filter and unarchived it (modal text 'Unarchive ES CASE?', flash 'Case #ES CASE unarchived.'). Ownership-transfer-on-archive and the two-tabs-race edge case not tested."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Archived 'Typeahead: Meats' from the list: modal opened with heading 'Confirm' and text 'Archive Typeahead: Meats?', confirming showed flash 'Case #Typeahead: Meats archived.' and removed it from the active list; found it under the Archived filter (checkbox correctly checked/shown) and clicked its unarchive icon (modal text 'Unarchive Typeahead: Meats?'), confirming showed flash 'Case #Typeahead: Meats unarchived.' and restored it to the active list. Ownership-transfer-on-archive and the two-tabs-race edge case not tested."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
       "3.6":
         title: "Share a case from the list"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:31:55Z
         result: pass
-        notes: "Re-verified after share_case_controller.js was rewritten on top of the new ShareEntityControllerBase/bs_modal.js. Shared SEARCHAPI CASE with OSC from the list-row Share icon (flash 'SEARCHAPI CASE shared with OSC.', Teams column updated on reload), then unshared it (flash 'SEARCHAPI CASE unshared from OSC.'). Confirmed the team dropdown only ever lists the current user's own teams, and already-shared teams are excluded from it (shown instead as an 'Already shared with' chip with its own Unshare button). Restored to original (unshared) state."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main touched share_case controller/directive/modal files. Shared 'Typeahead: Dairy' with OSC from the list-row Share icon (flash 'Typeahead: Dairy shared with OSC.', Teams column updated live without a page reload), then unshared it (flash 'Typeahead: Dairy unshared from OSC.'). Team dropdown only lists the current user's own teams; already-shared teams show instead as an 'Already shared with' entry with its own Unshare button. Restored to original (unshared) state."
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_share_case_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js"]
 
   "04":
@@ -189,15 +189,15 @@ parts:
     scenarios:
       "4.1":
         title: "Rename case / rename try"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:45:35Z
         result: pass
-        notes: "Re-verified after queriesLayout.html changed again for the clone-case toolbar migration (unrelated to rename itself). Case name uses ng-dblclick (not a single click) to enter edit mode — double-click the name text. Whitespace-only name still correctly keeps Rename disabled (fix from 2026-09-02 intact); renamed SOLR CASE to 'SOLR CASE Renamed' and back, both changes persisted immediately in the header. Did not re-test try-rename specifically this pass (same code pattern/fix as case-rename, in currSettings.js) or the blank-try-name guard."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Case name uses double-click to enter edit mode; clearing the name field correctly disabled the Rename button (blank name blocked), typing a real name re-enabled it and Rename persisted the change immediately in the header. Try name is independently double-click-editable the same way — cleared and confirmed the same blank-name guard, then renamed 'Try 1' to 'Try 1 Renamed' and confirmed it persisted in the header. Both changes also showed up correctly later in the try-history list (5.1)."
         paths: ["app/assets/javascripts/controllers/case.js", "app/assets/javascripts/controllers/currSettings.js", "app/assets/templates/views/queriesLayout.html", "app/models/case.rb"]
       "4.2":
         title: "Add a query (single)"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:46:01Z
         result: pass
-        notes: "Re-verified after quepidPopover.js/quepidTooltip.js changes in the same directive tree. Added 'star trek' to SOLR CASE, ran against live Solr and got real results (8516, unrated-count badge). Deleted the test query afterward via rails runner (no in-UI delete-query icon appeared in the accessibility snapshot for this row, so used the DB directly rather than hunt for it — the equivalent quick-action delete is separately covered by 4.15)."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main (queriesCtrl.js touched). Typed 'second query' into the add-query input on a live Solr-backed test case; Add query button was disabled while the input was empty and enabled once text was entered; clicking it added the query, ran it against live Solr, and scored it (326 results, 'Number of Queries' count incremented to 2) with no errors. Did not test the static-engine-disabled or search-failure edge cases this pass."
         paths: ["app/assets/javascripts/directives/", "app/models/query.rb"]
       "4.3":
         title: "Add multiple queries (bulk)"
@@ -213,15 +213,15 @@ parts:
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb"]
       "4.5":
         title: "Set per-query options (Query Options)"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:46:38Z
         result: pass
-        notes: "Re-verified this pass (no regression). Gotcha for future automation: the options editor is Ace, and its content lives in a hidden ace_text-input textarea overlapped by ace_content — a plain click/fill on the textbox ref times out ('intercepts pointer events'), and document.querySelector('.ace_editor') can grab the WRONG editor instance since several hidden ones exist on the page (query-params editors for other search-engine types) — scope the query to the open [role=dialog] and read editorEl.env.editor (not a fresh ace.edit(el) call) to reliably setValue() against the real bound instance. Confirmed invalid JSON ('{invalid json') still keeps the modal open with 'Please provide a valid JSON object.' (2026-09-02 fix intact), and valid JSON ('{\"foo\": \"bar\"}') still saves, closes, and flashes 'Query options saved successfully.' Cleaned up test options (reset to nil) afterward via rails runner. Bug found 2026-09-02: submitting invalid JSON showed the flash but the modal closed anyway; fixed by validating JSON inside ok() itself before closing the modal (app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js)."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Confirmed invalid JSON ('{invalid json') is still rejected with 'Please provide a valid JSON object.' and the modal stays open (2026-09-02 fix intact); valid JSON ('{\"testKey\": \"testValue\"}') saved, closed the modal, and flashed 'Query options saved successfully.' — also confirmed present later in a General-format case export CSV. Gotcha reconfirmed: clicking directly on the Ace textbox ref times out (intercepted by ace_content); click the visible content div first, then type into the textbox ref."
         paths: ["app/models/query.rb", "app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js", "app/assets/javascripts/components/query_options/query_options_controller.js"]
       "4.6":
         title: "Rate a document"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:47:23Z
         result: pass
-        notes: "Narrow regression check after removing the dead text-mode quepidPopover directive from quepidPopover.js (quepidPopoverTemplate, which backs this popover, was left unchanged): reopened the ratings popover on a search result and confirmed the Irrelevant/Relevant/Reset buttons still render via BS5. Did not re-submit a full rating or re-verify score updates/persistence this pass — see the 2026-09-02 note for that fuller run."
+        notes: "Full re-verification via Playwright MCP after the angular-cleanup-phase3 merge from main. Clicked a document's rating badge, popover opened with Irrelevant/Relevant/RESET; clicked '1 Relevant' — badge updated immediately. Reloaded the page and confirmed the rating persisted (badge still showed '1' after re-expanding the query). Reopened the popover and clicked RESET — badge cleared back to '--'. Full rate → persist-on-reload → reset cycle confirmed working. Duplicate/missing-doc-id banner and depth-of-rating-cutoff edge cases not tested this pass."
         paths: ["app/controllers/ratings_controller.rb", "app/assets/javascripts/directives/quepidPopover.js"]
       "4.7":
         title: "Case & query score badges"
@@ -237,33 +237,33 @@ parts:
         paths: ["app/controllers/scores_controller.rb", "app/models/scorer.rb"]
       "4.9":
         title: "Missing Documents finder"
-        last_run: 2026-09-08
+        last_run: 2026-09-14T18:34:16Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main (docFinder.js touched). On case 6 (Typeahead: Dairy), query 'dairy': opened Missing Documents, searched the pre-filled query (q=dairy&magicBoost=20), got '23 matching documents' with the persistent 'Changing ratings will affect the query score' warning, rated the top doc '1 Relevant' inline (badge updated live, case/query score badge updated from 0.00 to 1.00), then clicked 'Reset to All Rated Docs' which correctly switched to an 'Already Rated Documents' view showing the new rating. Did not test the blank-URL/invalid-JSON/unreachable-host edge cases for this modal specifically (that class of edge case was separately confirmed working in the Mapper Wizard fetch step, 7.7)."
         paths: ["app/assets/javascripts/"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:48:12Z
         result: pass
-        notes: "Re-verified rendering after settings.js/queryParams.js/searchEndpointSvc.js were refactored to route the 'es'/'os' engine checks through new searchEndpointSvc.isEsOrOsEngine()/usesJsonQueryParams() helpers. Query Sandbox tab shows the real stored query_params (q=*:*) correctly. Gotcha hit this pass: this tab's Ace editor is one of ~5 ace_editor instances that stay alive across drawer open/close on the same page load, so a stray editor.setValue() aimed at the wrong instance (see 4.5's note) can silently leave junk text sitting in this tab's box without ever being saved (confirmed via DB the real query_params was untouched) — a full page reload clears all such in-memory Ace state if this happens. Did not exercise an actual ES/OS-engine case this pass to specifically re-verify the new helper functions' behavior (SOLR CASE isn't es/os) — worth doing if ES CASE's Tune Relevance is touched again. Did not test static-engine empty-state or TLS/protocol-mismatch messaging."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Opened the drawer via the wrench icon, landed on the Query tab (Query Sandbox) showing the real stored template; edited it to add a ##tieBoost## placeholder and clicked 'Rerun My Searches!' — a new Try was created and all queries re-ran (initially failed since the placeholder had no substituted value yet — expected, see 4.11). Did not test static-engine empty-state or TLS/protocol-mismatch messaging this pass."
         paths: ["app/assets/javascripts/controllers/"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:48:23Z
         result: pass
-        notes: "Re-verified empty state after the same searchEndpointSvc refactor as 4.10/4.12: 'Add and remove knobs from here by editing your query' renders correctly with no ##variable## placeholders present. Did not re-test adding a ##knob## placeholder this pass (covered 2026-09-02)."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. After adding ##tieBoost## to the Query tab's template (4.10), switching to Tuning Knobs auto-showed a 'tieBoost:' numeric spinbutton (defaulted to 10); changed it to 0.5 and clicked 'Rerun My Searches!' — queries that had been failing (unsubstituted placeholder) now succeeded with real results, and the try-history list (5.1) correctly showed 'tieBoost=0.5' for the new try vs 'tieBoost=10' for the prior one, confirming the substitution took effect and persisted per-try. Empty-state (no placeholders) messaging not re-tested this pass."
         paths: ["app/assets/javascripts/controllers/"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
-        last_run: 2026-09-04
-        result: pass
-        notes: "Re-verified after the searchEndpointSvc refactor (settings.js now injects searchEndpointSvc and calls .usesJsonQueryParams() instead of inline 'es'/'os'/'vectara'/'algolia' string checks). Search Endpoints/Endpoint Details/Displayed Fields/Number of Results/Evaluate Nightly/Escape Queries all render correctly for SOLR CASE's Solr endpoint. Did not exercise an ES/OS/Vectara/Algolia-backed case to directly re-verify the refactored JSON-validation branch, or change values/toggle Evaluate Nightly/Escape Queries."
-        paths: ["app/assets/javascripts/controllers/", "app/models/search_endpoint.rb"]
+        last_run: 2026-09-14T19:12:11Z
+        result: pass_with_fixes
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Endpoint Details (read-only name/URL + More link), Displayed Fields, Number of Results, Evaluate Nightly, Escape Queries, and the Search Endpoints picker all rendered correctly. CONFIRMED AND FIXED real bug: typing 500 into Number of Results (max=100) triggered AngularJS's built-in max validator, which sets the bound model to `undefined` while the input still visually showed '500' (no error styling anywhere in the template) — settingsSvc.js then dropped the undefined value from the POST body entirely, so Try#set_defaults (try.rb:247, `number_of_rows = 10 if blank?`) silently substituted 10 with zero user feedback. Root-caused via a code investigation, then fixed: added an explicit range check (1-100) at the top of SettingsCtrl.submit() (app/assets/javascripts/controllers/settings.js) that rejects out-of-range/non-numeric values with a clear flash error ('Number of Results to Show must be between 1 and 100.') and refuses to save, instead of silently defaulting; also added a matching `min=\"1\"` to the template input (devQueryParams.html) alongside the existing `max=\"100\"`. Rebuilt Angular bundles (yarn build:angular-app / build:angular-templates) and re-verified live: typing 500 now shows the error and leaves the try unchanged (no new try created, field still shows '500' so the user can correct it); typing a valid value (50) still saves correctly and round-trips via the API (`number_of_rows: 50` confirmed on the saved try). jshint clean on the modified file. No test coverage existed for SettingsCtrl (spec/javascripts/angular/controllers/settings_spec.js is a placeholder) — did not add new Karma tests given this is legacy AngularJS code being phased out, per the migration effort; scope kept to the minimal fix. Did not toggle Evaluate Nightly or verify a queued background job via Job Manager."
+        paths: ["app/assets/javascripts/controllers/settings.js", "app/assets/templates/views/devQueryParams.html", "app/models/try.rb", "app/assets/javascripts/services/settingsSvc.js"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:50:02Z
         result: pass
-        notes: "First real pass — driven because scores_controller.rb gained a genuine new guard this branch: before_action :check_case, which renders a clean 404 instead of crashing when @case is nil (nonexistent/inaccessible case_id) — same defensive pattern as 13.2's tries_visualization fix. Confirmed: /cases/1/scores (valid case) renders 'Scores for Case Solr Case' with the scorer filter and table correctly; /cases/999999/scores (nonexistent case) returns a clean HTTP 404 instead of a 500, for both JSON and default HTML navigation. Did not drive this specifically via the in-workbench Tune Relevance drawer's History tab UI (used cases/:id/scores directly) or test the scorer-filter dropdown/pagination."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main, this time driven directly through the drawer's History tab UI. Confirmed 'Visualize your tries', 'Check Scores', and 'Check Ratings' links all present, and the try list below renders every try (4 at the time of this pass) with its search-endpoint URL. Did not click through to the Scores/Ratings pages themselves this pass (see 4.13's prior 2026-09-04 note for that direct verification) or test the bulk-delete/Check-All partial-selection edge cases."
         paths: ["app/controllers/scores_controller.rb", "app/views/scores/", "app/controllers/concerns/authentication/current_case_manager.rb"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
@@ -289,21 +289,21 @@ parts:
     scenarios:
       "5.1":
         title: "Try history (History tab)"
-        last_run: 2026-09-02
+        last_run: 2026-09-14T18:50:17Z
         result: pass
-        notes: "History tab lists all tries, color-coded per endpoint URL, with 'Visualize your tries' / 'Check Scores' / 'Check Ratings' links. Clicking an older try (Try 1) switched the whole page (URL, header, settings) live; switching back to the newest (Try 2, created during 4.10/4.11 testing) round-tripped cleanly with no data loss. Note: SOLR CASE now has 2 tries as a result of the 4.10/4.11 rerun testing — normal/expected since each rerun creates a new try, not something to clean up."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. History tab lists all tries (4, generated during this session's 4.1/4.10/4.11 testing), color-coded per endpoint URL, each showing its tieBoost value. Clicking an older try (Try 2) switched the whole page (URL, header, settings) live to that try's configuration; navigating back to the newest try (Try 4) round-tripped cleanly with no data loss. Did not specifically re-test the 'changing a setting creates a new try rather than mutating the old one' edge case in isolation this pass (implicitly exercised by 4.10/4.11 each creating a new try)."
         paths: ["app/models/try.rb", "app/controllers/core_controller.rb"]
       "5.2":
         title: "Create a snapshot"
-        last_run: 2026-09-02
+        last_run: 2026-09-14T18:35:09Z
         result: pass
-        notes: "Created a named snapshot successfully; 'Snapshot created successfully' flash confirmed. Doc note: submitting with the name field left blank is not actually blocked (button isn't disabled, no required-field error) — but it isn't silently broken either, it falls back to a sensible auto-generated name like 'Snapshot 09/02/26'. Worth a doc update but not a functional bug. Forced-server-error and large-case-background behavior not tested."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main (snapshotFactory/querySnapshotSvc/snapshotModal.html all touched). On case 6, clicked Take Snapshot with the name field left blank — same pre-existing behavior noted 2026-09-02: not blocked (no required-field error), falls back to an auto-generated name ('Snapshot 09/14/26'); 'Snapshot created successfully' flash shown and score badge updated (0.00→1.00 reflecting a rating made earlier in this pass). Doc's edge case ('should be blocked') still doesn't match actual behavior — flagging again, still not a regression. Forced-server-error and large-case-background behavior not tested."
         paths: ["app/services/snapshot_generator.rb", "app/models/snapshot.rb"]
       "5.3":
         title: "Compare snapshots (diff)"
-        last_run: 2026-09-02
+        last_run: 2026-09-14T18:36:16Z
         result: pass
-        notes: "Selected a snapshot in the compare modal, clicked Update Comparison Settings — flash 'Snapshot loaded successfully for comparison.' and a second score badge for the snapshot appeared next to the live case score. Clear Comparison View removed it. Multi-row add, duplicate-selection warning, in-progress-snapshot warning, and the in-modal delete-snapshot confirm were not tested."
+        notes: "Re-verified via Playwright MCP after the same merge (snapshotFactory/querySnapshotSvc touched). Selected the case-6 snapshot in the compare modal, clicked Update Comparison Settings — flash 'Snapshot loaded successfully for comparison.' and the snapshot's results appeared in a diff column alongside the live results. Clear Comparison View removed it cleanly. Multi-row add, duplicate-selection warning, in-progress-snapshot warning, and the in-modal delete-snapshot confirm were not tested this pass (only one snapshot existed for the case)."
         paths: ["app/models/snapshot.rb"]
       "5.4":
         title: "Annotations"
@@ -313,19 +313,19 @@ parts:
         paths: ["app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb"]
       "5.5":
         title: "Score graph (sparkline) & annotation markers"
-        last_run: 2026-09-08
+        last_run: 2026-09-14T19:10:10Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
-        paths: ["app/assets/javascripts/"]
+        notes: "Follow-up investigation confirms the graph DOES render with an all-zero score history — it just isn't visible. Gating logic (qscore_case.html:2, `ng-if=\"ctrl.scores.length > 1\"`) has no zero/null/distinctness filter anywhere in the pipeline (qgraph_controller.js, case_scores_controller.rb, score.rb all checked). Built a throwaway case (rails runner) with 5 case_scores all score=0.0 and confirmed via screenshot + raw SVG inspection: the `<qgraph>` mounts and Vega renders a real path (`d=\"M0,72L35,72L...\"`, stroke `#4c78a8`) — but that path sits exactly on the bottom pixel row of the 72px drawable area (80px svg minus 4px+4px translate padding), which is where `qgraph svg { border: 2px solid grey }` (qscore.css:104) also sits. The blue line is visually swallowed by the grey border, reading as 'nothing rendered' even though it's technically there. Confirmed by contrast: case 6, which has real varied non-zero score history (0.10 → 1.0), shows a clearly visible diagonal sparkline. So this is a real (minor) visual bug — a flat 0-score history gives no usable visual feedback — not a gating-logic bug and not a regression; not fixed (cosmetic, low-priority, and would need a design decision on how to make a flat-zero line visible, e.g. inset padding or a different baseline color). Cleaned up the throwaway case afterward. Annotation marker/tooltip behavior still not tested."
+        paths: ["app/assets/javascripts/components/qscore_case/", "app/assets/javascripts/components/qgraph/", "app/assets/stylesheets/qscore.css", "app/controllers/api/v1/case_scores_controller.rb"]
 
   "06":
     file: 06-core-workbench-import-export-and-explain-tools.md
     scenarios:
       "6.1":
         title: "Export a case"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:51:23Z
         result: pass
-        notes: "Re-opened modal on STATIC CASE (via the toolbar's dropdown-menu Export item, which needs a moment after the click to render — a snapshot taken immediately after clicking can miss it). All format radios (Information Need, General, Detailed, Snapshot, Basic, TREC, RRE/RankQuest, Learning to Rank, Quepid API, Quepid) and the Quepid API links (Case/Queries/Annotations/Scores/Ratings) still render correctly. Fetched the 'Quepid' full-case JSON link directly (api/export/cases/4.json) and got well-formed JSON back, which was then used as the import fixture for 3.3. Did not click the in-modal Export button for a CSV-format download."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Confirmed Export button stays disabled until a format is chosen; selected General and clicked Export — a real file downloaded ('Manual_Test_Wizard_Case_Renamed_general.csv') whose contents matched the documented header (Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes,Options) and correctly included the query-options JSON set earlier in 4.5. Gotcha reconfirmed: the toolbar's Export menu item needs the click aimed at the parent listitem, not the inner text span, to reliably open the modal. Did not test the other format radios, the in-progress-snapshot warning, or Detailed-outside-single-case-disabled this pass."
         paths: ["app/controllers/cases_controller.rb", "app/services/case_export"]
       "6.2":
         title: "Import into a case (ratings / information needs / snapshots)"
@@ -335,9 +335,9 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb", "app/services/snapshot_importer.rb", "app/assets/javascripts/components/import_ratings/import_ratings_controller.js"]
       "6.3":
         title: "Clone a case"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:51:55Z
         result: pass
-        notes: "Re-verified after migrating the toolbar's clone-case modal from AngularJS to Stimulus. Clone button stayed disabled with a blank name, enabled once filled in; toggled 'include entire try history' (hides the try picker) and unchecked Include Queries (shows the empty-case warning) before re-checking it. Cloned SOLR CASE (Try 2, Include Queries checked) into a new case; landed in its workbench with the copied query/try intact, then deleted the test clone via the toolbar's Delete option. Include-Ratings-off and forced-failure edge cases not tested."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Clone button stayed disabled with a blank name; unchecking Include Queries showed the exact warning 'You have chosen not to import any queries. The new case will be empty.' — re-checked it before submitting. Cloned into a new case; landed in its workbench with both queries copied ('Number of Queries: 2'), on the last try. Deleted the test clone afterward via the toolbar's Delete option. Include-Ratings-off and forced-failure edge cases not tested."
         paths: ["app/controllers/api/v1/clone/cases_controller.rb", "app/models/case.rb", "app/views/shared/_clone_case_core_modal.html.erb", "app/javascript/controllers/clone_case_core_controller.js", "app/assets/templates/views/queriesLayout.html"]
       "6.4":
         title: "Delete / Archive / Delete-all-queries (in-case toolbar)"
@@ -347,15 +347,15 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
       "6.5":
         title: "Share a case (in-case toolbar)"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:32:56Z
         result: pass
-        notes: "Re-verified after share_case_core_controller.js was rewritten on top of the new ShareEntityControllerBase/bs_modal.js/status_message.js. From a cloned test case's workbench toolbar: opened Share, clicked the OSC team chip (revealed a 'Share with OSC' button), submitted it and got an inline success alert ('Case shared with team successfully.') with OSC moving to the 'Already shared with:' section; clicked the OSC chip again (revealed 'Unshare from OSC'), submitted, got 'Case unshared from team successfully.' and OSC moved back to the selectable list. Full share+unshare round trip confirmed working on the core (in-workbench) surface, distinct from the Rails list-page version in 3.6/9.5."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main touched share_case controller/directive/modal files. On case 6 (Typeahead: Dairy) toolbar: opened Share, clicked the OSC chip (revealed 'Share with OSC'), submitted — alert 'Case shared with team successfully.', OSC moved to 'Already shared with:'; clicked OSC again (revealed 'Unshare from OSC'), submitted — 'Case unshared from team successfully.', restored to original unshared state. Full round trip confirmed working on the core (in-workbench) surface, distinct from the Rails list-page version in 3.6/9.5. Did not re-test the 'Create a team' navigation-away edge case this pass."
         paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
-        last_run: 2026-09-08
+        last_run: 2026-09-14T18:52:56Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. On an unshared clone of the test case, clicking Judgements correctly gated with 'Judgements are meant to be shared with a team, so either create a new team or share case first.' plus a 'Create a book' shortcut. Shared the case with OSC, reopened Judgements — the gate was gone and a Book picker appeared listing existing books ('Book of Ratings', 'Haystack Icecat Rating Party') plus 'None (disconnect from any book)'; selecting 'Book of Ratings' revealed both sync directions (Case→Book Query/Doc Pairs with Populate Now, Book→Case Judgement Ratings with Refresh Ratings), Sync Queries, and Save. Clicked Populate Now — flash 'Updating Book with Query Doc Pairs.' confirmed the case-to-book link and manual sync worked; ran synchronously (small case, 2 queries) rather than as a background job. Did not test Refresh Ratings, Sync Queries, or the Save-only-enabled-on-change behavior this pass."
         paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
@@ -387,21 +387,21 @@ parts:
     scenarios:
       "7.1":
         title: "Browse / filter the Search Endpoints list"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:53:53Z
         result: pass
-        notes: "Re-verified rendering after the shared page-header/account-dropdown partial extraction (61f02ef3). List, New Search Endpoint button, and all 4 seeded endpoints (Solr x2, Static, TMDB Solr) still render correctly. Did not re-drive the filter/empty-state UI this pass (logic-level, unchanged since 2026-09-02's fix)."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Name/URL filter ('Solr') correctly narrowed to the 3 Solr endpoints; a direct URL to a nonexistent endpoint ID (999999) correctly redirected with 'Search Endpoint you are looking for either doesn't exist or you don't have permissions.' Did not re-drive the Mine/Archived/Team filters or the empty-state message this pass."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/index.html.erb"]
       "7.2":
         title: "Create a Search Endpoint — one per engine type"
-        last_run: 2026-09-08
+        last_run: 2026-09-14T18:54:49Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep for the Solr engine type only (representative sample, not all 7 engine types): matches main."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main, for the Solr engine type only (representative sample, not all 7 engine types). Submitting the blank form was blocked (stayed on the new-endpoint page, no visible custom error — likely native required-field validation on Search Engine/Endpoint Url/Api Method). Submitting a JSON array (not object) in Custom Headers was rejected server-side with the exact message 'Custom headers must be a JSON object (e.g., {\"key\": \"value\"}), not an array or primitive value', form values preserved. Fixed to '{}' and resubmitted — redirected to the new endpoint's Show page successfully. Did not test the other 6 engine types, malformed-JSON (vs. wrong-type) headers, missing-colon Basic Auth, or the JSONP+proxy conflict this pass."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/models/search_endpoint.rb", "app/views/search_endpoints/_form.html.erb"]
       "7.3":
         title: "View / Edit a Search Endpoint"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:55:28Z
         result: pass
-        notes: "Re-verified TMDB Solr's show page still renders correctly after the shared partial extraction (heading, Edit link, Name/etc. fields). Did not re-drive an actual edit-and-save cycle this pass (covered 2026-09-02)."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main, including a full edit-and-save cycle. Set a Basic Auth Credential ('testuser:testpass123') and Rate Limit (30), saved — Show page displayed it masked as 'testuser:******'. Re-opened Edit: the field showed the masked value (not the real password); saved again without touching it — Show page still displayed the same masked value afterward, consistent with the real credential being preserved rather than overwritten with the literal masked string (not independently verified at the DB/rails-console level this pass). Did not test the archived-endpoint warning banner or the two-accounts team-sharing-preservation edge case."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/show.html.erb"]
       "7.4":
         title: "Clone a Search Endpoint"
@@ -417,33 +417,33 @@ parts:
         paths: ["app/controllers/search_endpoints_controller.rb"]
       "7.6":
         title: "Share / unshare a Search Endpoint"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:56:09Z
         result: pass
-        notes: "Spot-checked after the modal_shell/bs_modal.js shared-chrome refactor (2026-09-04): modal still opens correctly (title 'Share Search Endpoint: ...', team dropdown, 'Already shared with:' section) — no rendering regression from the shared partial. Full share/unshare POST cycle already covered across 2026-09-02/03; not re-submitted this pass. Re-verified after a second refactor pass: share_search_endpoint_controller.js is now a 3-line subclass of the new ShareEntityControllerBase (share_entity_controller_base.js), and the id/name/allTeamsJson/sharedTeamsJson data is now read via Stimulus's real Values API (static values) instead of hand-parsed dataset reads — this also fixed a pre-existing naming inconsistency (share-scorer previously used un-suffixed dataset keys while the others used the Values-API '-value' suffix; all four now share one Stimulus-enforced convention)."
+        notes: "Full share/unshare POST cycle re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Shared a new test endpoint with OSC — flash 'Manual Test Solr Endpoint shared with OSC.', OSC moved to 'Already shared with:' and the dropdown correctly showed 'No other teams to share with' (single-team account, so the exact-duplicate-share edge case wasn't independently testable here). Unshared it — flash 'Manual Test Solr Endpoint unshared from OSC.', dropdown re-enabled with OSC selectable again. Did not test the no-access ('You do not have access to that search endpoint.') edge case this pass."
         paths: ["app/views/shared/_share_search_endpoint_modal.html.erb", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
       "7.7":
         title: "Mapper Wizard — Step 1: Fetch Search Results"
-        last_run: 2026-09-02
+        last_run: 2026-09-14T18:37:01Z
         result: pass
-        notes: "Fetched real HTML from a public Solr demo search URL; HTML preview and length displayed correctly, Step 2 revealed."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main (new adapter_functions/v8_mapper_executor/mapper_based_search_engine backend). Blank-URL submit correctly blocked ('Please enter a search URL' — close to but not verbatim the doc's 'URL is required', worth a doc wording tweak). Pointed at an unreachable host (chorus.dev.o19s.com:8983, not routable from this sandbox) and got the expected 'Connection failed: ...' message verbatim. Fetched http://example.com successfully — 'Response fetched successfully (559 characters)', HTML preview displayed with Copy/Expand controls, Steps 2–3 revealed. Did not test invalid-URL-format, slow-endpoint-timeout, or invalid-JSON-headers edge cases this pass."
         paths: ["app/controllers/mapper_wizards_controller.rb"]
       "7.8":
         title: "Mapper Wizard — Step 2: Generate Mappers with AI"
-        last_run: 2026-09-02
+        last_run: 2026-09-14T18:37:11Z
         result: blocked
-        notes: "Still not testable — needs a real OpenAI key, none configured in this environment."
+        notes: "AI generation itself still not testable — needs a real OpenAI key, none configured in this environment. Did confirm the blank-key client-side guard still works: clicking 'Generate Mappers with AI' with an empty key field showed 'Please enter your OpenAI API key' and did not attempt a request. Used the 'No OpenAI key? Write the mapper code by hand instead.' link to proceed to Step 3."
         paths: ["app/controllers/mapper_wizards_controller.rb"]
       "7.9":
         title: "Mapper Wizard — Step 3: Edit, Test & Refine"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:37:36Z
         result: pass
-        notes: "Re-verified after mapper_wizard_controller.js's showStatus() was refactored to call the new shared showStatusMessage() util (utils/status_message.js) instead of its own inline alert/auto-hide logic. Ran the full existing Vitest suites for both files (17 tests, all pass) plus a live E2E check: fetched a real Solr URL in Step 1, Step 2 appeared with the 'No OpenAI key? Write the mapper code by hand instead.' link (2026-09-02 fix, still working), clicking it revealed Step 3, and the Test button ran the numberOfResultsMapper code and rendered a 'Test Result:' with no console errors. Did not specifically re-verify the success-message auto-hide-after-5s timing live (covered by status_message.test.js's unit tests instead)."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Reached Step 3 via the hand-write-it link; both editors pre-populated with skeleton numberOfResultsMapper/docsMapper code. Test on numberOfResultsMapper ran sandboxed and showed 'Test Result: 0' (the stub's hardcoded return); Test on docsMapper showed alert 'docsMapper test successful!' with 'Test Result: []'. Clicked 'Refine with AI' on docsMapper with no API key set — native prompt appeared for feedback text, submitting it correctly surfaced 'Please enter your OpenAI API key' rather than sending a request. Did not test with a real API key (blocked, see 7.8), nor the empty/broken-code or test-before-fetch error messages."
         paths: ["app/controllers/mapper_wizards_controller.rb", "app/services/v8_mapper_executor.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb"]
       "7.10":
         title: "Mapper Wizard — Step 4: Save Search Endpoint"
-        last_run: 2026-09-02
+        last_run: 2026-09-14T18:37:50Z
         result: pass
-        notes: "Completed Save with hand-written mapper code from 7.9's fix; created a real endpoint with search_engine forced to searchapi and the combined mapper code persisted. Deleted after verification."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Entered an Endpoint Name; confirmed 'Proxy requests through Quepid' defaults on and the sole team (OSC) is auto-checked for a new endpoint. Saved — redirected to the endpoint's Show page (/search_endpoints/21) with search_engine correctly forced to 'searchapi' and the two mapper functions combined into one Custom Code Mapper blob. Deleted the test endpoint afterward via its Edit page's Delete button. Did not test invalid-headers/missing-URL validation, the fresh-session-on-return edge case, the nonexistent-search_endpoint_id redirect, or the masked-credential-on-reopen edge case this pass."
         paths: ["app/controllers/mapper_wizards_controller.rb"]
 
   "08":
@@ -527,9 +527,9 @@ parts:
         paths: ["app/controllers/teams_controller.rb"]
       "9.5":
         title: "Sharing a Case/Book/Search Endpoint/Scorer with a team"
-        last_run: 2026-09-04
+        last_run: 2026-09-14T18:33:42Z
         result: pass
-        notes: "Re-verified after the shared modal_shell/bs_modal.js refactor (2026-09-04) on top of the 2026-09-03 ShareEntityControllerBase collapse. This pass did a full share+unshare POST round trip specifically for Book (flash 'Book of Ratings shared with Playwright Team ...' then 'unshared from ...', chip moved between the dropdown and 'Already shared with:' correctly, restored to original state) — completing full-cycle coverage across all four entity types across this and prior passes (Case: 3.6/6.5, Scorer: 8.7, Book: this pass; Search Endpoint open/populate-only via 7.6/2026-09-03). Re-verified all four after collapsing Case/Book/Scorer/SearchEndpoint's near-identical share controllers onto a new ShareEntityControllerBase (share_entity_controller_base.js) and switching to Stimulus's real Values API (static values) for the id/name/allTeamsJson/sharedTeamsJson data, instead of hand-parsed event.currentTarget.dataset reads — each concrete controller is now a ~3-line subclass supplying only entityLabel/modalElementId. Opened the index-page share modal for all four (Case, Book, Scorer, Search Endpoint) — correct title and already-shared team chip each time."
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. This pass did a full share+unshare round trip for Search Endpoint from its index page (Static Endpoint, already shared with OSC): selected the 'Already shared with' chip and unshared — flash 'Static Endpoint unshared from OSC.', dropdown re-enabled with OSC selectable; re-shared — flash 'Static Endpoint shared with OSC.', restored to original state. Combined with 3.6/6.5 (Case, this pass) that's now Case + Search Endpoint round-tripped this session; Book and Scorer not re-tested this pass (see prior 2026-09-04 note for their last full verification)."
         paths: ["app/views/shared/_share_case_modal.html.erb", "app/views/shared/_share_book_modal.html.erb", "app/views/shared/_share_search_endpoint_modal.html.erb", "app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_book_controller.js", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb", "app/views/books/_book.html.erb", "app/views/teams/_books.html.erb", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
       "9.6":
         title: "Archive/unarchive a Case or Search Endpoint from the team page"

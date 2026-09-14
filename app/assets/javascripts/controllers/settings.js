@@ -68,6 +68,12 @@ angular.module('QuepidApp')
       });
 
       function submit () {
+        var numberOfRows = $scope.pendingSettings.numberOfRows;
+        if (!angular.isNumber(numberOfRows) || numberOfRows < 1 || numberOfRows > 100) {
+          flash.error = 'Number of Results to Show must be between 1 and 100.';
+          return;
+        }
+
         let validateJson = false;
         if ( searchEndpointSvc.usesJsonQueryParams($scope.pendingSettings.searchEngine)){
           validateJson = true;
