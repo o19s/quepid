@@ -111,6 +111,68 @@ class MapperBasedSearchEngine
       test_query:                 '{"yql": "select * from sources * where true"}',
       additional_fields:          [ 'overview', 'cast', 'thumb:poster_path' ],
       mapper_file:                'db/mapper_based_search_engines/vespa.js',
+    },
+    {
+      id:                         'qdrant',
+      name:                       'Qdrant',
+      logo:                       'qdrant',
+      api_method:                 'POST',
+      # Qdrant enables CORS by default, but a self-hosted cluster is routinely on plain
+      # http://host:6333 while Quepid is on https (mixed content), and the api-key header
+      # below is a real credential we don't want sitting in browser-visible JS. Proxying
+      # through Quepid solves both, same as Vespa.
+      proxy_requests:             true,
+      # Qdrant authenticates with its own 'api-key' header, not HTTP Basic.
+      supports_basic_auth:        false,
+      # Deliberately left at the false default even though /points/query does take
+      # limit/offset: the response envelope ({ status, time, result: { points: [...] } })
+      # carries no total, so numberOfResultsMapper can only ever report the number of docs
+      # already on screen - and both "Peek at the next page of results" call sites gate on
+      # numFound > docs.length, which that can never satisfy. Naming
+      # pagination_hits_param/pagination_offset_param would not change that and would
+      # actively break search: splainer-search's searchApiSearcherPreprocessorSvc defaults
+      # those params as STRINGS ('10'/'0'), and Qdrant's Rust API rejects "limit": "10" with
+      # a deserialization error. The page size is baked into query_params below as a real
+      # integer instead, editable in the Query Sandbox.
+      supports_pagination:        false,
+      # No public Qdrant demo cluster exists to point this at the way Vespa's tile points at
+      # the o19s demo tenant, so this tile needs the user to paste their own collection's
+      # query URL. url_format is what the wizard shows them as the shape to follow.
+      search_url:                 '',
+      url_format:                 'https://<cluster-id>.<region>.cloud.qdrant.io:6333/collections/<collection>/points/query',
+      # BM25 rather than a dense embedding model: qdrant/bm25 is the one model Qdrant runs
+      # locally inside the cluster, so this default works on self-hosted Qdrant as well as
+      # Qdrant Cloud, where every other model requires Cloud Inference. It needs the
+      # collection to carry a sparse vector (named 'bm25' here, hence "using"); swapping in
+      # a dense Cloud model is a one-line edit in the Query Sandbox - replace the model with
+      # e.g. sentence-transformers/all-minilm-l6-v2 and drop "using".
+      #
+      # JSON, not a query string: POST avoids the URL-length limits a GET request risks once
+      # the query grows (e.g. ratedDocsQueryParamsMapper's has_id list gets long with many
+      # ratings). Try#searchapi_args only picks JsonArgParser (nested JSON values) over
+      # SolrArgParser (array-per-key values) when query_params starts with '{', so this has
+      # to be real JSON for api_method: 'POST' to send a body Qdrant accepts.
+      query_params:               '{"query": {"nearest": {"text": "#$query##", "model": "qdrant/bm25"}}, "using": "bm25", "with_payload": true, "limit": 10}',
+      # Qdrant can filter by point id (has_id) or by a payload key (match/any), so an
+      # already-rated-docs lookup is expressible - see ratedDocsQueryParamsMapper.
+      supports_rated_docs_lookup: true,
+      # A placeholder, not a credential: unlike Vespa's demo tenant there is no shared
+      # cluster to hand out read access to, so the user replaces this with their own key in
+      # the wizard's Custom Headers editor (a self-hosted cluster with auth disabled ignores
+      # the header entirely).
+      custom_headers:             { 'api-key': '<your-qdrant-api-key>' }.to_json,
+      header_type:                'Custom',
+      # Qdrant's own point id, which is what a has_id filter matches on. A collection that
+      # would rather key on a payload field can repoint this at that field by name; both
+      # cases are handled by ratedDocsQueryParamsMapper.
+      id_field:                   'id',
+      title_field:                'title',
+      # No "query" and no prefetch makes /points/query degrade to returning points ordered
+      # by id, so this works as a match-all smoke test against any collection, whether or
+      # not it has the sparse bm25 vector the default query_params above needs.
+      test_query:                 '{"with_payload": true, "limit": 1}',
+      additional_fields:          [],
+      mapper_file:                'db/mapper_based_search_engines/qdrant.js',
     }
   ].freeze
 
