@@ -89,6 +89,11 @@ class RunJudgeJudyJob < ApplicationJob
 
       judgement.save!
       counter += 1
+      # Sync this one pair's case ratings immediately, same as every human
+      # judging path (JudgementsController, BulkJudgeController) - cheaper
+      # than a full-book UpdateCaseJob resync at the end, and keeps case
+      # ratings current even if a long "judge all" run gets cancelled partway.
+      UpdateCaseRatingsJob.perform_later(query_doc_pair)
       BroadcastJudgeActivityJob.perform_later(book, judge)
       broadcast_judging_detail(book, judge, query_doc_pair, counter, judgement)
 
@@ -100,7 +105,6 @@ class RunJudgeJudyJob < ApplicationJob
     end
     broadcast_complete(book, judge)
     BroadcastJudgeActivityJob.perform_later(book, judge, actively_judging: false)
-    UpdateCaseJob.perform_later book
   end
 
   private

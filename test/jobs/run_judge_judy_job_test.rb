@@ -20,6 +20,14 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
       assert_not_nil judgement
       assert_in_delta(0.0, judgement.rating)
     end
+
+    test 'syncs case ratings per judged pair rather than one bulk update at the end' do
+      assert_no_enqueued_jobs(only: UpdateCaseJob) do
+        assert_enqueued_with(job: UpdateCaseRatingsJob) do
+          RunJudgeJudyJob.new.perform(book, judge_judy, 1)
+        end
+      end
+    end
   end
 
   describe 'failure scenarios' do
