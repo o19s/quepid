@@ -24,15 +24,6 @@ module SelectionStrategy
     random_query_doc_pair_for_multiple_judges(book, user).nil?
   end
 
-  # Returns true if there are query-doc pairs with zero judgements (highest priority)
-  def self.unjudged_pairs? book
-    book.query_doc_pairs
-      .left_joins(:judgements)
-      .group('query_doc_pairs.id')
-      .having('COUNT(judgements.id) = 0')
-      .exists?
-  end
-
   # Returns count of query-doc pairs with no judgements
   def self.unjudged_pairs_count book
     grouped_pair_count(book, 'COUNT(judgements.id) = 0')
