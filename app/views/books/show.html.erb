@@ -134,29 +134,20 @@ function updateModalTitle(judgeId) {
         </tr>
       </thead>
       <tbody id="judge-activity-table">
-        <%= render 'books/judge_activity_table_body', judge_activity: @judge_activity, book: @book %>
+        <%= render 'books/judge_activity_table_body', judge_activity: @judge_activity, book: @book, flashing_judge_id: nil %>
       </tbody>
     </table>
   </div>
+  <% if available_ai_judges_for_book?(@book) %>
+    <div class="card-footer d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <small class="text-muted">
+        <i class="bi bi-robot"></i>
+        These AI judges are available on your team: <strong><%= available_ai_judges_for_book(@book).pluck(:name).to_sentence %></strong>
+      </small>
+      <%= link_to 'Add AI Judge to this Book', edit_book_path(@book), class: 'btn btn-sm btn-outline-primary' %>
+    </div>
+  <% end %>
 </div>
-
-<%# ── AI judges available ──────────────────────────────────────────────────── %>
-<% if @book.ai_judges.present? %>
-  <div class="alert alert-secondary mb-4" role="alert">
-    <i class="bi bi-robot"></i>
-    AI <%= @book.ai_judges.count == 1 ? 'Judge' : 'Judges' %>
-    <strong><%= @book.ai_judges.map(&:name).to_sentence %></strong>
-    <%= @book.ai_judges.count == 1 ? 'is' : 'are' %> helping rate documents.
-  </div>
-<% elsif available_ai_judges_for_book?(@book) %>
-  <div class="alert alert-info mb-4" role="alert">
-    <h6><i class="bi bi-robot"></i> AI Judges Available</h6>
-    <p class="mb-2">
-      Your team has AI judges available: <strong><%= available_ai_judges_for_book(@book).pluck(:name).to_sentence %></strong>
-    </p>
-    <%= link_to 'Add AI Judge to this Book', edit_book_path(@book), class: 'btn btn-sm btn-outline-primary' %>
-  </div>
-<% end %>
 
 <%# ── Case management ──────────────────────────────────────────────────────── %>
 <div class="card mb-4">

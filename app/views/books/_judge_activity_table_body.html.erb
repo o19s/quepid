@@ -1,7 +1,7 @@
-<%# locals: (judge_activity:, book:, flash_active: false) %>
+<%# locals: (judge_activity:, book:, flashing_judge_id: nil) %>
 <% if judge_activity.any? %>
   <% judge_activity.each do |row| %>
-    <%= render 'books/judge_activity_row', row: row, flash_active: flash_active, book: book %>
+    <%= render 'books/judge_activity_row', row: row, flash_active: row[:judge].id == flashing_judge_id, book: book %>
   <% end %>
 <% else %>
   <tr id="judge-activity-empty">
