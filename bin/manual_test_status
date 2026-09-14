@@ -84,11 +84,14 @@ end
 
 # git status --porcelain lines are "XY path" or "XY old -> new" for renames; either way the
 # current on-disk path is the last whitespace-separated field after the two-char status code.
+# An untracked directory reports as a single "?? dir/" line rather than one line per file inside
+# it, so route each path through `files_under` to expand that case the same way a `paths:` entry
+# naming a directory already gets expanded.
 def dirty_files_for(root)
   out, status = Open3.capture2('git', '-C', root, 'status', '--porcelain')
   return Set.new unless status.success?
 
-  out.lines.map { |line| File.expand_path(line[3..].to_s.strip.split(' -> ').last, root) }.to_set
+  out.lines.flat_map { |line| files_under(root, line[3..].to_s.strip.split(' -> ').last) }.to_set
 end
 
 def last_change_for(paths, root, cache, dirty_files)

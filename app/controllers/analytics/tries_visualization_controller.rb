@@ -25,17 +25,5 @@ module Analytics
         @tries = [ @tries, root_try ].flatten
       end
     end
-
-    private
-
-    # @case is nil when the case doesn't exist, or isn't public/accessible to
-    # this (possibly anonymous) visitor. Render the standard 404 page instead
-    # of letting the view crash on a nil @case.
-    def render_404_page_unless_case
-      # layout: false -- the 'analytics' layout itself assumes @case is
-      # present (e.g. @case.public?), so skip it rather than crash again
-      # while trying to render the "not found" response.
-      render file: 'public/404.html', status: :not_found, layout: false unless @case
-    end
   end
 end

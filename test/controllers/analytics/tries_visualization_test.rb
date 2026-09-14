@@ -36,6 +36,10 @@ module Analytics
         get :show, params: { case_id: matt_case.id }
 
         assert_response :not_found
+        # `check_case`'s JSON 404 is also :not_found -- pin the HTML page specifically so a
+        # regression back to that guard fails (see docs/code_review_angular_cleanup_phase3.md #6).
+        assert_match "doesn't exist (404 Not found)", response.body
+        assert_no_match 'Case not found!', response.body
       end
 
       test 'vega_data renders a JSON 404 instead of crashing on a nil @case' do

@@ -37,11 +37,14 @@ class ScoresControllerTest < ActionController::TestCase
     describe 'a case this user cannot access' do
       let(:matt_case) { cases(:matt_case) } # owned by a different user, not public, not shared with random
 
-      test 'renders a JSON 404 instead of crashing on a nil @case' do
+      test 'renders the 404 page instead of crashing on a nil @case' do
         get :index, params: { case_id: matt_case.id }
 
         assert_response :not_found
-        assert_equal 'Case not found!', response.parsed_body['message']
+        # `check_case`'s JSON 404 is also :not_found -- pin the HTML page specifically so a
+        # regression back to that guard (see docs/code_review_angular_cleanup_phase3.md #6) fails.
+        assert_match "doesn't exist (404 Not found)", response.body
+        assert_no_match 'Case not found!', response.body
       end
     end
   end
@@ -64,6 +67,18 @@ class ScoresControllerTest < ActionController::TestCase
       }
 
       assert_redirected_to case_scores_path(case_with_score, scorer_id: scorers(:case_default_scorer).id)
+    end
+
+    describe 'a case this user cannot access' do
+      let(:matt_case) { cases(:matt_case) } # owned by a different user, not public, not shared with random
+
+      test 'renders the 404 page instead of crashing on a nil @case' do
+        delete :destroy_multiple, params: { case_id: matt_case.id, score_ids: [ score_for_try_1.id ] }
+
+        assert_response :not_found
+        assert_match "doesn't exist (404 Not found)", response.body
+        assert_no_match 'Case not found!', response.body
+      end
     end
   end
 end

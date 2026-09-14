@@ -59,7 +59,7 @@ export function getBootstrapPopover() {
  *   onTemplateShow?: () => void,
  *   scopeApply?: (fn: () => void) => void
  * }} options
- * @returns {{ instance: import("bootstrap").Popover | null, dispose: () => void, setBody: (body: string | Element) => void, setTitle: (title: string) => void }}
+ * @returns {{ instance: import("bootstrap").Popover | null, dispose: () => void, setBody: (body: string | Element) => void, setTitle: (title: string) => void, showFromIsOpen: (val: boolean) => void }}
  */
 export function createBsPopover(element, options = {}) {
   const Popover = getBootstrapPopover()

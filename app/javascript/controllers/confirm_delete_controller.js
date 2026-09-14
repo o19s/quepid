@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { createBsModal } from "utils/bs_modal"
+import { getOrCreateBsModal } from "utils/bs_modal"
 import { submitDestructiveForm } from "utils/destructive_form"
 
 // Shows a Bootstrap modal confirmation and submits a DELETE (or other) request
@@ -38,7 +38,7 @@ export default class extends Controller {
     this.confirmBtn.addEventListener('click', this._onConfirm)
 
     // Try to use Bootstrap modal if available
-    this._bsModal = createBsModal(this.modal)
+    this._bsModal = getOrCreateBsModal(this.modal)
     if (this._bsModal) {
       // Listen for modal hidden event to clean up listeners
       this.modal.addEventListener('hidden.bs.modal', this._onModalHidden)

@@ -33,6 +33,17 @@ module Analytics
         assert_not_nil pattern
         assert_operator pattern.count, :>=, 2
       end
+
+      describe 'a case this user cannot access' do
+        let(:matt_case) { cases(:matt_case) } # owned by a different user, not public, not shared with random
+
+        test 'renders the 404 page instead of crashing on a nil @case' do
+          get :show, params: { case_id: matt_case.id }
+
+          assert_response :not_found
+          assert_match "doesn't exist (404 Not found)", response.body
+        end
+      end
     end
   end
 end
