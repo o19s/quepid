@@ -34,7 +34,7 @@
       <% end %>
     </li>
     <li class="nav-item">
-      <%= link_to edit_book_path(book), class: "nav-link #{'active' if make_active?({action: 'edit'})}" do %>
+      <%= link_to edit_book_path(book), class: "nav-link #{'active' if book_settings_active?}" do %>
         <i class="bi bi-share-fill text-body"></i> Share book
       <% end %>
     </li>
@@ -44,7 +44,7 @@
       <% end %>
     </li>
     <li class="nav-item">
-      <%= link_to edit_book_path(book), class: "nav-link #{'active' if make_active?({action: 'edit'})}" do %>
+      <%= link_to edit_book_path(book), class: "nav-link #{'active' if book_settings_active?}" do %>
         <i class="bi bi-gear-wide-connected text-body"></i> Settings
       <% end %>
     </li>

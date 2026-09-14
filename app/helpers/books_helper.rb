@@ -62,11 +62,19 @@ module BooksHelper
   def book_overview_family_active?
     make_active?({ action: 'show' }) ||
       make_active?({ action: 'judgement_stats' }) ||
-      make_active?({ action: 'edit' }) ||
+      book_settings_active? ||
       make_active?({ action: 'export' }) ||
       make_active?({ controller: 'query_doc_pairs' }) ||
       make_active?({ controller: 'judgements' }) ||
       make_active?({ controller: 'import' })
+  end
+
+  # BooksController#edit backs both the "Share book" and "Settings" tabs.
+  # Scoped to the books controller specifically because
+  # Books::ImportController also has its own #edit action - action_name
+  # alone can't tell those two apart.
+  def book_settings_active?
+    'books' == controller_name && 'edit' == action_name
   end
 
   # Returns AI judges that are available to add to this book
