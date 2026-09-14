@@ -175,6 +175,7 @@ class BooksController < ApplicationController
 
       redirect_to @book, notice: 'Book was successfully created.'
     else
+      @ai_judges = []
       render :new
     end
   end
@@ -254,7 +255,7 @@ class BooksController < ApplicationController
 
     if books.any? { |b| b.scale != @book.scale }
       redirect_to book_path(@book),
-                  :alert => "One of the books chosen doesn't have a scale matching #{@book.scale}" and return
+                  alert: "One of the books chosen doesn't have a scale matching #{@book.scale}" and return
     end
 
     books.each do |book_to_merge|
@@ -292,10 +293,10 @@ class BooksController < ApplicationController
 
     if @book.save
       UpdateCaseJob.perform_later @book
-      redirect_to book_path(@book), :notice => "Combined #{query_doc_pair_count} query/doc pairs."
+      redirect_to book_path(@book), notice: "Combined #{query_doc_pair_count} query/doc pairs."
     else
       redirect_to book_path(@book),
-                  :alert => "Could not merge due to errors: #{@book.errors.full_messages.to_sentence}. #{query_doc_pair_count} query/doc pairs."
+                  alert: "Could not merge due to errors: #{@book.errors.full_messages.to_sentence}. #{query_doc_pair_count} query/doc pairs."
     end
   end
 
@@ -307,7 +308,7 @@ class BooksController < ApplicationController
     number_of_pairs = nil if judge_all
 
     RunJudgeJudyJob.perform_later(@book, ai_judge, number_of_pairs)
-    redirect_to book_path(@book), flash: { kraken_unleashed: judge_all }, :notice => "AI Judge #{ai_judge.name} will start evaluating query/doc pairs."
+    redirect_to book_path(@book), flash: { kraken_unleashed: judge_all }, notice: "AI Judge #{ai_judge.name} will start evaluating query/doc pairs."
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
@@ -329,14 +330,14 @@ class BooksController < ApplicationController
     end
 
     UpdateCaseJob.perform_later @book
-    redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements."
+    redirect_to book_path(@book), notice: "Assigned #{assignee.fullname} to ratings and judgements."
   end
 
   def delete_ratings_by_assignee
     deleted_count = @book.judgements.where(user: @user).delete_all
 
     UpdateCaseJob.perform_later @book
-    redirect_to book_path(@book), :notice => "Deleted #{deleted_count} judgements belonging to #{@user.fullname}."
+    redirect_to book_path(@book), notice: "Deleted #{deleted_count} judgements belonging to #{@user.fullname}."
   end
 
   def reset_unrateable
@@ -345,7 +346,7 @@ class BooksController < ApplicationController
     judgements_to_delete.destroy_all
 
     redirect_to book_path(@book),
-                :notice => "Reset unrateable status for #{judgements_count} judgements belonging to #{@user.fullname}."
+                notice: "Reset unrateable status for #{judgements_count} judgements belonging to #{@user.fullname}."
   end
 
   def reset_judge_later
@@ -354,7 +355,7 @@ class BooksController < ApplicationController
     judgements_to_delete.destroy_all
 
     redirect_to book_path(@book),
-                :notice => "Reset judge later status for #{judgements_count} judgements belonging to #{@user.fullname}."
+                notice: "Reset judge later status for #{judgements_count} judgements belonging to #{@user.fullname}."
   end
 
   def delete_query_doc_pairs_below_position
@@ -365,7 +366,7 @@ class BooksController < ApplicationController
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book),
-                :notice => "Deleted #{query_doc_pairs_count} query/doc pairs below position #{position}."
+                notice: "Deleted #{query_doc_pairs_count} query/doc pairs below position #{position}."
   end
 
   def eric_steered_us_wrong
@@ -380,7 +381,7 @@ class BooksController < ApplicationController
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book),
-                :notice => "Mapped #{judgements_to_update_count} judgements to have rating #{rating}."
+                notice: "Mapped #{judgements_to_update_count} judgements to have rating #{rating}."
   end
 
   def remap_judgement_ratings
@@ -421,7 +422,7 @@ class BooksController < ApplicationController
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book),
-                :notice => "Remapped #{judgements_updated} judgements and #{case_ratings_updated} case ratings."
+                notice: "Remapped #{judgements_updated} judgements and #{case_ratings_updated} case ratings."
   end
 
   private

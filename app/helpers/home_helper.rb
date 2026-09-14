@@ -23,8 +23,8 @@ module HomeHelper
     current_time = DateTime.current.seconds_since_midnight
     midnight = DateTime.now.beginning_of_day.seconds_since_midnight
     noon = DateTime.now.middle_of_day.seconds_since_midnight
-    five_pm = DateTime.now.change(:hour => 17 ).seconds_since_midnight
-    eight_pm = DateTime.now.change(:hour => 20 ).seconds_since_midnight
+    five_pm = DateTime.now.change(hour: 17).seconds_since_midnight
+    eight_pm = DateTime.now.change(hour: 20).seconds_since_midnight
 
     puts "DateTime.current #{DateTime.current}"
     puts "midnight: #{midnight}"

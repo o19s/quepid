@@ -21,10 +21,10 @@
 
         <form class="d-flex flex-wrap align-items-center gap-2">
           <div>
-            <label>New Case Name:</label>
-            <input type="text" ng-model="pendingWizardSettings.caseName" style='width: 250px' />
+            <label for="wizardCaseName">New Case Name:</label>
+            <input type="text" id="wizardCaseName" ng-model="pendingWizardSettings.caseName" style='width: 250px' />
           </div>
-          <button class="btn btn-primary ms-auto continue" wz-next>Continue</button>
+          <button class="btn btn-primary ms-auto continue" wz-next ng-disabled="!pendingWizardSettings.caseName || !pendingWizardSettings.caseName.trim()">Continue</button>
         </form>
       </div>
     </wz-step>

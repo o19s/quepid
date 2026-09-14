@@ -6,6 +6,8 @@ module Analytics
 
     skip_before_action :require_login # we allow anonymous users.   Not the best way to do this ;-)
     before_action :set_case, only: [ :show, :vega_specification, :vega_data ]
+    before_action :render_404_page_unless_case, only: [ :show ]
+    before_action :check_case, only: [ :vega_specification, :vega_data ]
 
     def show
     end

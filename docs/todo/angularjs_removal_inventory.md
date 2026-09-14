@@ -1,8 +1,7 @@
 # AngularJS removal: inventory & migration plan
 
-Fresh codebase scan (25 Aug 2026; counts re-verified after DOM-utils extraction / Vitest coverage expansion). Single reference for **what** AngularJS owns in Quepid, **why** to migrate, **how** to do it incrementally (default), optional **full case-page rewrite** decisions, and **what to delete** when done.
+Fresh codebase scan (25 Aug 2026; re-validated 4 Sep 2026 against actual code — counts refreshed, completed items removed). Single reference for **what** AngularJS owns in Quepid, **why** to migrate, **how** to do it incrementally (default), optional **full case-page rewrite** decisions, and **what to delete** when done.
 
-**Recent cleanup reflected below:** unused Angular components `action_icon`, `delete_case`, and `unarchiveCase` removed; `angular-countup` / `angular-timeago` / `textPaste` dropped in favor of `window.quepidDom` helpers, a first-party `timeAgo` filter, and Stimulus `bs-tooltip` / `text-paste`.
 
 Quepid’s frontend is split in two:
 
@@ -25,19 +24,18 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 147 files, 142 register `angular.module` |
-| HTML templates (components + `app/assets/templates`) | 56 (33 component + 23 under `app/assets/templates`) |
-| Controllers | 59 (`.controller()` registrations; 27 files under `controllers/`) |
+| Angular JS source files (`app/assets/javascripts`) | 140 files, 135 register `angular.module` |
+| HTML templates (components + `app/assets/templates`) | 52 (29 component + 23 under `app/assets/templates`) |
+| Controllers | 55 (`.controller()` registrations; 27 files under `controllers/`) |
 | Services | 26 (`.service()` registrations; 27 files under `services/` — `quepidModalSvc.js` registers a factory) |
 | Factories | 8 |
 | Filters | 8 under `filters/` (+ 4 directive-local: `plusOrMinus`, `stackChart*`) |
-| Custom directives / components | 36 (26 `.directive()` + 10 `.component()`) |
+| Custom directives / components | 33 (25 `.directive()` + 8 `.component()`) |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 15 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 10 packages (+ `angular` core from npm) |
-| Karma unit specs (`spec/javascripts/angular`) | 38 |
-| Vitest unit specs (`app/javascript/**/*.test.js`) | 14 |
-| Playwright specs for the case UI | 2 Angular page specs + helpers + baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` |
-| Playwright specs for Stimulus pages | `stimulus_pages.spec.ts` (cases index import-case, bulk judge, mapper wizard); core share-case: `share_case_smoke.spec.ts` + `dom_migration_screenshots` |
+| Karma unit specs (`spec/javascripts/angular`) | 39 |
+| Vitest unit specs (`app/javascript/**/*.test.js`) | 21 |
+| Playwright specs | See [Other inventory § Tests](#tests) for the Angular-core and Stimulus spec breakdown |
 
 ---
 
@@ -45,7 +43,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Priority | Item | Notes |
 |----------|------|-------|
-| **P0** | AngularJS 1.8.3 EOL | ~146 JS files, 56 templates on the core case UI — no patches since Dec 2021 |
+| **P0** | AngularJS 1.8.3 EOL | 140 JS files, 52 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
 | **P0** | `queriesSvc` god object (~1,386 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
 | **P0** | `eval()` scorers | Inside `$timeout()`, no sandbox; Web Worker timeout commented out |
 | **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
@@ -121,7 +119,7 @@ Before markup or controller work:
 
 **Collapse anti-pattern (share-case):** one list-group `_share_case_modal` everywhere — Angular-equivalent on core but **changed** cases index/teams away from `<select>` + always-visible disabled footers. Conversely, putting the old `<select>` partial on core **changed** the case toolbar away from Angular.
 
-Agents: this inventory doc is the migration playbook — see `CLAUDE.md`'s "Angular → Stimulus on core" rule and the per-surface checklist above.
+Agents: `angular-case-migration` skill (`.claude/skills/angular-case-migration/SKILL.md`).
 
 ### Category playbooks
 
@@ -147,15 +145,13 @@ Use when sizing a PR:
 
 Actionable incremental wins — do these before touching query/search state:
 
-1. **DOM utilities → Stimulus or BS5 data API** — **Partially done:** utils live in `utils/bs_tooltip.js`, `bs_popover.js`, `text_paste.js` (bridged via `window.quepidDom`); Stimulus `bs-tooltip` / `text-paste`; static help icons use Angular `bs-static-popover`. Thin Angular `quepidTooltip` / `quepidPopover` / `quepidPopoverTemplate` remain until those templates migrate.
-3. **`delete-case-options` / archive** — Mirror cases/teams `confirm-delete` + Rails archive/delete routes from the case context.
-4. **`clone-case`** — Modal + API / form-post; preserve post-clone navigation (`caseTryNavSvc.navigateTo` today).
-5. **`export-case`** — Larger modal + job polling; still a management action, not live search state.
-6. **Defer** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks until a deliberate case-page redesign.
+1. **DOM utilities → Stimulus or BS5 data API** — **Partially done:** plain-text tooltips (`quepid-tooltip`) and plain-text popovers (`quepid-popover`) migrated to Stimulus `bs-tooltip` / `bs-popover` (registered in `core_stimulus.js`); the Angular `quepidTooltip` directive and the text-mode `quepidPopover` directive are deleted. Angular `quepidPopoverTemplate` remains — it backs the ratings and search-match popovers (`views/ratings/popover.html`, `matches/matches.html`), which lazily `$compile` live interactive Angular content into the popover body and need their own migration, not just an attribute swap. `bs-static-popover` (fixed help-icon popovers) also remains Angular for now (new Stimulus UI, e.g. `clone-case-core`'s help icons, uses the Stimulus `bs-popover` controller instead of adding new Angular attributes).
+2. **`export-case`** — Larger modal + job polling; still a management action, not live search state.
+3. **Defer** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks until a deliberate case-page redesign.
 
 Optional when touching nearby code:
 
-- **`ngclipboard`** — Four copy buttons (search results + explain modal). Prefer `navigator.clipboard` (see Stimulus invite / mapper-wizard). Fix the Explain Query race below.
+- **`ngclipboard`** — Four copy buttons (search results + explain modal). Prefer `navigator.clipboard` (see Stimulus invite / mapper-wizard). See [Known bug (copy / explain migration)](#known-bug-copy--explain-migration) for the Explain Query race this needs to fix.
 - **`debug-matches`**, **`expand-content`** — Small markup; migrate with the matches/explain popover stack.
 
 Prefer **Rails view + route + Stimulus** for management actions over embedding new Stimulus inside the Angular bundle.
@@ -197,8 +193,6 @@ From `app/assets/templates/views/queriesLayout.html`:
 
 | Angular on core | Stimulus / Rails already on cases index & teams |
 |-----------------|-------------------------------------------------|
-| `<delete-case-options>` | `confirm_delete_controller.js` + archive/delete/unarchive routes |
-| `<clone-case>` | No Stimulus twin yet — `fetch` to clone API via `caseSvc.cloneCase` |
 | `<export-case>` | No twin — export + background job |
 | `<diff>`, `<import-ratings>` | Defer (heavy case state) |
 
@@ -209,6 +203,8 @@ Reuse these instead of reimplementing modals/flows:
 | Stimulus controller | Typical usage |
 |---------------------|---------------|
 | `share-case` / `share-case-core` | Index/teams: `share_case_controller` + `_share_case_modal`. Core toolbar: `share_case_core_controller` + `_share_case_core_modal` via `core_stimulus.js`. **Core intentional deltas vs Angular:** (1) after share/unshare the modal **stays open** with an in-modal success/error alert (enables multi-team work; Angular closed + global flash); (2) **Create a team** goes to `new_team_path` (Angular used `/teams` via `goToTeamsPage`). Rails index/teams UX unchanged (`<select>` + form POST redirect). |
+| `delete-case-options-core` | Core toolbar only (no Rails-page twin — cases/teams archive/delete already use `confirm-delete`). `delete_case_options_core_controller.js` + `_delete_case_options_core_modal.html.erb` via `core_stimulus.js`; three-way choice (archive / delete case / delete all queries) form-posts to `archive_case_path` / `case_path` / `case_queries_path` via `submitDestructiveForm`. |
+| `clone-case-core` | Core toolbar only (no Rails-page twin). `clone_case_core_controller.js` + `_clone_case_core_modal.html.erb` via `core_stimulus.js`; fetches try history from `api_case_tries_path`, posts options (name, history/try, queries, ratings) to `api_clone_cases_path`, then navigates to the new case. **Intentional delta vs Angular:** modal stays open with an inline alert on failure instead of Angular's close-then-global-flash (same delta as `share-case-core`). |
 | `share-book`, `share-scorer`, `share-search-endpoint` | Shared modals under `app/views/shared/` |
 | `import-case`, `import-snapshot` | Shared modals |
 | `confirm-delete` | Archive / delete / unarchive (cases, teams, books, search endpoints, members) |
@@ -256,13 +252,13 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **queriesSvc** | 1,386 | Central case state — search, docs, scores, persistence |
 | **wizardModal** | 909 | Onboarding wizard (ACE, CSV, tags, tour) |
 | **queriesCtrl** | 606 | Query list UX (sort, filter, paginate, keyboard) |
-| **settingsSvc** / **caseSvc** | 638 / 510 | Try / case domain model |
+| **settingsSvc** / **caseSvc** | 638 / 535 | Try / case domain model |
 | **$quepidModal** | 275 | BS5 modals + `$compile` — ~22 `.open()` call sites (~40 consumer files) |
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **routes.js** + **ngRoute** | — | Entire SPA |
 | **angular core** | — | Remove last |
 
-**Component LOC** (easiest → hardest, after toolbar duplicates): matches (0 JS) → debug_matches (59) → new_case (66) → expand_content (69) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → clone_case (105) → query_explain (116) → move_query (152) → delete_case_options (153) → add_query (160) → export_case (257) → qgraph (250) → diff (285) → judgements (302) → frog_report (360) → import_ratings (462).
+**Component LOC** (easiest → hardest, after toolbar duplicates): matches (0 JS) → debug_matches (59) → new_case (66) → expand_content (69) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → query_explain (116) → move_query (152) → add_query (160) → export_case (257) → qgraph (250) → diff (285) → judgements (327) → frog_report (360) → import_ratings (462).
 
 **Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `add-query`, `query-options`, `query-explain`, `new-case` / wizard, `frog-report`, `judgements`, annotations, `quepidTypeahead`, `queryParams`, `stackedChart`, `quepidCollapse`. Moving these implies rebuilding the case SPA, not a framework swap.
 
@@ -280,7 +276,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 3. **Multi-snapshot diff + scoring** — ≤5 snapshots, snapshot-as-searcher, client `scoreOthers()`, per-position diff, case averages. `diffResultsSvc.js` is ~225 lines but sits on fake-Solr snapshots and rating-driven refetch — line count understates the work.
 
-4. **Angular templates → target syntax** — 58 templates (`ng-repeat`, `ng-if`, `ng-model`, `dir-paginate`, `quepid-sortable`, `ui-ace`, …). Stimulus partials or React JSX depending on chosen stack.
+4. **Angular templates → target syntax** — 52 templates (`ng-repeat`, `ng-if`, `ng-model`, `dir-paginate`, `quepid-sortable`, `ui-ace`, …). Stimulus partials or React JSX depending on chosen stack.
 
 5. **Field spec parsing and display** — `id:id title:name …` — type detection (JSON / URL / text), thumb prefixes, media by extension, snippet `<strong>` wrapping. Domain logic in splainer-search + Quepid display code, not framework glue.
 
@@ -292,21 +288,11 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 
 **Observed:** After deleting the latest try, reload shows *"Cannot read properties of null (reading 'tryNo')"* until DB repair.
 
-**Frontend cause:** `settingsSvc.editableSettings()` assumes `selectedTry` is non-null. Try delete has no confirm; delete produces unhandled rejection noise in the console.
+**Frontend cause:** `settingsSvc.editableSettings()` still assumes `selectedTry` is non-null (`settingsSvc.js:429-431`, `tryToUse.tryNo` with no guard, even though the file has a working `isTrySelected()` check elsewhere it doesn't reuse). Try delete still has no confirm. Delete rejection handling was fixed separately (`queryParamsDetails.js` `deleteTry` now has a proper `.then(success, failure)` with a flash error) — re-verified 2026-09-04.
 
-**Fix during migration:** Fall back to the newest try when `selectedTry` is null; confirm before try delete; handle delete promise rejections cleanly.
+**Fix during migration:** Fall back to the newest try when `selectedTry` is null; confirm before try delete.
 
 **Backend still required:** `Api::V1::TriesController#destroy` must recompute `cases.last_try_number` — tracked in [todo.md § P0 backend](./todo.md#deleting-the-latest-try-bricks-the-case-backend).
-
-#### First-run Shepherd tour: `Shepherd is not defined`
-
-**Observed:** After a new user's first wizard Finish, tour never starts; console `ReferenceError: Shepherd is not defined`.
-
-**Cause:** `tour.js` expects global `Shepherd`; `angular_app.js` side-effect-imports tether-shepherd but does not pin `window.Shepherd` (unlike `window.bootstrap`).
-
-**Fix during migration:** Pin `window.Shepherd` (and confirm Tether) in the post-Angular entry bundle, or load Shepherd only from the new wizard/tour Stimulus (or server) flow. See [core_ui_implementation_reference § Shepherd](./core_ui_implementation_reference.md#1-shepherd-post-wizard-tour-tourjs).
-
-**Touches:** wizard finish (`wizardCtrl.js` / `new_case_controller.js`), [Feature area § New-case wizard](#4-new-case-wizard), full removal order step 7 (wizard).
 
 #### Wizard Esc orphans empty cases
 
@@ -338,7 +324,7 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 
 **Explain Query “Copy” buttons** (`query_explain/_modal.html`): each button has both `ng-click="ctrl.cancel()"` and `ngclipboard`. Cancel dismisses the modal before ClipboardJS commits — copy silently fails. The standalone copy on `searchResults.html` works.
 
-**Fix:** drop `cancel()` from Copy buttons, or defer cancel until after copy success. Prefer `navigator.clipboard` when replacing ngclipboard.
+**Fix:** drop `cancel()` from Copy buttons, or defer cancel until after copy success (see [Suggested PR order](#suggested-pr-order-start-here) for the broader `ngclipboard` → `navigator.clipboard` move).
 
 ---
 
@@ -447,9 +433,6 @@ Templates: `layouts/_header_core_app.html.erb`, `components/new_case/new_case.ht
 | Try rename in header | controller | `CurrSettingsCtrl` — `controllers/currSettings.js` |
 | Select scorer modal | controller + template | `ScorerCtrl`, `templates/views/pick_scorer.html` |
 | Create snapshot | controller + template | `TakeSnapshotCtrl`, `PromptSnapshotCtrl`, `templates/views/snapshotModal.html` |
-| Share case | Stimulus (core) | Toolbar link + `#shareCaseModal` (`share_case_core_controller.js`)
-| Clone case | component | `<clone-case>` — `components/clone_case/` |
-| Delete case / delete queries | component | `<delete-case-options>` — `components/delete_case_options/` |
 | Export case | component | `<export-case>` — `components/export_case/` |
 | Import ratings | component | `<import-ratings>` — `components/import_ratings/` |
 | Diff against snapshot | component | `<diff>` — `components/diff/` |
@@ -537,26 +520,23 @@ These Angular-specific wrappers are used across many templates:
 
 | Primitive | File | Replaces |
 |-----------|------|----------|
-| `$quepidModal` | `services/quepidModalSvc.js` | Bootstrap 5 modals (already BS5-backed shim; ~22 `.open()` sites) |
-| `quepidPopover` / `quepidPopoverTemplate` | `directives/quepidPopover.js` (~128 LOC thin shell) | `utils/bs_popover.js`; drop Angular attrs when templates migrate |
-| `bsStaticPopover` | `directives/bsStaticPopover.js` | Static help-icon popovers via shared `bs_popover` util |
-| `quepidTooltip` | `directives/quepidTooltip.js` (~38 LOC thin shell) | `utils/bs_tooltip.js` + Stimulus `bs-tooltip` |
+| `$quepidModal` | `services/quepidModalSvc.js` | Bootstrap 5 modals (already BS5-backed shim; call-site count in [Hardest § By file (LOC)](#by-file-loc)) |
+| `quepidPopover` / `quepidPopoverTemplate` | `directives/quepidPopover.js` (~128 LOC thin shell) | `utils/bs_popover.js`; current status/blockers in [Suggested PR order §1](#suggested-pr-order-start-here) |
+| `bsStaticPopover` | `directives/bsStaticPopover.js` | Static help-icon popovers via shared `bs_popover` util; current status in [Suggested PR order §1](#suggested-pr-order-start-here) |
 | `quepidCollapse` | `directives/quepidCollapse.js` | Bootstrap collapse |
 | `quepidTypeahead` | `directives/quepidTypeahead.js` | `autocompleter` (already vanilla; wired via Angular directive) |
 | `vega` | `directives/angular-vega.js` | Vega embed (Vega loaded via importmap `vega_globals`) |
 
 ---
 
-## Component inventory (20 folders)
+## Component inventory (18 folders)
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
 | `add_query` | `<add-query>` | Add query |
 | `annotation` | `<annotation>` | Single annotation CRUD |
 | `annotations` | `<annotations>` | Annotation list |
-| `clone_case` | `<clone-case>` | Clone case modal |
 | `debug_matches` | `<debug-matches>` | Debug relevancy matches |
-| `delete_case_options` | `<delete-case-options>` | Delete case or all queries |
 | `diff` | `<diff>` | Snapshot diff picker |
 | `expand_content` | `<expand-content>` | Expand HTML in modal |
 | `export_case` | `<export-case>` | Export case data |
@@ -587,7 +567,7 @@ These Angular-specific wrappers are used across many templates:
 | `customHeaders` | `<custom-headers>` | `customHeaders.html` | `CustomHeadersCtrl` |
 | `stackedChart` | `<stackedChart>` | `stackedChart.html` | `HotMatchesCtrl` |
 
-Attribute directives: `quepidSortable`, `quepidPopover`, `quepidPopoverTemplate`, `bsStaticPopover`, `quepidTooltip`, `quepidCollapse`, `quepidTypeahead`, `quepidEmbed`, `vega`
+Attribute directives: `quepidSortable`, `quepidPopover`, `quepidPopoverTemplate`, `bsStaticPopover`, `quepidCollapse`, `quepidTypeahead`, `quepidEmbed`, `vega`
 
 Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryParamsHistory`, `queryDiffResults`. Heavy: `quepidTypeahead` (299), `quepidPopover` (128), `searchResult` (79).
 
@@ -609,7 +589,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 ---
 
-## Templates (56 HTML files)
+## Templates (52 HTML files)
 
 **Shell:** `queriesLayout.html`, `queries.html`, `404.html`, `embed.html`
 
@@ -621,7 +601,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 **Wizard:** `wizardModal.html` · **Flash:** `common/flash.html`, `common/search_flash.html`
 
-**Components:** 33 HTML files under `app/assets/javascripts/components/`
+**Components:** 29 HTML files under `app/assets/javascripts/components/`
 
 Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 
@@ -660,15 +640,11 @@ Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (10 packages; see [vend
 
 ### Tests
 
-- **Karma:** 38 specs in `spec/javascripts/angular/` (incl. `bsStaticPopover`, `timeAgo`); loads all three Angular bundles + `angular-mocks`
+- **Karma:** 39 specs in `spec/javascripts/angular/` (incl. `bsStaticPopover`, `timeAgo`); loads all three Angular bundles + `angular-mocks`
 - **Vitest:** incl. `controllers/{share_case,share_case_core}_controller.test.js` and `utils/share_case_teams.js`
 - **Playwright (Angular core):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
-- **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case_smoke.spec.ts` — core toolbar share/unshare; `dom_migration_screenshots.spec.ts` — per-surface before/after shots (`share-case/` core, `share-case-rails/` index)
+- **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case.spec.ts` — permanent regression coverage for core toolbar share/unshare and the Rails cases-index/teams share modal (baseline screenshots + behavioral assertions, no before/after phase); `dom_migration_screenshots.spec.ts` — remaining per-surface before/after shots (hit count, clone-case/judgements/import-ratings popovers, annotation timeAgo)
 - **Rails:** `core_controller_test.rb`, `tls_flow_test.rb`, `user_invite_flow_test.rb`, `cases_controller_test.rb` (Stimulus cases index), `application_helper_test.rb` (`quepid_root_url`)
-
-### Stray Angular markup
-
-`app/views/users/invitations/edit.html.erb` — `ng-href="{{ termsAndConditionsUrl }}"` on non-core layout (inert today). Replace with ERB URL.
 
 ### Angular core HTTP patterns (legacy)
 
@@ -678,7 +654,7 @@ The core case UI at `/case/...` still uses AngularJS `$http`. **Do not copy thes
 |---------|---------|
 | API paths | Relative `api/...` (no leading slash), e.g. `$http.get('api/cases/' + caseNo)` |
 | CSRF | Automatic via `ng-rails-csrf` (`interceptors/rails-csrf.js`) for URLs containing `api/` |
-| Navigation / subpaths | `caseTryNavSvc.getQuepidRootUrl()` — never `$window.location.href = '/'` |
+| Navigation / subpaths | `caseTryNavSvc.getQuepidRootUrl()` (rule: see root `CLAUDE.md`) |
 | Route param | Cases use `:case_id` in `config/routes.rb` |
 
 ```javascript
@@ -691,9 +667,6 @@ $window.location.href = caseTryNavSvc.getQuepidRootUrl() + '/cases'
 
 **Migration targets** (hybrid: shared CSRF + root URL; server-owned endpoint URLs per control):
 
-- [x] Adopt `app/javascript/api/fetch.js` (`apiFetch`, `getCsrfToken`) and minimal `app/javascript/utils/quepid_root.js` (`getQuepidRootUrl` only)
-- [x] Add `quepid_root_url`, `data-quepid-root-url` on `application`, `admin`, and `core` layouts
-- [x] Vitest + ESLint + Prettier for `app/javascript/` (Karma/JSHint remain for Angular until removal)
 - [ ] Remaining Stimulus HTTP consistency — see [todo.md § Stimulus HTTP infra follow-ups](./todo.md#p2--stimulus-http-infra-follow-ups-hybrid-migration) (`bulk_judgement` URLs, `import_snapshot` `apiFetch`, import-case `redirect_url`, …)
 - [ ] Turbo query routes, server-side import page URLs (add `data-*-url-value` per migrated control)
 - [ ] Port additional `build*Url` helpers from `deangularjs-experimental` only when a control cannot use server-rendered URLs
@@ -734,9 +707,7 @@ $window.location.href = caseTryNavSvc.getQuepidRootUrl() + '/cases'
 
 ### Misc
 
-- [ ] Stray `ng-href` in invitations edit view
 - [ ] `bootstrap5-compat.css` Angular-only shims
-- [x] Shared `apiFetch` / minimal `quepid_root.js` (see [Angular core HTTP patterns](#angular-core-http-patterns-legacy))
 
 ---
 

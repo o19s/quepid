@@ -10,7 +10,46 @@ class PopulateBookJobTest < ActiveJob::TestCase
 
   describe 'populating an existing book' do
     test 'ensure that position value is unique per query' do
-      assert true
+      # Position is only persisted mid-loop when the query still exists on the
+      # case (see PopulateBookJob#perform); fix_duplicate_positions runs before
+      # the job's final book.save, so a matching query is required here for the
+      # duplicate positions to actually be on disk when dedup runs.
+      acase.queries.create!(query_text: 'duplicate query')
+
+      test_data = {
+        query_doc_pairs: [
+          {
+            query_text:      'duplicate query',
+            doc_id:          'doc_1',
+            position:        0,
+            document_fields: { title: 'Doc 1' },
+          },
+          {
+            query_text:      'duplicate query',
+            doc_id:          'doc_2',
+            position:        0,
+            document_fields: { title: 'Doc 2' },
+          }
+        ],
+      }
+
+      serialized_data = Marshal.dump(test_data)
+      compressed_data = Zlib::Deflate.deflate(serialized_data)
+
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io:           StringIO.new(compressed_data),
+        filename:     "test_populate_dup_#{book.id}.bin.zip",
+        content_type: 'application/zip'
+      )
+
+      PopulateBookJob.perform_now(book, acase, blob)
+
+      pairs = book.query_doc_pairs.where(query_text: 'duplicate query').order(:doc_id)
+      assert_equal 2, pairs.length
+
+      positions = pairs.map(&:position)
+      assert_equal [ 0 ], positions.compact
+      assert_includes positions, nil
     end
 
     test 'processes data from a blob' do

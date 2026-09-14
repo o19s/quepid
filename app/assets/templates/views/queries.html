@@ -90,16 +90,15 @@
       <div class="clearfix"></div>
 
       <div class="d-flex flex-row-reverse flex-wrap">
-        <div class="p-r-10">
+        <div class="pe-3">
           Number of Queries: {{ queriesList.length }}
         </div>
-        <div class="p-r-10">
+        <div class="pe-3">
           <input type="search" ng-model="queryFilter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id='queries-filter' />
         </div>
-        <div class="p-r-10">
+        <div class="pe-3">
           <frog-report
             the-case="caseSvc.selectedCase()"
-
           ></frog-report>
         </div>
       </div>
@@ -107,7 +106,7 @@
       <div ng-show="isBootstrapping()" class="alert alert-info search-feedback" role="alert">
         <i class="bi bi-arrow-repeat spintime"></i> <span ng-if="isBootstrapping()">Bootstrapping Queries</span>
       </div>
-      
+
       <div ng-show="searching()" class="alert alert-info search-feedback" role="alert">
         <i class="bi bi-arrow-repeat spintime"></i> Updating Queries: {{batchPosition}} / {{batchSize}}
         <small class="text-muted">If the counter stalls, do a hard refresh of Quepid.</small>
@@ -115,7 +114,7 @@
 
       <!-- let the user know what we're looking at-->
       <ul class="results-list-element" quepid-sortable="queries.sortableOptions" ng-class="!queryListSortable ? 'unsortable' : dragging === true ? 'dragging' : ''">
-        <li ng-class="query.isToggled() ? 'unsortable' : ''" dir-paginate="query in queriesList | filter:matchQueryFilter | orderBy:sort:reverse | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage" >
+        <li ng-class="query.isToggled() ? 'unsortable' : ''" dir-paginate="query in queriesList | filter:matchQueryFilter | orderBy:sort:reverse | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage">
           <search-results query="query" issortingenabled="queries.isSortingEnabled">
           </search-results>
         </li>

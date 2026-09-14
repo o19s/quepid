@@ -23,9 +23,16 @@ export default defineConfig({
       "utils/quepid_root": path.resolve(repoRoot, "app/javascript/utils/quepid_root.js"),
       "utils/bs_tooltip": path.resolve(repoRoot, "app/javascript/utils/bs_tooltip.js"),
       "utils/bs_popover": path.resolve(repoRoot, "app/javascript/utils/bs_popover.js"),
+      "utils/bs_modal": path.resolve(repoRoot, "app/javascript/utils/bs_modal.js"),
       "utils/text_paste": path.resolve(repoRoot, "app/javascript/utils/text_paste.js"),
+      "utils/share_case_teams": path.resolve(repoRoot, "app/javascript/utils/share_case_teams.js"),
       "utils/count_up": path.resolve(repoRoot, "app/javascript/utils/count_up.js"),
-      "utils/share_case_teams": path.resolve(repoRoot, "app/javascript/utils/share_case_teams.js")
+      "utils/status_message": path.resolve(repoRoot, "app/javascript/utils/status_message.js"),
+      "utils/destructive_form": path.resolve(repoRoot, "app/javascript/utils/destructive_form.js"),
+      "controllers/share_entity_controller_base": path.resolve(
+        repoRoot,
+        "app/javascript/controllers/share_entity_controller_base.js"
+      )
     },
   },
 })

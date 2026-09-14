@@ -13,9 +13,12 @@ pin 'api/fetch', to: 'api/fetch.js'
 pin 'utils/quepid_root', to: 'utils/quepid_root.js'
 pin 'utils/bs_tooltip', to: 'utils/bs_tooltip.js'
 pin 'utils/bs_popover', to: 'utils/bs_popover.js'
+pin 'utils/bs_modal', to: 'utils/bs_modal.js'
 pin 'utils/text_paste', to: 'utils/text_paste.js'
-pin 'utils/count_up', to: 'utils/count_up.js'
 pin 'utils/share_case_teams', to: 'utils/share_case_teams.js'
+pin 'utils/count_up', to: 'utils/count_up.js'
+pin 'utils/status_message', to: 'utils/status_message.js'
+pin 'utils/destructive_form', to: 'utils/destructive_form.js'
 
 pin 'local-time' # @3.0.3
 

@@ -20,6 +20,8 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
           patch "/books/#{james_bond_movies.id}/run_judge_judy/#{judge_judy.id}", params: { number_of_pairs: 1 }
           follow_redirect!
           assert_equal "AI Judge #{judge_judy.name} will start evaluating query/doc pairs.", flash[:notice]
+          # a bounded run isn't "judge all", so no kraken-unleashed celebration modal
+          assert_no_match(/successModal/, response.body)
         end
       end
     end
@@ -32,6 +34,10 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
         follow_redirect!
         assert_equal "AI Judge #{judge_judy.name} will start evaluating query/doc pairs.", flash[:notice]
         assert_equal james_bond_movies.query_doc_pairs.count, james_bond_movies.judgements.where(user: judge_judy).count
+        # "judge all" mode should still trigger the kraken-unleashed celebration modal
+        assert_match(/successModal/, response.body)
+        # ...and that boolean must never leak out as a literal "true"/"false" flash alert
+        assert_no_match(%r{alert.*>\s*(true|false)\s*</div>}m, response.body)
       end
     end
   end

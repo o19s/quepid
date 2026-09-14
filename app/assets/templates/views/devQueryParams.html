@@ -24,7 +24,7 @@
       <p ng-if="settings.searchEngine == 'static'">
         With a Static search endpoint there are no query settings to play with ;-(.
       </p>
-      <div ng-if="settings.searchEngine !== 'static'" class="rerunnable-settings-tab" id='query-params-editor'>
+      <div ng-if="settings.searchEngine !== 'static'" class="rerunnable-settings-tab" id="query-params-editor">
         <div class="d-flex justify-content-between align-items-center">
           <h4 class="mb-0">Query Sandbox:</h4>
           <p class="mb-0">
@@ -37,7 +37,7 @@
         <p ng-show="showQueryParamsWarning" id="query-params-warn" class="alert alert-warning"
           ng-bind-html="queryParamsWarning">{{ queryParamsWarning }}</p>
 
-        <div id='solr-query-params-editor' class='solr-query-params' ng-show="settings.searchEngine == 'solr'" ui-ace="{
+        <div id="solr-query-params-editor" class="solr-query-params" ng-show="settings.searchEngine == 'solr'" ui-ace="{
             require:      ['ace/ext/language_tools'],
             useWrapMode:  true,
             mode:         queryParamsMode(),
@@ -46,7 +46,7 @@
           }" ng-model="settings.selectedTry.queryParams" ng-change="validateQueryParams()">
         </div>
 
-        <div id='es-query-params-editor' class='es-query-params' ng-show="settings.searchEngine == 'es'" ui-ace="{
+        <div id="es-query-params-editor" class="es-query-params" ng-show="settings.searchEngine == 'es'" ui-ace="{
             require:      ['ace/ext/language_tools'],
             useWrapMode:  true,
             mode:         'json',
@@ -54,7 +54,7 @@
           }" ng-model="settings.selectedTry.queryParams">
         </div>
 
-        <div id='os-query-params-editor' class='os-query-params' ng-show="settings.searchEngine == 'os'" ui-ace="{
+        <div id="os-query-params-editor" class="os-query-params" ng-show="settings.searchEngine == 'os'" ui-ace="{
             require:      ['ace/ext/language_tools'],
             useWrapMode:  true,
             mode:         'json',
@@ -62,7 +62,7 @@
           }" ng-model="settings.selectedTry.queryParams">
         </div>
 
-        <div id='vectara-query-params-editor' class='vectara-query-params' ng-show="settings.searchEngine == 'vectara'"
+        <div id="vectara-query-params-editor" class="vectara-query-params" ng-show="settings.searchEngine == 'vectara'"
           ui-ace="{
             require:      ['ace/ext/language_tools'],
             useWrapMode:  true,
@@ -71,7 +71,7 @@
           }" ng-model="settings.selectedTry.queryParams">
         </div>
 
-        <div id='algolia-query-params-editor' class='algolia-query-params' ng-show="settings.searchEngine == 'algolia'"
+        <div id="algolia-query-params-editor" class="algolia-query-params" ng-show="settings.searchEngine == 'algolia'"
           ui-ace="{
             require:      ['ace/ext/language_tools'],
             useWrapMode:  true,
@@ -80,7 +80,7 @@
           }" ng-model="settings.selectedTry.queryParams">
         </div>
 
-        <div id='searchapi-query-params-editor' class='searchapi-query-params' ng-show="settings.searchEngine == 'searchapi'" ui-ace="{
+        <div id="searchapi-query-params-editor" class="searchapi-query-params" ng-show="settings.searchEngine == 'searchapi'" ui-ace="{
             require:      ['ace/ext/language_tools'],
             useWrapMode:  true,
             mode:         queryParamsMode(),
@@ -114,7 +114,7 @@
           <div ng-repeat="curatorVar in settings.selectedTry.curatorVars">
             <div ng-show="curatorVar.inQueryParams" class="slider-wrap">
               <label class="mb-0">{{ curatorVar.name }}:</label>
-              <input type="number" class="slider-val form-control form-control-sm" min=0 max=10000000000 ng-model="curatorVar.value" />
+              <input type="number" class="slider-val form-control form-control-sm" min="0" max="10000000000" ng-model="curatorVar.value">
               <p ng-show="curatorVar.inQueryParams != true" class="mb-0">
                 This knob/dial is not currently used by the query!
               </p>
@@ -149,7 +149,7 @@
             </p>
             <p>
               <img ng-if="settings.selectedTry.searchEngine"
-                ng-src="images/{{ settings.selectedTry.mapperBasedSearchEngineId || settings.selectedTry.searchEngine }}-icon.png" width="32px" /> &nbsp;
+                ng-src="images/{{ settings.selectedTry.mapperBasedSearchEngineId || settings.selectedTry.searchEngine }}-icon.png" width="32px"> &nbsp;
               {{settings.searchUrl}}
             </p>
             <p>
@@ -204,7 +204,7 @@
 
           <div class="dev-setting-attribute" ng-show="devSettingsNumResults.toggle">
             <input class="form-control" name="fields" ng-model="settings.numberOfRows" style="margin-bottom: 10px"
-              max="100" maxlength="3" size="3" type="number" />
+              min="1" max="100" maxlength="3" size="3" type="number">
           </div>
         </div>
         <!-- end of Number of Rows -->
@@ -218,15 +218,16 @@
           </div>
 
           <div class="dev-body form-check" ng-show="devSettingsNightly.toggle" ng-controller="CaseCtrl as ctrl">
-            <input type="checkbox" id="evaluate-nightly-checkbox" class="form-check-input" ng-model="caseModel.selectedCase().nightly" ng-change="updateNightly()"/>
+            <input type="checkbox" id="evaluate-nightly-checkbox" class="form-check-input" ng-model="caseModel.selectedCase().nightly" ng-change="updateNightly()" >
             <label class="form-check-label" for="evaluate-nightly-checkbox">Evaluate Case Nightly <i class="bi bi-repeat"></i></label>
 
             <p class="float-end">
               <span class="badge bg-info">
                 <a href="#"
-                  quepid-tooltip="Run all the queries every night and store the results and the scores as a snapshot."
-                  quepid-tooltip-html
-                  tooltip-placement="left">
+                  data-controller="bs-tooltip"
+                  data-bs-tooltip-title-value="Run all the queries every night and store the results and the scores as a snapshot."
+                  data-bs-tooltip-html-value="true"
+                  data-bs-tooltip-placement-value="left">
                   <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
                 </a>
               </span>
@@ -241,7 +242,7 @@
           </div>
         </div>
         <!-- end of Nightly Queries -->
-        
+
         <!-- Escape Queries: only Solr/ES/OS honor settings.escapeQuery (see
              supportsEscapeQuery in settingsSvc.js, wrapped for this template by
              queryParams.js) - shown for other engines it would be a no-op checkbox. -->
@@ -259,9 +260,10 @@
             <p class="float-end">
               <span class="badge bg-info">
                 <a href="#"
-                  quepid-tooltip="(advanced) -- To use {{ settings.searchEngine | searchEngineName }} query syntax (e.g. text:law, +required, -excluded), disable this feature -- otherwise special characters are escaped and treated as literal text"
-                  quepid-tooltip-html
-                  tooltip-placement="left">
+                  data-controller="bs-tooltip"
+                  data-bs-tooltip-title-value="(advanced) -- To use {{ settings.searchEngine | searchEngineName }} query syntax (e.g. text:law, +required, -excluded), disable this feature -- otherwise special characters are escaped and treated as literal text"
+                  data-bs-tooltip-html-value="true"
+                  data-bs-tooltip-placement-value="left">
                   <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
                 </a>
               </span>
@@ -280,7 +282,7 @@
 
 
           <div class="dev-body" ng-show="devSettingsSearchEndpoint.toggle">
-            Pick Shared Endpoints:<br />
+            Pick Shared Endpoints:<br>
             <span ng-show="listSearchEndpoints().length == 0">
               You do not have any search endpoints shared with this case.  Share the case with a team first.
             </span>
@@ -289,7 +291,7 @@
                 ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"
                 class="form-select">
               </select>
-              <br />OR<br />
+              <br>OR<br>
 
               <input type="text" ng-model="selectedItem" placeholder="Select endpoint to use"
                 quepid-typeahead="searchOptions($viewValue)"
@@ -300,7 +302,7 @@
                 quepid-typeahead-editable="false"
                 quepid-typeahead-on-select="onSelectSearchEndpoint($item)"
                 quepid-typeahead-no-results="noResults"
-                class="form-control"/>
+                class="form-control">
               <div ng-if="noResults">
                 No search endpoints found. Check your spelling!
               </div>
@@ -321,7 +323,7 @@
           <a ng-href="cases/{{ caseNo }}/ratings" target="_self">Check Ratings</a>
         </p>
         <p>
-          To switch back to a previous try, click on the try listing.<br />
+          To switch back to a previous try, click on the try listing.<br>
           Click on the "..." when you hover over a listing to edit a try.
         </p>
 
@@ -330,7 +332,7 @@
       </div>
     </div> <!-- end .settings-tab (History) -->
 
-    <div class="settings-tab" ng-show="qp.curTab == 'annotations'" style='height: 100%;'>
+    <div class="settings-tab" ng-show="qp.curTab == 'annotations'" style="height: 100%;">
       <annotations></annotations>
     </div> <!-- end .settings-tab (Annotations) -->
   </div> <!-- end #queryParamsCanvas -->

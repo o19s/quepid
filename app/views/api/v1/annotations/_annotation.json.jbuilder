@@ -12,5 +12,5 @@ json.score do
 end
 
 json.user do
-  json.name annotation.user.display_name
+  json.name annotation.user&.display_name
 end

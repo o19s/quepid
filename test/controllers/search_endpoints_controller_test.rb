@@ -22,22 +22,23 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  # test 'should create search_endpoint using existing parameters doesnt change anything' do
-  #   assert_difference('SearchEndpoint.count', 0) do
-  #     post search_endpoints_url,
-  #          params: { search_endpoint: {
-  #            api_method:     @search_endpoint.api_method,
-  #            custom_headers: @search_endpoint.custom_headers,
-  #            endpoint_url:   @search_endpoint.endpoint_url,
-  #            name:           @search_endpoint.name,
-  #            search_engine:  @search_endpoint.search_engine,
-  #            team_ids:       [],
-  #          } }
-  #   end
+  test 'should create a distinct search_endpoint even when it duplicates an existing one, unshared when team_ids is empty' do
+    assert_difference('SearchEndpoint.count', 1) do
+      post search_endpoints_url,
+           params: { search_endpoint: {
+             api_method:     @search_endpoint.api_method,
+             custom_headers: @search_endpoint.custom_headers,
+             endpoint_url:   @search_endpoint.endpoint_url,
+             name:           @search_endpoint.name,
+             search_engine:  @search_endpoint.search_engine,
+             team_ids:       [],
+           } }
+    end
 
-  #   assert_response :success
-  #   assert_empty SearchEndpoint.last.teams
-  # end
+    assert_redirected_to search_endpoint_url(SearchEndpoint.last)
+    assert_not_equal @search_endpoint.id, SearchEndpoint.last.id
+    assert_empty SearchEndpoint.last.teams
+  end
 
   test 'should create search_endpoint' do
     assert_difference('SearchEndpoint.count') do

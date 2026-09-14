@@ -1,207 +1,128 @@
 # frozen_string_literal: true
 
 require 'test_helper'
-require 'benchmark'
-require 'nokogiri'
-
-require 'tzinfo'
 
 # RubyLLM tools are auto-loaded from app/tools directory
 
+# This file originally prototyped the "agentic" JavaScript-extraction workflow described in
+# docs/agentic_javascript_extraction.md: an LLM chat with DownloadPage/JavascriptExtractor/
+# MapperTool registered as RubyLLM tools (`chat.with_tools(...)`), autonomously deciding to call
+# MapperTool, and retrying up to 3 times with progressively simpler prompts when extraction
+# failed. That multi-attempt, tool-calling design was never adopted -- grep the app for
+# `with_tools` and you will not find a single call. What actually shipped, in the very same PR
+# (#1285, "Use LLM to generate dataMapper Javascript"), is the simpler, deterministic pipeline in
+# MapperWizardService: fetch HTML once (DownloadPage, called directly), ask the LLM once to
+# generate both mapper functions (plain RubyLLM.chat(...).ask(...), no tool-calling), then let
+# the wizard UI run/refine them via MapperWizardService#test_mapper / #refine_mapper. See
+# app/services/mapper_wizard_service.rb and app/controllers/mapper_wizards_controller.rb.
+#
+# The test below now exercises that real, shipped pipeline end to end -- fetch -> generate ->
+# execute -- against a stubbed OpenAI response (same `https://api.openai.com/v1/chat/completions`
+# endpoint and response shape RubyLLM's OpenAI provider actually posts to and parses; see
+# test/support/openai_stubs.rb / test/services/llm_service_test.rb for the same stubbing
+# approach against LlmService's direct Faraday client). No live network or API key is needed to
+# run it.
 class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
-  let(:user) { users(:doug) }
-  let(:scorer) { scorers(:quepid_default_scorer) }
-  let(:selection_strategy) { selection_strategies(:multiple_raters) }
+  SEARCH_RESULTS_HTML = <<~HTML
+    <html>
+      <body>
+        <div class="result"><h3><a href="http://example.com/1">First Result</a></h3></div>
+        <div class="result"><h3><a href="http://example.com/2">Second Result</a></h3></div>
+      </body>
+    </html>
+  HTML
 
-  # rubocop:disable Style/ClassVars
-  # @@skip_tests = ENV.fetch('OPENAI_API_KEY', nil).nil?
-  @@skip_tests = true
-  # rubocop:enable Style/ClassVars
+  GENERATED_NUMBER_OF_RESULTS_MAPPER = <<~JS.strip
+    numberOfResultsMapper = function(data) {
+      var matches = data.match(/<div class="result">/g);
+      return matches ? matches.length : 0;
+    }
+  JS
 
-  test 'html based search page' do
-    skip('Ignoring all tests in ExperimentWithRubyLlmExtractorTest') if @@skip_tests
-    assert true
-    WebMock.allow_net_connect!
+  GENERATED_DOCS_MAPPER = <<~JS.strip
+    docsMapper = function(data) {
+      var docs = [];
+      var blocks = data.split('<div class="result">');
+      for (var i = 1; i < blocks.length; i++) {
+        var block = blocks[i];
+        var urlMatch = block.match(/href="([^"]+)"/);
+        var titleMatch = block.match(/>([^<]+)<\\/a>/);
+        if (urlMatch && titleMatch) {
+          docs.push({ id: urlMatch[1], title: titleMatch[1] });
+        }
+      }
+      return docs;
+    }
+  JS
 
-    RubyLLM.configure do |config|
-      config.openai_api_key = ENV.fetch('OPENAI_API_KEY', nil)
-    end
+  test 'html based search page: fetch, generate mapper functions via a stubbed LLM, and execute them' do
+    stub_request(:get, 'https://search.example.com/results')
+      .to_return(status: 200, body: SEARCH_RESULTS_HTML)
 
-    # Start a chat with the default model (GPT-4o-mini)
-    chat = RubyLLM.chat(model: 'gpt-5') # gpt-5 wrote a lot more code and it was better.
-    chat.with_tools(DownloadPage, JavascriptExtractor, MapperTool)
-    chat.on_tool_call do |tool_call|
-      # Called when the AI decides to use a tool
-      puts "Calling tool: #{tool_call.name}"
-      puts "Arguments: #{tool_call.arguments}"
-    end
+    llm_response_content = <<~MARKDOWN
+      Here are the mapper functions, based on the HTML structure:
 
-    chat.ask 'What is the title of the web page https://search.ed.ac.uk/?q=mental' do |chunk|
-      # Each chunk contains a portion of the response
-      print chunk.content
-    end
+      ```javascript
+      #{GENERATED_NUMBER_OF_RESULTS_MAPPER}
+      ```
 
-    # chat.ask 'Can you print out the search query that was used to fetch the page?' do |chunk|
-    #   # Each chunk contains a portion of the response
-    #   print chunk.content
-    # end
+      ```javascript
+      #{GENERATED_DOCS_MAPPER}
+      ```
+    MARKDOWN
 
-    # chat.ask 'Can you print out how many total results were found?' do |chunk|
-    #   # Each chunk contains a portion of the response
-    #   print chunk.content
-    # end
+    stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+      .with(
+        headers: { 'Authorization' => 'Bearer sk-test' },
+        body:    /First Result/ # proves the downloaded HTML actually made it into the prompt
+      )
+      .to_return(
+        status:  200,
+        body:    { choices: [ { message: { content: llm_response_content } } ] }.to_json,
+        headers: { 'Content-Type' => 'application/json' }
+      )
 
-    # chat.ask 'Can you print out how many individual results were returned in the current page?' do |chunk|
-    #   # Each chunk contains a portion of the response
-    #   print chunk.content
-    # end
-    # puts "\n\n\nBREAK\n\n\n"
-    # chat.ask 'For each individual result, can you print out the result in JSON format?  Please include the date, description, any url' do |chunk|
-    #   # Each chunk contains a portion of the response
-    #   print chunk.content
-    # end
+    service = MapperWizardService.new(api_key: 'sk-test')
 
-    puts "\n\n\nAWESOME\n\n\n"
-    chat.with_instructions <<~PROMPT, replace: true
-      You are a JavaScript expert helping create data extraction functions for Quepid.
+    fetch_result = service.fetch_html('https://search.example.com/results')
+    assert fetch_result[:success], "fetch_html failed: #{fetch_result[:error]}"
 
-        **Requirements:**
-        - Generate two JavaScript functions: numberOfResultsMapper and docsMapper#{'  '}
-        - Define functions as: functionName = function(params) {} (not function functionName())
-        - Include brief comments explaining logic
-        - Wrap ALL JavaScript code in ```javascript code blocks
-        - Target V8 engine only (no DOM APIs)
+    generate_result = service.generate_mappers(fetch_result[:html])
+    assert generate_result[:success], "generate_mappers failed: #{generate_result[:error]}"
+    assert_includes generate_result[:number_of_results_mapper], 'numberOfResultsMapper'
+    assert_includes generate_result[:docs_mapper], 'docsMapper'
 
-        **Function Specifications:**
-      #{'   '}
-         numberOfResultsMapper: Returns total number of search results found
-         ```javascript#{'         '}
-         numberOfResultsMapper = function(data){
-           return data.length;
-         }
-      #{'   '}
-         docsMapper: Converts source data format to the JSON format that Quepid format expects required "id" and "title" keys.
-         Include additional attributes like "description", "url", "image" only if they exist for most results.
-         Use URL as fallback "id" if no obvious "id" field exists.
-         ```javascript
-         docsMapper = function(data){
-             let docs = [];
-             for (let doc of data) {
-               docs.push({
-                 id: doc.publication_id,
-                 title: doc.title,
-               });
-             }
-             return docs;
-           }
-          ```
-         Analyze the downloaded HTML structure first, then generate appropriate functions.
-    PROMPT
+    count_result = service.test_mapper(
+      mapper_type:  'numberOfResultsMapper',
+      code:         generate_result[:number_of_results_mapper],
+      html_content: fetch_result[:html]
+    )
+    assert count_result[:success], "test_mapper (count) failed: #{count_result[:error]}"
+    assert_equal 2, count_result[:result]
 
-    response = chat.ask 'Can you generate the JavaScript methods required to convert the raw HTML that was downloaded into the formats that Quepid requires?'
+    docs_result = service.test_mapper(
+      mapper_type:  'docsMapper',
+      code:         generate_result[:docs_mapper],
+      html_content: fetch_result[:html]
+    )
+    assert docs_result[:success], "test_mapper (docs) failed: #{docs_result[:error]}"
+    assert_equal 2, docs_result[:result].length
+    assert_equal 'http://example.com/1', docs_result[:result][0]['id']
+    assert_equal 'First Result', docs_result[:result][0]['title']
 
-    puts response.content
+    assert_requested(:post, 'https://api.openai.com/v1/chat/completions', times: 1)
+  end
 
-    puts "\n\n\NOW WE ARE GETTING SOMEWHERE\n\n\n"
-    # chat.ask 'Can you give me just the JavaScript code I need?' do |chunk|
-    #   # Each chunk contains a portion of the response
-    #   print chunk.content
-    # end
-    response = chat.ask 'Can you give me just the JavaScript code I need?'
-    puts response.content
-
-    # pp response
-    #
-    # Implement agentic workflow with retry logic
-    max_attempts = 3
-    attempt = 1
-    extraction_successful = false
-
-    while attempt <= max_attempts && !extraction_successful
-      puts "\nATTEMPT #{attempt}/#{max_attempts}: Trying JavaScript extraction..."
-
-      if 1 == attempt
-        response = chat.ask 'Can you use the JavascriptMapper tool with the Javascript code you created and the HTML content that was downloaded to parse out the number of results and document data?'
-      elsif 2 == attempt
-        puts "\nFirst attempt may have failed. Let's try a simpler approach..."
-        response = chat.ask <<~RETRY_PROMPT
-          The previous JavaScript extraction may not have worked properly. Let's try again with a simpler approach:
-
-          1. First, use the JavascriptMapper tool to test your current JavaScript functions
-          2. If the results show 0 documents or 0 total results, create simpler JavaScript functions that use basic string operations instead of complex regex
-          3. Focus on finding obvious patterns in the HTML like repeated div classes or common HTML structures
-          4. Use indexOf, substring, and split methods instead of complex regex patterns
-
-          Please try the JavascriptMapper tool again with either your current functions or improved simpler ones.
-        RETRY_PROMPT
-      else
-        puts "\nFinal attempt: Debugging the extraction..."
-        response = chat.ask <<~DEBUG_PROMPT
-          Let's debug why the extraction isn't working:
-
-          1. Use the JavascriptMapper tool with very simple test functions first:
-             - numberOfResultsMapper that just returns 5 (hardcoded)
-             - docsMapper that returns a simple test array like [{id: "test", title: "Test Document"}]
-          2. If that works, then gradually make the functions more sophisticated
-          3. Look for the most obvious repeating pattern in the HTML (like div tags with consistent classes)
-          4. Use only basic string operations: indexOf, substring, split - no regex
-
-          Try the JavascriptMapper tool with either simple test functions or your best attempt at parsing.
-        DEBUG_PROMPT
-      end
-
-      puts response.content
-
-      # Check if the extraction was successful by looking for MapperTool usage indicators
-      if response.content.include?('MAPPER TOOL COMPLETED SUCCESSFULLY')
-
-        # Parse the results to check if we got meaningful data using simple string operations
-        doc_count = 0
-        total_results = 0
-
-        # Look for the document count line
-        response.content.each_line do |line|
-          if line.include?('Documents extracted:')
-            doc_match = line.match(/(\d+)/)
-            doc_count = doc_match[1].to_i if doc_match
-          elsif line.include?('Total results counted:')
-            results_match = line.match(/(\d+)/)
-            total_results = results_match[1].to_i if results_match
-          end
-        end
-
-        puts "\nEXTRACTION RESULTS: #{doc_count} documents, #{total_results} total results"
-
-        # Consider successful if we got some reasonable results
-        if doc_count.positive? || total_results.positive?
-          extraction_successful = true
-          puts "SUCCESS: JavaScript extraction worked on attempt #{attempt}!"
-        else
-          puts 'Got 0 results - will retry with different approach...'
-        end
-      elsif response.content.include?('MAPPER TOOL FAILED')
-        puts 'MapperTool failed - will retry with different approach...'
-      else
-        puts 'No clear MapperTool usage detected - checking response content...'
-        # If the response contains parsed results even without explicit tool markers, consider it successful
-        if response.content.match(/(\d+)\s+(documents?|results?)/i) &&
-           !response.content.match(/0\s+(documents?|results?)/i)
-          extraction_successful = true
-          puts 'SUCCESS: Found evidence of successful extraction in response!'
-        end
-      end
-
-      unless extraction_successful
-        attempt += 1
-        puts "\nAttempt #{attempt - 1} incomplete. #{max_attempts - attempt + 1} attempts remaining..." if attempt <= max_attempts
-      end
-    end
-
-    if extraction_successful
-      puts "\nFINAL SUCCESS: JavaScript extraction completed successfully!"
-    else
-      puts "\nEXTRACTION INCOMPLETE: After #{max_attempts} attempts, extraction may not have worked optimally."
-      puts 'However, the LLM may have provided useful information or fallback analysis.'
-    end
+  test 'multi-attempt agentic tool-calling retry loop' do
+    skip 'Never adopted: this test prototyped chat.with_tools(DownloadPage, JavascriptExtractor, ' \
+         'MapperTool) plus an up-to-3-attempts retry loop with progressively simpler prompts, as ' \
+         'described in docs/agentic_javascript_extraction.md. The app never wires an LLM chat to ' \
+         'those tools via with_tools (grep app/ for with_tools -- zero hits); ' \
+         'MapperWizardService#generate_mappers asks the LLM once and returns the result, and any ' \
+         'retrying happens through the wizard UI calling #test_mapper / #refine_mapper again, not ' \
+         'through an autonomous agent loop. Reviving this would mean the app itself adopting that ' \
+         'agentic design first -- there is no current behavior to assert against. The real ' \
+         'pipeline this test used to poke at by hand (download -> generate -> execute) is now ' \
+         'covered for real, deterministically, in the test above.'
   end
 end

@@ -5,6 +5,7 @@ import {
   expandFirstQuery,
   expandedCaseScreenshotOpts,
   gotoCase,
+  headerDropdownMenu,
 } from './angular_case_helpers';
 
 /**
@@ -47,8 +48,12 @@ test.describe('Angular core — narrow viewport slice (768×900)', () => {
     await expandFirstQuery(page);
     await expect(page).toHaveScreenshot('narrow-02-case-loaded.png', expandedCaseScreenshotOpts(page));
 
+    // Below the `lg` breakpoint the header's nav now lives behind a collapsed
+    // `.navbar-collapse` (see 16.2 in docs/manual-testing/tracking.yml) — open the
+    // toggler before the nav links are clickable.
+    await page.locator('#header .navbar-toggler').click();
     await page.locator('#header').getByRole('button', { name: /Relevancy Cases/i }).click();
-    const relevancyMenu = page.locator('#header li.dropdown').nth(0).locator('.dropdown-menu');
+    const relevancyMenu = headerDropdownMenu(page, 'Relevancy Cases');
     await expect(relevancyMenu).toBeVisible();
     await expect(page).toHaveScreenshot('narrow-03-relevancy-dropdown.png', {
       mask: dynamicRegions(page),

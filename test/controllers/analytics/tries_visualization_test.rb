@@ -28,5 +28,43 @@ module Analytics
         end
       end
     end
+
+    describe 'a case this user cannot access' do
+      let(:matt_case) { cases(:matt_case) } # owned by a different user, not public, not shared with joey
+
+      test 'renders the 404 page instead of crashing on a nil @case' do
+        get :show, params: { case_id: matt_case.id }
+
+        assert_response :not_found
+        # `check_case`'s JSON 404 is also :not_found -- pin the HTML page specifically so a
+        # regression back to that guard fails (see docs/code_review_angular_cleanup_phase3.md #6).
+        assert_match "doesn't exist (404 Not found)", response.body
+        assert_no_match 'Case not found!', response.body
+      end
+
+      test 'vega_data renders a JSON 404 instead of crashing on a nil @case' do
+        get :vega_data, params: { case_id: matt_case.id, format: :json }
+
+        assert_response :not_found
+        assert_equal 'Case not found!', response.parsed_body['message']
+      end
+
+      test 'vega_specification renders a JSON 404 instead of crashing on a nil @case' do
+        get :vega_specification, params: { case_id: matt_case.id, format: :json }
+
+        assert_response :not_found
+        assert_equal 'Case not found!', response.parsed_body['message']
+      end
+    end
+
+    describe 'Fetches the vega specification for a case' do
+      let(:case_with_two_tries) { cases(:case_with_two_tries) }
+
+      test 'renders successfully for a case the user can access' do
+        get :vega_specification, params: { case_id: case_with_two_tries.id, format: :json }
+
+        assert_response :ok
+      end
+    end
   end
 end

@@ -15,12 +15,14 @@ describe("text_paste", () => {
 
   it("invokes onPaste with plain text from clipboardData", () => {
     const onPaste = vi.fn()
+    const getData = vi.fn(() => "line one\nline two")
     attachTextPaste(input, onPaste)
 
     const event = new Event("paste", { bubbles: true })
-    event.clipboardData = { getData: () => "line one\nline two" }
+    event.clipboardData = { getData }
     input.dispatchEvent(event)
 
+    expect(getData).toHaveBeenCalledWith("text/plain")
     expect(onPaste).toHaveBeenCalledWith("line one\nline two")
   })
 
@@ -36,15 +38,24 @@ describe("text_paste", () => {
     expect(onPaste).not.toHaveBeenCalled()
   })
 
-  it("falls back to window.clipboardData when event.clipboardData is missing", () => {
+  it("does not invoke onPaste when clipboardData is unavailable", () => {
     const onPaste = vi.fn()
     attachTextPaste(input, onPaste)
 
-    window.clipboardData = { getData: () => "legacy paste" }
     const event = new Event("paste", { bubbles: true })
     input.dispatchEvent(event)
-    delete window.clipboardData
 
-    expect(onPaste).toHaveBeenCalledWith("legacy paste")
+    expect(onPaste).not.toHaveBeenCalled()
+  })
+
+  it("does not invoke onPaste when the pasted text is empty", () => {
+    const onPaste = vi.fn()
+    attachTextPaste(input, onPaste)
+
+    const event = new Event("paste", { bubbles: true })
+    event.clipboardData = { getData: () => "" }
+    input.dispatchEvent(event)
+
+    expect(onPaste).not.toHaveBeenCalled()
   })
 })

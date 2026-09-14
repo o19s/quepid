@@ -120,6 +120,21 @@ Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests 
 - **`controllers/`** — Add Vitest when you touch a controller for Angular migration or meaningful behavior change. Do not blanket-rewrite untested controllers for coverage alone.
 - Run `bin/docker r yarn test:unit` before merging JS changes that add or update specs.
 
+## StrykerJS mutation testing (`app/javascript/api`, `app/javascript/utils`)
+
+Mutation testing checks whether Vitest specs actually fail when the code they cover is broken (a "mutant" — e.g. flipping `&&` to `||`, an `if (x)` to `if (true)`) — plain coverage only proves a line ran, not that a test would catch a change to it.
+
+- Config: `stryker.config.mjs` (`vitest` test runner against `vitest.config.js`)
+- Runs in **incremental mode** — results are cached in `tmp/stryker-tmp/incremental.json` (gitignored) and reused on the next run, so only mutants touched by changed files are re-tested. Delete that file (or the whole `tmp/stryker-tmp/` dir) to force a full run.
+- Scope: `app/javascript/api/**/*.js` and `app/javascript/utils/**/*.js` — the two directories with the strict "new logic needs a colocated test" PR policy above. Controllers are excluded for now (many are intentionally untested per that same policy, which would just show up as noisy `NoCoverage` mutants); add specific controller files to `mutate` in `stryker.config.mjs` once they have solid Vitest coverage.
+- Legacy Angular (`app/assets/javascripts/`, Karma) is out of scope — it's being removed by the Angular → Stimulus migration, not worth the investment.
+
+```bash
+bin/docker r yarn test:mutation   # runs stryker, writes tmp/mutation-report/mutation-report.html
+```
+
+Survived/no-coverage mutants in the report point at either a missing test case or genuinely dead/defensive code — triage per file rather than chasing 100%.
+
 ## Unit test strategy: Karma vs Vitest
 
 ### Current state

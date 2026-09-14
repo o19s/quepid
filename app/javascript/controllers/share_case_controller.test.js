@@ -14,13 +14,18 @@ function buildController(overrides = {}) {
   controller.application = {
     getControllerForElementAndIdentifier: vi.fn(() => null)
   }
+  controller.identifier = "share-case"
   controller.selectedSharedTeamId = null
+  controller.idValue = ""
+  controller.nameValue = ""
+  controller.allTeamsJsonValue = ""
+  controller.sharedTeamsJsonValue = ""
   controller.hasTitleTarget = true
   controller.titleTarget = document.createElement("h5")
-  controller.hasCaseIdTarget = true
-  controller.caseIdTarget = { value: "" }
-  controller.hasUnshareCaseIdTarget = true
-  controller.unshareCaseIdTarget = { value: "" }
+  controller.hasRecordIdTarget = true
+  controller.recordIdTarget = { value: "" }
+  controller.hasUnshareRecordIdTarget = true
+  controller.unshareRecordIdTarget = { value: "" }
   controller.hasUnshareTeamIdTarget = true
   controller.unshareTeamIdTarget = { value: "" }
   controller.hasTeamSelectTarget = true
@@ -75,25 +80,21 @@ describe("ShareCaseController — Rails cases index / teams", () => {
     expect(controller.submitButtonTarget.disabled).toBe(false)
   })
 
-  it("open populates select and shared list from button JSON", () => {
-    const controller = buildController()
-
-    ShareCaseController.prototype.open.call(controller, {
-      currentTarget: {
-        dataset: {
-          shareCaseIdValue: "5",
-          shareCaseNameValue: "Index Case",
-          shareCaseAllTeamsJson: JSON.stringify([
-            { id: 1, name: "OSC" },
-            { id: 2, name: "Other" }
-          ]),
-          shareCaseSharedTeamsJson: JSON.stringify([{ id: 1, name: "OSC" }])
-        }
-      }
+  it("open reads its own Values-API data and populates the modal", () => {
+    const controller = buildController({
+      idValue: "5",
+      nameValue: "Index Case",
+      allTeamsJsonValue: JSON.stringify([
+        { id: 1, name: "OSC" },
+        { id: 2, name: "Other" }
+      ]),
+      sharedTeamsJsonValue: JSON.stringify([{ id: 1, name: "OSC" }])
     })
 
+    controller.open()
+
     expect(controller.titleTarget.textContent).toBe("Share Case: Index Case")
-    expect(controller.caseIdTarget.value).toBe("5")
+    expect(controller.recordIdTarget.value).toBe("5")
     expect([...controller.teamSelectTarget.options].map((o) => o.text)).toEqual([
       "Select a team...",
       "Other"
@@ -101,6 +102,37 @@ describe("ShareCaseController — Rails cases index / teams", () => {
     expect(controller.sharedListTarget.querySelectorAll("[data-team-id]").length).toBe(1)
     expect(controller.submitButtonTarget.disabled).toBe(true)
     expect(controller.unshareButtonTarget.disabled).toBe(true)
+  })
+
+  it("a non-root trigger delegates its own values to the modal root's openWith", () => {
+    const modalElement = document.createElement("div")
+    modalElement.id = "shareCaseModal"
+    document.body.appendChild(modalElement)
+
+    const modalController = buildController()
+    const openWithSpy = vi.spyOn(modalController, "openWith")
+
+    const trigger = buildController({
+      hasTitleTarget: false,
+      idValue: "7",
+      nameValue: "Trigger Case",
+      allTeamsJsonValue: JSON.stringify([{ id: 1, name: "OSC" }]),
+      sharedTeamsJsonValue: "[]",
+      application: {
+        getControllerForElementAndIdentifier: vi.fn(() => modalController)
+      }
+    })
+
+    trigger.open()
+
+    expect(openWithSpy).toHaveBeenCalledWith({
+      id: "7",
+      name: "Trigger Case",
+      allTeamsJson: JSON.stringify([{ id: 1, name: "OSC" }]),
+      sharedTeamsJson: "[]"
+    })
+
+    modalElement.remove()
   })
 
   it("toggleRailsSharedSelect toggles unshare footer", () => {

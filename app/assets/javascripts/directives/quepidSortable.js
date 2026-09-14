@@ -42,7 +42,7 @@ angular.module('QuepidApp')
           const opts = scope.$eval(attrs.quepidSortable) || {};
 
           // SortableJS physically moves the dragged <li> (and its
-          // descendants, including the query title's quepid-tooltip span)
+          // descendants, including the query title's tooltip span)
           // between siblings as it's dragged over them. That reparenting
           // can swallow the mouseleave Bootstrap's `trigger: 'hover'`
           // tooltip relies on to hide itself, so a tooltip that popped up
@@ -57,7 +57,9 @@ angular.module('QuepidApp')
             }
             const Tooltip = window.bootstrap && window.bootstrap.Tooltip;
             if (!Tooltip) { return; }
-            root.querySelectorAll('[quepid-tooltip]').forEach(function (el) {
+            // Kept in sync with utils/bs_tooltip.js's TOOLTIP_SELECTOR —
+            // this only runs if window.quepidDom.tooltip itself is missing.
+            root.querySelectorAll('[quepid-tooltip], [data-controller~="bs-tooltip"]').forEach(function (el) {
               const instance = Tooltip.getInstance(el);
               if (instance) { instance.hide(); }
             });

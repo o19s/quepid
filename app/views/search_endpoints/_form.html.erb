@@ -1,19 +1,9 @@
 <%= form_with(model: search_endpoint) do |form| %>
   <div class="card">
     <div class="card-body">
-      <% if search_endpoint.errors.any? %>
-        <div id="error_explanation">
-          <h2><%= pluralize(search_endpoint.errors.count, "error") %> prohibited this Search Endpoint from being saved:</h2>
+      <%= render "shared/error_messages", record: search_endpoint, subject: "Search Endpoint" %>
 
-          <ul>
-            <% search_endpoint.errors.each do |error| %>
-              <li><%= error.full_message %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
-
-      <% if @current_user.teams.empty? %>
+      <% if current_user.teams.empty? %>
         <div class="alert alert-warning" role="alert">
           Search Endpoints are meant to be shared with Teams, and you have not created any yet.
           <%= link_to 'Create a Team', teams_path, method: :get, class:'btn btn-primary' %>
@@ -118,7 +108,7 @@
 
       <div class="mb-3">
         <%= form.label :teams, "Teams to Share this Endpoint With", class: 'form-label' %>
-        <%= form.collection_check_boxes(:team_ids, @current_user.teams, :id, :name) do |b| %>
+        <%= form.collection_check_boxes(:team_ids, current_user.teams, :id, :name) do |b| %>
           <div class="collection-check-box">
             <%= b.check_box %>
             <%= b.label %>
