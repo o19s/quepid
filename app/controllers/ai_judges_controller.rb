@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class AiJudgesController < ApplicationController
-  before_action :set_team
+  before_action :set_team, only: [ :new, :create ]
   before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy ]
 
   DEFAULT_SYSTEM_PROMPT = <<~TEXT
@@ -59,6 +59,10 @@ class AiJudgesController < ApplicationController
     }
   TEXT
 
+  def index
+    @ai_judges = User.only_ai_judges.for_user(current_user).includes(:owner, :teams).order(:name)
+  end
+
   def show
     render 'edit'
   end
@@ -78,12 +82,11 @@ class AiJudgesController < ApplicationController
   def edit; end
 
   def create
-    @ai_judge = User.new(ai_judge_params)
+    @ai_judge = User.new(ai_judge_params.merge(owner: current_user))
 
     if @ai_judge.save
-      @team.members << @ai_judge
-      @team.save
-      redirect_to team_path(@team)
+      @ai_judge.teams = teams_from_ids(submitted_team_ids)
+      redirect_to ai_judge_path(@ai_judge)
     else
       render :new
     end
@@ -91,7 +94,8 @@ class AiJudgesController < ApplicationController
 
   def update
     if @ai_judge.update(ai_judge_params)
-      redirect_to team_path(@team)
+      apply_team_ids(@ai_judge, submitted_team_ids)
+      redirect_to ai_judge_path(@ai_judge)
     else
       render 'edit'
     end
@@ -99,17 +103,40 @@ class AiJudgesController < ApplicationController
 
   def destroy
     @ai_judge.destroy
-    redirect_to team_path(@team) # , notice: 'AI Judge was successfully removed.'
+    redirect_to ai_judges_path
   end
 
   private
 
   def set_team
-    @team = current_user.teams.find(params.expect(:team_id))
+    @team = current_user.teams.find_by(id: params[:team_id])
   end
 
   def set_ai_judge
-    @ai_judge = @team.members.only_ai_judges.find(params.expect(:id))
+    @ai_judge = User.only_ai_judges.for_user(current_user).find(params.expect(:id))
+  end
+
+  # Checkboxes suck: only touch teams the current user can actually see, so
+  # this can't accidentally unshare the judge from a team the submitting
+  # user isn't a member of. Mirrors BooksController#update's team_ids
+  # handling.
+  def apply_team_ids ai_judge, team_ids
+    teams_belonging_to_user = current_user.teams.pluck(:id)
+    kept_teams = ai_judge.teams.reject { |t| teams_belonging_to_user.include?(t.id) }
+    ai_judge.teams.replace(kept_teams | teams_from_ids(team_ids))
+  end
+
+  def teams_from_ids team_ids
+    return [] if team_ids.blank?
+
+    current_user.teams.where(id: team_ids.compact_blank)
+  end
+
+  # The team_ids checkboxes render inside the `user` form object
+  # (form_with model: @ai_judge), so they submit as user[team_ids][],
+  # not a top-level param.
+  def submitted_team_ids
+    params.dig(:user, :team_ids)
   end
 
   def ai_judge_params

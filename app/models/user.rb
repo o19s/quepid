@@ -34,6 +34,7 @@
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
 #  invited_by_id               :integer
+#  owner_id                    :integer
 #
 # Indexes
 #
@@ -42,6 +43,7 @@
 #  index_users_on_invited_by_id         (invited_by_id)
 #  index_users_on_name                  (name)
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
+#  index_users_owner_id                 (owner_id)
 #  ix_user_username                     (email) UNIQUE
 #
 # Foreign Keys
@@ -77,6 +79,15 @@ class User < ApplicationRecord
            foreign_key: :owner_id,
            inverse_of:  :owner,
            dependent:   :destroy
+
+  belongs_to :owner, class_name: 'User', optional: true
+
+  has_many :owned_ai_judges,
+           -> { only_ai_judges },
+           class_name:  'User',
+           foreign_key: :owner_id,
+           inverse_of:  :owner,
+           dependent:   :nullify
 
   # too late now!
   # rubocop:disable-next Rails/HasAndBelongsToMany
@@ -208,8 +219,24 @@ class User < ApplicationRecord
   include Profile
 
   # Scopes
+
   # default_scope -> { includes(:permissions) }
   scope :only_ai_judges, -> { where.not(llm_key: nil) }
+
+  # Same semantics as ForUserScope (own it, or share a team with it) but
+  # hand-rolled rather than `include`d: ForUserScope's `left_joins(teams:
+  # :members)` assumes the join table between the two hops differs (e.g.
+  # Book -> teams_books -> teams -> teams_members -> User). Here both hops
+  # go through the SAME teams_members table (User -> teams_members -> teams
+  # -> teams_members -> User), so Rails' plain `teams_members` alias binds
+  # to the first hop, not the second, and the generic scope silently
+  # degenerates to "candidate is literally the given user." Scoping the
+  # second hop as a subquery on team ids sidesteps the self-join entirely.
+  scope :for_user, ->(user) do
+    by_team = left_joins(:teams).where(teams: { id: user.teams.select(:id) })
+    by_owner = where(owner: user)
+    where(id: by_team.or(by_owner).reselect(:id))
+  end
 
   # A fresh install (e.g. SQLite with no seed data) has no real users - and so no
   # administrator to grant one via the admin UI or `thor user:grant_administrator`.

@@ -135,7 +135,13 @@ export default class extends Controller {
 
     this.teamSelectTarget.innerHTML = '<option value="">Select a team...</option>'
 
-    if (unsharedTeams.length === 0) {
+    if (allTeams.length === 0) {
+      const option = document.createElement("option")
+      option.value = ""
+      option.text = "You have no teams yet"
+      this.teamSelectTarget.appendChild(option)
+      this.teamSelectTarget.disabled = true
+    } else if (unsharedTeams.length === 0) {
       const option = document.createElement("option")
       option.value = ""
       option.text = "No other teams to share with"

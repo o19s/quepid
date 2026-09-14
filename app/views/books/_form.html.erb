@@ -28,20 +28,8 @@
       </div>
 
       <div class="mb-3">
-        <%= form.label :teams, "Teams to Share this Book With", class: 'form-label' %>
-        <% if @current_user.teams.any? %>
-          <%= form.collection_check_boxes(:team_ids, @current_user.teams, :id, :name) do |b| %>
-            <div class="collection-check-box">
-              <%= b.check_box %>
-              <%= b.label %>
-            </div>
-          <% end %>
-          <div class="form-text">Books are meant to be shared with human raters and relevance engineers, and you do this by picking which teams can use them.</div>
-        <% else %>
-          <div class="alert alert-info" role="alert">
-            <i class="bi bi-info-circle"></i> You don't belong to any teams yet. <%= link_to "Create a team", teams_path %> to share this book with other users.
-          </div>
-        <% end %>
+        <%= render 'shared/team_picker', form: form, label: 'Teams to Share this Book With',
+              help_text: 'Books are meant to be shared with human raters and relevance engineers, and you do this by picking which teams can use them.' %>
       </div>
 
 

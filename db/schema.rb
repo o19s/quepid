@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_03_152500) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_204719) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -615,6 +615,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_152500) do
     t.string "name"
     t.integer "num_logins"
     t.json "options"
+    t.integer "owner_id"
     t.string "password", limit: 120
     t.string "profile_pic", limit: 4000
     t.datetime "reset_password_sent_at", precision: nil
@@ -627,6 +628,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_152500) do
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191
     t.index ["invited_by_id"], name: "index_users_on_invited_by_id"
     t.index ["name"], name: "index_users_on_name"
+    t.index ["owner_id"], name: "index_users_owner_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, length: 191
   end
 

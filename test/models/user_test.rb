@@ -36,6 +36,7 @@ require 'test_helper'
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
 #  invited_by_id               :integer
+#  owner_id                    :integer
 #
 # Indexes
 #
@@ -44,6 +45,7 @@ require 'test_helper'
 #  index_users_on_invited_by_id         (invited_by_id)
 #  index_users_on_name                  (name)
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
+#  index_users_owner_id                 (owner_id)
 #  ix_user_username                     (email) UNIQUE
 #
 # Foreign Keys
@@ -458,6 +460,39 @@ class UserTest < ActiveSupport::TestCase
         judge_options = joey.judge_options
         assert_equal('gpt-3.5-turbo', judge_options[:model])
       end
+    end
+  end
+
+  describe 'for_user scope (ownership + team sharing for AI judges)' do
+    let(:owner) { User.create!(name: 'Owner', email: 'for-user-owner@example.com', password: 'password1') }
+    let(:teammate) { User.create!(name: 'Teammate', email: 'for-user-teammate@example.com', password: 'password1') }
+    let(:outsider) { User.create!(name: 'Outsider', email: 'for-user-outsider@example.com', password: 'password1') }
+    let(:team) { Team.create!(name: 'for_user scope test team') }
+
+    it 'is visible to its owner' do
+      judge = User.create!(name: 'Owned Judge', llm_key: '1234', owner: owner)
+      assert_includes User.only_ai_judges.for_user(owner), judge
+    end
+
+    it 'is visible to a teammate the judge is shared with' do
+      judge = User.create!(name: 'Shared Judge', llm_key: '1234')
+      team.members << judge
+      team.members << teammate
+      assert_includes User.only_ai_judges.for_user(teammate), judge
+    end
+
+    it 'is not visible to a user who neither owns it nor shares a team with it' do
+      judge = User.create!(name: 'Private Judge', llm_key: '1234', owner: owner)
+      team.members << judge
+      assert_not_includes User.only_ai_judges.for_user(outsider), judge
+    end
+
+    it 'excludes regular (non-AI-judge) users even when owned or team-shared' do
+      human = User.create!(name: 'Human', email: 'for-user-human@example.com', password: 'password1', owner: owner)
+      team.members << human
+      team.members << teammate
+      assert_not_includes User.only_ai_judges.for_user(owner), human
+      assert_not_includes User.only_ai_judges.for_user(teammate), human
     end
   end
 

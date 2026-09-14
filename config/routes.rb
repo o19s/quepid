@@ -80,11 +80,7 @@ Rails.application.routes.draw do
   get '/dropdown/cases' => 'dropdown#cases'
   get '/dropdown/books' => 'dropdown#books'
 
-  resources :teams, only: [] do
-    resources :ai_judges, controller: :ai_judges, except: [ :index ]
-  end
-
-  resources :ai_judges, only: [] do
+  resources :ai_judges do
     resource :prompt, only: [ :show, :edit, :update ], module: :ai_judges
   end
 

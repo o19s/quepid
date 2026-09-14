@@ -13,8 +13,16 @@ module AiJudges
 
       @query_doc_pair = if @book
                           @book.query_doc_pairs.sample
+                        elsif @ai_judge.owner
+                          # grab any query_doc_pair from a book the judge's owner can access
+                          # (owned directly, or shared via any of the owner's teams)
+                          QueryDocPair
+                            .where(book: Book.for_user(@ai_judge.owner))
+                            .order(Arel.sql(AdapterFunctions.random_function))
+                            .first
                         else
-                          # grab any query_doc_pair that the judge has access to
+                          # legacy/team-only judge with no owner - fall back to the judge's
+                          # own team memberships directly
                           QueryDocPair
                             .joins(book: { teams: :members })
                             .where(teams: { teams_members: { member_id: @ai_judge.id } })

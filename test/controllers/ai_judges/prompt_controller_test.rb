@@ -28,6 +28,17 @@ module AiJudges
         assert assigns(:query_doc_pair)
         assert_includes(book.query_doc_pairs, assigns(:query_doc_pair))
       end
+
+      test 'without a book, falls back to a book the judge owner can access when the judge has an owner' do
+        owned_judge = User.create!(name: 'Owned Judge', llm_key: '1234', owner: user)
+
+        get edit_ai_judge_prompt_url(ai_judge_id: owned_judge.id)
+        assert_response :success
+
+        query_doc_pair = assigns(:query_doc_pair)
+        assert_predicate query_doc_pair, :persisted?
+        assert_includes(Book.for_user(user).flat_map(&:query_doc_pairs), query_doc_pair)
+      end
     end
 
     # test 'should get update' do
