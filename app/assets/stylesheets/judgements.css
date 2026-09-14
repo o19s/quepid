@@ -153,3 +153,18 @@
   display: inline-block;
   animation: icon-flip 0.6s ease-in-out;
 }
+
+/*
+ * Book overview page — pulses a Linked Cases sync-direction arrow while a
+ * PopulateBookJob (Case -> Book) or UpdateCaseJob (Book -> Case) is
+ * actively running for that case (see BroadcastLinkedCasesJob).
+ */
+@keyframes icon-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+.icon-pulse {
+  display: inline-block;
+  animation: icon-pulse 1s ease-in-out infinite;
+}
