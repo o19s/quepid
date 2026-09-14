@@ -2,7 +2,8 @@
 <tr id="judge-row-<%= row[:judge].id %>">
   <td>
     <% if row[:judge].ai_judge? %>
-      <i class="bi bi-robot <%= row[:actively_judging] ? 'text-primary' : 'text-secondary' %>"></i>
+      <i class="bi bi-robot <%= row[:actively_judging] ? 'text-primary' : 'text-secondary' %> <%= 'judge-icon-flash' if flash_active %>"
+         id="judge-icon-<%= row[:judge].id %>"></i>
     <% else %>
       <i class="bi bi-person-circle text-secondary <%= 'judge-icon-flash' if flash_active %>"
          id="judge-icon-<%= row[:judge].id %>"></i>
