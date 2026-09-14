@@ -168,6 +168,32 @@ class Book < ApplicationRecord
     query_doc_pairs.select(:query_text).distinct.count
   end
 
+  # Per-judge activity stats (sparkline of daily counts, total count, last
+  # judged timestamp) for the given user ids, in a constant number of queries
+  # regardless of how many judges are asked for. Shared by the book overview
+  # page, the per-judge overview page, and the live activity broadcast so
+  # they can't drift out of sync with each other.
+  def judge_activity_for user_ids, days: 7
+    return {} if user_ids.blank?
+
+    start_date = (days - 1).days.ago.to_date
+    daily_counts = judgements
+      .where(user_id: user_ids)
+      .where(judgements: { updated_at: start_date.beginning_of_day.. })
+      .group(:user_id, Arel.sql('DATE(judgements.updated_at)'))
+      .count
+    totals = judgements.where(user_id: user_ids).group(:user_id).count
+    last_ats = judgements.where(user_id: user_ids).group(:user_id).maximum(:updated_at)
+
+    user_ids.index_with do |uid|
+      sparkline = (days - 1).downto(0).map do |days_ago|
+        date = days_ago.days.ago.to_date
+        { date: date.strftime('%a'), count: daily_counts[[ uid, date ]] || 0 }
+      end
+      { sparkline: sparkline, count: totals[uid] || 0, last_judged_at: last_ats[uid] }
+    end
+  end
+
   # Not proud of this method, but it's the only way I can get the dependent
   # objects of a Book to actually delete!
   # Otherwise our foreign key on judgements to query_doc_pairs gets violated with

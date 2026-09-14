@@ -5,6 +5,11 @@
     <% end %> 
   </li>
   <li class="nav-item">
+    <%= link_to judge_overview_book_path(book), class: "nav-link #{make_active?({action: 'judge_overview'}) ? 'active' : ''}", method: :get do %>
+      <i class="bi bi-person-check text-body"></i> Judge Overview
+    <% end %>
+  </li>
+  <li class="nav-item">
     <%= link_to book_query_doc_pairs_path(book), class: "nav-link", method: :get do %>
       Query/Doc Pairs
     <% end %> 

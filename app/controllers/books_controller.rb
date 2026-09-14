@@ -7,11 +7,13 @@ class BooksController < ApplicationController
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :judgement_stats, :export, :archive, :unarchive ]
+                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy,
+                        :judgement_stats, :judge_overview, :export, :archive, :unarchive ]
   before_action :check_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :judgement_stats, :export, :archive, :unarchive ]
+                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy,
+                        :judgement_stats, :judge_overview, :export, :archive, :unarchive ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -44,8 +46,7 @@ class BooksController < ApplicationController
     @pagy, @books = pagy(query)
   end
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable-next Metrics/AbcSize
   def show
     @kraken_unleashed = flash[:kraken_unleashed]
 
@@ -55,11 +56,68 @@ class BooksController < ApplicationController
 
     @cases = @book.cases
 
+    # ── RE coverage metrics ───────────────────────────────────────────────────
+    # Wrapped in a transaction so the three counts see one consistent snapshot
+    # even while this book is being actively judged.
+    @total_pairs, @zero_judgement_count, @partial_count = ActiveRecord::Base.transaction do
+      [
+        @book.query_doc_pairs.count,
+        SelectionStrategy.unjudged_pairs_count(@book),
+        SelectionStrategy.partially_judged_pairs_count(@book)
+      ]
+    end
+    @complete_count = @total_pairs - @zero_judgement_count - @partial_count
+    @coverage_pct   = @total_pairs.positive? ? ((@complete_count.to_f / @total_pairs) * 100).round : 0
+
+    # ── Per-judge activity: last 7 days sparkline + last judged timestamp ─────
+    judge_ids = (@book.judgements.where.not(user_id: nil).distinct.pluck(:user_id) + @book.ai_judges.pluck(:id)).uniq
+
+    @actively_judging_ids = RunJudgeJudyJob.actively_judging_user_ids(@book)
+    judges_by_id = User.where(id: judge_ids).index_by(&:id)
+    activity     = @book.judge_activity_for(judge_ids)
+
+    @judge_activity = judge_ids.filter_map do |uid|
+      judge = judges_by_id[uid]
+      next unless judge
+
+      stats = activity.fetch(uid, { sparkline: [], count: 0, last_judged_at: nil })
+      { judge: judge, sparkline: stats[:sparkline], last_judged_at: stats[:last_judged_at],
+        count: stats[:count], actively_judging: @actively_judging_ids.include?(judge.id) }
+    end
+    @judge_activity = @judge_activity.sort_by { |j| j[:judge].fullname }
+
     respond_with(@book)
   end
 
   # if this becomes richer, then move to it's own controller
   def export
+  end
+
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
+  def judge_overview
+    # Personal progress
+    @total_pairs           = @book.query_doc_pairs.count
+    @user_judgement_count  = @book.judgements.where(user: current_user).count
+    @user_progress_pct     = @total_pairs.positive? ? ((@user_judgement_count.to_f / @total_pairs) * 100).round : 0
+
+    # Last judging timestamp for this user in this book
+    @last_judged_at = @book.judgements.where(user: current_user).maximum(:updated_at)
+
+    # Pairs with zero judgements total (highest priority — no one has touched them)
+    @zero_judgement_pairs_count = SelectionStrategy.unjudged_pairs_count(@book)
+
+    # Pairs with 1-2 judgements total that the current user has NOT judged yet
+    @needs_more_not_yet_judged_by_user =
+      SelectionStrategy.partially_judged_pairs_not_yet_judged_by_count(@book, current_user)
+
+    # 7-day sparkline: judgements per day for this user in this book
+    @sparkline_data = @book.judge_activity_for([ current_user.id ]).fetch(current_user.id, { sparkline: [] })[:sparkline]
+
+    @user_has_judged_all = SelectionStrategy.user_has_judged_all_available_pairs?(@book, current_user)
+    @moar_judgements_needed = SelectionStrategy.moar_judgements_needed?(@book)
+
+    respond_with(@book)
   end
 
   def judgement_stats
@@ -308,6 +366,28 @@ class BooksController < ApplicationController
 
     RunJudgeJudyJob.perform_later(@book, ai_judge, number_of_pairs)
     redirect_to book_path(@book), flash: { kraken_unleashed: judge_all }, :notice => "AI Judge #{ai_judge.name} will start evaluating query/doc pairs."
+  end
+
+  def cancel_judge_judy
+    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
+    unless ai_judge
+      redirect_to book_path(@book), alert: 'AI Judge not found.'
+      return
+    end
+
+    RunJudgeJudyJob.active_for(@book, ai_judge).each do |job|
+      if job.claimed_execution.present?
+        # Job is actively running — force destroy it. RunJudgeJudyJob#perform
+        # checks for its own SolidQueue row on every iteration and stops as
+        # soon as it notices this row is gone.
+        job.claimed_execution.destroy
+        job.destroy
+      else
+        job.discard
+      end
+    end
+
+    redirect_to book_path(@book), notice: "AI Judge #{ai_judge.name} has been cancelled."
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength

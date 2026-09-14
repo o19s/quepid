@@ -87,6 +87,7 @@ class JudgementsController < ApplicationController
 
     if @judgement.save
       UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
+      BroadcastJudgeActivityJob.perform_later(@book, current_user)
       redirect_to book_judge_path(@book)
     else
       @query_doc_pair = @judgement.query_doc_pair

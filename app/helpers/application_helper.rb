@@ -60,6 +60,7 @@ module ApplicationHelper
   def flash_messages _opts = {}
     flash.each do |msg_type, message|
       next if 'unfurl' == msg_type # we don't show unfurl's in the flash notice UI.
+      next if 'kraken_unleashed' == msg_type # internal flag for the Kraken celebration modal, not a user-facing message.
 
       concat(
         content_tag(

@@ -1,0 +1,74 @@
+<%# locals: (row:, flash_active: false, book: nil) %>
+<tr id="judge-row-<%= row[:judge].id %>">
+  <td>
+    <% if row[:judge].ai_judge? %>
+      <i class="bi bi-robot <%= row[:actively_judging] ? 'text-primary' : 'text-secondary' %>"></i>
+    <% else %>
+      <i class="bi bi-person-circle text-secondary <%= 'judge-icon-flash' if flash_active %>"
+         id="judge-icon-<%= row[:judge].id %>"></i>
+    <% end %>
+    <%= row[:judge].fullname %>
+    <% if row[:judge].ai_judge? %>
+      <% if row[:actively_judging] %>
+        <span class="d-inline-flex align-items-center gap-1 ms-1">
+          <button class="badge bg-primary border-0"
+                  data-bs-toggle="modal"
+                  data-bs-target="#judging-modal-<%= row[:judge].id %>"
+                  style="cursor:pointer;"
+                  title="Click to see what's being judged">
+            <span class="spinner-grow spinner-grow-sm me-1" role="status" aria-hidden="true"></span>AI
+          </button>
+          <%= button_to cancel_judge_judy_book_path(book, ai_judge_id: row[:judge].id),
+                method: :delete,
+                class: 'btn btn-outline-danger btn-sm py-0 px-1',
+                style: 'font-size:0.7rem; line-height:1.4;',
+                title: 'Cancel judging',
+                form: { data: { turbo_confirm: "Stop #{row[:judge].fullname} from judging?" } } do %>
+            <i class="bi bi-x-circle"></i>
+          <% end %>
+        </span>
+      <% else %>
+        <span class="d-inline-flex align-items-center gap-1 ms-1">
+          <span class="badge bg-secondary">AI</span>
+          <%= button_to run_judge_judy_book_path(book, ai_judge_id: row[:judge].id),
+                method: :patch,
+                params: { number_of_pairs: 10 },
+                class: 'btn btn-outline-success btn-sm py-0 px-1',
+                style: 'font-size:0.7rem; line-height:1.4;',
+                title: 'Start judging 10 pairs' do %>
+            <i class="bi bi-play-fill"></i>
+          <% end %>
+        </span>
+      <% end %>
+    <% end %>
+  </td>
+  <td class="text-end fw-semibold"><%= row[:count] %></td>
+  <td class="text-end text-muted small">
+    <% if row[:last_judged_at] %>
+      <%= time_ago_in_words(row[:last_judged_at]) %> ago
+    <% else %>
+      —
+    <% end %>
+  </td>
+  <td>
+    <% if row[:count].positive? %>
+      <%=
+        Vega.lite
+          .data(row[:sparkline])
+          .width(140)
+          .height(32)
+          .mark(type: "line", point: true, color: row[:judge].ai_judge? ? "#6610f2" : "#0d6efd")
+          .encoding(
+            x: { field: "date", type: "ordinal", axis: nil, sort: nil },
+            y: { field: "count", type: "quantitative",
+                 axis: nil, scale: { domainMin: 0 } },
+            tooltip: [
+              { field: "date",  type: "ordinal",      title: "Day" },
+              { field: "count", type: "quantitative", title: "Judgements" }
+            ]
+          )
+          .config(view: { stroke: nil }, background: "transparent")
+      %>
+    <% end %>
+  </td>
+</tr>

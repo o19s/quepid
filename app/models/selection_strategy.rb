@@ -43,6 +43,16 @@ module SelectionStrategy
     grouped_pair_count(book, 'COUNT(judgements.id) BETWEEN 1 AND 2')
   end
 
+  # Returns count of partially judged (1-2 judgements) pairs that the given
+  # user has not yet judged themselves - used to prioritize a judge's next
+  # available pairs.
+  def self.partially_judged_pairs_not_yet_judged_by_count book, user
+    judged_pair_ids = book.judgements.where(user: user).pluck(:query_doc_pair_id)
+    grouped_pair_count(book, 'COUNT(judgements.id) BETWEEN 1 AND 2') do |relation|
+      relation.where.not(id: judged_pair_ids)
+    end
+  end
+
   # Checks if every query-document pair in the book has at least 3 judgements
   def self.every_query_doc_pair_has_three_judgements? book
     query_doc_pair = book.query_doc_pairs
@@ -88,8 +98,8 @@ module SelectionStrategy
       .left_joins(:judgements)
       .group('query_doc_pairs.id')
       .having(having_clause)
-      .select('query_doc_pairs.id')
-    QueryDocPair.from(matching_ids, :matching_pairs).count
+    matching_ids = yield(matching_ids) if block_given?
+    QueryDocPair.from(matching_ids.select('query_doc_pairs.id'), :matching_pairs).count
   end
   private_class_method :grouped_pair_count
 end
