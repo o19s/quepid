@@ -5,6 +5,24 @@ require 'progress_indicator'
 class BookImporter
   # include ProgressIndicator
 
+  # The uploaded file says which judge and which query/doc pair a judgement belongs to. It does
+  # not get to *change* them: we look these keys up, then drop them, so a handcrafted file can't
+  # attach its judgement to someone else's pair or overwrite one that already exists. Timestamps
+  # are excluded too - assign_attributes happily overwrites created_at/updated_at, and Rails only
+  # backfills them when blank, so a crafted file could otherwise forge a judgement's history.
+  UNASSIGNABLE_JUDGEMENT_KEYS = [
+    :user_email, :email, :user_id, :id, :judgement_id, :query_doc_pair, :query_doc_pair_id,
+    :created_at, :updated_at
+  ].freeze
+
+  # Same idea, one level up: a pair says which book it's in. Without this, a crafted `book_id`
+  # (or `id`) on a pair would move it - and every judgement on it - into a book the uploader
+  # doesn't own. See docs/todo/todo.md for why this is a stopgap, not the real fix. Timestamps
+  # are excluded for the same forgery reason as UNASSIGNABLE_JUDGEMENT_KEYS above.
+  UNASSIGNABLE_QUERY_DOC_PAIR_KEYS = [
+    :id, :book_id, :judgements, :query_doc_pair_id, :created_at, :updated_at
+  ].freeze
+
   attr_reader :logger, :options
 
   def initialize book, current_user, data_to_process, opts = {}
@@ -49,9 +67,9 @@ class BookImporter
     apply_top_level_attributes(params_to_use)
     apply_scale(params_to_use)
 
-    # A freshly-imported book has no owner yet - force it to be owned by the user doing the
-    # importing, otherwise you can lose the book! An existing book being added to keeps its owner.
-    @book.owner = User.find_by(email: @current_user.email) if @book.new_record?
+    # A book nobody owns gets claimed by whoever is importing, so it can't get lost - including
+    # an old book whose owner was deleted.
+    @book.owner ||= User.find_by(email: @current_user.email)
 
     @book.save
 
@@ -108,7 +126,7 @@ class BookImporter
 
     query_doc_pairs.each do |query_doc_pair|
       qdp = find_or_initialize_query_doc_pair(query_doc_pair)
-      qdp.assign_attributes(query_doc_pair.except(:judgements, :query_doc_pair_id))
+      qdp.assign_attributes(query_doc_pair.except(*UNASSIGNABLE_QUERY_DOC_PAIR_KEYS))
       qdp.save
 
       counter -= 1
@@ -145,13 +163,13 @@ class BookImporter
 
       next unless qdp
 
-      import_judgement(qdp, judgement.except(:query_doc_pair, :query_doc_pair_id))
+      import_judgement(qdp, judgement)
     end
   end
 
   def upsert_nested_query_doc_pair attrs
     qdp = find_or_initialize_query_doc_pair(attrs)
-    qdp.assign_attributes(attrs.except(:query_doc_pair_id))
+    qdp.assign_attributes(attrs.except(*UNASSIGNABLE_QUERY_DOC_PAIR_KEYS))
     qdp.save
     qdp
   end
@@ -175,10 +193,24 @@ class BookImporter
   end
 
   def import_judgement query_doc_pair, attrs
-    user = User.find_by(id: attrs[:user_id]) || User.find_by(email: attrs[:user_email] || attrs[:email])
+    user = find_judgement_user(attrs)
 
-    judgement = query_doc_pair.judgements.find_or_initialize_by(user: user)
-    judgement.assign_attributes(attrs.except(:user_email, :email, :user_id))
+    # A pair can hold several judgements from "nobody", so don't look one up by "the judgement
+    # with no judge" - that merges them all into a single row and loses ratings. The cost of
+    # always building instead: importing the same file twice creates duplicates, and once a pair
+    # has 3+ judgements its rating is calculated differently. See docs/todo/todo.md.
+    judgement = user ? query_doc_pair.judgements.find_or_initialize_by(user: user) : query_doc_pair.judgements.build
+    judgement.assign_attributes(attrs.except(*UNASSIGNABLE_JUDGEMENT_KEYS))
     judgement.save
+  end
+
+  # Only search by email when we actually have one: AI judges have no email, so searching for a
+  # blank email would hand the judgement to a random AI judge.
+  def find_judgement_user attrs
+    by_id = User.find_by(id: attrs[:user_id]) if attrs[:user_id].present?
+    return by_id if by_id
+
+    email = attrs[:user_email].presence || attrs[:email].presence
+    User.find_by(email: email) if email
   end
 end

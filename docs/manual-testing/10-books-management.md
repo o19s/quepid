@@ -103,6 +103,7 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
   - [ ] Upload structurally-invalid (but syntactically valid) JSON — expect "Invalid JSON file: Unable to process the provided data structure. {message}".
   - [ ] Upload judgements referencing a `user_email` not already in this Quepid instance with **Force create users unchecked** — expect "User with email '...' needs to be migrated over first." and the book is not created.
   - [ ] Repeat with **Force create users checked** — expect the user to be auto-invited and import to proceed successfully.
+  - [ ] Upload a payload whose pair carries **two judgements with no `user_email`** — expect *both* to land as separate rows on the Judgements tab with Rater "anonymous" (they must not collapse into one, nor be attributed to an AI judge; AI-judge users have no email, so a sloppy lookup matches them), and the Overview to report "This book has 2 anonymous judgements that could be mapped to a user." Note that re-uploading that same file *doubles* the anonymous rows — expected, since an anonymous judgement has no identity to upsert on; judgements carrying a `user_email` upsert instead. **Caveat worth checking:** that doubling is not cosmetic — once a pair reaches 3 judgements, `RatingsManager` stops averaging and takes the min of the top 3, so re-importing can move a computed case rating (see the anonymous-judgement idempotency entry in `docs/todo/todo.md`).
 
 ### 10.8 Import additional data into an existing book
 
@@ -110,7 +111,9 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
   1. On an existing book's **Import** tab, upload a JSON payload of additional `query_doc_pairs` (referencing existing `query_doc_pair_id`s, or new `query_text`/`doc_id` pairs to upsert).
   2. Separately, upload an `all_judgements` payload (using `email` to attribute judgements to a user, and optionally a nested `query_doc_pair` object instead of an id).
 - **Expected:** Pairs/judgements are created or updated once the background job completes.
-- **Edge cases:** Same JSON-validity and missing-file edge cases as 10.7 apply here too.
+- **Edge cases:**
+  - [ ] Same JSON-validity and missing-file edge cases as 10.7 apply here too.
+  - [ ] Anonymous (`user_email`-less) judgements stay separate and unattributed on both upload forms — see 10.7's anonymous-judgement edge case.
 
 ### 10.9 Export a book
 

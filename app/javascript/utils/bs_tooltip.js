@@ -63,7 +63,7 @@ export function hideTooltipsWithin(root) {
   const Tooltip = getBootstrapTooltip()
   if (!Tooltip) return
 
-  root.querySelectorAll(TOOLTIP_SELECTOR).forEach(el => {
+  root.querySelectorAll(TOOLTIP_SELECTOR).forEach((el) => {
     const instance = Tooltip.getInstance(el)
     if (instance) instance.hide()
   })
