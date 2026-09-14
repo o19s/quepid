@@ -6,7 +6,7 @@
   </div>
   <div class="progress" style="height:8px;">
     <%
-      total = book.query_doc_pairs.count
+      total = book.query_doc_pairs_within_rank_depth.count
       pct   = total > 0 ? ((counter.to_f / total) * 100).round : 0
     %>
     <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
