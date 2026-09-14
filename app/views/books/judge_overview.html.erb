@@ -121,6 +121,7 @@
               .data(@sparkline_data)
               .width(400)
               .height(140)
+              .autosize({ type: "fit", contains: "padding" })
               .mark(type: "line", point: true, color: "#0d6efd")
               .encoding(
                 x: { field: "date", type: "ordinal", axis: { labelAngle: 0, title: nil }, sort: nil },
