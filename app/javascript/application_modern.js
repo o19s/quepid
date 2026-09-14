@@ -84,3 +84,28 @@ function setCookie() {
   Cookies.set('cookie_eu_consented', true, { path: '/', expires: 365, secure: isSecure });
 }
 // cookies consent toast handling end
+
+// CSRF token repair for forms rendered via a Turbo Stream broadcast (e.g. a
+// button_to inside a book overview row, re-rendered from a background job
+// after an AI judge finishes). Rails can't embed a valid authenticity_token
+// in a form rendered outside a real request/session, so button_to silently
+// omits the hidden field there entirely - submitting that form as-is fails
+// with ActionController::InvalidAuthenticityToken. The page's own <meta
+// name="csrf-token"> tag is always valid for the current session, so refresh
+// (or add) every form's token from it right before it submits.
+document.addEventListener('submit', function (event) {
+  const form = event.target;
+  if (!(form instanceof HTMLFormElement)) return;
+
+  const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  if (!csrfMeta) return;
+
+  let tokenInput = form.querySelector('input[name="authenticity_token"]');
+  if (!tokenInput) {
+    tokenInput = document.createElement('input');
+    tokenInput.type = 'hidden';
+    tokenInput.name = 'authenticity_token';
+    form.appendChild(tokenInput);
+  }
+  tokenInput.value = csrfMeta.content;
+});
