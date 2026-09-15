@@ -217,26 +217,12 @@ class User < ApplicationRecord
 
   # Concerns
   include Profile
+  include ForUserScope
 
   # Scopes
 
   # default_scope -> { includes(:permissions) }
   scope :only_ai_judges, -> { where.not(llm_key: nil) }
-
-  # Same semantics as ForUserScope (own it, or share a team with it) but
-  # hand-rolled rather than `include`d: ForUserScope's `left_joins(teams:
-  # :members)` assumes the join table between the two hops differs (e.g.
-  # Book -> teams_books -> teams -> teams_members -> User). Here both hops
-  # go through the SAME teams_members table (User -> teams_members -> teams
-  # -> teams_members -> User), so Rails' plain `teams_members` alias binds
-  # to the first hop, not the second, and the generic scope silently
-  # degenerates to "candidate is literally the given user." Scoping the
-  # second hop as a subquery on team ids sidesteps the self-join entirely.
-  scope :for_user, ->(user) do
-    by_team = left_joins(:teams).where(teams: { id: user.teams.select(:id) })
-    by_owner = where(owner: user)
-    where(id: by_team.or(by_owner).reselect(:id))
-  end
 
   # A fresh install (e.g. SQLite with no seed data) has no real users - and so no
   # administrator to grant one via the admin UI or `thor user:grant_administrator`.
