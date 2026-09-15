@@ -1,11 +1,14 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1><i class="bi bi-book"></i> Import Data Into This Book</h1>
+  <h1>Import Data for <i class="bi bi-book"></i> <%= book_title(@book) %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= button_to 'Back to Book', book_path(@book), class: "btn btn-sm btn-outline-secondary", method: :get %>
-    </div>    
-  </div>  
+    </div>
+  </div>
 </div>
+
+<%= render 'books/tabs', book: @book %>
+<p/>
 
 <div class="card" style="">
   <div class="card-body">

@@ -139,3 +139,41 @@
   max-height: 300px;
   overflow-y: auto;
 }
+
+/*
+ * Book overview page — judge activity row flash on live Turbo Stream update.
+ */
+@keyframes icon-flip {
+  0%   { transform: rotateY(0deg); }
+  50%  { transform: rotateY(90deg); }
+  100% { transform: rotateY(0deg); }
+}
+
+.judge-icon-flash {
+  display: inline-block;
+  animation: icon-flip 0.6s ease-in-out;
+}
+
+/*
+ * Book overview page — pulses a Linked Cases sync-direction arrow while a
+ * PopulateBookJob (Case -> Book), UpdateCaseJob, or UpdateCaseRatingsJob
+ * (Book -> Case) is actively running for that case (see
+ * BroadcastLinkedCasesJob). Deliberately finite, not infinite: each
+ * broadcast re-renders the icon as a brand new element, restarting the
+ * animation, so sustained activity (frequent broadcasts) still reads as
+ * continuous pulsing. But Turbo Stream broadcasts for the same book can
+ * arrive out of order under concurrent job execution, and a stale "still
+ * running" render has no guaranteed follow-up broadcast to correct it once
+ * activity actually stops - an infinite animation would then pulse forever
+ * until the next reload. Finite iterations make that self-heal in a few
+ * seconds instead.
+ */
+@keyframes icon-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+.icon-pulse {
+  display: inline-block;
+  animation: icon-pulse 1s ease-in-out 4;
+}

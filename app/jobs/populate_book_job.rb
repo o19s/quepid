@@ -17,6 +17,27 @@ class PopulateBookJob < ApplicationJob
                      duration:    30.minutes,
                      on_conflict: :discard
 
+  # Finds the in-flight (not finished) SolidQueue rows for this job class
+  # matching the given book + case. Mirrors RunJudgeJudyJob.active_for -
+  # the Linked Cases card uses this to pulse a case's "sends pairs" arrow
+  # while its Case -> Book sync is actively running.
+  def self.active_for book, kase
+    book_gid = book.to_global_id.to_s
+    kase_gid = kase.to_global_id.to_s
+    SolidQueue::Job
+      .where(class_name: name, finished_at: nil)
+      .where('arguments LIKE ? AND arguments LIKE ?', "%#{book_gid}%", "%#{kase_gid}%")
+      .select do |job|
+        args = job.arguments['arguments'] || []
+        args.any? { |a| a.is_a?(Hash) && a['_aj_globalid'] == book_gid } &&
+          args.any? { |a| a.is_a?(Hash) && a['_aj_globalid'] == kase_gid }
+      end
+  end
+
+  def self.actively_populating? book, kase
+    active_for(book, kase).any?
+  end
+
   # rubocop:disable Security/MarshalLoad
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
@@ -24,6 +45,7 @@ class PopulateBookJob < ApplicationJob
     # Using Rails' bulk insert methods for better performance.
 
     book.update(populate_job: "populate started at #{Time.zone.now}")
+    BroadcastLinkedCasesJob.perform_later(book)
     compressed_data = blob.download
     serialized_data = Zlib::Inflate.inflate(compressed_data)
     params = Marshal.load(serialized_data)
@@ -91,6 +113,10 @@ class PopulateBookJob < ApplicationJob
         partial: 'books/blah',
         locals:  { book: book, counter: counter, percent: percent, qdp: query_doc_pair }
       )
+      # Keeps the Linked Cases pulse (finite-iteration, see judgements.css)
+      # alive for the length of a large book's populate run, not just its
+      # first few seconds.
+      BroadcastLinkedCasesJob.perform_later(book)
     end
 
     fix_duplicate_positions book
@@ -99,6 +125,7 @@ class PopulateBookJob < ApplicationJob
     blob.purge
     book.populate_job = nil
     book.save
+    BroadcastLinkedCasesJob.perform_later(book)
   end
   # rubocop:enable Security/MarshalLoad
   # rubocop:enable Metrics/MethodLength

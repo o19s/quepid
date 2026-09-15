@@ -99,6 +99,9 @@
   <div class="card-footer">
     <%= form.submit 'Save', class: 'btn btn-primary float-start' %>
     <%= link_to 'Back to Team', team_path(@team), class: "btn btn-outline-secondary float-end" %>
+    <% if ai_judge.persisted? %>
+      <%= link_to 'Clone', clone_team_ai_judge_path(@team, ai_judge), class: "btn btn-outline-secondary float-end me-2" %>
+    <% end %>
   </div>
 </div>
 

@@ -10,7 +10,7 @@ class BulkJudgeController < ApplicationController
   # rubocop:disable-next Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
   def new
     @query_text = params[:query_text]
-    @rank_depth = params[:rank_depth].presence&.to_i
+    @rank_depth = params[:rank_depth].presence&.to_i || @book.rank_depth
 
     # Default to showing only unrated items unless explicitly set to false
     @only_unrated = params[:only_unrated].nil? || deserialize_bool_param(params[:only_unrated])
@@ -20,14 +20,11 @@ class BulkJudgeController < ApplicationController
 
     @available_positions = @book.query_doc_pairs.distinct.pluck(:position).compact.sort
 
-    # Get all query_doc_pairs for this query_text
-    query = @book.query_doc_pairs.includes(:judgements)
+    # Get all query_doc_pairs for this query_text, already scoped to rank depth
+    query = @book.query_doc_pairs_within_rank_depth(@rank_depth).includes(:judgements)
 
     # Use LIKE search if query_text is provided to match partial queries
     query = query.where('LOWER(query_text) LIKE ?', "%#{@query_text.to_s.downcase}%") if @query_text.present?
-
-    # Filter by rank depth if specified
-    query = query.where(position: ..@rank_depth) if @rank_depth.present?
 
     # Filter for unrated items if checkbox is checked
     if @only_unrated
@@ -90,6 +87,7 @@ class BulkJudgeController < ApplicationController
       if judgement.persisted?
         judgement.destroy
         UpdateCaseRatingsJob.perform_later query_doc_pair
+        BroadcastJudgeActivityJob.perform_later(@book, current_user)
       end
       render json: { status: 'success' }
     else
@@ -105,6 +103,7 @@ class BulkJudgeController < ApplicationController
 
       if judgement.save
         UpdateCaseRatingsJob.perform_later query_doc_pair
+        BroadcastJudgeActivityJob.perform_later(@book, current_user)
         render json: { status: 'success', judgement_id: judgement.id }
       else
         render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_content
@@ -120,6 +119,7 @@ class BulkJudgeController < ApplicationController
 
     if judgement&.destroy
       UpdateCaseRatingsJob.perform_later judgement.query_doc_pair
+      BroadcastJudgeActivityJob.perform_later(@book, current_user)
       render json: { status: 'success' }
     else
       render json: { status: 'error', message: 'Judgement not found or could not be deleted' }, status: :not_found

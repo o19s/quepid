@@ -46,6 +46,35 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes result, 'class="btn btn-primary"'
   end
 
+  describe 'flash_messages' do
+    test 'renders a visible alert for a normal flash message' do
+      flash[:notice] = 'Something happened'
+
+      html = capture { flash_messages }
+
+      assert_includes html, 'Something happened'
+    end
+
+    test 'does not leak the internal kraken_unleashed flag as a visible message' do
+      flash[:notice] = 'AI Judge Foo will start evaluating query/doc pairs.'
+      flash[:kraken_unleashed] = true
+
+      html = capture { flash_messages }
+
+      assert_includes html, 'AI Judge Foo will start evaluating query/doc pairs.'
+      assert_not_includes html, 'true'
+    end
+
+    test 'does not leak the internal kraken_unleashed flag when false' do
+      flash[:notice] = 'AI Judge Foo will start evaluating query/doc pairs.'
+      flash[:kraken_unleashed] = false
+
+      html = capture { flash_messages }
+
+      assert_not_includes html, 'false'
+    end
+  end
+
   describe 'Smart handling of links to HTTPS search end points' do
     let(:https_search_endpoint) { search_endpoints(:bootstrap_try_1) }
 

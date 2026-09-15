@@ -56,17 +56,27 @@ module ApplicationHelper
     button_to(name, options, html_options) if condition
   end
 
+  # Transient, good-news flashes auto-dismiss after a few seconds (like a
+  # toast). Errors and warnings stay put until the user closes them - they
+  # need to actually read and act on those, so auto-hiding would risk
+  # yanking the message away before they can.
+  AUTO_DISMISS_FLASH_TYPES = %w[success notice].freeze
+
   # rubocop:disable-next Lint/EmptyBlock
   def flash_messages _opts = {}
     flash.each do |msg_type, message|
       next if 'unfurl' == msg_type # we don't show unfurl's in the flash notice UI.
+      next if 'kraken_unleashed' == msg_type # internal flag for the Kraken celebration modal, not a user-facing message.
+
+      data = AUTO_DISMISS_FLASH_TYPES.include?(msg_type.to_s) ? { controller: 'auto-dismiss' } : {}
 
       concat(
         content_tag(
           :div,
           message,
           class: "alert #{bootstrap_class_for(msg_type)} alert-dismissible fade show",
-          role:  'alert'
+          role:  'alert',
+          data:  data
         ) do
           concat(
             content_tag(

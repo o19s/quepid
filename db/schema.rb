@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_03_152500) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_010100) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -196,6 +196,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_152500) do
     t.string "name"
     t.integer "owner_id"
     t.string "populate_job"
+    t.integer "rank_depth"
     t.string "scale"
     t.text "scale_with_labels"
     t.text "scoring_guidelines"
@@ -206,6 +207,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_03_152500) do
   end
 
   create_table "books_ai_judges", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.boolean "auto_run", default: false, null: false
     t.bigint "book_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

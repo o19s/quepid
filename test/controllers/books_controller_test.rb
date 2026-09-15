@@ -36,6 +36,125 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'cancelling judge judy' do
+    test 'redirects with an error instead of crashing on an unknown ai_judge_id' do
+      login_user_for_integration_test user
+
+      delete "/books/#{james_bond_movies.id}/cancel_judge_judy/999999999"
+
+      assert_response :redirect
+      follow_redirect!
+      assert_equal 'AI Judge not found.', flash[:alert]
+    end
+
+    test 'destroys the matching in-flight SolidQueue job for this book and judge' do
+      login_user_for_integration_test user
+
+      other_book  = books(:book_of_comedy_films)
+      other_judge = users(:doug)
+
+      matching_job = SolidQueue::Job.create!(
+        active_job_id: SecureRandom.uuid,
+        class_name:    'RunJudgeJudyJob',
+        queue_name:    'default',
+        arguments:     {
+          'arguments' => [
+            { '_aj_globalid' => james_bond_movies.to_global_id.to_s },
+            { '_aj_globalid' => judge_judy.to_global_id.to_s },
+            nil
+          ],
+        }
+      )
+      unrelated_job = SolidQueue::Job.create!(
+        active_job_id: SecureRandom.uuid,
+        class_name:    'RunJudgeJudyJob',
+        queue_name:    'default',
+        arguments:     {
+          'arguments' => [
+            { '_aj_globalid' => other_book.to_global_id.to_s },
+            { '_aj_globalid' => other_judge.to_global_id.to_s },
+            nil
+          ],
+        }
+      )
+
+      delete "/books/#{james_bond_movies.id}/cancel_judge_judy/#{judge_judy.id}"
+
+      assert_response :redirect
+      follow_redirect!
+      assert_equal "AI Judge #{judge_judy.name} has been cancelled.", flash[:notice]
+      assert_not SolidQueue::Job.exists?(matching_job.id)
+      assert SolidQueue::Job.exists?(unrelated_job.id)
+    end
+  end
+
+  describe 'updating' do
+    test "keeps an AI judge's auto_run flag set when the judge stays checked across an unrelated save" do
+      login_user_for_integration_test user
+      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:                  'James Bond Movies (renamed)',
+          team_ids:              [],
+          ai_judge_ids:          [ judge_judy.id ],
+          auto_run_ai_judge_ids: [ judge_judy.id ],
+        },
+      }
+
+      assert_predicate james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy), :auto_run?
+    end
+
+    test 'turns auto_run off for an AI judge unchecked from auto-run while staying assigned' do
+      login_user_for_integration_test user
+      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:                  james_bond_movies.name,
+          team_ids:              [],
+          ai_judge_ids:          [ judge_judy.id ],
+          auto_run_ai_judge_ids: [],
+        },
+      }
+
+      books_ai_judge = james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy)
+      assert_not_nil books_ai_judge
+      assert_not books_ai_judge.auto_run?
+    end
+
+    test 'removes the AI judge assignment entirely when unchecked from ai_judge_ids' do
+      login_user_for_integration_test user
+      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:                  james_bond_movies.name,
+          team_ids:              [],
+          ai_judge_ids:          [],
+          auto_run_ai_judge_ids: [],
+        },
+      }
+
+      assert_nil james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy)
+    end
+
+    test 'does not crash when ai_judge_ids and auto_run_ai_judge_ids are omitted entirely' do
+      login_user_for_integration_test user
+      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:     james_bond_movies.name,
+          team_ids: [],
+        },
+      }
+
+      assert_response :redirect
+      assert_nil james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy)
+    end
+  end
+
   describe 'show' do
     let(:matt) { users(:matt) }
     let(:joe)  { users(:joe) }
@@ -45,17 +164,31 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       james_bond_movies.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
     end
 
+    test 'lists assigned AI judge in Judge Activity table even with no judgements' do
+      login_user_for_integration_test user
+      james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
+      james_bond_movies.judgements.where(user: judge_judy).delete_all
+
+      get "/books/#{james_bond_movies.id}"
+
+      assert_response :success
+      assert_select "#judge-row-#{judge_judy.id}" do
+        assert_select 'button[title=?]', 'Start judging 10 pairs'
+      end
+    end
+
     test 'flags unjudged pairs needing attention' do
       login_user_for_integration_test user
 
       get "/books/#{james_bond_movies.id}"
 
       assert_response :success
-      assert_match 'Critical: Unjudged Pairs Need Attention', response.body
-      assert_match 'no judgements yet', response.body
+      assert_match 'Not Started', response.body
+      assert_equal james_bond_movies.query_doc_pairs.count, assigns(:zero_judgement_count)
+      assert_equal 0, assigns(:coverage_pct)
     end
 
-    test 'shows the book as complete once every pair has three judgements' do
+    test 'shows the book as fully judged once every pair has three judgements' do
       login_user_for_integration_test user
 
       [ matt, joe, jane ].each do |judge|
@@ -67,7 +200,9 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       get "/books/#{james_bond_movies.id}"
 
       assert_response :success
-      assert_match 'All Done!', response.body
+      assert_match 'Fully Judged', response.body
+      assert_equal 100, assigns(:coverage_pct)
+      assert_equal james_bond_movies.query_doc_pairs.count, assigns(:complete_count)
     end
 
     test 'prompts to populate the book when it has no query/doc pairs' do
