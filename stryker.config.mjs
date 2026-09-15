@@ -3,7 +3,7 @@
 // being phased out by the Angular -> Stimulus migration, see CLAUDE.md.
 //
 // Scope starts at `api/` and `utils/` since those are the directories with a strict
-// "new/changed logic needs a colocated test" policy (CLAUDE.md § Tests). Expand
+// "new/changed logic needs a test in test/javascript/" policy (CLAUDE.md § Tests). Expand
 // `mutate` to specific controllers as they gain solid Vitest coverage.
 /** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
 export default {
@@ -11,7 +11,7 @@ export default {
   testRunner: "vitest",
   reporters: ["html", "clear-text", "progress"],
   coverageAnalysis: "perTest",
-  mutate: ["app/javascript/api/**/*.js", "app/javascript/utils/**/*.js", "!app/javascript/**/*.test.js"],
+  mutate: ["app/javascript/api/**/*.js", "app/javascript/utils/**/*.js"],
   vitest: {
     configFile: "vitest.config.js"
   },

@@ -78,10 +78,14 @@ module ApplicationHelper
     button_to(name, options, html_options) if condition
   end
 
+  # Flash keys that are structural flags consumed by a dedicated partial/controller,
+  # not user-facing messages, so the generic flash banner must not render them.
+  NON_DISPLAYABLE_FLASH_KEYS = %w[unfurl kraken_unleashed].freeze
+
   # rubocop:disable-next Lint/EmptyBlock
   def flash_messages _opts = {}
     flash.each do |msg_type, message|
-      next if 'unfurl' == msg_type # we don't show unfurl's in the flash notice UI.
+      next if NON_DISPLAYABLE_FLASH_KEYS.include?(msg_type.to_s)
 
       concat(
         content_tag(

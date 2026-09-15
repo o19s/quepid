@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
-import MapperWizardController from "./mapper_wizard_controller"
+import MapperWizardController from "controllers/mapper_wizard_controller"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn(),

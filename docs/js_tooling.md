@@ -5,7 +5,7 @@ Quepid runs **two parallel JavaScript worlds** during the Angular → Hotwire mi
 | Tree | Role | Lint | Unit tests |
 |------|------|------|------------|
 | `app/assets/javascripts/` | Legacy Angular case app (esbuild → `app/assets/builds/`) | **JSHint** (`.jshintrc`) | **Karma + Jasmine** (`spec/javascripts/`) |
-| `app/javascript/` | Importmap + Stimulus + Turbo (`application_modern.js`, controllers) | **ESLint** (full modern tree); **Prettier** (`api/`, `utils/` only) | **Vitest** (`app/javascript/**/*.test.js`, `vitest.config.js`) |
+| `app/javascript/` | Importmap + Stimulus + Turbo (`application_modern.js`, controllers) | **ESLint** (full modern tree); **Prettier** (`api/`, `utils/` only) | **Vitest** (`test/javascript/**/*.test.js`, `vitest.config.js`) |
 
 Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; it is not a substitute for fast unit tests. Specs are TypeScript; `test/playwright/tsconfig.json` enables Node typings (`@types/node`) for `node:fs` / `node:path` imports.
 
@@ -42,7 +42,7 @@ Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no t
 
 **Prettier** is enforced on **`api/` and `utils/`** only (via pre-commit and `yarn format:js*`). Do **not** run Prettier on `controllers/`, `modules/`, or entry bundles for now — whole-file Prettier would churn older single-quote files. Hand-apply modern style to **new** lines you add there.
 
-**ESLint** covers the full modern tree (but **ignores `*.test.js`**). Pre-commit runs ESLint on staged `controllers/`, `modules/`, etc.; run it yourself before finishing. Specs follow formatting conventions manually (no ESLint/Prettier on `*.test.js`).
+**ESLint** covers the full modern tree under `app/javascript/`; Vitest specs live under `test/javascript/` and are out of scope entirely (not colocated, not linted/formatted by these tools). Pre-commit runs ESLint on staged `controllers/`, `modules/`, etc.; run it yourself before finishing. Specs follow formatting conventions manually.
 
 **Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style.
 
@@ -99,7 +99,7 @@ Unit tests for the modern importmap stack. Legacy Angular specs remain on Karma 
 ### Setup
 
 - Config: `vitest.config.js` (`happy-dom`, import aliases for `api/fetch` and `utils/quepid_root`)
-- Specs: `app/javascript/**/*.test.js` (colocated with source, e.g. `api/fetch.test.js`)
+- Specs: `test/javascript/**/*.test.js`, mirroring `app/javascript/` (not colocated), e.g. `test/javascript/api/fetch.test.js` tests `app/javascript/api/fetch.js`. Import the module under test by its bare importmap path (`api/fetch`, `utils/bs_modal`, `controllers/foo_controller`) via the `resolve.alias` entries in `vitest.config.js`, not a relative path back into `app/javascript/`.
 - Module-level singletons (one-time warn flags, cached state): use `vi.resetModules()` and a fresh `import()` in `beforeEach` so tests do not leak state across files.
 
 ### Commands
@@ -112,11 +112,11 @@ bin/docker r rails test:vitest        # same as yarn test:unit (CI-style)
 
 `rails test:frontend` runs Vitest **before** Karma so fast failures surface first.
 
-Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests import them (controller specs use `app/javascript/test/stimulus_stub.js` for `@hotwired/stimulus`).
+Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests import them (controller specs use `app/javascript/test/stimulus_stub.js` for `@hotwired/stimulus`); `controllers/*` resolves via a wildcard alias, matching `pin_all_from` in `config/importmap.rb`, so individual controllers don't need their own entry.
 
 ### PR policy
 
-- **`api/` and `utils/`** — New or materially changed logic requires a colocated `*.test.js` in the **same PR**.
+- **`api/` and `utils/`** — New or materially changed logic requires a `*.test.js` in `test/javascript/` (mirroring the source path) in the **same PR**.
 - **`controllers/`** — Add Vitest when you touch a controller for Angular migration or meaningful behavior change. Do not blanket-rewrite untested controllers for coverage alone.
 - Run `bin/docker r yarn test:unit` before merging JS changes that add or update specs.
 
@@ -139,7 +139,7 @@ Survived/no-coverage mutants in the report point at either a missing test case o
 
 ### Current state
 
-- **Vitest + happy-dom** — `app/javascript/**/*.test.js` (shared modules plus Stimulus controller tests where behavior changes, e.g. `controllers/import_case_controller.test.js`).
+- **Vitest + happy-dom** — `test/javascript/**/*.test.js` (shared modules plus Stimulus controller tests where behavior changes, e.g. `test/javascript/controllers/import_case_controller.test.js`).
 - **Karma + Jasmine + angular-mocks** — ~41 specs under `spec/javascripts/`, all Angular.
 - Karma loads **pre-built esbuild bundles**; every `karma:run` runs `yarn build` first.
 - **share-case migration:** Vitest `share_case_controller.test.js` (Rails index/teams) and `share_case_core_controller.test.js` (core toolbar API stay-on-page). Judgements opens share via `quepid:open-share-case-core`. HTTP/broadcast contracts in Karma `teamSvc_spec.js`; `caseSvc_spec.js` covers `quepid:case-team-changed`.

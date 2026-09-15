@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { createBsModal, getOrCreateBsModal, hideBsModal, showBsModal } from "./bs_modal"
+import { createBsModal, getOrCreateBsModal, hideBsModal, showBsModal } from "utils/bs_modal"
 
 describe("bs_modal", () => {
   let element

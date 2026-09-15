@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import ShareScorerController from "./share_scorer_controller"
+import ShareScorerController from "controllers/share_scorer_controller"
 
 function buildController(overrides = {}) {
   const teamSelect = document.createElement("select")

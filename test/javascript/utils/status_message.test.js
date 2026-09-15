@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { showStatusMessage } from "./status_message"
+import { showStatusMessage } from "utils/status_message"
 
 describe("status_message", () => {
   it("does nothing when the element is missing", () => {

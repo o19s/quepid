@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import BsTooltipController from "./bs_tooltip_controller"
+import BsTooltipController from "controllers/bs_tooltip_controller"
 
 vi.mock("utils/bs_tooltip", () => ({
   createBsTooltip: vi.fn(() => ({ id: "tooltip-instance" })),

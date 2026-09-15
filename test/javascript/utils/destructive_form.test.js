@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { submitDestructiveForm } from "./destructive_form"
+import { submitDestructiveForm } from "utils/destructive_form"
 
 function setCsrfToken(token) {
   document.head.innerHTML = token ? `<meta name="csrf-token" content="${token}">` : ""

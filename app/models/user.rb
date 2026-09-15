@@ -107,6 +107,8 @@ class User < ApplicationRecord
 
   has_many :announcements, foreign_key: 'author_id', dependent: :destroy, inverse_of: :author
 
+  has_many :annotations, dependent: :nullify
+
   # Validations
   validates :name,
             length: { maximum: 255 }

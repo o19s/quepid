@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
-import CloneCaseCoreController from "./clone_case_core_controller"
+import CloneCaseCoreController from "controllers/clone_case_core_controller"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()

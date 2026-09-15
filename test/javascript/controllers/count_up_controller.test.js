@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import CountUpController from "./count_up_controller"
+import CountUpController from "controllers/count_up_controller"
 
 vi.mock("utils/count_up", () => ({
   animateCountUp: vi.fn(),

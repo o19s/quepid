@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { animateCountUp, stopCountUp } from "./count_up"
+import { animateCountUp, stopCountUp } from "utils/count_up"
 
 describe("count_up", () => {
   let element

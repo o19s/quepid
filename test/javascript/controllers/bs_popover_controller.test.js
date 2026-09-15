@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import BsPopoverController from "./bs_popover_controller"
+import BsPopoverController from "controllers/bs_popover_controller"
 
 const handle = {
   setTitle: vi.fn(),

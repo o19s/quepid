@@ -112,7 +112,7 @@ List before editing:
 ### 3. Karma baseline first
 
 - Run or capture the relevant Karma examples **before** deleting Angular sources.
-- Port contracts to Vitest (`app/javascript/**/*.test.js`) with comments naming the Karma examples.
+- Port contracts to Vitest (`test/javascript/**/*.test.js`, mirroring `app/javascript/`) with comments naming the Karma examples.
 - Explicitly document dropped examples (e.g. "modal dismiss is Bootstrap `data-bs-dismiss`").
 - Keep Karma for services still used by remaining Angular (`teamSvc`, `caseSvc` bridges, etc.).
 

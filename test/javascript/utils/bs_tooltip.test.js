@@ -5,7 +5,7 @@ import {
   disposeBsTooltip,
   hideTooltipsWithin,
   updateBsTooltipContent
-} from "./bs_tooltip"
+} from "utils/bs_tooltip"
 
 describe("bs_tooltip", () => {
   let element

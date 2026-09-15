@@ -170,7 +170,7 @@ parts:
         last_run: 2026-09-08
         result: pass_with_fixes
         notes: "Branch-ui-diff sweep found and confirmed a real fix: on main, submitting a valid snapshot CSV import failed server-side (SnapshotManager#import_queries expects a Hash but SnapshotImporter sent an Array) surfaced in the UI as '1 snapshot(s) failed to import'; on this branch the same import succeeds and the case reloads with the new snapshot. Traces to the payload-shape fix in app/javascript/controllers/import_snapshot_controller.js on this branch."
-        paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "app/javascript/controllers/import_snapshot_controller.test.js"]
+        paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "test/javascript/controllers/import_snapshot_controller.test.js"]
       "3.5":
         title: "Archive / unarchive a case from the list"
         last_run: 2026-09-14T18:43:07Z

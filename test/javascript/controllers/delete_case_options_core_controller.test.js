@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { submitDestructiveForm } from "utils/destructive_form"
-import DeleteCaseOptionsCoreController from "./delete_case_options_core_controller"
+import DeleteCaseOptionsCoreController from "controllers/delete_case_options_core_controller"
 
 vi.mock("utils/destructive_form", () => ({
   submitDestructiveForm: vi.fn()

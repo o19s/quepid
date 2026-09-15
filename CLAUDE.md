@@ -19,7 +19,7 @@
 
 - The core case app is built using AngularJS 1.8 but we are in the process of removing our AngularJS dependency.
 - In place of AngularJS we are using vanilla JS and StimulusJS along with various components of Hotwire, our goal is to have a modern Rails stack application.
-- **Angular → Stimulus on core:** per-surface equivalence — core matches Angular; Rails pages keep their prior UX. Do not collapse surfaces. Playbook: `angular-case-migration` skill (`.claude/skills/angular-case-migration/SKILL.md`).
+- **Angular → Stimulus on core:** per-surface equivalence — core matches Angular; Rails pages keep their prior UX. **Do not collapse surfaces.** Playbook: `angular-case-migration` skill (`.claude/skills/angular-case-migration/SKILL.md`).
 
 
 ## Backend
@@ -37,9 +37,9 @@
 
 ## Tests
 
-- Run JavaScript unit tests via `bin/docker r yarn test:unit` (Vitest — `app/javascript`) or `bin/docker r yarn test` (Karma — legacy Angular).
+- Run JavaScript unit tests via `bin/docker r yarn test:unit` (Vitest — specs in `test/javascript/`, mirroring `app/javascript/`, not colocated) or `bin/docker r yarn test` (Karma — legacy Angular).
 - Lint modern JS via `bin/docker r yarn lint:js` or `bin/docker r rails test:eslint` (see `docs/js_tooling.md`).
-- **Vitest PR policy:** new or materially changed logic in `app/javascript/api/` or `app/javascript/utils/` → colocated `*.test.js` in the same PR. Stimulus `controllers/` → add tests when you touch them for migration or behavior changes, not a blanket rewrite for coverage.
+- **Vitest PR policy:** new or materially changed logic in `app/javascript/api/` or `app/javascript/utils/` → a `*.test.js` under `test/javascript/` (mirroring the source path, e.g. `app/javascript/utils/foo.js` → `test/javascript/utils/foo.test.js`) in the same PR. Not colocated with the source. Stimulus `controllers/` → add tests when you touch them for migration or behavior changes, not a blanket rewrite for coverage.
 - Run Rails tests via `bin/docker r rails test`.
 - Lint CSS via `bin/docker r yarn lint:css` or `bin/docker r rails test:stylelint` (config: `.stylelintrc.json`).
 - Run Playwright E2E tests via `bin/docker r yarn test:e2e` (requires the app already running via `bin/docker s`, and `bin/docker r npx playwright install chromium` once). This is a separate, checked-in test suite under `test/playwright/` — not the same thing as the Playwright MCP interactive tool described below. See DEVELOPER_GUIDE.md's "Playwright E2E" section for env vars and full details.

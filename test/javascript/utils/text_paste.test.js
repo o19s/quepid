@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { attachTextPaste } from "./text_paste"
+import { attachTextPaste } from "utils/text_paste"
 
 describe("text_paste", () => {
   let input

@@ -4,7 +4,7 @@ import {
   parseTeamsJson,
   partitionTeams,
   unsharedTeams
-} from "./share_case_teams"
+} from "utils/share_case_teams"
 
 // partitionTeams mirrors Angular ShareCaseModalInstanceCtrl teamHasCase / addTeamToLists logic.
 

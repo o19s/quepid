@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { submitDestructiveForm } from "utils/destructive_form"
-import ConfirmDeleteController from "./confirm_delete_controller"
+import ConfirmDeleteController from "controllers/confirm_delete_controller"
 
 vi.mock("utils/destructive_form", () => ({
   submitDestructiveForm: vi.fn()

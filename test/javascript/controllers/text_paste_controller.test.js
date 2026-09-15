@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import TextPasteController from "./text_paste_controller"
+import TextPasteController from "controllers/text_paste_controller"
 
 const detach = vi.fn()
 

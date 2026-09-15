@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
-import ImportSnapshotController from "./import_snapshot_controller"
+import ImportSnapshotController from "controllers/import_snapshot_controller"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn(),

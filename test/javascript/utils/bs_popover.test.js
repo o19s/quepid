@@ -5,7 +5,7 @@ import {
   normalizePopoverPlacement,
   parsePopoverTrigger,
   toBsPopoverTrigger
-} from "./bs_popover"
+} from "utils/bs_popover"
 
 describe("bs_popover", () => {
   let element

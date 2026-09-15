@@ -34,7 +34,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 15 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 10 packages (+ `angular` core from npm) |
 | Karma unit specs (`spec/javascripts/angular`) | 39 |
-| Vitest unit specs (`app/javascript/**/*.test.js`) | 21 |
+| Vitest unit specs (`test/javascript/**/*.test.js`) | 21 |
 | Playwright specs | See [Other inventory § Tests](#tests) for the Angular-core and Stimulus spec breakdown |
 
 ---
@@ -226,7 +226,7 @@ Controllers: `app/javascript/controllers/` · entry: `app/javascript/application
 | BS5 tooltip / popover / paste | `utils/bs_tooltip.js`, `utils/bs_popover.js`, `utils/text_paste.js` | Bridged to Angular via `app/javascript/quepid_dom.js` → `window.quepidDom`; static icons use Angular `bs-static-popover` |
 | Core Stimulus entry | `app/javascript/core_stimulus.js` | Controllers without Turbo; loaded from `core.html.erb` |
 
-New Stimulus logic in `app/javascript/api/` or `utils/` needs colocated `*.test.js` (Vitest). See [`js_tooling.md`](../js_tooling.md).
+New Stimulus logic in `app/javascript/api/` or `utils/` needs a `*.test.js` under `test/javascript/` (Vitest, mirroring the source path — not colocated). See [`js_tooling.md`](../js_tooling.md).
 
 ### Full removal order (after incremental PRs)
 

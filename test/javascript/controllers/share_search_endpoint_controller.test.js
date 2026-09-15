@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import ShareSearchEndpointController from "./share_search_endpoint_controller"
+import ShareSearchEndpointController from "controllers/share_search_endpoint_controller"
 
 function buildController(overrides = {}) {
   const teamSelect = document.createElement("select")

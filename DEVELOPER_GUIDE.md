@@ -197,7 +197,7 @@ Run the test suite:
 
 ```bash
 bin/rails test                # Run backend tests
-bin/rails test:vitest         # Vitest (app/javascript)
+bin/rails test:vitest         # Vitest (test/javascript/)
 bin/rails test:frontend       # Vitest + Karma + linters
 bundle exec rubocop           # Run Ruby linter
 ```
@@ -325,12 +325,12 @@ bin/docker r rails test:jshint
 ```bash
 bin/docker r yarn lint:js
 bin/docker r yarn format:js:check    # Prettier check — api/ and utils/ only; or yarn format:js to fix
-bin/docker r yarn test:unit          # Vitest (app/javascript)
+bin/docker r yarn test:unit          # Vitest (test/javascript/, mirroring app/javascript/)
 bin/docker r rails test:vitest       # same as yarn test:unit
 bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
 ```
 
-**Vitest PR policy:** new or changed logic in `api/` or `utils/` → colocated `*.test.js` in the same PR. Controllers → test when you touch them for migration, not a blanket rewrite.
+**Vitest PR policy:** new or changed logic in `api/` or `utils/` → a `*.test.js` under `test/javascript/` (mirroring the source path, not colocated) in the same PR. Controllers → test when you touch them for migration, not a blanket rewrite.
 
 Git commits can run linters on staged JS via [pre-commit](https://pre-commit.com):
 
