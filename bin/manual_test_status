@@ -10,6 +10,15 @@
 #   - a file under its `paths` has a commit newer than last_run ("code changed since last verified")
 #   - last_run is older than policy.default_max_age_days ("stale by pure time")
 #
+# `last_run` should be a full UTC timestamp (YYYY-MM-DDTHH:MM:SSZ), compared at full precision
+# against commit timestamps — not truncated to a date — so two events on the same calendar day
+# (e.g. a verification pass and a later same-day edit) compare correctly. Older bare-date entries
+# (YYYY-MM-DD, no time) are treated as the END of that UTC day, preserving the same-day-doesn't-
+# count-as-stale behavior those entries were originally written under — reinterpreting ~100+
+# pre-existing entries under a stricter same-day rule would itself cause a wave of unnecessary
+# reruns, the opposite of this tool's purpose. New entries should use full timestamps so this
+# guesswork doesn't apply to them.
+#
 # Usage:
 #   bin/manual_test_status                 # full report, grouped by part
 #   bin/manual_test_status --due-only       # only scenarios needing attention
@@ -18,6 +27,7 @@
 
 require 'yaml'
 require 'date'
+require 'time'
 require 'optparse'
 require 'open3'
 
@@ -37,7 +47,7 @@ unless File.exist?(TRACKING_FILE)
   exit 1
 end
 
-data = YAML.safe_load(File.read(TRACKING_FILE), permitted_classes: [Date], aliases: true)
+data = YAML.safe_load(File.read(TRACKING_FILE), permitted_classes: [Date, Time], aliases: true)
 default_max_age = (data['policy'] || {})['default_max_age_days'] || 90
 
 # Cache one git-log lookup per unique path so we don't shell out per scenario.
@@ -57,7 +67,23 @@ def last_change_for(paths, root, cache)
 
   cmd = ['git', '-C', root, 'log', '-1', '--format=%cI', '--'] + existing
   out, status = Open3.capture2(*cmd)
-  cache[key] = status.success? && !out.strip.empty? ? DateTime.iso8601(out.strip).to_date : nil
+  cache[key] = status.success? && !out.strip.empty? ? Time.iso8601(out.strip) : nil
+end
+
+# Bare YYYY-MM-DD entries (recorded before full-timestamp last_run was required) become the END of
+# that UTC day, not the start — preserving the old date-vs-date behavior these entries were written
+# under (same-day code change does NOT count as "after"). Reinterpreting ~128 pre-existing entries
+# under a stricter same-day rule they were never written against would itself cause a wave of
+# unnecessary reruns, which is exactly what this tool exists to avoid. Full-timestamp entries (the
+# new convention, going forward) aren't affected by this and compare at true precision.
+def normalize_last_run(value)
+  return nil unless value
+
+  case value
+  when Time then value
+  when Date then Time.utc(value.year, value.month, value.day, 23, 59, 59)
+  else Time.parse(value.to_s)
+  end
 end
 
 # `git log` only sees committed history — this repo often carries uncommitted work-in-progress,
@@ -80,8 +106,10 @@ def dirty_match(paths, dirty_files)
   nil
 end
 
-def days_since(date)
-  (Date.today - date).to_i
+def days_since(time)
+  # Both sides must be the same zone — Date.today is system-local, which can disagree with a
+  # UTC-derived last_run by a day right around either zone's midnight.
+  (Time.now.utc.to_date - time.to_date).to_i
 end
 
 dirty_files = dirty_files_for(ROOT)
@@ -93,7 +121,7 @@ rows = []
   (part['scenarios'] || {}).each do |scenario_id, s|
     next if options[:paths_for] && options[:paths_for] != scenario_id
 
-    last_run = s['last_run'] ? Date.parse(s['last_run'].to_s) : nil
+    last_run = normalize_last_run(s['last_run'])
     code_changed = last_change_for(s['paths'], ROOT, last_change_cache)
     dirty_hit = dirty_match(s['paths'], dirty_files)
 
@@ -101,7 +129,8 @@ rows = []
     reasons << 'never run' if last_run.nil?
     reasons << "uncommitted changes in #{dirty_hit}" if dirty_hit
     if last_run && code_changed && code_changed > last_run
-      reasons << "code changed #{code_changed} (after last_run #{last_run})"
+      reasons << "code changed #{code_changed.getutc.strftime('%Y-%m-%d %H:%M UTC')} " \
+                 "(after last_run #{last_run.getutc.strftime('%Y-%m-%d %H:%M UTC')})"
     end
     if last_run && days_since(last_run) > default_max_age
       reasons << "stale (#{days_since(last_run)}d > #{default_max_age}d)"
@@ -156,7 +185,7 @@ rows.each do |r|
   status = if r[:due]
              "DUE  — #{r[:reasons].join('; ')}"
            else
-             "ok   — last run #{r[:last_run]} (#{r[:result]})"
+             "ok   — last run #{r[:last_run].getutc.strftime('%Y-%m-%d %H:%M UTC')} (#{r[:result]})"
            end
   printf("  %-6s %-55s %s\n", r[:id], r[:title][0, 55], status)
 end
