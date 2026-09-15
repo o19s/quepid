@@ -303,6 +303,9 @@ export default class extends Controller {
         throw new Error(`Failed to load teams (${response.status})`)
       }
       const data = await response.json()
+      // Bail if the case changed while this request was in flight (e.g. the
+      // modal was reopened for a different case) — an outdated response must
+      // not clobber the now-current case's share UI.
       if (caseId !== this.currentCaseId) return
       const teams = Array.isArray(data.teams) ? data.teams : []
       const { allTeams, sharedTeams } = partitionTeams(teams, caseId)

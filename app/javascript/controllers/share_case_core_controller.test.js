@@ -256,6 +256,43 @@ describe("ShareCaseCoreController — API share/unshare", () => {
     expect(controller.sharedSectionTarget.classList.contains("d-none")).toBe(true)
   })
 
+  it("ignores a stale teams response that resolves after the case changed", async () => {
+    let resolveFirstFetch
+    const firstFetch = new Promise((resolve) => {
+      resolveFirstFetch = resolve
+    })
+    const secondPayload = {
+      teams: [{ id: 3, name: "Fresh", cases: [{ case_id: 9 }], members: [] }]
+    }
+
+    apiFetch
+      .mockImplementationOnce(() => firstFetch)
+      .mockImplementationOnce(() =>
+        Promise.resolve({ ok: true, json: () => Promise.resolve(secondPayload) })
+      )
+
+    const controller = buildController()
+
+    // Case 5's request starts but does not resolve yet.
+    controller.currentCaseId = "5"
+    const staleLoad = controller.loadTeamsFromApi("5")
+
+    // The user reopens the modal for a different case before that resolves.
+    controller.currentCaseId = "9"
+    await controller.loadTeamsFromApi("9")
+
+    expect(controller.sharedTeams).toEqual([{ id: 3, name: "Fresh" }])
+    expect(controller.loadingTarget.classList.contains("d-none")).toBe(true)
+
+    // Case 5's stale response now arrives — it must not clobber case 9's UI.
+    resolveFirstFetch({ ok: true, json: () => Promise.resolve(TEAM_PAYLOAD) })
+    await staleLoad
+
+    expect(controller.currentCaseId).toBe("9")
+    expect(controller.sharedTeams).toEqual([{ id: 3, name: "Fresh" }])
+    expect(controller.loadingTarget.classList.contains("d-none")).toBe(true)
+  })
+
   it("shares via API and dispatches quepid:case-team-changed", async () => {
     apiFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({}) })
     const dispatchSpy = vi.spyOn(document, "dispatchEvent")
