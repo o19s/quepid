@@ -45,15 +45,15 @@ parts:
     scenarios:
       "1.1":
         title: "Sign up for a new account"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T16:16:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep (before/after against main): signup panel renders identically. Did not submit, to avoid creating a throwaway account during the sweep."
+        notes: "Full submit tested via Playwright MCP this time (previous pass only checked the panel rendered): signed up quepid+manualtest20260915@o19s.com with Full Name/Password/Confirm Password, landed logged-in on the dashboard's first-time empty state (see 2.1). Account was then deleted via Danger Zone as part of 1.9. Did not test the duplicate-email, mismatched-password, or terms-checkbox edge cases this pass."
         paths: ["app/controllers/users/signups_controller.rb", "app/views/sessions/new.html.erb"]
       "1.2":
         title: "Log in / log out"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T16:01:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: identical aside from the rotating random greeting text (Hiya!/G'Day!/etc.) present on both sides, unrelated to this branch."
+        notes: "Re-verified via Playwright MCP after the subpath-deployment /users/sign_in redirect fix (e9eb080d): plain (non-subpath) sign-in via email/password at /sessions/new still works, landing on the dashboard as expected. Did not test the subpath-deployment scenario itself (requires APP_RELATIVE_URL_ROOT configured, not set up on this host) or sign-out."
         paths: ["app/controllers/sessions_controller.rb", "app/views/sessions/"]
       "1.3":
         title: "OAuth login"
@@ -75,15 +75,15 @@ parts:
         paths: ["app/controllers/users/invitations_controller.rb", "app/controllers/teams_controller.rb"]
       "1.6":
         title: "Profile page"
-        last_run: 2026-09-08
-        result: pass
-        notes: "Re-verified via branch-ui-diff sweep: renders identically to main."
+        last_run: 2026-09-15T16:14:00Z
+        result: pass_with_fixes
+        notes: "Functionally re-verified via Playwright MCP (previous passes only checked rendering). Stats card (Cases/Teams/Queries/Ratings), Update profile (set Company Name to a test value, got 'Profile updated successfully.', value persisted, reverted it back to empty), Account Security, Personal Access Tokens, and Danger Zone sections all present and working. FOUND A PRE-EXISTING BUG (not introduced by this branch, see 1.7): the new shared `_error_messages` partial (extracted in e3e36e71 from inline duplicated code that already existed pre-branch) is rendered 3 times on this page — once each under Profile, Account Security, and Danger Zone, all showing the *same* `current_user.errors` — so a validation error from any one form (e.g. a password mismatch) appears duplicated under all three unrelated section headings simultaneously. Confusing but not a regression from this branch's refactor (verified via git blame the triplicated render predates this branch); flagged for the user to decide whether to fix. Did not fix given the scope of this test sweep."
         paths: ["app/controllers/profiles_controller.rb", "app/views/profiles/show.html.erb", "app/views/shared/_error_messages.html.erb"]
       "1.7":
         title: "Change password from Profile"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T16:14:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: form renders identically; did not submit a password change."
+        notes: "Re-verified via Playwright MCP: submitted a mismatched New Password/Confirm New Password (old password correct) — correctly rejected with 'Password confirmation doesn't match Password', no password change applied (confirmed by logging back in with the original 'password' afterward for other scenarios in this pass). See the triplicated-error-display bug noted under 1.6, reproduced here. Did not test the successful password-change path, to avoid invalidating the documented seed credentials for other testers/sessions."
         paths: ["app/controllers/accounts_controller.rb", "app/views/profiles/show.html.erb", "app/views/shared/_error_messages.html.erb"]
       "1.8":
         title: "API Keys (Personal Access Tokens)"
@@ -93,9 +93,9 @@ parts:
         paths: ["app/controllers/api_keys_controller.rb", "app/models/api_key.rb"]
       "1.9":
         title: "Account deletion (Danger Zone)"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T16:16:00Z
         result: pass
-        notes: "Tested the self-service Danger Zone button directly this time (previously only covered via the admin-delete path in 14.8): signed up a disposable throwaway account, logged in as it, clicked 'Delete your account' on its own Profile page, got flash 'Account was deleted' and landed back on the sign-in page; logged back in as the real seed account afterward with no issues. Pending-team-invitation edge case still not tested."
+        notes: "Re-verified via Playwright MCP: signed up quepid+manualtest20260915@o19s.com (see 1.1), clicked 'Delete your account' on its own Profile page — no confirmation step appeared before the request was submitted — got flash 'Account was deleted', landed on the sign-in page, no console errors. Logged back in as the real seed account with no issues afterward. Pending-team-invitation edge case still not tested."
         paths: ["app/controllers/accounts_controller.rb", "app/models/user.rb"]
 
   "02":
@@ -103,39 +103,39 @@ parts:
     scenarios:
       "2.1":
         title: "First-time / empty state"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:16:00Z
         result: pass
-        notes: "Verified on a brand-new account: welcome banner + Create Your First Relevancy Case CTA."
+        notes: "Re-verified via Playwright MCP on the freshly signed-up throwaway account from 1.1: 'Welcome to Quepid!' banner + 'Create Your First Relevancy Case' CTA rendered correctly. Did not click through case creation from this entry point (covered by 3.2's wizard test)."
         paths: ["app/controllers/home_controller.rb", "app/views/home/"]
       "2.2":
         title: "Case summary cards"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T16:01:00Z
         result: pass
-        notes: "Re-verified after home_helper.rb/home_controller.rb changes: 4 cards (10s Of Queries, Haystack Rating Party, Solr Case, Static Case) in alphabetical order, each with a working sparkline, score, date range, and working link. Did not test the 'moves up after viewing' recency edge case."
+        notes: "Spot-checked via Playwright MCP (widely-used surface, longest-stale part of this sweep — no functional change to this area on this branch). 4 case cards (10s Of Queries, Solr Case, Static Case, Typeahead: Dairy) rendered with sparkline, AP@10 score, date range, and trend delta text; case links intact. No console errors. Did not test the 'moves up after viewing' recency edge case."
         paths: ["app/controllers/home_controller.rb", "app/helpers/home_helper.rb"]
       "2.3":
         title: "Book summary cards"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:01:00Z
         result: pass
-        notes: "Verified card + Judge button navigates into judging screen."
+        notes: "Spot-checked via Playwright MCP alongside 2.2/2.4/2.6. 3 book cards (Of Ratings, Haystack Icecat Rating Party, Playwright Import Test Book) rendered with query/judgement/pair counts and a Judge button each. Did not click through Judge this pass (last done 2026-09-02)."
         paths: ["app/controllers/home_controller.rb"]
       "2.4":
         title: "Case score trend card (case_prophet)"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:01:00Z
         result: pass
-        notes: "Visually verified trend/delta/sparkline on populated cases. Did not test the 0/1/2-score, zero-changepoint, or annotation-marker-hover edge cases explicitly."
+        notes: "Spot-checked via Playwright MCP alongside 2.2/2.3/2.6. Trend/delta/sparkline visually correct on populated cases (e.g. 'Typeahead: Dairy' 567% increase since 18 days ago). Did not test the 0/1/2-score, zero-changepoint, or annotation-marker-hover edge cases."
         paths: ["app/services/case_prophet.rb", "app/views/home/"]
       "2.5":
         title: "Book summary detail"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:17:00Z
         result: pass
-        notes: "Verified both a populated book and a brand-new zero-pair book."
+        notes: "Re-verified via Playwright MCP: clicked into 'Book Of Ratings' from the dashboard card, landed on its Overview tab with all sub-nav tabs (Query/Doc Pairs, Judgement Stats, Judgements, Import, Share book, Export, Settings), unjudged-pairs banner, AI Judges list, Teams, Scale Labels, and Associated Files all rendering correctly. No console errors. Did not re-verify a brand-new zero-pair book this pass."
         paths: ["app/controllers/home_controller.rb"]
       "2.6":
         title: "Cases table"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:01:00Z
         result: pass
-        notes: "Columns verified, View all Cases navigates to /cases."
+        notes: "Spot-checked via Playwright MCP alongside 2.2/2.3/2.4. Columns (ID, Name, # of Queries, Last Score, Last Run, Last Run By) rendered correctly across 10 cases including never-run ones (blank score/run columns). Did not click 'View all Cases' this pass."
         paths: ["app/controllers/home_controller.rb"]
       "2.7":
         title: "Cookie consent toast"
@@ -149,9 +149,9 @@ parts:
     scenarios:
       "3.1":
         title: "Cases list — browsing and filtering"
-        last_run: 2026-09-14T18:42:47Z
+        last_run: 2026-09-15T16:30:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Partial-name filter ('Typeahead') correctly narrowed to the 3 Typeahead cases; exact-ID filter ('6789') correctly returned just that one case; a filter matching nothing ('zzznomatch') rendered an empty table with no error and correctly did NOT show the 'create your first case' message (cases exist overall, just none matching); Archived checkbox toggled and re-submitted the list (no archived cases existed to show, but the checkbox state and query param round-tripped correctly). Pagination and multi-account isolation not tested this pass."
+        notes: "Re-verified via Playwright MCP after today's shared page-header/account-dropdown partial extraction. Partial-name filter ('Typeahead') correctly narrowed to the 3 Typeahead cases; a filter matching nothing ('zzznomatch') rendered an empty table body (no error, no false 'create your first case' message); ?archived=1 correctly pre-checked the Archived checkbox. No console errors. Note: this page has the horizontal-overflow bug at 768px width documented under 16.2 — not re-verified at default viewport width here. Pagination and multi-account isolation not tested this pass."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
       "3.2":
         title: "Create a new case (setup wizard)"
@@ -173,9 +173,9 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "test/javascript/controllers/import_snapshot_controller.test.js"]
       "3.5":
         title: "Archive / unarchive a case from the list"
-        last_run: 2026-09-14T18:43:07Z
+        last_run: 2026-09-15T16:01:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Archived 'Typeahead: Meats' from the list: modal opened with heading 'Confirm' and text 'Archive Typeahead: Meats?', confirming showed flash 'Case #Typeahead: Meats archived.' and removed it from the active list; found it under the Archived filter (checkbox correctly checked/shown) and clicked its unarchive icon (modal text 'Unarchive Typeahead: Meats?'), confirming showed flash 'Case #Typeahead: Meats unarchived.' and restored it to the active list. Ownership-transfer-on-archive and the two-tabs-race edge case not tested."
+        notes: "Re-verified via Playwright MCP after the confirm-delete modal leak fix (ca1ff16b: confirm_delete_controller now uses getOrCreateBsModal instead of createBsModal). Opened and cancelled the Archive confirmation for 'Typeahead: Meats' 3 times in a row, then checked the DOM directly (document.querySelectorAll('.modal-backdrop').length) — only 1 backdrop present, confirming the leak is fixed (previously each open would have created a new Bootstrap Modal instance). Then confirmed the archive (flash 'Case #Typeahead: Meats archived.', removed from active list), found it under the Archived filter, and unarchived it (flash 'Case #Typeahead: Meats unarchived.', restored to active list). No console errors/warnings throughout. Ownership-transfer-on-archive and the two-tabs-race edge case not tested."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
       "3.6":
         title: "Share a case from the list"
@@ -335,21 +335,21 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb", "app/services/snapshot_importer.rb", "app/assets/javascripts/components/import_ratings/import_ratings_controller.js"]
       "6.3":
         title: "Clone a case"
-        last_run: 2026-09-14T18:51:55Z
+        last_run: 2026-09-15T16:19:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Clone button stayed disabled with a blank name; unchecking Include Queries showed the exact warning 'You have chosen not to import any queries. The new case will be empty.' — re-checked it before submitting. Cloned into a new case; landed in its workbench with both queries copied ('Number of Queries: 2'), on the last try. Deleted the test clone afterward via the toolbar's Delete option. Include-Ratings-off and forced-failure edge cases not tested."
+        notes: "Re-verified via Playwright MCP after today's full migration off the Angular clone_case component (commit f876f35e: 'Migrate clone-case modal to Stimulus, remove Angular component'). On case 6 (Typeahead: Dairy): Clone button stayed disabled with a blank name; entered a name, checked Include Ratings (Include Queries was on by default), left 'Only include a specific try' at Try 20 — Clone button enabled, submitted, landed in the new case's (#6837) workbench with 'Number of Queries: 1' copied over correctly. Deleted the test clone afterward via the in-case toolbar's new Delete Case Options modal (see 6.4). No console errors. Did not test 'Include the entire try history', unchecking Include Queries, or forced-failure edge cases this pass."
         paths: ["app/controllers/api/v1/clone/cases_controller.rb", "app/models/case.rb", "app/views/shared/_clone_case_core_modal.html.erb", "app/javascript/controllers/clone_case_core_controller.js", "app/assets/templates/views/queriesLayout.html"]
       "6.4":
         title: "Delete / Archive / Delete-all-queries (in-case toolbar)"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T16:19:00Z
         result: pass
-        notes: "Re-verified after the delete-case-options modal was migrated from AngularJS to Stimulus (delete_case_options_core_controller.js, on the new destructive_form.js/bs_modal.js utils). Used a disposable clone of SOLR CASE. Delete All Queries: button label swapped to 'Delete All Queries' with warning 'Deleting all the queries will also delete your ratings for those queries.'; confirmed it emptied the case's queries (0 remaining) while the case itself still existed. Archive Case: button read 'Archive', warning matched the archived-filter explanation; confirming navigated to the Cases list with flash 'Case #... archived.' and the case appeared under the Archived filter. Delete Case: warning read 'You're about to delete this case forever!...'; confirming permanently deleted it (flash 'Case #... deleted.'), which also cleaned up the disposable clone. Delete button correctly stayed disabled until an option was picked in every case. Forced-server-failure edge case not tested."
+        notes: "Re-verified via Playwright MCP after today's fuller migration (961d313a 'Wire delete-case-options-core into the case toolbar, remove Angular component'; 18fa8d83 'Migrate delete-case-options modal to Stimulus'; ca1ff16b's getOrCreateBsModal leak fix). Used a disposable clone of case 6 (see 6.3). Modal opened with heading 'Delete Options for Case: ...', 3 option buttons (Delete All Queries / Archive Case / Delete Case) in a group, Delete button correctly disabled until one was picked. Picked Delete Case: warning read \"You're about to delete this case forever! If you think you might want it later, use the Archive function instead.\"; confirming permanently deleted it (flash 'Case #Manual Test Clone 20260915 deleted.'), landed on the Cases list. No console errors. Did not re-exercise the Delete All Queries or Archive Case options this pass (Archive Case's shared confirm-delete/modal-leak plumbing was separately verified today via 3.5's list-level archive flow) or the forced-server-failure edge case."
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
       "6.5":
         title: "Share a case (in-case toolbar)"
-        last_run: 2026-09-14T18:32:56Z
+        last_run: 2026-09-15T16:01:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main touched share_case controller/directive/modal files. On case 6 (Typeahead: Dairy) toolbar: opened Share, clicked the OSC chip (revealed 'Share with OSC'), submitted — alert 'Case shared with team successfully.', OSC moved to 'Already shared with:'; clicked OSC again (revealed 'Unshare from OSC'), submitted — 'Case unshared from team successfully.', restored to original unshared state. Full round trip confirmed working on the core (in-workbench) surface, distinct from the Rails list-page version in 3.6/9.5. Did not re-test the 'Create a team' navigation-away edge case this pass."
+        notes: "Re-verified via Playwright MCP after share_case_core_controller.js was refactored to bind its share/unshare forms via Stimulus data-action (submit->share-case-core#submitShare / #submitUnshare) instead of manually-attached addEventListener submit handlers, and after the unshare response handling was tightened (dropped the redundant `response.status !== 204` check now that !response.ok already covers it). On case 6 (Typeahead: Dairy, previously unshared) toolbar: opened Share, selected OSC, submitted — flash 'Case shared with team successfully.', OSC moved to the 'Already shared with:' section. Selected OSC there, clicked 'Unshare from OSC' — flash 'Case unshared from team successfully.', OSC returned to the shareable list. Closed the modal cleanly. No console errors/warnings. This completes the round trip not covered in the prior pass (2026-09-15T15:34:13Z), which only checked the 'Create a team' link fix. Did not re-test that link fix or the empty-state case this pass."
         paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
@@ -371,10 +371,10 @@ parts:
         paths: ["app/assets/javascripts/directives/"]
       "6.9":
         title: "Frog Report"
-        last_run: 2026-09-08
-        result: fail
-        notes: "Pre-existing bug, NOT a regression from this branch: opening the Frog Report on case 'Haystack Rating Party' throws 'Cannot read properties of undefined (reading countMissingRatings)' and the modal never opens, identically on main and this branch. Root cause: that case's external Solr host (chorus.dev.o19s.com) is unreachable from this sandbox, all queries return 0 results, and the Frog Report controller doesn't handle that gracefully. Golden path verified working on a locally-reachable case (case 5, '10s Of Queries')."
-        paths: ["app/assets/javascripts/"]
+        last_run: 2026-09-15T16:25:00Z
+        result: pass_with_fixes
+        notes: "CONFIRMED FIX via Playwright MCP for the previously-documented crash (commit 32dfffa6 'Fix frog report crash when a query has no currentScore yet'): opening the Frog Report on 'Haystack Rating Party' (all 137 queries return 0 results because chorus.dev.o19s.com is unreachable from this sandbox — same environment limitation as before) now opens successfully with a Summary and 'Distribution of Queries Needing Ratings' chart, instead of throwing 'Cannot read properties of undefined (reading countMissingRatings)'. The only console errors were the expected net::ERR_CONNECTION_REFUSED to chorus.dev.o19s.com, no JS exceptions. Minor cosmetic quirk noticed (not a crash, not re-tested for severity): the Summary text read '0 ratings missing, leading to NaN% missing rate' when every query returns zero results (divide-by-zero in the missing-rate percentage) — separate from the fixed crash, not investigated further. Also re-confirmed the golden path still works on case 3 (SEARCHAPI CASE, an unrun/unscored query) with no crash."
+        paths: ["app/assets/javascripts/", "app/assets/javascripts/components/frog_report/frog_report_modal_instance_controller.js"]
       "6.10":
         title: "Unarchive case (from within a case context)"
         last_run: 2026-09-04
@@ -387,9 +387,9 @@ parts:
     scenarios:
       "7.1":
         title: "Browse / filter the Search Endpoints list"
-        last_run: 2026-09-14T18:53:53Z
+        last_run: 2026-09-15T16:26:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Name/URL filter ('Solr') correctly narrowed to the 3 Solr endpoints; a direct URL to a nonexistent endpoint ID (999999) correctly redirected with 'Search Endpoint you are looking for either doesn't exist or you don't have permissions.' Did not re-drive the Mine/Archived/Team filters or the empty-state message this pass."
+        notes: "Re-verified via Playwright MCP: list renders correctly (6 endpoints, all engine types represented — solr/static/searchapi/es), filter box, Mine/Archived checkboxes, Team dropdown, and per-row Share icons all present with no console errors. Did not re-drive the actual filter/search this pass (see 7.6 for the share-icon exercise on this page)."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/index.html.erb"]
       "7.2":
         title: "Create a Search Endpoint — one per engine type"
@@ -417,9 +417,9 @@ parts:
         paths: ["app/controllers/search_endpoints_controller.rb"]
       "7.6":
         title: "Share / unshare a Search Endpoint"
-        last_run: 2026-09-14T18:56:09Z
+        last_run: 2026-09-15T16:27:00Z
         result: pass
-        notes: "Full share/unshare POST cycle re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Shared a new test endpoint with OSC — flash 'Manual Test Solr Endpoint shared with OSC.', OSC moved to 'Already shared with:' and the dropdown correctly showed 'No other teams to share with' (single-team account, so the exact-duplicate-share edge case wasn't independently testable here). Unshared it — flash 'Manual Test Solr Endpoint unshared from OSC.', dropdown re-enabled with OSC selectable again. Did not test the no-access ('You do not have access to that search endpoint.') edge case this pass."
+        notes: "Full share/unshare round trip re-verified via Playwright MCP on the already-shared 'TMDB Solr' endpoint (after today's ShareEntityControllerBase/shared-partial extractions, commit e3e36e71 among others). Unshared it from OSC (flash 'TMDB Solr unshared from OSC.'), then re-shared it (flash 'TMDB Solr shared with OSC.') to restore original state. No console errors. Did not test the no-access edge case this pass."
         paths: ["app/views/shared/_share_search_endpoint_modal.html.erb", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
       "7.7":
         title: "Mapper Wizard — Step 1: Fetch Search Results"
@@ -667,9 +667,9 @@ parts:
         paths: ["app/controllers/bulk_judge_controller.rb"]
       "11.9":
         title: "Query/Doc Pairs management"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T16:26:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "CONFIRMED FIX via Playwright MCP (commit 52a45e6d 'Fix query_doc_pairs create/update to redirect to the pair, not the index'): created a new pair on Book Of Ratings ('manual test query' / 'manual-test-doc-1') — after Create, landed on /books/1/query_doc_pairs/3101 (the pair's own show page), not the index. Edited it and clicked Update — again landed on the pair's show page. Deleted it via the Edit page's Delete button (native confirm() dialog, accepted), redirected to the book Overview page. No console errors."
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query_doc_pair.rb", "test/controllers/query_doc_pairs_controller_test.rb"]
 
   "12":
@@ -846,16 +846,16 @@ parts:
     scenarios:
       "16.1":
         title: "Popover & tooltip paint check (BS3↔BS5 trap)"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T16:21:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: no visual regression found. The sidebar tooltip didn't visibly trigger via Playwright automation on either instance, so that specific hover-paint check was inconclusive rather than confirmed."
-        paths: ["app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/directives/quepidTooltip.js", "app/assets/stylesheets/bootstrap5-compat.css"]
+        notes: "Re-verified via Playwright MCP after today's new generic bs_popover_controller.js/bs_tooltip_controller.js (commit 18fa8d83). Two checks, both confirmed via getComputedStyle (not just eyeballing): (1) a rating-badge popover in the Core Workbench (case 6, 'dairy' query, first doc's '1' badge) — visible on first click, .popover.bs-popover-auto.show, display:block, opacity:1, transform is a plain translate (not scale(0)), font-size:14px. (2) the left sidebar's 'Home' icon tooltip on a Rails page (/cases) — visible on first hover, display:block, opacity:0.9, font-size:14px, correct text. Neither showed the BS3-leak symptoms (invisible-but-present, tiny font, stuck opacity). Did not check a share-modal info-icon popover this pass; narrow-viewport RFS scaling not explicitly rechecked here (see 16.2)."
+        paths: ["app/javascript/controllers/bs_popover_controller.js", "app/javascript/controllers/bs_tooltip_controller.js", "app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/directives/quepidTooltip.js", "app/assets/stylesheets/bootstrap5-compat.css"]
       "16.2":
         title: "Narrow viewport reflow sweep"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T16:23:00Z
         result: pass_with_fixes
-        notes: "Branch-ui-diff sweep found a significant positive fix: at 768x900, main still has no responsive hamburger toggler (nav overflows, avatar dropdown unreachable — matches this doc's prior 'known issue, not yet fixed' note). This branch now renders a working hamburger toggler on both the Rails header and the Angular core case-workbench header; clicking it opens a proper stacked nav with all links and the avatar dropdown. The 'known issue' note below should be revisited/updated to reflect this fix."
-        paths: ["app/views/layouts/_header.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/bootstrap5-compat.css"]
+        notes: "Re-verified via Playwright MCP at 768x900 after today's navbar-toggler/BS5-spacing commit (b85bc847) landed for real (the 09-08 pass saw an in-progress version). Confirmed good: the Rails header's hamburger ('Toggle navigation') opens a clean stacked nav (Relevancy Cases/Books/Teams/Scorers/Notebooks/User Manual/Wiki/avatar dropdown), and the Angular core case-workbench header collapses the same way with the toolbar wrapping cleanly (case 6, no overflow: document.documentElement.scrollWidth === clientWidth === 768). FOUND A REAL BUG (pre-existing, not introduced by this branch — no `table-responsive` wrapper has ever existed around this table, per git history): the Cases list page (/cases) overflows horizontally at 768px — document.documentElement.scrollWidth measured 936px against a 768px viewport/clientWidth, traced to app/views/cases/index.html.erb's <table> (11 columns) having no `.table-responsive` (or similar overflow-x) wrapper, so it forces the whole page to scroll horizontally instead of scrolling just the table. Likely affects other wide list tables sharing the same unwrapped-table pattern (e.g. Search Endpoints, Scorers, Books, Admin Users lists — not individually re-verified this pass). Did not fix, given the number of tables potentially affected and that it's out of scope for this branch's changes; flagged for the user to decide. Wizard endpoint-step accordion at 768px not re-tested this pass."
+        paths: ["app/views/layouts/_header.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/bootstrap5-compat.css", "app/views/cases/index.html.erb"]
       "16.3":
         title: "Case header typography"
         last_run: 2026-09-08

@@ -1,6 +1,6 @@
 <%# Core case toolbar — list UI, API stay-on-page %>
 <% modal_footer = capture do %>
-  <a href="<%= new_team_path %>" class="btn btn-primary me-auto">+ Create a team</a>
+  <a href="<%= new_team_path %>" target="_self" class="btn btn-primary me-auto">+ Create a team</a>
   <button type="submit" form="share-case-form" id="share-case-submit" class="btn btn-success d-none" data-share-case-core-target="submitButton">Share with team</button>
   <button type="submit" form="unshare-case-form" id="unshare-case-submit" class="btn btn-success d-none" data-share-case-core-target="unshareButton">Unshare from team</button>
 <% end %>
@@ -18,14 +18,14 @@
       <p class="mb-3">
         No teams to share with? Why not go ahead and create a new team!
       </p>
-      <a href="<%= new_team_path %>" class="btn btn-primary btn-lg">
+      <a href="<%= new_team_path %>" target="_self" class="btn btn-primary btn-lg">
         <i class="bi bi-plus-lg" aria-hidden="true"></i>
         Create a team
       </a>
     </div>
 
     <div data-share-case-core-target="sharePicker" class="d-none">
-      <%= form_with url: share_case_teams_path, method: :post, local: true, html: { id: 'share-case-form', class: 'mb-3', data: { share_case_core_target: 'shareForm' } } do %>
+      <%= form_with url: share_case_teams_path, method: :post, local: true, html: { id: 'share-case-form', class: 'mb-3', data: { action: 'submit->share-case-core#submitShare' } } do %>
         <%= hidden_field_tag :case_id, '', id: 'share-case-id', data: { share_case_core_target: 'caseId' } %>
         <%= hidden_field_tag :team_id, '', id: 'share-case-team', data: { share_case_core_target: 'teamId' } %>
 
@@ -39,7 +39,7 @@
       <p class="h5">Already shared with:</p>
       <div id="share-case-shared-list" class="list-group mt-2" data-share-case-core-target="sharedList"></div>
 
-      <%= form_with url: unshare_case_teams_path, method: :post, local: true, html: { id: 'unshare-case-form', class: 'mt-3', data: { share_case_core_target: 'unshareForm' } } do %>
+      <%= form_with url: unshare_case_teams_path, method: :post, local: true, html: { id: 'unshare-case-form', class: 'mt-3', data: { action: 'submit->share-case-core#submitUnshare' } } do %>
         <%= hidden_field_tag :case_id, '', id: 'unshare-case-id', data: { share_case_core_target: 'unshareCaseId' } %>
         <%= hidden_field_tag :team_id, '', id: 'unshare-case-team', data: { share_case_core_target: 'unshareTeamId' } %>
       <% end %>

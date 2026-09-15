@@ -26,6 +26,7 @@ This guide provides detailed instructions for developers who want to set up, run
 	- [II. Development Log](#ii-development-log)
 	- [III. Run Tests](#iii-run-tests)
 		- [Minitest](#minitest)
+		- [Vitest](#vitest)
 		- [Pre-commit hooks](#pre-commit-hooks)
 		- [JS Lint](#js-lint)
 		- [CSS Lint](#css-lint)
@@ -247,8 +248,6 @@ tail -f log/development.log
 
 ## III. Run Tests
 
-There are three types of tests that you can run:
-
 ### Minitest
 
 These tests run the tests from the Rails side (mainly API controllers, and models):
@@ -282,6 +281,17 @@ and then tail the log file via:
 ```bash
 tail -f log/test.log
 ```
+
+### Vitest
+
+Unit tests for the modern `app/javascript/` tree (Stimulus `controllers/`, `api/`, `utils/`), specs under `test/javascript/` mirroring `app/javascript/` (not colocated):
+
+```bash
+bin/docker r yarn test:unit          # Vitest
+bin/docker r rails test:vitest       # same as yarn test:unit
+```
+
+**Vitest PR policy:** new or materially changed logic in `app/javascript/api/` or `app/javascript/utils/` → a `*.test.js` under `test/javascript/` (mirroring the source path, e.g. `app/javascript/utils/foo.js` → `test/javascript/utils/foo.test.js`) in the same PR. Not colocated with the source. Stimulus `controllers/` → add tests when you touch them for migration or behavior changes, not a blanket rewrite for coverage.
 
 ### Pre-commit hooks
 
@@ -325,12 +335,8 @@ bin/docker r rails test:jshint
 ```bash
 bin/docker r yarn lint:js
 bin/docker r yarn format:js:check    # Prettier check — api/ and utils/ only; or yarn format:js to fix
-bin/docker r yarn test:unit          # Vitest (test/javascript/, mirroring app/javascript/)
-bin/docker r rails test:vitest       # same as yarn test:unit
 bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
 ```
-
-**Vitest PR policy:** new or changed logic in `api/` or `utils/` → a `*.test.js` under `test/javascript/` (mirroring the source path, not colocated) in the same PR. Controllers → test when you touch them for migration, not a blanket rewrite.
 
 Git commits can run linters on staged JS via [pre-commit](https://pre-commit.com):
 

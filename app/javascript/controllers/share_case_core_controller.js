@@ -28,9 +28,7 @@ export default class extends Controller {
     "unshareTeamId",
     "title",
     "submitButton",
-    "unshareButton",
-    "shareForm",
-    "unshareForm"
+    "unshareButton"
   ]
 
   static values = {
@@ -49,28 +47,14 @@ export default class extends Controller {
     this.currentCaseId = null
     this.allTeams = []
     this.sharedTeams = []
-    this.boundShareSubmit = (e) => this.submitShare(e)
-    this.boundUnshareSubmit = (e) => this.submitUnshare(e)
     this.boundOpenFromEvent = (e) => this.openFromExternal(e)
 
-    if (this.hasShareFormTarget) {
-      this.shareFormTarget.addEventListener("submit", this.boundShareSubmit)
-    }
-    if (this.hasUnshareFormTarget) {
-      this.unshareFormTarget.addEventListener("submit", this.boundUnshareSubmit)
-    }
     document.addEventListener("quepid:open-share-case-core", this.boundOpenFromEvent)
   }
 
   disconnect() {
     if (!this.isModalRoot) return
 
-    if (this.hasShareFormTarget) {
-      this.shareFormTarget.removeEventListener("submit", this.boundShareSubmit)
-    }
-    if (this.hasUnshareFormTarget) {
-      this.unshareFormTarget.removeEventListener("submit", this.boundUnshareSubmit)
-    }
     document.removeEventListener("quepid:open-share-case-core", this.boundOpenFromEvent)
   }
 
@@ -404,7 +388,7 @@ export default class extends Controller {
         headers: { Accept: "application/json" }
       })
 
-      if (!response.ok && response.status !== 204) {
+      if (!response.ok) {
         const data = await response.json().catch(() => ({}))
         throw new Error(data.error || data.message || response.statusText)
       }
