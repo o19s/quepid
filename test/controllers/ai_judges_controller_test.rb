@@ -19,6 +19,8 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
   test 'should get new with a team pre-selected from the team page' do
     get new_ai_judge_url(team_id: team.id)
     assert_response :success
+    assert_equal [ team.id ], assigns(:ai_judge).team_ids
+    assert_select "input[type=checkbox][value='#{team.id}'][checked]"
   end
 
   test 'should create ai_judge with no team (owner-only)' do

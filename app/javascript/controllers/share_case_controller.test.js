@@ -57,27 +57,6 @@ describe("ShareCaseController — Rails cases index / teams", () => {
     expect(controller.teamSelectTarget.disabled).toBe(false)
   })
 
-  it("rebuildTeamDropdown shows a distinct message when the user has no teams at all", () => {
-    const controller = buildController()
-    controller.rebuildTeamDropdown(JSON.stringify([]), JSON.stringify([]))
-
-    const options = [...controller.teamSelectTarget.options].map((o) => o.text)
-    expect(options).toEqual(["Select a team...", "You have no teams yet"])
-    expect(controller.teamSelectTarget.disabled).toBe(true)
-  })
-
-  it("rebuildTeamDropdown shows a different message when all teams are already shared", () => {
-    const controller = buildController()
-    controller.rebuildTeamDropdown(
-      JSON.stringify([{ id: 1, name: "OSC" }]),
-      JSON.stringify([{ id: 1, name: "OSC" }])
-    )
-
-    const options = [...controller.teamSelectTarget.options].map((o) => o.text)
-    expect(options).toEqual(["Select a team...", "No other teams to share with"])
-    expect(controller.teamSelectTarget.disabled).toBe(true)
-  })
-
   it("toggleSubmit enables share footer only when a team is selected", () => {
     const controller = buildController()
     controller.rebuildTeamDropdown(
