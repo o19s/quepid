@@ -64,4 +64,23 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to cases_path
   end
+
+  test 'archive marks a case the user owns as archived and redirects to the cases listing' do
+    kase = cases(:queries_case)
+
+    post archive_case_url(kase)
+
+    assert_redirected_to cases_path
+    assert kase.reload.archived
+    assert_equal user, kase.owner
+  end
+
+  test 'archive does not archive a case the user is not involved with' do
+    kase = cases(:owned_case)
+
+    post archive_case_url(kase)
+
+    assert_redirected_to cases_path
+    assert_not kase.reload.archived
+  end
 end

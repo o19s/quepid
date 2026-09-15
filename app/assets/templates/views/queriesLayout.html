@@ -127,9 +127,16 @@
               ></clone-case>
             </li>
             <li class="list-inline-item">
-              <delete-case-options
-                acase="caseModel.selectedCase()"
-              ></delete-case-options>
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+              <a
+                href="#"
+                data-controller="delete-case-options-core"
+                data-action="click->delete-case-options-core#open"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteCaseOptionsModal"
+                data-delete-case-options-core-id-value="{{ caseModel.selectedCase().caseNo }}"
+                data-delete-case-options-core-name-value="{{ caseModel.selectedCase().caseName }}"
+              >Delete</a>
             </li>
             <li class="list-inline-item">
               <export-case
