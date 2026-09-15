@@ -69,9 +69,9 @@ parts:
         paths: ["app/controllers/users/passwords_controller.rb"]
       "1.5":
         title: "Invitations (accepting one)"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T18:50:00Z
         result: pass
-        notes: "Full flow verified: invited a new email from a team, got the invite link from the page (copy-link button), accepted it (name/password form, email pre-filled), confirmed INVITED badge disappeared after acceptance, confirmed reusing the same invitation token afterward is rejected ('The invitation token provided is not valid!')."
+        notes: "Re-verified full flow via Playwright MCP: invited quepid+manualtestinvite20260915@o19s.com from a team (9.3), copied its invite link (via the 📋 button, read from the clipboard), logged out, visited the link — form had Email pre-filled; filled Full Name/Password/Confirm Password, clicked Accept Invite — landed on the team page, logged in as the new user, INVITED badge gone (now a full member). Deleted the disposable user afterward via admin. Did not re-test the reused-token-rejected edge case this pass."
         paths: ["app/controllers/users/invitations_controller.rb", "app/controllers/teams_controller.rb"]
       "1.6":
         title: "Profile page"
@@ -347,7 +347,7 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
       "6.5":
         title: "Share a case (in-case toolbar)"
-        last_run: 2026-09-15T16:01:00Z
+        last_run: 2026-09-15T18:50:00Z
         result: pass
         notes: "Re-verified via Playwright MCP after share_case_core_controller.js was refactored to bind its share/unshare forms via Stimulus data-action (submit->share-case-core#submitShare / #submitUnshare) instead of manually-attached addEventListener submit handlers, and after the unshare response handling was tightened (dropped the redundant `response.status !== 204` check now that !response.ok already covers it). On case 6 (Typeahead: Dairy, previously unshared) toolbar: opened Share, selected OSC, submitted — flash 'Case shared with team successfully.', OSC moved to the 'Already shared with:' section. Selected OSC there, clicked 'Unshare from OSC' — flash 'Case unshared from team successfully.', OSC returned to the shareable list. Closed the modal cleanly. No console errors/warnings. This completes the round trip not covered in the prior pass (2026-09-15T15:34:13Z), which only checked the 'Create a team' link fix. Did not re-test that link fix or the empty-state case this pass."
         paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js"]
@@ -643,9 +643,9 @@ parts:
         paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb"]
       "11.5":
         title: "Session milestones, navigation, and completion"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T18:52:00Z
         result: pass
-        notes: "Partial: rated one pair (Relevant), clicked 'Go Back to Previous Query/Doc Pair' — correctly reopened the same pair as an 'Editing Judgement' screen with the Relevant button pre-highlighted/bordered to reflect the existing rating (no cross-user warning banner, as expected since same user). Clicked 'Quit Judging' — returned to the Book Overview page, and confirmed via rails console the judgement was NOT lost. Did not test: judging 50 pairs to reach the 'party time' confetti/leaderboard screen, the show_rank true/false toggle, the different-user warning banner, or exhausting all available pairs (all too expensive/slow for this pass). Cleaned up the test judgement afterward."
+        notes: "Re-verified via Playwright MCP: rated a pair Relevant, clicked 'Go Back to Previous Query/Doc Pair' — correctly reopened it as an 'Editing Judgement' screen. Clicked 'Quit Judging' — returned to the Book Overview page. Did not re-test the 50-pair completion/confetti screen, show_rank toggle, or different-user warning banner this pass (too expensive/slow; see 2026-09-04 notes)."
         paths: ["app/controllers/judgements_controller.rb"]
       "11.6":
         title: "Judgements list (audit view)"
@@ -733,9 +733,9 @@ parts:
     scenarios:
       "14.1":
         title: "Admin access gating"
-        last_run: 2026-09-02
-        result: pass_with_fixes
-        notes: "Fixed a real bug: Admin::WebsocketTesterController inherited from plain ApplicationController instead of Admin::AdminController, so any logged-in non-admin could load /admin/websocket_tester directly and trigger 'Run Test Background Job'. Fixed + added a controller test asserting non-admin is redirected with 'You must be a Quepid Administrator.'. Verified /admin, /admin/users, /admin/announcements, /admin/websocket_tester (after fix) all correctly redirect for a non-admin (quepid+oscmember@o19s.com), and confirmed the anonymous (logged-out) case redirects to login first. Also confirmed no admin links leak into that user's avatar dropdown."
+        last_run: 2026-09-15T17:19:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: logged in as quepid+oscmember@o19s.com (non-admin) and navigated to /admin — correctly redirected to / with flash 'You must be a Quepid Administrator.' Note: the primary test account quepid+realisticactivity@o19s.com is itself flagged as an administrator in this environment's seed data, so it cannot be used for the negative case (a genuinely non-admin account like oscMember is needed)."
         paths: ["app/controllers/admin/admin_controller.rb", "app/controllers/admin/websocket_tester_controller.rb"]
       "14.2":
         title: "Admin Home dashboard"
@@ -745,60 +745,57 @@ parts:
         paths: ["app/controllers/admin/home_controller.rb"]
       "14.3":
         title: "User management — list & search"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T17:19:00Z
         result: pass
-        notes: "admin/users_controller.rb has no diff on this branch — DUE only from the shared page-header partial extraction touching index.html.erb. Re-verified rendering: heading, filter textbox, table all present. Did not re-drive the filter query this pass (covered 2026-09-02)."
+        notes: "Re-verified via Playwright MCP: filtered by 'oscmember' — correctly narrowed the table to just that one row with working Show/Edit links."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/index.html.erb"]
       "14.4":
         title: "User show page & Pulse activity"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T18:43:00Z
         result: pass
-        notes: "Same situation as 14.3 (no controller diff, view-only partial extraction). Re-verified rendering: Pulse section and all 6 stat headings (Cases viewed/scored/created, Queries created, Books created, Judgements created) present."
+        notes: "Re-verified via Playwright MCP: Pulse section and all 6 stat headings (Cases viewed/scored/created, Queries created, Books created, Judgements created) present; Lock/Unlock button also visible here (see 14.5)."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/show.html.erb"]
       "14.5":
         title: "Lock / unlock a user"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T18:43:00Z
         result: pass
-        notes: "Locked a test user, confirmed login blocked with the same generic 'Unknown email/password combo' message (does not leak lock status — correct). Unlocked, confirmed login then succeeds."
+        notes: "Re-verified via Playwright MCP: clicked Lock on oscMember's show page — button flipped to Unlock and 'Locked?' field updated; clicked Unlock — reverted correctly. Did not re-test the login-blocked message this pass."
         paths: ["app/controllers/admin/users_controller.rb"]
       "14.6":
         title: "Edit a user"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T18:43:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP: set oscMember's Company field to a test value, clicked Update User — persisted and displayed on the show page; reverted it back to empty."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/edit.html.erb"]
       "14.7":
         title: "Assign judgements to anonymous user (admin-level)"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T18:46:00Z
         result: pass
-        notes: "Verified 'All judgements assigned to anonymous user' flash and count."
+        notes: "Re-verified rendering via Playwright MCP: 'Assign Judgements to Anonymous User' section on oscMember's admin Edit page correctly shows 'This user has 200 judgements total.' with its action button. Did not click it this pass — oscMember's 200 judgements are real attributions on the shared Book Of Ratings demo dataset, and reassigning them to anonymous is not easily reversible; the prior 2026-09-02 pass already exercised the actual click-through on a disposable target. See 2026-09-08's own 10.6b/10.6a-adjacent testing in this pass for a fresh live exercise of the underlying assign/delete-by-user mechanics on a disposable book copy instead."
         paths: ["app/controllers/admin/users_controller.rb"]
       "14.8":
         title: "Delete a user"
-        last_run: 2026-09-08
-        result: pass_with_fixes
-        notes: "Branch-ui-diff sweep found and confirmed a real fix: on main, the delete confirm dialog read 'Are you sure you want to delete this Search Endpoint?' (copy-paste bug) instead of '...this User?'; correct on this branch. Verified via the confirm() dialog's own message text, not a screenshot (native dialogs aren't part of the page render)."
+        last_run: 2026-09-15T18:46:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: signed up a disposable throwaway account (0 judgements), then as admin clicked 'Delete this User' on its Edit page — confirm() dialog correctly read 'Are you sure you want to delete this User?' (the copy-paste-bug fix from the prior pass still holds), confirming deleted it — flash 'User account was successfully deleted.', removed from the Users list."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/edit.html.erb"]
       "14.9":
         title: "Announcements"
-        last_run: 2026-09-09T21:44:38Z
+        last_run: 2026-09-15T18:45:00Z
         result: pass
-        notes: "Re-verified list rendering after the shared page-header partial extraction (heading, table present) (2026-09-04). Branch-ui-diff sweep 2026-09-09 drove the full lifecycle against main: index, new-announcement form, live-banner display for a non-admin user, dismiss-then-reload (banner stays hidden), and Views-count increment — all identical to main."
+        notes: "Re-verified rendering via Playwright MCP: index page loads with heading 'Quepid Announcements for Users' and table. Did not re-drive the full create/dismiss/view-count lifecycle this pass (see 2026-09-09 for that)."
         paths: ["app/controllers/admin/announcements_controller.rb", "app/models/announcement.rb", "app/views/admin/announcements/edit.html.erb"]
       "14.10":
         title: "Websocket Tester"
-        last_run: 2026-09-02
-        result: pass_with_fixes
-        notes: "Fixed: flash notice typo 'Websocker Tester...' (app/controllers/admin/websocket_tester_controller.rb). Verified the live countdown actually works via ActionCable in this environment."
+        last_run: 2026-09-15T18:45:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: clicked 'Run Test Background Job' — live ActionCable-driven countdown appeared and updated ('Iterations Remaining: 23'), confirming the flash-typo fix (Websocket, not Websocker) and the live-update mechanism both still work."
         paths: ["app/controllers/admin/websocket_tester_controller.rb"]
       "14.11":
         title: "Mounted engines (Job Manager, SQL Analytics)"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T18:44:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
-        paths: ["config/routes.rb"]
-        result: null
-        notes: "Not tested."
+        notes: "Tested via Playwright MCP as admin: /admin/jobs (Mission Control::Jobs) loaded correctly ('Mission control - Queues'); /admin/blazer (Blazer SQL Analytics) loaded correctly. No console errors on either. Did not separately re-verify non-admin gating on these two specific mount points this pass (general /admin gating reconfirmed in 14.1). Also fixed a malformed duplicate-key entry found in this file for '14.11' this pass — the previous version repeated title/result/notes/paths twice within the same mapping, so only the second, unset copy actually took effect in YAML."
         paths: ["config/routes.rb"]
 
   "15":
@@ -806,37 +803,37 @@ parts:
     scenarios:
       "15.1":
         title: "Left icon sidebar"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:30:00Z
         result: pass_with_fixes
-        notes: "Bug found: sidebar icon tooltips never appeared on hover at all — the BS5 tooltip-init script in _sidebar.html.erb was entirely commented out (dead code), and each icon used a bare data-bs-toggle=\"tooltip\" pattern that nothing in the current JS actually initializes (the shared app/javascript/utils/bs_tooltip.js helper only wires up [quepid-tooltip] and [data-controller~=\"bs-tooltip\"] elements). Fixed by switching every sidebar icon to the existing bs-tooltip Stimulus controller (data-controller=\"bs-tooltip\" + data-bs-tooltip-*-value attributes) and removing the dead commented-out script block. Verified: on a fresh page load, hovering an icon (e.g. Teams) now shows the correct tooltip text, confirmed via both a screenshot and computed styles (display:block, opacity 0.9, in-viewport position). Rapid repeated programmatic hovers across icons in the same automated session showed some screenshot flakiness (headless-browser timing artifact, not a real bug — computed styles stayed correct throughout). Active-state highlighting and click-navigation confirmed for all 7 icons; narrow-viewport behavior (Part 16.2) not retested here."
+        notes: "Re-verified via Playwright MCP this pass (also directly re-confirmed in 16.1): hovering the sidebar's Home icon on /cases showed the correct tooltip ('Home'), computed display:block/opacity:0.9/font-size:14px — the bs-tooltip Stimulus controller fix from the prior pass still holds. Prior pass found and fixed the original bug: sidebar icon tooltips never appeared on hover at all — the BS5 tooltip-init script in _sidebar.html.erb was entirely commented out (dead code), and each icon used a bare data-bs-toggle=\"tooltip\" pattern that nothing in the current JS actually initializes (the shared app/javascript/utils/bs_tooltip.js helper only wires up [quepid-tooltip] and [data-controller~=\"bs-tooltip\"] elements). Fixed by switching every sidebar icon to the existing bs-tooltip Stimulus controller (data-controller=\"bs-tooltip\" + data-bs-tooltip-*-value attributes) and removing the dead commented-out script block. Active-state highlighting and click-navigation confirmed for all 7 icons in that pass."
         paths: ["app/views/layouts/_sidebar.html.erb"]
       "15.2":
         title: "Top navbar quick-access dropdowns"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T16:30:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified indirectly this pass: the Relevancy Cases/Books quick-access dropdowns in the top navbar were opened and used repeatedly throughout this session's other scenarios (e.g. 3.2's wizard trigger) with no issues, and the responsive collapse of this same header was directly re-verified in 16.2."
         paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_page_header.html.erb", "app/views/shared/_account_dropdown.html.erb"]
       "15.3":
         title: "External links (User Manual, Wiki, API Docs)"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T18:47:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP: User Manual (https://quepid-docs.dev.o19s.com/2/quepid) and Wiki (https://github.com/o19s/quepid/wiki) links present with correct hrefs in the top navbar across many pages visited this pass."
         paths: ["config/routes.rb"]
       "15.4":
         title: "Avatar dropdown & admin shortcuts"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T18:47:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main. Note: the test account (quepid+realisticactivity@o19s.com) is itself a Quepid Administrator, so only the admin-variant dropdown was exercised, not the non-admin variant."
+        notes: "Re-verified via Playwright MCP: avatar dropdown correctly shows My profile, Logout, and Admin shortcuts (Admin Home, Users, Announcements, Job Manager) for quepid+realisticactivity@o19s.com, which is itself a Quepid Administrator in this environment's seed data. Did not re-test the non-admin variant this pass (oscMember's dropdown was not inspected, though 14.1 confirmed oscMember is correctly blocked from /admin itself)."
         paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_account_dropdown.html.erb"]
       "15.5":
         title: "Cookies static page"
-        last_run: 2026-09-08
-        result: pass_with_fixes
-        notes: "Branch-ui-diff sweep found and confirmed a real fix: on main this page rendered literal unevaluated ERB interpolation as raw text (#{link_to 'http://www.aboutcookies.org', 'www.aboutcookies.org'} and #{INSERT SITE HERE}); on this branch it renders a real clickable www.aboutcookies.org link and 'Quepid' correctly."
+        last_run: 2026-09-15T18:47:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: page renders correctly with real headings and paragraphs (COOKIES, TYPES OF COOKIES, Necessary cookies), confirming the prior ERB-interpolation fix still holds (no raw #{...} text visible)."
         paths: ["app/controllers/pages_controller.rb", "app/views/pages/cookies.html.erb"]
       "15.6":
         title: "Notebooks (JupyterLite integration)"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T18:48:00Z
         result: pass_with_fixes
         notes: "This dev environment had never run bin/setup_jupyterlite_docker, so clicking Notebooks 404'd with a Rails routing error (public/notebooks/ didn't exist) — expected per the doc's own noted edge case, not a Quepid bug. While fixing this, found and fixed a real bug in bin/docker: the run|r case used an unquoted $@ (docker compose ... run --rm app $@), which word-splits any multi-word quoted argument (e.g. bash -c '...with spaces...') — confirmed via `bin/docker r bash -c 'echo hello world'` printing nothing before the fix. Fixed by quoting it (\"$@\"), re-confirmed the same command now prints 'hello world'. This unblocked running bin/setup_jupyterlite_docker successfully. With the real JupyterLite build in place: Notebooks link opened /notebooks/lab/index.html in a new tab (tab title 'JupyterLite'), the file browser showed the bundled examples/ folder with 4 sample notebooks, opened 'Scoring Comparison.ipynb', and ran its first cell (imports pandas/matplotlib under Pyodide) via Shift+Enter successfully with no errors and the selection advanced to the next cell. Minor: the bundled jupyterlab-tour extension throws console errors and fails to activate (TypeError: n.addFactory is not a function) — cosmetic, upstream in the quepid-jupyterlite release, does not block file browser/kernel/notebook execution. Did not verify a deployed (baked-into-image) environment separately."
         paths: ["bin/setup_jupyterlite", "bin/setup_jupyterlite_docker", "bin/docker", "public/notebooks/"]
@@ -852,21 +849,21 @@ parts:
         paths: ["app/javascript/controllers/bs_popover_controller.js", "app/javascript/controllers/bs_tooltip_controller.js", "app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/directives/quepidTooltip.js", "app/assets/stylesheets/bootstrap5-compat.css"]
       "16.2":
         title: "Narrow viewport reflow sweep"
-        last_run: 2026-09-15T16:23:00Z
+        last_run: 2026-09-15T19:00:00Z
         result: pass_with_fixes
-        notes: "Re-verified via Playwright MCP at 768x900 after today's navbar-toggler/BS5-spacing commit (b85bc847) landed for real (the 09-08 pass saw an in-progress version). Confirmed good: the Rails header's hamburger ('Toggle navigation') opens a clean stacked nav (Relevancy Cases/Books/Teams/Scorers/Notebooks/User Manual/Wiki/avatar dropdown), and the Angular core case-workbench header collapses the same way with the toolbar wrapping cleanly (case 6, no overflow: document.documentElement.scrollWidth === clientWidth === 768). FOUND A REAL BUG (pre-existing, not introduced by this branch — no `table-responsive` wrapper has ever existed around this table, per git history): the Cases list page (/cases) overflows horizontally at 768px — document.documentElement.scrollWidth measured 936px against a 768px viewport/clientWidth, traced to app/views/cases/index.html.erb's <table> (11 columns) having no `.table-responsive` (or similar overflow-x) wrapper, so it forces the whole page to scroll horizontally instead of scrolling just the table. Likely affects other wide list tables sharing the same unwrapped-table pattern (e.g. Search Endpoints, Scorers, Books, Admin Users lists — not individually re-verified this pass). Did not fix, given the number of tables potentially affected and that it's out of scope for this branch's changes; flagged for the user to decide. Wizard endpoint-step accordion at 768px not re-tested this pass."
+        notes: "CONFIRMED AND FIXED. Re-verified via Playwright MCP at 768x900 after today's navbar-toggler/BS5-spacing commit (b85bc847). Confirmed good: the Rails header's hamburger ('Toggle navigation') opens a clean stacked nav, and the Angular core case-workbench header collapses the same way with the toolbar wrapping cleanly (case 6, no overflow). Found a real bug and traced its origin precisely (not pre-existing as first assumed): the Cases list page (/cases) overflowed horizontally at 768px — the pre-Angular-removal cases list (deleted `case_listing.html`/`components/case_listing`) laid out each row with Bootstrap's responsive `row`/`col-xs-N` grid (no `<table>` at all); the Rails rewrite in `e52cec3a` ('Migrate teams, scorers and case listings away from angularjs') replaced that with a rigid 11-column `<table>` and never added a `.table-responsive` wrapper, so the migration itself dropped the old layout's responsiveness. Fixed by wrapping the `<table>` in `app/views/cases/index.html.erb` with `<div class=\"table-responsive\">`. Verified at 768px: `window.scrollX` can no longer move (page itself doesn't scroll horizontally), the table now scrolls internally within its own bounded box, and a full-page screenshot confirms no page-level scrollbar. Verified at 1280px desktop width: full table still renders normally, unaffected. (Note: `document.documentElement.scrollWidth` still reads ~930 after the fix due to a `.card` being `display:flex` with a nested `overflow-x:auto` descendant — a known scrollWidth-measurement quirk, not an actual scrollable page; confirmed via `window.scrollX`/screenshot instead.) Other wide list tables (Search Endpoints, Scorers, Books, Admin Users) may share the same unwrapped-table pattern from other Angular-removal migrations — not individually checked this pass, so not confirmed either way. Wizard endpoint-step accordion at 768px not re-tested this pass."
         paths: ["app/views/layouts/_header.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/bootstrap5-compat.css", "app/views/cases/index.html.erb"]
       "16.3":
         title: "Case header typography"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T18:49:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: h1/small font-size ratio is an exact 0.875x on both main and this branch."
+        notes: "Re-verified via Playwright MCP: measured via getComputedStyle on case 6's header — h1 font-size 35px, small font-size 30.625px, ratio exactly 0.875, matching the expected fix."
         paths: ["app/assets/stylesheets/bootstrap5-compat.css"]
       "16.4":
         title: "Modal accessibility spot-check"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T18:49:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: Tab stays trapped and Escape closes the modal, identically on both main and this branch."
+        notes: "Re-verified via Playwright MCP: opened the Clone modal on case 6, pressed Escape — confirmed via document.querySelector('.modal.show') that the modal closed. Did not re-test Tab-trap this pass."
         paths: ["app/assets/javascripts/"]
       "16.5":
         title: "General visual sanity sweep after any CSS/JS change"

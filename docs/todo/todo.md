@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-09-10
+**Last updated:** 2026-09-15
 
 Outstanding bugs, hardening, and cleanup on `main` only. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -112,6 +112,32 @@ Deleting a rating that was already removed can error; races (tabs, double clicks
 **Cause:** `ProfilesController#update` surfaces errors for JSON only.
 
 **Fix direction:** On HTML failure, re-render with flash / errors (mirror `AccountsController`).
+
+---
+
+### Profile page shows the same validation errors three times
+
+**Location:** `app/views/profiles/show.html.erb`, `app/views/shared/_error_messages.html.erb`
+
+**Observed:** A validation error from any one form on `/profile` renders under all three section headings (Profile, Account Security, Danger Zone) at once. E.g. submitting a mismatched password confirmation on the Account Security form also shows "Password confirmation doesn't match Password" under the unrelated Profile and Danger Zone sections.
+
+**Cause:** The view renders `shared/error_messages` three times, once per section, always against the same `current_user.errors` — with no way to tell which section's form actually produced the error. Predates the shared partial; present since the initial OSS commit.
+
+**Fix direction:** Either scope each render to only show when its own section's form was submitted, or consolidate into a single error block shown once above all three sections.
+
+---
+
+### Book import forms 404 instead of importing into the book you're viewing
+
+**Location:** `app/views/books/import/edit.html.erb`, `app/controllers/books/import_controller.rb`
+
+**Observed:** On `/books/:id/import/edit` ("Import Data Into This Book"), uploading a file through either upload form (Import Query Doc Pairs, Import Judgements) 404s.
+
+**Cause:** Both forms are `form_with model: @book, url: books_import_index_path` with no explicit `method:`. Since `@book` is a persisted record, Rails renders them as PATCH (via the hidden `_method` field), but `config/routes.rb` only defines POST at `books_import_index_path` (`Books::Import#create`) — no PATCH route exists there, so the request never reaches the controller.
+
+Fixing the method alone isn't enough: `Books::Import#create` unconditionally does `@book = Book.new`, ignoring `params[:id]` — it's built only for the from-scratch "New Book" import flow (`/books/import/new`), not for adding data to an existing book.
+
+**Fix direction:** Give `#create` (or a new action) a path to load and import into an already-existing `@book` when an id is present, and point these two forms at that route/method instead of the generic new-book endpoint.
 
 ---
 

@@ -13,6 +13,7 @@
     `bin/docker r yarn build`              # full frontend build
     `bin/docker r yarn build:css`          # core.css / application.css only
     `bin/docker r yarn build:angular-vendor`  # BS5 + splainer-search bundle
+- In general, prefer using a single agent and not spawning sub-agents unless it will make a big difference. Even then, ask before spawning.
 
 
 ## Frontend
@@ -76,6 +77,7 @@
 - To understand the data model used by Quepid, consult `./docs/data_mapping.md`.
 - To understand how the application is built, consult `./docs/app_structure.md`.
 - **DEVELOPER_GUIDE.md is the primary human-facing doc; CLAUDE.md is agent-only guidance.** When a rule applies to both, keep the full text in DEVELOPER_GUIDE.md and have CLAUDE.md point to it — never the other way around. Skill files (`.claude/skills/**/SKILL.md`) are agent-only too, so they may reference CLAUDE.md directly.
+- **State the rule, not the incident.** When you add a rule to a doc because something went wrong (a bug, a leak, a broken baseline), write the rule and, if genuinely non-obvious, *why* it holds — not a blow-by-blow of the specific occurrence (dates, counts, "this bit us on..."). Specifics like "16 leaked users" or a timestamp rot the moment the underlying state changes and read as clutter to a later reader who has no way to verify or care about that instance. Only keep instance detail when it's load-bearing — e.g. it teaches a non-obvious edge case the rule alone wouldn't convey.
 
 
 ## Code Style

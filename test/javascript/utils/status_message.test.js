@@ -67,15 +67,31 @@ describe("status_message", () => {
     vi.useRealTimers()
   })
 
-  it("does not clear content if it changed before autoHideMs elapses (race guard)", () => {
+  it("does not clear content if a later call changed it before autoHideMs elapses (race guard)", () => {
     vi.useFakeTimers()
     const el = document.createElement("span")
     showStatusMessage(el, { message: "Saved", autoHideMs: 2000 })
 
-    el.textContent = "Error saving"
+    showStatusMessage(el, { message: "Error saving", variantClass: "text-danger" })
     vi.advanceTimersByTime(2000)
 
     expect(el.textContent).toBe("Error saving")
+    vi.useRealTimers()
+  })
+
+  it("does not clear content if a later call set identical content before autoHideMs elapses", () => {
+    vi.useFakeTimers()
+    const el = document.createElement("span")
+    showStatusMessage(el, { message: "Saved", autoHideMs: 2000 })
+
+    vi.advanceTimersByTime(1000)
+    showStatusMessage(el, { message: "Saved", autoHideMs: 2000 })
+
+    vi.advanceTimersByTime(1000)
+    expect(el.textContent).toBe("Saved")
+
+    vi.advanceTimersByTime(1000)
+    expect(el.textContent).toBe("")
     vi.useRealTimers()
   })
 

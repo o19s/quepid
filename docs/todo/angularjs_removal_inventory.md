@@ -1,6 +1,6 @@
 # AngularJS removal: inventory & migration plan
 
-Fresh codebase scan (25 Aug 2026; re-validated 4 Sep 2026 against actual code — counts refreshed, completed items removed). Single reference for **what** AngularJS owns in Quepid, **why** to migrate, **how** to do it incrementally (default), optional **full case-page rewrite** decisions, and **what to delete** when done.
+Fresh codebase scan (25 Aug 2026; re-validated 4 Sep 2026 against actual code — counts refreshed, completed items removed). Single reference for **what** AngularJS owns in Quepid, **why** to migrate, **how** to do it incrementally (the path in progress today), how the **live query/search/score state** — the case workspace's core and the largest remaining piece — gets replaced as the committed final phase, and **what to delete** when done.
 
 
 Quepid’s frontend is split in two:
@@ -10,7 +10,7 @@ Quepid’s frontend is split in two:
 | **Core case UI** | AngularJS 1.8 SPA (queries, ratings, Solr JSONP) | `app/views/layouts/core.html.erb`, `QuepidApp` |
 | **Rails pages** | ERB + Stimulus (+ Turbo Streams in places) | teams, books, scorers, cases index, home, admin, … |
 
-**Default path:** chip away at isolated pieces without rebuilding the whole case workspace — toolbar Stimulus twins first, defer query/search state until deliberate. **Optional fork:** full case-page rewrite (most of the effort; where search engineers spend their time). See [Full case-page rewrite fork](#full-case-page-rewrite-fork-optional).
+**Removal is complete, not partial** — every Angular file is scheduled to go, including `queriesSvc` and live search/scoring. **Sequencing, not scope:** chip away at isolated, lower-risk pieces first (toolbar Stimulus twins, management modals, heavy widgets); live query/search/score state is sequenced **last** because it's the highest-coupling, highest-regression-risk code — most of the remaining effort concentrates there — not because it's optional. See [Live query-state phase](#live-query-state-phase-committed-final-phase) for what must be decided before that work starts.
 
 Backend stays on any path: Rails 8.1, existing models/services, MySQL, Solid Queue/Cable, REST API (`oas_rails` — extend, don't restart). **`splainer-search` 3.x is already vanilla ESM**; keep it except on a strict no-reuse clean-slate.
 
@@ -84,7 +84,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 ## Decision lenses
 
-Condensed from a larger advisory panel — the questions that actually gate a rewrite:
+Condensed from a larger advisory panel — the questions that must be answered before the [live query-state phase](#live-query-state-phase-committed-final-phase) starts, not whether it happens:
 
 | Lens | Question |
 |------|----------|
@@ -147,7 +147,7 @@ Actionable incremental wins — do these before touching query/search state:
 
 1. **DOM utilities → Stimulus or BS5 data API** — **Partially done:** plain-text tooltips (`quepid-tooltip`) and plain-text popovers (`quepid-popover`) migrated to Stimulus `bs-tooltip` / `bs-popover` (registered in `core_stimulus.js`); the Angular `quepidTooltip` directive and the text-mode `quepidPopover` directive are deleted. Angular `quepidPopoverTemplate` remains — it backs the ratings and search-match popovers (`views/ratings/popover.html`, `matches/matches.html`), which lazily `$compile` live interactive Angular content into the popover body and need their own migration, not just an attribute swap. `bs-static-popover` (fixed help-icon popovers) also remains Angular for now (new Stimulus UI, e.g. `clone-case-core`'s help icons, uses the Stimulus `bs-popover` controller instead of adding new Angular attributes).
 2. **`export-case`** — Larger modal + job polling; still a management action, not live search state.
-3. **Defer** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks until a deliberate case-page redesign.
+3. **Sequence last** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks — not skipped, but gated on the [live query-state phase](#live-query-state-phase-committed-final-phase)'s state plan being signed off before any code starts.
 
 Optional when touching nearby code:
 
@@ -156,11 +156,11 @@ Optional when touching nearby code:
 
 Prefer **Rails view + route + Stimulus** for management actions over embedding new Stimulus inside the Angular bundle.
 
-### Full case-page rewrite fork (optional)
+### Live query-state phase (committed, final)
 
-Keep the existing Rails backend and API. The incremental PR order above is the default. If the case workspace gets a full rewrite instead:
+Keep the existing Rails backend and API — this phase replaces the Angular case-workspace **frontend** only, not the domain model or API. The incremental PR order above ships first; this phase starts once that's done and the [decision lenses](#decision-lenses) above are answered.
 
-Hotwire already covers most non-case pages (teams, books, scorers, admin). The case workspace is one route but **most of the product value**.
+Hotwire already covers most non-case pages (teams, books, scorers, admin). The case workspace is one route but **most of the product value**, which is why it's sequenced last.
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -243,7 +243,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 9. Header — `HeaderCtrl` dropdowns
 10. Cleanup — removal checklist below
 
-### Hardest — do not start here
+### Hardest — sequence last, needs the state plan first
 
 #### By file (LOC)
 

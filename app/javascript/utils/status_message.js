@@ -1,9 +1,15 @@
+const generations = new WeakMap()
+
 /**
  * Shared status/alert message helper for Stimulus controllers.
  *
- * Auto-hide is guarded: the element only clears if its content still matches
- * what this call set, so a later message (e.g. from a slower/faster request)
- * isn't stomped by an earlier call's timeout.
+ * Auto-hide is guarded: each call stamps the element with a generation
+ * token, and the timeout only fires if it's still the most recent call, so
+ * a later message (even one with identical content, e.g. two successive
+ * "Saved" notifications) isn't stomped by an earlier call's timeout. The
+ * guard only sees calls made through this function — code that mutates the
+ * element's content directly, bypassing showStatusMessage, isn't tracked and
+ * can still be clobbered by a pending timer.
  *
  * @param {Element} el
  * @param {object} options
@@ -23,6 +29,8 @@ export function showStatusMessage(
 
   const useHtml = html !== undefined
   const content = useHtml ? html : (message ?? "")
+  const generation = (generations.get(el) ?? 0) + 1
+  generations.set(el, generation)
 
   if (useHtml) {
     el.innerHTML = content
@@ -39,8 +47,7 @@ export function showStatusMessage(
 
   if (autoHideMs) {
     setTimeout(() => {
-      const current = useHtml ? el.innerHTML : el.textContent
-      if (current !== content) return
+      if (generations.get(el) !== generation) return
 
       if (onExpire) {
         onExpire(el)

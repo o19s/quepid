@@ -39,20 +39,18 @@ page errors, don't try to work around it by re-migrating.
 back to a snapshot — including anything anyone else did in the meantime. Before taking a snapshot
 or restoring, check `ListAgents` for other active sessions on this machine; if one might be
 exercising the same dev stack (e.g. running its own manual-testing pass), ask before proceeding —
-don't silently blow away someone else's in-progress work. This happened once already: coordinate.
+don't silently blow away someone else's in-progress work.
 
 **The Playwright MCP browser is a single shared instance, not one per agent.** If you delegate
 scenario batches to multiple subagents, running them **in parallel makes them hijack each other's
-navigation** — screenshots land on the wrong page, mid-flow state gets clobbered, and it can look
-exactly like an unrelated concurrent session (it isn't: check `ps` for a single `playwright-mcp`
-process before assuming a stranger is involved). This happened once already: always run
-Playwright-driving batches **sequentially** — launch one, wait for it to finish, launch the next.
-Only non-Playwright work (e.g. reading tracking.yml, editing docs) is safe to parallelize.
+navigation**. Always run Playwright-driving batches **sequentially** — launch one, wait for it to
+finish, launch the next. Only non-Playwright work (e.g. reading tracking.yml, editing docs)
+is safe to parallelize.
 
 ## Steps
 
-1. **Confirm the dev server is up.** This skill never stops it (per `CLAUDE.md`). If
-   `http://localhost:3000` isn't responding, tell the user to run `bin/docker s` first.
+1. **Confirm the dev server is up.** This skill never stops it. If
+   `http://localhost:3000` isn't responding, run `bin/docker s` first.
 
 2. **Find affected scenarios.**
    ```
@@ -68,8 +66,7 @@ Only non-Playwright work (e.g. reading tracking.yml, editing docs) is safe to pa
    NOT know whether a scenario was already screenshot-compared old-vs-new. That history lives in
    `docs/manual-testing/tracking.yml`. For each matched scenario, check its `last_run`/`notes`.
 
-   **Compare each path's file mtime against `last_run`** — simplest option, no new bookkeeping
-   needed since `last_run` already exists in `tracking.yml`:
+   **Compare each path's file mtime against `last_run`** — `last_run` already exists in `tracking.yml`:
    ```
    ls -la <path>                                    # for a file
    find <path> -type f -newermt "<last_run value>"   # for a directory-style path — ls -la on a
@@ -81,25 +78,21 @@ Only non-Playwright work (e.g. reading tracking.yml, editing docs) is safe to pa
                                                       # timestamp directly, no reference file
                                                       # needed; prints any file changed after it.
    ```
-   `last_run` is a full UTC timestamp (`YYYY-MM-DDTHH:MM:SSZ`, per `tracking.yml`'s header) for
+   `last_run` is a full UTC timestamp (`YYYY-MM-DDTHH:MM:SSZ`) for
    any scenario recorded after this rule existed — compare at that precision, not just by date, so
    two events on the same calendar day (e.g. this morning's sweep vs. an edit made this afternoon)
    compare correctly. Older bare-date entries (`YYYY-MM-DD`, no time — from before this rule) only
    support date-level precision; `bin/manual_test_status` treats those as the *end* of that UTC day
-   (see its header comment), so do the same by hand here: a same-day mtime on a bare-date entry
-   still counts as covered, don't flag it. If every path is covered as of its `last_run` timestamp,
+   (see its header comment), so do the same by hand here. If every path is covered as of its `last_run` timestamp,
    and its `notes` say something like "branch-ui-diff sweep" / "re-verified against main" (i.e. an
    explicit old-vs-new comparison already happened) **for this same base ref**, treat it as already
    covered — do not re-run it. If any path's mtime is newer, it's a genuine gap, re-run it.
 
    A git-ref/commit-date comparison (what `bin/manual_test_status`'s "code changed since last_run"
    check does) is exact but only works for *committed* history — it can't see anything about
-   uncommitted work, which is exactly the state this whole branch was in during the 2026-09-08/09
-   sweep, so it wasn't an option here. mtime can occasionally misfire in the other direction (a
+   uncommitted work. mtime can occasionally misfire in the other direction (a
    `git checkout`/`stash`/rebase can bump many files' mtimes without changing their content) — that
    just costs an unnecessary rerun of one scenario, which is a fine tradeoff for staying simple.
-   What mtime should NOT be trusted for is the opposite direction (assuming unchanged when it's
-   actually stale) — a real edit reliably bumps mtime, so this is rarely a problem in practice.
 
    - `bin/manual_test_status` will still list such a scenario as "DUE" if its paths are currently
      *uncommitted* — that flag means "not yet committed," not "not yet verified." Don't confuse
@@ -108,9 +101,7 @@ Only non-Playwright work (e.g. reading tracking.yml, editing docs) is safe to pa
      branch-ui-diff-style note) has NOT had an old-vs-new comparison yet — it's a genuine gap.
    Report the split to the user: e.g. "88 scenarios matched; 42 already have an explicit
    before/after comparison on record from `<date>`; 46 don't." This is cheap (one YAML read plus
-   an `ls -la` per path) and skips potentially hours of redundant Playwright/DB-snapshot work. This
-   happened once already — a full re-run duplicated a sweep from the day before that was sitting
-   uncommitted in `tracking.yml` the whole time.
+   an `ls -la` per path) and skips potentially hours of redundant Playwright/DB-snapshot work.
 
 4. **Scope the run.** Of what's left after filtering, this can still match many scenarios. Don't
    silently run all of them — tell the user how many are genuinely uncovered and, unless they said
