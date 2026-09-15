@@ -71,6 +71,10 @@ public/assets
 # Test Coverage
 coverage/
 
+# StrykerJS mutation testing
+tmp/stryker-tmp/
+tmp/mutation-report/
+
 # Docker artifacts
 docker-compose.override.yml
 

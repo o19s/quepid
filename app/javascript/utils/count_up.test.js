@@ -41,6 +41,35 @@ describe("count_up", () => {
     expect(element.textContent).toBe("0")
   })
 
+  it("uses the default steps and duration when no options are given", () => {
+    animateCountUp(element, 0, 10)
+
+    vi.advanceTimersByTime(499)
+    expect(element.textContent).not.toBe("10")
+
+    vi.advanceTimersByTime(1)
+    expect(element.textContent).toBe("10")
+  })
+
+  it("honors a custom steps count distinct from the default", () => {
+    animateCountUp(element, 0, 10, { steps: 2, durationMs: 100 })
+
+    vi.advanceTimersByTime(50)
+    expect(element.textContent).toBe("5")
+
+    vi.advanceTimersByTime(50)
+    expect(element.textContent).toBe("10")
+  })
+
+  it("stops exactly at the target and does not overshoot on further ticks", () => {
+    animateCountUp(element, 0, 10, { steps: 5, durationMs: 500 })
+    vi.advanceTimersByTime(500)
+    expect(element.textContent).toBe("10")
+
+    vi.advanceTimersByTime(500)
+    expect(element.textContent).toBe("10")
+  })
+
   it("cancels an in-flight animation when a new one starts on the same element", () => {
     animateCountUp(element, 0, 100, { steps: 5, durationMs: 500 })
     vi.advanceTimersByTime(100)
