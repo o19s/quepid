@@ -63,7 +63,7 @@ class QueryDocPairsControllerTest < ActionDispatch::IntegrationTest
 
       created = book.query_doc_pairs.find_by(query_text: 'new query', doc_id: 'new_doc')
       assert_not_nil created
-      assert_redirected_to book_query_doc_pairs_path(book, created)
+      assert_redirected_to book_query_doc_pair_path(book, created)
     end
 
     test 're-renders new when the query_doc_pair (and so the book) fails to save' do
@@ -73,7 +73,7 @@ class QueryDocPairsControllerTest < ActionDispatch::IntegrationTest
         }
       end
 
-      assert_response :success
+      assert_response :unprocessable_content
     end
   end
 
@@ -83,8 +83,20 @@ class QueryDocPairsControllerTest < ActionDispatch::IntegrationTest
         query_doc_pair: { query_text: 'Updated Query Text' },
       }
 
-      assert_redirected_to book_query_doc_pairs_path(book, query_doc_pair)
+      assert_redirected_to book_query_doc_pair_path(book, query_doc_pair)
       assert_equal 'Updated Query Text', query_doc_pair.reload.query_text
+    end
+
+    test 're-renders edit with an error and leaves the record unchanged when document_fields is invalid JSON' do
+      original_document_fields = query_doc_pair.document_fields
+
+      patch book_query_doc_pair_url(book, query_doc_pair), params: {
+        query_doc_pair: { document_fields: 'not valid json {' },
+      }
+
+      assert_response :unprocessable_content
+      assert_match 'must be valid JSON', response.body
+      assert_equal original_document_fields, query_doc_pair.reload.document_fields
     end
   end
 
