@@ -202,9 +202,9 @@ parts:
         paths: ["app/models/query.rb", "app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js", "app/assets/javascripts/components/query_options/query_options_controller.js"]
       "4.6":
         title: "Rate a document"
-        last_run: 2026-09-02
+        last_run: 2026-09-04
         result: pass
-        notes: "Rated a document, badge/query/case score all updated live. Reload-persists and RESET not explicitly re-verified after rating."
+        notes: "Narrow regression check after removing the dead text-mode quepidPopover directive from quepidPopover.js (quepidPopoverTemplate, which backs this popover, was left unchanged): reopened the ratings popover on a search result and confirmed the Irrelevant/Relevant/Reset buttons still render via BS5. Did not re-submit a full rating or re-verify score updates/persistence this pass — see the 2026-09-02 note for that fuller run."
         paths: ["app/controllers/ratings_controller.rb", "app/assets/javascripts/directives/quepidPopover.js"]
       "4.7":
         title: "Case & query score badges"

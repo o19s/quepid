@@ -217,25 +217,6 @@ codebase as of 2026-09-03 — re-check before acting, since line numbers drift.
      (`_import_case_modal.html.erb` / `_import_snapshot_modal.html.erb`), not the
      core Angular case page.
 
-### Medium impact
-
-2. **Raw `fetch()` with manual CSRF handling bypasses `api/fetch.js`.**
-   `import_snapshot_controller.js:193-211` manually reads
-   `document.querySelector('meta[name="csrf-token"]').content` (no optional
-   chaining — throws if the tag is missing) instead of using the project's
-   `apiFetch`/`getCsrfToken()`, which its sibling `import_case_controller.js:53`
-   already uses correctly. `confirm_delete_controller.js:72` is a third independent
-   CSRF-token lookup (arguably legitimate since it's a plain form POST).
-   - **Fix**: Use `apiFetch` in `sendSnapshotToAPI`; have `confirm_delete_controller.js`
-     import `getCsrfToken()` from `api/fetch.js`.
-   - **Pragmatic priority — Do now:** this is an actual crash bug waiting for a page
-     where the meta tag is missing/stale, and the fix is a one-line swap to an
-     already-proven helper. Don't let this sit under "medium impact" — it's cheap and
-     it's a real bug.
-   - **Angular removal:** No — `import_snapshot_controller.js` and
-     `confirm_delete_controller.js` are both Rails-page Stimulus controllers, no
-     Angular involvement.
-
 ### Low-medium impact
 
 5. **Clipboard-copy-with-fallback duplicated with inconsistent robustness.**
