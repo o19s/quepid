@@ -1,50 +1,40 @@
-<div
-  class="modal fade"
-  id="shareBookModal"
-  tabindex="-1"
-  aria-labelledby="shareBookModalLabel"
-  aria-hidden="true"
-  data-controller="share-book"
->
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="shareBookModalLabel" data-share-book-target="title">Share Book</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <%= form_with url: share_book_teams_path, method: :post, local: true, html: { id: 'share-book-form', class: 'mb-3' } do %>
-          <%= hidden_field_tag :book_id, '', id: 'share-book-id', data: { share_book_target: 'recordId' } %>
+<% modal_footer = capture do %>
+  <a href="<%= new_team_path %>" class="btn btn-primary me-auto">+ Create a team</a>
+  <button type="submit" form="share-book-form" id="share-book-submit" class="btn btn-success" disabled data-share-book-target="submitButton">Share with team</button>
+  <button type="submit" form="unshare-book-form" id="unshare-book-submit" class="btn btn-success" disabled data-share-book-target="unshareButton">Unshare from team</button>
+<% end %>
 
-          <p class="h5">Select a team to share this book with:</p>
-          <div class="mb-3">
-            <%= select_tag :team_id,
-                           options_for_select([['Select a team', '']]),
-                           class: 'form-select',
-                           id: 'share-book-team',
-                           required: true,
-                           data: {
-                             share_book_target: 'teamSelect',
-                             action: 'change->share-book#toggleSubmit'
-                           } %>
-          </div>
-        <% end %>
+<% modal_body = capture do %>
+  <%= form_with url: share_book_teams_path, method: :post, local: true, html: { id: 'share-book-form', class: 'mb-3' } do %>
+    <%= hidden_field_tag :book_id, '', id: 'share-book-id', data: { share_book_target: 'recordId' } %>
 
-        <hr>
-        <p class="h5">Already shared with:</p>
-        <div id="share-book-shared-list" class="list-group mt-2" data-share-book-target="sharedList"></div>
-
-        <%= form_with url: unshare_book_teams_path, method: :post, local: true, html: { id: 'unshare-book-form', class: 'mt-3' } do %>
-          <%= hidden_field_tag :book_id, '', id: 'unshare-book-id', data: { share_book_target: 'unshareRecordId' } %>
-          <%= hidden_field_tag :team_id, '', id: 'unshare-book-team', data: { share_book_target: 'unshareTeamId' } %>
-        <% end %>
-      </div>
-      <div class="modal-footer">
-        <a href="<%= new_team_path %>" class="btn btn-primary me-auto">+ Create a team</a>
-        <button type="submit" form="share-book-form" id="share-book-submit" class="btn btn-success" disabled data-share-book-target="submitButton">Share with team</button>
-        <button type="submit" form="unshare-book-form" id="unshare-book-submit" class="btn btn-success" disabled data-share-book-target="unshareButton">Unshare from team</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-      </div>
+    <p class="h5">Select a team to share this book with:</p>
+    <div class="mb-3">
+      <%= select_tag :team_id,
+                     options_for_select([['Select a team', '']]),
+                     class: 'form-select',
+                     id: 'share-book-team',
+                     required: true,
+                     data: {
+                       share_book_target: 'teamSelect',
+                       action: 'change->share-book#toggleSubmit'
+                     } %>
     </div>
-  </div>
-</div>
+  <% end %>
+
+  <hr>
+  <p class="h5">Already shared with:</p>
+  <div id="share-book-shared-list" class="list-group mt-2" data-share-book-target="sharedList"></div>
+
+  <%= form_with url: unshare_book_teams_path, method: :post, local: true, html: { id: 'unshare-book-form', class: 'mt-3' } do %>
+    <%= hidden_field_tag :book_id, '', id: 'unshare-book-id', data: { share_book_target: 'unshareRecordId' } %>
+    <%= hidden_field_tag :team_id, '', id: 'unshare-book-team', data: { share_book_target: 'unshareTeamId' } %>
+  <% end %>
+<% end %>
+
+<%= render "shared/modal_shell", id: "shareBookModal", title: "Share Book",
+                                 dialog_class: "modal-lg",
+                                 data: { controller: "share-book" },
+                                 title_data: { share_book_target: "title" },
+                                 footer: modal_footer,
+                                 body: modal_body %>

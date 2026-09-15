@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
+import { showStatusMessage } from "utils/status_message"
 
 export default class extends Controller {
   static targets = [
@@ -510,20 +511,16 @@ export default class extends Controller {
 
   // Helper methods
   showStatus(message, type) {
-    if (this.hasStatusTarget) {
-      this.statusTarget.textContent = message
-      this.statusTarget.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'}`
-      this.statusTarget.style.display = "block"
+    if (!this.hasStatusTarget) return
 
+    this.statusTarget.style.display = "block"
+    showStatusMessage(this.statusTarget, {
+      message,
+      className: `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'}`,
       // Auto-hide success messages after 5 seconds
-      if (type === 'success') {
-        setTimeout(() => {
-          if (this.statusTarget.textContent === message) {
-            this.statusTarget.style.display = "none"
-          }
-        }, 5000)
-      }
-    }
+      autoHideMs: type === 'success' ? 5000 : undefined,
+      onExpire: (el) => { el.style.display = "none" }
+    })
   }
 
   setButtonLoading(button, loading) {

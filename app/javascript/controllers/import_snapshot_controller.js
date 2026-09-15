@@ -1,4 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
+import { apiFetch } from "api/fetch"
+import { showStatusMessage } from "utils/status_message"
 
 export default class extends Controller {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner", "preview", "previewContent"]
@@ -193,11 +195,10 @@ export default class extends Controller {
   async sendSnapshotToAPI(caseId, snapshotData) {
     const url = `/api/cases/${caseId}/snapshots/imports`
     
-    const response = await fetch(url, {
+    const response = await apiFetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({ snapshots: [snapshotData] })
     })
@@ -231,9 +232,7 @@ export default class extends Controller {
   }
 
   showAlert(message, type) {
-    this.alertTarget.textContent = message
-    this.alertTarget.className = `alert alert-${type}`
-    this.alertTarget.classList.remove('d-none')
+    showStatusMessage(this.alertTarget, { message, className: `alert alert-${type}` })
   }
 
   hideAlert() {
