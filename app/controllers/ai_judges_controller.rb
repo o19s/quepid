@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class AiJudgesController < ApplicationController
-  before_action :set_team, only: [ :new, :create ]
+  before_action :set_team, only: [ :new ]
   before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy ]
 
   DEFAULT_SYSTEM_PROMPT = <<~TEXT
@@ -69,6 +69,7 @@ class AiJudgesController < ApplicationController
 
   def new
     @ai_judge = User.new
+    @ai_judge.team_ids = [ @team.id ] if @team
     @ai_judge.system_prompt = DEFAULT_SYSTEM_PROMPT
     @ai_judge.judge_options = {
       llm_provider:    'openai',
@@ -119,11 +120,16 @@ class AiJudgesController < ApplicationController
   # Checkboxes suck: only touch teams the current user can actually see, so
   # this can't accidentally unshare the judge from a team the submitting
   # user isn't a member of. Mirrors BooksController#update's team_ids
-  # handling.
+  # handling. Loads current_user.teams once and derives both the
+  # membership check and the selected teams from it, rather than querying
+  # it twice.
   def apply_team_ids ai_judge, team_ids
-    teams_belonging_to_user = current_user.teams.pluck(:id)
-    kept_teams = ai_judge.teams.reject { |t| teams_belonging_to_user.include?(t.id) }
-    ai_judge.teams.replace(kept_teams | teams_from_ids(team_ids))
+    user_teams = current_user.teams.to_a
+    selected_ids = Array(team_ids).compact_blank.map(&:to_i)
+
+    kept_teams = ai_judge.teams.reject { |t| user_teams.any? { |ut| ut.id == t.id } }
+    selected_teams = user_teams.select { |t| selected_ids.include?(t.id) }
+    ai_judge.teams.replace(kept_teams | selected_teams)
   end
 
   def teams_from_ids team_ids
