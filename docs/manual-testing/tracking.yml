@@ -543,57 +543,57 @@ parts:
     scenarios:
       "10.1":
         title: "Books list"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T17:04:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP: New Book link, filter textbox, and table all render correctly with no console errors."
         paths: ["app/controllers/books_controller.rb", "app/views/books/index.html.erb"]
       "10.2":
         title: "Create a new book"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T17:04:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP: filled Name, submitted with Rating Scale left at 'Select a rating scale...' — blocked by the required-field validation (form stayed on /books/new, no error banner shown, field auto-focused). Selected '0,1 (Irrelevant, Relevant)' and resubmitted — created successfully (book 49), landed on its Overview page. Edge case found (not investigated further): the Rating Scale required-field rejection gives no visible error message, only native focus."
         paths: ["app/controllers/books_controller.rb", "app/models/book.rb"]
       "10.3":
         title: "Edit book settings"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T17:04:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP: renamed the test book via its Edit form, clicked Update Book — heading and flash updated immediately to the new name."
         paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb"]
       "10.4":
         title: "Book Overview / Show page"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T17:04:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP: Overview page renders correctly immediately after book creation, and again after merging in 222 query/doc pairs (query count, Critical Unjudged Pairs banner, Start with Unjudged Pairs/Judge in Bulk buttons all appeared correctly once there was data)."
         paths: ["app/controllers/books_controller.rb", "app/views/books/show.html.erb"]
       "10.5":
         title: "Combine (merge) books"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T17:05:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main, including scale-mismatch validation between books."
+        notes: "Re-verified via Playwright MCP: on the disposable test book's Edit page, checked 'Book Of Ratings' in 'Populate This Book from other Books' and clicked Merge — flash 'Combined 222 query/doc pairs.', Overview immediately reflected 24 queries / 45 judged of 222. Did not re-test the scale-mismatch validation this pass."
         paths: ["app/controllers/books_controller.rb"]
       "10.6a":
         title: "Assign anonymous judgements/ratings to a user"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T17:05:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified rendering via Playwright MCP: the 'Assign Anonymous Judgements & Ratings to a User' section renders correctly with an Assignee dropdown and 'Related cases to be updated' text. Could not exercise the actual assignment this pass — the merged-in judgements were all attributed to real users, so the Assignee dropdown had no anonymous-judge options to pick from (no anonymous ratings existed in this environment to test against)."
         paths: ["app/controllers/books_controller.rb"]
       "10.6b":
         title: "Delete judgements by user"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T17:06:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP: on the disposable test book (after merging in Book Of Ratings' 222 pairs), selected 'Osc Team Member' in the User dropdown and clicked Delete Judgements — flash 'Deleted 200 judgements belonging to Osc Team Member.' Confirmed this only affected the disposable copy, not the source Book Of Ratings."
         paths: ["app/controllers/books_controller.rb"]
       "10.6c":
         title: "Delete query doc pairs below a rank"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T17:06:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP: selected Position '10' and clicked Delete Query Doc Pairs on the disposable test book — flash 'Deleted 0 query/doc pairs below position 10.' (no pairs exceeded that rank in this dataset, but the action completed without error)."
         paths: ["app/controllers/books_controller.rb", "app/models/query_doc_pair.rb"]
       "10.6d":
         title: "Assign rating to Judge Later judgements"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T17:06:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP: selected Rating '1' and clicked Assign Rating and Clear Judge Later on the disposable test book — flash 'Mapped 0 judgements to have rating 1.' (no Judge Later entries existed in this dataset, but the action completed without error)."
         paths: ["app/controllers/books_controller.rb"]
       "10.7":
         title: "Import a new book from JSON"
@@ -603,9 +603,9 @@ parts:
         paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb"]
       "10.8":
         title: "Import additional data into an existing book"
-        last_run: 2026-09-10T19:58:24Z
-        result: pass
-        notes: "Covered live on both upload forms: a query_doc_pairs payload whose new pair carried two user_email-less judgements landed both as separate anonymous rows; an all_judgements payload with a nested query_doc_pair upserted one pair carrying both the email-attributed and the anonymous judgement, confirming query_doc_pair_id still resolves for lookup while being blocked from assignment. Book-level keys (name, scale, show_rank, support_implicit_judgements) in an update payload were ignored, leaving the book's settings unchanged. Not covered live: JSON-validity edge cases (see 10.7)."
+        last_run: 2026-09-15T17:08:00Z
+        result: fail
+        notes: "CONFIRMED BUG via Playwright MCP + code reading, pre-existing (not introduced by this branch — app/controllers/books/import_controller.rb and app/views/books/import/edit.html.erb last touched by an unrelated cosmetic header-partial commit today; core logic unchanged since cf0673cf). The 'Import Data Into This Book' page at /books/:id/import/edit (edit_books_import route) displays the target book's context, but BOTH of its file-upload forms (Import Query Doc Pairs, Import Judgements) are `form_with model: @book, url: books_import_index_path` — i.e. they POST to the generic /books/import endpoint (Books::Import#create), which unconditionally does `@book = Book.new; @book.owner = current_user` with no reference to params[:id]. So a user who uploads a file through this page's buttons does NOT import into the book they're viewing — the code path creates a disconnected new book instead (or fails validation, in which case nothing happens, no orphan book is created, per rails runner check). Reproduced: uploaded a valid query_doc_pairs-only JSON on /books/49/import/edit; no new book was created (Book.save presumably failed on a missing required field for the generic new-book path) and the response ended in an unstyled 404 at GET /books/import rather than a friendly re-rendered error — did not fully root-cause the 404 itself, but the endpoint-mismatch is confirmed directly from the view/controller/route source, independent of that symptom. The book-scoped API routes referenced in the page's own help text (POST /books/:book_id/query_doc_pairs, POST /books/:book_id/judgements) DO exist and DO operate on the correct book — this is very likely how the 2026-09-10 pass below actually verified this scenario (via direct API calls, matching the doc text), not via the page's own upload buttons, which is why the bug went undetected until this pass drove the actual UI. Not fixed given the scope of this test sweep; flagging for a decision on priority. Prior (API-level) pass's notes, still accurate for the API itself: a query_doc_pairs payload whose new pair carried two user_email-less judgements landed both as separate anonymous rows; an all_judgements payload with a nested query_doc_pair upserted one pair carrying both the email-attributed and the anonymous judgement, confirming query_doc_pair_id still resolves for lookup while being blocked from assignment. Book-level keys (name, scale, show_rank, support_implicit_judgements) in an update payload were ignored, leaving the book's settings unchanged."
         paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb", "app/views/books/import/edit.html.erb", "config/routes.rb"]
       "10.9":
         title: "Export a book"
@@ -619,27 +619,27 @@ parts:
     scenarios:
       "11.1":
         title: "Single-pair judging screen"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T17:11:00Z
         result: pass
-        notes: "Rated a pair, advanced without full reload."
+        notes: "Re-verified via Playwright MCP on Book Of Ratings: screen renders Query, Scoring Guidelines link, I will Judge Later/I Can't Tell buttons, and Irrelevant/Relevant rating buttons with keyboard-hint letters (A/S). Rated a pair Relevant — advanced to the next pair without a full page reload."
         paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb"]
       "11.2":
         title: "Keyboard-shortcut rating"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T17:11:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: functional behavior confirmed matching main (keyboard shortcut rating applied correctly on both)."
+        notes: "Partial re-check via Playwright MCP: confirmed the A/S keyboard-hint letters render under Irrelevant/Relevant. A single Playwright key press() (instant keydown+keyup) did not visibly trigger the ~500ms-hold auto-submit behavior — consistent with the documented hold requirement rather than a bug, but this pass could not simulate a true sustained hold to confirm the auto-submit path itself, or the must-not-fire-in-a-textarea/modal guard. Rating via direct button click (11.1) worked correctly."
         paths: ["app/assets/", "app/javascript/controllers/"]
       "11.3":
         title: "I will Judge Later"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T17:12:00Z
         result: pass
-        notes: "Clicked 'I will Judge Later' on book 1's judging screen — confirmed via rails console a judgement was created with judge_later: true and rating: nil, and the screen advanced to the next pair. Did not separately re-verify the 11.6 Judge Later filter or the 10.6d bulk-resolve tool pick it up (those are covered by their own scenario entries). Cleaned up the test judgement afterward."
+        notes: "Re-verified via Playwright MCP: clicked 'I will Judge Later' on Book Of Ratings' judging screen — advanced to the next pair; confirmed the judgement appears under the Judgements list's 'Later' filter (11.6)."
         paths: ["app/controllers/judgements_controller.rb"]
       "11.4":
         title: "I Can't Tell (mark unrateable)"
-        last_run: 2026-09-09T21:33:53Z
+        last_run: 2026-09-15T17:12:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: modal (with typed explanation), advance-to-next-pair, and Cancel flow all identical to main."
+        notes: "Re-verified via Playwright MCP: clicked 'I Can't Tell' — 'Record Explanation' modal appeared, typed an explanation, clicked Skip Judging — advanced to the next pair; confirmed the judgement appears under the Judgements list's 'Unrateable' filter (11.6) with the correct query/doc/rater shown."
         paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb"]
       "11.5":
         title: "Session milestones, navigation, and completion"
@@ -649,21 +649,21 @@ parts:
         paths: ["app/controllers/judgements_controller.rb"]
       "11.6":
         title: "Judgements list (audit view)"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T17:13:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP on Book Of Ratings: checked the Unrateable filter — showed exactly this pass's 'I Can't Tell' judgement (11.4); unchecked it and checked Later instead — showed exactly this pass's Judge Later judgement (11.3). Both filters round-tripped their query params correctly (?unrateable=true, ?judge_later=true)."
         paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/"]
       "11.7":
         title: "Judgement Stats (leaderboard)"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T17:14:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP: page rendered Leaderboard, Judgement Distribution, and Judging Stats sections correctly, with no console errors. (Also incidentally verified the dev server's known self-restart behavior: a brief connection-refused blip recovered automatically within ~10s.)"
         paths: ["app/controllers/books_controller.rb", "app/views/books/judgement_stats.html.erb"]
       "11.8":
         title: "Bulk Judge (grid mode)"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T17:14:00Z
         result: pass
-        notes: "Full golden path verified on book 1: results grouped by query with doc count, default-filtered to Unrated. Clicked Relevant on a doc — confirmed via rails console it saved via AJAX (no page reload, no URL change) and visually marked selected/bordered. Reloaded — rating persisted, and the doc correctly disappeared from the default Unrated-only view. Unchecked Unrated — the rated doc reappeared, pre-selected/bordered, with a Reset control now showing. Clicked Reset — confirmed the judgement was actually deleted (AJAX, no reload). Re-rated it, toggled Show Explanations on, typed into its explanation field, tabbed out — confirmed via rails console it auto-saved (no explicit save button) and persisted across a reload. Toggled Show Explanations off with that explanation present — confirmed it now renders as read-only text (not an editable textbox), not vanished. Entered a query-text filter matching nothing — got the 'No documents match your current filters' empty state listing the active filter with working 'Clear query filter'/'Clear all filters' buttons. Did not test the Rank Depth dropdown. Cleaned up the test judgement afterward."
+        notes: "Light recheck via Playwright MCP this pass: page rendered correctly ('Page 1 of 7 - Showing 1 to 25 of 175 unrated documents...'), clicked a Relevant radio on the first grid item — confirmed checked/selected state applied. Prior (2026-09-04) full golden-path pass, still the deepest coverage on record: results grouped by query with doc count, default-filtered to Unrated. Clicked Relevant on a doc — confirmed via rails console it saved via AJAX (no page reload, no URL change) and visually marked selected/bordered. Reloaded — rating persisted, and the doc correctly disappeared from the default Unrated-only view. Unchecked Unrated — the rated doc reappeared, pre-selected/bordered, with a Reset control now showing. Clicked Reset — confirmed the judgement was actually deleted (AJAX, no reload). Re-rated it, toggled Show Explanations on, typed into its explanation field, tabbed out — confirmed via rails console it auto-saved (no explicit save button) and persisted across a reload. Toggled Show Explanations off with that explanation present — confirmed it now renders as read-only text (not an editable textbox), not vanished. Entered a query-text filter matching nothing — got the 'No documents match your current filters' empty state listing the active filter with working 'Clear query filter'/'Clear all filters' buttons. Did not test the Rank Depth dropdown."
         paths: ["app/controllers/bulk_judge_controller.rb"]
       "11.9":
         title: "Query/Doc Pairs management"
@@ -677,9 +677,9 @@ parts:
     scenarios:
       "12.1":
         title: "Create a per-team AI Judge"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T17:16:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP: form correctly blocked submission with 'LLM Key can't be blank' when left empty; filled it and resubmitted — created successfully, appeared in the team's member list as an AI Judge. Removed it afterward via Remove member (same confirm-dialog flow as 9.4)."
         paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/models/ai_judge.rb"]
       "12.2":
         title: "Edit / delete an AI Judge"
@@ -689,15 +689,15 @@ parts:
         paths: ["app/controllers/ai_judges_controller.rb"]
       "12.3":
         title: "Assign an AI Judge to a Book"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T16:52:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified indirectly this pass: 'We have some AI Judges OSC AI Judge, Azure OpenAI Judge, and Azure Anthropic Judge helping us rate documents.' rendered correctly on Book Of Ratings' Overview page in several screenshots this pass (2.5, 6.6-adjacent). Did not re-drive the assignment flow itself this pass."
         paths: ["app/controllers/books_controller.rb"]
       "12.4":
         title: "Refine an AI Judge's prompt"
-        last_run: 2026-09-04
+        last_run: 2026-09-08
         result: pass
-        notes: "Re-verified specifically because prompts_controller.rb#update changed real behavior: llm_service.perform_safe_judgement now receives book: @book (was called with no book context before), tying into the 'harden LLM judgement scoring against out-of-scale/non-numeric ratings' work in llm_service.rb. Navigated with ?book_id=1 in the URL (so @book is actually populated — the route takes book_id as a query param, not a nested path segment) and ran a real prompt against local Ollama (qwen3:0.6b) for OSC AI Judge against Book of Ratings' 0-3 scale: got back 'LLM Response: 3.0' with a real explanation, confirming the book-scoped scale validation path works end-to-end. Malformed-JSON and zero-pairs edge cases not tested."
+        notes: "No functional changes to app/controllers/ai_judges/prompts_controller.rb since the prior thorough pass; not re-driven this pass given the cost of a live local-LLM call. Prior pass: re-verified specifically because prompts_controller.rb#update changed real behavior: llm_service.perform_safe_judgement now receives book: @book (was called with no book context before), tying into the 'harden LLM judgement scoring against out-of-scale/non-numeric ratings' work in llm_service.rb. Navigated with ?book_id=1 in the URL (so @book is actually populated — the route takes book_id as a query param, not a nested path segment) and ran a real prompt against local Ollama (qwen3:0.6b) for OSC AI Judge against Book of Ratings' 0-3 scale: got back 'LLM Response: 3.0' with a real explanation, confirming the book-scoped scale validation path works end-to-end. Malformed-JSON and zero-pairs edge cases not tested."
         paths: ["app/controllers/ai_judges/prompts_controller.rb"]
       "12.5":
         title: "Trigger a judging run (Judge Judy)"
@@ -711,9 +711,9 @@ parts:
     scenarios:
       "13.1":
         title: "Tries visualization"
-        last_run: 2026-09-09T19:56:04Z
+        last_run: 2026-09-15T17:17:00Z
         result: pass_with_fixes
-        notes: "Verified tree renders and anonymous access to a public case's URL works while logged out (2026-09-02). Re-verified 2026-09-09 after fixing app/views/layouts/analytics.html.erb (shared with 13.3): the Public badge/Make Private button previously rendered flush against the raw viewport edge outside any container; now wrapped in a properly padded, aligned container. Confirmed correct for both a public case (badge + button) and a private case (button only)."
+        notes: "Re-verified via Playwright MCP: the tree renders correctly (ROOT + numbered Try nodes with diagonal links, labels/layout/links/separation controls present), and the 'Make public' button on a private case still shows the properly padded/bordered container fix from the 2026-09-09 pass. Did not re-test anonymous access to a public case's URL this pass."
         paths: ["app/controllers/analytics/tries_visualization_controller.rb", "app/views/layouts/analytics.html.erb"]
       "13.2":
         title: "Case visibility (Public / Private toggle)"
@@ -723,9 +723,9 @@ parts:
         paths: ["app/controllers/analytics/tries_visualization_controller.rb", "app/models/case.rb"]
       "13.3":
         title: "Duplicate scores diagnostic"
-        last_run: 2026-09-09T19:55:52Z
+        last_run: 2026-09-15T17:17:00Z
         result: pass_with_fixes
-        notes: "Root-caused and fixed. The Public/Make Private controls were absent on main not due to CSS, but because Analytics::Cases::DuplicateScoresController was missing `layout 'analytics'` (main used the default `application` layout for this action, which has no badge markup at all) — this branch already fixed that (added the layout declaration). That fix correctly exposed the badge/button, which then rendered flush against the raw viewport edge (no container wrapper) — confirmed via tries_visualization (which has always used the analytics layout) that this unstyled look is long-standing, pre-existing, unrelated to any header change. Fixed today by wrapping both in a `container d-flex align-items-center gap-2 py-2` in app/views/layouts/analytics.html.erb, verified on both duplicate_scores and tries_visualization, public and private cases."
+        notes: "Re-verified via Playwright MCP: page rendered correctly ('List out scores for a specific day and try, grouping by duplicate. Count of 1 is okay!'), no console errors. Prior pass (2026-09-09) root-caused and fixed a real bug: the Public/Make Private controls were absent on main not due to CSS, but because Analytics::Cases::DuplicateScoresController was missing `layout 'analytics'` (main used the default `application` layout for this action, which has no badge markup at all) — this branch already fixed that (added the layout declaration). That fix correctly exposed the badge/button, which then rendered flush against the raw viewport edge (no container wrapper) — confirmed via tries_visualization (which has always used the analytics layout) that this unstyled look is long-standing, pre-existing, unrelated to any header change. Fixed by wrapping both in a `container d-flex align-items-center gap-2 py-2` in app/views/layouts/analytics.html.erb, verified on both duplicate_scores and tries_visualization, public and private cases."
         paths: ["app/controllers/analytics/cases/duplicate_scores_controller.rb", "app/views/analytics/cases/duplicate_scores/show.html.erb", "app/views/layouts/analytics.html.erb", "test/controllers/analytics/cases/duplicate_scores_test.rb"]
 
   "14":

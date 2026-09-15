@@ -413,6 +413,8 @@ Baseline screenshots live under `test/playwright/baselines/` and **are checked i
 
 Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.ts`) because they share case state in the database (whichever adapter the dev server is running against) and a single authenticated session — don't assume they're safe to parallelize without addressing that first.
 
+**Clean up anything a spec creates in the shared dev DB.** Because the suite runs against real shared state rather than a fixture DB, any row a test creates (a user, a team, a case) outlives that single run and every later run adds another one — unlike case/session state, there's no reset between runs. If your spec creates a persistent row, delete it in a `test.afterAll` (see `teams.spec.ts`'s or `signup.spec.ts`'s for the pattern).
+
 **Ad-hoc screenshot review** (Playwright MCP captures, migration proofs, etc.) land in `.playwright-mcp/` (gitignored). Organize by **topic subfolder** so the viewer can separate this PR’s shots from older work, e.g. `.playwright-mcp/share-case/`, `.playwright-mcp/prior/`. Filenames stay `*-before.png` / `*-after.png`.
 
 ```bash
