@@ -338,7 +338,6 @@ bin/docker r yarn format:js:check    # Prettier check — api/ and utils/ only; 
 bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
 ```
 
-
 Git commits can run linters on staged JS via [pre-commit](https://pre-commit.com):
 
 ```bash
