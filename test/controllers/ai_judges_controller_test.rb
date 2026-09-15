@@ -58,7 +58,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
   describe 'index' do
     it 'lists AI judges the user owns or shares a team with' do
-      owned_judge = User.create!(name: 'My Judge', llm_key: '1234', owner: user)
+      owned_judge = AiJudge.create!(name: 'My Judge', llm_key: '1234', owner: user)
 
       get ai_judges_url
 
@@ -69,7 +69,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
     it 'excludes AI judges owned by, or only shared with, someone else' do
       other_user = users(:doug)
-      private_judge = User.create!(name: 'Not Mine', llm_key: '1234', owner: other_user)
+      private_judge = AiJudge.create!(name: 'Not Mine', llm_key: '1234', owner: other_user)
 
       get ai_judges_url
 
@@ -80,7 +80,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
   describe 'access control' do
     it 'cannot edit an AI judge owned by, and not shared with, another user' do
       other_user = users(:doug)
-      private_judge = User.create!(name: 'Not Mine', llm_key: '1234', owner: other_user)
+      private_judge = AiJudge.create!(name: 'Not Mine', llm_key: '1234', owner: other_user)
 
       get edit_ai_judge_url(private_judge)
 

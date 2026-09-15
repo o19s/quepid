@@ -139,7 +139,7 @@ class BooksController < ApplicationController
   end
 
   def edit
-    @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @ai_judges = AiJudge.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
 
     @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
 
@@ -197,7 +197,7 @@ class BooksController < ApplicationController
     @book.ai_judges.clear
     ai_judge_ids = book_params[:ai_judge_ids].compact_blank
     ai_judge_ids.each do |ai_judge_id|
-      @book.ai_judges << User.find(ai_judge_id)
+      @book.ai_judges << AiJudge.find(ai_judge_id)
     end
 
     # Handle scorer selection
@@ -215,7 +215,7 @@ class BooksController < ApplicationController
 
     @book.save
 
-    @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @ai_judges = AiJudge.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
     respond_with(@book)

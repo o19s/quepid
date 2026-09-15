@@ -60,9 +60,9 @@ module BooksHelper
   # (AI judges the book's owner can access - owned directly, or shared via
   # any of the owner's teams - that aren't already assigned to the book)
   def available_ai_judges_for_book book
-    return User.none unless book.owner
+    return AiJudge.none unless book.owner
 
-    User.only_ai_judges.for_user(book.owner).where.not(id: book.ai_judges.select(:id))
+    AiJudge.for_user(book.owner).where.not(id: book.ai_judges.select(:id))
   end
 
   # Returns true if there are AI judges available to add to this book

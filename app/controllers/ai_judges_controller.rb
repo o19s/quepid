@@ -60,7 +60,7 @@ class AiJudgesController < ApplicationController
   TEXT
 
   def index
-    @ai_judges = User.only_ai_judges.for_user(current_user).includes(:owner, :teams).order(:name)
+    @ai_judges = AiJudge.for_user(current_user).includes(:owner, :teams).order(:name)
   end
 
   def show
@@ -68,7 +68,7 @@ class AiJudgesController < ApplicationController
   end
 
   def new
-    @ai_judge = User.new
+    @ai_judge = AiJudge.new
     @ai_judge.team_ids = [ @team.id ] if @team
     @ai_judge.system_prompt = DEFAULT_SYSTEM_PROMPT
     @ai_judge.judge_options = {
@@ -83,7 +83,7 @@ class AiJudgesController < ApplicationController
   def edit; end
 
   def create
-    @ai_judge = User.new(ai_judge_params.merge(owner: current_user))
+    @ai_judge = AiJudge.new(ai_judge_params.merge(owner: current_user))
 
     if @ai_judge.save
       @ai_judge.teams = teams_from_ids(submitted_team_ids)
@@ -114,7 +114,7 @@ class AiJudgesController < ApplicationController
   end
 
   def set_ai_judge
-    @ai_judge = User.only_ai_judges.for_user(current_user).find(params.expect(:id))
+    @ai_judge = AiJudge.for_user(current_user).find(params.expect(:id))
   end
 
   # Checkboxes suck: only touch teams the current user can actually see, so

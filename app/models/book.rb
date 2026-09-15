@@ -69,8 +69,9 @@ class Book < ApplicationRecord
 
   # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :ai_judges,
-                          class_name: 'User',
-                          join_table: 'books_ai_judges'
+                          class_name:              'AiJudge',
+                          join_table:              'books_ai_judges',
+                          association_foreign_key: 'user_id'
 
   has_many :query_doc_pairs, dependent: :delete_all, autosave: true
 

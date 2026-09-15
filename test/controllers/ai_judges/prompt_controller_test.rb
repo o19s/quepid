@@ -30,7 +30,7 @@ module AiJudges
       end
 
       test 'without a book, falls back to a book the judge owner can access when the judge has an owner' do
-        owned_judge = User.create!(name: 'Owned Judge', llm_key: '1234', owner: user)
+        owned_judge = AiJudge.create!(name: 'Owned Judge', llm_key: '1234', owner: user)
 
         get edit_ai_judge_prompt_url(ai_judge_id: owned_judge.id)
         assert_response :success
