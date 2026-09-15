@@ -119,8 +119,9 @@ class AiJudgesController < ApplicationController
 
   # Checkboxes suck: only touch teams the current user can actually see, so
   # this can't accidentally unshare the judge from a team the submitting
-  # user isn't a member of. Mirrors BooksController#update's team_ids
-  # handling. Loads current_user.teams once and derives both the
+  # user isn't a member of (BooksController#update's team_ids handling
+  # doesn't scope to current_user.teams the same way - don't copy that
+  # pattern). Loads current_user.teams once and derives both the
   # membership check and the selected teams from it, rather than querying
   # it twice.
   def apply_team_ids ai_judge, team_ids

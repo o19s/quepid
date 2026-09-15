@@ -9,7 +9,7 @@ module AiJudges
     end
 
     def edit
-      @ai_judge = AiJudge.find(params.expect(:ai_judge_id))
+      @ai_judge = AiJudge.for_user(current_user).find(params.expect(:ai_judge_id))
 
       @query_doc_pair = if @book
                           @book.query_doc_pairs.sample
@@ -30,7 +30,7 @@ module AiJudges
     end
 
     def update
-      @ai_judge = AiJudge.find(params.expect(:ai_judge_id))
+      @ai_judge = AiJudge.for_user(current_user).find(params.expect(:ai_judge_id))
       @ai_judge.update(ai_judge_params)
 
       @query_doc_pair = QueryDocPair.new(query_doc_pair_params)

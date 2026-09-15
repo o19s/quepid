@@ -7,7 +7,10 @@ class BackfillAiJudgeOwners < ActiveRecord::Migration[8.1]
   # plausible "creator". A judge with no team has no one to pick, and is
   # left ownerless.
   def up
-    User.only_ai_judges.where(owner_id: nil).find_each do |judge|
+    # Query by llm_key directly, not the `only_ai_judges`/`type` scope: this
+    # migration runs before add_type_to_users, so the `type` column doesn't
+    # exist in the table yet at this point in a fresh `db:migrate` replay.
+    User.where.not(llm_key: nil).where(owner_id: nil).find_each do |judge|
       oldest_teammate = User
         .where(llm_key: nil)
         .joins(:teams)
