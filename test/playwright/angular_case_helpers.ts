@@ -4,9 +4,22 @@ import { Page } from '@playwright/test';
  * Shared navigation and screenshot helpers for the Angular case UI (`core` layout).
  * Used by core_smoke, angular_pages, angular_pages_narrow_viewport, modal_a11y, and popover_visibility.
  */
+// The one case in the shared dev DB known to have a working search endpoint, existing queries,
+// and a last score ("10s of Queries") — the single source of truth for every spec that needs
+// "a case with real data" (this file's CASE_ID, plus SNAPSHOT_CASE_ID in
+// snapshots_and_annotations.spec.ts and QUERIES_CASE_ID in dom_migration_screenshots.spec.ts,
+// which both import this instead of hardcoding their own copy of the same number). Case IDs here
+// are just whatever the shared dev DB currently has at that row, not a fixed fixture — id 1 has
+// drifted between "10s of Queries" and "SOLR CASE" (near-empty) over this DB's history, which
+// desyncs old committed baselines from freshly regenerated ones even though nothing UI-relevant
+// changed. If the shared dev DB's case 5 ever stops being "10s of Queries", update this one
+// constant rather than hunting down every hardcoded copy. See DEVELOPER_GUIDE.md's Playwright E2E
+// section.
+export const DEFAULT_RICH_CASE_ID = 5;
+
 function readCaseId(): number {
   const raw = process.env.QUEPID_E2E_CASE_ID;
-  if (raw === undefined || raw === '') return 1;
+  if (raw === undefined || raw === '') return DEFAULT_RICH_CASE_ID;
   const n = Number(raw);
   if (!Number.isInteger(n) || n < 1) {
     throw new Error(`QUEPID_E2E_CASE_ID must be a positive integer; got ${JSON.stringify(raw)}`);
