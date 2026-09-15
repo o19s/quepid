@@ -16,6 +16,13 @@
 #     day — exactly the case that causes redundant or missed reruns — so always include the time.
 #     Also set result to pass / pass_with_fixes / fail / blocked, and a one-line note (what you did,
 #     what you found).
+#   - `notes` describes THE LATEST PASS ONLY, in the form "Covered live: ... Not covered live: ...".
+#     Don't append this pass's narrative to the previous one — git log -p holds the history, and a
+#     note that mixes passes leaves the reader unable to tell which sentence is still true. Keep it
+#     near one or two sentences; bin/manual_test_status never reads notes, a human does.
+#   - Timing gotcha: bin/manual_test_status compares last_run against the COMMIT timestamp of the
+#     files in `paths`, so a last_run stamped before you commit re-flags the scenario as due the
+#     moment the commit lands. Stamp it after committing (amend), or expect it to read as due.
 #   - If you skip a scenario, leave it alone — last_run: null means "never verified", which is
 #     honest and useful. Don't backfill a timestamp for something you didn't actually run.
 #   - Older entries recorded before this rule (bare YYYY-MM-DD dates) are still valid and don't need
@@ -590,15 +597,15 @@ parts:
         paths: ["app/controllers/books_controller.rb"]
       "10.7":
         title: "Import a new book from JSON"
-        last_run: 2026-09-08
-        result: pass
-        notes: "Re-driven live via Playwright MCP after the update-action refactor in import_controller.rb. Uploaded a small .json with name/scale/scale_with_labels/query_doc_pairs — redirected to the new book's Show page with 'Book was successfully created.'; after the background job completed, scale labels and the 1 query/doc pair matched the file. Invalid-JSON, structurally-invalid-JSON, missing-file, and unknown-user-email edge cases not re-tested live this pass (covered by test/controllers/books/import_controller_test.rb)."
+        last_run: 2026-09-10T19:58:24Z
+        result: pass_with_fixes
+        notes: "Covered live: two judgements with no user_email on one pair landed as separate 'anonymous' rows (Overview: 'This book has 2 anonymous judgements that could be mapped to a user.'), and re-uploading the same file doubles them as designed - which also moves computed case ratings once a pair passes 3 judgements, see docs/todo/todo.md. A crafted payload carrying another book's query_doc_pair_id plus an existing judgement id reparented nothing and claimed no id. Also covered: missing file, malformed JSON, and unknown user_email with Force create users OFF. Not covered live: structurally-invalid JSON, Force-create-users ON."
         paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb"]
       "10.8":
         title: "Import additional data into an existing book"
-        last_run: 2026-09-08
+        last_run: 2026-09-10T19:58:24Z
         result: pass
-        notes: "Previously broken (see prior note, now fixed by the update action + upsert semantics added to import_controller.rb/book_importer.rb). Re-driven live via Playwright MCP: uploaded a payload to an existing book's Import tab containing a new query_doc_pair PLUS name/scale/show_rank/support_implicit_judgements/scorer keys designed to hijack the book's settings (regression check for a bug found and fixed this same session, where the update path reused the whole-book import pipeline unguarded). Book gained the new query/doc pair (1 -> 2 queries) and every book-level attribute (name, scale labels, show_rank, support_implicit_judgements) stayed unchanged. Standalone all_judgements upload and JSON-validity edge cases not re-tested live this pass (covered by test/controllers/books/import_controller_test.rb)."
+        notes: "Covered live on both upload forms: a query_doc_pairs payload whose new pair carried two user_email-less judgements landed both as separate anonymous rows; an all_judgements payload with a nested query_doc_pair upserted one pair carrying both the email-attributed and the anonymous judgement, confirming query_doc_pair_id still resolves for lookup while being blocked from assignment. Book-level keys (name, scale, show_rank, support_implicit_judgements) in an update payload were ignored, leaving the book's settings unchanged. Not covered live: JSON-validity edge cases (see 10.7)."
         paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb", "app/views/books/import/edit.html.erb", "config/routes.rb"]
       "10.9":
         title: "Export a book"

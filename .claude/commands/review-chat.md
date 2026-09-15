@@ -1,1 +1,2 @@
 review the code in this conversation for bugs, errors, bad practices, regressions, lost functionality, overengineering, and etc.
+make sure that you have a modern rails engineer (including Stimulus, etc.) review the changes, also a pragmatic engineer, a QA engineer.
