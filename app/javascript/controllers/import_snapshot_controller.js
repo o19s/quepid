@@ -201,6 +201,7 @@ export default class extends Controller {
     // server-rendered URL to pass in - fall back to the root URL.
     const url = `${getQuepidRootUrl()}/api/cases/${caseId}/snapshots/imports`
 
+
     const response = await apiFetch(url, {
       method: 'POST',
       headers: {
