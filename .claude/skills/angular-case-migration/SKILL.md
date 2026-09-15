@@ -10,13 +10,13 @@ description: >-
 
 # Angular case-page migration
 
-Quepid's **core case UI** (`/case/:id`) was AngularJS. **Rails pages** (cases index, teams, …) already use Stimulus + ERB. Removing Angular is **not** "make everything look like Angular" or "reuse one Rails partial everywhere."
+Quepid's **core case UI** (`/case/:id`) was AngularJS. **Rails pages** (cases index, teams, …) already use Stimulus + ERB.
 
-**Goal:** On each surface, ship **equivalent** functionality and appearance using Stimulus, vanilla JS, and Rails as appropriate.
+**Goal:** on each surface, ship **equivalent** functionality and appearance using Stimulus, Hotwire, vanilla JS, and Rails as appropriate — **not** "make everything look like Angular", and **not** "reuse one Rails partial everywhere".
 
-- **Core toolbar / case workspace:** match what **Angular** shipped (recover `components/<name>/` templates).
+- **Core toolbar / case workspace:** match what **Angular** shipped (recover `components/<name>/` templates and use it as the spec for the core surface - don't design from scratch and don't copy the Rails twin).
 - **Rails pages that already had a twin:** match what **that Rails partial + controller** shipped (`git show HEAD:`).
-- **Reuse is OK on core** when a Rails/Stimulus building block produces the **same** UX as Angular (e.g. shared modal shell + `share-case-core` API stay-on-page paths) — not when it silently ships cases-index `<select>` on the case page.
+- **Reuse is OK on core** when a Rails/Stimulus building block produces the **same** UX as Angular (e.g. shared modal shell + `share-case-core` API stay-on-page paths) — but always verify equivalence on the core surface before considering it a valid replacement.
 
 **Never collapse** unlike surfaces into one template or one interaction model without an explicit product decision and per-surface screenshot proof.
 
@@ -24,14 +24,14 @@ Quepid's **core case UI** (`/case/:id`) was AngularJS. **Rails pages** (cases in
 
 ## Per-surface equivalence (do not collapse)
 
-Quepid had **different share-case (and similar) UX on different surfaces** before migration. Removing Angular means **equivalent functionality and appearance on each surface**, using Stimulus/vanilla/Rails as appropriate — **not** picking one surface's UX and applying it everywhere.
+Quepid had **different share-case (and similar) UX on different surfaces** before migration.
 
 ### Identify the surface first
 
-| Surface | Layout | Pre-migration share-case (example) |
-|---------|--------|-------------------------------------|
-| **Core case** `/case/:id` toolbar | `core.html.erb` | Angular `$quepidModal` template (`list-group`, conditional sections, one footer action) |
-| **Rails pages** cases index, teams | `application` | Rails `_share_case_modal` + Stimulus (`<select>`, form POST, redirect) |
+| Surface | Layout | Pre-migration share-case UI (example) | Transport |
+|---------|--------|----------------------------------------|-----------|
+| **Core case** `/case/:id` toolbar | `core.html.erb` | Angular `$quepidModal`: `list-group`, conditional sections, one footer action | `teamSvc` API, stay on page |
+| **Rails pages** cases index, teams | `application` | Rails `_share_case_modal` + Stimulus: `<select>`, always-visible "Already shared with", two disabled footer buttons | form POST, redirect |
 
 Other features may have the same split: **core Angular** vs **Rails Stimulus twin**. Inventory both; never assume one partial is the source of truth for all surfaces.
 
@@ -43,18 +43,15 @@ Other features may have the same split: **core Angular** vs **Rails Stimulus twi
 4. **Do not collapse** — one ERB partial with one interaction model for every surface. Use separate controllers/partials (e.g. `share-case` vs `share-case-core`) or explicit controller branches when surfaces differed.
 5. **Do not replace Rails page behavior with Angular behavior** — cases index / teams should stay equivalent to their pre-migration Rails UX unless the user explicitly requests a unified redesign.
 
-### Definition of done (per surface)
+### Definition of done
 
-- [ ] Parity table for **this surface** (not "closest twin")
-- [ ] Tests for this surface's contracts
-- [ ] Matched before/after screenshots for **this surface's** prior UX
-- [ ] Other surfaces unchanged or explicitly listed in the PR
+See [Definition of done (PR)](#definition-of-done-pr) — every item there is **per surface**, never "closest twin".
 
 ### Anti-patterns
 
 - **share-case:** One `_share_case_modal` with Angular list UI on cases index (drops `<select>` and always-visible disabled footers users had there).
 - **share-case:** Porting API to core but shipping cases-index dropdown UX on the case toolbar.
-- **Either direction:** "Unified modal" without a product decision and per-surface screenshot proof.
+- **Either direction:** "Unified modal" without a product decision, separate per-surface parity tables, and per-surface screenshot proof.
 
 ## Choose the work class
 
@@ -112,7 +109,7 @@ List before editing:
 ### 3. Karma baseline first
 
 - Run or capture the relevant Karma examples **before** deleting Angular sources.
-- Port contracts to Vitest (`test/javascript/**/*.test.js`, mirroring `app/javascript/`) with comments naming the Karma examples.
+- Port contracts to Vitest with comments naming the Karma examples (spec location and commands: CLAUDE.md § Tests → JavaScript).
 - Explicitly document dropped examples (e.g. "modal dismiss is Bootstrap `data-bs-dismiss`").
 - Keep Karma for services still used by remaining Angular (`teamSvc`, `caseSvc` bridges, etc.).
 
@@ -127,7 +124,7 @@ List before editing:
 
 - Vitest for new/changed Stimulus controllers and `api/` / `utils/` logic.
 - Playwright: migration pairs under `.playwright-mcp/<topic>/` (`*-before` / `*-after`); for durable golden paths update `test/playwright/baselines/` when Angular is gone.
-- Rebuild: `bin/docker r yarn build` / `build:angular-*` / `build:css` as needed. App via Docker (`bin/docker s`); do not stop the dev server unless asked.
+- Rebuild the bundles you touched and run the app via Docker — commands and the leave-the-dev-server-running rule are in CLAUDE.md § General Configuration / Execution.
 
 ### 6. Screenshots (matched states, per surface)
 
@@ -147,18 +144,7 @@ Only when parity table, tests, and matched shots are done:
 
 **Examples:** share-case, clone-case, export-case, delete/archive, judgements entry shell.
 
-**share-case had two live UIs before migration:**
-
-| Surface | Old UX | Old transport |
-|---------|--------|---------------|
-| Core toolbar | Angular list-group, conditional sections, one footer action | `teamSvc` API, stay on page |
-| Cases index / teams | `<select>`, always "Already shared with", two disabled footer buttons | form POST, redirect |
-
-**Forbidden:**
-
-- One `_share_case_modal` that applies Angular list UI on cases index (drops Rails behavior).
-- Putting cases-index `<select>` on core toolbar (drops Angular behavior).
-- "Unified modal" without separate parity tables and screenshots for each surface.
+**share-case had two live UIs before migration** — see [Identify the surface first](#identify-the-surface-first) for what each shipped, and [Anti-patterns](#anti-patterns) for what is forbidden.
 
 **Allowed:**
 
@@ -208,8 +194,8 @@ Port only when a UI migration needs them:
 ## Definition of done (PR)
 
 - [ ] Parity table **per affected surface**
-- [ ] Karma → Vitest (or justified drops) for core contracts
-- [ ] Matched screenshots per surface (core vs Rails pages not interchangeable)
-- [ ] Rails surfaces unchanged unless PR explicitly migrates them
+- [ ] Tests for each affected surface's contracts; Karma → Vitest (or justified drops) for core
+- [ ] Matched before/after screenshots per surface (core vs Rails pages not interchangeable)
+- [ ] Other surfaces unchanged, or explicitly listed as migrated in the PR
 - [ ] Bridges documented if Angular remains
 - [ ] Inventory updated; Angular removed only when safe

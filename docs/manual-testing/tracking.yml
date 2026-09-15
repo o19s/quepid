@@ -155,21 +155,21 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
       "3.2":
         title: "Create a new case (setup wizard)"
-        last_run: 2026-09-14T18:45:01Z
+        last_run: 2026-09-15T16:32:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main (wizardModal.js and related templates touched). Navigated via Relevancy Cases > Create a case — a new case (6816) was created immediately and the wizard auto-triggered on /case/6816/try/1?showWizard=true, per documented behavior. Blank case-name correctly disabled Continue; picked an existing Solr endpoint, clicked 'ping it' — got 'Quepid can search this! Hit Continue to keep working through setup.'; Fields step blocked Continue with 'This field is required. Please select a title field.' until filled, then a confirm() dialog warned about using a custom field for title/ID (accepted); Query step accepted a test query; Finish completed the wizard and landed in the workbench with showWizard stripped from the URL. Deleted the test case afterward. Did not test invalid-endpoint-URL or HTTPS/HTTP protocol-mismatch messaging, or the /cases/new direct-URL re-trigger edge case.\n\nFollow-up code investigation of the product-tour popup ('Case Header') appearing on a non-brand-new account (9+ existing cases): the tour is NOT actually gated on account age or case count. It's gated purely on the per-user `completed_case_wizard` boolean (app/models/user.rb; checked at app/assets/javascripts/controllers/wizardCtrl.js:24-29 and app/assets/javascripts/components/new_case/new_case_controller.js:42-47). That flag only flips to true when a wizard run is completed via Finish (wizardModal.js:928 → userSvc.js's shownIntroWizard() → PUT /api/users/:id); dismissing/cancelling a wizard never sets it. So the tour fires again for any account whose flag is still false, regardless of how many cases it has — the doc's 'brand-new account' framing described the wrong trigger. Not a code bug; updated 03-case-management.md's edge-case wording to describe the real `completed_case_wizard` gate instead."
+        notes: "Full wizard re-run via Playwright MCP after today's shared-header/BS5-navbar work (no direct changes to wizard files themselves since the 09-14 pass). New case (6838) auto-created and wizard triggered on showWizard=true; Name step blocked Continue until filled ('Manual Test Wizard Case 20260915'); Endpoint step's 'Use an existing Search Endpoint' path with TMDB Solr — 'ping it' returned 'Quepid can search this! Hit Continue...'; Fields step pre-filled Title Field with 'title' from the endpoint's saved field mappings, Continue enabled immediately (no custom-field confirm() this time since the endpoint already had fields mapped); Query step accepted 'star wars'; Finish landed in the workbench with showWizard stripped from the URL, correct case name and 1 query ('Number of Queries: 1'). Deleted the test case afterward via the toolbar's Delete Case Options modal. Did not test invalid-endpoint-URL, HTTPS/HTTP protocol-mismatch messaging, the custom-field confirm() dialog, or the /cases/new direct-URL re-trigger edge case this pass."
         paths: ["app/controllers/core_controller.rb", "app/assets/javascripts/controllers/wizardCtrl.js", "app/assets/javascripts/controllers/wizardModal.js", "app/assets/templates/views/wizardModal.html", "app/javascript/angular_app.js"]
       "3.3":
         title: "Import a case from JSON"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T16:34:00Z
         result: pass
-        notes: "Re-verified after the import modal was rebuilt on the shared modal_shell partial. Uploading a .txt file was blocked client-side ('Please select a valid JSON file.', Import button disabled). A .json-named file with malformed content was rejected server-side with a clear inline error ('Invalid JSON file. Please check the file format.'), no crash. A valid exported-case JSON (fetched live via 6.1's api/export/cases/4.json link, for STATIC CASE) imported successfully, created a new case with the same 1 query, and navigated straight to its workbench. Deleted the test case after verification via the delete-case-options-core modal. Large-export / progress-indicator behavior not tested."
+        notes: "Re-verified via Playwright MCP. Fetched a live export (api/export/cases/4.json, STATIC CASE) via fetch(), renamed the case_name to 'Manual Test Import 20260915', uploaded it — imported successfully into new case 6839 with the same 1 query, navigated straight to its workbench; deleted afterward via the Delete Case Options modal. Separately uploaded a .json-named file with invalid JSON syntax — no client-side block (extension check passed) but server-side rejection was correct and clear: 'Invalid JSON file. Please check the file format.', no crash. Did not re-test the .txt-extension client-side block or large-export/progress-indicator behavior this pass."
         paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb"]
       "3.4":
         title: "Import snapshots from CSV"
-        last_run: 2026-09-08
-        result: pass_with_fixes
-        notes: "Branch-ui-diff sweep found and confirmed a real fix: on main, submitting a valid snapshot CSV import failed server-side (SnapshotManager#import_queries expects a Hash but SnapshotImporter sent an Array) surfaced in the UI as '1 snapshot(s) failed to import'; on this branch the same import succeeds and the case reloads with the new snapshot. Traces to the payload-shape fix in app/javascript/controllers/import_snapshot_controller.js on this branch."
+        last_run: 2026-09-15T16:35:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP after today's sequential-import fix (commit ac2301f2 'Send snapshot imports sequentially to avoid a find-or-create deadlock'). With no file chosen, Import stayed disabled as documented. Uploaded a 2-row CSV against STATIC CASE (id 4) with two distinct Snapshot Name values ('Manual Test Snap A', 'Manual Test Snap B') — CSV Preview panel appeared, Import enabled, submit succeeded with no error and no deadlock/hang. Verified via Compare Snapshots that BOTH snapshots were created as separate entries (not merged/dropped), confirming the sequential-send fix handles multi-row/multi-name imports correctly. Left the two test snapshots on the shared demo case (no UI path found to delete a snapshot) — harmless test data, same as other pre-existing leftover fixtures on this instance. Did not test the nonexistent-Case-ID or missing-header rejection edge cases this pass."
         paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "test/javascript/controllers/import_snapshot_controller.test.js"]
       "3.5":
         title: "Archive / unarchive a case from the list"
@@ -179,9 +179,9 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
       "3.6":
         title: "Share a case from the list"
-        last_run: 2026-09-14T18:31:55Z
+        last_run: 2026-09-15T16:36:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main touched share_case controller/directive/modal files. Shared 'Typeahead: Dairy' with OSC from the list-row Share icon (flash 'Typeahead: Dairy shared with OSC.', Teams column updated live without a page reload), then unshared it (flash 'Typeahead: Dairy unshared from OSC.'). Team dropdown only lists the current user's own teams; already-shared teams show instead as an 'Already shared with' entry with its own Unshare button. Restored to original (unshared) state."
+        notes: "Full round trip re-verified via Playwright MCP after today's ShareEntityControllerBase/shared-partial extractions. Shared 'Typeahead: Dessert' with OSC from the list-row Share icon — flash 'Typeahead: Dessert shared with OSC.', Teams column updated live to show the 'OSC' link without a page reload. Reopened the modal — OSC correctly moved to 'Already shared with:'; unshared it — flash 'Typeahead: Dessert unshared from OSC.', restored to original state. No console errors."
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_share_case_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js"]
 
   "04":
@@ -189,81 +189,81 @@ parts:
     scenarios:
       "4.1":
         title: "Rename case / rename try"
-        last_run: 2026-09-14T18:45:35Z
+        last_run: 2026-09-15T16:38:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Case name uses double-click to enter edit mode; clearing the name field correctly disabled the Rename button (blank name blocked), typing a real name re-enabled it and Rename persisted the change immediately in the header. Try name is independently double-click-editable the same way — cleared and confirmed the same blank-name guard, then renamed 'Try 1' to 'Try 1 Renamed' and confirmed it persisted in the header. Both changes also showed up correctly later in the try-history list (5.1)."
+        notes: "Re-verified via Playwright MCP on a disposable clone (case 6840). Double-clicked the case name to enter edit mode, renamed to 'Manual Test Part4 Renamed Case', clicked Rename — applied immediately in the header. Double-clicked the try name, renamed 'Try 20' to 'Manual Test Try Renamed', Rename applied immediately. Reloaded the page — both names persisted correctly. Did not re-test the blank-name guard this pass (confirmed previously)."
         paths: ["app/assets/javascripts/controllers/case.js", "app/assets/javascripts/controllers/currSettings.js", "app/assets/templates/views/queriesLayout.html", "app/models/case.rb"]
       "4.2":
         title: "Add a query (single)"
-        last_run: 2026-09-14T18:46:01Z
+        last_run: 2026-09-15T16:39:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main (queriesCtrl.js touched). Typed 'second query' into the add-query input on a live Solr-backed test case; Add query button was disabled while the input was empty and enabled once text was entered; clicking it added the query, ran it against live Solr, and scored it (326 results, 'Number of Queries' count incremented to 2) with no errors. Did not test the static-engine-disabled or search-failure edge cases this pass."
+        notes: "Re-verified via Playwright MCP on disposable case 6840 (Solr-backed). Add query button disabled while input empty, enabled once 'cheese' was typed; clicking it added, ran, and scored the query with no errors ('Number of Queries' incremented 1→2). Did not test the static-engine-disabled or search-failure edge cases this pass."
         paths: ["app/assets/javascripts/directives/", "app/models/query.rb"]
       "4.3":
         title: "Add multiple queries (bulk)"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T16:39:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Typed 'butter;yogurt' — button label switched from 'Add query' to 'Add queries' as documented; clicking it added and scored both queries ('Number of Queries' went 2→4), no errors. Did not independently confirm a distinct bulk success/failure flash text (the toast likely auto-dismissed before the snapshot) or the single-failed-query-doesn't-block-others edge case this pass."
         paths: ["app/assets/javascripts/components/add_query/"]
       "4.4":
         title: "Move a query to another case"
-        last_run: 2026-09-08
+        last_run: 2026-09-15T16:40:00Z
         result: pass
-        notes: "Re-verified via branch-ui-diff sweep: matches main."
+        notes: "Re-verified via Playwright MCP: expanded 'yogurt' on disposable case 6840, clicked Move Query — modal listed all cases; picked SOLR CASE, footer button correctly relabeled to 'Move to SOLR CASE', clicked it — flash 'Query moved successfully!', query count on the source case dropped 4→3. Verified on SOLR CASE (case 1) that 'yogurt' now appeared (count 1→2), then deleted it there via Delete Query (native confirm() accepted) to restore SOLR CASE to its original single query. Did not test moving a query with existing ratings/history, or the failure-path edge case."
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb"]
       "4.5":
         title: "Set per-query options (Query Options)"
-        last_run: 2026-09-14T18:46:38Z
+        last_run: 2026-09-15T16:41:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Confirmed invalid JSON ('{invalid json') is still rejected with 'Please provide a valid JSON object.' and the modal stays open (2026-09-02 fix intact); valid JSON ('{\"testKey\": \"testValue\"}') saved, closed the modal, and flashed 'Query options saved successfully.' — also confirmed present later in a General-format case export CSV. Gotcha reconfirmed: clicking directly on the Ace textbox ref times out (intercepted by ace_content); click the visible content div first, then type into the textbox ref."
+        notes: "Re-verified via Playwright MCP on disposable case 6840 (no functional changes to this area since the prior pass). Opened Set Options on the 'cheese' query, replaced the default '{}' with '{\"manualTestKey\": \"manualTestValue\"}', clicked Set Options — flash 'Query options saved successfully.' Gotcha reconfirmed: click the visible Ace content div first, then type into the textbox ref (clicking the textbox ref directly times out). Did not re-test the invalid-JSON rejection path this pass."
         paths: ["app/models/query.rb", "app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js", "app/assets/javascripts/components/query_options/query_options_controller.js"]
       "4.6":
         title: "Rate a document"
-        last_run: 2026-09-14T18:47:23Z
+        last_run: 2026-09-15T16:42:00Z
         result: pass
-        notes: "Full re-verification via Playwright MCP after the angular-cleanup-phase3 merge from main. Clicked a document's rating badge, popover opened with Irrelevant/Relevant/RESET; clicked '1 Relevant' — badge updated immediately. Reloaded the page and confirmed the rating persisted (badge still showed '1' after re-expanding the query). Reopened the popover and clicked RESET — badge cleared back to '--'. Full rate → persist-on-reload → reset cycle confirmed working. Duplicate/missing-doc-id banner and depth-of-rating-cutoff edge cases not tested this pass."
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Clicked a 'cheese' result's rating badge, popover opened with Irrelevant/Relevant/RESET; clicked '1 Relevant' — badge updated to '1' immediately, and both the query score (0.00→1.00) and overall case score (0.33→0.67) updated live in the same request (see 4.7). Reloaded the page — rating and scores persisted correctly. Did not re-test RESET, the duplicate/missing-doc-id banner, or depth-of-rating-cutoff edge cases this pass."
         paths: ["app/controllers/ratings_controller.rb", "app/assets/javascripts/directives/quepidPopover.js"]
       "4.7":
         title: "Case & query score badges"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:42:00Z
         result: pass
-        notes: "Verified badges update live with sensible color change on rating."
+        notes: "Re-verified via Playwright MCP as part of 4.6's rating flow: rating a previously-unrated top result live-updated both the query-level score badge (0.00→1.00, green) and the case-level score badge in the header (0.33→0.67), with no page reload, and both persisted after a manual reload."
         paths: ["app/models/score.rb"]
       "4.8":
         title: "Select a scorer for the case"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:43:00Z
         result: pass
-        notes: "Switched from AP@10 to nDCG@10 via the Select Scorer modal; header/score badge updated to nDCG@10 immediately. Switched back to AP@10 to restore original state. Custom-scorer / not-shared-with-you warning not tested."
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Select Scorer modal listed the built-in AP@10/nDCG@10 pair plus the account's custom scorers; picked nDCG@10 and clicked Select Scorer — header and score badge updated to nDCG@10 immediately, no reload needed. Case is disposable so did not restore the original scorer. Custom-scorer / not-shared-with-you warning not tested."
         paths: ["app/controllers/scores_controller.rb", "app/models/scorer.rb"]
       "4.9":
         title: "Missing Documents finder"
-        last_run: 2026-09-14T18:34:16Z
+        last_run: 2026-09-15T16:44:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main (docFinder.js touched). On case 6 (Typeahead: Dairy), query 'dairy': opened Missing Documents, searched the pre-filled query (q=dairy&magicBoost=20), got '23 matching documents' with the persistent 'Changing ratings will affect the query score' warning, rated the top doc '1 Relevant' inline (badge updated live, case/query score badge updated from 0.00 to 1.00), then clicked 'Reset to All Rated Docs' which correctly switched to an 'Already Rated Documents' view showing the new rating. Did not test the blank-URL/invalid-JSON/unreachable-host edge cases for this modal specifically (that class of edge case was separately confirmed working in the Mapper Wizard fetch step, 7.7)."
+        notes: "Re-verified via Playwright MCP on disposable case 6840, query 'butter': opened Missing Documents, pre-filled query (q=butter&magicBoost=20) shown with the 'Changing ratings will affect the query score' warning; clicked Search, got '4 matching documents'; rated the top doc '3 Perfect' inline from within the modal — rating and the query's score badge (0.00→1.00) updated live in the underlying workbench behind the modal. Did not test 'Reset to All Rated Docs' or the blank-URL/invalid-query edge cases this pass."
         paths: ["app/assets/javascripts/"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
-        last_run: 2026-09-14T18:48:12Z
+        last_run: 2026-09-15T16:45:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Opened the drawer via the wrench icon, landed on the Query tab (Query Sandbox) showing the real stored template; edited it to add a ##tieBoost## placeholder and clicked 'Rerun My Searches!' — a new Try was created and all queries re-ran (initially failed since the placeholder had no substituted value yet — expected, see 4.11). Did not test static-engine empty-state or TLS/protocol-mismatch messaging this pass."
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Opened the drawer via Tune Relevance, landed on the Query tab showing the real stored template (q=#$query##&magicBoost=20); edited magicBoost to 50 and clicked 'Rerun My Searches!' — a new Try (Try 2) was created, all 3 queries re-ran with the new param, and scores updated accordingly. Did not test static-engine empty-state or TLS/protocol-mismatch messaging this pass."
         paths: ["app/assets/javascripts/controllers/"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
-        last_run: 2026-09-14T18:48:23Z
+        last_run: 2026-09-15T16:46:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. After adding ##tieBoost## to the Query tab's template (4.10), switching to Tuning Knobs auto-showed a 'tieBoost:' numeric spinbutton (defaulted to 10); changed it to 0.5 and clicked 'Rerun My Searches!' — queries that had been failing (unsubstituted placeholder) now succeeded with real results, and the try-history list (5.1) correctly showed 'tieBoost=0.5' for the new try vs 'tieBoost=10' for the prior one, confirming the substitution took effect and persisted per-try. Empty-state (no placeholders) messaging not re-tested this pass."
+        notes: "Re-verified via Playwright MCP on disposable case 6840. After adding ##titleBoost## to the Query tab's template (4.10), switching to Tuning Knobs auto-showed a 'titleBoost:' numeric spinbutton (defaulted to 10, the first numeric token after the placeholder); changed it to 25 and clicked 'Rerun My Searches!' — rerun completed with no errors. Empty-state (no placeholders) messaging not re-tested this pass."
         paths: ["app/assets/javascripts/controllers/"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
-        last_run: 2026-09-14T19:12:11Z
+        last_run: 2026-09-15T16:47:00Z
         result: pass_with_fixes
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Endpoint Details (read-only name/URL + More link), Displayed Fields, Number of Results, Evaluate Nightly, Escape Queries, and the Search Endpoints picker all rendered correctly. CONFIRMED AND FIXED real bug: typing 500 into Number of Results (max=100) triggered AngularJS's built-in max validator, which sets the bound model to `undefined` while the input still visually showed '500' (no error styling anywhere in the template) — settingsSvc.js then dropped the undefined value from the POST body entirely, so Try#set_defaults (try.rb:247, `number_of_rows = 10 if blank?`) silently substituted 10 with zero user feedback. Root-caused via a code investigation, then fixed: added an explicit range check (1-100) at the top of SettingsCtrl.submit() (app/assets/javascripts/controllers/settings.js) that rejects out-of-range/non-numeric values with a clear flash error ('Number of Results to Show must be between 1 and 100.') and refuses to save, instead of silently defaulting; also added a matching `min=\"1\"` to the template input (devQueryParams.html) alongside the existing `max=\"100\"`. Rebuilt Angular bundles (yarn build:angular-app / build:angular-templates) and re-verified live: typing 500 now shows the error and leaves the try unchanged (no new try created, field still shows '500' so the user can correct it); typing a valid value (50) still saves correctly and round-trips via the API (`number_of_rows: 50` confirmed on the saved try). jshint clean on the modified file. No test coverage existed for SettingsCtrl (spec/javascripts/angular/controllers/settings_spec.js is a placeholder) — did not add new Karma tests given this is legacy AngularJS code being phased out, per the migration effort; scope kept to the minimal fix. Did not toggle Evaluate Nightly or verify a queued background job via Job Manager."
+        notes: "Reconfirmed via Playwright MCP on disposable case 6840 (no code changes to this area since the fix below): typed 500 into Number of Results to Show, clicked Rerun My Searches — flash 'Number of Results to Show must be between 1 and 100.', try count stayed at Try 3 (no new try created from the rejected save), confirming the fix described below still holds. Prior pass's notes: Endpoint Details (read-only name/URL + More link), Displayed Fields, Number of Results, Evaluate Nightly, Escape Queries, and the Search Endpoints picker all rendered correctly. CONFIRMED AND FIXED real bug: typing 500 into Number of Results (max=100) triggered AngularJS's built-in max validator, which sets the bound model to `undefined` while the input still visually showed '500' (no error styling anywhere in the template) — settingsSvc.js then dropped the undefined value from the POST body entirely, so Try#set_defaults (try.rb:247, `number_of_rows = 10 if blank?`) silently substituted 10 with zero user feedback. Root-caused via a code investigation, then fixed: added an explicit range check (1-100) at the top of SettingsCtrl.submit() (app/assets/javascripts/controllers/settings.js) that rejects out-of-range/non-numeric values with a clear flash error ('Number of Results to Show must be between 1 and 100.') and refuses to save, instead of silently defaulting; also added a matching `min=\"1\"` to the template input (devQueryParams.html) alongside the existing `max=\"100\"`. Rebuilt Angular bundles (yarn build:angular-app / build:angular-templates) and re-verified live: typing 500 now shows the error and leaves the try unchanged (no new try created, field still shows '500' so the user can correct it); typing a valid value (50) still saves correctly and round-trips via the API (`number_of_rows: 50` confirmed on the saved try). jshint clean on the modified file. No test coverage existed for SettingsCtrl (spec/javascripts/angular/controllers/settings_spec.js is a placeholder) — did not add new Karma tests given this is legacy AngularJS code being phased out, per the migration effort; scope kept to the minimal fix. Did not toggle Evaluate Nightly or verify a queued background job via Job Manager."
         paths: ["app/assets/javascripts/controllers/settings.js", "app/assets/templates/views/devQueryParams.html", "app/models/try.rb", "app/assets/javascripts/services/settingsSvc.js"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
-        last_run: 2026-09-14T18:50:02Z
+        last_run: 2026-09-15T16:47:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main, this time driven directly through the drawer's History tab UI. Confirmed 'Visualize your tries', 'Check Scores', and 'Check Ratings' links all present, and the try list below renders every try (4 at the time of this pass) with its search-endpoint URL. Did not click through to the Scores/Ratings pages themselves this pass (see 4.13's prior 2026-09-04 note for that direct verification) or test the bulk-delete/Check-All partial-selection edge cases."
+        notes: "Re-verified via Playwright MCP on disposable case 6840 after generating 3 tries via the Query/Tuning-Knobs/Settings tabs in this same pass. History tab correctly listed all 3 tries each with its own query-param preview and search-endpoint URL, plus 'Visualize your tries'/'Check Scores'/'Check Ratings' links. Clicked the oldest try ('Manual Test Try Renamed - Try 1') — switched the workbench to /case/6840/try/1 correctly. Did not test the bulk-delete/Check-All partial-selection edge cases this pass."
         paths: ["app/controllers/scores_controller.rb", "app/views/scores/", "app/controllers/concerns/authentication/current_case_manager.rb"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
@@ -273,15 +273,15 @@ parts:
         paths: ["app/controllers/api/v1/annotations_controller.rb"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:48:00Z
         result: pass
-        notes: "Copy query icon (ngclipboard directive) correctly copied the query text to the clipboard. Delete Query showed the native 'Are you absolutely sure you want to delete?' confirm and removed the query on accept, restoring the case's query count."
+        notes: "Re-verified via Playwright MCP. Copy icon on the 'butter' query (case 6840) copied its query text to the clipboard, confirmed via navigator.clipboard.readText(). Delete Query separately re-verified on SOLR CASE (case 1, see 4.4): native 'Are you absolutely sure you want to delete?' confirm() shown, query removed on accept and case's query count decremented correctly."
         paths: ["app/models/query.rb"]
       "4.16":
         title: "Query Notes & Information Need"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:49:00Z
         result: pass
-        notes: "Filled Information Need and Notes, saved (flash 'Success! Your query details have been saved.', panel auto-collapsed); re-expanded after a full reload and both values persisted correctly. Saving with both fields blank also succeeded without error. Cleared test values afterward. Forced-failure and Part 6 export round-trip edge cases not tested."
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Filled Information Need ('Find butter products') and Notes ('Manual test note for query 4.16') on the 'butter' query, saved — flash 'Success! Your query details have been saved.'; reloaded the page and re-expanded Toggle Notes, both values persisted correctly. Did not re-test the blank-fields or forced-failure edge cases this pass."
         paths: ["app/models/query.rb"]
 
   "05":
@@ -323,15 +323,15 @@ parts:
     scenarios:
       "6.1":
         title: "Export a case"
-        last_run: 2026-09-14T18:51:23Z
+        last_run: 2026-09-15T16:51:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Confirmed Export button stays disabled until a format is chosen; selected General and clicked Export — a real file downloaded ('Manual_Test_Wizard_Case_Renamed_general.csv') whose contents matched the documented header (Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes,Options) and correctly included the query-options JSON set earlier in 4.5. Gotcha reconfirmed: the toolbar's Export menu item needs the click aimed at the parent listitem, not the inner text span, to reliably open the modal. Did not test the other format radios, the in-progress-snapshot warning, or Detailed-outside-single-case-disabled this pass."
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Export modal listed all format radios (Information Need, General, Detailed, Snapshot, Basic, TREC, RRE, LTR); selected General and clicked Export — triggered a real file download (browser navigated to about:blank momentarily as the download started, recovered fine on renavigating to the case). Separately confirmed via a direct fetch('/api/export/cases/6840.json') that the underlying export data is correct and includes the query Notes set earlier in 4.16. Did not test the other format radios or the in-progress-snapshot warning this pass."
         paths: ["app/controllers/cases_controller.rb", "app/services/case_export"]
       "6.2":
         title: "Import into a case (ratings / information needs / snapshots)"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T16:53:00Z
         result: pass
-        notes: "Tested all three tabs on SOLR CASE's 'star wars' query. Ratings: selected CSV format, uploaded a 2-row query,docid,rating CSV, saw the 'This operation WILL override your existing ratings' warning, imported — confirmed via rails console both ratings landed with the exact values (3.0 and 1.0). Information Needs: uploaded a query,information_need CSV, imported with no error — confirmed the query's information_need field was set to the exact uploaded text. Snapshots: had to select the 'Snapshot CSV' radio for the already-chosen file to register before Import enabled (order-sensitive: file-then-radio still worked, but Import stayed disabled until the radio was also checked) — uploaded a Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position CSV, confirmed the Case ID column was correctly ignored (imported into case 1 regardless of the CSV's own Case ID value) and a real Snapshot row was created. Cleaned up all three (deleted the test ratings and snapshot, cleared information_need) afterward via rails runner. Did not test the 'Clear existing queries?' / 'Create missing queries?' toggles, or any invalid-file/missing-header edge cases."
+        notes: "Re-verified the Ratings tab via Playwright MCP on disposable case 6840: selected CSV format, uploaded a 1-row 'query,docid,rating' CSV rating the 'cheese' query — Import enabled once the file was chosen, submitted, flash 'Successfully imported ratings from CSV.' Confirmed the Information Needs tab still renders correctly (its own CSV-format radio, header hint, Choose File). Did not re-test the Snapshots tab this pass (see 3.4/6.2's 2026-09-04 notes and 3.4's 2026-09-15 sequential-import re-verification) or the Clear-existing-queries/Create-missing-queries toggles."
         paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb", "app/services/snapshot_importer.rb", "app/assets/javascripts/components/import_ratings/import_ratings_controller.js"]
       "6.3":
         title: "Clone a case"
@@ -353,21 +353,21 @@ parts:
         paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
-        last_run: 2026-09-14T18:52:56Z
+        last_run: 2026-09-15T16:52:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. On an unshared clone of the test case, clicking Judgements correctly gated with 'Judgements are meant to be shared with a team, so either create a new team or share case first.' plus a 'Create a book' shortcut. Shared the case with OSC, reopened Judgements — the gate was gone and a Book picker appeared listing existing books ('Book of Ratings', 'Haystack Icecat Rating Party') plus 'None (disconnect from any book)'; selecting 'Book of Ratings' revealed both sync directions (Case→Book Query/Doc Pairs with Populate Now, Book→Case Judgement Ratings with Refresh Ratings), Sync Queries, and Save. Clicked Populate Now — flash 'Updating Book with Query Doc Pairs.' confirmed the case-to-book link and manual sync worked; ran synchronously (small case, 2 queries) rather than as a background job. Did not test Refresh Ratings, Sync Queries, or the Save-only-enabled-on-change behavior this pass."
+        notes: "Re-verified via Playwright MCP on disposable case 6840 (unshared with any team). Clicking Judgements correctly gated with 'Judgements are meant to be shared with a team, so either create a new team or share case first.' plus a 'Create a book' shortcut (pre-filled /books/new?scorer_id=1&origin_case_id=6840). Clicked it, form was pre-filled with a sensible name ('Book For Manual Test Part4 Renamed Case'); clicked Create Book — landed on the new book's Overview page (book 48) with 'Related cases:' correctly linking back to the originating case. Did not re-test the shared-case Book-picker path (existing book selection, Populate Now/Refresh Ratings sync) this pass — see prior pass's notes for that."
         paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T16:49:00Z
         result: pass
-        notes: "Re-verified after quepidPopover.js/quepidSortable.js changes in the same directive tree (this modal itself isn't popover-driven, but shares the directory). Params and Parsing tabs still render real Solr debug data (QParser, echoParams, etc.). Did not test Query Template tab or the Copy icon."
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Opened Explain Query on the 'butter' query — Params/Parsing/Query Template tabs all present; Parsing tab showed real Solr debug data (parsedquery: \"text:butter\", querystring, rawquerystring). Did not test the Query Template tab or the Copy icon this pass."
         paths: ["app/assets/javascripts/directives/"]
       "6.8":
         title: "Explain a single document (Debug Explain)"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T16:50:00Z
         result: pass
-        notes: "Re-verified specifically because this is the highest-risk scenario for the quepidPopover.js refactor (23 lines changed) and quepidTooltip.js removal (38 lines deleted, folded into the new bs_tooltip_controller.js) — this flow's entry point IS a popover (click the info icon next to 'Matches' on a document row). Popover opened correctly showing 'Relevancy Score: 1' with Debug/Expand actions; clicking Debug opened 'Debug Explain for Long Day's Journey Into Night (id:43004)' with the JSON explain tree, exactly as before. No console errors from the popover interaction itself (a 'Possibly unhandled rejection: backdrop click' appeared later from an unrelated Escape-key modal dismissal — a known pre-existing ui-bootstrap noise pattern, not new)."
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Clicked the 'Matches' info icon on a butter-query result — popover opened correctly showing 'Relevancy Score: 11.295498' with a Debug/Expand action for the score-computation expression. No console errors."
         paths: ["app/assets/javascripts/directives/"]
       "6.9":
         title: "Frog Report"
@@ -376,10 +376,10 @@ parts:
         notes: "CONFIRMED FIX via Playwright MCP for the previously-documented crash (commit 32dfffa6 'Fix frog report crash when a query has no currentScore yet'): opening the Frog Report on 'Haystack Rating Party' (all 137 queries return 0 results because chorus.dev.o19s.com is unreachable from this sandbox — same environment limitation as before) now opens successfully with a Summary and 'Distribution of Queries Needing Ratings' chart, instead of throwing 'Cannot read properties of undefined (reading countMissingRatings)'. The only console errors were the expected net::ERR_CONNECTION_REFUSED to chorus.dev.o19s.com, no JS exceptions. Minor cosmetic quirk noticed (not a crash, not re-tested for severity): the Summary text read '0 ratings missing, leading to NaN% missing rate' when every query returns zero results (divide-by-zero in the missing-rate percentage) — separate from the fixed crash, not investigated further. Also re-confirmed the golden path still works on case 3 (SEARCHAPI CASE, an unrun/unscored query) with no crash."
         paths: ["app/assets/javascripts/", "app/assets/javascripts/components/frog_report/frog_report_modal_instance_controller.js"]
       "6.10":
-        title: "Unarchive case (from within a case context)"
-        last_run: 2026-09-04
+        title: "Unarchive case (from a list's Archived filter)"
+        last_run: 2026-09-15T16:30:00Z
         result: pass
-        notes: "Re-verified via 3.5 this pass (same underlying icon-button + confirm-modal mechanism, now on confirm_delete_controller.js/bs_modal.js rather than a distinct in-case UI — see 2026-09-02's note that no dedicated 'Unarchive case' modal exists in the codebase). Doc inaccuracy found: there is no 'Unarchive case' modal with an 'Add Back {case name}' button anywhere in the codebase (grepped app/views and app/assets/templates — no matches). The actual mechanism is the same icon-button pattern already verified in 3.5 and app/views/teams/_cases.html.erb: an 'Unarchive case' icon with a confirm dialog 'Unarchive {case name}?', reachable from the Cases list (Archived filter) and from a Team's case list (Archived Cases checkbox) — not a distinct modal. Recommend updating this doc entry to describe the real UI instead of a modal that doesn't exist; not filing this as a code fix since the underlying feature works correctly, just the doc's steps are wrong."
+        notes: "Re-verified via 3.5 this pass (same underlying icon-button + confirm-modal mechanism, confirm_delete_controller.js/bs_modal.js, leak-fix ca1ff16b). Doc corrected in this pass: 06-core-workbench-import-export-and-explain-tools.md's scenario 6.10 previously described a nonexistent 'Unarchive case' modal with an 'Add Back {case name}' button (flagged but not fixed in the prior two passes) — updated the title and steps to describe the real UI (Archived-filter checkbox + per-row unarchive icon + confirm dialog, on /cases or a team's case list)."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb"]
 
   "07":
@@ -393,27 +393,27 @@ parts:
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/index.html.erb"]
       "7.2":
         title: "Create a Search Endpoint — one per engine type"
-        last_run: 2026-09-14T18:54:49Z
+        last_run: 2026-09-15T16:56:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main, for the Solr engine type only (representative sample, not all 7 engine types). Submitting the blank form was blocked (stayed on the new-endpoint page, no visible custom error — likely native required-field validation on Search Engine/Endpoint Url/Api Method). Submitting a JSON array (not object) in Custom Headers was rejected server-side with the exact message 'Custom headers must be a JSON object (e.g., {\"key\": \"value\"}), not an array or primitive value', form values preserved. Fixed to '{}' and resubmitted — redirected to the new endpoint's Show page successfully. Did not test the other 6 engine types, malformed-JSON (vs. wrong-type) headers, missing-colon Basic Auth, or the JSONP+proxy conflict this pass."
+        notes: "Re-verified via Playwright MCP for the Solr engine type (representative sample). Filled Name/Search engine (Solr)/Endpoint url/Api method (GET), clicked Create Search endpoint — redirected to the new endpoint's Show page successfully. Did not test the other 6 engine types, blank-form validation, or Custom Headers JSON-type rejection this pass (see prior pass for that)."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/models/search_endpoint.rb", "app/views/search_endpoints/_form.html.erb"]
       "7.3":
         title: "View / Edit a Search Endpoint"
-        last_run: 2026-09-14T18:55:28Z
+        last_run: 2026-09-15T16:56:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main, including a full edit-and-save cycle. Set a Basic Auth Credential ('testuser:testpass123') and Rate Limit (30), saved — Show page displayed it masked as 'testuser:******'. Re-opened Edit: the field showed the masked value (not the real password); saved again without touching it — Show page still displayed the same masked value afterward, consistent with the real credential being preserved rather than overwritten with the literal masked string (not independently verified at the DB/rails-console level this pass). Did not test the archived-endpoint warning banner or the two-accounts team-sharing-preservation edge case."
+        notes: "Re-verified via Playwright MCP: edited a freshly-created test endpoint's Rate Limit to 30, clicked Update Search endpoint — Show page reflected the new value immediately. Did not re-test the Basic Auth masking behavior this pass (see prior pass for that detailed check)."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/show.html.erb"]
       "7.4":
         title: "Clone a Search Endpoint"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:56:00Z
         result: pass
-        notes: "Cloned an existing endpoint; clone appeared with a distinct name/id and did not carry over team-sharing from the original. Deleted after verification."
+        notes: "Re-verified via Playwright MCP: cloned a test Solr endpoint — Clone form pre-filled Name as 'Clone of {original}' and carried over the Rate Limit (30); submitting created a distinct endpoint (id 24, vs. original's 23). Deleted both after verification."
         paths: ["app/controllers/search_endpoints_controller.rb"]
       "7.5":
         title: "Archive / Delete a Search Endpoint"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:57:00Z
         result: pass
-        notes: "Archived a test endpoint (disappeared from default list, reappeared under archived filter), then deleted it; both operations worked as expected."
+        notes: "Re-verified via Playwright MCP: checked the Archived checkbox on a test endpoint's Edit form and saved — Show page correctly displayed 'Archived: true You must unarchive this search endpoint to use it with new cases.' Then deleted it via the Edit page's Delete button (native confirm() accepted) — flash 'Search Endpoint was deleted.', removed from the list. Also deleted a second test endpoint the same way to clean up."
         paths: ["app/controllers/search_endpoints_controller.rb"]
       "7.6":
         title: "Share / unshare a Search Endpoint"
@@ -435,9 +435,9 @@ parts:
         paths: ["app/controllers/mapper_wizards_controller.rb"]
       "7.9":
         title: "Mapper Wizard — Step 3: Edit, Test & Refine"
-        last_run: 2026-09-14T18:37:36Z
+        last_run: 2026-09-15T16:58:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Reached Step 3 via the hand-write-it link; both editors pre-populated with skeleton numberOfResultsMapper/docsMapper code. Test on numberOfResultsMapper ran sandboxed and showed 'Test Result: 0' (the stub's hardcoded return); Test on docsMapper showed alert 'docsMapper test successful!' with 'Test Result: []'. Clicked 'Refine with AI' on docsMapper with no API key set — native prompt appeared for feedback text, submitting it correctly surfaced 'Please enter your OpenAI API key' rather than sending a request. Did not test with a real API key (blocked, see 7.8), nor the empty/broken-code or test-before-fetch error messages."
+        notes: "Light recheck only this pass (no functional changes to mapper_wizards_controller.rb/v8_mapper_executor.rb since the prior thorough pass below): loaded the Mapper Wizard page, confirmed the 4-step layout still renders with no console errors. Prior pass's full verification: reached Step 3 via the hand-write-it link; both editors pre-populated with skeleton numberOfResultsMapper/docsMapper code. Test on numberOfResultsMapper ran sandboxed and showed 'Test Result: 0' (the stub's hardcoded return); Test on docsMapper showed alert 'docsMapper test successful!' with 'Test Result: []'. Clicked 'Refine with AI' on docsMapper with no API key set — native prompt appeared for feedback text, submitting it correctly surfaced 'Please enter your OpenAI API key' rather than sending a request. Did not test with a real API key (blocked, see 7.8), nor the empty/broken-code or test-before-fetch error messages."
         paths: ["app/controllers/mapper_wizards_controller.rb", "app/services/v8_mapper_executor.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb"]
       "7.10":
         title: "Mapper Wizard — Step 4: Save Search Endpoint"
@@ -451,45 +451,45 @@ parts:
     scenarios:
       "8.1":
         title: "Scorers list"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T16:58:00Z
         result: pass
-        notes: "Re-verified rendering after the shared page-header/account-dropdown partial extraction and the scorers/_list.html.erb share-button data-controller fix (8.7). Communal/Custom filter checkboxes, counts, and table still render correctly. Did not re-verify the non-admin Clone-not-Edit visibility rule this pass (covered 2026-09-02)."
+        notes: "Re-verified via Playwright MCP: Communal/Custom filter checkboxes, filter searchbox, counts, and table all render correctly with no console errors. Did not re-verify the non-admin Clone-not-Edit visibility rule this pass."
         paths: ["app/controllers/scorers_controller.rb", "app/views/scorers/index.html.erb"]
       "8.2":
         title: "Set your default scorer"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:59:00Z
         result: pass
-        notes: "Changed to nDCG@10, verified 'Default scorer updated.' flash and selection persisted; restored to AP@10 afterward."
+        notes: "Re-verified via Playwright MCP: changed default scorer to nDCG@10, clicked Save — selection persisted (option shown selected on reload of the response). Restored to AP@10 afterward, same result."
         paths: ["app/controllers/scorers_controller.rb"]
       "8.3":
         title: "Create a custom scorer"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:59:00Z
         result: pass
-        notes: "Created with custom JS code, Binary scale, and scale labels (0=Bad, 1=Good) — all persisted correctly. Name auto-suggests 'Scorer N' when untouched (matches the blank-name edge case). Did not test the >10-values or non-integer-values validation errors."
+        notes: "Re-verified via Playwright MCP: /scorers/new pre-fills a default name ('Scorer 17') and skeleton code; renamed to 'Manual Test Scorer 20260915' and saved — created successfully (scorer 19), landed on its Edit page. Did not re-test the >10-values or non-integer-values validation errors this pass."
         paths: ["app/controllers/scorers_controller.rb", "app/models/scorer.rb"]
       "8.4":
         title: "Edit a scorer"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T16:59:00Z
         result: pass
-        notes: "Renamed the scorer created in 8.3, saved, 'Scorer updated.' flash confirmed. Did not test the communal-scorer-as-admin warning banner."
+        notes: "Re-verified via Playwright MCP: changed the test scorer's Scale list to '0,1,2,3' and saved — flash 'Scorer updated.', Scale column on the index reflected '[0, 1, 2, 3]' immediately. Did not re-test the communal-scorer-as-admin warning banner this pass."
         paths: ["app/controllers/scorers_controller.rb"]
       "8.5":
         title: "Clone a scorer"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T17:00:00Z
         result: pass
-        notes: "Cloned communal AP@10 as a non-admin-context action, got an editable 'Clone of AP@10' with 'Scorer cloned.' flash."
+        notes: "Re-verified via Playwright MCP: cloned the test custom scorer from the index — got an editable 'Clone of Manual Test Scorer 20260915' (distinct id 20) with the Graded Scale (0,1,2,3) carried over from the original."
         paths: ["app/controllers/scorers_controller.rb"]
       "8.6":
         title: "Delete a scorer"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T17:01:00Z
         result: pass
-        notes: "Deleted both test scorers created this pass (8.3's and 8.5's clone); confirm dialog text is correct ('Are you sure you want to delete this Scorer?', no typo)."
+        notes: "Re-verified via Playwright MCP: deleted both test scorers created this pass (the original and its clone) via the Edit page's Delete button — native confirm() 'Are you sure you want to delete this Scorer?' accepted each time, flash 'Scorer deleted.', both removed from the index."
         paths: ["app/controllers/scorers_controller.rb"]
       "8.7":
         title: "Share / unshare a scorer with a team"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T17:00:00Z
         result: pass
-        notes: "Spot-checked (not a full re-run of the share/unshare cycle, which was already deeply verified 2026-09-03) after the shared modal_shell/osc_copyright partial extraction and bs_modal.js changes on 2026-09-04: opened the Share modal on a custom scorer from the scorers index and confirmed it still renders correctly (title 'Share Scorer: ...', team dropdown populated, 'Already shared with:' section present) — the shared-chrome refactor didn't break this modal's rendering. Full cycle re-verified after a second refactor pass: share_scorer_controller.js is now a 3-line subclass of the new ShareEntityControllerBase, reading id/name/allTeamsJson/sharedTeamsJson via Stimulus's real Values API. This pass also fixed the scorers index page specifically: `data-controller=\"share-scorer\"` previously lived on an ancestor wrapper div shared by every row (harmless under the old event-based reads, but incompatible with the Values API, which only reads off the controller's own element) — moved onto each row's Share button in scorers/_list.html.erb, matching the books/cases/search-endpoints pattern. Verified end-to-end from the scorers index: opened modal (correct title, dropdown excludes already-shared teams), selected OSC and submitted 'Share with team' (flash: 'shared with OSC', chip appeared active), then clicked the chip and submitted 'Unshare from team' (flash: 'unshared from OSC', scorer back to its original unshared state). No leftover test data."
+        notes: "Re-verified the share half of the cycle via Playwright MCP on a fresh test scorer: opened Share from the index, selected OSC, clicked 'Share with team' — flash 'Manual Test Scorer 20260915 shared with OSC.' Did not re-test unshare this pass (the scorer was deleted afterward as part of 8.6's cleanup, which implicitly removes the share)."
         paths: ["app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb"]
       "8.8":
         title: "Confirm the seeded communal scorers"
@@ -503,37 +503,37 @@ parts:
     scenarios:
       "9.1":
         title: "Create, rename, and browse teams"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T17:02:00Z
         result: pass
-        notes: "Created a team, creator auto-added as member. Did not test rename or duplicate-name behavior."
+        notes: "Re-verified via Playwright MCP: created 'Manual Test Team 20260915' (creator auto-added as member), then renamed it to 'Manual Test Team Renamed 20260915' via the Rename Team form — flash 'Team renamed.', heading updated immediately. Left the team in place (no delete-team option found in the UI) as harmless test data, same as other pre-existing test fixtures on this instance."
         paths: ["app/controllers/teams_controller.rb", "app/models/team.rb"]
       "9.2":
         title: "Add a team member (existing user)"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T17:02:00Z
         result: pass
-        notes: "Autocomplete correctly suggested a same-domain user not already on the team; add succeeded; re-adding the same user showed 'is already a member of this team.' Did not test the cross-domain privacy-boundary suppression itself (no non-o19s.com seed account handy)."
+        notes: "Re-verified via Playwright MCP: typed the seed oscMember's email, selected the autocomplete suggestion, clicked Add user — flash 'Osc Team Member added to the team.', member appeared in the Members list. Did not re-test the already-a-member or cross-domain-suppression edge cases this pass."
         paths: ["app/controllers/teams_controller.rb"]
       "9.3":
         title: "Invite a new (non-existing) user"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T17:03:00Z
         result: pass
-        notes: "Full flow verified (see 1.5 for the acceptance half). 'Invitation email was sent to ...' flash, INVITED badge with working copy-link button, real mailer content confirmed via development.log."
+        notes: "Re-verified via Playwright MCP: typed a non-existing email, clicked Add user — flash 'Invitation email was sent to ...', INVITED badge appeared with an Invite link. Did not re-verify the acceptance half or mailer content this pass (see 1.5 and the prior pass)."
         paths: ["app/controllers/teams_controller.rb", "app/controllers/users/invitations_controller.rb"]
       "9.4":
         title: "Remove a team member"
-        last_run: 2026-09-02
+        last_run: 2026-09-15T17:02:00Z
         result: pass
-        notes: "Confirm dialog text exactly matches doc ('Remove {fullname} from this team?'); member removed after confirming."
+        notes: "Re-verified via Playwright MCP: clicked Remove member on the just-added oscMember — confirm dialog read 'Remove Osc Team Member from this team?', confirming removed them (flash 'Osc Team Member removed from the team.', Members count dropped 2→1)."
         paths: ["app/controllers/teams_controller.rb"]
       "9.5":
         title: "Sharing a Case/Book/Search Endpoint/Scorer with a team"
-        last_run: 2026-09-14T18:33:42Z
+        last_run: 2026-09-15T17:00:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. This pass did a full share+unshare round trip for Search Endpoint from its index page (Static Endpoint, already shared with OSC): selected the 'Already shared with' chip and unshared — flash 'Static Endpoint unshared from OSC.', dropdown re-enabled with OSC selectable; re-shared — flash 'Static Endpoint shared with OSC.', restored to original state. Combined with 3.6/6.5 (Case, this pass) that's now Case + Search Endpoint round-tripped this session; Book and Scorer not re-tested this pass (see prior 2026-09-04 note for their last full verification)."
+        notes: "Re-verified via Playwright MCP this pass across all four entity types (each done independently as part of its own scenario): Case share/unshare round trip (3.6, 6.5), Search Endpoint share/unshare round trip (7.6), Scorer share (8.7). Book sharing not independently re-tested this pass — see prior 2026-09-04 note for its last full verification."
         paths: ["app/views/shared/_share_case_modal.html.erb", "app/views/shared/_share_book_modal.html.erb", "app/views/shared/_share_search_endpoint_modal.html.erb", "app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_book_controller.js", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb", "app/views/books/_book.html.erb", "app/views/teams/_books.html.erb", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
       "9.6":
         title: "Archive/unarchive a Case or Search Endpoint from the team page"
-        last_run: 2026-09-04
+        last_run: 2026-09-15T16:30:00Z
         result: pass
         notes: "Re-verified indirectly this pass: the underlying confirm_delete_controller.js + destructive_form.js + bs_modal.js mechanism (same code this team-page UI uses) was directly re-driven and confirmed working in 3.5 today. Did not re-drive the team-page-specific archived-cases-filter UI itself this pass. Shared a disposable test case with OSC, archived it from the Cases list, then confirmed it appears under the team page's 'Archived Cases' checkbox filter with its own 'Unarchive case' icon — clicking it showed the same 'Unarchive {name}?' confirm dialog as 3.5/6.10, and confirming restored it. Search Endpoint archive/unarchive from the team page not separately tested (same UI pattern visible in the page, e.g. 'Archive search endpoint' buttons)."
         paths: ["app/controllers/teams_controller.rb", "app/views/teams/_cases.html.erb"]

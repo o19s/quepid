@@ -119,9 +119,9 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
   5. If the case is linked to a Book, use **Refresh ratings from book {book name}**.
 - **Expected:** Stats and chart accurately reflect the case's current rating coverage; the refresh action pulls the latest judgements from the linked book.
 
-### 6.10 Unarchive case (from within a case context)
+### 6.10 Unarchive case (from a list's Archived filter)
 
 - [ ] **Steps:**
-  1. Trigger the "Unarchive case" modal (lists archived cases for a team, or across all your cases).
-  2. Click **Add Back {case name}** on one.
-- **Expected:** The chosen case is restored to active status.
+  1. On the Cases list (`/cases`) or a Team's case list, check the **Archived** filter checkbox.
+  2. Click the (green) unarchive icon on the case's row, and confirm the "Unarchive {case name}?" dialog.
+- **Expected:** The chosen case is restored to active status and reappears in the default (non-archived) list. (There is no separate "Unarchive case" modal listing archived cases with an "Add Back" button — this is the same icon-button + confirm mechanism used to archive, in reverse.)
