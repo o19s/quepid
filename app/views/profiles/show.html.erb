@@ -67,7 +67,7 @@
 
 <div class="container centered-form">
   <div class="row mb-3">
-    <hr/>
+    <hr>
     <%= form_with( model: current_user, url: profile_path) do |f| %>
 
       <h2>
@@ -104,7 +104,7 @@
   </div>
 
   <div class="row mb-3">
-    <hr/>
+    <hr>
     <%= form_with( model: current_user, url: account_path) do |f| %>
 
       <h2>
@@ -129,19 +129,19 @@
 
     <% end %>
   </div>
-  
+
   <div class="row mb-3">
-    <hr/>
+    <hr>
 
     <h2>
       Personal Access Tokens
     </h2>
-    
+
     <p class="form-text">
       These tokens, sometimes called a Bearer Token, allow you to access Quepid's <%= link_to 'APIs', oas_rails_path %>. Treat these like you would your password!
-      <br/>
+      <br>
       For example: <code>curl -H "Authorization: Bearer <%= current_user.api_keys.empty? ? "YOUR_TOKEN" : current_user.api_keys.first.token_digest %>" <%= link_to api_user_url(current_user), api_user_url(current_user) %></code> to look at your own details.
-    </p>   
+    </p>
     <p>
       <table class="table table-hover table-sm">
         <thead>
@@ -151,7 +151,7 @@
             <th></th>
           </tr>
         </thead>
-      
+
         <tbody>
           <% current_user.api_keys.each do |api_key| %>
             <tr>
@@ -163,25 +163,25 @@
         </tbody>
       </table>
     </p>
-    <p>    
+    <p>
     <%= button_to 'Generate new Token', api_keys_path, method: :post, class: 'btn btn-primary' %> 
     </p>
 
   </div>
 
   <div class="row mb-3">
-    <hr/>
+    <hr>
     <%= form_with( model: current_user, url: account_path,  method: :delete) do |f| %>
 
-      <h2>
-        <font color="red">Danger Zone</font>
+      <h2 class="text-danger">
+        Danger Zone
       </h2>
       <%= render "shared/error_messages", record: current_user, subject: "" %>
 
-      <label for="confirm" class="form-text">
+      <p class="form-text">
         This will remove you from any existing teams, and delete any cases that you are the owner and only member of, as well as associated
         snapshots and all ratings that have been made.
-      </label>
+      </p>
 
       <%= f.submit 'Delete your account', class: 'btn btn-primary', data: {confirm: "Are you sure you want to delete your account?"} %>
 
