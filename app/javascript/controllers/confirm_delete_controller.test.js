@@ -7,7 +7,7 @@ vi.mock("utils/destructive_form", () => ({
 }))
 
 vi.mock("utils/bs_modal", () => ({
-  createBsModal: vi.fn(() => null)
+  getOrCreateBsModal: vi.fn(() => null)
 }))
 
 function buildController() {
