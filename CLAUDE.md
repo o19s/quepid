@@ -7,6 +7,7 @@
 - To start Quepid use:
     `bin/docker s`
 - Do not stop (you may restart) the dev server unless the user explicitly asks. Leave it running across tasks.
+- When a correction or lesson applies to how you work in this repo, fix it in the actual project file it belongs to (this file, a skill's `SKILL.md`, a doc) — not only in your own private memory, which no other session or person can see or review.
 - Most commands you want to run you can just prefix with `bin/docker r bundle exec` so `rails console --environment=test` becomes `bin/docker r bundle exec rails console --environment=test`
 - After CSS or vendor JS changes make sure you rebuild:
     `bin/docker r yarn build`              # full frontend build
@@ -51,6 +52,7 @@
 - After changing code, check whether any tracked `paths` match your diff (`bin/manual_test_status` will surface it as "uncommitted changes in ...") and actually drive the affected scenario(s) through Playwright MCP before considering the change done — don't just rely on automated tests for UI-facing changes.
 - After running a scenario (pass or fail), update its entry in `tracking.yml`: `last_run` (today, UTC), `result` (`pass` / `pass_with_fixes` / `fail` / `blocked`), and a one-line `notes` on what was actually covered and what wasn't (partial coverage is normal — say so rather than implying the whole scenario was exhaustively verified). Only set `last_run` for scenarios you actually exercised; leave others alone (`null` is honest and useful).
 - If a scenario's source moves or a new one is added, update `paths`/add an entry — the tracker is only as useful as its path mappings.
+- **Feature parity, not just staleness:** the checks above only re-verify scenarios that *already exist*. When a PR adds, removes, or materially changes user-facing functionality, also update the prose itself, in the same PR: add a new numbered scenario (with `paths`) for new functionality, delete/mark obsolete the scenario for removed functionality, and revise steps/expected-results for changed behavior. This applies to Angular→Stimulus migrations too — check whether the migrated surface's existing scenario still describes the right UI (see `angular-case-migration` skill's per-surface equivalence rule).
 
 
 ## Documentation
@@ -122,6 +124,7 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 For any user-visible change, prove the behavior with Playwright MCP screenshots — never substitute prose or memory. App: `http://localhost:33000`; sign in with `quepid+realisticactivity@o19s.com` / `password`.
 
 - **Before & after**: capture the affected flow before editing, then repeat the identical steps after. Capture every relevant state (modal open/closed, accordion expanded, error vs success, etc.). `browser_snapshot` is only for driving clicks; `browser_take_screenshot` is the proof.
+- **Capturing a screenshot is not verifying it.** Before claiming two states match or differ, actually open and look at every before/after pair (Read tool or equivalent) — don't infer "identical" from the code diff not touching that template, and don't treat a console-log error as a substitute for looking at what the page actually rendered.
 - **Frame big** (my screenshots have come out too small): shoot the **full viewport**, not element crops. Quepid modals scroll *internally*, so `fullPage:true` does NOT reach below their fold — instead `browser_resize` the viewport to roughly match the modal so it fills the frame, then screenshot the viewport. Size to the content: a tall step (e.g. the wizard endpoint step) needs ~`820x2200`; a short step (e.g. wizard Finish) needs ~`900x760` — a tall viewport dwarfs a short modal. Narrower width = modal fills more of the frame.
 - **Force hard-to-reach states** (e.g. a failed save) by intercepting the API with `browser_run_code_unsafe` + `page.route('**/api/...', ...)`.
     - Gotcha: `setTimeout` is undefined in that context — use `await page.waitForTimeout(ms)` for delays.
