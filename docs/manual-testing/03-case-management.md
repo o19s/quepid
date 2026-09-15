@@ -33,7 +33,7 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
   - [ ] Leave the case name blank and try to proceed — should be blocked.
   - [ ] Enter an invalid/unreachable endpoint URL and use "ping it" — should surface a clear connection error, not a silent failure or crash.
   - [ ] Enter an HTTPS Quepid session pointed at an HTTP-only Solr endpoint — confirm the wizard surfaces the protocol-mismatch guidance (see also `bootstrap5-compat.css`/HTTPS notes for Solr JSONP in the project's engineering docs).
-  - [ ] Create your very first-ever case on a brand-new account — confirm the product tour auto-starts shortly after the wizard completes.
+  - [ ] Complete the wizard on an account whose `completed_case_wizard` flag is still `false` (the actual trigger — not tied to case count or account age; the flag only flips true once a wizard run is finished via **Finish**, so cancelling/dismissing earlier wizard runs leaves it eligible again) — confirm the product tour auto-starts shortly after the wizard completes.
   - [ ] Visit `/cases/new` directly (no query param needed — it always creates a brand-new case immediately and redirects to `/case/:id/try/1?showWizard=true`) — confirm the wizard auto-triggers. Note: reloading that redirected URL re-triggers the wizard again each time, since `showWizard=true` stays in the URL and is never stripped client-side (`app/assets/javascripts/controllers/wizardCtrl.js`) — this is current behavior, not a one-time trigger.
 
 ### 3.3 Import a case from JSON
