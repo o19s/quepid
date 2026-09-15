@@ -31,7 +31,7 @@ angular.module('QuepidApp')
               return flash;
             },
             queriesSvc: function () {
-              return flash;
+              return queriesSvc;
             }
           }
         });

@@ -1,6 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
-import { parseTeamsJson, partitionTeams } from "utils/share_case_teams"
+import {
+  deactivateListItem,
+  parseTeamsJson,
+  partitionTeams,
+  unsharedTeams
+} from "utils/share_case_teams"
 
 /**
  * Share / unshare from the core case toolbar — list UI, API stay-on-page.
@@ -146,11 +151,8 @@ export default class extends Controller {
   }
 
   clearSharedSelection() {
-    if (this.selectedSharedTeamId && this.hasSharedListTarget) {
-      const prev = this.sharedListTarget.querySelector(
-        `[data-team-id="${this.selectedSharedTeamId}"]`
-      )
-      if (prev) prev.classList.remove("active")
+    if (this.hasSharedListTarget) {
+      deactivateListItem(this.sharedListTarget, this.selectedSharedTeamId)
     }
     this.selectedSharedTeamId = null
     this.selectedSharedTeamName = null
@@ -159,11 +161,8 @@ export default class extends Controller {
   }
 
   clearShareSelection() {
-    if (this.selectedShareTeamId && this.hasShareableListTarget) {
-      const prev = this.shareableListTarget.querySelector(
-        `[data-team-id="${this.selectedShareTeamId}"]`
-      )
-      if (prev) prev.classList.remove("active")
+    if (this.hasShareableListTarget) {
+      deactivateListItem(this.shareableListTarget, this.selectedShareTeamId)
     }
     this.selectedShareTeamId = null
     this.selectedShareTeamName = null
@@ -202,25 +201,15 @@ export default class extends Controller {
   renderShareableTeams(teams) {
     if (!this.hasShareableListTarget) return
 
-    this.shareableListTarget.innerHTML = ""
-
-    teams.forEach((team) => {
-      const item = document.createElement("button")
-      item.type = "button"
-      item.className = "list-group-item list-group-item-action"
-      item.textContent = team.name || `Team ${team.id}`
-      item.dataset.teamId = team.id
-      item.addEventListener("click", (e) => this.toggleShareSelect(e, team))
-      this.shareableListTarget.appendChild(item)
+    this.renderTeamList(this.shareableListTarget, teams, {
+      className: "list-group-item list-group-item-action",
+      onSelect: (e, team) => this.toggleShareSelect(e, team)
     })
   }
 
   toggleShareSelect(e, team) {
-    if (this.selectedShareTeamId && this.hasShareableListTarget) {
-      const prev = this.shareableListTarget.querySelector(
-        `[data-team-id="${this.selectedShareTeamId}"]`
-      )
-      if (prev) prev.classList.remove("active")
+    if (this.hasShareableListTarget) {
+      deactivateListItem(this.shareableListTarget, this.selectedShareTeamId)
     }
 
     if (String(this.selectedShareTeamId) === String(team.id)) {
@@ -239,28 +228,31 @@ export default class extends Controller {
   renderSharedTeams(teams) {
     if (!this.hasSharedListTarget) return
 
-    this.sharedListTarget.innerHTML = ""
-
-    teams.forEach((team) => {
-      const item = document.createElement("button")
-      item.type = "button"
-      item.className =
-        "list-group-item list-group-item-action list-group-item-success"
-      item.textContent = team.name || `Team ${team.id}`
-      item.dataset.teamId = team.id
-      item.addEventListener("click", (e) => this.toggleCoreSharedSelect(e, team))
-      this.sharedListTarget.appendChild(item)
+    this.renderTeamList(this.sharedListTarget, teams, {
+      className: "list-group-item list-group-item-action list-group-item-success",
+      onSelect: (e, team) => this.toggleCoreSharedSelect(e, team)
     })
 
     this.updateUnshareFooter()
   }
 
+  renderTeamList(target, teams, { className, onSelect }) {
+    target.innerHTML = ""
+
+    teams.forEach((team) => {
+      const item = document.createElement("button")
+      item.type = "button"
+      item.className = className
+      item.textContent = team.name || `Team ${team.id}`
+      item.dataset.teamId = team.id
+      item.addEventListener("click", (e) => onSelect(e, team))
+      target.appendChild(item)
+    })
+  }
+
   toggleCoreSharedSelect(e, team) {
-    if (this.selectedSharedTeamId && this.hasSharedListTarget) {
-      const prev = this.sharedListTarget.querySelector(
-        `[data-team-id="${this.selectedSharedTeamId}"]`
-      )
-      if (prev) prev.classList.remove("active")
+    if (this.hasSharedListTarget) {
+      deactivateListItem(this.sharedListTarget, this.selectedSharedTeamId)
     }
 
     if (String(this.selectedSharedTeamId) === String(team.id)) {
@@ -275,8 +267,8 @@ export default class extends Controller {
     }
   }
 
-  applyShareableAndSharedUi(unsharedTeams, sharedTeams) {
-    const hasShareable = unsharedTeams.length > 0
+  applyShareableAndSharedUi(shareableTeams, sharedTeams) {
+    const hasShareable = shareableTeams.length > 0
     const hasShared = sharedTeams.length > 0
 
     if (this.hasEmptyShareableTarget) {
@@ -294,13 +286,10 @@ export default class extends Controller {
   }
 
   rebuildShareableList(allTeams, sharedTeams) {
-    const sharedTeamIds = sharedTeams.map((t) => String(t.id))
-    const unsharedTeams = allTeams.filter(
-      (team) => !sharedTeamIds.includes(String(team.id))
-    )
+    const shareableTeams = unsharedTeams(allTeams, sharedTeams)
 
-    this.renderShareableTeams(unsharedTeams)
-    this.applyShareableAndSharedUi(unsharedTeams, sharedTeams)
+    this.renderShareableTeams(shareableTeams)
+    this.applyShareableAndSharedUi(shareableTeams, sharedTeams)
   }
 
   async loadTeamsFromApi(caseId) {

@@ -91,8 +91,8 @@
                                    bs_target: '#shareSearchEndpointModal',
                                    share_search_endpoint_id_value: search_endpoint.id,
                                    share_search_endpoint_name_value: search_endpoint.fullname,
-                                   share_search_endpoint_all_teams_json: current_user.teams.select(:id, :name).order(:name).to_json,
-                                   share_search_endpoint_shared_teams_json: search_endpoint.teams.select(:id, :name).to_json
+                                   share_search_endpoint_all_teams_json_value: current_user.teams.select(:id, :name).order(:name).to_json,
+                                   share_search_endpoint_shared_teams_json_value: search_endpoint.teams.select(:id, :name).to_json
                                  } do %>
                     <i class="bi bi-share" aria-hidden="true"></i>
                   <% end %>

@@ -6,10 +6,12 @@ angular.module('QuepidApp')
     '$scope','$location',
     'flash',
     'settingsSvc',
+    'searchEndpointSvc',
     function (
       $scope, $location,
       flash,
-      settingsSvc
+      settingsSvc,
+      searchEndpointSvc
     ) {
       $scope.settingsModel = {};
       $scope.pendingSettings = {
@@ -67,7 +69,7 @@ angular.module('QuepidApp')
 
       function submit () {
         let validateJson = false;
-        if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os' ||  $scope.pendingSettings.searchEngine === 'vectara' || $scope.pendingSettings.searchEngine === 'algolia'){
+        if ( searchEndpointSvc.usesJsonQueryParams($scope.pendingSettings.searchEngine)){
           validateJson = true;
         }
         else if ($scope.pendingSettings.searchEngine === 'searchapi'){

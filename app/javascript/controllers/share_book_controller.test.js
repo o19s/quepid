@@ -1,20 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import ShareCaseController from "./share_case_controller"
+import ShareBookController from "./share_book_controller"
 
 function buildController(overrides = {}) {
   const teamSelect = document.createElement("select")
-  teamSelect.id = "share-case-team"
+  teamSelect.id = "share-book-team"
   const submitButton = document.createElement("button")
   const unshareButton = document.createElement("button")
   submitButton.disabled = true
   unshareButton.disabled = true
 
-  const controller = Object.create(ShareCaseController.prototype)
+  const controller = Object.create(ShareBookController.prototype)
   controller.element = document.createElement("div")
   controller.application = {
     getControllerForElementAndIdentifier: vi.fn(() => null)
   }
-  controller.identifier = "share-case"
+  controller.identifier = "share-book"
   controller.selectedSharedTeamId = null
   controller.idValue = ""
   controller.nameValue = ""
@@ -41,8 +41,7 @@ function buildController(overrides = {}) {
   return controller
 }
 
-describe("ShareCaseController — Rails cases index / teams", () => {
-  // No Karma analogue — Rails surface uses form POST + redirect (Playwright dom_migration / stimulus_pages).
+describe("ShareBookController — Rails books index / teams", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -83,7 +82,7 @@ describe("ShareCaseController — Rails cases index / teams", () => {
   it("open reads its own Values-API data and populates the modal", () => {
     const controller = buildController({
       idValue: "5",
-      nameValue: "Index Case",
+      nameValue: "Index Book",
       allTeamsJsonValue: JSON.stringify([
         { id: 1, name: "OSC" },
         { id: 2, name: "Other" }
@@ -93,7 +92,7 @@ describe("ShareCaseController — Rails cases index / teams", () => {
 
     controller.open()
 
-    expect(controller.titleTarget.textContent).toBe("Share Case: Index Case")
+    expect(controller.titleTarget.textContent).toBe("Share Book: Index Book")
     expect(controller.recordIdTarget.value).toBe("5")
     expect([...controller.teamSelectTarget.options].map((o) => o.text)).toEqual([
       "Select a team...",
@@ -106,7 +105,7 @@ describe("ShareCaseController — Rails cases index / teams", () => {
 
   it("a non-root trigger delegates its own values to the modal root's openWith", () => {
     const modalElement = document.createElement("div")
-    modalElement.id = "shareCaseModal"
+    modalElement.id = "shareBookModal"
     document.body.appendChild(modalElement)
 
     const modalController = buildController()
@@ -115,7 +114,7 @@ describe("ShareCaseController — Rails cases index / teams", () => {
     const trigger = buildController({
       hasTitleTarget: false,
       idValue: "7",
-      nameValue: "Trigger Case",
+      nameValue: "Trigger Book",
       allTeamsJsonValue: JSON.stringify([{ id: 1, name: "OSC" }]),
       sharedTeamsJsonValue: "[]",
       application: {
@@ -127,7 +126,7 @@ describe("ShareCaseController — Rails cases index / teams", () => {
 
     expect(openWithSpy).toHaveBeenCalledWith({
       id: "7",
-      name: "Trigger Case",
+      name: "Trigger Book",
       allTeamsJson: JSON.stringify([{ id: 1, name: "OSC" }]),
       sharedTeamsJson: "[]"
     })

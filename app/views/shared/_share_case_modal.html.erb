@@ -15,7 +15,7 @@
       </div>
       <div class="modal-body">
         <%= form_with url: share_case_teams_path, method: :post, local: true, html: { id: 'share-case-form', class: 'mb-3' } do %>
-          <%= hidden_field_tag :case_id, '', id: 'share-case-id', data: { share_case_target: 'caseId' } %>
+          <%= hidden_field_tag :case_id, '', id: 'share-case-id', data: { share_case_target: 'recordId' } %>
 
           <p class="h5">Select a team to share this case with:</p>
           <div class="mb-3">
@@ -36,7 +36,7 @@
         <div id="share-case-shared-list" class="list-group mt-2" data-share-case-target="sharedList"></div>
 
         <%= form_with url: unshare_case_teams_path, method: :post, local: true, html: { id: 'unshare-case-form', class: 'mt-3' } do %>
-          <%= hidden_field_tag :case_id, '', id: 'unshare-case-id', data: { share_case_target: 'unshareCaseId' } %>
+          <%= hidden_field_tag :case_id, '', id: 'unshare-case-id', data: { share_case_target: 'unshareRecordId' } %>
           <%= hidden_field_tag :team_id, '', id: 'unshare-case-team', data: { share_case_target: 'unshareTeamId' } %>
         <% end %>
       </div>

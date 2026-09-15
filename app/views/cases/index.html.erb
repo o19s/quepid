@@ -1,5 +1,4 @@
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1>Cases</h1>
+<%= page_header "Cases" do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= button_tag type: 'button',
@@ -10,7 +9,7 @@
                      } do %>
         Import Case from JSON
       <% end %>
-      
+
       <%= button_tag type: 'button',
                      class: 'btn btn-sm btn-outline-secondary',
                      data: {
@@ -19,9 +18,9 @@
                      } do %>
         Import Snapshots from CSV
       <% end %>
-    </div>    
+    </div>
   </div>
-</div>
+<% end %>
 Cases are a group of queries that you are evaluating and experimenting with.
 
 <p id="notice"><%= notice %></p>
@@ -158,8 +157,8 @@ Cases are a group of queries that you are evaluating and experimenting with.
                                bs_target: '#shareCaseModal',
                                share_case_id_value: kase.id,
                                share_case_name_value: kase.case_name,
-                               share_case_all_teams_json: current_user.teams.select(:id, :name).order(:name).to_json,
-                               share_case_shared_teams_json: kase.teams.select(:id, :name).to_json
+                               share_case_all_teams_json_value: current_user.teams.select(:id, :name).order(:name).to_json,
+                               share_case_shared_teams_json_value: kase.teams.select(:id, :name).to_json
                              } do %>
                 <i class="bi bi-share" aria-hidden="true"></i>
               <% end %>

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest"
-import { parseTeamsJson, partitionTeams } from "./share_case_teams"
+import {
+  deactivateListItem,
+  parseTeamsJson,
+  partitionTeams,
+  unsharedTeams
+} from "./share_case_teams"
 
 // partitionTeams mirrors Angular ShareCaseModalInstanceCtrl teamHasCase / addTeamToLists logic.
 
@@ -36,5 +41,51 @@ describe("partitionTeams", () => {
   it("treats missing cases as unshared", () => {
     const { sharedTeams } = partitionTeams(teams, 42)
     expect(sharedTeams.some((t) => t.id === 3)).toBe(false)
+  })
+})
+
+describe("unsharedTeams", () => {
+  it("returns teams from allTeams not present in sharedTeams", () => {
+    const allTeams = [{ id: 1 }, { id: 2 }, { id: 3 }]
+    const sharedTeams = [{ id: 2 }]
+    expect(unsharedTeams(allTeams, sharedTeams).map((t) => t.id)).toEqual([1, 3])
+  })
+
+  it("compares ids as strings", () => {
+    const allTeams = [{ id: "1" }, { id: 2 }]
+    const sharedTeams = [{ id: 1 }]
+    expect(unsharedTeams(allTeams, sharedTeams)).toEqual([{ id: 2 }])
+  })
+
+  it("returns all teams when none are shared", () => {
+    const allTeams = [{ id: 1 }, { id: 2 }]
+    expect(unsharedTeams(allTeams, [])).toEqual(allTeams)
+  })
+})
+
+describe("deactivateListItem", () => {
+  function buildList() {
+    const list = document.createElement("div")
+    const item = document.createElement("button")
+    item.dataset.teamId = "5"
+    item.classList.add("active")
+    list.appendChild(item)
+    return { list, item }
+  }
+
+  it("removes the active class from the matching item", () => {
+    const { list, item } = buildList()
+    deactivateListItem(list, "5")
+    expect(item.classList.contains("active")).toBe(false)
+  })
+
+  it("does nothing when teamId is falsy", () => {
+    const { list, item } = buildList()
+    deactivateListItem(list, null)
+    expect(item.classList.contains("active")).toBe(true)
+  })
+
+  it("does nothing when listElement is missing", () => {
+    expect(() => deactivateListItem(null, "5")).not.toThrow()
   })
 })

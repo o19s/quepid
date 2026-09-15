@@ -400,10 +400,10 @@ parts:
         paths: ["app/controllers/search_endpoints_controller.rb"]
       "7.6":
         title: "Share / unshare a Search Endpoint"
-        last_run: 2026-09-02
+        last_run: 2026-09-03
         result: pass
-        notes: "Shared a test endpoint with a team via the share modal, then unshared it; team access reflected correctly both times."
-        paths: ["app/views/shared/_share_search_endpoint_modal.html.erb"]
+        notes: "Re-verified after a second refactor pass: share_search_endpoint_controller.js is now a 3-line subclass of the new ShareEntityControllerBase (share_entity_controller_base.js), and the id/name/allTeamsJson/sharedTeamsJson data is now read via Stimulus's real Values API (static values) instead of hand-parsed dataset reads — this also fixed a pre-existing naming inconsistency (share-scorer previously used un-suffixed dataset keys while the others used the Values-API '-value' suffix; all four now share one Stimulus-enforced convention). Confirmed: modal opens with correct title ('Share Search Endpoint: ...') and the already-shared team (OSC) renders correctly. Did not re-submit the actual share/unshare POST + redirect in this pass (covered on 2026-09-02)."
+        paths: ["app/views/shared/_share_search_endpoint_modal.html.erb", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
       "7.7":
         title: "Mapper Wizard — Step 1: Fetch Search Results"
         last_run: 2026-09-02
@@ -470,10 +470,10 @@ parts:
         paths: ["app/controllers/scorers_controller.rb"]
       "8.7":
         title: "Share / unshare a scorer with a team"
-        last_run: 2026-09-02
+        last_run: 2026-09-03
         result: pass
-        notes: "Full cycle verified: share with OSC, 'Already shared with' shows it, unshare (clicking the team chip populates and enables the Unshare button) removes it. Communal rows correctly have no Share icon at all. Did not test the double-share/double-unshare informational-alert edge cases specifically."
-        paths: ["app/views/shared/_share_scorer_modal.html.erb"]
+        notes: "Full cycle re-verified after a second refactor pass: share_scorer_controller.js is now a 3-line subclass of the new ShareEntityControllerBase, reading id/name/allTeamsJson/sharedTeamsJson via Stimulus's real Values API. This pass also fixed the scorers index page specifically: `data-controller=\"share-scorer\"` previously lived on an ancestor wrapper div shared by every row (harmless under the old event-based reads, but incompatible with the Values API, which only reads off the controller's own element) — moved onto each row's Share button in scorers/_list.html.erb, matching the books/cases/search-endpoints pattern. Verified end-to-end from the scorers index: opened modal (correct title, dropdown excludes already-shared teams), selected OSC and submitted 'Share with team' (flash: 'shared with OSC', chip appeared active), then clicked the chip and submitted 'Unshare from team' (flash: 'unshared from OSC', scorer back to its original unshared state). No leftover test data."
+        paths: ["app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb"]
       "8.8":
         title: "Confirm the seeded communal scorers"
         last_run: 2026-09-02
@@ -510,10 +510,10 @@ parts:
         paths: ["app/controllers/teams_controller.rb"]
       "9.5":
         title: "Sharing a Case/Book/Search Endpoint/Scorer with a team"
-        last_run: 2026-09-02
+        last_run: 2026-09-03
         result: pass
-        notes: "Tested for Case only (from the in-workbench entry point, 6.5). Book/Search-Endpoint/Scorer sharing and the team-page entry point not tested."
-        paths: ["app/views/shared/_share_case_modal.html.erb", "app/views/shared/_share_book_modal.html.erb", "app/views/shared/_share_search_endpoint_modal.html.erb", "app/views/shared/_share_scorer_modal.html.erb"]
+        notes: "Re-verified all four after collapsing Case/Book/Scorer/SearchEndpoint's near-identical share controllers onto a new ShareEntityControllerBase (share_entity_controller_base.js) and switching to Stimulus's real Values API (static values) for the id/name/allTeamsJson/sharedTeamsJson data, instead of hand-parsed event.currentTarget.dataset reads — each concrete controller is now a ~3-line subclass supplying only entityLabel/modalElementId. Opened the index-page share modal for all four (Case, Book, Scorer, Search Endpoint) — correct title and already-shared team chip each time. Also opened the team-page entry point for Book (delegation from the trigger button's controller instance to the modal's own instance via getControllerForElementAndIdentifier). Did a full share+unshare POST/redirect round trip for Scorer (see 8.7); did not re-submit the POST for Case/Book/Search Endpoint in this pass (open/populate verified, full-cycle coverage from 2026-09-02 for those)."
+        paths: ["app/views/shared/_share_case_modal.html.erb", "app/views/shared/_share_book_modal.html.erb", "app/views/shared/_share_search_endpoint_modal.html.erb", "app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_book_controller.js", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb", "app/views/books/_book.html.erb", "app/views/teams/_books.html.erb", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
       "9.6":
         title: "Archive/unarchive a Case or Search Endpoint from the team page"
         last_run: 2026-09-02

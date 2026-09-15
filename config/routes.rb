@@ -64,7 +64,8 @@ Rails.application.routes.draw do
   post 'users/login' => 'sessions#create' # , #defaults: { format: :json
   post 'users/signup' => 'users/signups#create'
 
-  get  'logout' => 'sessions#destroy'
+  get 'login' => 'sessions#new'
+  get 'logout' => 'sessions#destroy'
 
   resources :sessions, except: [ :edit, :show, :update ]
   resource :account, only: [ :update, :destroy ]
