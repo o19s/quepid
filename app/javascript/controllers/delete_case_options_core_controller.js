@@ -1,4 +1,4 @@
-import { Controller } from "@hotwired/stimulus"
+import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
 import { submitDestructiveForm } from "utils/destructive_form"
 
 const ACTION_LABELS = {
@@ -18,10 +18,11 @@ const ACTION_METHODS = {
  * (stay-Rails) transport, mirrors the AngularJS delete-case-options modal.
  *
  * One controller class instantiated on both the toolbar trigger and the
- * modal root (same dual-role pattern as share-case-core): the trigger reads
- * case id/name off its own dataset and delegates to the modal-root instance.
+ * modal root (same dual-role pattern as share-case-core, shared via
+ * ModalTriggerControllerBase): the trigger reads case id/name off its own
+ * dataset and delegates to the modal-root instance.
  */
-export default class extends Controller {
+export default class extends ModalTriggerControllerBase {
   static targets = [ "title", "optionButton", "description", "submitButton" ]
 
   static values = {
@@ -30,19 +31,11 @@ export default class extends Controller {
     destroyQueriesUrlTemplate: String
   }
 
-  get isModalRoot() {
-    return this.hasTitleTarget
+  get modalElementId() {
+    return "deleteCaseOptionsModal"
   }
 
-  open(event) {
-    event?.preventDefault?.()
-
-    if (!this.isModalRoot) {
-      const modalController = this.modalController()
-      if (modalController) return modalController.open(event)
-      return
-    }
-
+  openAsRoot(event) {
     const btn = event.currentTarget || event.target
     const caseId = btn?.dataset?.deleteCaseOptionsCoreIdValue
     const caseName = btn?.dataset?.deleteCaseOptionsCoreNameValue
@@ -60,23 +53,13 @@ export default class extends Controller {
   }
 
   confirm() {
-    if (!this.selectedAction) return
+    if (!this.selectedAction || !this.currentCaseId) return
 
     const template = this._urlTemplateFor(this.selectedAction)
     if (!template) return
 
     const url = template.replaceAll("__CASE_ID__", this.currentCaseId)
     submitDestructiveForm(url, ACTION_METHODS[this.selectedAction])
-  }
-
-  modalController() {
-    const modal = document.getElementById("deleteCaseOptionsModal")
-    if (!modal) return null
-
-    return this.application.getControllerForElementAndIdentifier(
-      modal,
-      "delete-case-options-core"
-    )
   }
 
   _urlTemplateFor(action) {

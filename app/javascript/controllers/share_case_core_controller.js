@@ -1,4 +1,4 @@
-import { Controller } from "@hotwired/stimulus"
+import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
 import { apiFetch } from "api/fetch"
 import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
 import {
@@ -11,8 +11,9 @@ import { showStatusMessage } from "utils/status_message"
 
 /**
  * Share / unshare from the core case toolbar — list UI, API stay-on-page.
+ * Dual-role trigger/modal-root pattern shared via ModalTriggerControllerBase.
  */
-export default class extends Controller {
+export default class extends ModalTriggerControllerBase {
   static targets = [
     "alert",
     "loading",
@@ -58,19 +59,11 @@ export default class extends Controller {
     document.removeEventListener("quepid:open-share-case-core", this.boundOpenFromEvent)
   }
 
-  get isModalRoot() {
-    return this.hasTitleTarget
+  get modalElementId() {
+    return "shareCaseModal"
   }
 
-  async open(event) {
-    event?.preventDefault?.()
-
-    if (!this.isModalRoot) {
-      const modalController = this.modalController()
-      if (modalController) return modalController.open(event)
-      return
-    }
-
+  async openAsRoot(event) {
     const btn = event.currentTarget || event.target
     const caseId = btn?.dataset?.shareCaseCoreIdValue
     const caseName = btn?.dataset?.shareCaseCoreNameValue
@@ -112,16 +105,6 @@ export default class extends Controller {
         }
       }
     })
-  }
-
-  modalController() {
-    const modal = document.getElementById("shareCaseModal")
-    if (!modal) return null
-
-    return this.application.getControllerForElementAndIdentifier(
-      modal,
-      "share-case-core"
-    )
   }
 
   clearSelections() {

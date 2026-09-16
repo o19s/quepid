@@ -1,4 +1,4 @@
-import { Controller } from "@hotwired/stimulus"
+import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
 import { apiFetch } from "api/fetch"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import { showStatusMessage } from "utils/status_message"
@@ -15,11 +15,12 @@ const REDIRECT_DELAY_MS = 1000
  * close-then-global-flash (same documented delta as share-case-core).
  *
  * One controller class instantiated on both the toolbar trigger and the modal
- * root (same dual-role pattern as share-case-core / delete-case-options-core):
- * the trigger reads case id/name/last-try off its own dataset and delegates
- * to the modal-root instance.
+ * root (same dual-role pattern as share-case-core / delete-case-options-core,
+ * shared via ModalTriggerControllerBase): the trigger reads case
+ * id/name/last-try off its own dataset and delegates to the modal-root
+ * instance.
  */
-export default class extends Controller {
+export default class extends ModalTriggerControllerBase {
   static targets = [
     "title",
     "alert",
@@ -39,19 +40,11 @@ export default class extends Controller {
     cloneUrl: String
   }
 
-  get isModalRoot() {
-    return this.hasTitleTarget
+  get modalElementId() {
+    return "cloneCaseModal"
   }
 
-  open(event) {
-    event?.preventDefault?.()
-
-    if (!this.isModalRoot) {
-      const modalController = this.modalController()
-      if (modalController) return modalController.open(event)
-      return
-    }
-
+  openAsRoot(event) {
     const btn = event.currentTarget || event.target
     const caseId = btn?.dataset?.cloneCaseCoreIdValue
     const caseName = btn?.dataset?.cloneCaseCoreNameValue
@@ -74,16 +67,6 @@ export default class extends Controller {
     this.clearAlert()
     this.refreshUi()
     this.loadTries()
-  }
-
-  modalController() {
-    const modal = document.getElementById("cloneCaseModal")
-    if (!modal) return null
-
-    return this.application.getControllerForElementAndIdentifier(
-      modal,
-      "clone-case-core"
-    )
   }
 
   selectHistory(event) {
@@ -115,13 +98,19 @@ export default class extends Controller {
     this.trySelectTarget.innerHTML = ""
     if (!this.hasTriesUrlTemplateValue || !this.currentCaseId) return
 
+    const caseId = this.currentCaseId
+
     try {
-      const url = this.triesUrlTemplateValue.replaceAll("__CASE_ID__", this.currentCaseId)
+      const url = this.triesUrlTemplateValue.replaceAll("__CASE_ID__", caseId)
       const response = await apiFetch(url, { headers: { Accept: "application/json" } })
       if (!response.ok) {
         throw new Error(`Failed to load tries (${response.status})`)
       }
       const data = await response.json()
+      // Bail if the case changed while this request was in flight (e.g. the
+      // modal was reopened for a different case) — an outdated response must
+      // not clobber the now-current case's try dropdown.
+      if (caseId !== this.currentCaseId) return
       const tries = Array.isArray(data.tries) ? data.tries : []
 
       tries.forEach((tryItem) => {
@@ -135,6 +124,7 @@ export default class extends Controller {
         this.trySelectTarget.value = String(this.tryNumber)
       }
     } catch (error) {
+      if (caseId !== this.currentCaseId) return
       console.error("clone-case-core: load tries failed", error)
       this.showAlert("Unable to load try history. Please try again.", "danger")
     }
@@ -214,7 +204,6 @@ export default class extends Controller {
 
   clearAlert() {
     if (!this.hasAlertTarget) return
-    this.alertTarget.textContent = ""
-    this.alertTarget.className = "alert d-none"
+    showStatusMessage(this.alertTarget, { message: "", className: "alert d-none" })
   }
 }
