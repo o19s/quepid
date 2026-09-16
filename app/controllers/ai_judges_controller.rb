@@ -83,10 +83,10 @@ class AiJudgesController < ApplicationController
   def edit; end
 
   def create
-    @ai_judge = AiJudge.new(ai_judge_params.merge(owner: current_user))
+    @ai_judge = current_user.owned_ai_judges.build(ai_judge_params)
 
     if @ai_judge.save
-      @ai_judge.teams = teams_from_ids(submitted_team_ids)
+      apply_team_ids(@ai_judge, submitted_team_ids)
       redirect_to ai_judge_path(@ai_judge)
     else
       render :new
@@ -123,7 +123,8 @@ class AiJudgesController < ApplicationController
   # doesn't scope to current_user.teams the same way - don't copy that
   # pattern). Loads current_user.teams once and derives both the
   # membership check and the selected teams from it, rather than querying
-  # it twice.
+  # it twice. Used by both create (where ai_judge.teams starts empty, so
+  # there's nothing to keep) and update (where it is).
   def apply_team_ids ai_judge, team_ids
     user_teams = current_user.teams.to_a
     selected_ids = Array(team_ids).compact_blank.map(&:to_i)
@@ -131,12 +132,6 @@ class AiJudgesController < ApplicationController
     kept_teams = ai_judge.teams.reject { |t| user_teams.any? { |ut| ut.id == t.id } }
     selected_teams = user_teams.select { |t| selected_ids.include?(t.id) }
     ai_judge.teams.replace(kept_teams | selected_teams)
-  end
-
-  def teams_from_ids team_ids
-    return [] if team_ids.blank?
-
-    current_user.teams.where(id: team_ids.compact_blank)
   end
 
   # The team_ids checkboxes render inside the `user` form object
