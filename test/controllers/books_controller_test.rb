@@ -20,6 +20,8 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
           patch "/books/#{james_bond_movies.id}/run_judge_judy/#{judge_judy.id}", params: { number_of_pairs: 1 }
           follow_redirect!
           assert_equal "AI Judge #{judge_judy.name} will start evaluating query/doc pairs.", flash[:notice]
+          # a bounded run isn't "judge all", so no kraken-unleashed celebration modal
+          assert_no_match(/successModal/, response.body)
         end
       end
     end
@@ -32,6 +34,10 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
         follow_redirect!
         assert_equal "AI Judge #{judge_judy.name} will start evaluating query/doc pairs.", flash[:notice]
         assert_equal james_bond_movies.query_doc_pairs.count, james_bond_movies.judgements.where(user: judge_judy).count
+        # "judge all" mode should still trigger the kraken-unleashed celebration modal
+        assert_match(/successModal/, response.body)
+        # ...and that boolean must never leak out as a literal "true"/"false" flash alert
+        assert_no_match(%r{alert.*>\s*(true|false)\s*</div>}m, response.body)
       end
     end
   end
@@ -269,6 +275,49 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
       assert_no_match james_bond_movies.name, response.body
       # assert_match archived_book.name, response.body
+    end
+  end
+
+  describe 'searching the index' do
+    let(:doug) { users(:doug) }
+
+    test 'matches by book name' do
+      login_user_for_integration_test doug
+
+      get '/books', params: { q: 'james bond' }
+
+      assert_response :success
+      assert_match james_bond_movies.name, response.body
+    end
+
+    test 'matches by team name without erroring (books.teams is not implicitly joined)' do
+      login_user_for_integration_test doug
+
+      get '/books', params: { q: 'a shared team' }
+
+      assert_response :success
+      assert_match james_bond_movies.name, response.body
+    end
+
+    test 'is case-insensitive' do
+      login_user_for_integration_test doug
+
+      get '/books', params: { q: 'JAMES BOND' }
+
+      assert_response :success
+      assert_match james_bond_movies.name, response.body
+    end
+
+    test 'does not duplicate a book shared with multiple matching teams' do
+      login_user_for_integration_test doug
+
+      teams(:case_finder_owned_team).books << james_bond_movies
+
+      get '/books', params: { q: 'team' }
+
+      assert_response :success
+      book_ids = assigns(:books).map(&:id)
+      assert_equal 1, book_ids.count(james_bond_movies.id)
     end
   end
 
