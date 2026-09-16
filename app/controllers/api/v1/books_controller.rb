@@ -10,13 +10,13 @@ module Api
       before_action :check_book, only: [ :show, :update, :destroy ]
 
       # @parameter archived(query) [Boolean] Whether or not to return only archived books in the response.
+      # @parameter owned(query) [Boolean] Whether to return only books owned by the current user, excluding ones only shared via a team.
       def index
         archived = deserialize_bool_param(params[:archived])
-        @books = if archived
-                   current_user.books_involved_with.archived
-                 else
-                   current_user.books_involved_with.active
-                 end
+        owned = deserialize_bool_param(params[:owned])
+
+        scope = owned ? current_user.books : current_user.books_involved_with
+        @books = archived ? scope.archived : scope.active
 
         respond_with @books
       end

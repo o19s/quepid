@@ -23,21 +23,21 @@
     </a>
   </p>
 
-  <div class="alert alert-info text-center" role="alert" ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading">
+  <div class="alert alert-info text-center" role="alert" ng-show="ctrl.share.teams.length === 0 && ctrl.share.books.length === 0 && !ctrl.share.loading">
     <p>
-      Judgements are meant to be shared with a team, so either
+      You don't own any Books yet, and this case isn't shared with a team. Either create your own Book below, or
       <a
         ng-click="ctrl.goToTeamsPage()"
       >create a new team</a>
       or
       <a
         ng-click="ctrl.openShareCase()"
-      >share case</a> first.
+      >share case</a> to pick from a team's Books.
     </p>
 
   </div>
 
-  <div class="text-center" ng-show="ctrl.share.teams.length > 0 &&  ctrl.share.books.length === 0 && !ctrl.share.loading">
+  <div class="text-center" ng-show="ctrl.share.books.length === 0 && !ctrl.share.loading">
     <p>
       You have not created any Books of Judgements yet, so go ahead and create a new Book!
     </p>
@@ -50,7 +50,7 @@
 
   <div ng-show="ctrl.share.books.length > 0 && !ctrl.share.loading">
     <div>
-      <label>Select a Book of Judgements <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" bs-static-popover data-bs-placement="right" data-bs-content="All the Books related to all the Teams this Case has been shared with are listed below.  If you don't see the Book you want, check that you shared the Case with the right Team."></i></label>
+      <label>Select a Book of Judgements <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" bs-static-popover data-bs-placement="right" data-bs-content="Books you own are always listed below. If this case is shared with a team, Books shared with that team are listed too - share the case with the right team if you don't see the Book you want."></i></label>
 
       <ul class="list-group">
         <li class="list-group-item"

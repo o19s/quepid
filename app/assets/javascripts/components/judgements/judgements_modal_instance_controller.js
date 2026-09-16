@@ -101,12 +101,20 @@ angular.module('QuepidApp')
       };
 
       // Start loading the list of teams from the case
-      angular.forEach(acase.teams, function(team) {
-        addTeamToLists(team);
-        bookSvc.list(team).then(function(){
+      if (acase.teams.length > 0) {
+        angular.forEach(acase.teams, function(team) {
+          addTeamToLists(team);
+          bookSvc.list(team).then(function(){
+            addBooksToLists(bookSvc.books);
+          });
+        });
+      } else {
+        // Case isn't shared with any team yet - fall back to books the
+        // current user owns directly, rather than showing no books at all.
+        bookSvc.listMine().then(function(){
           addBooksToLists(bookSvc.books);
         });
-      });
+      }
       ctrl.share.loading = false;
       // And done, hide loading message.
 
