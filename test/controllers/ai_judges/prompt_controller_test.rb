@@ -28,6 +28,36 @@ module AiJudges
         assert assigns(:query_doc_pair)
         assert_includes(book.query_doc_pairs, assigns(:query_doc_pair))
       end
+
+      test 'without a book, falls back to a book the judge owner can access when the judge has an owner' do
+        owned_judge = AiJudge.create!(name: 'Owned Judge', llm_key: '1234', owner: user)
+
+        get edit_ai_judge_prompt_url(ai_judge_id: owned_judge.id)
+        assert_response :success
+
+        query_doc_pair = assigns(:query_doc_pair)
+        assert_predicate query_doc_pair, :persisted?
+        assert_includes(Book.for_user(user).flat_map(&:query_doc_pairs), query_doc_pair)
+      end
+
+      test 'is not found when the ai judge is not owned by or shared with the current user' do
+        login_user_for_integration_test users(:case_finder_user)
+
+        get edit_ai_judge_prompt_url(ai_judge_id: ai_judge.id)
+
+        assert_response :not_found
+      end
+    end
+
+    describe 'patch update' do
+      test 'is not found when the ai judge is not owned by or shared with the current user' do
+        login_user_for_integration_test users(:case_finder_user)
+
+        patch ai_judge_prompt_url(ai_judge_id: ai_judge.id), params: { user: { system_prompt: 'hijacked' } }
+
+        assert_response :not_found
+        assert_equal 'You are a grocery store shopper.  You like cheese.  Is this a cheese?', ai_judge.reload.system_prompt
+      end
     end
 
     # test 'should get update' do

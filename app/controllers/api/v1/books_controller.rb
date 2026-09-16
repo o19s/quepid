@@ -28,7 +28,7 @@ module Api
       # @request_body [Reference:#/components/schemas/Book]
       # @request_body_example basic book [Reference:#/components/examples/BasicBook]
       def create
-        @book = Book.new(book_params)
+        @book = current_user.books.build(book_params)
         if params[:book][:team_id]
           team = Team.find_by(id: params[:book][:team_id])
           @book.teams << team

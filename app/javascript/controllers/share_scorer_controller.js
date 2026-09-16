@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { parseTeamsJson, populateTeamSelect } from "utils/share_case_teams"
 
 export default class extends Controller {
   connect() {
@@ -50,15 +51,7 @@ export default class extends Controller {
   renderSharedTeams(rawJson) {
     if (!this.sharedListEl) return
 
-    let teams = []
-    try {
-      if (rawJson && rawJson.trim() !== '') {
-        const parsed = JSON.parse(rawJson)
-        if (Array.isArray(parsed)) teams = parsed
-      }
-    } catch (e) {
-      teams = []
-    }
+    const teams = parseTeamsJson(rawJson)
 
     this.sharedListEl.innerHTML = ''
 
@@ -100,54 +93,6 @@ export default class extends Controller {
   rebuildTeamDropdown(allTeamsJson, sharedTeamsJson) {
     if (!this.teamSelect) return
 
-    // Parse all user teams
-    let allTeams = []
-    try {
-      if (allTeamsJson && allTeamsJson.trim() !== '') {
-        const parsed = JSON.parse(allTeamsJson)
-        if (Array.isArray(parsed)) allTeams = parsed
-      }
-    } catch (e) {
-      console.error('Error parsing allTeamsJson:', e, allTeamsJson)
-      allTeams = []
-    }
-
-    // Parse shared teams
-    let sharedTeams = []
-    try {
-      if (sharedTeamsJson && sharedTeamsJson.trim() !== '') {
-        const parsed = JSON.parse(sharedTeamsJson)
-        if (Array.isArray(parsed)) sharedTeams = parsed
-      }
-    } catch (e) {
-      sharedTeams = []
-    }
-
-    const sharedTeamIds = sharedTeams.map(t => String(t.id))
-    
-    // Filter out teams that already have the scorer (server-side style logic)
-    const unsharedTeams = allTeams.filter(team => !sharedTeamIds.includes(String(team.id)))
-    
-    // Rebuild dropdown with only unshared teams
-    this.teamSelect.innerHTML = '<option value="">Select a team...</option>'
-    
-    if (unsharedTeams.length === 0) {
-      const option = document.createElement('option')
-      option.value = ''
-      option.text = 'No other teams to share with'
-      this.teamSelect.appendChild(option)
-      this.teamSelect.disabled = true
-    } else {
-      unsharedTeams.forEach(team => {
-        const option = document.createElement('option')
-        option.value = team.id
-        option.text = team.name
-        this.teamSelect.appendChild(option)
-      })
-      this.teamSelect.disabled = false
-    }
-    
-    // Reset selection to empty
-    this.teamSelect.value = ''
+    populateTeamSelect(this.teamSelect, parseTeamsJson(allTeamsJson), parseTeamsJson(sharedTeamsJson))
   }
 }

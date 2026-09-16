@@ -49,17 +49,18 @@ This book consists of <%= @book.queries_count %> queries.
 
 <%= render 'kraken_unleashed', book: @book if @kraken_unleashed %>
 
+<% available_ai_judges = available_ai_judges_for_book(@book).to_a %>
 <% if @book.ai_judges.present? %>
   <div class="mb-2">
     <i class="bi bi-robot"></i>
     We have <%= "#{@book.ai_judges.count == 1 ? 'an' : 'some'} AI #{@book.ai_judges.count == 1 ? 'Judge' : 'Judges'}" %>
     <i><%= @book.ai_judges.map(&:name).to_sentence %></i> helping us rate documents.
   </div>
-<% elsif available_ai_judges_for_book?(@book) %>
+<% elsif available_ai_judges.any? %>
   <div class="alert alert-info mb-3" role="alert">
     <h6><i class="bi bi-robot"></i> AI Judges Available</h6>
     <p class="mb-2">
-      Your team has AI judges available that could help rate documents automatically: <strong><%= available_ai_judges_for_book(@book).pluck(:name).to_sentence %></strong>
+      Your team has AI judges available that could help rate documents automatically: <strong><%= available_ai_judges.pluck(:name).to_sentence %></strong>
     </p>
     <%= link_to 'Add AI Judge to this Book', edit_book_path(@book), class: 'btn btn-sm btn-outline-primary' %>
   </div>

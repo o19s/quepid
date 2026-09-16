@@ -23,6 +23,11 @@
       </div>
     </div>
 
+    <div class="mb-3">
+      <%= render 'shared/team_picker', form: form, label: 'Teams to Share this AI Judge With',
+            help_text: "AI judges are usable by anyone on a team they're shared with. Leave unchecked to keep this judge private to you." %>
+    </div>
+
     <div class="row mb-3">
       <%= form.label :llm_key, class: 'col-sm-2 col-form-label' %>
       <div class="col-sm-10">
@@ -98,7 +103,7 @@
 
   <div class="card-footer">
     <%= form.submit 'Save', class: 'btn btn-primary float-start' %>
-    <%= link_to 'Back to Team', team_path(@team), class: "btn btn-outline-secondary float-end" %>
+    <%= link_to 'Back to AI Judges', ai_judges_path, class: "btn btn-outline-secondary float-end" %>
   </div>
 </div>
 

@@ -45,17 +45,13 @@ class UserLlmKeyEncryptionTest < ActiveSupport::TestCase
     assert_equal 'sk-another-test-key', loaded_user.llm_key
   end
 
-  test 'can query users by llm_key presence' do
-    # Create a user with llm_key (AI judge)
-    ai_judge = User.create!(
+  test 'can query AI judges via the only_ai_judges scope' do
+    ai_judge = AiJudge.create!(
       name:          'ai judge3',
-      email:         'ai_judge3@example.com',
-      password:      'password123',
       llm_key:       'sk-query-test-key',
       system_prompt: 'You are a helpful assistant'
     )
 
-    # Test the only_ai_judges scope
     ai_judges = User.only_ai_judges
     assert_includes ai_judges, ai_judge
     assert_not_includes ai_judges, users(:doug)

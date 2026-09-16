@@ -10,6 +10,42 @@ export function parseTeamsJson(rawJson) {
   return []
 }
 
+// Shared by the four "share with a team" modal controllers (case, book,
+// scorer, search endpoint): rebuilds a <select>'s options from the full
+// team list minus whichever teams already have this resource, with a
+// distinct message for "you have no teams at all" vs. "already shared
+// with everyone".
+export function populateTeamSelect(selectEl, allTeams, sharedTeams, opts = {}) {
+  const {
+    placeholder = "Select a team...",
+    emptyMessage = "You have no teams yet",
+    noneLeftMessage = "No other teams to share with"
+  } = opts
+
+  const sharedTeamIds = sharedTeams.map((t) => String(t.id))
+  const unsharedTeams = allTeams.filter((team) => !sharedTeamIds.includes(String(team.id)))
+
+  selectEl.innerHTML = `<option value="">${placeholder}</option>`
+
+  if (allTeams.length === 0 || unsharedTeams.length === 0) {
+    const option = document.createElement("option")
+    option.value = ""
+    option.text = allTeams.length === 0 ? emptyMessage : noneLeftMessage
+    selectEl.appendChild(option)
+    selectEl.disabled = true
+  } else {
+    unsharedTeams.forEach((team) => {
+      const option = document.createElement("option")
+      option.value = team.id
+      option.text = team.name
+      selectEl.appendChild(option)
+    })
+    selectEl.disabled = false
+  }
+
+  selectEl.value = ""
+}
+
 export function partitionTeams(teams, caseId) {
   const caseNo = Number(caseId)
   const allTeams = []

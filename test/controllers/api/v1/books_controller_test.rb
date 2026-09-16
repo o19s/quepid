@@ -80,6 +80,7 @@ module Api
           assert_equal response.parsed_body['name'], book_name
 
           assert_equal doug.books_involved_with.count, count + 1
+          assert_equal doug, assigns(:book).owner
         end
       end
 

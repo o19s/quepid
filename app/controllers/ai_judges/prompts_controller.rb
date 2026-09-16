@@ -9,15 +9,19 @@ module AiJudges
     end
 
     def edit
-      @ai_judge = User.find(params.expect(:ai_judge_id))
+      @ai_judge = AiJudge.for_user(current_user).find(params.expect(:ai_judge_id))
 
       @query_doc_pair = if @book
                           @book.query_doc_pairs.sample
                         else
-                          # grab any query_doc_pair that the judge has access to
+                          # Grab any query_doc_pair from a book the judge can access -
+                          # owned directly (or by the judge's owner), or shared via a
+                          # team. Book.for_user's team check is "does this user have a
+                          # teams_members row for one of the book's teams", which is
+                          # true whether that user is the judge's owner or, for a
+                          # legacy/owner-less judge, the judge itself.
                           QueryDocPair
-                            .joins(book: { teams: :members })
-                            .where(teams: { teams_members: { member_id: @ai_judge.id } })
+                            .where(book: Book.for_user(@ai_judge.owner || @ai_judge))
                             .order(Arel.sql(AdapterFunctions.random_function))
                             .first
                         end
@@ -26,7 +30,7 @@ module AiJudges
     end
 
     def update
-      @ai_judge = User.find(params.expect(:ai_judge_id))
+      @ai_judge = AiJudge.for_user(current_user).find(params.expect(:ai_judge_id))
       @ai_judge.update(ai_judge_params)
 
       @query_doc_pair = QueryDocPair.new(query_doc_pair_params)

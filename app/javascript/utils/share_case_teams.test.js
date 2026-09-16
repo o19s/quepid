@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { parseTeamsJson, partitionTeams } from "./share_case_teams"
+import { parseTeamsJson, partitionTeams, populateTeamSelect } from "./share_case_teams"
 
 // partitionTeams mirrors Angular ShareCaseModalInstanceCtrl teamHasCase / addTeamToLists logic.
 
@@ -36,5 +36,51 @@ describe("partitionTeams", () => {
   it("treats missing cases as unshared", () => {
     const { sharedTeams } = partitionTeams(teams, 42)
     expect(sharedTeams.some((t) => t.id === 3)).toBe(false)
+  })
+})
+
+// Shared by the four "share with a team" modal Stimulus controllers
+// (case, book, scorer, search endpoint).
+describe("populateTeamSelect", () => {
+  function buildSelect() {
+    return document.createElement("select")
+  }
+
+  it("lists teams not already shared, and re-enables the select", () => {
+    const select = buildSelect()
+    select.disabled = true
+
+    populateTeamSelect(
+      select,
+      [
+        { id: 1, name: "OSC" },
+        { id: 2, name: "Other" }
+      ],
+      [{ id: 1, name: "OSC" }]
+    )
+
+    const options = [...select.options].map((o) => o.text)
+    expect(options).toEqual(["Select a team...", "Other"])
+    expect(select.disabled).toBe(false)
+  })
+
+  it("shows a distinct message and disables the select when there are no teams at all", () => {
+    const select = buildSelect()
+
+    populateTeamSelect(select, [], [])
+
+    const options = [...select.options].map((o) => o.text)
+    expect(options).toEqual(["Select a team...", "You have no teams yet"])
+    expect(select.disabled).toBe(true)
+  })
+
+  it("shows a different message when every team already has this resource", () => {
+    const select = buildSelect()
+
+    populateTeamSelect(select, [{ id: 1, name: "OSC" }], [{ id: 1, name: "OSC" }])
+
+    const options = [...select.options].map((o) => o.text)
+    expect(options).toEqual(["Select a team...", "No other teams to share with"])
+    expect(select.disabled).toBe(true)
   })
 })

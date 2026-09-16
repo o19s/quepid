@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { parseTeamsJson } from "utils/share_case_teams"
+import { parseTeamsJson, populateTeamSelect } from "utils/share_case_teams"
 
 /**
  * Share / unshare on cases index and teams — `<select>`, form POST, redirect.
@@ -126,31 +126,10 @@ export default class extends Controller {
   rebuildTeamDropdown(allTeamsJson, sharedTeamsJson) {
     if (!this.hasTeamSelectTarget) return
 
-    const allTeams = parseTeamsJson(allTeamsJson)
-    const sharedTeams = parseTeamsJson(sharedTeamsJson)
-    const sharedTeamIds = sharedTeams.map((t) => String(t.id))
-    const unsharedTeams = allTeams.filter(
-      (team) => !sharedTeamIds.includes(String(team.id))
+    populateTeamSelect(
+      this.teamSelectTarget,
+      parseTeamsJson(allTeamsJson),
+      parseTeamsJson(sharedTeamsJson)
     )
-
-    this.teamSelectTarget.innerHTML = '<option value="">Select a team...</option>'
-
-    if (unsharedTeams.length === 0) {
-      const option = document.createElement("option")
-      option.value = ""
-      option.text = "No other teams to share with"
-      this.teamSelectTarget.appendChild(option)
-      this.teamSelectTarget.disabled = true
-    } else {
-      unsharedTeams.forEach((team) => {
-        const option = document.createElement("option")
-        option.value = team.id
-        option.text = team.name
-        this.teamSelectTarget.appendChild(option)
-      })
-      this.teamSelectTarget.disabled = false
-    }
-
-    this.teamSelectTarget.value = ""
   }
 }
