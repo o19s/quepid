@@ -2,9 +2,6 @@
  .border-bottom {
 	 border-bottom: 1px #aaa solid;
 }
- .padded-text {
-	 padding: 15px;
-}
  a.action-icon {
 	 color: #666;
 	 text-decoration: none;
@@ -16,15 +13,6 @@
  a.action-icon sup {
 	 top: -1em;
 	 font-size: 10px;
-}
- .p-r-10 {
-	 padding-right: 10px;
-}
- .p-t-20 {
-	 padding-top: 20px;
-}
- .p-b-20 {
-	 padding-bottom: 20px;
 }
  .query-help {
 	 font-size: 1.5em;

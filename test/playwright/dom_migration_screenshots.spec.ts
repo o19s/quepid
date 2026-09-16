@@ -1,19 +1,25 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
+import { DEFAULT_RICH_CASE_ID } from './angular_case_helpers';
 
 /** Set MIGRATION_SHOT_PHASE=before|after (default after). */
 const PHASE = process.env.MIGRATION_SHOT_PHASE === 'before' ? 'before' : 'after';
 /** Case with teams for share-case shots (fresh seed: case 1, one user team). */
 const SHARE_CASE_ID = Number(process.env.QUEPID_E2E_SHARE_CASE_ID || 1);
-/** Case with queries in DB for hit-count / annotations (seed: case 5 has 20 queries). */
-const QUERIES_CASE_ID = Number(process.env.QUEPID_E2E_QUERIES_CASE_ID || 5);
+/** Case with queries in DB for hit-count / annotations — see DEFAULT_RICH_CASE_ID's comment. */
+const QUERIES_CASE_ID = Number(process.env.QUEPID_E2E_QUERIES_CASE_ID || DEFAULT_RICH_CASE_ID);
 /**
  * Topic subfolder under `.playwright-mcp/` so the screenshot viewer can group
  * this PR's shots separately from older captures. Override with MIGRATION_SHOT_TOPIC.
  * Share-case tests default to `share-case/` even when the env var is unset.
  */
 const TOPIC = process.env.MIGRATION_SHOT_TOPIC || '';
+
+// NOTE: the share-case migration-diff tests that used to live here were moved to
+// share_case.spec.ts as permanent regression coverage — commit 9eebf95c deleted the
+// AngularJS share_case component entirely, so there is no more "before" for this
+// surface to diff against. See that file's header comment for details.
 
 async function gotoCase(page: import('@playwright/test').Page, caseId = SHARE_CASE_ID) {
   await page.goto(`case/${caseId}`);
@@ -303,7 +309,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
   test('clone-case popover', async ({ page }) => {
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page);
-    await page.locator('clone-case a').click();
+    await page.locator('a[data-controller="clone-case-core"]').click();
     const modal = page.locator('.modal.show').first();
     await expect(modal).toBeVisible();
     await page.setViewportSize({ width: 900, height: 760 });

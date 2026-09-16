@@ -8,10 +8,7 @@
  */
 export function attachTextPaste(element, onPaste) {
   const handler = (event) => {
-    const pastedText = event.clipboardData
-      ? event.clipboardData.getData("text/plain")
-      : window.clipboardData?.getData("Text") // IE legacy
-
+    const pastedText = event.clipboardData?.getData("text/plain")
     if (pastedText) onPaste(pastedText)
   }
 

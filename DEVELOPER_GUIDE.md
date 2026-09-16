@@ -26,6 +26,7 @@ This guide provides detailed instructions for developers who want to set up, run
 	- [II. Development Log](#ii-development-log)
 	- [III. Run Tests](#iii-run-tests)
 		- [Minitest](#minitest)
+		- [Vitest](#vitest)
 		- [Pre-commit hooks](#pre-commit-hooks)
 		- [JS Lint](#js-lint)
 		- [CSS Lint](#css-lint)
@@ -197,7 +198,7 @@ Run the test suite:
 
 ```bash
 bin/rails test                # Run backend tests
-bin/rails test:vitest         # Vitest (app/javascript)
+bin/rails test:vitest         # Vitest (test/javascript/)
 bin/rails test:frontend       # Vitest + Karma + linters
 bundle exec rubocop           # Run Ruby linter
 ```
@@ -247,8 +248,6 @@ tail -f log/development.log
 
 ## III. Run Tests
 
-There are three types of tests that you can run:
-
 ### Minitest
 
 These tests run the tests from the Rails side (mainly API controllers, and models):
@@ -282,6 +281,17 @@ and then tail the log file via:
 ```bash
 tail -f log/test.log
 ```
+
+### Vitest
+
+Unit tests for the modern `app/javascript/` tree (Stimulus `controllers/`, `api/`, `utils/`), specs under `test/javascript/` mirroring `app/javascript/` (not colocated):
+
+```bash
+bin/docker r yarn test:unit          # Vitest
+bin/docker r rails test:vitest       # same as yarn test:unit
+```
+
+**Vitest PR policy:** new or materially changed logic in `app/javascript/api/` or `app/javascript/utils/` → a `*.test.js` under `test/javascript/` (mirroring the source path, e.g. `app/javascript/utils/foo.js` → `test/javascript/utils/foo.test.js`) in the same PR. Not colocated with the source. Stimulus `controllers/` → add tests when you touch them for migration or behavior changes, not a blanket rewrite for coverage.
 
 ### Pre-commit hooks
 
@@ -325,12 +335,8 @@ bin/docker r rails test:jshint
 ```bash
 bin/docker r yarn lint:js
 bin/docker r yarn format:js:check    # Prettier check — api/ and utils/ only; or yarn format:js to fix
-bin/docker r yarn test:unit          # Vitest (app/javascript)
-bin/docker r rails test:vitest       # same as yarn test:unit
 bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
 ```
-
-**Vitest PR policy:** new or changed logic in `api/` or `utils/` → colocated `*.test.js` in the same PR. Controllers → test when you touch them for migration, not a blanket rewrite.
 
 Git commits can run linters on staged JS via [pre-commit](https://pre-commit.com):
 
@@ -392,11 +398,12 @@ Environment variables (all optional, sensible defaults baked in):
 
 * `QUEPID_BASE_URL` — defaults to `http://localhost:33000` (`docker-compose`'s published port). Override for a different host/port, e.g. `QUEPID_BASE_URL=http://localhost:3000` if your setup exposes the app there directly instead of through nginx. With `RAILS_RELATIVE_URL_ROOT`, include the subpath (e.g. `http://localhost:33000/quepid-app`); `test/playwright/env.ts` normalizes a trailing slash so relative `page.goto()` paths resolve under the mount.
 * `QUEPID_E2E_EMAIL` / `QUEPID_E2E_PASSWORD` — sign-in credentials used by `auth.setup.ts`, default to the same sandbox login CLAUDE.md documents for the Playwright MCP flow (`quepid+realisticactivity@o19s.com` / `password`). The resulting session is cached at `test/playwright/.auth/user.json` (gitignored).
-* `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `1`. **Must be a case with queries** — if your seed data's case 1 has none, the shared `gotoCase()` helper (`test/playwright/angular_case_helpers.ts`) times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data, e.g. `QUEPID_E2E_CASE_ID=5`.
+* `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `5` (`"10s of Queries"` in the shared dev DB — a case with a working search endpoint and existing queries). **Must be a case with queries** — if your seed data's case has none, the shared `gotoCase()` helper (`test/playwright/angular_case_helpers.ts`) times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data if it differs, e.g. `QUEPID_E2E_CASE_ID=1`. Note that case IDs in the shared dev DB aren't a fixed fixture — they're just whatever row currently holds that ID, which can drift as the DB is reseeded or mutated over time (e.g. id `1` has been both `"10s of Queries"` and, later, a near-empty `"SOLR CASE"`). If you're regenerating baselines to visually diff against previously committed ones, confirm via `bin/docker r bundle exec rails runner "puts Case.find(<id>).case_name"` that the ID still resolves to the case you expect before trusting the diff.
 
 Structure:
 
 * `core_smoke.spec.ts`, `angular_pages.spec.ts`, `angular_pages_narrow_viewport.spec.ts` — golden-path interaction screenshots (`toHaveScreenshot`) across modals, dropdowns, and the wizard, at desktop and narrow viewports.
+* `share_case.spec.ts` — permanent regression coverage for case sharing: the Stimulus `share-case-core` modal on the core toolbar (incl. the judgements-modal bridge into it) and the Rails cases-index/teams share modal. Mixes `toHaveScreenshot()` baselines with plain behavioral assertions (share/unshare click flow, success alerts) that don't depend on any before/after phase.
 * `stimulus_pages.spec.ts` — smoke and interaction tests for Stimulus pages (cases import modal redirect, bulk judgement save via routed API, mapper wizard) on the `application` layout.
 * `popover_visibility.spec.ts` — computed-style assertions catching invisible-but-present popovers (see the BS5-on-`core` traps documented in CLAUDE.md).
 * `modal_a11y.spec.ts` — axe accessibility smoke test on a modal.
@@ -406,6 +413,8 @@ Baseline screenshots live under `test/playwright/baselines/` and **are checked i
 
 Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.ts`) because they share case state in the database (whichever adapter the dev server is running against) and a single authenticated session — don't assume they're safe to parallelize without addressing that first.
 
+**Clean up anything a spec creates in the shared dev DB.** Because the suite runs against real shared state rather than a fixture DB, any row a test creates (a user, a team, a case) outlives that single run and every later run adds another one — unlike case/session state, there's no reset between runs. If your spec creates a persistent row, delete it in a `test.afterAll` (see `teams.spec.ts`'s or `signup.spec.ts`'s for the pattern).
+
 **Ad-hoc screenshot review** (Playwright MCP captures, migration proofs, etc.) land in `.playwright-mcp/` (gitignored). Organize by **topic subfolder** so the viewer can separate this PR’s shots from older work, e.g. `.playwright-mcp/share-case/`, `.playwright-mcp/prior/`. Filenames stay `*-before.png` / `*-after.png`.
 
 ```bash
@@ -413,7 +422,7 @@ yarn screenshots:view
 # if host Node engines block yarn: node test/playwright/screenshot-viewer-server.mjs
 ```
 
-Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — sidebar groups by folder, pairs before/after, flags **byte-identical** pairs at manifest generation time, and runs a **pixel diff** in the browser (magenta overlay + diff map) when bytes differ. Sidebar badges: `byte =` (identical files), `bytes ≠` / `diff` (changed), `pixel =` (same image, different PNG encoding). Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`. For `dom_migration_screenshots.spec.ts`, set `MIGRATION_SHOT_TOPIC=share-case` (share-case tests also hardcode that folder).
+Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — sidebar groups by folder, pairs before/after, flags **byte-identical** pairs at manifest generation time, and runs a **pixel diff** in the browser (magenta overlay + diff map) when bytes differ. Sidebar badges: `byte =` (identical files), `bytes ≠` / `diff` (changed), `pixel =` (same image, different PNG encoding). Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`. For `dom_migration_screenshots.spec.ts`, set `MIGRATION_SHOT_PHASE=before|after` to pick the phase; group a run's shots by saving them into a topic subfolder as described above. (The share-case surface no longer runs through this ad-hoc flow — its screenshots are ordinary checked-in `toHaveScreenshot()` baselines in `share_case.spec.ts`.)
 
 ### Rubocop
 

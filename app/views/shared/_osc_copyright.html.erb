@@ -1,0 +1,15 @@
+<%# Shared OSC copyright link, rendered in both Rails-page and Angular-core footers.
+    `link_class`      - CSS class for the link (e.g. "text-white" on the plain
+                        Rails footer's dark background); nil omits it, as core does.
+    `separator`       - HTML rendered between the year and the link (core uses an em-dash).
+    `open_in_new_tab` - whether to add target="_blank" rel="noopener noreferrer",
+                        matching each surface's prior markup (true on the plain
+                        Rails footer, false on core). %>
+&copy; <%= Time.zone.now.year %><%= separator %>
+<%= link_to 'http://opensourceconnections.com',
+            class: link_class,
+            target: (open_in_new_tab ? '_blank' : nil),
+            rel: (open_in_new_tab ? 'noopener noreferrer' : nil) do %>
+  <%= image_tag "OSC-icon.png", width: 24 %>
+  OpenSource Connections, LLC
+<% end %>

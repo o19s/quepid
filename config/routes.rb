@@ -64,7 +64,9 @@ Rails.application.routes.draw do
   post 'users/login' => 'sessions#create' # , #defaults: { format: :json
   post 'users/signup' => 'users/signups#create'
 
-  get  'logout' => 'sessions#destroy'
+  get 'login' => 'sessions#new'
+  get 'logout' => 'sessions#destroy'
+  get 'users/sign_in' => redirect('login') # Devise's conventional path; we use our own sessions controller
 
   resources :sessions, except: [ :edit, :show, :update ]
   resource :account, only: [ :update, :destroy ]
@@ -341,6 +343,8 @@ Rails.application.routes.draw do
   get '/cases' => 'cases#index', as: :cases
   post '/cases/:id/archive' => 'cases#archive', as: :archive_case
   post '/cases/:id/unarchive' => 'cases#unarchive', as: :unarchive_case
+  delete '/cases/:id' => 'cases#destroy', as: :case
+  delete '/cases/:id/queries' => 'cases#destroy_queries', as: :case_queries
 
   # Routes handled by angular
   get '/case/:id(/try/:try_number)'   => 'core#index', as: :case_core

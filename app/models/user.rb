@@ -107,6 +107,11 @@ class User < ApplicationRecord
 
   has_many :announcements, foreign_key: 'author_id', dependent: :destroy, inverse_of: :author
 
+  # :destroy, not :nullify - Annotation requires a user (belongs_to :user,
+  # optional: false), so nullifying user_id on delete would leave rows that
+  # violate the model's own invariant.
+  has_many :annotations, dependent: :destroy
+
   # Validations
   validates :name,
             length: { maximum: 255 }

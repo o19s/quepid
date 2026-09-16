@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Dumps the shared dev MySQL database so a mutating manual-testing scenario can be run once per
+# ui_diff instance and restored back to a clean state afterward (bin/ui_diff_db_restore).
+# Pairs with bin/ui_diff_up/down — see .claude/skills/branch-ui-diff/SKILL.md.
+
+APP_ROOT=$(cd "$(dirname "$0")/.." && pwd)
+cd "$APP_ROOT"
+
+set -a
+source .env
+set +a
+
+STATE_DIR="$APP_ROOT/tmp/ui_diff"
+SNAPSHOT_FILE="$STATE_DIR/db_snapshot.sql"
+mkdir -p "$STATE_DIR"
+
+# config/database.yml's development entry is "${DB_NAME}_development", not DB_NAME itself.
+DB_NAME="${DB_NAME:-quepid}_development"
+DB_USERNAME="${DB_USERNAME:-root}"
+DB_PASSWORD="${DB_PASSWORD:-password}"
+
+echo "==> Dumping $DB_NAME (quepid_db) to $SNAPSHOT_FILE"
+docker exec quepid_db mysqldump -u"$DB_USERNAME" -p"$DB_PASSWORD" "$DB_NAME" > "$SNAPSHOT_FILE"
+echo "==> Snapshot saved ($(du -h "$SNAPSHOT_FILE" | cut -f1))"

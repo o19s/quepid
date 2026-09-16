@@ -348,6 +348,24 @@ class UserTest < ActiveSupport::TestCase
       shared_team_case.reload
       assert_not shared_team_case.destroyed?
     end
+
+    it 'deletes a user who authored an annotation, destroying the annotation rather than raising a foreign key error' do
+      annotation = Annotation.create!(user: random, message: 'a note')
+      random.judgements.each do |j|
+        j.update!(user: nil)
+      end
+      random.owned_scorers.each do |s|
+        s.teams.each { |t| s.teams.delete(t) }
+      end
+      random.reload
+
+      random.destroy
+      assert_predicate random, :destroyed?
+
+      # :destroy, not :nullify - Annotation requires a user, so the annotation
+      # must go with its author rather than being left in an invalid state.
+      assert_nil Annotation.find_by(id: annotation.id)
+    end
   end
 
   describe 'User accessing Books' do
