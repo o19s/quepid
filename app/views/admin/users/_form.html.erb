@@ -5,7 +5,7 @@
       Manage the basic attributes of a user.
     </p>
     <%= form_for(@user, url: {action: passed_in_action}) do |f| %>
-      <%= render "shared/error_messages", record: @user, subject: "user" %>
+      <%= render "shared/error_messages", record: @user, subject: "user", id: "error_explanation_attributes" %>
 
       <div class="row mb-3">
         <%= f.label :email, class: 'col-sm-2 col-form-label' %>
@@ -89,7 +89,7 @@
         You can either set the user's password in plain text, or, if you know their encrypted password then you provide it.
       </p>
       <%= form_for(@user, url: {action: passed_in_action}) do |f| %>
-        <%= render "shared/error_messages", record: @user, subject: "" %>
+        <%= render "shared/error_messages", record: @user, subject: "", id: "error_explanation_password" %>
 
         <div class="mb-3">
           <%= f.label :password, class: 'form-label' %>

@@ -73,7 +73,7 @@
       <h2>
         Profile
       </h2>
-      <%= render "shared/error_messages", record: current_user, subject: "" %>
+      <%= render "shared/error_messages", record: current_user, subject: "", id: "error_explanation_profile" %>
 
       <div class="form-floating mb-3">
 
@@ -110,7 +110,7 @@
       <h2>
         Account Security
       </h2>
-      <%= render "shared/error_messages", record: current_user, subject: "" %>
+      <%= render "shared/error_messages", record: current_user, subject: "", id: "error_explanation_account_security" %>
 
       <div class="form-floating mb-3">
         <input id="old" type="password" name="current_password" class="form-control" placeholder="Password"/>
@@ -176,7 +176,7 @@
       <h2 class="text-danger">
         Danger Zone
       </h2>
-      <%= render "shared/error_messages", record: current_user, subject: "" %>
+      <%= render "shared/error_messages", record: current_user, subject: "", id: "error_explanation_danger_zone" %>
 
       <p class="form-text">
         This will remove you from any existing teams, and delete any cases that you are the owner and only member of, as well as associated

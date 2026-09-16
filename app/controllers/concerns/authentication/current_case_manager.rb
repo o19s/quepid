@@ -55,6 +55,16 @@ module Authentication
       render json: { message: 'Case not found!' }, status: :not_found unless @case
     end
 
+    # @case is nil when the case doesn't exist, or isn't public/accessible to
+    # this (possibly anonymous) visitor. Render the standard 404 page instead
+    # of letting an HTML-rendering controller/view crash on a nil @case.
+    def render_404_page_unless_case
+      # layout: false -- some callers' layouts assume @case is present (e.g.
+      # @case.public?), so skip the layout rather than crash again while
+      # trying to render the "not found" response.
+      render file: 'public/404.html', status: :not_found, layout: false unless @case
+    end
+
     def decrypt_case_id encrypted_value
       Rails.application.message_verifier('magic').verify(encrypted_value)
     rescue ActiveSupport::MessageVerifier::InvalidSignature
