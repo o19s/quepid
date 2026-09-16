@@ -367,6 +367,39 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'AI judge assignment' do
+    let(:doug) { users(:doug) }
+    let(:random_1) { users(:random_1) }
+
+    setup { login_user_for_integration_test doug }
+
+    test 'edit includes an ai judge owned directly by the book owner, even with no team share' do
+      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
+
+      # Bullet fires on the pre-existing @other_books N+1, not our new query — suppress it.
+      Bullet.enable = false
+      get "/books/#{james_bond_movies.id}/edit"
+      Bullet.enable = true
+
+      assert_response :success
+      assert_includes assigns(:ai_judges), owner_only_judge
+    end
+
+    test 'update rejects an ai judge id the book owner cannot access' do
+      unrelated_judge = AiJudge.create!(name: 'Unrelated Judge', llm_key: '1234', owner: random_1)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:         james_bond_movies.name,
+          team_ids:     james_bond_movies.team_ids,
+          ai_judge_ids: [ unrelated_judge.id ],
+        },
+      }
+
+      assert_not_includes james_bond_movies.reload.ai_judges, unrelated_judge
+    end
+  end
+
   def test_scorer_id_copies_scale_fields_when_creating_book
     login_user_for_integration_test user
 

@@ -14,14 +14,12 @@ module AiJudges
       @query_doc_pair = if @book
                           @book.query_doc_pairs.sample
                         else
-                          # Grab any query_doc_pair from a book the judge can access -
-                          # owned directly (or by the judge's owner), or shared via a
-                          # team. Book.for_user's team check is "does this user have a
-                          # teams_members row for one of the book's teams", which is
-                          # true whether that user is the judge's owner or, for a
-                          # legacy/owner-less judge, the judge itself.
+                          # Grab any query_doc_pair from a book the *requesting* user
+                          # can access - not the judge's owner. A judge can be shared
+                          # with a teammate who isn't the owner, and that teammate must
+                          # not see documents from books private to the owner.
                           QueryDocPair
-                            .where(book: Book.for_user(@ai_judge.owner || @ai_judge))
+                            .where(book: Book.for_user(current_user))
                             .order(Arel.sql(AdapterFunctions.random_function))
                             .first
                         end

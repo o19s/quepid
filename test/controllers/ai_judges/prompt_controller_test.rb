@@ -29,7 +29,7 @@ module AiJudges
         assert_includes(book.query_doc_pairs, assigns(:query_doc_pair))
       end
 
-      test 'without a book, falls back to a book the judge owner can access when the judge has an owner' do
+      test 'without a book, falls back to a book the current user can access when the judge has an owner' do
         owned_judge = AiJudge.create!(name: 'Owned Judge', llm_key: '1234', owner: user)
 
         get edit_ai_judge_prompt_url(ai_judge_id: owned_judge.id)
@@ -38,6 +38,21 @@ module AiJudges
         query_doc_pair = assigns(:query_doc_pair)
         assert_predicate query_doc_pair, :persisted?
         assert_includes(Book.for_user(user).flat_map(&:query_doc_pairs), query_doc_pair)
+      end
+
+      test 'without a book, falls back to a book the requesting teammate can access, not a book private to the judge owner' do
+        owner = users(:case_finder_user)
+        shared_team = teams(:case_finder_owned_team) # random and case_finder_user are both members
+
+        private_book = Book.create!(name: 'owner-private book', owner: owner)
+        private_qdp = private_book.query_doc_pairs.create!(query_text: 'q', doc_id: 'd', position: 1)
+
+        shared_judge = AiJudge.create!(name: 'Shared Judge', llm_key: '1234', owner: owner, teams: [ shared_team ])
+
+        get edit_ai_judge_prompt_url(ai_judge_id: shared_judge.id)
+        assert_response :success
+
+        assert_not_equal private_qdp, assigns(:query_doc_pair)
       end
 
       test 'is not found when the ai judge is not owned by or shared with the current user' do

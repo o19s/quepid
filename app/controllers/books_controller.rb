@@ -139,7 +139,7 @@ class BooksController < ApplicationController
   end
 
   def edit
-    @ai_judges = AiJudge.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @ai_judges = @book.owner ? AiJudge.for_user(@book.owner) : AiJudge.none
 
     @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
 
@@ -194,17 +194,19 @@ class BooksController < ApplicationController
     @book.teams.replace(teams)
 
     # checkboxes suck
+    assignable_ai_judges = @book.owner ? AiJudge.for_user(@book.owner) : AiJudge.none
     @book.ai_judges.clear
     ai_judge_ids = book_params[:ai_judge_ids].compact_blank
     ai_judge_ids.each do |ai_judge_id|
-      @book.ai_judges << AiJudge.find(ai_judge_id)
+      ai_judge = assignable_ai_judges.find_by(id: ai_judge_id)
+      @book.ai_judges << ai_judge if ai_judge
     end
 
     # Handle scorer selection
     apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
 
     @book.update(book_params.except(
-                   :team_ids, :ai_judges, :link_the_case, :origin_case_id, :scorer_id,
+                   :team_ids, :ai_judges, :ai_judge_ids, :link_the_case, :origin_case_id, :scorer_id,
                    :delete_export_file, :delete_import_file,
                    :auto_populate_book_pairs,
                    :auto_populate_case_judgements
@@ -215,7 +217,7 @@ class BooksController < ApplicationController
 
     @book.save
 
-    @ai_judges = AiJudge.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @ai_judges = @book.owner ? AiJudge.for_user(@book.owner) : AiJudge.none
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
     respond_with(@book)
