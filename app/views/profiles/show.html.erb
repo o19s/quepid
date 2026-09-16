@@ -1,4 +1,10 @@
-
+<%
+  # Set by ProfilesController#update / AccountsController#update|#destroy on a validation
+  # failure, so only the section whose form was actually submitted shows its errors -- all
+  # three forms below act on the same current_user, so unscoped error_messages renders would
+  # otherwise show one form's errors under all three headings at once.
+  active_error_section = local_assigns.fetch(:active_error_section, nil)
+%>
 <section styled="background-color: #9de2ff;">
   <div class="container py-5 h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
@@ -73,7 +79,9 @@
       <h2>
         Profile
       </h2>
-      <%= render "shared/error_messages", record: current_user, subject: "", id: "error_explanation_profile" %>
+      <% if :profile == active_error_section %>
+        <%= render "shared/error_messages", record: current_user, subject: "", id: "error_explanation_profile" %>
+      <% end %>
 
       <div class="form-floating mb-3">
 
@@ -110,7 +118,9 @@
       <h2>
         Account Security
       </h2>
-      <%= render "shared/error_messages", record: current_user, subject: "", id: "error_explanation_account_security" %>
+      <% if :account_security == active_error_section %>
+        <%= render "shared/error_messages", record: current_user, subject: "", id: "error_explanation_account_security" %>
+      <% end %>
 
       <div class="form-floating mb-3">
         <input id="old" type="password" name="current_password" class="form-control" placeholder="Password"/>
@@ -176,7 +186,9 @@
       <h2 class="text-danger">
         Danger Zone
       </h2>
-      <%= render "shared/error_messages", record: current_user, subject: "", id: "error_explanation_danger_zone" %>
+      <% if :danger_zone == active_error_section %>
+        <%= render "shared/error_messages", record: current_user, subject: "", id: "error_explanation_danger_zone" %>
+      <% end %>
 
       <p class="form-text">
         This will remove you from any existing teams, and delete any cases that you are the owner and only member of, as well as associated
