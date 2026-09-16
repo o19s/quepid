@@ -78,9 +78,12 @@ class AiJudgesController < ApplicationController
       llm_timeout:     30,
       llm_api_version: '',
     }
+    @book_id = params[:book_id]
   end
 
-  def edit; end
+  def edit
+    @book_id = params[:book_id]
+  end
 
   def create
     @ai_judge = current_user.owned_ai_judges.build(ai_judge_params)
