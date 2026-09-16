@@ -6,6 +6,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        <p class="text-muted small">This search endpoint is usable by anyone on a team it's shared with. Not shared with a team? It stays private to you.</p>
+
         <%= form_with url: share_search_endpoint_teams_path, method: :post, local: true, html: { id: 'share-search-endpoint-form', class: 'mb-3' } do %>
           <%= hidden_field_tag :search_endpoint_id, '', id: 'share-search-endpoint-id' %>
 

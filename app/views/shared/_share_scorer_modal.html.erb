@@ -6,6 +6,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        <p class="text-muted small">This scorer is usable by anyone on a team it's shared with. Not shared with a team? It stays private to you.</p>
+
         <%= form_with url: share_scorers_path, method: :post, local: true, html: { id: 'share-scorer-form', class: 'mb-3' } do %>
           <%= hidden_field_tag :scorer_id, '', id: 'share-scorer-id' %>
 

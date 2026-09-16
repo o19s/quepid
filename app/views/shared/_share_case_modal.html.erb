@@ -14,6 +14,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        <p class="text-muted small">This case is usable by anyone on a team it's shared with. Not shared with a team? It stays private to you.</p>
+
         <%= form_with url: share_case_teams_path, method: :post, local: true, html: { id: 'share-case-form', class: 'mb-3' } do %>
           <%= hidden_field_tag :case_id, '', id: 'share-case-id', data: { share_case_target: 'caseId' } %>
 
