@@ -50,7 +50,7 @@
       </div>
     <% end %>
     
-    <%= form_with model: @book, url: books_import_index_path do |form| %>
+    <%= form_with model: @book, url: books_import_path(@book), method: :patch do |form| %>
       <div class="mb-3">        
         <%= form.label :import_file,'Select JSON file to import', class:'form-check-label' %>
         <%= form.file_field :import_file, class:'form-control' %>
@@ -122,7 +122,7 @@
       </div>
     <% end %>
     
-    <%= form_with model: @book, url: books_import_index_path do |form| %>
+    <%= form_with model: @book, url: books_import_path(@book), method: :patch do |form| %>
       <div class="mb-3">        
         <%= form.label :import_file,'Select JSON file to import', class:'form-check-label' %>
         <%= form.file_field :import_file, class:'form-control' %>
