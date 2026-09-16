@@ -57,6 +57,8 @@
 #
 class AiJudge < User
   validates :name, presence: true
-  validates :llm_key, length: { maximum: 255 }, allow_nil: false, presence: true
+  # Optional - LlmService skips auth headers entirely when llm_key is blank,
+  # which is correct for a local provider (e.g. Ollama) that doesn't check one.
+  validates :llm_key, length: { maximum: 255 }, allow_blank: true
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true
 end

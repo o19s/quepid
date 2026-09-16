@@ -36,11 +36,14 @@ class AiJudgeTest < ActiveSupport::TestCase
       assert_predicate judge, :valid?
     end
 
-    it 'requires an llm_key' do
+    it 'does not require an llm_key, since a local LLM provider may not check one' do
       judge = AiJudge.new(name: 'Judge Judy')
-      assert_not judge.valid?
-      judge.llm_key = '1234'
       assert_predicate judge, :valid?
+    end
+
+    it 'still enforces the llm_key length limit when one is provided' do
+      judge = AiJudge.new(name: 'Judge Judy', llm_key: 'x' * 256)
+      assert_not judge.valid?
     end
   end
 

@@ -33,68 +33,73 @@
       <div class="col-sm-10">
         <%= form.text_field :llm_key, class: "form-control" %>
         <div class="form-text">
-          This is the key to access your LLM provider's API. It's required even
-          if your provider doesn't check it (e.g. a local Ollama setup) - enter
-          a placeholder value like "abc123" in that case.
+          This is the key to access your LLM provider's API. Leave it blank if
+          your provider doesn't check one (e.g. a local Ollama setup).
         </div>
       </div>
     </div>
 
-    <ul class="nav nav-underline mb-3" id="pills-tab" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="pills-structured-fields-tab" data-bs-toggle="pill" data-bs-target="#pills-structured-fields" type="button" role="tab" aria-controls="pills-structured-fields" aria-selected="true">Structured Fields</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="pills-json-tab" data-bs-toggle="pill" data-bs-target="#pills-json" type="button" role="tab" aria-controls="pills-json" aria-selected="false">JSON</button>
-      </li>
-    </ul>
-    <div class="tab-content" id="pills-tabContent">
-      <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
+    <div class="row">
+      <div class="col-md-6">
+        <ul class="nav nav-underline mb-3" id="pills-tab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pills-structured-fields-tab" data-bs-toggle="pill" data-bs-target="#pills-structured-fields" type="button" role="tab" aria-controls="pills-structured-fields" aria-selected="true">Structured Fields</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-json-tab" data-bs-toggle="pill" data-bs-target="#pills-json" type="button" role="tab" aria-controls="pills-json" aria-selected="false">JSON</button>
+          </li>
+        </ul>
+        <div class="tab-content" id="pills-tabContent">
+          <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
 
-        <% sorted_judge_options = @ai_judge.judge_options.sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
-        <% sorted_judge_options.each do |key, value| %>
-          <div class="row mb-3">
-            <%= label_tag "judge_options[#{key}]", key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
-            <div class="col-sm-4">
-              <% if key.to_s == 'llm_provider' %>
-                <%= select_tag "user[judge_options][llm_provider]",
-                      options_for_select([
-                        ['OpenAI',                          'openai'],
-                        ['Azure OpenAI',                    'azure_openai'],
-                        ['Azure AI Foundry',                'azure_ai_foundry'],
-                        ['Azure AI Foundry (Serverless)',    'azure_ai_foundry_serverless'],
-                        ['Azure AI Foundry (Anthropic)',     'azure_ai_foundry_anthropic'],
-                        ['Anthropic',                       'anthropic'],
-                        ['Google Gemini',                   'google_gemini'],
-                        ['Ollama',                          'ollama'],
-                      ], value.to_s),
-                      id: 'judge_options_llm_provider',
-                      class: 'form-select form-select-sm structured-field'
-                %>
-              <% else %>
-                <%= text_field_tag "user[judge_options][#{key}]", value,
-                  id: "judge_options_#{key}",
-                  class: 'form-control form-control-sm structured-field'
-                %>
-              <% end %>
+            <% sorted_judge_options = @ai_judge.judge_options.sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
+            <% sorted_judge_options.each do |key, value| %>
+              <div class="row mb-3">
+                <%= label_tag "judge_options[#{key}]", key.to_s.humanize.titleize, class: 'col-sm-5 col-form-label text-nowrap' %>
+                <div class="col-sm-7">
+                  <% if key.to_s == 'llm_provider' %>
+                    <%= select_tag "user[judge_options][llm_provider]",
+                          options_for_select([
+                            ['OpenAI',                          'openai'],
+                            ['Azure OpenAI',                    'azure_openai'],
+                            ['Azure AI Foundry',                'azure_ai_foundry'],
+                            ['Azure AI Foundry (Serverless)',    'azure_ai_foundry_serverless'],
+                            ['Azure AI Foundry (Anthropic)',     'azure_ai_foundry_anthropic'],
+                            ['Anthropic',                       'anthropic'],
+                            ['Google Gemini',                   'google_gemini'],
+                            ['Ollama',                          'ollama'],
+                          ], value.to_s),
+                          id: 'judge_options_llm_provider',
+                          class: 'form-select form-select-sm structured-field'
+                    %>
+                  <% else %>
+                    <%= text_field_tag "user[judge_options][#{key}]", value,
+                      id: "judge_options_#{key}",
+                      class: 'form-control form-control-sm structured-field'
+                    %>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="tab-pane fade" id="pills-json" role="tabpanel" aria-labelledby="pills-json-tab" tabindex="0">
+            <div class="row mb-3">
+              <div class="form-text">
+                This the raw JSON stored as <code>options</code> for the Judge.
+                Make sure you are editing under the <code>judge_options</code> key.
+              </div>
+              <%= form.text_area :options, value: format_json(@ai_judge.options),
+                class: 'form-control json-field', rows: 10, disabled: true %>
             </div>
           </div>
-        <% end %>
-        <div id="provider-help" class="alert alert-info mt-3 mb-0 small" style="display:none;">
         </div>
       </div>
-      <div class="tab-pane fade" id="pills-json" role="tabpanel" aria-labelledby="pills-json-tab" tabindex="0">
-        <div class="row mb-3">
-          <div class="form-text">
-            This the raw JSON stored as <code>options</code> for the Judge.
-            Make sure you are editing under the <code>judge_options</code> key.
-          </div>
-          <%= form.text_area :options, value: format_json(@ai_judge.options),
-            class: 'form-control json-field', rows: 10, disabled: true %>
+      <div class="col-md-6">
+        <div class="fw-semibold mb-2">Suggestions</div>
+        <div id="provider-help" class="alert alert-info small" style="display:none;">
         </div>
       </div>
     </div>
-
 
     <div class="row mb-3">
       <%= form.label :system_prompt, class: 'col-sm-2 col-form-label' %>
@@ -219,13 +224,13 @@
               '<b>API Version:</b> Leave blank'
       },
       ollama: {
-        llm_service_url: 'http://ollama:11434',
+        llm_service_url: 'http://ollama:31434',
         llm_api_version: '',
         llm_model:       'qwen3:0.6b',
         help: '<strong>Ollama</strong> &mdash; Local models via the Ollama container.<br>' +
-              '<b>URL:</b> <code>http://ollama:11434</code> (Docker) or <code>http://localhost:11434</code> (local)<br>' +
+              '<b>URL:</b> <code>http://ollama:31434</code> (Docker) or <code>http://localhost:31434</code> (local)<br>' +
               '<b>Model:</b> e.g. <code>qwen3:0.6b</code>, <code>llama3</code><br>' +
-              '<b>Key:</b> Any placeholder value (e.g. <code>abc123</code>)<br>' +
+              '<b>Key:</b> Leave blank - Ollama doesn\'t check one<br>' +
               '<b>API Version:</b> Leave blank'
       }
     };
