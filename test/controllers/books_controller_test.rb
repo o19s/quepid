@@ -398,6 +398,45 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
       assert_not_includes james_bond_movies.reload.ai_judges, unrelated_judge
     end
+
+    test 'new includes an ai judge owned directly by the current user, even with no team share' do
+      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
+
+      get '/books/new'
+
+      assert_response :success
+      assert_includes assigns(:ai_judges), owner_only_judge
+    end
+
+    test 'create assigns an ai judge owned directly by the creator, even with no team share' do
+      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
+
+      post '/books', params: {
+        book: {
+          name:         'New Book With Owned Judge',
+          team_ids:     [],
+          ai_judge_ids: [ owner_only_judge.id ],
+        },
+      }
+
+      created_book = Book.find_by(name: 'New Book With Owned Judge')
+      assert_includes created_book.ai_judges, owner_only_judge
+    end
+
+    test 'create rejects an ai judge id the creator cannot access' do
+      unrelated_judge = AiJudge.create!(name: 'Unrelated Judge', llm_key: '1234', owner: random_1)
+
+      post '/books', params: {
+        book: {
+          name:         'New Book Rejecting Unrelated Judge',
+          team_ids:     [],
+          ai_judge_ids: [ unrelated_judge.id ],
+        },
+      }
+
+      created_book = Book.find_by(name: 'New Book Rejecting Unrelated Judge')
+      assert_not_includes created_book.ai_judges, unrelated_judge
+    end
   end
 
   def test_scorer_id_copies_scale_fields_when_creating_book

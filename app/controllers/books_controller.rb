@@ -126,7 +126,7 @@ class BooksController < ApplicationController
       end
     end
 
-    @ai_judges = []
+    @ai_judges = AiJudge.for_user(current_user)
 
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
@@ -139,7 +139,7 @@ class BooksController < ApplicationController
   end
 
   def edit
-    @ai_judges = @book.owner ? AiJudge.for_user(@book.owner) : AiJudge.none
+    @ai_judges = visible_ai_judges_for(@book.owner)
 
     @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
 
@@ -153,13 +153,14 @@ class BooksController < ApplicationController
   end
 
   def create
-    @book = Book.new(book_params)
+    @book = Book.new(book_params.except(:ai_judge_ids))
     @book.owner = current_user
 
     # Handle scorer selection
     apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
 
     if @book.save
+      assign_ai_judges @book, book_params[:ai_judge_ids], current_user
 
       if params[:book][:link_the_case]
         @origin_case = current_user.cases_involved_with.where(id: params[:book][:origin_case_id]).first
@@ -194,13 +195,8 @@ class BooksController < ApplicationController
     @book.teams.replace(teams)
 
     # checkboxes suck
-    assignable_ai_judges = @book.owner ? AiJudge.for_user(@book.owner) : AiJudge.none
     @book.ai_judges.clear
-    ai_judge_ids = book_params[:ai_judge_ids].compact_blank
-    ai_judge_ids.each do |ai_judge_id|
-      ai_judge = assignable_ai_judges.find_by(id: ai_judge_id)
-      @book.ai_judges << ai_judge if ai_judge
-    end
+    assign_ai_judges @book, book_params[:ai_judge_ids], @book.owner
 
     # Handle scorer selection
     apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
@@ -217,7 +213,7 @@ class BooksController < ApplicationController
 
     @book.save
 
-    @ai_judges = @book.owner ? AiJudge.for_user(@book.owner) : AiJudge.none
+    @ai_judges = visible_ai_judges_for(@book.owner)
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
     respond_with(@book)
@@ -427,6 +423,22 @@ class BooksController < ApplicationController
   end
 
   private
+
+  # AI judges owner can access - owned directly, or shared via any of the
+  # owner's teams. No owner (e.g. an orphaned book) means no AI judges.
+  def visible_ai_judges_for owner
+    owner ? AiJudge.for_user(owner) : AiJudge.none
+  end
+
+  # Checkboxes suck: only assign ids that are actually visible to scope_owner,
+  # so a submitted id for someone else's private judge is silently ignored.
+  def assign_ai_judges book, ai_judge_ids, scope_owner
+    assignable_ai_judges = visible_ai_judges_for(scope_owner)
+    Array(ai_judge_ids).compact_blank.each do |ai_judge_id|
+      ai_judge = assignable_ai_judges.find_by(id: ai_judge_id)
+      book.ai_judges << ai_judge if ai_judge
+    end
+  end
 
   def apply_scorer_to_book book, scorer_id
     scorer = current_user.scorers_involved_with.find_by(id: scorer_id)
