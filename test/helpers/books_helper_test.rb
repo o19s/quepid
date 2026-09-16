@@ -41,8 +41,11 @@ class BooksHelperTest < ActionView::TestCase
     end
 
     it 'returns empty when the book has no owner even if its team has AI judges' do
-      # book_of_comedy_films belongs to another_shared_team but has no owner set
-      book = books(:book_of_comedy_films)
+      # "shared" team has judge_judy as a member - if this method looked at the
+      # book's own teams (the pre-ownership-model behavior) rather than the
+      # book's owner, it would find her here despite the book having no owner.
+      shared_team = teams(:shared)
+      book = Book.create!(name: 'Ownerless Book On A Judge Team', teams: [ shared_team ])
 
       available_judges = available_ai_judges_for_book(book)
       assert_empty available_judges
@@ -51,14 +54,17 @@ class BooksHelperTest < ActionView::TestCase
 
   describe '#available_ai_judges_for_book?' do
     it 'returns false when the book has no owner' do
-      # book_of_comedy_films has no owner set
-      book = books(:book_of_comedy_films)
-      assert_not available_ai_judges_for_book?(book)
-    end
-
-    it 'returns false when book has no owner' do
       ownerless_book = Book.create!(name: 'Ownerless Book')
       assert_not available_ai_judges_for_book?(ownerless_book)
+    end
+
+    it 'returns false when the book has no owner even if its team has AI judges' do
+      # Same regression this guards against as the #available_ai_judges_for_book
+      # test above: ownership, not the book's own team membership, must decide.
+      shared_team = teams(:shared)
+      book = Book.create!(name: 'Ownerless Book On A Judge Team', teams: [ shared_team ])
+
+      assert_not available_ai_judges_for_book?(book)
     end
 
     it 'returns true when AI judges are available' do
