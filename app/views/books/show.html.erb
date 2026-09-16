@@ -1,18 +1,5 @@
 <%= turbo_stream_from(:notifications) %>
 
-<script>
-function updateModalTitle(judgeId) {
-  const checkbox = document.getElementById(`judge_all_${judgeId}`);
-  const button = document.getElementById(`submit_${judgeId}`);
-  
-  if (checkbox.checked) {
-    button.value = "Unleash the Kraken!!";
-  } else {
-    button.value = "Judge Documents";
-  }
-}
-</script>
-
 <%= turbo_frame_tag "modal" %>
 
 <% title = capture do %>
@@ -52,7 +39,7 @@ This book consists of <%= @book.queries_count %> queries.
 <% if @book.ai_judges.present? %>
   <div class="mb-2">
     <i class="bi bi-robot"></i>
-    We have <%= "#{@book.ai_judges.count == 1 ? 'an' : 'some'} AI #{@book.ai_judges.count == 1 ? 'Judge' : 'Judges'}" %>
+    We have <%= @book.ai_judges.count == 1 ? 'an' : 'some' %> AI <%= @book.ai_judges.count == 1 ? 'Judge' : 'Judges' %>
     <i><%= @book.ai_judges.map(&:name).to_sentence %></i> helping us rate documents.
   </div>
 <% elsif available_ai_judges_for_book?(@book) %>
@@ -68,8 +55,8 @@ This book consists of <%= @book.queries_count %> queries.
 <% if @book.import_file.attached? %>
 <div class="alert alert-danger" role="alert">
   This book has an upload of data that is currently being processed and is not ready for use yet.
-  <br/>
-  
+  <br>
+
   Query Doc Pairs Loaded: <%= @book.query_doc_pairs.count %>
   <%= link_to book_path(@book) do %>
     Refresh
@@ -85,7 +72,7 @@ This book consists of <%= @book.queries_count %> queries.
 <% if @book.populate_job.present? %>
 <div class="alert alert-danger" role="alert">
   Currently populating this book with fresh data from a case.
-  <br/>
+  <br>
   Status is the book has <%= @book.query_doc_pairs.count %>  query doc pairs.
   <%= link_to book_path(@book) do %>
     <i

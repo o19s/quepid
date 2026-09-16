@@ -57,9 +57,9 @@ parts:
         paths: ["app/controllers/sessions_controller.rb", "app/views/sessions/"]
       "1.3":
         title: "OAuth login"
-        last_run: 2026-09-02
+        last_run: 2026-09-15
         result: blocked
-        notes: "Google: placeholder client id/secret in .env, expected to be unusable. Keycloak: click produces 'Could not sign user in with OAuth provider' — root cause is environment setup, not app code: keycloak/wait-for-keycloak.sh documents that the browser's host machine needs a `127.0.0.1 keycloak` /etc/hosts entry for the OAuth redirect to resolve, and this host doesn't have one. Did not add it (host-level system file change outside the repo). Devise config (config/initializers/devise.rb:324-332) looks correctly wired otherwise."
+        notes: "Re-verified via Playwright MCP after the case-insensitive-email-match commit: same environment limitation as before, not a regression. Google button present but untested (placeholder client id/secret). Keycloak click still produces 'Could not sign user in with OAuth provider' — confirmed via /etc/hosts that this host still has no `127.0.0.1 keycloak` entry. Did not add it (host-level system file change outside the repo)."
         paths: ["app/controllers/users/omniauth_callbacks_controller.rb", "config/initializers/devise.rb"]
       "1.4":
         title: "Password reset"
@@ -139,9 +139,9 @@ parts:
         paths: ["app/controllers/home_controller.rb"]
       "2.7":
         title: "Cookie consent toast"
-        last_run: 2026-09-04
+        last_run: 2026-09-15
         result: pass
-        notes: "Same environment limitation as before (no COOKIES_URL configured here), so live-browser re-check could again only confirm the toast is absent on the dashboard — consistent with the server-side gating logic, still covered by the integration test suite added 2026-09-02 (app/views/home/_consent_toast.html.erb via a with_cookies_url test helper: toast absent with no cookies_url, present with the correct Learn More href when configured and not yet consented, absent again once the cookie_eu_consented cookie is set). Client-side show/dismiss/autohide is standard Bootstrap Toast API (app/javascript/application_modern.js), already exercised elsewhere in the app. Did not re-verify the positive path live."
+        notes: "Re-verified via Playwright MCP: same environment limitation as before (no COOKIES_URL configured here), so live-browser re-check could again only confirm the toast is absent on the dashboard after logging in — consistent with the server-side gating logic, still covered by the integration test suite (app/views/home/_consent_toast.html.erb via a with_cookies_url test helper). Client-side show/dismiss/autohide is standard Bootstrap Toast API (app/javascript/application_modern.js), already exercised elsewhere in the app. Did not re-verify the positive path live."
         paths: ["app/javascript/application_modern.js", "app/views/home/_consent_toast.html.erb", "app/controllers/home_controller.rb", "test/controllers/home_controller_test.rb"]
 
   "03":
@@ -149,9 +149,9 @@ parts:
     scenarios:
       "3.1":
         title: "Cases list — browsing and filtering"
-        last_run: 2026-09-15T16:30:00Z
+        last_run: 2026-09-15T19:04:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after today's shared page-header/account-dropdown partial extraction. Partial-name filter ('Typeahead') correctly narrowed to the 3 Typeahead cases; a filter matching nothing ('zzznomatch') rendered an empty table body (no error, no false 'create your first case' message); ?archived=1 correctly pre-checked the Archived checkbox. No console errors. Note: this page has the horizontal-overflow bug at 768px width documented under 16.2 — not re-verified at default viewport width here. Pagination and multi-account isolation not tested this pass."
+        notes: "Re-verified via Playwright MCP. Partial-name filter ('Typeahead') correctly narrowed to the 3 Typeahead cases; exact-ID filter ('6789') matched the single case by ID; Team dropdown ('OSC') correctly narrowed to only that team's cases; Archived checkbox auto-submitted and toggled the list correctly (see 3.5 for the archive/unarchive round trip exercised in the same pass). No console errors. Filter-matches-nothing, pagination, and multi-account isolation not tested this pass."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
       "3.2":
         title: "Create a new case (setup wizard)"
@@ -173,9 +173,9 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "test/javascript/controllers/import_snapshot_controller.test.js"]
       "3.5":
         title: "Archive / unarchive a case from the list"
-        last_run: 2026-09-15T16:01:00Z
+        last_run: 2026-09-15T19:04:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the confirm-delete modal leak fix (ca1ff16b: confirm_delete_controller now uses getOrCreateBsModal instead of createBsModal). Opened and cancelled the Archive confirmation for 'Typeahead: Meats' 3 times in a row, then checked the DOM directly (document.querySelectorAll('.modal-backdrop').length) — only 1 backdrop present, confirming the leak is fixed (previously each open would have created a new Bootstrap Modal instance). Then confirmed the archive (flash 'Case #Typeahead: Meats archived.', removed from active list), found it under the Archived filter, and unarchived it (flash 'Case #Typeahead: Meats unarchived.', restored to active list). No console errors/warnings throughout. Ownership-transfer-on-archive and the two-tabs-race edge case not tested."
+        notes: "Re-verified via Playwright MCP. Archived a disposable test case ('Manual Test Zero Score Sparkline', id 6820) via the row's Archive icon — confirm modal appeared, confirmed, flash 'Case #Manual Test Zero Score Sparkline archived.', removed from active list. Found it under the Archived checkbox filter, unarchived via the row's icon — separate confirm modal, confirmed, flash 'Case #Manual Test Zero Score Sparkline unarchived.', restored to active list in its original state. No console errors throughout. Ownership-transfer-on-archive and the two-tabs-race edge case not tested."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
       "3.6":
         title: "Share a case from the list"
@@ -347,9 +347,9 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
       "6.5":
         title: "Share a case (in-case toolbar)"
-        last_run: 2026-09-15T18:50:00Z
+        last_run: 2026-09-15T19:06:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after share_case_core_controller.js was refactored to bind its share/unshare forms via Stimulus data-action (submit->share-case-core#submitShare / #submitUnshare) instead of manually-attached addEventListener submit handlers, and after the unshare response handling was tightened (dropped the redundant `response.status !== 204` check now that !response.ok already covers it). On case 6 (Typeahead: Dairy, previously unshared) toolbar: opened Share, selected OSC, submitted — flash 'Case shared with team successfully.', OSC moved to the 'Already shared with:' section. Selected OSC there, clicked 'Unshare from OSC' — flash 'Case unshared from team successfully.', OSC returned to the shareable list. Closed the modal cleanly. No console errors/warnings. This completes the round trip not covered in the prior pass (2026-09-15T15:34:13Z), which only checked the 'Create a team' link fix. Did not re-test that link fix or the empty-state case this pass."
+        notes: "Re-verified via Playwright MCP. On case 4 (STATIC CASE, workbench toolbar's Share case icon): opened the modal, shared with 'Manual Test Team Renamed 20260915' — flash 'Case shared with team successfully.', team moved into 'Already shared with:'. Selected it there, clicked 'Unshare from...' — flash 'Case unshared from team successfully.', case returned to its unshared starting state. No console errors. Did not re-test the 'Create a team' shortcut's navigation-without-losing-context edge case this pass."
         paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
@@ -377,9 +377,9 @@ parts:
         paths: ["app/assets/javascripts/", "app/assets/javascripts/components/frog_report/frog_report_modal_instance_controller.js"]
       "6.10":
         title: "Unarchive case (from a list's Archived filter)"
-        last_run: 2026-09-15T16:30:00Z
+        last_run: 2026-09-15T19:05:00Z
         result: pass
-        notes: "Re-verified via 3.5 this pass (same underlying icon-button + confirm-modal mechanism, confirm_delete_controller.js/bs_modal.js, leak-fix ca1ff16b). Doc corrected in this pass: 06-core-workbench-import-export-and-explain-tools.md's scenario 6.10 previously described a nonexistent 'Unarchive case' modal with an 'Add Back {case name}' button (flagged but not fixed in the prior two passes) — updated the title and steps to describe the real UI (Archived-filter checkbox + per-row unarchive icon + confirm dialog, on /cases or a team's case list)."
+        notes: "Re-verified directly (not just via 3.5's cross-reference) via Playwright MCP: checked the Archived filter on /cases, found the just-archived test case, clicked its per-row unarchive icon — separate confirm dialog ('Unarchive {name}?'), confirmed, flash '{name} unarchived.', case restored to the active list. No console errors."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb"]
 
   "07":
@@ -527,9 +527,9 @@ parts:
         paths: ["app/controllers/teams_controller.rb"]
       "9.5":
         title: "Sharing a Case/Book/Search Endpoint/Scorer with a team"
-        last_run: 2026-09-15T17:00:00Z
+        last_run: 2026-09-15T19:16:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP this pass across all four entity types (each done independently as part of its own scenario): Case share/unshare round trip (3.6, 6.5), Search Endpoint share/unshare round trip (7.6), Scorer share (8.7). Book sharing not independently re-tested this pass — see prior 2026-09-04 note for its last full verification."
+        notes: "Re-verified via Playwright MCP across all four entity types from their own index pages (the /cases-index entry point specifically, plus 6.5 for the in-case-toolbar entry point): Case (share + already-shared-with + unshare, SOLR CASE with Manual Test Team), Book (Book of Ratings with Manual Test Team, including the 'No other teams to share with' disabled-dropdown state once fully shared), Search Endpoint (Edinburgh University Website with Manual Test Team), Scorer (a disposable Playwright-fixture scorer with OSC). Confirmed the doc's noted uncertainty: Scorers DO have a working Unshare control (not share-only as previously flagged) — share and unshare both round-tripped correctly with success alerts. Note: mid-pass, an external/concurrent process (not this session) deleted the 'Manual Test Team Renamed 20260915' team while a share modal was open, causing one unshare attempt to correctly surface 'Team not found.' rather than crash — confirmed via server logs this was not caused by any action in this session. Did not re-test the 'You do not have access to that X' access-denial edge case or the Team-page entry point specifically this pass."
         paths: ["app/views/shared/_share_case_modal.html.erb", "app/views/shared/_share_book_modal.html.erb", "app/views/shared/_share_search_endpoint_modal.html.erb", "app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_book_controller.js", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb", "app/views/books/_book.html.erb", "app/views/teams/_books.html.erb", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
       "9.6":
         title: "Archive/unarchive a Case or Search Endpoint from the team page"
@@ -701,9 +701,9 @@ parts:
         paths: ["app/controllers/ai_judges/prompts_controller.rb"]
       "12.5":
         title: "Trigger a judging run (Judge Judy)"
-        last_run: 2026-09-09T21:46:42Z
-        result: pass
-        notes: "Ran a bounded 10-pair job against local Ollama (2026-09-02); all 10 correctly marked unrateable because the book's 0/1 scale didn't match the default 0-3 system prompt — confirmed this is the recently-added out-of-scale hardening working as intended, not a bug. 'Judge All Pairs' / Unleash the Kraken not tested. Partial branch-ui-diff sweep 2026-09-09: did NOT click 'Judge Documents' on either main or this branch (unbounded local-LLM job duration, couldn't guarantee it'd finish before the DB-restore boundary) — compared only the pre-trigger leaderboard/modal (default + 'Judge All Pairs' checked), identical on both, including a pre-existing JS bug (`updateModalTitle is not defined`) that stops the button label switching to 'Unleash the Kraken!!', reproduced on both so not a regression. The actual trigger/run behavior itself has not been compared old-vs-new."
+        last_run: 2026-09-15T19:24:00Z
+        result: pass_with_fixes
+        notes: "Ran a bounded run (default 10) against local Ollama (qwen3:0.6b) for OSC AI Judge on Book of Ratings (id 1, 222 pairs, 0/1 scale) via Playwright MCP from Judgement Stats — flash 'AI Judge OSC AI Judge will start evaluating query/doc pairs.', judged 8-10 pairs (settled at 10 once the async job caught up), Judging Stats table updated accordingly. FOUND AND FIXED the `updateModalTitle is not defined` bug previously flagged on 2026-09-09 as 'pre-existing, not a regression': the inline `<script>` defining it lived only in books/show.html.erb, which never actually renders this modal — the modal is only ever rendered from judgement_stats.html.erb (confirmed via grep), so the checkbox's onchange always threw. Replaced with a `judge-documents-modal` Stimulus controller (app/javascript/controllers/judge_documents_modal_controller.js) wired via data-action/data-target instead of a global function, and deleted the dead script from show.html.erb. Re-verified after the fix: checking 'Judge All Pairs' now correctly flips the button to 'Unleash the Kraken!!' (and back) with zero console errors. Triggered the full 'Judge All Pairs' run afterward — confirmed live Turbo/ActionCable progress notifications ('Query/Doc Pairs So Far: N, Processing query X') updating correctly over several minutes, judged count climbing steadily (10 to 119+) with no errors, and the book Overview's guidance banner correctly progressing from 'Critical: Unjudged Pairs Need Attention' to 'Finishing Up Judgements'. Did NOT wait for the ~200-pair run to fully finish (~15+ more minutes against a local LLM) to see the final kraken celebratory modal — left the job running in the background; the steady, error-free progress across 100+ processed pairs is strong evidence it completes correctly. unrateable/zero-pairs-left/gating-once-nothing-left-to-judge edge cases not re-tested this pass."
         paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/services/llm_service.rb"]
 
   "13":
