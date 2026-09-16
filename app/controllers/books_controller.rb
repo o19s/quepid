@@ -38,7 +38,14 @@ class BooksController < ApplicationController
 
     if params[:q].present?
       q = "%#{params[:q].to_s.downcase}%"
-      query = query.where('LOWER(books.name) LIKE ? OR LOWER(teams.name) LIKE ?', q, q)
+
+      # `includes([:teams])` alone won't JOIN teams for a raw SQL condition (only a
+      # hash condition like `where(teams: {...})` makes Rails switch to eager_load),
+      # so match on ids first - same pattern as ForUserScope and CasesController#index.
+      matching_ids = Book.left_joins(:teams)
+        .where('LOWER(books.name) LIKE ? OR LOWER(teams.name) LIKE ?', q, q)
+        .reselect(:id).distinct
+      query = query.where(id: matching_ids)
     end
 
     @pagy, @books = pagy(query)
