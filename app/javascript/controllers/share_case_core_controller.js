@@ -235,12 +235,16 @@ export default class extends ModalTriggerControllerBase {
     }
   }
 
-  applyShareableAndSharedUi(shareableTeams, sharedTeams) {
+  applyShareableAndSharedUi(shareableTeams, sharedTeams, allTeams) {
     const hasShareable = shareableTeams.length > 0
     const hasShared = sharedTeams.length > 0
+    const hasNoTeams = allTeams.length === 0
 
     if (this.hasEmptyShareableTarget) {
-      this.emptyShareableTarget.classList.toggle("d-none", hasShareable)
+      // A team that already has this case is not shareable again, but it
+      // still means the user has a team. Reserve this empty state for users
+      // with no teams at all.
+      this.emptyShareableTarget.classList.toggle("d-none", !hasNoTeams)
     }
     if (this.hasSharePickerTarget) {
       this.sharePickerTarget.classList.toggle("d-none", !hasShareable)
@@ -257,7 +261,7 @@ export default class extends ModalTriggerControllerBase {
     const shareableTeams = unsharedTeams(allTeams, sharedTeams)
 
     this.renderShareableTeams(shareableTeams)
-    this.applyShareableAndSharedUi(shareableTeams, sharedTeams)
+    this.applyShareableAndSharedUi(shareableTeams, sharedTeams, allTeams)
   }
 
   async loadTeamsFromApi(caseId) {
