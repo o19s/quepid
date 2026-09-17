@@ -56,6 +56,15 @@ class ProfilesControllerTest < ActionController::TestCase
           end
         end
       end
+
+      test 'a validation failure re-renders show with only the profile section showing its errors' do
+        patch :update, params: { user: { email: 'not-an-email' } }
+
+        assert_response :unprocessable_content
+        assert_select '#error_explanation_profile'
+        assert_select '#error_explanation_account_security', count: 0
+        assert_select '#error_explanation_danger_zone', count: 0
+      end
     end
   end
 end

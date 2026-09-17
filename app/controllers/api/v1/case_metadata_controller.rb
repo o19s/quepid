@@ -4,7 +4,6 @@ module Api
   module V1
     class CaseMetadataController < Api::ApiController
       before_action :set_case
-      before_action :check_case
 
       def update
         @metadatum = @case.metadata.find_or_create_by user_id: current_user.id

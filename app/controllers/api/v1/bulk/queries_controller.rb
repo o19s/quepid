@@ -6,7 +6,6 @@ module Api
       # @tags cases > queries
       class QueriesController < Api::ApiController
         before_action :set_case
-        before_action :check_case
 
         # @summary Bulk create queries
         # @request_body Query to be created

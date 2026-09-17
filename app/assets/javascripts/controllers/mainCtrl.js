@@ -78,7 +78,7 @@ angular.module('QuepidApp')
 
             settingsSvc.setCurrentTry(tryNo);
             if (!settingsSvc.isTrySelected()){
-              flash.to('search-error').error = 'The try that was specified for the case does not actually exist!';
+              throw new Error('try number ' + tryNo + ' not existing');
             }
             else {
               if (settingsSvc.editableSettings().proxyRequests === true){
@@ -174,6 +174,9 @@ angular.module('QuepidApp')
             }
             else if (message.startsWith('Could not retrieve case')){
               flash.to('search-error').error = message;
+            }
+            else if (message.startsWith('try number ')){
+              flash.to('search-error').error = 'Could not load case ' + caseNo + ' due to ' + message;
             }
             else {
               flash.to('search-error').error = 'Could not load the case ' + caseNo + ' due to: ' + message;

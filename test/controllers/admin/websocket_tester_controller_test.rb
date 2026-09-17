@@ -26,6 +26,7 @@ module Admin
 
       get admin_websocket_tester_index_url
       assert_redirected_to root_path
+      assert_equal 'You must be a Quepid Administrator.', flash[:notice]
     end
   end
 end

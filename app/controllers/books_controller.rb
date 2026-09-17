@@ -8,10 +8,6 @@ class BooksController < ApplicationController
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
                         :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :judgement_stats, :export, :archive, :unarchive ]
-  before_action :check_book,
-                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
-                        :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :judgement_stats, :export, :archive, :unarchive ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -38,7 +34,14 @@ class BooksController < ApplicationController
 
     if params[:q].present?
       q = "%#{params[:q].to_s.downcase}%"
-      query = query.where('LOWER(books.name) LIKE ? OR LOWER(teams.name) LIKE ?', q, q)
+
+      # `includes([:teams])` alone won't JOIN teams for a raw SQL condition (only a
+      # hash condition like `where(teams: {...})` makes Rails switch to eager_load),
+      # so match on ids first - same pattern as ForUserScope and CasesController#index.
+      matching_ids = Book.left_joins(:teams)
+        .where('LOWER(books.name) LIKE ? OR LOWER(teams.name) LIKE ?', q, q)
+        .reselect(:id).distinct
+      query = query.where(id: matching_ids)
     end
 
     @pagy, @books = pagy(query)
@@ -176,6 +179,7 @@ class BooksController < ApplicationController
 
       redirect_to @book, notice: 'Book was successfully created.'
     else
+      @ai_judges = []
       render :new
     end
   end
@@ -451,6 +455,13 @@ class BooksController < ApplicationController
   # This set_book is different because we use :id, not :book_id.
   def set_book
     @book = current_user.books_involved_with.where(id: params[:id]).first
+
+    unless @book
+      redirect_to books_path,
+                  alert: "Could not retrieve book #{params[:id]}. Confirm that the book has been shared with you via a team you are a member of!"
+      return
+    end
+
     TrackBookViewedJob.perform_later current_user, @book
   end
 

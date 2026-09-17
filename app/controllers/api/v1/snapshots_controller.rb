@@ -8,9 +8,7 @@ module Api
       include ActionView::Helpers::NumberHelper
 
       before_action :set_case
-      before_action :check_case
-      before_action :set_snapshot,    only: [ :show, :destroy ]
-      before_action :check_snapshot,  only: [ :show, :destroy ]
+      before_action :set_snapshot, only: [ :show, :destroy ]
 
       # Special handling for cases that are "public", and therefore it's snapshots
       def authenticate_api!
@@ -73,16 +71,10 @@ module Api
 
       def set_snapshot
         @snapshot = if 'latest' == params[:id]
-                      @case.snapshots.order(created_at: :desc).first
+                      @case.snapshots.order(created_at: :desc).first!
                     else
-                      @case.snapshots
-                        .where(id: params[:id])
-                        .first
+                      @case.snapshots.find(params.expect(:id))
                     end
-      end
-
-      def check_snapshot
-        render json: { error: 'Not Found!' }, status: :not_found unless @snapshot
       end
 
       def snapshot_params

@@ -19,7 +19,7 @@ class AccountsController < ApplicationController
     respond_to do |format|
       format.html do
         if error
-          render 'profiles/show'
+          render 'profiles/show', status: :unprocessable_content, locals: { active_error_section: :account_security }
         else
           redirect_to profile_path
         end
@@ -40,7 +40,9 @@ class AccountsController < ApplicationController
         format.html { redirect_to sessions_path, notice: 'Account was deleted' }
         format.json { head :no_content }
       else
-        format.html { render 'profiles/show' }
+        format.html do
+          render 'profiles/show', status: :unprocessable_content, locals: { active_error_section: :danger_zone }
+        end
         format.json { render json: @user.errors, status: :unprocessable_content }
       end
     end

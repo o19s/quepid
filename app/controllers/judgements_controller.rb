@@ -4,7 +4,6 @@ class JudgementsController < ApplicationController
   include Pagy::Method
 
   before_action :set_book
-  before_action :check_book
   before_action :set_judgement, only: [ :show, :edit, :update, :destroy ]
 
   def index

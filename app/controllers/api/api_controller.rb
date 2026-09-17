@@ -14,6 +14,11 @@ module Api
     include ApiKeyAuthenticatable
 
     respond_to :json
+
+    rescue_from ActiveRecord::RecordNotFound do |exception|
+      resource_name = exception.model.presence || 'Resource'
+      render json: { message: "#{resource_name.underscore.humanize} not found!" }, status: :not_found
+    end
     protect_from_forgery with: :null_session
 
     prepend_before_action :set_current_user

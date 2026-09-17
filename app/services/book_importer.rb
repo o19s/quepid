@@ -5,6 +5,24 @@ require 'progress_indicator'
 class BookImporter
   # include ProgressIndicator
 
+  # The uploaded file says which judge and which query/doc pair a judgement belongs to. It does
+  # not get to *change* them: we look these keys up, then drop them, so a handcrafted file can't
+  # attach its judgement to someone else's pair or overwrite one that already exists. Timestamps
+  # are excluded too - assign_attributes happily overwrites created_at/updated_at, and Rails only
+  # backfills them when blank, so a crafted file could otherwise forge a judgement's history.
+  UNASSIGNABLE_JUDGEMENT_KEYS = [
+    :user_email, :email, :user_id, :id, :judgement_id, :query_doc_pair, :query_doc_pair_id,
+    :created_at, :updated_at
+  ].freeze
+
+  # Same idea, one level up: a pair says which book it's in. Without this, a crafted `book_id`
+  # (or `id`) on a pair would move it - and every judgement on it - into a book the uploader
+  # doesn't own. See docs/todo/todo.md for why this is a stopgap, not the real fix. Timestamps
+  # are excluded for the same forgery reason as UNASSIGNABLE_JUDGEMENT_KEYS above.
+  UNASSIGNABLE_QUERY_DOC_PAIR_KEYS = [
+    :id, :book_id, :judgements, :query_doc_pair_id, :created_at, :updated_at
+  ].freeze
+
   attr_reader :logger, :options
 
   def initialize book, current_user, data_to_process, opts = {}
@@ -25,42 +43,54 @@ class BookImporter
   def validate
     params_to_use = @data_to_process
 
-    @book.scale = params_to_use[:scale]
+    @book.scale = params_to_use[:scale] if params_to_use.key?(:scale)
     @book.scale_with_labels = params_to_use[:scale_with_labels] if params_to_use[:scale_with_labels].present?
 
-    if params_to_use[:query_doc_pairs]
-      list_of_emails_of_users = []
-      params_to_use[:query_doc_pairs].each do |query_doc_pair|
-        next unless query_doc_pair[:judgements]
-
-        query_doc_pair[:judgements].each do |judgement|
-          list_of_emails_of_users << judgement[:user_email] if judgement[:user_email].present?
-        end
-      end
-      list_of_emails_of_users.uniq!
-      list_of_emails_of_users.each do |email|
-        unless User.by_email(email).exists?
-          if true == options[:force_create_users]
-            User.invite!({ email: email, password: '', skip_invitation: true }, @current_user)
-          else
-            @book.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")
-          end
+    emails_of_judges(params_to_use).each do |email|
+      unless User.by_email(email).exists?
+        if true == options[:force_create_users]
+          User.invite!({ email: email, password: '', skip_invitation: true }, @current_user)
+        else
+          @book.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")
         end
       end
     end
   end
 
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
+  # Returns true on success, so Api::V1::Import::BooksController#create's `if book_importer.import`
+  # check doesn't depend on which of the branches below happened to run last (some callers - e.g.
+  # a payload with only query_doc_pairs and no all_judgements - would otherwise see a falsy nil).
+  # rubocop:disable-next Naming/PredicateMethod
   def import
     params_to_use = @data_to_process
 
-    # passed first set of validations.
-    @book.name = params_to_use[:name]
-    @book.show_rank = params_to_use[:show_rank]
-    @book.support_implicit_judgements = params_to_use[:support_implicit_judgements]
+    apply_top_level_attributes(params_to_use)
+    apply_scale(params_to_use)
 
-    # Set scale information (already set in validate, but ensure it's persisted)
+    # A book nobody owns gets claimed by whoever is importing, so it can't get lost - including
+    # an old book whose owner was deleted.
+    @book.owner ||= User.by_email(@current_user.email).first
+
+    @book.save
+
+    import_query_doc_pairs(params_to_use[:query_doc_pairs]) if params_to_use[:query_doc_pairs]
+    import_all_judgements(params_to_use[:all_judgements]) if params_to_use[:all_judgements]
+
+    true
+  end
+
+  private
+
+  def apply_top_level_attributes params_to_use
+    @book.name = params_to_use[:name] if params_to_use.key?(:name)
+    @book.show_rank = params_to_use[:show_rank] if params_to_use.key?(:show_rank)
+    return unless params_to_use.key?(:support_implicit_judgements)
+
+    @book.support_implicit_judgements = params_to_use[:support_implicit_judgements]
+  end
+
+  # Set scale information (already set in #validate, but ensure it's persisted)
+  def apply_scale params_to_use
     if params_to_use[:scorer]
       scorer_data = params_to_use[:scorer]
       @book.scale = scorer_data[:scale] if scorer_data[:scale].present?
@@ -69,39 +99,117 @@ class BookImporter
       @book.scale = params_to_use[:scale]
       @book.scale_with_labels = params_to_use[:scale_with_labels] if params_to_use[:scale_with_labels].present?
     end
+  end
 
-    # Force the imported book to be owned by the user doing the importing.  Otherwise you can loose the book!
-    @book.owner = User.find_by(email: @current_user.email)
+  def emails_of_judges params_to_use
+    emails = []
 
-    @book.save
-
-    if params_to_use[:query_doc_pairs]
-      total = params_to_use[:query_doc_pairs].size
-      counter = total
-      last_percent = 0
-      params_to_use[:query_doc_pairs].each do |query_doc_pair|
-        qdp = @book.query_doc_pairs.create(query_doc_pair.except(:judgements))
-        counter -= 1
-        # emit a message every percent that we cross, from 0 to 100...
-        percent = (((total - counter).to_f / total) * 100).truncate
-        if percent > last_percent
-          last_percent = percent
-          Turbo::StreamsChannel.broadcast_render_to(
-            :notifications,
-            target:  'notifications',
-            partial: 'books/blah',
-            locals:  { book: @book, counter: counter, percent: percent, qdp: qdp }
-          )
-        end
-        next unless query_doc_pair[:judgements]
-
-        query_doc_pair[:judgements].each do |judgement|
-          judgement[:user] = User.by_email(judgement[:user_email]).first
-          qdp.judgements.create(judgement.except(:user_email))
-        end
+    params_to_use[:query_doc_pairs]&.each do |query_doc_pair|
+      query_doc_pair[:judgements]&.each do |judgement|
+        emails << judgement[:user_email] if judgement[:user_email].present?
       end
     end
+
+    params_to_use[:all_judgements]&.each do |judgement|
+      email = judgement[:user_email] || judgement[:email]
+      emails << email if email.present?
+    end
+
+    emails.uniq
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
+
+  def import_query_doc_pairs query_doc_pairs
+    total = query_doc_pairs.size
+    counter = total
+    last_percent = 0
+
+    query_doc_pairs.each do |query_doc_pair|
+      qdp = find_or_initialize_query_doc_pair(query_doc_pair)
+      qdp.assign_attributes(query_doc_pair.except(*UNASSIGNABLE_QUERY_DOC_PAIR_KEYS))
+      qdp.save
+
+      counter -= 1
+      last_percent = broadcast_progress(total, counter, last_percent, qdp)
+
+      next unless query_doc_pair[:judgements]
+
+      query_doc_pair[:judgements].each { |judgement| import_judgement(qdp, judgement) }
+    end
+  end
+
+  # Emits a notifications broadcast every percent of `total` crossed, from 0 to 100,
+  # and returns the (possibly updated) last_percent for the caller to carry forward.
+  def broadcast_progress total, counter, last_percent, qdp
+    percent = (((total - counter).to_f / total) * 100).truncate
+    return last_percent unless percent > last_percent
+
+    Turbo::StreamsChannel.broadcast_render_to(
+      :notifications,
+      target:  'notifications',
+      partial: 'books/blah',
+      locals:  { book: @book, counter: counter, percent: percent, qdp: qdp }
+    )
+    percent
+  end
+
+  def import_all_judgements judgements
+    judgements.each do |judgement|
+      qdp = if judgement[:query_doc_pair].present?
+              upsert_nested_query_doc_pair(judgement[:query_doc_pair])
+            else
+              find_query_doc_pair(judgement)
+            end
+
+      next unless qdp
+
+      import_judgement(qdp, judgement)
+    end
+  end
+
+  def upsert_nested_query_doc_pair attrs
+    qdp = find_or_initialize_query_doc_pair(attrs)
+    qdp.assign_attributes(attrs.except(*UNASSIGNABLE_QUERY_DOC_PAIR_KEYS))
+    qdp.save
+    qdp
+  end
+
+  def find_query_doc_pair attrs
+    return nil if attrs[:query_doc_pair_id].blank?
+
+    @book.query_doc_pairs.find_by(id: attrs[:query_doc_pair_id])
+  end
+
+  def find_or_initialize_query_doc_pair attrs
+    if attrs[:query_doc_pair_id].present?
+      existing = @book.query_doc_pairs.find_by(id: attrs[:query_doc_pair_id])
+      return existing if existing
+    end
+
+    # No id given, or it doesn't belong to this book (e.g. a stale/foreign id) - fall back to
+    # matching by query_text/doc_id rather than forcing that id onto a new record, which would
+    # collide with an unrelated row's primary key.
+    @book.query_doc_pairs.find_or_initialize_by(query_text: attrs[:query_text], doc_id: attrs[:doc_id])
+  end
+
+  def import_judgement query_doc_pair, attrs
+    user = find_judgement_user(attrs)
+
+    # A pair can hold several judgements from "nobody", so don't look one up by "the judgement
+    # with no judge" - that merges them all into a single row and loses ratings. The cost of
+    # always building instead: importing the same file twice creates duplicates, and once a pair
+    # has 3+ judgements its rating is calculated differently. See docs/todo/todo.md.
+    judgement = user ? query_doc_pair.judgements.find_or_initialize_by(user: user) : query_doc_pair.judgements.build
+    judgement.assign_attributes(attrs.except(*UNASSIGNABLE_JUDGEMENT_KEYS))
+    judgement.save
+  end
+
+  # Only search by email when we actually have one: AI judges have no email, so searching for a
+  # blank email would hand the judgement to a random AI judge.
+  def find_judgement_user attrs
+    by_id = User.find_by(id: attrs[:user_id]) if attrs[:user_id].present?
+    return by_id if by_id
+
+    email = attrs[:user_email].presence || attrs[:email].presence
+    User.by_email(email).first if email
+  end
 end

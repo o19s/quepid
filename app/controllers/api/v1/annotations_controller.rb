@@ -4,7 +4,6 @@ module Api
   module V1
     class AnnotationsController < Api::ApiController
       before_action :set_case
-      before_action :check_case
       before_action :set_annotation, only: [ :update, :destroy ]
 
       def index
@@ -52,9 +51,7 @@ module Api
       private
 
       def set_annotation
-        @annotation = @case.annotations.where(id: params[:id]).first
-
-        render json: { message: 'Annotation not found!' }, status: :not_found unless @annotation
+        @annotation = @case.annotations.find(params.expect(:id))
       end
 
       def annotation_params

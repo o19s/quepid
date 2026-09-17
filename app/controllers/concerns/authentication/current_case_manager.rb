@@ -29,6 +29,10 @@ module Authentication
               end
 
       @case = Case.public_cases.find_by(id: case_id) if @case.nil? # We didn't find a match, so let's see if it's a public case
+
+      return if @case
+
+      raise ActiveRecord::RecordNotFound.new('Case not found', 'Case', 'id', case_id)
     end
 
     def recent_cases count
@@ -49,10 +53,6 @@ module Authentication
                 []
               end
       cases
-    end
-
-    def check_case
-      render json: { message: 'Case not found!' }, status: :not_found unless @case
     end
 
     def decrypt_case_id encrypted_value
