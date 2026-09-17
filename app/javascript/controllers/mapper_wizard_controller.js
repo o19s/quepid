@@ -68,6 +68,7 @@ export default class extends Controller {
   // Step 3 directly, instead of it only ever being revealed by a successful AI generation.
   showStep3Manually(event) {
     event.preventDefault()
+    this.step2Target.style.display = "block"
     this.step3Target.style.display = "block"
     this.step3Target.scrollIntoView({ behavior: "smooth", block: "start" })
   }
