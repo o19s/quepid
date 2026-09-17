@@ -9,6 +9,7 @@
 - Do not stop (you may restart) the dev server unless the user explicitly asks. Leave it running across tasks.
 - When a correction or lesson applies to how you work in this repo, fix it in the actual project file it belongs to (this file, a skill's `SKILL.md`, a doc) — not only in your own private memory, which no other session or person can see or review.
 - Most commands you want to run you can just prefix with `bin/docker r bundle exec` so `rails console --environment=test` becomes `bin/docker r bundle exec rails console --environment=test`
+- Before reviewing a branch against main, run `git fetch origin main` and compare against `origin/main` (for example, `git diff origin/main...HEAD`). Do not use the local `main` branch as the review baseline; it may be stale.
 - After CSS or vendor JS changes make sure you rebuild:
     `bin/docker r yarn build`              # full frontend build
     `bin/docker r yarn build:css`          # core.css / application.css only
