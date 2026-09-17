@@ -90,7 +90,7 @@ class AiJudgesController < ApplicationController
 
     if @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
-      redirect_to ai_judge_path(@ai_judge)
+      redirect_to ai_judge_path(@ai_judge), notice: 'AI Judge was successfully created.'
     else
       render :new
     end

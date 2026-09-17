@@ -11,13 +11,14 @@
     </p>
   </div>
   <p>
-    Explicit Judgements created by humans and <i class="bi bi-robot"></i> LLMs are a good way to start measuring your search quality.
+    Explicit judgements created by humans and <i class="bi bi-robot"></i>AI judges (LLMs) are an effective way to start measuring your search quality.
+    Quepid organizes these judgements into <strong>Books</strong> —collections of query and document pairs evaluated by human reviewers or automated AI models.
   </p>
   <p>
-    Quepid organizes Judgements in a <strong>Book</strong> that consists of query and document pairs for human evaluation.
+    Select a Book below and configure how data syncs between your Case and Book.
   </p>
+
   <p>
-    <strong>Select a Book below</strong> and configure how data syncs between your Case and Book.
     <a href="https://quepid-docs.dev.o19s.com/2/quepid/64/thinking-about-cases-and-books-of-judgements" target="_blank" rel="noopener noreferrer">
       Learn more <i class="bi bi-box-arrow-up-right"></i>
     </a>
@@ -25,23 +26,14 @@
 
   <div class="alert alert-info text-center" role="alert" ng-show="ctrl.share.teams.length === 0 && ctrl.share.books.length === 0 && !ctrl.share.loading">
     <p>
-      You don't own any Books yet, and this case isn't shared with a team. Either create your own Book below, or
-      <a
-        ng-click="ctrl.goToTeamsPage()"
-      >create a new team</a>
-      or
-      <a
-        ng-click="ctrl.openShareCase()"
-      >share case</a> to pick from a team's Books.
+      You don't have any Books yet. Teams in Quepid let you collaborate and share Books with colleagues. You can create your own Book below, <a
+        ng-click="ctrl.goToTeamsPage()">create a new team</a> to start collaborating, or <a
+        ng-click="ctrl.openShareCase()">share this case</a> with a team to access their Books.
     </p>
 
   </div>
 
   <div class="text-center" ng-show="ctrl.share.books.length === 0 && !ctrl.share.loading">
-    <p>
-      You have not created any Books of Judgements yet, so go ahead and create a new Book!
-    </p>
-
     <a class="btn btn-primary btn-lg" ng-href="{{ctrl.createNewBookLink()}}" target="_self">
       <i class="bi bi-plus-lg"></i>
       Create a book

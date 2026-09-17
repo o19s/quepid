@@ -34,6 +34,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_equal user, new_judge.owner
     assert_empty new_judge.teams
     assert_redirected_to ai_judge_url(new_judge)
+    assert_equal 'AI Judge was successfully created.', flash[:notice]
   end
 
   test 'should create ai_judge and share it with a team in the same request' do

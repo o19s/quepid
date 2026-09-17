@@ -10,7 +10,7 @@
   </div>
   <div class="card">
     <div class="card-body">
-      <h5 class="card-title">Your Progress</h3>
+      <h5 class="card-title">Your Progress</h5>
       <h6 class="card-subtitle mb-2 text-body-secondary">Judge all the documents to chase the frogs out of the pond!</h6>
       <div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="<%= @judged_by_user %>" aria-valuemin="0" aria-valuemax="<%= @total_pool_of_judgements%>">
         <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: <%=number_to_percentage((@judged_by_user / @total_pool_of_judgements) * 100, precision: 0)%>  "></div>
@@ -20,7 +20,7 @@
   <p/>
   <div class="card">
     <div class="card-body">
-      <h5 class="card-title">Leaderboard</h3>
+      <h5 class="card-title">Leaderboard</h5>
       <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
       <%=
       Vega.lite

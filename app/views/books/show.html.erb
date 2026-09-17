@@ -47,7 +47,7 @@ This book consists of <%= @book.queries_count %> queries.
   <div class="alert alert-info mb-3" role="alert">
     <h6><i class="bi bi-robot"></i> AI Judges Available</h6>
     <p class="mb-2">
-      Your team has AI judges available that could help rate documents automatically: <strong><%= available_ai_judges.pluck(:name).to_sentence %></strong>
+      You have AI judges available that could help rate documents automatically: <strong><%= available_ai_judges.pluck(:name).to_sentence %></strong>
     </p>
     <%= link_to 'Add AI Judge to this Book', edit_book_path(@book), class: 'btn btn-sm btn-outline-primary' %>
   </div>

@@ -4,7 +4,7 @@
      data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
      data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>">
   <div class="card-header">
-    <h5 class="card-title"><i class="bi bi-robot"></i> AI Judge</h5>
+    <h5 class="mb-0"><i class="bi bi-robot"></i> AI Judge</h5>
   </div>
   <div class="card-body">
     <% if ai_judge.errors.any? %>

@@ -165,7 +165,7 @@ class BooksController < ApplicationController
     if @book.save
       assign_ai_judges @book, book_params[:ai_judge_ids], current_user
 
-      if params[:book][:link_the_case]
+      if deserialize_bool_param(params[:book][:link_the_case])
         @origin_case = current_user.cases_involved_with.where(id: params[:book][:origin_case_id]).first
         @origin_case.book = @book
         @origin_case.auto_populate_book_pairs = deserialize_bool_param(
@@ -192,7 +192,7 @@ class BooksController < ApplicationController
     team_ids_belonging_to_user = current_user.teams.pluck(:id)
     teams = @book.teams.reject { |t| team_ids_belonging_to_user.include?(t.id) }
     @book.teams.clear
-    book_params[:team_ids].each do |team_id|
+    Array(book_params[:team_ids]).each do |team_id|
       teams << Team.find(team_id)
     end
 
