@@ -4,8 +4,7 @@ module Api
   module V1
     # @tags teams > cases
     class TeamCasesController < Api::ApiController
-      before_action :set_team,    only: [ :index, :create, :destroy ]
-      before_action :check_team,  only: [ :index, :create, :destroy ]
+      before_action :set_team, only: [ :index, :create, :destroy ]
 
       def index
         @cases = @team.cases

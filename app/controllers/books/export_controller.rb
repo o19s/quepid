@@ -6,7 +6,6 @@ require 'json'
 module Books
   class ExportController < ApplicationController
     before_action :set_book
-    before_action :check_book
 
     def update
       # WARNING books/export_controller.rb and

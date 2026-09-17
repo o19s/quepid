@@ -113,11 +113,12 @@ class QueryDocPairsControllerTest < ActionDispatch::IntegrationTest
   describe 'a book this user cannot access' do
     let(:other_users_book) { books(:empty_book_2) }
 
-    test 'renders a JSON 404 instead of a book owned by someone else' do
+    test 'renders the HTML 404 page instead of a book owned by someone else' do
       get book_query_doc_pairs_url(other_users_book)
 
       assert_response :not_found
-      assert_equal 'Book not found!', response.parsed_body['message']
+      assert_match "doesn't exist (404 Not found)", response.body
+      assert_no_match 'Book not found!', response.body
     end
   end
 end

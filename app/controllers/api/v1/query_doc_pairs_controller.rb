@@ -5,9 +5,7 @@ module Api
     # @tags books > query doc pairs
     class QueryDocPairsController < Api::ApiController
       before_action :set_book
-      before_action :check_book
-      before_action :set_query_doc_pair,   only: [ :show, :update, :destroy ]
-      before_action :check_query_doc_pair, only: [ :show, :update, :destroy ]
+      before_action :set_query_doc_pair, only: [ :show, :update, :destroy ]
 
       def index
         @query_doc_pairs = @book.query_doc_pairs
@@ -119,11 +117,7 @@ module Api
       end
 
       def set_query_doc_pair
-        @query_doc_pair = @book.query_doc_pairs.where(id: params[:id]).first
-      end
-
-      def check_query_doc_pair
-        render json: { message: 'Query Doc Pair not found!' }, status: :not_found unless @query_doc_pair
+        @query_doc_pair = @book.query_doc_pairs.find(params.expect(:id))
       end
     end
   end

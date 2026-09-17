@@ -65,9 +65,9 @@ class ScorersControllerTest < ActionController::TestCase
       end
 
       test 'cannot edit communal scorer' do
-        assert_raises(ActiveRecord::RecordNotFound) do
-          get :edit, params: { id: communal_scorer.id }
-        end
+        get :edit, params: { id: communal_scorer.id }
+
+        assert_response :not_found
       end
     end
 
@@ -113,9 +113,10 @@ class ScorersControllerTest < ActionController::TestCase
       end
 
       test 'cannot update communal scorer' do
-        assert_raises(ActiveRecord::RecordNotFound) do
-          put :update, params: { id: communal_scorer.id, scorer: { name: 'Hacked Name' } }
-        end
+        put :update, params: { id: communal_scorer.id, scorer: { name: 'Hacked Name' } }
+
+        assert_response :not_found
+        assert_not_equal 'Hacked Name', communal_scorer.reload.name
       end
     end
 
@@ -176,9 +177,11 @@ class ScorersControllerTest < ActionController::TestCase
       end
 
       test 'cannot delete communal scorer' do
-        assert_raises(ActiveRecord::RecordNotFound) do
+        assert_no_difference 'Scorer.count' do
           delete :destroy, params: { id: communal_scorer.id }
         end
+
+        assert_response :not_found
       end
     end
 

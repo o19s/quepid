@@ -4,7 +4,6 @@ module Api
   module V1
     class CaseScorersController < Api::ApiController
       before_action :set_case
-      before_action :check_case
 
       def index
         @default           = @case.scorer
