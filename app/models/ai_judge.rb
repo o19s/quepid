@@ -56,9 +56,21 @@
 #  fk_rails_...  (invited_by_id => users.id)
 #
 class AiJudge < User
+  encrypts :llm_key, deterministic: false
+
+  belongs_to :owner, class_name: 'User', optional: true
+
   validates :name, presence: true
-  # Optional - LlmService skips auth headers entirely when llm_key is blank,
-  # which is correct for a local provider (e.g. Ollama) that doesn't check one.
   validates :llm_key, length: { maximum: 255 }, allow_blank: true
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true
+
+  def judge_options
+    opts = options&.dig('judge_options') || {}
+    opts.deep_symbolize_keys
+  end
+
+  def judge_options= value
+    self.options ||= {}
+    self.options = options.merge(judge_options: value)
+  end
 end

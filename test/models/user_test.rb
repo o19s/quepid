@@ -461,8 +461,8 @@ class UserTest < ActiveSupport::TestCase
       assert_not_includes AiJudge.for_user(outsider), judge
     end
 
-    it 'excludes regular (non-AI-judge) users even when owned or team-shared' do
-      human = User.create!(name: 'Human', email: 'for-user-human@example.com', password: 'password1', owner: owner)
+    it 'excludes regular (non-AI-judge) users even when team-shared' do
+      human = User.create!(name: 'Human', email: 'for-user-human@example.com', password: 'password1')
       team.members << human
       team.members << teammate
       assert_not_includes AiJudge.for_user(owner), human

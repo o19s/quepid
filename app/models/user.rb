@@ -54,9 +54,6 @@
 #  fk_rails_...  (invited_by_id => users.id)
 #
 class User < ApplicationRecord
-  # Encrypted attributes
-  encrypts :llm_key, deterministic: false
-
   # Associations
   has_many :api_keys, dependent: :destroy
 
@@ -81,8 +78,6 @@ class User < ApplicationRecord
            foreign_key: :owner_id,
            inverse_of:  :owner,
            dependent:   :destroy
-
-  belongs_to :owner, class_name: 'User', optional: true
 
   has_many :owned_ai_judges,
            class_name:  'AiJudge',
@@ -221,13 +216,6 @@ class User < ApplicationRecord
 
   # Scopes
 
-  # default_scope -> { includes(:permissions) }
-  # Legacy alias for AiJudge.all/AiJudge.where(...) - kept (rather than
-  # deleted) purely so already-shipped migrations that reference it (e.g.
-  # db/migrate/20260915163412_backfill_ai_judge_owners.rb) keep working
-  # unmodified on a brand new database. New code should use AiJudge directly.
-  scope :only_ai_judges, -> { where(type: 'AiJudge') }
-
   # A fresh install (e.g. SQLite with no seed data) has no real users - and so no
   # administrator to grant one via the admin UI or `thor user:grant_administrator`.
   # Used by promote_to_first_administrator? below to make the first real signup an
@@ -310,17 +298,6 @@ class User < ApplicationRecord
       .left_outer_joins(:announcement_viewed)
       .where('user_id != ? OR user_id IS NULL', id)
       .order(:created_at)
-  end
-
-  def judge_options
-    # ugh, why isn't this :judge_options?
-    opts = options&.dig('judge_options') || {}
-    opts.deep_symbolize_keys
-  end
-
-  def judge_options= value
-    self.options ||= {}
-    self.options = options.merge(judge_options: value)
   end
 
   private
