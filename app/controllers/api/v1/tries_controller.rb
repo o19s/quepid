@@ -17,6 +17,8 @@ module Api
         respond_with @try
       end
 
+      # @summary Preview the request arguments for a try
+      #
       # Parses query_params into the args a search would use, WITHOUT persisting anything —
       # lets the frontend preview a one-off/ad-hoc query (e.g. the "Find and Rate Missing
       # Documents" modal) using the try's real search_engine + curator vars, without creating
