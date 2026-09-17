@@ -66,7 +66,7 @@ class PopulateBookJob < ApplicationJob
 
         # don't overload the database with updates when nothing changed
         if query_doc_pair.changed?
-          # Rails.logger.info "Changes detected for QueryDocPair ##{query_doc_pair.id} (#{query_doc_pair.query_text}/#{query_doc_pair.doc_id}):"
+          # Rails.logger.info "Changes detected for QueryDocPair #{query_doc_pair.id} (#{query_doc_pair.query_text}/#{query_doc_pair.doc_id}):"
           # Rails.logger.info "  Changed attributes: #{query_doc_pair.changed.join(', ')}"
 
           # # Show detailed changes with before/after values

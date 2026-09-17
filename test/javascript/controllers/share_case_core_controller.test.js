@@ -116,6 +116,25 @@ describe("ShareCaseCoreController — modal list UI", () => {
     expect(controller.submitButtonTarget.classList.contains("d-none")).toBe(true)
   })
 
+  it("hides the no-teams prompt when every team already shares the case", () => {
+    const controller = buildController()
+    const teams = [{ id: 1, name: "OSC" }]
+
+    controller.applyTeamLists(teams, teams)
+
+    expect(controller.emptyShareableTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.sharePickerTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.sharedSectionTarget.classList.contains("d-none")).toBe(false)
+  })
+
+  it("shows the no-teams prompt only when the user has no teams", () => {
+    const controller = buildController()
+
+    controller.applyTeamLists([], [])
+
+    expect(controller.emptyShareableTarget.classList.contains("d-none")).toBe(false)
+  })
+
   it("selectTeam marks a share action", () => {
     const controller = buildController()
     controller.applyTeamLists(
