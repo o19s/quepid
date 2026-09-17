@@ -142,7 +142,7 @@ module Books
     end
 
     def set_book
-      @book = current_user.books_involved_with.where(id: params[:id]).first
+      @book = current_user.books_involved_with.find(params.expect(:id))
       TrackBookViewedJob.perform_later current_user, @book
     end
 
