@@ -21,6 +21,28 @@ module ApplicationHelper
     book.name.sub(/^book\s+/i, '').titleize
   end
 
+  # Renders the shared page-header bar: an <h1> title plus an optional right-aligned
+  # actions block (buttons, toolbar, stats -- whatever the page needs).
+  def page_header title, &block
+    render 'shared/page_header', title: title, actions: (block ? capture(&block) : nil)
+  end
+
+  # Divider <li> for the shared account-dropdown menu (shared/_account_dropdown).
+  # :hr is a standard Bootstrap divider (plain Rails nav). :separator is an
+  # empty role="separator" <li> that core's header-scoped CSS
+  # (core-additions.css `header .dropdown-menu > li`) turns into a divider via
+  # its border-bottom -- the two surfaces can't share one divider style.
+  def account_dropdown_divider style
+    case style
+    when :hr
+      content_tag(:li, tag.hr(class: 'dropdown-divider'))
+    when :separator
+      content_tag(:li, '', role: 'separator')
+    else
+      raise ArgumentError, "unknown account dropdown divider style: #{style.inspect}"
+    end
+  end
+
   def case_title kase
     if kase.case_name.downcase.starts_with?('case')
       kase.case_name.titleize
@@ -56,10 +78,14 @@ module ApplicationHelper
     button_to(name, options, html_options) if condition
   end
 
+  # Flash keys that are structural flags consumed by a dedicated partial/controller,
+  # not user-facing messages, so the generic flash banner must not render them.
+  NON_DISPLAYABLE_FLASH_KEYS = %w[unfurl kraken_unleashed].freeze
+
   # rubocop:disable-next Lint/EmptyBlock
   def flash_messages _opts = {}
     flash.each do |msg_type, message|
-      next if 'unfurl' == msg_type # we don't show unfurl's in the flash notice UI.
+      next if NON_DISPLAYABLE_FLASH_KEYS.include?(msg_type.to_s)
 
       concat(
         content_tag(

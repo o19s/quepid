@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
+import { showStatusMessage } from "utils/status_message"
 
 export default class extends Controller {
   static targets = [
@@ -61,6 +62,14 @@ export default class extends Controller {
       this.step3Target.style.display = "block"
       this.showStatus("Existing mappers loaded. Fetch HTML to test them, or edit and save directly.", "info")
     }
+  }
+
+  // Lets a user without an OpenAI key (or who just prefers to write the mapper by hand) reach
+  // Step 3 directly, instead of it only ever being revealed by a successful AI generation.
+  showStep3Manually(event) {
+    event.preventDefault()
+    this.step3Target.style.display = "block"
+    this.step3Target.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
   captureEditors() {
@@ -516,21 +525,16 @@ export default class extends Controller {
 
   // Helper methods
   showStatus(message, type) {
-    if (this.hasStatusTarget) {
-      const alertVariant = { error: "danger", success: "success", warning: "warning" }[type] || "info"
-      this.statusTarget.textContent = message
-      this.statusTarget.className = `alert alert-${alertVariant}`
-      this.statusTarget.style.display = "block"
+    if (!this.hasStatusTarget) return
 
+    this.statusTarget.style.display = "block"
+    showStatusMessage(this.statusTarget, {
+      message,
+      className: `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'}`,
       // Auto-hide success messages after 5 seconds
-      if (type === 'success') {
-        setTimeout(() => {
-          if (this.statusTarget.textContent === message) {
-            this.statusTarget.style.display = "none"
-          }
-        }, 5000)
-      }
-    }
+      autoHideMs: type === 'success' ? 5000 : undefined,
+      onExpire: (el) => { el.style.display = "none" }
+    })
   }
 
   setButtonLoading(button, loading) {

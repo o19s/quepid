@@ -7,18 +7,20 @@
 - To start Quepid use:
     `bin/docker s`
 - Do not stop (you may restart) the dev server unless the user explicitly asks. Leave it running across tasks.
+- When a correction or lesson applies to how you work in this repo, fix it in the actual project file it belongs to (this file, a skill's `SKILL.md`, a doc) — not only in your own private memory, which no other session or person can see or review.
 - Most commands you want to run you can just prefix with `bin/docker r bundle exec` so `rails console --environment=test` becomes `bin/docker r bundle exec rails console --environment=test`
 - After CSS or vendor JS changes make sure you rebuild:
     `bin/docker r yarn build`              # full frontend build
     `bin/docker r yarn build:css`          # core.css / application.css only
     `bin/docker r yarn build:angular-vendor`  # BS5 + splainer-search bundle
+- In general, prefer using a single agent and not spawning sub-agents unless it will make a big difference. Even then, ask before spawning.
 
 
 ## Frontend
 
 - The core case app is built using AngularJS 1.8 but we are in the process of removing our AngularJS dependency.
 - In place of AngularJS we are using vanilla JS and StimulusJS along with various components of Hotwire, our goal is to have a modern Rails stack application.
-- **Angular → Stimulus on core:** per-surface equivalence — core matches Angular; Rails pages keep their prior UX. Do not collapse surfaces. See `docs/todo/angularjs_removal_inventory.md` for the migration playbook and per-surface checklist.
+- **Angular → Stimulus on core:** per-surface equivalence — core matches Angular; Rails pages keep their prior UX. **Do not collapse surfaces.** Playbook: `angular-case-migration` skill (`.claude/skills/angular-case-migration/SKILL.md`).
 
 
 ## Backend
@@ -36,12 +38,37 @@
 
 ## Tests
 
-- Run JavaScript unit tests via `bin/docker r yarn test:unit` (Vitest — `app/javascript`) or `bin/docker r yarn test` (Karma — legacy Angular).
+### JavaScript
+
+- Run JavaScript unit tests via `bin/docker r yarn test:unit` (Vitest — specs in `test/javascript/`, mirroring `app/javascript/`, not colocated) or `bin/docker r yarn test` (Karma — legacy Angular).
 - Lint modern JS via `bin/docker r yarn lint:js` or `bin/docker r rails test:eslint` (see `docs/js_tooling.md`).
-- **Vitest PR policy:** new or materially changed logic in `app/javascript/api/` or `app/javascript/utils/` → colocated `*.test.js` in the same PR. Stimulus `controllers/` → add tests when you touch them for migration or behavior changes, not a blanket rewrite for coverage.
+- **Vitest PR policy:** see DEVELOPER_GUIDE.md's "Vitest" section.
+
+### Rails
 - Run Rails tests via `bin/docker r rails test`.
+
+### CSS
 - Lint CSS via `bin/docker r yarn lint:css` or `bin/docker r rails test:stylelint` (config: `.stylelintrc.json`).
-- Run Playwright E2E tests via `bin/docker r yarn test:e2e` (requires the app already running via `bin/docker s`, and `bin/docker r npx playwright install chromium` once). This is a separate, checked-in test suite under `test/playwright/` — not the same thing as the Playwright MCP interactive tool described below. See DEVELOPER_GUIDE.md's "Playwright E2E" section for env vars and full details.
+
+### E2E (Playwright)
+- Run Playwright E2E tests via `bin/docker r yarn test:e2e` (requires the app already running via `bin/docker s`, and `bin/docker r npx playwright install chromium` once). 
+- This is a separate, checked-in test suite under `test/playwright/` — not the same thing as the Playwright MCP interactive tool described below. See DEVELOPER_GUIDE.md's "Playwright E2E" section for env vars and full details.
+- **Any spec that creates a row in the shared dev DB (a user, a team, a case) must delete it in a `test.afterAll`** — See DEVELOPER_GUIDE.md's "Playwright E2E" section for the cleanup pattern to copy.
+
+### Manual testing tracker (`docs/manual-testing/`)
+
+- `docs/manual-testing/*.md` is the human-readable manual test script. - `docs/manual-testing/tracking.yml` tracks, per numbered scenario, when it was last actually driven end-to-end (via Playwright MCP or by hand), the result, and which source `paths` that scenario exercises.
+
+- Before starting work that touches a tracked path, or when asked to do a manual testing pass: run `bin/manual_test_status` (plain `ruby`, no Docker/Rails boot needed) to see what's due — never run, stale (> `policy.default_max_age_days`, default 90), or whose `paths` changed (committed **or uncommitted**) since `last_run`. Use `--due-only` to filter, `--part 07` to scope to one part, `--paths-for 3.2` to see what a scenario tracks.
+- After changing code, check whether any tracked `paths` match your diff (`bin/manual_test_status` will surface it as "uncommitted changes in ...") and actually drive the affected scenario(s) through Playwright MCP before considering the change done — don't just rely on automated tests for UI-facing changes.
+- Age-expired scenarios (flagged solely because `last_run` is past `default_max_age_days`, with no path change involved) are also yours to act on, not just report: when a session touching this repo notices one via `bin/manual_test_status`, drive it through Playwright MCP and update `tracking.yml` in that same session — don't wait to be asked, and don't leave it sitting as a report for a human to run later.
+- After running a scenario (pass or fail), update its entry in `tracking.yml`: `last_run` (today, UTC), `result` (`pass` / `pass_with_fixes` / `fail` / `blocked`), and a one-line `notes` on what was actually covered and what wasn't (partial coverage is normal — say so rather than implying the whole scenario was exhaustively verified). Only set `last_run` for scenarios you actually exercised; leave others alone (`null` is honest and useful).
+- If a scenario's source moves or a new one is added, update `paths`/add an entry — the tracker is only as useful as its path mappings.
+- **Feature parity, not just staleness:** the checks above only re-verify scenarios that *already exist*. When a PR adds, removes, or materially changes user-facing functionality, also update the prose itself, in the same PR: 
+    - add a new numbered scenario (with `paths`) for new functionality, 
+    - delete/mark obsolete the scenario for removed functionality, 
+    - and revise steps/expected-results for changed behavior. 
+    - This applies to Angular→Stimulus migrations too — check whether the migrated surface's existing scenario still describes the right UI (see `angular-case-migration` skill's per-surface equivalence rule).
 
 
 ## Documentation
@@ -49,6 +76,8 @@
 - Documentation goes in the `docs` directory, not a toplevel `doc` directory.
 - To understand the data model used by Quepid, consult `./docs/data_mapping.md`.
 - To understand how the application is built, consult `./docs/app_structure.md`.
+- **DEVELOPER_GUIDE.md is the primary human-facing doc; CLAUDE.md is agent-only guidance.** When a rule applies to both, keep the full text in DEVELOPER_GUIDE.md and have CLAUDE.md point to it — never the other way around. Skill files (`.claude/skills/**/SKILL.md`) are agent-only too, so they may reference CLAUDE.md directly.
+- **State the rule, not the incident.** When you add a rule to a doc because something went wrong (a bug, a leak, a broken baseline), write the rule and, if genuinely non-obvious, *why* it holds — not a blow-by-blow of the specific occurrence (dates, counts, "this bit us on..."). Specifics like "16 leaked users" or a timestamp rot the moment the underlying state changes and read as clutter to a later reader who has no way to verify or care about that instance. Only keep instance detail when it's load-bearing — e.g. it teaches a non-obvious edge case the rule alone wouldn't convey.
 
 
 ## Code Style
@@ -67,10 +96,11 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 
 - **Double quotes**, **no semicolons**, **no trailing commas** (`trailingComma: "none"`).
 - Prettier pre-commit is limited to **`api/` and `utils/`** (see `config/javascript_lint_scope.mjs`). Before committing there: `bin/docker r yarn format:js:check` and `bin/docker r yarn lint:js`.
-- ESLint covers the wider modern tree (`controllers/`, `modules/`, entry bundles, etc.) but **ignores `*.test.js`**. Pre-commit **still runs ESLint** on those paths — run it yourself before finishing: `bin/docker r npx eslint app/javascript/path/to/file.js` or tree-wide `bin/docker r yarn lint:js`. Do **not** run Prettier outside `api/`/`utils/` for now (it would churn older single-quote files); hand-apply modern style to **new** lines you add.
+- ESLint covers the wider modern tree (`controllers/`, `modules/`, entry bundles, etc.) but **ignores `*.test.js`** — follow the conventions above manually when you add specs. 
+    - Pre-commit **still runs ESLint** on those paths — run it yourself before finishing: `bin/docker r npx eslint app/javascript/path/to/file.js` or tree-wide `bin/docker r yarn lint:js`.
+    - Do **not** run Prettier outside `api/`/`utils/` for now (it would churn older single-quote files); hand-apply modern style to **new** lines you add.
 - **Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style. Do not fall back to legacy Angular habits (`var`, semicolons) on greenfield Stimulus/importmap code.
 - **Importmap bare paths** — `import { apiFetch } from "api/fetch"`, not relative `../api/...`. Add new pins to `vitest.config.js` when tests import them.
-- **ESLint ignores `*.test.js`** — follow the conventions above manually when you add specs.
 - Use `const` or `let`, not `var`.
 
 **Legacy Angular JS** (`app/assets/javascripts/`) — `.jshintrc`:
@@ -103,7 +133,8 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 - The Angular case UI (`app/views/layouts/core.html.erb`) loads **`core.css`**: npm **Bootstrap 5** first, then Quepid layers (`core-additions.css` — Quepid layout without Bootstrap-class selectors; **`bootstrap5-compat.css`** — all Bootstrap-class shims, navbar brand skin, modals, popovers, dev-panel chrome, etc.). The header's full-width layout is a markup change (`container` → `container-fluid`), not a `bootstrap5-compat.css` rule.
 - **`app/javascript/angular_app.js`** pins BS5 **`window.bootstrap`** for popovers, tooltips, dropdowns, accordion, tabs, modals (`$quepidModal`), and similar.
 - The non-Angular UI loads BS5 via `application.css`. The two are separate stylesheet worlds. When you **add or change** BS5-driven UI on `core` (or more rules in `bootstrap5-compat.css`), use `app/assets/javascripts/directives/quepidPopover.js` and `quepidTooltip.js` as patterns and expect these traps:
-- **Root `font-size` and rem-based BS5 defaults.** `bootstrap5-compat.css` comment blocks historically assumed **`html { font-size: 62.5% }`** (1rem = 10px); that rule is **not** set in-repo on `core` today (`core.html.erb` / `core-additions.css`). If **computed** root `font-size` is not 16px, rem-based BS5 defaults may look wrong — override the relevant **`--bs-*`** vars with **px** in compat CSS when tuning widgets, and verify computed styles. Do not change root font-size casually without checking the whole **`core`** stack.
+- **Root `font-size` and rem-based BS5 defaults.** `bootstrap5-compat.css` comment blocks historically assumed **`html { font-size: 62.5% }`** (1rem = 10px); that rule is **not** set in-repo on `core` today (`core.html.erb` / `core-additions.css`). 
+    - If **computed** root `font-size` is not 16px, rem-based BS5 defaults may look wrong — override the relevant **`--bs-*`** vars with **px** in compat CSS when tuning widgets, and verify computed styles. Do not change root font-size casually without checking the whole **`core`** stack.
 - **Earlier-layer rules can win on shared selectors** (e.g. `.popover { padding: 1px }` from an old patch while BS5 puts padding on `.popover-header` / `.popover-body`). Reset bleed-through properties explicitly in the compat CSS.
 - **Verify visually.** Some of these traps produce *invisible-but-present* failures (popover element in DOM, `aria-describedby` set, but nothing visible). Static analysis won't catch them. Use Playwright MCP (or have the user screenshot DevTools' Computed panel for the popover element) and confirm `display`, `opacity`, `font-size`, and `transform` are sensible.
 
@@ -113,7 +144,10 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 For any user-visible change, prove the behavior with Playwright MCP screenshots — never substitute prose or memory. App: `http://localhost:33000`; sign in with `quepid+realisticactivity@o19s.com` / `password`.
 
 - **Before & after**: capture the affected flow before editing, then repeat the identical steps after. Capture every relevant state (modal open/closed, accordion expanded, error vs success, etc.). `browser_snapshot` is only for driving clicks; `browser_take_screenshot` is the proof.
-- **Frame big** (my screenshots have come out too small): shoot the **full viewport**, not element crops. Quepid modals scroll *internally*, so `fullPage:true` does NOT reach below their fold — instead `browser_resize` the viewport to roughly match the modal so it fills the frame, then screenshot the viewport. Size to the content: a tall step (e.g. the wizard endpoint step) needs ~`820x2200`; a short step (e.g. wizard Finish) needs ~`900x760` — a tall viewport dwarfs a short modal. Narrower width = modal fills more of the frame.
+- **Capturing a screenshot is not verifying it.** Before claiming two states match or differ, actually open and look at every before/after pair (Read tool or equivalent) — don't infer "identical" from the code diff not touching that template, and don't treat a console-log error as a substitute for looking at what the page actually rendered.
+- **Frame big** (screenshots have come out too small): shoot the **full viewport**, not element crops. 
+    - Quepid modals scroll *internally*, so `fullPage:true` does NOT reach below their fold — instead `browser_resize` the viewport to roughly match the modal so it fills the frame, then screenshot the viewport. 
+    - Size to the content: a tall step (e.g. the wizard endpoint step) needs ~`820x2200`; a short step (e.g. wizard Finish) needs ~`900x760` — a tall viewport dwarfs a short modal. Narrower width = modal fills more of the frame.
 - **Force hard-to-reach states** (e.g. a failed save) by intercepting the API with `browser_run_code_unsafe` + `page.route('**/api/...', ...)`.
     - Gotcha: `setTimeout` is undefined in that context — use `await page.waitForTimeout(ms)` for delays.
 - **Save** under `.playwright-mcp/<topic>/` (gitignored) with clear `-before`/`-after` (+ state) names, e.g. `.playwright-mcp/share-case/migration-share-case-modal-after.png`. Topic folders keep this PR’s shots separate from older captures in the screenshot viewer (`yarn screenshots:view` / `node test/playwright/screenshot-viewer-server.mjs`).

@@ -1,0 +1,80 @@
+<%# Core case toolbar — clone case options, API stay-on-page then navigate to
+    the new case, mirrors the AngularJS clone-case modal it replaces. %>
+<% modal_footer = capture do %>
+  <button type="submit" form="clone-case-form" class="btn btn-primary" disabled
+          data-clone-case-core-target="submitButton">Clone</button>
+<% end %>
+
+<% modal_body = capture do %>
+  <div class="alert alert-warning d-none" role="alert" data-clone-case-core-target="noQueriesAlert">
+    You have chosen not to import any queries. The new case will be empty.
+  </div>
+  <div class="alert d-none" role="alert" data-clone-case-core-target="alert"></div>
+
+  <p>Cloning a case is the best way to reduce the repetitive work of creating multiple cases that use the same search engine. Select the specific elements to include in the new case.</p>
+
+  <%= form_with url: api_clone_cases_path, method: :post, local: false,
+                html: { id: 'clone-case-form', data: { action: 'submit->clone-case-core#submit' } } do %>
+    <div class="mb-3">
+      <label for="cloneCaseName">New case name</label>
+      <input type="text" class="form-control" id="cloneCaseName" placeholder="Enter new case name" required
+             data-clone-case-core-target="caseNameInput" data-action="input->clone-case-core#updateCaseName">
+    </div>
+
+    <div class="mb-3">
+      <label>Include case history
+        <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help"
+           data-controller="bs-popover" data-bs-popover-trigger-value="mouseenter" data-bs-popover-placement-value="right"
+           data-bs-popover-content-value="Select to include either a single try or all the tries of your case history if you want to evaluate previous attempts."></i>
+      </label>
+      <div class="btn-group w-100" role="group">
+        <button type="button" class="btn btn-primary" data-clone-case-core-target="historyOffButton"
+                data-action="click->clone-case-core#selectHistory" data-clone-case-core-history-param="false">Only include a specific try</button>
+        <button type="button" class="btn btn-outline-secondary" data-clone-case-core-target="historyOnButton"
+                data-action="click->clone-case-core#selectHistory" data-clone-case-core-history-param="true">Include the entire try history</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6" data-clone-case-core-target="tryFieldWrapper">
+        <div class="mb-3">
+          <label for="cloneCaseTry">Select try</label>
+          <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help"
+             data-controller="bs-popover" data-bs-popover-trigger-value="mouseenter" data-bs-popover-placement-value="right"
+             data-bs-popover-content-value="Select the desired try from your full case history."></i>
+          <select id="cloneCaseTry" class="form-select"
+                  data-clone-case-core-target="trySelect" data-action="change->clone-case-core#updateTry"></select>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label class="d-block">Select content
+            <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help"
+               data-controller="bs-popover" data-bs-popover-trigger-value="mouseenter" data-bs-popover-placement-value="right"
+               data-bs-popover-content-value="When cloning a case, you typically want to include your existing queries. If you want to preserve ratings, select to import them as well."></i>
+          </label>
+          <div class="form-check form-check-inline">
+            <input id="cloneCaseIncludeQueries" type="checkbox" class="form-check-input" checked
+                   data-clone-case-core-target="queriesCheckbox" data-action="change->clone-case-core#toggleQueries">
+            <label class="form-check-label" for="cloneCaseIncludeQueries">Include Queries</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input id="cloneCaseIncludeRatings" type="checkbox" class="form-check-input"
+                   data-clone-case-core-target="ratingsCheckbox" data-action="change->clone-case-core#toggleRatings">
+            <label class="form-check-label" for="cloneCaseIncludeRatings">Include Ratings</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<%= render "shared/modal_shell", id: "cloneCaseModal", title: "Clone case",
+                                 data: {
+                                   controller: "clone-case-core",
+                                   clone_case_core_tries_url_template_value: api_case_tries_path(case_id: '__CASE_ID__'),
+                                   clone_case_core_clone_url_value: api_clone_cases_path
+                                 },
+                                 title_data: { clone_case_core_target: "title" },
+                                 footer: modal_footer,
+                                 body: modal_body %>

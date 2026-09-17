@@ -1,4 +1,4 @@
-<div class="modal fade" id="unleash_modal_<%= ai_judge.id %>" tabindex="-1" aria-labelledby="unleashModalLabel_<%= ai_judge.id %>" aria-hidden="true">
+<div class="modal fade" id="unleash_modal_<%= ai_judge.id %>" tabindex="-1" aria-labelledby="unleashModalLabel_<%= ai_judge.id %>" aria-hidden="true" data-controller="judge-documents-modal">
 
   <div class="modal-dialog">
     <div class="modal-content">
@@ -8,27 +8,27 @@
       </div>
       <%= form_with(url: run_judge_judy_book_path(@book, ai_judge_id: ai_judge.id), method: :patch) do |form| %>
       <div class="modal-body">
-        
+
           <div class="row mb-3">
 
-            <%= form.label :number_of_pairs, "Query Doc Pairs to Judge", 
+            <%= form.label :number_of_pairs, "Query Doc Pairs to Judge",
                 class: 'col-sm-4 col-form-label' %>
             <div class="col-sm-8">
-              <%= form.number_field :number_of_pairs, 
+              <%= form.number_field :number_of_pairs,
                   class: 'form-control',
                   min: 1,
                   value: 10 %>
               <div class="form-text">How many pairs should the AI judge evaluate?</div>
             </div>
           </div>
-        
+
           <div class="row mb-3">
             <div class="col-sm-4"></div>
             <div class="col-sm-8">
               <div class="form-check">
-                <%= form.check_box :judge_all, 
+                <%= form.check_box :judge_all,
                     id: "judge_all_#{ai_judge.id}",
-                    onchange: "updateModalTitle(#{ai_judge.id})",
+                    data: { judge_documents_modal_target: 'judgeAll', action: 'change->judge-documents-modal#updateLabel' },
                     class: 'form-check-input' %>
                 <%= form.label :judge_all, "Judge All Pairs",
                     for: "judge_all_#{ai_judge.id}",
@@ -37,14 +37,15 @@
               </div>
             </div>
           </div>
-        
+
           <div class="row">
             <div class="col-sm-4"></div>
             <div class="col-sm-8">
-              <%= form.submit "Judge Documents", id: "submit_#{ai_judge.id}", class: 'btn btn-primary' %>
+              <%= form.submit "Judge Documents", id: "submit_#{ai_judge.id}",
+                  data: { judge_documents_modal_target: 'submitButton' }, class: 'btn btn-primary' %>
             </div>
           </div>
-      
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

@@ -155,9 +155,13 @@ angular.module('QuepidApp')
       };
 
       ctrl.numberOfMissingRatings = function () {
+        // A query with no currentScore yet — count it as fully missing rather than
+        // crashing on the undefined score. Cap by docs.length since a query can't
+        // be missing more ratings than it has results to rate.
+        var depthOfRating = ctrl.depthOfRating();
         var countMissingRatings = 0;
         angular.forEach(queriesSvc.queries, function(q) {
-          countMissingRatings = countMissingRatings + q.currentScore.countMissingRatings;
+          countMissingRatings = countMissingRatings + (q.currentScore ? q.currentScore.countMissingRatings : Math.min(depthOfRating, q.docs.length));
         });
         return countMissingRatings;
       };
@@ -166,7 +170,7 @@ angular.module('QuepidApp')
         var depthOfRating = ctrl.depthOfRating();
         var missingRatingsTable = {};
         angular.forEach(queriesSvc.queries, function(q) {
-          var missingCount = parseInt(q.currentScore.countMissingRatings);
+          var missingCount = q.currentScore ? parseInt(q.currentScore.countMissingRatings) : Math.min(depthOfRating, q.docs.length);
           if (!missingRatingsTable.hasOwnProperty(missingCount)){
             missingRatingsTable[missingCount] = {
               count: 0

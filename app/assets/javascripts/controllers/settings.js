@@ -6,10 +6,12 @@ angular.module('QuepidApp')
     '$scope','$location',
     'flash',
     'settingsSvc',
+    'searchEndpointSvc',
     function (
       $scope, $location,
       flash,
-      settingsSvc
+      settingsSvc,
+      searchEndpointSvc
     ) {
       $scope.settingsModel = {};
       $scope.pendingSettings = {
@@ -66,8 +68,14 @@ angular.module('QuepidApp')
       });
 
       function submit () {
+        var numberOfRows = $scope.pendingSettings.numberOfRows;
+        if (!angular.isNumber(numberOfRows) || numberOfRows < 1 || numberOfRows > 100) {
+          flash.error = 'Number of Results to Show must be between 1 and 100.';
+          return;
+        }
+
         let validateJson = false;
-        if ( $scope.pendingSettings.searchEngine === 'es'  || $scope.pendingSettings.searchEngine === 'os' ||  $scope.pendingSettings.searchEngine === 'vectara' || $scope.pendingSettings.searchEngine === 'algolia'){
+        if ( searchEndpointSvc.usesJsonQueryParams($scope.pendingSettings.searchEngine)){
           validateJson = true;
         }
         else if ($scope.pendingSettings.searchEngine === 'searchapi'){

@@ -135,7 +135,6 @@ star wars,"The original movie"</pre>
         </ng-csv-import>
 
 
-
         <div ng-if="ctrl.information_needs.content" class="block left">
           <h2>CSV</h2>
           <div ng-show="ctrl.information_needs.import.alert" class="text-danger bg-danger import-content" ng-bind-html="ctrl.information_needs.import.alert">
@@ -192,7 +191,7 @@ Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,1921,3
 </div>
 <div class="modal-footer">
 
-  <p class='bg-warning text-warning padded-text' ng-if="ctrl.showWarning()">
+  <p class="bg-warning text-warning p-3" ng-if="ctrl.showWarning()">
     <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
     <span ng-show="ctrl.ratingsTypePicked()">
     This operation WILL override your existing ratings. Proceed with caution!
@@ -202,7 +201,7 @@ Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,1921,3
     </span>
     <span ng-show="ctrl.snapshotTypePicked()">
     This operation WILL replace any snapshots you have created that have the same Snapshot Name in the csv.
-    </span>    
+    </span>
   </p>
 
   <i class="bi bi-arrow-repeat spintime" aria-hidden="true" ng-show="ctrl.loading"></i>

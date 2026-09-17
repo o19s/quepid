@@ -86,7 +86,9 @@ export function createBsPopover(element, options = {}) {
   const setIsOpen = options.setIsOpen
   const scopeApply = options.scopeApply || ((fn) => fn())
 
-  const bsTrigger = hasIsOpen || trigger === "outsideClick" ? "manual" : toBsPopoverTrigger(trigger)
+  // toBsPopoverTrigger already maps "outsideClick" -> "manual", so hasIsOpen
+  // is the only extra case this needs to force.
+  const bsTrigger = hasIsOpen ? "manual" : toBsPopoverTrigger(trigger)
 
   let currentTitle = options.title || ""
   let currentBody = mode === "text" ? options.body || "" : ""

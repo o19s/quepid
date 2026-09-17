@@ -10,6 +10,11 @@ export function parseTeamsJson(rawJson) {
   return []
 }
 
+export function unsharedTeams(allTeams, sharedTeams) {
+  const sharedTeamIds = sharedTeams.map((t) => String(t.id))
+  return allTeams.filter((team) => !sharedTeamIds.includes(String(team.id)))
+}
+
 // Shared by the four "share with a team" modal controllers (case, book,
 // scorer, search endpoint): rebuilds a <select>'s options from the full
 // team list minus whichever teams already have this resource, with a
@@ -22,19 +27,18 @@ export function populateTeamSelect(selectEl, allTeams, sharedTeams, opts = {}) {
     noneLeftMessage = "No other teams to share with"
   } = opts
 
-  const sharedTeamIds = sharedTeams.map((t) => String(t.id))
-  const unsharedTeams = allTeams.filter((team) => !sharedTeamIds.includes(String(team.id)))
+  const teamsToShare = unsharedTeams(allTeams, sharedTeams)
 
   selectEl.innerHTML = `<option value="">${placeholder}</option>`
 
-  if (allTeams.length === 0 || unsharedTeams.length === 0) {
+  if (allTeams.length === 0 || teamsToShare.length === 0) {
     const option = document.createElement("option")
     option.value = ""
     option.text = allTeams.length === 0 ? emptyMessage : noneLeftMessage
     selectEl.appendChild(option)
     selectEl.disabled = true
   } else {
-    unsharedTeams.forEach((team) => {
+    teamsToShare.forEach((team) => {
       const option = document.createElement("option")
       option.value = team.id
       option.text = team.name
@@ -44,6 +48,12 @@ export function populateTeamSelect(selectEl, allTeams, sharedTeams, opts = {}) {
   }
 
   selectEl.value = ""
+}
+
+export function deactivateListItem(listElement, teamId) {
+  if (!teamId || !listElement) return
+  const prev = listElement.querySelector(`[data-team-id="${teamId}"]`)
+  if (prev) prev.classList.remove("active")
 }
 
 export function partitionTeams(teams, caseId) {

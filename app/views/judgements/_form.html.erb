@@ -174,17 +174,7 @@
 %>
 
 <%= form_for(judgement, url: url_for_form) do |form| %>
-  <% if judgement.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(judgement.errors.count, "error") %> prohibited this judgement from being saved:</h2>
-
-      <ul>
-        <% judgement.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+  <%= render "shared/error_messages", record: judgement, subject: "judgement" %>
 
   <% if judgement.user_id != @current_user.id %>
     <div class="alert alert-warning" role="alert">
@@ -263,7 +253,7 @@
         <tr>
           <td><i class="bi-keyboard"></i></td>
           <% @rating_buttons.each do |b| %>
-              <td class="keyboard-shortcuts-td"><span class="<%= judgement.rating == b["value"].to_i ? 'bold-and-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
+              <td class="keyboard-shortcuts-td"><span class="<%= judgement.rating == b["value"].to_i ? 'fw-bold text-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
           <% end %>
         </tr>
       </table>

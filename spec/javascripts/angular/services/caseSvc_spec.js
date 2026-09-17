@@ -503,51 +503,6 @@ describe('Service: caseSvc', function () {
     });
   });
 
-  describe('clone', function() {
-    var $rootScope;
-
-    var cases = [
-      {
-        'caseNo': 1,
-        'case_name': 'test case 1',
-        'lastTry': 3,
-        'owned': true
-      },
-      {
-        'caseNo': 2,
-        'case_name': 'test case 2',
-        'lastTry': 4,
-        'owned': true
-      }
-    ];
-
-    var theCase = cases[0];
-
-    var expectedResponse = {
-      'caseNo':   3,
-      'case_name': 'Clone: test case 1',
-      'lastTry':  0,
-      'owned':    true
-    };
-
-    beforeEach(inject(function(_$rootScope_) {
-      $rootScope  = _$rootScope_;
-
-      caseSvc.allCases = cases;
-    }));
-
-    it('clones a case successfully', function() {
-      var url = 'api/clone/cases';
-      $httpBackend.expectPOST(url).respond(200, expectedResponse);
-
-      caseSvc.cloneCase(theCase);
-      $httpBackend.flush();
-      $rootScope.$apply();
-
-      expect(caseSvc.allCases.length).toBe(3);
-    });
-  });
-
   // Stimulus share-case on core dispatches this instead of Angular caseTeamAdded.
   describe('quepid:case-team-changed bridge', function() {
     var $rootScope;

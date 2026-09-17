@@ -1,5 +1,4 @@
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1>Team: <%= @team.name %></h1>
+<%= page_header "Team: #{@team.name}" do %>
   <div class="text-end">
     <small class="text-muted">Members: <strong><%= @members.count %></strong></small>
     &nbsp;&nbsp;
@@ -11,7 +10,7 @@
     &nbsp;&nbsp;
     <small class="text-muted">Scorers: <strong><%= @scorers_count %></strong></small>
   </div>
-</div>
+<% end %>
 
 <div class="row mb-4">
   <div class="col-md-4">
