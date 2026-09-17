@@ -123,29 +123,44 @@ async function shot(page: import('@playwright/test').Page, stem: string, topic =
   console.log(`wrote ${file}`);
 }
 
-async function openHelpPopover(page: import('@playwright/test').Page, modal: import('@playwright/test').Locator) {
-  const help = modal.locator('.bi-question-circle-fill').first();
-  await help.scrollIntoViewIfNeeded();
-  const popoverBody = page.locator('.popover.show .popover-body, .popover-body').first();
+async function openHelpPopover(
+  page: import('@playwright/test').Page,
+  modal: import('@playwright/test').Locator,
+  expectedText: string | RegExp
+) {
+  const help = PHASE === 'after'
+    ? modal.locator('[data-controller~="bs-popover"]').first()
+    : modal.locator('.bi-question-circle-fill').first();
 
-  // After: bs-static-popover (hover). Before: quepid-popover + mouseenter → BS5 hover focus.
-  await help.hover({ force: true });
-  try {
-    await expect(popoverBody).toBeVisible({ timeout: 2_000 });
-  } catch {
-    await help.focus();
-    try {
-      await expect(popoverBody).toBeVisible({ timeout: 2_000 });
-    } catch {
-      await help.evaluate((el) => {
-        const bs = (window as Window & { bootstrap?: { Popover: { getInstance: (e: Element) => { show: () => void } | null; new (e: Element): { show: () => void } } } }).bootstrap;
-        if (!bs?.Popover) return;
-        const inst = bs.Popover.getInstance(el) ?? new bs.Popover(el);
-        inst.show();
-      });
-    }
+  if (PHASE === 'after') {
+    await expect(help).toHaveAttribute('data-bs-popover-trigger-value', 'mouseenter');
+    await expect(help).toHaveAttribute('data-bs-popover-placement-value', 'right');
   }
-  await expect(popoverBody).toBeVisible({ timeout: 8_000 });
+
+  await help.scrollIntoViewIfNeeded();
+
+  // A hover is the configured trigger. Do not construct a Bootstrap Popover here:
+  // that would conceal a failed Stimulus controller connection.
+  await help.hover({ force: true });
+  await expect(help).toHaveAttribute('aria-describedby', /.+/, { timeout: 8_000 });
+  const popoverId = await help.getAttribute('aria-describedby');
+  if (!popoverId) {
+    throw new Error('Help icon did not identify its popover');
+  }
+
+  const popover = page.locator(`[id="${popoverId}"]`);
+  await expect(popover).toBeVisible();
+  await expect(popover.locator('.popover-body')).toHaveText(expectedText);
+
+  if (PHASE === 'after') {
+    const hasStimulusPopover = await help.evaluate((element) => {
+      const bootstrap = (window as Window & {
+        bootstrap?: { Popover?: { getInstance: (element: Element) => unknown } }
+      }).bootstrap;
+      return Boolean(bootstrap?.Popover?.getInstance(element));
+    });
+    expect(hasStimulusPopover).toBeTruthy();
+  }
 }
 
 test.describe(`DOM migration shots (${PHASE})`, () => {
@@ -313,7 +328,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     const modal = page.locator('.modal.show').first();
     await expect(modal).toBeVisible();
     await page.setViewportSize({ width: 900, height: 760 });
-    await openHelpPopover(page, modal);
+    await openHelpPopover(page, modal, /Select to include either a single try or all the tries/);
     await shot(page, 'clone-case-popover');
   });
 
@@ -326,7 +341,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await expect(modal).toBeVisible();
     await expect(modal.getByLabel('Help').first()).toBeVisible({ timeout: 15_000 });
     await page.setViewportSize({ width: 900, height: 820 });
-    await openHelpPopover(page, modal);
+    await openHelpPopover(page, modal, /All the Books related to all the Teams/);
     await shot(page, 'judgements-popover');
   });
 
@@ -337,7 +352,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     const modal = page.locator('.modal.show').first();
     await expect(modal).toBeVisible();
     await page.setViewportSize({ width: 900, height: 900 });
-    await openHelpPopover(page, modal);
+    await openHelpPopover(page, modal, /Select to clear all the existing queries on a case/);
     await shot(page, 'import-ratings-popover');
   });
 

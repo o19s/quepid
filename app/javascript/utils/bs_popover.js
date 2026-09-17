@@ -1,6 +1,5 @@
 /**
- * Bootstrap 5 popover helpers shared by Angular quepidPopover / bsStaticPopover
- * and (future) Stimulus pages.
+ * Bootstrap 5 popover helpers shared by Angular quepidPopover and Stimulus pages.
  *
  * Trigger mapping (uib → BS5) for Angular attrs:
  *   'mouseenter'   → hover focus
@@ -9,7 +8,7 @@
  *   'outsideClick' → manual + document capture listener
  */
 
-export const POPOVER_SELECTOR = "[quepid-popover], [quepid-popover-template], [bs-static-popover]"
+export const POPOVER_SELECTOR = "[quepid-popover], [quepid-popover-template]"
 
 export function parsePopoverTrigger(raw) {
   if (!raw) return "click"

@@ -145,7 +145,7 @@ Use when sizing a PR:
 
 Actionable incremental wins — do these before touching query/search state:
 
-1. **DOM utilities → Stimulus or BS5 data API** — **Partially done:** plain-text tooltips (`quepid-tooltip`) and plain-text popovers (`quepid-popover`) migrated to Stimulus `bs-tooltip` / `bs-popover` (registered in `core_stimulus.js`); the Angular `quepidTooltip` directive and the text-mode `quepidPopover` directive are deleted. Angular `quepidPopoverTemplate` remains — it backs the ratings and search-match popovers (`views/ratings/popover.html`, `matches/matches.html`), which lazily `$compile` live interactive Angular content into the popover body and need their own migration, not just an attribute swap. `bs-static-popover` (fixed help-icon popovers) also remains Angular for now (new Stimulus UI, e.g. `clone-case-core`'s help icons, uses the Stimulus `bs-popover` controller instead of adding new Angular attributes).
+1. **DOM utilities → Stimulus or BS5 data API** — **Partially done:** plain-text tooltips (`quepid-tooltip`), plain-text popovers (`quepid-popover`), and fixed help-icon popovers (`bs-static-popover`) migrated to Stimulus `bs-tooltip` / `bs-popover` (registered in `core_stimulus.js`); their Angular directives are deleted. Angular `quepidPopoverTemplate` remains — it backs the ratings and search-match popovers (`views/ratings/popover.html`, `matches/matches.html`), which lazily `$compile` live interactive Angular content into the popover body and need their own migration, not just an attribute swap.
 3. **Sequence last** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks — not skipped, but gated on the [live query-state phase](#live-query-state-phase-committed-final-phase)'s state plan being signed off before any code starts.
 
 Optional when touching nearby code:
@@ -222,7 +222,7 @@ Controllers: `app/javascript/controllers/` · entry: `app/javascript/application
 | `apiFetch` / `getCsrfToken` | `app/javascript/api/fetch.js` | CSRF-aware JSON fetch (Vitest-covered) |
 | `getQuepidRootUrl` | `app/javascript/utils/quepid_root.js` | Subpath-safe root from `data-quepid-root-url` |
 | CodeMirror 6 editor | `app/javascript/modules/editor.js` | Candidate `ui-ace` replacement for wizard / dev pane |
-| BS5 tooltip / popover / paste | `utils/bs_tooltip.js`, `utils/bs_popover.js`, `utils/text_paste.js` | Bridged to Angular via `app/javascript/quepid_dom.js` → `window.quepidDom`; static icons use Angular `bs-static-popover` |
+| BS5 tooltip / popover / paste | `utils/bs_tooltip.js`, `utils/bs_popover.js`, `utils/text_paste.js` | Legacy Angular template popovers are bridged via `app/javascript/quepid_dom.js` → `window.quepidDom`; static icons use the `bs-popover` Stimulus controller |
 | Core Stimulus entry | `app/javascript/core_stimulus.js` | Controllers without Turbo; loaded from `core.html.erb` |
 
 New Stimulus logic in `app/javascript/api/` or `utils/` needs a `*.test.js` under `test/javascript/` (Vitest, mirroring the source path — not colocated). See [`js_tooling.md`](../js_tooling.md).
@@ -530,7 +530,6 @@ These Angular-specific wrappers are used across many templates:
 |-----------|------|----------|
 | `$quepidModal` | `services/quepidModalSvc.js` | Bootstrap 5 modals (already BS5-backed shim; call-site count in [Hardest § By file (LOC)](#by-file-loc)) |
 | `quepidPopover` / `quepidPopoverTemplate` | `directives/quepidPopover.js` (~128 LOC thin shell) | `utils/bs_popover.js`; current status/blockers in [Suggested PR order §1](#suggested-pr-order-start-here) |
-| `bsStaticPopover` | `directives/bsStaticPopover.js` | Static help-icon popovers via shared `bs_popover` util; current status in [Suggested PR order §1](#suggested-pr-order-start-here) |
 | `quepidCollapse` | `directives/quepidCollapse.js` | Bootstrap collapse |
 | `quepidTypeahead` | `directives/quepidTypeahead.js` | `autocompleter` (already vanilla; wired via Angular directive) |
 | `vega` | `directives/angular-vega.js` | Vega embed (Vega loaded via importmap `vega_globals`) |
@@ -574,7 +573,7 @@ These Angular-specific wrappers are used across many templates:
 | `customHeaders` | `<custom-headers>` | `customHeaders.html` | `CustomHeadersCtrl` |
 | `stackedChart` | `<stackedChart>` | `stackedChart.html` | `HotMatchesCtrl` |
 
-Attribute directives: `quepidSortable`, `quepidPopover`, `quepidPopoverTemplate`, `bsStaticPopover`, `quepidCollapse`, `quepidTypeahead`, `quepidEmbed`, `vega`
+Attribute directives: `quepidSortable`, `quepidPopover`, `quepidPopoverTemplate`, `quepidCollapse`, `quepidTypeahead`, `quepidEmbed`, `vega`
 
 Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryParamsHistory`, `queryDiffResults`. Heavy: `quepidTypeahead` (299), `quepidPopover` (128), `searchResult` (79).
 
@@ -647,7 +646,7 @@ Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (10 packages; see [vend
 
 ### Tests
 
-- **Karma:** 39 specs in `spec/javascripts/angular/` (incl. `bsStaticPopover`, `timeAgo`); loads all three Angular bundles + `angular-mocks`
+- **Karma:** 40 specs in `spec/javascripts/angular/` (incl. `timeAgo`); loads all three Angular bundles + `angular-mocks`
 - **Vitest:** incl. `controllers/{share_case,share_case_core}_controller.test.js` and `utils/share_case_teams.js`
 - **Playwright (Angular core):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
 - **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case_smoke.spec.ts` — core toolbar share/unshare; `dom_migration_screenshots.spec.ts` — per-surface before/after shots (`share-case/` core, `share-case-rails/` index)

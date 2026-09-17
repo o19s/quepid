@@ -1,9 +1,9 @@
 'use strict';
 
 // uib-popover replacement — BS5 via quepidDom.popover (utils/bs_popover.js).
-// Fixed `?` help icons: use bs-static-popover instead; plain-text popovers
-// use the Stimulus bs-popover controller instead (core_stimulus.js). Only
-// template-backed popovers (ratings, match detail) still live here.
+// Fixed `?` help icons and plain-text popovers now use the Stimulus bs-popover
+// controller (core_stimulus.js). Only template-backed popovers (ratings, match
+// detail) still live here.
 // outsideClick → manual trigger + capture listener; do not add our click
 // toggle when the element already has ng-click.
 // uib triggers: mouseenter → hover focus; outsideClick → manual.
