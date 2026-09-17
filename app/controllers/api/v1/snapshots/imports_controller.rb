@@ -5,7 +5,6 @@ module Api
     module Snapshots
       class ImportsController < Api::ApiController
         before_action :set_case
-        before_action :check_case
 
         def create
           service = SnapshotImporter.new(@case)

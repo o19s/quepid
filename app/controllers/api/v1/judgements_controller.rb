@@ -5,9 +5,7 @@ module Api
     # @tags books > judgements
     class JudgementsController < Api::ApiController
       before_action :set_book
-      before_action :check_book
-      before_action :set_judgement,   only: [ :show, :update, :destroy ]
-      before_action :check_judgement, only: [ :show, :update, :destroy ]
+      before_action :set_judgement, only: [ :show, :update, :destroy ]
 
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/BlockLength
@@ -126,11 +124,7 @@ module Api
       end
 
       def set_judgement
-        @judgement = @book.judgements.where(id: params[:id]).first
-      end
-
-      def check_judgement
-        render json: { message: 'Query Doc Pair not found!' }, status: :not_found unless @judgement
+        @judgement = @book.judgements.find(params.expect(:id))
       end
     end
   end

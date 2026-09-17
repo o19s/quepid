@@ -7,7 +7,6 @@ module Api
     # @tags books
     class BooksController < Api::ApiController
       before_action :set_book, only: [ :show, :update, :destroy ]
-      before_action :check_book, only: [ :show, :update, :destroy ]
 
       # @parameter archived(query) [Boolean] Whether or not to return only archived books in the response.
       def index
@@ -67,12 +66,8 @@ module Api
       end
 
       def set_book
-        @book = current_user.books_involved_with.where(id: params[:id]).first
+        @book = current_user.books_involved_with.find(params.expect(:id))
         TrackBookViewedJob.perform_later current_user, @book
-      end
-
-      def check_book
-        render json: { message: 'Book not found!' }, status: :not_found unless @book
       end
     end
   end

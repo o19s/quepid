@@ -5,7 +5,6 @@ module Api
     module Clone
       class CasesController < Api::ApiController
         before_action :set_case
-        before_action :check_case
 
         def create
           @new_case = Case.new

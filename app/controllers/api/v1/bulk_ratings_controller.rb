@@ -4,9 +4,7 @@ module Api
   module V1
     class BulkRatingsController < Api::ApiController
       before_action :set_case
-      before_action :check_case
       before_action :set_case_query
-      before_action :check_query
 
       # We get a messy set of params in this method, so we don't use the normal
       # approach of strong parameter validation.  We hardcode the only params

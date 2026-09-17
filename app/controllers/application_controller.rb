@@ -15,6 +15,14 @@ class ApplicationController < ActionController::Base
 
   respond_to :html, :js
 
+  rescue_from ActiveRecord::RecordNotFound do |exception|
+    respond_to do |format|
+      format.json { render_not_found_json(exception) }
+      format.html { render file: Rails.public_path.join('404.html'), status: :not_found, layout: false }
+      format.any { render file: Rails.public_path.join('404.html'), status: :not_found, layout: false }
+    end
+  end
+
   before_action :set_current_user
   before_action :require_login
   before_action :check_current_user_locked!
@@ -30,6 +38,11 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
 
   private
+
+  def render_not_found_json exception
+    resource_name = exception.model.presence || 'Resource'
+    render json: { message: "#{resource_name.underscore.humanize} not found!" }, status: :not_found
+  end
 
   def deserialize_bool_param param
     ActiveRecord::Type::Boolean.new.deserialize(param) || false

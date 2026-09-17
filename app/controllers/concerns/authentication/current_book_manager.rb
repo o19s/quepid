@@ -7,16 +7,12 @@ module Authentication
     private
 
     def set_book
-      @book = current_user.books_involved_with.where(id: params[:book_id]).first
+      @book = current_user.books_involved_with.find(params.expect(:book_id))
       TrackBookViewedJob.perform_later current_user, @book
     end
 
     def set_book_no_track
-      @book = current_user.books_involved_with.where(id: params[:book_id]).first
-    end
-
-    def check_book
-      render json: { message: 'Book not found!' }, status: :not_found unless @book
+      @book = current_user.books_involved_with.find(params.expect(:book_id))
     end
 
     def recent_books count

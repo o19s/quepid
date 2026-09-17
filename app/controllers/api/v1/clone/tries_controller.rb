@@ -5,7 +5,6 @@ module Api
     module Clone
       class TriesController < Api::ApiController
         before_action :set_case
-        before_action :check_case
         before_action :set_try, only: [ :create ]
 
         def create
@@ -39,9 +38,7 @@ module Api
         private
 
         def set_try
-          @try = @case.tries.where(try_number: params[:try_number]).first
-
-          render json: { message: 'Try not found!' }, status: :not_found unless @try
+          @try = @case.tries.find_by!(try_number: params.expect(:try_number))
         end
 
         def try_params

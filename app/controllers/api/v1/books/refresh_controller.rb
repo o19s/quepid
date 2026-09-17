@@ -5,9 +5,7 @@ module Api
     module Books
       class RefreshController < Api::ApiController
         before_action :set_book, only: [ :update ]
-        before_action :check_book, only: [ :update ]
         before_action :set_case, only: [ :update ]
-        before_action :check_case, only: [ :update ]
 
         def update
           @create_missing_queries = deserialize_bool_param(params[:create_missing_queries])

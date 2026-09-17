@@ -133,9 +133,7 @@ module Api
 
       def set_search_endpoint
         # This block of logic should all be in user_search_endpoint_finder.rb
-        @search_endpoint = current_user.search_endpoints_involved_with.where(id: params[:id]).first
-
-        render json: { error: 'Not Found!' }, status: :not_found unless @search_endpoint
+        @search_endpoint = current_user.search_endpoints_involved_with.find(params.expect(:id))
       end
 
       def search_endpoint_params

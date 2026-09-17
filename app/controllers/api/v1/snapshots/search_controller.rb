@@ -5,9 +5,7 @@ module Api
     module Snapshots
       class SearchController < SnapshotsController
         before_action :set_case
-        before_action :check_case
         before_action :set_snapshot
-        before_action :check_snapshot
 
         # rubocop:disable Metrics/MethodLength
         # rubocop:disable Metrics/AbcSize
@@ -78,9 +76,8 @@ module Api
 
         def set_snapshot
           @snapshot = @case.snapshots
-            .where(id: params[:snapshot_id])
             .includes([ { snapshot_queries: [ :snapshot_docs ] } ])
-            .first
+            .find(params.expect(:snapshot_id))
         end
       end
     end

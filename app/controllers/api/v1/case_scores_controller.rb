@@ -5,7 +5,6 @@ module Api
     # @tags cases > scores
     class CaseScoresController < Api::ApiController
       before_action :set_case
-      before_action :check_case
 
       def index
         @scores = @case.scores.where(scorer: @case.scorer).includes(:user).limit(10)
