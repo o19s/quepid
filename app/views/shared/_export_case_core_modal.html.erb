@@ -1,0 +1,159 @@
+<%# Core case toolbar — export case modal, mirrors the AngularJS <export-case>
+    component/_modal.html it replaces. Clicking Export always closes the modal
+    (data-bs-dismiss) and immediately downloads (Angular's close-then-download
+    flow); there's no inline success/failure alert since Angular didn't have
+    one either.
+
+    "Detailed" is the one format that can't be reconstructed from the server
+    alone (it needs the live, already-searched documents held in the
+    still-running Angular app) — see export_case_core_controller.js. %>
+<% modal_footer = capture do %>
+  <button type="button" class="btn btn-primary" disabled data-bs-dismiss="modal"
+          data-export-case-core-target="submitButton" data-action="click->export-case-core#submit">Export</button>
+<% end %>
+
+<% modal_body = capture do %>
+  <p>There are a number of formats for exporting data from Quepid.</p>
+
+  <div class="mb-3">
+    <input type="radio" id="exportInformationNeed" name="export-case-format" value="information_need"
+           data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="information_need">
+    <label for="exportInformationNeed">Information Need</label>
+    <span class="form-text d-block">
+      CSV file with <code>query,information_need</code>, use as a template for uploading Information Need for queries back into Quepid.
+    </span>
+  </div>
+  <hr>
+  <div class="mb-3">
+    <input type="radio" id="exportGeneral" name="export-case-format" value="general"
+           data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="general">
+    <label for="exportGeneral">General</label>
+    <span class="form-text d-block">
+      CSV file with <code>Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes,Options</code>
+    </span>
+  </div>
+
+  <div class="mb-3">
+    <input type="radio" id="exportDetailed" name="export-case-format" value="detailed"
+           data-export-case-core-target="detailedRadio"
+           data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="detailed">
+    <label for="exportDetailed">Detailed</label>
+    <p class="bg-warning text-warning p-3 d-none" data-export-case-core-target="detailedWarning">
+      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+      Detailed export is only supported from the individual Case view.
+    </p>
+    <span class="form-text d-block">
+      CSV file with <code>Team Name,Case Name,Case ID,Query Text,Doc ID,Position,Title,Rating,Field1,...,FieldN</code> where <code>Field1,...,FieldN</code> are specified under <strong>Settings</strong> in the <strong>Displayed Fields</strong> field.
+    </span>
+  </div>
+
+  <div class="mb-3">
+    <input type="radio" id="exportSnapshot" name="export-case-format" value="snapshot"
+           data-export-case-core-target="snapshotRadio"
+           data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="snapshot">
+    <label for="exportSnapshot">Snapshot</label>
+    <span class="form-text d-block">
+      Snapshot's represent a point in time, and you may want to download them for further analysis, rework them, and then
+      import them back into Quepid using the <strong>Import Snapshots from CSV</strong> function on the Relevancy Cases listing page.
+      You will have a CSV file with <code>Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position</code> fields.
+      If you have recorded the document fields when you took the snapshot, then you will also have <code>Field1,...,FieldN</code> columns.
+    </span>
+    <label for="exportSnapshotSelect" class="d-block">Snapshot
+      <select id="exportSnapshotSelect" class="form-select d-inline-block w-auto"
+              data-export-case-core-target="snapshotSelect" data-action="change->export-case-core#selectSnapshot"></select>
+    </label>
+  </div>
+  <hr>
+  <div class="mb-3">
+    <input type="radio" id="exportBasic" name="export-case-format" value="basic"
+           data-export-case-core-target="basicRadio"
+           data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="basic">
+    <label for="exportBasic">Basic</label>
+    <span class="form-text d-block">
+      Simple CSV file format <code>query,docid,rating</code> that exports only queries that have been rated.
+      Compatible with projects like <a href="https://github.com/tballison/quaerite" target="_blank" rel="noopener noreferrer">Quaerite</a> among others.
+    </span>
+
+    <input type="radio" id="exportTrec" name="export-case-format" value="trec"
+           data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="trec">
+    <label for="exportTrec">TREC</label>
+    <span class="form-text d-block">
+      TREC qrel file format <code>query_id 0 docno judgment</code> that exports only queries that have been rated.
+      Used by the <a href="https://trec.nist.gov/" target="_blank" rel="noopener noreferrer">TREC</a> competition.
+    </span>
+
+    <label for="exportBasicSnapshotSelect" class="d-block">Snapshot
+      <select id="exportBasicSnapshotSelect" class="form-select d-inline-block w-auto"
+              data-export-case-core-target="basicSnapshotSelect" data-action="change->export-case-core#selectBasicSnapshot"></select>
+    </label>
+    <span class="form-text d-block">
+      If you choose a Snapshot, then it will export unrated query/document pairs from when the Snapshot was created.
+    </span>
+  </div>
+  <hr>
+  <div class="mb-3">
+    <input type="radio" id="exportRre" name="export-case-format" value="rre"
+           data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="rre">
+    <label for="exportRre">Rated Ranking Evaluator / RankQuest</label>
+    <span class="form-text d-block">
+      Using <a href="https://github.com/SeaseLtd/rated-ranking-evaluator" target="_blank" rel="noopener noreferrer">Rated Ranking Evaluator</a> or <a href="https://rankquest.jillesvangurp.com/" target="_blank" rel="noopener noreferrer">RankQuest</a>?  Use the RRE format to export the ratings from Quepid to import into those tools.
+    </span>
+  </div>
+  <div class="mb-3">
+    <input type="radio" id="exportLtr" name="export-case-format" value="ltr"
+           data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="ltr">
+    <label for="exportLtr">Learning to Rank</label>
+    <span class="form-text d-block">
+      LTR uses a rather odd format of <code>rating qid:queryid # docid query</code>, eg <code>3 qid:1 # 1370 star trek</code>.
+    </span>
+  </div>
+  <hr>
+  <div class="mb-3">
+    <label>Quepid API</label>
+    <span class="form-text d-block">
+      Quepid <%= link_to "has an API", oas_rails_path, target: "_blank", rel: "noopener noreferrer" %> that you can export data in the JSON format via.  Append the parameter <code>?shallow=true</code> to return a smaller dataset.
+    </span>
+
+    Retrieve the
+    <%= link_to "Case", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "caseLink" } %>,
+    <%= link_to "Queries", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "queriesLink" } %>,
+    <%= link_to "Annotations", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "annotationsLink" } %>,
+    <%= link_to "Scores", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "scoresLink" } %>,
+    <%= link_to "Ratings", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "ratingsLink" } %>, or a Snapshot
+    <select class="form-select d-inline-block w-auto"
+            data-export-case-core-target="apiSnapshotSelect" data-action="change->export-case-core#selectApiSnapshot"></select>
+    <span class="d-none" data-export-case-core-target="apiSnapshotWrapper">
+      <%= link_to "here", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "apiSnapshotLink" } %>
+    </span>
+    from API.
+  </div>
+  <hr>
+  <div class="mb-3">
+    <input type="radio" id="exportQuepid" name="export-case-format" value="quepid"
+           data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="quepid">
+    <label for="exportQuepid">Quepid</label>
+    <span class="form-text d-block">
+      Need to move a Case between different Quepids?  This format lets you dump the complete Case.
+      You can also create a new Case outside Quepid and import using this format.
+      Use the Import Case function on the Cases Listing page to import it back in as a brand new Case.
+    </span>
+    Peek at <%= link_to "the JSON format", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "quepidPeekLink" } %>.
+  </div>
+<% end %>
+
+<%= render "shared/modal_shell", id: "exportCaseModal", title: "Export Case", dialog_class: "modal-lg",
+                                 data: {
+                                   controller: "export-case-core",
+                                   export_case_core_snapshots_index_url_template_value: api_case_snapshots_path(case_id: "__CASE_ID__", shallow: true),
+                                   export_case_core_snapshot_show_url_template_value: api_case_snapshot_path(case_id: "__CASE_ID__", id: "__SNAPSHOT_ID__", shallow: false),
+                                   export_case_core_case_url_template_value: api_case_path(case_id: "__CASE_ID__", shallow: false),
+                                   export_case_core_queries_url_template_value: api_case_queries_path(case_id: "__CASE_ID__"),
+                                   export_case_core_annotations_url_template_value: api_case_annotations_path(case_id: "__CASE_ID__"),
+                                   export_case_core_scores_url_template_value: api_case_scores_path(case_id: "__CASE_ID__"),
+                                   export_case_core_ratings_export_url_template_value: api_export_rating_path(case_id: "__CASE_ID__", format: "__FORMAT__"),
+                                   export_case_core_information_need_url_template_value: api_export_queries_information_need_path(case_id: "__CASE_ID__", format: :csv),
+                                   export_case_core_quepid_export_url_template_value: api_export_case_path(case_id: "__CASE_ID__")
+                                 },
+                                 title_data: { export_case_core_target: "title" },
+                                 footer: modal_footer,
+                                 body: modal_body %>

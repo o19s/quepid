@@ -13,9 +13,8 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
   2. In "Export Case: {case name}", try each format radio button in turn: **Information Need**, **General**, **Detailed** (only enabled in single-case view), **Snapshot** (pick a snapshot from its dropdown), **Basic**, **TREC** (pick a snapshot), **Rated Ranking Evaluator / RankQuest**, **Learning to Rank**.
   3. For each, click **Export** and confirm a file downloads with a sensible filename (e.g., `{caseName}_general.csv`) and the content matches what the modal's copy describes.
   4. Also check the **Quepid API** links section (Case/Queries/Annotations/Scores/Ratings/Snapshot JSON) and the **Quepid** full-case-JSON export (usable for re-import, see Part 3.3).
-- **Expected:** Export button stays disabled until a format is chosen. Each format produces a correctly structured file.
+- **Expected:** Export button stays disabled until a format is chosen, and stays disabled for **Snapshot** until a snapshot is picked from its dropdown. Each format produces a correctly structured file.
 - **Edge cases:**
-  - [ ] Choose a Snapshot/Basic/TREC export while that snapshot is still being processed in the background — confirm the warning about "currently being processed" appears instead of exporting incomplete/corrupt data.
   - [ ] Try Detailed export outside of single-case context — confirm it's disabled, not silently broken.
 
 ### 6.2 Import into a case (ratings / information needs / snapshots)

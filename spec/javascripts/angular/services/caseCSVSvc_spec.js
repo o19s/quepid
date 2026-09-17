@@ -13,91 +13,14 @@ describe('Service: caseCSVSvc', function () {
     });
   });
 
-  describe('stringify', function () {
-    var mockScores = {
-      "all_rated": false,
-      "case_id": 8,
-      "created_at": "2015-07-14 16:08:55",
-      "updated_at": "2015-07-14 16:08:55",
-      "queries": {
-        "1": {
-          "score": 30,
-          "text": "dog",
-        },
-        "2": {
-          "score": 0,
-          "text": "cat",
-        },
-        "3": {
-          "score": '',
-          "text": "foo",
-        }
-      },
-      "score":      54.5,
-      "try_id":     1,
-      "user_id":    2,
-      "email":      "ychaker@example.com"
-    };
-    var mockCase = {
-      "caseName":   'Test Case',
-      "caseNo":     8,
-      "teamName":   'Test Team',
-      "lastScore":  mockScores,
-      "teamNames":  function() { return 'Test Team'; },
-    };
-    var mockQueries =[
-      {
-        "queryId":1,
-        "query_text": "dog",
-        "informationNeed":"",
-        "notes": "This dog looks like a great dog.",
-        "options": {}
-        
-      },
-      {
-        "queryId":2,
-        "query_text": "cat",
-        "informationNeed":"",
-        "notes": 'Is this "really" a "cat"?',
-        "options": {}
-      },
-      {
-        "queryId":3,
-        "query_text": "foo",
-        "informationNeed":"",
-        "notes": "chil'laxin",
-        "options": {}
-      }
-    ];
-    var mockQueriesSvcQueries ={
-      "1": {
-        "queryId":1,
-        "query_text": "dog",
-        "informationNeed":"",
-        "notes": "This dog looks like a great dog.",
-        "options": {}
-        
-      },
-      "2": {
-        "queryId":2,
-        "query_text": "cat",
-        "informationNeed":"",
-        "notes": 'Is this "really" a "cat"?',
-        "options": {}
-      },
-      "3": {
-        "queryId":3,
-        "query_text": "foo",
-        "informationNeed":"",
-        "notes": "chil'laxin",
-        "options": {}
-      }
-    };  
-
-    mockCase.queries = mockQueries;
-
+  // `stringify` (the "general" export format) moved to
+  // app/javascript/utils/case_csv.js (buildGeneralCaseCsv) when the
+  // AngularJS <export-case> component was replaced by the Stimulus
+  // `export-case-core` modal — its escaping-edge-case coverage below moved
+  // with it to test/javascript/utils/case_csv.test.js.
+  describe('fixObjectKeys', function () {
     it('strips leading and trailing spaces in the keys', function () {
-      
+
       var mockResultFromUploadingCSVWithSpaces = [
         {
         "Query Text ": "star wars",
@@ -105,7 +28,7 @@ describe('Service: caseCSVSvc', function () {
         "MovieRating ": "PG"
         }
       ];
-      
+
       const result = caseCSVSvc.fixObjectKeys(mockResultFromUploadingCSVWithSpaces);
 
       expect(result).toEqual([{
@@ -114,121 +37,72 @@ describe('Service: caseCSVSvc', function () {
         "MovieRating": "PG"
       }]);
     });
-    
-    it('returns a comma separated string of query scores with the header', function () {
-      var result = caseCSVSvc.stringify(mockCase,mockQueriesSvcQueries, true);
+  });
+});
 
-      var expectedResult = "Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes,Options\r\nTest Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this \"\"really\"\" a \"\"cat\"\"?,\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin,\r\n";
+// Separate top-level describe (not nested in the one above) so its own
+// beforeEach controls injection: it deliberately never injects
+// `caseCSVSvc` itself, to prove that the `export-case:detailed` bridge in
+// caseCSVSvc.js's `.run()` block attaches on app bootstrap regardless of
+// whether anything in the dependency graph references caseCSVSvc directly.
+// The first test below is what actually guards that: deleting the `.run()`
+// block makes it (and only it) fail, since without eager instantiation there
+// is no listener to call saveAs at all. The second test covers a different,
+// unrelated concern (the case-mismatch guard inside the listener) and would
+// pass just as well with no listener attached — it's here for completeness,
+// not as a `.run()` regression guard.
+describe('caseCSVSvc export-case:detailed bridge', function () {
+  var caseSvc, queriesSvc;
 
-      expect(result).toEqual(expectedResult);
+  beforeEach(module('QuepidTest'));
+
+  beforeEach(function() {
+    inject(function (_caseSvc_, _queriesSvc_) {
+      caseSvc = _caseSvc_;
+      queriesSvc = _queriesSvc_;
     });
+  });
 
-    it('returns a comma separated string of query scores without the header', function () {
-      var result = caseCSVSvc.stringify(mockCase, mockQueriesSvcQueries);
+  function mockQuery() {
+    return {
+      queryText: 'dog',
+      docs: [],
+      fieldSpec: function() {
+        return { fields: [], id: 'id', title: 'title' };
+      }
+    };
+  }
 
-      var expectedResult = "Test Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this \"\"really\"\" a \"\"cat\"\"?,\r\nTest Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin,\r\n";
-
-      expect(result).toEqual(expectedResult);
+  it('attaches its listener eagerly via .run() and downloads a detailed-export CSV when the event matches the currently selected case', function () {
+    queriesSvc.queries = { 1: mockQuery() };
+    caseSvc.selectTheCase({
+      caseNo: 42,
+      caseName: 'Eager Bridge Case',
+      lastScore: { case_id: 42 },
+      teamNames: function() { return 'Team'; }
     });
+    spyOn(window, 'saveAs');
 
-    it('escapes a value with a " in it', function () {
-      var newMockCase = angular.copy(mockCase);
-      newMockCase.caseName = 'Test "Case"';
+    document.dispatchEvent(new CustomEvent('export-case:detailed', { detail: { caseId: 42 } }));
 
-      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
+    expect(window.saveAs).toHaveBeenCalled();
+    var args = window.saveAs.calls.mostRecent().args;
+    expect(args[0] instanceof Blob).toBe(true);
+    expect(args[1]).toBe('Eager_Bridge_Case_detailed.csv');
+  });
 
-      var expectedResult = 'Test Team,Test ""Case"",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,Test ""Case"",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,Test ""Case"",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
-
-      expect(result).toEqual(expectedResult);
+  it('does nothing when the event\'s caseId does not match the currently selected case', function () {
+    queriesSvc.queries = { 1: mockQuery() };
+    caseSvc.selectTheCase({
+      caseNo: 42,
+      caseName: 'Eager Bridge Case',
+      lastScore: { case_id: 42 },
+      teamNames: function() { return 'Team'; }
     });
+    spyOn(window, 'saveAs');
 
-    it('escapes a value with a \n in it', function () {
-      var newMockCase = angular.copy(mockCase);
-      newMockCase.caseName = 'Test \n Case';
+    document.dispatchEvent(new CustomEvent('export-case:detailed', { detail: { caseId: 999 } }));
 
-      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
-
-      var expectedResult = 'Test Team,"Test \n Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,"Test \n Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,"Test \n Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
-
-      expect(result).toEqual(expectedResult);
-    });
-
-    it('escapes a value with a \r in it', function () {
-      var newMockCase = angular.copy(mockCase);
-      newMockCase.caseName = 'Test \r Case';
-
-      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
-
-      var expectedResult = 'Test Team,"Test \r Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,"Test \r Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,"Test \r Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
-
-      expect(result).toEqual(expectedResult);
-    });
-
-    it('escapes a value with a \n\r in it', function () {
-      var newMockCase = angular.copy(mockCase);
-      newMockCase.caseName = 'Test \n\r Case';
-
-      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
-
-      var expectedResult = 'Test Team,"Test \n\r Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,"Test \n\r Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,"Test \n\r Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
-
-      expect(result).toEqual(expectedResult);
-    });
-
-    it('escapes a value with a , in it', function () {
-      var newMockCase = angular.copy(mockCase);
-      newMockCase.caseName = 'Test, Case';
-
-      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
-
-      var expectedResult = 'Test Team,"Test, Case",8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team,"Test, Case",8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team,"Test, Case",8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
-
-      expect(result).toEqual(expectedResult);
-    });
-
-    it('escapes a value that starts with =', function () {
-      var newMockCase = angular.copy(mockCase);
-      newMockCase.caseName = '=Test Case';
-
-      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
-
-      var expectedResult = 'Test Team, =Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, =Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, =Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';
-
-      expect(result).toEqual(expectedResult);
-    });
-
-    it('escapes a value that starts with @', function () {
-      var newMockCase = angular.copy(mockCase);
-      newMockCase.caseName = '@Test Case';
-
-      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
-
-      var expectedResult = 'Test Team, @Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, @Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, @Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';;
-
-      expect(result).toEqual(expectedResult);
-    });
-
-    it('escapes a value that starts with +', function () {
-      var newMockCase = angular.copy(mockCase);
-      newMockCase.caseName = '+Test Case';
-
-      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
-
-      var expectedResult = 'Test Team, +Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, +Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, +Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';;
-
-      expect(result).toEqual(expectedResult);
-    });
-
-    it('escapes a value that starts with -', function () {
-      var newMockCase = angular.copy(mockCase);
-      newMockCase.caseName = '-Test Case';
-
-      var result = caseCSVSvc.stringify(newMockCase, mockQueriesSvcQueries);
-
-      var expectedResult = 'Test Team, -Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\nTest Team, -Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\nTest Team, -Test Case,8,foo,,2015-07-14 16:08:55,,,chil\'laxin,\r\n';;
-
-      expect(result).toEqual(expectedResult);
-    });
-
+    expect(window.saveAs).not.toHaveBeenCalled();
   });
 });

@@ -15,7 +15,7 @@
               scores="scores"
             >
             </qscore-case>
-            
+
             <!-- Snapshot case scores -->
             <qscore-case
               ng-if="queries.avgQuery.diffs"
@@ -45,8 +45,8 @@
                 </span>
                 <span ng-show="caseName.startRename">
                   <form class="d-flex flex-wrap align-items-center gap-2" ng-submit="caseName.rename()">
-                      <input style="background:#FFFF99" type="text" ng-model="caseName.name" />
-                      <input type="submit" class="btn btn-sm btn-primary" value="Rename" ng-disabled="!caseName.name || !caseName.name.trim()" />
+                      <input style="background:#FFFF99" type="text" ng-model="caseName.name">
+                      <input type="submit" class="btn btn-sm btn-primary" value="Rename" ng-disabled="!caseName.name || !caseName.name.trim()">
                       <button class="btn btn-sm btn-outline-secondary" ng-click="caseName.cancel()">Cancel</button>
                   </form>
                 </span>
@@ -61,8 +61,8 @@
                 </span>
                 <span ng-show="tryName.startRename">
                   <form class="d-flex flex-wrap align-items-center gap-2" ng-submit="tryName.rename()">
-                      <input style="background:#FFFF99" type="text" ng-model="tryName.name" />
-                      <input type="submit" class="btn btn-sm btn-primary" value="Rename" ng-disabled="!tryName.name || !tryName.name.trim()" />
+                      <input style="background:#FFFF99" type="text" ng-model="tryName.name">
+                      <input type="submit" class="btn btn-sm btn-primary" value="Rename" ng-disabled="!tryName.name || !tryName.name.trim()">
                       <button class="btn btn-sm btn-outline-secondary" ng-click="tryName.cancel()">Cancel</button>
                   </form>
                 </span>
@@ -147,11 +147,17 @@
               >Delete</a>
             </li>
             <li class="list-inline-item">
-              <export-case
-                icon-only="false"
-                acase="caseModel.selectedCase()"
-                supports-detailed-export="true"
-              ></export-case>
+              <i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i>
+              <a
+                href="#"
+                data-controller="export-case-core"
+                data-action="click->export-case-core#open"
+                data-bs-toggle="modal"
+                data-bs-target="#exportCaseModal"
+                data-export-case-core-id-value="{{ caseModel.selectedCase().caseNo }}"
+                data-export-case-core-name-value="{{ caseModel.selectedCase().caseName }}"
+                data-export-case-core-supports-detailed-export-value="true"
+              >Export</a>
             </li>
             <li class="list-inline-item" id="tune-relevance-link">
               <i class="bi bi-wrench-adjustable"></i>
