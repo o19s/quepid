@@ -99,8 +99,8 @@
                                    bs_target: '#shareCaseModal',
                                    share_case_id_value: kase.id,
                                    share_case_name_value: kase.case_name,
-                                   share_case_all_teams_json: current_user.teams.select(:id, :name).order(:name).to_json,
-                                   share_case_shared_teams_json: kase.teams.select(:id, :name).to_json
+                                   share_case_all_teams_json_value: current_user.teams.select(:id, :name).order(:name).to_json,
+                                   share_case_shared_teams_json_value: kase.teams.select(:id, :name).to_json
                                  } do %>
                     <i class="bi bi-share" aria-hidden="true"></i>
                   <% end %>

@@ -5,6 +5,7 @@ import {
   expandFirstQuery,
   expandedCaseScreenshotOpts,
   gotoCase,
+  headerDropdownMenu,
 } from './angular_case_helpers';
 
 /**
@@ -24,7 +25,7 @@ test.describe('Angular pages — interaction screenshots', () => {
     await expect(page).toHaveScreenshot('cases-list-01-case-loaded.png', expandedCaseScreenshotOpts(page));
 
     await page.locator('#header').getByRole('button', { name: /Relevancy Cases/i }).click();
-    const relevancyMenu = page.locator('#header li.dropdown').nth(0).locator('.dropdown-menu');
+    const relevancyMenu = headerDropdownMenu(page, 'Relevancy Cases');
     await expect(relevancyMenu).toBeVisible();
     await expect(page).toHaveScreenshot('cases-list-02-relevancy-cases-dropdown.png', {
       mask: dynamicRegions(page),
@@ -37,7 +38,7 @@ test.describe('Angular pages — interaction screenshots', () => {
     await expect(page).toHaveScreenshot('cases-list-03-query-filter-focused.png', expandedCaseScreenshotOpts(page));
 
     await page.locator('#header').getByRole('button', { name: /Books/i }).click();
-    const booksMenu = page.locator('#header li.dropdown').nth(1).locator('.dropdown-menu');
+    const booksMenu = headerDropdownMenu(page, 'Books');
     await expect(booksMenu).toBeVisible();
     await expect(booksMenu).toContainText('RECENT BOOKS');
     await expect(page).toHaveScreenshot('cases-list-04-books-dropdown.png', {
@@ -88,7 +89,7 @@ test.describe('Angular pages — interaction screenshots', () => {
     await page.keyboard.press('Escape');
 
     await page.locator('#header').getByRole('button', { name: /Relevancy Cases/i }).click();
-    await expect(page.locator('#header li.dropdown').nth(0).locator('.dropdown-menu')).toBeVisible();
+    await expect(headerDropdownMenu(page, 'Relevancy Cases')).toBeVisible();
     await expect(page).toHaveScreenshot('query-editor-06-relevancy-cases-dropdown.png', {
       mask: dynamicRegions(page),
       maxDiffPixelRatio: 0.025,
@@ -101,7 +102,7 @@ test.describe('Angular pages — interaction screenshots', () => {
     await expect(page).toHaveScreenshot('rating-ui-01-results-visible.png', expandedCaseScreenshotOpts(page));
 
     await page.locator('#header').getByRole('button', { name: /Relevancy Cases/i }).click();
-    await expect(page.locator('#header li.dropdown').nth(0).locator('.dropdown-menu')).toBeVisible();
+    await expect(headerDropdownMenu(page, 'Relevancy Cases')).toBeVisible();
     await expect(page).toHaveScreenshot('rating-ui-02-relevancy-cases-dropdown.png', {
       mask: dynamicRegions(page),
       maxDiffPixelRatio: 0.025,
@@ -152,7 +153,7 @@ test.describe('Angular pages — interaction screenshots', () => {
     await page.keyboard.press('Escape');
 
     await page.locator('#header').getByRole('button', { name: /Books/i }).click();
-    await expect(page.locator('#header li.dropdown').nth(1).locator('.dropdown-menu')).toBeVisible();
+    await expect(headerDropdownMenu(page, 'Books')).toBeVisible();
     await expect(page).toHaveScreenshot('scorer-config-05-books-dropdown.png', {
       mask: dynamicRegions(page),
       maxDiffPixelRatio: 0.025,
@@ -181,7 +182,14 @@ test.describe('Angular pages — interaction screenshots', () => {
     await expect(page).toHaveScreenshot('wizard-03-case-name-focused.png', expandedCaseScreenshotOpts(page));
 
     await nameInput.fill('Playwright wizard tour', { force: true });
-    await expect(modal.getByRole('heading', { name: /What Search Endpoint/i })).toBeVisible({ timeout: 15_000 });
+    // angular-wizard sometimes auto-advances on the input event and sometimes doesn't.
+    // If it didn't, click Continue; either way we end up on the Endpoint step.
+    const endpointHeading = modal.getByRole('heading', { name: /What Search Endpoint/i });
+    const visibleContinue = modal.getByRole('button', { name: /^Continue$/i }).filter({ visible: true });
+    if (!(await endpointHeading.isVisible())) {
+      await visibleContinue.click();
+    }
+    await expect(endpointHeading).toBeVisible({ timeout: 15_000 });
     await modal.getByRole('button', { name: 'Create a new Search Endpoint' }).click();
     await expect(page).toHaveScreenshot('wizard-04-endpoint-accordion.png', expandedCaseScreenshotOpts(page));
 
@@ -195,7 +203,7 @@ test.describe('Angular pages — interaction screenshots', () => {
     await expandFirstQuery(page);
 
     await page.locator('#header').getByRole('button', { name: /Relevancy Cases/i }).click();
-    await expect(page.locator('#header li.dropdown').nth(0).locator('.dropdown-menu')).toBeVisible();
+    await expect(headerDropdownMenu(page, 'Relevancy Cases')).toBeVisible();
     await expect(page).toHaveScreenshot('wizard-05-relevancy-cases-dropdown.png', {
       mask: dynamicRegions(page),
       maxDiffPixelRatio: 0.025,

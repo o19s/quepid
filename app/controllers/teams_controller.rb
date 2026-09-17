@@ -17,10 +17,10 @@ class TeamsController < ApplicationController
 
     if @team.cases.exists?(kase.id)
       @team.cases.delete(kase)
-      flash[:notice] = "Case ##{kase.case_name} removed from the team."
+      flash[:notice] = "Case #{kase.case_name} removed from the team."
       Analytics::Tracker.track_case_deleted_event(current_user, kase) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_deleted_event)
     else
-      flash[:alert] = "Case ##{kase.case_name} is not associated with this team."
+      flash[:alert] = "Case #{kase.case_name} is not associated with this team."
     end
 
     redirect_to team_path(@team)
@@ -191,9 +191,9 @@ class TeamsController < ApplicationController
       kase.owner = current_user
       kase.mark_archived!
       Analytics::Tracker.track_case_archived_event(current_user, kase) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_archived_event)
-      flash[:notice] = "Case ##{kase.case_name} archived."
+      flash[:notice] = "Case #{kase.case_name} archived."
     else
-      flash[:alert] = "Case ##{kase.case_name} is not associated with this team."
+      flash[:alert] = "Case #{kase.case_name} is not associated with this team."
     end
 
     redirect_to team_path(@team)
@@ -207,9 +207,9 @@ class TeamsController < ApplicationController
     if @team.cases.exists?(kase.id)
       kase.archived = false
       kase.save
-      flash[:notice] = "Case ##{kase.case_name} unarchived."
+      flash[:notice] = "Case #{kase.case_name} unarchived."
     else
-      flash[:alert] = "Case ##{kase.case_name} is not associated with this team."
+      flash[:alert] = "Case #{kase.case_name} is not associated with this team."
     end
 
     redirect_to team_path(@team)

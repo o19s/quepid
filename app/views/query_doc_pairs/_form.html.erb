@@ -1,17 +1,7 @@
 <%= form_with(model: [@book, query_doc_pair]) do |form| %>
   <div class="card">
     <div class="card-body">
-      <% if query_doc_pair.errors.any? %>
-        <div id="error_explanation">
-          <h2><%= pluralize(query_doc_pair.errors.count, "error") %> prohibited this Query Doc Pair from being saved:</h2>
-
-          <ul>
-            <% query_doc_pair.errors.each do |error| %>
-              <li><%= error.full_message %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
+      <%= render "shared/error_messages", record: query_doc_pair, subject: "Query Doc Pair" %>
 
       <div class="mb-3">
         <%= form.label :query_text, class: 'form-label' %>

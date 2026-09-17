@@ -1,17 +1,7 @@
 <%= form_with(model: search_endpoint) do |form| %>
   <div class="card">
     <div class="card-body">
-      <% if search_endpoint.errors.any? %>
-        <div id="error_explanation">
-          <h2><%= pluralize(search_endpoint.errors.count, "error") %> prohibited this Search Endpoint from being saved:</h2>
-
-          <ul>
-            <% search_endpoint.errors.each do |error| %>
-              <li><%= error.full_message %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
+      <%= render "shared/error_messages", record: search_endpoint, subject: "Search Endpoint" %>
 
       <% if @current_user.teams.empty? %>
         <div class="alert alert-warning" role="alert">

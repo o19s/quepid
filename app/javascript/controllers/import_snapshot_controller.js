@@ -1,4 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
+import { apiFetch } from "api/fetch"
+import { showStatusMessage } from "utils/status_message"
+import { getQuepidRootUrl } from "utils/quepid_root"
 
 export default class extends Controller {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner", "preview", "previewContent"]
@@ -161,41 +164,47 @@ export default class extends Controller {
       snapshot.queries[queryText].docs.push(docPayload)
     })
 
-    // Convert to API format and send requests
-    const promises = []
-    
+    // Convert to API format and send requests sequentially: snapshots for the same
+    // case commonly share query text, and sending them concurrently races the
+    // server's find-or-create-query logic into a MySQL deadlock.
+    let failureCount = 0
+
     for (const [caseId, caseData] of Object.entries(cases)) {
       for (const [snapshotName, snapshot] of Object.entries(caseData.snapshots)) {
         const snapshotPayload = {
           name: snapshot.name,
           created_at: snapshot.created_at,
-          queries: Object.entries(snapshot.queries).map(([queryText, queryData]) => ({
-            query_text: queryText,
-            docs: queryData.docs
-          }))
+          queries: Object.fromEntries(
+            Object.entries(snapshot.queries).map(([queryText, queryData]) => [
+              queryText,
+              { docs: queryData.docs }
+            ])
+          )
         }
-        
-        promises.push(this.sendSnapshotToAPI(caseId, snapshotPayload))
+
+        try {
+          await this.sendSnapshotToAPI(caseId, snapshotPayload)
+        } catch (error) {
+          console.error(`Snapshot import failed for case ${caseId}, snapshot "${snapshotName}":`, error)
+          failureCount += 1
+        }
       }
     }
 
-    const results = await Promise.allSettled(promises)
-    
-    // Check for failures
-    const failures = results.filter(r => r.status === 'rejected')
-    if (failures.length > 0) {
-      throw new Error(`${failures.length} snapshot(s) failed to import. Some may have been imported successfully.`)
+    if (failureCount > 0) {
+      throw new Error(`${failureCount} snapshot(s) failed to import. Some may have been imported successfully.`)
     }
   }
 
   async sendSnapshotToAPI(caseId, snapshotData) {
-    const url = `/api/cases/${caseId}/snapshots/imports`
-    
-    const response = await fetch(url, {
+    // Case IDs come from the uploaded CSV, not the page, so there's no
+    // server-rendered URL to pass in - fall back to the root URL.
+    const url = `${getQuepidRootUrl()}/api/cases/${caseId}/snapshots/imports`
+
+    const response = await apiFetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({ snapshots: [snapshotData] })
     })
@@ -229,9 +238,7 @@ export default class extends Controller {
   }
 
   showAlert(message, type) {
-    this.alertTarget.textContent = message
-    this.alertTarget.className = `alert alert-${type}`
-    this.alertTarget.classList.remove('d-none')
+    showStatusMessage(this.alertTarget, { message, className: `alert alert-${type}` })
   }
 
   hideAlert() {
