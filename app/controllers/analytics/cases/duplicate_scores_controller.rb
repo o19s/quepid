@@ -6,7 +6,6 @@ module Analytics
       layout 'analytics'
 
       before_action :set_case, only: [ :show ]
-      before_action :render_404_page_unless_case, only: [ :show ]
 
       def show
         @duplicate_score_patterns = Score.select([ 'count(*) as count', :try_id, :score, 'DATE(updated_at) AS day' ])

@@ -7,15 +7,11 @@ module Authentication
     private
 
     def set_case_query
-      @query = @case.queries.where(id: params[:query_id]).first
+      @query = @case.queries.find(params.expect(:query_id))
     end
 
     def set_query
-      @query = @case.queries.where(id: params[:id]).first
-    end
-
-    def check_query
-      render json: { message: 'Query not found!' }, status: :not_found unless @query
+      @query = @case.queries.find(params.expect(:id))
     end
   end
 end

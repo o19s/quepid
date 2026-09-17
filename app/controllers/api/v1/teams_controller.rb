@@ -3,8 +3,7 @@
 module Api
   module V1
     class TeamsController < Api::ApiController
-      before_action :set_team,          only: [ :show, :update, :destroy ]
-      before_action :check_team,        only: [ :show, :update, :destroy ]
+      before_action :set_team, only: [ :show, :update, :destroy ]
 
       def index
         # @teams = current_user.teams_im_in

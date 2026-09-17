@@ -7,6 +7,12 @@ module Api
       before_action :set_scorer, only: [ :show, :update, :destroy ]
       before_action :check_communal_scorers_only, only: [ :create, :update, :destroy ]
 
+      # Keep the established error envelope for this endpoint while using a
+      # raising loader like the rest of the API.
+      rescue_from ActiveRecord::RecordNotFound do
+        render json: { error: 'Not Found!' }, status: :not_found
+      end
+
       def index
         @user_scorers = current_user.scorers_involved_with.all.reject(&:communal?) unless Rails.application.config.communal_scorers_only
         @communal_scorers = Scorer.communal
@@ -150,11 +156,10 @@ module Api
 
       def set_scorer
         # This block of logic should all be in user_scorer_finder.rb
-        @scorer = current_user.scorers_involved_with.where(id: params[:id]).first
+        @scorer = current_user.scorers_involved_with.find_by(id: params[:id])
 
-        @scorer = Scorer.communal.where(id: params[:id]).first if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
-
-        render json: { error: 'Not Found!' }, status: :not_found unless @scorer
+        @scorer = Scorer.communal.find_by(id: params[:id]) if @scorer.nil? # Check if communal scorers has the scorer.  This logic should be in the .scorers. method!
+        raise ActiveRecord::RecordNotFound.new('Scorer not found', 'Scorer', 'id', params[:id]) unless @scorer
       end
 
       def check_communal_scorers_only

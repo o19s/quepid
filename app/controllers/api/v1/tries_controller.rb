@@ -6,7 +6,6 @@ module Api
 
     class TriesController < Api::ApiController
       before_action :set_case
-      before_action :check_case
       before_action :set_try, only: [ :show, :update, :destroy, :preview_args ]
 
       def index
@@ -159,9 +158,7 @@ module Api
       def set_try
         # We always refer to a try as a incrementing linear number within the scope of
         # a case.   We don't use the internal try_id in the API.
-        @try = @case.tries.where(try_number: params[:try_number]).first
-
-        render json: { message: 'Try not found!' }, status: :not_found unless @try
+        @try = @case.tries.find_by!(try_number: params.expect(:try_number))
       end
 
       def try_params

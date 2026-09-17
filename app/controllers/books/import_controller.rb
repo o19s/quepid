@@ -17,8 +17,6 @@ module Books
 
     before_action :set_book,
                   only: [ :edit, :update ]
-    before_action :check_book,
-                  only: [ :edit, :update ]
 
     def new
       @book = Book.new

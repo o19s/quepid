@@ -29,6 +29,10 @@ module Authentication
               end
 
       @case = Case.public_cases.find_by(id: case_id) if @case.nil? # We didn't find a match, so let's see if it's a public case
+
+      return if @case
+
+      raise ActiveRecord::RecordNotFound.new('Case not found', 'Case', 'id', case_id)
     end
 
     def recent_cases count
@@ -49,20 +53,6 @@ module Authentication
                 []
               end
       cases
-    end
-
-    def check_case
-      render json: { message: 'Case not found!' }, status: :not_found unless @case
-    end
-
-    # @case is nil when the case doesn't exist, or isn't public/accessible to
-    # this (possibly anonymous) visitor. Render the standard 404 page instead
-    # of letting an HTML-rendering controller/view crash on a nil @case.
-    def render_404_page_unless_case
-      # layout: false -- some callers' layouts assume @case is present (e.g.
-      # @case.public?), so skip the layout rather than crash again while
-      # trying to render the "not found" response.
-      render file: 'public/404.html', status: :not_found, layout: false unless @case
     end
 
     def decrypt_case_id encrypted_value

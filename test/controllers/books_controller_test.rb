@@ -85,6 +85,15 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_match 'No Query/Doc Pairs Available', response.body
     end
+
+    test 'redirects an inaccessible book to the books page with sharing guidance' do
+      login_user_for_integration_test user
+
+      get '/books/99999'
+
+      assert_redirected_to books_path
+      assert_equal 'Could not retrieve book 99999. Confirm that the book has been shared with you via a team you are a member of!', flash[:alert]
+    end
   end
 
   describe 'judgement stats' do

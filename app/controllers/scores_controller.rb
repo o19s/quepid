@@ -4,7 +4,6 @@ class ScoresController < ApplicationController
   include Pagy::Method
 
   before_action :set_case
-  before_action :render_404_page_unless_case
 
   def index
     query = @case.scores
