@@ -157,14 +157,17 @@
             }
           }
           else if (typeof data === 'string') {
-            data = data.trim().replace(/"/g, '""'); // Escape double quotes
+            data = data.trim();
 
-            if (data.indexOf(',') > -1 || data.indexOf('\n') > -1 || data.indexOf('\r') > -1) {
-              data = textDelimiter + data + textDelimiter;
-            }
-
+            // Neutralize spreadsheet formulas before adding CSV quoting.
             if (data.startsWith('=') || data.startsWith('@') || data.startsWith('+') || data.startsWith('-')) {
               data = ` ${data}`;
+            }
+
+            data = data.replace(/"/g, '""'); // Escape double quotes
+
+            if (data.indexOf(',') > -1 || data.indexOf('\n') > -1 || data.indexOf('\r') > -1 || data.indexOf('"') > -1) {
+              data = textDelimiter + data + textDelimiter;
             }
           }
           return data;

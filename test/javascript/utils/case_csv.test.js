@@ -29,7 +29,7 @@ describe("buildGeneralCaseCsv", () => {
     expect(result).toEqual(
       "Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes,Options\r\n" +
       "Test Team,Test Case,8,dog,30,2015-07-14 16:08:55,,,This dog looks like a great dog.,\r\n" +
-      'Test Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,Is this ""really"" a ""cat""?,\r\n' +
+      'Test Team,Test Case,8,cat,0,2015-07-14 16:08:55,,,"Is this ""really"" a ""cat""?",\r\n' +
       "Test Team,Test Case,8,foo,,2015-07-14 16:08:55,,,chil'laxin,\r\n"
     )
   })
@@ -41,7 +41,7 @@ describe("buildGeneralCaseCsv", () => {
   })
 
   it.each([
-    [ 'a value with a " in it', 'Test "Case"', 'Test ""Case""' ],
+    [ 'a value with a " in it', 'Test "Case"', '"Test ""Case"""' ],
     [ "a value with a \\n in it", "Test \n Case", '"Test \n Case"' ],
     [ "a value with a \\r in it", "Test \r Case", '"Test \r Case"' ],
     [ "a value with a \\n\\r in it", "Test \n\r Case", '"Test \n\r Case"' ],
@@ -49,7 +49,8 @@ describe("buildGeneralCaseCsv", () => {
     [ "a value that starts with =", "=Test Case", " =Test Case" ],
     [ "a value that starts with @", "@Test Case", " @Test Case" ],
     [ "a value that starts with +", "+Test Case", " +Test Case" ],
-    [ "a value that starts with -", "-Test Case", " -Test Case" ]
+    [ "a value that starts with -", "-Test Case", " -Test Case" ],
+    [ "a formula that needs CSV quoting", '=HYPERLINK("https://example.com","click")', '" =HYPERLINK(""https://example.com"",""click"")"' ]
   ])("escapes %s", (_description, caseName, expectedCaseNameField) => {
     const result = buildGeneralCaseCsv({ ...baseCaseData, case_name: caseName }, queries)
     const firstDataRow = result.split("\r\n")[1]
