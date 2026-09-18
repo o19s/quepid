@@ -96,7 +96,7 @@ class CaseImporter
   end
 
   def arrange_imported_queries
-    Arrangement::List.sequence_in_order(@imported_queries)
+    Arrangement::List.normalize_in_order(@imported_queries)
   end
 
   def attach_search_endpoint

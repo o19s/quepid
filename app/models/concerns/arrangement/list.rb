@@ -44,7 +44,7 @@ module Arrangement
       # Normalize nodes in the order supplied by the caller. This is useful
       # when importing an ordered list whose source does not expose the
       # internal arrangement pointers.
-      def sequence_in_order nodes
+      def normalize_in_order nodes
         return [] if nodes.blank?
 
         normalize(nodes)
