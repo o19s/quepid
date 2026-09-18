@@ -35,13 +35,8 @@
 
   <div class="mb-3">
     <input type="radio" id="exportDetailed" name="export-case-format" value="detailed"
-           data-export-case-core-target="detailedRadio"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="detailed">
     <label for="exportDetailed">Detailed</label>
-    <p class="bg-warning text-warning p-3 d-none" data-export-case-core-target="detailedWarning">
-      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
-      Detailed export is only supported from the individual Case view.
-    </p>
     <span class="form-text d-block">
       CSV file with <code>Team Name,Case Name,Case ID,Query Text,Doc ID,Position,Title,Rating,Field1,...,FieldN</code> where <code>Field1,...,FieldN</code> are specified under <strong>Settings</strong> in the <strong>Displayed Fields</strong> field.
     </span>

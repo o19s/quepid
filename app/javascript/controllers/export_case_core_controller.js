@@ -32,8 +32,6 @@ export default class extends ModalTriggerControllerBase {
   static targets = [
     "title",
     "submitButton",
-    "detailedRadio",
-    "detailedWarning",
     "snapshotRadio",
     "snapshotSelect",
     "basicRadio",
@@ -69,11 +67,9 @@ export default class extends ModalTriggerControllerBase {
     const btn = event.currentTarget || event.target
     const caseId = btn?.dataset?.exportCaseCoreIdValue
     const caseName = btn?.dataset?.exportCaseCoreNameValue
-    const supportsDetailedExport = btn?.dataset?.exportCaseCoreSupportsDetailedExportValue !== "false"
 
     this.currentCaseId = caseId || ""
     this.currentCaseName = caseName || ""
-    this.supportsDetailedExport = supportsDetailedExport
     this.selectedFormat = null
 
     if (this.hasTitleTarget) {
@@ -81,8 +77,6 @@ export default class extends ModalTriggerControllerBase {
     }
 
     this.element.querySelectorAll('input[name="export-case-format"]').forEach((radio) => { radio.checked = false })
-    if (this.hasDetailedRadioTarget) this.detailedRadioTarget.disabled = !supportsDetailedExport
-    if (this.hasDetailedWarningTarget) this.detailedWarningTarget.classList.add("d-none")
 
     this._refreshLinks()
     this._refreshSubmitState()
@@ -91,10 +85,6 @@ export default class extends ModalTriggerControllerBase {
 
   selectFormat(event) {
     this.selectedFormat = event.params.format
-    if (this.hasDetailedWarningTarget) {
-      const showWarning = this.selectedFormat === "detailed" && !this.supportsDetailedExport
-      this.detailedWarningTarget.classList.toggle("d-none", !showWarning)
-    }
     this._refreshSubmitState()
   }
 
@@ -205,8 +195,7 @@ export default class extends ModalTriggerControllerBase {
   _refreshSubmitState() {
     if (!this.hasSubmitButtonTarget) return
     const missingSnapshot = this.selectedFormat === "snapshot" && !this._selectedSnapshotId()
-    const disabled = !this.selectedFormat || missingSnapshot ||
-      (this.selectedFormat === "detailed" && !this.supportsDetailedExport)
+    const disabled = !this.selectedFormat || missingSnapshot
     this.submitButtonTarget.disabled = disabled
   }
 

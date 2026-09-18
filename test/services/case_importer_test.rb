@@ -99,6 +99,7 @@ class CaseImporterTest < ActiveSupport::TestCase
 
       assert_equal 2, new_case.queries.count
       assert_equal 2, new_case.ratings.count
+      assert_equal [ 'First Query', 'Second Query' ], new_case.queries.reload.map(&:query_text)
 
       second_query = new_case.queries.find_by(query_text: 'Second Query')
       assert_equal user, second_query.ratings.find_by(doc_id: 'doca').user
