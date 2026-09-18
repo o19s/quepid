@@ -220,16 +220,16 @@ codebase as of 2026-09-03 — re-check before acting, since line numbers drift.
 ### Low-medium impact
 
 5. **Clipboard-copy-with-fallback duplicated with inconsistent robustness.**
-   `invite_controller.js:6-35` has a full fallback path
-   (`navigator.clipboard` → `execCommand('copy')`); `mapper_wizard_controller.js:484-509`
-   only supports `navigator.clipboard.writeText`, no fallback. Both separately
-   reimplement "swap button content for N ms then restore."
-   - **Fix**: `utils/clipboard.js` (`copyToClipboard`, `flashButtonFeedback`).
-   - **Pragmatic priority — Opportunistic:** the missing fallback is a real gap
-     (older browsers / non-HTTPS contexts), but low traffic surface — fix when
-     next touching either controller rather than as standalone work.
-   - **Angular removal:** No — `invite_controller.js` (teams page) and
-     `mapper_wizard_controller.js` (Rails wizard page) are both Rails-only.
+   `invite_controller.js` now uses shared `utils/clipboard` (`copyText`).
+   `mapper_wizard_controller.js:484-509` still only supports
+   `navigator.clipboard.writeText` (no HTTP fallback) and separately reimplements
+   "swap button content for N ms then restore."
+   - **Fix**: route mapper through `utils/clipboard.copyText`; optional shared
+     `flashButtonFeedback` if a third call site appears.
+   - **Pragmatic priority — Opportunistic:** the missing mapper fallback is a real
+     gap (older browsers / non-HTTPS contexts), but low traffic surface — fix when
+     next touching that controller rather than as standalone work.
+   - **Angular removal:** No — `mapper_wizard_controller.js` is Rails-only.
 
 6. **Manual debounce-timer bookkeeping** reimplemented in
    `team_member_autocomplete_controller.js:30,36-37,44,52-55,171-176` and
@@ -307,15 +307,24 @@ codebase as of 2026-09-03 — re-check before acting, since line numbers drift.
      wholesale.
    - **Angular removal:** Yes — legacy AngularJS modal-instance controllers.
 
-6. Rating-scale watch/setup logic duplicated across `searchResults.js:86-138`,
-   `docFinder.js:129-165` (`rateBulkSvc.setScale`/`handleRatingScale`), and
-   `controllers/searchResult.js:13-18` (same `setScale` shape, but via the
-   single-doc `rateElementSvc` instead) — manual doc-id collection repeated too. Core UI,
-   not imminently migrated; worth a `rateBulkSvc.bulkRate/bulkReset` extraction if
-   anyone is in this code anyway.
-   - **Pragmatic priority — Opportunistic:** no bug, core UI with no near-term
-     migration date — fine to leave alone, do the extraction only incidentally while
-     touching rating-scale code for a feature reason.
+6. **(partially resolved 2026-09-18)** `rateBulkSvc`/`rateElementSvc` were identical
+   `setScale`-only services (the duplicated `handleRatingScale` they used to share was
+   removed when the ratings-scale popover migrated to the Stimulus
+   `rating-popover` controller) — merged into a single `rateScaleSvc`.
+   What's left: `searchResults.js`, `docFinder.js`, and `controllers/searchResult.js`
+   each independently wire up `$element.on('rating-popover:rate'/'reset', ...)` +
+   `$scope.$on('$destroy', ...)` cleanup to bridge the Stimulus controller's bubbling
+   CustomEvents back into Angular (same `stopPropagation`/`$scope.$apply()`/doc-id-collection
+   shape ~90 lines total, with the id-collection loop duplicated a second time within
+   `searchResults.js`/`docFinder.js` between their own rate and reset handlers).
+   - **Fix**: A `bindRatingPopover($scope, $element, { rate, reset })` helper
+     (natural fit alongside `rateScaleSvc`) that owns the event binding/cleanup;
+     callers pass only their rate/reset logic.
+   - **Pragmatic priority — Skip:** this is Angular-to-Stimulus bridge code that
+     exists solely until the surrounding Angular controllers themselves are ported —
+     building a shared abstraction for code with a known short remaining lifespan
+     wastes the effort. Revisit only if this bridge is still here well after the
+     surrounding controllers were expected to be migrated.
    - **Angular removal:** Yes — `searchResults.js`, `docFinder.js`, and
      `controllers/searchResult.js` are all legacy AngularJS core-UI code.
 

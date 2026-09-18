@@ -1,27 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { copyText } from "utils/clipboard"
 
-/**
- * Stub the legacy copy path without referencing Document.execCommand
- * (deprecated in lib.dom types).
- *
- * @param {boolean} ok
- * @returns {import("vitest").Mock}
- */
-function stubLegacyCopy(ok) {
-  const execCommand = vi.fn().mockReturnValue(ok)
-  Object.defineProperty(document, "execCommand", {
-    configurable: true,
-    writable: true,
-    value: execCommand
-  })
-  return execCommand
-}
-
 describe("clipboard", () => {
   afterEach(() => {
     document.body.innerHTML = ""
     vi.unstubAllGlobals()
+    // Instance stubs must not leak across tests (vi.unstubAllGlobals won't clear them).
+    Reflect.deleteProperty(document, "execCommand")
   })
 
   it("uses navigator.clipboard.writeText when available", async () => {
@@ -35,7 +20,8 @@ describe("clipboard", () => {
 
   it("falls back to execCommand('copy') when clipboard API is missing (HTTP case page)", async () => {
     vi.stubGlobal("navigator", {})
-    const execCommand = stubLegacyCopy(true)
+    const execCommand = vi.fn().mockReturnValue(true)
+    document.execCommand = execCommand
 
     await copyText("plain-http")
 
@@ -46,7 +32,7 @@ describe("clipboard", () => {
 
   it("rejects when the legacy copy command returns false", async () => {
     vi.stubGlobal("navigator", {})
-    stubLegacyCopy(false)
+    document.execCommand = vi.fn().mockReturnValue(false)
 
     await expect(copyText("nope")).rejects.toThrow("Copy command was rejected")
     expect(document.querySelector("textarea")).toBeNull()
