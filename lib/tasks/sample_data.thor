@@ -163,7 +163,7 @@ class SampleData < Thor
       system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
     }
     user_params = user_specifics # user_defaults.merge(user_specifics)
-    osc_ai_judge = seed_user user_params
+    osc_ai_judge = seed_judge user_params
     osc_ai_judge.judge_options = {
       llm_provider:    'ollama',
       llm_service_url: 'http://ollama:31434',
@@ -184,7 +184,7 @@ class SampleData < Thor
       system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
     }
     user_params = user_specifics
-    azure_openai_judge = seed_user user_params
+    azure_openai_judge = seed_judge user_params
     azure_openai_judge.judge_options = {
       llm_provider:    'azure_openai',
       llm_service_url: 'https://YOUR-RESOURCE.openai.azure.com',
@@ -205,7 +205,7 @@ class SampleData < Thor
       system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
     }
     user_params = user_specifics
-    azure_anthropic_judge = seed_user user_params
+    azure_anthropic_judge = seed_judge user_params
     azure_anthropic_judge.judge_options = {
       llm_provider:    'azure_ai_foundry_anthropic',
       llm_service_url: 'https://YOUR-RESOURCE.services.ai.azure.com/anthropic',
@@ -735,6 +735,10 @@ class SampleData < Thor
     else
       ::User.create hash
     end
+  end
+
+  def seed_judge hash
+    ::AiJudge.find_by(name: hash[:name]) || ::AiJudge.create(hash)
   end
 
   def unzip_file_in_memory zip_file

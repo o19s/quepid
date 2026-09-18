@@ -68,6 +68,7 @@ export default class extends Controller {
   // Step 3 directly, instead of it only ever being revealed by a successful AI generation.
   showStep3Manually(event) {
     event.preventDefault()
+    this.step2Target.style.display = "block"
     this.step3Target.style.display = "block"
     this.step3Target.scrollIntoView({ behavior: "smooth", block: "start" })
   }
@@ -217,7 +218,14 @@ export default class extends Controller {
           this.docsMapperTarget.value = data.docs_mapper
         }
 
-        this.showStatus("Mapper functions generated successfully!", "success")
+        if (data.truncated) {
+          this.showStatus(
+            `Mapper functions generated, but the fetched HTML was long (${data.original_length.toLocaleString()} characters) and had to be truncated to ${data.sent_length.toLocaleString()} characters before the AI saw it. If docsMapper doesn't find results below, the real markup may be past that cutoff — try "Refine with AI" with more specific feedback, or edit the mapper by hand.`,
+            "warning"
+          )
+        } else {
+          this.showStatus("Mapper functions generated successfully!", "success")
+        }
         this.step3Target.style.display = "block"
       } else {
         this.showStatus(data.error || "Failed to generate mappers", "error")
@@ -387,7 +395,14 @@ export default class extends Controller {
         } else {
           textarea.value = data.code
         }
-        this.showStatus(`${mapperType} refined successfully!`, "success")
+        if (data.truncated) {
+          this.showStatus(
+            `${mapperType} refined, but the HTML sample was long (${data.original_length.toLocaleString()} characters) and had to be truncated to ${data.sent_length.toLocaleString()} characters before the AI saw it. Test the result below to confirm it still works.`,
+            "warning"
+          )
+        } else {
+          this.showStatus(`${mapperType} refined successfully!`, "success")
+        }
       } else {
         this.showStatus(data.error || "Refinement failed", "error")
       }

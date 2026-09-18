@@ -14,7 +14,9 @@ module Admin
     def index
       @shallow = 'true' == params[:shallow]
 
-      query = User.order(created_at: :desc)
+      # Exclude AI judges - fixtures never backfill `type`, so NULL must match
+      # too (see User.no_real_users_yet? for the same NULL-handling need).
+      query = User.where(type: [ nil, 'User' ]).order(created_at: :desc)
 
       if params[:q].present?
         q = "%#{params[:q].to_s.downcase}%"
