@@ -20,6 +20,5 @@ angular.module('QuepidApp', [
   'ngTagsInput',
   'ng-rails-csrf',
   'templates',
-  'ngclipboard',
   'ngVega'
 ]);

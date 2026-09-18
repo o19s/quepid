@@ -27,12 +27,12 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | Angular JS source files (`app/assets/javascripts`) | 140 files, 135 register `angular.module` |
 | HTML templates (components + `app/assets/templates`) | 52 (29 component + 23 under `app/assets/templates`) |
 | Controllers | 55 (`.controller()` registrations; 27 files under `controllers/`) |
-| Services | 26 (`.service()` registrations; 27 files under `services/` — `quepidModalSvc.js` registers a factory) |
+| Services | 27 (`.service()` registrations; 29 files under `services/` — `quepidModalSvc.js` registers a factory) |
 | Factories | 8 |
 | Filters | 8 under `filters/` (+ 4 directive-local: `plusOrMinus`, `stackChart*`) |
 | Custom directives / components | 33 (25 `.directive()` + 8 `.component()`) |
-| `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 15 |
-| Vendored Angular libraries (`app/javascript/vendor`) | 10 packages (+ `angular` core from npm) |
+| `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 14 |
+| Vendored Angular libraries (`app/javascript/vendor`) | 9 packages (+ `angular` core from npm) |
 | Karma unit specs (`spec/javascripts/angular`) | 39 |
 | Vitest unit specs (`test/javascript/**/*.test.js`) | 21 |
 | Playwright specs | See [Other inventory § Tests](#tests) for the Angular-core and Stimulus spec breakdown |
@@ -150,7 +150,6 @@ Actionable incremental wins — do these before touching query/search state:
 
 Optional when touching nearby code:
 
-- **`ngclipboard`** — Four copy buttons (search results + explain modal). Prefer `navigator.clipboard` (see Stimulus invite / mapper-wizard). See [Known bug (copy / explain migration)](#known-bug-copy--explain-migration) for the Explain Query race this needs to fix.
 - **`debug-matches`**, **`expand-content`** — Small markup; migrate with the matches/explain popover stack.
 
 Prefer **Rails view + route + Stimulus** for management actions over embedding new Stimulus inside the Angular bundle.
@@ -329,11 +328,6 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 
 **Touches:** `searchResults.html`, diff/snapshot Compare UI, [Feature area § Search results](#6-search-results-and-rating-ui).
 
-#### Known bug (copy / explain migration)
-
-**Explain Query “Copy” buttons** (`query_explain/_modal.html`): each button has both `ng-click="ctrl.cancel()"` and `ngclipboard`. Cancel dismisses the modal before ClipboardJS commits — copy silently fails. The standalone copy on `searchResults.html` works.
-
-**Fix:** drop `cancel()` from Copy buttons, or defer cancel until after copy success (see [Suggested PR order](#suggested-pr-order-start-here) for the broader `ngclipboard` → `navigator.clipboard` move).
 
 ---
 
@@ -388,7 +382,6 @@ Flash include, `LoadingCtrl`, `ng-view`
 | `ngTagsInput` | `ng-tags-input` | Wizard fields | Tom Select / tags Stimulus |
 | `ng-rails-csrf` | `interceptors/rails-csrf.js` | CSRF on `$http` | Fetch wrapper with CSRF meta tag |
 | `templates` | `build_templates.js` | `$templateCache` | ERB partials / Stimulus templates |
-| `ngclipboard` | `ngclipboard` + `clipboard` | Copy buttons | `navigator.clipboard` |
 | `ngVega` | `directives/angular-vega.js` | Frog report chart | `vegaEmbed` on `window` (keep until frog report migrates) |
 
 Non-Angular libs that **stay**: Bootstrap 5, D3, Vega, ACE, autocompleter, clipboard, URI.js, Shepherd, SortableJS.
@@ -501,7 +494,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Expand content modal | component | `<expand-content>` — `components/expand_content/` |
 | Embed helper | directive | `quepidEmbed` on `searchResult.js` |
 | Hit count display | template | `searchResults.html` (`{{ query.getNumFound() }}`) |
-| Copy query text | third-party | `ngclipboard` |
+| Copy query text | service | `clipboardSvc` — `services/clipboardSvc.js` (`ngclipboard` removed) |
 
 Backing services/factories: `docCacheSvc`, `DocListFactory`, `annotationsSvc`, `AnnotationFactory`, `searchEndpointSvc`
 
@@ -581,7 +574,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 ## Services, factories, and filters
 
-**Services (26):** `annotationsSvc`, `bookSvc`, `bootstrapSvc`*, `caseCSVSvc`, `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `diffResultsSvc`, `docCacheSvc`, `importRatingsSvc`, `paneSvc`, `qscoreSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateBulkSvc`, `rateElementSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `snapshotSearcherSvc`, `teamSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`)
+**Services (27):** `annotationsSvc`, `bookSvc`, `bootstrapSvc`*, `caseCSVSvc`, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `diffResultsSvc`, `docCacheSvc`, `importRatingsSvc`, `paneSvc`, `qscoreSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateBulkSvc`, `rateElementSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `snapshotSearcherSvc`, `teamSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`)
 
 **Factories (8):** `$quepidModal` (`services/quepidModalSvc.js`), `AnnotationFactory`, `broadcastSvc`, `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `SnapshotFactory`, `TryFactory`
 

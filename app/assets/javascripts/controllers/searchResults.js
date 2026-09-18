@@ -3,12 +3,16 @@ angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
     '$rootScope',
     '$scope', '$element', '$log', '$window',
-    'rateBulkSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
+    'clipboardSvc', 'rateBulkSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
     function (
       $rootScope, $scope, $element, $log, $window,
-      rateBulkSvc, queriesSvc, queryViewSvc, settingsSvc
+      clipboardSvc, rateBulkSvc, queriesSvc, queryViewSvc, settingsSvc
     ) {
       $scope.queriesSvc = queriesSvc;
+
+      $scope.copyQueryText = function() {
+        clipboardSvc.copy($scope.query.queryText).catch(angular.noop);
+      };
 
       // Settings for query display
       var DisplayConfig = function() {

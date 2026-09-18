@@ -3,11 +3,13 @@
 angular.module('QuepidApp')
   .controller('BrowseQueryModalInstanceCtrl', [
     '$quepidModalInstance',
+    'clipboardSvc',
     'query',
     'selectedTry',
     'engineName',
     function (
       $quepidModalInstance,
+      clipboardSvc,
       query,
       selectedTry,
       engineName
@@ -56,8 +58,10 @@ angular.module('QuepidApp')
 
       ctrl.copied = false;
 
-      ctrl.onCopySuccess = function () {
-        ctrl.copied = true;
+      ctrl.copyCurlCommand = function () {
+        clipboardSvc.copy(ctrl.curlCommand).then(function () {
+          ctrl.copied = true;
+        }, angular.noop);
       };
 
       ctrl.cancel = function () {

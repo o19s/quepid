@@ -34,8 +34,6 @@ import './vendor/angular-wizard/angular-wizard.js';
 import './vendor/angular-utils-pagination';
 import './vendor/angular-csv-import/lib/angular-csv-import.js';
 import './vendor/angular-flash/angular-flash.js';
-import 'clipboard';
-import './vendor/ngclipboard/ngclipboard.js';
 import './vendor/ng-tags-input/build/ng-tags-input.js';
 import 'file-saver';
 
