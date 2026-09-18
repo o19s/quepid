@@ -10,29 +10,6 @@ angular.module('QuepidApp')
         }
       };
 
-      var handleRatingScale = function(src, rateCallback, resetCallback, extra) {
-        src.ratingsOn = false;
-
-        src.open = function() {
-          src.ratingsOn = true;
-        };
-
-        src.close = function() {
-          src.ratingsOn = false;
-        };
-
-        src.rate = function(ratingNo) {
-          rateCallback(ratingNo, extra);
-          src.close();
-        };
-
-        src.reset = function() {
-          resetCallback(extra);
-          src.close();
-        };
-      };
-
-      this.setScale           = setScale;
-      this.handleRatingScale  = handleRatingScale;
+      this.setScale = setScale;
     }
   ]);

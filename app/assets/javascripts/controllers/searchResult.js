@@ -2,9 +2,9 @@
 
 angular.module('QuepidApp')
   .controller('SearchResultCtrl', [
-    '$scope', '$quepidModal',
+    '$scope', '$element', '$quepidModal',
     'rateElementSvc',
-    function ($scope, $quepidModal, rateElementSvc) {
+    function ($scope, $element, $quepidModal, rateElementSvc) {
 
       var src = {
         'query':  $scope.query,
@@ -15,6 +15,31 @@ angular.module('QuepidApp')
 
       $scope.$watch('query.effectiveScorer()', function() {
         rateElementSvc.setScale(src, $scope.ratings);
+      });
+
+      // Content and open/close state now live in the rating-popover Stimulus
+      // controller (data-controller="rating-popover" in searchResult.html);
+      // it dispatches these events on its own element, which bubble up to
+      // whichever DOM node this controller is attached to. Stop propagation
+      // so an ancestor's own rating-popover listener (e.g. SearchResultsCtrl's
+      // "Score All" bulk rating) doesn't also fire for this single doc.
+      $element.on('rating-popover:rate', function(event) {
+        event.stopPropagation();
+        var newRating = parseInt(event.detail.rating, 10);
+        src.doc.rate(newRating);
+        src.query.touchModifiedAt();
+        $scope.$apply();
+      });
+
+      $element.on('rating-popover:reset', function(event) {
+        event.stopPropagation();
+        src.doc.resetRating();
+        src.query.touchModifiedAt();
+        $scope.$apply();
+      });
+
+      $scope.$on('$destroy', function() {
+        $element.off('rating-popover:rate rating-popover:reset');
       });
 
       // Note, as of 29-Feb-24, the Highest Rated has been removed..  So...
@@ -33,18 +58,6 @@ angular.module('QuepidApp')
       });
 
       rateElementSvc.setScale(src, $scope.ratings);
-      rateElementSvc.handleRatingScale($scope.ratings,
-        function(ratingNo, extra) {
-          var newRating = parseInt(ratingNo, 10);
-          extra.doc.rate(newRating);
-          extra.query.touchModifiedAt();
-        },
-        function(extra) {
-          extra.doc.resetRating();
-          extra.query.touchModifiedAt();
-        },
-        src
-      );
 
       $scope.displayRating = function() {
         if (!$scope.doc.hasRating()) {

@@ -2,10 +2,10 @@
 angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
     '$rootScope',
-    '$scope', '$log', '$window',
+    '$scope', '$element', '$log', '$window',
     'rateBulkSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
     function (
-      $rootScope, $scope, $log, $window,
+      $rootScope, $scope, $element, $log, $window,
       rateBulkSvc, queriesSvc, queryViewSvc, settingsSvc
     ) {
       $scope.queriesSvc = queriesSvc;
@@ -94,39 +94,53 @@ angular.module('QuepidApp')
       });
 
       rateBulkSvc.setScale(src, $scope.ratings);
-      rateBulkSvc.handleRatingScale($scope.ratings,
-        function(ratingNo, extra) {
-          var newRating = parseInt(ratingNo, 10);
 
-          extra.query.rating = newRating;
+      // Content and open/close state now live in the rating-popover Stimulus
+      // controller (data-controller="rating-popover" in searchResults.html);
+      // it dispatches these events on its own element, which bubble up to
+      // this directive's root element. Stop propagation so a per-doc
+      // search-result row's own rating-popover event never reaches here too
+      // (each search-result row registers its own listener closer to the
+      // source and stops the event there).
+      $element.on('rating-popover:rate', function(event) {
+        event.stopPropagation();
+        var newRating = parseInt(event.detail.rating, 10);
 
-          var ids = [];
-          var docs = queriesSvc.showOnlyRated ? extra.query.ratedDocs : extra.query.docs;
-          angular.forEach(docs, function(doc) {
-            ids.push(doc.id);
-          });
+        src.query.rating = newRating;
 
-          if ( ids.length > 0 ) {
-            docs[0].rateBulk(ids, newRating);
-          }
-          extra.query.touchModifiedAt();
-        },
-        function(extra) {
-          extra.query.rating = '--';
+        var ids = [];
+        var docs = queriesSvc.showOnlyRated ? src.query.ratedDocs : src.query.docs;
+        angular.forEach(docs, function(doc) {
+          ids.push(doc.id);
+        });
 
-          var ids = [];
-          var docs = queriesSvc.showOnlyRated ? extra.query.ratedDocs : extra.query.docs;
-          angular.forEach(docs, function(doc) {
-            ids.push(doc.id);
-          });
+        if ( ids.length > 0 ) {
+          docs[0].rateBulk(ids, newRating);
+        }
+        src.query.touchModifiedAt();
+        $scope.$apply();
+      });
 
-          if ( ids.length > 0 ) {
-            docs[0].resetBulkRatings(ids);
-          }
-          extra.query.touchModifiedAt();
-        },
-        src
-      );
+      $element.on('rating-popover:reset', function(event) {
+        event.stopPropagation();
+        src.query.rating = '--';
+
+        var ids = [];
+        var docs = queriesSvc.showOnlyRated ? src.query.ratedDocs : src.query.docs;
+        angular.forEach(docs, function(doc) {
+          ids.push(doc.id);
+        });
+
+        if ( ids.length > 0 ) {
+          docs[0].resetBulkRatings(ids);
+        }
+        src.query.touchModifiedAt();
+        $scope.$apply();
+      });
+
+      $scope.$on('$destroy', function() {
+        $element.off('rating-popover:rate rating-popover:reset');
+      });
 
       $scope.displayRating = function() {
         if (!$scope.query.rating) {

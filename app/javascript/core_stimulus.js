@@ -13,6 +13,7 @@ import CloneCaseCoreController from "controllers/clone_case_core_controller"
 import ExportCaseCoreController from "controllers/export_case_core_controller"
 import BsTooltipController from "controllers/bs_tooltip_controller"
 import BsPopoverController from "controllers/bs_popover_controller"
+import RatingPopoverController from "controllers/rating_popover_controller"
 
 application.register("share-case-core", ShareCaseCoreController)
 application.register("delete-case-options-core", DeleteCaseOptionsCoreController)
@@ -20,3 +21,4 @@ application.register("clone-case-core", CloneCaseCoreController)
 application.register("export-case-core", ExportCaseCoreController)
 application.register("bs-tooltip", BsTooltipController)
 application.register("bs-popover", BsPopoverController)
+application.register("rating-popover", RatingPopoverController)

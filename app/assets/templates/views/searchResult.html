@@ -6,7 +6,7 @@
     <div class="col-ratings">
 
       <div ng-if="doc.error === undefined" class="ratings">
-        <div class="single-rating" quepid-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
+        <div class="single-rating" data-controller="rating-popover" data-rating-popover-scale-value="{{ (ratings.scale || {}) | json:0 }}">
           <span class="btn" ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle">
             {{displayRating()}}
             <i class="bi bi-caret-down-fill" aria-hidden="true"></i>
@@ -21,7 +21,7 @@
         <img class="img-thumbnail result-thumbnail" ng-src="{{formatImageUrl(doc.thumb, doc.thumb_options)}}">
       </div>
       <div ng-show="doc.hasImage()" class="result-image-col flex-shrink-0 text-center me-2">
-        <img class="img-thumbnail result-image" ng-src="{{formatImageUrl(doc.image, doc.image_options)}}" />
+        <img class="img-thumbnail result-image" ng-src="{{formatImageUrl(doc.image, doc.image_options)}}">
       </div>
 
       <!-- Fields -->
@@ -53,9 +53,9 @@
           >
             <!-- Normal display of a snippet -->
           </span>
-          <span><a ng-href="https://translate.google.com/?sl=auto&tl=en&text={{fieldValue}}" target="_blank" rel="noopener noreferrer"><img ng-src="images/google-translate.png" width="16" height="16"/></a></span>
+          <span><a ng-href="https://translate.google.com/?sl=auto&tl=en&text={{fieldValue}}" target="_blank" rel="noopener noreferrer"><img ng-src="images/google-translate.png" width="16" height="16" ></a></span>
         </li>
-        
+
         <!-- Unabridgeds -->
         <li ng-repeat="(fieldName, fieldValue) in doc.unabridgeds">
           <span class="subLabel">{{fieldName}}:</span>
@@ -63,7 +63,7 @@
             ng-bind-html="fieldValue"
           >
           </span>
-        </li>          
+        </li>
 
         <!-- Other fields -->
         <li ng-repeat="(fieldName, fieldValue) in snippets">
@@ -96,7 +96,7 @@
         </li>
 
         <!-- Rank (position in the list) -->
-        <li class='result-rank'>
+        <li class="result-rank">
           Rank: #{{ rank }}
         </li>
       </ul>

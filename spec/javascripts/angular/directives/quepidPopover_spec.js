@@ -3,8 +3,9 @@
 // Text-mode `quepid-popover` (plain string content, no template) is no longer
 // used anywhere in the app — the last call sites (searchResults.html "Close
 // the results pane" icons) migrated to the Stimulus bs-popover controller.
-// Only `quepid-popover-template` (ratings/matches popovers, still Angular)
-// remains covered here.
+// The ratings popover migrated to the Stimulus rating-popover controller too
+// (rating_popover_controller.js). Only `quepid-popover-template` (the match
+// popover, still Angular) remains covered here.
 describe('Directive: quepidPopoverTemplate', function () {
 
   beforeEach(module('QuepidTest'));
@@ -29,7 +30,7 @@ describe('Directive: quepidPopoverTemplate', function () {
     it('shows/hides the popover in response to the bound flag, and reflects user-driven hides back', function () {
       scope.ratings = { ratingsOn: false };
       var element = compilePopover(
-        '<div quepid-popover-template="\'views/ratings/popover.html\'" ' +
+        '<div quepid-popover-template="\'matches/matches.html\'" ' +
              'popover-is-open="ratings.ratingsOn"></div>'
       );
       document.body.appendChild(element[0]);
@@ -57,7 +58,7 @@ describe('Directive: quepidPopoverTemplate', function () {
       scope.ratings  = { ratingsOn: false };
       scope.onClick  = jasmine.createSpy('onClick');
       var element = compilePopover(
-        '<div quepid-popover-template="\'views/ratings/popover.html\'" ' +
+        '<div quepid-popover-template="\'matches/matches.html\'" ' +
              'ng-click="onClick()" ' +
              'popover-trigger="outsideClick" ' +
              'popover-is-open="ratings.ratingsOn"></div>'
@@ -82,7 +83,7 @@ describe('Directive: quepidPopoverTemplate', function () {
 
   it('disposes the BS5 instance on scope $destroy', function () {
     var element = compilePopover(
-      '<div quepid-popover-template="\'views/ratings/popover.html\'"></div>'
+      '<div quepid-popover-template="\'matches/matches.html\'"></div>'
     );
     expect(window.bootstrap.Popover.getInstance(element[0])).not.toBeNull();
 
