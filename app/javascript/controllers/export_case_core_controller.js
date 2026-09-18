@@ -29,6 +29,8 @@ const FORMAT_PLACEHOLDER = "__FORMAT__"
  * dataset and delegates to the modal-root instance.
  */
 export default class extends ModalTriggerControllerBase {
+  modalElementId = "exportCaseModal"
+
   static targets = [
     "title",
     "submitButton",
@@ -57,10 +59,6 @@ export default class extends ModalTriggerControllerBase {
     ratingsExportUrlTemplate: String,
     informationNeedUrlTemplate: String,
     quepidExportUrlTemplate: String
-  }
-
-  get modalElementId() {
-    return "exportCaseModal"
   }
 
   openAsRoot(event) {
