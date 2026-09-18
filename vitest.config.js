@@ -31,6 +31,8 @@ export default defineConfig({
       { find: "utils/share_case_teams", replacement: path.resolve(repoRoot, "app/javascript/utils/share_case_teams.js") },
       { find: "utils/status_message", replacement: path.resolve(repoRoot, "app/javascript/utils/status_message.js") },
       { find: "utils/destructive_form", replacement: path.resolve(repoRoot, "app/javascript/utils/destructive_form.js") },
+      { find: "utils/case_csv", replacement: path.resolve(repoRoot, "app/javascript/utils/case_csv.js") },
+      { find: "utils/download_file", replacement: path.resolve(repoRoot, "app/javascript/utils/download_file.js") },
       { find: /^controllers\/(.*)$/, replacement: path.resolve(repoRoot, "app/javascript/controllers") + "/$1" }
     ],
   },

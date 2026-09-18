@@ -58,6 +58,10 @@ class CaseImporter
       update_first_try
 
       import_succeeded = @case.save
+      if import_succeeded
+        arrange_imported_queries
+        import_succeeded = @case.save
+      end
       raise ActiveRecord::Rollback unless import_succeeded
     end
 
@@ -78,8 +82,10 @@ class CaseImporter
   end
 
   def build_queries_and_ratings
+    @imported_queries = []
     @data_to_process[:queries]&.each do |query|
-      new_query = @case.queries.build(query.except(:ratings))
+      new_query = @case.queries.build(query.except(:ratings, :arranged_at, :arranged_next))
+      @imported_queries << new_query
       next unless query[:ratings]
 
       query[:ratings].each do |rating|
@@ -87,6 +93,10 @@ class CaseImporter
         new_query.ratings.build(rating.except(:user_email))
       end
     end
+  end
+
+  def arrange_imported_queries
+    Arrangement::List.normalize_in_order(@imported_queries)
   end
 
   def attach_search_endpoint

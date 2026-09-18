@@ -1,5 +1,24 @@
 version = 1
 
+exclude_patterns = [
+  "node_modules/**",           # Dependencies
+  "dist/**",                   # Build output
+  "test/**",                   # Minitest and Vitest tests
+  "spec/**",                   # Karma/legacy Angular tests
+  "**/*.test.js",              # JavaScript unit tests wherever located
+  "**/*.spec.js",              # Legacy JavaScript specs wherever located
+  "app/assets/**",             # Legacy Angular/JSHint-managed assets and builds
+  "app/javascript/vendor/**",  # Vendored JavaScript
+  "public/javascripts/ace/**"  # Vendored Ace editor assets
+]
+
+test_patterns = [
+  "test/**",
+  "spec/**",
+  "**/*.test.js",
+  "**/*.spec.js"
+]
+
 [[analyzers]]
 name = "ruby"
 enabled = true
@@ -9,9 +28,9 @@ name = "javascript"
 enabled = true
 
   [analyzers.meta]
-  plugins = ["angular"]
+  environment = ["nodejs", "browser", "vitest"]
+  module_system = "es-modules"
 
-  
 [[analyzers]]
 name = "docker"
 enabled = true
@@ -20,12 +39,4 @@ enabled = true
   dockerfile_paths = [
     "Dockerfile.dev",
     "Dockerfile.prod"
-  ]
-  
-[exclusions]
-  paths = [
-    "node_modules/**",    # Exclude all files and directories in the node_modules folder
-    "dist/**",            # Exclude all files and directories in the dist folder
-    "**/*.spec.js",       # Exclude all JavaScript test files
-    "public/javascripts/ace/*.js"      # Exclude a specific file
   ]

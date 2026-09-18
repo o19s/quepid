@@ -104,6 +104,12 @@ Rails.application.config.openid_connect_button_text = ENV.fetch('OPENID_CONNECT_
 # is set up under.
 Rails.application.config.quepid_domain = ENV.fetch('QUEPID_DOMAIN', '')
 
+# == Ollama Service URL
+# The development Docker stack listens on port 31434; production's Docker
+# stack uses the standard Ollama port. Override this with OLLAMA_SERVICE_URL
+# when Rails runs directly on the host or uses a custom Ollama deployment.
+Rails.application.config.ollama_service_url = ENV.fetch('OLLAMA_SERVICE_URL', Rails.env.production? ? 'http://ollama:11434' : 'http://ollama:31434')
+
 # == If we have nested Quepid under a context, like tools.bigcorp.com/quepid then this deal with that situation.
 Rails.application.config.action_cable.url = "#{ENV.fetch('RAILS_RELATIVE_URL_ROOT', '')}/cable"
 

@@ -94,11 +94,13 @@ class CaseImporterTest < ActiveSupport::TestCase
     end
 
     test 'builds queries and ratings' do
-      importer = CaseImporter.new new_case, user, data
+      imported_data = data.merge(queries: data[:queries].reverse)
+      importer = CaseImporter.new new_case, user, imported_data
       importer.import
 
       assert_equal 2, new_case.queries.count
       assert_equal 2, new_case.ratings.count
+      assert_equal [ 'Second Query', 'First Query' ], new_case.queries.reload.map(&:query_text)
 
       second_query = new_case.queries.find_by(query_text: 'Second Query')
       assert_equal user, second_query.ratings.find_by(doc_id: 'doca').user

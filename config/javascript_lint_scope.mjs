@@ -32,6 +32,7 @@ export const ESLINT_IGNORES = [
   'app/assets/builds/**',
   'app/javascript/vendor/**',
   ...LEGACY_ESBUILD_ENTRIES,
+  'app/javascript/**/*.test.js',
 ];
 
 /**
