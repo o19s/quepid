@@ -104,11 +104,11 @@
   </div>
 
   <div ng-if="explainView === 'full'" class="col-md-2">
-    <div class="stacked-chart-container">
-      <stacked-chart viewport="explainViewport" doc="doc" max-doc-score="maxDocScore"></stacked-chart>
-
-      <!-- <a href="#" ng-click="showDetailed()">Detailed</a> -->
-    </div>
+    <div
+      class="stacked-chart-container"
+      data-controller="match-explain"
+      data-match-explain-data-value="{{ matchExplainData() | json:0 }}"
+    ></div>
   </div>
 </div>
 

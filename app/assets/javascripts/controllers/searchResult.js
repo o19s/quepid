@@ -92,20 +92,25 @@ angular.module('QuepidApp')
         });
       };
 
-      $scope.showDetailed = function() {
-        $quepidModal.open({
-          templateUrl: 'views/detailedExplain.html',
-          controller: 'DocExplainCtrl',
-          //windowClass: 'detailed-explain-modal',
-          resolve: {
-            doc: function() {
-              return $scope.doc;
-            },
-            maxScore: function() {
-              return $scope.maxDocScore;
-            }
-          }
-        });
+      // Feeds the match-explain Stimulus controller (searchResult.html's
+      // stacked-chart-container) — see docs/todo/angularjs_removal_inventory.md's
+      // "DOM utilities" entry. doc.explain()/hotMatchesOutOf() stay Angular
+      // (splainer-search); this just serializes what the popover/bars/debug
+      // and expand modals need to render.
+      $scope.matchExplainData = function() {
+        var explain      = $scope.doc.explain();
+        var hasChildren  = explain.children.length > 0;
+
+        return {
+          hasChildren:   hasChildren,
+          hots:          $scope.doc.hotMatchesOutOf($scope.maxDocScore),
+          explainToStr:  hasChildren ? explain.toStr() : null,
+          explainAsJson: hasChildren ? null : JSON.stringify(explain.asJson, null, 2),
+          explainRawStr: explain.rawStr(),
+          docTitle:      $scope.doc.title,
+          docId:         $scope.doc.id,
+          docScore:      $scope.doc.score(),
+        };
       };
 
       $scope.isObjectOrArray = function(value) {

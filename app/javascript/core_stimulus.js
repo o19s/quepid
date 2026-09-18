@@ -14,6 +14,7 @@ import ExportCaseCoreController from "controllers/export_case_core_controller"
 import BsTooltipController from "controllers/bs_tooltip_controller"
 import BsPopoverController from "controllers/bs_popover_controller"
 import RatingPopoverController from "controllers/rating_popover_controller"
+import MatchExplainController from "controllers/match_explain_controller"
 import FlashController from "controllers/flash_controller"
 
 application.register("share-case-core", ShareCaseCoreController)
@@ -23,4 +24,5 @@ application.register("export-case-core", ExportCaseCoreController)
 application.register("bs-tooltip", BsTooltipController)
 application.register("bs-popover", BsPopoverController)
 application.register("rating-popover", RatingPopoverController)
+application.register("match-explain", MatchExplainController)
 application.register("flash", FlashController)

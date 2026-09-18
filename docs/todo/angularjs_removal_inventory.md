@@ -1,6 +1,6 @@
 # AngularJS removal: inventory & migration plan
 
-Fresh codebase scan (25 Aug 2026; re-validated 4 Sep 2026 against actual code — counts refreshed, completed items removed). Single reference for **what** AngularJS owns in Quepid, **why** to migrate, **how** to do it incrementally (the path in progress today), how the **live query/search/score state** — the case workspace's core and the largest remaining piece — gets replaced as the committed final phase, and **what to delete** when done.
+Single reference for **what** AngularJS owns in Quepid, **why** to migrate, **how** to do it incrementally (the path in progress today), how the **live query/search/score state** — the case workspace's core and the largest remaining piece — gets replaced as the committed final phase, and **what to delete** when done.
 
 
 Quepid’s frontend is split in two:
@@ -10,9 +10,9 @@ Quepid’s frontend is split in two:
 | **Core case UI** | AngularJS 1.8 SPA (queries, ratings, Solr JSONP) | `app/views/layouts/core.html.erb`, `QuepidApp` |
 | **Rails pages** | ERB + Stimulus (+ Turbo Streams in places) | teams, books, scorers, cases index, home, admin, … |
 
-**Removal is complete, not partial** — every Angular file is scheduled to go, including `queriesSvc` and live search/scoring. **Sequencing, not scope:** chip away at isolated, lower-risk pieces first (toolbar Stimulus twins, management modals, heavy widgets); live query/search/score state is sequenced **last** because it's the highest-coupling, highest-regression-risk code — most of the remaining effort concentrates there — not because it's optional. See [Live query-state phase](#live-query-state-phase-committed-final-phase) for what must be decided before that work starts.
+- **Removal is complete, not partial** — every Angular file is scheduled to go, including `queriesSvc` and live search/scoring. - **Sequencing, not scope:** chip away at isolated, lower-risk pieces first (toolbar Stimulus twins, management modals, heavy widgets); live query/search/score state is sequenced **last** because it's the highest-coupling, highest-regression-risk code.
 
-Backend stays on any path: Rails 8.1, existing models/services, MySQL, Solid Queue/Cable, REST API (`oas_rails` — extend, don't restart). **`splainer-search` 3.x is already vanilla ESM**; keep it except on a strict no-reuse clean-slate.
+Backend stays on any path: Rails 8.1, existing models/services, MySQL, Solid Queue/Cable, REST API (`oas_rails` — extend, don't restart). **`splainer-search` 3.x is already vanilla ESM**.
 
 See also: [App structure](../app_structure.md), [Vendor README](../../app/javascript/vendor/README.md), [DEVELOPER_GUIDE](../../DEVELOPER_GUIDE.md), [event bus inventory](./event_bus_inventory.md) (re-run before deleting `$broadcast` emitters).
 
@@ -24,17 +24,17 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 140 files, 135 register `angular.module` |
-| HTML templates (components + `app/assets/templates`) | 52 (29 component + 23 under `app/assets/templates`) |
-| Controllers | 55 (`.controller()` registrations; 27 files under `controllers/`) |
-| Services | 27 (`.service()` registrations; 29 files under `services/` — `quepidModalSvc.js` registers a factory) |
+| Angular JS source files (`app/assets/javascripts`) | 130 files, 125 register `angular.module` |
+| HTML templates (components + `app/assets/templates`) | 42 (24 component + 18 under `app/assets/templates`) |
+| Controllers | 49 (`.controller()` registrations; 25 files under `controllers/`) |
+| Services | 27 (`.service()` registrations; 28 files under `services/` — `quepidModalSvc.js` registers a factory) |
 | Factories | 8 |
-| Filters | 8 under `filters/` (+ 4 directive-local: `plusOrMinus`, `stackChart*`) |
-| Custom directives / components | 33 (25 `.directive()` + 8 `.component()`) |
-| `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 14 |
+| Filters | 8 under `filters/` (+ 1 directive-local: `plusOrMinus`) |
+| Custom directives / components | 28 (21 `.directive()` + 7 `.component()`) |
+| `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 12 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 8 packages (+ `angular` core from npm) |
 | Karma unit specs (`spec/javascripts/angular`) | 39 |
-| Vitest unit specs (`test/javascript/**/*.test.js`) | 21 |
+| Vitest unit specs (`test/javascript/**/*.test.js`) | 34 |
 | Playwright specs | See [Other inventory § Tests](#tests) for the Angular-core and Stimulus spec breakdown |
 
 ---
@@ -49,7 +49,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
 | **P1** | `new Function()` mappers | SearchAPI mappers; MiniRacer on server; mapper wizard already Stimulus |
 | **P2** | Digest workarounds | Version counters / sentinels instead of clear data flow |
-| **P2** | Copy-paste debt | e.g. `ctrl.cancel = function () { $quepidModalInstance.dismiss('cancel'); }` repeated ~21x across modal-instance controllers |
+| **P2** | Copy-paste debt | e.g. `ctrl.cancel = function () { $quepidModalInstance.dismiss('cancel'); }` repeated ~15x across modal-instance controllers |
 | **Defer** | jQuery pane resize | Narrow scope (`toggleEast`, layout polling) — migrate with case page, not a driver |
 | **Defer** | `bootstrap5-compat.css` | Largely done; tuning shims, not a rewrite gate |
 
@@ -84,7 +84,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 ## Decision lenses
 
-Condensed from a larger advisory panel — the questions that must be answered before the [live query-state phase](#live-query-state-phase-committed-final-phase) starts, not whether it happens:
+The questions that must be answered before the [live query-state phase](#live-query-state-phase-committed-final-phase) starts, not whether it happens:
 
 | Lens | Question |
 |------|----------|
@@ -101,7 +101,7 @@ Condensed from a larger advisory panel — the questions that must be answered b
 
 ### Port checklist (mandatory)
 
-Removing Angular on **core** means **equivalent** behavior and appearance to what Angular shipped on `/case/:id` — using Stimulus/vanilla/Rails as appropriate. It does **not** mean:
+Removing Angular on **core** means **equivalent** behavior and appearance to what Angular shipped on `/case/:id` — using Hotwire/Stimulus/vanilla/Rails as appropriate. It does **not** mean:
 
 - Replacing Rails page UX with Angular UX (cases index, teams, …).
 - Collapsing core and Rails into one partial when they differed.
@@ -145,14 +145,10 @@ Use when sizing a PR:
 
 Actionable incremental wins — do these before touching query/search state:
 
-1. **DOM utilities → Stimulus or BS5 data API** — **Partially done:** plain-text tooltips (`quepid-tooltip`), plain-text popovers (`quepid-popover`), and fixed help-icon popovers (`bs-static-popover`) migrated to Stimulus `bs-tooltip` / `bs-popover` (registered in `core_stimulus.js`); their Angular directives are deleted. The **ratings-scale popover** (`SearchResultCtrl`/`SearchResultsCtrl`/`docFinder.js`, `views/ratings/popover.html`) is also migrated, to the Stimulus `rating-popover` controller (`app/javascript/controllers/rating_popover_controller.js`) — this was the first slice of the [live query-state phase](#live-query-state-phase-committed-final-phase): the popover shell/content rendering is now vanilla JS, but the actual rating mutation (`doc.rate()`/`resetRating()`, `scoreAll()` propagation) is untouched and still lives in Angular, reached via a `bubbles: true` CustomEvent (`rating-popover:rate`/`:reset`) that each owning Angular controller listens for on its own `$element` (stopping propagation so a per-doc row's event doesn't also trigger an ancestor "Score All" bulk listener). `views/ratings/popover.html` is deleted. The Angular `quepidPopoverTemplate` directive (`quepidPopover.js`) still remains for the **match/explain popover** (`matches/matches.html`, via `stackedChart.html`/`HotMatchesCtrl`) — deferred because it opens into `debug-matches` → `$quepidModal` (`DebugMatchesModalInstanceCtrl`), a bigger seam than a first slice should take on.
-3. **Sequence last** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks — not skipped, but gated on the [live query-state phase](#live-query-state-phase-committed-final-phase)'s state plan being signed off before any code starts.
+1. **DOM utilities → Stimulus or BS5 data API** — **Done.** Popover shells/content are now vanilla JS but actual mutations are often untouched.
+3. **Sequence last** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks — not skipped, but gated on the live query-state phase's state plan being signed off before any code starts.
 
-Optional when touching nearby code:
-
-- **`debug-matches`**, **`expand-content`** — Small markup; migrate with the matches/explain popover stack.
-
-Prefer **Rails view + route + Stimulus** for management actions over embedding new Stimulus inside the Angular bundle.
+Prefer **Rails view + route + Hotwire/Stimulus** for management actions over embedding new Stimulus inside the Angular bundle.
 
 ### Live query-state phase (committed, final)
 
@@ -175,7 +171,7 @@ Hotwire already covers most non-case pages (teams, books, scorers, admin). The c
                        └──────────────────────┘
 ```
 
-**UI stack:** Stimulus + vanilla (matches incremental path) *or* a React island — either way bundle with **esbuild** (same as `build:angular-vendor` today). Importmap is for Stimulus pages, not a heavy case workspace.
+**UI stack:** Hotwire/Stimulus + vanilla (matches incremental path) *or* a React island — either way bundle with **esbuild** (same as `build:angular-vendor` today). Importmap is for Stimulus pages, not a heavy case workspace.
 
 **Search:** Live `searchAll()` stays **client → customer engine** (Quepid proxy for CORS/auth). Server-side fetch is already the **batch** path (`FetchService` / `RunCaseEvaluationJob`) — don't conflate the two.
 
@@ -256,15 +252,15 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **routes.js** + **ngRoute** | — | Entire SPA |
 | **angular core** | — | Remove last |
 
-**Component LOC** (easiest → hardest, after toolbar duplicates — see [Suggested PR order §2](#suggested-pr-order-start-here)): matches (0 JS) → debug_matches (59) → new_case (66) → expand_content (69) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → query_explain (116) → move_query (152) → add_query (160) → qgraph (250) → diff (285) → judgements (327) → frog_report (360) → import_ratings (462).
+**Component LOC** (easiest → hardest, after toolbar duplicates — see [Suggested PR order §2](#suggested-pr-order-start-here)): new_case (66) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → query_explain (116) → move_query (152) → add_query (160) → qgraph (250) → diff (285) → judgements (327) → frog_report (360) → import_ratings (462).
 
-**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `add-query`, `query-options`, `query-explain`, `new-case` / wizard, `frog-report`, `judgements`, annotations, `quepidTypeahead`, `queryParams`, `stackedChart`, `quepidCollapse`. Moving these implies rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `add-query`, `query-options`, `query-explain`, `new-case` / wizard, `frog-report`, `judgements`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Moving these implies rebuilding the case SPA, not a framework swap.
 
 #### App-level (port seams; don't rebuild)
 
 **Scoring runtime** — Custom JS scorers expose an ~18-function API. `ScorerFactory.js` and `scorer_logic.js` already drift (client has helpers the server lacks). **Direction:** shared npm package with an explicit canonical API and a scorer migration guide — not server-only scoring; every rating triggers client `scoreAll()` today.
 
-**Search engine coupling** — **Already shipped:** `splainer-search` 3.x ESM — seven engines, explain parsing, field-spec normalization. Stimulus can import `createWiredServices` directly; Angular uses the same package via `splainer_search_adapter.js`. **Still hard:** Quepid-specific seams — snapshot fake-Solr, proxy/basic auth, TLS protocol switching, SearchAPI mapper code — must port with any case UI work.
+**Search engine coupling** — **Still hard:** Quepid-specific seams — snapshot fake-Solr, proxy/basic auth, TLS protocol switching, SearchAPI mapper code — must port with any case UI work.
 
 #### UI-level (reimplement on any framework)
 
@@ -486,10 +482,6 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Move query modal | component | `<move-query>` — `components/move_query/` |
 | Missing documents search | controllers + template | `TargetedSearchCtrl`, `DocFinderCtrl`, `TargetedSearchModalCtrl`, `templates/views/targetedSearchModal.html` |
 | Diff results view | directive + controller | `<query-diff-results>`, `QueryDiffResultsCtrl`, `templates/views/queryDiffResults.html` |
-| Hot matches chart | directive + controller | `<stackedChart>`, `HotMatchesCtrl`, `templates/views/stackedChart.html` |
-| Matches popover content | template (no JS) | `components/matches/matches.html` (loaded via `quepid-popover-template`) |
-| Debug matches | component | `<debug-matches>` — `components/debug_matches/` |
-| Expand content modal | component | `<expand-content>` — `components/expand_content/` |
 | Embed helper | directive | `quepidEmbed` on `searchResult.js` |
 | Hit count display | template | `searchResults.html` (`{{ query.getNumFound() }}`) |
 | Copy query text | service | `clipboardSvc` — `services/clipboardSvc.js` (`ngclipboard` removed) |
@@ -509,7 +501,6 @@ Filters: `isImageUrl`, `quepidTypeaheadHighlight` (used by typeahead directive)
 | Settings persistence | service + factories | `settingsSvc`, `SettingsFactory`, `TryFactory` |
 | Search endpoint popup | template | `templates/views/searchEndpoint_popup.html` |
 | Detailed doc modal | controller + template | `DetailedDocCtrl`, `templates/views/detailedDoc.html` |
-| Explain detail modal | controller + template | `DocExplainCtrl`, `templates/views/detailedExplain.html` |
 
 Uses heavily: `ui-ace`, `json-explorer`, `settingsIdValue`
 
@@ -520,27 +511,23 @@ These Angular-specific wrappers are used across many templates:
 | Primitive | File | Replaces |
 |-----------|------|----------|
 | `$quepidModal` | `services/quepidModalSvc.js` | Bootstrap 5 modals (already BS5-backed shim; call-site count in [Hardest § By file (LOC)](#by-file-loc)) |
-| `quepidPopover` / `quepidPopoverTemplate` | `directives/quepidPopover.js` (~128 LOC thin shell) | `utils/bs_popover.js`; current status/blockers in [Suggested PR order §1](#suggested-pr-order-start-here) |
-| `quepidCollapse` | `directives/quepidCollapse.js` | Bootstrap collapse |
+| `quepidCollapse` | `directives/quepidCollapse.js` | Bootstrap collapse (still used by `wizardModal.html`; `stackedChart.html`'s use is gone with that file) |
 | `quepidTypeahead` | `directives/quepidTypeahead.js` | `autocompleter` (already vanilla; wired via Angular directive) |
 | `vega` | `directives/angular-vega.js` | Vega embed (Vega loaded via importmap `vega_globals`) |
 
 ---
 
-## Component inventory (17 folders)
+## Component inventory (14 folders)
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
 | `add_query` | `<add-query>` | Add query |
 | `annotation` | `<annotation>` | Single annotation CRUD |
 | `annotations` | `<annotations>` | Annotation list |
-| `debug_matches` | `<debug-matches>` | Debug relevancy matches |
 | `diff` | `<diff>` | Snapshot diff picker |
-| `expand_content` | `<expand-content>` | Expand HTML in modal |
 | `frog_report` | `<frog-report>` | Zero-results report + Vega |
 | `import_ratings` | `<import-ratings>` | CSV import |
 | `judgements` | `<judgements>` | Link to judgement book |
-| `matches` | *(template only)* | Hot-matches popover body |
 | `move_query` | `<move-query>` | Move query to another case |
 | `new_case` | `<new-case>` | Header new-case entry |
 | `qgraph` | `<qgraph>` | Score timeline |
@@ -562,11 +549,10 @@ These Angular-specific wrappers are used across many templates:
 | `queryParamsHistory` | `<query-params-history>` | `queryParamsHistory.html` | `queryParamsHistoryCtrl` |
 | `queryDiffResults` | `<query-diff-results>` | `queryDiffResults.html` | `QueryDiffResultsCtrl` |
 | `customHeaders` | `<custom-headers>` | `customHeaders.html` | `CustomHeadersCtrl` |
-| `stackedChart` | `<stackedChart>` | `stackedChart.html` | `HotMatchesCtrl` |
 
-Attribute directives: `quepidSortable`, `quepidPopover`, `quepidPopoverTemplate`, `quepidCollapse`, `quepidTypeahead`, `quepidEmbed`, `vega`
+Attribute directives: `quepidSortable`, `quepidCollapse`, `quepidTypeahead`, `quepidEmbed`, `vega`
 
-Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryParamsHistory`, `queryDiffResults`. Heavy: `quepidTypeahead` (299), `quepidPopover` (128), `searchResult` (79).
+Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryParamsHistory`, `queryDiffResults`. Heavy: `quepidTypeahead` (299), `searchResult` (79).
 
 ---
 
@@ -580,25 +566,25 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 **Filters (8 under `filters/`):** `caseType`, `isImageUrl`, `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`, `timeAgo` (first-party replacement for vendored `angular-timeago`)
 
-**Directive-local filters (4):** `plusOrMinus` (`searchResults.js`); `stackChartColor`, `stackChartHeight`, `stackChartLeftover` (`stackedChart.js`)
+**Directive-local filters (1):** `plusOrMinus` (`searchResults.js`)
 
 **Values (2):** `eastPaneWidth`, `settingsIdValue`
 
 ---
 
-## Templates (52 HTML files)
+## Templates (42 HTML files)
 
 **Shell:** `queriesLayout.html`, `queries.html`, `404.html`, `embed.html`
 
-**Search/results:** `searchResults.html`, `searchResult.html`, `queryDiffResults.html`, `stackedChart.html`, `targetedSearchModal.html`, `ratings/popover.html`
+**Search/results:** `searchResults.html`, `searchResult.html`, `queryDiffResults.html`, `targetedSearchModal.html`
 
 **Case-action modals:** `pick_scorer.html`, `snapshotModal.html`, `searchEndpoint_popup.html`
 
-**Dev pane:** `_dev_settings.html`, `devQueryParams.html`, `queryParamsDetails.html`, `queryParamsHistory.html`, `customHeaders.html`, `detailedDoc.html`, `detailedExplain.html`
+**Dev pane:** `_dev_settings.html`, `devQueryParams.html`, `queryParamsDetails.html`, `queryParamsHistory.html`, `customHeaders.html`, `detailedDoc.html`
 
 **Wizard:** `wizardModal.html`
 
-**Components:** 29 HTML files under `app/assets/javascripts/components/`
+**Components:** 24 HTML files under `app/assets/javascripts/components/`
 
 Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 

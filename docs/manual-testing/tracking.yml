@@ -365,16 +365,16 @@ parts:
         paths: ["app/assets/javascripts/directives/"]
       "6.8":
         title: "Explain a single document (Debug Explain)"
-        last_run: 2026-09-15T16:50:00Z
+        last_run: 2026-09-18T17:12:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840. Clicked the 'Matches' info icon on a butter-query result — popover opened correctly showing 'Relevancy Score: 11.295498' with a Debug/Expand action for the score-computation expression. No console errors."
-        paths: ["app/assets/javascripts/directives/"]
+        notes: "Re-verified via Playwright MCP on case 1 (Solr Case, 'star wars' query) after a follow-up review pass on the match-explain migration fixed several bugs: the popover is now created once and updated in place (setTitle/setBody) instead of being disposed and rebuilt on every data change — confirmed live that changing the underlying data (simulating another doc's rating shifting maxDocScore) no longer closes an already-open popover and its title updates live instead; the Bootstrap Collapse instance behind 'Show N More' is now disposed on re-render instead of leaking; Debug/Expand still click through correctly end-to-end after that refactor (Expand opens 'Relevancy Score: N' with the raw explain text; Debug disabled/aria-disabled on this case's no-breakdown real data, confirmed working with the ported JSON tree on synthetic multi-term data as before). A separate null-pointer guard fix (dataValueChanged firing after disconnect) is a controller-lifecycle edge case verified via a Vitest unit test, not something drivable through the UI. No console errors."
+        paths: ["app/javascript/controllers/match_explain_controller.js", "app/javascript/utils/json_explorer.js", "app/javascript/utils/dynamic_modal.js", "app/assets/javascripts/controllers/searchResult.js", "app/assets/templates/views/searchResult.html"]
       "6.9":
         title: "Frog Report"
-        last_run: 2026-09-15T16:25:00Z
+        last_run: 2026-09-18T17:15:00Z
         result: pass_with_fixes
-        notes: "CONFIRMED FIX via Playwright MCP for the previously-documented crash (commit 32dfffa6 'Fix frog report crash when a query has no currentScore yet'): opening the Frog Report on 'Haystack Rating Party' (all 137 queries return 0 results because chorus.dev.o19s.com is unreachable from this sandbox — same environment limitation as before) now opens successfully with a Summary and 'Distribution of Queries Needing Ratings' chart, instead of throwing 'Cannot read properties of undefined (reading countMissingRatings)'. The only console errors were the expected net::ERR_CONNECTION_REFUSED to chorus.dev.o19s.com, no JS exceptions. Minor cosmetic quirk noticed (not a crash, not re-tested for severity): the Summary text read '0 ratings missing, leading to NaN% missing rate' when every query returns zero results (divide-by-zero in the missing-rate percentage) — separate from the fixed crash, not investigated further. Also re-confirmed the golden path still works on case 3 (SEARCHAPI CASE, an unrun/unscored query) with no crash."
-        paths: ["app/assets/javascripts/", "app/assets/javascripts/components/frog_report/frog_report_modal_instance_controller.js"]
+        notes: "Re-verified via Playwright MCP on case 1 (Solr Case) — flagged DUE by a stale path glob (app/assets/javascripts/, since narrowed below) that matched unrelated deletions from the match-explain migration; Frog Report itself wasn't touched by that work. Frog icon opens 'The Frog Pond Report: SOLR CASE' with Summary text and the 'Distribution of Queries Needing Ratings' bar chart; Close (header X or footer button) removes the modal from the DOM and clears body's modal-open with no leftover backdrop. No console errors (one Vega v5-vs-v6.2.0 spec-version warning, expected/pre-existing). Did not re-drive the zero-results case (Haystack Rating Party) or re-check the NaN%-missing-rate cosmetic quirk from the prior pass — this pass was a regression spot-check against the match-explain changes, not a full re-run. Prior finding retained: CONFIRMED FIX via Playwright MCP (2026-09-15) for the previously-documented crash (commit 32dfffa6 'Fix frog report crash when a query has no currentScore yet') — opening on 'Haystack Rating Party' (all 137 queries return 0 results; chorus.dev.o19s.com unreachable from that sandbox) no longer throws 'Cannot read properties of undefined (reading countMissingRatings)'. Minor cosmetic quirk noted then, not yet investigated: Summary reads '0 ratings missing, leading to NaN% missing rate' when every query returns zero results (divide-by-zero in the missing-rate percentage)."
+        paths: ["app/assets/javascripts/components/frog_report/"]
       "6.10":
         title: "Unarchive case (from a list's Archived filter)"
         last_run: 2026-09-15T19:05:00Z
@@ -861,9 +861,9 @@ parts:
         paths: ["app/assets/stylesheets/bootstrap5-compat.css"]
       "16.4":
         title: "Modal accessibility spot-check"
-        last_run: 2026-09-15T18:49:00Z
+        last_run: 2026-09-18T17:12:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: opened the Clone modal on case 6, pressed Escape — confirmed via document.querySelector('.modal.show') that the modal closed. Did not re-test Tab-trap this pass."
+        notes: "Re-verified via Playwright MCP on case 1: opened the new Expand modal (match-explain's utils/dynamic_modal.js — a from-scratch vanilla BS5 modal, not the Angular $quepidModal shim used elsewhere) from a search result row's Matches popover, pressed Escape — confirmed the modal element was removed from the DOM, document.body no longer had modal-open, and no .modal-backdrop was left behind. Did not re-test Tab-trap this pass, and did not exercise the nested-modal case (opening this modal from a doc row inside the Missing Documents or Compare Snapshots modal)."
         paths: ["app/assets/javascripts/"]
       "16.5":
         title: "General visual sanity sweep after any CSS/JS change"
