@@ -52,7 +52,6 @@
         "angular-csv-import",
         "angular-ui-ace",
         "angular-wizard",
-        "ng-json-explorer",
         "jquery"
       ]
     },

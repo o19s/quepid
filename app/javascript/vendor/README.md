@@ -11,8 +11,9 @@ Third-party JavaScript that Quepid previously loaded from `package.json` now liv
 | `angular-utils-pagination/` | `angularUtils.directives.dirPagination` |
 | `angular-csv-import/` | CSV import directives |
 | `angular-ui-ace/` | `ui.ace` |
-| `ng-json-explorer/` | `ngJsonExplorer` |
 | `ng-tags-input/` | Tag input; upstream `build/ng-tags-input.min.css` copied in `build_css.js`; BS5-aligned skin is `app/assets/stylesheets/ng-tags-input-theme.css` → `builds/ng-tags-input.theme.css` |
+
+JSON tree display no longer uses a vendored Angular directive — see `utils/json_explorer.js` and `app/assets/stylesheets/json-explorer.css` (copied to `builds/` by `build_css.js`).
 
 **splainer-search** is loaded from npm (see root `package.json`) and bridged onto Angular DI in **`app/javascript/splainer_search_adapter.js`**.
 

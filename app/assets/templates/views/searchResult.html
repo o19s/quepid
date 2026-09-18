@@ -71,12 +71,9 @@
 
           <span
             ng-if="isObjectOrArray(fieldValue)"
+            data-controller="json-explorer"
+            data-json-explorer-json-value="{{ fieldValue | json:0 }}"
           >
-            <!-- output JSON blob -->
-            <json-explorer
-              json-data="fieldValue"
-              collapsed="false">
-            </json-explorer>
           </span>
 
           <span

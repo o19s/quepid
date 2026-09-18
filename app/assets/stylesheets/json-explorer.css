@@ -1,3 +1,13 @@
+/*
+ * Styles for the vanilla JSON tree (`utils/json_explorer.js` / Stimulus
+ * `json-explorer`). Root class remains `.angular-json-explorer` so existing
+ * markup stays stable.
+ *
+ * Originally from ng-json-explorer (Goldark), BSD-3-Clause:
+ * Copyright (c) 2013, Goldark <opensource@goldark.com.br>
+ * https://github.com/Goldark/ng-json-explorer
+ */
+
 .angular-json-explorer .hidden {
 	display: none;
 }
@@ -28,6 +38,7 @@
 	left: -1em;
 	cursor: pointer;
 	-moz-user-select: none;
+	user-select: none;
 	color: rgb(249, 39, 83);
 	text-decoration: none;
 }

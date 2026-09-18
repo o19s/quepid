@@ -124,3 +124,12 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
   1. On the Cases list (`/cases`) or a Team's case list, check the **Archived** filter checkbox.
   2. Click the (green) unarchive icon on the case's row, and confirm the "Unarchive {case name}?" dialog.
 - **Expected:** The chosen case is restored to active status and reappears in the default (non-archived) list. (There is no separate "Unarchive case" modal listing archived cases with an "Add Back" button — this is the same icon-button + confirm mechanism used to archive, in reverse.)
+
+### 6.11 View a document's details (Detailed Document View)
+
+- [ ] **Steps:**
+  1. Expand a query, click a result's title.
+  2. In "Detailed Document View of doc: {doc id}", review the listed sub-fields, translations, and embeds.
+  3. Click **View All Fields** to reveal the full raw document as formatted JSON, then **Hide All Fields** to collapse it again.
+  4. Click **View Document** (opens the document at the search engine in a new tab) if the doc has a resolvable URL, otherwise confirm the button is disabled.
+- **Expected:** Fields shown match the document's actual data; an object/array-valued sub-field renders as an expandable JSON tree, not raw text.

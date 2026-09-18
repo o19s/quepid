@@ -24,17 +24,17 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 130 files, 125 register `angular.module` |
-| HTML templates (components + `app/assets/templates`) | 42 (24 component + 18 under `app/assets/templates`) |
-| Controllers | 49 (`.controller()` registrations; 25 files under `controllers/`) |
+| Angular JS source files (`app/assets/javascripts`) | 128 files, 123 register `angular.module` |
+| HTML templates (components + `app/assets/templates`) | 40 (23 component + 17 under `app/assets/templates`) |
+| Controllers | 47 (`.controller()` registrations; 24 files under `controllers/`) |
 | Services | 27 (`.service()` registrations; 28 files under `services/` — `quepidModalSvc.js` registers a factory) |
 | Factories | 8 |
 | Filters | 8 under `filters/` (+ 1 directive-local: `plusOrMinus`) |
 | Custom directives / components | 28 (21 `.directive()` + 7 `.component()`) |
-| `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 12 |
-| Vendored Angular libraries (`app/javascript/vendor`) | 8 packages (+ `angular` core from npm) |
+| `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 11 |
+| Vendored Angular libraries (`app/javascript/vendor`) | 7 packages (+ `angular` core from npm) |
 | Karma unit specs (`spec/javascripts/angular`) | 39 |
-| Vitest unit specs (`test/javascript/**/*.test.js`) | 34 |
+| Vitest unit specs (`test/javascript/**/*.test.js`) | 36 |
 | Playwright specs | See [Other inventory § Tests](#tests) for the Angular-core and Stimulus spec breakdown |
 
 ---
@@ -252,9 +252,9 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **routes.js** + **ngRoute** | — | Entire SPA |
 | **angular core** | — | Remove last |
 
-**Component LOC** (easiest → hardest, after toolbar duplicates — see [Suggested PR order §2](#suggested-pr-order-start-here)): new_case (66) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → query_explain (116) → move_query (152) → add_query (160) → qgraph (250) → diff (285) → judgements (327) → frog_report (360) → import_ratings (462).
+**Component LOC** (easiest → hardest, after toolbar duplicates — see [Suggested PR order §2](#suggested-pr-order-start-here)): new_case (66) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → move_query (152) → add_query (160) → qgraph (250) → diff (285) → judgements (327) → frog_report (360) → import_ratings (462).
 
-**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `add-query`, `query-options`, `query-explain`, `new-case` / wizard, `frog-report`, `judgements`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Moving these implies rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `add-query`, `query-options`, `new-case` / wizard, `frog-report`, `judgements`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Moving these implies rebuilding the case SPA, not a framework swap.
 
 #### App-level (port seams; don't rebuild)
 
@@ -341,7 +341,7 @@ The Rails cases index at `/cases` is **not** Angular.
 
 - `<body ng-app="QuepidApp">`
 - JS: `angular_app`, `angular_templates`, `quepid_angular_app`
-- CSS: `angular-json-explorer`, `angular-wizard`, `ng-tags-input`
+- CSS: `json-explorer` (Quepid-owned), `angular-wizard`, `ng-tags-input`
 - Inline script: `bootstrapSvc.run()`, `configurationSvc` seeded from Rails config
 
 ### Case shell (`app/views/core/index.html.erb`)
@@ -369,7 +369,6 @@ Flash include, `LoadingCtrl`, `ng-view`
 | `ngRoute` | `angular-route` | Case/try routing | History API / Rails URLs (last with SPA) |
 | `ngSanitize` | `angular-sanitize` | `ng-bind-html` | DOMPurify or server sanitize |
 | `mgo-angular-wizard` | `angular-wizard` | New-case wizard | Multi-step Stimulus or server wizard |
-| `ngJsonExplorer` | `ng-json-explorer` | JSON panes | Vanilla tree component |
 | `o19s.splainer-search` | `splainer_search_adapter.js` | Search HTTP | `splainer-search/wired.js` directly |
 | `ui.ace` | `angular-ui-ace` | Query editors | Stimulus + `window.ace` |
 | `angularUtils.directives.dirPagination` | `angular-utils-pagination` | Query paging | Stimulus pager |
@@ -477,7 +476,6 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Query notes | controller | `QueryNotesCtrl` |
 | Annotations list | component | `<annotations>` — `components/annotations/` |
 | Single annotation | component | `<annotation>` — `components/annotation/` (uses `timeAgo` filter) |
-| Explain modal | component | `<query-explain>` — `components/query_explain/` |
 | Query options modal | component | `<query-options>` — `components/query_options/` |
 | Move query modal | component | `<move-query>` — `components/move_query/` |
 | Missing documents search | controllers + template | `TargetedSearchCtrl`, `DocFinderCtrl`, `TargetedSearchModalCtrl`, `templates/views/targetedSearchModal.html` |
@@ -500,9 +498,8 @@ Filters: `isImageUrl`, `quepidTypeaheadHighlight` (used by typeahead directive)
 | Try history | directive + controller | `<query-params-history>`, `queryParamsHistoryCtrl`, `templates/views/queryParamsHistory.html` |
 | Settings persistence | service + factories | `settingsSvc`, `SettingsFactory`, `TryFactory` |
 | Search endpoint popup | template | `templates/views/searchEndpoint_popup.html` |
-| Detailed doc modal | controller + template | `DetailedDocCtrl`, `templates/views/detailedDoc.html` |
 
-Uses heavily: `ui-ace`, `json-explorer`, `settingsIdValue`
+Uses heavily: `ui-ace`, `settingsIdValue`
 
 ### 8. Shared UI primitives (migrate before or alongside features)
 
@@ -533,7 +530,7 @@ These Angular-specific wrappers are used across many templates:
 | `qgraph` | `<qgraph>` | Score timeline |
 | `qscore_case` | `<qscore-case>` | Case score display |
 | `qscore_query` | `<qscore-query>` | Per-query score |
-| `query_explain` | `<query-explain>` | Explain JSON modal |
+| `query_explain` | `<query-explain>` | Thin Angular data bridge + Stimulus `query-explain` modal (sync params/parsing via `data-*-value`; live `renderTemplate()` via CustomEvent) |
 | `query_options` | `<query-options>` | Per-query options |
 
 ---
@@ -572,7 +569,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 ---
 
-## Templates (42 HTML files)
+## Templates (40 HTML files)
 
 **Shell:** `queriesLayout.html`, `queries.html`, `404.html`, `embed.html`
 
@@ -580,11 +577,11 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 **Case-action modals:** `pick_scorer.html`, `snapshotModal.html`, `searchEndpoint_popup.html`
 
-**Dev pane:** `_dev_settings.html`, `devQueryParams.html`, `queryParamsDetails.html`, `queryParamsHistory.html`, `customHeaders.html`, `detailedDoc.html`
+**Dev pane:** `_dev_settings.html`, `devQueryParams.html`, `queryParamsDetails.html`, `queryParamsHistory.html`, `customHeaders.html`
 
 **Wizard:** `wizardModal.html`
 
-**Components:** 24 HTML files under `app/assets/javascripts/components/`
+**Components:** 23 HTML files under `app/assets/javascripts/components/`
 
 Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 
@@ -598,7 +595,7 @@ Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 
 ### DOM bridge (`quepid_dom.js`)
 
-`app/javascript/quepid_dom.js` — side-effect entry that pins `window.quepidDom` (`attachBsTooltip`, popover helpers, `attachTextPaste`) for thin Angular directives. Loaded with the Angular vendor bundle; remove with Angular.
+`app/javascript/quepid_dom.js` — side-effect entry that pins `window.quepidDom` (tooltip/popover/paste helpers, `countUp`, `flash`, `modal.open` (`utils/dynamic_modal.js`), `jsonExplorer.render`/`escapeHtml` (`utils/json_explorer.js`)) for thin Angular controllers that need to build one-off vanilla UI (e.g. `searchResult.js`'s detailed-doc modal). Loaded with the Angular vendor bundle (`build:angular-vendor` passes esbuild `--alias:utils=./app/javascript/utils` so bridged utils can keep their normal importmap-style bare imports); remove with Angular.
 
 ### Non-Angular JS in the Angular bundle
 
@@ -606,7 +603,7 @@ Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 
 ### Stylesheets
 
-Core layout loads vendor CSS: `angular-json-explorer`, `angular-wizard`, `ng-tags-input`. `core.css` + `bootstrap5-compat.css` style the case UI.
+Core layout loads: `json-explorer` (Quepid-owned, styles the vanilla JSON tree), plus vendored `angular-wizard` / `ng-tags-input`. `core.css` + `bootstrap5-compat.css` style the case UI.
 
 ### Build toolchain
 
@@ -617,9 +614,9 @@ Core layout loads vendor CSS: `angular-json-explorer`, `angular-wizard`, `ng-tag
 | App bundle | `build_angular_app.js` → `quepid_angular_app.js` |
 | Templates | `build_templates.js` → `angular_templates.js` |
 | yarn scripts | `build:angular*` included in `yarn build` |
-| Vendor CSS | `build_css.js` · audit: `audit_css.js` |
+| Linked stylesheets | `build_css.js` → `copyLinkedStylesheets()` · audit: `audit_css.js` |
 
-Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (10 packages; see [vendor README](../../app/javascript/vendor/README.md))
+Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (7 packages; see [vendor README](../../app/javascript/vendor/README.md))
 
 ### Tests
 
@@ -671,7 +668,7 @@ $window.location.href = caseTryNavSvc.getQuepidRootUrl() + '/cases'
 ### Built artifacts
 
 - [ ] `app/assets/builds/angular_app.js`, `quepid_angular_app.js`, `angular_templates.js`
-- [ ] Vendor CSS builds: `angular-json-explorer.css`, `angular-wizard.css`, `ng-tags-input*.css`
+- [ ] Vendor CSS builds: `angular-wizard.css`, `ng-tags-input*.css` (`json-explorer.css` stays — owned by the vanilla JSON tree)
 
 ### Rails views
 

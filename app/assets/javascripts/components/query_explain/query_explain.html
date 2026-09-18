@@ -1,6 +1,4 @@
-<button
-  class="btn btn-outline-secondary btn-sm"
-  ng-click="ctrl.prompt()"
->
-  Explain Query
-</button>
+<span
+  data-controller="query-explain"
+  data-query-explain-data-value="{{ ctrl.queryExplainData() | json:0 }}"
+></span>

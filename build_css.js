@@ -185,15 +185,15 @@ function buildAdminCSS() {
   console.log(`admin.css created (${(stats.size / 1024).toFixed(1)}KB)`);
 }
 
-function copyVendorFiles() {
-  console.log('Copying Angular vendor CSS files...');
-  
+// Standalone stylesheets linked from core.html.erb (not folded into core.css).
+function copyLinkedStylesheets() {
+  console.log('Copying linked stylesheets...');
+
   ensureDirectoryExists('app/assets/builds');
-  
-  // Copy Angular third-party CSS files (sources live in app/javascript/vendor)
+
   copyFileIfExists(
-    'app/javascript/vendor/ng-json-explorer/dist/angular-json-explorer.css',
-    'app/assets/builds/angular-json-explorer.css'
+    'app/assets/stylesheets/json-explorer.css',
+    'app/assets/builds/json-explorer.css'
   );
   copyFileIfExists(
     'app/javascript/vendor/angular-wizard/angular-wizard.css',
@@ -238,8 +238,8 @@ function buildAllCSS() {
     buildCoreCSS();
     buildAdminCSS();
 
-    // Copy vendor and asset files
-    copyVendorFiles();
+    // Copy linked stylesheets and other asset files
+    copyLinkedStylesheets();
     copyFontFiles();
     copyImageFiles();
     

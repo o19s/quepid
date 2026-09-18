@@ -370,10 +370,10 @@ From the match/explain popover + Debug/Expand modal migration (`match_explain_co
 
 ---
 
-### `json_explorer.js` doesn't escape object/array keys
+### `json_explorer.js` undefined value renders a stray comma `<li>`
 
-**Location:** `app/javascript/utils/json_explorer.js` (`parseChildren`)
+**Location:** `app/javascript/utils/json_explorer.js` (`parseValue` / `parseChildren`)
 
-Faithfully ports the vendored `ng-json-explorer` Angular directive's own pre-existing gap: leaf string/number/boolean values are escaped, but a key name is inserted into the tree HTML raw. Unlike the vendor file, this is new code fully under our control — worth closing (`escapeHtml(key)`) next time this file is touched. Low real-world risk: reachable key names come from the search engine's explain payload or admin-configured field specs, not raw end-user input.
+A `parseValue`/`parseChildren` entry for an `undefined` value renders a stray `<li>,</li>` instead of omitting the `<li>` entirely (the vendor's `if`/`else if` chain with no final `else` just skips it). Unreachable in practice — input always comes from `JSON.parse`, which never produces `undefined` — but worth matching exactly if this file is revisited.
 
-Same file, lower priority: a `parseValue`/`parseChildren` entry for an `undefined` value renders a stray `<li>,</li>` instead of omitting the `<li>` entirely (the vendor's `if`/`else if` chain with no final `else` just skips it). Unreachable in practice — input always comes from `JSON.parse`, which never produces `undefined` — but worth matching exactly if this file is revisited.
+(Key escaping + the broken `class="prop>"` typo were fixed when the query-explain / detailed-doc follow-ups landed.)

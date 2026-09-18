@@ -15,9 +15,20 @@ describe("json_explorer", () => {
 
       const root = container.querySelector(".angular-json-explorer")
       expect(root).not.toBeNull()
+      expect(root.querySelector(".prop").textContent).toContain("description")
       expect(root.querySelector(".string").textContent).toBe('"weight(x)"')
       expect(root.querySelector(".num").textContent).toBe("3.5")
       expect(root.querySelector(".bool").textContent).toBe("true")
+    })
+
+    it("escapes HTML-significant characters in object keys (and uses class prop, not prop>)", () => {
+      const container = document.createElement("div")
+      renderJsonExplorer(container, JSON.stringify({ "<script>": "x" }))
+
+      const prop = container.querySelector(".prop")
+      expect(prop).not.toBeNull()
+      expect(prop.className).toBe("prop")
+      expect(prop.innerHTML).toContain("&lt;script&gt;")
     })
 
     it("escapes HTML-significant characters in string leaves", () => {

@@ -6,14 +6,15 @@ import { createBsModal, restoreModalBodyLock, showStackedModal } from "utils/bs_
  * for debug-matches/expand-content (no header/footer chrome, dismissible via
  * backdrop or Esc only, matching those two modals' original markup exactly).
  *
- * @param {{ html: string, size?: "sm"|"lg"|"xl", windowClass?: string }} options
+ * @param {{ html: string, size?: "sm"|"lg"|"xl", windowClass?: string, ariaLabelledBy?: string }} options
  * @returns {{ element: Element, dispose: () => void }}
  */
-export function openDynamicModal({ html, size, windowClass } = {}) {
+export function openDynamicModal({ html, size, windowClass, ariaLabelledBy } = {}) {
   const wrapper = document.createElement("div")
   wrapper.className = ["modal", "fade", windowClass].filter(Boolean).join(" ")
   wrapper.setAttribute("tabindex", "-1")
   wrapper.setAttribute("role", "dialog")
+  if (ariaLabelledBy) wrapper.setAttribute("aria-labelledby", ariaLabelledBy)
 
   const sizeClass = size ? `modal-${size}` : ""
   wrapper.innerHTML = `
@@ -51,5 +52,13 @@ export function openDynamicModal({ html, size, windowClass } = {}) {
     onHidden()
   }
 
-  return { element: wrapper, dispose: onHidden }
+  // Callers (e.g. detailed-doc Close) should go through hide() so BS5 removes
+  // its backdrop; jumping straight to onHidden leaves orphaned .modal-backdrop
+  // nodes. hide() fires hidden.bs.modal → onHidden for the real teardown.
+  function dispose() {
+    if (bsModal) bsModal.hide()
+    else onHidden()
+  }
+
+  return { element: wrapper, dispose }
 }

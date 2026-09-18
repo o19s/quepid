@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { openDynamicModal } from "utils/dynamic_modal"
 
 describe("dynamic_modal", () => {
@@ -52,6 +52,16 @@ describe("dynamic_modal", () => {
     expect(instance._shown).toBe(true)
   })
 
+  it("sets aria-labelledby when given (query-explain modal's title heading)", () => {
+    const { element } = openDynamicModal({ html: "<p>hi</p>", ariaLabelledBy: "some-title-id" })
+    expect(element.getAttribute("aria-labelledby")).toBe("some-title-id")
+  })
+
+  it("omits aria-labelledby when not given", () => {
+    const { element } = openDynamicModal({ html: "<p>hi</p>" })
+    expect(element.hasAttribute("aria-labelledby")).toBe(false)
+  })
+
   it("omits the size class when no size is given", () => {
     const { element } = openDynamicModal({ html: "<p>hi</p>" })
     expect(element.querySelector(".modal-dialog").className).not.toMatch(/modal-(sm|lg|xl)/)
@@ -65,6 +75,18 @@ describe("dynamic_modal", () => {
 
     expect(instance._disposed).toBe(true)
     expect(document.body.contains(element)).toBe(false)
+  })
+
+  it("routes dispose() through hide() so BS5 can remove its backdrop", () => {
+    const { dispose } = openDynamicModal({ html: "<p>hi</p>" })
+    const instance = window.bootstrap.Modal.instances.get(
+      document.querySelector(".modal")
+    )
+    const hideSpy = vi.spyOn(instance, "hide")
+
+    dispose()
+
+    expect(hideSpy).toHaveBeenCalledTimes(1)
   })
 
   it("tears down when bootstrap.Modal is unavailable instead of leaving an orphaned element shown", () => {

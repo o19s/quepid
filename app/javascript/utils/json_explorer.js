@@ -1,10 +1,8 @@
 /**
- * Vanilla port of the vendored `ng-json-explorer` Angular directive
- * (app/javascript/vendor/ng-json-explorer) — same markup, classnames (styled by
- * angular-json-explorer.css, loaded via core.html.erb) and collapse/expand
- * interaction, without the Angular scope/watch machinery. Only caller today is
- * the debug-matches modal; query_explain's modal still uses the Angular
- * directive directly.
+ * Vanilla port of the former `ng-json-explorer` Angular directive — same markup,
+ * classnames (styled by app/assets/stylesheets/json-explorer.css, loaded via
+ * core.html.erb) and collapse/expand
+ * interaction, without the Angular scope/watch machinery.
  */
 
 export function escapeHtml(value) {

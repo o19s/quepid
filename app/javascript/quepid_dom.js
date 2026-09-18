@@ -16,6 +16,13 @@ import { restoreModalBodyLock, showStackedModal } from "./utils/bs_modal"
 import { attachTextPaste } from "./utils/text_paste"
 import { animateCountUp, stopCountUp } from "./utils/count_up"
 import { hideFlash, showFlash } from "./utils/flash"
+// dynamic_modal.js pulls in utils/bs_modal via the usual importmap bare
+// specifier ("utils/bs_modal", not "./bs_modal") — this bundle (angular_app.js)
+// is built with plain esbuild, which doesn't know about config/importmap.rb's
+// pins, so build:angular-vendor passes --alias:utils=./app/javascript/utils
+// to resolve it (see package.json).
+import { openDynamicModal } from "./utils/dynamic_modal"
+import { renderJsonExplorer, escapeHtml } from "./utils/json_explorer"
 
 /**
  * Shared DOM helpers for Bootstrap tooltips/popovers and paste handling.
@@ -50,7 +57,12 @@ const quepidDom = {
   },
   modal: {
     showStacked: showStackedModal,
-    restoreBodyLock: restoreModalBodyLock
+    restoreBodyLock: restoreModalBodyLock,
+    open: openDynamicModal
+  },
+  jsonExplorer: {
+    render: renderJsonExplorer,
+    escapeHtml
   }
 }
 

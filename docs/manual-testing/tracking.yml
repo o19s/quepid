@@ -359,16 +359,22 @@ parts:
         paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb", "app/assets/javascripts/components/judgements/_modal.html"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
-        last_run: 2026-09-15T16:49:00Z
+        last_run: 2026-09-18T17:41:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840. Opened Explain Query on the 'butter' query — Params/Parsing/Query Template tabs all present; Parsing tab showed real Solr debug data (parsedquery: \"text:butter\", querystring, rawquerystring). Did not test the Query Template tab or the Copy icon this pass."
-        paths: ["app/assets/javascripts/directives/"]
+        notes: "Re-verified via Playwright MCP on case 5 ('employer' query) after migrating the modal from Angular ($quepidModal) to a Stimulus controller + the vanilla json_explorer/dynamic_modal utils (query_explain component's Angular controller now only serializes sync data and bridges the live searcher.renderTemplate() call via a CustomEvent). Params tab showed real Solr params (q, qf, fl, etc.); Parsing tab showed parsedquery/querystring/rawquerystring; Query Template tab correctly showed 'This is not a templated query.' for this Solr case (no bridge event fired, since Solr's searcher has no isTemplateCall) — ES/OS template rendering itself wasn't exercised live this pass, only its 'not templated' and error-path branches (Vitest-covered). Copy button correctly followed the active tab. No console errors."
+        paths: ["app/assets/javascripts/components/query_explain/", "app/javascript/controllers/query_explain_controller.js"]
       "6.8":
         title: "Explain a single document (Debug Explain)"
-        last_run: 2026-09-18T17:12:00Z
+        last_run: 2026-09-18T17:41:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on case 1 (Solr Case, 'star wars' query) after a follow-up review pass on the match-explain migration fixed several bugs: the popover is now created once and updated in place (setTitle/setBody) instead of being disposed and rebuilt on every data change — confirmed live that changing the underlying data (simulating another doc's rating shifting maxDocScore) no longer closes an already-open popover and its title updates live instead; the Bootstrap Collapse instance behind 'Show N More' is now disposed on re-render instead of leaking; Debug/Expand still click through correctly end-to-end after that refactor (Expand opens 'Relevancy Score: N' with the raw explain text; Debug disabled/aria-disabled on this case's no-breakdown real data, confirmed working with the ported JSON tree on synthetic multi-term data as before). A separate null-pointer guard fix (dataValueChanged firing after disconnect) is a controller-lifecycle edge case verified via a Vitest unit test, not something drivable through the UI. No console errors."
+        notes: "Re-verified via Playwright MCP on case 5 ('employer' query) as a regression spot-check after reusing dynamic_modal.js/json_explorer.js for the query-explain and detailed-doc migrations (both now bridged into the Angular bundle via window.quepidDom, which needed an esbuild --alias fix — see 6.11's notes). Matches popover opened, Debug opened the JSON explain tree correctly. No console errors."
         paths: ["app/javascript/controllers/match_explain_controller.js", "app/javascript/utils/json_explorer.js", "app/javascript/utils/dynamic_modal.js", "app/assets/javascripts/controllers/searchResult.js", "app/assets/templates/views/searchResult.html"]
+      "6.11":
+        title: "View a document's details (Detailed Document View)"
+        last_run: 2026-09-18T17:41:00Z
+        result: pass
+        notes: "New scenario — this modal (doc title click) previously had no tracked entry. Migrated this pass from Angular ($quepidModal + DetailedDocCtrl + the vendored ng-json-explorer directive, which is now fully removed from the app) to a one-off Stimulus/vanilla modal built in searchResult.js via window.quepidDom.modal.open, reusing the same json_explorer.js tree used elsewhere. Verified via Playwright MCP on case 5: clicking a result's title opened 'Detailed Document View of doc: {id}', showed the structure/text sub-fields, View All Fields toggled a formatted JSON block of the full raw doc (replacing the deleted ui-ace readonly editor with a plain <pre>), and View Document / Close worked. Deliberate security-motivated behavior change: sub-field text is now HTML-escaped instead of ng-bind-html'd (Angular's ngSanitize doesn't exist in the vanilla path, and doc field values can contain arbitrary indexed content) — confirmed live that a field containing literal <section> tags now renders as visible escaped text rather than being interpreted as markup (this also happened to be the pre-existing behavior in practice, since the Angular template's isObjectOrArray() was never in scope for the modal's own controller and always evaluated falsy). Did not exercise a doc with an object/array sub-field (none in this dataset) — that path is covered by json_explorer.js's existing Vitest suite instead."
+        paths: ["app/assets/javascripts/controllers/searchResult.js", "app/assets/templates/views/searchResult.html", "app/javascript/utils/dynamic_modal.js", "app/javascript/utils/json_explorer.js", "app/javascript/quepid_dom.js"]
       "6.9":
         title: "Frog Report"
         last_run: 2026-09-18T17:15:00Z

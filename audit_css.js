@@ -122,7 +122,7 @@ const SAFELIST = {
     /^ace_/,            // Ace editor
     /^d3-tip/,          // d3-tip
     /^vega-/,           // Vega embed
-    /^json-/,           // ng-json-explorer
+    /^json-/,           // json_explorer (historical .angular-json-explorer classes)
   ],
 };
 

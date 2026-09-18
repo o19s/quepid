@@ -10,7 +10,6 @@ angular.module('QuepidApp', [
   'ngRoute',
   'ngSanitize',
   'mgo-angular-wizard',
-  'ngJsonExplorer',
   'o19s.splainer-search',
   'ui.ace',
   'angularUtils.directives.dirPagination',
