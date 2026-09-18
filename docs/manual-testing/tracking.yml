@@ -219,10 +219,10 @@ parts:
         paths: ["app/models/query.rb", "app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js", "app/assets/javascripts/components/query_options/query_options_controller.js"]
       "4.6":
         title: "Rate a document"
-        last_run: 2026-09-18T14:19:00Z
+        last_run: 2026-09-18T15:59:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on SOLR CASE (case 1) after migrating the ratings-scale popover from Angular's quepidPopover directive to the Stimulus rating-popover controller (rating_popover_controller.js) — the popover shell/content now renders in vanilla JS; the actual rating mutation (doc.rate/resetRating, scoreAll propagation) is unchanged, still Angular, bridged via a bubbling CustomEvent. Verified popover appearance is pixel-identical to the pre-change Angular version (matched before/after screenshots), rating a single result only rates that doc (fixed a bug during this pass where the event bubbled into the 'Score All' bulk handler and rated every doc — added event.stopPropagation()), badge + case score updated live (0.00→1.00 on '1 Relevant', 0.00 on '0 Irrelevant'), RESET restores '--'. Follow-up pass: guarded the template against a blank scale attribute (`(ratings.scale || {}) | json:0`, also switched to compact JSON) and removed the now-dead rateElementSvc/rateBulkSvc handleRatingScale — re-verified live afterward that the compact attribute still parses and rating/reset still work. Also re-verified the same popover on the 'Score All' bulk rating badge and inside the Missing Documents finder modal (see 4.9). Left the case in its original unrated state. Did not re-test the duplicate/missing-doc-id banner or depth-of-rating-cutoff edge cases this pass."
-        paths: ["app/controllers/ratings_controller.rb", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/controllers/searchResult.js", "app/assets/javascripts/controllers/searchResults.js", "app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/services/rateElementSvc.js", "app/assets/javascripts/services/rateBulkSvc.js", "app/assets/templates/views/searchResult.html", "app/assets/templates/views/searchResults.html"]
+        notes: "Re-verified via Playwright MCP on SOLR CASE (case 1) after merging rateBulkSvc/rateElementSvc (identical setScale-only services left behind by the earlier ratings-popover Stimulus migration) into a single rateScaleSvc and updating the three consuming controllers' injections (searchResult.js, searchResults.js, docFinder.js). Rated 'Long Day's Journey Into Night' (rank #1) via the popover: doc badge 0.00→1.00, case/query score badges updated live, no console errors. RESET restored the doc to '--' and the case back to 0.00/10 unrated — original state preserved. Did not re-test the 'Score All' bulk path, the Missing Documents finder popover, or non-rating edge cases this pass (see 4.9 for that surface)."
+        paths: ["app/controllers/ratings_controller.rb", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/controllers/searchResult.js", "app/assets/javascripts/controllers/searchResults.js", "app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/services/rateScaleSvc.js", "app/assets/templates/views/searchResult.html", "app/assets/templates/views/searchResults.html"]
       "4.7":
         title: "Case & query score badges"
         last_run: 2026-09-15T16:42:00Z
@@ -237,10 +237,10 @@ parts:
         paths: ["app/controllers/scores_controller.rb", "app/models/scorer.rb"]
       "4.9":
         title: "Missing Documents finder"
-        last_run: 2026-09-18T14:19:00Z
+        last_run: 2026-09-18T16:00:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on SOLR CASE (case 1), query 'star wars', as part of the ratings-popover Stimulus migration (see 4.6). Opened Missing Documents, searched (q=*:*, 8516 matches), used the modal's 'Score All' rating popover (same Stimulus rating-popover controller, bulk rate path via docFinder.js) — rated all 10 shown docs '0 Irrelevant', badges updated live both inside the modal and on the underlying workbench behind it (shared doc models), then RESET via the same popover to restore unrated state. Follow-up pass: re-confirmed the modal's popover still renders (now with the compact-JSON/blank-safe scale attribute) and opens correctly after the rateElementSvc/rateBulkSvc cleanup; did not rate anything this pass since nothing needed resetting. Did not test the blank-URL/invalid-query edge cases or 'Reset to All Rated Docs' button this pass."
-        paths: ["app/assets/javascripts/controllers/docFinder.js", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/services/rateBulkSvc.js", "app/assets/templates/views/targetedSearchModal.html"]
+        notes: "Re-verified via Playwright MCP on SOLR CASE (case 1), query 'star wars', after merging rateBulkSvc/rateElementSvc into rateScaleSvc and updating docFinder.js's injection (see 4.6). Opened Missing Documents, searched (q=*:*, 8516 matches), used the modal's 'Score All' popover (bulk rate path via docFinder.js) to rate all 10 shown docs '0 Irrelevant' — badges updated live both inside the modal and on the underlying workbench behind it, no console errors, then RESET via the same popover restored all 10 to unrated. Closed the modal and confirmed the case/query score badges were back to their original 0.00/10-unrated state. Did not test the blank-URL/invalid-query edge cases or 'Reset to All Rated Docs' button this pass."
+        paths: ["app/assets/javascripts/controllers/docFinder.js", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/services/rateScaleSvc.js", "app/assets/templates/views/targetedSearchModal.html"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
         last_run: 2026-09-15T16:45:00Z
@@ -279,10 +279,10 @@ parts:
         paths: ["app/models/query.rb"]
       "4.16":
         title: "Query Notes & Information Need"
-        last_run: 2026-09-15T16:49:00Z
+        last_run: 2026-09-18T15:29:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840. Filled Information Need ('Find butter products') and Notes ('Manual test note for query 4.16') on the 'butter' query, saved — flash 'Success! Your query details have been saved.'; reloaded the page and re-expanded Toggle Notes, both values persisted correctly. Did not re-test the blank-fields or forced-failure edge cases this pass."
-        paths: ["app/models/query.rb"]
+        notes: "Re-verified via Playwright MCP on case 1 (Solr Case) after migrating the core flash-message system off angular-flash to a Stimulus controller + CustomEvent bridge. Toggled Notes on 'star wars', typed a note, saved — flash 'Success! Your query details have been saved.' rendered correctly via the new path (window.quepidDom.flash.show -> flash:show CustomEvent -> Stimulus flash controller). Did not re-test Information Need persistence, reload round-trip, or forced-failure edge cases this pass — scope was the flash mechanism, not the full scenario."
+        paths: ["app/models/query.rb", "app/assets/javascripts/controllers/queryNotes.js", "app/javascript/controllers/flash_controller.js", "app/javascript/utils/flash.js"]
 
   "05":
     file: 05-core-workbench-history-snapshots-and-annotations.md

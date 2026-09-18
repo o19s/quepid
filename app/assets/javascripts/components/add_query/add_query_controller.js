@@ -12,13 +12,11 @@ angular.module('QuepidApp')
   .controller('AddQueryCtrl', [
     '$rootScope',
     '$log',
-    'flash',
     'queriesSvc',
     'settingsSvc',
     function (
       $rootScope,
       $log,
-      flash,
       queriesSvc,
       settingsSvc
     ) {
@@ -44,10 +42,10 @@ angular.module('QuepidApp')
             q.searchAndScore()
               .then(function success() {
                 $rootScope.$emit('scoring-complete');
-                flash.success = 'Query added successfully.';
+                window.quepidDom.flash.show('success', 'Query added successfully.');
               }, function error(errorMsg) {
-                flash.error = 'Your new query had an error!';
-                flash.to('search-error').error = errorMsg;
+                window.quepidDom.flash.show('error', 'Your new query had an error!');
+                window.quepidDom.flash.show('error', errorMsg, 'search-error');
               }).then(function(){
                 $log.info('rescoring queries after adding query');
                 queriesSvc.updateScores();
@@ -69,10 +67,10 @@ angular.module('QuepidApp')
             queriesSvc.searchAll()
               .then(function () {
                 // searchAll emits its own 'scoring-complete' message, not needed here
-                flash.success = 'Queries added successfully.';
+                window.quepidDom.flash.show('success', 'Queries added successfully.');
               }, function (errorMsg) {
-                flash.error = 'One (or many) of your new queries had an error!';
-                flash.to('search-error').error = errorMsg;
+                window.quepidDom.flash.show('error', 'One (or many) of your new queries had an error!');
+                window.quepidDom.flash.show('error', errorMsg, 'search-error');
               });
             ctrl.loading = false;
           });

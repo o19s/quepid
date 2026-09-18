@@ -1,12 +1,12 @@
 'use strict';
 
-describe('Service: rateElementSvc', function () {
+describe('Service: rateScaleSvc', function () {
 
   // load the service's module
   beforeEach(module('QuepidTest'));
 
   describe('setting the scale', function() {
-    var $rootScope, rateElementSvc, scorerSvc;
+    var $rootScope, rateScaleSvc, scorerSvc;
 
     var expectedDefaultScorer = {
       '1':  '#c51800',
@@ -57,8 +57,8 @@ describe('Service: rateElementSvc', function () {
       "ratings": { }
     };
 
-    beforeEach(inject( function(_$rootScope_, _rateElementSvc_, _scorerSvc_, $q) {
-      rateElementSvc  = _rateElementSvc_;
+    beforeEach(inject( function(_$rootScope_, _rateScaleSvc_, _scorerSvc_, $q) {
+      rateScaleSvc  = _rateScaleSvc_;
       scorerSvc = _scorerSvc_;
       $rootScope      = _$rootScope_;
 
@@ -92,7 +92,7 @@ describe('Service: rateElementSvc', function () {
 
 
 
-      rateElementSvc.setScale(mockScope, mockScope.ratings);
+      rateScaleSvc.setScale(mockScope, mockScope.ratings);
       $rootScope.$apply();
 
       expect(mockScope.ratings.scale).toBeDefined();
@@ -118,7 +118,7 @@ describe('Service: rateElementSvc', function () {
         return expectedScorer;
       };
 
-      rateElementSvc.setScale(mockScope, mockScope.ratings);
+      rateScaleSvc.setScale(mockScope, mockScope.ratings);
       $rootScope.$apply();
 
       expect(mockScope.ratings.scale).toBeDefined();

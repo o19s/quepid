@@ -1,8 +1,8 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .service('rateBulkSvc', [
-    function rateBulkSvc() {
+  .service('rateScaleSvc', [
+    function rateScaleSvc() {
       var setScale = function(src, dst) {
         if (!angular.isUndefined(src.query)) {
           var scorer = src.query.effectiveScorer();

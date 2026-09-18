@@ -3,8 +3,8 @@
 angular.module('QuepidApp')
   .controller('SearchResultCtrl', [
     '$scope', '$element', '$quepidModal',
-    'rateElementSvc',
-    function ($scope, $element, $quepidModal, rateElementSvc) {
+    'rateScaleSvc',
+    function ($scope, $element, $quepidModal, rateScaleSvc) {
 
       var src = {
         'query':  $scope.query,
@@ -14,7 +14,7 @@ angular.module('QuepidApp')
       $scope.ratings = { };
 
       $scope.$watch('query.effectiveScorer()', function() {
-        rateElementSvc.setScale(src, $scope.ratings);
+        rateScaleSvc.setScale(src, $scope.ratings);
       });
 
       // Content and open/close state now live in the rating-popover Stimulus
@@ -57,7 +57,7 @@ angular.module('QuepidApp')
         src.doc = $scope.doc;
       });
 
-      rateElementSvc.setScale(src, $scope.ratings);
+      rateScaleSvc.setScale(src, $scope.ratings);
 
       $scope.displayRating = function() {
         if (!$scope.doc.hasRating()) {

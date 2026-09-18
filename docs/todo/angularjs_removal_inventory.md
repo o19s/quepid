@@ -32,7 +32,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | Filters | 8 under `filters/` (+ 4 directive-local: `plusOrMinus`, `stackChart*`) |
 | Custom directives / components | 33 (25 `.directive()` + 8 `.component()`) |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 14 |
-| Vendored Angular libraries (`app/javascript/vendor`) | 9 packages (+ `angular` core from npm) |
+| Vendored Angular libraries (`app/javascript/vendor`) | 8 packages (+ `angular` core from npm) |
 | Karma unit specs (`spec/javascripts/angular`) | 39 |
 | Vitest unit specs (`test/javascript/**/*.test.js`) | 21 |
 | Playwright specs | See [Other inventory § Tests](#tests) for the Angular-core and Stimulus spec breakdown |
@@ -49,7 +49,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
 | **P1** | `new Function()` mappers | SearchAPI mappers; MiniRacer on server; mapper wizard already Stimulus |
 | **P2** | Digest workarounds | Version counters / sentinels instead of clear data flow |
-| **P2** | Copy-paste debt | e.g. identical `rateElementSvc` / `rateBulkSvc` |
+| **P2** | Copy-paste debt | e.g. `ctrl.cancel = function () { $quepidModalInstance.dismiss('cancel'); }` repeated ~21x across modal-instance controllers |
 | **Defer** | jQuery pane resize | Narrow scope (`toggleEast`, layout polling) — migrate with case page, not a driver |
 | **Defer** | `bootstrap5-compat.css` | Largely done; tuning shims, not a rewrite gate |
 
@@ -230,7 +230,7 @@ New Stimulus logic in `app/javascript/api/` or `utils/` needs a `*.test.js` unde
 
 When replacing the case SPA (not just toolbar actions), work in dependency order:
 
-1. Shared primitives — `$quepidModal`, popovers, tooltips, typeahead, flash, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; finish by dropping Angular directive shells)
+1. Shared primitives — `$quepidModal`, popovers, tooltips, typeahead, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`; finish by dropping remaining Angular directive shells)
 2. Shell — drop `ngRoute`; `MainCtrl` bootstrap → Stimulus + fetch
 3. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
 4. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
@@ -378,7 +378,6 @@ Flash include, `LoadingCtrl`, `ng-view`
 | `ui.ace` | `angular-ui-ace` | Query editors | Stimulus + `window.ace` |
 | `angularUtils.directives.dirPagination` | `angular-utils-pagination` | Query paging | Stimulus pager |
 | `ngCsvImport` | `angular-csv-import` | CSV upload | Papa Parse + file input |
-| `angular-flash.*` | `angular-flash` | Flash messages | BS5 toast / Rails flash |
 | `ngTagsInput` | `ng-tags-input` | Wizard fields | Tom Select / tags Stimulus |
 | `ng-rails-csrf` | `interceptors/rails-csrf.js` | CSRF on `$http` | Fetch wrapper with CSRF meta tag |
 | `templates` | `build_templates.js` | `$templateCache` | ERB partials / Stimulus templates |
@@ -407,7 +406,6 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | App bootstrap & loading gate | controller | `LoadingCtrl` — `controllers/loading.js` |
 | Case/try bootstrapping | controller | `MainCtrl` — `controllers/mainCtrl.js` |
 | 404 handling | controller + template | `404Ctrl`, `templates/views/404.html` |
-| Global flash | template + directive | `templates/views/common/flash.html`, `search_flash.html`, `flash-alert` |
 | Current user on `$rootScope` | service | `bootstrapSvc`, `userSvc` |
 | App config flags | service | `configurationSvc` |
 | CSRF on API requests | interceptor | `interceptors/rails-csrf.js` |
@@ -477,8 +475,8 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Results panel | directive + controller | `<search-results>`, `SearchResultsCtrl` |
 | Single result row | directive + controller | `<search-result>`, `SearchResultCtrl` |
 | Results template | template | `templates/views/searchResults.html`, `searchResult.html` |
-| Rating popover | template | `templates/views/ratings/popover.html` |
-| Rate elements | services | `rateElementSvc`, `ratingsStoreSvc`, `rateBulkSvc` |
+| Rating popover | Stimulus controller | `rating_popover_controller.js` (migrated off Angular; mutation still bridges back via `rating-popover:rate`/`:reset` events) |
+| Rate elements | service | `rateScaleSvc`, `ratingsStoreSvc` |
 | Rating background styling | filter | `ratingBgStyle` |
 | Query notes | controller | `QueryNotesCtrl` |
 | Annotations list | component | `<annotations>` — `components/annotations/` |
@@ -574,7 +572,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 ## Services, factories, and filters
 
-**Services (27):** `annotationsSvc`, `bookSvc`, `bootstrapSvc`*, `caseCSVSvc`, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `diffResultsSvc`, `docCacheSvc`, `importRatingsSvc`, `paneSvc`, `qscoreSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateBulkSvc`, `rateElementSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `snapshotSearcherSvc`, `teamSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`)
+**Services (26):** `annotationsSvc`, `bookSvc`, `bootstrapSvc`*, `caseCSVSvc`, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `diffResultsSvc`, `docCacheSvc`, `importRatingsSvc`, `paneSvc`, `qscoreSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateScaleSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `snapshotSearcherSvc`, `teamSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`)
 
 **Factories (8):** `$quepidModal` (`services/quepidModalSvc.js`), `AnnotationFactory`, `broadcastSvc`, `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `SnapshotFactory`, `TryFactory`
 
@@ -598,7 +596,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 **Dev pane:** `_dev_settings.html`, `devQueryParams.html`, `queryParamsDetails.html`, `queryParamsHistory.html`, `customHeaders.html`, `detailedDoc.html`, `detailedExplain.html`
 
-**Wizard:** `wizardModal.html` · **Flash:** `common/flash.html`, `common/search_flash.html`
+**Wizard:** `wizardModal.html`
 
 **Components:** 29 HTML files under `app/assets/javascripts/components/`
 

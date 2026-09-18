@@ -4,11 +4,11 @@ angular.module('QuepidApp')
   .controller('DocFinderCtrl', [
     '$scope', '$element',
     'queriesSvc', 'settingsSvc',
-    'rateBulkSvc',
+    'rateScaleSvc',
     function (
       $scope, $element,
       queriesSvc, settingsSvc,
-      rateBulkSvc
+      rateScaleSvc
     ) {
       $scope.defaultList = false;
       $scope.docFinder = {
@@ -166,10 +166,10 @@ angular.module('QuepidApp')
       $scope.ratings = { };
 
       $scope.$watch('query.effectiveScorer()', function() {
-        rateBulkSvc.setScale(src, $scope.ratings);
+        rateScaleSvc.setScale(src, $scope.ratings);
       });
 
-      rateBulkSvc.setScale(src, $scope.ratings);
+      rateScaleSvc.setScale(src, $scope.ratings);
 
       // Content and open/close state now live in the rating-popover Stimulus
       // controller (data-controller="rating-popover" in targetedSearchModal.html);

@@ -15,8 +15,6 @@ angular.module('QuepidApp', [
   'ui.ace',
   'angularUtils.directives.dirPagination',
   'ngCsvImport',
-  'angular-flash.service',
-  'angular-flash.flash-alert-directive',
   'ngTagsInput',
   'ng-rails-csrf',
   'templates',

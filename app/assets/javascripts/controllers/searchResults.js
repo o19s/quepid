@@ -3,10 +3,10 @@ angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
     '$rootScope',
     '$scope', '$element', '$log', '$window',
-    'clipboardSvc', 'rateBulkSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
+    'clipboardSvc', 'rateScaleSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
     function (
       $rootScope, $scope, $element, $log, $window,
-      clipboardSvc, rateBulkSvc, queriesSvc, queryViewSvc, settingsSvc
+      clipboardSvc, rateScaleSvc, queriesSvc, queryViewSvc, settingsSvc
     ) {
       $scope.queriesSvc = queriesSvc;
 
@@ -94,10 +94,10 @@ angular.module('QuepidApp')
       $scope.ratings = { };
 
       $scope.$watch('query.effectiveScorer()', function() {
-        rateBulkSvc.setScale(src, $scope.ratings);
+        rateScaleSvc.setScale(src, $scope.ratings);
       });
 
-      rateBulkSvc.setScale(src, $scope.ratings);
+      rateScaleSvc.setScale(src, $scope.ratings);
 
       // Content and open/close state now live in the rating-popover Stimulus
       // controller (data-controller="rating-popover" in searchResults.html);

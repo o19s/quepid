@@ -10,7 +10,6 @@ Third-party JavaScript that Quepid previously loaded from `package.json` now liv
 | `angular-wizard/` | `mgo-angular-wizard` |
 | `angular-utils-pagination/` | `angularUtils.directives.dirPagination` |
 | `angular-csv-import/` | CSV import directives |
-| `angular-flash/` | Flash alerts |
 | `angular-ui-ace/` | `ui.ace` |
 | `ng-json-explorer/` | `ngJsonExplorer` |
 | `ng-tags-input/` | Tag input; upstream `build/ng-tags-input.min.css` copied in `build_css.js`; BS5-aligned skin is `app/assets/stylesheets/ng-tags-input-theme.css` → `builds/ng-tags-input.theme.css` |

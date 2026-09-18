@@ -14,6 +14,7 @@ import {
 } from "./utils/bs_popover"
 import { attachTextPaste } from "./utils/text_paste"
 import { animateCountUp, stopCountUp } from "./utils/count_up"
+import { hideFlash, showFlash } from "./utils/flash"
 
 /**
  * Shared DOM helpers for Bootstrap tooltips/popovers and paste handling.
@@ -41,6 +42,10 @@ const quepidDom = {
   countUp: {
     animate: animateCountUp,
     stop: stopCountUp
+  },
+  flash: {
+    show: showFlash,
+    hide: hideFlash
   }
 }
 
