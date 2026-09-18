@@ -146,7 +146,6 @@ Use when sizing a PR:
 Actionable incremental wins — do these before touching query/search state:
 
 1. **DOM utilities → Stimulus or BS5 data API** — **Partially done:** plain-text tooltips (`quepid-tooltip`) and plain-text popovers (`quepid-popover`) migrated to Stimulus `bs-tooltip` / `bs-popover` (registered in `core_stimulus.js`); the Angular `quepidTooltip` directive and the text-mode `quepidPopover` directive are deleted. Angular `quepidPopoverTemplate` remains — it backs the ratings and search-match popovers (`views/ratings/popover.html`, `matches/matches.html`), which lazily `$compile` live interactive Angular content into the popover body and need their own migration, not just an attribute swap. `bs-static-popover` (fixed help-icon popovers) also remains Angular for now (new Stimulus UI, e.g. `clone-case-core`'s help icons, uses the Stimulus `bs-popover` controller instead of adding new Angular attributes).
-2. **`export-case`** — Larger modal + job polling; still a management action, not live search state.
 3. **Sequence last** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks — not skipped, but gated on the [live query-state phase](#live-query-state-phase-committed-final-phase)'s state plan being signed off before any code starts.
 
 Optional when touching nearby code:
@@ -193,7 +192,6 @@ From `app/assets/templates/views/queriesLayout.html`:
 
 | Angular on core | Stimulus / Rails already on cases index & teams |
 |-----------------|-------------------------------------------------|
-| `<export-case>` | No twin — export + background job |
 | `<diff>`, `<import-ratings>` | Defer (heavy case state) |
 
 ### Stimulus twins already on Rails pages
@@ -202,9 +200,10 @@ Reuse these instead of reimplementing modals/flows:
 
 | Stimulus controller | Typical usage |
 |---------------------|---------------|
-| `share-case` / `share-case-core` | Index/teams: `share_case_controller` + `_share_case_modal`. Core toolbar: `share_case_core_controller` + `_share_case_core_modal` via `core_stimulus.js`. **Core intentional deltas vs Angular:** (1) after share/unshare the modal **stays open** with an in-modal success/error alert (enables multi-team work; Angular closed + global flash); (2) **Create a team** goes to `new_team_path` (Angular used `/teams` via `goToTeamsPage`). Rails index/teams UX unchanged (`<select>` + form POST redirect). |
-| `delete-case-options-core` | Core toolbar only (no Rails-page twin — cases/teams archive/delete already use `confirm-delete`). `delete_case_options_core_controller.js` + `_delete_case_options_core_modal.html.erb` via `core_stimulus.js`; three-way choice (archive / delete case / delete all queries) form-posts to `archive_case_path` / `case_path` / `case_queries_path` via `submitDestructiveForm`. |
-| `clone-case-core` | Core toolbar only (no Rails-page twin). `clone_case_core_controller.js` + `_clone_case_core_modal.html.erb` via `core_stimulus.js`; fetches try history from `api_case_tries_path`, posts options (name, history/try, queries, ratings) to `api_clone_cases_path`, then navigates to the new case. **Intentional delta vs Angular:** modal stays open with an inline alert on failure instead of Angular's close-then-global-flash (same delta as `share-case-core`). |
+| `share-case` / `share-case-core` | Index/teams: `share_case_controller` + `_share_case_modal`. Core toolbar: `share_case_core_controller` + `_share_case_core_modal` via `core_stimulus.js`. **Core deltas vs Angular:** stays open after share/unshare with an inline alert (multi-team work; Angular closed + global flash); "Create a team" goes to `new_team_path` (Angular used `/teams`). Rails index/teams unchanged. |
+| `delete-case-options-core` | Core toolbar only (no Rails-page twin — cases/teams archive/delete already use `confirm-delete`). `delete_case_options_core_controller.js` + `_delete_case_options_core_modal.html.erb` via `core_stimulus.js`; three-way choice (archive / delete case / delete all queries) via `submitDestructiveForm`. |
+| `clone-case-core` | Core toolbar only (no Rails-page twin). `clone_case_core_controller.js` + `_clone_case_core_modal.html.erb` via `core_stimulus.js`. **Delta vs Angular:** stays open with an inline alert on failure (same delta as `share-case-core`). |
+| `export-case-core` | Core toolbar only (no Rails-page twin). `export_case_core_controller.js` + `_export_case_core_modal.html.erb` via `core_stimulus.js`. **Matches Angular:** modal always closes on Export before the download starts (no inline alert, unlike the stay-open pattern above). **Intentional delta vs Angular:** Export stays disabled for the `snapshot` format until a snapshot is actually chosen from its dropdown — Angular let you click Export with nothing chosen, which then failed inside `querySnapshotSvc.get(undefined)` with no user feedback; the new guard prevents that dead-end instead of reproducing it. **Bridge, not final:** the `detailed` format needs live search results still held in Angular `queriesSvc`, so it dispatches a `document` CustomEvent (`export-case:detailed`) that `caseCSVSvc.js` still listens for — resolves when `queriesSvc` migrates (see [Suggested PR order §2](#suggested-pr-order-start-here)). |
 | `share-book`, `share-scorer`, `share-search-endpoint` | Shared modals under `app/views/shared/` |
 | `import-case`, `import-snapshot` | Shared modals |
 | `confirm-delete` | Archive / delete / unarchive (cases, teams, books, search endpoints, members) |
@@ -258,7 +257,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **routes.js** + **ngRoute** | — | Entire SPA |
 | **angular core** | — | Remove last |
 
-**Component LOC** (easiest → hardest, after toolbar duplicates): matches (0 JS) → debug_matches (59) → new_case (66) → expand_content (69) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → query_explain (116) → move_query (152) → add_query (160) → export_case (257) → qgraph (250) → diff (285) → judgements (327) → frog_report (360) → import_ratings (462).
+**Component LOC** (easiest → hardest, after toolbar duplicates — see [Suggested PR order §2](#suggested-pr-order-start-here)): matches (0 JS) → debug_matches (59) → new_case (66) → expand_content (69) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → query_explain (116) → move_query (152) → add_query (160) → qgraph (250) → diff (285) → judgements (327) → frog_report (360) → import_ratings (462).
 
 **Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `add-query`, `query-options`, `query-explain`, `new-case` / wizard, `frog-report`, `judgements`, annotations, `quepidTypeahead`, `queryParams`, `stackedChart`, `quepidCollapse`. Moving these implies rebuilding the case SPA, not a framework swap.
 
@@ -443,7 +442,6 @@ Templates: `layouts/_header_core_app.html.erb`, `components/new_case/new_case.ht
 | Try rename in header | controller | `CurrSettingsCtrl` — `controllers/currSettings.js` |
 | Select scorer modal | controller + template | `ScorerCtrl`, `templates/views/pick_scorer.html` |
 | Create snapshot | controller + template | `TakeSnapshotCtrl`, `PromptSnapshotCtrl`, `templates/views/snapshotModal.html` |
-| Export case | component | `<export-case>` — `components/export_case/` |
 | Import ratings | component | `<import-ratings>` — `components/import_ratings/` |
 | Diff against snapshot | component | `<diff>` — `components/diff/` |
 | Judgements / books | component | `<judgements>` — `components/judgements/` |
@@ -539,7 +537,7 @@ These Angular-specific wrappers are used across many templates:
 
 ---
 
-## Component inventory (18 folders)
+## Component inventory (17 folders)
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
@@ -549,7 +547,6 @@ These Angular-specific wrappers are used across many templates:
 | `debug_matches` | `<debug-matches>` | Debug relevancy matches |
 | `diff` | `<diff>` | Snapshot diff picker |
 | `expand_content` | `<expand-content>` | Expand HTML in modal |
-| `export_case` | `<export-case>` | Export case data |
 | `frog_report` | `<frog-report>` | Zero-results report + Vega |
 | `import_ratings` | `<import-ratings>` | CSV import |
 | `judgements` | `<judgements>` | Link to judgement book |

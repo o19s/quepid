@@ -323,10 +323,10 @@ parts:
     scenarios:
       "6.1":
         title: "Export a case"
-        last_run: 2026-09-15T16:51:00Z
+        last_run: 2026-09-17T15:30:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840. Export modal listed all format radios (Information Need, General, Detailed, Snapshot, Basic, TREC, RRE, LTR); selected General and clicked Export — triggered a real file download (browser navigated to about:blank momentarily as the download started, recovered fine on renavigating to the case). Separately confirmed via a direct fetch('/api/export/cases/6840.json') that the underlying export data is correct and includes the query Notes set earlier in 4.16. Did not test the other format radios or the in-progress-snapshot warning this pass."
-        paths: ["app/controllers/cases_controller.rb", "app/services/case_export"]
+        notes: "Re-verified live via Playwright MCP on case 5 (real click-through this pass, working around the prior session's transport errors by hooking URL.createObjectURL/anchor-click/saveAs/window.open client-side to capture the blob instead of letting a real OS Save-As dialog block the CDP connection). All 9 formats clicked through the actual UI and confirmed byte-for-byte against the modal's documented headers: Information Need (query,information_need), General, Detailed (bridges to legacy caseCSVSvc via CustomEvent + FileSaver saveAs — confirmed this is the one that trips the OS save dialog/transport error if saveAs isn't hooked), Snapshot (Export button confirmed disabled until a snapshot is picked, then enabled), Basic, TREC, RRE, Learning to Rank, and Quepid (full case JSON). Filenames all matched the `{caseName}_{format}.csv/txt/json` pattern. 0 console errors across the whole run; before/after toolbar screenshots identical. Quepid API links section (Case/Queries/Annotations/Scores/Ratings/Snapshot) spot-checked by URL only, not clicked through. Detailed export is exposed directly from the individual Case toolbar."
+        paths: ["app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/assets/javascripts/services/caseCSVSvc.js", "app/controllers/api/v1/export"]
       "6.2":
         title: "Import into a case (ratings / information needs / snapshots)"
         last_run: 2026-09-15T16:53:00Z
