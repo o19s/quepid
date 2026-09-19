@@ -7,13 +7,11 @@ angular.module('QuepidApp')
     '$scope',
     '$quepidModal',
     '$log',
-    'flash',
     'queriesSvc',
     function (
       $scope,
       $quepidModal,
       $log,
-      flash,
       queriesSvc
     ) {
       var ctrl = this;
@@ -38,11 +36,11 @@ angular.module('QuepidApp')
 
           queriesSvc.moveQuery(ctrl.query, selectedItem)
             .then(function() {
-              flash.success = 'Query moved successfully!';
+              window.quepidDom.flash.show('success', 'Query moved successfully!');
               $log.info('rescoring queries after moving query');
               queriesSvc.updateScores();
             }, function() {
-              flash.error = 'Unable to move query.';
+              window.quepidDom.flash.show('error', 'Unable to move query.');
             });
         }, function() {
           $log.info('dismissed query move modal at: ' + new Date());

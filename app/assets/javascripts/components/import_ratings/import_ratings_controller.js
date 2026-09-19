@@ -5,10 +5,9 @@
 angular.module('QuepidApp')
   .controller('ImportRatingsCtrl', [
     '$quepidModal',
-    'flash',
     'queriesSvc',
     'querySnapshotSvc',
-    function ($quepidModal, flash, queriesSvc, querySnapshotSvc) {
+    function ($quepidModal, queriesSvc, querySnapshotSvc) {
       var ctrl = this;
 
       // Functions
@@ -27,9 +26,6 @@ angular.module('QuepidApp')
             querySnapshotSvc: function () {
               return querySnapshotSvc;
             },
-            flash: function () {
-              return flash;
-            },
             queriesSvc: function () {
               return queriesSvc;
             }
@@ -47,9 +43,9 @@ angular.module('QuepidApp')
                   });
               }
 
-              flash.success = response.message;
+              window.quepidDom.flash.show('success', response.message);
             } else {
-              flash.error = response.message;
+              window.quepidDom.flash.show('error', response.message);
             }
           }, function () {
           }

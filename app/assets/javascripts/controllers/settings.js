@@ -4,12 +4,10 @@
 angular.module('QuepidApp')
   .controller('SettingsCtrl', [
     '$scope','$location',
-    'flash',
     'settingsSvc',
     'searchEndpointSvc',
     function (
       $scope, $location,
-      flash,
       settingsSvc,
       searchEndpointSvc
     ) {
@@ -70,7 +68,7 @@ angular.module('QuepidApp')
       function submit () {
         var numberOfRows = $scope.pendingSettings.numberOfRows;
         if (!angular.isNumber(numberOfRows) || numberOfRows < 1 || numberOfRows > 100) {
-          flash.error = 'Number of Results to Show must be between 1 and 100.';
+          window.quepidDom.flash.show('error', 'Number of Results to Show must be between 1 and 100.');
           return;
         }
 
@@ -88,7 +86,7 @@ angular.module('QuepidApp')
             $scope.pendingSettings.selectedTry.queryParams = JSON.stringify(jsonObject, null, 2);
 
           } catch (e) {
-            flash.error = 'Please provide a valid formatted JSON object for the query DSL.';
+            window.quepidDom.flash.show('error', 'Please provide a valid formatted JSON object for the query DSL.');
             return;
           }
         }

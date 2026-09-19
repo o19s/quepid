@@ -19,7 +19,7 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-outline-secondary float-start me-auto" ngclipboard data-clipboard-text="{{ctrl.curlCommand}}" ngclipboard-success="ctrl.onCopySuccess()">
+  <button class="btn btn-outline-secondary float-start me-auto" ng-click="ctrl.copyCurlCommand()">
     <i class="bi" ng-class="ctrl.copied ? 'bi-check-lg' : 'bi-copy'"></i> {{ctrl.copied ? 'Copied!' : 'Copy curl command'}}
   </button>
   <a ng-if="!ctrl.hasHeaders" class="btn btn-outline-secondary float-start me-2" ng-href="{{ctrl.url}}" target="_blank" rel="noopener noreferrer">

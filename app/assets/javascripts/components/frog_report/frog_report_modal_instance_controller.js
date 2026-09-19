@@ -2,9 +2,9 @@
 
 angular.module('QuepidApp')
   .controller('FrogReportModalInstanceCtrl', [
-    '$quepidModalInstance', '$scope', 'flash','$window',
+    '$quepidModalInstance', '$scope', '$window',
     'theCase', 'queriesSvc','bookSvc', 'caseTryNavSvc',
-    function ($quepidModalInstance, $scope,flash, $window, theCase, queriesSvc, bookSvc, caseTryNavSvc) {
+    function ($quepidModalInstance, $scope, $window, theCase, queriesSvc, bookSvc, caseTryNavSvc) {
       var ctrl = this;
 
       ctrl.theCase = theCase;
@@ -254,10 +254,10 @@ angular.module('QuepidApp')
           $quepidModalInstance.close(true);
 
           if (processInBackground === true) {
-            flash.success = 'Ratings are being refreshed in the background.';
+            window.quepidDom.flash.show('success', 'Ratings are being refreshed in the background.');
           }
           else {
-            flash.success = 'Ratings have been refreshed.';
+            window.quepidDom.flash.show('success', 'Ratings have been refreshed.');
           }
           
           // Check if we should redirect to homepage
