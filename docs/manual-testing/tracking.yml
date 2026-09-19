@@ -353,9 +353,9 @@ parts:
         paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
-        last_run: 2026-09-18T19:30:00Z
+        last_run: 2026-09-19T18:28:00Z
         result: pass
-        notes: "Playwright MCP on disposable case 6842 (shared with OSC) after Stimulus judgements-core migration. Modal listed None + Book of Ratings + Haystack Icecat Rating Party; selected Book of Ratings and Save → savedBookId=1, modal closed. Screenshot .playwright-mcp/judgements-core/modal-after-books.png. Case deleted afterward. Populate Now / Refresh Ratings / Sync Queries not exercised this pass."
+        notes: "Playwright MCP on case 6 (10s of Queries, book_id nil going in) after fixing a Save-button-never-re-enables bug in judgements_core_controller.js (selectBook() recomputed d-none but not disabled — see removed 'Judgements modal save button' entry in angularjs_removal_inventory.md). Opened modal: None selected, no Save button visible (no unsaved changes). Selected Book of Ratings: Case Integration section appeared, Save button appeared enabled (not disabled) — clicked, flash 'Settings saved.', modal closed, case now linked to Book of Ratings. Reopened, selected None, Save was enabled again, clicked, flash shown, modal closed — confirmed book_id back to nil via rails runner. Confirms the disabled-state fix works in both directions. Populate Now / Refresh Ratings / Sync Queries not exercised this pass. Screenshots: .playwright-mcp/judgements-core/manual-6.6-{before-select,after-select,after-save}.png."
         paths: ["app/javascript/controllers/judgements_core_controller.js", "app/views/shared/_judgements_core_modal.html.erb", "app/assets/javascripts/services/queriesSvc.js", "app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb"]
       "6.7":
         title: "Explain a query (Explain Query modal)"

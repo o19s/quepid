@@ -28,6 +28,10 @@ test.afterAll(async ({ browser }) => {
     storageState: 'test/playwright/.auth/user.json'
   });
   try {
+    // apiHeaders() reads the CSRF token from the current document's meta tag —
+    // without a navigation first, this page is still blank and every delete
+    // below goes out with an empty token (and used to fail silently).
+    await page.goto('cases');
     for (const caseId of caseIds) {
       await deleteCaseViaApi(page, caseId);
     }
@@ -59,7 +63,11 @@ async function createDisposableCase(page: Page, label: string): Promise<number> 
 }
 
 async function deleteCaseViaApi(page: Page, caseId: number) {
-  await page.request.delete(`api/cases/${caseId}`, { headers: await apiHeaders(page) });
+  const response = await page.request.delete(`api/cases/${caseId}`, { headers: await apiHeaders(page) });
+  // Assert like every other cleanup in this suite: a silent failure here
+  // (e.g. an empty CSRF token nulling the session) would let this exact
+  // case leak right back in on the next run with no signal.
+  expect(response.ok()).toBeTruthy();
 }
 
 async function shareCaseWithFirstTeam(page: Page, caseId: number): Promise<number | null> {

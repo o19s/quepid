@@ -408,7 +408,9 @@ export default class extends ModalTriggerControllerBase {
 
   _refreshSaveVisibility() {
     if (!this.hasSaveButtonTarget) return
-    this.saveButtonTarget.classList.toggle("d-none", !this.hasUnsavedChanges())
+    const hasChanges = this.hasUnsavedChanges()
+    this.saveButtonTarget.classList.toggle("d-none", !hasChanges)
+    this.saveButtonTarget.disabled = this._busy || !hasChanges
   }
 
   _updateCreateBookLinks() {
@@ -520,12 +522,14 @@ export default class extends ModalTriggerControllerBase {
   }
 
   setBusy(busy) {
+    this._busy = busy
     this.actionButtonTargets.forEach((btn) => {
       btn.disabled = busy
     })
-    if (this.hasSaveButtonTarget) {
-      this.saveButtonTarget.disabled = busy || !this.hasUnsavedChanges()
-    }
+    // Picking a book (or toggling a sync checkbox) after this initial call
+    // must re-enable Save without another setBusy() — recompute from _busy
+    // rather than assuming "not busy".
+    this._refreshSaveVisibility()
     // Angular parity: Cancel is disabled while a save/refresh/sync request is
     // in flight, so a stale request's completion handler can't fire against a
     // modal the user has since dismissed and possibly reopened.

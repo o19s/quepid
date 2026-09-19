@@ -327,35 +327,6 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 
 **Touches:** `searchResults.html`, diff/snapshot Compare UI, [Feature area § Search results](#6-search-results-and-rating-ui).
 
-#### Judgements modal save button never re-enables after book selection
-
-**Observed:** `test/playwright/toolbar_modals_core.spec.ts`'s "judgements modal links a book and saves settings" fails — the Save button stays `disabled` after clicking a real book in the list, so the test's `saveButton.click()` times out. Reproduced consistently across multiple full E2E runs; confirmed pre-existing (fails identically on `HEAD` before any of the judgements/pick-scorer/take-snapshot bug fixes from 2026-09-18).
-
-**Cause:** Not yet root-caused. `judgements_core_controller.js`'s `selectBook()` calls `_refreshSaveVisibility()` (toggles `d-none`, not `disabled`) — worth checking whether `setBusy`/`hasUnsavedChanges()` interaction has the same class of stale-disabled-state bug as the pick-scorer one fixed the same day (`selectScorer()` not recomputing `disabled` after selection changes).
-
-**Fix during migration:** Investigate `judgements_core_controller.js`'s Save-button enable/disable path; add a Vitest regression test once fixed.
-
-**Touches:** `judgements_core_controller.js`, `test/playwright/toolbar_modals_core.spec.ts`.
-
-#### Stale screenshot baselines: 3 `angular_pages.spec.ts` diffs + 1 narrow-viewport diff
-
-**Observed:** Four E2E screenshot tests fail with pixel-diff mismatches, reproduced consistently across multiple full-suite runs on 2026-09-18: `angular_pages.spec.ts` "cases list — header case picker & filters", "scorer config — select scorer modal", "wizard — welcome, name step, accordion"; and `angular_pages_narrow_viewport.spec.ts` "wizard endpoint accordion + cases list reflow". Not caused by that day's judgements/pick-scorer/take-snapshot bug fixes (same failures present before those changes).
-
-**Cause:** Not yet determined — could be genuinely stale baselines (need regenerating + visual sign-off) or a real, currently-unowned visual regression elsewhere on the branch. Needs the same visual-diff review given to the `share_case.spec.ts` baselines fixed 2026-09-18 (extract the old baseline via `git show HEAD:<path>`, compare against the new `-actual.png`, and only regenerate once the new state is visually confirmed correct) before touching the checked-in PNGs.
-
-**Fix during migration:** Pull the `-actual`/`-expected`/`-diff` PNGs from `test/playwright/test-results/runs/` for each, visually compare, and either regenerate the baseline (if the new state is correct) or fix the actual regression.
-
-**Touches:** `test/playwright/angular_pages.spec.ts`, `test/playwright/angular_pages_narrow_viewport.spec.ts`, `test/playwright/baselines/`.
-
-#### `toolbar_modals_core.spec.ts` cleanup doesn't assert delete succeeded
-
-**Observed:** `deleteCaseViaApi` (used by `toolbar_modals_core.spec.ts`'s `test.afterAll`) calls `page.request.delete(...)` without asserting `response.ok()`, unlike `teams.spec.ts`'s `afterAll`, which explicitly asserts this to catch a silently-broken CSRF/session that would otherwise let a leaked row back in with no signal (see that file's comment).
-
-**Fix during migration:** Add the same `expect(response.ok()).toBeTruthy()` assertion (with the same rationale comment) to `deleteCaseViaApi` or its call site.
-
-**Touches:** `test/playwright/toolbar_modals_core.spec.ts`.
-
-
 ---
 
 ## Where Angular is mounted

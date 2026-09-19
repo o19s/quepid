@@ -135,6 +135,10 @@ describe("JudgementsCoreController", () => {
     controller.selectBook({ params: { bookId: 1 } })
     expect(controller.hasUnsavedChanges()).toBe(true)
     expect(controller.saveButtonTarget.classList.contains("d-none")).toBe(false)
+    // Regression: selectBook() must re-enable Save, not just unhide it —
+    // setBusy(false) at load time disables it while there are no unsaved
+    // changes yet, and nothing else re-enabled it afterward.
+    expect(controller.saveButtonTarget.disabled).toBe(false)
   })
 
   it("prefers the API book_id over a stale trigger attribute", async () => {
