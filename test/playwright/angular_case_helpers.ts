@@ -12,10 +12,11 @@ import { Page } from '@playwright/test';
 // are just whatever the shared dev DB currently has at that row, not a fixed fixture — id 1 has
 // drifted between "10s of Queries" and "SOLR CASE" (near-empty) over this DB's history, which
 // desyncs old committed baselines from freshly regenerated ones even though nothing UI-relevant
-// changed. If the shared dev DB's case 5 ever stops being "10s of Queries", update this one
+// changed. Moved from 5 to 6 on 2026-09-19 when a "VESPA CASE" fixture was added ahead of it in
+// the seed order. If the shared dev DB's case 6 ever stops being "10s of Queries", update this one
 // constant rather than hunting down every hardcoded copy. See DEVELOPER_GUIDE.md's Playwright E2E
 // section.
-export const DEFAULT_RICH_CASE_ID = 5;
+export const DEFAULT_RICH_CASE_ID = 6;
 
 function readCaseId(): number {
   const raw = process.env.QUEPID_E2E_CASE_ID;

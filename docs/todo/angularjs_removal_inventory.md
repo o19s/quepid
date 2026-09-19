@@ -503,13 +503,14 @@ These Angular-specific wrappers are used across many templates:
 
 ---
 
-## Component inventory (13 folders)
+## Component inventory (14 folders)
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
 | `add_query` | `<add-query>` | Add query |
 | `annotation` | `<annotation>` | Single annotation CRUD |
 | `annotations` | `<annotations>` | Annotation list |
+| `browse_query` | `<browse-query>` | "Browse N Results on {engine}" link, opens results in a new tab/window |
 | `diff` | `<diff>` | Snapshot diff picker |
 | `frog_report` | `<frog-report>` | Zero-results report + Vega |
 | `import_ratings` | `<import-ratings>` | CSV import |
