@@ -27,6 +27,14 @@ describe("json_explorer", () => {
       expect(container.querySelector(".string").innerHTML).toBe('"&lt;script&gt;"')
     })
 
+    it("escapes HTML-significant characters in object keys", () => {
+      const container = document.createElement("div")
+      renderJsonExplorer(container, JSON.stringify({ "<script>alert(1)</script>": "safe" }))
+
+      expect(container.querySelector(".prop").textContent).toBe("<script>alert(1)</script>")
+      expect(container.querySelector("script")).toBeNull()
+    })
+
     it("nests arrays and objects under a collapsible list with a collapser link", () => {
       const container = document.createElement("div")
       renderJsonExplorer(container, JSON.stringify({ details: [{ description: "a" }] }))

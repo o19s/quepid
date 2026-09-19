@@ -21,7 +21,7 @@ function isRaw(value) {
 }
 
 function parseRaw(key, value) {
-  const prefix = key ? `<span class="prop>">${key}</span>: ` : ""
+  const prefix = key ? `<span class="prop">${escapeHtml(key)}</span>: ` : ""
   if (typeof value === "string")
     return `${prefix}<span class="string">"${escapeHtml(value)}"</span>`
   if (typeof value === "number") return `${prefix}<span class="num">${value}</span>`
@@ -31,8 +31,8 @@ function parseRaw(key, value) {
 
 function parseChildren(key, value, collapser, ellipsis, contents, open, close) {
   let html = key
-    ? `<span class="prop>"><a href="#" class="collapser">${collapser}</a>${key}</span>: ${open}`
-    : `<span class="prop>"><a href="#" class="collapser">${collapser}</a></span> ${open}`
+    ? `<span class="prop"><a href="#" class="collapser">${collapser}</a>${escapeHtml(key)}</span>: ${open}`
+    : `<span class="prop"><a href="#" class="collapser">${collapser}</a></span> ${open}`
   html += `<span class="ellipsis ${ellipsis}">...</span>`
   html += `<ul class="${open === "[" ? "array" : "object"} collapsible ${contents}">`
 
