@@ -1,4 +1,4 @@
-import { createBsModal } from "utils/bs_modal"
+import { createBsModal, restoreModalBodyLock, showStackedModal } from "utils/bs_modal"
 
 /**
  * One-off Bootstrap 5 modal built from scratch and torn down on hide — the
@@ -35,9 +35,7 @@ export function openDynamicModal({ html, size, windowClass } = {}) {
     // Compare Snapshots modal, both of which embed search-result rows) —
     // re-apply here if another modal is still showing, or the outer one
     // silently loses its scroll lock. Mirrors the deleted $quepidModal shim.
-    if (document.querySelector(".modal.show")) {
-      document.body.classList.add("modal-open")
-    }
+    restoreModalBodyLock()
   }
   wrapper.addEventListener("hidden.bs.modal", onHidden)
 
@@ -48,14 +46,7 @@ export function openDynamicModal({ html, size, windowClass } = {}) {
     // is "on top". Bump per already-shown modal; BS5 appends its backdrop
     // synchronously inside show() (only the fade-in is async), so the most
     // recent .modal-backdrop right after show() returns is ours.
-    const stackIdx = document.querySelectorAll(".modal.show").length
-    if (stackIdx > 0) wrapper.style.zIndex = 1050 + stackIdx * 20
-    bsModal.show()
-    if (stackIdx > 0) {
-      const backdrops = document.querySelectorAll(".modal-backdrop")
-      const ours = backdrops[backdrops.length - 1]
-      if (ours) ours.style.zIndex = 1040 + stackIdx * 20
-    }
+    showStackedModal(wrapper, bsModal)
   } else {
     onHidden()
   }

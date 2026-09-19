@@ -12,6 +12,7 @@ import {
   parsePopoverTrigger,
   toBsPopoverTrigger
 } from "./utils/bs_popover"
+import { restoreModalBodyLock, showStackedModal } from "./utils/bs_modal"
 import { attachTextPaste } from "./utils/text_paste"
 import { animateCountUp, stopCountUp } from "./utils/count_up"
 import { hideFlash, showFlash } from "./utils/flash"
@@ -46,6 +47,10 @@ const quepidDom = {
   flash: {
     show: showFlash,
     hide: hideFlash
+  },
+  modal: {
+    showStacked: showStackedModal,
+    restoreBodyLock: restoreModalBodyLock
   }
 }
 
