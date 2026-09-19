@@ -1,6 +1,7 @@
 services:
   app:
     container_name: quepid_app
+    init: true
     build:
       context: .
       dockerfile: Dockerfile.dev
