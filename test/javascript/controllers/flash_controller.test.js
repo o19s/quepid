@@ -39,6 +39,7 @@ describe("FlashController", () => {
 
     expect(controller.messageTarget.textContent).toBe("Saved!")
     expect(controller.element.classList.contains("show")).toBe(true)
+    expect(controller.element.classList.contains("alert-success")).toBe(true)
     expect(controller.element.classList.contains("alert-danger")).toBe(false)
   })
 
@@ -62,6 +63,7 @@ describe("FlashController", () => {
     )
 
     expect(controller.element.classList.contains("alert-danger")).toBe(true)
+    expect(controller.element.classList.contains("alert-success")).toBe(false)
   })
 
   it("auto-hides after its duration", () => {
@@ -143,6 +145,7 @@ describe("FlashController", () => {
 
     expect(controller.element.classList.contains("show")).toBe(false)
     expect(controller.element.classList.contains("alert-danger")).toBe(false)
+    expect(controller.element.classList.contains("alert-success")).toBe(false)
   })
 
   it("stops listening after disconnect", () => {
