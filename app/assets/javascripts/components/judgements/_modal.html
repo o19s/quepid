@@ -4,10 +4,10 @@
 </div>
 
 <div class="modal-body">
-  <div ng-show='ctrl.share.loading'>
+  <div ng-show="ctrl.share.loading">
     <p>
       Loading your teams, this will be quick I promise!
-      <i class='bi bi-arrow-repeat spintime'></i>
+      <i class="bi bi-arrow-repeat spintime"></i>
     </p>
   </div>
   <p>
@@ -50,7 +50,7 @@
 
   <div ng-show="ctrl.share.books.length > 0 && !ctrl.share.loading">
     <div>
-      <label>Select a Book of Judgements <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" bs-static-popover data-bs-placement="right" data-bs-content="All the Books related to all the Teams this Case has been shared with are listed below.  If you don't see the Book you want, check that you shared the Case with the right Team."></i></label>
+      <label>Select a Book of Judgements <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" data-controller="bs-popover" data-bs-popover-trigger-value="mouseenter" data-bs-popover-placement-value="right" data-bs-popover-content-value="All the Books related to all the Teams this Case has been shared with are listed below.  If you don't see the Book you want, check that you shared the Case with the right Team."></i></label>
 
       <ul class="list-group">
         <li class="list-group-item"
@@ -77,7 +77,7 @@
   </div>
 
   <div ng-show="ctrl.activeBookId">
-    <hr/>
+    <hr>
     <h4>Case Integration</h4>
 
     <div class="card">
@@ -92,12 +92,12 @@
         <div class="row">
           <div class="col-sm-8">
             <label>
-              <input type="checkbox" ng-model='ctrl.autoPopulateBookPairs'>
+              <input type="checkbox" ng-model="ctrl.autoPopulateBookPairs">
               Case <i class="bi bi-arrow-right"></i> Book: Query/Doc Pairs
-              <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" bs-static-popover data-bs-placement="right" data-bs-content="When enabled, new query/doc pairs are automatically sent to the Book whenever searches run in this Case."></i>
+              <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" data-controller="bs-popover" data-bs-popover-trigger-value="mouseenter" data-bs-popover-placement-value="right" data-bs-popover-content-value="When enabled, new query/doc pairs are automatically sent to the Book whenever searches run in this Case."></i>
             </label>
             <p class="text-muted small">
-              <strong>On:</strong> New query/doc pairs automatically added to Book when Case runs.<br/>
+              <strong>On:</strong> New query/doc pairs automatically added to Book when Case runs.<br>
               <strong>Off:</strong> Manually trigger updates to the Book when needed.
             </p>
           </div>
@@ -108,17 +108,17 @@
           </div>
         </div>
 
-        <hr style="margin: 8px 0;"/>
+        <hr style="margin: 8px 0;">
 
         <div class="row">
           <div class="col-sm-8">
             <label>
-              <input type="checkbox" ng-model='ctrl.autoPopulateCaseJudgements'>
+              <input type="checkbox" ng-model="ctrl.autoPopulateCaseJudgements">
                 Case <i class="bi bi-arrow-left"></i> Book: Judgement Ratings
-              <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" bs-static-popover data-bs-placement="right" data-bs-content="When enabled, Case ratings are updated as judgements are made in the Book."></i>
+              <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" data-controller="bs-popover" data-bs-popover-trigger-value="mouseenter" data-bs-popover-placement-value="right" data-bs-popover-content-value="When enabled, Case ratings are updated as judgements are made in the Book."></i>
             </label>
             <p class="text-muted small">
-              <strong>On:</strong> Case ratings update immediately as judgements are made.<br/>
+              <strong>On:</strong> Case ratings update immediately as judgements are made.<br>
               <strong>Off:</strong> Manually import judgements when ready to test.
             </p>
           </div>
@@ -128,13 +128,13 @@
             </button>
           </div>
         </div>
-        <hr style="margin: 8px 0;"/>
+        <hr style="margin: 8px 0;">
 
         <div class="row">
           <div class="col-sm-8">
             <label>
               Case <i class="bi bi-arrow-left"></i> Book: Sync missing queries from Book to Case
-              <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" bs-static-popover data-bs-placement="right" data-bs-content="Create queries in this Case that exist in the Book but don't currently exist in the Case."></i>
+              <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" data-controller="bs-popover" data-bs-popover-trigger-value="mouseenter" data-bs-popover-placement-value="right" data-bs-popover-content-value="Create queries in this Case that exist in the Book but don't currently exist in the Case."></i>
             </label>
             <p class="text-muted small">Case <i class="bi bi-arrow-left"></i> Book: add queries that exist in Book but not in Case.</p>
           </div>
@@ -148,8 +148,8 @@
     </div>
   </div>
 
-  <div class='text-danger' ng-show="processingPrompt.error">
-    An error ({{processingPrompt.error}}) occurred, please try again.<br />
+  <div class="text-danger" ng-show="processingPrompt.error">
+    An error ({{processingPrompt.error}}) occurred, please try again.<br>
     If the error persist, contact adminstrator for further assistance.
   </div>
 

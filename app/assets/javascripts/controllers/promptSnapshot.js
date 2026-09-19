@@ -3,11 +3,9 @@
 angular.module('QuepidApp')
   .controller('PromptSnapshotCtrl', [
     '$scope', '$quepidModalInstance',
-    'flash',
     'queriesSvc', 'querySnapshotSvc','settingsSvc',
     function(
       $scope, $quepidModalInstance,
-      flash,
       queriesSvc, querySnapshotSvc, settingsSvc
     ) {
 
@@ -32,7 +30,7 @@ angular.module('QuepidApp')
           $scope.snapPrompt.inProgress = false;
           $quepidModalInstance.close();
 
-          flash.success = 'Snapshot created successfully.';
+          window.quepidDom.flash.show('success', 'Snapshot created successfully.');
         }, function(response) {
           $scope.snapPrompt.inProgress  = false;
           $scope.snapPrompt.error       = response.data.statusText;

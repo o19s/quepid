@@ -1,12 +1,12 @@
 'use strict';
 
-describe('Service: rateElementSvc', function () {
+describe('Service: rateScaleSvc', function () {
 
   // load the service's module
   beforeEach(module('QuepidTest'));
 
   describe('setting the scale', function() {
-    var $rootScope, rateElementSvc, scorerSvc;
+    var $rootScope, rateScaleSvc, scorerSvc;
 
     var expectedDefaultScorer = {
       '1':  '#c51800',
@@ -57,8 +57,8 @@ describe('Service: rateElementSvc', function () {
       "ratings": { }
     };
 
-    beforeEach(inject( function(_$rootScope_, _rateElementSvc_, _scorerSvc_, $q) {
-      rateElementSvc  = _rateElementSvc_;
+    beforeEach(inject( function(_$rootScope_, _rateScaleSvc_, _scorerSvc_, $q) {
+      rateScaleSvc  = _rateScaleSvc_;
       scorerSvc = _scorerSvc_;
       $rootScope      = _$rootScope_;
 
@@ -92,7 +92,7 @@ describe('Service: rateElementSvc', function () {
 
 
 
-      rateElementSvc.setScale(mockScope, mockScope.ratings);
+      rateScaleSvc.setScale(mockScope, mockScope.ratings);
       $rootScope.$apply();
 
       expect(mockScope.ratings.scale).toBeDefined();
@@ -118,75 +118,11 @@ describe('Service: rateElementSvc', function () {
         return expectedScorer;
       };
 
-      rateElementSvc.setScale(mockScope, mockScope.ratings);
+      rateScaleSvc.setScale(mockScope, mockScope.ratings);
       $rootScope.$apply();
 
       expect(mockScope.ratings.scale).toBeDefined();
       expect(mockScope.ratings.scale).toEqual(expectedScorer);
-    });
-  });
-
-  describe('handleRatingScale', function() {
-    var rateElementSvc;
-
-    var mockScope = {
-      "ratings": { }
-    };
-
-    const mockExtra = { };
-
-    var mockRateCallback = function(rating, extra) {
-      extra.gotRated = rating;
-    };
-    var mockResetCallback = function(extra) {
-      extra.gotRated = null;
-    };
-
-    beforeEach(inject( function(_rateElementSvc_) {
-      rateElementSvc  = _rateElementSvc_;
-
-      rateElementSvc.handleRatingScale(
-        mockScope.ratings, mockRateCallback, mockResetCallback, mockExtra
-      );
-    }));
-
-    it('sets up the dialog', function() {
-      expect(mockScope.ratings.ratingsOn).toBeDefined();
-      expect(mockScope.ratings.ratingsOn).toEqual(false);
-    });
-
-    it('opens the dialog', function() {
-      mockScope.ratings.open();
-
-      expect(mockScope.ratings.ratingsOn).toBeDefined();
-      expect(mockScope.ratings.ratingsOn).toEqual(true);
-    });
-
-    it('closes the dialog', function() {
-      mockScope.ratings.close();
-
-      expect(mockScope.ratings.ratingsOn).toBeDefined();
-      expect(mockScope.ratings.ratingsOn).toEqual(false);
-    });
-
-    it('rates an element and calls the callback function', function() {
-      mockScope.ratings.rate(1);
-
-      expect(mockScope.ratings.ratingsOn).toBeDefined();
-      expect(mockScope.ratings.ratingsOn).toEqual(false);
-
-      expect(mockExtra.gotRated).toBeDefined();
-      expect(mockExtra.gotRated).toEqual(1);
-    });
-
-    it('resets rate of an element and calls the callback function', function() {
-      mockScope.ratings.reset();
-
-      expect(mockScope.ratings.ratingsOn).toBeDefined();
-      expect(mockScope.ratings.ratingsOn).toEqual(false);
-
-      expect(mockExtra.gotRated).toBeDefined();
-      expect(mockExtra.gotRated).toEqual(null);
     });
   });
 });

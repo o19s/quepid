@@ -1,2 +1,3 @@
-review the code in this conversation for bugs, errors, bad practices, regressions, lost functionality, overengineering, and etc.
-make sure that you have a modern rails engineer (including Stimulus, etc.) review the changes, also a pragmatic engineer, a QA engineer.
+- Don't use subagents when running this command, if you are asked to review as something (e.g. a pragmatic engineer), do it with the current agent.
+- Review the code in this conversation for bugs, errors, bad practices, regressions, lost functionality, overengineering, and etc.
+- Make sure to review the code from the perspectives of a modern Ruby on Rails engineer (including Hotwire, Stimulus), a pragmatic engineer, and a QA engineer.

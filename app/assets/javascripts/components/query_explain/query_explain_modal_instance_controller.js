@@ -4,10 +4,12 @@ angular.module('QuepidApp')
   .controller('QueryExplainModalInstanceCtrl', [
     '$quepidModalInstance',
     '$log',
+    'clipboardSvc',
     'query',
     function (
       $quepidModalInstance,
       $log,
+      clipboardSvc,
       query
     ) {
       let ctrl = this;
@@ -64,6 +66,10 @@ angular.module('QuepidApp')
         }, function(response) {
           $log.debug(response.data);
         });
+      };
+
+      ctrl.copy = function (text) {
+        clipboardSvc.copy(text).catch(angular.noop);
       };
 
       ctrl.cancel = function () {

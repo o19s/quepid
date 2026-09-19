@@ -219,10 +219,10 @@ parts:
         paths: ["app/models/query.rb", "app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js", "app/assets/javascripts/components/query_options/query_options_controller.js"]
       "4.6":
         title: "Rate a document"
-        last_run: 2026-09-15T16:42:00Z
+        last_run: 2026-09-19T17:26:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840. Clicked a 'cheese' result's rating badge, popover opened with Irrelevant/Relevant/RESET; clicked '1 Relevant' — badge updated to '1' immediately, and both the query score (0.00→1.00) and overall case score (0.33→0.67) updated live in the same request (see 4.7). Reloaded the page — rating and scores persisted correctly. Did not re-test RESET, the duplicate/missing-doc-id banner, or depth-of-rating-cutoff edge cases this pass."
-        paths: ["app/controllers/ratings_controller.rb", "app/assets/javascripts/directives/quepidPopover.js"]
+        notes: "Spot-checked via Playwright MCP on SOLR CASE (case 1) after angular-phase-4 was merged into main via a squash commit (0edc0f3a) that repackaged the already-verified 2026-09-18 commits (below) into a new commit hash, which made this scenario show as stale by file-mtime even though `git show --stat` confirmed no further code changes to these files. Opened the rating popover on 'Long Day's Journey Into Night' (rank #1) and confirmed it still renders correctly (0 Irrelevant / 1 Relevant / RESET). Did not redo the full rate/RESET score-badge cycle this pass — that was already covered by the 2026-09-18 pass below, which remains accurate: \"Re-verified via Playwright MCP on SOLR CASE (case 1) after merging rateBulkSvc/rateElementSvc (identical setScale-only services left behind by the earlier ratings-popover Stimulus migration) into a single rateScaleSvc and updating the three consuming controllers' injections (searchResult.js, searchResults.js, docFinder.js). Rated 'Long Day's Journey Into Night' (rank #1) via the popover: doc badge 0.00→1.00, case/query score badges updated live, no console errors. RESET restored the doc to '--' and the case back to 0.00/10 unrated — original state preserved. Did not re-test the 'Score All' bulk path, the Missing Documents finder popover, or non-rating edge cases this pass (see 4.9 for that surface).\""
+        paths: ["app/controllers/ratings_controller.rb", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/controllers/searchResult.js", "app/assets/javascripts/controllers/searchResults.js", "app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/services/rateScaleSvc.js", "app/assets/templates/views/searchResult.html", "app/assets/templates/views/searchResults.html"]
       "4.7":
         title: "Case & query score badges"
         last_run: 2026-09-15T16:42:00Z
@@ -237,10 +237,10 @@ parts:
         paths: ["app/controllers/scores_controller.rb", "app/models/scorer.rb"]
       "4.9":
         title: "Missing Documents finder"
-        last_run: 2026-09-15T16:44:00Z
+        last_run: 2026-09-19T17:29:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840, query 'butter': opened Missing Documents, pre-filled query (q=butter&magicBoost=20) shown with the 'Changing ratings will affect the query score' warning; clicked Search, got '4 matching documents'; rated the top doc '3 Perfect' inline from within the modal — rating and the query's score badge (0.00→1.00) updated live in the underlying workbench behind the modal. Did not test 'Reset to All Rated Docs' or the blank-URL/invalid-query edge cases this pass."
-        paths: ["app/assets/javascripts/"]
+        notes: "Spot-checked via Playwright MCP on SOLR CASE (case 1) after angular-phase-4 was merged into main (the 2026-09-18 verification below predates that squash-merge commit, which is why this showed as stale by file-mtime alone — `git show --stat` on every later commit confirmed none touched these files further). Opened Missing Documents, clicked Search (q=*:*, 8516 matches) — Query Results rendered with the same rating dropdowns and 'Matches' info popovers as the main workbench, 'Changing ratings will affect the query score.' banner legible, no console errors. Did not redo the bulk-rate/RESET cycle this pass — that was already covered by the 2026-09-18 pass below, which remains accurate: \"...used the modal's 'Score All' popover (bulk rate path via docFinder.js) to rate all 10 shown docs '0 Irrelevant' — badges updated live both inside the modal and on the underlying workbench behind it, no console errors, then RESET via the same popover restored all 10 to unrated...\""
+        paths: ["app/assets/javascripts/controllers/docFinder.js", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/services/rateScaleSvc.js", "app/assets/templates/views/targetedSearchModal.html"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
         last_run: 2026-09-15T16:45:00Z
@@ -279,10 +279,10 @@ parts:
         paths: ["app/models/query.rb"]
       "4.16":
         title: "Query Notes & Information Need"
-        last_run: 2026-09-15T16:49:00Z
+        last_run: 2026-09-19T17:27:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840. Filled Information Need ('Find butter products') and Notes ('Manual test note for query 4.16') on the 'butter' query, saved — flash 'Success! Your query details have been saved.'; reloaded the page and re-expanded Toggle Notes, both values persisted correctly. Did not re-test the blank-fields or forced-failure edge cases this pass."
-        paths: ["app/models/query.rb"]
+        notes: "Re-verified via Playwright MCP on case 1 (Solr Case) after angular-phase-4 was merged into main (the 2026-09-18 verification below predates that squash-merge commit, which is why this showed as stale by file-mtime alone — no further code changes to these files). Toggled Notes on 'star wars', typed a note, clicked Save — flash 'Success! Your query details have been saved.' rendered correctly (green alert, bottom of page), no console errors. Did not re-test Information Need persistence, reload round-trip, or forced-failure edge cases this pass, same as the prior note: \"Re-verified via Playwright MCP on case 1 (Solr Case) after migrating the core flash-message system off angular-flash to a Stimulus controller + CustomEvent bridge. Toggled Notes on 'star wars', typed a note, saved — flash 'Success! Your query details have been saved.' rendered correctly via the new path (window.quepidDom.flash.show -> flash:show CustomEvent -> Stimulus flash controller).\""
+        paths: ["app/models/query.rb", "app/assets/javascripts/controllers/queryNotes.js", "app/javascript/controllers/flash_controller.js", "app/javascript/utils/flash.js"]
 
   "05":
     file: 05-core-workbench-history-snapshots-and-annotations.md
@@ -323,16 +323,16 @@ parts:
     scenarios:
       "6.1":
         title: "Export a case"
-        last_run: 2026-09-17T15:30:00Z
-        result: pass
-        notes: "Re-verified live via Playwright MCP on case 5 (real click-through this pass, working around the prior session's transport errors by hooking URL.createObjectURL/anchor-click/saveAs/window.open client-side to capture the blob instead of letting a real OS Save-As dialog block the CDP connection). All 9 formats clicked through the actual UI and confirmed byte-for-byte against the modal's documented headers: Information Need (query,information_need), General, Detailed (bridges to legacy caseCSVSvc via CustomEvent + FileSaver saveAs — confirmed this is the one that trips the OS save dialog/transport error if saveAs isn't hooked), Snapshot (Export button confirmed disabled until a snapshot is picked, then enabled), Basic, TREC, RRE, Learning to Rank, and Quepid (full case JSON). Filenames all matched the `{caseName}_{format}.csv/txt/json` pattern. 0 console errors across the whole run; before/after toolbar screenshots identical. Quepid API links section (Case/Queries/Annotations/Scores/Ratings/Snapshot) spot-checked by URL only, not clicked through. Detailed export is exposed directly from the individual Case toolbar."
+        last_run: 2026-09-19T16:50:00Z
+        result: pass_with_fixes
+        notes: "Targeted re-check of the Detailed-export-unsupported edge case only (not a full re-run of all 9 formats, already covered by the 2026-09-17 pass). A branch merge had accidentally dropped the detailedRadio/detailedWarning gating (commit 6b9035d0 on angular-phase-4 incidentally deleted it while doing an unrelated arranged_at cleanup); restored it, then found and fixed a real bug in the restored code: the warning banner used `bg-warning text-warning` (amber-on-amber, rendering as a blank amber block with the text/icon fully invisible — confirmed visually via Playwright screenshot) instead of the app's established `alert alert-warning role=\"alert\"` pattern. Verified via Playwright MCP on case 1: normal single-case view shows Detailed enabled with no warning (screenshot); forced the unsupported-context state via the Stimulus controller (no second trigger point exists yet to reach this natively) and confirmed the radio disables, submit stays disabled, and the warning now renders legibly (screenshot). Did not re-test the other 8 formats/downloads this pass."
         paths: ["app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/assets/javascripts/services/caseCSVSvc.js", "app/controllers/api/v1/export"]
       "6.2":
         title: "Import into a case (ratings / information needs / snapshots)"
-        last_run: 2026-09-15T16:53:00Z
-        result: pass
-        notes: "Re-verified the Ratings tab via Playwright MCP on disposable case 6840: selected CSV format, uploaded a 1-row 'query,docid,rating' CSV rating the 'cheese' query — Import enabled once the file was chosen, submitted, flash 'Successfully imported ratings from CSV.' Confirmed the Information Needs tab still renders correctly (its own CSV-format radio, header hint, Choose File). Did not re-test the Snapshots tab this pass (see 3.4/6.2's 2026-09-04 notes and 3.4's 2026-09-15 sequential-import re-verification) or the Clear-existing-queries/Create-missing-queries toggles."
-        paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb", "app/services/snapshot_importer.rb", "app/assets/javascripts/components/import_ratings/import_ratings_controller.js"]
+        last_run: 2026-09-17T18:42:46Z
+        result: pass_with_fixes
+        notes: "Covered live: migrated the Ratings and Information Needs help icons to the bs-popover Stimulus controller; hover showed their original text in visible, correctly positioned popovers. Not covered live: file upload/submission and the Snapshots tab."
+        paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb", "app/services/snapshot_importer.rb", "app/assets/javascripts/components/import_ratings/import_ratings_controller.js", "app/assets/javascripts/components/import_ratings/_modal.html"]
       "6.3":
         title: "Clone a case"
         last_run: 2026-09-15T16:19:00Z
@@ -353,10 +353,10 @@ parts:
         paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
-        last_run: 2026-09-15T16:52:00Z
-        result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840 (unshared with any team). Clicking Judgements correctly gated with 'Judgements are meant to be shared with a team, so either create a new team or share case first.' plus a 'Create a book' shortcut (pre-filled /books/new?scorer_id=1&origin_case_id=6840). Clicked it, form was pre-filled with a sensible name ('Book For Manual Test Part4 Renamed Case'); clicked Create Book — landed on the new book's Overview page (book 48) with 'Related cases:' correctly linking back to the originating case. Did not re-test the shared-case Book-picker path (existing book selection, Populate Now/Refresh Ratings sync) this pass — see prior pass's notes for that."
-        paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb"]
+        last_run: 2026-09-17T18:42:46Z
+        result: pass_with_fixes
+        notes: "Covered live: opened the shared-case Book picker and all four migrated help icons; each hover rendered its original explanatory text in a visible popover. Not covered live: save/persisting a Book selection or running the sync actions."
+        paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb", "app/assets/javascripts/components/judgements/_modal.html"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
         last_run: 2026-09-15T16:49:00Z
@@ -365,16 +365,16 @@ parts:
         paths: ["app/assets/javascripts/directives/"]
       "6.8":
         title: "Explain a single document (Debug Explain)"
-        last_run: 2026-09-15T16:50:00Z
+        last_run: 2026-09-19T17:26:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840. Clicked the 'Matches' info icon on a butter-query result — popover opened correctly showing 'Relevancy Score: 11.295498' with a Debug/Expand action for the score-computation expression. No console errors."
-        paths: ["app/assets/javascripts/directives/"]
+        notes: "Re-verified via Playwright MCP on case 1 (Solr Case, 'star wars' query) after angular-phase-4 was merged into main (the 2026-09-18 verification below predates that squash-merge commit, which is why this showed as stale by file-mtime alone — `git show --stat` on every later commit confirmed none touched these files further). Clicked the 'Matches' info icon on 'Long Day's Journey Into Night' — popover opened showing 'Relevancy Score: 1' with the match/value/description JSON and Debug/Expand buttons; Debug correctly disabled (this doc has no per-term score breakdown); clicked Expand — full-page modal opened showing the same JSON enlarged, no console errors. Matches the prior pass's description below: \"...Debug/Expand still click through correctly end-to-end after that refactor (Expand opens 'Relevancy Score: N' with the raw explain text; Debug disabled/aria-disabled on this case's no-breakdown real data...).\""
+        paths: ["app/javascript/controllers/match_explain_controller.js", "app/javascript/utils/json_explorer.js", "app/javascript/utils/dynamic_modal.js", "app/assets/javascripts/controllers/searchResult.js", "app/assets/templates/views/searchResult.html"]
       "6.9":
         title: "Frog Report"
-        last_run: 2026-09-15T16:25:00Z
+        last_run: 2026-09-18T17:15:00Z
         result: pass_with_fixes
-        notes: "CONFIRMED FIX via Playwright MCP for the previously-documented crash (commit 32dfffa6 'Fix frog report crash when a query has no currentScore yet'): opening the Frog Report on 'Haystack Rating Party' (all 137 queries return 0 results because chorus.dev.o19s.com is unreachable from this sandbox — same environment limitation as before) now opens successfully with a Summary and 'Distribution of Queries Needing Ratings' chart, instead of throwing 'Cannot read properties of undefined (reading countMissingRatings)'. The only console errors were the expected net::ERR_CONNECTION_REFUSED to chorus.dev.o19s.com, no JS exceptions. Minor cosmetic quirk noticed (not a crash, not re-tested for severity): the Summary text read '0 ratings missing, leading to NaN% missing rate' when every query returns zero results (divide-by-zero in the missing-rate percentage) — separate from the fixed crash, not investigated further. Also re-confirmed the golden path still works on case 3 (SEARCHAPI CASE, an unrun/unscored query) with no crash."
-        paths: ["app/assets/javascripts/", "app/assets/javascripts/components/frog_report/frog_report_modal_instance_controller.js"]
+        notes: "Re-verified via Playwright MCP on case 1 (Solr Case) — flagged DUE by a stale path glob (app/assets/javascripts/, since narrowed below) that matched unrelated deletions from the match-explain migration; Frog Report itself wasn't touched by that work. Frog icon opens 'The Frog Pond Report: SOLR CASE' with Summary text and the 'Distribution of Queries Needing Ratings' bar chart; Close (header X or footer button) removes the modal from the DOM and clears body's modal-open with no leftover backdrop. No console errors (one Vega v5-vs-v6.2.0 spec-version warning, expected/pre-existing). Did not re-drive the zero-results case (Haystack Rating Party) or re-check the NaN%-missing-rate cosmetic quirk from the prior pass — this pass was a regression spot-check against the match-explain changes, not a full re-run. Prior finding retained: CONFIRMED FIX via Playwright MCP (2026-09-15) for the previously-documented crash (commit 32dfffa6 'Fix frog report crash when a query has no currentScore yet') — opening on 'Haystack Rating Party' (all 137 queries return 0 results; chorus.dev.o19s.com unreachable from that sandbox) no longer throws 'Cannot read properties of undefined (reading countMissingRatings)'. Minor cosmetic quirk noted then, not yet investigated: Summary reads '0 ratings missing, leading to NaN% missing rate' when every query returns zero results (divide-by-zero in the missing-rate percentage)."
+        paths: ["app/assets/javascripts/components/frog_report/"]
       "6.10":
         title: "Unarchive case (from a list's Archived filter)"
         last_run: 2026-09-15T19:05:00Z
@@ -843,10 +843,10 @@ parts:
     scenarios:
       "16.1":
         title: "Popover & tooltip paint check (BS3↔BS5 trap)"
-        last_run: 2026-09-15T16:21:00Z
-        result: pass
-        notes: "Re-verified via Playwright MCP after today's new generic bs_popover_controller.js/bs_tooltip_controller.js (commit 18fa8d83). Two checks, both confirmed via getComputedStyle (not just eyeballing): (1) a rating-badge popover in the Core Workbench (case 6, 'dairy' query, first doc's '1' badge) — visible on first click, .popover.bs-popover-auto.show, display:block, opacity:1, transform is a plain translate (not scale(0)), font-size:14px. (2) the left sidebar's 'Home' icon tooltip on a Rails page (/cases) — visible on first hover, display:block, opacity:0.9, font-size:14px, correct text. Neither showed the BS3-leak symptoms (invisible-but-present, tiny font, stuck opacity). Did not check a share-modal info-icon popover this pass; narrow-viewport RFS scaling not explicitly rechecked here (see 16.2)."
-        paths: ["app/javascript/controllers/bs_popover_controller.js", "app/javascript/controllers/bs_tooltip_controller.js", "app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/directives/quepidTooltip.js", "app/assets/stylesheets/bootstrap5-compat.css"]
+        last_run: 2026-09-17T18:42:46Z
+        result: pass_with_fixes
+        notes: "Covered live: migrated Import, Judgements, and disabled-sort help icons rendered their original copy in visible BS5 popovers; screenshot review found no invisible/tiny/opaque paint failure. Not covered live: a narrow-viewport RFS check or a tooltip."
+        paths: ["app/javascript/controllers/bs_popover_controller.js", "app/javascript/controllers/bs_tooltip_controller.js", "app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/directives/quepidTooltip.js", "app/assets/stylesheets/bootstrap5-compat.css", "app/assets/javascripts/directives/bsStaticPopover.js"]
       "16.2":
         title: "Narrow viewport reflow sweep"
         last_run: 2026-09-15T19:00:00Z
@@ -861,9 +861,9 @@ parts:
         paths: ["app/assets/stylesheets/bootstrap5-compat.css"]
       "16.4":
         title: "Modal accessibility spot-check"
-        last_run: 2026-09-15T18:49:00Z
+        last_run: 2026-09-18T17:12:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: opened the Clone modal on case 6, pressed Escape — confirmed via document.querySelector('.modal.show') that the modal closed. Did not re-test Tab-trap this pass."
+        notes: "Re-verified via Playwright MCP on case 1: opened the new Expand modal (match-explain's utils/dynamic_modal.js — a from-scratch vanilla BS5 modal, not the Angular $quepidModal shim used elsewhere) from a search result row's Matches popover, pressed Escape — confirmed the modal element was removed from the DOM, document.body no longer had modal-open, and no .modal-backdrop was left behind. Did not re-test Tab-trap this pass, and did not exercise the nested-modal case (opening this modal from a doc row inside the Missing Documents or Compare Snapshots modal)."
         paths: ["app/assets/javascripts/"]
       "16.5":
         title: "General visual sanity sweep after any CSS/JS change"
