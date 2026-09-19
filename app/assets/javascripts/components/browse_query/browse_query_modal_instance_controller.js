@@ -50,8 +50,23 @@ angular.module('QuepidApp')
         return '\'' + String(str).replace(/'/g, '\'\\\'\'') + '\'';
       }
 
+      // Browse URLs can contain unescaped spaces in values such as Solr's `fl`
+      // parameter. Shell quoting keeps the URL together, but curl still rejects
+      // spaces in the URL itself. Re-serializing URLSearchParams encodes those
+      // values while preserving duplicate parameters.
+      function encodeQueryString(url) {
+        try {
+          var parsed = new window.URL(url);
+          parsed.search = parsed.searchParams.toString();
+          return parsed.toString();
+        }
+        catch (e) {
+          return url;
+        }
+      }
+
       ctrl.curlCommand = window.CurlGenerator({
-        url: shellQuoteSingle(ctrl.url),
+        url: shellQuoteSingle(encodeQueryString(ctrl.url)),
         method: 'GET',
         headers: headers
       });
