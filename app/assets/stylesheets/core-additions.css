@@ -574,6 +574,10 @@ footer {
   text-decoration:  underline;
 }
 
+.matches-popper .bi-info-circle-fill {
+  margin-left: 0.25rem;
+}
+
 .btn-circle {
   width: 30px;
   height: 30px;

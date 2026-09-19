@@ -108,7 +108,7 @@ angular.module('QuepidApp')
       // source and stops the event there).
       $element.on('rating-popover:rate', function(event) {
         event.stopPropagation();
-        var newRating = parseInt(event.detail.rating, 10);
+        var newRating = parseInt(event.originalEvent.detail.rating, 10);
 
         src.query.rating = newRating;
 

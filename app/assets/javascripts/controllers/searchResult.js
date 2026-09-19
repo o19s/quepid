@@ -97,20 +97,41 @@ angular.module('QuepidApp')
       // "DOM utilities" entry. doc.explain()/hotMatchesOutOf() stay Angular
       // (splainer-search); this just serializes what the popover/bars/debug
       // and expand modals need to render.
+      var matchExplainCache = {
+        doc: null,
+        queryVersion: null,
+        maxDocScore: null,
+        data: null
+      };
+
       $scope.matchExplainData = function() {
+        var queryVersion = $scope.query.version();
+        var maxDocScore = $scope.maxDocScore;
+        if (matchExplainCache.doc === $scope.doc &&
+            matchExplainCache.queryVersion === queryVersion &&
+            matchExplainCache.maxDocScore === maxDocScore) {
+          return matchExplainCache.data;
+        }
+
         var explain      = $scope.doc.explain();
         var hasChildren  = explain.children.length > 0;
 
-        return {
-          hasChildren:   hasChildren,
-          hots:          $scope.doc.hotMatchesOutOf($scope.maxDocScore),
-          explainToStr:  hasChildren ? explain.toStr() : null,
-          explainAsJson: hasChildren ? null : JSON.stringify(explain.asJson, null, 2),
-          explainRawStr: explain.rawStr(),
-          docTitle:      $scope.doc.title,
-          docId:         $scope.doc.id,
-          docScore:      $scope.doc.score(),
+        matchExplainCache = {
+          doc: $scope.doc,
+          queryVersion: queryVersion,
+          maxDocScore: maxDocScore,
+          data: {
+            hasChildren: hasChildren,
+            hots: $scope.doc.hotMatchesOutOf(maxDocScore),
+            explainToStr: hasChildren ? explain.toStr() : null,
+            explainAsJson: hasChildren ? null : JSON.stringify(explain.asJson, null, 2),
+            explainRawStr: explain.rawStr(),
+            docTitle: $scope.doc.title,
+            docId: $scope.doc.id,
+            docScore: $scope.doc.score()
+          }
         };
+        return matchExplainCache.data;
       };
 
       $scope.isObjectOrArray = function(value) {

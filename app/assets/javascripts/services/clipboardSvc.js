@@ -23,8 +23,12 @@ angular.module('QuepidApp')
 
         var deferred = $q.defer();
         try {
-          document.execCommand('copy');
-          deferred.resolve();
+          if (document.execCommand('copy')) {
+            deferred.resolve();
+          }
+          else {
+            deferred.reject(new Error('The browser refused to copy the text.'));
+          }
         }
         catch (e) {
           deferred.reject(e);

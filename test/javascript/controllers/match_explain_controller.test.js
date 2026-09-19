@@ -167,6 +167,15 @@ describe("MatchExplainController", () => {
     expect(bar.getAttribute("aria-valuenow")).toBe("100")
   })
 
+  it("opens Debug Explain when a hot-match bar is clicked", () => {
+    const controller = buildController(element, baseData())
+    MatchExplainController.prototype.connect.call(controller)
+
+    element.querySelector(".match-explain-bar").click()
+
+    expect(openDynamicModal).toHaveBeenCalledTimes(1)
+  })
+
   it("escapes match descriptions rendered into the bars", () => {
     const controller = buildController(element, baseData({ hots: [{ description: "<b>x</b>", percentage: 10 }] }))
     MatchExplainController.prototype.connect.call(controller)

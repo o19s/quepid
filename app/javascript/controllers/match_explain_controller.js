@@ -106,7 +106,7 @@ export default class extends Controller {
     const pct = Number(match.percentage) || 0
     const clamped = pct > 100 ? 100 : pct < 0 ? 0 : pct
     return `
-      <div class="graph-explain">
+      <div class="graph-explain match-explain-bar">
         <div class="graph-label">${escapeHtml(match.description)}</div>
         <div class="progress">
           <div
@@ -127,6 +127,10 @@ export default class extends Controller {
       this.collapseInstance.dispose()
       this.collapseInstance = null
     }
+
+    this.barsEl.querySelectorAll(".match-explain-bar").forEach((bar) => {
+      bar.addEventListener("click", () => this.openDebugModal(data))
+    })
 
     const toggle = this.barsEl.querySelector(".match-explain-toggle")
     if (!toggle) return
@@ -192,7 +196,7 @@ export default class extends Controller {
       size: "lg",
       windowClass: "doc-detailed-explain-modal"
     })
-    renderJsonExplorer(modal.element.querySelector(".match-explain-json"), data.explainRawStr, { collapsed: false })
+    renderJsonExplorer(modal.element.querySelector(".match-explain-json"), data.explainRawStr, { collapsed: true })
   }
 
   openExpandModal(data) {
