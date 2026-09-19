@@ -25,7 +25,7 @@ angular.module('QuepidApp')
       // "Score All" bulk rating) doesn't also fire for this single doc.
       $element.on('rating-popover:rate', function(event) {
         event.stopPropagation();
-        var newRating = parseInt(event.detail.rating, 10);
+        var newRating = parseInt(event.originalEvent.detail.rating, 10);
         src.doc.rate(newRating);
         src.query.touchModifiedAt();
         $scope.$apply();
