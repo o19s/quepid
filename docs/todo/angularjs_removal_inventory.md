@@ -145,8 +145,8 @@ Use when sizing a PR:
 
 Actionable incremental wins — do these before touching query/search state:
 
-1. **DOM utilities → Stimulus or BS5 data API** — **Done.** Popover shells/content are now vanilla JS but actual mutations are often untouched.
-3. **Sequence last** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks — not skipped, but gated on the live query-state phase's state plan being signed off before any code starts.
+1. **DOM utilities → Stimulus or BS5 data API** — **Done.** Plain-text tooltips/popovers, `bs-static-popover` help icons, the ratings popover, and the search-match popover are all migrated to Stimulus (`bs-tooltip`, `bs-popover`, `rating_popover_controller`, `match_explain_controller`); the Angular `quepidTooltip`/`quepidPopover`/`quepidPopoverTemplate`/`bsStaticPopover` directives are deleted.
+3. **Sequence last** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks — not skipped, but gated on the [live query-state phase](#live-query-state-phase-committed-final-phase)'s state plan being signed off before any code starts.
 
 Prefer **Rails view + route + Hotwire/Stimulus** for management actions over embedding new Stimulus inside the Angular bundle.
 
