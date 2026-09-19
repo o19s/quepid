@@ -288,16 +288,6 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 
 **Backend still required:** `Api::V1::TriesController#destroy` must recompute `cases.last_try_number` — tracked in [todo.md § P0 backend](./todo.md#deleting-the-latest-try-bricks-the-case-backend).
 
-#### First-run Shepherd tour: `Shepherd is not defined`
-
-**Observed:** After a new user's first wizard Finish, tour never starts; console `ReferenceError: Shepherd is not defined`.
-
-**Cause:** `tour.js` expects global `Shepherd`; `angular_app.js` side-effect-imports tether-shepherd but does not pin `window.Shepherd` (unlike `window.bootstrap`).
-
-**Fix during migration:** Pin `window.Shepherd` (and confirm Tether) in the post-Angular entry bundle, or load Shepherd only from the new wizard/tour Stimulus (or server) flow. See [core_ui_implementation_reference § Shepherd](./core_ui_implementation_reference.md#1-shepherd-post-wizard-tour-tourjs).
-
-**Touches:** wizard finish (`wizardCtrl.js` / `new_case_controller.js`), [Feature area § New-case wizard](#4-new-case-wizard), full removal order step 7 (wizard).
-
 #### Wizard Esc orphans empty cases
 
 **Observed:** Wizard **X** prompts and deletes the empty case; **Esc** closes with no confirm and leaves the case.
