@@ -3,8 +3,8 @@ import { dynamicRegions } from './angular_case_helpers';
 
 /**
  * Permanent regression coverage for case sharing: the Stimulus
- * `share-case-core` modal on the core case toolbar, the judgements-modal
- * bridge into it, and the Rails cases-index/teams `share-case` modal.
+ * `share-case-core` modal on the core case toolbar, the judgements-core
+ * modal bridge into it, and the Rails cases-index/teams `share-case` modal.
  *
  * This supersedes two transitional specs:
  *  - The "share-case" tests that used to live in dom_migration_screenshots.spec.ts
@@ -152,14 +152,20 @@ test.describe('core case toolbar: share-case modal (share-case-core Stimulus con
     await expect(page).toHaveScreenshot('share-case-modal-shareable-selected.png', shareCaseScreenshotOpts(page));
   });
 
-  test('modal shows an empty state once every team already shares the case', async ({ page }) => {
+  test('modal hides the no-teams prompt once every team already shares the case', async ({ page }) => {
     await shareCaseWithAllTeams(page, SHARE_CASE_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page, SHARE_CASE_ID);
     const modal = await openCoreShareModal(page);
 
+    // Commit 095a9e1a reserves the "no teams" hero for users with zero teams
+    // at all — a team that already shares this case still means the user
+    // has a team, so the hero (and the now-empty share picker) stay hidden
+    // and the shared-teams list is what's shown instead.
     await expect(modal.locator('#share-case-shareable-list [data-team-id]')).toHaveCount(0);
-    await expect(modal.locator('[data-share-case-core-target="emptyShareable"]')).toBeVisible();
+    await expect(modal.locator('[data-share-case-core-target="emptyShareable"]')).toBeHidden();
+    await expect(modal.locator('[data-share-case-core-target="sharePicker"]')).toBeHidden();
+    await expect(modal.locator('[data-share-case-core-target="sharedSection"]')).toBeVisible();
 
     await page.setViewportSize({ width: 900, height: 820 });
     await expect(page).toHaveScreenshot('share-case-modal-no-shareable.png', shareCaseScreenshotOpts(page));
@@ -223,8 +229,8 @@ test.describe('core case toolbar: share-case modal (share-case-core Stimulus con
     await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page, SHARE_CASE_ID);
-    await page.locator('judgements').getByText('Judgements', { exact: true }).click();
-    const judgementsModal = page.locator('.modal.show').first();
+    await page.locator('a[data-controller="judgements-core"]').getByText('Judgements', { exact: true }).click();
+    const judgementsModal = page.locator('#judgementsModal.show, .modal.show').first();
     await expect(judgementsModal).toBeVisible();
     const shareCaseLink = judgementsModal.getByText('share case', { exact: true });
     await expect(shareCaseLink).toBeVisible({ timeout: 15_000 });

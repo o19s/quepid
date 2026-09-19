@@ -115,14 +115,14 @@ test.describe('Angular pages — interaction screenshots', () => {
 
     await page.keyboard.press('Escape');
 
-    await page.getByText('Create snapshot', { exact: false }).first().click();
-    await expect(page.locator('.modal.show').first()).toBeVisible({ timeout: 5_000 });
+    await page.locator('a[data-controller="take-snapshot-core"]').click();
+    await expect(page.locator('#takeSnapshotModal.show')).toBeVisible({ timeout: 5_000 });
     await expect(page).toHaveScreenshot('rating-ui-04-snapshot-modal.png', {
       mask: dynamicRegions(page),
       maxDiffPixelRatio: 0.05,
     });
 
-    const snapshotModal = page.locator('.modal.show').filter({ hasText: /Take a Snapshot/i });
+    const snapshotModal = page.locator('#takeSnapshotModal.show');
     await snapshotModal.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(page.locator('.modal.show')).toHaveCount(0);
 
@@ -135,11 +135,11 @@ test.describe('Angular pages — interaction screenshots', () => {
     await expandFirstQuery(page);
     await expect(page).toHaveScreenshot('scorer-config-01-before-scorer-modal.png', expandedCaseScreenshotOpts(page));
 
-    await page.getByText('Select scorer', { exact: true }).click();
-    await expect(page.locator('.modal.show')).toContainText(/How would you like to score/i);
+    await page.locator('a[data-controller="pick-scorer-core"]').click();
+    await expect(page.locator('#pickScorerModal.show')).toContainText(/How would you like to score/i);
     await expect(page).toHaveScreenshot('scorer-config-02-pick-scorer-modal.png', expandedCaseScreenshotOpts(page));
 
-    const picker = page.locator('.modal.show').first();
+    const picker = page.locator('#pickScorerModal.show');
     const firstScorer = picker.locator('.list-group-item').first();
     await firstScorer.click();
     await expect(page).toHaveScreenshot('scorer-config-03-scorer-highlighted.png', expandedCaseScreenshotOpts(page));

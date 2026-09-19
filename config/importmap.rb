@@ -24,6 +24,8 @@ pin 'utils/status_message', to: 'utils/status_message.js'
 pin 'utils/destructive_form', to: 'utils/destructive_form.js'
 pin 'utils/case_csv', to: 'utils/case_csv.js'
 pin 'utils/download_file', to: 'utils/download_file.js'
+pin 'utils/flash', to: 'utils/flash.js'
+pin 'utils/search_engine_name', to: 'utils/search_engine_name.js'
 
 pin 'local-time' # @3.0.3
 

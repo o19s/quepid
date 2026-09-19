@@ -136,6 +136,23 @@ angular.module('QuepidApp')
         });
       });
 
+      // Stimulus judgements-core: keep the in-memory case book/sync settings in sync.
+      document.addEventListener('judgements:book-settings-saved', function(event) {
+        var detail = event.detail || {};
+        var selected = svc.getSelectedCase();
+        if (!svc.isCaseSelected() || !selected || Number(detail.caseId) !== Number(selected.caseNo)) {
+          return;
+        }
+
+        $rootScope.$applyAsync(function() {
+          selected.bookId = detail.bookId;
+          selected.bookName = detail.bookName;
+          selected.autoPopulateBookPairs = detail.autoPopulateBookPairs;
+          selected.autoPopulateCaseJudgements = detail.autoPopulateCaseJudgements;
+          broadcastSvc.send('associateBook', svc.dropdownBooks);
+        });
+      });
+
       this.selectCase = function(caseNo) {
         var cases = this.allCases.slice(); // shallow copy (dont create new cases)
         angular.forEach(cases, function(aCase) {

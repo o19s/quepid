@@ -231,10 +231,10 @@ parts:
         paths: ["app/models/score.rb"]
       "4.8":
         title: "Select a scorer for the case"
-        last_run: 2026-09-15T16:43:00Z
+        last_run: 2026-09-18T19:30:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840. Select Scorer modal listed the built-in AP@10/nDCG@10 pair plus the account's custom scorers; picked nDCG@10 and clicked Select Scorer — header and score badge updated to nDCG@10 immediately, no reload needed. Case is disposable so did not restore the original scorer. Custom-scorer / not-shared-with-you warning not tested."
-        paths: ["app/controllers/scores_controller.rb", "app/models/scorer.rb"]
+        notes: "Playwright MCP on disposable case 6842 after Stimulus pick-scorer-core migration. Opened modal, selected nDCG@10, Select Scorer PUT /api/cases/6842/scorers/1 → 200, modal closed. Screenshot .playwright-mcp/pick-scorer/modal-after-select-ndcg.png. Case deleted afterward. Communal-only / inaccessible-scorer warning not exercised this pass."
+        paths: ["app/javascript/controllers/pick_scorer_core_controller.js", "app/views/shared/_pick_scorer_core_modal.html.erb", "app/assets/javascripts/services/queriesSvc.js", "app/models/scorer.rb"]
       "4.9":
         title: "Missing Documents finder"
         last_run: 2026-09-18T16:00:00Z
@@ -295,10 +295,10 @@ parts:
         paths: ["app/models/try.rb", "app/controllers/core_controller.rb"]
       "5.2":
         title: "Create a snapshot"
-        last_run: 2026-09-14T18:35:09Z
+        last_run: 2026-09-18T19:30:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main (snapshotFactory/querySnapshotSvc/snapshotModal.html all touched). On case 6, clicked Take Snapshot with the name field left blank — same pre-existing behavior noted 2026-09-02: not blocked (no required-field error), falls back to an auto-generated name ('Snapshot 09/14/26'); 'Snapshot created successfully' flash shown and score badge updated (0.00→1.00 reflecting a rating made earlier in this pass). Doc's edge case ('should be blocked') still doesn't match actual behavior — flagging again, still not a regression. Forced-server-error and large-case-background behavior not tested."
-        paths: ["app/services/snapshot_generator.rb", "app/models/snapshot.rb"]
+        notes: "Playwright MCP on disposable case 6842 after Stimulus take-snapshot-core migration. Named snapshot, Take Snapshot succeeded (snapshot id 2490 listed via API with nDCG@10 scorer). Screenshot .playwright-mcp/take-snapshot/modal-after-named.png. Case (+ snapshot) deleted afterward. Forced-error / large-case paths not exercised."
+        paths: ["app/javascript/controllers/take_snapshot_core_controller.js", "app/views/shared/_take_snapshot_core_modal.html.erb", "app/assets/javascripts/services/querySnapshotSvc.js", "app/services/snapshot_generator.rb", "app/models/snapshot.rb"]
       "5.3":
         title: "Compare snapshots (diff)"
         last_run: 2026-09-14T18:36:16Z
@@ -353,10 +353,10 @@ parts:
         paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
-        last_run: 2026-09-17T18:42:46Z
-        result: pass_with_fixes
-        notes: "Covered live: opened the shared-case Book picker and all four migrated help icons; each hover rendered its original explanatory text in a visible popover. Not covered live: save/persisting a Book selection or running the sync actions."
-        paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb", "app/assets/javascripts/components/judgements/_modal.html"]
+        last_run: 2026-09-18T19:30:00Z
+        result: pass
+        notes: "Playwright MCP on disposable case 6842 (shared with OSC) after Stimulus judgements-core migration. Modal listed None + Book of Ratings + Haystack Icecat Rating Party; selected Book of Ratings and Save → savedBookId=1, modal closed. Screenshot .playwright-mcp/judgements-core/modal-after-books.png. Case deleted afterward. Populate Now / Refresh Ratings / Sync Queries not exercised this pass."
+        paths: ["app/javascript/controllers/judgements_core_controller.js", "app/views/shared/_judgements_core_modal.html.erb", "app/assets/javascripts/services/queriesSvc.js", "app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
         last_run: 2026-09-18T17:41:00Z

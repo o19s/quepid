@@ -1,0 +1,54 @@
+<%# Core case toolbar — take snapshot. Collects name/options then bridges to
+    Angular querySnapshotSvc via `take-snapshot:create` for the live query
+    payload. Mirrors AngularJS snapshotModal.html. %>
+<% modal_footer = capture do %>
+  <button type="button" class="btn btn-primary"
+          data-take-snapshot-core-target="submitButton"
+          data-action="click->take-snapshot-core#submit">
+    Take Snapshot
+  </button>
+  <div class="d-none" data-take-snapshot-core-target="progress">
+    Snapshot Being Created (this can take a minute or so)
+  </div>
+<% end %>
+
+<% modal_body = capture do %>
+  <div class="alert d-none" role="alert" data-take-snapshot-core-target="alert"></div>
+  <p>Recording the current results of your queries is useful for compare future work against this point in time as well as to use in comparing multiple Cases.  A snapshot
+  stores the individual queries in a case, the ratings made, and optionally all the fields returned for the documents.</p>
+
+  <label class="fw-bold" for="snapshotName">Snapshot Name</label>
+  <input type="text" class="form-control" id="snapshotName" placeholder="Name your snapshot"
+         data-take-snapshot-core-target="nameInput">
+
+  <br/>
+
+  <label class="fw-bold">Include Document Fields</label>
+  <div data-take-snapshot-core-target="lookupFields">
+    <p>
+      To facilitate additional analysis, you may want to record as part of the snapshot all the displayed fields for each document returned.
+      This will be the <code data-take-snapshot-core-target="fieldSpec"></code> fields.
+    </p>
+
+    <div class="form-check">
+      <input id="include-document-fields" type="checkbox" class="form-check-input"
+             data-take-snapshot-core-target="recordFieldsCheckbox">
+      <label class="form-check-label" for="include-document-fields">Record Document Fields?</label>
+    </div>
+  </div>
+
+  <div class="d-none" data-take-snapshot-core-target="noLookupFields">
+    <p>
+      To power comparisons when using <span data-take-snapshot-core-target="engineName"></span> the fields of your documents will be stored in Quepid.
+    </p>
+  </div>
+<% end %>
+
+<%= render "shared/modal_shell", id: "takeSnapshotModal",
+                                 title: "Take a Snapshot of all your queries?",
+                                 data: {
+                                   controller: "take-snapshot-core"
+                                 },
+                                 title_data: { take_snapshot_core_target: "title" },
+                                 footer: modal_footer,
+                                 body: modal_body %>

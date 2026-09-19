@@ -173,6 +173,53 @@ angular.module('QuepidApp')
         svc.scoreAll();
       });
 
+      // Stimulus pick-scorer-core: API save already done; apply scorer + rescore live queries.
+      document.addEventListener('pick-scorer:selected', function(event) {
+        var detail = event.detail || {};
+        if (Number(detail.caseId) !== Number(svc.getCaseNo()) || !detail.scorer) {
+          return;
+        }
+        $scope.$applyAsync(function() {
+          var scorer = scorerSvc.constructFromData(detail.scorer);
+          scorerSvc.setDefault(scorer).then(function() {
+            svc.updateScores();
+          });
+        });
+      });
+
+      // Stimulus judgements-core: populate book needs live searched docs from this service.
+      document.addEventListener('judgements:populate-book', function(event) {
+        var detail = event.detail || {};
+        if (Number(detail.caseId) !== Number(svc.getCaseNo())) {
+          if (detail.done) { detail.done('case mismatch'); }
+          return;
+        }
+        bookSvc.updateQueryDocPairs(detail.bookId, detail.caseId, svc.queryArray())
+          .then(function() {
+            if (detail.done) { detail.done(null); }
+          }, function(response) {
+            var message = (response && response.data && response.data.statusText) ||
+              (response && response.statusText) ||
+              'error';
+            if (detail.done) { detail.done(message); }
+          });
+      });
+
+      // Stimulus judgements-core: after ratings refresh, re-bootstrap queries + search.
+      document.addEventListener('judgements:queries-need-reload', function(event) {
+        var detail = event.detail || {};
+        if (Number(detail.caseId) !== Number(svc.getCaseNo())) {
+          return;
+        }
+        $scope.$applyAsync(function() {
+          svc.reset();
+          svc.bootstrapQueries(detail.caseId)
+            .then(function() {
+              svc.searchAll();
+            });
+        });
+      });
+
       /**
        * mapper_code (a try's JS source defining numberOfResultsMapper/docsMapper/
        * nextPageArgsMapper/ratedDocsQueryParamsMapper - see

@@ -4,11 +4,11 @@
 
 angular.module('QuepidApp')
   .service('querySnapshotSvc', [
-    '$http', '$q',
+    '$http', '$q', '$injector',
     'settingsSvc', 'docCacheSvc', 'caseTryNavSvc', 'fieldSpecSvc',
     'SnapshotFactory',
     function querySnapshotSvc(
-      $http, $q,
+      $http, $q, $injector,
       settingsSvc, docCacheSvc, caseTryNavSvc, fieldSpecSvc,
       SnapshotFactory
     ) {
@@ -27,7 +27,31 @@ angular.module('QuepidApp')
       svc.importSnapshotsToSpecificCase = importSnapshotsToSpecificCase;
       svc.get             = get;
       svc.mapFieldSpecToSolrFormat = mapFieldSpecToSolrFormat;
-      
+
+      // Stimulus take-snapshot-core: modal collects name/options; this builds the
+      // payload from live queriesSvc results until the live-query-state migration.
+      // Lazy $injector.get avoids a circular DI
+      // (queriesSvc ← snapshotSearcherSvc ← querySnapshotSvc).
+      document.addEventListener('take-snapshot:create', function(event) {
+        var detail = event.detail || {};
+        if (Number(detail.caseId) !== Number(svc.getCaseNo())) {
+          if (detail.done) { detail.done('case mismatch'); }
+          return;
+        }
+
+        var queriesSvc = $injector.get('queriesSvc');
+        svc.addSnapshot(detail.name, detail.recordDocumentFields, queriesSvc.queryArray())
+          .then(function() {
+            window.quepidDom.flash.show('success', 'Snapshot created successfully.');
+            if (detail.done) { detail.done(null); }
+          }, function(response) {
+            var message = (response && response.data && response.data.statusText) ||
+              (response && response.statusText) ||
+              'error';
+            if (detail.done) { detail.done(message); }
+          });
+      });
+
       function mapFieldSpecToSolrFormat(fieldSpec) {
         let convertedfieldSpec = fieldSpec.replace(/id:_([^,]+)/, 'id:$1');
         return convertedfieldSpec;

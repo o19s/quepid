@@ -13,8 +13,8 @@ describe('Service: $quepidModal', function () {
     scope        = $rootScope.$new();
   }));
 
-  // NOTE: other specs in this suite (e.g. promptSnapshot_spec.js) open real
-  // $quepidModal instances and spy over close() without ever tearing the
+  // NOTE: other specs in this suite can open real $quepidModal instances and
+  // spy over close() without ever tearing the
   // real BS5 modal down, so leftover .modal/.modal-backdrop elements from
   // other files can be present in karma's single shared document. Every
   // assertion below holds a direct element reference (captured the instant

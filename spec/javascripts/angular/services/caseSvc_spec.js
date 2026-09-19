@@ -623,4 +623,60 @@ describe('Service: caseSvc', function () {
         .toEqual([1]);
     });
   });
+
+  describe('judgements:book-settings-saved bridge', function() {
+    var $rootScope;
+    var broadcastSvc;
+
+    beforeEach(inject(function(_$rootScope_, _broadcastSvc_) {
+      $rootScope   = _$rootScope_;
+      broadcastSvc = _broadcastSvc_;
+
+      caseSvc.allCases = [
+        {
+          caseNo:   5,
+          caseName: 'Demo Case',
+          teams:    [{ id: 1, name: 'OSC' }]
+        }
+      ];
+      caseSvc.selectCase(5);
+    }));
+
+    it('updates the selected case book/sync settings and re-broadcasts associateBook', function() {
+      spyOn(broadcastSvc, 'send');
+
+      document.dispatchEvent(new CustomEvent('judgements:book-settings-saved', {
+        detail: {
+          caseId: 5,
+          bookId: 42,
+          bookName: 'Some Book',
+          autoPopulateBookPairs: true,
+          autoPopulateCaseJudgements: false
+        }
+      }));
+      $rootScope.$apply();
+
+      var selected = caseSvc.getSelectedCase();
+      expect(selected.bookId).toBe(42);
+      expect(selected.bookName).toBe('Some Book');
+      expect(selected.autoPopulateBookPairs).toBe(true);
+      expect(selected.autoPopulateCaseJudgements).toBe(false);
+      // Regression: the Stimulus judgements-core save path used to skip this
+      // broadcast entirely, leaving the header Books dropdown (headerCtrl.js)
+      // and queriesSvc's cached auto-populate gate stale until a page reload.
+      expect(broadcastSvc.send.calls.mostRecent().args[0]).toBe('associateBook');
+    });
+
+    it('ignores events for a different case', function() {
+      spyOn(broadcastSvc, 'send');
+
+      document.dispatchEvent(new CustomEvent('judgements:book-settings-saved', {
+        detail: { caseId: 99, bookId: 42 }
+      }));
+      $rootScope.$apply();
+
+      expect(caseSvc.getSelectedCase().bookId).not.toBe(42);
+      expect(broadcastSvc.send).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -1,7 +1,10 @@
 <%# Generic Bootstrap 5 modal shell (.modal > .modal-dialog > .modal-content >
     .modal-header/.modal-body/.modal-footer) shared across the share/import
     modal partials. The standard Cancel/data-bs-dismiss button is rendered
-    automatically after `footer`.
+    automatically after `footer`. If the controller declares a "cancelButton"
+    target, it also gets `data-#{controller}-target="cancelButton"` so the
+    controller can disable Cancel during a busy/in-flight request (controllers
+    that don't declare that target just get an inert, ignored data attribute).
 
     Locals:
       id           - DOM id for the outer .modal div; also drives the title's
@@ -10,13 +13,17 @@
       body         - captured .modal-body content
       footer       - captured .modal-footer content, rendered before Cancel (default: none)
       dialog_class - extra classes for .modal-dialog, e.g. "modal-lg" (default: none)
+      modal_class  - extra classes for the outer .modal (alongside "modal fade")
       data         - data attributes for the outer .modal div, e.g. { controller: "share-book" }
       title_data   - data attributes for the .modal-title element (default: none) %>
 <% footer ||= nil %>
 <% dialog_class ||= "" %>
+<% modal_class ||= "" %>
 <% data ||= {} %>
 <% title_data ||= {} %>
-<%= content_tag :div, class: "modal fade", id: id, tabindex: "-1",
+<% cancel_data = { bs_dismiss: "modal" } %>
+<% cancel_data["#{data[:controller]}-target"] = "cancelButton" if data[:controller].present? %>
+<%= content_tag :div, class: "modal fade #{modal_class}".strip, id: id, tabindex: "-1",
                 aria: { labelledby: "#{id}Label", hidden: "true" }, data: data do %>
   <div class="modal-dialog <%= dialog_class %>">
     <div class="modal-content">
@@ -29,7 +36,7 @@
       </div>
       <div class="modal-footer">
         <%= footer %>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <%= content_tag :button, "Cancel", type: "button", class: "btn btn-secondary", data: cancel_data %>
       </div>
     </div>
   </div>

@@ -22,14 +22,15 @@ Every time case/query/engine settings change, Quepid saves a new **Try** so you 
 
 ### 5.2 Create a snapshot
 
+Core toolbar opens the Stimulus **take-snapshot-core** modal (`#takeSnapshotModal`); the live result payload still bridges to Angular `querySnapshotSvc` until that state is migrated.
+
 - [ ] **Steps:**
-  1. Click the camera icon ("Create snapshot") in the case toolbar.
-  2. Enter a snapshot name (required).
+  1. Click **Create snapshot** in the case toolbar.
+  2. Enter a snapshot name (optional in practice — blank names get an auto-generated label).
   3. If shown (only for engines that support lookup-by-id), toggle **Record Document Fields?**.
   4. Click **Take Snapshot**.
-- **Expected:** While processing, the modal (or relevant UI) shows "Snapshot Being Created (this can take a minute or so)"; once done, the snapshot is available for comparison (5.3) and export (Part 6).
+- **Expected:** While processing, the modal shows "Snapshot Being Created (this can take a minute or so)"; once done, the snapshot is available for comparison (5.3) and export (Part 6).
 - **Edge cases:**
-  - [ ] Submit with no name — should be blocked (required field).
   - [ ] Force a server error — confirm it surfaces clearly rather than leaving the modal stuck on "in progress" forever.
   - [ ] Take a snapshot on a large case (many queries) — confirm the async/background behavior doesn't block the rest of the UI.
 

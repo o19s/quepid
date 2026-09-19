@@ -15,7 +15,6 @@ angular.module('QuepidApp')
     '$log',
     '$location',
     '$routeParams',
-    '$quepidModal',
     'queriesSvc',
     'queryViewSvc',
     'querySnapshotSvc',
@@ -32,7 +31,6 @@ angular.module('QuepidApp')
       $log,
       $location,
       $routeParams,
-      $quepidModal,
       queriesSvc,
       queryViewSvc,
       querySnapshotSvc,
@@ -151,10 +149,22 @@ angular.module('QuepidApp')
       $scope.queries                  = {};
       $scope.queries.sortableOptions  = sortableOptions;
 
-      $scope.pickCaseScorer           = pickCaseScorer;
       $scope.sortBy                   = sortBy;
-
       $scope.getScorer                = getScorer;
+
+      // Snapshot modal trigger attrs — live try settings for the Stimulus take-snapshot modal.
+      $scope.snapshotFieldSpec = function() {
+        if (!settingsSvc.isTrySelected()) { return ''; }
+        return settingsSvc.applicableSettings().fieldSpec || '';
+      };
+      $scope.snapshotSearchEngine = function() {
+        if (!settingsSvc.isTrySelected()) { return ''; }
+        return settingsSvc.applicableSettings().searchEngine || '';
+      };
+      $scope.snapshotMapperEngineName = function() {
+        if (!settingsSvc.isTrySelected()) { return ''; }
+        return settingsSvc.applicableSettings().mapperBasedSearchEngineName || '';
+      };
 
       $scope.reverse = $location.search().reverse;
       $scope.sortBy($location.search().sort || 'default', !$scope.reverse);
@@ -538,29 +548,6 @@ angular.module('QuepidApp')
 
       function getScorer() {
         return scorerSvc.defaultScorer;
-      }
-
-      /*jslint latedef:false*/
-      function pickCaseScorer() {
-        var modalInstance = $quepidModal.open({
-          templateUrl:    'views/pick_scorer.html',
-          controller:     'ScorerCtrl',
-          windowClass:    'pick-scorer-modal',
-          ariaLabelledBy: 'pick-scorer-modal-title',
-          resolve:        {
-            parent: function() {
-              return {
-                attachTo:      queriesSvc,
-                currentScorer: scorerSvc.defaultScorer,
-              };
-            },
-          }
-        });
-
-        modalInstance.result.then(
-          function() { },
-          function() { }
-        );
       }
 
       function sortBy(field, skipOrder) {

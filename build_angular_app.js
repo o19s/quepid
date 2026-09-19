@@ -5,7 +5,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
 const OUTPUT_FILE = 'app/assets/builds/quepid_angular_app.js';
 const VENDOR_OUTPUT = 'app/assets/builds/angular_app.js';
@@ -185,8 +184,13 @@ function buildAngularApp() {
 }
 
 function rebuildCaseAngularBundles() {
-  console.log('Rebuilding angular_app.js + quepid_angular_app.js...');
-  execSync('yarn build:angular', { stdio: 'inherit', cwd: path.resolve(__dirname) });
+  console.log('Rebuilding quepid_angular_app.js...');
+  // In-process, not a shelled-out `yarn build:angular-vendor` — that step
+  // duplicates work the persistent angular_vendor esbuild --watch=forever
+  // process already does, and racing two esbuild writers against the same
+  // output file could throw and (with no try/catch around a shell-out) crash
+  // this process, which takes down the whole Procfile.dev group with it.
+  buildAngularApp();
 }
 
 // Main execution

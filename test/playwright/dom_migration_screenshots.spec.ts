@@ -220,15 +220,13 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await expect(modal).toContainText(/Share Case/i);
     await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({ timeout: 15_000 });
     await expect(modal.locator('#share-case-shareable-list [data-team-id]')).toHaveCount(0);
-    await expect(modal.locator('[data-share-case-core-target="emptyShareable"]')).toBeVisible();
+    // Commit 095a9e1a reserves this hero for users with zero teams at all —
+    // a team that already shares this case still means the user has a team,
+    // so it (and the now-empty share picker) stay hidden here.
+    await expect(modal.locator('[data-share-case-core-target="emptyShareable"]')).toBeHidden();
     await page.setViewportSize({ width: 900, height: 820 });
     await shot(page, 'share-case-modal-no-shareable', 'share-case');
-    const teamsResponse = await page.request.get('/api/teams', { headers: await apiHeaders(page) });
-    const payload = await teamsResponse.json();
-    const teams = Array.isArray(payload.teams) ? payload.teams : [];
-    if (teams.length > 0) {
-      await unshareCaseFromTeam(page, SHARE_CASE_ID, teams[0].id);
-    }
+    await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
   });
 
   test('share-case modal unshare selected', async ({ page }) => {
@@ -304,8 +302,8 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page, SHARE_CASE_ID);
-    await page.locator('judgements').getByText('Judgements', { exact: true }).click();
-    const judgementsModal = page.locator('.modal.show').first();
+    await page.locator('a[data-controller="judgements-core"]').getByText('Judgements', { exact: true }).click();
+    const judgementsModal = page.locator('#judgementsModal.show, .modal.show').first();
     await expect(judgementsModal).toBeVisible();
     const shareCaseLink = judgementsModal.getByText('share case', { exact: true });
     await expect(shareCaseLink).toBeVisible({ timeout: 15_000 });
@@ -336,8 +334,8 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await ensureCaseSharedWithOneTeam(page, SHARE_CASE_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page, SHARE_CASE_ID);
-    await page.locator('judgements').getByText('Judgements', { exact: true }).click();
-    const modal = page.locator('.modal.show').first();
+    await page.locator('a[data-controller="judgements-core"]').getByText('Judgements', { exact: true }).click();
+    const modal = page.locator('#judgementsModal.show, .modal.show').first();
     await expect(modal).toBeVisible();
     await expect(modal.getByLabel('Help').first()).toBeVisible({ timeout: 15_000 });
     await page.setViewportSize({ width: 900, height: 820 });

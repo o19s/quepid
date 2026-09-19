@@ -82,18 +82,55 @@
           <ul class="list-inline">
             <li class="list-inline-item">
               <i class="bi bi-card-list"></i>
-              <a name="button" ng-click="pickCaseScorer()">
+              <a
+                href="#"
+                data-controller="pick-scorer-core"
+                data-action="click->pick-scorer-core#open"
+                data-bs-toggle="modal"
+                data-bs-target="#pickScorerModal"
+                data-pick-scorer-core-id-value="{{ caseModel.selectedCase().caseNo }}"
+                data-pick-scorer-core-current-scorer-id-value="{{ getScorer().scorerId }}"
+                data-pick-scorer-core-current-scorer-name-value="{{ getScorer().name }}"
+              >
                 Select scorer
               </a>
             </li>
             <li class="list-inline-item">
-              <judgements
-                acase="caseModel.selectedCase()"
-              ></judgements>
+              <i
+                class="bi bi-book-half"
+                aria-hidden="true"
+                title="Judgements"
+              ></i>
+              <a
+                href="#"
+                data-controller="judgements-core"
+                data-action="click->judgements-core#open"
+                data-bs-toggle="modal"
+                data-bs-target="#judgementsModal"
+                data-judgements-core-id-value="{{ caseModel.selectedCase().caseNo }}"
+                data-judgements-core-name-value="{{ caseModel.selectedCase().caseName }}"
+                data-judgements-core-scorer-id-value="{{ caseModel.selectedCase().scorerId }}"
+                data-judgements-core-book-id-value="{{ caseModel.selectedCase().bookId }}"
+                data-judgements-core-queries-count-value="{{ caseModel.selectedCase().queriesCount }}"
+                data-judgements-core-auto-populate-book-pairs-value="{{ caseModel.selectedCase().autoPopulateBookPairs }}"
+                data-judgements-core-auto-populate-case-judgements-value="{{ caseModel.selectedCase().autoPopulateCaseJudgements }}"
+              >
+                Judgements
+              </a>
             </li>
             <li class="list-inline-item">
               <i class="bi bi-camera-fill"></i>
-              <a ng-controller="TakeSnapshotCtrl" type="button" ng-click="snapshot.prompt()">
+              <a
+                href="#"
+                data-controller="take-snapshot-core"
+                data-action="click->take-snapshot-core#open"
+                data-bs-toggle="modal"
+                data-bs-target="#takeSnapshotModal"
+                data-take-snapshot-core-id-value="{{ caseModel.selectedCase().caseNo }}"
+                data-take-snapshot-core-field-spec-value="{{ snapshotFieldSpec() }}"
+                data-take-snapshot-core-search-engine-value="{{ snapshotSearchEngine() }}"
+                data-take-snapshot-core-mapper-engine-name-value="{{ snapshotMapperEngineName() }}"
+              >
                 Create snapshot
               </a>
             </li>

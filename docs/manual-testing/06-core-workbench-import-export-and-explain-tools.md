@@ -77,8 +77,10 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
 
 ### 6.6 Judgements link (connect a case to a Book)
 
+Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). Populate Now still needs live search docs from Angular `queriesSvc` (CustomEvent bridge).
+
 - [ ] **Steps:**
-  1. Click the **Judgements** (book) icon in the case toolbar.
+  1. Click **Judgements** in the case toolbar.
   2. If the case isn't yet shared with any team, confirm you're prompted to share it or create a team first.
   3. Pick (or create) a Book from a team the case is shared with.
   4. Toggle **Case → Book: Query/Doc Pairs** sync and use its manual **Populate Now** button.

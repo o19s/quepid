@@ -24,17 +24,17 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 128 files, 123 register `angular.module` |
-| HTML templates (components + `app/assets/templates`) | 40 (23 component + 17 under `app/assets/templates`) |
-| Controllers | 47 (`.controller()` registrations; 24 files under `controllers/`) |
+| Angular JS source files (`app/assets/javascripts`) | 122 files, 117 register `angular.module` |
+| HTML templates (components + `app/assets/templates`) | 36 (21 component + 15 under `app/assets/templates`) |
+| Controllers | 42 (`.controller()` registrations; 21 files under `controllers/`) |
 | Services | 27 (`.service()` registrations; 28 files under `services/` — `quepidModalSvc.js` registers a factory) |
 | Factories | 8 |
 | Filters | 8 under `filters/` (+ 1 directive-local: `plusOrMinus`) |
-| Custom directives / components | 28 (21 `.directive()` + 7 `.component()`) |
+| Custom directives / components | 27 (21 `.directive()` + 6 `.component()`) |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 11 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 7 packages (+ `angular` core from npm) |
-| Karma unit specs (`spec/javascripts/angular`) | 39 |
-| Vitest unit specs (`test/javascript/**/*.test.js`) | 36 |
+| Karma unit specs (`spec/javascripts/angular`) | 37 |
+| Vitest unit specs (`test/javascript/**/*.test.js`) | 42 |
 | Playwright specs | See [Other inventory § Tests](#tests) for the Angular-core and Stimulus spec breakdown |
 
 ---
@@ -43,13 +43,13 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Priority | Item | Notes |
 |----------|------|-------|
-| **P0** | AngularJS 1.8.3 EOL | 140 JS files, 52 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
+| **P0** | AngularJS 1.8.3 EOL | 122 JS files, 36 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
 | **P0** | `queriesSvc` god object (~1,386 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
 | **P0** | `eval()` scorers | Inside `$timeout()`, no sandbox; Web Worker timeout commented out |
 | **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
 | **P1** | `new Function()` mappers | SearchAPI mappers; MiniRacer on server; mapper wizard already Stimulus |
 | **P2** | Digest workarounds | Version counters / sentinels instead of clear data flow |
-| **P2** | Copy-paste debt | e.g. `ctrl.cancel = function () { $quepidModalInstance.dismiss('cancel'); }` repeated ~15x across modal-instance controllers |
+| **P2** | Copy-paste debt | e.g. `ctrl.cancel = function () { $quepidModalInstance.dismiss('cancel'); }` repeated 12x across modal-instance controllers |
 | **Defer** | jQuery pane resize | Narrow scope (`toggleEast`, layout polling) — migrate with case page, not a driver |
 | **Defer** | `bootstrap5-compat.css` | Largely done; tuning shims, not a rewrite gate |
 
@@ -143,10 +143,9 @@ Use when sizing a PR:
 
 ### Suggested PR order (start here)
 
-Actionable incremental wins — do these before touching query/search state:
+Toolbar Stimulus twins and DOM utilities in this list are done. Next is the [live query-state phase](#live-query-state-phase-committed-final-phase):
 
-1. **DOM utilities → Stimulus or BS5 data API** — **Done.** Popover shells/content are now vanilla JS but actual mutations are often untouched.
-3. **Sequence last** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks — not skipped, but gated on the live query-state phase's state plan being signed off before any code starts.
+1. **Sequence last** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks — not skipped, but gated on that phase's state plan being signed off before any code starts.
 
 Prefer **Rails view + route + Hotwire/Stimulus** for management actions over embedding new Stimulus inside the Angular bundle.
 
@@ -198,7 +197,11 @@ Reuse these instead of reimplementing modals/flows:
 | `share-case` / `share-case-core` | Index/teams: `share_case_controller` + `_share_case_modal`. Core toolbar: `share_case_core_controller` + `_share_case_core_modal` via `core_stimulus.js`. **Core deltas vs Angular:** stays open after share/unshare with an inline alert (multi-team work; Angular closed + global flash); "Create a team" goes to `new_team_path` (Angular used `/teams`). Rails index/teams unchanged. |
 | `delete-case-options-core` | Core toolbar only (no Rails-page twin — cases/teams archive/delete already use `confirm-delete`). `delete_case_options_core_controller.js` + `_delete_case_options_core_modal.html.erb` via `core_stimulus.js`; three-way choice (archive / delete case / delete all queries) via `submitDestructiveForm`. |
 | `clone-case-core` | Core toolbar only (no Rails-page twin). `clone_case_core_controller.js` + `_clone_case_core_modal.html.erb` via `core_stimulus.js`. **Delta vs Angular:** stays open with an inline alert on failure (same delta as `share-case-core`). |
-| `export-case-core` | Core toolbar only (no Rails-page twin). `export_case_core_controller.js` + `_export_case_core_modal.html.erb` via `core_stimulus.js`. **Matches Angular:** modal always closes on Export before the download starts (no inline alert, unlike the stay-open pattern above). **Intentional delta vs Angular:** Export stays disabled for the `snapshot` format until a snapshot is actually chosen from its dropdown — Angular let you click Export with nothing chosen, which then failed inside `querySnapshotSvc.get(undefined)` with no user feedback; the new guard prevents that dead-end instead of reproducing it. **Bridge, not final:** the `detailed` format needs live search results still held in Angular `queriesSvc`, so it dispatches a `document` CustomEvent (`export-case:detailed`) that `caseCSVSvc.js` still listens for — resolves when `queriesSvc` migrates (see [Suggested PR order §2](#suggested-pr-order-start-here)). |
+| `export-case-core` | Core toolbar only (no Rails-page twin). `export_case_core_controller.js` + `_export_case_core_modal.html.erb` via `core_stimulus.js`. **Matches Angular:** modal always closes on Export before the download starts (no inline alert, unlike the stay-open pattern above). **Intentional delta vs Angular:** Export stays disabled for the `snapshot` format until a snapshot is actually chosen from its dropdown — Angular let you click Export with nothing chosen, which then failed inside `querySnapshotSvc.get(undefined)` with no user feedback; the new guard prevents that dead-end instead of reproducing it. **Bridge, not final:** the `detailed` format needs live search results still held in Angular `queriesSvc`, so it dispatches a `document` CustomEvent (`export-case:detailed`) that `caseCSVSvc.js` still listens for — resolves when `queriesSvc` migrates (see [live query-state phase](#live-query-state-phase-committed-final-phase)). |
+| `pick-scorer-core` | Core toolbar only. `pick_scorer_core_controller.js` + `_pick_scorer_core_modal.html.erb`. Lists scorers from `api/scorers`, saves via `PUT api/cases/:id/scorers/:id`, then dispatches `pick-scorer:selected` so Angular `scorerSvc`/`queriesSvc` can rescore live queries. |
+| `take-snapshot-core` | Core toolbar only. `take_snapshot_core_controller.js` + `_take_snapshot_core_modal.html.erb`. Collects name/options; dispatches `take-snapshot:create` so Angular `querySnapshotSvc.addSnapshot` can build the live-query payload. |
+| `judgements-core` | Core toolbar only. `judgements_core_controller.js` + `_judgements_core_modal.html.erb`. Book link + sync settings via case/books APIs; `judgements:populate-book` / `judgements:queries-need-reload` / `judgements:book-settings-saved` bridges for live query state. |
+| `rating-popover` | Per-result and score-all rating UI. Shell is Stimulus; `doc.rate()` / `resetRating()` / `scoreAll()` still run in Angular via `rating-popover:rate` / `:reset`. |
 | `share-book`, `share-scorer`, `share-search-endpoint` | Shared modals under `app/views/shared/` |
 | `import-case`, `import-snapshot` | Shared modals |
 | `confirm-delete` | Archive / delete / unarchive (cases, teams, books, search endpoints, members) |
@@ -226,12 +229,12 @@ New Stimulus logic in `app/javascript/api/` or `utils/` needs a `*.test.js` unde
 
 When replacing the case SPA (not just toolbar actions), work in dependency order:
 
-1. Shared primitives — `$quepidModal`, popovers, tooltips, typeahead, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`; finish by dropping remaining Angular directive shells)
+1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper
 2. Shell — drop `ngRoute`; `MainCtrl` bootstrap → Stimulus + fetch
 3. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
 4. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
 5. Query list + results — `queries`, `search-results`, rating UI
-6. Case action modals — share, clone, export, import, judgements, diff, delete, snapshot, pick scorer
+6. Case action modals — import ratings, diff
 7. Wizard — largest template; ACE, CSV, tags, tour
 8. Tune Relevance pane — ACE, json explorer, try management
 9. Header — `HeaderCtrl` dropdowns
@@ -247,14 +250,14 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **wizardModal** | 909 | Onboarding wizard (ACE, CSV, tags, tour) |
 | **queriesCtrl** | 606 | Query list UX (sort, filter, paginate, keyboard) |
 | **settingsSvc** / **caseSvc** | 638 / 510 | Try / case domain model |
-| **$quepidModal** | 275 | BS5 modals + `$compile` — ~22 `.open()` call sites (~40 consumer files) |
+| **$quepidModal** | 275 | BS5 modals + `$compile` — 11 `.open()` call sites (24 files reference `$quepidModal`) |
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **routes.js** + **ngRoute** | — | Entire SPA |
 | **angular core** | — | Remove last |
 
-**Component LOC** (easiest → hardest, after toolbar duplicates — see [Suggested PR order §2](#suggested-pr-order-start-here)): new_case (66) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → move_query (152) → add_query (160) → qgraph (250) → diff (285) → judgements (327) → frog_report (360) → import_ratings (462).
+**Component LOC** (easiest → hardest, after [toolbar duplicates](#core-toolbar-duplicates-highest-leverage)): new_case (66) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → move_query (152) → add_query (160) → qgraph (250) → diff (285) → frog_report (360) → import_ratings (462).
 
-**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `add-query`, `query-options`, `new-case` / wizard, `frog-report`, `judgements`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Moving these implies rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `add-query`, `query-options`, `new-case` / wizard, `frog-report`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Moving these implies rebuilding the case SPA, not a framework swap.
 
 #### App-level (port seams; don't rebuild)
 
@@ -270,7 +273,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 3. **Multi-snapshot diff + scoring** — ≤5 snapshots, snapshot-as-searcher, client `scoreOthers()`, per-position diff, case averages. `diffResultsSvc.js` is ~225 lines but sits on fake-Solr snapshots and rating-driven refetch — line count understates the work.
 
-4. **Angular templates → target syntax** — 52 templates (`ng-repeat`, `ng-if`, `ng-model`, `dir-paginate`, `quepid-sortable`, `ui-ace`, …). Stimulus partials or React JSX depending on chosen stack.
+4. **Angular templates → target syntax** — 36 templates (`ng-repeat`, `ng-if`, `ng-model`, `dir-paginate`, `quepid-sortable`, `ui-ace`, …). Stimulus partials or React JSX depending on chosen stack.
 
 5. **Field spec parsing and display** — `id:id title:name …` — type detection (JSON / URL / text), thumb prefixes, media by extension, snippet `<strong>` wrapping. Domain logic in splainer-search + Quepid display code, not framework glue.
 
@@ -323,6 +326,34 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 **Fix during migration:** Add `aria-label` (or visible text) on the replacement controls. Align with [decision lens § A11y](#decision-lenses) — scores and rating controls need real ARIA, not color-only state.
 
 **Touches:** `searchResults.html`, diff/snapshot Compare UI, [Feature area § Search results](#6-search-results-and-rating-ui).
+
+#### Judgements modal save button never re-enables after book selection
+
+**Observed:** `test/playwright/toolbar_modals_core.spec.ts`'s "judgements modal links a book and saves settings" fails — the Save button stays `disabled` after clicking a real book in the list, so the test's `saveButton.click()` times out. Reproduced consistently across multiple full E2E runs; confirmed pre-existing (fails identically on `HEAD` before any of the judgements/pick-scorer/take-snapshot bug fixes from 2026-09-18).
+
+**Cause:** Not yet root-caused. `judgements_core_controller.js`'s `selectBook()` calls `_refreshSaveVisibility()` (toggles `d-none`, not `disabled`) — worth checking whether `setBusy`/`hasUnsavedChanges()` interaction has the same class of stale-disabled-state bug as the pick-scorer one fixed the same day (`selectScorer()` not recomputing `disabled` after selection changes).
+
+**Fix during migration:** Investigate `judgements_core_controller.js`'s Save-button enable/disable path; add a Vitest regression test once fixed.
+
+**Touches:** `judgements_core_controller.js`, `test/playwright/toolbar_modals_core.spec.ts`.
+
+#### Stale screenshot baselines: 3 `angular_pages.spec.ts` diffs + 1 narrow-viewport diff
+
+**Observed:** Four E2E screenshot tests fail with pixel-diff mismatches, reproduced consistently across multiple full-suite runs on 2026-09-18: `angular_pages.spec.ts` "cases list — header case picker & filters", "scorer config — select scorer modal", "wizard — welcome, name step, accordion"; and `angular_pages_narrow_viewport.spec.ts` "wizard endpoint accordion + cases list reflow". Not caused by that day's judgements/pick-scorer/take-snapshot bug fixes (same failures present before those changes).
+
+**Cause:** Not yet determined — could be genuinely stale baselines (need regenerating + visual sign-off) or a real, currently-unowned visual regression elsewhere on the branch. Needs the same visual-diff review given to the `share_case.spec.ts` baselines fixed 2026-09-18 (extract the old baseline via `git show HEAD:<path>`, compare against the new `-actual.png`, and only regenerate once the new state is visually confirmed correct) before touching the checked-in PNGs.
+
+**Fix during migration:** Pull the `-actual`/`-expected`/`-diff` PNGs from `test/playwright/test-results/runs/` for each, visually compare, and either regenerate the baseline (if the new state is correct) or fix the actual regression.
+
+**Touches:** `test/playwright/angular_pages.spec.ts`, `test/playwright/angular_pages_narrow_viewport.spec.ts`, `test/playwright/baselines/`.
+
+#### `toolbar_modals_core.spec.ts` cleanup doesn't assert delete succeeded
+
+**Observed:** `deleteCaseViaApi` (used by `toolbar_modals_core.spec.ts`'s `test.afterAll`) calls `page.request.delete(...)` without asserting `response.ok()`, unlike `teams.spec.ts`'s `afterAll`, which explicitly asserts this to catch a silently-broken CSRF/session that would otherwise let a leaked row back in with no signal (see that file's comment).
+
+**Fix during migration:** Add the same `expect(response.ok()).toBeTruthy()` assertion (with the same rationale comment) to `deleteCaseViaApi` or its call site.
+
+**Touches:** `test/playwright/toolbar_modals_core.spec.ts`.
 
 
 ---
@@ -426,11 +457,8 @@ Templates: `layouts/_header_core_app.html.erb`, `components/new_case/new_case.ht
 | Per-query score | component | `<qscore-query>` — `components/qscore_query/` |
 | Case rename, nightly/public badges | controller | `CaseCtrl` — `controllers/case.js` |
 | Try rename in header | controller | `CurrSettingsCtrl` — `controllers/currSettings.js` |
-| Select scorer modal | controller + template | `ScorerCtrl`, `templates/views/pick_scorer.html` |
-| Create snapshot | controller + template | `TakeSnapshotCtrl`, `PromptSnapshotCtrl`, `templates/views/snapshotModal.html` |
 | Import ratings | component | `<import-ratings>` — `components/import_ratings/` |
 | Diff against snapshot | component | `<diff>` — `components/diff/` |
-| Judgements / books | component | `<judgements>` — `components/judgements/` |
 | New-case wizard launcher | controller | `WizardCtrl` — `controllers/wizardCtrl.js` |
 
 Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `snapshotSearcherSvc`, `SnapshotFactory`, `importRatingsSvc`, `caseCSVSvc`, `bookSvc`, `teamSvc`, `diffResultsSvc`, `qscoreSvc`
@@ -470,7 +498,6 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Results panel | directive + controller | `<search-results>`, `SearchResultsCtrl` |
 | Single result row | directive + controller | `<search-result>`, `SearchResultCtrl` |
 | Results template | template | `templates/views/searchResults.html`, `searchResult.html` |
-| Rating popover | Stimulus controller | `rating_popover_controller.js` (migrated off Angular; mutation still bridges back via `rating-popover:rate`/`:reset` events) |
 | Rate elements | service | `rateScaleSvc`, `ratingsStoreSvc` |
 | Rating background styling | filter | `ratingBgStyle` |
 | Query notes | controller | `QueryNotesCtrl` |
@@ -482,7 +509,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Diff results view | directive + controller | `<query-diff-results>`, `QueryDiffResultsCtrl`, `templates/views/queryDiffResults.html` |
 | Embed helper | directive | `quepidEmbed` on `searchResult.js` |
 | Hit count display | template | `searchResults.html` (`{{ query.getNumFound() }}`) |
-| Copy query text | service | `clipboardSvc` — `services/clipboardSvc.js` (`ngclipboard` removed) |
+| Copy query text | service | `clipboardSvc` — `services/clipboardSvc.js` |
 
 Backing services/factories: `docCacheSvc`, `DocListFactory`, `annotationsSvc`, `AnnotationFactory`, `searchEndpointSvc`
 
@@ -514,7 +541,7 @@ These Angular-specific wrappers are used across many templates:
 
 ---
 
-## Component inventory (14 folders)
+## Component inventory (13 folders)
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
@@ -524,7 +551,6 @@ These Angular-specific wrappers are used across many templates:
 | `diff` | `<diff>` | Snapshot diff picker |
 | `frog_report` | `<frog-report>` | Zero-results report + Vega |
 | `import_ratings` | `<import-ratings>` | CSV import |
-| `judgements` | `<judgements>` | Link to judgement book |
 | `move_query` | `<move-query>` | Move query to another case |
 | `new_case` | `<new-case>` | Header new-case entry |
 | `qgraph` | `<qgraph>` | Score timeline |
@@ -569,19 +595,19 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 ---
 
-## Templates (40 HTML files)
+## Templates (36 HTML files)
 
 **Shell:** `queriesLayout.html`, `queries.html`, `404.html`, `embed.html`
 
 **Search/results:** `searchResults.html`, `searchResult.html`, `queryDiffResults.html`, `targetedSearchModal.html`
 
-**Case-action modals:** `pick_scorer.html`, `snapshotModal.html`, `searchEndpoint_popup.html`
+**Case-action modals:** `searchEndpoint_popup.html`
 
 **Dev pane:** `_dev_settings.html`, `devQueryParams.html`, `queryParamsDetails.html`, `queryParamsHistory.html`, `customHeaders.html`
 
 **Wizard:** `wizardModal.html`
 
-**Components:** 23 HTML files under `app/assets/javascripts/components/`
+**Components:** 21 HTML files under `app/assets/javascripts/components/`
 
 Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 
@@ -620,7 +646,7 @@ Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (7 packages; see [vendo
 
 ### Tests
 
-- **Karma:** 39 specs in `spec/javascripts/angular/` (incl. `timeAgo`); loads all three Angular bundles + `angular-mocks`
+- **Karma:** 37 specs in `spec/javascripts/angular/` (incl. `timeAgo`); loads all three Angular bundles + `angular-mocks`
 - **Vitest:** incl. `controllers/{share_case,share_case_core}_controller.test.js` and `utils/share_case_teams.js`
 - **Playwright (Angular core):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
 - **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case_smoke.spec.ts` — core toolbar share/unshare; `dom_migration_screenshots.spec.ts` — per-surface before/after shots (`share-case/` core, `share-case-rails/` index)
@@ -647,9 +673,6 @@ $window.location.href = caseTryNavSvc.getQuepidRootUrl() + '/cases'
 
 **Migration targets** (hybrid: shared CSRF + root URL; server-owned endpoint URLs per control):
 
-- [x] Adopt `app/javascript/api/fetch.js` (`apiFetch`, `getCsrfToken`) and minimal `app/javascript/utils/quepid_root.js` (`getQuepidRootUrl` only)
-- [x] Add `quepid_root_url`, `data-quepid-root-url` on `application`, `admin`, and `core` layouts
-- [x] Vitest + ESLint + Prettier for `app/javascript/` (Karma/JSHint remain for Angular until removal)
 - [ ] Remaining Stimulus HTTP consistency — see [todo.md § Stimulus HTTP infra follow-ups](./todo.md#p2--stimulus-http-infra-follow-ups-hybrid-migration) (`bulk_judgement` URLs, `import_snapshot` `apiFetch`, import-case `redirect_url`, …)
 - [ ] Turbo query routes, server-side import page URLs (add `data-*-url-value` per migrated control)
 - [ ] Port additional `build*Url` helpers from `deangularjs-experimental` only when a control cannot use server-rendered URLs
@@ -691,7 +714,6 @@ $window.location.href = caseTryNavSvc.getQuepidRootUrl() + '/cases'
 ### Misc
 
 - [ ] `bootstrap5-compat.css` Angular-only shims
-- [x] Shared `apiFetch` / minimal `quepid_root.js` (see [Angular core HTTP patterns](#angular-core-http-patterns-legacy))
 
 ---
 

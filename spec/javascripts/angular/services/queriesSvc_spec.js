@@ -1160,6 +1160,65 @@ describe('Service: queriesSvc', function () {
     });
   });
 
+  describe('Stimulus bridge listeners', function() {
+    beforeEach(function() {
+      setupQuerySvc(2);
+    });
+
+    it('rescores via scorerSvc on pick-scorer:selected for the current case', function() {
+      mockScorerSvc.setDefault = jasmine.createSpy('setDefault').and.callFake(function() {
+        return $q.when();
+      });
+      spyOn(queriesSvc, 'updateScores');
+
+      document.dispatchEvent(new CustomEvent('pick-scorer:selected', {
+        detail: { caseId: 2, scorer: { scorer_id: 1, code: 'return 1;' } }
+      }));
+      // Regression: this used to reference $rootScope, which doesn't exist
+      // in this closure (the injected root-scope service is bound to the
+      // parameter named $scope) — a ReferenceError thrown here, silently,
+      // meant the scorer was saved but queries never actually rescored.
+      $rootScope.$apply();
+
+      expect(mockScorerSvc.setDefault).toHaveBeenCalled();
+      expect(queriesSvc.updateScores).toHaveBeenCalled();
+    });
+
+    it('re-bootstraps and searches on judgements:queries-need-reload for the current case', function() {
+      spyOn(queriesSvc, 'reset');
+      spyOn(queriesSvc, 'bootstrapQueries').and.callFake(function() {
+        return $q.when();
+      });
+      spyOn(queriesSvc, 'searchAll');
+
+      document.dispatchEvent(new CustomEvent('judgements:queries-need-reload', {
+        detail: { caseId: 2 }
+      }));
+      // Same $rootScope-vs-$scope regression as pick-scorer:selected above —
+      // this listener throwing meant the query list silently went stale
+      // right after a "ratings refreshed" success flash.
+      $rootScope.$apply();
+
+      expect(queriesSvc.reset).toHaveBeenCalled();
+      expect(queriesSvc.bootstrapQueries).toHaveBeenCalledWith(2);
+      expect(queriesSvc.searchAll).toHaveBeenCalled();
+    });
+
+    it('reports a case mismatch instead of hanging when judgements:populate-book is stale', function() {
+      var done = jasmine.createSpy('done');
+
+      document.dispatchEvent(new CustomEvent('judgements:populate-book', {
+        detail: { caseId: 999, bookId: 42, done: done }
+      }));
+
+      // Regression: this branch used to return without ever calling
+      // detail.done, leaving the Stimulus judgements-core modal (which sets
+      // its busy/progress state before dispatching and only clears it in
+      // the done callback) stuck mid-spinner forever.
+      expect(done).toHaveBeenCalledWith('case mismatch');
+    });
+  });
+
   afterEach(function() {
     $httpBackend.verifyNoOutstandingExpectation();
     $httpBackend.verifyNoOutstandingRequest();

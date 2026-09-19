@@ -20,7 +20,15 @@ Quepid's **core case UI** (`/case/:id`) was AngularJS. **Rails pages** (cases in
 
 **Never collapse** unlike surfaces into one template or one interaction model without an explicit product decision and per-surface screenshot proof.
 
-**Canonical docs:** `docs/todo/angularjs_removal_inventory.md` (category playbooks + PR order), `docs/todo/event_bus_inventory.md` (before deleting `$broadcast` emitters), `CLAUDE.md` / `DEVELOPER_GUIDE.md` (Docker, Vitest, Playwright screenshots).
+**Canonical docs (do not restate — follow these, update them if the rule changes):**
+
+| Topic | Doc |
+|-------|-----|
+| Category playbooks / PR order | `docs/todo/angularjs_removal_inventory.md` |
+| `$broadcast` before deleting emitters | `docs/todo/event_bus_inventory.md` |
+| Docker, Vitest, Playwright E2E | `DEVELOPER_GUIDE.md` (primary human); `CLAUDE.md` § Tests for agent shortcuts |
+| Manual scenarios + `tracking.yml` | `docs/manual-testing/README.md` + part files; workflow in `CLAUDE.md` § Manual testing tracker |
+| Playwright MCP screenshots | `CLAUDE.md` § UI changes — screenshots via Playwright MCP |
 
 ## Per-surface equivalence (do not collapse)
 
@@ -74,10 +82,12 @@ Migration progress:
 - [ ] 2. Recover Angular truth + parity table
 - [ ] 3. Karma baseline (before deleting Angular specs)
 - [ ] 4. Implement behind a clear seam
-- [ ] 5. Vitest / E2E contracts
-- [ ] 6. Matched before/after screenshots
+- [ ] 5. Vitest + Playwright E2E + manual-testing docs
+- [ ] 6. Drive manual scenarios via Playwright MCP (+ matched screenshots)
 - [ ] 7. Delete Angular + update inventory
 ```
+
+Vitest + an open-modal screenshot is not done — phases 5–6.
 
 ### 1. Inventory the seam
 
@@ -88,7 +98,7 @@ List before editing:
 - `$broadcast` / `$on` / `$rootScope` events (`docs/todo/event_bus_inventory.md`)
 - Karma specs under `spec/javascripts/angular/`
 - Existing Stimulus twin on Rails pages (if any) — record as **that surface's** baseline, not core's source of truth
-- Playwright coverage (`test/playwright/`, `.playwright-mcp/<topic>/`)
+- Playwright coverage (`test/playwright/`, `.playwright-mcp/<topic>/`) and matching `docs/manual-testing/` scenarios (`bin/manual_test_status --paths-for …`)
 
 ### 2. Recover surface truth (two baselines when both exist)
 
@@ -109,7 +119,7 @@ List before editing:
 ### 3. Karma baseline first
 
 - Run or capture the relevant Karma examples **before** deleting Angular sources.
-- Port contracts to Vitest with comments naming the Karma examples (spec location and commands: CLAUDE.md § Tests → JavaScript).
+- Port contracts to Vitest with comments naming the Karma examples (commands: `CLAUDE.md` § Tests → JavaScript / `DEVELOPER_GUIDE.md` § Vitest).
 - Explicitly document dropped examples (e.g. "modal dismiss is Bootstrap `data-bs-dismiss`").
 - Keep Karma for services still used by remaining Angular (`teamSvc`, `caseSvc` bridges, etc.).
 
@@ -118,23 +128,27 @@ List before editing:
 - **Core:** `core_stimulus.js` + modal/API stay-on-page; UI must match Angular; bridge `caseSvc` with `document` CustomEvents when Angular SPA remains.
 - **Rails pages:** keep form POST + redirect; UI must match prior Rails partial; button JSON on `data-*` attributes as before.
 - **Do not** change Rails page UX to match core unless explicitly requested.
-- Server owns URLs (`data-*-url-value`); `apiFetch` for core JSON mutations.
+- Server owns URLs (`data-*-url-value`); `apiFetch` for core JSON mutations (`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions).
 
-### 5. Tests
+### 5. Vitest + Playwright E2E + manual-testing docs
 
-- Vitest for new/changed Stimulus controllers and `api/` / `utils/` logic.
-- Playwright: migration pairs under `.playwright-mcp/<topic>/` (`*-before` / `*-after`); for durable golden paths update `test/playwright/baselines/` when Angular is gone.
-- Rebuild the bundles you touched and run the app via Docker — commands and the leave-the-dev-server-running rule are in CLAUDE.md § General Configuration / Execution.
+How to run / author each layer lives in the canonical docs above. Migration-specific requirements:
 
-### 6. Screenshots (matched states, per surface)
+- **Vitest** — new/changed Stimulus + utils; include empty states, warnings, config flags (not happy-path only).
+- **Playwright E2E** — update specs still targeting Angular / `$quepidModal`; add or extend a path that does the key action (not open-modal-only) when none exists.
+- **Manual-testing** — apply CLAUDE.md feature-parity rules to this surface: revise/add/remove `NN-*.md` scenarios as needed; point `tracking.yml` `paths` at the new Stimulus controller, ERB modal, and any Angular bridge.
 
-- Core pairs: Angular before vs Stimulus after on `/case/:id`.
-- Rails pairs (if touched): HEAD Rails before vs after on cases index / teams — **not** the same PNGs as core.
-- Same data state **and** interaction on each pair.
+### 6. Drive those scenarios via Playwright MCP
+
+Follow `CLAUDE.md` § Manual testing tracker and § UI changes. Migration-specific:
+
+- Drive every touched or new scenario for this surface (disposable case/clone when mutating). Open-modal-only only if the mutate path is blocked — say so in `notes`.
+- Matched before/after under `.playwright-mcp/<topic>/`. Core pairs ≠ Rails pairs.
+- Update `tracking.yml` for scenarios you actually drove.
 
 ### 7. Delete Angular + inventory
 
-Only when parity table, tests, and matched shots are done:
+Only when parity table, phases 5–6, and inventory notes are done:
 
 - Remove component registration and templates; rebuild Angular bundles.
 - Update `docs/todo/angularjs_removal_inventory.md` with Done notes and any remaining bridges.
@@ -161,7 +175,7 @@ Only when parity table, tests, and matched shots are done:
 
 **Seam:** often a dedicated esbuild entry or large Stimulus controller; poll/Cable for jobs; do not block the case page on full rewrite of `queriesSvc`.
 
-**Tests:** step-by-step Playwright shots (each wizard step / diff mode); Vitest for pure parsers and API helpers.
+**Tests:** phases 5–6; MCP shot per wizard step / diff mode.
 
 ## Live query state
 
@@ -178,7 +192,7 @@ Only when parity table, tests, and matched shots are done:
 
 **Seam ideas:** dual-run (Angular + new) for read-only display first; cut over mutations last; feature flag if available.
 
-**Tests:** Karma query/score contracts → Vitest; Playwright baselines for rating + score badge updates, not only static modals.
+**Tests:** Karma query/score contracts → Vitest; phases 5–6. Playwright baselines for rating + score badge updates, not only static modals.
 
 ## App-level seams (brief)
 
@@ -193,9 +207,14 @@ Port only when a UI migration needs them:
 
 ## Definition of done (PR)
 
+Per-surface checklist — how-to for each item is in the canonical docs table above:
+
 - [ ] Parity table **per affected surface**
-- [ ] Tests for each affected surface's contracts; Karma → Vitest (or justified drops) for core
-- [ ] Matched before/after screenshots per surface (core vs Rails pages not interchangeable)
-- [ ] Other surfaces unchanged, or explicitly listed as migrated in the PR
+- [ ] Vitest contracts; Karma → Vitest (or justified drops) for core
+- [ ] Checked-in Playwright E2E updated/added (not only MCP ad-hoc shots)
+- [ ] Manual-testing prose + `tracking.yml` `paths` updated for feature parity
+- [ ] Affected/new scenarios driven via Playwright MCP; `tracking.yml` `last_run` / `result` / `notes` updated
+- [ ] Matched before/after screenshots per surface (core ≠ Rails)
+- [ ] Other surfaces unchanged, or listed as migrated in the PR
 - [ ] Bridges documented if Angular remains
 - [ ] Inventory updated; Angular removed only when safe

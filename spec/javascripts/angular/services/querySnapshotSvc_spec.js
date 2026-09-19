@@ -508,12 +508,28 @@ describe('Service: querySnapshotSvc', function () {
     });
   });
   
-  describe('Mapping fieldSpec back to /search endpoint expectations', function() {    
+  describe('Mapping fieldSpec back to /search endpoint expectations', function() {
     it('handles various patterns', function() {
       expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id:id title:title body')).toBe('id:id title:title body');
       expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id:_id title:title body')).toBe('id:id title:title body');
       expect(querySnapshotSvc.mapFieldSpecToSolrFormat('title:title id:_id body')).toBe('title:title id:id body');
       expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id title:title body')).toBe('id title:title body');
-    });    
+    });
+  });
+
+  describe('take-snapshot:create bridge', function() {
+    it('reports a case mismatch instead of hanging when stale', function() {
+      var done = jasmine.createSpy('done');
+
+      document.dispatchEvent(new CustomEvent('take-snapshot:create', {
+        detail: { caseId: 999, name: 'stale snapshot', done: done }
+      }));
+
+      // Regression: this branch used to return without ever calling
+      // detail.done, leaving the Stimulus take-snapshot-core modal (which
+      // sets submitting/progress state before dispatching and only clears
+      // it in the done callback) stuck mid-spinner forever.
+      expect(done).toHaveBeenCalledWith('case mismatch');
+    });
   });
 });

@@ -35,8 +35,8 @@ test.describe('snapshots', () => {
     let snapshotId: number | undefined;
 
     try {
-      await page.getByText('Create snapshot', { exact: false }).first().click();
-      const snapshotModal = page.locator('.modal.show').filter({ hasText: /Take a Snapshot/i });
+      await page.locator('a[data-controller="take-snapshot-core"]').click();
+      const snapshotModal = page.locator('#takeSnapshotModal.show');
       await expect(snapshotModal).toBeVisible();
 
       await snapshotModal.locator('#snapshotName').fill(snapshotName);

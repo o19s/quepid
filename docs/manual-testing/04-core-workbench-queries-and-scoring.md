@@ -89,14 +89,16 @@ Before testing individual features, get oriented:
 
 ### 4.8 Select a scorer for the case
 
+Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`); after save it rescored live queries via an Angular bridge until that state is migrated.
+
 - [ ] **Steps:**
-  1. Click the **Select scorer** icon in the case toolbar.
+  1. Click **Select scorer** in the case toolbar.
   2. In "How would you like to score this case?", browse the default/communal scorers and your own custom scorers.
   3. Pick a different scorer, click **Select Scorer**.
-  4. Try the **Create New Scorer** shortcut.
+  4. Try the **Create New Scorer** shortcut (hidden when the deployment is communal-scorers-only).
 - **Expected:** Case score recalculates using the new scorer; the scorer name in the header updates.
 - **Edge cases:**
-  - [ ] Pick a scorer that isn't shared with you (if applicable) — confirm the warning that "you won't have access to it again" if you switch away from it.
+  - [ ] When the case's current scorer is not in your accessible lists, confirm the warning that "you won't have access to it again" if you switch away from it.
 
 ### 4.9 Missing Documents finder
 

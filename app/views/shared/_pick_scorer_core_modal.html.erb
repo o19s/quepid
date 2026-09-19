@@ -1,0 +1,44 @@
+<%# Core case toolbar — pick scorer, API stay-on-page then rescore via Angular
+    bridge (`pick-scorer:selected`). Mirrors AngularJS pick_scorer.html. %>
+<% modal_footer = capture do %>
+  <button type="button" class="btn btn-primary me-auto d-none"
+          data-pick-scorer-core-target="createButton"
+          data-action="click->pick-scorer-core#gotoScorers">
+    <i class="bi bi-plus" style="color: #FFF"></i>
+    Create New Scorer
+  </button>
+  <button type="button" class="btn btn-success"
+          data-pick-scorer-core-target="submitButton"
+          data-action="click->pick-scorer-core#submit">Select Scorer</button>
+<% end %>
+
+<% modal_body = capture do %>
+  <div class="alert d-none" role="alert" data-pick-scorer-core-target="alert"></div>
+  <div class="alert alert-warning d-none" role="alert" data-pick-scorer-core-target="warning">
+    The scorer <span data-pick-scorer-core-target="warningName"></span> used by this case is NOT shared via a team with you, so if you switch away from it you won't have access to it again.
+  </div>
+  <div class="row" style="max-height:300px;overflow-y:auto">
+    <h4>Select from defaults:</h4>
+    <ul class="list-group" data-pick-scorer-core-target="communalList"></ul>
+
+    <div class="mt-3 d-none" data-pick-scorer-core-target="customSection">
+      <h4>Or select from your own custom scorers:</h4>
+    </div>
+    <ul class="list-group" data-pick-scorer-core-target="customList"></ul>
+    <p class="text-muted d-none" data-pick-scorer-core-target="customEmpty">
+      None exist. Use "Create New Scorer" below to make one.
+    </p>
+  </div>
+<% end %>
+
+<%= render "shared/modal_shell", id: "pickScorerModal", title: "How would you like to score this case?",
+                                 modal_class: "pick-scorer-modal",
+                                 data: {
+                                   controller: "pick-scorer-core",
+                                   pick_scorer_core_scorers_url_value: api_scorers_path,
+                                   pick_scorer_core_case_scorer_url_template_value: api_case_scorer_path(case_id: "__CASE_ID__", id: "__SCORER_ID__"),
+                                   pick_scorer_core_communal_scorers_only_value: Rails.application.config.communal_scorers_only
+                                 },
+                                 title_data: { pick_scorer_core_target: "title" },
+                                 footer: modal_footer,
+                                 body: modal_body %>

@@ -21,7 +21,7 @@
 
 - The core case app is built using AngularJS 1.8 but we are in the process of removing our AngularJS dependency.
 - In place of AngularJS we are using vanilla JS and StimulusJS along with various components of Hotwire, our goal is to have a modern Rails stack application.
-- **Angular → Stimulus on core:** per-surface equivalence — core matches Angular; Rails pages keep their prior UX. **Do not collapse surfaces.** Playbook: `angular-case-migration` skill (`.claude/skills/angular-case-migration/SKILL.md`).
+- **Angular → Stimulus on core:** per-surface equivalence — core matches Angular; Rails pages keep their prior UX. **Do not collapse surfaces.** Playbook: `angular-case-migration` skill (`.claude/skills/angular-case-migration/SKILL.md`) — DoD is phases 5–6, not Vitest + a modal screenshot.
 
 
 ## Backend
@@ -69,7 +69,7 @@
     - add a new numbered scenario (with `paths`) for new functionality, 
     - delete/mark obsolete the scenario for removed functionality, 
     - and revise steps/expected-results for changed behavior. 
-    - This applies to Angular→Stimulus migrations too — check whether the migrated surface's existing scenario still describes the right UI (see `angular-case-migration` skill's per-surface equivalence rule).
+    - Angular→Stimulus migrations follow the same rule — see `angular-case-migration` skill phases 5–6.
 
 
 ## Documentation

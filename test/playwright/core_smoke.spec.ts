@@ -70,9 +70,9 @@ test.describe('core layout golden paths', () => {
 
   test('take a snapshot', async ({ page }) => {
     await gotoCase(page);
-    // queriesLayout.html:94 — <a ng-click="snapshot.prompt()">Create snapshot</a>
-    await page.getByText('Create snapshot', { exact: false }).first().click();
-    await expect(page.locator('.modal.show').first()).toBeVisible({ timeout: 5_000 });
+    // queriesLayout.html — Stimulus take-snapshot-core toolbar trigger
+    await page.locator('a[data-controller="take-snapshot-core"]').click();
+    await expect(page.locator('#takeSnapshotModal.show, .modal.show').first()).toBeVisible({ timeout: 5_000 });
     await expect(page).toHaveScreenshot('snapshot-modal.png', {
       mask: dynamicRegions(page),
       maxDiffPixelRatio: 0.065,
