@@ -53,8 +53,14 @@ export default class extends Controller {
     } else {
       this.messageTarget.textContent = message
     }
-    this.element.classList.remove("alert-danger")
-    if (type === "error") this.element.classList.add("alert-danger")
+    this.element.classList.remove("alert-success", "alert-danger", "alert-warning", "alert-info")
+    const alertClass = {
+      success: "alert-success",
+      error: "alert-danger",
+      warn: "alert-warning",
+      info: "alert-info"
+    }[type]
+    if (alertClass) this.element.classList.add(alertClass)
     this.element.classList.add("show", "alert")
 
     if (this.durationValue > 0) {
@@ -64,6 +70,13 @@ export default class extends Controller {
 
   hide() {
     clearTimeout(this.timer)
-    this.element.classList.remove("show", "alert", "alert-danger")
+    this.element.classList.remove(
+      "show",
+      "alert",
+      "alert-success",
+      "alert-danger",
+      "alert-warning",
+      "alert-info"
+    )
   }
 }
