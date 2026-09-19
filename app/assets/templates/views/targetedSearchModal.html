@@ -94,7 +94,7 @@
         <div class="score-all float-start">
           <strong>Score All</strong>
           <div class="ratings">
-            <div class="single-rating" ng-click="ratings.open()" quepid-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
+            <div class="single-rating" data-controller="rating-popover" data-rating-popover-scale-value="{{ (ratings.scale || {}) | json:0 }}">
               <span class="btn" style="background-color: rgb(119, 119, 119);">- <i class="bi bi-caret-down-fill"></i></span>
             </div>
           </div>

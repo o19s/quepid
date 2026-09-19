@@ -3,11 +3,9 @@
 angular.module('QuepidApp')
   .controller('QueryOptionsModalInstanceCtrl', [
     '$quepidModalInstance',
-    'flash',
     'value',
     function (
       $quepidModalInstance,
-      flash,
       value
     ) {
       var ctrl = this;
@@ -18,7 +16,7 @@ angular.module('QuepidApp')
         try {
           JSON.parse(ctrl.value);
         } catch (e) {
-          flash.error = 'Please provide a valid JSON object.';
+          window.quepidDom.flash.show('error', 'Please provide a valid JSON object.');
           return;
         }
 

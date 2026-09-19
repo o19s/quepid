@@ -5,12 +5,10 @@
 angular.module('QuepidApp')
   .controller('FrogReportCtrl', [
     '$quepidModal',
-    'flash',
     'caseSvc',
     'queriesSvc',
     function (
       $quepidModal,
-      flash,
       caseSvc,
       queriesSvc
     ) {
@@ -44,7 +42,7 @@ angular.module('QuepidApp')
                 queriesSvc.searchAll();
               });
 
-            flash.success = 'Ratings refreshed successfully!';
+            window.quepidDom.flash.show('success', 'Ratings refreshed successfully!');
           
           }, function() { }
         );

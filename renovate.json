@@ -50,7 +50,6 @@
       "enabled": false,
       "matchPackageNames": [
         "angular-csv-import",
-        "angular-flash",
         "angular-ui-ace",
         "angular-wizard",
         "ng-json-explorer",

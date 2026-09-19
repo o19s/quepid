@@ -26,6 +26,8 @@ export default defineConfig({
       { find: "utils/bs_tooltip", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_tooltip.js") },
       { find: "utils/bs_popover", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_popover.js") },
       { find: "utils/bs_modal", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_modal.js") },
+      { find: "utils/dynamic_modal", replacement: path.resolve(repoRoot, "app/javascript/utils/dynamic_modal.js") },
+      { find: "utils/json_explorer", replacement: path.resolve(repoRoot, "app/javascript/utils/json_explorer.js") },
       { find: "utils/text_paste", replacement: path.resolve(repoRoot, "app/javascript/utils/text_paste.js") },
       { find: "utils/count_up", replacement: path.resolve(repoRoot, "app/javascript/utils/count_up.js") },
       { find: "utils/share_case_teams", replacement: path.resolve(repoRoot, "app/javascript/utils/share_case_teams.js") },
@@ -33,6 +35,7 @@ export default defineConfig({
       { find: "utils/destructive_form", replacement: path.resolve(repoRoot, "app/javascript/utils/destructive_form.js") },
       { find: "utils/case_csv", replacement: path.resolve(repoRoot, "app/javascript/utils/case_csv.js") },
       { find: "utils/download_file", replacement: path.resolve(repoRoot, "app/javascript/utils/download_file.js") },
+      { find: "utils/flash", replacement: path.resolve(repoRoot, "app/javascript/utils/flash.js") },
       { find: /^controllers\/(.*)$/, replacement: path.resolve(repoRoot, "app/javascript/controllers") + "/$1" }
     ],
   },

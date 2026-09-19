@@ -5,12 +5,10 @@
 angular.module('QuepidApp')
   .controller('AnnotationsCtrl', [
     '$scope',
-    'flash',
     'caseSvc',
     'annotationsSvc',
     function(
       $scope,
-      flash,
       caseSvc,
       annotationsSvc
     ) {
@@ -49,7 +47,7 @@ angular.module('QuepidApp')
 
       function create () {
         if (ctrl.selectedCase.lastScore === undefined){
-          flash.error = 'Can\'t create a new annotation until searches have been run!  Please rerun your searches.';
+          window.quepidDom.flash.show('error', 'Can\'t create a new annotation until searches have been run!  Please rerun your searches.');
           return;
         }
 
@@ -70,9 +68,9 @@ angular.module('QuepidApp')
             // Clear current message
             ctrl.annotationModel = { message: '' };
 
-            flash.success = 'New Annotation created successfully!';
+            window.quepidDom.flash.show('success', 'New Annotation created successfully!');
           }, function() {
-            flash.error = 'Unable to create Annotation.';
+            window.quepidDom.flash.show('error', 'Unable to create Annotation.');
           });
       }
 

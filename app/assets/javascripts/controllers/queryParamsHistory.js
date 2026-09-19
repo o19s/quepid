@@ -3,9 +3,8 @@
 angular.module('QuepidApp')
   .controller('queryParamsHistoryCtrl', [
     '$scope', '$quepidModal',
-    'flash',
     'caseTryNavSvc',
-    function($scope, $quepidModal, flash, caseTryNavSvc) {
+    function($scope, $quepidModal, caseTryNavSvc) {
       var urlsIveSeen = {};
 
       // This method trys to group search end urls into
@@ -56,9 +55,9 @@ angular.module('QuepidApp')
           if (data && data.action === 'clone') {
             $scope.settings.duplicateTry(data.aTry.tryNo)
               .then(function(newTry) {
-                flash.success = 'Try ' + data.aTry.name + ' duplicated successfully as ' + newTry.name + '.';
+                window.quepidDom.flash.show('success', 'Try ' + data.aTry.name + ' duplicated successfully as ' + newTry.name + '.');
               }, function() {
-                flash.error = 'Unable to duplicate try.';
+                window.quepidDom.flash.show('error', 'Unable to duplicate try.');
               });
           }
         });
