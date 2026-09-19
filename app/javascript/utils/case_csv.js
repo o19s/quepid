@@ -28,14 +28,19 @@ export function csvField(value) {
   if (typeof data === "object") {
     data = data === null ? "" : escapeJsonStringForCsv(JSON.stringify(data))
   } else if (typeof data === "string") {
-    data = data.trim().replace(/"/g, '""')
+    data = data.trim()
 
-    if (data.includes(",") || data.includes("\n") || data.includes("\r")) {
-      data = TEXT_DELIMITER + data + TEXT_DELIMITER
-    }
-
+    // Neutralize spreadsheet formulas before adding CSV quoting. Otherwise a
+    // value such as =HYPERLINK("...", "...") starts with a quote after
+    // escaping and bypasses this check.
     if (LEADING_CHARS_NEEDING_ESCAPE.includes(data[0])) {
       data = ` ${data}`
+    }
+
+    data = data.replace(/"/g, '""')
+
+    if (data.includes(",") || data.includes("\n") || data.includes("\r") || data.includes('"')) {
+      data = TEXT_DELIMITER + data + TEXT_DELIMITER
     }
   }
 

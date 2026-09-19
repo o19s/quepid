@@ -20,6 +20,8 @@ class ExportImportCaseFlowTest < ActionDispatch::IntegrationTest
 
     response_json = response.parsed_body
 
+    assert(response_json['queries'].all? { |query| !query.key?('arranged_at') && !query.key?('arranged_next') })
+
     # Modify the book into a NEW book and import.
     response_json['case_name'] = 'New Case'
 

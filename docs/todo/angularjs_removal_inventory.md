@@ -33,7 +33,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | Custom directives / components | 27 (21 `.directive()` + 6 `.component()`) |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 11 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 7 packages (+ `angular` core from npm) |
-| Karma unit specs (`spec/javascripts/angular`) | 37 |
+| Karma unit specs (`spec/javascripts/angular`) | 38 |
 | Vitest unit specs (`test/javascript/**/*.test.js`) | 42 |
 | Playwright specs | See [Other inventory § Tests](#tests) for the Angular-core and Stimulus spec breakdown |
 
@@ -229,7 +229,7 @@ New Stimulus logic in `app/javascript/api/` or `utils/` needs a `*.test.js` unde
 
 When replacing the case SPA (not just toolbar actions), work in dependency order:
 
-1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper
+1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`; finish by dropping remaining Angular directive shells)
 2. Shell — drop `ngRoute`; `MainCtrl` bootstrap → Stimulus + fetch
 3. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
 4. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
@@ -290,16 +290,6 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 **Fix during migration:** Fall back to the newest try when `selectedTry` is null; confirm before try delete.
 
 **Backend still required:** `Api::V1::TriesController#destroy` must recompute `cases.last_try_number` — tracked in [todo.md § P0 backend](./todo.md#deleting-the-latest-try-bricks-the-case-backend).
-
-#### First-run Shepherd tour: `Shepherd is not defined`
-
-**Observed:** After a new user's first wizard Finish, tour never starts; console `ReferenceError: Shepherd is not defined`.
-
-**Cause:** `tour.js` expects global `Shepherd`; `angular_app.js` side-effect-imports tether-shepherd but does not pin `window.Shepherd` (unlike `window.bootstrap`).
-
-**Fix during migration:** Pin `window.Shepherd` (and confirm Tether) in the post-Angular entry bundle, or load Shepherd only from the new wizard/tour Stimulus (or server) flow. See [core_ui_implementation_reference § Shepherd](./core_ui_implementation_reference.md#1-shepherd-post-wizard-tour-tourjs).
-
-**Touches:** wizard finish (`wizardCtrl.js` / `new_case_controller.js`), [Feature area § New-case wizard](#4-new-case-wizard), full removal order step 7 (wizard).
 
 #### Wizard Esc orphans empty cases
 
@@ -469,6 +459,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Results panel | directive + controller | `<search-results>`, `SearchResultsCtrl` |
 | Single result row | directive + controller | `<search-result>`, `SearchResultCtrl` |
 | Results template | template | `templates/views/searchResults.html`, `searchResult.html` |
+| Rating popover | Stimulus controller | `rating_popover_controller.js` (migrated off Angular; mutation still bridges back via `rating-popover:rate`/`:reset` events) |
 | Rate elements | service | `rateScaleSvc`, `ratingsStoreSvc` |
 | Rating background styling | filter | `ratingBgStyle` |
 | Query notes | controller | `QueryNotesCtrl` |
@@ -480,7 +471,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Diff results view | directive + controller | `<query-diff-results>`, `QueryDiffResultsCtrl`, `templates/views/queryDiffResults.html` |
 | Embed helper | directive | `quepidEmbed` on `searchResult.js` |
 | Hit count display | template | `searchResults.html` (`{{ query.getNumFound() }}`) |
-| Copy query text | service | `clipboardSvc` — `services/clipboardSvc.js` |
+| Copy query text | service | `clipboardSvc` — `services/clipboardSvc.js` (`ngclipboard` removed) |
 
 Backing services/factories: `docCacheSvc`, `DocListFactory`, `annotationsSvc`, `AnnotationFactory`, `searchEndpointSvc`
 
@@ -617,7 +608,7 @@ Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (7 packages; see [vendo
 
 ### Tests
 
-- **Karma:** 37 specs in `spec/javascripts/angular/` (incl. `timeAgo`); loads all three Angular bundles + `angular-mocks`
+- **Karma:** 38 specs in `spec/javascripts/angular/` (incl. `timeAgo`); loads all three Angular bundles + `angular-mocks`
 - **Vitest:** incl. `controllers/{share_case,share_case_core}_controller.test.js` and `utils/share_case_teams.js`
 - **Playwright (Angular core):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
 - **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case_smoke.spec.ts` — core toolbar share/unshare; `dom_migration_screenshots.spec.ts` — per-surface before/after shots (`share-case/` core, `share-case-rails/` index)
