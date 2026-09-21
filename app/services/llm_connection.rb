@@ -12,6 +12,12 @@ module LlmConnection
   # failing the judgement.
   RETRY_STATUSES = [ 429, 529 ].freeze
 
+  # Base seconds between retries when Rails.configuration doesn't say otherwise --
+  # which is any context where customize_quepid.rb hasn't run, including a server
+  # still up from before that initializer existed. A missing setting must not turn
+  # every judging call into a 500.
+  DEFAULT_INTERVAL = 2
+
   # faraday-retry's own default method list: safe to repeat a request that
   # changes nothing, whatever went wrong.
   IDEMPOTENT_METHODS = [ :delete, :get, :head, :options, :put ].freeze
@@ -45,6 +51,14 @@ module LlmConnection
   end
 
   def self.options overrides = {}
-    RETRY_OPTIONS.merge(interval: Rails.configuration.llm_retry_interval).merge(overrides)
+    RETRY_OPTIONS.merge(interval: configured_interval).merge(overrides)
+  end
+
+  # @param config [Object] anything answering llm_retry_interval; the parameter
+  #   exists so this is testable without reaching into Rails' configuration.
+  def self.configured_interval config = Rails.configuration
+    return DEFAULT_INTERVAL unless config.respond_to?(:llm_retry_interval)
+
+    config.llm_retry_interval
   end
 end

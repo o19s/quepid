@@ -31,6 +31,12 @@ class LlmConnectionTest < ActiveSupport::TestCase
     Rails.configuration.llm_retry_interval = original
   end
 
+  test 'an unconfigured backoff interval falls back rather than raising' do
+    # e.g. a server still running from before customize_quepid.rb set it.
+    assert_equal LlmConnection::DEFAULT_INTERVAL, LlmConnection.configured_interval(Object.new)
+    assert_equal 5, LlmConnection.configured_interval(Struct.new(:llm_retry_interval).new(5))
+  end
+
   test 'parses a JSON body into a hash' do
     stub_request(:post, "#{url}/v1/chat/completions")
       .to_return(status: 200, body: { ok: true }.to_json, headers: { 'Content-Type' => 'application/json' })
