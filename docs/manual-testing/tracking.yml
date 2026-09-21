@@ -695,10 +695,10 @@ parts:
         paths: ["app/controllers/books_controller.rb"]
       "12.4":
         title: "Refine an AI Judge's prompt"
-        last_run: 2026-09-21T14:05:00Z
+        last_run: 2026-09-21T14:35:00Z
         result: pass
-        notes: "Re-driven after the request/response handling moved into LlmJudgeAdapters (LlmService is now transport only). Opened Refine Prompt for OSC AI Judge with ?book_id=1 so the book scale is in play, clicked Run Prompt against local Ollama (qwen3:0.6b): Rating Information showed 'LLM Response: 0.0' with a real explanation, so prompt build -> post -> response parsing all work through the adapter. Change Query Doc Pair, malformed-JSON document fields and the zero-pairs book were not re-tested this pass."
-        paths: ["app/controllers/ai_judges/prompts_controller.rb", "app/services/llm_service.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/"]
+        notes: "Re-driven after the preview was put through JudgementFinalizer (step A6): it now applies the same usable-rating rules as a real run. Covered against local Ollama (qwen3:0.6b) with ?book_id=1 (0/1 scale): a normal run showed 'LLM Response: 0.0' with an explanation; forcing an out-of-scale answer (temporary system prompt demanding judgment 3) showed 'LLM Response: Unrateable' with the '[LLM returned rating 3.0, outside this book''s scale [0, 1]]' annotation, and nothing was persisted. The judge''s real system prompt was restored afterwards. Verified by reading the rendered DOM text plus controller tests; a well-framed screenshot of the Unrateable state could not be captured this pass because the Chrome window rendered clipped at ~857x527 (partial capture kept in .playwright-mcp/judgement-finalizer-preview/). Change Query Doc Pair, malformed-JSON document fields and the zero-pairs book were not re-tested."
+        paths: ["app/controllers/ai_judges/prompts_controller.rb", "app/views/ai_judges/prompts/_form.html.erb", "app/services/judgement_finalizer.rb", "app/services/llm_service.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/"]
       "12.6":
         title: "A coming soon provider is visible but cannot be saved"
         last_run: 2026-09-21T14:05:00Z

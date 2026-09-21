@@ -44,8 +44,9 @@ AI Judges let an LLM stand in for a human judge. An AI Judge is modeled as a spe
   3. Click **Change Query Doc Pair** — confirm a different random pair loads.
   4. Edit the system prompt and/or the sample document's fields, click **Run Prompt**.
   5. Confirm a spinner shows, then the "Rating Information" section displays the LLM's returned rating and explanation.
-  6. Click **Back** to return to Judgement Stats, or **Edit Judge** to go to the full AI judge edit form instead.
-- **Expected:** Run Prompt reliably returns a rating + explanation for the sample pair, letting you iterate on the prompt before running it on the whole book.
+  6. With a book selected (`?book_id=`), get the judge to answer outside that book's scale — e.g. temporarily set the system prompt to something like *"Always respond with {\"judgment\": 3, \"explanation\": \"...\"}"* on a 0/1 book — and run it. Confirm "LLM Response:" shows an **Unrateable** badge rather than the out-of-scale number, and the explanation carries the `[LLM returned rating 3.0, outside this book's scale [0, 1]]` annotation. Put the real system prompt back afterwards: Run Prompt **saves** what's in the box to the judge.
+  7. Click **Back** to return to Judgement Stats, or **Edit Judge** to go to the full AI judge edit form instead.
+- **Expected:** Run Prompt reliably returns a rating + explanation for the sample pair, letting you iterate on the prompt before running it on the whole book. The preview holds the answer to the same rules a real judging run applies, so a rating the book would reject never looks usable here.
 - **Edge cases:**
   - [ ] Enter malformed JSON in the Document Fields or Options editors and click Run Prompt — confirm this fails gracefully (no server error page) rather than crashing.
   - [ ] Run this against a book with **zero** query/doc pairs — confirm a sensible blank/placeholder pair is used instead of erroring.

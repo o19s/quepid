@@ -40,6 +40,10 @@ module AiJudges
       llm_service = LlmService.new(@ai_judge.llm_key, @ai_judge.judge_options)
       @judgement = Judgement.new(query_doc_pair: @query_doc_pair, user: @ai_judge)
       llm_service.perform_safe_judgement @judgement, book: @book
+      # Hold the preview to the same rules a real judging run applies, so a
+      # rating this book would reject can't look fine while you tune the prompt.
+      # Nothing is persisted here -- the finalizer only marks the in-memory record.
+      JudgementFinalizer.call @judgement, book: @book
 
       render :edit
     end

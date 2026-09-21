@@ -291,7 +291,7 @@ Extract the blank / out-of-scale rules verbatim (including the annotation wordin
 from `RunJudgeJudyJob`.
 *Deployable because* the rules and their wording are unchanged; job tests pass unedited.
 
-**A6 · Preview page applies the same rules** *(the one behaviour change in phase A — its own PR)*
+**A6 · Preview page applies the same rules** *(landed — the one behaviour change in phase A)*
 Wire `AiJudges::PromptsController#update` through `JudgementFinalizer`, so the preview can no
 longer show a rating the real run would reject.
 *Deployable because* it only makes the preview stricter, and the preview writes nothing.

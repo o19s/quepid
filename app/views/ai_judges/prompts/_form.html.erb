@@ -49,7 +49,11 @@
           <h2>Rating Information</h2>
           <div>
             LLM Response:
-            <%= @judgement.rating %>
+            <% if @judgement.unrateable? %>
+              <span class="badge text-bg-warning">Unrateable</span>
+            <% else %>
+              <%= @judgement.rating %>
+            <% end %>
             <br/>
 
             <%= @judgement.explanation %>

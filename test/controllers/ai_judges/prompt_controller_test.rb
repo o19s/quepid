@@ -52,6 +52,50 @@ module AiJudges
         assert_response :success
         assert_includes captured_system_prompt, "This book's rating scale is:"
       end
+
+      test 'a rating this book would reject is shown as unrateable, not as a usable rating' do
+        # the book's scale is 0,1 and the judge answers 3
+        stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+          .with(headers: { 'Authorization' => "Bearer #{OPENAI_VALID_KEY}" })
+          .to_return(status: 200,
+                     body:   { choices: [ { message: { content: '{"judgment": 3, "explanation": "Perfect"}' } } ] }.to_json, headers: {})
+
+        assert_no_difference 'Judgement.count' do
+          patch ai_judge_prompt_url(ai_judge_id: ai_judge.id),
+                params: {
+                  book_id:        book.id,
+                  user:           { system_prompt: ai_judge.system_prompt },
+                  query_doc_pair: { query_text: 'what year was this released?', doc_id: 'goldeneye',
+                                    document_fields: '{}' },
+                }
+        end
+
+        assert_response :success
+        assert_predicate assigns(:judgement), :unrateable
+        assert_nil assigns(:judgement).rating
+        assert_match(/Unrateable/, response.body)
+        assert_match(/outside this book&#39;s scale/, response.body)
+      end
+
+      test 'a rating on the book scale is still shown as the rating' do
+        stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+          .with(headers: { 'Authorization' => "Bearer #{OPENAI_VALID_KEY}" })
+          .to_return(status: 200,
+                     body:   { choices: [ { message: { content: '{"judgment": 1, "explanation": "Relevant"}' } } ] }.to_json, headers: {})
+
+        patch ai_judge_prompt_url(ai_judge_id: ai_judge.id),
+              params: {
+                book_id:        book.id,
+                user:           { system_prompt: ai_judge.system_prompt },
+                query_doc_pair: { query_text: 'what year was this released?', doc_id: 'goldeneye',
+                                  document_fields: '{}' },
+              }
+
+        assert_response :success
+        assert_not assigns(:judgement).unrateable
+        assert_in_delta(1.0, assigns(:judgement).rating)
+        assert_no_match(/Unrateable/, response.body)
+      end
     end
   end
 end
