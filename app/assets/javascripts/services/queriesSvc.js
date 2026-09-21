@@ -1029,12 +1029,13 @@ angular.module('QuepidApp')
             .then(function() {
               that.notes = notes;
               that.informationNeed = informationNeed;
-            }, function(response) {
+            })
+            .catch(function(response) {
+              // Re-reject rather than returning: returning a value from a rejection handler
+              // RESOLVES the promise, which made QueryNotesCtrl run its success path on a failed
+              // save -- flashing "saved", collapsing the panel and discarding the user's edits.
               $log.debug('Failed to save notes: ', response);
-              return response;
-            }).catch(function(response) {
-              $log.debug('Failed to save notes');
-              return response;
+              return $q.reject(response);
             });
         };
 
@@ -1064,12 +1065,12 @@ angular.module('QuepidApp')
               that.options = options;
 
               that.setDirty();
-            }, function(response) {
+            })
+            .catch(function(response) {
+              // Re-reject: returning here would RESOLVE the promise, so QueryOptionsCtrl's
+              // error callback could never run and a failed save still flashed success.
               $log.debug('Failed to save options: ', response);
-              return response;
-            }).catch(function(response) {
-              $log.debug('Failed to save options');
-              return response;
+              return $q.reject(response);
             });
         };
 
@@ -1464,12 +1465,11 @@ angular.module('QuepidApp')
           .then(function() {
             delete that.queries[queryId];
             svcVersion++;
-          }, function(response) {
+          })
+          .catch(function(response) {
+            // Re-reject so a failed delete cannot look like a success to the caller.
             $log.debug('Failed to delete query: ', response);
-            return response;
-          }).catch(function(response) {
-            $log.debug('Failed to delete query');
-            return response;
+            return $q.reject(response);
           });
       };
 
@@ -1482,12 +1482,11 @@ angular.module('QuepidApp')
           .then(function() {
             delete that.queries[query.queryId];
             svcVersion++;
-          }, function(response) {
-            $log.info('failed to move query');
-            return response;
-          }).catch(function(response) {
-            $log.debug('Failed to move query');
-            return response;
+          })
+          .catch(function(response) {
+            // Re-reject: MoveQueryCtrl already has an error callback that could never run.
+            $log.debug('Failed to move query: ', response);
+            return $q.reject(response);
           });
       };
 

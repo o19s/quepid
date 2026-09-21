@@ -10,6 +10,15 @@
   only compiles the page once at bootstrap, so anything Angular-owned inside would lose its
   bindings after the first rename. The live score badges therefore stay outside the frame,
   in core/index.html.erb.
+
+  CONTRACT - anything rendered in here goes stale unless something tells the frame to refetch.
+  Server-rendered markup has no digest watching it, so a control elsewhere on the page that
+  mutates one of these fields (case_name, the try, scorer, nightly, public, archived) must
+  dispatch `quepid:case-header-stale` on `document`; `case-toolbar` listens and refetches the
+  frame. Prefer that generic event over teaching case_toolbar_controller.js about yet another
+  specific one - it already carries two of those (`quepid:case-renamed`, `pick-scorer:selected`)
+  and each was only added after the matching field was found stale in manual testing.
+  If you add a field here, wire its mutation path at the same time.
 %>
 <%= turbo_frame_tag 'case_header' do %>
   <%#
@@ -103,7 +112,7 @@
 
       <small class="fw-normal text-muted">
         &mdash;
-        <%= kase.scorer&.name %>
+        <span data-case-header-scorer><%= kase.scorer&.name %></span>
       </small>
     </h1>
 

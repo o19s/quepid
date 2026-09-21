@@ -8,13 +8,14 @@
     `bin/docker s`
 - Do not stop (you may restart) the dev server unless the user explicitly asks. Leave it running across tasks.
 - When a correction or lesson applies to how you work in this repo, fix it in the actual project file it belongs to (this file, a skill's `SKILL.md`, a doc) — not only in your own private memory, which no other session or person can see or review.
-- Most commands you want to run you can just prefix with `bin/docker r bundle exec` so `rails console --environment=test` becomes `bin/docker r bundle exec rails console --environment=test`
-- Before reviewing a branch against main, run `git fetch origin main` and compare against `origin/main` (for example, `git diff origin/main...HEAD`). Do not use the local `main` branch as the review baseline; it may be stale.
-- Never stage or unstage files on your own initiative (`git add`, `git rm`, `git mv`, `git reset`, `git restore --staged`, etc.) — the user manages the index themselves, and this includes "cleaning up" a staging side effect you just caused yourself (e.g. `git rm` staging a deletion). Use the non-staging equivalent instead (plain `rm`/`mv`). Don't comment on or flag staged/unstaged state either, expected or not — it's the user's own workflow, not something to narrate. Only touch the index when the user explicitly asks for that specific action in that turn, or as the staging step of an explicitly requested `git commit`.
+- **Default to `docker compose exec app`, which runs the command IN the already-running app container.** So `rails console --environment=test` becomes `docker compose exec app rails console --environment=test`.
+- **Use `bin/docker r` only when there is no running container to use** (the stack is down, or you deliberately want a clean one). `r` is `docker compose run --rm`: a NEW throwaway container with its own loopback and its own filesystem, so it silently breaks anything that needs the running dev server or that must persist installed state. Both failure modes look like app bugs rather than wrong-container mistakes:
+    - **Can't reach the app.** In the running container the app is plain `http://localhost:3000`. In an `r` container `localhost` is itself, and the host is only reachable as `host.docker.internal` — which Rails rejects with a 403 "Blocked hosts" page, since its dev allow-list takes any bare IP but only a few names.
+    - **Installs never stick.** `npx playwright install` and friends land in the throwaway container and vanish on exit, so the install appears to "never take" however many times it is rerun.
 - After CSS or vendor JS changes make sure you rebuild:
-    `bin/docker r yarn build`              # full frontend build
-    `bin/docker r yarn build:css`          # core.css / application.css only
-    `bin/docker r yarn build:angular-vendor`  # BS5 + splainer-search bundle
+    `docker compose exec app yarn build`              # full frontend build
+    `docker compose exec app yarn build:css`          # core.css / application.css only
+    `docker compose exec app yarn build:angular-vendor`  # BS5 + splainer-search bundle
 - In general, prefer using a single agent and not spawning sub-agents unless it will make a big difference. Even then, ask before spawning.
 
 
@@ -43,18 +44,18 @@
 
 ### JavaScript
 
-- Run JavaScript unit tests via `bin/docker r yarn test:unit` (Vitest — specs in `test/javascript/`, mirroring `app/javascript/`, not colocated) or `bin/docker r yarn test` (Karma — legacy Angular).
-- Lint modern JS via `bin/docker r yarn lint:js` or `bin/docker r rails test:eslint` (see `docs/js_tooling.md`).
+- Run JavaScript unit tests via `docker compose exec app yarn test:unit` (Vitest — specs in `test/javascript/`, mirroring `app/javascript/`, not colocated) or `docker compose exec app yarn test` (Karma — legacy Angular).
+- Lint modern JS via `docker compose exec app yarn lint:js` or `docker compose exec app rails test:eslint` (see `docs/js_tooling.md`).
 - **Vitest PR policy:** see DEVELOPER_GUIDE.md's "Vitest" section.
 
 ### Rails
-- Run Rails tests via `bin/docker r rails test`.
+- Run Rails tests via `docker compose exec app rails test`.
 
 ### CSS
-- Lint CSS via `bin/docker r yarn lint:css` or `bin/docker r rails test:stylelint` (config: `.stylelintrc.json`).
+- Lint CSS via `docker compose exec app yarn lint:css` or `docker compose exec app rails test:stylelint` (config: `.stylelintrc.json`).
 
 ### E2E (Playwright)
-- Run Playwright E2E tests via `bin/docker r yarn test:e2e` (requires the app already running via `bin/docker s`, and `bin/docker r npx playwright install chromium` once). 
+- Run Playwright E2E tests via `docker compose exec app yarn test:e2e`, with `docker compose exec app npx playwright install chromium` once. Requires the app already running via `bin/docker s`. **`bin/docker r` cannot run these** — E2E needs the live server and the browser install has to persist, which is exactly what a throwaway container breaks.
 - This is a separate, checked-in test suite under `test/playwright/` — not the same thing as the Playwright MCP interactive tool described below. See DEVELOPER_GUIDE.md's "Playwright E2E" section for env vars and full details.
 - **Any spec that creates a row in the shared dev DB (a user, a team, a case) must delete it in a `test.afterAll`** — See DEVELOPER_GUIDE.md's "Playwright E2E" section for the cleanup pattern to copy.
 
@@ -65,7 +66,7 @@
 - Before starting work that touches a tracked path, or when asked to do a manual testing pass: run `bin/manual_test_status` (plain `ruby`, no Docker/Rails boot needed) to see what's due — never run, stale (> `policy.default_max_age_days`, default 90), or whose `paths` changed (committed **or uncommitted**) since `last_run`. Use `--due-only` to filter, `--part 07` to scope to one part, `--paths-for 3.2` to see what a scenario tracks.
 - After changing code, check whether any tracked `paths` match your diff (`bin/manual_test_status` will surface it as "uncommitted changes in ...") and actually drive the affected scenario(s) through Playwright MCP before considering the change done — don't just rely on automated tests for UI-facing changes.
 - Age-expired scenarios (flagged solely because `last_run` is past `default_max_age_days`, with no path change involved) are also yours to act on, not just report: when a session touching this repo notices one via `bin/manual_test_status`, drive it through Playwright MCP and update `tracking.yml` in that same session — don't wait to be asked, and don't leave it sitting as a report for a human to run later.
-- After running a scenario (pass or fail), update its entry in `tracking.yml`: `last_run` (today, UTC), `result` (`pass` / `pass_with_fixes` / `fail` / `blocked`), and a one-line `notes` on what was actually covered and what wasn't (partial coverage is normal — say so rather than implying the whole scenario was exhaustively verified). Only set `last_run` for scenarios you actually exercised; leave others alone (`null` is honest and useful).
+- After running a scenario (pass or fail), update its entry in `tracking.yml`: `last_run` (today, UTC), `result` (`pass` / `pass_with_fixes` / `fail` / `blocked`), and `notes` on what was actually covered and what wasn't (partial coverage is normal — say so rather than implying the whole scenario was exhaustively verified; `tracking.yml`'s own header has the length guidance — brief for a clean pass, as long as it takes to be useful when the pass found and fixed something). Only set `last_run` for scenarios you actually exercised; leave others alone (`null` is honest and useful).
 - If a scenario's source moves or a new one is added, update `paths`/add an entry — the tracker is only as useful as its path mappings.
 - **Feature parity, not just staleness:** the checks above only re-verify scenarios that *already exist*. When a PR adds, removes, or materially changes user-facing functionality, also update the prose itself, in the same PR: 
     - add a new numbered scenario (with `paths`) for new functionality, 
@@ -98,9 +99,9 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 **Modern JS** (`app/javascript/`) — `.prettierrc.json`; full tooling in `docs/js_tooling.md`:
 
 - **Double quotes**, **no semicolons**, **no trailing commas** (`trailingComma: "none"`).
-- Prettier pre-commit is limited to **`api/` and `utils/`** (see `config/javascript_lint_scope.mjs`). Before committing there: `bin/docker r yarn format:js:check` and `bin/docker r yarn lint:js`.
+- Prettier pre-commit is limited to **`api/` and `utils/`** (see `config/javascript_lint_scope.mjs`). Before committing there: `docker compose exec app yarn format:js:check` and `docker compose exec app yarn lint:js`.
 - ESLint covers the wider modern tree (`controllers/`, `modules/`, entry bundles, etc.) but **ignores `*.test.js`** — follow the conventions above manually when you add specs. 
-    - Pre-commit **still runs ESLint** on those paths — run it yourself before finishing: `bin/docker r npx eslint app/javascript/path/to/file.js` or tree-wide `bin/docker r yarn lint:js`.
+    - Pre-commit **still runs ESLint** on those paths — run it yourself before finishing: `docker compose exec app npx eslint app/javascript/path/to/file.js` or tree-wide `docker compose exec app yarn lint:js`.
     - Do **not** run Prettier outside `api/`/`utils/` for now (it would churn older single-quote files); hand-apply modern style to **new** lines you add.
 - **Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style. Do not fall back to legacy Angular habits (`var`, semicolons) on greenfield Stimulus/importmap code.
 - **Importmap bare paths** — `import { apiFetch } from "api/fetch"`, not relative `../api/...`. Add new pins to `vitest.config.js` when tests import them.

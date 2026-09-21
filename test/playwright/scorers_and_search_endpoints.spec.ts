@@ -1,8 +1,48 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { playwrightBaseURL } from './env';
 
 // Regression coverage for scorer and search-endpoint management (Rails CRUD
 // surfaces under ScorersController / SearchEndpointsController). Previously
 // untested by the Playwright suite.
+
+let newScorerId: string | undefined;
+let newEndpointId: string | undefined;
+
+/**
+ * Both records below used to be left behind in the shared dev DB. The scorer was never
+ * deleted at all and the endpoint was only archived, so every run added one of each --
+ * they accumulate into the scorer picker the core "Select scorer" modal renders and into
+ * the endpoint lists other specs assert against. Delete them once this file is done,
+ * however its tests ended.
+ */
+test.afterAll(async ({ browser }) => {
+  if (!newScorerId && !newEndpointId) return;
+
+  const page: Page = await browser.newPage({
+    baseURL: playwrightBaseURL(),
+    storageState: 'test/playwright/.auth/user.json'
+  });
+  try {
+    await page.goto('scorers');
+    const csrf = await page.evaluate(() =>
+      document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
+    );
+    const headers = { Accept: 'application/json', 'X-CSRF-Token': csrf };
+
+    for (const [path, id] of [
+      ['api/scorers', newScorerId],
+      ['api/search_endpoints', newEndpointId]
+    ] as const) {
+      if (!id) continue;
+      const response = await page.request.delete(`${path}/${id}`, { headers });
+      // Assert rather than ignore: a silent failure here (e.g. an empty CSRF token
+      // nulling the session) would let this row leak right back in on the next run.
+      expect(response.ok()).toBeTruthy();
+    }
+  } finally {
+    await page.close();
+  }
+});
 
 test.describe('scorers management', () => {
   test('index lists existing scorers and a new one appears after creation', async ({ page }) => {
@@ -24,6 +64,9 @@ test.describe('scorers management', () => {
     // ScorersController#create redirects to edit_scorer_path with a notice.
     await expect(page).toHaveURL(/\/scorers\/\d+\/edit/);
     await expect(page.locator('#flash')).toContainText('Scorer created.');
+
+    newScorerId = page.url().match(/\/scorers\/(\d+)\/edit/)?.[1];
+    expect(newScorerId).toBeTruthy();
 
     // Pagination/ordering could push the new scorer off page 1 — filter by
     // name via the index's `q` search param to find it deterministically.
@@ -59,6 +102,7 @@ test.describe('search endpoints management', () => {
     const endpointUrl = page.url();
     const endpointId = endpointUrl.match(/\/search_endpoints\/(\d+)$/)?.[1];
     expect(endpointId).toBeTruthy();
+    newEndpointId = endpointId;
 
     // Confirm it shows in the default (non-archived) listing before archiving.
     await page.goto(`search_endpoints?q=${encodeURIComponent(endpointName)}`);

@@ -14,12 +14,17 @@
 #     without seconds+zone silently parses as a String and breaks bin/manual_test_status. Date-only
 #     granularity can't tell "verified this morning" from "edited again this afternoon" on the same
 #     day — exactly the case that causes redundant or missed reruns — so always include the time.
-#     Also set result to pass / pass_with_fixes / fail / blocked, and a one-line note (what you did,
-#     what you found).
+#     Also set result to pass / pass_with_fixes / fail / blocked, and a `notes` entry (what you
+#     did, what you found) — see the length guidance below.
 #   - `notes` describes THE LATEST PASS ONLY, in the form "Covered live: ... Not covered live: ...".
 #     Don't append this pass's narrative to the previous one — git log -p holds the history, and a
-#     note that mixes passes leaves the reader unable to tell which sentence is still true. Keep it
-#     near one or two sentences; bin/manual_test_status never reads notes, a human does.
+#     note that mixes passes leaves the reader unable to tell which sentence is still true.
+#     Length follows what the pass actually found; bin/manual_test_status never reads notes, a
+#     human does, so write for them:
+#       - a clean pass is one or two sentences — what you drove, and what you didn't;
+#       - a pass_with_fixes / fail earns as much room as it takes to say what broke, the cause,
+#         and how the fix was verified. That detail is the whole value of the entry later, and is
+#         why several notes here run long. Don't pad a routine pass to match them.
 #   - Timing gotcha: bin/manual_test_status compares last_run against the COMMIT timestamp of the
 #     files in `paths`, so a last_run stamped before you commit re-flags the scenario as due the
 #     moment the commit lands. Stamp it after committing (amend), or expect it to read as due.
@@ -155,9 +160,9 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
       "3.2":
         title: "Create a new case (setup wizard)"
-        last_run: 2026-09-21T16:05:00Z
-        result: pass_with_fixes
-        notes: "Full wizard driven three times via Playwright MCP (Welcome step shown, Welcome step skipped, and once more against the final code after the fix below) while migrating the case header to a server-rendered Turbo Frame. Name, Endpoint (existing TMDB Solr), Fields, Query ('star wars') and Finish all behaved as before, landing in the workbench with the chosen name and 1 query. FIXED a real pre-existing bug found here: the wizard fired the case-rename PUT *after* settingsSvc.update(), which ends in a full page navigation, so the browser regularly aborted the rename (observed as a status -1 request in a Playwright trace) and the case kept its scratch name. The rename now runs first and is awaited before settings are saved. Disposable cases deleted and the shared completed_case_wizard flag reset afterwards. Did not test invalid-endpoint-URL, HTTPS/HTTP protocol-mismatch messaging, the custom-field confirm() dialog, or the /cases/new direct-URL re-trigger edge case this pass. Prior pass notes: Full wizard re-run via Playwright MCP after today's shared-header/BS5-navbar work (no direct changes to wizard files themselves since the 09-14 pass). New case (6838) auto-created and wizard triggered on showWizard=true; Name step blocked Continue until filled ('Manual Test Wizard Case 20260915'); Endpoint step's 'Use an existing Search Endpoint' path with TMDB Solr — 'ping it' returned 'Quepid can search this! Hit Continue...'; Fields step pre-filled Title Field with 'title' from the endpoint's saved field mappings, Continue enabled immediately (no custom-field confirm() this time since the endpoint already had fields mapped); Query step accepted 'star wars'; Finish landed in the workbench with showWizard stripped from the URL, correct case name and 1 query ('Number of Queries: 1'). Deleted the test case afterward via the toolbar's Delete Case Options modal. Did not test invalid-endpoint-URL, HTTPS/HTTP protocol-mismatch messaging, the custom-field confirm() dialog, or the /cases/new direct-URL re-trigger edge case this pass."
+        last_run: 2026-09-21T18:55:00Z
+        result: pass
+        notes: "Covered live: driven by hand through Playwright MCP earlier today (full wizard: name, endpoint, fields, query, finish), then re-verified against the committed code by the automated wizard_completion.spec.ts run, which matters because case_toolbar_controller.js was rewritten after the hand drive. That spec asserts the finished case's heading matches the name typed into the wizard — the heading being the server-rendered case header — so it exercises the wizard's rename reaching the header over the quepid:case-renamed bridge, plus a screenshot baseline of the completed case. It cleans up after itself (deletes the case and resets completed_case_wizard in nested finallys). Not covered live: wizard error/validation states, the conditional Welcome step, and re-running the wizard against a case that already has data."
         paths: ["app/controllers/core_controller.rb", "app/assets/javascripts/controllers/wizardCtrl.js", "app/assets/javascripts/controllers/wizardModal.js", "app/assets/templates/views/wizardModal.html", "app/javascript/angular_app.js"]
       "3.3":
         title: "Import a case from JSON"
@@ -173,15 +178,15 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "test/javascript/controllers/import_snapshot_controller.test.js"]
       "3.5":
         title: "Archive / unarchive a case from the list"
-        last_run: 2026-09-15T19:04:00Z
+        last_run: 2026-09-21T19:36:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP. Archived a disposable test case ('Manual Test Zero Score Sparkline', id 6820) via the row's Archive icon — confirm modal appeared, confirmed, flash 'Case #Manual Test Zero Score Sparkline archived.', removed from active list. Found it under the Archived checkbox filter, unarchived via the row's icon — separate confirm modal, confirmed, flash 'Case #Manual Test Zero Score Sparkline unarchived.', restored to active list in its original state. No console errors throughout. Ownership-transfer-on-archive and the two-tabs-race edge case not tested."
+        notes: "Covered live: Playwright MCP on a disposable case. Archive icon -> inline confirm reading 'Archive <name>?' -> confirmed; case left the default list and the flash confirmed it. Checked the Archived filter, found it with the green Unarchive icon, confirmed 'Unarchive <name>?' and it returned to the active list. Not covered live: archiving a case held only via team access (and the ownership transfer that implies), or the stale/deleted-case 'Case not found.' path."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
       "3.6":
         title: "Share a case from the list"
-        last_run: 2026-09-15T16:36:00Z
+        last_run: 2026-09-21T19:36:00Z
         result: pass
-        notes: "Full round trip re-verified via Playwright MCP after today's ShareEntityControllerBase/shared-partial extractions. Shared 'Typeahead: Dessert' with OSC from the list-row Share icon — flash 'Typeahead: Dessert shared with OSC.', Teams column updated live to show the 'OSC' link without a page reload. Reopened the modal — OSC correctly moved to 'Already shared with:'; unshared it — flash 'Typeahead: Dessert unshared from OSC.', restored to original state. No console errors."
+        notes: "Covered live: Playwright MCP on a disposable case. Shared with OSC from the row's share icon (flash '<name> shared with OSC.', Teams column updated), reopened the modal to find OSC under 'Already shared with', selected it and unshared (flash '<name> unshared from OSC.', Teams column back to blank). The unshare button is correctly disabled until a shared team is picked. Not covered live: sharing with a team you do not belong to, or a tampered request for a case you cannot access."
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_share_case_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js"]
 
   "04":
@@ -189,21 +194,21 @@ parts:
     scenarios:
       "4.1":
         title: "Rename case / rename try"
-        last_run: 2026-09-21T15:55:00Z
+        last_run: 2026-09-21T18:20:00Z
         result: pass
-        notes: "Re-driven via Playwright MCP on case 6 after the case header moved from the Angular queriesLayout.html template to a server-rendered Rails partial inside a `case_header` Turbo Frame. Double-clicked the case name, renamed to 'Manual 4.1 Renamed Case', clicked Rename — frame re-rendered in place with the new name and no full page navigation. Double-clicked the try name, renamed to 'Manual 4.1 Renamed Try' — displayed as 'Manual 4.1 Renamed Try - Try 31', matching the try-number-appending rule the client TryFactory used. Reloaded: both names persisted. Blank-name guard re-tested this pass: whitespace-only input leaves the Rename button disabled, as ng-disabled did. Also confirmed the rename propagates off-frame — the toolbar modal triggers and the Angular caseSvc model both picked up the new name, so a Share/Clone/Export modal opened afterwards shows it. Case 6 restored to '10s of Queries' / 'Try 31' afterwards. Did not exercise rename from the Tune Relevance drawer's own try-rename control (separate surface, scenario 4.13)."
+        notes: "Covered live: Playwright MCP on case 6, re-driven against the committed code after the modals moved to reading the case name live from the header. Double-clicked the case name and renamed it — the case_header Turbo Frame re-rendered in place with no full-page navigation, and reopening Export / Clone / Delete / Share immediately showed the new name with no reload, which is the whole point of dropping the per-trigger name copies. Double-clicked the try name and renamed it — displayed as 'Manual Retest Try - Try 31', matching the try-number-appending rule the client TryFactory used. Blank-name guard holds on both forms: whitespace-only input leaves Rename disabled and it re-enables as soon as real text is typed. Case 6 restored to '10s of Queries' / 'Try 31' and verified via rails runner. Not covered live: renaming a try from the Tune Relevance drawer's own control (scenario 4.13), or a server-side rename failure."
         paths: ["app/views/core/_case_header.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/controllers/core/case_header_controller.rb", "app/javascript/controllers/case_rename_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/assets/javascripts/controllers/case.js", "app/assets/javascripts/services/caseSvc.js", "app/assets/javascripts/services/settingsSvc.js", "app/models/case.rb", "app/models/try.rb"]
       "4.2":
         title: "Add a query (single)"
-        last_run: 2026-09-15T16:39:00Z
+        last_run: 2026-09-21T19:36:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840 (Solr-backed). Add query button disabled while input empty, enabled once 'cheese' was typed; clicking it added, ran, and scored the query with no errors ('Number of Queries' incremented 1→2). Did not test the static-engine-disabled or search-failure edge cases this pass."
+        notes: "Covered live: Playwright MCP. Added a single query, which was searched and scored and appeared in the list. The submit is an <input type=submit> labelled 'Add query'; it is correctly disabled for both empty and whitespace-only input and re-enables on real text. Not covered live: the static-endpoint 'adding not supported' state, or a forced search/scoring failure."
         paths: ["app/assets/javascripts/directives/", "app/models/query.rb"]
       "4.3":
         title: "Add multiple queries (bulk)"
-        last_run: 2026-09-15T16:39:00Z
+        last_run: 2026-09-21T19:36:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840. Typed 'butter;yogurt' — button label switched from 'Add query' to 'Add queries' as documented; clicking it added and scored both queries ('Number of Queries' went 2→4), no errors. Did not independently confirm a distinct bulk success/failure flash text (the toast likely auto-dismissed before the snapshot) or the single-failed-query-doesn't-block-others edge case this pass."
+        notes: "Covered live: Playwright MCP. Both documented bulk paths work: semicolon-separated input added 2 queries, and a genuine multi-line paste added 2 more (the paste handler normalises the newline to ';' in the single-line input). The submit label switches 'Add query' -> 'Add queries' with more than one. All were searched with real result counts. Not covered live: a bulk submit where one query fails and the rest must still be added."
         paths: ["app/assets/javascripts/components/add_query/"]
       "4.4":
         title: "Move a query to another case"
@@ -213,9 +218,9 @@ parts:
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb"]
       "4.5":
         title: "Set per-query options (Query Options)"
-        last_run: 2026-09-15T16:41:00Z
-        result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840 (no functional changes to this area since the prior pass). Opened Set Options on the 'cheese' query, replaced the default '{}' with '{\"manualTestKey\": \"manualTestValue\"}', clicked Set Options — flash 'Query options saved successfully.' Gotcha reconfirmed: click the visible Ace content div first, then type into the textbox ref (clicking the textbox ref directly times out). Did not re-test the invalid-JSON rejection path this pass."
+        last_run: 2026-09-21T19:55:00Z
+        result: pass_with_fixes
+        notes: "Covered live: Playwright MCP. Invalid JSON flashes 'Please provide a valid JSON object.' and the modal stays open; valid JSON saves, closes and round-trips. FOUND AND FIXED: a failed save flashed 'Query options saved successfully.' -- queriesSvc#saveOptions swallowed the rejection (same $q defect as saveNotes), so QueryOptionsCtrl's already-written error callback could never fire. Now re-rejects and flashes 'Unable to save query options.', verified live with a forced 500. Not covered live: asserting the rescore a save triggers."
         paths: ["app/models/query.rb", "app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js", "app/assets/javascripts/components/query_options/query_options_controller.js"]
       "4.6":
         title: "Rate a document"
@@ -231,33 +236,33 @@ parts:
         paths: ["app/models/score.rb"]
       "4.8":
         title: "Select a scorer for the case"
-        last_run: 2026-09-18T19:30:00Z
-        result: pass
-        notes: "Playwright MCP on disposable case 6842 after Stimulus pick-scorer-core migration. Opened modal, selected nDCG@10, Select Scorer PUT /api/cases/6842/scorers/1 → 200, modal closed. Screenshot .playwright-mcp/pick-scorer/modal-after-select-ndcg.png. Case deleted afterward. Communal-only / inaccessible-scorer warning not exercised this pass."
+        last_run: 2026-09-21T19:36:00Z
+        result: pass_with_fixes
+        notes: "Covered live: Playwright MCP. Modal lists the communal scorers and custom ones; picking one saves and rescores. FOUND AND FIXED a regression from the case-header server-render: the header shows the scorer name, but choosing a scorer only updated the database and Angular, so the header kept showing the old scorer until a full page reload. case_toolbar_controller.js now listens for the existing pick-scorer:selected event and refetches the header frame, the same way it already handles an Angular-originated rename; verified live (nDCG@10 -> AP@10 with no reload) and covered by two new Vitest cases. Not covered live: the Create New Scorer shortcut, or the warning shown when switching away from a scorer you would lose access to."
         paths: ["app/javascript/controllers/pick_scorer_core_controller.js", "app/views/shared/_pick_scorer_core_modal.html.erb", "app/assets/javascripts/services/queriesSvc.js", "app/models/scorer.rb"]
       "4.9":
         title: "Missing Documents finder"
-        last_run: 2026-09-21T13:13:00Z
+        last_run: 2026-09-21T19:36:00Z
         result: pass
-        notes: "Shallow pass via Playwright MCP on SOLR CASE (case 1), query 'star wars', after extracting the rated-docs lookup rules out of queriesSvc into app/javascript/utils/rated_docs.js. Opened Missing Documents and confirmed the modal renders with its query pre-filled (q=*:*) and the 'Reset to All Rated Docs' button present and enabled — that button is gated on trySupportsRatedDocsLookup(), which now delegates to the extracted module. No console errors. Did NOT run a search from the modal, rate anything through it, or exercise the 'Score All' bulk path this pass — the prior pass covers those. The same predicate was verified on both branches elsewhere: 'Show only rated' is enabled on this Solr case and correctly disabled ('Not supported for this search engine yet') on STATIC CASE (case 4)."
+        notes: "Covered live: Playwright MCP. The modal pre-fills the try's query; a Lucene-syntax search (q=text:interpreters) returned 'returned 137 matching documents', the persistent 'Changing ratings will affect the query score.' warning is shown, an unrated result was rated inline (ratings 10 -> 11), and 'Reset to All Rated Docs' returned to the rated view. Not covered live: the no-results message."
         paths: ["app/assets/javascripts/controllers/docFinder.js", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/services/rateScaleSvc.js", "app/assets/templates/views/targetedSearchModal.html", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/utils/rated_docs.js"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
-        last_run: 2026-09-15T16:45:00Z
+        last_run: 2026-09-21T18:09:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840. Opened the drawer via Tune Relevance, landed on the Query tab showing the real stored template (q=#$query##&magicBoost=20); edited magicBoost to 50 and clicked 'Rerun My Searches!' — a new Try (Try 2) was created, all 3 queries re-ran with the new param, and scores updated accordingly. Did not test static-engine empty-state or TLS/protocol-mismatch messaging this pass."
+        notes: "Covered live: Playwright MCP on case 6 after the case-header/toolbar server-render. Tune Relevance opened from the server-rendered toolbar, Query tab showed the real stored template (q=##&magicBoost=31), and the regression the settingsSvc equality guard fixes was reproduced deliberately — typed an unsaved edit into the sandbox, renamed the case in the header, and the unsaved edit survived (previously a rename bumped settingsId and discarded it). Not covered live: running a rerun to create a new try, static-engine empty state, TLS/protocol-mismatch messaging."
         paths: ["app/assets/javascripts/controllers/"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
-        last_run: 2026-09-15T16:46:00Z
+        last_run: 2026-09-21T18:09:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840. After adding ##titleBoost## to the Query tab's template (4.10), switching to Tuning Knobs auto-showed a 'titleBoost:' numeric spinbutton (defaulted to 10, the first numeric token after the placeholder); changed it to 25 and clicked 'Rerun My Searches!' — rerun completed with no errors. Empty-state (no placeholders) messaging not re-tested this pass."
+        notes: "Covered live: Playwright MCP on case 6 — Tuning Knobs tab still renders its help text and empty 'Tuning Knobs' section after CurrSettingsCtrl was deleted and CaseCtrl shrank. Not covered live: adding a ##placeholder## to produce knobs, editing a knob value, or rerunning searches."
         paths: ["app/assets/javascripts/controllers/"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
-        last_run: 2026-09-15T16:47:00Z
+        last_run: 2026-09-21T19:55:00Z
         result: pass_with_fixes
-        notes: "Reconfirmed via Playwright MCP on disposable case 6840 (no code changes to this area since the fix below): typed 500 into Number of Results to Show, clicked Rerun My Searches — flash 'Number of Results to Show must be between 1 and 100.', try count stayed at Try 3 (no new try created from the rejected save), confirming the fix described below still holds. Prior pass's notes: Endpoint Details (read-only name/URL + More link), Displayed Fields, Number of Results, Evaluate Nightly, Escape Queries, and the Search Endpoints picker all rendered correctly. CONFIRMED AND FIXED real bug: typing 500 into Number of Results (max=100) triggered AngularJS's built-in max validator, which sets the bound model to `undefined` while the input still visually showed '500' (no error styling anywhere in the template) — settingsSvc.js then dropped the undefined value from the POST body entirely, so Try#set_defaults (try.rb:247, `number_of_rows = 10 if blank?`) silently substituted 10 with zero user feedback. Root-caused via a code investigation, then fixed: added an explicit range check (1-100) at the top of SettingsCtrl.submit() (app/assets/javascripts/controllers/settings.js) that rejects out-of-range/non-numeric values with a clear flash error ('Number of Results to Show must be between 1 and 100.') and refuses to save, instead of silently defaulting; also added a matching `min=\"1\"` to the template input (devQueryParams.html) alongside the existing `max=\"100\"`. Rebuilt Angular bundles (yarn build:angular-app / build:angular-templates) and re-verified live: typing 500 now shows the error and leaves the try unchanged (no new try created, field still shows '500' so the user can correct it); typing a valid value (50) still saves correctly and round-trips via the API (`number_of_rows: 50` confirmed on the saved try). jshint clean on the modified file. No test coverage existed for SettingsCtrl (spec/javascripts/angular/controllers/settings_spec.js is a placeholder) — did not add new Karma tests given this is legacy AngularJS code being phased out, per the migration effort; scope kept to the minimal fix. Did not toggle Evaluate Nightly or verify a queued background job via Job Manager."
+        notes: "Covered live: Playwright MCP. Settings tab renders Endpoint Details, Displayed Fields, Number of Results, Evaluate Nightly, Escape Queries and Search Endpoints; toggling Evaluate Nightly persists in both directions (confirmed via rails runner), which also proves caseModel.selectedCase() returns the real case rather than the NO_CASE placeholder. FOUND AND FIXED: the header's nightly indicator went stale on toggle, because the header is server-rendered and nothing refetched the frame. caseSvc now dispatches quepid:case-header-stale and case-toolbar refetches; covered by an e2e test that fails without the fix. Not covered live: the 1-100 Number of Results validation (unchanged), or a queued job in Job Manager."
         paths: ["app/assets/javascripts/controllers/settings.js", "app/assets/templates/views/devQueryParams.html", "app/models/try.rb", "app/assets/javascripts/services/settingsSvc.js"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
@@ -279,15 +284,15 @@ parts:
         paths: ["app/models/query.rb"]
       "4.16":
         title: "Query Notes & Information Need"
-        last_run: 2026-09-18T15:29:00Z
-        result: pass
-        notes: "Re-verified via Playwright MCP on case 1 (Solr Case) after migrating the core flash-message system off angular-flash to a Stimulus controller + CustomEvent bridge. Toggled Notes on 'star wars', typed a note, saved — flash 'Success! Your query details have been saved.' rendered correctly via the new path (window.quepidDom.flash.show -> flash:show CustomEvent -> Stimulus flash controller). Did not re-test Information Need persistence, reload round-trip, or forced-failure edge cases this pass — scope was the flash mechanism, not the full scenario."
+        last_run: 2026-09-21T19:55:00Z
+        result: pass_with_fixes
+        notes: "Covered live: Playwright MCP. Information Need and Notes save with 'Success! Your query details have been saved.', the panel auto-collapses, and both survive a reload. FOUND AND FIXED TWO bugs: (1) a failed save flashed SUCCESS, collapsed the panel and discarded the user's edits -- queriesSvc#saveNotes returned from its rejection handler, which resolves the promise in $q, so the controller's error branch never ran; it now re-rejects. (2) the panel is editable before its own GET resolves and the late response overwrote in-progress typing; QueryNotesCtrl now only takes the fetched value if the field is untouched. Both are covered by test/playwright/query_notes.spec.ts, verified to fail without the fixes. Note fetchNotes still swallows its rejection - left alone as a read (stale display, not data loss)."
         paths: ["app/models/query.rb", "app/assets/javascripts/controllers/queryNotes.js", "app/javascript/controllers/flash_controller.js", "app/javascript/utils/flash.js"]
       "4.17":
         title: "Workbench boot & case/try navigation"
-        last_run: 2026-09-20T00:19:00Z
+        last_run: 2026-09-21T18:20:00Z
         result: pass
-        notes: "New scenario, added with the ngRoute removal (shell migration step 2). Verified via Playwright MCP: direct load of /case/1/try/1 booted the workbench with zero console errors; clicking VESPA CASE in the header's Relevancy Cases dropdown did a real full-page navigation (URL changed to /case/5/try/1, fresh page load, no errors) instead of an in-SPA transition; bare /case loaded the fallback case (Typeahead: Dessert, Try 20) instead of the old dead-code 'Not Found' page; an unrouted path (/this-path-does-not-exist) hit Rails' own 404 (dev-mode exception page), not an Angular one. caseTryNavSvc.notFound() was revised after this pass to flash an error and stay on the page instead of navigating anywhere (its callers are generic $http-failure handlers, not routing 404s) -- that revision is covered by caseTryNavSvc_spec.js, not re-driven live here. Also did not separately drive the 'revert to last try' / Settings-tab-save navigation edge case or the zero-cases flash this pass -- covered by Karma specs (caseTryNavSvc_spec.js, settingsSvc_spec.js) instead."
+        notes: "Covered live: Playwright MCP re-driven against the committed server-rendered case shell. Direct load of /case/6/try/31 booted the workbench with the header, toolbar and query list rendered and zero console errors. The header's Relevancy Cases dropdown did a real full-page navigation to /case/1/try/1 (SOLR CASE), not an in-SPA transition, confirming ngRoute is still gone. Bare /case fell through to a real case (E2E Static Fixture, Try 31) rather than a dead 'Not Found' view. Not covered live: an unrouted path's Rails 404, the 'revert to last try' / Settings-save navigation path, or the zero-cases flash — those stay covered by caseTryNavSvc_spec.js and settingsSvc_spec.js."
         paths: ["app/assets/javascripts/routes.js", "app/assets/javascripts/app.js", "app/assets/javascripts/controllers/mainCtrl.js", "app/assets/javascripts/controllers/loading.js", "app/assets/javascripts/controllers/headerCtrl.js", "app/assets/javascripts/controllers/queriesCtrl.js", "app/assets/javascripts/services/caseTryNavSvc.js", "app/assets/javascripts/services/configurationSvc.js", "app/views/layouts/core.html.erb", "app/views/core/index.html.erb", "app/views/core/_case_header.html.erb", "app/views/core/_case_toolbar.html.erb", "app/javascript/core_stimulus.js"]
 
   "05":
@@ -295,15 +300,15 @@ parts:
     scenarios:
       "5.1":
         title: "Try history (History tab)"
-        last_run: 2026-09-14T18:50:17Z
+        last_run: 2026-09-21T18:09:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. History tab lists all tries (4, generated during this session's 4.1/4.10/4.11 testing), color-coded per endpoint URL, each showing its tieBoost value. Clicking an older try (Try 2) switched the whole page (URL, header, settings) live to that try's configuration; navigating back to the newest try (Try 4) round-tripped cleanly with no data loss. Did not specifically re-test the 'changing a setting creates a new try rather than mutating the old one' edge case in isolation this pass (implicitly exercised by 4.10/4.11 each creating a new try)."
+        notes: "Covered live: Playwright MCP on case 6 — History tab lists all 31 tries newest-first with the current try highlighted, after Try.latest changed from a scope to a class method (a scope body ending in .first returned the relation for a case with no tries). Not covered live: switching to an older try, editing a try name from the history list, or a case with zero tries."
         paths: ["app/models/try.rb", "app/controllers/core_controller.rb"]
       "5.2":
         title: "Create a snapshot"
-        last_run: 2026-09-18T19:30:00Z
+        last_run: 2026-09-21T19:36:00Z
         result: pass
-        notes: "Playwright MCP on disposable case 6842 after Stimulus take-snapshot-core migration. Named snapshot, Take Snapshot succeeded (snapshot id 2490 listed via API with nDCG@10 scorer). Screenshot .playwright-mcp/take-snapshot/modal-after-named.png. Case (+ snapshot) deleted afterward. Forced-error / large-case paths not exercised."
+        notes: "Covered live: Playwright MCP on a disposable case. Named a snapshot, took it, and confirmed it is listed in the compare-snapshots picker afterwards. Not covered live: the 'Snapshot Being Created' progress state (the snapshot completed faster than it could be sampled on a 26-query case), the Record Document Fields toggle, or a forced server error."
         paths: ["app/javascript/controllers/take_snapshot_core_controller.js", "app/views/shared/_take_snapshot_core_modal.html.erb", "app/assets/javascripts/services/querySnapshotSvc.js", "app/services/snapshot_generator.rb", "app/models/snapshot.rb"]
       "5.3":
         title: "Compare snapshots (diff)"
@@ -329,57 +334,57 @@ parts:
     scenarios:
       "6.1":
         title: "Export a case"
-        last_run: 2026-09-19T16:50:00Z
-        result: pass_with_fixes
-        notes: "Targeted re-check of the Detailed-export-unsupported edge case only (not a full re-run of all 9 formats, already covered by the 2026-09-17 pass). A branch merge had accidentally dropped the detailedRadio/detailedWarning gating (commit 6b9035d0 on angular-phase-4 incidentally deleted it while doing an unrelated arranged_at cleanup); restored it, then found and fixed a real bug in the restored code: the warning banner used `bg-warning text-warning` (amber-on-amber, rendering as a blank amber block with the text/icon fully invisible — confirmed visually via Playwright screenshot) instead of the app's established `alert alert-warning role=\"alert\"` pattern. Verified via Playwright MCP on case 1: normal single-case view shows Detailed enabled with no warning (screenshot); forced the unsupported-context state via the Stimulus controller (no second trigger point exists yet to reach this natively) and confirmed the radio disables, submit stays disabled, and the warning now renders legibly (screenshot). Did not re-test the other 8 formats/downloads this pass."
+        last_run: 2026-09-21T18:09:00Z
+        result: pass
+        notes: "Covered live: Playwright MCP on case 6 after the modals stopped carrying their own copy of the case name. Modal title read 'Export Case: 10s of Queries', and a Detailed export downloaded as 10s_of_Queries_detailed.csv, confirming the filename path still gets the name from utils/case_header. Renaming the case in the header and reopening the modal showed the new name with no reload. Not covered live: the other 8 formats and the Detailed-unsupported warning state."
         paths: ["app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/assets/javascripts/services/caseCSVSvc.js", "app/controllers/api/v1/export"]
       "6.2":
         title: "Import into a case (ratings / information needs / snapshots)"
-        last_run: 2026-09-17T18:42:46Z
-        result: pass_with_fixes
-        notes: "Covered live: migrated the Ratings and Information Needs help icons to the bs-popover Stimulus controller; hover showed their original text in visible, correctly positioned popovers. Not covered live: file upload/submission and the Snapshots tab."
+        last_run: 2026-09-21T19:36:00Z
+        result: pass
+        notes: "Covered live: Playwright MCP on a disposable case. Modal title carries the case name and all three tabs render. Ratings tab: a mismatched-header CSV produces the 'Headers mismatch!' alert listing the expected 'query,docid,rating'; a valid CSV shows the override warning and imports (both ratings confirmed in the database). Information Needs tab: a valid CSV imported and the value was confirmed on the query. Not covered live: the Snapshots tab, the RRE/LTR formats, the too-many-columns line-number error, and cancelling after upload."
         paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb", "app/services/snapshot_importer.rb", "app/assets/javascripts/components/import_ratings/import_ratings_controller.js", "app/assets/javascripts/components/import_ratings/_modal.html"]
       "6.3":
         title: "Clone a case"
-        last_run: 2026-09-15T16:19:00Z
+        last_run: 2026-09-21T18:09:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after today's full migration off the Angular clone_case component (commit f876f35e: 'Migrate clone-case modal to Stimulus, remove Angular component'). On case 6 (Typeahead: Dairy): Clone button stayed disabled with a blank name; entered a name, checked Include Ratings (Include Queries was on by default), left 'Only include a specific try' at Try 20 — Clone button enabled, submitted, landed in the new case's (#6837) workbench with 'Number of Queries: 1' copied over correctly. Deleted the test clone afterward via the in-case toolbar's new Delete Case Options modal (see 6.4). No console errors. Did not test 'Include the entire try history', unchecking Include Queries, or forced-failure edge cases this pass."
+        notes: "Covered live: Playwright MCP on case 6 after the modals stopped carrying their own copy of the case name. Modal title read 'Clone case: 10s of Queries' with the try selector on Try 31; renaming the case in the header and reopening showed the new name with no reload. Not covered live: actually performing a clone this pass (no disposable case was created)."
         paths: ["app/controllers/api/v1/clone/cases_controller.rb", "app/models/case.rb", "app/views/shared/_clone_case_core_modal.html.erb", "app/javascript/controllers/clone_case_core_controller.js", "app/views/core/_case_toolbar.html.erb"]
       "6.4":
         title: "Delete / Archive / Delete-all-queries (in-case toolbar)"
-        last_run: 2026-09-15T16:19:00Z
+        last_run: 2026-09-21T18:09:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP after today's fuller migration (961d313a 'Wire delete-case-options-core into the case toolbar, remove Angular component'; 18fa8d83 'Migrate delete-case-options modal to Stimulus'; ca1ff16b's getOrCreateBsModal leak fix). Used a disposable clone of case 6 (see 6.3). Modal opened with heading 'Delete Options for Case: ...', 3 option buttons (Delete All Queries / Archive Case / Delete Case) in a group, Delete button correctly disabled until one was picked. Picked Delete Case: warning read \"You're about to delete this case forever! If you think you might want it later, use the Archive function instead.\"; confirming permanently deleted it (flash 'Case #Manual Test Clone 20260915 deleted.'), landed on the Cases list. No console errors. Did not re-exercise the Delete All Queries or Archive Case options this pass (Archive Case's shared confirm-delete/modal-leak plumbing was separately verified today via 3.5's list-level archive flow) or the forced-server-failure edge case."
+        notes: "Covered live: Playwright MCP on case 6 after the modals stopped carrying their own copy of the case name. Modal title read 'Delete Options for Case: 10s of Queries' with all three options and Delete disabled until one is picked; renaming the case in the header and reopening showed the new name with no reload. Not covered live: executing any of Delete All Queries / Archive Case / Delete Case (case 6 is shared seed data)."
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
       "6.5":
         title: "Share a case (in-case toolbar)"
-        last_run: 2026-09-15T19:06:00Z
+        last_run: 2026-09-21T18:09:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP. On case 4 (STATIC CASE, workbench toolbar's Share case icon): opened the modal, shared with 'Manual Test Team Renamed 20260915' — flash 'Case shared with team successfully.', team moved into 'Already shared with:'. Selected it there, clicked 'Unshare from...' — flash 'Case unshared from team successfully.', case returned to its unshared starting state. No console errors. Did not re-test the 'Create a team' shortcut's navigation-without-losing-context edge case this pass."
+        notes: "Covered live: Playwright MCP on case 6 after the modals stopped carrying their own copy of the case name. Modal title read 'Share Case: 10s of Queries' and listed OSC under 'Already shared with:'; renaming the case in the header and reopening showed the new name with no reload. Not covered live: sharing or unsharing (would have mutated shared seed data)."
         paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js", "app/assets/javascripts/services/caseSvc.js"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
-        last_run: 2026-09-19T18:28:00Z
+        last_run: 2026-09-21T18:09:00Z
         result: pass
-        notes: "Playwright MCP on case 6 (10s of Queries, book_id nil going in) after fixing a Save-button-never-re-enables bug in judgements_core_controller.js (selectBook() recomputed d-none but not disabled — see removed 'Judgements modal save button' entry in angularjs_removal_inventory.md). Opened modal: None selected, no Save button visible (no unsaved changes). Selected Book of Ratings: Case Integration section appeared, Save button appeared enabled (not disabled) — clicked, flash 'Settings saved.', modal closed, case now linked to Book of Ratings. Reopened, selected None, Save was enabled again, clicked, flash shown, modal closed — confirmed book_id back to nil via rails runner. Confirms the disabled-state fix works in both directions. Populate Now / Refresh Ratings / Sync Queries not exercised this pass. Screenshots: .playwright-mcp/judgements-core/manual-6.6-{before-select,after-select,after-save}.png."
+        notes: "Covered live: Playwright MCP on case 6 — modal title is plainly 'Judgements' and never shows the case name, confirming the case-name wiring removed from judgements_core_controller.js was genuinely dead rather than a regression. Book list rendered with None selected and Book of Ratings available. Not covered live: selecting a book and saving, Populate Now, Refresh Ratings, Sync Queries."
         paths: ["app/javascript/controllers/judgements_core_controller.js", "app/views/shared/_judgements_core_modal.html.erb", "app/assets/javascripts/services/queriesSvc.js", "app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
-        last_run: 2026-09-18T17:41:00Z
+        last_run: 2026-09-21T19:36:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on case 5 ('employer' query) after migrating the modal from Angular ($quepidModal) to a Stimulus controller + the vanilla json_explorer/dynamic_modal utils (query_explain component's Angular controller now only serializes sync data and bridges the live searcher.renderTemplate() call via a CustomEvent). Params tab showed real Solr params (q, qf, fl, etc.); Parsing tab showed parsedquery/querystring/rawquerystring; Query Template tab correctly showed 'This is not a templated query.' for this Solr case (no bridge event fired, since Solr's searcher has no isTemplateCall) — ES/OS template rendering itself wasn't exercised live this pass, only its 'not templated' and error-path branches (Vitest-covered). Copy button correctly followed the active tab. No console errors."
+        notes: "Covered live: Playwright MCP. All three tabs return engine-appropriate content: Params shows the processed parameters, Parsing shows the parsed query (QParser: LuceneQParser), and Query Template correctly reports 'This is not a templated query.' for an untemplated query. Copy control present. Not covered live: pasting a copied tab elsewhere to confirm clipboard content, and the populated-template rendering for a templated query."
         paths: ["app/assets/javascripts/components/query_explain/", "app/javascript/controllers/query_explain_controller.js"]
       "6.8":
         title: "Explain a single document (Debug Explain)"
-        last_run: 2026-09-18T17:41:00Z
+        last_run: 2026-09-21T19:36:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on case 5 ('employer' query) as a regression spot-check after reusing dynamic_modal.js/json_explorer.js for the query-explain and detailed-doc migrations (both now bridged into the Angular bundle via window.quepidDom, which needed an esbuild --alias fix — see 6.11's notes). Matches popover opened, Debug opened the JSON explain tree correctly. No console errors."
+        notes: "Covered live: Playwright MCP. Clicking a match bar in the score-breakdown widget opens 'Debug Explain for <doc title> (id:<doc id>)' with the raw explain rendered as a JSON tree (51 nodes). Note this surface is now the Stimulus match_explain controller rather than the old Angular debug_matches component. Not covered live: expanding/collapsing individual tree nodes."
         paths: ["app/javascript/controllers/match_explain_controller.js", "app/javascript/utils/json_explorer.js", "app/javascript/utils/dynamic_modal.js", "app/assets/javascripts/controllers/searchResult.js", "app/assets/templates/views/searchResult.html"]
       "6.11":
         title: "View a document's details (Detailed Document View)"
-        last_run: 2026-09-18T17:41:00Z
+        last_run: 2026-09-21T19:36:00Z
         result: pass
-        notes: "New scenario — this modal (doc title click) previously had no tracked entry. Migrated this pass from Angular ($quepidModal + DetailedDocCtrl + the vendored ng-json-explorer directive, which is now fully removed from the app) to a one-off Stimulus/vanilla modal built in searchResult.js via window.quepidDom.modal.open, reusing the same json_explorer.js tree used elsewhere. Verified via Playwright MCP on case 5: clicking a result's title opened 'Detailed Document View of doc: {id}', showed the structure/text sub-fields, View All Fields toggled a formatted JSON block of the full raw doc (replacing the deleted ui-ace readonly editor with a plain <pre>), and View Document / Close worked. Deliberate security-motivated behavior change: sub-field text is now HTML-escaped instead of ng-bind-html'd (Angular's ngSanitize doesn't exist in the vanilla path, and doc field values can contain arbitrary indexed content) — confirmed live that a field containing literal <section> tags now renders as visible escaped text rather than being interpreted as markup (this also happened to be the pre-existing behavior in practice, since the Angular template's isObjectOrArray() was never in scope for the modal's own controller and always evaluated falsy). Did not exercise a doc with an object/array sub-field (none in this dataset) — that path is covered by json_explorer.js's existing Vitest suite instead."
+        notes: "Covered live: Playwright MCP. Clicking a result title opens 'Detailed Document View of doc: <id>' listing the document's sub-fields; 'View All Fields' reveals the full raw document and toggles to 'Hide All Fields'. Not covered live: following 'View Document' out to the search engine, and the disabled state for a doc with no resolvable URL."
         paths: ["app/assets/javascripts/controllers/searchResult.js", "app/assets/templates/views/searchResult.html", "app/javascript/utils/dynamic_modal.js", "app/javascript/utils/json_explorer.js", "app/javascript/quepid_dom.js"]
       "6.9":
         title: "Frog Report"
@@ -615,9 +620,9 @@ parts:
         paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb"]
       "10.8":
         title: "Import additional data into an existing book"
-        last_run: 2026-09-15T17:08:00Z
-        result: fail
-        notes: "CONFIRMED BUG via Playwright MCP + code reading, pre-existing (not introduced by this branch — app/controllers/books/import_controller.rb and app/views/books/import/edit.html.erb last touched by an unrelated cosmetic header-partial commit today; core logic unchanged since cf0673cf). The 'Import Data Into This Book' page at /books/:id/import/edit (edit_books_import route) displays the target book's context, but BOTH of its file-upload forms (Import Query Doc Pairs, Import Judgements) are `form_with model: @book, url: books_import_index_path` — i.e. they POST to the generic /books/import endpoint (Books::Import#create), which unconditionally does `@book = Book.new; @book.owner = current_user` with no reference to params[:id]. So a user who uploads a file through this page's buttons does NOT import into the book they're viewing — the code path creates a disconnected new book instead (or fails validation, in which case nothing happens, no orphan book is created, per rails runner check). Reproduced: uploaded a valid query_doc_pairs-only JSON on /books/49/import/edit; no new book was created (Book.save presumably failed on a missing required field for the generic new-book path) and the response ended in an unstyled 404 at GET /books/import rather than a friendly re-rendered error — did not fully root-cause the 404 itself, but the endpoint-mismatch is confirmed directly from the view/controller/route source, independent of that symptom. The book-scoped API routes referenced in the page's own help text (POST /books/:book_id/query_doc_pairs, POST /books/:book_id/judgements) DO exist and DO operate on the correct book — this is very likely how the 2026-09-10 pass below actually verified this scenario (via direct API calls, matching the doc text), not via the page's own upload buttons, which is why the bug went undetected until this pass drove the actual UI. Not fixed given the scope of this test sweep; flagging for a decision on priority. Prior (API-level) pass's notes, still accurate for the API itself: a query_doc_pairs payload whose new pair carried two user_email-less judgements landed both as separate anonymous rows; an all_judgements payload with a nested query_doc_pair upserted one pair carrying both the email-attributed and the anonymous judgement, confirming query_doc_pair_id still resolves for lookup while being blocked from assignment. Book-level keys (name, scale, show_rank, support_implicit_judgements) in an update payload were ignored, leaving the book's settings unchanged."
+        last_run: 2026-09-21T19:36:00Z
+        result: pass
+        notes: "Covered live: Playwright MCP on a disposable book. Uploaded a query_doc_pairs JSON (2 new query_text/doc_id pairs upserted) and separately an all_judgements JSON, each flashing 'Data was successfully queued for import.'; both verified in the database after the background job ran. The anonymous-judgement edge case holds: the judgement carrying an email was attributed to that user, the one without stayed unattributed. Not covered live: referencing existing query_doc_pair_ids by id, and the JSON-validity/missing-file errors."
         paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb", "app/views/books/import/edit.html.erb", "config/routes.rb"]
       "10.9":
         title: "Export a book"
@@ -637,9 +642,9 @@ parts:
         paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb"]
       "11.2":
         title: "Keyboard-shortcut rating"
-        last_run: 2026-09-15T17:11:00Z
+        last_run: 2026-09-21T19:36:00Z
         result: pass
-        notes: "Partial re-check via Playwright MCP: confirmed the A/S keyboard-hint letters render under Irrelevant/Relevant. A single Playwright key press() (instant keydown+keyup) did not visibly trigger the ~500ms-hold auto-submit behavior — consistent with the documented hold requirement rather than a bug, but this pass could not simulate a true sustained hold to confirm the auto-submit path itself, or the must-not-fire-in-a-textarea/modal guard. Rating via direct button click (11.1) worked correctly."
+        notes: "Covered live: Playwright MCP on a disposable book with a 0-3 scale. A, S and D each preselect the matching rating button (btn-preselected class and bold weight) and auto-submit after the hold, advancing to the next pair. The focus guard holds: typing 'fads' (four mapped keys) into the Explanation textarea inserted the literal text with no preselect and no submit. Not covered live: the full key set through ';', and the guard while the 'I Can't Tell' modal is open."
         paths: ["app/assets/", "app/javascript/controllers/"]
       "11.3":
         title: "I will Judge Later"
@@ -805,9 +810,9 @@ parts:
         paths: ["app/controllers/admin/websocket_tester_controller.rb"]
       "14.11":
         title: "Mounted engines (Job Manager, SQL Analytics)"
-        last_run: 2026-09-15T18:44:00Z
+        last_run: 2026-09-21T19:36:00Z
         result: pass
-        notes: "Tested via Playwright MCP as admin: /admin/jobs (Mission Control::Jobs) loaded correctly ('Mission control - Queues'); /admin/blazer (Blazer SQL Analytics) loaded correctly. No console errors on either. Did not separately re-verify non-admin gating on these two specific mount points this pass (general /admin gating reconfirmed in 14.1). Also fixed a malformed duplicate-key entry found in this file for '14.11' this pass — the previous version repeated title/result/notes/paths twice within the same mapping, so only the second, unset copy actually took effect in YAML."
+        notes: "Covered live: Playwright MCP as an admin. Job Manager (MissionControl::Jobs) loads at admin/jobs showing queue state, and SQL Analytics (Blazer) loads at admin/blazer with its query list. Worth noting the dev environment currently has 101 failed jobs, all TrackBookViewedJob with ActiveJob::DeserializationError. Not covered live: the non-admin access denial, which needs a second, non-admin session."
         paths: ["config/routes.rb"]
 
   "15":
@@ -827,9 +832,9 @@ parts:
         paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_page_header.html.erb", "app/views/shared/_account_dropdown.html.erb"]
       "15.3":
         title: "External links (User Manual, Wiki, API Docs)"
-        last_run: 2026-09-15T18:47:00Z
+        last_run: 2026-09-21T19:36:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: User Manual (https://quepid-docs.dev.o19s.com/2/quepid) and Wiki (https://github.com/o19s/quepid/wiki) links present with correct hrefs in the top navbar across many pages visited this pass."
+        notes: "Covered live: Playwright MCP. User Manual and Wiki both carry target=_blank and point at the external docs site and the GitHub wiki. API Docs from the avatar dropdown loads the oas_rails page, which renders and lists the documented endpoints (Books with List/Create/View/Update/Delete, Books > Import/Export, Books > Judgements, and so on). Not covered live: executing a try-it-out request from the API docs page."
         paths: ["config/routes.rb"]
       "15.4":
         title: "Avatar dropdown & admin shortcuts"
@@ -855,9 +860,9 @@ parts:
     scenarios:
       "16.1":
         title: "Popover & tooltip paint check (BS3↔BS5 trap)"
-        last_run: 2026-09-17T18:42:46Z
-        result: pass_with_fixes
-        notes: "Covered live: migrated Import, Judgements, and disabled-sort help icons rendered their original copy in visible BS5 popovers; screenshot review found no invisible/tiny/opaque paint failure. Not covered live: a narrow-viewport RFS check or a tooltip."
+        last_run: 2026-09-21T19:36:00Z
+        result: pass
+        notes: "Covered live: Playwright MCP, computed styles read from the live elements. Rating-badge popover at the default viewport: display block, opacity 1, transform a pure translation with no scale(0), font-size 14px against a 14px root (proportionate, not collapsed to a legacy fixed px) - and visible on the FIRST click. Re-checked at the 768x900 narrow viewport with the same result, so RFS scaling does not break it. A BS5 tooltip was also checked: display block, opacity 0.9 (Bootstrap's default, not stuck at 0), visible."
         paths: ["app/javascript/controllers/bs_popover_controller.js", "app/javascript/controllers/bs_tooltip_controller.js", "app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/directives/quepidTooltip.js", "app/assets/stylesheets/bootstrap5-compat.css", "app/assets/javascripts/directives/bsStaticPopover.js"]
       "16.2":
         title: "Narrow viewport reflow sweep"
@@ -873,9 +878,9 @@ parts:
         paths: ["app/assets/stylesheets/bootstrap5-compat.css"]
       "16.4":
         title: "Modal accessibility spot-check"
-        last_run: 2026-09-18T17:12:00Z
+        last_run: 2026-09-21T19:36:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on case 1: opened the new Expand modal (match-explain's utils/dynamic_modal.js — a from-scratch vanilla BS5 modal, not the Angular $quepidModal shim used elsewhere) from a search result row's Matches popover, pressed Escape — confirmed the modal element was removed from the DOM, document.body no longer had modal-open, and no .modal-backdrop was left behind. Did not re-test Tab-trap this pass, and did not exercise the nested-modal case (opening this modal from a doc row inside the Missing Documents or Compare Snapshots modal)."
+        notes: "Covered live: Playwright MCP, keyboard half on two modals with different markup - Explain Query and Compare Snapshots. In both, focus stayed inside the modal on Tab rather than escaping to background content, and Escape closed the modal. The axe scan half is covered by the automated modal_a11y.spec.ts, which passes. Not covered live: an interactive axe run over a modal the automated spec does not cover."
         paths: ["app/assets/javascripts/"]
       "16.5":
         title: "General visual sanity sweep after any CSS/JS change"

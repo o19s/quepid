@@ -28,13 +28,38 @@ export default class extends Controller {
   connect() {
     this.onFrameRender = this.handleFrameRender.bind(this)
     this.onAngularRename = this.handleAngularRename.bind(this)
+    this.onScorerSelected = this.handleScorerSelected.bind(this)
+    this.onHeaderStale = this.handleHeaderStale.bind(this)
     document.addEventListener("turbo:frame-render", this.onFrameRender)
     document.addEventListener("quepid:case-renamed", this.onAngularRename)
+    document.addEventListener("pick-scorer:selected", this.onScorerSelected)
+    document.addEventListener("quepid:case-header-stale", this.onHeaderStale)
   }
 
   disconnect() {
     document.removeEventListener("turbo:frame-render", this.onFrameRender)
     document.removeEventListener("quepid:case-renamed", this.onAngularRename)
+    document.removeEventListener("pick-scorer:selected", this.onScorerSelected)
+    document.removeEventListener("quepid:case-header-stale", this.onHeaderStale)
+  }
+
+  /**
+   * The general "something the header renders has changed" signal, for any surface that mutates
+   * case state the server renders (nightly, public, archived...). Prefer dispatching this over
+   * adding another bespoke listener here - see the contract in core/_case_header.html.erb.
+   */
+  handleHeaderStale() {
+    this.refetchHeader()
+  }
+
+  /**
+   * The header renders the case's scorer name, so a scorer chosen in the pick-scorer modal has to
+   * reach it. Nothing else would: the modal saves over the API and bridges to Angular for the
+   * rescore, which used to be enough when the header was an Angular template reading the same
+   * model, but the header is server-rendered now.
+   */
+  handleScorerSelected() {
+    this.refetchHeader()
   }
 
   handleFrameRender(event) {
@@ -66,6 +91,11 @@ export default class extends Controller {
 
     if (caseName !== undefined) this.applyHeaderName(caseName)
 
+    this.refetchHeader()
+  }
+
+  /** Re-fetches the header frame from the server so it picks up whatever changed. */
+  refetchHeader() {
     if (!this.hasHeaderUrlValue || !this.headerUrlValue) return
 
     const frame = document.getElementById(HEADER_FRAME_ID)

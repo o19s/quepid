@@ -140,17 +140,15 @@ Use when sizing a PR:
 - **Replacement ready?** — Stimulus / vanilla pattern already on Rails pages? (**Ready ≠ identical UX** — still port Angular.)
 - **Infrastructure** — Safe to remove only after dependents are gone?
 
-### Suggested PR order (start here)
+### Remaining PR order
 
-Toolbar Stimulus twins and DOM utilities in this list are done. Next is the [live query-state phase](#live-query-state-phase-committed-final-phase):
-
-1. **Sequence last** `queriesCtrl` / `queriesSvc` / `searchResults` and scoring/diff/import stacks — not skipped, but gated on that phase's state plan being signed off before any code starts.
+Everything left routes through the [live query-state phase](#live-query-state-phase-committed-final-phase): `queriesCtrl` / `queriesSvc` / `searchResults` and the scoring/diff/import stacks — not skipped, but gated on that phase's state plan being signed off before any code starts.
 
 Prefer **Rails view + route + Hotwire/Stimulus** for management actions over embedding new Stimulus inside the Angular bundle.
 
 ### Live query-state phase (committed, final)
 
-Keep the existing Rails backend and API — this phase replaces the Angular case-workspace **frontend** only, not the domain model or API. The incremental PR order above ships first; this phase starts once that's done and the [decision lenses](#decision-lenses) above are answered.
+Keep the existing Rails backend and API — this phase replaces the Angular case-workspace **frontend** only, not the domain model or API. It starts once the [decision lenses](#decision-lenses) above are answered and its state plan is signed off.
 
 Hotwire already covers most non-case pages (teams, books, scorers, admin). The case workspace is one route but **most of the product value**, which is why it's sequenced last.
 
@@ -179,13 +177,9 @@ Hotwire already covers most non-case pages (teams, books, scorers, admin). The c
 
 **Not in scope for a UI rewrite:** domain model redesign, OpenAPI-from-scratch, moving live search or live scoring server-side.
 
-### Core toolbar duplicates (highest leverage)
+### Core toolbar
 
-The toolbar is server-rendered from `@case`/`@try` now (`app/views/core/_case_toolbar.html.erb`, which replaced the `#case-actions` block of the deleted `queriesLayout.html`); what is listed here is what is still Angular *inside* it.
-
-| Angular on core | Stimulus / Rails already on cases index & teams |
-|-----------------|-------------------------------------------------|
-| `<diff>`, `<import-ratings>` | Defer (heavy case state) |
+The toolbar is server-rendered from `@case`/`@try` (`app/views/core/_case_toolbar.html.erb`). Still Angular *inside* it: `<diff>` and `<import-ratings>` — both deferred with the rest of the heavy case state.
 
 **The toolbar keeps `ng-if="caseModel.caseLoaded()"`, and it is load-bearing.** Its attributes no longer need Angular, but several of its actions do: "Create snapshot" clicked before `queriesSvc` has bootstrapped posts an empty snapshot that never resolves, leaving the modal stuck on "Snapshot Being Created". Server-rendering made the toolbar clickable from first paint, roughly 1.5s earlier than Angular exposed it, which is long enough to hit. Drop the gate only when `<diff>`, `<import-ratings>` and the snapshot/export flows no longer depend on live query state.
 
@@ -233,11 +227,9 @@ New Stimulus logic in `app/javascript/api/` or `utils/` needs a `*.test.js` unde
 
 When replacing the case SPA (not just toolbar actions), work in dependency order:
 
-Shell (`ngRoute`/`404Ctrl` removal, `MainCtrl` bootstrap off `$routeParams`) is done — `MainCtrl` stays Angular-authored (it still calls `caseSvc`/`settingsSvc`/`queriesSvc`, next up below) but is no longer route-triggered; see [Application shell](#1-application-shell).
+`MainCtrl` stays Angular-authored — it still calls `caseSvc`/`settingsSvc`/`queriesSvc` (next up below) — but is no longer route-triggered; see [Application shell](#1-application-shell). `CaseCtrl` is reduced to what the still-Angular drawer and `<import-ratings>` need.
 
-**Case header and toolbar are done.** `views/queriesLayout.html` is deleted and the layout is ERB; the header is a server-rendered Turbo Frame and the toolbar's modal-trigger attributes come from `@case`/`@try` instead of Angular interpolation. `CurrSettingsCtrl` is gone; `CaseCtrl` is reduced to what the still-Angular drawer and `<import-ratings>` need.
-
-**Turbo is now loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
+**Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
 1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). **Not separable (checked 2026-09-19):** every remaining call site of all three lives inside a component already on the defer list (`$quepidModal`: `browse_query`, `query_options`, `new_case`, `annotation`, `diff`, `frog_report`, `import_ratings`, `move_query`, `wizardModal`/`wizardCtrl`, `queryParamsDetails`/`queryParamsHistory`, `targetedSearchModal`, `searchResult`, `case.js`; `quepidTypeahead`/`quepidCollapse`: `wizardModal.html`, `devQueryParams.html`, `searchEndpoint_popup.html`). They fall out as each of those components migrates in steps 4–7 below — don't plan a standalone PR for this step.
 2. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
@@ -263,7 +255,7 @@ Shell (`ngRoute`/`404Ctrl` removal, `MainCtrl` bootstrap off `$routeParams`) is 
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
-**Component LOC** (easiest → hardest, after [toolbar duplicates](#core-toolbar-duplicates-highest-leverage)): new_case (66) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → move_query (152) → add_query (160) → qgraph (250) → diff (285) → frog_report (360) → import_ratings (462).
+**Component LOC** (easiest → hardest, after [core toolbar](#core-toolbar)): new_case (66) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → move_query (152) → add_query (160) → qgraph (250) → diff (285) → frog_report (360) → import_ratings (462).
 
 **Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `add-query`, `query-options`, `new-case` / wizard, `frog-report`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Moving these implies rebuilding the case SPA, not a framework swap.
 
@@ -311,7 +303,7 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 
 **Observed:** After deleting the latest try, reload shows *"Cannot read properties of null (reading 'tryNo')"* until DB repair.
 
-**Frontend cause:** `settingsSvc.editableSettings()` still assumes `selectedTry` is non-null (`settingsSvc.js:429-431`, `tryToUse.tryNo` with no guard, even though the file has a working `isTrySelected()` check elsewhere it doesn't reuse). Try delete still has no confirm. Delete rejection handling was fixed separately (`queryParamsDetails.js` `deleteTry` now has a proper `.then(success, failure)` with a flash error) — re-verified 2026-09-04.
+**Frontend cause:** `settingsSvc.editableSettings()` still assumes `selectedTry` is non-null (`settingsSvc.js:513-519`, `tryToUse.tryNo` with no guard, even though the file has a working `isTrySelected()` at `:440` it doesn't reuse). Try delete still has no confirm.
 
 **Fix during migration:** Fall back to the newest try when `selectedTry` is null; confirm before try delete.
 
@@ -357,7 +349,7 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 
 ## Traps found while server-rendering the case header
 
-Three of these cost real debugging time and will recur as more of the page moves to Rails.
+These cost real debugging time and will recur as more of the page moves to Rails.
 
 **Duplicating server state onto DOM attributes buys you a synchronisation problem.**
 The first cut stamped the case name onto five modal triggers as `data-*-name-value` and kept them
@@ -404,9 +396,9 @@ The Rails cases index at `/cases` is **not** Angular.
 
 ### Case shell (`app/views/core/index.html.erb`)
 
-Flash include, `LoadingCtrl`, `ng-controller="MainCtrl"` wrapping the case layout **rendered as ERB** (no more `ng-view`/`ngRoute`, and no more `ng-include` of `views/queriesLayout.html` — that template is deleted).
+Flash include, `LoadingCtrl`, `ng-controller="MainCtrl"` wrapping the case layout **rendered as ERB**.
 
-The layout had to move out of an Angular template to let the header and toolbar read `@case`/`@try`: templates under `app/assets/templates` are compiled into the `angular_templates` bundle and cannot contain ERB.
+The layout lives in ERB, not an Angular template, because the header and toolbar read `@case`/`@try`: templates under `app/assets/templates` are compiled into the `angular_templates` bundle and cannot contain ERB.
 
 Angular still compiles what is left, because custom elements inside `ng-app` are compiled at bootstrap like any other markup. What remains Angular in the shell:
 
@@ -426,7 +418,7 @@ Angular still compiles what is left, because custom elements inside `ng-app` are
 
 ### `app/assets/javascripts/routes.js`
 
-`$locationProvider.html5Mode(true)` + `$httpProvider` cache/header config only — `$routeProvider` and the `/case/:caseNo(/try/:tryNo)`/`404Ctrl` routes it used to register are gone (dropped with `ngRoute`).
+`$locationProvider.html5Mode(true)` + `$httpProvider` cache/header config only — no `$routeProvider`.
 
 ---
 
@@ -467,7 +459,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Case layout markup | Rails view | `app/views/core/index.html.erb` + `_case_header`/`_case_toolbar` partials (replaced `views/queriesLayout.html`) |
+| Case layout markup | Rails view | `app/views/core/index.html.erb` + `_case_header`/`_case_toolbar` partials |
 | App bootstrap & loading gate | controller | `LoadingCtrl` — `controllers/loading.js` |
 | Case/try bootstrapping | controller | `MainCtrl` — `controllers/mainCtrl.js` |
 | Current user on `$rootScope` | service | `bootstrapSvc`, `userSvc` |
@@ -476,7 +468,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | Case/try URL helpers | service | `caseTryNavSvc` — still the Angular-facing navigation API (`navigateTo`/`navigationCompleted`/`isLoading`/`notFound`/`getCaseNo`/`getTryNo`); called from several still-Angular components (case rename, try switch, wizard). `navigateTo()` is a real `$window.location.assign()` (full reload, not an SPA transition); `notFound()` flashes an error and stays on the page rather than navigating anywhere — its ~6 callers are generic `$http`-failure handlers (case create/rename/etc.), not actual routing 404s, so there's no good page to send the user to. |
 | Pane layout (east slider) | service + value | `paneSvc`, `eastPaneWidth` |
 
-`routes.js` no longer registers `$routeProvider`/`404Ctrl` — routing is server-side (Rails); `MainCtrl` is attached directly in `core/index.html.erb` rather than route-triggered.
+Routing is server-side (Rails); `MainCtrl` is attached directly in `core/index.html.erb`.
 
 ### 2. Header navigation (core layout)
 
@@ -492,11 +484,11 @@ Templates: `layouts/_header_core_app.html.erb`, `components/new_case/new_case.ht
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Case layout shell | Rails view | `app/views/core/index.html.erb` (was `templates/views/queriesLayout.html`) |
+| Case layout shell | Rails view | `app/views/core/index.html.erb` |
 | Case score display | component | `<qscore-case>` — `components/qscore_case/` |
 | Per-query score | component | `<qscore-query>` — `components/qscore_query/` |
 | Case rename, nightly/public/archived badges, scorer name | Rails partial + Stimulus | `app/views/core/_case_header.html.erb` + `case_rename_controller.js`, served by `Core::CaseHeaderController`. `CaseCtrl` (`controllers/case.js`) survives only for the drawer's nightly checkbox and `<import-ratings>`'s `acase` binding |
-| Try rename in header | Rails partial + Stimulus | same partial/controller as case rename; `CurrSettingsCtrl` (`controllers/currSettings.js`) **deleted** |
+| Try rename in header | Rails partial + Stimulus | same partial/controller as case rename |
 | Import ratings | component | `<import-ratings>` — `components/import_ratings/` |
 | Diff against snapshot | component | `<diff>` — `components/diff/` |
 | New-case wizard launcher | controller | `WizardCtrl` — `controllers/wizardCtrl.js` |
@@ -538,7 +530,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Results panel | directive + controller | `<search-results>`, `SearchResultsCtrl` |
 | Single result row | directive + controller | `<search-result>`, `SearchResultCtrl` |
 | Results template | template | `templates/views/searchResults.html`, `searchResult.html` |
-| Rating popover | Stimulus controller | `rating_popover_controller.js` (migrated off Angular; mutation still bridges back via `rating-popover:rate`/`:reset` events) |
+| Rating popover | Stimulus controller | `rating_popover_controller.js` — mutation still bridges back to Angular via `rating-popover:rate`/`:reset` events |
 | Rate elements | service | `rateScaleSvc`, `ratingsStoreSvc` |
 | Rating background styling | filter | `ratingBgStyle` |
 | Query notes | controller | `QueryNotesCtrl` |
@@ -550,7 +542,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Diff results view | directive + controller | `<query-diff-results>`, `QueryDiffResultsCtrl`, `templates/views/queryDiffResults.html` |
 | Embed helper | directive | `quepidEmbed` on `searchResult.js` |
 | Hit count display | template | `searchResults.html` (`{{ query.getNumFound() }}`) |
-| Copy query text | service | `clipboardSvc` — `services/clipboardSvc.js` (`ngclipboard` removed) |
+| Copy query text | service | `clipboardSvc` — `services/clipboardSvc.js` |
 
 Backing services/factories: `docCacheSvc`, `DocListFactory`, `annotationsSvc`, `AnnotationFactory`, `searchEndpointSvc`
 
@@ -576,7 +568,7 @@ These Angular-specific wrappers are used across many templates:
 | Primitive | File | Replaces |
 |-----------|------|----------|
 | `$quepidModal` | `services/quepidModalSvc.js` | Bootstrap 5 modals (already BS5-backed shim; call-site count in [Hardest § By file (LOC)](#by-file-loc)) |
-| `quepidCollapse` | `directives/quepidCollapse.js` | Bootstrap collapse (still used by `wizardModal.html`; `stackedChart.html`'s use is gone with that file) |
+| `quepidCollapse` | `directives/quepidCollapse.js` | Bootstrap collapse (used by `wizardModal.html`) |
 | `quepidTypeahead` | `directives/quepidTypeahead.js` | `autocompleter` (already vanilla; wired via Angular directive) |
 | `vega` | `directives/angular-vega.js` | Vega embed (Vega loaded via importmap `vega_globals`) |
 
@@ -629,7 +621,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 `broadcastSvc` wraps `$rootScope.$broadcast` — used by `caseSvc`, `settingsSvc`, `queriesSvc`, `annotationsSvc`, `bookSvc`. See [event bus inventory](./event_bus_inventory.md).
 
-**Filters (8 under `filters/`):** `caseType`, `isImageUrl`, `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`, `timeAgo` (first-party replacement for vendored `angular-timeago`)
+**Filters (8 under `filters/`):** `caseType`, `isImageUrl`, `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`, `timeAgo`
 
 **Directive-local filters (1):** `plusOrMinus` (`searchResults.js`)
 

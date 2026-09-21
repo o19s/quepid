@@ -66,6 +66,10 @@ angular.module('QuepidApp')
           queriesSvc.deleteQuery(queryId).then(function() {
             $log.info('rescoring queries after removing query');
             queriesSvc.updateScores();
+          }, function() {
+            // deleteQuery now rejects on failure instead of swallowing it, so say so rather
+            // than rescoring as though the query had gone.
+            window.quepidDom.flash.show('error', 'Unable to delete query.');
           });
           
         }

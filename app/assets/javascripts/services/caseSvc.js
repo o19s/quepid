@@ -450,6 +450,15 @@ angular.module('QuepidApp')
         return $http.put(url, data)
           .then(function() {
             broadcastSvc.send('caseUpdate', theCase);
+
+            /*
+             * The case header is server-rendered and shows the nightly indicator, so it cannot
+             * see this change on its own. See app/views/core/_case_header.html.erb for the
+             * contract this event belongs to.
+             */
+            document.dispatchEvent(new CustomEvent('quepid:case-header-stale', {
+              detail: { caseNo: theCase.caseNo, reason: 'nightly' }
+            }));
           }, function() {
             caseTryNavSvc.notFound();
           });

@@ -147,6 +147,74 @@ describe("CaseToolbarController", () => {
     })
   })
 
+  /**
+   * The header renders the scorer name server-side, so picking a scorer has to refetch the frame.
+   * Nothing else would: the modal saves over the API and bridges to Angular for the rescore, which
+   * was enough only while the header was an Angular template reading the same model.
+   */
+  describe("scorer chosen in the pick-scorer modal", () => {
+    it("refetches the header frame so the new scorer name renders", () => {
+      const frame = buildFrame()
+      controller.headerUrlValue = "/case/7/header/try/2"
+      controller.hasHeaderUrlValue = true
+
+      CaseToolbarController.prototype.handleScorerSelected.call(controller)
+
+      expect(frame.src).toBe("/case/7/header/try/2")
+    })
+
+    it("does nothing when no refetch url was rendered", () => {
+      buildFrame()
+      controller.hasHeaderUrlValue = false
+
+      expect(() =>
+        CaseToolbarController.prototype.handleScorerSelected.call(controller)
+      ).not.toThrow()
+    })
+  })
+
+  /**
+   * Anything the server-rendered header shows goes stale unless something refetches the frame,
+   * so surfaces that mutate that state dispatch `quepid:case-header-stale` (see the contract in
+   * core/_case_header.html.erb). These go through connect() and a real dispatched event rather
+   * than calling the handler directly: the bug this guards against is the event never arriving,
+   * which a direct call cannot catch.
+   */
+  describe("generic header-stale signal", () => {
+    afterEach(() => {
+      CaseToolbarController.prototype.disconnect.call(controller)
+    })
+
+    it("refetches the header when the event is dispatched on document", () => {
+      const frame = buildFrame()
+      controller.headerUrlValue = "/case/7/header/try/2"
+      controller.hasHeaderUrlValue = true
+      vi.restoreAllMocks() // let the real dispatchEvent through
+
+      CaseToolbarController.prototype.connect.call(controller)
+      document.dispatchEvent(new CustomEvent("quepid:case-header-stale", {
+        detail: { caseNo: 7, reason: "nightly" }
+      }))
+
+      expect(frame.src).toBe("/case/7/header/try/2")
+    })
+
+    it("stops refetching once disconnected", () => {
+      const frame = buildFrame()
+      controller.headerUrlValue = "/case/7/header/try/2"
+      controller.hasHeaderUrlValue = true
+      vi.restoreAllMocks()
+
+      CaseToolbarController.prototype.connect.call(controller)
+      CaseToolbarController.prototype.disconnect.call(controller)
+      document.dispatchEvent(new CustomEvent("quepid:case-header-stale"))
+
+      // jsdom treats <turbo-frame> as an unknown element, so an untouched src is undefined
+      // rather than "" — assert the refetch simply did not happen.
+      expect(frame.src).not.toBe("/case/7/header/try/2")
+    })
+  })
+
   it("removes its document listeners on disconnect", () => {
     const remove = vi.spyOn(document, "removeEventListener")
     CaseToolbarController.prototype.connect.call(controller)
@@ -154,5 +222,6 @@ describe("CaseToolbarController", () => {
 
     expect(remove).toHaveBeenCalledWith("turbo:frame-render", controller.onFrameRender)
     expect(remove).toHaveBeenCalledWith("quepid:case-renamed", controller.onAngularRename)
+    expect(remove).toHaveBeenCalledWith("pick-scorer:selected", controller.onScorerSelected)
   })
 })

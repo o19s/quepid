@@ -66,6 +66,7 @@ Before testing individual features, get oriented:
 - **Expected:** Valid JSON saves and triggers a rescore of all queries.
 - **Edge cases:**
   - [ ] Enter invalid JSON, click Set Options — confirm the flash "Please provide a valid JSON object." appears and the modal does **not** close or save.
+  - [ ] Force a save failure (e.g., simulate a network error) — confirm the flash "Unable to save query options." appears rather than a success message.
 
 ### 4.6 Rate a document
 
@@ -145,6 +146,8 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
   - [ ] Set Number of Results above the max (100) — confirm it's clamped/rejected.
   - [ ] Toggle Evaluate Nightly on, then check that a background job is actually queued (verify via Admin > Job Manager, Part 14, if accessible).
 
+> Toggling **Evaluate Nightly** must also update the nightly (repeat) icon in the case header immediately, without a page reload — the header is server-rendered, so it only reflects the change if the toggle tells it to refresh. Regression-covered by `test/playwright/case_header_rename.spec.ts`.
+
 ### 4.13 Tune Relevance drawer — History tab
 
 Covered in depth in Part 5 (Tries / History). Quick smoke test here:
@@ -187,7 +190,8 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   4. Click **Toggle Notes** again to collapse the panel, then re-expand it (or reload the page) and confirm both values were persisted and reload correctly.
 - **Expected:** Flash "Success! Your query details have been saved." on save; the panel auto-collapses after a successful save.
 - **Edge cases:**
-  - [ ] Force a save failure (e.g., simulate a network error) — confirm the flash "Ooooops! Could not save your query details. Please try again." appears and the panel stays open with your unsaved edits intact.
+  - [ ] Force a save failure (e.g., simulate a network error) — confirm the flash "Ooooops! Could not save your query details. Please try again." appears and the panel stays open with your unsaved edits intact. (Regression-covered by `test/playwright/query_notes.spec.ts`.)
+  - [ ] Start typing **immediately** after clicking Toggle Notes, before the panel has finished loading — confirm your text is not overwritten when the load completes. (The panel renders editable before its own fetch returns; regression-covered by the same spec.)
   - [ ] Leave both fields blank and save — should succeed without error (notes are optional).
   - [ ] Confirm the **Information Need** value entered here is the same one referenced/exported by the "Information Need" export/import format in Part 6.1/6.2 — edit it here, then run an Information Need export, and confirm it round-trips correctly.
 

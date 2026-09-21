@@ -132,3 +132,76 @@ test.describe('core case header: rename (server-rendered Turbo Frame)', () => {
     await expect(page.locator(caseDisplay)).toHaveText(original ?? '');
   });
 });
+
+/**
+ * The header renders server-side, so anything it shows goes stale unless something tells the
+ * frame to refetch. Rename has its own bridge (above); these are the *other* fields, each of
+ * which was found stale by hand rather than by a test:
+ *
+ *   - scorer  -- picking a scorer saved to the database and rescored, but the header kept
+ *                showing the previous scorer until a full page reload.
+ *   - nightly -- toggling "Evaluate Nightly" in the Tune Relevance drawer left the header's
+ *                repeat icon showing the old state.
+ *
+ * Both are the same defect: a control outside the frame mutates state the frame rendered.
+ * `_case_header.html.erb` documents the contract (dispatch `quepid:case-header-stale`); this
+ * covers it end to end, since the failure is in the wiring between Angular, Stimulus and Turbo
+ * and unit tests on either side cannot see it.
+ */
+test.describe('core case header: stays in step with changes made outside the frame', () => {
+  let caseId: number;
+
+  test.beforeEach(async ({ page }) => {
+    caseId = await createDisposableCase(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    if (caseId) await deleteCaseViaApi(page, caseId);
+  });
+
+  test('shows the new scorer as soon as one is picked, without a reload', async ({ page }) => {
+    await gotoLoadedCase(page, caseId);
+
+    const scorerLabel = page.locator('[data-case-header-scorer]');
+    const before = (await scorerLabel.textContent())?.trim();
+
+    await page.locator('#case-actions').getByText('Select scorer').click();
+    const modal = page.locator('#pickScorerModal.show');
+    await expect(modal).toBeVisible({ timeout: 15_000 });
+
+    // Any communal scorer other than the one already applied.
+    const option = modal.locator('li, .list-group-item, label, tr')
+      .filter({ hasText: /^(nDCG@10|AP@10|P@10|DCG@10)$/ })
+      .filter({ hasNotText: before ?? '\u0000' })
+      .first();
+    const chosen = (await option.textContent())?.trim();
+    await option.click();
+    await modal.getByRole('button', { name: /Select Scorer/i }).click();
+
+    await expect(modal).toBeHidden({ timeout: 15_000 });
+    // No reload between the save and this assertion -- that is the whole point.
+    await expect(scorerLabel).toHaveText(chosen ?? '', { timeout: 15_000 });
+  });
+
+  test('updates the nightly indicator when it is toggled in the drawer', async ({ page }) => {
+    await gotoLoadedCase(page, caseId);
+
+    const icon = page.locator('#case_header .bi-repeat');
+    const shownBefore = await icon.count();
+
+    await page.locator('#case-actions').getByText('Tune Relevance').click();
+    await page.locator('#engineTab').click();
+    await page.getByText('Evaluate Nightly?').click();
+
+    const checkbox = page.locator('#evaluate-nightly-checkbox');
+    await expect(checkbox).toBeVisible({ timeout: 15_000 });
+    await checkbox.click();
+
+    // Toggling off removes the icon; toggling on adds it. Assert against whichever
+    // direction this case started in rather than assuming a default.
+    await expect(icon).toHaveCount(shownBefore === 0 ? 1 : 0, { timeout: 15_000 });
+
+    await checkbox.click();
+    await expect(icon).toHaveCount(shownBefore, { timeout: 15_000 });
+  });
+});
