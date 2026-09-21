@@ -31,6 +31,7 @@
 - Tests for Ruby are written in Minitest.
 - Long-running work uses ActiveJob + SolidQueue, ActionCable pushes state to the frontend.
 - Solr JSONP forces the case page to HTTP while the rest may be HTTPS. When touching `CoreController` or SSL config, make sure to take this into consideration.
+- **Turbo on the Angular case page** (Frames/Streams only, Drive off; never put Angular elements inside a Turbo Frame) — see DEVELOPER_GUIDE.md's "Turbo on the Angular case page" section before adding Hotwire to `core`.
 
 
 ## JavaScript

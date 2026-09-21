@@ -59,7 +59,6 @@ export default class extends ModalTriggerControllerBase {
   openAsRoot(event) {
     const btn = event.currentTarget || event.target
     const caseId = btn?.dataset?.judgementsCoreIdValue
-    const caseName = btn?.dataset?.judgementsCoreNameValue
     const scorerId = btn?.dataset?.judgementsCoreScorerIdValue
     const bookId = btn?.dataset?.judgementsCoreBookIdValue
     const queriesCount = btn?.dataset?.judgementsCoreQueriesCountValue
@@ -67,7 +66,6 @@ export default class extends ModalTriggerControllerBase {
     const autoJudgements = btn?.dataset?.judgementsCoreAutoPopulateCaseJudgementsValue
 
     this.currentCaseId = caseId || ""
-    this.currentCaseName = caseName || ""
     this.scorerId = scorerId || ""
     this.queriesCount = Number(queriesCount || 0)
     this.savedBookId = bookId ? Number(bookId) : null
@@ -121,11 +119,11 @@ export default class extends ModalTriggerControllerBase {
   openShareCase(event) {
     event?.preventDefault?.()
     const caseNo = this.currentCaseId
-    const caseName = this.currentCaseName
+    // No caseName in the detail: share-case-core reads the live name off the case header itself.
     const openShare = () => {
       document.dispatchEvent(
         new CustomEvent("quepid:open-share-case-core", {
-          detail: { caseNo: Number(caseNo), caseName }
+          detail: { caseNo: Number(caseNo) }
         })
       )
     }

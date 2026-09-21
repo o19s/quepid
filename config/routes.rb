@@ -351,6 +351,14 @@ Rails.application.routes.draw do
   get '/cases/new'                    => 'core#new', as: :case_new
   get '/case'                         => 'core#index'
 
+  # Server-rendered case header on the Angular core page. These re-render the
+  # `case_header` Turbo Frame in place rather than returning JSON, so a rename
+  # updates every place the name appears without a client-side model to sync.
+  get '/case/:id/header(/try/:try_number)' => 'core/case_header#show', as: :case_header
+  patch '/case/:id/header/case_name' => 'core/case_header#rename_case', as: :rename_case_header
+  patch '/case/:id/header/try_name/:try_number' => 'core/case_header#rename_try',
+        as: :rename_try_header
+
   # Static pages
   get '/cookies' => 'pages#show', defaults: { page: 'cookies' }
 end

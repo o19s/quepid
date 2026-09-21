@@ -194,6 +194,39 @@ class TryTest < ActiveSupport::TestCase
     end
   end
 
+  # Mirrors formattedName() in app/assets/javascripts/factories/TryFactory.js, so the
+  # server-rendered case header and the Angular models still in the page agree on the label.
+  describe '#formatted_name' do
+    test 'leaves a name that already mentions its try number alone' do
+      try = tries(:one)
+      try.name = 'Try 1'
+
+      assert_equal 'Try 1', try.formatted_name
+    end
+
+    test 'leaves a name that embeds its try number alone' do
+      try = tries(:one)
+      try.name = 'Baseline Try 1 rerun'
+
+      assert_equal 'Baseline Try 1 rerun', try.formatted_name
+    end
+
+    test 'appends the try number to a name that does not mention it' do
+      try = tries(:one)
+      try.name = 'Baseline'
+
+      assert_equal 'Baseline - Try 1', try.formatted_name
+    end
+
+    # A different try's number in the name must not suppress this try's own.
+    test 'appends the try number when the name mentions a different try' do
+      try = tries(:one)
+      try.name = 'Copy of Try 7'
+
+      assert_equal 'Copy of Try 7 - Try 1', try.formatted_name
+    end
+  end
+
   describe '#json_query_params?' do
     test 'is public, not a private predicate, so it can be served on the try JSON' do
       try = tries(:one)

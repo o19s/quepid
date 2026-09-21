@@ -24,9 +24,9 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 120 files, 115 register `angular.module` |
-| HTML templates (components + `app/assets/templates`) | 35 (21 component + 14 under `app/assets/templates`) |
-| Controllers | 41 (`.controller()` registrations; 20 files under `controllers/`) |
+| Angular JS source files (`app/assets/javascripts`) | 119 files, 114 register `angular.module` |
+| HTML templates (components + `app/assets/templates`) | 34 (21 component + 13 under `app/assets/templates`) |
+| Controllers | 40 (`.controller()` registrations; 19 files under `controllers/`) |
 | Services | 26 (`.service()` registrations; 27 files under `services/` — `quepidModalSvc.js` registers a factory) |
 | Factories | 8 |
 | Filters | 8 under `filters/` (+ 1 directive-local: `plusOrMinus`) |
@@ -34,7 +34,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 10 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 6 packages (+ `angular` core from npm) |
 | Karma unit specs (`spec/javascripts/angular`) | 38 |
-| Vitest unit specs (`test/javascript/**/*.test.js`) | 42 |
+| Vitest unit specs (`test/javascript/**/*.test.js`) | 45 |
 | Playwright specs | See [Other inventory § Tests](#tests) for the Angular-core and Stimulus spec breakdown |
 
 ---
@@ -43,7 +43,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Priority | Item | Notes |
 |----------|------|-------|
-| **P0** | AngularJS 1.8.3 EOL | 122 JS files, 36 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
+| **P0** | AngularJS 1.8.3 EOL | 119 JS files, 34 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
 | **P0** | `queriesSvc` god object (~1,725 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
 | **P0** | `eval()` scorers | Inside `$timeout()`, no sandbox; Web Worker timeout commented out |
 | **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
@@ -181,11 +181,13 @@ Hotwire already covers most non-case pages (teams, books, scorers, admin). The c
 
 ### Core toolbar duplicates (highest leverage)
 
-From `app/assets/templates/views/queriesLayout.html`:
+The toolbar is server-rendered from `@case`/`@try` now (`app/views/core/_case_toolbar.html.erb`, which replaced the `#case-actions` block of the deleted `queriesLayout.html`); what is listed here is what is still Angular *inside* it.
 
 | Angular on core | Stimulus / Rails already on cases index & teams |
 |-----------------|-------------------------------------------------|
 | `<diff>`, `<import-ratings>` | Defer (heavy case state) |
+
+**The toolbar keeps `ng-if="caseModel.caseLoaded()"`, and it is load-bearing.** Its attributes no longer need Angular, but several of its actions do: "Create snapshot" clicked before `queriesSvc` has bootstrapped posts an empty snapshot that never resolves, leaving the modal stuck on "Snapshot Being Created". Server-rendering made the toolbar clickable from first paint, roughly 1.5s earlier than Angular exposed it, which is long enough to hit. Drop the gate only when `<diff>`, `<import-ratings>` and the snapshot/export flows no longer depend on live query state.
 
 ### Stimulus twins already on Rails pages
 
@@ -200,6 +202,9 @@ Reuse these instead of reimplementing modals/flows:
 | `pick-scorer-core` | Core toolbar only. `pick_scorer_core_controller.js` + `_pick_scorer_core_modal.html.erb`. Lists scorers from `api/scorers`, saves via `PUT api/cases/:id/scorers/:id`, then dispatches `pick-scorer:selected` so Angular `scorerSvc`/`queriesSvc` can rescore live queries. |
 | `take-snapshot-core` | Core toolbar only. `take_snapshot_core_controller.js` + `_take_snapshot_core_modal.html.erb`. Collects name/options; dispatches `take-snapshot:create` so Angular `querySnapshotSvc.addSnapshot` can build the live-query payload. |
 | `judgements-core` | Core toolbar only. `judgements_core_controller.js` + `_judgements_core_modal.html.erb`. Book link + sync settings via case/books APIs; `judgements:populate-book` / `judgements:queries-need-reload` / `judgements:book-settings-saved` bridges for live query state. |
+| `case-rename` | Core case header only. `case_rename_controller.js` + `app/views/core/_case_header.html.erb`, inside a `case_header` Turbo Frame served by `Core::CaseHeaderController`. Double-click to edit, Rename posts to Rails and re-renders the frame, Cancel restores. **Matches Angular**, with one deliberate addition: the field takes focus on open (it did not before), which the A11y decision lens asks for. It focuses without selecting, so the first keystroke still extends the name rather than replacing it. |
+| `case-toolbar` | Core case toolbar only. `case_toolbar_controller.js` + `app/views/core/_case_toolbar.html.erb`. Not a modal — it only bridges the header to the Angular services that still run the page: `case-header:renamed` → `caseSvc` and `case-header:try-renamed` → `settingsSvc` on a frame render, and inbound `quepid:case-renamed` so a rename made *by* Angular (the wizard) reaches the server-rendered header. Mounted on the always-present `#case-actions` wrapper, not the `ng-if` gated div, so it is never torn down mid-rename. It deliberately does **not** copy the case name onto the modal triggers — see `utils/case_header` below. |
+| `utils/case_header` (helper, not a controller) | `caseNameFromHeader()` reads the name out of the `case_header` frame. The five core modals (share, clone, delete, export, judgements) call it when they open instead of carrying a `data-*-name-value` copy. One source of truth means nothing to resynchronise after a rename, and an `ng-if` rebuild of the toolbar cannot reinstate a stale name. |
 | `rating-popover` | Per-result and score-all rating UI. Shell is Stimulus; `doc.rate()` / `resetRating()` / `scoreAll()` still run in Angular via `rating-popover:rate` / `:reset`. |
 | `share-book`, `share-scorer`, `share-search-endpoint` | Shared modals under `app/views/shared/` |
 | `import-case`, `import-snapshot` | Shared modals |
@@ -230,6 +235,10 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 Shell (`ngRoute`/`404Ctrl` removal, `MainCtrl` bootstrap off `$routeParams`) is done — `MainCtrl` stays Angular-authored (it still calls `caseSvc`/`settingsSvc`/`queriesSvc`, next up below) but is no longer route-triggered; see [Application shell](#1-application-shell).
 
+**Case header and toolbar are done.** `views/queriesLayout.html` is deleted and the layout is ERB; the header is a server-rendered Turbo Frame and the toolbar's modal-trigger attributes come from `@case`/`@try` instead of Angular interpolation. `CurrSettingsCtrl` is gone; `CaseCtrl` is reduced to what the still-Angular drawer and `<import-ratings>` need.
+
+**Turbo is now loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
+
 1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). **Not separable (checked 2026-09-19):** every remaining call site of all three lives inside a component already on the defer list (`$quepidModal`: `browse_query`, `query_options`, `new_case`, `annotation`, `diff`, `frog_report`, `import_ratings`, `move_query`, `wizardModal`/`wizardCtrl`, `queryParamsDetails`/`queryParamsHistory`, `targetedSearchModal`, `searchResult`, `case.js`; `quepidTypeahead`/`quepidCollapse`: `wizardModal.html`, `devQueryParams.html`, `searchEndpoint_popup.html`). They fall out as each of those components migrates in steps 4–7 below — don't plan a standalone PR for this step.
 2. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
 3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
@@ -246,7 +255,7 @@ Shell (`ngRoute`/`404Ctrl` removal, `MainCtrl` bootstrap off `$routeParams`) is 
 
 | Name | LOC | Why |
 |------|-----|-----|
-| **queriesSvc** | 1,725 | Central case state — search, docs, scores, persistence |
+| **queriesSvc** | 1,690 | Central case state — search, docs, scores, persistence |
 | **wizardModal** | 1,051 | Onboarding wizard (ACE, CSV, tags, tour) |
 | **queriesCtrl** | 609 | Query list UX (sort, filter, paginate, keyboard) |
 | **settingsSvc** / **caseSvc** | 720 / 509 | Try / case domain model |
@@ -346,6 +355,36 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 
 ---
 
+## Traps found while server-rendering the case header
+
+Three of these cost real debugging time and will recur as more of the page moves to Rails.
+
+**Duplicating server state onto DOM attributes buys you a synchronisation problem.**
+The first cut stamped the case name onto five modal triggers as `data-*-name-value` and kept them
+in step with a frame-render handler and a capture-phase click repair. All of that existed so five
+modal titles and one download filename showed the current name. Reading the name from the header
+when the modal opens deletes the copies, the sync, and the repair. Prefer one live source over
+several copies with a reconciler, especially when the copies are only read at a single moment.
+
+**A `$scope` function returning a fresh object literal is an infinite digest waiting to happen.**
+`CaseCtrl.caseModel.selectedCase()` returned `{ caseNo: -1, caseName: '' }` on every call before the
+case loaded. `<import-ratings>` binds it with `=`, so a new object identity each digest is a change
+each digest. Angular's template had hidden this behind `ng-if="caseModel.caseLoaded()"`; rendering
+the toolbar unconditionally exposed it as `$rootScope:infdig`. Return a single stable instance.
+
+**A scope whose body ends in `.first` returns the relation when there is no record.**
+`Try.latest` was `scope :latest, -> { order(id: :desc).first }`. Rails returns the record when there
+is one and falls back to the *relation* when the body is nil, so a case with no tries yielded an
+`AssociationRelation` and `@try.try_number` raised `NoMethodError`. Nothing noticed until a view
+actually read `@try`. It is a class method now.
+
+**A fire-and-forget request before a navigation gets aborted.**
+The wizard issued the case-rename `PUT` after `settingsSvc.update()`, which ends in a real
+`$window.location.assign`. The browser cancelled the rename often enough that the case kept its
+scratch name — visible in a Playwright trace as a request with status `-1`. The rename runs first
+and is awaited now. Worth remembering generally: anything Angular fires near `caseTryNavSvc`
+navigation needs to be awaited, not just started.
+
 ## Where Angular is mounted
 
 ### Rails routes (`config/routes.rb`)
@@ -365,7 +404,21 @@ The Rails cases index at `/cases` is **not** Angular.
 
 ### Case shell (`app/views/core/index.html.erb`)
 
-Flash include, `LoadingCtrl`, `ng-controller="MainCtrl"` wrapping an `ng-include` of `views/queriesLayout.html` (no more `ng-view`/`ngRoute`)
+Flash include, `LoadingCtrl`, `ng-controller="MainCtrl"` wrapping the case layout **rendered as ERB** (no more `ng-view`/`ngRoute`, and no more `ng-include` of `views/queriesLayout.html` — that template is deleted).
+
+The layout had to move out of an Angular template to let the header and toolbar read `@case`/`@try`: templates under `app/assets/templates` are compiled into the `angular_templates` bundle and cannot contain ERB.
+
+Angular still compiles what is left, because custom elements inside `ng-app` are compiled at bootstrap like any other markup. What remains Angular in the shell:
+
+| Element | Why it stays |
+|---------|--------------|
+| `<qscore-case>` | Score is computed client-side from live ratings |
+| `<queries>` | The query list / search results island |
+| `<diff>`, `<import-ratings>` | Not yet migrated |
+| `ng-include 'views/_dev_settings.html'` | Tune Relevance drawer, still Angular |
+| `ng-click="toggleDevSettings()"` | Drawer toggle, on `MainCtrl` scope |
+
+**Keep the `<qscore-case>` tags siblings of `<queries>` under the same `ng-controller`.** `<queries>` declares no isolate scope, so `QueriesCtrl` publishes `queries`, `maxScore`, `scores`, `annotations` and `getScorer()` onto `MainCtrl`'s scope — which is the only reason those bindings resolve.
 
 ### Header (`app/views/layouts/_header_core_app.html.erb`)
 
@@ -414,6 +467,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 
 | Item | Type | Key files |
 |------|------|-----------|
+| Case layout markup | Rails view | `app/views/core/index.html.erb` + `_case_header`/`_case_toolbar` partials (replaced `views/queriesLayout.html`) |
 | App bootstrap & loading gate | controller | `LoadingCtrl` — `controllers/loading.js` |
 | Case/try bootstrapping | controller | `MainCtrl` — `controllers/mainCtrl.js` |
 | Current user on `$rootScope` | service | `bootstrapSvc`, `userSvc` |
@@ -438,11 +492,11 @@ Templates: `layouts/_header_core_app.html.erb`, `components/new_case/new_case.ht
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Case layout shell | template | `templates/views/queriesLayout.html` |
+| Case layout shell | Rails view | `app/views/core/index.html.erb` (was `templates/views/queriesLayout.html`) |
 | Case score display | component | `<qscore-case>` — `components/qscore_case/` |
 | Per-query score | component | `<qscore-query>` — `components/qscore_query/` |
-| Case rename, nightly/public badges | controller | `CaseCtrl` — `controllers/case.js` |
-| Try rename in header | controller | `CurrSettingsCtrl` — `controllers/currSettings.js` |
+| Case rename, nightly/public/archived badges, scorer name | Rails partial + Stimulus | `app/views/core/_case_header.html.erb` + `case_rename_controller.js`, served by `Core::CaseHeaderController`. `CaseCtrl` (`controllers/case.js`) survives only for the drawer's nightly checkbox and `<import-ratings>`'s `acase` binding |
+| Try rename in header | Rails partial + Stimulus | same partial/controller as case rename; `CurrSettingsCtrl` (`controllers/currSettings.js`) **deleted** |
 | Import ratings | component | `<import-ratings>` — `components/import_ratings/` |
 | Diff against snapshot | component | `<diff>` — `components/diff/` |
 | New-case wizard launcher | controller | `WizardCtrl` — `controllers/wizardCtrl.js` |
@@ -583,9 +637,9 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 ---
 
-## Templates (35 HTML files)
+## Templates (34 HTML files)
 
-**Shell:** `queriesLayout.html`, `queries.html`, `embed.html`
+**Shell:** `queries.html`, `embed.html`
 
 **Search/results:** `searchResults.html`, `searchResult.html`, `queryDiffResults.html`, `targetedSearchModal.html`
 

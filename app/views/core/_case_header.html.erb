@@ -1,0 +1,116 @@
+<%#
+  Server-rendered case header for the Angular core case page.
+
+  Everything here is Rails model data that CoreController already loads, so it is rendered
+  from `kase`/`a_try` rather than interpolated out of the Angular caseSvc/settingsSvc models.
+  The rename forms post to Core::CaseHeaderController and re-render this frame in place,
+  which is what replaces Angular's digest on this surface.
+
+  Keep this frame free of Angular elements: a frame re-render replaces its DOM, and Angular
+  only compiles the page once at bootstrap, so anything Angular-owned inside would lose its
+  bindings after the first rename. The live score badges therefore stay outside the frame,
+  in core/index.html.erb.
+%>
+<%= turbo_frame_tag 'case_header' do %>
+  <%#
+    The identity attributes below are read by the `case-toolbar` Stimulus controller when this
+    frame re-renders, so it can refresh the toolbar's modal trigger attributes and tell the
+    Angular services about a rename they no longer perform themselves.
+  %>
+  <div
+    class="case-header-meta"
+    style="display:inline-block;vertical-align:top"
+    data-controller="case-rename"
+    data-case-header-case-no="<%= kase.id %>"
+    data-case-header-case-name="<%= kase.case_name %>"
+    data-case-header-try-no="<%= a_try&.try_number %>"
+    data-case-header-try-name="<%= a_try&.name %>"
+  >
+    <h1 class="fs-1 fw-normal lh-sm mb-3">
+      <small class="d-block fw-normal text-muted">
+        Current case
+        <% if kase.nightly? %>
+          <i
+            class="bi bi-repeat"
+            data-controller="bs-tooltip"
+            data-bs-tooltip-title-value="Queries are run on a nightly basis."
+            data-bs-tooltip-delay-value="1000"
+            data-bs-tooltip-placement-value="right"
+          ></i>
+        <% end %>
+        <% if kase.public? %><span>PUBLIC</span><% end %>
+        <% if kase.archived? %><span>ARCHIVED</span><% end %>
+      </small>
+
+      <span data-action="dblclick->case-rename#editCase">
+        <span data-case-rename-target="caseDisplay">
+          <%= kase.case_name %>
+        </span>
+        <span data-case-rename-target="caseForm" class="d-none">
+          <%= form_with url: rename_case_header_path(kase),
+                        scope: :case,
+                        method: :patch,
+                        class: 'd-flex flex-wrap align-items-center gap-2' do |f| %>
+            <%= f.text_field :case_name,
+                             value:       kase.case_name,
+                             style:       'background:#FFFF99',
+                             aria:        { label: 'Case name' },
+                             data:        { case_rename_target: 'caseInput',
+                                            action: 'input->case-rename#caseInputChanged' } %>
+            <%= f.submit 'Rename',
+                         class: 'btn btn-sm btn-primary',
+                         data:  { case_rename_target: 'caseSubmit' } %>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              data-action="case-rename#cancelCase"
+            >Cancel</button>
+          <% end %>
+        </span>
+      </span>
+
+      <small class="fw-normal text-muted">
+        &mdash;
+        <span data-action="dblclick->case-rename#editTry">
+          <span data-case-rename-target="tryDisplay">
+            <%= a_try&.formatted_name %>
+          </span>
+        </span>
+        <span data-case-rename-target="tryForm" class="d-none">
+          <% if a_try %>
+            <%= form_with url: rename_try_header_path(kase, a_try.try_number),
+                          scope: :try,
+                          method: :patch,
+                          class: 'd-flex flex-wrap align-items-center gap-2' do |f| %>
+              <%= f.text_field :name,
+                               value: a_try.name,
+                               style: 'background:#FFFF99',
+                               aria:  { label: 'Try name' },
+                               data:  { case_rename_target: 'tryInput',
+                                        action: 'input->case-rename#tryInputChanged' } %>
+              <%= f.submit 'Rename',
+                           class: 'btn btn-sm btn-primary',
+                           data:  { case_rename_target: 'trySubmit' } %>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary"
+                data-action="case-rename#cancelTry"
+              >Cancel</button>
+            <% end %>
+          <% end %>
+        </span>
+      </small>
+
+      <small class="fw-normal text-muted">
+        &mdash;
+        <%= kase.scorer&.name %>
+      </small>
+    </h1>
+
+    <% if local_assigns[:error].present? %>
+      <div class="alert alert-warning py-1 px-2 d-inline-block" role="alert">
+        <%= error %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

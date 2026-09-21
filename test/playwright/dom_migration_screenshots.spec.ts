@@ -164,6 +164,25 @@ async function openHelpPopover(
 }
 
 test.describe(`DOM migration shots (${PHASE})`, () => {
+  /*
+   * Several tests below share SHARE_CASE_ID with a team (ensureCaseSharedWithOneTeam /
+   * shareCaseWithAllTeams) and the last of them never unshares, so the spec used to leave a
+   * teams_cases row behind in the shared dev DB. That row is invisible within a run but breaks
+   * the *next* one: 'share-case modal with shareable' needs at least one team NOT yet sharing
+   * the case, and with a single team configured there is none left.
+   *
+   * Reset the sharing state on the way out, per DEVELOPER_GUIDE.md's Playwright E2E cleanup rule.
+   */
+  test.afterAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    try {
+      await page.goto('cases');
+      await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
+    } finally {
+      await page.close();
+    }
+  });
+
   test('hit count', async ({ page }) => {
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page, QUERIES_CASE_ID);

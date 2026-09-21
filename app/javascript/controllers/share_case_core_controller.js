@@ -8,6 +8,7 @@ import {
   unsharedTeams
 } from "utils/share_case_teams"
 import { showStatusMessage } from "utils/status_message"
+import { caseNameFromHeader } from "utils/case_header"
 
 /**
  * Share / unshare from the core case toolbar — list UI, API stay-on-page.
@@ -66,7 +67,7 @@ export default class extends ModalTriggerControllerBase {
   async openAsRoot(event) {
     const btn = event.currentTarget || event.target
     const caseId = btn?.dataset?.shareCaseCoreIdValue
-    const caseName = btn?.dataset?.shareCaseCoreNameValue
+    const caseName = caseNameFromHeader()
 
     if (this.hasCaseIdTarget) this.caseIdTarget.value = caseId || ""
     if (this.hasUnshareCaseIdTarget) this.unshareCaseIdTarget.value = caseId || ""
@@ -100,8 +101,7 @@ export default class extends ModalTriggerControllerBase {
       preventDefault: () => {},
       currentTarget: {
         dataset: {
-          shareCaseCoreIdValue: String(detail.caseNo ?? ""),
-          shareCaseCoreNameValue: detail.caseName ?? ""
+          shareCaseCoreIdValue: String(detail.caseNo ?? "")
         }
       }
     })

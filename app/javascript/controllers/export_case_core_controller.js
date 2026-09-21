@@ -2,6 +2,7 @@ import ModalTriggerControllerBase from "controllers/core_modal_trigger_controlle
 import { apiFetch } from "api/fetch"
 import { buildGeneralCaseCsv, buildSnapshotCsv, formatDownloadFileName, formatShortDate } from "utils/case_csv"
 import { downloadBlob } from "utils/download_file"
+import { caseNameFromHeader } from "utils/case_header"
 
 const CASE_ID_PLACEHOLDER = "__CASE_ID__"
 const SNAPSHOT_ID_PLACEHOLDER = "__SNAPSHOT_ID__"
@@ -66,7 +67,7 @@ export default class extends ModalTriggerControllerBase {
   openAsRoot(event) {
     const btn = event.currentTarget || event.target
     const caseId = btn?.dataset?.exportCaseCoreIdValue
-    const caseName = btn?.dataset?.exportCaseCoreNameValue
+    const caseName = caseNameFromHeader()
     const supportsDetailedExport = btn?.dataset?.exportCaseCoreSupportsDetailedExportValue !== "false"
 
     this.currentCaseId = caseId || ""

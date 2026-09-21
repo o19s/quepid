@@ -9,12 +9,12 @@
 
 angular.module('QuepidApp')
   .controller('WizardModalCtrl', [
-    '$rootScope', '$scope', '$quepidModalInstance', '$log', '$window', '$location',
+    '$rootScope', '$scope', '$quepidModalInstance', '$log', '$window', '$location', '$q',
     'WizardHandler',
     'settingsSvc', 'searchSvc',
     'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc','searchEndpointSvc','mapperBasedSearchEngineSvc','caseCSVSvc','querySnapshotSvc',
     function (
-      $rootScope, $scope, $quepidModalInstance, $log, $window, $location,
+      $rootScope, $scope, $quepidModalInstance, $log, $window, $location, $q,
       WizardHandler,
       settingsSvc, searchSvc,
       docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc, searchEndpointSvc, mapperBasedSearchEngineSvc, caseCSVSvc, querySnapshotSvc
@@ -899,17 +899,32 @@ angular.module('QuepidApp')
 
           $scope.finishSaveError = null;
           $scope.savingFinish = true;
-          return settingsSvc.update($scope.pendingWizardSettings)
+
+          /*
+           * Rename the case BEFORE saving settings, and wait for it.
+           *
+           * settingsSvc.update() ends in a real page navigation (caseTryNavSvc does a
+           * $window.location.assign), which aborts whatever is still in flight. The rename used
+           * to be fired afterwards, so it raced that navigation and was often cancelled outright
+           * - the PUT never reached the server and the case kept its scratch name. Ordering it
+           * first removes the race: nothing here navigates until it has come back.
+           */
+          var renameFirst = $q.resolve();
+          if(typeof($scope.pendingWizardSettings.caseName) !=='undefined' && $scope.pendingWizardSettings.caseName !== ''){
+            renameFirst = caseSvc.renameCase(caseSvc.getSelectedCase(), $scope.pendingWizardSettings.caseName) || $q.resolve();
+          }
+
+          return renameFirst
+          .then(function() {
+            return settingsSvc.update($scope.pendingWizardSettings);
+          })
           .then(function() {
             var latestSettings = settingsSvc.editableSettings();
             docCacheSvc.invalidate();
             docCacheSvc.update(latestSettings);
             queriesSvc.changeSettings(caseTryNavSvc.getCaseNo(), latestSettings);
 
-            //Change Case Name (Separate from Dev settings)
-            if(typeof($scope.pendingWizardSettings.caseName) !=='undefined' && $scope.pendingWizardSettings.caseName !== ''){
-              caseSvc.renameCase(caseSvc.getSelectedCase(), $scope.pendingWizardSettings.caseName);
-            }
+            // Case name is already persisted above, before settingsSvc.update() could navigate.
             var length = $scope.pendingWizardSettings.newQueries.length;
             
             var queries = [];

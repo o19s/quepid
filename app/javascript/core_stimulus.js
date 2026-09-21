@@ -5,8 +5,19 @@
  * `controllers/index.js`'s `eagerLoadControllersFrom` (which would import every
  * pinned controller, Rails-only ones like `confetti_controller.js` included) on
  * this already-heavy Angular surface.
+ *
+ * Turbo is loaded here for Turbo Frames only - the server-rendered case header
+ * re-renders its frame on rename. Drive is switched off, as it is for the rest of
+ * the app in `application_modern.js`, and that matters more on this page: Angular
+ * runs `$locationProvider.html5Mode(true)`, so letting Turbo Drive intercept
+ * navigation would put two routers on the same URL. Frames and Streams still work
+ * with Drive off, because Turbo treats anything inside a <turbo-frame> as
+ * navigatable regardless.
  */
+import "@hotwired/turbo-rails"
 import { application } from "controllers/application"
+import CaseRenameController from "controllers/case_rename_controller"
+import CaseToolbarController from "controllers/case_toolbar_controller"
 import ShareCaseCoreController from "controllers/share_case_core_controller"
 import DeleteCaseOptionsCoreController from "controllers/delete_case_options_core_controller"
 import CloneCaseCoreController from "controllers/clone_case_core_controller"
@@ -22,6 +33,10 @@ import QueryExplainController from "controllers/query_explain_controller"
 import JsonExplorerController from "controllers/json_explorer_controller"
 import FlashController from "controllers/flash_controller"
 
+Turbo.session.drive = false
+
+application.register("case-rename", CaseRenameController)
+application.register("case-toolbar", CaseToolbarController)
 application.register("share-case-core", ShareCaseCoreController)
 application.register("delete-case-options-core", DeleteCaseOptionsCoreController)
 application.register("clone-case-core", CloneCaseCoreController)

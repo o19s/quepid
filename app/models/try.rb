@@ -35,7 +35,15 @@ class Try < ApplicationRecord
   has_ancestry orphan_strategy: :adopt
 
   # Scopes
-  scope :latest, -> { order(id: :desc).first } # The try created the most recently
+  # The try created most recently, or nil when the case has none.
+  #
+  # Deliberately a class method rather than a scope: a scope body that ends in `.first` returns
+  # the record when there is one, but Rails falls back to returning the *relation* when the body
+  # comes back nil - so an empty case yielded an AssociationRelation, and callers reaching
+  # straight for `.try_number` got a NoMethodError instead of a nil.
+  def self.latest
+    order(id: :desc).first
+  end
 
   # Associations
   belongs_to :case, optional: true # shouldn't be optional, but was in rails 4
@@ -109,6 +117,16 @@ class Try < ApplicationRecord
 
   def param
     try_number
+  end
+
+  # How the try is labelled in the case header. Mirrors `formattedName()` in
+  # app/assets/javascripts/factories/TryFactory.js so the server-rendered header
+  # and the Angular models still in the page agree: a name that already mentions
+  # its own try number is shown as-is, anything else gets the number appended.
+  def formatted_name
+    return name if name.to_s.include?("Try #{try_number}")
+
+    "#{name} - Try #{try_number}"
   end
 
   def add_curator_vars vars = {}

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import { downloadBlob } from "utils/download_file"
 import ExportCaseCoreController from "controllers/export_case_core_controller"
+import { mountCaseHeader } from "../support/case_header_dom"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
@@ -77,9 +78,9 @@ function buildModalController(overrides = {}) {
 }
 
 function buildTrigger({ id = "5", name = "Movies", supportsDetailedExport = "true" } = {}) {
+  mountCaseHeader(name)
   const trigger = document.createElement("a")
   trigger.dataset.exportCaseCoreIdValue = id
-  trigger.dataset.exportCaseCoreNameValue = name
   trigger.dataset.exportCaseCoreSupportsDetailedExportValue = supportsDetailedExport
   return trigger
 }

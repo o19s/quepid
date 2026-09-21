@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import ShareCaseCoreController from "controllers/share_case_core_controller"
+import { mountCaseHeader } from "../support/case_header_dom"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
@@ -96,11 +97,11 @@ describe("ShareCaseCoreController — modal list UI", () => {
     })
 
     const controller = buildController()
+    mountCaseHeader("Demo Case")
     await ShareCaseCoreController.prototype.open.call(controller, {
       currentTarget: {
         dataset: {
-          shareCaseCoreIdValue: "5",
-          shareCaseCoreNameValue: "Demo Case"
+          shareCaseCoreIdValue: "5"
         }
       }
     })
@@ -178,12 +179,12 @@ describe("ShareCaseCoreController — API share/unshare", () => {
 
     const controller = buildController()
     const preventDefault = vi.fn()
+    mountCaseHeader("Demo Case")
     await ShareCaseCoreController.prototype.open.call(controller, {
       preventDefault,
       currentTarget: {
         dataset: {
-          shareCaseCoreIdValue: "5",
-          shareCaseCoreNameValue: "Demo Case"
+          shareCaseCoreIdValue: "5"
         }
       }
     })
@@ -254,11 +255,11 @@ describe("ShareCaseCoreController — API share/unshare", () => {
     })
 
     const controller = buildController()
+    mountCaseHeader("Demo Case")
     await ShareCaseCoreController.prototype.open.call(controller, {
       currentTarget: {
         dataset: {
-          shareCaseCoreIdValue: "5",
-          shareCaseCoreNameValue: "Demo Case"
+          shareCaseCoreIdValue: "5"
         }
       }
     })
@@ -376,6 +377,7 @@ describe("ShareCaseCoreController — API share/unshare", () => {
   })
 
   it("openFromExternal shows modal and loads teams", async () => {
+    mountCaseHeader("From Judgements")
     apiFetch.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(TEAM_PAYLOAD)
@@ -390,7 +392,7 @@ describe("ShareCaseCoreController — API share/unshare", () => {
     controller.element = document.createElement("div")
 
     await ShareCaseCoreController.prototype.openFromExternal.call(controller, {
-      detail: { caseNo: 5, caseName: "From Judgements" }
+      detail: { caseNo: 5 }
     })
 
     expect(window.bootstrap.Modal.getOrCreateInstance).toHaveBeenCalled()

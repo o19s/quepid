@@ -859,6 +859,30 @@ Normative patterns for **new** client code on Rails pages (teams, books, admin, 
 - **REST vs HTML routes.** JSON under `/api/...` is the REST surface ([OpenAPI](/api/docs), [`docs/QUEPID_FEATURES.md` §23](docs/QUEPID_FEATURES.md#23-api-surface)). Some Stimulus controllers hit **HTML JSON endpoints** instead (bulk judge, mapper wizard) — still prefer server-generated URLs over paths built in JS.
 - **Subpath deployments.** Layouts set `data-quepid-root-url` on `<body>` via `quepid_root_url`. Use `getQuepidRootUrl()` from `utils/quepid_root` only when navigation cannot be a server-rendered URL (e.g. redirect after import). Prefer `data-*-url-value` for API endpoints.
 
+### Turbo on the Angular case page
+
+The case page (`app/views/layouts/core.html.erb`) loads Turbo through `core_stimulus.js`, but only
+for **Frames and Streams**. `Turbo.session.drive = false` is set there, as it is in
+`application_modern.js` for the rest of the app.
+
+Keep Drive off on this layout. AngularJS runs `$locationProvider.html5Mode(true)`, so letting Turbo
+Drive intercept navigation would put two routers on the same URL. Frames and Streams are unaffected:
+Turbo treats anything inside a `<turbo-frame>` as navigatable regardless of the Drive setting, so
+forms inside a frame still submit and re-render normally.
+
+**Never put an Angular element inside a Turbo Frame on this page.** Angular compiles the document
+once at bootstrap. A frame re-render replaces its children with HTML Angular will never compile, so
+any `ng-*` attribute, `{{ }}` binding or custom element inside it is dead from that point on. Where
+server-rendered markup and Angular elements have to sit together — the case header's score badges
+next to its name, the toolbar's `<diff>` and `<import-ratings>` next to Stimulus modal triggers —
+keep the Angular elements *outside* the frame and let a Stimulus controller reconcile the two (see
+`case_toolbar_controller.js`).
+
+Server-rendering a region that Angular used to own also removes whatever ordering Angular's own
+bindings imposed. The case toolbar still carries `ng-if="caseModel.caseLoaded()"` for exactly this
+reason: its markup no longer needs Angular, but several of its actions read live `queriesSvc` state
+and break if clicked before the case has bootstrapped.
+
 ## Fonts
 
 The *aller* font face is from FontSquirrel, and the .ttf is converted into .woff2 format.  

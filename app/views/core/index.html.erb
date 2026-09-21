@@ -1,3 +1,23 @@
+<%#
+  Case page shell.
+
+  The layout that used to live in the Angular template `views/queriesLayout.html` is rendered here
+  instead. That template was compiled into the `angular_templates` bundle, so it could not contain
+  ERB - which meant the case header and toolbar had to re-derive, through Angular models, data that
+  CoreController already loads. Rendering the shell from Rails lets the header and toolbar come
+  straight from `@case`/`@try`.
+
+  What stays Angular, and why:
+    * <qscore-case>  - the score is computed client-side from live ratings.
+    * <queries>      - the query list and search results island.
+    * <diff>, <import-ratings> - not yet migrated (see the removal inventory).
+    * the east pane  - the Tune Relevance drawer, still Angular.
+
+  Those elements are compiled by Angular at bootstrap like any other markup inside `ng-app`.
+  <queries> does not declare an isolate scope, so QueriesCtrl publishes `queries`, `maxScore`,
+  `scores`, `annotations` and `getScorer()` onto MainCtrl's scope - which is why the sibling
+  <qscore-case> bindings below resolve. Keep them siblings under the same ng-controller.
+%>
 <div id="flash-messages">
   <div class="flash fade" data-controller="flash" data-flash-channel-value="main">
     <button type="button" class="btn-core-close float-start" aria-label="Dismiss" data-action="flash#hide"></button>
@@ -19,7 +39,57 @@
   </div>
   <div ng-show="!loading.isLoading()">
     <div ng-controller="MainCtrl">
-      <div ng-include="'views/queriesLayout.html'"></div>
+      <div id="main">
+        <div class="pane_container">
+          <div class="pane_main results-control">
+            <div id="case-header" class="row">
+              <div class="col-sm-12">
+                <div style="display: inline-flex; align-items: flex-start;">
+                  <!-- Current case score -->
+                  <qscore-case
+                    annotations="annotations"
+                    class="case-score"
+                    max-score="maxScore || 1"
+                    scorable="queries.avgQuery"
+                    score-label="getScorer().name"
+                    scores="scores"
+                  >
+                  </qscore-case>
+
+                  <!-- Snapshot case scores -->
+                  <qscore-case
+                    ng-if="queries.avgQuery.diffs"
+                    ng-repeat="searcher in queries.avgQuery.diffs.getSearchers() track by $index"
+                    class="case-score diff-score"
+                    max-score="maxScore || 1"
+                    scorable="searcher"
+                    score-label="searcher.name()"
+                    scores="[]"
+                    annotations="[]"
+                  >
+                  </qscore-case>
+                </div>
+
+                <%= render 'core/case_header', kase: @case, a_try: @try, error: nil %>
+              </div>
+            </div>
+
+            <%= render 'core/case_toolbar', kase: @case, a_try: @try %>
+
+            <!-- see queries directive -->
+            <queries></queries>
+
+            <div ng-controller="WizardCtrl"></div>
+          </div>
+
+          <div class="east-slider">
+          </div>
+
+          <div class="pane_east">
+            <ng-include src="'views/_dev_settings.html'"></ng-include>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

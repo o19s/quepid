@@ -105,6 +105,26 @@ angular.module('QuepidApp')
         }
       });
 
+      /*
+       * Server-rendered case header (app/views/core/_case_header.html.erb). Rename now happens
+       * in Rails and re-renders a Turbo Frame, so this service never sees the PUT that
+       * renameCase() used to make - without this bridge the in-memory case would keep the old
+       * name, and the recent-cases dropdown (HeaderCtrl, which refreshes on 'caseRenamed')
+       * would too, until a full page load.
+       */
+      document.addEventListener('case-header:renamed', function(event) {
+        var detail = event.detail || {};
+        var selected = svc.getSelectedCase();
+        if (!svc.isCaseSelected() || !selected || Number(detail.caseNo) !== Number(selected.caseNo)) {
+          return;
+        }
+
+        $rootScope.$applyAsync(function() {
+          selected.caseName = detail.caseName;
+          broadcastSvc.send('caseRenamed', selected);
+        });
+      });
+
       // Stimulus share-case (both Rails index/teams and the core toolbar).
       document.addEventListener('quepid:case-team-changed', function(event) {
         var detail = event.detail || {};
@@ -397,6 +417,18 @@ angular.module('QuepidApp')
             .then(function() {
               theCase.caseName = newName;
               broadcastSvc.send('caseRenamed', theCase);
+
+              /*
+               * The case header is server-rendered now (core/_case_header.html.erb), so a rename
+               * made from Angular - the new-case wizard is the only remaining caller - has to ask
+               * that Turbo Frame to re-render, or the heading keeps the old name until a reload.
+               *
+               * This does not loop with the inbound 'case-header:renamed' bridge above: that one
+               * assigns caseName directly and never calls back into renameCase().
+               */
+              document.dispatchEvent(new CustomEvent('quepid:case-renamed', {
+                detail: { caseNo: theCase.caseNo, caseName: newName }
+              }));
             }, function() {
               caseTryNavSvc.notFound();
             });

@@ -443,6 +443,40 @@ angular.module('QuepidApp')
         return currSettings !== null && currSettings.selectedTry !== null;
       };
 
+      /*
+       * Server-rendered case header (app/views/core/_case_header.html.erb). The try rename there
+       * is a Rails round trip, so renameTry() below never runs and the in-memory TryFactory keeps
+       * the old name - which the Tune Relevance drawer would then show, since
+       * queryParamsDetails reads the name off the resolved `aTry` when it opens.
+       *
+       * This only mirrors the already-persisted name locally; it must not re-issue the PUT.
+       */
+      document.addEventListener('case-header:try-renamed', function(event) {
+        var detail = event.detail || {};
+
+        if (currSettings === null) {
+          return;
+        }
+
+        var theTry = currSettings.getTry(Number(detail.tryNo));
+
+        if (!theTry || theTry.name === detail.name) {
+          return;
+        }
+
+        theTry.name = detail.name;
+
+        /*
+         * Bumping settingsId is not free, so it must only happen on a real change. SettingsCtrl
+         * watches it and reinitialises `pendingSettings` from the service when it moves - which
+         * throws away whatever the user has typed into the Tune Relevance drawer but not yet
+         * submitted. The header frame re-renders (and so announces a try name) on any header
+         * change, a case rename included, so without the equality guard above renaming a case
+         * would silently discard unsaved query-param edits.
+         */
+        currSettings.settingsId++;
+      });
+
       // An external change in case, we need
       // to rebootstrap ourselves
       this.bootstrap = function() {

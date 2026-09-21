@@ -2,6 +2,7 @@ import ModalTriggerControllerBase from "controllers/core_modal_trigger_controlle
 import { apiFetch } from "api/fetch"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import { showStatusMessage } from "utils/status_message"
+import { caseNameFromHeader } from "utils/case_header"
 
 const REDIRECT_DELAY_MS = 1000
 
@@ -47,7 +48,7 @@ export default class extends ModalTriggerControllerBase {
   openAsRoot(event) {
     const btn = event.currentTarget || event.target
     const caseId = btn?.dataset?.cloneCaseCoreIdValue
-    const caseName = btn?.dataset?.cloneCaseCoreNameValue
+    const caseName = caseNameFromHeader()
     const lastTry = btn?.dataset?.cloneCaseCoreLastTryValue
 
     this.currentCaseId = caseId || ""

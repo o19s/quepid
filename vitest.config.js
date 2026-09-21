@@ -23,6 +23,7 @@ export default defineConfig({
       { find: "@hotwired/stimulus", replacement: path.resolve(repoRoot, "app/javascript/test/stimulus_stub.js") },
       { find: "api/fetch", replacement: path.resolve(repoRoot, "app/javascript/api/fetch.js") },
       { find: "utils/quepid_root", replacement: path.resolve(repoRoot, "app/javascript/utils/quepid_root.js") },
+      { find: "utils/case_header", replacement: path.resolve(repoRoot, "app/javascript/utils/case_header.js") },
       { find: "utils/bs_tooltip", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_tooltip.js") },
       { find: "utils/bs_popover", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_popover.js") },
       { find: "utils/bs_modal", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_modal.js") },

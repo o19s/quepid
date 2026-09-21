@@ -1,5 +1,6 @@
 import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
 import { submitDestructiveForm } from "utils/destructive_form"
+import { caseNameFromHeader } from "utils/case_header"
 
 const ACTION_LABELS = {
   archive: "Archive",
@@ -38,7 +39,7 @@ export default class extends ModalTriggerControllerBase {
   openAsRoot(event) {
     const btn = event.currentTarget || event.target
     const caseId = btn?.dataset?.deleteCaseOptionsCoreIdValue
-    const caseName = btn?.dataset?.deleteCaseOptionsCoreNameValue
+    const caseName = caseNameFromHeader()
 
     this.currentCaseId = caseId || ""
     this.titleTarget.textContent = caseName ? `Delete Options for Case: ${caseName}` : "Delete Options for Case"

@@ -1,0 +1,163 @@
+<%#
+  Server-rendered case-action toolbar for the Angular core case page.
+
+  Each link's `data-*` attributes used to be Angular interpolations of caseSvc/settingsSvc models
+  (`{{ caseModel.selectedCase().caseNo }}` and friends). Every one of those values is Rails model
+  data that CoreController already has, so they are rendered from `kase`/`a_try` directly.
+
+  This is deliberately NOT inside the `case_header` Turbo Frame: <diff> and <import-ratings> are
+  still Angular components, and Angular only compiles the page once at bootstrap, so a frame
+  re-render would leave them dead.
+
+  The case *name* is deliberately absent from these triggers. Each modal reads it live from the
+  header through `utils/case_header` when it opens, so a rename needs nothing copied or resynced
+  here - which also means an `ng-if` rebuild of this toolbar cannot reinstate a stale name.
+
+  `ng-controller="CaseCtrl"` stays for <import-ratings>, which binds `acase="caseModel.selectedCase()"`.
+%>
+<%#
+  `case-toolbar` is mounted out here rather than on the gated div below, so it is never torn
+  down: `ng-if` destroys and re-creates its contents, and a rename that lands while the toolbar
+  is detached would otherwise find no listener and leave the header showing the old name.
+  Mounting it on the always-present wrapper also lets it re-apply the current name on connect,
+  which matters because an `ng-if` re-create re-inserts the original server-rendered attributes.
+%>
+<div
+  id="case-actions"
+  class="row"
+  ng-controller="CaseCtrl"
+  data-controller="case-toolbar"
+  data-case-toolbar-header-url-value="<%= case_header_path(kase, try_number: a_try&.try_number) %>"
+>
+  <%#
+    The `ng-if` is not leftover Angular data binding - the attributes below are all server
+    rendered. It gates *visibility* only, and it has to stay until <diff>/<import-ratings> and
+    the snapshot/export flows stop depending on live queriesSvc state.
+
+    Without it the toolbar is clickable from the first paint, roughly 1.5s before Angular has
+    bootstrapped the case. "Create snapshot" clicked in that window posts with no query state
+    and hangs on "Snapshot Being Created" forever. Angular hid the whole toolbar until the case
+    loaded, so this also keeps the surface equivalent to what it shipped.
+  %>
+  <div class="col-sm-12" ng-if="caseModel.caseLoaded()">
+    <ul class="list-inline">
+      <li class="list-inline-item">
+        <i class="bi bi-card-list"></i>
+        <a
+          href="#"
+          data-controller="pick-scorer-core"
+          data-action="click->pick-scorer-core#open"
+          data-bs-toggle="modal"
+          data-bs-target="#pickScorerModal"
+          data-pick-scorer-core-id-value="<%= kase.id %>"
+          data-pick-scorer-core-current-scorer-id-value="<%= kase.scorer&.id %>"
+          data-pick-scorer-core-current-scorer-name-value="<%= kase.scorer&.name %>"
+        >
+          Select scorer
+        </a>
+      </li>
+      <li class="list-inline-item">
+        <i
+          class="bi bi-book-half"
+          aria-hidden="true"
+          title="Judgements"
+        ></i>
+        <a
+          href="#"
+          data-controller="judgements-core"
+          data-action="click->judgements-core#open"
+          data-bs-toggle="modal"
+          data-bs-target="#judgementsModal"
+          data-judgements-core-id-value="<%= kase.id %>"
+          data-judgements-core-scorer-id-value="<%= kase.scorer_id %>"
+          data-judgements-core-book-id-value="<%= kase.book_id %>"
+          data-judgements-core-queries-count-value="<%= kase.queries.count %>"
+          data-judgements-core-auto-populate-book-pairs-value="<%= kase.auto_populate_book_pairs %>"
+          data-judgements-core-auto-populate-case-judgements-value="<%= kase.auto_populate_case_judgements %>"
+        >
+          Judgements
+        </a>
+      </li>
+      <li class="list-inline-item">
+        <i class="bi bi-camera-fill"></i>
+        <a
+          href="#"
+          data-controller="take-snapshot-core"
+          data-action="click->take-snapshot-core#open"
+          data-bs-toggle="modal"
+          data-bs-target="#takeSnapshotModal"
+          data-take-snapshot-core-id-value="<%= kase.id %>"
+          data-take-snapshot-core-field-spec-value="<%= a_try&.field_spec %>"
+          data-take-snapshot-core-search-engine-value="<%= a_try&.search_endpoint&.search_engine %>"
+          data-take-snapshot-core-mapper-engine-name-value="<%= a_try&.search_endpoint&.mapper_based_search_engine&.name %>"
+        >
+          Create snapshot
+        </a>
+      </li>
+      <li class="list-inline-item">
+        <diff></diff>
+      </li>
+      <li class="list-inline-item">
+        <import-ratings
+          acase="caseModel.selectedCase()"
+        ></import-ratings>
+      </li>
+      <li class="list-inline-item">
+        <i
+          class="bi bi-share-fill"
+          aria-hidden="true"
+          title="Share Case"
+        ></i>
+        <a
+          href="#"
+          data-controller="share-case-core"
+          data-action="click->share-case-core#open"
+          data-bs-toggle="modal"
+          data-bs-target="#shareCaseModal"
+          data-share-case-core-id-value="<%= kase.id %>"
+        >Share case</a>
+      </li>
+      <li class="list-inline-item">
+        <i class="bi bi-copy" aria-hidden="true"></i>
+        <a
+          href="#"
+          data-controller="clone-case-core"
+          data-action="click->clone-case-core#open"
+          data-bs-toggle="modal"
+          data-bs-target="#cloneCaseModal"
+          data-clone-case-core-id-value="<%= kase.id %>"
+          data-clone-case-core-last-try-value="<%= kase.last_try_number %>"
+        >Clone</a>
+      </li>
+      <li class="list-inline-item">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+        <a
+          href="#"
+          data-controller="delete-case-options-core"
+          data-action="click->delete-case-options-core#open"
+          data-bs-toggle="modal"
+          data-bs-target="#deleteCaseOptionsModal"
+          data-delete-case-options-core-id-value="<%= kase.id %>"
+        >Delete</a>
+      </li>
+      <li class="list-inline-item">
+        <i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i>
+        <a
+          href="#"
+          data-controller="export-case-core"
+          data-action="click->export-case-core#open"
+          data-bs-toggle="modal"
+          data-bs-target="#exportCaseModal"
+          data-export-case-core-id-value="<%= kase.id %>"
+          data-export-case-core-supports-detailed-export-value="true"
+        >Export</a>
+      </li>
+      <li class="list-inline-item" id="tune-relevance-link">
+        <i class="bi bi-wrench-adjustable"></i>
+        <a type="button" ng-click="toggleDevSettings()">
+          Tune Relevance
+        </a>
+      </li>
+    </ul>
+  </div>
+</div> <!-- end of #case-actions -->

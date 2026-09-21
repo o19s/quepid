@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { submitDestructiveForm } from "utils/destructive_form"
 import DeleteCaseOptionsCoreController from "controllers/delete_case_options_core_controller"
+import { mountCaseHeader } from "../support/case_header_dom"
 
 vi.mock("utils/destructive_form", () => ({
   submitDestructiveForm: vi.fn()
@@ -63,11 +64,11 @@ describe("DeleteCaseOptionsCoreController", () => {
     expect(trigger.isModalRoot).toBe(false)
   })
 
-  it("open sets the title from the trigger's dataset and disables the submit button until a choice is made", () => {
+  it("open titles itself from the live case header and disables the submit button until a choice is made", () => {
     const controller = buildModalController()
+    mountCaseHeader("Movies")
     const trigger = document.createElement("a")
     trigger.dataset.deleteCaseOptionsCoreIdValue = "42"
-    trigger.dataset.deleteCaseOptionsCoreNameValue = "Movies"
 
     controller.open({ preventDefault: () => {}, currentTarget: trigger })
 

@@ -88,7 +88,6 @@ describe("JudgementsCoreController", () => {
     const controller = buildModalController()
     const trigger = document.createElement("a")
     trigger.dataset.judgementsCoreIdValue = "42"
-    trigger.dataset.judgementsCoreNameValue = "My Case"
     trigger.dataset.judgementsCoreScorerIdValue = "7"
 
     await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })

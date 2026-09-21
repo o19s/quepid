@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import CloneCaseCoreController from "controllers/clone_case_core_controller"
+import { mountCaseHeader } from "../support/case_header_dom"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
@@ -43,9 +44,9 @@ function buildModalController(overrides = {}) {
 }
 
 function buildTrigger({ id = "5", name = "Movies", lastTry = "3" } = {}) {
+  mountCaseHeader(name)
   const trigger = document.createElement("a")
   trigger.dataset.cloneCaseCoreIdValue = id
-  trigger.dataset.cloneCaseCoreNameValue = name
   trigger.dataset.cloneCaseCoreLastTryValue = lastTry
   return trigger
 }
