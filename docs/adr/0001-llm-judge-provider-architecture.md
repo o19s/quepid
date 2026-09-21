@@ -255,10 +255,19 @@ Introduce the value object; use it in `LlmService#augment_system_prompt_for_scal
 *Deployable because* both call sites are asserted to produce byte-identical strings/decisions.
 *Rollback:* revert. *Verify:* `rails test test/models/judge_scale_test.rb test/services/llm_service_test.rb`.
 
-**A3 · `LlmConnection`**
+**A3 · `LlmConnection`** *(landed)*
 Move the Faraday builder out of `LlmService`; add `529` to `retry_statuses`.
 *Deployable because* the only behaviour delta is retrying one more status code that no current
 provider returns. *Verify:* existing `llm_service_test.rb` retry tests.
+
+> **Found while extracting it:** faraday-retry only retries idempotent methods by default
+> (`delete/get/head/options/put`), so `retry_statuses` has never applied to the POSTs a judge
+> makes — the retry config is inert for our calls, and adding `529` is inert with it.
+> `test/services/llm_connection_test.rb` pins that reality rather than the intention.
+> Making retries real means opting POST in, which changes behaviour (a rate-limited run would
+> back off instead of marking pairs unrateable) and so is its own step, not part of a shared
+> extraction. Worth doing: 429/529 both mean the request produced no completion, so a retry
+> costs nothing but time.
 
 **A4 · Adapters for the providers we already have**
 `LlmJudgeAdapters::{Base,OpenAi,Anthropic}` implementing D1's two methods; `LlmService` rewired to

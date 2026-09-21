@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'faraday'
-require 'faraday/retry'
 require 'json'
 
 class LlmService
@@ -17,7 +16,7 @@ class LlmService
 
     @llm_key = llm_key
     @options = default_options.merge(opts.deep_symbolize_keys)
-    @conn = build_connection
+    @conn = LlmConnection.build(url: @options[:llm_service_url])
     @completions_path = compute_completions_path
     @auth_headers = compute_auth_headers
   end
@@ -114,21 +113,6 @@ class LlmService
     Float(value)
   rescue ArgumentError, TypeError
     nil
-  end
-
-  def build_connection
-    Faraday.new(url: @options[:llm_service_url]) do |f|
-      f.request :json
-      f.response :json
-      f.adapter Faraday.default_adapter
-      f.request :retry, {
-        max:                 3,
-        interval:            2,
-        interval_randomness: 0.5,
-        backoff_factor:      2,
-        retry_statuses:      [ 429 ],
-      }
-    end
   end
 
   def get_openai_response user_prompt, system_prompt
