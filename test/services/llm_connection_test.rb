@@ -22,6 +22,15 @@ class LlmConnectionTest < ActiveSupport::TestCase
     assert_not_includes LlmConnection::RETRY_STATUSES, 500
   end
 
+  test 'the backoff interval comes from configuration' do
+    original = Rails.configuration.llm_retry_interval
+    Rails.configuration.llm_retry_interval = 7
+
+    assert_equal 7, LlmConnection.options[:interval]
+  ensure
+    Rails.configuration.llm_retry_interval = original
+  end
+
   test 'parses a JSON body into a hash' do
     stub_request(:post, "#{url}/v1/chat/completions")
       .to_return(status: 200, body: { ok: true }.to_json, headers: { 'Content-Type' => 'application/json' })
@@ -31,16 +40,51 @@ class LlmConnectionTest < ActiveSupport::TestCase
     assert_equal({ 'ok' => true }, response.body)
   end
 
-  # Documents today's reality rather than an intention: faraday-retry only
-  # retries idempotent methods unless told otherwise, so a rate-limited POST --
-  # which is every call a judge makes -- is returned to the caller on the first
-  # try. See the NOTE in LlmConnection before changing this.
-  test 'a rate limited POST is not actually retried yet' do
-    stub_request(:post, "#{url}/v1/chat/completions").to_return(status: 429, body: '{}')
+  describe 'retrying a POST, which is every call a judge makes' do
+    # Collapse the backoff so the suite doesn't actually sleep 2s, 4s, 8s.
+    let(:impatient) { { interval: 0, backoff_factor: 1, interval_randomness: 0 } }
 
-    response = LlmConnection.build(url: url).post('v1/chat/completions', {})
+    def post_to url, retry_options
+      LlmConnection.build(url: url, retry_options: retry_options).post('v1/chat/completions', {})
+    end
 
-    assert_equal 429, response.status
-    assert_requested :post, "#{url}/v1/chat/completions", times: 1
+    test 'a rate limited POST is retried and can then succeed' do
+      stub_request(:post, "#{url}/v1/chat/completions")
+        .to_return({ status: 429, body: '{}' },
+                   { status: 200, body: { ok: true }.to_json, headers: { 'Content-Type' => 'application/json' } })
+
+      response = post_to(url, impatient)
+
+      assert_equal 200, response.status
+      assert_requested :post, "#{url}/v1/chat/completions", times: 2
+    end
+
+    test 'an overloaded POST is retried too, and gives up after max attempts' do
+      stub_request(:post, "#{url}/v1/chat/completions").to_return(status: 529, body: '{}')
+
+      response = post_to(url, impatient)
+
+      assert_equal 529, response.status
+      # the first attempt plus RETRY_OPTIONS[:max] retries
+      assert_requested :post, "#{url}/v1/chat/completions", times: 4
+    end
+
+    test 'a POST that fails any other way is left alone' do
+      stub_request(:post, "#{url}/v1/chat/completions").to_return(status: 500, body: '{}')
+
+      response = post_to(url, impatient)
+
+      assert_equal 500, response.status
+      assert_requested :post, "#{url}/v1/chat/completions", times: 1
+    end
+
+    # The request may have reached the provider and been billed, so repeating it
+    # is not free the way repeating a refused one is.
+    test 'a POST that times out is not retried' do
+      stub_request(:post, "#{url}/v1/chat/completions").to_timeout
+
+      assert_raises(Faraday::Error) { post_to(url, impatient) }
+      assert_requested :post, "#{url}/v1/chat/completions", times: 1
+    end
   end
 end

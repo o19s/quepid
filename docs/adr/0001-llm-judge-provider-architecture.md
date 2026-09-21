@@ -261,13 +261,16 @@ Move the Faraday builder out of `LlmService`; add `529` to `retry_statuses`.
 provider returns. *Verify:* existing `llm_service_test.rb` retry tests.
 
 > **Found while extracting it:** faraday-retry only retries idempotent methods by default
-> (`delete/get/head/options/put`), so `retry_statuses` has never applied to the POSTs a judge
-> makes — the retry config is inert for our calls, and adding `529` is inert with it.
-> `test/services/llm_connection_test.rb` pins that reality rather than the intention.
-> Making retries real means opting POST in, which changes behaviour (a rate-limited run would
-> back off instead of marking pairs unrateable) and so is its own step, not part of a shared
-> extraction. Worth doing: 429/529 both mean the request produced no completion, so a retry
-> costs nothing but time.
+> (`delete/get/head/options/put`), so `retry_statuses` had never applied to the POSTs a judge
+> makes — the retry config was inert for our calls, and `529` was inert with it.
+
+**A3b · Make the retries real for POSTs** *(landed — the behaviour change A3 deliberately excluded)*
+`retry_if` narrows by *exception* rather than by verb: `Faraday::RetriableResponse` is raised only
+for `RETRY_STATUSES`, so a POST retries when the provider said "too many" or "overloaded" — which
+guarantees no completion was produced and nothing is paid for twice — and does **not** retry on a
+timeout or connection failure, where the request may already have been processed.
+The base interval moves to `Rails.configuration.llm_retry_interval` (2s; `0` in test, so a stubbed
+429 doesn't make the suite sit through a real backoff — it costs 15s otherwise).
 
 **A4 · Adapters for the providers we already have**
 `LlmJudgeAdapters::{Base,OpenAi,Anthropic}` implementing D1's two methods; `LlmService` rewired to
