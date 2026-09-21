@@ -14,6 +14,7 @@
 | [`todo/QUEPID_FEATURES.md`](./todo/QUEPID_FEATURES.md) | Whole-app feature inventory |
 | [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md) | Case workspace (`/case/...`) deep dive |
 | [`complete_application_specification.md`](./complete_application_specification.md) | Schema columns, HTML routes, business rules (rewrite reference) |
+| [`adr/0001-llm-judge-provider-architecture.md`](./adr/0001-llm-judge-provider-architecture.md) | Why the LLM-as-Judge adapter seam exists, why Jev lands now and OpenAI Batch is deferred, and the deployable step order |
 | [`todo/todo.md`](./todo/todo.md) | Open bugs, hardening, and cleanup on `main` (excludes obviated Angular UI — see [§ Obviated](./todo/todo.md#obviated-by-angular-removal-do-not-fix-in-angular)) |
 
 ## Dedup rules (Aug 2026)

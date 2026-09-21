@@ -306,9 +306,14 @@ class User < ApplicationRecord
     opts.deep_symbolize_keys
   end
 
+  # `options` is a JSON column, so the key this writes under has to be the same *string*
+  # the reader digs for. Merging under a symbol adds a second entry next to any existing
+  # string one, which serializes to a JSON object with two "judge_options" keys -- last
+  # one wins on the way back, and `json` 3.0 raises on it outright. Strings both ways.
+  # The value is stringified for the same reason: what we hold in memory before a reload
+  # should be the shape that comes back from the database.
   def judge_options= value
-    self.options ||= {}
-    self.options = options.merge(judge_options: value)
+    self.options = (options || {}).merge('judge_options' => value.to_h.deep_stringify_keys)
   end
 
   private

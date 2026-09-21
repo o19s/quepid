@@ -476,6 +476,34 @@ class UserTest < ActiveSupport::TestCase
         judge_options = joey.judge_options
         assert_equal('gpt-3.5-turbo', judge_options[:model])
       end
+
+      it 'stores everything under one string key, whatever keys you hand it' do
+        user = User.new(llm_key: '1234', name: 'Judge Judy')
+
+        user.judge_options = { 'llm_provider' => 'openai' }
+        user.judge_options = { llm_provider: 'ollama', llm_model: 'qwen3:0.6b' }
+        user.save!
+
+        # A symbol key here would sit alongside the string one and serialize to a JSON
+        # object with two "judge_options" entries.
+        assert_equal [ 'judge_options' ], user.read_attribute(:options).keys
+        assert_equal 1, user.read_attribute(:options).to_json.scan('judge_options').size
+
+        user.reload
+        assert_equal 'ollama', user.judge_options[:llm_provider]
+        assert_equal 'qwen3:0.6b', user.judge_options[:llm_model]
+      end
+
+      it 'keeps other options entries when judge options are written' do
+        user = User.new(llm_key: '1234', name: 'Judge Judy', options: { 'special_options' => { 'key1' => 'opt1' } })
+
+        user.judge_options = { llm_provider: 'openai' }
+        user.save!
+        user.reload
+
+        assert_equal 'opt1', user.options.dig('special_options', 'key1')
+        assert_equal 'openai', user.judge_options[:llm_provider]
+      end
     end
   end
 

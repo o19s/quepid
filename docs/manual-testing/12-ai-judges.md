@@ -11,7 +11,7 @@ AI Judges let an LLM stand in for a human judge. An AI Judge is modeled as a spe
 - [ ] **Steps:**
   1. From a Team's show page, click **Create AI Judge**.
   2. Fill in Name and an **LLM Key** (required — help text notes it must be something, even a placeholder like "abc123").
-  3. Choose an **LLM Provider** from the dropdown — try each option in turn: OpenAI, Azure OpenAI, Azure AI Foundry, Azure AI Foundry Serverless, Azure AI Foundry Anthropic, Anthropic, Google Gemini, Ollama.
+  3. Choose an **LLM Provider** from the dropdown — try each option in turn: OpenAI, Azure OpenAI, Azure AI Foundry, Azure AI Foundry Serverless, Azure AI Foundry Anthropic, Anthropic, Google Gemini, Ollama. (TypeSafe Jev is listed too, but it is a "coming soon" placeholder — see 12.6.)
   4. For each, confirm the LLM Service URL / Model / API Version fields auto-fill with sensible presets and inline help text updates.
   5. Toggle between the **Structured Fields** and **JSON** tabs for `judge_options` — confirm they're mutually exclusive (editing one disables the other, not just visually but functionally).
   6. Review/edit the default **System Prompt** (a canned 0–3 relevance-grading prompt with worked examples).
@@ -64,3 +64,18 @@ AI Judges let an LLM stand in for a human judge. An AI Judge is modeled as a spe
   - [ ] Simulate (or naturally trigger) the LLM failing to return a usable rating for a given pair — confirm that specific judgement is marked `unrateable` rather than the whole run erroring out.
   - [ ] Trigger a run when the book already has zero unjudged pairs left — confirm it completes immediately having processed 0, without error.
   - [ ] Confirm **Prepare to Judge!** is disabled/absent once the AI judge has nothing left to judge, or once the book has already reached its judgements-per-pair cap (cross-reference Part 11.7).
+
+### 12.6 A "coming soon" provider is visible but cannot be saved
+
+Some providers are listed in the form before Quepid can actually judge with them, so a team can see what the provider will need and get an API key ready. TypeSafe Jev is the current one.
+
+- [ ] **Steps:**
+  1. On the AI Judge form (new or edit), pick **TypeSafe Jev (coming soon)** from the LLM Provider dropdown.
+  2. Confirm a yellow **Coming soon** banner appears above the usual blue help panel, saying the provider cannot be saved yet and linking to `console.typesafe.ai/keys` for an account/API key.
+  3. Confirm **LLM Service URL**, **LLM Model** and **LLM API Version** auto-fill (`https://api.typesafe.ai`, `jev-latest`, blank) and become **read-only/greyed**, while **LLM Key**, **Name**, **Timeout** and the system prompt stay editable.
+  4. Fill in Name and LLM Key anyway and click **Save**.
+  5. Switch the provider back to a supported one (e.g. Ollama) — confirm the banner disappears, the help panel updates, and the URL/Model/API Version fields become editable again.
+- **Expected:** Step 4 does **not** create (or update) the judge: the form re-renders with the error "TypeSafe Jev (coming soon) is not available yet, so an AI Judge cannot use it." Step 5 leaves the form fully usable for a supported provider.
+- **Edge cases:**
+  - [ ] Try the same on the **edit** form for an existing, working judge — confirm the save is refused and the judge keeps its previous provider (it is not half-updated).
+  - [ ] Set the provider to `typesafe_jev` through the **JSON** tab instead of the dropdown — confirm the save is still refused server-side.
