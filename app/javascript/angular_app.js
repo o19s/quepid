@@ -61,6 +61,10 @@ window.URI = URI;
 import quepidDom from './quepid_dom';
 window.quepidDom = quepidDom;
 
+// Framework-free query/search logic (see app/javascript/quepid_search.js).
+import quepidSearch from './quepid_search';
+window.quepidSearch = quepidSearch;
+
 // Shepherd for tours. Both are UMD builds; under esbuild's CommonJS-like
 // module scope they resolve to their `module.exports` branch instead of
 // setting `root.Shepherd`/`root.Tether`, so legacy code (app/assets/javascripts/tour.js)

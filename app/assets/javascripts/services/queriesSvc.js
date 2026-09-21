@@ -125,33 +125,14 @@ angular.module('QuepidApp')
       this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
 
-      /**
-       * Single source of truth for "can this try's engine look up already-rated docs by ID via
-       * a mapper?" (MapperBasedSearchEngine#supports_rated_docs_lookup, exposed on the try as
-       * mapperBasedSearchEngineSupportsRatedDocsLookup) - only meaningful for searchapi; see
-       * trySupportsRatedDocsLookup below for the general "any engine" version of this question.
-       */
+      // Rated-docs lookup rules live in app/javascript/utils/rated_docs.js (Vitest-covered);
+      // these stay as the Angular-facing names that queriesCtrl.js and docFinder.js call.
       function trySupportsSearchApiRatedDocsLookup(aTry) {
-        if (!aTry || aTry.searchEngine !== 'searchapi') {
-          return false;
-        }
-
-        return !!aTry.mapperBasedSearchEngineSupportsRatedDocsLookup;
+        return window.quepidSearch.ratedDocs.supportsSearchApiLookup(aTry);
       }
 
-      // es/os/solr always have a generic ID-filter query syntax (filterToRatings below), so
-      // they always support this; searchapi is conditional on its mapper (above). Single
-      // source of truth for "does this try support rated-docs lookup at all" - used to gate
-      // "Show only rated" (queriesCtrl.js) and the Find-and-Rate-Missing-Documents
-      // "Already Rated Documents" section (docFinder.js), so the two stay in sync.
-      var NATIVELY_RATED_DOCS_LOOKUP_ENGINES = [ 'es', 'os', 'solr' ];
-
       function trySupportsRatedDocsLookup(aTry) {
-        if (!aTry) {
-          return false;
-        }
-        return NATIVELY_RATED_DOCS_LOOKUP_ENGINES.indexOf(aTry.searchEngine) !== -1 ||
-          trySupportsSearchApiRatedDocsLookup(aTry);
+        return window.quepidSearch.ratedDocs.supportsLookup(aTry);
       }
 
       // Shared "clone settings with the selectedTry overridden" pattern for a one-off preview
@@ -1138,29 +1119,13 @@ angular.module('QuepidApp')
           });
         };
 
+        // Per-engine filter syntax lives in app/javascript/utils/rated_docs.js (Vitest-covered).
         this.filterToRatings = function(settings, slice) {
-          let ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
-
-          // Explain other cannot page thru results, this allows for retrieving slices of the ratings
-          if (slice !== undefined) {
-            ratedIDs = ratedIDs.slice(slice, settings.numberOfRows + slice);
-          }
-
-          let fieldSpec = settings.createFieldSpec();
-
-          if (searchEndpointSvc.isEsOrOsEngine(settings.searchEngine)) {
-            let esQuery = {
-              'terms': {}
-            };
-            esQuery['terms'][fieldSpec.id] = ratedIDs;
-            return esQuery;
-          } else if (settings.searchEngine === 'solr') {
-            return '{!terms f=' + fieldSpec.id + '}' + ratedIDs.join(',');
-          } else if (settings.searchEngine === 'vectara') {
-            return ratedIDs.map(function(id) {
-              return 'doc.id = \'' + id + '\'';
-            }).join(' OR ');
-          }
+          return window.quepidSearch.ratedDocs.buildFilter({
+            searchEngine: settings.searchEngine,
+            idField:      settings.createFieldSpec().id,
+            ratedIds:     window.quepidSearch.ratedDocs.ids(self.ratings, slice, settings.numberOfRows)
+          });
         };
       };
 

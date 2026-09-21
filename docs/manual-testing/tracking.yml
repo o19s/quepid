@@ -219,9 +219,9 @@ parts:
         paths: ["app/models/query.rb", "app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js", "app/assets/javascripts/components/query_options/query_options_controller.js"]
       "4.6":
         title: "Rate a document"
-        last_run: 2026-09-18T15:59:00Z
+        last_run: 2026-09-21T13:13:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on SOLR CASE (case 1) after merging rateBulkSvc/rateElementSvc (identical setScale-only services left behind by the earlier ratings-popover Stimulus migration) into a single rateScaleSvc and updating the three consuming controllers' injections (searchResult.js, searchResults.js, docFinder.js). Rated 'Long Day's Journey Into Night' (rank #1) via the popover: doc badge 0.00→1.00, case/query score badges updated live, no console errors. RESET restored the doc to '--' and the case back to 0.00/10 unrated — original state preserved. Did not re-test the 'Score All' bulk path, the Missing Documents finder popover, or non-rating edge cases this pass (see 4.9 for that surface)."
+        notes: "Re-verified via Playwright MCP on SOLR CASE (case 1) after extracting the rated-docs lookup rules out of queriesSvc into app/javascript/utils/rated_docs.js. Rated 'Long Day's Journey Into Night' (rank #1) via the popover '1 Relevant': case score badge 0.00→1.00 (green), frog badge 10→9 unrated, no console errors. RESET restored the doc to '--' and the case to 0.00/10 unrated, confirmed after a reload — original state preserved. Did not re-test the 'Score All' bulk path, the Missing Documents rating popover, or the 0-Irrelevant/multi-doc paths this pass (see 4.9 for that surface)."
         paths: ["app/controllers/ratings_controller.rb", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/controllers/searchResult.js", "app/assets/javascripts/controllers/searchResults.js", "app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/services/rateScaleSvc.js", "app/assets/templates/views/searchResult.html", "app/assets/templates/views/searchResults.html"]
       "4.7":
         title: "Case & query score badges"
@@ -237,10 +237,10 @@ parts:
         paths: ["app/javascript/controllers/pick_scorer_core_controller.js", "app/views/shared/_pick_scorer_core_modal.html.erb", "app/assets/javascripts/services/queriesSvc.js", "app/models/scorer.rb"]
       "4.9":
         title: "Missing Documents finder"
-        last_run: 2026-09-18T16:00:00Z
+        last_run: 2026-09-21T13:13:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on SOLR CASE (case 1), query 'star wars', after merging rateBulkSvc/rateElementSvc into rateScaleSvc and updating docFinder.js's injection (see 4.6). Opened Missing Documents, searched (q=*:*, 8516 matches), used the modal's 'Score All' popover (bulk rate path via docFinder.js) to rate all 10 shown docs '0 Irrelevant' — badges updated live both inside the modal and on the underlying workbench behind it, no console errors, then RESET via the same popover restored all 10 to unrated. Closed the modal and confirmed the case/query score badges were back to their original 0.00/10-unrated state. Did not test the blank-URL/invalid-query edge cases or 'Reset to All Rated Docs' button this pass."
-        paths: ["app/assets/javascripts/controllers/docFinder.js", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/services/rateScaleSvc.js", "app/assets/templates/views/targetedSearchModal.html"]
+        notes: "Shallow pass via Playwright MCP on SOLR CASE (case 1), query 'star wars', after extracting the rated-docs lookup rules out of queriesSvc into app/javascript/utils/rated_docs.js. Opened Missing Documents and confirmed the modal renders with its query pre-filled (q=*:*) and the 'Reset to All Rated Docs' button present and enabled — that button is gated on trySupportsRatedDocsLookup(), which now delegates to the extracted module. No console errors. Did NOT run a search from the modal, rate anything through it, or exercise the 'Score All' bulk path this pass — the prior pass covers those. The same predicate was verified on both branches elsewhere: 'Show only rated' is enabled on this Solr case and correctly disabled ('Not supported for this search engine yet') on STATIC CASE (case 4)."
+        paths: ["app/assets/javascripts/controllers/docFinder.js", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/services/rateScaleSvc.js", "app/assets/templates/views/targetedSearchModal.html", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/utils/rated_docs.js"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
         last_run: 2026-09-15T16:45:00Z

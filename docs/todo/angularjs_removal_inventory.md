@@ -44,7 +44,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | Priority | Item | Notes |
 |----------|------|-------|
 | **P0** | AngularJS 1.8.3 EOL | 122 JS files, 36 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
-| **P0** | `queriesSvc` god object (~1,386 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
+| **P0** | `queriesSvc` god object (~1,725 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
 | **P0** | `eval()` scorers | Inside `$timeout()`, no sandbox; Web Worker timeout commented out |
 | **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
 | **P1** | `new Function()` mappers | SearchAPI mappers; MiniRacer on server; mapper wizard already Stimulus |
@@ -246,17 +246,35 @@ Shell (`ngRoute`/`404Ctrl` removal, `MainCtrl` bootstrap off `$routeParams`) is 
 
 | Name | LOC | Why |
 |------|-----|-----|
-| **queriesSvc** | 1,386 | Central case state — search, docs, scores, persistence |
-| **wizardModal** | 909 | Onboarding wizard (ACE, CSV, tags, tour) |
-| **queriesCtrl** | 606 | Query list UX (sort, filter, paginate, keyboard) |
-| **settingsSvc** / **caseSvc** | 638 / 510 | Try / case domain model |
-| **$quepidModal** | 275 | BS5 modals + `$compile` — 11 `.open()` call sites (24 files reference `$quepidModal`) |
+| **queriesSvc** | 1,725 | Central case state — search, docs, scores, persistence |
+| **wizardModal** | 1,051 | Onboarding wizard (ACE, CSV, tags, tour) |
+| **queriesCtrl** | 609 | Query list UX (sort, filter, paginate, keyboard) |
+| **settingsSvc** / **caseSvc** | 720 / 509 | Try / case domain model |
+| **$quepidModal** | 272 | BS5 modals + `$compile` — 11 `.open()` call sites (24 files reference `$quepidModal`) |
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
 **Component LOC** (easiest → hardest, after [toolbar duplicates](#core-toolbar-duplicates-highest-leverage)): new_case (66) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → move_query (152) → add_query (160) → qgraph (250) → diff (285) → frog_report (360) → import_ratings (462).
 
 **Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `add-query`, `query-options`, `new-case` / wizard, `frog-report`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Moving these implies rebuilding the case SPA, not a framework swap.
+
+#### `queriesSvc` seam inventory (phase 1)
+
+22 Angular files reach into `queriesSvc`; the four `*_core_controller.js` Stimulus controllers reach it only through `document` CustomEvents (already bridged). Grouped by what a caller actually needs:
+
+| Surface | Members | Callers |
+|---------|---------|---------|
+| **Read / display** | `queryArray`, `latestScoreInfo`, `version`, `hasUnscoredQueries`, `scoredQueryCount`, `queryCount`, `isBootstrapping`, `queries`, `showOnlyRated` | `queriesCtrl`, `frog_report`, `caseCSVSvc` / `utils/case_csv.js`, `querySnapshotSvc`, `queryDiffResults` |
+| **Mutation / lifecycle** | `bootstrapQueries`, `changeSettings`, `searchAll`, `createQuery`, `persistQuery(ies)`, `deleteQuery`, `moveQuery`, `updateQueryDisplayPosition`, `reset`, `updateScores`, `scoreAll`, `refreshAllDiffs`, `syncToBook` | `mainCtrl`, `wizardModal`, `add_query`, `move_query`, `searchResults`, `diff`, `import_ratings`, `query_options`, `caseSvc` |
+| **Search / score engine** (`Query`) | `search`, `searchFromSnapshot`, `paginate`, `ratedPaginate`, `score` / `scoreOthers`, `refreshRatedDocs`, `setDocs`, `filterToRatings`, plus svc-level `createSearcherFromSettings`, `normalizeDocExplains`, `searchApiRatedDocs`, `pAll`, mapper `eval` | `docFinder`; otherwise internal |
+
+**Framework-free today (extract ahead of any UI decision):** `pAll`, `evaluateMapperFunctions` + cache, `matchFeaturesExplain`, `filterToRatings`, `trySupportsRatedDocsLookup` / `trySupportsSearchApiRatedDocsLookup`, `settingsWithTryOverrides`, the aggregation math in `scoreAll`. These keep the same signatures under any target stack, so extracting them to tested ESM under `app/javascript/` is not a bet on the UI framework. Wiring already exists — `utils/*.js` → `quepid_dom.js` → `window.quepidDom`, with `build:angular-vendor` passing `--alias:utils=./app/javascript/utils`.
+
+**`static` is normalized to `solr` by mutation.** `createSearcherFromSettings()` assigns `passedInSettings.searchEngine = 'solr'` for a static engine, and `Query.search()` passes `currSettings` uncopied — so the rewrite persists on the service until the next `changeSettings()`. It is load-bearing: `Query.search()` builds `ratedSearcher` with `filterToRated: true` on every search, and `filterToRatings()` has no `static` branch, so without the rewrite a static case pushes `undefined` into `fq`. The rewrite reaches only the settings-level copy — `selectedTry.searchEngine` stays `static`, which is why `trySupportsRatedDocsLookup()` (read off the try) correctly leaves "Show only rated" disabled for static cases. Extractions must normalize `static` → `solr` at the searcher/filter seam **only**, never in the capability predicates, or the toggle silently turns on. No Karma or Vitest example covers a static engine.
+
+**Contract to port from:** `spec/javascripts/angular/services/queriesSvc_spec.js` (1,226 lines) — notably `createSearcherFromSettings` (Solr `echoParams`, `jsonQueryDsl`, `fq` vs `filter` ratings filter), the query factory scoring/doc-state examples, and bootstrap/add/delete/move versioning. Port per skill phase 3 before deleting Angular sources.
+
+**Unresolved (blocks UI work, not extraction):** Angular's digest is what re-renders `queriesCtrl` / `searchResults` / `qscore-*` when a rating changes. Stimulus supplies no reactivity, and `scoreAll()` is O(n queries) per rating with no perf target set (see [decision lenses](#decision-lenses)). The replacement re-render mechanism is still undecided.
 
 #### App-level (port seams; don't rebuild)
 
@@ -315,6 +333,16 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 **Fix during migration:** Add `aria-label` (or visible text) on the replacement controls. Align with [decision lens § A11y](#decision-lenses) — scores and rating controls need real ARIA, not color-only state.
 
 **Touches:** `searchResults.html`, diff/snapshot Compare UI, [Feature area § Search results](#6-search-results-and-rating-ui).
+
+#### "Show only rated" serves a stale list after a new rating
+
+**Observed:** Toggle "Show only rated" on and off, rate a document, then toggle it on again — the rated list is whatever it was on the first toggle, so a just-rated doc is missing. A reload fixes it.
+
+**Cause:** `toggleShowOnlyRated()` only calls `query.refreshRatedDocs()` when `!query.ratingsReady`, and `refreshRatedDocs()` sets `ratingsReady = true` permanently — nothing clears it when a rating changes, so the rated-doc fetch never re-runs.
+
+**Fix during migration:** Invalidate the rated-docs cache on rating change (the `rating-changed` path that already triggers `scoreAll()`), rather than gating the refetch on a one-shot flag.
+
+**Touches:** `queriesSvc` `toggleShowOnlyRated` / `refreshRatedDocs` / `ratingsReady`, [live query-state phase](#live-query-state-phase-committed-final-phase).
 
 ---
 
