@@ -241,7 +241,7 @@ Every step below is a single PR, mergeable and deployable on its own, in this or
 
 ### 5.2 Phase A — the seam (no user-visible change, no new capability)
 
-**A1 · `LlmProviders` registry, rendered by the form**
+**A1 · `LlmProviders` registry, rendered by the form** *(landed)*
 Add `app/models/llm_provider.rb` + `app/models/llm_providers.rb` carrying today's six providers
 verbatim. Render the `<select>` options and the `PROVIDER_PRESETS` JSON from it; delete the
 hand-kept lists in the ERB/JS.
@@ -249,7 +249,7 @@ hand-kept lists in the ERB/JS.
 *Rollback:* revert one file pair. *Verify:* `rails test test/models/llm_providers_test.rb`,
 `yarn lint:js`, plus a Playwright MCP shot of the AI Judge form (manual scenario 12.1 paths).
 
-**A2 · `JudgeScale`**
+**A2 · `JudgeScale`** *(landed)*
 Introduce the value object; use it in `LlmService#augment_system_prompt_for_scale` /
 `#sanitize_scale_label` and in `RunJudgeJudyJob`'s membership check.
 *Deployable because* both call sites are asserted to produce byte-identical strings/decisions.

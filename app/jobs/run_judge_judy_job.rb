@@ -17,6 +17,7 @@ class RunJudgeJudyJob < ApplicationJob
   def perform book, judge, number_of_pairs
     counter = 0
     llm_service = LlmService.new judge.llm_key, judge.judge_options
+    scale = JudgeScale.for(book)
     loop do
       break if number_of_pairs && counter >= number_of_pairs
 
@@ -30,7 +31,7 @@ class RunJudgeJudyJob < ApplicationJob
       if judgement.rating.blank?
         # if we don't have a rating, let's assume it's not rateable and mark it so.
         judgement.mark_unrateable
-      elsif book.scale.present? && book.scale.map(&:to_f).exclude?(judgement.rating.to_f)
+      elsif scale.present? && !scale.includes?(judgement.rating)
         # the LLM returned a rating outside this book's configured scale -- a
         # human judge could never produce this (the judging UI only offers
         # buttons for the book's actual scale values), so don't trust it, but
