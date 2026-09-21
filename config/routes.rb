@@ -81,6 +81,12 @@ Rails.application.routes.draw do
 
   get '/dropdown/cases' => 'dropdown#cases'
   get '/dropdown/books' => 'dropdown#books'
+  # Core case page twins: same lists, but their links must do a hard browser
+  # navigation (see app/views/dropdown/cases_core.html.erb) instead of the
+  # Rails-page navbar's Turbo AJAX visit, which would leave Angular running
+  # against the old case underneath a silently-changed URL.
+  get '/dropdown/cases_core' => 'dropdown#cases_core'
+  get '/dropdown/books_core' => 'dropdown#books_core'
 
   resources :teams, only: [] do
     resources :ai_judges, controller: :ai_judges, except: [ :index ]

@@ -51,15 +51,14 @@ deregister). `R` and `S` columns below distinguish them.
 
 | Event name | Emitter(s) | Listener(s) | Listener kind | Notes |
 |------------|------------|-------------|---------------|-------|
-| `caseSelected` | `caseSvc.js:181` | `headerCtrl.js:62` | S | |
-| `updatedCasesList` | `caseSvc.js:213,274,539`, `move_query_modal_instance_controller.js:63` | `headerCtrl.js:48` (loop), `move_query_modal_instance_controller.js:39` (loop) | S | Most-fanned event; four emitters |
-| `fetchedDropdownCasesList` | `caseSvc.js:293` | `headerCtrl.js:32` | S | |
-| `updatedCaseScore` | `caseSvc.js:355`, `annotationsSvc.js:29,39,71` | `queriesCtrl.js:173`, `annotations_controller.js:40`, `move_query_modal_instance_controller.js:39` (loop) | S | |
-| `caseRenamed` | `caseSvc.js:124,419` | `caseSvc.js:102`, `headerCtrl.js:48` (loop), `move_query_modal_instance_controller.js:39` (loop) | R + S | `caseSvc` listens via `$rootScope.$on`. `:124` is the Stimulus bridge — a `case-header:renamed` CustomEvent from the server-rendered header re-broadcast into Angular |
-| `caseUpdate` | `caseSvc.js:452` | *(none found)* | — | **Dead emit** — no `$on('caseUpdate')` matches |
-| `associateBook` | `caseSvc.js:166,499` | `headerCtrl.js:42`, `queriesSvc.js:74` | S + R | `queriesSvc` listener is `$rootScope.$on` (aliased `$scope`). `:166` is the Stimulus bridge from `quepid:case-team-changed` |
+| `caseSelected` | `caseSvc.js:183` | *(none found)* | — | **Dead emit** — `headerCtrl.js` was the only listener; removed when the core header dropdowns moved to Turbo Frames (see angularjs_removal_inventory.md) |
+| `updatedCasesList` | `caseSvc.js:215,276,541`, `move_query_modal_instance_controller.js:63` | `move_query_modal_instance_controller.js:39` (loop) | S | `headerCtrl.js`'s listener is gone (same removal as above) |
+| `fetchedDropdownCasesList` | `caseSvc.js:295` | *(none found)* | — | **Dead emit** — same removal as `caseSelected` |
+| `updatedCaseScore` | `caseSvc.js:357`, `annotationsSvc.js:29,39,71` | `queriesCtrl.js:173`, `annotations_controller.js:40`, `move_query_modal_instance_controller.js:39` (loop) | S | |
+| `caseRenamed` | `caseSvc.js:126,421` | `caseSvc.js:102`, `move_query_modal_instance_controller.js:39` (loop) | R + S | `caseSvc` listens via `$rootScope.$on`. `:126` is the Stimulus bridge — a `case-header:renamed` CustomEvent from the server-rendered header re-broadcast into Angular. `headerCtrl.js`'s listener is gone (same removal as `caseSelected`) — the recent-cases dropdown is its own Turbo Frame now and doesn't live-refresh on rename either, matching the Rails-page navbar's identical frame |
+| `caseUpdate` | `caseSvc.js:454` | *(none found)* | — | **Dead emit** — no `$on('caseUpdate')` matches |
+| `associateBook` | `caseSvc.js:168,501` | `queriesSvc.js:74` | R | `queriesSvc` listener is `$rootScope.$on` (aliased `$scope`). `:168` is the Stimulus bridge from `quepid:case-team-changed`. `headerCtrl.js`'s listener is gone (same removal as `caseSelected`) |
 | `annotationDeleted` | `annotationsSvc.js:40` | `annotations_controller.js:36` | S | |
-| `fetchedDropdownBooksList` | `bookSvc.js:147` | `headerCtrl.js:37` | S | |
 | `settings-changed` | `settingsSvc.js:496` | *(none found)* | — | **Dead emit** — emitted on try-list fetch; no listener (COREUI doc reference is stale) |
 | `settings-updated` | `settingsSvc.js:637,727` | `caseSvc.js:94` (per `Case` instance), `move_query_modal_instance_controller.js:39` (loop) | R + S | **Leak:** listener registered inside `Case` constructor — one `$rootScope.$on` per constructed case |
 | `rating-changed` | `ratingsStoreSvc.js:29` (`$rootScope.$emit` via alias) | `queriesSvc.js:153`, `queriesCtrl.js:65`, `searchResults.js:30` | R | All three listeners are `$rootScope.$on`; `queriesCtrl` deregisters on `$destroy`, others do not |
@@ -69,21 +68,26 @@ deregister). `R` and `S` columns below distinguish them.
 
 ## Emitter index (`broadcastSvc.send`)
 
-20 active calls across 5 files (+1 commented in `queriesSvc.js`; last counted 2026-09-21):
+19 active calls across 4 files (+1 commented in `queriesSvc.js`; last counted 2026-09-21):
 
 | File | Count | Events |
 |------|-------|--------|
 | `services/caseSvc.js` | 11 | `caseSelected`, `updatedCasesList` ×3, `fetchedDropdownCasesList`, `updatedCaseScore`, `caseRenamed` ×2, `caseUpdate`, `associateBook` ×2 |
 | `services/annotationsSvc.js` | 4 | `updatedCaseScore` ×3, `annotationDeleted` |
 | `services/settingsSvc.js` | 3 | `settings-changed`, `settings-updated` ×2 |
-| `services/bookSvc.js` | 1 | `fetchedDropdownBooksList` |
 | `components/move_query/move_query_modal_instance_controller.js` | 1 | `updatedCasesList` |
+
+Of the 19, 2 became dead emits when `headerCtrl.js` was deleted (core header dropdowns → Turbo Frames):
+`caseSelected`, `fetchedDropdownCasesList` (both `caseSvc.js`). A third, `fetchedDropdownBooksList`
+(`bookSvc.js`), went dead the same way but was deleted outright along with its now-unreachable
+`fetchDropdownBooks()` emitter — see [Migration-relevant observations](#migration-relevant-observations)
+§2 — so it no longer appears in this count. `services/bookSvc.js` also drops out of the file list
+above as a result: it registered zero other `broadcastSvc.send` calls.
 
 ## Listener index (`$on`)
 
 | File | Kind | Events | Deregisters? |
 |------|------|--------|--------------|
-| `controllers/headerCtrl.js` | S | `fetchedDropdownCasesList`, `fetchedDropdownBooksList`, `associateBook`, `updatedCasesList`, `caseRenamed`, `caseSelected` | scope teardown |
 | `controllers/queriesCtrl.js` | R | `scoring-complete`, `rating-changed` | yes (`$destroy`) |
 | `controllers/queriesCtrl.js` | S | `updatedCaseScore` | scope teardown |
 | `controllers/searchResults.js` | R | `rating-changed` | **no** — one listener per `SearchResultsCtrl` instance |
@@ -101,10 +105,19 @@ deregister). `R` and `S` columns below distinguish them.
    `document.dispatchEvent(new CustomEvent(...))` only when a surviving Angular
    listener still needs notification during a partial migration.
 
-2. **Dead emits to clean up.** `caseUpdate`, `settings-changed`, and
-   `updatedQueriesList` (commented) have no `$on` listeners. Safe to remove
-   after a quick template grep confirms no `ng-{{…}}` bindings depended on
-   the digest side-effect.
+2. **Dead emits to clean up.** `caseUpdate`, `settings-changed`,
+   `updatedQueriesList` (commented), `caseSelected`, and
+   `fetchedDropdownCasesList` have no `$on` listeners. The last two went dead
+   when `headerCtrl.js` was deleted (core header dropdowns → Turbo Frames).
+   `fetchDropdownCases()` (`caseSvc.js`) — which feeds `fetchedDropdownCasesList`
+   — was deliberately left in place despite that, because `caseSvc.casesCount`
+   (read by `NewCaseCtrl`'s default case-name fallback) has no other populator;
+   only the broadcast itself is dead. `fetchDropdownBooks()` (`bookSvc.js`) had
+   no such reason — `bookSvc.booksCount` had no reader anywhere — so it was
+   deleted outright along with `dropdownBooks`/`booksCount` and the
+   `fetchedDropdownBooksList` broadcast; that event no longer appears in the
+   table above. Safe to remove the rest after a quick template grep confirms
+   no `ng-{{…}}` bindings depended on the digest side-effect.
 
 3. **Dead listener.** `deepCaseListUpdated` in
    `move_query_modal_instance_controller.js:31-43` listens for an event no one

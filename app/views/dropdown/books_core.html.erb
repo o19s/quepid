@@ -1,0 +1,9 @@
+<%# Core case page twin of dropdown/books.html.erb - see cases_core.html.erb for why both
+    `turbo: false` and `target: "_self"` are needed, and why `class: "dropdown-item"` (absent
+    from the Rails-page navbar's twin) is here to match Angular's original core markup. %>
+<turbo-frame id="dropdown_books">
+  <% @books.each do |book| %>
+    <li><%= link_to book.name, book_path(book), class: "dropdown-item", data: { turbo: false }, target: "_self" %></li>
+    <li><hr class="dropdown-divider"></li>
+  <% end %>
+</turbo-frame>

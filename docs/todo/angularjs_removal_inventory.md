@@ -24,9 +24,9 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 119 files, 114 register `angular.module` |
+| Angular JS source files (`app/assets/javascripts`) | 118 files, 113 register `angular.module` (`headerCtrl.js` deleted — see [Header](#header-appviewslayoutsheader_core_apphtmlerb)) |
 | HTML templates (components + `app/assets/templates`) | 34 (21 component + 13 under `app/assets/templates`) |
-| Controllers | 40 (`.controller()` registrations; 19 files under `controllers/`) |
+| Controllers | 39 (`.controller()` registrations; 18 files under `controllers/`) |
 | Services | 26 (`.service()` registrations; 27 files under `services/` — `quepidModalSvc.js` registers a factory) |
 | Factories | 8 |
 | Filters | 8 under `filters/` (+ 1 directive-local: `plusOrMinus`) |
@@ -43,7 +43,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Priority | Item | Notes |
 |----------|------|-------|
-| **P0** | AngularJS 1.8.3 EOL | 119 JS files, 34 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
+| **P0** | AngularJS 1.8.3 EOL | 118 JS files, 34 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
 | **P0** | `queriesSvc` god object (~1,725 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
 | **P0** | `eval()` scorers | Inside `$timeout()`, no sandbox; Web Worker timeout commented out |
 | **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
@@ -238,8 +238,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 5. Case action modals — import ratings, diff
 6. Wizard — largest template; ACE, CSV, tags, tour
 7. Tune Relevance pane — ACE, json explorer, try management
-8. Header — `HeaderCtrl` dropdowns
-9. Cleanup — removal checklist below
+8. Cleanup — removal checklist below
 
 ### Hardest — sequence last, needs the state plan first
 
@@ -414,7 +413,16 @@ Angular still compiles what is left, because custom elements inside `ng-app` are
 
 ### Header (`app/views/layouts/_header_core_app.html.erb`)
 
-`HeaderCtrl`, `ng-repeat` case/book dropdowns
+**Done.** Server-rendered — `HeaderCtrl` and its `ng-repeat` case/book dropdowns are deleted.
+The case/book lists are Turbo Frames (`dropdown#cases_core`/`#books_core`, twins of the
+Rails-page navbar's `dropdown#cases`/`#books`); links need both `data-turbo="false"` (Frames
+stay navigable even with Drive off) and `target="_self"` (escapes Angular's own
+`$locationProvider.html5Mode` link rewriter) — either alone still leaves the click intercepted
+and the page silently showing the old case under a changed URL. The "(N active)" count and
+"Create a book"'s case-derived query params (`scorer_id`, `team_ids[]`, `origin_case_id`) are
+rendered server-side from `@case`, matching what `HeaderCtrl` showed on core; the Rails-page
+navbar doesn't have either. `<new-case>` (the "Create a case" button) is still Angular — it's
+self-contained (isolate scope, no `HeaderCtrl` dependency) and out of scope for this pass.
 
 ### `app/assets/javascripts/routes.js`
 
@@ -469,16 +477,6 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | Pane layout (east slider) | service + value | `paneSvc`, `eastPaneWidth` |
 
 Routing is server-side (Rails); `MainCtrl` is attached directly in `core/index.html.erb`.
-
-### 2. Header navigation (core layout)
-
-| Item | Type | Key files |
-|------|------|-----------|
-| Recent cases dropdown | controller | `HeaderCtrl` — `controllers/headerCtrl.js` |
-| Recent books dropdown | controller | same |
-| New case link | component | `<new-case>` — `components/new_case/` |
-
-Templates: `layouts/_header_core_app.html.erb`, `components/new_case/new_case.html`
 
 ### 3. Case header, scoring, and case actions
 

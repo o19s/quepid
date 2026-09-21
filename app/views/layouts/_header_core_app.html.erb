@@ -10,8 +10,17 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="coreNavbarContent">
-      <ul class="navbar-nav me-auto" ng-controller="HeaderCtrl">
-        <!-- Begin case selector -->
+      <ul class="navbar-nav me-auto">
+        <!--
+          Begin case selector. Server-rendered (was Angular HeaderCtrl). Same interaction model
+          (lazy-loaded Turbo Frame list, full-page link) as the Rails-page navbar's `dropdown/cases`
+          frame (`_header.html.erb`), but with `dropdown#cases_core`/`cases_core.html.erb` as the
+          core-specific twin: same list, links do a hard navigation (`turbo: false`) instead of a
+          Turbo AJAX visit, since AJAX-swapping this page's body would leave Angular running against
+          the old case - see config/routes.rb. The "(N active)" count and "Create a book"'s
+          case-derived query params are core-only additions that Angular showed but the Rails-page
+          navbar doesn't - see docs/todo/angularjs_removal_inventory.md.
+        -->
         <li class="nav-item dropdown">
           <a href="#" role="button" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             <span class="nav-label">Relevancy Cases</span>
@@ -22,16 +31,16 @@
             <li class="text-muted">
               <strong>RECENT CASES</strong>
             </li>
+            <li><hr class="dropdown-divider"></li>
 
-            <li ng-repeat="case in headerScope.dropdownCases | limitTo:5 track by $index">
-              <a href="#" class="dropdown-item" ng-click="headerScope.goToCase($event, case)">{{ case.caseName }}</a>
-            </li>
+            <turbo-frame id="dropdown_cases" src="<%= dropdown_cases_core_path %>" loading="lazy">
+            </turbo-frame>
 
             <li class="actions">
               <a href="cases" class="btn btn-outline-secondary w-100" target="_self">
                 View all cases
                 <small class="text-muted">
-                  ({{ headerScope.casesCount }} active)
+                  (<%= current_user.cases_involved_with.not_archived.count %> active)
                 </small>
               </a>
 
@@ -51,27 +60,30 @@
             <li class="text-muted">
               <strong>RECENT BOOKS</strong>
             </li>
+            <li><hr class="dropdown-divider"></li>
 
-            <li ng-repeat="book in headerScope.dropdownBooks | limitTo:5 track by $index">
-              <a ng-href="{{headerScope.createBookLink(book)}}" target="_self" class="dropdown-item">{{ book.name }}</a>
-            </li>
+            <turbo-frame id="dropdown_books" src="<%= dropdown_books_core_path %>" loading="lazy">
+            </turbo-frame>
 
             <li class="actions">
               <a href="books" class="btn btn-outline-secondary w-100" target="_self">
                 View all books
                 <small class="text-muted">
-                  ({{ headerScope.booksCount }} active)
+                  (<%= current_user.books_involved_with.count %> active)
                 </small>
               </a>
 
-              <a
-                class="btn btn-success w-100"
-                ng-href="{{headerScope.createNewBookLink()}}"
-                target="_self"
-              >
-                <i class="bi bi-plus-lg"></i>
-                Create a book
-              </a>
+              <% if kase.present? %>
+                <%= link_to new_book_path(scorer_id: kase.scorer_id, team_ids: kase.teams.map(&:id), origin_case_id: kase.id), class: "btn btn-success w-100", target: "_self" do %>
+                  <i class="bi bi-plus-lg"></i>
+                  Create a book
+                <% end %>
+              <% else %>
+                <%= link_to new_book_path, class: "btn btn-success w-100", target: "_self" do %>
+                  <i class="bi bi-plus-lg"></i>
+                  Create a book
+                <% end %>
+              <% end %>
             </li>
           </ul>
         </li>

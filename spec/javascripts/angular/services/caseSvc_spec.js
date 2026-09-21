@@ -620,8 +620,8 @@ describe('Service: caseSvc', function () {
       expect(selected.autoPopulateBookPairs).toBe(true);
       expect(selected.autoPopulateCaseJudgements).toBe(false);
       // Regression: the Stimulus judgements-core save path used to skip this
-      // broadcast entirely, leaving the header Books dropdown (headerCtrl.js)
-      // and queriesSvc's cached auto-populate gate stale until a page reload.
+      // broadcast entirely, leaving queriesSvc's cached auto-populate gate
+      // stale until a page reload.
       expect(broadcastSvc.send.calls.mostRecent().args[0]).toBe('associateBook');
     });
 

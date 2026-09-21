@@ -1,0 +1,26 @@
+<%#
+  Core case page twin of dropdown/cases.html.erb. Same recent-cases list, but these links need
+  a real hard navigation - two independent interceptors have to be defeated, not just one:
+
+  1. `turbo: false` instead of `turbo_frame: "_top"`: this frame is nested inside the
+     Angular-bootstrapped core page, and Turbo Frames stay navigable even with Drive off (see
+     DEVELOPER_GUIDE.md's "Turbo on the Angular case page"), so a "_top" visit would still swap
+     the body via AJAX without reloading the script context.
+  2. `target: "_self"`: AngularJS's own `$locationProvider.html5Mode(true)` installs a
+     document-wide click handler that rewrites any same-origin link lacking a `target` attribute
+     into a client-side route change - the same escape hatch every other link in
+     _header_core_app.html.erb already relies on (see caseTryNavSvc.js). Without both, Turbo
+     correctly steps aside but Angular then intercepts the click itself.
+
+  Skipping either one leaves the URL changing while the page silently keeps showing the old case.
+
+  `class: "dropdown-item"` matches what the original Angular markup put on each of these links
+  (dropdown/cases.html.erb, the Rails-page navbar's twin, never had it) - without it the items
+  render as plain underlined text instead of full-row, padded/hoverable Bootstrap menu items.
+%>
+<turbo-frame id="dropdown_cases">
+  <% @cases.each do |kase| %>
+  <li><%= link_to_core_case kase.case_name, kase, kase.last_try_number, class: "dropdown-item", data: { turbo: false }, target: "_self" %></li>
+  <li><hr class="dropdown-divider"></li>
+  <% end %>
+</turbo-frame>

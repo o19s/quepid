@@ -109,8 +109,10 @@ angular.module('QuepidApp')
        * Server-rendered case header (app/views/core/_case_header.html.erb). Rename now happens
        * in Rails and re-renders a Turbo Frame, so this service never sees the PUT that
        * renameCase() used to make - without this bridge the in-memory case would keep the old
-       * name, and the recent-cases dropdown (HeaderCtrl, which refreshes on 'caseRenamed')
-       * would too, until a full page load.
+       * name until a full page load. (The recent-cases dropdown is its own Turbo Frame now too -
+       * see _header_core_app.html.erb - and, like the Rails-page navbar's identical frame,
+       * doesn't live-refresh on a rename either; that's existing cross-surface behavior, not
+       * something this bridge needs to cover.)
        */
       document.addEventListener('case-header:renamed', function(event) {
         var detail = event.detail || {};
