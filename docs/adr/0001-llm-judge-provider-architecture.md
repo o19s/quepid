@@ -286,7 +286,7 @@ test from §3.
 > A judge with no `llm_provider` at all still resolves to the OpenAI adapter, which is what
 > those judges have always been.
 
-**A5 · `JudgementFinalizer`, wired into the job only**
+**A5 · `JudgementFinalizer`, wired into the job only** *(landed)*
 Extract the blank / out-of-scale rules verbatim (including the annotation wording) and call it
 from `RunJudgeJudyJob`.
 *Deployable because* the rules and their wording are unchanged; job tests pass unedited.

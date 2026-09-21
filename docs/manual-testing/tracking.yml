@@ -707,10 +707,10 @@ parts:
         paths: ["app/models/llm_provider.rb", "app/models/llm_providers.rb", "app/views/ai_judges/_form.html.erb", "app/controllers/ai_judges_controller.rb"]
       "12.5":
         title: "Trigger a judging run (Judge Judy)"
-        last_run: 2026-09-21T14:05:00Z
+        last_run: 2026-09-21T14:20:00Z
         result: pass
-        notes: "Re-driven after the adapter extraction. Bounded run of 3 pairs from Judgement Stats for OSC AI Judge against local Ollama (qwen3:0.6b) on Book of Ratings (0/1 scale): flash and live Turbo progress as before, 3 judgements written through the OpenAI adapter. Both guard branches exercised again for real - in-scale ratings (0.0) saved, and a pair where the model answered 2.0 came back unrateable annotated '[LLM returned rating 2.0, outside this book's scale [0, 1]]'. Judge All Pairs / kraken mode and the zero-pairs-left case not re-driven this pass."
-        paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/models/judge_scale.rb", "app/services/llm_service.rb", "app/services/llm_connection.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/"]
+        notes: "Re-driven after the usable-rating rules moved into JudgementFinalizer (the job now decides nothing itself). Bounded run of 3 pairs from Judgement Stats for OSC AI Judge against local Ollama (qwen3:0.6b) on Book of Ratings (0/1 scale): flash and live Turbo progress as before, 3 judgements written; all three happened to come back 3.0 from the model and were marked unrateable with the unchanged annotation '[LLM returned rating 3.0, outside this book's scale [0, 1]]'. Earlier runs this session covered the in-scale path on the same code. Judge All Pairs / kraken mode and the zero-pairs-left case not re-driven."
+        paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/models/judge_scale.rb", "app/services/judgement_finalizer.rb", "app/services/llm_service.rb", "app/services/llm_connection.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/"]
 
   "13":
     file: 13-analytics.md
