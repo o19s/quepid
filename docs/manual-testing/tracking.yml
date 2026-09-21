@@ -677,7 +677,7 @@ parts:
     scenarios:
       "12.1":
         title: "Create a per-team AI Judge"
-        last_run: 2026-09-21T13:40:00Z
+        last_run: 2026-09-21T14:05:00Z
         result: pass
         notes: "Re-driven in Chrome against the dev server after moving the provider dropdown and PROVIDER_PRESETS onto the LlmProviders registry and adding the TypeSafe Jev placeholder. Covered: the form now lists 9 providers (8 original, same order and labels, plus Jev); cycling every provider fills Llm Service Url / Llm Model / Llm Api Version and shows the matching help panel (Ollama picks up Rails.configuration.ollama_service_url); before/after screenshots of the OpenAI and Ollama states are identical (.playwright-mcp/llm-providers-registry/). Not re-driven this pass: actually submitting the create form for a supported provider, the blank-LLM-Key validation, and member removal."
         paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/models/ai_judge.rb", "app/models/llm_provider.rb", "app/models/llm_providers.rb"]
@@ -695,22 +695,22 @@ parts:
         paths: ["app/controllers/books_controller.rb"]
       "12.4":
         title: "Refine an AI Judge's prompt"
-        last_run: 2026-09-08
+        last_run: 2026-09-21T14:05:00Z
         result: pass
-        notes: "No functional changes to app/controllers/ai_judges/prompts_controller.rb since the prior thorough pass; not re-driven this pass given the cost of a live local-LLM call. Prior pass: re-verified specifically because prompts_controller.rb#update changed real behavior: llm_service.perform_safe_judgement now receives book: @book (was called with no book context before), tying into the 'harden LLM judgement scoring against out-of-scale/non-numeric ratings' work in llm_service.rb. Navigated with ?book_id=1 in the URL (so @book is actually populated — the route takes book_id as a query param, not a nested path segment) and ran a real prompt against local Ollama (qwen3:0.6b) for OSC AI Judge against Book of Ratings' 0-3 scale: got back 'LLM Response: 3.0' with a real explanation, confirming the book-scoped scale validation path works end-to-end. Malformed-JSON and zero-pairs edge cases not tested."
-        paths: ["app/controllers/ai_judges/prompts_controller.rb"]
+        notes: "Re-driven after the request/response handling moved into LlmJudgeAdapters (LlmService is now transport only). Opened Refine Prompt for OSC AI Judge with ?book_id=1 so the book scale is in play, clicked Run Prompt against local Ollama (qwen3:0.6b): Rating Information showed 'LLM Response: 0.0' with a real explanation, so prompt build -> post -> response parsing all work through the adapter. Change Query Doc Pair, malformed-JSON document fields and the zero-pairs book were not re-tested this pass."
+        paths: ["app/controllers/ai_judges/prompts_controller.rb", "app/services/llm_service.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/"]
       "12.6":
         title: "A coming soon provider is visible but cannot be saved"
-        last_run: 2026-09-21T13:40:00Z
+        last_run: 2026-09-21T14:05:00Z
         result: pass
         notes: "Drove the new TypeSafe Jev placeholder in Chrome: selecting it shows the yellow Coming soon banner with the console.typesafe.ai/keys link, fills and locks Llm Service Url (https://api.typesafe.ai), Llm Model (jev-latest) and Llm Api Version as read-only, and leaves LLM Key / Name / Timeout editable; switching back to a supported provider clears the banner and unlocks the fields. The server-side refusal (create and update) is covered by ai_judges_controller_test.rb rather than driven through the browser this pass, as is the JSON-tab route to setting the provider."
         paths: ["app/models/llm_provider.rb", "app/models/llm_providers.rb", "app/views/ai_judges/_form.html.erb", "app/controllers/ai_judges_controller.rb"]
       "12.5":
         title: "Trigger a judging run (Judge Judy)"
-        last_run: 2026-09-21T13:50:00Z
+        last_run: 2026-09-21T14:05:00Z
         result: pass
-        notes: "Re-driven after the book scale rules moved into JudgeScale (shared by the system-prompt augmentation and the job's rating check). Bounded run of 3 pairs from Judgement Stats for OSC AI Judge against local Ollama (qwen3:0.6b) on Book of Ratings (0/1 scale): flash 'AI Judge OSC AI Judge will start evaluating query/doc pairs.', live Turbo progress ('Query/Doc Pairs Remaining: N, Processing query ...'), 3 judgements written. Both branches of the guard were exercised for real: two in-scale ratings (0.0) saved normally, and one where the model answered 3.0 came back unrateable with the annotation '[LLM returned rating 3.0, outside this book's scale [0, 1]]' -- wording unchanged from before the refactor. Judge All Pairs / kraken mode and the zero-pairs-left case not re-driven this pass."
-        paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/models/judge_scale.rb", "app/services/llm_service.rb"]
+        notes: "Re-driven after the adapter extraction. Bounded run of 3 pairs from Judgement Stats for OSC AI Judge against local Ollama (qwen3:0.6b) on Book of Ratings (0/1 scale): flash and live Turbo progress as before, 3 judgements written through the OpenAI adapter. Both guard branches exercised again for real - in-scale ratings (0.0) saved, and a pair where the model answered 2.0 came back unrateable annotated '[LLM returned rating 2.0, outside this book's scale [0, 1]]'. Judge All Pairs / kraken mode and the zero-pairs-left case not re-driven this pass."
+        paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/models/judge_scale.rb", "app/services/llm_service.rb", "app/services/llm_connection.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/"]
 
   "13":
     file: 13-analytics.md

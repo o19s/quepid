@@ -94,6 +94,43 @@ class LlmProvidersTest < ActiveSupport::TestCase
     assert_predicate LlmProviders['openai'], :frozen?
   end
 
+  test 'each provider names the dialect it speaks and how its key is sent' do
+    anthropic_keys = %w[anthropic azure_ai_foundry_anthropic]
+    api_key_keys = %w[azure_openai azure_ai_foundry azure_ai_foundry_serverless azure_ai_foundry_anthropic]
+
+    LlmProviders.each do |provider|
+      expected_adapter = if anthropic_keys.include?(provider.key)
+                           'LlmJudgeAdapters::Anthropic'
+                         else
+                           'LlmJudgeAdapters::OpenAi'
+                         end
+
+      if 'typesafe_jev' == provider.key
+        assert_nil provider.adapter, 'a provider we cannot judge with has no adapter'
+      else
+        assert_equal expected_adapter, provider.adapter, "#{provider.key} adapter"
+      end
+    end
+
+    assert_equal :x_api_key, LlmProviders['anthropic'].auth_style
+    assert_equal :x_api_key, LlmProviders['azure_ai_foundry_anthropic'].auth_style
+    api_key_keys.excluding('azure_ai_foundry_anthropic').each do |key|
+      assert_equal :api_key, LlmProviders[key].auth_style, "#{key} auth style"
+    end
+    assert_equal :bearer, LlmProviders['openai'].auth_style
+    assert_equal :bearer, LlmProviders['ollama'].auth_style
+  end
+
+  test 'every registered adapter resolves to a class that can build a request' do
+    LlmProviders.each do |provider|
+      next if provider.adapter.nil?
+
+      adapter = provider.adapter.constantize
+
+      assert_operator adapter, :<, LlmJudgeAdapters::Base, "#{provider.key} adapter"
+    end
+  end
+
   test 'only the placeholder providers are coming soon' do
     assert_equal [ 'typesafe_jev' ], LlmProviders.coming_soon.map(&:key)
     assert_not_predicate LlmProviders['openai'], :coming_soon?

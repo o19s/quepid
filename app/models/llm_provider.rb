@@ -7,7 +7,7 @@
 # app knows about that provider is looked up here -- see LlmProviders.
 class LlmProvider
   attr_reader :key, :label, :default_service_url, :default_api_version, :default_model,
-              :help_html, :notice_html, :read_only_fields
+              :help_html, :notice_html, :read_only_fields, :adapter, :auth_style
 
   # @param key [String] value stored in judge_options[:llm_provider]
   # @param label [String] shown in the AI Judge form's provider dropdown
@@ -19,9 +19,13 @@ class LlmProvider
   #   provider Quepid cannot judge with yet
   # @param read_only_fields [Array<String>] judge_options fields the form locks for this
   #   provider, for settings the vendor fixes rather than the team choosing
+  # @param adapter [String, nil] name of the LlmJudgeAdapters class that speaks this
+  #   vendor's dialect; nil for a provider with no adapter yet
+  # @param auth_style [Symbol] how the API key is sent: :bearer, :api_key or :x_api_key
   # rubocop:disable-next Metrics/ParameterLists -- keyword arguments, all of them required data
   def initialize(key:, label:, default_service_url:, default_model:, help_html:,
-                 default_api_version: '', notice_html: nil, read_only_fields: [])
+                 default_api_version: '', notice_html: nil, read_only_fields: [],
+                 adapter: 'LlmJudgeAdapters::OpenAi', auth_style: :bearer)
     @key = key.to_s
     @label = label
     @default_service_url = default_service_url
@@ -30,6 +34,8 @@ class LlmProvider
     @help_html = help_html
     @notice_html = notice_html
     @read_only_fields = read_only_fields.map(&:to_s).freeze
+    @adapter = adapter
+    @auth_style = auth_style
 
     freeze
   end

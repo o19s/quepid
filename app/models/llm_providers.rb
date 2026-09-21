@@ -70,6 +70,7 @@ module LlmProviders
     def azure_openai
       LlmProvider.new(
         key:                 'azure_openai',
+        auth_style:          :api_key,
         label:               'Azure OpenAI',
         default_service_url: 'https://RESOURCE.openai.azure.com',
         default_model:       'gpt-4.1',
@@ -87,6 +88,7 @@ module LlmProviders
     def azure_ai_foundry
       LlmProvider.new(
         key:                 'azure_ai_foundry',
+        auth_style:          :api_key,
         label:               'Azure AI Foundry',
         default_service_url: 'https://RESOURCE.services.ai.azure.com',
         default_api_version: '2025-01-01-preview',
@@ -102,6 +104,7 @@ module LlmProviders
     def azure_ai_foundry_serverless
       LlmProvider.new(
         key:                 'azure_ai_foundry_serverless',
+        auth_style:          :api_key,
         label:               'Azure AI Foundry (Serverless)',
         default_service_url: 'https://MODEL-NAME.REGION.models.ai.azure.com',
         default_model:       '',
@@ -117,6 +120,8 @@ module LlmProviders
     def azure_ai_foundry_anthropic
       LlmProvider.new(
         key:                 'azure_ai_foundry_anthropic',
+        adapter:             'LlmJudgeAdapters::Anthropic',
+        auth_style:          :x_api_key,
         label:               'Azure AI Foundry (Anthropic)',
         default_service_url: 'https://RESOURCE.services.ai.azure.com/anthropic',
         default_model:       'claude-3-5-haiku-20241022',
@@ -133,6 +138,8 @@ module LlmProviders
     def anthropic
       LlmProvider.new(
         key:                 'anthropic',
+        adapter:             'LlmJudgeAdapters::Anthropic',
+        auth_style:          :x_api_key,
         label:               'Anthropic',
         default_service_url: 'https://api.anthropic.com',
         default_model:       'claude-sonnet-4-5-20250514',
@@ -167,6 +174,7 @@ module LlmProviders
     def typesafe_jev
       LlmProvider.new(
         key:                 'typesafe_jev',
+        adapter:             nil,
         label:               'TypeSafe Jev (coming soon)',
         default_service_url: 'https://api.typesafe.ai',
         default_model:       'jev-latest',

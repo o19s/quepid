@@ -272,13 +272,19 @@ timeout or connection failure, where the request may already have been processed
 The base interval moves to `Rails.configuration.llm_retry_interval` (2s; `0` in test, so a stubbed
 429 doesn't make the suite sit through a real backoff — it costs 15s otherwise).
 
-**A4 · Adapters for the providers we already have**
+**A4 · Adapters for the providers we already have** *(landed)*
 `LlmJudgeAdapters::{Base,OpenAi,Anthropic}` implementing D1's two methods; `LlmService` rewired to
 resolve via the registry and delegate. Azure variants are the OpenAI/Anthropic adapters with
 registry-supplied paths and auth.
 *Deployable because* P2: the whole existing service test file passes untouched.
 *Verify:* `rails test test/services` + the **B1–B4 contract tests** and the batch-flow simulation
 test from §3.
+
+> The registry grew the two fields the dispatch needs — `adapter` (the class that speaks a
+> provider's dialect) and `auth_style` (`:bearer` / `:api_key` / `:x_api_key`), replacing
+> `LlmService`'s `AZURE_PROVIDERS` / `ANTHROPIC_PROVIDERS` constants and its auth `case`.
+> A judge with no `llm_provider` at all still resolves to the OpenAI adapter, which is what
+> those judges have always been.
 
 **A5 · `JudgementFinalizer`, wired into the job only**
 Extract the blank / out-of-scale rules verbatim (including the annotation wording) and call it
