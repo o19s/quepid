@@ -283,6 +283,12 @@ parts:
         result: pass
         notes: "Re-verified via Playwright MCP on case 1 (Solr Case) after migrating the core flash-message system off angular-flash to a Stimulus controller + CustomEvent bridge. Toggled Notes on 'star wars', typed a note, saved — flash 'Success! Your query details have been saved.' rendered correctly via the new path (window.quepidDom.flash.show -> flash:show CustomEvent -> Stimulus flash controller). Did not re-test Information Need persistence, reload round-trip, or forced-failure edge cases this pass — scope was the flash mechanism, not the full scenario."
         paths: ["app/models/query.rb", "app/assets/javascripts/controllers/queryNotes.js", "app/javascript/controllers/flash_controller.js", "app/javascript/utils/flash.js"]
+      "4.17":
+        title: "Workbench boot & case/try navigation"
+        last_run: 2026-09-20T00:19:00Z
+        result: pass
+        notes: "New scenario, added with the ngRoute removal (shell migration step 2). Verified via Playwright MCP: direct load of /case/1/try/1 booted the workbench with zero console errors; clicking VESPA CASE in the header's Relevancy Cases dropdown did a real full-page navigation (URL changed to /case/5/try/1, fresh page load, no errors) instead of an in-SPA transition; bare /case loaded the fallback case (Typeahead: Dessert, Try 20) instead of the old dead-code 'Not Found' page; an unrouted path (/this-path-does-not-exist) hit Rails' own 404 (dev-mode exception page), not an Angular one. caseTryNavSvc.notFound() was revised after this pass to flash an error and stay on the page instead of navigating anywhere (its callers are generic $http-failure handlers, not routing 404s) -- that revision is covered by caseTryNavSvc_spec.js, not re-driven live here. Also did not separately drive the 'revert to last try' / Settings-tab-save navigation edge case or the zero-cases flash this pass -- covered by Karma specs (caseTryNavSvc_spec.js, settingsSvc_spec.js) instead."
+        paths: ["app/assets/javascripts/routes.js", "app/assets/javascripts/app.js", "app/assets/javascripts/controllers/mainCtrl.js", "app/assets/javascripts/controllers/loading.js", "app/assets/javascripts/controllers/headerCtrl.js", "app/assets/javascripts/controllers/queriesCtrl.js", "app/assets/javascripts/services/caseTryNavSvc.js", "app/assets/javascripts/services/configurationSvc.js", "app/views/layouts/core.html.erb", "app/views/core/index.html.erb"]
 
   "05":
     file: 05-core-workbench-history-snapshots-and-annotations.md
@@ -350,7 +356,7 @@ parts:
         last_run: 2026-09-15T19:06:00Z
         result: pass
         notes: "Re-verified via Playwright MCP. On case 4 (STATIC CASE, workbench toolbar's Share case icon): opened the modal, shared with 'Manual Test Team Renamed 20260915' — flash 'Case shared with team successfully.', team moved into 'Already shared with:'. Selected it there, clicked 'Unshare from...' — flash 'Case unshared from team successfully.', case returned to its unshared starting state. No console errors. Did not re-test the 'Create a team' shortcut's navigation-without-losing-context edge case this pass."
-        paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js"]
+        paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js", "app/assets/javascripts/services/caseSvc.js"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
         last_run: 2026-09-19T18:28:00Z

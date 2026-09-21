@@ -25,6 +25,12 @@ const SHARE_CASE_ID = Number(process.env.QUEPID_E2E_SHARE_CASE_ID || 1);
 async function gotoCase(page: Page, caseId = SHARE_CASE_ID) {
   await page.goto(`case/${caseId}`);
   await page.waitForSelector('#case-actions, .results-list-element li, .modal.show', { timeout: 20_000 });
+  // Case 1 ("SOLR CASE") uses a real external Solr host. `.search-feedback`
+  // ("Bootstrapping Queries" / "Updating Queries: X / Y") is `ng-show`, so
+  // while visible it occupies real layout space -- see the identical wait in
+  // angular_case_helpers.ts's gotoCase() for why `state: 'hidden'` alone
+  // isn't enough (two elements share the class).
+  await expect(page.locator('.search-feedback:visible')).toHaveCount(0, { timeout: 40_000 }).catch(() => {});
 }
 
 async function gotoCasesIndex(page: Page) {

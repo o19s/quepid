@@ -7,23 +7,22 @@
 // What did I do here, like implement a router on top of my router!?!?
 angular.module('QuepidApp')
   .service('caseTryNavSvc', [
-    'configurationSvc','$location', '$timeout',
-    function caseTryNavSvc(configurationSvc, $location, $timeout) {
+    'configurationSvc','$location', '$window',
+    function caseTryNavSvc(configurationSvc, $location, $window) {
       var caseNo = 0;
       var tryNo = 0;
 
-      var currNavDelay = 1000;
       var isLoading = false;
 
       this.isLoading = function () {
         return isLoading;
       };
 
-      this.navigateTo = function (caseTryObj, navDelay) {
-        if (navDelay === undefined) {
-          navDelay = 1000;
-        }
-        currNavDelay = navDelay;
+      // Real page navigation (not an in-SPA route change) -- Rails' own
+      // CoreController#index re-renders the whole shell for the new case/try.
+      // Every caller here reacts to a mutation that already completed
+      // server-side, so there's no client state left to preserve across it.
+      this.navigateTo = function (caseTryObj) {
         var navCaseNo = caseNo;
         var navTryNo = tryNo;
         var sortBy, sortOrder;
@@ -42,26 +41,38 @@ angular.module('QuepidApp')
           navTryNo = 1;
         }
 
-        $location.search({ 'sort': sortBy, 'reverse': sortOrder });
+        var url = this.getQuepidRootUrl() + '/case/' + navCaseNo + '/try/' + navTryNo;
+        var query = new URLSearchParams();
+        if (sortBy) {
+          query.set('sort', sortBy);
+        }
+        if (sortOrder) {
+          query.set('reverse', sortOrder);
+        }
+        var queryString = query.toString();
+        if (queryString) {
+          url += '?' + queryString;
+        }
 
-        isLoading = true;
-
-        // always append a trailing / or ngRoute will double load this
-        var path = '/case/' + navCaseNo + '/try/' + navTryNo + '/';
-        $location.path(path);
+        $window.location.assign(url);
       };
 
       this.navigationCompleted = function (caseTryObj) {
         caseNo = caseTryObj.caseNo;
         tryNo = caseTryObj.tryNo;
-
-        $timeout(function () {
-          isLoading = false;
-        }, currNavDelay);
+        isLoading = false;
       };
 
+      // Generic $http-failure handler for several unrelated mutations (case
+      // create/rename/nightly-toggle/book-association, dropdown-cases fetch,
+      // settings fetch) -- none of these are really "not found" errors, and
+      // none showed any feedback before this flash. Stay on the page and
+      // flash instead of navigating away: those callers are deep in
+      // caseSvc/settingsSvc with no page-navigation context of their own, so
+      // there's nowhere good to navigate *to*, and a real navigation here
+      // used to strand the user on a bare, unbranded error page.
       this.notFound = function () {
-        $location.path('/404.html');
+        window.quepidDom.flash.show('error', 'Unable to complete your request. Please try again.');
       };
 
       this.navigateToCasesListing = function () {

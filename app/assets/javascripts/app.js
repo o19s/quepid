@@ -2,12 +2,12 @@
 
 /**
  * Root Angular module for Quepid's interactive case UI (search tries, queries, scorers).
- * Declares third-party and internal modules; routing and `MainCtrl` wiring live in `routes.js`.
+ * Declares third-party and internal modules; `MainCtrl` wiring lives in `routes.js`
+ * (ngRoute/client-side routing removed -- see docs/todo/angularjs_removal_inventory.md).
  */
 
 angular.module('QuepidApp', [
   'UtilitiesModule',
-  'ngRoute',
   'ngSanitize',
   'mgo-angular-wizard',
   'o19s.splainer-search',

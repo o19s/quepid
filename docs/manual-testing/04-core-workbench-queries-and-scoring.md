@@ -190,3 +190,15 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   - [ ] Force a save failure (e.g., simulate a network error) — confirm the flash "Ooooops! Could not save your query details. Please try again." appears and the panel stays open with your unsaved edits intact.
   - [ ] Leave both fields blank and save — should succeed without error (notes are optional).
   - [ ] Confirm the **Information Need** value entered here is the same one referenced/exported by the "Information Need" export/import format in Part 6.1/6.2 — edit it here, then run an Information Need export, and confirm it round-trips correctly.
+
+### 4.17 Workbench boot & case/try navigation
+
+- [ ] **Steps:**
+  1. Navigate directly to `/case/:id/try/:try_number` for an existing case. Confirm the workbench boots (header, toolbar, query list) with no console errors.
+  2. From the header's **Relevancy Cases** dropdown, click a different case. Confirm the browser does a full page navigation (URL changes, page reloads) to that case's workbench, which then boots correctly.
+  3. Navigate to bare `/case` (no id). Confirm it loads your most recent non-archived case's workbench rather than a "Not Found" page.
+  4. Navigate to a path Rails doesn't route at all (e.g. `/case/x/y/z/garbage`). Confirm you get Rails' own 404, not an Angular-rendered one.
+- **Expected:** All four load the workbench (or a real 404) via a normal server-rendered page load — case/try switching is no longer an in-page SPA transition.
+- **Edge cases:**
+  - [ ] Switch try via "revert to last try" or a Settings-tab save that changes the selected try — confirm this also does a full navigation to the new try's URL.
+  - [ ] A logged-in user with zero cases hitting bare `/case` sees the "You don't have any Cases created in Quepid" flash instead of a blank or broken page.

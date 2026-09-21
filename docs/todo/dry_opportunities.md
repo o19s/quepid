@@ -217,6 +217,42 @@ codebase as of 2026-09-03 — re-check before acting, since line numbers drift.
      (`_import_case_modal.html.erb` / `_import_snapshot_modal.html.erb`), not the
      core Angular case page.
 
+2. **Core-toolbar modal controllers reimplement the same three small patterns
+   independently, 3-7 times each**, instead of using `ModalTriggerControllerBase`
+   (which all of them already extend) as the shared home.
+   - `showAlert`/`clearAlert` (toggle an alert target's class + text via
+     `showStatusMessage`) is near-byte-identical across
+     `pick_scorer_core_controller.js:260-268`, `take_snapshot_core_controller.js:122-136`,
+     `clone_case_core_controller.js:200-207`, and `share_case_core_controller.js:435-443`
+     — a 4th copy. `judgements_core_controller.js:542-555`'s `showError`/`clearError` is
+     a *5th*, structurally different variant (different target name, className shape,
+     and manual `whiteSpace` handling) of the same idea.
+   - `setProgress(visible)` (toggle `d-none` on a `progress` target) is byte-identical
+     in `judgements_core_controller.js:537-539` and `take_snapshot_core_controller.js:109-112`
+     — added twice in the same PR.
+   - Ad hoc `__CASE_ID__`/`__TEAM_ID__`/`__BOOK_ID__`/`__SCORER_ID__` placeholder
+     `.replaceAll()` chains for URL templating are hand-rolled independently in
+     `judgements_core_controller.js:8-11`, `pick_scorer_core_controller.js:96-97`,
+     `clone_case_core_controller.js:104`, `delete_case_options_core_controller.js:61`,
+     `export_case_core_controller.js:6,298`, and `share_case_core_controller.js:326,371-372`
+     — six-plus copies of the same substitution logic.
+     (Line numbers as of 2026-09-18 — this file is actively being edited on
+     `angular-phase-6`; re-check before acting, per this doc's own header note.)
+   - **Fix**: hoist `showAlert`/`clearAlert`/`setProgress` onto
+     `ModalTriggerControllerBase` (or a small `utils/status_message` wrapper); extract
+     a single `fillUrlTemplate(template, params)` helper for the URL-template call sites.
+   - **Pragmatic priority — Soon, not now:** real, growing debt (discovered via a
+     multi-angle code review of the judgements/pick-scorer/take-snapshot migration
+     PR) — a future behavior change (e.g. auto-hide alerts, `aria-busy`) has to be
+     found and patched in 3-7 places instead of one, and the copies have already
+     started drifting (`showError`/`clearError`'s different shape). Don't bundle into
+     an active bug-fix pass — do it as its own small refactor PR once the
+     judgements/pick-scorer/take-snapshot migration work settles, to avoid merge
+     friction with whatever's still landing on `angular-phase-6`.
+   - **Angular removal:** Partially — these are the *new* Stimulus controllers
+     themselves (already migrated off Angular), so this is a modern-JS cleanup, not
+     something that goes away when Angular is removed.
+
 ### Low-medium impact
 
 5. **Clipboard-copy-with-fallback duplicated with inconsistent robustness.**

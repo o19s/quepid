@@ -6,7 +6,7 @@ Third-party JavaScript that Quepid previously loaded from `package.json` now liv
 
 | Directory | Role |
 |-----------|------|
-| `angular-route`, `angular-sanitize` | AngularJS satellites: `ngRoute`, `ngSanitize` |
+| `angular-sanitize` | AngularJS satellite: `ngSanitize` |
 | `angular-wizard/` | `mgo-angular-wizard` |
 | `angular-utils-pagination/` | `angularUtils.directives.dirPagination` |
 | `angular-csv-import/` | CSV import directives |

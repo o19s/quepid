@@ -1,22 +1,35 @@
-import { Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 
 /**
  * Shared navigation and screenshot helpers for the Angular case UI (`core` layout).
  * Used by core_smoke, angular_pages, angular_pages_narrow_viewport, modal_a11y, and popover_visibility.
  */
 // The one case in the shared dev DB known to have a working search endpoint, existing queries,
-// and a last score ("10s of Queries") — the single source of truth for every spec that needs
-// "a case with real data" (this file's CASE_ID, plus SNAPSHOT_CASE_ID in
-// snapshots_and_annotations.spec.ts and QUERIES_CASE_ID in dom_migration_screenshots.spec.ts,
-// which both import this instead of hardcoding their own copy of the same number). Case IDs here
-// are just whatever the shared dev DB currently has at that row, not a fixed fixture — id 1 has
-// drifted between "10s of Queries" and "SOLR CASE" (near-empty) over this DB's history, which
-// desyncs old committed baselines from freshly regenerated ones even though nothing UI-relevant
-// changed. Moved from 5 to 6 on 2026-09-19 when a "VESPA CASE" fixture was added ahead of it in
-// the seed order. If the shared dev DB's case 6 ever stops being "10s of Queries", update this one
-// constant rather than hunting down every hardcoded copy. See DEVELOPER_GUIDE.md's Playwright E2E
-// section.
-export const DEFAULT_RICH_CASE_ID = 6;
+// and a last score — the single source of truth for every spec that needs "a case with real
+// data" (this file's CASE_ID, plus SNAPSHOT_CASE_ID in snapshots_and_annotations.spec.ts and
+// QUERIES_CASE_ID in dom_migration_screenshots.spec.ts, which both import this instead of
+// hardcoding their own copy of the same number).
+//
+// "E2E Static Fixture (10s of Queries)" (case 219) is a clone of case 6 ("10s of Queries") —
+// same 20 queries and ratings, but its try's search endpoint is Quepid's own `static` engine,
+// pointing at a snapshot of case 6's results (`/api/cases/219/snapshots/35/search`) instead of
+// the real external `quepid-solr.dev.o19s.com` host case 6 (and case 1, case 5 before it) used.
+// That external dependency was the root cause of most Playwright screenshot flakiness in this
+// suite: JSONP round-trips to a shared, uncontrolled third-party-ish host, contended further
+// whenever several specs (or several manual full-suite runs) hit it back-to-back, occasionally
+// pushed total page-settle time past even generous waits, and its live results genuinely
+// varied run to run (see dynamicRegions()'s scorable-content masks below, still needed for
+// masking even on a static case, just no longer for genuine live-search variance). Static
+// search has zero network dependency and always returns the same 20 queries' same captured
+// top-10 docs — deterministic by construction, not by discipline.
+//
+// Case IDs here are just whatever the shared dev DB currently has at that row, not a fixed
+// fixture in the Rails-test-suite sense — if this case or its snapshot/search-endpoint ever
+// gets deleted, recreate it the same way (clone a real case → take a snapshot with "Record
+// Document Fields?" checked → create a `static` SearchEndpoint pointing at
+// `/api/cases/:id/snapshots/:snapshot_id/search` → point the clone's try at it) rather than
+// reverting to a live external engine. See DEVELOPER_GUIDE.md's Playwright E2E section.
+export const DEFAULT_RICH_CASE_ID = 219;
 
 function readCaseId(): number {
   const raw = process.env.QUEPID_E2E_CASE_ID;
@@ -30,10 +43,24 @@ function readCaseId(): number {
 
 export const CASE_ID = readCaseId();
 
-export async function gotoCase(page: Page, query: string = ''): Promise<void> {
+export async function gotoCase(page: Page, query: string = '', caseId: number = CASE_ID): Promise<void> {
   const suffix = query ? `?${query}` : '';
-  await page.goto(`case/${CASE_ID}${suffix}`);
+  await page.goto(`case/${caseId}${suffix}`);
   await page.waitForSelector('.results-list-element li, .modal.show', { timeout: 20_000 });
+  // `.search-feedback` matches *two* elements (a "Bootstrapping Queries" div
+  // and a separate "Updating Queries: X / Y" div, both `ng-show`) -- while
+  // either is visible it occupies real layout space, so whether one happened
+  // to still be up shifts everything below it, which no amount of
+  // pixel-masking can fix (it's a layout difference, not a content one).
+  // `page.waitForSelector(selector, {state: 'hidden'})` only tracks the
+  // *first* matched element, so it resolved as soon as the (fast)
+  // bootstrapping div hid even while the searching div was still up --
+  // asserting the visible-locator count reaches 0 covers both. A live-Solr
+  // case (e.g. case 6, still used deliberately by core_smoke.spec.ts's
+  // explain-modal test) needs real headroom for 20 queries against a real
+  // external host; the default static fixture settles almost immediately,
+  // but the wait is harmless there too.
+  await expect(page.locator('.search-feedback:visible')).toHaveCount(0, { timeout: 40_000 }).catch(() => {});
 }
 
 /** Expand the first query row unless results are already visible. */
@@ -44,9 +71,23 @@ export async function expandFirstQuery(page: Page): Promise<void> {
   await page.waitForSelector('search-result', { timeout: 15_000 });
 }
 
-/** Mask async flash copy so screenshots stay stable across runs. */
+/**
+ * Mask content that legitimately varies run to run so screenshots stay
+ * stable. Beyond async flash copy, this includes anything derived from a
+ * live search against a real external engine (case 6's try, for one, points
+ * at `quepid-solr.dev.o19s.com` directly) -- score badges, per-query result
+ * counts, and the unrated-count bubble all reflect that live search's
+ * current result set, which is not deterministic between runs (network
+ * conditions, index changes, even browser-CORS-driven partial failures).
+ * None of the specs using this helper are actually testing those values;
+ * they're testing a modal, a toolbar, or an accordion that happens to render
+ * on top of/next to a real case's query list.
+ */
 export function dynamicRegions(page: Page) {
-  return [page.locator('#flash-messages')];
+  return [
+    page.locator('#flash-messages'),
+    page.locator('.case-score, .results-score, .total-results, .notification-bubble, .scorable-score')
+  ];
 }
 
 /**

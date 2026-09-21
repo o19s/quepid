@@ -6,14 +6,12 @@ angular.module('QuepidApp')
   .controller('HeaderCtrl', [
     '$rootScope',
     '$scope',
-    '$route',
     'caseSvc',
-    'bookSvc', 
+    'bookSvc',
     'caseTryNavSvc',
     function(
       $rootScope,
       $scope,
-      $route,
       caseSvc,
       bookSvc,
       caseTryNavSvc

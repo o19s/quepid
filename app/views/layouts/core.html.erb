@@ -45,6 +45,8 @@
         function(bootstrapSvc, configurationSvc) {
           configurationSvc.setCommunalScorersOnly('<%= Rails.application.config.communal_scorers_only %>');
           configurationSvc.setQueryListSortable('<%= Rails.application.config.query_list_sortable %>');
+          configurationSvc.setCaseNo(<%= (params[:id].presence || @case&.id || 0).to_i %>);
+          configurationSvc.setTryNo(<%= params[:try_number].present? ? params[:try_number].to_i : "null" %>);
 
           bootstrapSvc.run();
         }

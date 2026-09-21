@@ -4,7 +4,6 @@
 
 // Angular and AngularJS satellite modules (vendored under ./vendor/ except core angular from npm)
 import 'angular';
-import './vendor/angular-route';
 import './vendor/angular-sanitize';
 
 // Bootstrap 5 JS (Tooltip, Popover, etc.) is loaded separately via the

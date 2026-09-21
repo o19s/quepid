@@ -21,7 +21,14 @@ test.describe('core layout golden paths', () => {
   });
 
   test('explain modal — switch tabs', async ({ page }) => {
-    await gotoCase(page);
+    // Deliberately pinned to live-Solr case 6, not the suite's default static
+    // fixture (case 219): the "Parsing" tab renders Solr's debug/explain
+    // payload, which a static/snapshot search endpoint never captures or
+    // replays (see angular_case_helpers.ts's DEFAULT_RICH_CASE_ID comment).
+    // Static search would leave this tab permanently empty, silently losing
+    // its value as a regression net for that pane's rendering. Accepting the
+    // small residual live-network flake risk for this one test only.
+    await gotoCase(page, '', 6);
     await expandFirstQuery(page);
 
     await page.getByRole('button', { name: 'Explain Query', exact: true }).first().click();

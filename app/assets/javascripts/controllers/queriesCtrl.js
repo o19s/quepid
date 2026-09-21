@@ -14,7 +14,6 @@ angular.module('QuepidApp')
     '$q',
     '$log',
     '$location',
-    '$routeParams',
     'queriesSvc',
     'queryViewSvc',
     'querySnapshotSvc',
@@ -30,7 +29,6 @@ angular.module('QuepidApp')
       $q,
       $log,
       $location,
-      $routeParams,
       queriesSvc,
       queryViewSvc,
       querySnapshotSvc,
@@ -439,8 +437,8 @@ angular.module('QuepidApp')
 
       function saveScoring() {
         // finished a batch run, log the result!
-        var caseNo  = parseInt($routeParams.caseNo, 10);
-        var tryNo   = parseInt($routeParams.tryNo, 10);
+        var caseNo  = configurationSvc.getCaseNo();
+        var tryNo   = configurationSvc.getTryNo();
         
         if (Object.keys($scope.queries.avgQuery.currentScore.queries).length === 0) {
           // if we have no queries, then let's short circuit this.  We don't need to

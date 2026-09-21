@@ -85,18 +85,29 @@ describe('Service: settingsSvc', function () {
   };
 
   var locationMock = null;
+  var windowMock = null;
   var querySvcMock = null;
 
   beforeEach(function() {
     locationMock = {
       path: jasmine.createSpy(),
-      search: jasmine.createSpy()
+      search: jasmine.createSpy(),
+      absUrl: jasmine.createSpy().and.returnValue('https://localhost:443/quepid/case/1/try/0')
+    };
+    // caseTryNavSvc.navigateTo() does a real $window.location.assign() now
+    // (see docs/todo/angularjs_removal_inventory.md). This mock makes that
+    // safe to exercise and keeps the real navigateTo() active for the tests
+    // below (spec/karma/mockBackend.js no-ops it only when $window is the
+    // real browser window).
+    windowMock = {
+      location: { assign: jasmine.createSpy(), href: '' }
     };
     querySvcMock = {
       changeSettings: jasmine.createSpy()
     };
     module(function($provide) {
       $provide.value('$location', locationMock);
+      $provide.value('$window', windowMock);
       $provide.value('queriesSvc', querySvcMock);
     });
     /*jshint camelcase:false*/
@@ -253,7 +264,7 @@ describe('Service: settingsSvc', function () {
     settingsSvc.save(editableSettings);
     $httpBackend.flush();
 
-    expect(locationMock.path).toHaveBeenCalledWith('/case/0/try/2/');
+    expect(windowMock.location.assign).toHaveBeenCalledWith('https://localhost:443/quepid/case/0/try/2');
     $httpBackend.verifyNoOutstandingExpectation();
   });
 
@@ -374,7 +385,7 @@ describe('Service: settingsSvc', function () {
     $httpBackend.flush();
     settingsCpy = settingsSvc.editableSettings();
     // expect navigation!
-    expect(locationMock.path).toHaveBeenCalledWith('/case/0/try/' + lastTry + '/');
+    expect(windowMock.location.assign).toHaveBeenCalledWith('https://localhost:443/quepid/case/0/try/' + lastTry);
   });
 
   it('wont delete last try', function() {

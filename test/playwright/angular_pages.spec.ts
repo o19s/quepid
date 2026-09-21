@@ -205,14 +205,23 @@ test.describe('Angular pages — interaction screenshots', () => {
     await page.locator('#header').getByRole('button', { name: /Relevancy Cases/i }).click();
     await expect(headerDropdownMenu(page, 'Relevancy Cases')).toBeVisible();
     await expect(page).toHaveScreenshot('wizard-05-relevancy-cases-dropdown.png', {
-      mask: dynamicRegions(page),
+      // expandFirstQuery() above leaves a real, live search result expanded
+      // in the background -- irrelevant to this screenshot's actual subject
+      // (the dropdown) and not deterministic between runs, so mask it too.
+      mask: [...dynamicRegions(page), page.locator('search-result')],
       maxDiffPixelRatio: 0.025,
     });
     await page.keyboard.press('Escape');
 
     await page.locator('search-result .single-rating').first().click();
     await expect(page.locator('.popover, [class*="popover"]').first()).toBeVisible({ timeout: 5_000 });
-    await expect(page).toHaveScreenshot('wizard-06-judgement-popover.png', expandedCaseScreenshotOpts(page));
+    await expect(page).toHaveScreenshot('wizard-06-judgement-popover.png', {
+      // Same expanded-result backdrop as wizard-05 above; the popover itself
+      // renders as its own overlay so masking the row behind it doesn't hide
+      // what this screenshot actually tests.
+      mask: [...dynamicRegions(page), page.locator('search-result')],
+      maxDiffPixelRatio: 0.025,
+    });
     await page.keyboard.press('Escape');
 
     await page.getByText('Share case', { exact: true }).click();

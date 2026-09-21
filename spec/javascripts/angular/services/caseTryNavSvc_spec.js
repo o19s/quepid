@@ -7,6 +7,7 @@ describe('Service: caseTryNavSvc', function () {
   beforeEach(module('QuepidTest'));
 
   var locationMock = null;
+  var windowMock = null;
   var caseTryNavSvc;
 
   beforeEach(function() {
@@ -17,8 +18,13 @@ describe('Service: caseTryNavSvc', function () {
 
     };
 
+    windowMock = {
+      location: { assign: jasmine.createSpy(), href: '' }
+    };
+
     module(function($provide) {
       $provide.value('$location', locationMock);
+      $provide.value('$window', windowMock);
     });
 
     /*jshint camelcase:false*/
@@ -28,57 +34,49 @@ describe('Service: caseTryNavSvc', function () {
     /*jshint camelcase:true*/
   });
 
+  // navigateTo() is a real page navigation ($window.location.assign), not an
+  // in-SPA route change -- see docs/todo/angularjs_removal_inventory.md.
   it('navigates to new case/try', function () {
     caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/');
+    expect(windowMock.location.assign).toHaveBeenCalledWith('https://localhost:443/quepid/case/5/try/1');
   });
 
   it('navigates to new case', function() {
     caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/');
     caseTryNavSvc.navigationCompleted({caseNo: 5, tryNo: 1});
     caseTryNavSvc.navigateTo({caseNo: 4});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/4/try/1/');
+    expect(windowMock.location.assign).toHaveBeenCalledWith('https://localhost:443/quepid/case/4/try/1');
   });
 
   it('navigates to new try', function() {
     caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/');
     caseTryNavSvc.navigationCompleted({caseNo: 5, tryNo: 1});
     caseTryNavSvc.navigateTo({tryNo: 4});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/4/');
+    expect(windowMock.location.assign).toHaveBeenCalledWith('https://localhost:443/quepid/case/5/try/4');
   });
 
   it('navigates to new case when both specified', function () {
     caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/');
     caseTryNavSvc.navigationCompleted({caseNo: 5, tryNo: 1});
     caseTryNavSvc.navigateTo({caseNo: 4, tryNo: 1});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/4/try/1/');
+    expect(windowMock.location.assign).toHaveBeenCalledWith('https://localhost:443/quepid/case/4/try/1');
   });
 
   it('navigates to new try when both specified', function () {
     caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/');
     caseTryNavSvc.navigationCompleted({caseNo: 5, tryNo: 1});
     caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 2});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/2/');
+    expect(windowMock.location.assign).toHaveBeenCalledWith('https://localhost:443/quepid/case/5/try/2');
+  });
+
+  it('carries the current sort/reverse query params onto the new URL', function() {
+    locationMock.search.and.returnValue({ sort: 'name', reverse: 'true' });
+    caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1});
+    expect(windowMock.location.assign).toHaveBeenCalledWith('https://localhost:443/quepid/case/5/try/1?sort=name&reverse=true');
   });
 
   it('doesnt save nav till confirmed', function() {
     caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1});
-    expect(locationMock.path).toHaveBeenCalledWith('/case/5/try/1/');
-    expect(caseTryNavSvc.getCaseNo()).toBe(0);
-    expect(caseTryNavSvc.getTryNo()).toBe(0);
-    caseTryNavSvc.navigationCompleted({caseNo: 5, tryNo: 1});
-    expect(caseTryNavSvc.getCaseNo()).toBe(5);
-    expect(caseTryNavSvc.getTryNo()).toBe(1);
-  });
-
-  it('calls location with trailing slash', function() {
-    // due to an angular bug, we always need to have a trailing / to avoid duplicate route loading
-    caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1});
-    expect(locationMock.path.calls.argsFor(0)[0].slice(-1)).toEqual('/');
     expect(caseTryNavSvc.getCaseNo()).toBe(0);
     expect(caseTryNavSvc.getTryNo()).toBe(0);
     caseTryNavSvc.navigationCompleted({caseNo: 5, tryNo: 1});
@@ -93,6 +91,19 @@ describe('Service: caseTryNavSvc', function () {
   });
 
   it('returns the quepid root url', function() {
-    expect(caseTryNavSvc.getQuepidRootUrl()).toEqual('https://localhost:443/quepid');    
+    expect(caseTryNavSvc.getQuepidRootUrl()).toEqual('https://localhost:443/quepid');
+  });
+
+  it('flashes an error and stays on the page on not found (no navigation)', function() {
+    spyOn(window.quepidDom.flash, 'show');
+    caseTryNavSvc.notFound();
+    expect(window.quepidDom.flash.show).toHaveBeenCalledWith('error', 'Unable to complete your request. Please try again.');
+    expect(windowMock.location.assign).not.toHaveBeenCalled();
+  });
+
+  it('is not loading by default, and navigateTo() does not toggle it (real navigation replaces that UX)', function() {
+    expect(caseTryNavSvc.isLoading()).toBe(false);
+    caseTryNavSvc.navigateTo({caseNo: 5, tryNo: 1});
+    expect(caseTryNavSvc.isLoading()).toBe(false);
   });
 });

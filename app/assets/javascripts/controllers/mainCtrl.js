@@ -1,29 +1,31 @@
 'use strict';
 
 /**
- * Top-level controller for `/case/:caseNo` and `/case/:caseNo/try/:tryNo`. Boots the selected case:
- * load case + try from the API, reset cached query state when the case or search engine changes,
- * run searches, load query snapshots, and surface TLS/mixed-content errors from `bootstrapCase`.
+ * Top-level controller, instantiated once per page load on `core/index.html.erb`. Boots the
+ * selected case: load case + try from the API, reset cached query state when the case or search
+ * engine changes, run searches, load query snapshots, and surface TLS/mixed-content errors from
+ * `bootstrapCase`. caseNo/tryNo come from `configurationSvc` (seeded server-side by Rails), not
+ * from the URL -- see docs/todo/angularjs_removal_inventory.md.
  */
 
 angular.module('QuepidApp')
   // there's a lot of dependencies here, but this guy
   // is responsible for bootstrapping everyone so...
   .controller('MainCtrl', [
-    '$scope', '$routeParams', '$rootScope', '$log',
+    '$scope', '$rootScope', '$log',
     'caseSvc', 'settingsSvc', 'querySnapshotSvc', 'caseTryNavSvc',
     'queryViewSvc', 'queriesSvc', 'docCacheSvc', 'diffResultsSvc', 'scorerSvc',
-    'paneSvc',
+    'paneSvc', 'configurationSvc',
     function (
-      $scope, $routeParams, $rootScope, $log,
+      $scope, $rootScope, $log,
       caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
       queryViewSvc, queriesSvc, docCacheSvc, diffResultsSvc, scorerSvc,
-      paneSvc
+      paneSvc, configurationSvc
     ) {
       $log.debug('NEW MAIN CTRL');
 
-      var caseNo  = parseInt($routeParams.caseNo, 10);
-      var tryNo   = parseInt($routeParams.tryNo, 10);
+      var caseNo  = configurationSvc.getCaseNo();
+      var tryNo   = configurationSvc.getTryNo();
 
       var initialCaseNo = angular.copy(caseTryNavSvc.getCaseNo());
 

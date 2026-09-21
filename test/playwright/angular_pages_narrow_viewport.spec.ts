@@ -46,7 +46,13 @@ test.describe('Angular core — narrow viewport slice (768×900)', () => {
 
     await gotoCase(page);
     await expandFirstQuery(page);
-    await expect(page).toHaveScreenshot('narrow-02-case-loaded.png', expandedCaseScreenshotOpts(page));
+    // This step is really just scene-setting for the dropdown/share-modal
+    // shots below -- expandFirstQuery() leaves a real, live search result
+    // expanded that isn't deterministic between runs, so mask it too.
+    await expect(page).toHaveScreenshot('narrow-02-case-loaded.png', {
+      mask: [...dynamicRegions(page), page.locator('search-result')],
+      maxDiffPixelRatio: 0.025,
+    });
 
     // Below the `lg` breakpoint the header's nav now lives behind a collapsed
     // `.navbar-collapse` (see 16.2 in docs/manual-testing/tracking.yml) — open the

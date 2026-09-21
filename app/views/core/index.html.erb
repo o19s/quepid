@@ -18,6 +18,8 @@
     </div>
   </div>
   <div ng-show="!loading.isLoading()">
-    <div ng-view></div>
+    <div ng-controller="MainCtrl">
+      <div ng-include="'views/queriesLayout.html'"></div>
+    </div>
   </div>
 </div>

@@ -142,7 +142,7 @@ Survived/no-coverage mutants in the report point at either a missing test case o
 - **Vitest + happy-dom** — `test/javascript/**/*.test.js` (shared modules plus Stimulus controller tests where behavior changes, e.g. `test/javascript/controllers/import_case_controller.test.js`).
 - **Karma + Jasmine + angular-mocks** — ~41 specs under `spec/javascripts/`, all Angular.
 - Karma loads **pre-built esbuild bundles**; every `karma:run` runs `yarn build` first.
-- **share-case migration:** Vitest `share_case_controller.test.js` (Rails index/teams) and `share_case_core_controller.test.js` (core toolbar API stay-on-page). Judgements opens share via `quepid:open-share-case-core`. HTTP/broadcast contracts in Karma `teamSvc_spec.js`; `caseSvc_spec.js` covers `quepid:case-team-changed`.
+- **share-case migration:** Vitest `share_case_controller.test.js` (Rails index/teams) and `share_case_core_controller.test.js` (core toolbar API stay-on-page). Judgements opens share via `quepid:open-share-case-core`. Now fully Stimulus — `teamSvc.js` and its Karma spec were dead code and have been deleted; `caseSvc_spec.js` covers the `quepid:case-team-changed` bridge.
 
 ---
 

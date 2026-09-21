@@ -21,14 +21,23 @@ const SNAPSHOT_CASE_ID = Number(process.env.QUEPID_E2E_SNAPSHOT_CASE_ID || DEFAU
 async function gotoSnapshotCase(page: Page): Promise<void> {
   await page.goto(`case/${SNAPSHOT_CASE_ID}`);
   await page.waitForSelector('#case-actions', { timeout: 20_000 });
+  // Wait for `.search-feedback` ("Bootstrapping Queries" / "Updating Queries: X / Y")
+  // to clear before proceeding -- see the identical wait in angular_case_helpers.ts's
+  // gotoCase() for why `state: 'hidden'` alone isn't enough (two elements share the
+  // class). Without this, clicking "Take Snapshot" before queriesSvc's state has
+  // actually settled can race the snapshot POST silently -- easy to miss when the
+  // case was slow (live Solr always left enough slack), much easier to hit once the
+  // case's search is instant (a local static/snapshot endpoint).
+  await expect(page.locator('.search-feedback:visible')).toHaveCount(0, { timeout: 20_000 }).catch(() => {});
 }
 
 test.describe('snapshots', () => {
   test('creating a snapshot lists it in the compare-snapshots picker', async ({ page }) => {
-    // The save serializes explain data for every query/doc in the case, and
-    // this shared dev server can be under concurrent load from other runs —
-    // give this one more headroom than the default 30s test timeout.
-    test.setTimeout(90_000);
+    // The save serializes explain data for every query/doc in the case by
+    // fetching it from SNAPSHOT_CASE_ID's live search endpoint (a real
+    // external Solr host, not a fixture) -- give this one more headroom than
+    // the default 30s test timeout to absorb that host's real-world latency.
+    test.setTimeout(120_000);
     await gotoSnapshotCase(page);
 
     const snapshotName = `Playwright snapshot ${Date.now()}`;
@@ -52,7 +61,7 @@ test.describe('snapshots', () => {
         response =>
           response.url().includes(`/api/cases/${SNAPSHOT_CASE_ID}/snapshots`) &&
           'POST' === response.request().method(),
-        { timeout: 45_000 }
+        { timeout: 100_000 }
       );
       await snapshotModal.getByRole('button', { name: 'Take Snapshot', exact: true }).click();
       const snapshotResponse = await snapshotSaved;

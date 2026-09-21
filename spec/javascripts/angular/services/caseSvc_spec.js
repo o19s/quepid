@@ -582,48 +582,6 @@ describe('Service: caseSvc', function () {
     });
   });
 
-  // Legacy Angular path: teamSvc.shareCase still broadcasts caseTeamAdded.
-  describe('caseTeamAdded bridge', function() {
-    var $rootScope;
-    var broadcastSvc;
-
-    beforeEach(inject(function(_$rootScope_, _broadcastSvc_) {
-      $rootScope  = _$rootScope_;
-      broadcastSvc = _broadcastSvc_;
-
-      caseSvc.allCases = [
-        {
-          caseNo:   5,
-          caseName: 'Demo Case',
-          teams:    [{ id: 1, name: 'OSC' }]
-        }
-      ];
-      caseSvc.selectCase(5);
-    }));
-
-    it('adds a team when teamSvc broadcasts caseTeamAdded', function() {
-      broadcastSvc.send('caseTeamAdded', {
-        caseNo: 5,
-        team:   { id: 2, name: 'Other' }
-      });
-      $rootScope.$apply();
-
-      expect(caseSvc.getSelectedCase().teams.map(function(t) { return t.id; }))
-        .toEqual([1, 2]);
-    });
-
-    it('ignores caseTeamAdded for a different case', function() {
-      broadcastSvc.send('caseTeamAdded', {
-        caseNo: 99,
-        team:   { id: 2, name: 'Other' }
-      });
-      $rootScope.$apply();
-
-      expect(caseSvc.getSelectedCase().teams.map(function(t) { return t.id; }))
-        .toEqual([1]);
-    });
-  });
-
   describe('judgements:book-settings-saved bridge', function() {
     var $rootScope;
     var broadcastSvc;

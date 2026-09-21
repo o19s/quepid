@@ -105,13 +105,7 @@ angular.module('QuepidApp')
         }
       });
 
-      $rootScope.$on('caseTeamAdded', function(event, args) {
-        if ( svc.isCaseSelected() && args.caseNo === svc.getSelectedCase().caseNo ) {
-          svc.getSelectedCase().teams.push(args.team);
-        }
-      });
-
-      // Stimulus share-case on the core toolbar (stay-on-page).
+      // Stimulus share-case (both Rails index/teams and the core toolbar).
       document.addEventListener('quepid:case-team-changed', function(event) {
         var detail = event.detail || {};
         var selected = svc.getSelectedCase();

@@ -283,4 +283,27 @@ window.mockBackend = function(angModule) {
 };
 
 // declare for testing
-angular.module('QuepidTest', ['ngMock', 'ngRoute', 'QuepidApp']);
+angular.module('QuepidTest', ['ngMock', 'QuepidApp'])
+  // caseTryNavSvc.navigateTo() does a real $window.location.assign() now
+  // (previously $location.path(), which ngMock already virtualizes for
+  // every spec automatically). Wrapping/mutating the real $window or
+  // window.location to neutralize this doesn't work -- Location's methods
+  // are brand-checked ("Illegal invocation") on anything but the one real
+  // window/location, and some are unforgeable (can't be redefined at all).
+  // Instead, neutralize the method on caseTryNavSvc itself whenever no spec
+  // has provided its own $window mock (i.e. $window is still the real
+  // browser window) -- otherwise an unrelated spec's $httpBackend.flush()
+  // could trigger a real browser navigation and abort the whole Karma run.
+  // Specs asserting on navigation itself (caseTryNavSvc_spec.js,
+  // settingsSvc_spec.js) provide their own $window via $provide.value, so
+  // $window !== window there and this is a pass-through.
+  // notFound() no longer navigates at all (it flashes an error and stays on
+  // the page), so it needs no such guard.
+  .config(function($provide) {
+    $provide.decorator('caseTryNavSvc', ['$delegate', '$window', function($delegate, $window) {
+      if ($window === window) {
+        $delegate.navigateTo = function() {};
+      }
+      return $delegate;
+    }]);
+  });

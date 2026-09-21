@@ -10,6 +10,7 @@
 - When a correction or lesson applies to how you work in this repo, fix it in the actual project file it belongs to (this file, a skill's `SKILL.md`, a doc) — not only in your own private memory, which no other session or person can see or review.
 - Most commands you want to run you can just prefix with `bin/docker r bundle exec` so `rails console --environment=test` becomes `bin/docker r bundle exec rails console --environment=test`
 - Before reviewing a branch against main, run `git fetch origin main` and compare against `origin/main` (for example, `git diff origin/main...HEAD`). Do not use the local `main` branch as the review baseline; it may be stale.
+- Never stage or unstage files on your own initiative (`git add`, `git rm`, `git mv`, `git reset`, `git restore --staged`, etc.) — the user manages the index themselves, and this includes "cleaning up" a staging side effect you just caused yourself (e.g. `git rm` staging a deletion). Use the non-staging equivalent instead (plain `rm`/`mv`). Don't comment on or flag staged/unstaged state either, expected or not — it's the user's own workflow, not something to narrate. Only touch the index when the user explicitly asks for that specific action in that turn, or as the staging step of an explicitly requested `git commit`.
 - After CSS or vendor JS changes make sure you rebuild:
     `bin/docker r yarn build`              # full frontend build
     `bin/docker r yarn build:css`          # core.css / application.css only

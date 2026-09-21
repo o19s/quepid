@@ -24,15 +24,15 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 122 files, 117 register `angular.module` |
-| HTML templates (components + `app/assets/templates`) | 36 (21 component + 15 under `app/assets/templates`) |
-| Controllers | 42 (`.controller()` registrations; 21 files under `controllers/`) |
-| Services | 27 (`.service()` registrations; 28 files under `services/` — `quepidModalSvc.js` registers a factory) |
+| Angular JS source files (`app/assets/javascripts`) | 120 files, 115 register `angular.module` |
+| HTML templates (components + `app/assets/templates`) | 35 (21 component + 14 under `app/assets/templates`) |
+| Controllers | 41 (`.controller()` registrations; 20 files under `controllers/`) |
+| Services | 26 (`.service()` registrations; 27 files under `services/` — `quepidModalSvc.js` registers a factory) |
 | Factories | 8 |
 | Filters | 8 under `filters/` (+ 1 directive-local: `plusOrMinus`) |
 | Custom directives / components | 27 (21 `.directive()` + 6 `.component()`) |
-| `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 11 |
-| Vendored Angular libraries (`app/javascript/vendor`) | 7 packages (+ `angular` core from npm) |
+| `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 10 |
+| Vendored Angular libraries (`app/javascript/vendor`) | 6 packages (+ `angular` core from npm) |
 | Karma unit specs (`spec/javascripts/angular`) | 38 |
 | Vitest unit specs (`test/javascript/**/*.test.js`) | 42 |
 | Playwright specs | See [Other inventory § Tests](#tests) for the Angular-core and Stimulus spec breakdown |
@@ -84,16 +84,15 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 ## Decision lenses
 
-The questions that must be answered before the [live query-state phase](#live-query-state-phase-committed-final-phase) starts, not whether it happens:
+The questions that must be answered before the [live query-state phase](#live-query-state-phase-committed-final-phase) starts, not whether it happens. **Signed off 2026-09-19:**
 
-| Lens | Question |
-|------|----------|
-| **Incremental shipper** | What ships without a feature freeze? (Toolbar Stimulus twins, DOM utilities, management modals.) |
-| **Search/IR domain** | Does live tuning still search customer engines from the browser (proxy when needed)? Does batch eval stay on `FetchService`? |
-| **UX fidelity** | Does rating still feel instant? (Today: client `scoreAll()` on every rating — not negotiable.) |
-| **Security** | What replaces browser `eval()` for scorers? (Web Worker — not server-only scoring.) |
-| **Performance** | Large cases (1,000+ queries): `scoreAll()` is O(n queries) today — framework change alone doesn't fix that. |
-| **A11y** | Scores can't be color-only; real ARIA on badges and rating controls. |
+| Lens | Question | Decision |
+|------|----------|----------|
+| **Search/IR domain** | Does live tuning still search customer engines from the browser (proxy when needed)? Does batch eval stay on `FetchService`? | **Confirmed.** Live search stays browser → customer engine; batch stays server-side on `FetchService`. |
+| **UX fidelity** | Does rating still feel instant? (Today: client `scoreAll()` on every rating — not negotiable.) | **Confirmed.** Client `scoreAll()` on every rating stays non-negotiable. |
+| **Security** | What replaces browser `eval()` for scorers? (Web Worker — not server-only scoring.) | **Deferred.** Keep `eval()` as-is for the live-query-state phase; do not block the rewrite on building the Web Worker sandbox. Revisit as a follow-up once the rewrite ships — this is a known open risk, not a closed one. |
+| **Performance** | Large cases (1,000+ queries): `scoreAll()` is O(n queries) today — framework change alone doesn't fix that. | Not separately decided — no perf target set; carry current behavior forward, don't regress it. |
+| **A11y** | Scores can't be color-only; real ARIA on badges and rating controls. | Do it. |
 
 ---
 
@@ -164,13 +163,13 @@ Hotwire already covers most non-case pages (teams, books, scorers, admin). The c
            │                   │
   ┌────────┴────────┐  ┌───────┴──────────────┐
   │ Hotwire pages   │  │ Case workspace       │
-  │ (already live)  │  │ Stimulus *or* React  │
+  │ (already live)  │  │ Stimulus + vanilla   │
   └─────────────────┘  │ esbuild bundle       │
                        │ splainer-search 3.x  │
                        └──────────────────────┘
 ```
 
-**UI stack:** Hotwire/Stimulus + vanilla (matches incremental path) *or* a React island — either way bundle with **esbuild** (same as `build:angular-vendor` today). Importmap is for Stimulus pages, not a heavy case workspace.
+**UI stack: Hotwire/Stimulus + vanilla JS**. Bundle with **esbuild** (same as `build:angular-vendor` today) — importmap is for Stimulus pages, not a heavy case workspace.
 
 **Search:** Live `searchAll()` stays **client → customer engine** (Quepid proxy for CORS/auth). Server-side fetch is already the **batch** path (`FetchService` / `RunCaseEvaluationJob`) — don't conflate the two.
 
@@ -229,16 +228,17 @@ New Stimulus logic in `app/javascript/api/` or `utils/` needs a `*.test.js` unde
 
 When replacing the case SPA (not just toolbar actions), work in dependency order:
 
-1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`; finish by dropping remaining Angular directive shells)
-2. Shell — drop `ngRoute`; `MainCtrl` bootstrap → Stimulus + fetch
-3. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
-4. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
-5. Query list + results — `queries`, `search-results`, rating UI
-6. Case action modals — import ratings, diff
-7. Wizard — largest template; ACE, CSV, tags, tour
-8. Tune Relevance pane — ACE, json explorer, try management
-9. Header — `HeaderCtrl` dropdowns
-10. Cleanup — removal checklist below
+Shell (`ngRoute`/`404Ctrl` removal, `MainCtrl` bootstrap off `$routeParams`) is done — `MainCtrl` stays Angular-authored (it still calls `caseSvc`/`settingsSvc`/`queriesSvc`, next up below) but is no longer route-triggered; see [Application shell](#1-application-shell).
+
+1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). **Not separable (checked 2026-09-19):** every remaining call site of all three lives inside a component already on the defer list (`$quepidModal`: `browse_query`, `query_options`, `new_case`, `annotation`, `diff`, `frog_report`, `import_ratings`, `move_query`, `wizardModal`/`wizardCtrl`, `queryParamsDetails`/`queryParamsHistory`, `targetedSearchModal`, `searchResult`, `case.js`; `quepidTypeahead`/`quepidCollapse`: `wizardModal.html`, `devQueryParams.html`, `searchEndpoint_popup.html`). They fall out as each of those components migrates in steps 4–7 below — don't plan a standalone PR for this step.
+2. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
+3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
+4. Query list + results — `queries`, `search-results`, rating UI
+5. Case action modals — import ratings, diff
+6. Wizard — largest template; ACE, CSV, tags, tour
+7. Tune Relevance pane — ACE, json explorer, try management
+8. Header — `HeaderCtrl` dropdowns
+9. Cleanup — removal checklist below
 
 ### Hardest — sequence last, needs the state plan first
 
@@ -252,7 +252,6 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **settingsSvc** / **caseSvc** | 638 / 510 | Try / case domain model |
 | **$quepidModal** | 275 | BS5 modals + `$compile` — 11 `.open()` call sites (24 files reference `$quepidModal`) |
 | **ScorerFactory** | 666 | Scoring model + judgement math |
-| **routes.js** + **ngRoute** | — | Entire SPA |
 | **angular core** | — | Remove last |
 
 **Component LOC** (easiest → hardest, after [toolbar duplicates](#core-toolbar-duplicates-highest-leverage)): new_case (66) → qscore_* (79–82) → annotation/annotations (87–94) → query_options (98) → move_query (152) → add_query (160) → qgraph (250) → diff (285) → frog_report (360) → import_ratings (462).
@@ -334,21 +333,19 @@ The Rails cases index at `/cases` is **not** Angular.
 - `<body ng-app="QuepidApp">`
 - JS: `angular_app`, `angular_templates`, `quepid_angular_app`
 - CSS: `json-explorer` (Quepid-owned), `angular-wizard`, `ng-tags-input`
-- Inline script: `bootstrapSvc.run()`, `configurationSvc` seeded from Rails config
+- Inline script: `bootstrapSvc.run()`, `configurationSvc` seeded from Rails config — including `caseNo`/`tryNo` from `params[:id]`/`params[:try_number]`/`@case`. Interpolate as bare integers/`"null"`, never `.to_json` — Rails' default HTML-escaping of `<%= %>` mangles `"`/`&` inside a `<script>` tag (`"1"` → `&quot;1&quot;`), silently breaking the whole inline script.
 
 ### Case shell (`app/views/core/index.html.erb`)
 
-Flash include, `LoadingCtrl`, `ng-view`
+Flash include, `LoadingCtrl`, `ng-controller="MainCtrl"` wrapping an `ng-include` of `views/queriesLayout.html` (no more `ng-view`/`ngRoute`)
 
 ### Header (`app/views/layouts/_header_core_app.html.erb`)
 
 `HeaderCtrl`, `ng-repeat` case/book dropdowns
 
-### Client routing (`app/assets/javascripts/routes.js`)
+### `app/assets/javascripts/routes.js`
 
-- `$locationProvider.html5Mode(true)`
-- `/case/:caseNo(/try/:tryNo)` → `MainCtrl` + `views/queriesLayout.html`
-- Fallback → `404Ctrl` + `views/404.html`
+`$locationProvider.html5Mode(true)` + `$httpProvider` cache/header config only — `$routeProvider` and the `/case/:caseNo(/try/:tryNo)`/`404Ctrl` routes it used to register are gone (dropped with `ngRoute`).
 
 ---
 
@@ -358,7 +355,6 @@ Flash include, `LoadingCtrl`, `ng-view`
 
 | Module | Source | Used for | Replace with |
 |--------|--------|----------|--------------|
-| `ngRoute` | `angular-route` | Case/try routing | History API / Rails URLs (last with SPA) |
 | `ngSanitize` | `angular-sanitize` | `ng-bind-html` | DOMPurify or server sanitize |
 | `mgo-angular-wizard` | `angular-wizard` | New-case wizard | Multi-step Stimulus or server wizard |
 | `o19s.splainer-search` | `splainer_search_adapter.js` | Search HTTP | `splainer-search/wired.js` directly |
@@ -392,12 +388,13 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 |------|------|-----------|
 | App bootstrap & loading gate | controller | `LoadingCtrl` — `controllers/loading.js` |
 | Case/try bootstrapping | controller | `MainCtrl` — `controllers/mainCtrl.js` |
-| 404 handling | controller + template | `404Ctrl`, `templates/views/404.html` |
 | Current user on `$rootScope` | service | `bootstrapSvc`, `userSvc` |
 | App config flags | service | `configurationSvc` |
 | CSRF on API requests | interceptor | `interceptors/rails-csrf.js` |
-| Case/try URL helpers | service | `caseTryNavSvc` |
+| Case/try URL helpers | service | `caseTryNavSvc` — still the Angular-facing navigation API (`navigateTo`/`navigationCompleted`/`isLoading`/`notFound`/`getCaseNo`/`getTryNo`); called from several still-Angular components (case rename, try switch, wizard). `navigateTo()` is a real `$window.location.assign()` (full reload, not an SPA transition); `notFound()` flashes an error and stays on the page rather than navigating anywhere — its ~6 callers are generic `$http`-failure handlers (case create/rename/etc.), not actual routing 404s, so there's no good page to send the user to. |
 | Pane layout (east slider) | service + value | `paneSvc`, `eastPaneWidth` |
+
+`routes.js` no longer registers `$routeProvider`/`404Ctrl` — routing is server-side (Rails); `MainCtrl` is attached directly in `core/index.html.erb` rather than route-triggered.
 
 ### 2. Header navigation (core layout)
 
@@ -422,7 +419,7 @@ Templates: `layouts/_header_core_app.html.erb`, `components/new_case/new_case.ht
 | Diff against snapshot | component | `<diff>` — `components/diff/` |
 | New-case wizard launcher | controller | `WizardCtrl` — `controllers/wizardCtrl.js` |
 
-Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `snapshotSearcherSvc`, `SnapshotFactory`, `importRatingsSvc`, `caseCSVSvc`, `bookSvc`, `teamSvc`, `diffResultsSvc`, `qscoreSvc`
+Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `snapshotSearcherSvc`, `SnapshotFactory`, `importRatingsSvc`, `caseCSVSvc`, `bookSvc`, `diffResultsSvc`, `qscoreSvc`
 
 ### 4. New-case wizard
 
@@ -544,11 +541,11 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 ## Services, factories, and filters
 
-**Services (26):** `annotationsSvc`, `bookSvc`, `bootstrapSvc`*, `caseCSVSvc`, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `diffResultsSvc`, `docCacheSvc`, `importRatingsSvc`, `paneSvc`, `qscoreSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateScaleSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `snapshotSearcherSvc`, `teamSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`)
+**Services (25):** `annotationsSvc`, `bookSvc`, `bootstrapSvc`*, `caseCSVSvc`, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `diffResultsSvc`, `docCacheSvc`, `importRatingsSvc`, `paneSvc`, `qscoreSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateScaleSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `snapshotSearcherSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`).
 
 **Factories (8):** `$quepidModal` (`services/quepidModalSvc.js`), `AnnotationFactory`, `broadcastSvc`, `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `SnapshotFactory`, `TryFactory`
 
-`broadcastSvc` wraps `$rootScope.$broadcast` — used by `caseSvc`, `settingsSvc`, `queriesSvc`, `annotationsSvc`, `bookSvc`, `teamSvc`. See [event bus inventory](./event_bus_inventory.md).
+`broadcastSvc` wraps `$rootScope.$broadcast` — used by `caseSvc`, `settingsSvc`, `queriesSvc`, `annotationsSvc`, `bookSvc`. See [event bus inventory](./event_bus_inventory.md).
 
 **Filters (8 under `filters/`):** `caseType`, `isImageUrl`, `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`, `timeAgo` (first-party replacement for vendored `angular-timeago`)
 
@@ -558,9 +555,9 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 ---
 
-## Templates (36 HTML files)
+## Templates (35 HTML files)
 
-**Shell:** `queriesLayout.html`, `queries.html`, `404.html`, `embed.html`
+**Shell:** `queriesLayout.html`, `queries.html`, `embed.html`
 
 **Search/results:** `searchResults.html`, `searchResult.html`, `queryDiffResults.html`, `targetedSearchModal.html`
 
@@ -605,7 +602,7 @@ Core layout loads: `json-explorer` (Quepid-owned, styles the vanilla JSON tree),
 | yarn scripts | `build:angular*` included in `yarn build` |
 | Linked stylesheets | `build_css.js` → `copyLinkedStylesheets()` · audit: `audit_css.js` |
 
-Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (7 packages; see [vendor README](../../app/javascript/vendor/README.md))
+Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (6 packages; see [vendor README](../../app/javascript/vendor/README.md))
 
 ### Tests
 

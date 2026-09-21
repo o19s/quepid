@@ -121,7 +121,7 @@ List before editing:
 - Run or capture the relevant Karma examples **before** deleting Angular sources.
 - Port contracts to Vitest with comments naming the Karma examples (commands: `CLAUDE.md` § Tests → JavaScript / `DEVELOPER_GUIDE.md` § Vitest).
 - Explicitly document dropped examples (e.g. "modal dismiss is Bootstrap `data-bs-dismiss`").
-- Keep Karma for services still used by remaining Angular (`teamSvc`, `caseSvc` bridges, etc.).
+- Keep Karma for services still used by remaining Angular (`caseSvc` bridges, etc.). Once a service is *only* reachable from the migrated Angular path (e.g. `teamSvc` after `share-case` went fully Stimulus), delete the service, its Karma spec, and any now-dead `$rootScope.$on`/`broadcastSvc.send` calls it fed — don't leave them as unreachable code.
 
 ### 4. Implement behind a seam (per surface)
 
