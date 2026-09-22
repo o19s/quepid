@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import {
+  CASE_ID,
   dynamicRegions,
   expandFirstQuery,
   expandedCaseScreenshotOpts,
@@ -73,6 +74,84 @@ test.describe('core layout golden paths', () => {
     await expect(page.locator('.popover, [class*="popover"]').first()).toBeVisible({ timeout: 5_000 });
 
     await expect(page).toHaveScreenshot('judgement-popover.png', expandedCaseScreenshotOpts(page));
+  });
+
+  test.describe('rating a result', () => {
+    // Restoring the shared static case's rating through the popover UI in a
+    // try/finally isn't reliable: a real regression in this flow (score never
+    // updates) fails via expect.poll, but a hung .click() can still run out
+    // the whole test timeout, and Playwright doesn't guarantee a try/finally
+    // inside the test body finishes unwinding once that happens. A
+    // test.afterEach does run even then (same reasoning as
+    // toolbar_modals_core.spec.ts's afterAll comment), so cleanup goes
+    // through a direct API call instead of the UI, keyed off the query/doc
+    // identity and rating captured from Angular scope before any mutation.
+    let restoreState: { queryId: number; docId: string; rating: number | null } | undefined;
+
+    test.afterEach(async ({ page }) => {
+      if (!restoreState) return;
+      const { queryId, docId, rating } = restoreState;
+      restoreState = undefined;
+
+      const csrf = await page.evaluate(() =>
+        document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
+      );
+      const headers = { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-Token': csrf };
+      const url = `api/cases/${CASE_ID}/queries/${queryId}/ratings`;
+
+      // Assert rather than ignore: a silent failure here (e.g. an empty CSRF
+      // token nulling the session) would leave the shared case's rating
+      // mutated for the next run instead of raising anything.
+      const response = rating === null
+        ? await page.request.delete(url, { data: { rating: { doc_id: docId } }, headers })
+        : await page.request.put(url, { data: { rating: { doc_id: docId, rating } }, headers });
+      expect(response.ok()).toBeTruthy();
+    });
+
+    test('rating updates the query score, case score, and rating badge', async ({ page }) => {
+      await gotoCase(page);
+      await expandFirstQuery(page);
+
+      const queryScore = page.locator('.qscore-query-badge').first();
+      const caseScore = page.locator('[data-controller="qscore-case"]').first();
+      const resultRating = page.locator('search-result .single-rating').first();
+
+      await expect(queryScore).not.toHaveText('?');
+      await expect(caseScore).not.toHaveText('?');
+
+      // Read query/doc identity and the actual rating value (not its
+      // formatted display text) via Angular scope, before any mutation, so
+      // afterEach can restore it precisely regardless of how this test ends.
+      restoreState = await resultRating.evaluate((el) => {
+        const scope = (window as any).angular.element(el).scope();
+        return {
+          queryId: scope.query.queryId as number,
+          docId:   scope.doc.id as string,
+          rating:  (scope.doc.hasRating() ? scope.doc.getRating() : null) as number | null,
+        };
+      });
+
+      // Reset first so the following positive rating is a known mutation even
+      // when the shared static case already has a rating on this document.
+      await resultRating.click();
+      await expect(page.locator('.popover').last()).toBeVisible();
+      await page.locator('.popover').last().locator('.reset').click();
+      await expect(page.locator('.popover')).toHaveCount(0);
+
+      const scoreBeforeRating = await queryScore.textContent();
+      const caseScoreBeforeRating = await caseScore.textContent();
+      const badgeColorBeforeRating = await resultRating.locator('span.btn').evaluate((el) => getComputedStyle(el).backgroundColor);
+
+      await resultRating.click();
+      const ratingOption = page.locator('.popover').last().locator('.ratingNum').last();
+      await expect(ratingOption).toBeVisible();
+      await ratingOption.click();
+      await expect(page.locator('.popover')).toHaveCount(0);
+
+      await expect.poll(async () => (await queryScore.textContent())?.trim()).not.toBe(scoreBeforeRating?.trim());
+      await expect.poll(async () => (await caseScore.textContent())?.trim()).not.toBe(caseScoreBeforeRating?.trim());
+      await expect.poll(async () => await resultRating.locator('span.btn').evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe(badgeColorBeforeRating);
+    });
   });
 
   test('take a snapshot', async ({ page }) => {

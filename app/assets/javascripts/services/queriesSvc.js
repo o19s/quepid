@@ -1113,8 +1113,8 @@ angular.module('QuepidApp')
 
         this.searchAndScore = function() {
           return this.search().then( () => {
-            this.score();
-            
+            return this.score();
+          }).then( () => {
             // Sync query results to associated Book if one exists
             svc.syncToBook();
           });
