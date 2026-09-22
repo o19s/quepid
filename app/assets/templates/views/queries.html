@@ -1,12 +1,20 @@
-<div class="results" id="query-container">
+<div
+  class="results"
+  id="query-container"
+  data-controller="queries-list"
+  data-queries-list-show-only-rated-value="{{queriesSvc.showOnlyRated}}"
+  data-queries-list-show-only-rated-unsupported-value="{{showOnlyRatedUnsupported()}}"
+  data-queries-list-sort-name-value="{{sortName}}"
+  data-queries-list-reverse-value="{{reverse}}"
+  data-queries-list-query-list-sortable-value="{{queryListSortable}}">
   <div class="row">
     <div class="col-sm-12 mb-3">
       <add-query class="float-start mb-2"></add-query>
 
       <ul class="list-inline d-flex justify-content-end flex-wrap mb-0 float-end">
-        <li class="list-inline-item" title="{{ showOnlyRatedUnsupported() ? 'Not supported for this search engine yet' : '' }}">
-          <input type="checkbox" class="align-top" ng-checked="queriesSvc.showOnlyRated" ng-click="!showOnlyRatedUnsupported() && queriesSvc.toggleShowOnlyRated()" ng-disabled="showOnlyRatedUnsupported()" />
-          <a href="" ng-click="!showOnlyRatedUnsupported() && queriesSvc.toggleShowOnlyRated()" ng-class="{ 'text-muted': showOnlyRatedUnsupported() }">Show only rated</a>
+        <li class="list-inline-item" data-queries-list-target="ratedLabel" title="{{ showOnlyRatedUnsupported() ? 'Not supported for this search engine yet' : '' }}">
+          <input type="checkbox" class="align-top" data-queries-list-target="ratedCheckbox" data-action="change->queries-list#toggleShowOnlyRated" />
+          <a href="" data-action="click->queries-list#toggleShowOnlyRated">Show only rated</a>
         </li>
 
         <li class="list-inline-item text-muted">
@@ -14,7 +22,7 @@
         </li>
 
         <li class="list-inline-item">
-          <a ng-click="collapseAll()" href="">Collapse all</a>
+          <a data-action="click->queries-list#collapseAll" href="">Collapse all</a>
         </li>
 
         <li class="list-inline-item text-muted">
@@ -25,60 +33,50 @@
           <span class="text-muted">Sort &nbsp;</span>
 
           <ul class="list-inline" style="display:inline" role="group" aria-label="sort">
-            <li class="list-inline-item" ng-if="queryListSortable">
-              <a ng-class="{active: sort == 'defaultCaseOrder'}" ng-click="sortBy('default')">
+            <li class="list-inline-item" data-queries-list-target="sortLink manualSortLink" data-sort-field="default">
+              <a data-action="click->queries-list#sort" data-sort-field="default">
                 Manual
-                <i ng-show="sortName == 'default'"
-                      class="bi"
-                      ng-class="reverse ? 'bi-arrow-up' : 'bi-arrow-down'"
+                <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="default"
                       aria-hidden="true">
                 </i>
               </a>
             </li>
-            <li class="list-inline-item" ng-if="!queryListSortable">
+            <li class="list-inline-item d-none" data-queries-list-target="manualHelp">
               Manual
               <i class="bi bi-exclamation-circle-fill" tabindex="0" role="button" aria-label="Help" data-controller="bs-popover" data-bs-popover-trigger-value="mouseenter" data-bs-popover-placement-value="right" data-bs-popover-content-value="Manual sorting has been disabled by your administrator due to the bug https://github.com/o19s/quepid/issues/272."></i>
             </li>
 
             <li class="list-inline-item">
-              <a ng-class="{active: sort == 'queryText'}" ng-click="sortBy('query')">
+              <a data-queries-list-target="sortLink" data-sort-field="query" data-action="click->queries-list#sort">
                 Name
-                <i ng-show="sortName == 'query'"
-                  class="bi"
-                  ng-class="reverse ? 'bi-arrow-up' : 'bi-arrow-down'"
+                <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="query"
                   aria-hidden="true">
                 </i>
               </a>
             </li>
 
             <li class="list-inline-item">
-               <a ng-class="{active: sort == 'modified'}" ng-click="sortBy('modified')">
+               <a data-queries-list-target="sortLink" data-sort-field="modified" data-action="click->queries-list#sort">
                  Modified
-                 <i ng-show="sortName == 'modified'"
-                       class="bi"
-                       ng-class="reverse ? 'bi-arrow-up' : 'bi-arrow-down'"
+                 <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="modified"
                        aria-hidden="true">
                  </i>
                </a>
              </li>
 
             <li class="list-inline-item">
-              <a ng-class="{active: sort == 'lastScore'}" ng-click="sortBy('score')">
+              <a data-queries-list-target="sortLink" data-sort-field="score" data-action="click->queries-list#sort">
                 Score
-                <i ng-show="sortName == 'score'"
-                  class="bi"
-                  ng-class="reverse ? 'bi-arrow-up' : 'bi-arrow-down'"
+                <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="score"
                   aria-hidden="true">
                 </i>
               </a>
             </li>
 
             <li class="list-inline-item">
-              <a ng-class="{active: sort == 'errorText'}" ng-click="sortBy('error')">
+              <a data-queries-list-target="sortLink" data-sort-field="error" data-action="click->queries-list#sort">
                 Errors
-                <i ng-show="sortName == 'error'"
-                  class="bi"
-                  ng-class="reverse ? 'bi-arrow-up' : 'bi-arrow-down'"
+                <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="error"
                   aria-hidden="true">
                 </i>
               </a>
@@ -94,7 +92,7 @@
           Number of Queries: {{ queriesList.length }}
         </div>
         <div class="pe-3">
-          <input type="search" ng-model="queryFilter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id='queries-filter' />
+          <input type="search" data-queries-list-target="filter" data-action="input->queries-list#filter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id='queries-filter' />
         </div>
         <div class="pe-3">
           <frog-report
@@ -113,7 +111,7 @@
       </div>
 
       <!-- let the user know what we're looking at-->
-      <ul class="results-list-element" quepid-sortable="queries.sortableOptions" ng-class="!queryListSortable ? 'unsortable' : dragging === true ? 'dragging' : ''">
+      <ul class="results-list-element" data-queries-list-target="list" ng-class="!queryListSortable ? 'unsortable' : dragging === true ? 'dragging' : ''">
         <li ng-class="query.isToggled() ? 'unsortable' : ''" dir-paginate="query in queriesList | filter:matchQueryFilter | orderBy:sort:reverse | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage">
           <search-results query="query" issortingenabled="queries.isSortingEnabled">
           </search-results>

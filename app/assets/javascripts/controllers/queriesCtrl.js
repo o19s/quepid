@@ -10,6 +10,7 @@
 angular.module('QuepidApp')
   .controller('QueriesCtrl', [
     '$scope',
+    '$element',
     '$q',
     '$log',
     '$location',
@@ -24,6 +25,7 @@ angular.module('QuepidApp')
     'settingsSvc',
     function (
       $scope,
+      $element,
       $q,
       $log,
       $location,
@@ -43,6 +45,35 @@ angular.module('QuepidApp')
       $scope.queryListSortable = configurationSvc.isQueryListSortable();
       $scope.annotations = []; // Initialize annotations array
 
+      $element.on('queries-list:toggle-rated', function () {
+        $scope.$evalAsync(function () {
+          if (!$scope.showOnlyRatedUnsupported()) {
+            queriesSvc.toggleShowOnlyRated();
+          }
+        });
+      });
+      $element.on('queries-list:collapse-all', function () {
+        $scope.$evalAsync($scope.collapseAll);
+      });
+      $element.on('queries-list:sort', function (event) {
+        $scope.$evalAsync(function () {
+          var originalEvent = event.originalEvent || {};
+          var field = (originalEvent.detail && originalEvent.detail.field) ||
+            (event.detail && event.detail.field);
+          $scope.sortBy(field);
+        });
+      });
+      $element.on('queries-list:filter', function (event) {
+        $scope.$evalAsync(function () {
+          var originalEvent = event.originalEvent || {};
+          var originalValue = originalEvent.detail && originalEvent.detail.value;
+          var value = originalValue !== undefined && originalValue !== null ?
+            originalValue :
+            (event.detail && event.detail.value);
+          $scope.queryFilter = value !== undefined && value !== null ? value : '';
+        });
+      });
+      $scope.$on('$destroy', function () { $element.off('queries-list:toggle-rated queries-list:collapse-all queries-list:sort queries-list:filter queries-list:drag-start queries-list:drag-end'); });
       // The scoringCompleteListener is a workaround for the fact that
       // we create multiple instances of this controller when we reselect the
       // same Case in the core app.  Which leads to multiple calls to the backend for the same scoring complete calculation
@@ -105,24 +136,23 @@ angular.module('QuepidApp')
           clearTimeout(caseScoreUpdateTimeout); // Clean up timeout
         }
       });
-      // Options for quepidSortable (see directives/quepidSortable.js). The
-      // directive already runs start/stop inside $scope.$apply, so these
-      // must not call $apply themselves.
-      var sortableOptions = {
-        start: function() {
+      var originalList;
+      $element.on('queries-list:drag-start', function () {
+        $scope.$evalAsync(function () {
           $scope.dragging = true;
-
-          // This is required because by the time `stop` is called the DOM
-          // (and therefore SortableJS's oldIndex/newIndex) already reflects
-          // the new order.
-          $scope.originalList = angular.copy($scope.queriesList);
+          originalList = angular.copy($scope.queriesList);
 
           if ( $scope.reverse ) {
-            $scope.originalList = $scope.originalList.reverse();
+            originalList = originalList.reverse();
           }
-        },
-        stop: function(oldIndex, newIndex) {
+        });
+      });
+      $element.on('queries-list:drag-end', function (event) {
+        $scope.$evalAsync(function () {
           $scope.dragging = false;
+          var detail = (event.originalEvent && event.originalEvent.detail) || event.detail || {};
+          var oldIndex = detail.oldIndex;
+          var newIndex = detail.newIndex;
 
           if ( angular.isUndefined(newIndex) || oldIndex === newIndex ) {
             return;
@@ -136,8 +166,8 @@ angular.module('QuepidApp')
             ($scope.pagination.currentPage - 1) * $scope.pagination.pageSize
           );
 
-          var item      = $scope.originalList[fromIndex];
-          var oldItem   = $scope.originalList[toIndex];
+          var item      = originalList[fromIndex];
+          var oldItem   = originalList[toIndex];
 
           if (toIndex < fromIndex) {
             reverse = !reverse;
@@ -145,13 +175,11 @@ angular.module('QuepidApp')
 
           queriesSvc.updateQueryDisplayPosition(item.queryId, oldItem.queryId, reverse)
             .then(function() {
-              $scope.originalList = $scope.queriesList;
+              originalList = $scope.queriesList;
             });
-        }
-      };
-
-      $scope.queries                  = {};
-      $scope.queries.sortableOptions  = sortableOptions;
+        });
+      });
+      $scope.queries = {};
 
       $scope.sortBy                   = sortBy;
       $scope.getScorer                = getScorer;
@@ -565,27 +593,22 @@ angular.module('QuepidApp')
             case 'default':
               $scope.sort = 'defaultCaseOrder';
               $scope.sortName = 'default';
-              $scope.queries.sortableOptions.disabled = false;
               break;
             case 'modified':
               $scope.sort = '-modifiedAt';
               $scope.sortName = 'modified';
-              $scope.queries.sortableOptions.disabled = true;
               break;
             case 'query':
               $scope.sort = 'queryText';
               $scope.sortName = 'query';
-              $scope.queries.sortableOptions.disabled = true;
               break;
             case 'score':
               $scope.sort = '-lastScore';
               $scope.sortName = 'score';
-              $scope.queries.sortableOptions.disabled = true;
               break;
             case 'error':
               $scope.sort = ['-errorText', 'allRated'];
               $scope.sortName = 'error';
-              $scope.queries.sortableOptions.disabled = true;
               break;
           }
         }

@@ -82,6 +82,27 @@ test.describe('core layout golden paths', () => {
       .toHaveClass(/bi-caret-up-fill/);
   });
 
+  test('query list controls bridge through Stimulus', async ({ page }) => {
+    await gotoCase(page);
+
+    const queryList = page.locator('#query-container');
+    const rows = queryList.locator('ul.results-list-element > li');
+    await expect(rows.first()).toBeVisible();
+
+    await page.locator('#queries-filter').fill('this-query-does-not-exist');
+    await expect(rows).toHaveCount(0);
+
+    await page.locator('#queries-filter').fill('');
+    await expect(rows.first()).toBeVisible();
+
+    await queryList.locator('a[data-sort-field="query"]').click();
+    await expect(queryList).toHaveAttribute('data-queries-list-sort-name-value', 'query');
+
+    await expandFirstQuery(page);
+    await queryList.getByRole('link', { name: 'Collapse all', exact: true }).click();
+    await expect(queryList.locator('.sub-results:visible')).toHaveCount(0);
+  });
+
   test('leave a judgement', async ({ page }) => {
     await gotoCase(page);
     await expandFirstQuery(page);
