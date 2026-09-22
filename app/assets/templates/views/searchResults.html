@@ -1,8 +1,7 @@
 <div
-  ng-attr-id="{{ 'query-' + query.queryText }}"
   data-query-row-query-id-value="{{query.queryId}}"
-  rank="{{$index + 1}}"
   data-controller="query-row"
+  data-query-row-rank-value="{{$index + 1}}"
   data-query-row-query-text-value="{{query.queryText}}"
   data-query-row-information-need-value="{{query.informationNeed}}"
   data-query-row-num-found-value="{{query.getNumFound()}}"

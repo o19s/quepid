@@ -10,6 +10,7 @@ export default class extends Controller {
   static targets = ["query", "text", "image", "resultCount", "resultLabel", "querqy", "header", "toggle"]
   static values = {
     queryId: Number,
+    rank: Number,
     informationNeed: String,
     numFound: Number,
     querqyTriggered: Boolean,
@@ -68,6 +69,8 @@ export default class extends Controller {
 
   render() {
     if (this.hasStateValue) this.stateValueChanged(this.stateValue)
+    this.element.id = `query-${this.queryTextValue}`
+    this.element.setAttribute("rank", String(this.rankValue))
     if (this.hasQueryTarget) {
       this.queryTarget.setAttribute("data-bs-tooltip-title-value", `Info Need: ${this.informationNeedValue}`)
     }

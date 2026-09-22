@@ -38,6 +38,7 @@ describe("QueryRowController", () => {
     controller.toggleTarget = controller.element.querySelector('[data-query-row-target="toggle"]')
     controller.queryTextValue = "Star Wars"
     controller.queryIdValue = 42
+    controller.rankValue = 3
     controller.numFoundValue = 1
     controller.querqyTriggeredValue = true
     controller.informationNeedValue = "Find space movies"
@@ -50,6 +51,8 @@ describe("QueryRowController", () => {
   it("renders read-only row values", () => {
     controller.render()
 
+    expect(controller.element.id).toBe("query-Star Wars")
+    expect(controller.element.getAttribute("rank")).toBe("3")
     expect(controller.textTarget.textContent).toBe("Star Wars\u00a0")
     expect(controller.imageTarget.classList.contains("d-none")).toBe(true)
     expect(controller.queryTarget.getAttribute("data-bs-tooltip-title-value")).toBe("Info Need: Find space movies")
