@@ -33,9 +33,9 @@
 
     <h2 class="results-title">
       <span class="query" data-controller="bs-tooltip" data-query-row-target="query" data-bs-tooltip-title-value="Info Need: {{query.informationNeed}}" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
-        <img class="img-thumbnail query-thumbnail" ng-if="query.queryText | isImageUrl"
-             ng-src="{{query.queryText}}">
-        <span ng-if="!(query.queryText | isImageUrl)" data-query-row-target="text">
+        <img class="img-thumbnail query-thumbnail d-none" data-query-row-target="image"
+             alt="">
+        <span data-query-row-target="text">
           &nbsp;
         </span>
       </span>

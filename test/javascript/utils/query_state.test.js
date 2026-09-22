@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   invalidateRatedDocsCache,
+  isImageUrl,
   matchesQueryFilter,
   orderedQueries,
   paginate,
@@ -11,6 +12,12 @@ import {
 } from "utils/query_state"
 
 describe("query_state", () => {
+  it("recognizes supported image URLs", () => {
+    expect(isImageUrl("https://example.test/poster.JPG?size=small")).toBe(true)
+    expect(isImageUrl("https://example.test/poster.txt")).toBe(false)
+    expect(isImageUrl(null)).toBe(false)
+  })
+
   it("detects both Querqy rewrite shapes", () => {
     expect(querqyRuleTriggered({ querqy: { rewrite: "title:foo" } })).toBe(true)
     expect(querqyRuleTriggered({ "querqy.infoLog": [] })).toBe(true)

@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { queryStateClass } from "utils/query_state"
+import { isImageUrl, queryStateClass } from "utils/query_state"
 
 /**
  * Read-only query-row presentation. The Angular search-results directive still
@@ -7,7 +7,7 @@ import { queryStateClass } from "utils/query_state"
  * header values so the row can be migrated incrementally.
  */
 export default class extends Controller {
-  static targets = ["query", "text", "resultCount", "resultLabel", "querqy", "header", "toggle"]
+  static targets = ["query", "text", "image", "resultCount", "resultLabel", "querqy", "header", "toggle"]
   static values = {
     informationNeed: String,
     numFound: Number,
@@ -62,6 +62,13 @@ export default class extends Controller {
       this.queryTarget.setAttribute("data-bs-tooltip-title-value", `Info Need: ${this.informationNeedValue}`)
     }
     if (this.hasTextTarget) this.textTarget.textContent = `${this.queryTextValue}\u00a0`
+    if (this.hasImageTarget) {
+      const image = isImageUrl(this.queryTextValue)
+      this.imageTarget.classList.toggle("d-none", !image)
+      this.imageTarget.toggleAttribute("aria-hidden", !image)
+      if (image) this.imageTarget.src = this.queryTextValue
+    }
+    if (this.hasTextTarget) this.textTarget.classList.toggle("d-none", isImageUrl(this.queryTextValue))
     if (this.hasResultCountTarget) {
       this.resultCountTarget.setAttribute("data-count-up-number-value", String(this.numFoundValue || 0))
     }

@@ -8,6 +8,7 @@ describe("QueryRowController", () => {
     document.body.innerHTML = `
       <div>
         <span data-query-row-target="query"></span>
+        <img data-query-row-target="image" />
         <span data-query-row-target="text"></span>
         <span data-query-row-target="resultCount"></span>
         <small data-query-row-target="resultLabel"></small>
@@ -20,6 +21,7 @@ describe("QueryRowController", () => {
     controller.element = document.body.firstElementChild
     controller.hasTextTarget = true
     controller.hasQueryTarget = true
+    controller.hasImageTarget = true
     controller.hasResultCountTarget = true
     controller.hasResultLabelTarget = true
     controller.hasQuerqyTarget = true
@@ -27,6 +29,7 @@ describe("QueryRowController", () => {
     controller.hasToggleTarget = true
     controller.hasStateValue = true
     controller.queryTarget = controller.element.querySelector('[data-query-row-target="query"]')
+    controller.imageTarget = controller.element.querySelector('[data-query-row-target="image"]')
     controller.textTarget = controller.element.querySelector('[data-query-row-target="text"]')
     controller.resultCountTarget = controller.element.querySelector('[data-query-row-target="resultCount"]')
     controller.resultLabelTarget = controller.element.querySelector('[data-query-row-target="resultLabel"]')
@@ -47,6 +50,7 @@ describe("QueryRowController", () => {
     controller.render()
 
     expect(controller.textTarget.textContent).toBe("Star Wars\u00a0")
+    expect(controller.imageTarget.classList.contains("d-none")).toBe(true)
     expect(controller.queryTarget.getAttribute("data-bs-tooltip-title-value")).toBe("Info Need: Find space movies")
     expect(controller.resultCountTarget.getAttribute("data-count-up-number-value")).toBe("1")
     expect(controller.resultLabelTarget.textContent).toBe("Result")
@@ -74,5 +78,14 @@ describe("QueryRowController", () => {
     expect(controller.element.querySelector('[data-query-row-target="header"]').classList.contains("diff-query-display")).toBe(false)
     expect(controller.element.querySelector('[data-query-row-target="toggle"]').classList.contains("bi-caret-down-fill")).toBe(true)
     expect(controller.element.querySelector('[data-query-row-target="toggle"]').classList.contains("d-none")).toBe(true)
+  })
+
+  it("renders image queries as thumbnails instead of text", () => {
+    controller.queryTextValue = "https://example.test/poster.jpg?size=small"
+    controller.render()
+
+    expect(controller.imageTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.imageTarget.src).toBe("https://example.test/poster.jpg?size=small")
+    expect(controller.textTarget.classList.contains("d-none")).toBe(true)
   })
 })

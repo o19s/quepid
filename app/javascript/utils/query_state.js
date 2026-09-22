@@ -20,6 +20,10 @@ export function queryStateClass(state) {
   return `queryHeader_${state}`
 }
 
+export function isImageUrl(url) {
+  return typeof url === "string" && /\.(png|jpe?g|gif|webp|svg|bmp)(\?.*)?$/i.test(url)
+}
+
 export function invalidateRatedDocsCache(query) {
   if (!query) return
   query.ratingsReady = false

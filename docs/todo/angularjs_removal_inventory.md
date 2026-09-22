@@ -295,7 +295,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 1. **Migrate score-adjacent `$rootScope` events** (`rating-changed`, `scoring-complete`) to store events, keeping compatibility listeners until nothing still depends on the broadcast. The store now publishes both events; Angular consumers subscribe to the store and the legacy emitter remains only as a fallback for an older bundle.
 2. **Extract remaining framework-free query-state helpers** ahead of the UI they feed — `querqyRuleTriggered()`, hit-count/state helpers, rated-doc cache invalidation, query display-position calculation, pagination/filter predicates. The first set now lives in `app/javascript/utils/query_state.js`, is exposed through `window.quepidSearch.queryState`, and is covered by Vitest while Angular consumes it.
-3. **Query-row rendering (read-only) before the query list.** The shared row predicates are ready; the next UI slice should move the read-only header rendering while sorting, filtering, pagination, drag reorder, and query creation stay Angular-owned.
+3. **Query-row rendering (read-only) before the query list.** The read-only header rendering now lives in `query-row-controller.js`, including state/diff classes, result count/label, Querqy marker, toggle caret, and image-vs-text query display. Sorting, filtering, pagination, drag reorder, and query creation remain Angular-owned.
 4. **Query-list controls**, then **5. search results**, then **6. mutations last** — matches the [decision lenses](#decision-lenses) ordering (search/score stay client-owned throughout; nothing here moves them server-side).
 
 The diff/snapshot score badges stay Angular until `diffResultsSvc` migrates — out of this sequence.
@@ -562,7 +562,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 
 Backing services/factories: `docCacheSvc`, `DocListFactory`, `annotationsSvc`, `AnnotationFactory`, `searchEndpointSvc`
 
-Filters: `isImageUrl`, `quepidTypeaheadHighlight` (used by typeahead directive)
+Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 
 ### 7. Tune Relevance (east pane / dev settings)
 
@@ -637,7 +637,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 `broadcastSvc` wraps `$rootScope.$broadcast` — used by `caseSvc`, `settingsSvc`, `queriesSvc`, `annotationsSvc`, `bookSvc`. See [event bus inventory](./event_bus_inventory.md).
 
-**Filters (8 under `filters/`):** `caseType`, `isImageUrl`, `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`, `timeAgo`
+**Filters (7 under `filters/`):** `caseType`, `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`, `timeAgo`
 
 **Directive-local filters (1):** `plusOrMinus` (`searchResults.js`)
 
