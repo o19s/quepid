@@ -38,6 +38,7 @@ import MatchExplainController from "controllers/match_explain_controller"
 import QueryExplainController from "controllers/query_explain_controller"
 import JsonExplorerController from "controllers/json_explorer_controller"
 import SearchResultController from "controllers/search_result_controller"
+import SearchResultsController from "controllers/search_results_controller"
 import AddQueryController from "controllers/add_query_controller"
 import FlashController from "controllers/flash_controller"
 
@@ -65,5 +66,6 @@ application.register("match-explain", MatchExplainController)
 application.register("query-explain", QueryExplainController)
 application.register("json-explorer", JsonExplorerController)
 application.register("search-result", SearchResultController)
+application.register("search-results", SearchResultsController)
 application.register("add-query", AddQueryController)
 application.register("flash", FlashController)

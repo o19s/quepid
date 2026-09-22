@@ -300,6 +300,14 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 The diff/snapshot score badges stay Angular until `diffResultsSvc` migrates — out of this sequence.
 
+**Search-results rendering slice migrated (2026-09-22).** `search_results_controller.js`
+now owns expanded-row visibility and repeats the live document result elements from
+the client-owned query objects. `search_result_controller.js` continues to own each
+result's DOM and rating presentation. Angular still supplies the query/document
+objects and owns the toolbar mutations, notes, diff view, pagination actions, and
+the `SearchResultCtrl` mutation/detail bridge. The query-list container and its
+pagination directive remain Angular-owned until the query mutation seam moves.
+
 **The `window.quepidStore` bridge is temporary.** It exists so `queriesSvc` (still Angular) can push into a store that Stimulus (not yet the page owner) can read, during dual-run. Once the case workspace has its own entry bundle, the global goes away in favor of a module import — don't grow further ad hoc bridges on `window.quepidStore` as if it were the permanent integration point.
 
 **`setLatestScoreInfo()` replaces the whole score map, on purpose — for now.** It mirrors `scoreAll()` rescoring every query on every rating (see "Do not scope `scoreAll()`" above). If a later slice adds a partial-update path (e.g. scoping to one query), give it its own method name rather than overloading `setLatestScoreInfo()` with a partial payload — subscribers currently assume a full replace on every `change` event, and a silent partial write would reproduce the class of staleness bug this store exists to avoid.
@@ -559,7 +567,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Results panel | directive + controller | `<search-results>`, `SearchResultsCtrl` |
+| Results panel | Stimulus controller + Angular bridge | `app/javascript/controllers/search_results_controller.js`; `<search-results>`, `SearchResultsCtrl` remain as the temporary query/mutation bridge |
 | Single result row | directive + controller | `<search-result>`, `SearchResultCtrl` |
 | Results template | template | `templates/views/searchResults.html`, `searchResult.html` |
 | Rating popover | Stimulus controller | `rating_popover_controller.js` — mutation still bridges back to Angular via `rating-popover:rate`/`:reset` events |

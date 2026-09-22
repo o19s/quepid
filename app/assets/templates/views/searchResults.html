@@ -1,6 +1,6 @@
 <div
-  data-query-row-query-id-value="{{query.queryId}}"
   data-controller="query-row"
+  data-query-row-query-id-value="{{query.queryId}}"
   data-query-row-rank-value="{{$index + 1}}"
   data-query-row-query-text-value="{{query.queryText}}"
   data-query-row-information-need-value="{{query.informationNeed}}"
@@ -75,7 +75,8 @@
     <i class="toggleSign bi" data-query-row-target="toggle" data-action="click->query-row#toggle"></i>
   </div>
 
-  <div ng-if="query.isToggled()" class="sub-results container-fluid">
+  <div data-controller="search-results">
+    <div data-search-results-target="content" class="sub-results container-fluid d-none">
     <div class="col-ratings query-rating">
       <strong>Score All</strong>
       <div class="ratings">
@@ -157,11 +158,10 @@
       {{query.errorText}}
     </div>
 
+    <div data-search-results-target="results"></div>
+
     <!-- Default search results -->
     <div ng-if="!queriesSvc.showOnlyRated" ng-show="displayed.results == displayed.resultsView.results">
-      <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.docs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
-      </search-result>
-
       <div class="row results-pane-footer">
         <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane"></i>
         <span ng-if="query.numFound > query.docs.length && (selectedTry.searchEngine != 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination)">
@@ -184,9 +184,6 @@
 
     <!-- Rated only search results -->
     <div ng-if="queriesSvc.showOnlyRated" ng-show="displayed.results == displayed.resultsView.results">
-      <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.ratedDocs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
-      </search-result>
-
       <div class="row results-pane-footer">
         <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane"></i>
         <span ng-if="query.getNumFound() > query.ratedDocs.length && (selectedTry.searchEngine != 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination)">
@@ -208,5 +205,6 @@
       </div>
     </div>
 
+    </div>
   </div>
 </div>

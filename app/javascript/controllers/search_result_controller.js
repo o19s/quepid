@@ -19,14 +19,19 @@ export default class extends Controller {
   }
 
   attachToAngularScope() {
-    const angularElement = window.angular?.element(this.element)
-    this.angularScope = angularElement?.isolateScope?.() || angularElement?.scope?.()
+    const angularElement = this.element.__angularScope
+      ? null
+      : window.angular?.element(this.element)
+    this.angularScope = this.element.__angularScope || angularElement?.isolateScope?.() || angularElement?.scope?.()
     if (!this.angularScope) {
       this.retryHandle = requestAnimationFrame(() => this.attachToAngularScope())
       return
     }
 
-    this.angularScope.$watch(() => this.angularScope.doc, () => this.render())
+    this.angularScope.$watch(
+      () => this.angularScope.doc?.getRating?.(),
+      () => this.refreshRating()
+    )
 
     this.render()
   }
