@@ -1,8 +1,7 @@
 'use strict';
 angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
-    '$rootScope',
-    '$scope', '$element', '$log', '$window',
+    '$rootScope', '$scope', '$element', '$log', '$window',
     'clipboardSvc', 'rateScaleSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
     function (
       $rootScope, $scope, $element, $log, $window,
@@ -27,18 +26,38 @@ angular.module('QuepidApp')
       $scope.selectedTry  = settingsSvc.applicableSettings();
 
       // Refresh rated-only docs if ratings have changed
-      $rootScope.$on('rating-changed', function(e, queryId) {
-        if (!queriesSvc.showOnlyRated && $scope.query.queryId === queryId) {
-          queriesSvc.updateScores();          
-        }
-      });
+      var ratingChangedHandler = function(event, legacyQueryId) {
+        var queryId = window.quepidSearch.queryState.ratingChangedQueryId(event, legacyQueryId);
+        $scope.$evalAsync(function() {
+          if ($scope.query.queryId !== queryId) {
+            return;
+          }
+
+          if (queriesSvc.showOnlyRated) {
+            $scope.query.refreshRatedDocs();
+          } else {
+            queriesSvc.updateScores();
+          }
+        });
+      };
+      var legacyRatingChangedListener;
+      if (window.quepidStore && window.quepidStore.scoring) {
+        window.quepidStore.scoring.addEventListener('rating-changed', ratingChangedHandler);
+      } else {
+        legacyRatingChangedListener = $rootScope.$on('rating-changed', function(event, queryId) {
+          ratingChangedHandler(event, queryId);
+        });
+      }
 
 
       $scope.displayed = new DisplayConfig();
 
       $scope.numFound = 0;
       $scope.query.getNumFound = function() {
-        $scope.numFound = queriesSvc.showOnlyRated ? $scope.query.ratedDocsFound : $scope.query.numFound;
+        $scope.numFound = window.quepidSearch.queryState.queryResultCount(
+          $scope.query,
+          queriesSvc.showOnlyRated
+        );
         return $scope.numFound;
       };
 
@@ -140,6 +159,12 @@ angular.module('QuepidApp')
 
       $scope.$on('$destroy', function() {
         $element.off('rating-popover:rate rating-popover:reset');
+        if (window.quepidStore && window.quepidStore.scoring) {
+          window.quepidStore.scoring.removeEventListener('rating-changed', ratingChangedHandler);
+        }
+        if (legacyRatingChangedListener) {
+          legacyRatingChangedListener();
+        }
       });
 
       $scope.displayRating = function() {
@@ -152,20 +177,9 @@ angular.module('QuepidApp')
       };
       
       $scope.querqyRuleTriggered = function () {
-        let triggered = false;
-        
-        if ($scope.query.searcher && $scope.query.searcher.parsedQueryDetails) {
-          let parsedQueryDetails = $scope.query.searcher.parsedQueryDetails;
-          
-          if (parsedQueryDetails.querqy?.rewrite !== undefined) { // jshint ignore:line
-            triggered = true;
-          }
-          else if ('querqy.infoLog' in parsedQueryDetails){
-            triggered = true;
-          }
-        }
-          
-        return triggered;
+        return window.quepidSearch.queryState.querqyRuleTriggered(
+          $scope.query.searcher && $scope.query.searcher.parsedQueryDetails
+        );
       };
     }
   ]);

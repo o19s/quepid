@@ -84,6 +84,26 @@ describe("CaseScoreStore", () => {
     })
   })
 
+  it("publishes rating changes with the query id", () => {
+    const listener = vi.fn()
+    store.addEventListener("rating-changed", listener)
+
+    store.markRatingChanged(42)
+
+    expect(listener).toHaveBeenCalledOnce()
+    expect(listener.mock.calls[0][0].detail).toEqual({ queryId: 42 })
+  })
+
+  it("publishes scoring-complete after the score snapshot", () => {
+    const events = []
+    store.addEventListener("change", () => events.push("change"))
+    store.addEventListener("scoring-complete", () => events.push("scoring-complete"))
+
+    store.setLatestScoreInfo({ allRated: true, score: 1, queries: {} })
+
+    expect(events).toEqual(["change", "scoring-complete"])
+  })
+
   it("snapshot() reflects the current state without needing a change event", () => {
     store.setLatestScoreInfo({ allRated: false, score: "--", queries: { 3: { score: "--" } } })
 

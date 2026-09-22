@@ -10,7 +10,6 @@
 angular.module('QuepidApp')
   .controller('QueriesCtrl', [
     '$scope',
-    '$rootScope',
     '$q',
     '$log',
     '$location',
@@ -25,7 +24,6 @@ angular.module('QuepidApp')
     'settingsSvc',
     function (
       $scope,
-      $rootScope,
       $q,
       $log,
       $location,
@@ -49,20 +47,23 @@ angular.module('QuepidApp')
       // we create multiple instances of this controller when we reselect the
       // same Case in the core app.  Which leads to multiple calls to the backend for the same scoring complete calculation
       // performed by .calcScore() call.
-      const scoringCompleteListener = $rootScope.$on('scoring-complete', () => {
-        $scope.queries.avgQuery.calcScore();
-        
-        // Also recalculate case-level diff scores if diffs are enabled
-        if ($scope.queries.avgQuery.diffs) {
-          $scope.queries.avgQuery.diffs.calculateCaseScores();
-        }
-      });
+      const scoringCompleteHandler = () => {
+        $scope.$evalAsync(() => {
+          $scope.queries.avgQuery.calcScore();
+
+          // Also recalculate case-level diff scores if diffs are enabled
+          if ($scope.queries.avgQuery.diffs) {
+            $scope.queries.avgQuery.diffs.calculateCaseScores();
+          }
+        });
+      };
       
       // Debounced case score recalculation to prevent multiple rapid updates
       var caseScoreUpdateTimeout;
       
       // Listen for rating changes to update case scores immediately
-      const ratingChangedListener = $rootScope.$on('rating-changed', () => {
+      const ratingChangedHandler = () => {
+        $scope.$evalAsync(() => {
         // Debounce to prevent multiple rapid recalculations
         if (caseScoreUpdateTimeout) {
           clearTimeout(caseScoreUpdateTimeout);
@@ -86,19 +87,24 @@ angular.module('QuepidApp')
           }
           caseScoreUpdateTimeout = null;
         }, 100); // 100ms debounce
-      });
+        });
+      };
+
+      const scoringStore = window.quepidStore && window.quepidStore.scoring;
+      if (scoringStore) {
+        scoringStore.addEventListener('scoring-complete', scoringCompleteHandler);
+        scoringStore.addEventListener('rating-changed', ratingChangedHandler);
+      }
       
       $scope.$on('$destroy', () => {
-        scoringCompleteListener(); // Deregister the listener
-        ratingChangedListener(); // Deregister the listener
+        if (scoringStore) {
+          scoringStore.removeEventListener('scoring-complete', scoringCompleteHandler);
+          scoringStore.removeEventListener('rating-changed', ratingChangedHandler);
+        }
         if (caseScoreUpdateTimeout) {
           clearTimeout(caseScoreUpdateTimeout); // Clean up timeout
         }
       });
-      // $rootScope.$on('scoring-complete', () => {
-      //   $scope.queries.avgQuery.calcScore();
-      // });
-
       // Options for quepidSortable (see directives/quepidSortable.js). The
       // directive already runs start/stop inside $scope.$apply, so these
       // must not call $apply themselves.
@@ -596,13 +602,7 @@ angular.module('QuepidApp')
       }
 
       $scope.matchQueryFilter = function(query) {
-        if ($scope.queryFilter !== undefined) {
-          var lowercaseQueryText = query.queryText.toLowerCase();
-          return lowercaseQueryText.includes($scope.queryFilter.toLowerCase());
-        }
-        else {
-          return true;
-        }
+        return window.quepidSearch.queryState.matchesQueryFilter(query, $scope.queryFilter);
       };
 
     }

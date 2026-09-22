@@ -28,6 +28,7 @@ pin 'utils/download_file', to: 'utils/download_file.js'
 pin 'utils/flash', to: 'utils/flash.js'
 pin 'utils/search_engine_name', to: 'utils/search_engine_name.js'
 pin 'utils/scoring', to: 'utils/scoring.js'
+pin 'utils/query_state', to: 'utils/query_state.js'
 
 pin 'local-time' # @3.0.3
 

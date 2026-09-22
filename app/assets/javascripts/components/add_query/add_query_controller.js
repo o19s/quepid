@@ -10,12 +10,10 @@
 
 angular.module('QuepidApp')
   .controller('AddQueryCtrl', [
-    '$rootScope',
     '$log',
     'queriesSvc',
     'settingsSvc',
     function (
-      $rootScope,
       $log,
       queriesSvc,
       settingsSvc
@@ -41,7 +39,6 @@ angular.module('QuepidApp')
           .then(function() {
             q.searchAndScore()
               .then(function success() {
-                $rootScope.$emit('scoring-complete');
                 window.quepidDom.flash.show('success', 'Query added successfully.');
               }, function error(errorMsg) {
                 window.quepidDom.flash.show('error', 'Your new query had an error!');
@@ -66,7 +63,7 @@ angular.module('QuepidApp')
           .then(function() {
             queriesSvc.searchAll()
               .then(function () {
-                // searchAll emits its own 'scoring-complete' message, not needed here
+                // searchAll publishes scoring-complete through the score store.
                 window.quepidDom.flash.show('success', 'Queries added successfully.');
               }, function (errorMsg) {
                 window.quepidDom.flash.show('error', 'One (or many) of your new queries had an error!');

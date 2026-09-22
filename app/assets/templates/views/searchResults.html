@@ -1,7 +1,12 @@
 <div
   ng-attr-id="{{ 'query-' + query.queryText }}"
   rank="{{$index + 1}}"
-  ng-class="query.state() | queryStateClass">
+  ng-class="query.state() | queryStateClass"
+  data-controller="query-row"
+  data-query-row-query-text-value="{{query.queryText}}"
+  data-query-row-information-need-value="{{query.informationNeed}}"
+  data-query-row-num-found-value="{{query.getNumFound()}}"
+  data-query-row-querqy-triggered-value="{{querqyRuleTriggered()}}">
   <div class="result-header" ng-class="{'diff-query-display': (displayed.results == displayed.resultsView.diffs && query.diffs)}">
     <!-- Current query score (Stimulus, store-driven — see
          docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4) -->
@@ -24,23 +29,18 @@
     </qscore-query>
 
     <h2 class="results-title">
-      <span class="query" data-controller="bs-tooltip" data-bs-tooltip-title-value="Info Need: {{query.informationNeed}}" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
+      <span class="query" data-controller="bs-tooltip" data-query-row-target="query" data-bs-tooltip-title-value="Info Need: {{query.informationNeed}}" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
         <img class="img-thumbnail query-thumbnail" ng-if="query.queryText | isImageUrl"
              ng-src="{{query.queryText}}">
-        <span ng-if="!(query.queryText | isImageUrl)">
-          {{query.queryText}}&nbsp;
+        <span ng-if="!(query.queryText | isImageUrl)" data-query-row-target="text">
+          &nbsp;
         </span>
       </span>
     </h2>
 
     <span class="float-end total-results">
-      <span count-up="query.getNumFound()"></span>
-      <small class="text-muted">
-        <ng-pluralize count="query.getNumFound()"
-            when="{'0': 'Results',
-                   'one': 'Result',
-                   'other': 'Results'}">
-        </ng-pluralize>
+      <span data-query-row-target="resultCount" data-controller="count-up" data-count-up-number-value="{{query.getNumFound()}}"></span>
+      <small class="text-muted" data-query-row-target="resultLabel">
       </small>
     </span>
 
@@ -65,7 +65,7 @@
     </span>
 
 
-    <span ng-show="querqyRuleTriggered()" class="float-end" style="margin-right: 20px;" title="Querqy Strikes Again!">
+    <span class="float-end d-none" style="margin-right: 20px;" title="Querqy Strikes Again!" data-query-row-target="querqy">
       <i class="querqy-icon"></i>
     </span>
 

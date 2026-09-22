@@ -149,10 +149,22 @@ angular.module('QuepidApp')
       svc.showOnlyRated = false;
       svc.isBootstrapping = false;
 
-      // Rescore on ratings update
-      $scope.$on('rating-changed', () => {
-        svc.scoreAll();
-      });
+      // Rescore on ratings update. The store is the native event source during
+      // the migration; keep the Angular listener as a fallback for older bundles.
+      var ratingChangedHandler = function(event, legacyQueryId) {
+        var queryId = window.quepidSearch.queryState.ratingChangedQueryId(event, legacyQueryId);
+        if (queryId !== undefined && svc.queries[queryId]) {
+          window.quepidSearch.queryState.invalidateRatedDocsCache(svc.queries[queryId]);
+        }
+        $scope.$evalAsync(function() {
+          svc.scoreAll();
+        });
+      };
+      if (window.quepidStore && window.quepidStore.scoring) {
+        window.quepidStore.scoring.addEventListener('rating-changed', ratingChangedHandler);
+      } else {
+        $scope.$on('rating-changed', ratingChangedHandler);
+      }
 
       // Stimulus pick-scorer-core: API save already done; apply scorer + rescore live queries.
       document.addEventListener('pick-scorer:selected', function(event) {
@@ -530,6 +542,7 @@ angular.module('QuepidApp')
         self.docsSet        = false;
         self.allRated       = true;
         self.ratingsPromise = null;
+        self.ratingsGeneration = 0;
         self.ratingsReady   = false;
 
         self.queryId        = queryWithRatings.queryId;
@@ -702,6 +715,11 @@ angular.module('QuepidApp')
 
 
         this.refreshRatedDocs = function(pageSize) {
+          if (self.ratingsPromise) {
+            return self.ratingsPromise;
+          }
+
+          var requestGeneration = self.ratingsGeneration;
           let settings = angular.copy(currSettings);
 
           if (pageSize) {
@@ -709,7 +727,11 @@ angular.module('QuepidApp')
           }
 
           if (settings.searchEngine === 'searchapi') {
-            return refreshRatedDocsForSearchApi(settings);
+            self.ratingsPromise = refreshRatedDocsForSearchApi(settings, requestGeneration).catch(function(error) {
+              self.ratingsPromise = null;
+              return $q.reject(error);
+            });
+            return self.ratingsPromise;
           }
 
           self.ratedSearcher = svc.createSearcherFromSettings(
@@ -719,7 +741,12 @@ angular.module('QuepidApp')
             );
 
           let ratedDocsStaging = [];
-          return self.ratedSearcher.search().then(function() {
+          self.ratingsPromise = self.ratedSearcher.search().then(function() {
+            if (requestGeneration !== self.ratingsGeneration) {
+              self.ratingsPromise = null;
+              return self.refreshRatedDocs(pageSize);
+            }
+
             self.ratedUrl = self.ratedSearcher.linkUrl;
 
             let normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
@@ -734,6 +761,12 @@ angular.module('QuepidApp')
             self.ratingsReady = true;
             self.ratingsPromise = null;
           });
+          var ratedDocsRequest = self.ratingsPromise;
+          self.ratingsPromise = ratedDocsRequest.catch(function(error) {
+            self.ratingsPromise = null;
+            return $q.reject(error);
+          });
+          return self.ratingsPromise;
         };
 
         // filterToRatings() (createSearcherFromSettings' filterToRated option, above) has no
@@ -748,7 +781,7 @@ angular.module('QuepidApp')
         // (no ratedDocsQueryParamsMapper) can't support "Show only rated" at all - rather than
         // silently show unfiltered results mislabeled as "rated", self.ratedDocsUnsupported is
         // set so the UI can disable the control and say why (see queriesCtrl.js/queries.html).
-        function refreshRatedDocsForSearchApi(settings) {
+        function refreshRatedDocsForSearchApi(settings, requestGeneration) {
           self.ratedDocsUnsupported = !svc.trySupportsSearchApiRatedDocsLookup(settings.selectedTry);
 
           if (self.ratedDocsUnsupported) {
@@ -763,6 +796,11 @@ angular.module('QuepidApp')
           }
 
           return svc.searchApiRatedDocs(settings, self, ratedIDs).then(function(result) {
+            if (requestGeneration !== self.ratingsGeneration) {
+              self.ratingsPromise = null;
+              return self.refreshRatedDocs(settings.numberOfRows);
+            }
+
             if (result === null) {
               self.ratedDocsUnsupported = true;
               return resetRatedDocsToEmpty();
@@ -1425,16 +1463,7 @@ angular.module('QuepidApp')
       // get the full list of queries sorted by create/manual order
       // only call this when our version() changes
       this.queryArray = function() {
-        let rVal = [];
-
-        for (let displayIter = 0; displayIter < this.displayOrder.length; ++displayIter) {
-          let currQueryId = this.displayOrder[displayIter];
-          if (this.queries.hasOwnProperty(currQueryId)) {
-            this.queries[currQueryId].defaultCaseOrder = displayIter;
-            rVal.push(this.queries[currQueryId]);
-          }
-        }
-        return rVal;
+        return window.quepidSearch.queryState.orderedQueries(this.displayOrder, this.queries);
       };
 
       this.updateQueryDisplayPosition = function(queryId, oldQueryId, reverse) {
@@ -1562,8 +1591,6 @@ angular.module('QuepidApp')
           if (isFullScoreAll) {
             window.quepidStore.scoring.setLatestScoreInfo(svc.latestScoreInfo);
           }
-
-          $scope.$emit('scoring-complete');
 
           return svc.latestScoreInfo;
         });

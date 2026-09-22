@@ -26,7 +26,12 @@ angular.module('QuepidApp')
           version++;
           svcVersion++;
 
-          $scope.$emit('rating-changed', queryId);
+          if (window.quepidStore && window.quepidStore.scoring) {
+            window.quepidStore.scoring.markRatingChanged(queryId);
+          } else {
+            // Compatibility for an Angular bundle loaded without the modern store.
+            $scope.$emit('rating-changed', queryId);
+          }
         };
 
         this.setQueryId = function(newQueryId) {

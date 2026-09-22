@@ -43,6 +43,10 @@ export class CaseScoreStore extends EventTarget {
     return this._queryScores.get(String(queryId)) ?? null
   }
 
+  markRatingChanged(queryId) {
+    this.dispatchEvent(new CustomEvent("rating-changed", { detail: { queryId } }))
+  }
+
   /**
    * Called by `queriesSvc.scoreAll()` with the exact object it assigns to
    * `svc.latestScoreInfo`. Replaces all query scores atomically and fires one
@@ -52,6 +56,7 @@ export class CaseScoreStore extends EventTarget {
     this._caseScore = { score, allRated, maxScore: averageMaxScore(queries ?? {}) }
     this._queryScores = new Map(Object.entries(queries ?? {}))
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("scoring-complete", { detail: this.snapshot() }))
   }
 
   snapshot() {

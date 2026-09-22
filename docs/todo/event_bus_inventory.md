@@ -61,8 +61,8 @@ deregister). `R` and `S` columns below distinguish them.
 | `annotationDeleted` | `annotationsSvc.js:40` | `annotations_controller.js:36` | S | |
 | `settings-changed` | `settingsSvc.js:496` | *(none found)* | — | **Dead emit** — emitted on try-list fetch; no listener (COREUI doc reference is stale) |
 | `settings-updated` | `settingsSvc.js:637,727` | `caseSvc.js:94` (per `Case` instance), `move_query_modal_instance_controller.js:39` (loop) | R + S | **Leak:** listener registered inside `Case` constructor — one `$rootScope.$on` per constructed case |
-| `rating-changed` | `ratingsStoreSvc.js:29` (`$rootScope.$emit` via alias) | `queriesSvc.js:153`, `queriesCtrl.js:65`, `searchResults.js:30` | R | All three listeners are `$rootScope.$on`; `queriesCtrl` deregisters on `$destroy`, others do not |
-| `scoring-complete` | `queriesSvc.js:1555` (`$rootScope.$emit` via alias), `add_query_controller.js:44` (`$rootScope.$emit`) | `queriesCtrl.js:52` | R | Both emitters use `$rootScope.$emit`; `queriesCtrl` deregisters on `$destroy` |
+| `rating-changed` | `ratingsStoreSvc.js:29` → `window.quepidStore.scoring` (legacy `$rootScope.$emit` fallback) | Store listeners in `queriesSvc.js`, `queriesCtrl.js`, `searchResults.js` (legacy service fallback only) | R | Store event carries `{ detail: { queryId } }`; per-row listeners deregister on `$destroy` |
+| `scoring-complete` | `CaseScoreStore.setLatestScoreInfo()`; legacy add-query emitter removed | Store listener in `queriesCtrl.js` | R | Published after the store's `change`; Angular consumers re-enter through `$evalAsync` |
 | `deepCaseListUpdated` | *(none found)* | `move_query_modal_instance_controller.js:39` (loop) | S | **Dead listener** — no emitter |
 | `updatedQueriesList` | `queriesSvc.js:1371` (commented out) | *(none)* | — | Commented-out emit; remove next time someone touches that file |
 
