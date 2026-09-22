@@ -203,13 +203,13 @@ parts:
         last_run: 2026-09-21T19:36:00Z
         result: pass
         notes: "Covered live: Playwright MCP. Added a single query, which was searched and scored and appeared in the list. The submit is an <input type=submit> labelled 'Add query'; it is correctly disabled for both empty and whitespace-only input and re-enables on real text. Not covered live: the static-endpoint 'adding not supported' state, or a forced search/scoring failure."
-        paths: ["app/assets/javascripts/directives/", "app/models/query.rb"]
+        paths: ["app/assets/templates/views/queries.html", "app/assets/javascripts/controllers/queriesCtrl.js", "app/javascript/controllers/add_query_controller.js", "app/models/query.rb"]
       "4.3":
         title: "Add multiple queries (bulk)"
         last_run: 2026-09-21T19:36:00Z
         result: pass
         notes: "Covered live: Playwright MCP. Both documented bulk paths work: semicolon-separated input added 2 queries, and a genuine multi-line paste added 2 more (the paste handler normalises the newline to ';' in the single-line input). The submit label switches 'Add query' -> 'Add queries' with more than one. All were searched with real result counts. Not covered live: a bulk submit where one query fails and the rest must still be added."
-        paths: ["app/assets/javascripts/components/add_query/"]
+        paths: ["app/assets/templates/views/queries.html", "app/assets/javascripts/controllers/queriesCtrl.js", "app/javascript/controllers/add_query_controller.js"]
       "4.4":
         title: "Move a query to another case"
         last_run: 2026-09-15T16:40:00Z

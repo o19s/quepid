@@ -73,7 +73,13 @@ angular.module('QuepidApp')
           $scope.queryFilter = value !== undefined && value !== null ? value : '';
         });
       });
-      $scope.$on('$destroy', function () { $element.off('queries-list:toggle-rated queries-list:collapse-all queries-list:sort queries-list:filter queries-list:drag-start queries-list:drag-end'); });
+      $element.on('add-query:submit', function (event) {
+        var detail = (event.originalEvent && event.originalEvent.detail) || event.detail || {};
+        $scope.$evalAsync(function () {
+          addQueries(detail.queryTexts || []);
+        });
+      });
+      $scope.$on('$destroy', function () { $element.off('queries-list:toggle-rated queries-list:collapse-all queries-list:sort queries-list:filter queries-list:drag-start queries-list:drag-end add-query:submit'); });
       // The scoringCompleteListener is a workaround for the fact that
       // we create multiple instances of this controller when we reselect the
       // same Case in the core app.  Which leads to multiple calls to the backend for the same scoring complete calculation
@@ -183,6 +189,8 @@ angular.module('QuepidApp')
 
       $scope.sortBy                   = sortBy;
       $scope.getScorer                = getScorer;
+      $scope.canAddQueries            = canAddQueries;
+      $scope.addQueryMessage          = addQueryMessage;
 
       // Snapshot modal trigger attrs — live try settings for the Stimulus take-snapshot modal.
       $scope.snapshotFieldSpec = function() {
@@ -200,6 +208,66 @@ angular.module('QuepidApp')
 
       $scope.reverse = $location.search().reverse;
       $scope.sortBy($location.search().sort || 'default', !$scope.reverse);
+
+      function canAddQueries() {
+        return !(settingsSvc.isTrySelected() && settingsSvc.applicableSettings().searchEngine === 'static');
+      }
+
+      function addQueryMessage() {
+        return canAddQueries() ? 'Add a query to this case' : 'Adding queries is not supported';
+      }
+
+      function addQueries(queryTexts) {
+        if (queryTexts.length === 0) {
+          return;
+        }
+
+        if (queryTexts.length === 1) {
+          var query = queriesSvc.createQuery(queryTexts[0]);
+          queriesSvc.persistQuery(query).then(function () {
+            return query.searchAndScore().then(function () {
+              window.quepidDom.flash.show('success', 'Query added successfully.');
+            }, function (errorMsg) {
+              window.quepidDom.flash.show('error', 'Your new query had an error!');
+              window.quepidDom.flash.show('error', errorMsg, 'search-error');
+            }).then(function () {
+              $log.info('rescoring queries after adding query');
+              queriesSvc.updateScores();
+            });
+          }).then(function () {
+            addQueryComplete(true);
+          }, function (errorMsg) {
+            window.quepidDom.flash.show('error', errorMsg || 'Unable to add query.');
+            addQueryComplete(false);
+          });
+          return;
+        }
+
+        var queries = queryTexts.map(function (queryText) {
+          return queriesSvc.createQuery(queryText);
+        });
+
+        queriesSvc.persistQueries(queries).then(function () {
+          return queriesSvc.searchAll().then(function () {
+            window.quepidDom.flash.show('success', 'Queries added successfully.');
+          }, function (errorMsg) {
+            window.quepidDom.flash.show('error', 'One (or many) of your new queries had an error!');
+            window.quepidDom.flash.show('error', errorMsg, 'search-error');
+          });
+        }).then(function () {
+          addQueryComplete(true);
+        }, function (errorMsg) {
+          window.quepidDom.flash.show('error', errorMsg || 'Unable to add queries.');
+          addQueryComplete(false);
+        });
+      }
+
+      function addQueryComplete(success) {
+        var addQuery = $element[0].querySelector('[data-controller="add-query"]');
+        if (addQuery) {
+          addQuery.dispatchEvent(new CustomEvent('add-query:complete', { detail: { success: success } }));
+        }
+      }
 
 
       // We continue to get multiple of these events, once each time the controller gets

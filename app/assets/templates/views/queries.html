@@ -9,7 +9,21 @@
   data-queries-list-query-list-sortable-value="{{queryListSortable}}">
   <div class="row">
     <div class="col-sm-12 mb-3">
-      <add-query class="float-start mb-2"></add-query>
+      <form
+        class="d-flex align-items-center vertically-centered gap-2 float-start mb-2"
+        data-controller="add-query"
+        data-add-query-can-add-queries-value="{{canAddQueries()}}"
+        data-add-query-placeholder-value="{{addQueryMessage()}}"
+        data-action="submit->add-query#submit">
+        <div class="input-group">
+          <input id="add-query" class="form-control" data-add-query-target="input"
+            placeholder="{{addQueryMessage()}}" type="text"
+            data-action="input->add-query#input">
+          <input id="add-query-submit" class="btn btn-success" data-add-query-target="submit"
+            type="submit" value="Add query">
+        </div>
+        <i class="spinner d-none" data-add-query-target="spinner"></i>
+      </form>
 
       <ul class="list-inline d-flex justify-content-end flex-wrap mb-0 float-end">
         <li class="list-inline-item" data-queries-list-target="ratedLabel" title="{{ showOnlyRatedUnsupported() ? 'Not supported for this search engine yet' : '' }}">

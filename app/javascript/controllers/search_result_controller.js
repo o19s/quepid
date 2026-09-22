@@ -15,14 +15,14 @@ export default class extends Controller {
     }
     this.element.addEventListener("rating-popover:rate", this.handleRatingChange)
     this.element.addEventListener("rating-popover:reset", this.handleRatingChange)
-    this.initialize()
+    this.attachToAngularScope()
   }
 
-  initialize() {
+  attachToAngularScope() {
     const angularElement = window.angular?.element(this.element)
     this.angularScope = angularElement?.isolateScope?.() || angularElement?.scope?.()
     if (!this.angularScope) {
-      this.retryHandle = requestAnimationFrame(() => this.initialize())
+      this.retryHandle = requestAnimationFrame(() => this.attachToAngularScope())
       return
     }
 

@@ -209,7 +209,7 @@ Reuse these instead of reimplementing modals/flows:
 | `invite`, `team-member-autocomplete` | Team invite / membership |
 | `bulk-judgement`, `mapper-wizard` | Book LLM judge; mapper wizard |
 | `document-fields-modal`, `scoring-guidelines`, `scorer-scale` | Books / scorers forms |
-| `bs-tooltip`, `text-paste` | BS5 tooltips on Rails pages; paste-to-textarea (shared util with Angular add-query) |
+| `bs-tooltip`, `text-paste` | BS5 tooltips on Rails pages; paste-to-textarea (the add-query controller now imports the shared paste utility) |
 | `confetti`, `prompt-form`, `user-activity` | Judgement celebration; prompts; admin charts |
 
 Controllers: `app/javascript/controllers/` · entry: `app/javascript/application_modern.js`
@@ -259,7 +259,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 **Component LOC** (all JS and HTML files in each component folder, easiest → hardest): new_case (74) → qscore_query (86) → qscore_case (101) → query_explain (117) → annotations (129) → query_options (137) → annotation (152) → add_query (180) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423) → import_ratings (674).
 
-**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `add-query`, `query-options`, `new-case` / wizard, `frog-report`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Moving these implies rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. The add-query form shell has moved to Stimulus, but its persistence/search seam remains part of the live query-state migration. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
 
 #### `queriesSvc` seam inventory (phase 1)
 
@@ -296,7 +296,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 1. **Extract remaining framework-free query-state helpers** ahead of the UI they feed — `querqyRuleTriggered()`, hit-count/state helpers, rated-doc cache invalidation, query display-position calculation, pagination/filter predicates. The first set now lives in `app/javascript/utils/query_state.js`, is exposed through `window.quepidSearch.queryState`, and is covered by Vitest while Angular consumes it.
 2. **Finish query-row rendering and query-list controls.** The read-only header rendering now lives in `query-row-controller.js`, including state/diff classes, result count/label, Querqy marker, toggle caret, and image-vs-text query display. The toolbar and drag lifecycle now live in `queries-list-controller.js`; pagination remains on the proven Angular directive until a parity-focused replacement is worthwhile.
 3. **Migrate search-results rendering**, preserving the client-owned search/rating state and the Angular bridge for mutations not yet moved.
-4. **Migrate query mutations last** — add, move, delete, and persist — matching the [decision lenses](#decision-lenses) ordering (search/score stay client-owned throughout; nothing here moves them server-side).
+4. **Migrate query mutations last** — add, move, delete, and persist — matching the [decision lenses](#decision-lenses) ordering (search/score stay client-owned throughout; nothing here moves them server-side). The add-query form is now Stimulus-owned (`add_query_controller.js`) and emits a semantic event to the remaining Angular `queriesSvc` bridge; the persistence/search implementation is intentionally still Angular until the service seam is migrated.
 
 The diff/snapshot score badges stay Angular until `diffResultsSvc` migrates — out of this sequence.
 
@@ -544,7 +544,7 @@ and `quepidEmbed` directive are removed.
 |------|------|-----------|
 | Query list container | directive + controller | `<queries>`, `QueriesCtrl` — `directives/queries.js`, `controllers/queriesCtrl.js` |
 | Query list template | template | `templates/views/queries.html` |
-| Add query | component | `<add-query>` — `components/add_query/` |
+| Add query | Stimulus controller + Angular service bridge | `app/javascript/controllers/add_query_controller.js` + `QueriesCtrl`'s `add-query:submit` bridge; persistence/search remain in `queriesSvc` for now |
 | Sort / filter / collapse | controller logic | `QueriesCtrl` |
 | Drag reorder | directive | `quepidSortable` — `directives/quepidSortable.js` (uses SortableJS via `window.Sortable`) |
 | Pagination | third-party | `dir-paginate`, `<dir-pagination-controls>` |
@@ -610,7 +610,7 @@ These Angular-specific wrappers are used across many templates:
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
-| `add_query` | `<add-query>` | Add query |
+| `add_query` | Stimulus controller | `app/javascript/controllers/add_query_controller.js`; the old Angular component files are removed, while `queriesSvc` remains the temporary mutation bridge |
 | `annotation` | `<annotation>` | Single annotation CRUD |
 | `annotations` | `<annotations>` | Annotation list |
 | `browse_query` | `<browse-query>` | "Browse N Results on {engine}" link, opens results in a new tab/window |
