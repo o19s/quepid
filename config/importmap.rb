@@ -27,6 +27,7 @@ pin 'utils/case_csv', to: 'utils/case_csv.js'
 pin 'utils/download_file', to: 'utils/download_file.js'
 pin 'utils/flash', to: 'utils/flash.js'
 pin 'utils/search_engine_name', to: 'utils/search_engine_name.js'
+pin 'utils/scoring', to: 'utils/scoring.js'
 
 pin 'local-time' # @3.0.3
 

@@ -11,26 +11,29 @@
 }
 
 /* Base qscore component styles */
-qscore-case, qscore-query {
+qscore-case, qscore-query, .case-score {
   padding: 0;
 }
 
-qscore-case.case-score {
-  margin: var(--qscore-spacing-xl) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) 0px;
-}
-
-/* Simplified diff score margins */
-qscore-case.case-score:not(.diff-score):not(:only-of-type),
-qscore-case.case-score.diff-score {
+/*
+  Case score badge spacing (docs/todo/angularjs_removal_inventory.md § Re-render
+  mechanism, step 4). The primary case score is a plain `.case-score` div now
+  (Stimulus-driven); the snapshot/diff scores remain `<qscore-case class="case-score
+  diff-score">` (Angular). Both share the `.case-score` class, so these rules key off
+  DOM position (`:last-child`), not tag name, and apply the same regardless of which
+  is which: only the rightmost badge keeps the outer margin - every other one sits
+  flush against the next.
+*/
+.case-score {
   margin: var(--qscore-spacing-xl) 0px calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
-qscore-case.case-score.diff-score:last-of-type {
+.case-score:last-child {
   margin: var(--qscore-spacing-xl) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
 /* Header rating styles */
-qscore-case .header-rating {
+.case-score .header-rating {
   border-radius: var(--qscore-border-radius);
   color: #fff;
   display: inline-block;
@@ -42,9 +45,16 @@ qscore-case .header-rating {
   vertical-align: top;
 }
 
-/* Overall rating styles - consolidated identical selectors */
+/* Overall rating styles - consolidated identical selectors.
+   .qscore-query-badge (Stimulus, store-driven primary query score badge —
+   see docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4)
+   *is* the equivalent of qscore-query's `.overall-rating` child, not a
+   wrapper around one: Angular's `ng-style` targeted `.overall-rating`
+   itself, and a separate outer wrapper here just to carry
+   `data-controller` left the actual float un-styled. */
 qscore-case .overall-rating,
-qscore-query .overall-rating {
+qscore-query .overall-rating,
+.qscore-query-badge {
   display: block;
   float: left;
   height: 100%;
@@ -61,7 +71,8 @@ qscore-query .overall-rating {
 
 /* Query score specific positioning - consolidated identical rules */
 qscore-query.results-score .overall-rating,
-.diff-query-display qscore-query.results-score .overall-rating {
+.diff-query-display qscore-query.results-score .overall-rating,
+.qscore-query-badge {
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
 }
 
@@ -77,30 +88,27 @@ qscore-query.diff-score .overall-rating {
   border-bottom-right-radius: var(--qscore-border-radius);
 }
 
-/* Border radius adjustments for multiple scores */
-qscore-case.case-score:not(.diff-score):not(:only-of-type) .header-rating {
+/* Border radius adjustments for multiple scores - same DOM-position logic as the
+   margin rules above: square off the side that butts against a neighbor. */
+.case-score:not(:last-child) .header-rating {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
-qscore-case.case-score.diff-score .header-rating {
-  border-radius: 0;
-}
-
-qscore-case.case-score.diff-score:last-of-type .header-rating {
-  border-top-right-radius: var(--qscore-border-radius);
-  border-bottom-right-radius: var(--qscore-border-radius);
+.case-score.diff-score .header-rating {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 /* Graph styling */
-qscore-case qgraph {
+.case-score qgraph {
   display: inline-block;
   height: 80px;
   margin: 0px calc(-1 * var(--qscore-spacing-md)) 0px 0px;
   width: 150px;
 }
 
-qscore-case qgraph svg {
+.case-score qgraph svg {
   border: var(--qscore-border-width-thick) solid grey;
   border-right-style: none;
   border-radius: var(--qscore-border-radius);

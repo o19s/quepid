@@ -5,6 +5,7 @@ import {
   supportsRatedDocsLookup,
   supportsSearchApiRatedDocsLookup
 } from "./utils/rated_docs"
+import { averageScore, formatScore, isUnratedScore, ratingBackgroundColor } from "./utils/scoring"
 
 /**
  * Framework-free query/search logic lifted out of the Angular `queriesSvc`, kept
@@ -19,6 +20,12 @@ const quepidSearch = {
     normalizeSearchEngine,
     supportsLookup: supportsRatedDocsLookup,
     supportsSearchApiLookup: supportsSearchApiRatedDocsLookup
+  },
+  scoring: {
+    average: averageScore,
+    formatDisplay: formatScore,
+    isUnrated: isUnratedScore,
+    ratingBackgroundColor
   }
 }
 

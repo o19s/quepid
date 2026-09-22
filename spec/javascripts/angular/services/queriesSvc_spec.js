@@ -831,6 +831,42 @@ describe('Service: queriesSvc', function () {
     });
   });
 
+  it('writes the same score into the dual-run store (docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 3)', function() {
+    setupQuerySvc();
+    var Scorable = function(queryId) {
+      this.queryId = queryId;
+      this.queryText = 'q' + queryId;
+      this.numFound = 10;
+      this.score = function() {
+        var deferred = $q.defer();
+        deferred.resolve({
+            score:            5,
+            maxScore:         5,
+            allRated:         true,
+            backgroundColor:  ''
+        });
+        return deferred.promise;
+      };
+    };
+
+    // Store write only happens for a full-case scoreAll() (scorables
+    // defaulted from this.queries), not an arbitrary explicit subset — see
+    // docs/todo/angularjs_removal_inventory.md § Re-render mechanism.
+    queriesSvc.queries = { 1: new Scorable(1), 2: new Scorable(2) };
+    queriesSvc.scoreAll();
+    $rootScope.$apply();
+
+    expect(window.quepidStore.scoring.caseScore).toEqual({
+      score:    queriesSvc.latestScoreInfo.score,
+      allRated: queriesSvc.latestScoreInfo.allRated,
+      // Derived from each scorable's own maxScore (5) — see
+      // docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4.
+      maxScore: 5
+    });
+    expect(window.quepidStore.scoring.queryScore(1)).toEqual(queriesSvc.latestScoreInfo.queries[1]);
+    expect(window.quepidStore.scoring.queryScore(2)).toEqual(queriesSvc.latestScoreInfo.queries[2]);
+  });
+
   it('scores scorables', function() {
     setupQuerySvc();
     var Scorable = function() {

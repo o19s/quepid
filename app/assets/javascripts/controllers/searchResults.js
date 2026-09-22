@@ -42,14 +42,6 @@ angular.module('QuepidApp')
         return $scope.numFound;
       };
 
-      $scope.query.isNotAllRated = function() {
-        var score = $scope.query.currentScore;
-        if (!score || score.score === null || score.allRated) {
-          return false;
-        }
-        return true;
-      };
-
       //$scope.query.moused = false;
       $scope.query.isToggled = function() {
         return queryViewSvc.isQueryToggled($scope.query.queryId);

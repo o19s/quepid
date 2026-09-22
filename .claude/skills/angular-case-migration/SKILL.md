@@ -189,6 +189,7 @@ Only when parity table, phases 5–6, and inventory notes are done:
 - Rating must still feel instant: client `scoreAll()` on rating is non-negotiable today.
 - Solr JSONP forces case page HTTP considerations (`CoreController` / SSL).
 - Replace `$rootScope.$broadcast` trees with an explicit event or store — re-run event bus inventory first.
+- Re-render is **decided**: `EventTarget` store + Stimulus subscribers for client-owned state; Turbo Frames only for server-owned state; no reactive framework, no Turbo Streams for scores or docs. Follow `docs/todo/angularjs_removal_inventory.md` § Re-render mechanism — including extracting `scoreDisplay` / `ratingBgStyle` / score sentinels to tested ESM *before* the store, and leaving `scoreAll()` scoping alone.
 
 **Seam ideas:** dual-run (Angular + new) for read-only display first; cut over mutations last; feature flag if available.
 

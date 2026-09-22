@@ -1,15 +1,11 @@
 'use strict';
 
+// Score display formatting lives in app/javascript/utils/scoring.js (Vitest-covered).
 angular.module('QuepidApp')
   .filter('scoreDisplay', [
-    '$filter',
-    function($filter) {
+    function() {
       return function(score) {
-        if ( angular.isNumber(score) ) {
-          return $filter('number')(score, 2);
-        } else {
-          return score;
-        }
+        return window.quepidSearch.scoring.formatDisplay(score);
       };
     }
   ]);

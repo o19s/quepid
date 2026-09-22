@@ -28,6 +28,9 @@ import JudgementsCoreController from "controllers/judgements_core_controller"
 import BsTooltipController from "controllers/bs_tooltip_controller"
 import BsPopoverController from "controllers/bs_popover_controller"
 import RatingPopoverController from "controllers/rating_popover_controller"
+import QscoreQueryController from "controllers/qscore_query_controller"
+import QscoreCaseController from "controllers/qscore_case_controller"
+import QueryUnratedBadgeController from "controllers/query_unrated_badge_controller"
 import MatchExplainController from "controllers/match_explain_controller"
 import QueryExplainController from "controllers/query_explain_controller"
 import JsonExplorerController from "controllers/json_explorer_controller"
@@ -47,6 +50,9 @@ application.register("judgements-core", JudgementsCoreController)
 application.register("bs-tooltip", BsTooltipController)
 application.register("bs-popover", BsPopoverController)
 application.register("rating-popover", RatingPopoverController)
+application.register("qscore-query", QscoreQueryController)
+application.register("qscore-case", QscoreCaseController)
+application.register("query-unrated-badge", QueryUnratedBadgeController)
 application.register("match-explain", MatchExplainController)
 application.register("query-explain", QueryExplainController)
 application.register("json-explorer", JsonExplorerController)

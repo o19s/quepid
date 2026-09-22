@@ -1499,9 +1499,11 @@ angular.module('QuepidApp')
        *
        */
       this.scoreAll = function(scorables) {
-        let avg = null;
-        let tot = 0;
+        // Aggregation math (sentinel exclusion + averaging) lives in
+        // app/javascript/utils/scoring.js (Vitest-covered).
+        let scores = [];
         let allRated = true;
+        let isFullScoreAll = (scorables === undefined);
         if (scorables === undefined) {
           scorables = this.queries;
         }
@@ -1514,43 +1516,52 @@ angular.module('QuepidApp')
             if (!scoreInfo.allRated) {
               allRated = false;
             }
-            
+
             if (scoreInfo.score === null) {
               // Handle null scores gracefully in diff/snapshot comparisons
               console.log('Skipping null score in scoreAll calculation');
               return; // Skip this scorable and continue with others
             }
-            // 'zsr' and '--' are not-yet-rated sentinel values; exclude them from the average.
-            if (scoreInfo.score !== 'zsr' && scoreInfo.score !== '--'){
-              avg += scoreInfo.score;
-              tot++;
-            }
+            scores.push(scoreInfo.score);
             //TODO: make text be queryText
             queryScores[scorable.queryId] = {
-              score:    scoreInfo.score,
-              maxScore: scoreInfo.maxScore,
-              text:     scorable.queryText,
-              numFound: scorable.numFound,
+              score:                scoreInfo.score,
+              maxScore:             scoreInfo.maxScore,
+              text:                 scorable.queryText,
+              numFound:             scorable.numFound,
+              allRated:             scoreInfo.allRated,
+              countMissingRatings:  scoreInfo.countMissingRatings,
             };
-            
+
             return scoreInfo;
           }));
         });
 
         return $q.all(promises).then(function() {
-          if (tot > 0) {
-            avg = avg/tot;
-          }
-          else {
-            // we have no rated queries, everything is zsr or --, so mark at case level --
-            avg = '--';
-          }
+          // Averages the numeric scores; if every query is still 'zsr'/'--'
+          // (nothing rated yet), the case-level score is '--' too.
+          let avg = window.quepidSearch.scoring.average(scores);
 
           svc.latestScoreInfo = {
             'allRated': allRated,
             'score':    avg,
             'queries':  queryScores,
           };
+
+          // Dual-run shadow store (docs/todo/angularjs_removal_inventory.md §
+          // Re-render mechanism, step 3). Pure side effect — does not affect
+          // Angular's own rendering, which still reads svc.latestScoreInfo via
+          // avgQuery.currentScore / queriesCtrl's $watchGroup.
+          //
+          // Only mirror a full-case scoreAll() — the store replaces its whole
+          // query-score set on every write (by design, see
+          // case_score_store.test.js), so a partial-scorables call here (e.g.
+          // scoreAllDiffs() scoring just the diffed queries) would wipe every
+          // other query's entry and blank out the Stimulus badges that read
+          // from it (qscore_query_controller.js, query_unrated_badge_controller.js).
+          if (isFullScoreAll) {
+            window.quepidStore.scoring.setLatestScoreInfo(svc.latestScoreInfo);
+          }
 
           $scope.$emit('scoring-complete');
 

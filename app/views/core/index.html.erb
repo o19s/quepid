@@ -8,15 +8,21 @@
   straight from `@case`/`@try`.
 
   What stays Angular, and why:
-    * <qscore-case>  - the score is computed client-side from live ratings.
+    * <qgraph>       - the case score history chart, still reads live off MainCtrl's scope.
+    * <qscore-case>  - only the snapshot/diff usage; scores come from diffResultsSvc, client-side.
     * <queries>      - the query list and search results island.
     * <diff>, <import-ratings> - not yet migrated (see the removal inventory).
     * the east pane  - the Tune Relevance drawer, still Angular.
 
-  Those elements are compiled by Angular at bootstrap like any other markup inside `ng-app`.
-  <queries> does not declare an isolate scope, so QueriesCtrl publishes `queries`, `maxScore`,
-  `scores`, `annotations` and `getScorer()` onto MainCtrl's scope - which is why the sibling
-  <qscore-case> bindings below resolve. Keep them siblings under the same ng-controller.
+  The primary case score badge (docs/todo/angularjs_removal_inventory.md § Re-render
+  mechanism, step 4) is Stimulus now, driven by window.quepidStore.scoring - see
+  app/javascript/controllers/qscore_case_controller.js.
+
+  Those Angular elements are compiled by Angular at bootstrap like any other markup inside
+  `ng-app`, including inside the plain wrapper divs below. <queries> does not declare an
+  isolate scope, so QueriesCtrl publishes `queries`, `maxScore`, `scores`, `annotations` and
+  `getScorer()` onto MainCtrl's scope - which is why <qgraph> and the diff <qscore-case>
+  bindings below resolve. Keep them under the same ng-controller.
 %>
 <div id="flash-messages">
   <div class="flash fade" data-controller="flash" data-flash-channel-value="main">
@@ -45,16 +51,26 @@
             <div id="case-header" class="row">
               <div class="col-sm-12">
                 <div style="display: inline-flex; align-items: flex-start;">
-                  <!-- Current case score -->
-                  <qscore-case
-                    annotations="annotations"
-                    class="case-score"
-                    max-score="maxScore || 1"
-                    scorable="queries.avgQuery"
-                    score-label="getScorer().name"
-                    scores="scores"
-                  >
-                  </qscore-case>
+                  <!-- Current case score (Stimulus, store-driven — see
+                       docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4) -->
+                  <div class="case-score">
+                    <qgraph
+                      ng-if="scores && (scores.length > 1)"
+                      max="maxScore || 1"
+                      scores="scores"
+                      annotations="annotations"
+                    ></qgraph>
+
+                    <div
+                      class="header-rating"
+                      data-controller="qscore-case"
+                      data-qscore-case-case-id-value="<%= @case.id %>"
+                      data-qscore-case-score-label-value="<%= @case.scorer&.name %>"
+                    >
+                      <span class="scorable-score" data-qscore-case-target="value"></span>
+                      <span class="query-score-label low-profile" data-qscore-case-target="label"></span>
+                    </div>
+                  </div>
 
                   <!-- Snapshot case scores -->
                   <qscore-case

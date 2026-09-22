@@ -883,6 +883,15 @@ bindings imposed. The case toolbar still carries `ng-if="caseModel.caseLoaded()"
 reason: its markup no longer needs Angular, but several of its actions read live `queriesSvc` state
 and break if clicked before the case has bootstrapped.
 
+**Which mechanism re-renders a region depends on who owns the state.** Server-owned state — the case
+name, try, scorer name, badges — re-renders through a Turbo Frame, because Rails can render it. The
+case workspace's scores and search results cannot: live search runs browser → customer engine and
+scoring runs client-side, so the server never sees the documents and has nothing to render from.
+Those re-render from a client-side store that Stimulus controllers subscribe to, writing the DOM
+directly. Reach for a Turbo Stream only when Rails is the source of truth for what changed; on this
+page that is the exception, not the default. Migration sequencing and test obligations live in
+`docs/todo/angularjs_removal_inventory.md` § Re-render mechanism.
+
 ## Fonts
 
 The *aller* font face is from FontSquirrel, and the .ttf is converted into .woff2 format.  

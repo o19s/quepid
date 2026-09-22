@@ -65,6 +65,12 @@ window.quepidDom = quepidDom;
 import quepidSearch from './quepid_search';
 window.quepidSearch = quepidSearch;
 
+// Dual-run shadow stores for the case-workspace re-render mechanism (see
+// app/javascript/quepid_store.js and docs/todo/angularjs_removal_inventory.md
+// § Re-render mechanism).
+import quepidStore from './quepid_store';
+window.quepidStore = quepidStore;
+
 // Shepherd for tours. Both are UMD builds; under esbuild's CommonJS-like
 // module scope they resolve to their `module.exports` branch instead of
 // setting `root.Shepherd`/`root.Tether`, so legacy code (app/assets/javascripts/tour.js)

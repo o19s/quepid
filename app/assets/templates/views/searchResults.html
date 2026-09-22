@@ -3,13 +3,15 @@
   rank="{{$index + 1}}"
   ng-class="query.state() | queryStateClass">
   <div class="result-header" ng-class="{'diff-query-display': (displayed.results == displayed.resultsView.diffs && query.diffs)}">
-    <!-- Current query score -->
-    <qscore-query
-      class="results-score"
-      max-score="maxScore || 100"
-      scorable="query"
+    <!-- Current query score (Stimulus, store-driven — see
+         docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4) -->
+    <div
+      class="results-score qscore-query-badge"
+      data-controller="qscore-query"
+      data-qscore-query-query-id-value="{{query.queryId}}"
     >
-    </qscore-query>
+      <span class="scorable-score" data-qscore-query-target="value"></span>
+    </div>
 
     <!-- Snapshot query scores -->
     <qscore-query
@@ -47,10 +49,18 @@
        aria-label="Query failed"
        title="Query failed"></i>
 
-    <span ng-show="query.isNotAllRated()" class="float-end" style="margin-right: 20px;" title="Hop to it!  There are unrated results!">
+    <!-- Unrated-results frog badge (Stimulus, store-driven — see
+         docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 5) -->
+    <span
+      class="float-end d-none"
+      style="margin-right: 20px;"
+      title="Hop to it!  There are unrated results!"
+      data-controller="query-unrated-badge"
+      data-query-unrated-badge-query-id-value="{{query.queryId}}"
+    >
       <div class="icon-container">
         <i class="frog-icon">🐸</i>
-        <div class="notification-bubble">{{ query.currentScore.countMissingRatings }}</div>
+        <div class="notification-bubble" data-query-unrated-badge-target="count"></div>
       </div>
     </span>
 
