@@ -60,6 +60,9 @@ test.describe('core layout golden paths', () => {
     const results = page.locator('search-result');
     await expect(results).not.toHaveCount(0);
     await expect(results.first()).toBeVisible();
+    await expect(results.first().locator('.subTitle')).toContainText(/\S/);
+    await expect(results.first().locator('.result-rank')).toHaveText(/Rank: #1/);
+    await expect(results.first().locator('.single-rating')).toBeVisible();
     await expect(page).toHaveScreenshot('query-results.png', expandedCaseScreenshotOpts(page));
   });
 

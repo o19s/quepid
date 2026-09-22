@@ -37,6 +37,7 @@ import CountUpController from "controllers/count_up_controller"
 import MatchExplainController from "controllers/match_explain_controller"
 import QueryExplainController from "controllers/query_explain_controller"
 import JsonExplorerController from "controllers/json_explorer_controller"
+import SearchResultController from "controllers/search_result_controller"
 import FlashController from "controllers/flash_controller"
 
 Turbo.session.drive = false
@@ -62,4 +63,5 @@ application.register("count-up", CountUpController)
 application.register("match-explain", MatchExplainController)
 application.register("query-explain", QueryExplainController)
 application.register("json-explorer", JsonExplorerController)
+application.register("search-result", SearchResultController)
 application.register("flash", FlashController)

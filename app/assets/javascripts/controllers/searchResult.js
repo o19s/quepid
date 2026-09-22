@@ -68,17 +68,6 @@ angular.module('QuepidApp')
         }
       };
 
-      $scope.formatImageUrl = function(imgUrl, options) {
-        if (options){
-          if (options.prefix){
-            imgUrl = options.prefix + imgUrl;
-          }
-        }
-        return imgUrl;
-      };
-
-      $scope.snippets = $scope.doc.subSnippets('<strong>', '</strong>');
-
       // Was the `detailedDoc.html` / `DetailedDocCtrl` modal ($quepidModal +
       // ng-json-explorer). Rendered via window.quepidDom (see
       // app/javascript/quepid_dom.js) rather than a Stimulus controller/element
@@ -218,13 +207,6 @@ angular.module('QuepidApp')
           }
         };
         return matchExplainCache.data;
-      };
-
-      $scope.isObjectOrArray = function(value) {
-        return typeof value === 'object';
-      };
-      $scope.isUrl = function(value) {
-        return ( /^\s*http[s]?:.*/.test(value));
       };
 
       // fieldName may be a field_spec dotted path (e.g. "fields.url"), which isn't a

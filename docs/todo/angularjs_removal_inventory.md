@@ -532,6 +532,14 @@ results and live query state are still Angular-owned. The old
 not a complete `searchResults` migration: its expanded content, pagination,
 notes, query actions, and document rows remain in the incremental bridge.
 
+**Single-result rendering slice migrated (2026-09-22).**
+`search_result_controller.js` now owns the document-row DOM, rating trigger
+shell, media fields, snippets, error banner, rank marker, depth-of-rating
+note, and match-explain mount. `SearchResultCtrl` remains only as the
+temporary data/detail-modal and rating mutation bridge; search, score, and
+query mutations remain Angular-owned. The old `searchResult.html` template
+and `quepidEmbed` directive are removed.
+
 | Item | Type | Key files |
 |------|------|-----------|
 | Query list container | directive + controller | `<queries>`, `QueriesCtrl` — `directives/queries.js`, `controllers/queriesCtrl.js` |
