@@ -2,13 +2,14 @@ import { Controller } from "@hotwired/stimulus"
 import { isImageUrl, queryStateClass } from "utils/query_state"
 
 /**
- * Read-only query-row presentation. The Angular search-results directive still
- * owns the expanded row and its controls; this controller owns only the static
- * header values so the row can be migrated incrementally.
+ * Query-row presentation. Angular still owns the expanded row and its
+ * controls; this controller owns the header values and dispatches the toggle
+ * intent so the row can be migrated incrementally.
  */
 export default class extends Controller {
   static targets = ["query", "text", "image", "resultCount", "resultLabel", "querqy", "header", "toggle"]
   static values = {
+    queryId: Number,
     informationNeed: String,
     numFound: Number,
     querqyTriggered: Boolean,
@@ -49,6 +50,15 @@ export default class extends Controller {
 
   sortingValueChanged() {
     this.render()
+  }
+
+  toggle(event) {
+    event.preventDefault()
+    if (this.sortingValue) return
+
+    this.dispatch("toggle", {
+      detail: { queryId: this.queryIdValue }
+    })
   }
 
   stateValueChanged(value, previousValue) {

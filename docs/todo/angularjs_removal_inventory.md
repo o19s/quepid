@@ -524,6 +524,14 @@ Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `
 
 ### 5. Query list
 
+**Query-row header slice migrated (2026-09-22).** `query_row_controller.js` now
+owns the query-title/caret expand intent and dispatches `query-row:toggle`;
+`SearchResultsCtrl` remains the bridge to `queryViewSvc` while the expanded
+results and live query state are still Angular-owned. The old
+`searchResults.js` directive click handler is removed. This is intentionally
+not a complete `searchResults` migration: its expanded content, pagination,
+notes, query actions, and document rows remain in the incremental bridge.
+
 | Item | Type | Key files |
 |------|------|-----------|
 | Query list container | directive + controller | `<queries>`, `QueriesCtrl` — `directives/queries.js`, `controllers/queriesCtrl.js` |

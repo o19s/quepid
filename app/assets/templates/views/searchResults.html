@@ -1,5 +1,6 @@
 <div
   ng-attr-id="{{ 'query-' + query.queryText }}"
+  data-query-row-query-id-value="{{query.queryId}}"
   rank="{{$index + 1}}"
   data-controller="query-row"
   data-query-row-query-text-value="{{query.queryText}}"
@@ -31,7 +32,7 @@
     >
     </qscore-query>
 
-    <h2 class="results-title">
+    <h2 class="results-title" data-action="click->query-row#toggle">
       <span class="query" data-controller="bs-tooltip" data-query-row-target="query" data-bs-tooltip-title-value="Info Need: {{query.informationNeed}}" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
         <img class="img-thumbnail query-thumbnail d-none" data-query-row-target="image"
              alt="">
@@ -72,7 +73,7 @@
       <i class="querqy-icon"></i>
     </span>
 
-    <i class="toggleSign bi" data-query-row-target="toggle" ng-hide="isSortingEnabled()" ng-click="query.toggle()"></i>
+    <i class="toggleSign bi" data-query-row-target="toggle" data-action="click->query-row#toggle"></i>
   </div>
 
   <div ng-if="query.isToggled()" class="sub-results container-fluid">

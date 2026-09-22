@@ -37,6 +37,7 @@ describe("QueryRowController", () => {
     controller.headerTarget = controller.element.querySelector('[data-query-row-target="header"]')
     controller.toggleTarget = controller.element.querySelector('[data-query-row-target="toggle"]')
     controller.queryTextValue = "Star Wars"
+    controller.queryIdValue = 42
     controller.numFoundValue = 1
     controller.querqyTriggeredValue = true
     controller.informationNeedValue = "Find space movies"
@@ -58,6 +59,27 @@ describe("QueryRowController", () => {
     expect(controller.element.classList.contains("queryHeader_searching")).toBe(true)
     expect(controller.element.querySelector('[data-query-row-target="header"]').classList.contains("diff-query-display")).toBe(true)
     expect(controller.element.querySelector('[data-query-row-target="toggle"]').classList.contains("bi-caret-up-fill")).toBe(true)
+  })
+
+  it("dispatches a toggle intent for an unsorted row", () => {
+    controller.dispatch = (name, options) => {
+      controller.dispatchName = name
+      controller.dispatchOptions = options
+    }
+
+    controller.toggle({ preventDefault: () => {} })
+
+    expect(controller.dispatchName).toBe("toggle")
+    expect(controller.dispatchOptions.detail.queryId).toBe(42)
+  })
+
+  it("does not dispatch a toggle intent while sorting", () => {
+    controller.sortingValue = true
+    controller.dispatch = () => {
+      throw new Error("sorting rows must not toggle")
+    }
+
+    controller.toggle({ preventDefault: () => {} })
   })
 
   it("uses plural result copy and hides the Querqy marker when inactive", () => {

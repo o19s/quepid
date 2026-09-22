@@ -69,6 +69,21 @@ angular.module('QuepidApp')
           queryViewSvc.toggleQuery($scope.query.queryId);
       };
 
+      // The query-row Stimulus controller owns the header click. Keep the
+      // expanded content and query-view state in Angular until that island is
+      // migrated, and bridge only the intent here.
+      $element.on('query-row:toggle', function(event) {
+        var originalEvent = event.originalEvent;
+        if (!originalEvent || originalEvent.detail.queryId !== $scope.query.queryId) {
+          return;
+        }
+        if (!$scope.isSortingEnabled()) {
+          $scope.$apply(function() {
+            $scope.query.toggle();
+          });
+        }
+      });
+
       $scope.removeQuery = function(queryId) {
         $log.debug('Remove query!' + queryId);
         var confirm = $window.confirm('Are you absolutely sure you want to delete?');
@@ -158,7 +173,7 @@ angular.module('QuepidApp')
       });
 
       $scope.$on('$destroy', function() {
-        $element.off('rating-popover:rate rating-popover:reset');
+        $element.off('query-row:toggle rating-popover:rate rating-popover:reset');
         if (window.quepidStore && window.quepidStore.scoring) {
           window.quepidStore.scoring.removeEventListener('rating-changed', ratingChangedHandler);
         }

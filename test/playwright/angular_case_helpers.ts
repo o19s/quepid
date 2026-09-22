@@ -66,7 +66,7 @@ export async function gotoCase(page: Page, query: string = '', caseId: number = 
 /** Expand the first query row unless results are already visible. */
 export async function expandFirstQuery(page: Page): Promise<void> {
   if (await page.locator('search-result').count() > 0) return;
-  const toggle = page.locator('.results-list-element li .toggleSign[ng-click="query.toggle()"]').first();
+  const toggle = page.locator('.results-list-element li .toggleSign[data-action="click->query-row#toggle"]').first();
   await toggle.click();
   await page.waitForSelector('search-result', { timeout: 15_000 });
 }
