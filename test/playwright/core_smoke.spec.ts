@@ -63,6 +63,19 @@ test.describe('core layout golden paths', () => {
     await expect(page).toHaveScreenshot('query-results.png', expandedCaseScreenshotOpts(page));
   });
 
+  test('query row header renders through Stimulus', async ({ page }) => {
+    await gotoCase(page);
+
+    const row = page.locator('[data-controller="query-row"]').first();
+    await expect(row).toBeVisible();
+    await expect(row).toHaveAttribute('data-query-row-state-value', /\S/);
+    await expect(row.locator('[data-query-row-target="text"]')).toContainText(/\S/);
+    await expect(row.locator('[data-query-row-target="resultLabel"]')).toHaveText(/Result(s)?/);
+    await expect(row.locator('[data-query-row-target="resultCount"]')).toHaveText(/\d+/);
+    await expect(row.locator('[data-query-row-target="query"]'))
+      .toHaveAttribute('data-bs-tooltip-title-value', /Info Need:/);
+  });
+
   test('leave a judgement', async ({ page }) => {
     await gotoCase(page);
     await expandFirstQuery(page);

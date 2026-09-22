@@ -16,6 +16,10 @@ export function queryResultCount(query, showOnlyRated) {
   return showOnlyRated ? (query?.ratedDocsFound ?? 0) : (query?.numFound ?? 0)
 }
 
+export function queryStateClass(state) {
+  return `queryHeader_${state}`
+}
+
 export function invalidateRatedDocsCache(query) {
   if (!query) return
   query.ratingsReady = false

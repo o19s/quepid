@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { queryStateClass } from "utils/query_state"
 
 /**
  * Read-only query-row presentation. The Angular search-results directive still
@@ -11,7 +12,8 @@ export default class extends Controller {
     informationNeed: String,
     numFound: Number,
     querqyTriggered: Boolean,
-    queryText: String
+    queryText: String,
+    state: String
   }
 
   connect() {
@@ -34,7 +36,13 @@ export default class extends Controller {
     this.render()
   }
 
+  stateValueChanged(value, previousValue) {
+    if (previousValue) this.element.classList.remove(queryStateClass(previousValue))
+    if (value) this.element.classList.add(queryStateClass(value))
+  }
+
   render() {
+    if (this.hasStateValue) this.stateValueChanged(this.stateValue)
     if (this.hasQueryTarget) {
       this.queryTarget.setAttribute("data-bs-tooltip-title-value", `Info Need: ${this.informationNeedValue}`)
     }

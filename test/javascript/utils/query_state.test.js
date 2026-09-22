@@ -5,6 +5,7 @@ import {
   orderedQueries,
   paginate,
   queryResultCount,
+  queryStateClass,
   querqyRuleTriggered,
   ratingChangedQueryId
 } from "utils/query_state"
@@ -20,6 +21,10 @@ describe("query_state", () => {
   it("selects the current result count", () => {
     expect(queryResultCount({ numFound: 12, ratedDocsFound: 3 }, false)).toBe(12)
     expect(queryResultCount({ numFound: 12, ratedDocsFound: 3 }, true)).toBe(3)
+  })
+
+  it("maps query state to the legacy header class during the bridge", () => {
+    expect(queryStateClass("searching")).toBe("queryHeader_searching")
   })
 
   it("invalidates the rated-doc cache without discarding an in-flight request", () => {

@@ -21,6 +21,7 @@ describe("QueryRowController", () => {
     controller.hasResultCountTarget = true
     controller.hasResultLabelTarget = true
     controller.hasQuerqyTarget = true
+    controller.hasStateValue = true
     controller.queryTarget = controller.element.querySelector('[data-query-row-target="query"]')
     controller.textTarget = controller.element.querySelector('[data-query-row-target="text"]')
     controller.resultCountTarget = controller.element.querySelector('[data-query-row-target="resultCount"]')
@@ -30,6 +31,7 @@ describe("QueryRowController", () => {
     controller.numFoundValue = 1
     controller.querqyTriggeredValue = true
     controller.informationNeedValue = "Find space movies"
+    controller.stateValue = "searching"
   })
 
   it("renders read-only row values", () => {
@@ -40,14 +42,20 @@ describe("QueryRowController", () => {
     expect(controller.resultCountTarget.getAttribute("data-count-up-number-value")).toBe("1")
     expect(controller.resultLabelTarget.textContent).toBe("Result")
     expect(controller.querqyTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.element.classList.contains("queryHeader_searching")).toBe(true)
   })
 
   it("uses plural result copy and hides the Querqy marker when inactive", () => {
     controller.numFoundValue = 2
     controller.querqyTriggeredValue = false
     controller.render()
+    controller.stateValue = "error"
+    controller.stateValueChanged("error", "searching")
+    controller.render()
 
     expect(controller.resultLabelTarget.textContent).toBe("Results")
     expect(controller.querqyTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.element.classList.contains("queryHeader_searching")).toBe(false)
+    expect(controller.element.classList.contains("queryHeader_error")).toBe(true)
   })
 })

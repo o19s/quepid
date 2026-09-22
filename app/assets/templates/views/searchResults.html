@@ -1,12 +1,12 @@
 <div
   ng-attr-id="{{ 'query-' + query.queryText }}"
   rank="{{$index + 1}}"
-  ng-class="query.state() | queryStateClass"
   data-controller="query-row"
   data-query-row-query-text-value="{{query.queryText}}"
   data-query-row-information-need-value="{{query.informationNeed}}"
   data-query-row-num-found-value="{{query.getNumFound()}}"
-  data-query-row-querqy-triggered-value="{{querqyRuleTriggered()}}">
+  data-query-row-querqy-triggered-value="{{querqyRuleTriggered()}}"
+  data-query-row-state-value="{{query.state()}}">
   <div class="result-header" ng-class="{'diff-query-display': (displayed.results == displayed.resultsView.diffs && query.diffs)}">
     <!-- Current query score (Stimulus, store-driven — see
          docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4) -->

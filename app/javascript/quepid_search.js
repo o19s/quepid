@@ -12,6 +12,7 @@ import {
   orderedQueries,
   paginate,
   queryResultCount,
+  queryStateClass,
   querqyRuleTriggered,
   ratingChangedQueryId
 } from "./utils/query_state"
@@ -42,6 +43,7 @@ const quepidSearch = {
     orderedQueries,
     paginate,
     queryResultCount,
+    queryStateClass,
     querqyRuleTriggered,
     ratingChangedQueryId
   }
