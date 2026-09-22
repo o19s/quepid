@@ -106,6 +106,28 @@ test.describe('core layout golden paths', () => {
     await expect(queryList.locator('.sub-results:visible')).toHaveCount(0);
   });
 
+  test('add query reports a persistence failure', async ({ page }) => {
+    await page.route('**/api/cases/6/queries*', async route => {
+      if (route.request().method() !== 'POST') {
+        await route.continue();
+        return;
+      }
+
+      await route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'forced add-query failure' })
+      });
+    });
+
+    await gotoCase(page, '', 6);
+    await page.locator('#add-query').fill('forced add-query failure');
+    await page.locator('#add-query-submit').click();
+
+    await expect(page.locator('#flash-messages')).toContainText('forced add-query failure');
+    await expect(page.locator('#add-query')).toBeFocused();
+  });
+
   test('leave a judgement', async ({ page }) => {
     await gotoCase(page);
     await expandFirstQuery(page);

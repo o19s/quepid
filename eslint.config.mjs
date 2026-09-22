@@ -43,4 +43,20 @@ export default [
       'no-unused-vars': 'off',
     },
   },
+  {
+    files: ['app/assets/javascripts/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'script',
+      globals: {
+        ...globals.browser,
+        angular: 'readonly',
+        jQuery: 'readonly',
+        $: 'readonly',
+      },
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+    },
+  },
 ];

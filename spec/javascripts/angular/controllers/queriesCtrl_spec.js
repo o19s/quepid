@@ -17,7 +17,8 @@ describe('Controller: QueriesCtrl', function () {
   beforeEach(inject(function ($controller, $rootScope) {
     scope = $rootScope.$new();
     QueriesCtrl = $controller('QueriesCtrl', {
-      $scope: scope
+      $scope: scope,
+      $element: angular.element('<div></div>')
     });
   }));
 

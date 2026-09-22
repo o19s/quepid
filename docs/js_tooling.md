@@ -4,7 +4,7 @@ Quepid runs **two parallel JavaScript worlds** during the Angular → Hotwire mi
 
 | Tree | Role | Lint | Unit tests |
 |------|------|------|------------|
-| `app/assets/javascripts/` | Legacy Angular case app (esbuild → `app/assets/builds/`) | **JSHint** (`.jshintrc`) | **Karma + Jasmine** (`spec/javascripts/`) |
+| `app/assets/javascripts/` | Legacy Angular case app (esbuild → `app/assets/builds/`) | **ESLint + Prettier (advisory on commit)** | **Karma + Jasmine** (`spec/javascripts/`) |
 | `app/javascript/` | Importmap + Stimulus + Turbo (`application_modern.js`, controllers) | **ESLint** (full modern tree); **Prettier** (`api/`, `utils/` only) | **Vitest** (`test/javascript/**/*.test.js`, `vitest.config.js`) |
 
 Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; it is not a substitute for fast unit tests. Specs are TypeScript; `test/playwright/tsconfig.json` enables Node typings (`@types/node`) for `node:fs` / `node:path` imports.
@@ -54,10 +54,12 @@ Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no t
 
 ```bash
 bin/docker r yarn lint:js              # ESLint — full modern tree (eslint.config.mjs)
+bin/docker r yarn lint:js:legacy      # ESLint — full legacy Angular tree (advisory in CI/commits)
 bin/docker r yarn format:js:check      # Prettier check — api/ and utils/ only
 bin/docker r yarn format:js            # Prettier write — api/ and utils/ only
+bin/docker r yarn format:js:legacy:check # Prettier check — full legacy Angular tree (advisory in CI/commits)
 bin/docker r rails test:eslint         # ESLint + Prettier check (CI-style)
-bin/docker r rails test:frontend       # Vitest + Karma + JSHint + ESLint + Stylelint
+bin/docker r rails test:frontend       # Vitest + Karma + ESLint + Stylelint
 ```
 
 Per-file ESLint (e.g. a controller outside the Prettier scope):
@@ -74,23 +76,19 @@ After pulling these dependencies, run `bin/docker r yarn install` once.
 
 `.githooks/pre-commit` (via `bin/install-git-hooks`) runs on staged files:
 
-- `app/assets/javascripts/*.js` → JSHint
+- `app/assets/javascripts/**/*.js` → **advisory ESLint + Prettier** via the legacy staged hooks
 - `app/javascript/**/*.js` (lint scope) → **ESLint** via `eslint-staged` + `filter_javascript_lint_paths.mjs`
 - `app/javascript/api/**`, `app/javascript/utils/**` → **Prettier** via `prettier-staged` + `filter_javascript_prettier_paths.mjs` (other modern paths are ESLint-only for now)
 
-[pre-commit.com](https://pre-commit.com) hooks: `jshint-staged`, `eslint-staged`, `prettier-staged`, `stylelint-staged`.
+[pre-commit.com](https://pre-commit.com) hooks: `eslint-staged`, `prettier-staged`, `stylelint-staged`.
 
 ### Editor
 
 `.devcontainer/devcontainer.json` includes the ESLint and EditorConfig extensions. Point ESLint at the workspace `eslint.config.mjs`; Prettier uses `.prettierrc.json`.
 
-## JSHint (legacy `app/assets/javascripts`)
+## Legacy Angular assets
 
-Still the linter for the Angular asset tree. See `DEVELOPER_GUIDE.md` § JS Lint.
-
-```bash
-bin/docker r rails test:jshint
-```
+The `app/assets/javascripts/` tree is checked by ESLint and Prettier when legacy JavaScript is staged. Those checks are advisory in the commit hook: findings are printed but do not block the commit while the Angular case app is being retired.
 
 ## Vitest (`app/javascript`)
 

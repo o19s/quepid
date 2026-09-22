@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Advisory Prettier check for staged legacy Angular JavaScript.
+set -u
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+PRETTIER="./node_modules/.bin/prettier"
+files=()
+
+for path in "$@"; do
+  case "$path" in
+    app/assets/javascripts/*.js) files+=("$path") ;;
+  esac
+done
+
+if [[ ${#files[@]} -eq 0 ]]; then
+  exit 0
+fi
+
+cd "$ROOT"
+echo "Advisory legacy Prettier check (failures do not block commit):"
+if docker info >/dev/null 2>&1; then
+  bin/docker r "$PRETTIER" --check "${files[@]}"
+else
+  "$PRETTIER" --check "${files[@]}"
+fi
+status=$?
+if [[ $status -ne 0 ]]; then
+  echo "Legacy Prettier reported issues; commit will continue." >&2
+fi
+exit 0

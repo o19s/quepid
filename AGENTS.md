@@ -109,10 +109,7 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 - **Importmap bare paths** — `import { apiFetch } from "api/fetch"`, not relative `../api/...`. Add new pins to `vitest.config.js` when tests import them.
 - Use `const` or `let`, not `var`.
 
-**Legacy Angular JS** (`app/assets/javascripts/`) — `.jshintrc`:
-
-- **Single quotes** (`quotmark: single`), not the modern double-quote style.
-- Multiline ternary: keep `?` and `:` at the **end** of the line, not the start of the next line (JSHint “misleading line break”).
+**Legacy Angular JS** (`app/assets/javascripts/`) — ESLint and Prettier run as advisory checks on staged files; their findings do not block commits while the Angular case app is being retired. Avoid reformatting it as part of modern JavaScript changes.
 
 **Ruby** — `.rubocop.yml` (opposite comma rule from JS):
 

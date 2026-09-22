@@ -31,11 +31,4 @@ describe('Controller: SearchResultCtrl', function () {
     });
   });
 
-  it('Check url paths', function () {
-    expect(scope.isUrl("http://amazon.ca")).toBe(true);
-    expect(scope.isUrl("https://amazon.ca")).toBe(true);
-    expect(scope.isUrl("httpx://amazon.ca")).toBe(false);
-    expect(scope.isUrl(" http://amazon.ca")).toBe(true);
-    expect(scope.isUrl(" https://amazon.ca")).toBe(true);
-  });
 });

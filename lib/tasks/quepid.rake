@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require 'colorize'
-require 'jshint/lint'
-
 # rubocop:disable-next Metrics/BlockLength
 namespace :test do
   desc 'Report failed tests from JUnit XML reports'
@@ -90,31 +88,12 @@ namespace :test do
     end
   end
 
-  desc 'Run all frontend tasks: test:vitest, test:js, test:jshint, test:eslint, test:stylelint'
+  desc 'Run all frontend tasks: test:vitest, test:js, test:eslint, test:stylelint'
   task frontend: :environment do
     Rake::Task['test:vitest'].invoke
     Rake::Task['test:js'].invoke
-    Rake::Task['test:jshint'].invoke
     Rake::Task['test:eslint'].invoke
     Rake::Task['test:stylelint'].invoke
-  end
-
-  desc 'Run jshint on js files using configuration .jshintrc'
-  task jshint: :environment do
-    puts '-' * 100
-    puts 'Starting JSHint tests'.yellow
-
-    linter = Jshint::Lint.new
-    linter.lint
-
-    if linter.errors?
-      puts 'JSHint tests failed!'.red
-      puts '-' * 100
-      exit false
-    else
-      puts 'JSHint tests passed!'.green
-      puts '-' * 100
-    end
   end
 
   desc 'Run ESLint on app/javascript (see eslint.config.mjs)'

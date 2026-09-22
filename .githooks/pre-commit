@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Run RuboCop, JSHint (legacy Angular assets), ESLint + Prettier (app/javascript).
+# Run RuboCop, advisory ESLint + Prettier for legacy Angular assets, and
+# blocking ESLint + Prettier for app/javascript.
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -33,7 +34,8 @@ if [[ ${#ruby_files[@]} -gt 0 ]]; then
 fi
 
 if [[ ${#legacy_js_files[@]} -gt 0 ]]; then
-  bin/pre-commit-jshint "${legacy_js_files[@]}"
+  bin/legacy-eslint-staged "${legacy_js_files[@]}"
+  bin/legacy-prettier-staged "${legacy_js_files[@]}"
 fi
 
 if [[ ${#modern_js_files[@]} -gt 0 ]]; then

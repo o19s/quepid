@@ -295,7 +295,7 @@ bin/docker r rails test:vitest       # same as yarn test:unit
 
 ### Pre-commit hooks
 
-Git commits run RuboCop (Ruby), JSHint (`app/assets/javascripts/`), ESLint on the modern `app/javascript/` tree, and Prettier on `app/javascript/api/` and `utils/` only — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
+Git commits run RuboCop (Ruby), advisory ESLint and Prettier on staged legacy Angular assets, blocking ESLint on the modern `app/javascript/` tree, and Prettier on `app/javascript/api/` and `utils/` only — via a version-controlled hook in `.githooks/pre-commit`. Legacy findings are printed but do not block commits. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
 
 Hooks prefer Docker when it is available (`bin/docker r`), matching the usual Quepid development workflow.
 
@@ -317,24 +317,21 @@ Run linters directly:
 
 ```bash
 bin/pre-commit-rubocop path/to/file.rb
-bin/pre-commit-jshint path/to/file.js
 bin/eslint-staged path/to/app/javascript/file.js
 bin/prettier-staged path/to/app/javascript/file.js
 ```
 
 ### JS Lint
 
-**Legacy Angular assets** (`app/assets/javascripts/`) — JSHint:
-
-```bash
-bin/docker r rails test:jshint
-```
+Legacy Angular assets under `app/assets/javascripts/` are checked with ESLint and Prettier when staged, but their findings are advisory and do not block commits while the Angular case app is being retired.
 
 **Modern importmap / Stimulus** (`app/javascript/`) — ESLint on the full modern tree; Prettier on `api/` and `utils/` only (see [`docs/js_tooling.md`](docs/js_tooling.md)):
 
 ```bash
 bin/docker r yarn lint:js
+bin/docker r yarn lint:js:legacy      # advisory — full legacy Angular tree
 bin/docker r yarn format:js:check    # Prettier check — api/ and utils/ only; or yarn format:js to fix
+bin/docker r yarn format:js:legacy:check # advisory — full legacy Angular tree
 bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
 ```
 
@@ -345,7 +342,7 @@ pip install pre-commit   # or: pipx install pre-commit
 pre-commit install
 ```
 
-The hook lints staged `*.js` under `app/assets/javascripts` (JSHint) and scoped files under `app/javascript` (ESLint on controllers/modules/etc.; Prettier on `api/` and `utils/` only). JSHint paths and skips match `rake test:jshint` — `lib/jshint/configuration.rb` excludes `vendor/assets/javascripts` and `lib/assets/javascripts` from the default search paths. Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
+The hook checks staged legacy Angular files with advisory ESLint and Prettier, then lints scoped files under `app/javascript` (ESLint on controllers/modules/etc.; Prettier on `api/` and `utils/` only). Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
 
 ### CSS Lint
 
@@ -359,7 +356,7 @@ bin/docker r rails test:stylelint
 
 Configuration lives in `.stylelintrc.json` (extends `stylelint-config-standard` with pragmatic overrides for legacy Quepid CSS). Built bundles under `app/assets/builds/` and vendored CSS are ignored (see `.stylelintignore`).
 
-Pre-commit can lint staged CSS the same way as JSHint:
+Pre-commit can lint staged CSS with the same hook workflow:
 
 ```bash
 pre-commit install
@@ -604,7 +601,6 @@ bin/docker r bin/rails routes
 bin/docker r rails test
 bin/docker r rails test:vitest
 bin/docker r rails test:frontend
-bin/docker r bin/rake test:jshint
 bin/docker r rails test:eslint
 bin/docker r bin/rake test:stylelint
 ```
@@ -1031,7 +1027,7 @@ Adapter-specific behavior:
 **Solutions**:
 1. Check for JavaScript or CSS syntax errors:
    ```bash
-   bin/docker r rails test:jshint
+   bin/docker r rails test:eslint
    bin/docker r rails test:stylelint
    ```
 

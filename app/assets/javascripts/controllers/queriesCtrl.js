@@ -164,22 +164,22 @@ angular.module('QuepidApp')
             return;
           }
 
-          var reverse   = $scope.reverse;
-          var fromIndex = oldIndex + (
-            ($scope.pagination.currentPage - 1) * $scope.pagination.pageSize
-          );
-          var toIndex   = newIndex + (
-            ($scope.pagination.currentPage - 1) * $scope.pagination.pageSize
-          );
+          var displayPositions = window.quepidSearch.queryState.queryDisplayPositions({
+            oldIndex: oldIndex,
+            newIndex: newIndex,
+            currentPage: $scope.pagination.currentPage,
+            pageSize: $scope.pagination.pageSize,
+            reverse: $scope.reverse
+          });
 
-          var item      = originalList[fromIndex];
-          var oldItem   = originalList[toIndex];
+          var item = originalList[displayPositions.fromIndex];
+          var oldItem = originalList[displayPositions.toIndex];
 
-          if (toIndex < fromIndex) {
-            reverse = !reverse;
-          }
-
-          queriesSvc.updateQueryDisplayPosition(item.queryId, oldItem.queryId, reverse)
+          queriesSvc.updateQueryDisplayPosition(
+            item.queryId,
+            oldItem.queryId,
+            displayPositions.reverse
+          )
             .then(function() {
               originalList = $scope.queriesList;
             });
@@ -217,6 +217,16 @@ angular.module('QuepidApp')
         return canAddQueries() ? 'Add a query to this case' : 'Adding queries is not supported';
       }
 
+      function addQueryErrorMessage(errorMsg, fallback) {
+        if (angular.isString(errorMsg)) {
+          return errorMsg;
+        }
+        if (errorMsg && errorMsg.error) {
+          return angular.isString(errorMsg.error) ? errorMsg.error : angular.toJson(errorMsg.error);
+        }
+        return errorMsg ? angular.toJson(errorMsg) : fallback;
+      }
+
       function addQueries(queryTexts) {
         if (queryTexts.length === 0) {
           return;
@@ -237,7 +247,7 @@ angular.module('QuepidApp')
           }).then(function () {
             addQueryComplete(true);
           }, function (errorMsg) {
-            window.quepidDom.flash.show('error', errorMsg || 'Unable to add query.');
+            window.quepidDom.flash.show('error', addQueryErrorMessage(errorMsg, 'Unable to add query.'));
             addQueryComplete(false);
           });
           return;
@@ -257,7 +267,7 @@ angular.module('QuepidApp')
         }).then(function () {
           addQueryComplete(true);
         }, function (errorMsg) {
-          window.quepidDom.flash.show('error', errorMsg || 'Unable to add queries.');
+          window.quepidDom.flash.show('error', addQueryErrorMessage(errorMsg, 'Unable to add queries.'));
           addQueryComplete(false);
         });
       }

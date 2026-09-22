@@ -1135,18 +1135,11 @@ angular.module('QuepidApp')
         };
 
         this.state = function() {
-          if (this.errorText.length > 0) {
-            return 'error';
-          }
-          if (!resultsReturned) {
-            return 'loading';
-          }
-          else if (this.docs.length === 0 && this.errorText === '') {
-            return 'noResults';
-          }
-          else {
-            return 'loaded';
-          }
+          return window.quepidSearch.queryState.queryLifecycleState({
+            errorText: this.errorText,
+            resultsReturned: resultsReturned,
+            docCount: this.docs.length
+          });
         };
 
         this.searchAndScore = function() {

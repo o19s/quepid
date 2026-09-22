@@ -1,8 +1,8 @@
 /**
  * Single source of truth for ESLint + Prettier scope on `app/javascript/`.
  *
- * Legacy Angular assets (`app/assets/javascripts/`) stay on JSHint — see
- * `lib/jshint/configuration.rb`.
+ * Legacy Angular assets have a separate, advisory ESLint/Prettier scope while
+ * that code is being retired.
  */
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -24,7 +24,6 @@ export const SKIPPED_DIRECTORIES = ['vendor'];
  */
 export const ESLINT_IGNORES = [
   '**/node_modules/**',
-  'app/assets/**',
   'public/**',
   'vendor/**',
   'spec/**',
