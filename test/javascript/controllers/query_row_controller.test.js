@@ -12,6 +12,8 @@ describe("QueryRowController", () => {
         <span data-query-row-target="resultCount"></span>
         <small data-query-row-target="resultLabel"></small>
         <span data-query-row-target="querqy"></span>
+        <div data-query-row-target="header"></div>
+        <i data-query-row-target="toggle"></i>
       </div>
     `
     controller = Object.create(QueryRowController.prototype)
@@ -21,17 +23,24 @@ describe("QueryRowController", () => {
     controller.hasResultCountTarget = true
     controller.hasResultLabelTarget = true
     controller.hasQuerqyTarget = true
+    controller.hasHeaderTarget = true
+    controller.hasToggleTarget = true
     controller.hasStateValue = true
     controller.queryTarget = controller.element.querySelector('[data-query-row-target="query"]')
     controller.textTarget = controller.element.querySelector('[data-query-row-target="text"]')
     controller.resultCountTarget = controller.element.querySelector('[data-query-row-target="resultCount"]')
     controller.resultLabelTarget = controller.element.querySelector('[data-query-row-target="resultLabel"]')
     controller.querqyTarget = controller.element.querySelector('[data-query-row-target="querqy"]')
+    controller.headerTarget = controller.element.querySelector('[data-query-row-target="header"]')
+    controller.toggleTarget = controller.element.querySelector('[data-query-row-target="toggle"]')
     controller.queryTextValue = "Star Wars"
     controller.numFoundValue = 1
     controller.querqyTriggeredValue = true
     controller.informationNeedValue = "Find space movies"
     controller.stateValue = "searching"
+    controller.diffValue = true
+    controller.toggledValue = true
+    controller.sortingValue = false
   })
 
   it("renders read-only row values", () => {
@@ -43,6 +52,8 @@ describe("QueryRowController", () => {
     expect(controller.resultLabelTarget.textContent).toBe("Result")
     expect(controller.querqyTarget.classList.contains("d-none")).toBe(false)
     expect(controller.element.classList.contains("queryHeader_searching")).toBe(true)
+    expect(controller.element.querySelector('[data-query-row-target="header"]').classList.contains("diff-query-display")).toBe(true)
+    expect(controller.element.querySelector('[data-query-row-target="toggle"]').classList.contains("bi-caret-up-fill")).toBe(true)
   })
 
   it("uses plural result copy and hides the Querqy marker when inactive", () => {
@@ -51,11 +62,17 @@ describe("QueryRowController", () => {
     controller.render()
     controller.stateValue = "error"
     controller.stateValueChanged("error", "searching")
+    controller.diffValue = false
+    controller.toggledValue = false
+    controller.sortingValue = true
     controller.render()
 
     expect(controller.resultLabelTarget.textContent).toBe("Results")
     expect(controller.querqyTarget.classList.contains("d-none")).toBe(true)
     expect(controller.element.classList.contains("queryHeader_searching")).toBe(false)
     expect(controller.element.classList.contains("queryHeader_error")).toBe(true)
+    expect(controller.element.querySelector('[data-query-row-target="header"]').classList.contains("diff-query-display")).toBe(false)
+    expect(controller.element.querySelector('[data-query-row-target="toggle"]').classList.contains("bi-caret-down-fill")).toBe(true)
+    expect(controller.element.querySelector('[data-query-row-target="toggle"]').classList.contains("d-none")).toBe(true)
   })
 })

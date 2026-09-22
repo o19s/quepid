@@ -6,8 +6,11 @@
   data-query-row-information-need-value="{{query.informationNeed}}"
   data-query-row-num-found-value="{{query.getNumFound()}}"
   data-query-row-querqy-triggered-value="{{querqyRuleTriggered()}}"
-  data-query-row-state-value="{{query.state()}}">
-  <div class="result-header" ng-class="{'diff-query-display': (displayed.results == displayed.resultsView.diffs && query.diffs)}">
+  data-query-row-state-value="{{query.state()}}"
+  data-query-row-diff-value="{{displayed.results == displayed.resultsView.diffs && query.diffs}}"
+  data-query-row-toggled-value="{{query.isToggled()}}"
+  data-query-row-sorting-value="{{isSortingEnabled()}}">
+  <div class="result-header" data-query-row-target="header">
     <!-- Current query score (Stimulus, store-driven — see
          docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4) -->
     <div
@@ -69,7 +72,7 @@
       <i class="querqy-icon"></i>
     </span>
 
-    <i class="toggleSign bi {{query.isToggled() | plusOrMinus}}" ng-hide="isSortingEnabled()" ng-click="query.toggle()"></i>
+    <i class="toggleSign bi" data-query-row-target="toggle" ng-hide="isSortingEnabled()" ng-click="query.toggle()"></i>
   </div>
 
   <div ng-if="query.isToggled()" class="sub-results container-fluid">

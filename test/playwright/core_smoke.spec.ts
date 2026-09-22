@@ -74,6 +74,12 @@ test.describe('core layout golden paths', () => {
     await expect(row.locator('[data-query-row-target="resultCount"]')).toHaveText(/\d+/);
     await expect(row.locator('[data-query-row-target="query"]'))
       .toHaveAttribute('data-bs-tooltip-title-value', /Info Need:/);
+    await expect(row.locator('[data-query-row-target="toggle"]'))
+      .toHaveClass(/bi-caret-down-fill/);
+
+    await row.locator('h2.results-title').click();
+    await expect(row.locator('[data-query-row-target="toggle"]'))
+      .toHaveClass(/bi-caret-up-fill/);
   });
 
   test('leave a judgement', async ({ page }) => {

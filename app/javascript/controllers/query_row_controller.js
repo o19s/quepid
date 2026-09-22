@@ -7,13 +7,16 @@ import { queryStateClass } from "utils/query_state"
  * header values so the row can be migrated incrementally.
  */
 export default class extends Controller {
-  static targets = ["query", "text", "resultCount", "resultLabel", "querqy"]
+  static targets = ["query", "text", "resultCount", "resultLabel", "querqy", "header", "toggle"]
   static values = {
     informationNeed: String,
     numFound: Number,
     querqyTriggered: Boolean,
     queryText: String,
-    state: String
+    state: String,
+    diff: Boolean,
+    toggled: Boolean,
+    sorting: Boolean
   }
 
   connect() {
@@ -36,6 +39,18 @@ export default class extends Controller {
     this.render()
   }
 
+  diffValueChanged() {
+    this.render()
+  }
+
+  toggledValueChanged() {
+    this.render()
+  }
+
+  sortingValueChanged() {
+    this.render()
+  }
+
   stateValueChanged(value, previousValue) {
     if (previousValue) this.element.classList.remove(queryStateClass(previousValue))
     if (value) this.element.classList.add(queryStateClass(value))
@@ -54,5 +69,11 @@ export default class extends Controller {
       this.resultLabelTarget.textContent = this.numFoundValue === 1 ? "Result" : "Results"
     }
     if (this.hasQuerqyTarget) this.querqyTarget.classList.toggle("d-none", !this.querqyTriggeredValue)
+    if (this.hasHeaderTarget) this.headerTarget.classList.toggle("diff-query-display", this.diffValue)
+    if (this.hasToggleTarget) {
+      this.toggleTarget.classList.toggle("bi-caret-up-fill", this.toggledValue)
+      this.toggleTarget.classList.toggle("bi-caret-down-fill", !this.toggledValue)
+      this.toggleTarget.classList.toggle("d-none", this.sortingValue)
+    }
   }
 }

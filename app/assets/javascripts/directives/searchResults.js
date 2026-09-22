@@ -1,20 +1,6 @@
 'use strict';
 
 angular.module('QuepidApp')
-  .filter('plusOrMinus', [
-    function() {
-      return function(toggled) {
-        if (toggled) {
-          return 'bi-caret-up-fill';
-        }
-        else {
-          return 'bi-caret-down-fill';
-        }
-      };
-    }
-  ]);
-
-angular.module('QuepidApp')
   .directive('searchResults', [
     function () {
       return {
