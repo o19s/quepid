@@ -1,10 +1,10 @@
 'use strict';
 angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
-    '$rootScope', '$scope', '$element', '$log', '$window',
+    '$rootScope', '$scope', '$element', '$log',
     'clipboardSvc', 'rateScaleSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
     function (
-      $rootScope, $scope, $element, $log, $window,
+      $rootScope, $scope, $element, $log,
       clipboardSvc, rateScaleSvc, queriesSvc, queryViewSvc, settingsSvc
     ) {
       $scope.queriesSvc = queriesSvc;
@@ -84,22 +84,22 @@ angular.module('QuepidApp')
         }
       });
 
-      $scope.removeQuery = function(queryId) {
-        $log.debug('Remove query!' + queryId);
-        var confirm = $window.confirm('Are you absolutely sure you want to delete?');
-
-        if (confirm) {
-          queriesSvc.deleteQuery(queryId).then(function() {
-            $log.info('rescoring queries after removing query');
-            queriesSvc.updateScores();
-          }, function() {
-            // deleteQuery now rejects on failure instead of swallowing it, so say so rather
-            // than rescoring as though the query had gone.
-            window.quepidDom.flash.show('error', 'Unable to delete query.');
-          });
-          
+      var queryDeleteHandler = function(event) {
+        var originalEvent = event.originalEvent;
+        if (!originalEvent || originalEvent.detail.queryId !== $scope.query.queryId) {
+          return;
         }
+
+        queriesSvc.deleteQuery(originalEvent.detail.queryId).then(function() {
+          $log.info('rescoring queries after removing query');
+          queriesSvc.updateScores();
+        }, function() {
+          // deleteQuery rejects on failure, so say so rather than rescoring as
+          // though the query had gone.
+          window.quepidDom.flash.show('error', 'Unable to delete query.');
+        });
       };
+      $element.on('query-delete:submit', queryDeleteHandler);
 
       // Watch for diff changes - unified logic for all diff scenarios
       $scope.$watch('query.diffs', function() {
@@ -173,7 +173,8 @@ angular.module('QuepidApp')
       });
 
       $scope.$on('$destroy', function() {
-        $element.off('query-row:toggle rating-popover:rate rating-popover:reset');
+        $element.off('query-row:toggle query-delete:submit', queryDeleteHandler);
+        $element.off('rating-popover:rate rating-popover:reset');
         if (window.quepidStore && window.quepidStore.scoring) {
           window.quepidStore.scoring.removeEventListener('rating-changed', ratingChangedHandler);
         }

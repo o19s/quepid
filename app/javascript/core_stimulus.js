@@ -41,6 +41,7 @@ import SearchResultController from "controllers/search_result_controller"
 import SearchResultsController from "controllers/search_results_controller"
 import AddQueryController from "controllers/add_query_controller"
 import QueryLifecycleController from "controllers/query_lifecycle_controller"
+import QueryDeleteController from "controllers/query_delete_controller"
 import FlashController from "controllers/flash_controller"
 
 Turbo.session.drive = false
@@ -70,4 +71,5 @@ application.register("search-result", SearchResultController)
 application.register("search-results", SearchResultsController)
 application.register("add-query", AddQueryController)
 application.register("query-lifecycle", QueryLifecycleController)
+application.register("query-delete", QueryDeleteController)
 application.register("flash", FlashController)

@@ -192,16 +192,6 @@ Reuse these instead of reimplementing modals/flows:
 
 | Stimulus controller | Typical usage |
 |---------------------|---------------|
-| `share-case` / `share-case-core` | Index/teams: `share_case_controller` + `_share_case_modal`. Core toolbar: `share_case_core_controller` + `_share_case_core_modal` via `core_stimulus.js`. **Core deltas vs Angular:** stays open after share/unshare with an inline alert (multi-team work; Angular closed + global flash); "Create a team" goes to `new_team_path` (Angular used `/teams`). Rails index/teams unchanged. |
-| `delete-case-options-core` | Core toolbar only (no Rails-page twin — cases/teams archive/delete already use `confirm-delete`). `delete_case_options_core_controller.js` + `_delete_case_options_core_modal.html.erb` via `core_stimulus.js`; three-way choice (archive / delete case / delete all queries) via `submitDestructiveForm`. |
-| `clone-case-core` | Core toolbar only (no Rails-page twin). `clone_case_core_controller.js` + `_clone_case_core_modal.html.erb` via `core_stimulus.js`. **Delta vs Angular:** stays open with an inline alert on failure (same delta as `share-case-core`). |
-| `export-case-core` | Core toolbar only (no Rails-page twin). `export_case_core_controller.js` + `_export_case_core_modal.html.erb` via `core_stimulus.js`. **Matches Angular:** modal always closes on Export before the download starts (no inline alert, unlike the stay-open pattern above). **Intentional delta vs Angular:** Export stays disabled for the `snapshot` format until a snapshot is actually chosen from its dropdown — Angular let you click Export with nothing chosen, which then failed inside `querySnapshotSvc.get(undefined)` with no user feedback; the new guard prevents that dead-end instead of reproducing it. **Bridge, not final:** the `detailed` format needs live search results still held in Angular `queriesSvc`, so it dispatches a `document` CustomEvent (`export-case:detailed`) that `caseCSVSvc.js` still listens for — resolves when `queriesSvc` migrates (see [live query-state phase](#live-query-state-phase-committed-final-phase)). |
-| `pick-scorer-core` | Core toolbar only. `pick_scorer_core_controller.js` + `_pick_scorer_core_modal.html.erb`. Lists scorers from `api/scorers`, saves via `PUT api/cases/:id/scorers/:id`, then dispatches `pick-scorer:selected` so Angular `scorerSvc`/`queriesSvc` can rescore live queries. |
-| `take-snapshot-core` | Core toolbar only. `take_snapshot_core_controller.js` + `_take_snapshot_core_modal.html.erb`. Collects name/options; dispatches `take-snapshot:create` so Angular `querySnapshotSvc.addSnapshot` can build the live-query payload. |
-| `judgements-core` | Core toolbar only. `judgements_core_controller.js` + `_judgements_core_modal.html.erb`. Book link + sync settings via case/books APIs; `judgements:populate-book` / `judgements:queries-need-reload` / `judgements:book-settings-saved` bridges for live query state. |
-| `case-rename` | Core case header only. `case_rename_controller.js` + `app/views/core/_case_header.html.erb`, inside a `case_header` Turbo Frame served by `Core::CaseHeaderController`. Double-click to edit, Rename posts to Rails and re-renders the frame, Cancel restores. **Matches Angular**, with one deliberate addition: the field takes focus on open (it did not before), which the A11y decision lens asks for. It focuses without selecting, so the first keystroke still extends the name rather than replacing it. |
-| `case-toolbar` | Core case toolbar only. `case_toolbar_controller.js` + `app/views/core/_case_toolbar.html.erb`. Not a modal — it only bridges the header to the Angular services that still run the page: `case-header:renamed` → `caseSvc` and `case-header:try-renamed` → `settingsSvc` on a frame render, and inbound `quepid:case-renamed` so a rename made *by* Angular (the wizard) reaches the server-rendered header. Mounted on the always-present `#case-actions` wrapper, not the `ng-if` gated div, so it is never torn down mid-rename. It deliberately does **not** copy the case name onto the modal triggers — see `utils/case_header` below. |
-| `utils/case_header` (helper, not a controller) | `caseNameFromHeader()` reads the name out of the `case_header` frame. The five core modals (share, clone, delete, export, judgements) call it when they open instead of carrying a `data-*-name-value` copy. One source of truth means nothing to resynchronise after a rename, and an `ng-if` rebuild of the toolbar cannot reinstate a stale name. |
 | `rating-popover` | Per-result and score-all rating UI. Shell is Stimulus; `doc.rate()` / `resetRating()` / `scoreAll()` still run in Angular via `rating-popover:rate` / `:reset`. |
 | `share-book`, `share-scorer`, `share-search-endpoint` | Shared modals under `app/views/shared/` |
 | `import-case`, `import-snapshot` | Shared modals |
@@ -259,7 +249,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 **Component LOC** (all JS and HTML files in each component folder, easiest → hardest): new_case (74) → qscore_query (86) → qscore_case (101) → query_explain (117) → annotations (129) → query_options (137) → annotation (152) → add_query (180) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423) → import_ratings (674).
 
-**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. The add-query form shell has moved to Stimulus, but its persistence/search seam remains part of the live query-state migration. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. The add-query persistence/search seam remains part of the live query-state migration. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
 
 #### `queriesSvc` seam inventory (phase 1)
 
@@ -291,23 +281,11 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Do not scope `scoreAll()` in the same change.** One rating rescores every query today; the performance lens says carry that forward. An explicit store makes per-query scoping possible later, but taking it here ships an unapproved behaviour change and makes any score discrepancy unattributable.
 
-**Remaining, in slice order (2026-09-22).** Score rendering (qscore badges, case score) shipped dual-run, and the canonical score publication path is now covered end-to-end. `queriesSvc.scoreAll()` publishes the complete score map for ratings and scorer changes; a newly added query reaches it the same way, via the `updateScores()` call that already follows `searchAndScore()` in `add_query_controller.js` — `searchAndScore()` itself does not call `scoreAll()` directly, since that caller always triggers a full rescore of its own moments later and calling `scoreAll()` from both places only coupled a new query's success/failure to every other query's scoring outcome. The Playwright contract covers rate → per-query score → case score → badge. The score-adjacent `rating-changed` and `scoring-complete` events now publish through `CaseScoreStore`, with Angular compatibility listeners retained while the old consumers remain. The query-list toolbar controls (rated-only, collapse-all, filtering, and sort state/actions) and SortableJS drag lifecycle now render or run through `queries-list` Stimulus and bridge semantic events back to `QueriesCtrl`; the existing Angular pagination control remains in place for behavior parity. Next:
-
-The framework-free query-state helper extraction is complete: `querqyRuleTriggered()`, hit-count/state helpers, rated-doc cache invalidation, query display-position calculation, pagination, and filter predicates now live in `app/javascript/utils/query_state.js`, are exposed through `window.quepidSearch.queryState`, and are covered by Vitest while Angular consumes them.
-
-Query-row rendering and query-list controls are also complete: the read-only header rendering lives in `query-row-controller.js`, including state/diff classes, result count/label, Querqy marker, toggle caret, and image-vs-text query display. The toolbar and drag lifecycle live in `queries-list-controller.js`; pagination remains on the proven Angular directive until a parity-focused replacement is worthwhile. Search-results rendering now lives in `search_results_controller.js`, while Angular continues to provide the query/document objects and mutation bridge.
+**Remaining, in slice order (2026-09-22).** Next:
 
 1. **Migrate query mutations last** — add, move, delete, and persist — matching the [decision lenses](#decision-lenses) ordering (search/score stay client-owned throughout; nothing here moves them server-side). The add-query form and its user-facing orchestration are now Stimulus-owned (`add_query_controller.js` + `query_lifecycle_controller.js`). The query lifecycle API request contracts live in tested ESM (`utils/query_lifecycle.js`); `queriesSvc` remains the temporary adapter for Query construction, persistence, search, and scoring. Move/delete/persist orchestration for the remaining query surfaces is next.
 
 The diff/snapshot score badges stay Angular until `diffResultsSvc` migrates — out of this sequence.
-
-**Search-results rendering slice migrated (2026-09-22).** `search_results_controller.js`
-now owns expanded-row visibility and repeats the live document result elements from
-the client-owned query objects. `search_result_controller.js` continues to own each
-result's DOM and rating presentation. Angular still supplies the query/document
-objects and owns the toolbar mutations, notes, diff view, pagination actions, and
-the `SearchResultCtrl` mutation/detail bridge. The query-list container and its
-pagination directive remain Angular-owned until the query mutation seam moves.
 
 **The `window.quepidStore` bridge is temporary.** It exists so `queriesSvc` (still Angular) can push into a store that Stimulus (not yet the page owner) can read, during dual-run. Once the case workspace has its own entry bundle, the global goes away in favor of a module import — don't grow further ad hoc bridges on `window.quepidStore` as if it were the permanent integration point.
 
@@ -512,8 +490,7 @@ Routing is server-side (Rails); `MainCtrl` is attached directly in `core/index.h
 | Case layout shell | Rails view | `app/views/core/index.html.erb` |
 | Case score display | component | Diff/snapshot `<qscore-case>` — `components/qscore_case/` |
 | Per-query score | component | Diff/snapshot `<qscore-query>` — `components/qscore_query/` |
-| Case rename, nightly/public/archived badges, scorer name | Rails partial + Stimulus | `app/views/core/_case_header.html.erb` + `case_rename_controller.js`, served by `Core::CaseHeaderController`. `CaseCtrl` (`controllers/case.js`) survives only for the drawer's nightly checkbox and `<import-ratings>`'s `acase` binding |
-| Try rename in header | Rails partial + Stimulus | same partial/controller as case rename |
+| Nightly/public/archived badges, scorer name | Angular bridge | `CaseCtrl` (`controllers/case.js`) survives only for the drawer's nightly checkbox and `<import-ratings>`'s `acase` binding |
 | Import ratings | component | `<import-ratings>` — `components/import_ratings/` |
 | Diff against snapshot | component | `<diff>` — `components/diff/` |
 | New-case wizard launcher | controller | `WizardCtrl` — `controllers/wizardCtrl.js` |
@@ -532,22 +509,6 @@ Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `
 | Wizard cancel cleanup | service call | `caseSvc.deleteCase` from `wizardModal.js` |
 
 ### 5. Query list
-
-**Query-row header slice migrated (2026-09-22).** `query_row_controller.js` now
-owns the row's read-only DOM identity (`id` and `rank`), query-title/caret expand intent, and dispatches `query-row:toggle`;
-`SearchResultsCtrl` remains the bridge to `queryViewSvc` while the expanded
-results and live query state are still Angular-owned. The old
-`searchResults.js` directive click handler is removed. This is intentionally
-not a complete `searchResults` migration: its expanded content, pagination,
-notes, query actions, and document rows remain in the incremental bridge.
-
-**Single-result rendering slice migrated (2026-09-22).**
-`search_result_controller.js` now owns the document-row DOM, rating trigger
-shell, media fields, snippets, error banner, rank marker, depth-of-rating
-note, and match-explain mount. `SearchResultCtrl` remains only as the
-temporary data/detail-modal and rating mutation bridge; search, score, and
-query mutations remain Angular-owned. The old `searchResult.html` template
-and `quepidEmbed` directive are removed.
 
 | Item | Type | Key files |
 |------|------|-----------|
@@ -570,7 +531,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 |------|------|-----------|
 | Results panel | Stimulus controller + Angular bridge | `app/javascript/controllers/search_results_controller.js`; `<search-results>`, `SearchResultsCtrl` remain as the temporary query/mutation bridge |
 | Single result row | directive + controller | `<search-result>`, `SearchResultCtrl` |
-| Results template | template | `templates/views/searchResults.html`, `searchResult.html` |
+| Results template | template | `templates/views/searchResults.html` |
 | Rating popover | Stimulus controller | `rating_popover_controller.js` — mutation still bridges back to Angular via `rating-popover:rate`/`:reset` events |
 | Rate elements | service | `rateScaleSvc`, `ratingsStoreSvc` |
 | Rating background styling | filter | `ratingBgStyle` |
@@ -581,7 +542,6 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Move query modal | component | `<move-query>` — `components/move_query/` |
 | Missing documents search | controllers + template | `TargetedSearchCtrl`, `DocFinderCtrl`, `TargetedSearchModalCtrl`, `templates/views/targetedSearchModal.html` |
 | Diff results view | directive + controller | `<query-diff-results>`, `QueryDiffResultsCtrl`, `templates/views/queryDiffResults.html` |
-| Embed helper | directive | `quepidEmbed` on `searchResult.js` |
 | Hit count display | template | `searchResults.html` (`{{ query.getNumFound() }}`) |
 | Copy query text | service | `clipboardSvc` — `services/clipboardSvc.js` |
 
@@ -619,7 +579,6 @@ These Angular-specific wrappers are used across many templates:
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
-| `add_query` | Stimulus controller | `app/javascript/controllers/add_query_controller.js`; the old Angular component files are removed, while `queriesSvc` remains the temporary mutation bridge |
 | `annotation` | `<annotation>` | Single annotation CRUD |
 | `annotations` | `<annotations>` | Annotation list |
 | `browse_query` | `<browse-query>` | "Browse N Results on {engine}" link, opens results in a new tab/window |
@@ -642,13 +601,13 @@ These Angular-specific wrappers are used across many templates:
 |-----------|---------|----------|------------|
 | `queries` | `<queries>` | `queries.html` | `QueriesCtrl` |
 | `searchResults` | `<search-results>` | nested | `SearchResultsCtrl` |
-| `searchResult` | `<search-result>` | `searchResult.html` | `SearchResultCtrl` |
+| `searchResult` | `<search-result>` | inline in `searchResults.html` | `SearchResultCtrl` |
 | `queryParams` | `<query-params>` | `devQueryParams.html` | `QueryParamsCtrl` |
 | `queryParamsHistory` | `<query-params-history>` | `queryParamsHistory.html` | `queryParamsHistoryCtrl` |
 | `queryDiffResults` | `<query-diff-results>` | `queryDiffResults.html` | `QueryDiffResultsCtrl` |
 | `customHeaders` | `<custom-headers>` | `customHeaders.html` | `CustomHeadersCtrl` |
 
-Attribute directives: `quepidSortable`, `quepidCollapse`, `quepidTypeahead`, `quepidEmbed`, `vega`
+Attribute directives: `quepidSortable`, `quepidCollapse`, `quepidTypeahead`, `vega`
 
 Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryParamsHistory`, `queryDiffResults`. Heavy: `quepidTypeahead` (299), `searchResult` (79).
 
@@ -674,7 +633,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 **Shell:** `queries.html`, `embed.html`
 
-**Search/results:** `searchResults.html`, `searchResult.html`, `queryDiffResults.html`, `targetedSearchModal.html`
+**Search/results:** `searchResults.html`, `queryDiffResults.html`, `targetedSearchModal.html`
 
 **Case-action modals:** `searchEndpoint_popup.html`
 

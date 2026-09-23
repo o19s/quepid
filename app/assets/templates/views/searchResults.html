@@ -116,7 +116,13 @@
 
       <div class="btn-group">
         <move-query query="query"></move-query>
-        <button class="btn btn-danger btn-sm" ng-click="removeQuery(query.queryId)">Delete Query</button>
+        <button
+          class="btn btn-danger btn-sm"
+          data-controller="query-delete"
+          data-query-delete-query-id-value="{{query.queryId}}"
+          data-action="click->query-delete#remove">
+          Delete Query
+        </button>
       </div>
 
     </div>
