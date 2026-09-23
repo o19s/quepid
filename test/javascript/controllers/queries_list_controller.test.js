@@ -98,6 +98,82 @@ describe("queries_list_controller", () => {
     expect(controller.sortable.option).toHaveBeenCalledWith("disabled", true)
   })
 
+  it("orders live queries from the collection store and filters by query text", () => {
+    const { controller } = controllerFor()
+    controller.store = { orderedQueryIds: () => [2, 1] }
+    controller.angularScope = {
+      queriesSvc: {
+        queries: {
+          1: { queryId: 1, queryText: "Star Wars" },
+          2: { queryId: 2, queryText: "Dune" }
+        }
+      }
+    }
+    controller.filterValue = "star"
+
+    expect(controller.orderedLiveQueries().map(query => query.queryId)).toEqual([1])
+  })
+
+  it("preserves manual order and renders pagination controls", () => {
+    const { controller } = controllerFor()
+    controller.store = { orderedQueryIds: () => [3, 2, 1] }
+    controller.angularScope = {
+      queriesSvc: {
+        queries: {
+          1: { queryId: 1, queryText: "one" },
+          2: { queryId: 2, queryText: "two" },
+          3: { queryId: 3, queryText: "three" }
+        }
+      }
+    }
+    controller.currentPage = 2
+    controller.paginationTarget = document.createElement("div")
+    controller.hasPaginationTarget = true
+
+    expect(controller.orderedLiveQueries().map(query => query.queryId)).toEqual([3, 2, 1])
+    controller.renderPagination(3, 5)
+    expect(controller.paginationTarget.textContent).toContain("Page 2 of 3 (5 queries)")
+    expect(controller.paginationTarget.querySelector('[data-page="previous"]').disabled).toBe(false)
+    expect(controller.paginationTarget.querySelector('[data-page="next"]').disabled).toBe(false)
+  })
+
+  it("sorts scores numerically and reverses the selected sort", () => {
+    const { controller } = controllerFor()
+    controller.store = { orderedQueryIds: () => [1, 2] }
+    controller.angularScope = {
+      queriesSvc: {
+        queries: {
+          1: { queryId: 1, queryText: "one", lastScore: 2 },
+          2: { queryId: 2, queryText: "two", lastScore: 10 }
+        }
+      }
+    }
+    controller.clientSortName = "score"
+    controller.clientReverse = false
+
+    expect(controller.orderedLiveQueries().map(query => query.queryId)).toEqual([2, 1])
+
+    controller.clientReverse = true
+    expect(controller.orderedLiveQueries().map(query => query.queryId)).toEqual([1, 2])
+  })
+
+  it("uses all-rated status as the Errors sort tie-breaker", () => {
+    const { controller } = controllerFor()
+    controller.store = { orderedQueryIds: () => [1, 2] }
+    controller.angularScope = {
+      queriesSvc: {
+        queries: {
+          1: { queryId: 1, errorText: "same error", allRated: true },
+          2: { queryId: 2, errorText: "same error", allRated: false }
+        }
+      }
+    }
+    controller.clientSortName = "error"
+    controller.clientReverse = false
+
+    expect(controller.orderedLiveQueries().map(query => query.queryId)).toEqual([2, 1])
+  })
+
   it("bridges drag start while reorder persistence owns drag end", () => {
     const { controller } = controllerFor()
     const events = []

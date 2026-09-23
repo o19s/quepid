@@ -104,7 +104,7 @@
 
       <div class="d-flex flex-row-reverse flex-wrap">
         <div class="pe-3">
-          Number of Queries: {{ queriesList.length }}
+          Number of Queries: <span data-queries-list-target="count">{{ queriesList.length }}</span>
         </div>
         <div class="pe-3">
           <input type="search" data-queries-list-target="filter" data-action="input->queries-list#filter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id='queries-filter' />
@@ -126,18 +126,13 @@
       </div>
 
       <!-- let the user know what we're looking at-->
-      <ul class="results-list-element" data-queries-list-target="list" ng-class="!queryListSortable ? 'unsortable' : ''">
-        <li ng-class="query.isToggled() ? 'unsortable' : ''" dir-paginate="query in queriesList | filter:matchQueryFilter | orderBy:sort:reverse | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage">
-          <search-results query="query" issortingenabled="queries.isSortingEnabled">
-          </search-results>
-        </li>
-      </ul>
+      <ul class="results-list-element" data-queries-list-target="list"></ul>
 
     </div>
   </div>
   <div class="row">
     <div class="col-md-11">
-      <dir-pagination-controls></dir-pagination-controls>
+      <div data-queries-list-target="pagination"></div>
     </div>
   </div>
 </div>

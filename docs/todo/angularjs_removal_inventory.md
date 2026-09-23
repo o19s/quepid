@@ -143,7 +143,7 @@ Use when sizing a PR:
 
 ### Remaining PR order
 
-Everything left routes through the [live query-state phase](#live-query-state-phase-committed-final-phase): `queriesCtrl` / `queriesSvc` / `searchResults` and the scoring/diff/import stacks — not skipped, but gated on that phase's state plan being signed off before any code starts.
+Everything left routes through the [live query-state phase](#live-query-state-phase-committed-final-phase): the expanded `search-results` bridge, `queriesSvc`, and the scoring/diff/import stacks — not skipped, but gated on that phase's state plan being signed off before any code starts.
 
 Prefer **Rails view + route + Hotwire/Stimulus** for management actions over embedding new Stimulus inside the Angular bundle.
 
@@ -249,7 +249,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 **Component LOC** (all JS and HTML files in each component folder, easiest → hardest): new_case (74) → qscore_query (86) → qscore_case (101) → query_explain (117) → annotations (129) → query_options (137) → annotation (152) → add_query (180) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423) → import_ratings (674).
 
-**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult` / `queries`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. The add-query persistence/search seam remains part of the live query-state migration. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
 
 #### `queriesSvc` seam inventory (phase 1)
 
@@ -281,11 +281,11 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Do not scope `scoreAll()` in the same change.** One rating rescores every query today; the performance lens says carry that forward. An explicit store makes per-query scoping possible later, but taking it here ships an unapproved behaviour change and makes any score discrepancy unattributable.
 
-**Remaining, in slice order (2026-09-23).** The query-mutation persistence seam is now complete: add, move, delete, reorder, and wizard bulk persistence use the modern lifecycle request contracts. `queriesSvc` retains only the temporary in-memory commit adapter for the wizard while Angular still owns the live query collection; it no longer owns the persistence HTTP request. Next:
+**Remaining, in slice order (2026-09-23).** The query-list collection shell and query-mutation persistence seam are complete. The next slice is:
 
-1. **Move query bootstrap/read state toward the explicit client store** — preserve browser-to-customer-engine search and client-side scoring, but make the store authoritative for query collection snapshots and the Stimulus query-list/read controllers. This is the next live-state slice; do not combine it with scorer sandboxing, diff migration, or wizard UI replacement.
+1. **Remove the expanded-results Angular bridge** — preserve browser-to-customer-engine search and client-side scoring, but move the `search-results` island's document rendering and controls onto the explicit store incrementally. Do not combine it with scorer sandboxing, diff migration, or wizard UI replacement.
 
-**Slice progress (2026-09-23).** The first dual-run step is implemented: `query_collection_store.js` now owns bootstrap status, query metadata snapshots, and server display order; `queriesSvc` publishes bootstrap and add/delete/move/reorder changes into it, and reads the store's order when returning live Angular `Query` objects. Angular still owns the `Query` objects, search, documents, ratings, scoring, and DOM rendering. The next step is to move query-list/read rendering to Stimulus against this store, with the Angular bridge retained for expanded results until that seam is separately migrated.
+The query-list collection shell is Stimulus-rendered from `query_collection_store.js`, including filtering, sorting, pagination, and row hosts. Each expanded `search-results` island is still compiled against the live Angular `Query` object, so Angular continues to own search, documents, ratings, and scoring.
 
 The diff/snapshot score badges stay Angular until `diffResultsSvc` migrates — out of this sequence.
 
@@ -514,16 +514,12 @@ Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Query list container | directive + controller | `<queries>`, `QueriesCtrl` — `directives/queries.js`, `controllers/queriesCtrl.js` |
-| Query list template | template | `templates/views/queries.html` |
+| Query-list collection shell | Stimulus controller + store | `app/javascript/controllers/queries_list_controller.js`, `app/javascript/stores/query_collection_store.js`; filtering, sorting, pagination, row hosts, and reorder persistence are complete |
 | Add query | Stimulus controller + temporary Angular state bridge | `app/javascript/controllers/add_query_controller.js`, `app/javascript/controllers/query_lifecycle_controller.js`, and `app/javascript/utils/query_lifecycle.js`; Angular retains Query construction and search/scoring only |
-| Sort / filter / collapse | controller logic | `QueriesCtrl` |
-| Drag reorder | directive | `quepidSortable` — `directives/quepidSortable.js` (uses SortableJS via `window.Sortable`) |
-| Pagination | third-party | `dir-paginate`, `<dir-pagination-controls>` |
 | Queries-without-results report | component | `<frog-report>` — `components/frog_report/` (includes Vega chart) |
 | Score-over-time graph | component | `<qgraph>` — `components/qgraph/` |
 
-Backing services: `queriesSvc`, `queryViewSvc`, `searchErrorTranslatorSvc`, `varExtractorSvc`
+Remaining backing services: `queriesSvc`, `queryViewSvc`, `searchErrorTranslatorSvc`, `varExtractorSvc`
 
 Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 
