@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { hideTooltipsWithin } from "utils/bs_tooltip"
+import { matchesQueryFilter, queryResultCount, querqyRuleTriggered } from "utils/query_state"
 import { queryCollectionStore } from "stores/query_collection_store"
 
 /**
@@ -254,11 +255,11 @@ export default class extends Controller {
     this.destroyAngularRows()
     this.listTarget.replaceChildren()
 
-    visibleQueries.forEach(query => {
+    visibleQueries.forEach((query, index) => {
       const row = document.createElement("li")
       row.className = query.isToggled?.() ? "unsortable" : ""
       row.dataset.queryId = String(query.queryId)
-      this.renderQueryShell(row, query, start + visibleQueries.indexOf(query) + 1)
+      this.renderQueryShell(row, query, start + index + 1)
       this.renderAngularIslands(row, query)
       this.listTarget.appendChild(row)
     })
@@ -303,8 +304,7 @@ export default class extends Controller {
   }
 
   matchesFilter(query) {
-    if (!this.filterValue) return true
-    return String(query.queryText || "").toLowerCase().includes(this.filterValue.toLowerCase())
+    return matchesQueryFilter(query, this.filterValue)
   }
 
   sortValue(query, sortName) {
@@ -320,10 +320,8 @@ export default class extends Controller {
     const queryText = escapeAttribute(query.queryText || "")
     const informationNeed = escapeAttribute(query.informationNeed || "")
     const state = escapeAttribute(query.state?.() || "")
-    const numFound = Number(window.quepidSearch?.queryState?.queryResultCount?.(query, this.showOnlyRatedValue) || 0)
-    const querqyTriggered = Boolean(window.quepidSearch?.queryState?.querqyRuleTriggered?.(
-      query.searcher?.parsedQueryDetails
-    ))
+    const numFound = Number(queryResultCount(query, this.showOnlyRatedValue) || 0)
+    const querqyTriggered = querqyRuleTriggered(query.searcher?.parsedQueryDetails)
     const hasDiffs = Boolean(query.diffs)
     const toggled = Boolean(query.isToggled?.())
     const sorting = Boolean(this.angularScope?.queries?.isSortingEnabled?.())

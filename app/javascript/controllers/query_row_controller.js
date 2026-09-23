@@ -75,13 +75,13 @@ export default class extends Controller {
       this.queryTarget.setAttribute("data-bs-tooltip-title-value", `Info Need: ${this.informationNeedValue}`)
     }
     if (this.hasTextTarget) this.textTarget.textContent = `${this.queryTextValue}\u00a0`
+    const imageUrl = isImageUrl(this.queryTextValue)
     if (this.hasImageTarget) {
-      const image = isImageUrl(this.queryTextValue)
-      this.imageTarget.classList.toggle("d-none", !image)
-      this.imageTarget.toggleAttribute("aria-hidden", !image)
-      if (image) this.imageTarget.src = this.queryTextValue
+      this.imageTarget.classList.toggle("d-none", !imageUrl)
+      this.imageTarget.toggleAttribute("aria-hidden", !imageUrl)
+      if (imageUrl) this.imageTarget.src = this.queryTextValue
     }
-    if (this.hasTextTarget) this.textTarget.classList.toggle("d-none", isImageUrl(this.queryTextValue))
+    if (this.hasTextTarget) this.textTarget.classList.toggle("d-none", imageUrl)
     if (this.hasResultCountTarget) {
       this.resultCountTarget.setAttribute("data-count-up-number-value", String(this.numFoundValue || 0))
     }
