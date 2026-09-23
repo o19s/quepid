@@ -37,6 +37,7 @@
 - The core case app is built using AngularJS 1.8 but we are in the process of removing our AngularJS dependency.
 - In place of AngularJS we are using vanilla JS and StimulusJS along with various components of Hotwire, our goal is to have a modern Rails stack application.
 - **Angular → Stimulus on core:** per-surface equivalence — core matches Angular; Rails pages keep their prior UX. **Do not collapse surfaces.** Playbook: `angular-case-migration` skill (`.agents/skills/angular-case-migration/SKILL.md`) — DoD is phases 5–6, not Vitest + a modal screenshot.
+- **Migration skill preflight is mandatory:** before changing `/case/:id` Angular/Stimulus code, read the complete `angular-case-migration/SKILL.md`, announce that it is in use, and record the affected phase checklist. Run the relevant Karma baseline before removing Angular specs; port migrated contracts to Vitest, then complete the required Playwright/manual-testing verification before calling the slice done.
 
 
 ## Backend

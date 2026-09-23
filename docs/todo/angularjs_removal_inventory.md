@@ -182,9 +182,9 @@ See [Re-render mechanism](#re-render-mechanism) for the client/server state boun
 
 ### Core toolbar
 
-The toolbar is server-rendered from `@case`/`@try` (`app/views/core/_case_toolbar.html.erb`). Still Angular *inside* it: `<diff>` and `<import-ratings>` — both deferred with the rest of the heavy case state.
+The toolbar is server-rendered from `@case`/`@try` (`app/views/core/_case_toolbar.html.erb`). Still Angular *inside* it: `<import-ratings>` and the diff renderer/state; the snapshot comparison picker is Stimulus-owned (`diff-core`) with a temporary document-event bridge into Angular until `diffResultsSvc` migrates.
 
-**The toolbar keeps `ng-if="caseModel.caseLoaded()"`, and it is load-bearing.** Its attributes no longer need Angular, but several of its actions do: "Create snapshot" clicked before `queriesSvc` has bootstrapped posts an empty snapshot that never resolves, leaving the modal stuck on "Snapshot Being Created". Server-rendering made the toolbar clickable from first paint, roughly 1.5s earlier than Angular exposed it, which is long enough to hit. Drop the gate only when `<diff>`, `<import-ratings>` and the snapshot/export flows no longer depend on live query state.
+**The toolbar keeps `ng-if="caseModel.caseLoaded()"`, and it is load-bearing.** Its attributes no longer need Angular, but several of its actions do: "Create snapshot" clicked before `queriesSvc` has bootstrapped posts an empty snapshot that never resolves, leaving the modal stuck on "Snapshot Being Created". Server-rendering made the toolbar clickable from first paint, roughly 1.5s earlier than Angular exposed it, which is long enough to hit. Drop the gate only when `<import-ratings>` and the remaining snapshot/export flows no longer depend on live query state.
 
 ### Stimulus twins already on Rails pages
 
@@ -492,7 +492,7 @@ Routing is server-side (Rails); `MainCtrl` is attached directly in `core/index.h
 | Per-query score | component | Diff/snapshot `<qscore-query>` — `components/qscore_query/` |
 | Nightly/public/archived badges, scorer name | Angular bridge | `CaseCtrl` (`controllers/case.js`) survives only for the drawer's nightly checkbox and `<import-ratings>`'s `acase` binding |
 | Import ratings | component | `<import-ratings>` — `components/import_ratings/` |
-| Diff against snapshot | component | `<diff>` — `components/diff/` |
+| Diff picker | Stimulus controller + temporary Angular state bridge | `app/javascript/controllers/diff_core_controller.js`, `app/views/core/_diff_modal.html.erb`; Angular still owns `diffResultsSvc` rendering |
 | New-case wizard launcher | controller | `WizardCtrl` — `controllers/wizardCtrl.js` |
 
 Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `snapshotSearcherSvc`, `SnapshotFactory`, `importRatingsSvc`, `caseCSVSvc`, `bookSvc`, `diffResultsSvc`, `qscoreSvc`
@@ -574,7 +574,7 @@ These Angular-specific wrappers are used across many templates:
 | Folder | Element | Purpose |
 |--------|---------|---------|
 | `browse_query` | `<browse-query>` | "Browse N Results on {engine}" link, opens results in a new tab/window |
-| `diff` | `<diff>` | Snapshot diff picker |
+| `diff` | `<diff>` | Snapshot diff renderer/state remains Angular; picker migrated to `diff-core` |
 | `frog_report` | `<frog-report>` | Zero-results report + Vega |
 | `import_ratings` | `<import-ratings>` | CSV import |
 | `move_query` | `<move-query>` | Move query to another case |

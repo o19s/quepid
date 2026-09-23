@@ -312,10 +312,10 @@ parts:
         paths: ["app/javascript/controllers/take_snapshot_core_controller.js", "app/views/shared/_take_snapshot_core_modal.html.erb", "app/assets/javascripts/services/querySnapshotSvc.js", "app/services/snapshot_generator.rb", "app/models/snapshot.rb"]
       "5.3":
         title: "Compare snapshots (diff)"
-        last_run: 2026-09-14T18:36:16Z
-        result: pass
-        notes: "Re-verified via Playwright MCP after the same merge (snapshotFactory/querySnapshotSvc touched). Selected the case-6 snapshot in the compare modal, clicked Update Comparison Settings — flash 'Snapshot loaded successfully for comparison.' and the snapshot's results appeared in a diff column alongside the live results. Clear Comparison View removed it cleanly. Multi-row add, duplicate-selection warning, in-progress-snapshot warning, and the in-modal delete-snapshot confirm were not tested this pass (only one snapshot existed for the case)."
-        paths: ["app/models/snapshot.rb"]
+        last_run: 2026-09-23T21:05:24Z
+        result: pass_with_fixes
+        notes: "Covered live: Playwright MCP on case 219 opened the new Stimulus picker, loaded the snapshot list, and verified the modal was clickable after moving its root to the layout level; the static fixture correctly surfaced its existing snapshot-fetch error without closing. Focused Playwright E2E on case 6 created a disposable snapshot, selected it, applied comparison settings, and verified diff score badges appeared; cleanup removed the snapshot. Not covered live: multi-row comparison, duplicate warning, processing warning, and in-modal deletion."
+        paths: ["app/javascript/controllers/diff_core_controller.js", "app/views/core/_diff_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/layouts/core.html.erb", "app/views/shared/_modal_shell.html.erb", "app/assets/javascripts/services/querySnapshotSvc.js", "test/playwright/snapshots_and_annotations.spec.ts"]
       "5.4":
         title: "Annotations"
         last_run: 2026-09-23T17:01:47Z

@@ -5,7 +5,7 @@
   (`{{ caseModel.selectedCase().caseNo }}` and friends). Every one of those values is Rails model
   data that CoreController already has, so they are rendered from `kase`/`a_try` directly.
 
-  This is deliberately NOT inside the `case_header` Turbo Frame: <diff> and <import-ratings> are
+  This is deliberately NOT inside the `case_header` Turbo Frame: <import-ratings> is
   still Angular components, and Angular only compiles the page once at bootstrap, so a frame
   re-render would leave them dead.
 
@@ -95,7 +95,14 @@
         </a>
       </li>
       <li class="list-inline-item">
-        <diff></diff>
+          <i class="bi bi-bar-chart-fill" aria-hidden="true"></i>
+          <a
+            href="#"
+            data-controller="diff-core"
+            data-action="click->diff-core#open"
+            data-bs-toggle="modal"
+            data-bs-target="#diffModal"
+          >Compare snapshots</a>
       </li>
       <li class="list-inline-item">
         <import-ratings

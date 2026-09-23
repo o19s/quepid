@@ -12,6 +12,7 @@
       title        - modal title text
       body         - captured .modal-body content
       footer       - captured .modal-footer content, rendered before Cancel (default: none)
+      cancel_class - Bootstrap button class for the automatic Cancel button (default: "btn-secondary")
       dialog_class - extra classes for .modal-dialog, e.g. "modal-lg" (default: none)
       modal_class  - extra classes for the outer .modal (alongside "modal fade")
       data         - data attributes for the outer .modal div, e.g. { controller: "share-book" }
@@ -21,6 +22,7 @@
 <% modal_class ||= "" %>
 <% data ||= {} %>
 <% title_data ||= {} %>
+<% cancel_class ||= "btn-secondary" %>
 <% cancel_data = { bs_dismiss: "modal" } %>
 <% cancel_data["#{data[:controller]}-target"] = "cancelButton" if data[:controller].present? %>
 <%= content_tag :div, class: "modal fade #{modal_class}".strip, id: id, tabindex: "-1",
@@ -36,7 +38,7 @@
       </div>
       <div class="modal-footer">
         <%= footer %>
-        <%= content_tag :button, "Cancel", type: "button", class: "btn btn-secondary", data: cancel_data %>
+        <%= content_tag :button, "Cancel", type: "button", class: "btn #{cancel_class}", data: cancel_data %>
       </div>
     </div>
   </div>

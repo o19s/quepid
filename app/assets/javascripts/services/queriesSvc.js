@@ -161,6 +161,12 @@ angular.module('QuepidApp')
           return;
         }
 
+        var effectiveScorer = angular.isFunction(query.effectiveScorer) ? query.effectiveScorer() : null;
+        var ratingScale = query.ratings && query.ratings.scale;
+        if (!ratingScale && effectiveScorer && angular.isFunction(effectiveScorer.getColors)) {
+          ratingScale = effectiveScorer.getColors();
+        }
+
         queryDocumentsStore.replaceQuery(query.queryId, {
           queryText: query.queryText,
           docs: query.docs,
@@ -175,13 +181,18 @@ angular.module('QuepidApp')
           resultsView: 2,
           errorText: query.errorText,
           depthOfRating: query.depthOfRating,
-          ratingScale: query.ratings && query.ratings.scale || query.effectiveScorer().getColors(),
+          ratingScale: ratingScale || {},
           queryRating: query.rating,
-          maxDocScore: query.maxDocScore(),
+          maxDocScore: angular.isFunction(query.maxDocScore) ? query.maxDocScore() : null,
           documentUrlFor: function(doc) {
-            if (!doc || !doc._url) return null;
+            if (!doc || !angular.isFunction(doc._url)) return null;
 
-            var linkUrl = doc._url();
+            var linkUrl;
+            try {
+              linkUrl = doc._url();
+            } catch (error) {
+              return null;
+            }
             var settings = settingsSvc.applicableSettings() || {};
             if (settings.basicAuthCredential) {
               linkUrl = linkUrl.replace('://', '://' + settings.basicAuthCredential + '@');
@@ -191,7 +202,7 @@ angular.module('QuepidApp')
             }
             return linkUrl;
           },
-          version: query.version()
+          version: angular.isFunction(query.version) ? query.version() : null
         });
       }
 

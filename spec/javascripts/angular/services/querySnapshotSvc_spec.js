@@ -12,6 +12,7 @@ describe('Service: querySnapshotSvc', function () {
   var $httpBackend = null;
   var settingsSvc = null;
   var docResolverSvc;
+  var $injector;
 
   var recordDocumentFields = false;
 
@@ -22,7 +23,8 @@ describe('Service: querySnapshotSvc', function () {
       $provide.value('settingsSvc',     settingsSvc);
     });
     /* jshint camelcase: false */
-    inject(function (_$rootScope_, _$q_, _querySnapshotSvc_, _fieldSpecSvc_, _docResolverSvc_, $injector) {
+    inject(function (_$rootScope_, _$q_, _querySnapshotSvc_, _fieldSpecSvc_, _docResolverSvc_, _$injector_) {
+      $injector         = _$injector_;
       $httpBackend      = $injector.get('$httpBackend');
       $rootScope        = _$rootScope_;
       $q                = _$q_;
@@ -283,6 +285,25 @@ describe('Service: querySnapshotSvc', function () {
       });
       $httpBackend.flush();
       expect(called).toBe(1);
+    });
+  });
+
+  describe('Stimulus diff bridge', function() {
+    it('clears comparisons inside an Angular digest', function() {
+      var queryViewSvc = $injector.get('queryViewSvc');
+      var queriesSvc = $injector.get('queriesSvc');
+      spyOn(queryViewSvc, 'disableComparisons').and.callThrough();
+      spyOn(queriesSvc, 'refreshAllDiffs').and.returnValue($q.when());
+
+      var done = jasmine.createSpy('done');
+      document.dispatchEvent(new CustomEvent('diff:clear', { detail: { done: done } }));
+
+      expect(queryViewSvc.disableComparisons).not.toHaveBeenCalled();
+      $rootScope.$digest();
+
+      expect(queryViewSvc.disableComparisons).toHaveBeenCalled();
+      expect(queriesSvc.refreshAllDiffs).toHaveBeenCalled();
+      expect(done).toHaveBeenCalledWith(null);
     });
   });
 

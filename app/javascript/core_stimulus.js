@@ -46,6 +46,7 @@ import MoveQueryCoreController from "controllers/move_query_core_controller"
 import FlashController from "controllers/flash_controller"
 import QueryNotesController from "controllers/query_notes_controller"
 import AnnotationsController from "controllers/annotations_controller"
+import DiffCoreController from "controllers/diff_core_controller"
 
 Turbo.session.drive = false
 
@@ -79,3 +80,4 @@ application.register("move-query-core", MoveQueryCoreController)
 application.register("flash", FlashController)
 application.register("query-notes", QueryNotesController)
 application.register("annotations", AnnotationsController)
+application.register("diff-core", DiffCoreController)

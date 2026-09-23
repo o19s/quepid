@@ -73,12 +73,17 @@ test.describe('snapshots', () => {
       await page.getByText('Compare snapshots', { exact: false }).first().click();
       const compareModal = page.locator('.modal.show').filter({ hasText: /Compare Your Search Results/i });
       await expect(compareModal).toBeVisible();
+      await expect(page.locator('#diffModal[data-controller="diff-core"]')).toBeVisible();
 
       const select = compareModal.locator('select').first();
-      await expect(select.locator('option', { hasText: snapshotName })).toHaveCount(1, { timeout: 15_000 });
+      const snapshotOption = select.locator('option', { hasText: snapshotName });
+      await expect(snapshotOption).toHaveCount(1, { timeout: 15_000 });
 
-      await compareModal.getByRole('button', { name: 'Cancel', exact: true }).click();
-      await expect(compareModal).toBeHidden();
+      await select.selectOption(await snapshotOption.getAttribute('value') as string);
+      await compareModal.getByRole('button', { name: 'Update Comparison Settings', exact: true }).click();
+      await expect(compareModal).toBeHidden({ timeout: 30_000 });
+
+      await expect(page.locator('.diff-score').first()).toBeVisible({ timeout: 30_000 });
     } finally {
       // This case's dev DB row is shared across runs (there's no per-test
       // fixture reset) — clean up after ourselves so repeated runs don't pile

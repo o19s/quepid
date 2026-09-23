@@ -1,0 +1,43 @@
+<% modal_body = capture do %>
+  <div data-diff-core-target="alert" class="alert d-none"></div>
+  <p>Select 1-3 snapshots to compare against your current search results</p>
+  <div class="snapshot-selection-container">
+    <h4>Select Snapshots:</h4>
+    <div data-diff-core-target="selections"></div>
+    <button type="button" class="btn btn-sm btn-success" data-diff-core-target="addButton" data-action="diff-core#addSelection">
+      <i class="bi bi-plus" aria-hidden="true"></i> Add Snapshot
+    </button>
+    <div data-diff-core-target="warning" class="alert alert-warning d-none mt-3" role="alert"></div>
+    <div data-diff-core-target="processingWarning" class="alert alert-warning d-none mt-3" role="alert">
+      One or more selected snapshots are currently being processed in the background. You should wait until they complete.
+    </div>
+    <div data-diff-core-target="deleteWarning" class="alert alert-warning d-none mt-3" role="alert">
+      Are you sure you want to delete this snapshot?
+      <a href="#" data-action="click->diff-core#confirmDelete">yes</a> /
+      <a href="#" data-action="click->diff-core#cancelDelete">no</a>
+    </div>
+  </div>
+  <div data-diff-core-target="progress" class="alert alert-info d-none mt-3">
+    Fetching snapshot data, this may take a moment depending on the number of queries and snapshots...
+  </div>
+<% end %>
+
+<% modal_footer = capture do %>
+  <button type="button" class="btn btn-primary" data-diff-core-target="updateButton" data-action="diff-core#update">
+    Update Comparison Settings
+  </button>
+  <button type="button" class="btn btn-warning" data-diff-core-target="clearButton" data-action="diff-core#clear">
+    Clear Comparison View
+  </button>
+<% end %>
+
+<%= render "shared/modal_shell", id: "diffModal", title: "Compare Your Search Results",
+                                 data: {
+                                   controller: "diff-core",
+                                   diff_core_snapshots_url_value: api_case_snapshots_path(case_id: kase.id),
+                                   diff_core_max_snapshots_value: 5
+                                 },
+                                 title_data: { diff_core_target: "title" },
+                                 cancel_class: "btn-outline-secondary",
+                                 footer: modal_footer,
+                                 body: modal_body %>

@@ -4,11 +4,12 @@
 
 angular.module('QuepidApp')
   .service('querySnapshotSvc', [
-    '$http', '$q', '$injector',
+    '$http', '$q', '$injector', '$rootScope',
     'settingsSvc', 'docCacheSvc', 'caseTryNavSvc', 'fieldSpecSvc',
     'SnapshotFactory',
     function querySnapshotSvc(
       $http, $q, $injector,
+      $rootScope,
       settingsSvc, docCacheSvc, caseTryNavSvc, fieldSpecSvc,
       SnapshotFactory
     ) {
@@ -50,6 +51,72 @@ angular.module('QuepidApp')
               'error';
             if (detail.done) { detail.done(message); }
           });
+      });
+
+      // Stimulus owns the snapshot comparison picker while Angular still owns
+      // the live diff engine. Keep this bridge deliberately small: once
+      // diffResultsSvc moves out of Angular these listeners disappear with it.
+      document.addEventListener('diff:selection-request', function(event) {
+        var queryViewSvc = $injector.get('queryViewSvc');
+        if (event.detail && event.detail.done) {
+          event.detail.done(queryViewSvc.getAllDiffSettings());
+        }
+      });
+
+      document.addEventListener('diff:apply', function(event) {
+        var detail = event.detail || {};
+        var queryViewSvc = $injector.get('queryViewSvc');
+        var queriesSvc = $injector.get('queriesSvc');
+        var selections = detail.selections || [];
+
+        Promise.all(selections.map(function(snapshotId) {
+          return svc.get(snapshotId);
+        })).then(function() {
+          // Native Promise callbacks run outside Angular's digest cycle.
+          // Re-enter Angular before changing diff state so the live columns
+          // and scores render immediately after the picker closes.
+          $rootScope.$evalAsync(function() {
+            queryViewSvc.enableDiffs(selections);
+            $q.when(queriesSvc.refreshAllDiffs()).then(function() {
+              if (detail.done) { detail.done(null); }
+            }).catch(function(error) {
+              if (detail.done) { detail.done(error); }
+            });
+          });
+        }).catch(function(error) {
+          if (detail.done) { detail.done(error); }
+        });
+      });
+
+      document.addEventListener('diff:clear', function(event) {
+        var detail = event.detail || {};
+        var queryViewSvc = $injector.get('queryViewSvc');
+        var queriesSvc = $injector.get('queriesSvc');
+        // This listener is invoked by a native DOM event, outside Angular's
+        // digest cycle. Clearing has no subsequent $http request to trigger a
+        // digest, so schedule both the state mutation and refresh in Angular.
+        $rootScope.$evalAsync(function() {
+          queryViewSvc.disableComparisons();
+          $q.when(queriesSvc.refreshAllDiffs()).then(function() {
+            if (detail.done) { detail.done(null); }
+          }).catch(function(error) {
+            if (detail.done) { detail.done(error); }
+          });
+        });
+      });
+
+      document.addEventListener('diff:delete', function(event) {
+        var detail = event.detail || {};
+        var queryViewSvc = $injector.get('queryViewSvc');
+        var queriesSvc = $injector.get('queriesSvc');
+        svc.deleteSnapshot(detail.snapshotId).then(function() {
+          queryViewSvc.disableComparisons();
+          return queriesSvc.refreshAllDiffs();
+        }).then(function() {
+          if (detail.done) { detail.done(null); }
+        }).catch(function(error) {
+          if (detail.done) { detail.done(error); }
+        });
       });
 
       function mapFieldSpecToSolrFormat(fieldSpec) {
