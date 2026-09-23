@@ -99,7 +99,7 @@ document.addEventListener("submit", (event) => {
   // GET forms serialize every field into the resulting URL - injecting the
   // token there would leak it into browser history, server access logs, and
   // any Referer header. Only non-GET forms use authenticity_token at all.
-  if ("get" === form.method) return
+  if (form.method === "get") return
 
   const csrfMeta = document.querySelector('meta[name="csrf-token"]')
   if (!csrfMeta) return
