@@ -7,6 +7,26 @@ import { setButtonLoading, escapeHtml } from "utils/stimulus_ui"
 // where the stored text had LF.
 const normalizePrompt = (text) => (text || "").replace(/\r\n?/g, "\n").trim()
 
+// null for text that isn't JSON, so a typo can be told apart from real content.
+function parseJsonOrNull(text) {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
+}
+
+function showPanel(element, html) {
+  if (!element) return
+
+  if (html) {
+    element.innerHTML = html
+    element.style.display = "block"
+  } else {
+    element.style.display = "none"
+  }
+}
+
 /**
  * Combined AI judge create/edit wizard: step 1 (configure) is a normal Rails
  * form submit handled by AiJudgesController#create/#update - this controller
@@ -143,12 +163,8 @@ export default class extends Controller {
   applyJsonToFields() {
     if (!this.hasJsonFieldTarget) return
 
-    let parsed
-    try {
-      parsed = JSON.parse(this.jsonFieldTarget.value)
-    } catch {
-      return // leave the fields alone rather than wiping them over a typo
-    }
+    const parsed = parseJsonOrNull(this.jsonFieldTarget.value)
+    if (!parsed) return // leave the fields alone rather than wiping them over a typo
 
     const { judge_options: judgeOptions = {}, ...rest } = parsed
     this.otherOptions = rest
@@ -179,23 +195,12 @@ export default class extends Controller {
   updateProviderPanels(provider) {
     const preset = this.presetsValue[provider]
 
-    this.panel(this.hasProviderNoticeTarget && this.providerNoticeTarget, preset?.notice)
-    this.panel(this.hasProviderHelpTarget && this.providerHelpTarget, preset?.help)
+    showPanel(this.hasProviderNoticeTarget && this.providerNoticeTarget, preset?.notice)
+    showPanel(this.hasProviderHelpTarget && this.providerHelpTarget, preset?.help)
     this.applyReadOnlyFields(preset)
     this.describePromptField(preset)
     this.showProviderOptionFields(provider)
     this.showCriteria(preset)
-  }
-
-  panel(element, html) {
-    if (!element) return
-
-    if (html) {
-      element.innerHTML = html
-      element.style.display = "block"
-    } else {
-      element.style.display = "none"
-    }
   }
 
   // Fields the provider fixes for us (e.g. a single endpoint and model) are shown
