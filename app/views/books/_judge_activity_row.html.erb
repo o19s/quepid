@@ -1,7 +1,8 @@
 <%# locals: (row:, flash_active: false, book: nil) %>
-<tr id="judge-row-<%= row[:judge].id %>">
+<% is_ai_judge = row[:judge].ai_judge? %>
+<tr id="judge-row-<%= row[:judge].id %>" data-actively-judging="<%= row[:actively_judging] %>">
   <td>
-    <% if row[:judge].ai_judge? %>
+    <% if is_ai_judge %>
       <i class="bi bi-robot <%= row[:actively_judging] ? 'text-primary' : 'text-secondary' %> <%= 'judge-icon-flash' if flash_active %>"
          id="judge-icon-<%= row[:judge].id %>"></i>
     <% else %>
@@ -9,10 +10,10 @@
          id="judge-icon-<%= row[:judge].id %>"></i>
     <% end %>
     <%= row[:judge].fullname %>
-    <% if row[:judge].ai_judge? && row[:auto_run] %>
+    <% if is_ai_judge && row[:auto_run] %>
       <i class="bi bi-repeat text-muted" title="Auto-runs when new query/doc pairs are added"></i>
     <% end %>
-    <% if row[:judge].ai_judge? %>
+    <% if is_ai_judge %>
       <% if row[:actively_judging] %>
         <span class="d-inline-flex align-items-center gap-1 ms-1">
           <button class="badge bg-primary border-0"
@@ -22,14 +23,10 @@
                   title="Click to see what's being judged">
             <span class="spinner-grow spinner-grow-sm me-1" role="status" aria-hidden="true"></span>AI
           </button>
-          <%= button_to cancel_judge_judy_book_path(book, ai_judge_id: row[:judge].id),
-                method: :delete,
-                class: 'btn btn-outline-danger btn-sm py-0 px-1',
+          <%= render 'books/cancel_judging_button', book: book, judge: row[:judge],
+                css_class: 'btn btn-outline-danger btn-sm py-0 px-1',
                 style: 'font-size:0.7rem; line-height:1.4;',
-                title: 'Cancel judging',
-                form: { data: { turbo_confirm: "Stop #{row[:judge].fullname} from judging?" } } do %>
-            <i class="bi bi-x-circle"></i>
-          <% end %>
+                icon: 'bi-x-circle', title: 'Cancel judging' %>
         </span>
       <% else %>
         <span class="d-inline-flex align-items-center gap-1 ms-1">
@@ -61,7 +58,7 @@
           .data(row[:sparkline])
           .width(140)
           .height(32)
-          .mark(type: "line", point: true, color: row[:judge].ai_judge? ? "#6610f2" : "#0d6efd")
+          .mark(type: "line", point: true, color: is_ai_judge ? "#6610f2" : "#0d6efd")
           .encoding(
             x: { field: "date", type: "ordinal", axis: nil, sort: nil },
             y: { field: "count", type: "quantitative",

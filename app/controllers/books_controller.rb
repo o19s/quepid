@@ -8,7 +8,7 @@ class BooksController < ApplicationController
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
                         :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy,
-                        :judgement_stats, :judge_overview, :export, :archive, :unarchive ]
+                        :judgement_stats, :judge_overview, :judge_activity, :export, :archive, :unarchive ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -106,6 +106,18 @@ class BooksController < ApplicationController
     @moar_judgements_needed = SelectionStrategy.moar_judgements_needed?(@book)
 
     respond_with(@book)
+  end
+
+  # Polled by the judge-activity-poll Stimulus controller as a fallback for
+  # BroadcastJudgeActivityJob's live Turbo Stream push - if that broadcast is
+  # ever missed (a dropped ActionCable connection, a broadcast that fires
+  # before the page's subscription is ready, etc.), a row could otherwise be
+  # left showing as "actively judging" with nothing to correct it. Renders
+  # the exact same partial the broadcast does, so a poll response can safely
+  # replace the table body content in place.
+  def judge_activity
+    render partial: 'judge_activity_table_body',
+           locals:  { judge_activity: @book.judge_activity_rows, book: @book, flashing_judge_id: nil }
   end
 
   def judgement_stats
@@ -371,17 +383,7 @@ class BooksController < ApplicationController
       return
     end
 
-    RunJudgeJudyJob.active_for(@book, ai_judge).each do |job|
-      if job.claimed_execution.present?
-        # Job is actively running — force destroy it. RunJudgeJudyJob#perform
-        # checks for its own SolidQueue row on every iteration and stops as
-        # soon as it notices this row is gone.
-        job.claimed_execution.destroy
-        job.destroy
-      else
-        job.discard
-      end
-    end
+    RunJudgeJudyJob.cancel(@book, ai_judge)
 
     redirect_to book_path(@book), notice: "AI Judge #{ai_judge.name} has been cancelled."
   end

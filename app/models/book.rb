@@ -221,10 +221,10 @@ class Book < ApplicationRecord
     judge_ids = (judgements.where.not(user_id: nil).distinct.pluck(:user_id) + ai_judges.pluck(:id)).uniq
     return [] if judge_ids.empty?
 
-    actively_judging_ids = RunJudgeJudyJob.actively_judging_user_ids(self)
+    actively_judging_ids = RunJudgeJudyJob.actively_judging_user_ids(self).to_set
     judges_by_id = User.where(id: judge_ids).index_by(&:id)
     activity = judge_activity_for(judge_ids)
-    auto_run_ids = books_ai_judges.auto_run.pluck(:user_id)
+    auto_run_ids = books_ai_judges.auto_run.pluck(:user_id).to_set
 
     rows = judge_ids.filter_map do |uid|
       judge = judges_by_id[uid]

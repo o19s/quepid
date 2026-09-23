@@ -170,6 +170,31 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       james_bond_movies.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
     end
 
+    test 'describes the book by its distinct query and query/doc pair counts' do
+      login_user_for_integration_test user
+
+      scoped_book = Book.create!(name: 'Counts Book', owner: user, scale: [ 0, 1 ])
+      scoped_book.query_doc_pairs.create!(query_text: 'shirts', doc_id: 'd1', position: 1)
+      scoped_book.query_doc_pairs.create!(query_text: 'shirts', doc_id: 'd2', position: 2)
+      scoped_book.query_doc_pairs.create!(query_text: 'pants', doc_id: 'd3', position: 1)
+
+      get "/books/#{scoped_book.id}"
+
+      assert_response :success
+      assert_match 'This book has 2 queries and 3 query/doc pairs.', response.body
+    end
+
+    test 'judge_activity renders the same partial content polled as a broadcast fallback' do
+      login_user_for_integration_test user
+      james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
+
+      get judge_activity_book_path(james_bond_movies)
+
+      assert_response :success
+      assert_match "judge-row-#{judge_judy.id}", response.body
+      assert_match 'Judge Judy', response.body
+    end
+
     test 'lists assigned AI judge in Judge Activity table even with no judgements' do
       login_user_for_integration_test user
       james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)

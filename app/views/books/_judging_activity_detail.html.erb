@@ -1,14 +1,11 @@
-<%# Rendered inside the live judging modal. locals: book, judge, qdp, counter, judgement: nil %>
+<%# Rendered inside the live judging modal. locals: book, judge, qdp, counter, total_pairs, judgement: nil %>
 <div class="mb-3">
   <div class="d-flex justify-content-between align-items-center mb-1">
     <small class="text-muted">Progress</small>
     <small class="text-muted"><%= counter %> judged so far</small>
   </div>
   <div class="progress" style="height:8px;">
-    <%
-      total = book.query_doc_pairs_within_rank_depth.count
-      pct   = total > 0 ? ((counter.to_f / total) * 100).round : 0
-    %>
+    <% pct = total_pairs.positive? ? ((counter.to_f / total_pairs) * 100).round : 0 %>
     <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
          style="width:<%= pct %>%"
          role="progressbar"
@@ -16,7 +13,7 @@
     </div>
   </div>
   <div class="d-flex justify-content-between">
-    <small class="text-muted"><%= counter %> of <%= total %></small>
+    <small class="text-muted"><%= counter %> of <%= total_pairs %></small>
     <small class="text-muted"><%= pct %>%</small>
   </div>
 </div>

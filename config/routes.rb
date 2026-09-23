@@ -131,6 +131,7 @@ Rails.application.routes.draw do
     member do
       get 'judgement_stats'
       get 'judge_overview'
+      get 'judge_activity'
       get 'export'
       patch 'combine'
       patch 'archive'

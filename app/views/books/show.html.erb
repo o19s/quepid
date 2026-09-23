@@ -39,7 +39,7 @@ function updateModalTitle(judgeId) {
 <%= render 'tabs', book: @book %>
 <p class="text-muted mt-2">
   Books organize the query/doc pairs needed for evaluating search queries.
-  This book consists of <%= @book.queries_count %> queries.
+  This book has <%= pluralize(@book.queries_count, 'query') %> and <%= pluralize(@book.query_doc_pairs.count, 'query/doc pair') %>.
 </p>
 
 <%= render 'kraken_unleashed', book: @book if @kraken_unleashed %>
@@ -160,7 +160,9 @@ function updateModalTitle(judgeId) {
           <th style="min-width:160px">Activity (7d)</th>
         </tr>
       </thead>
-      <tbody id="judge-activity-table">
+      <tbody id="judge-activity-table"
+             data-controller="judge-activity-poll"
+             data-judge-activity-poll-url-value="<%= judge_activity_book_path(@book) %>">
         <%= render 'books/judge_activity_table_body', judge_activity: @judge_activity, book: @book, flashing_judge_id: nil %>
       </tbody>
     </table>

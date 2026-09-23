@@ -23,6 +23,17 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[type=checkbox][value='#{team.id}'][checked]"
   end
 
+  test 'should update ai_judge and flash a success notice' do
+    patch ai_judge_url(ai_judge),
+          params: { user: {
+            name: 'Renamed Judge', llm_key: ai_judge.llm_key, system_prompt: ai_judge.system_prompt
+          } }
+
+    assert_redirected_to ai_judge_path(ai_judge)
+    assert_equal 'AI Judge was successfully updated.', flash[:notice]
+    assert_equal 'Renamed Judge', ai_judge.reload.name
+  end
+
   test 'should create ai_judge with no team (owner-only)' do
     assert_difference('User.count') do
       post ai_judges_url,

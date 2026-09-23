@@ -16,8 +16,8 @@ class RunJudgeJudyJob < ApplicationJob
   # matching the given book + judge. This is the one place that reaches into
   # SolidQueue's serialized arguments to answer "is this book+judge combo
   # actively being judged right now" - callers (the book overview page, the
-  # cancel action, the live broadcast) should use this or #actively_judging?
-  # rather than re-deriving it.
+  # cancel action, the live broadcast) should use this rather than
+  # re-deriving it.
   def self.active_for book, judge
     book_gid  = book.to_global_id.to_s
     judge_gid = judge.to_global_id.to_s
@@ -31,8 +31,23 @@ class RunJudgeJudyJob < ApplicationJob
       end
   end
 
-  def self.actively_judging? book, judge
-    active_for(book, judge).any?
+  # Force-stops any in-flight judging run for this book + judge. The one
+  # place that reaches into a SolidQueue row's internals to cancel it, so
+  # callers (currently just the cancel action) don't need to know that a
+  # claimed (already-running) job must have its execution record destroyed
+  # first, while a merely-queued job can just be discarded.
+  def self.cancel book, judge
+    active_for(book, judge).each do |job|
+      if job.claimed_execution.present?
+        # Job is actively running — force destroy it. #perform checks for
+        # its own SolidQueue row on every iteration and stops as soon as it
+        # notices this row is gone.
+        job.claimed_execution.destroy
+        job.destroy
+      else
+        job.discard
+      end
+    end
   end
 
   # All ai/human judge ids with an in-flight job for this book, in a single
@@ -67,6 +82,7 @@ class RunJudgeJudyJob < ApplicationJob
   #   RunJudgeJudyJob.perform_later(book, ai_judge, nil)
   def perform book, judge, number_of_pairs
     counter = 0
+    total_pairs = book.query_doc_pairs_within_rank_depth.count
     llm_service = LlmService.new judge.llm_key, judge.judge_options
     # Only jobs actually dispatched through SolidQueue have a row to poll for
     # cancellation - under the :test adapter (or inline execution) there's
@@ -96,7 +112,7 @@ class RunJudgeJudyJob < ApplicationJob
       # ratings current even if a long "judge all" run gets cancelled partway.
       UpdateCaseRatingsJob.perform_later(query_doc_pair)
       BroadcastJudgeActivityJob.perform_later(book, judge)
-      broadcast_judging_detail(book, judge, query_doc_pair, counter, judgement)
+      broadcast_judging_detail(book, judge, counter, total_pairs, judgement)
 
       if number_of_pairs.nil?
         broadcast_update_kraken_mode(book, counter, query_doc_pair, judge)
@@ -126,12 +142,13 @@ class RunJudgeJudyJob < ApplicationJob
     end
   end
 
-  def broadcast_judging_detail book, judge, qdp, counter, judgement
+  def broadcast_judging_detail book, judge, counter, total_pairs, judgement
     Turbo::StreamsChannel.broadcast_update_to(
       book.judgements_broadcast_channel,
       target:  "judging-activity-#{judge.id}",
       partial: 'books/judging_activity_detail',
-      locals:  { book: book, judge: judge, qdp: qdp, counter: counter, judgement: judgement }
+      locals:  { book: book, judge: judge, qdp: judgement.query_doc_pair, counter: counter, total_pairs: total_pairs,
+                 judgement: judgement }
     )
   end
 

@@ -85,8 +85,7 @@ class BulkJudgeController < ApplicationController
     if deserialize_bool_param(params[:reset])
       if judgement.persisted?
         judgement.destroy
-        UpdateCaseRatingsJob.perform_later query_doc_pair
-        BroadcastJudgeActivityJob.perform_later(@book, current_user)
+        broadcast_judgement_change query_doc_pair, current_user
       end
       render json: { status: 'success' }
     else
@@ -101,8 +100,7 @@ class BulkJudgeController < ApplicationController
       judgement.explanation = params[:explanation] if params.key?(:explanation)
 
       if judgement.save
-        UpdateCaseRatingsJob.perform_later query_doc_pair
-        BroadcastJudgeActivityJob.perform_later(@book, current_user)
+        broadcast_judgement_change query_doc_pair, current_user
         render json: { status: 'success', judgement_id: judgement.id }
       else
         render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_content
@@ -117,11 +115,19 @@ class BulkJudgeController < ApplicationController
     )
 
     if judgement&.destroy
-      UpdateCaseRatingsJob.perform_later judgement.query_doc_pair
-      BroadcastJudgeActivityJob.perform_later(@book, current_user)
+      broadcast_judgement_change judgement.query_doc_pair, current_user
       render json: { status: 'success' }
     else
       render json: { status: 'error', message: 'Judgement not found or could not be deleted' }, status: :not_found
     end
+  end
+
+  private
+
+  # Every judgement mutation needs both: sync the case ratings this pair
+  # feeds into, and refresh the book overview's live Judge Activity table.
+  def broadcast_judgement_change query_doc_pair, judge
+    UpdateCaseRatingsJob.perform_later query_doc_pair
+    BroadcastJudgeActivityJob.perform_later(@book, judge)
   end
 end

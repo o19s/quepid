@@ -85,8 +85,7 @@ class JudgementsController < ApplicationController
     end
 
     if @judgement.save
-      UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
-      BroadcastJudgeActivityJob.perform_later(@book, current_user)
+      broadcast_judgement_change @judgement.query_doc_pair, current_user
       redirect_to book_judge_path(@book)
     else
       @query_doc_pair = @judgement.query_doc_pair
@@ -99,8 +98,7 @@ class JudgementsController < ApplicationController
     @judgement.update(judgement_params)
 
     @judgement.mark_unrateable!
-    UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
-    BroadcastJudgeActivityJob.perform_later(@book, current_user)
+    broadcast_judgement_change @judgement.query_doc_pair, current_user
     redirect_to book_judge_path(@book)
   end
 
@@ -108,8 +106,7 @@ class JudgementsController < ApplicationController
     @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
 
     @judgement.mark_judge_later!
-    UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
-    BroadcastJudgeActivityJob.perform_later(@book, current_user)
+    broadcast_judgement_change @judgement.query_doc_pair, current_user
     redirect_to book_judge_path(@book)
   end
 
@@ -118,8 +115,7 @@ class JudgementsController < ApplicationController
     @judgement.user = current_user
     @judgement.unrateable = false
     if @judgement.save
-      UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
-      BroadcastJudgeActivityJob.perform_later(@book, current_user)
+      broadcast_judgement_change @judgement.query_doc_pair, current_user
       redirect_to book_judge_path(@book)
     else
       render action: :edit
@@ -129,12 +125,21 @@ class JudgementsController < ApplicationController
   def destroy
     judge = @judgement.user
     @judgement.destroy
-    UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
-    BroadcastJudgeActivityJob.perform_later(@book, judge) if judge
+    broadcast_judgement_change @judgement.query_doc_pair, judge
     redirect_to book_judge_path(@book), notice: "Removed rating for query '#{@judgement.query_doc_pair.query_text}'."
   end
 
   private
+
+  # Every judgement mutation needs both: sync the case ratings this pair
+  # feeds into, and refresh the book overview's live Judge Activity table.
+  # judge is nil'able (see #destroy, where the judgement's own user may have
+  # been unassigned) - skip the activity broadcast rather than misattribute
+  # it to whoever's currently signed in.
+  def broadcast_judgement_change query_doc_pair, judge
+    UpdateCaseRatingsJob.perform_later query_doc_pair
+    BroadcastJudgeActivityJob.perform_later(@book, judge) if judge
+  end
 
   def set_judgement
     @judgement = @book.judgements.find(params.expect(:id))

@@ -1,32 +1,18 @@
 <%# Live judging detail modal for an AI judge. locals: ai_judge, book %>
-<div class="modal fade" id="judging-modal-<%= ai_judge.id %>" tabindex="-1"
-     aria-labelledby="judging-modal-label-<%= ai_judge.id %>" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="judging-modal-label-<%= ai_judge.id %>">
-          <i class="bi bi-robot text-primary"></i>
-          <%= ai_judge.fullname %> — Live Judging Activity
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div id="judging-activity-<%= ai_judge.id %>">
-          <div class="d-flex align-items-center gap-2 text-muted">
-            <span class="spinner-border spinner-border-sm" role="status"></span>
-            Waiting for next judgement...
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <%= button_to cancel_judge_judy_book_path(book, ai_judge_id: ai_judge.id),
-              method: :delete,
-              class: 'btn btn-danger',
-              form: { data: { turbo_confirm: "Stop #{ai_judge.fullname} from judging?" } } do %>
-          <i class="bi bi-stop-circle"></i> Stop Judging
-        <% end %>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
+<% modal_footer = render 'books/cancel_judging_button', book: book, judge: ai_judge,
+     css_class: 'btn btn-danger', icon: 'bi-stop-circle', label: 'Stop Judging' %>
+
+<% modal_body = capture do %>
+  <div id="judging-activity-<%= ai_judge.id %>">
+    <div class="d-flex align-items-center gap-2 text-muted">
+      <span class="spinner-border spinner-border-sm" role="status"></span>
+      Waiting for next judgement...
     </div>
   </div>
-</div>
+<% end %>
+
+<%= render "shared/modal_shell", id: "judging-modal-#{ai_judge.id}",
+                                 title: '<i class="bi bi-robot text-primary"></i> '.html_safe + "#{ai_judge.fullname} — Live Judging Activity",
+                                 dialog_class: "modal-lg",
+                                 footer: modal_footer,
+                                 body: modal_body %>
