@@ -283,7 +283,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Remaining, in slice order (2026-09-22).** Next:
 
-1. **Migrate query mutations last** — add, move, delete, and persist — matching the [decision lenses](#decision-lenses) ordering (search/score stay client-owned throughout; nothing here moves them server-side). The add-query form and its user-facing orchestration are now Stimulus-owned (`add_query_controller.js` + `query_lifecycle_controller.js`). The query lifecycle API request contracts live in tested ESM (`utils/query_lifecycle.js`); `queriesSvc` remains the temporary adapter for Query construction, persistence, search, and scoring. Move/delete/persist orchestration for the remaining query surfaces is next.
+1. **Migrate query mutations last** — add, move, delete, and persist — matching the [decision lenses](#decision-lenses) ordering (search/score stay client-owned throughout; nothing here moves them server-side). The add-query form and its user-facing orchestration are now Stimulus-owned (`add_query_controller.js` + `query_lifecycle_controller.js`). The Move Query modal is now Stimulus-owned (`move_query_core_controller.js` + `_move_query_core_modal.html.erb`), while `queriesSvc` remains the temporary adapter for removing the moved query and refreshing scores. The query lifecycle API request contracts live in tested ESM (`utils/query_lifecycle.js`); `queriesSvc` remains the temporary adapter for Query construction, persistence, search, and scoring. Delete-request and persistence/reorder orchestration for the remaining query surfaces is next.
 
 The diff/snapshot score badges stay Angular until `diffResultsSvc` migrates — out of this sequence.
 

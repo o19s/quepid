@@ -1528,6 +1528,7 @@ angular.module('QuepidApp')
 
       // Move a query
       this.moveQuery = function(query, targetCase) {
+        var that = svc;
         return $http(window.quepidSearch.queryLifecycle.moveRequest(query, targetCase.caseNo))
           .then(function() {
             delete that.queries[query.queryId];
@@ -1538,6 +1539,19 @@ angular.module('QuepidApp')
             $log.debug('Failed to move query: ', response);
             return $q.reject(response);
           });
+      };
+
+      // Temporary bridge for the Stimulus Move Query modal until the live query
+      // store owns query mutations and score refreshes.
+      window.quepidSearch.queryLifecycle.moveQuery = function(queryId, targetCaseId) {
+        var query = svc.queries[queryId];
+        if (!query) {
+          return $q.reject({ error: 'Unable to move query.' });
+        }
+
+        return svc.moveQuery(query, { caseNo: targetCaseId }).then(function() {
+          svc.updateScores();
+        });
       };
 
       this.version = function() {

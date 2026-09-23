@@ -66,7 +66,8 @@ const quepidSearch = {
     deleteRequest,
     moveRequest,
     positionRequest,
-    addQueries: null
+    addQueries: null,
+    moveQuery: null
   }
 }
 

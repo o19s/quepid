@@ -212,10 +212,10 @@ parts:
         paths: ["app/assets/templates/views/queries.html", "app/assets/javascripts/controllers/queriesCtrl.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/utils/query_state.js", "test/javascript/utils/query_state.test.js"]
       "4.4":
         title: "Move a query to another case"
-        last_run: 2026-09-15T16:40:00Z
+        last_run: 2026-09-23T12:25:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: expanded 'yogurt' on disposable case 6840, clicked Move Query — modal listed all cases; picked SOLR CASE, footer button correctly relabeled to 'Move to SOLR CASE', clicked it — flash 'Query moved successfully!', query count on the source case dropped 4→3. Verified on SOLR CASE (case 1) that 'yogurt' now appeared (count 1→2), then deleted it there via Delete Query (native confirm() accepted) to restore SOLR CASE to its original single query. Did not test moving a query with existing ratings/history, or the failure-path edge case."
-        paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb"]
+        notes: "Covered live via Playwright MCP on E2E Static Fixture (case 219): expanded 'online', opened the Stimulus Move Query modal, confirmed the current case was excluded from the list, selected SOLR CASE, and verified the footer changed to 'Move to SOLR CASE'. Submitted with the PUT intercepted to preserve the shared fixture; confirmed 'Query moved successfully!' and the source list changed 20→19 in the live UI. Console had 0 errors. Not covered: persistent target-case verification, moving ratings/history, no-other-cases empty state, or forced failure. Matched modal before/after screenshots were visually checked; new captures are under .playwright-mcp/move-query/."
+        paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb", "app/views/shared/_move_query_core_modal.html.erb", "app/javascript/controllers/move_query_core_controller.js", "app/javascript/core_stimulus.js", "app/assets/templates/views/searchResults.html", "app/assets/javascripts/services/queriesSvc.js", "test/javascript/controllers/move_query_core_controller.test.js", "test/playwright/core_smoke.spec.ts"]
       "4.5":
         title: "Set per-query options (Query Options)"
         last_run: 2026-09-21T19:55:00Z

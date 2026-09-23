@@ -115,7 +115,16 @@
       </div>
 
       <div class="btn-group">
-        <move-query query="query"></move-query>
+        <button
+          class="btn btn-warning btn-sm"
+          data-controller="move-query-core"
+          data-move-query-core-query-id-value="{{query.queryId}}"
+          data-move-query-core-case-id-value="{{query.caseNo}}"
+          data-bs-toggle="modal"
+          data-bs-target="#moveQueryModal"
+          data-action="click->move-query-core#open">
+          Move Query
+        </button>
         <button
           class="btn btn-danger btn-sm"
           data-controller="query-delete"

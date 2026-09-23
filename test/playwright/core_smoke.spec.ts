@@ -106,6 +106,43 @@ test.describe('core layout golden paths', () => {
     await expect(queryList.locator('.sub-results:visible')).toHaveCount(0);
   });
 
+  test('move query modal is Stimulus-owned and submits through the Angular state adapter', async ({ page }) => {
+    let moveRequest: { url: string; body: string } | undefined;
+    await page.route('**/api/cases/*/queries/*', async route => {
+      if (route.request().method() !== 'PUT') {
+        await route.continue();
+        return;
+      }
+
+      moveRequest = {
+        url: route.request().url(),
+        body: route.request().postData() || ''
+      };
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+    });
+
+    await gotoCase(page);
+    await expandFirstQuery(page);
+
+    const row = page.locator('.results-list-element li').first();
+    await row.getByRole('button', { name: 'Move Query', exact: true }).click();
+
+    const modal = page.locator('#moveQueryModal');
+    await expect(modal).toBeVisible();
+    await expect(modal).toContainText('Move Query to Another Case');
+
+    const targetCase = modal.locator('.move-query-cases-list button').first();
+    await expect(targetCase).toBeVisible();
+    const targetName = await targetCase.textContent();
+    await targetCase.click();
+    await expect(modal.getByRole('button', { name: `Move to ${targetName}`, exact: true })).toBeEnabled();
+    await modal.getByRole('button', { name: `Move to ${targetName}`, exact: true }).click();
+
+    await expect(page.locator('#flash-messages')).toContainText('Query moved successfully!');
+    expect(moveRequest?.url).toMatch(/\/api\/cases\/\d+\/queries\/\d+$/);
+    expect(moveRequest?.body).toContain('other_case_id');
+  });
+
   test('add query reports a persistence failure', async ({ page }) => {
     await page.route('**/api/cases/6/queries*', async route => {
       if (route.request().method() !== 'POST') {
