@@ -129,7 +129,7 @@ class BooksController < ApplicationController
       end
     end
 
-    @ai_judges = []
+    @ai_judges = AiJudge.for_user(current_user)
 
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
@@ -142,7 +142,7 @@ class BooksController < ApplicationController
   end
 
   def edit
-    @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @ai_judges = visible_ai_judges_for(@book.owner)
 
     @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
 
@@ -156,15 +156,16 @@ class BooksController < ApplicationController
   end
 
   def create
-    @book = Book.new(book_params)
+    @book = Book.new(book_params.except(:ai_judge_ids))
     @book.owner = current_user
 
     # Handle scorer selection
     apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
 
     if @book.save
+      assign_ai_judges @book, book_params[:ai_judge_ids], current_user
 
-      if params[:book][:link_the_case]
+      if deserialize_bool_param(params[:book][:link_the_case])
         @origin_case = current_user.cases_involved_with.where(id: params[:book][:origin_case_id]).first
         @origin_case.book = @book
         @origin_case.auto_populate_book_pairs = deserialize_bool_param(
@@ -191,7 +192,7 @@ class BooksController < ApplicationController
     team_ids_belonging_to_user = current_user.teams.pluck(:id)
     teams = @book.teams.reject { |t| team_ids_belonging_to_user.include?(t.id) }
     @book.teams.clear
-    book_params[:team_ids].each do |team_id|
+    Array(book_params[:team_ids]).each do |team_id|
       teams << Team.find(team_id)
     end
 
@@ -199,16 +200,13 @@ class BooksController < ApplicationController
 
     # checkboxes suck
     @book.ai_judges.clear
-    ai_judge_ids = book_params[:ai_judge_ids].compact_blank
-    ai_judge_ids.each do |ai_judge_id|
-      @book.ai_judges << User.find(ai_judge_id)
-    end
+    assign_ai_judges @book, book_params[:ai_judge_ids], @book.owner
 
     # Handle scorer selection
     apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
 
     @book.update(book_params.except(
-                   :team_ids, :ai_judges, :link_the_case, :origin_case_id, :scorer_id,
+                   :team_ids, :ai_judges, :ai_judge_ids, :link_the_case, :origin_case_id, :scorer_id,
                    :delete_export_file, :delete_import_file,
                    :auto_populate_book_pairs,
                    :auto_populate_case_judgements
@@ -219,7 +217,7 @@ class BooksController < ApplicationController
 
     @book.save
 
-    @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @ai_judges = visible_ai_judges_for(@book.owner)
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
     respond_with(@book)
@@ -429,6 +427,22 @@ class BooksController < ApplicationController
   end
 
   private
+
+  # AI judges owner can access - owned directly, or shared via any of the
+  # owner's teams. No owner (e.g. an orphaned book) means no AI judges.
+  def visible_ai_judges_for owner
+    owner ? AiJudge.for_user(owner) : AiJudge.none
+  end
+
+  # Checkboxes suck: only assign ids that are actually visible to scope_owner,
+  # so a submitted id for someone else's private judge is silently ignored.
+  def assign_ai_judges book, ai_judge_ids, scope_owner
+    assignable_ai_judges = visible_ai_judges_for(scope_owner)
+    Array(ai_judge_ids).compact_blank.each do |ai_judge_id|
+      ai_judge = assignable_ai_judges.find_by(id: ai_judge_id)
+      book.ai_judges << ai_judge if ai_judge
+    end
+  end
 
   def apply_scorer_to_book book, scorer_id
     scorer = current_user.scorers_involved_with.find_by(id: scorer_id)

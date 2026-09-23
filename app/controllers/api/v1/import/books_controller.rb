@@ -59,7 +59,7 @@ module Api
           team_id = params.require(:team_id)
           params_to_use = book_params.to_h.deep_symbolize_keys
 
-          @book = Book.new
+          @book = Book.new(owner: @current_user)
 
           @book.teams << Team.find(team_id)
           options = {}

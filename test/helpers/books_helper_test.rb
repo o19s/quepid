@@ -4,20 +4,18 @@ require 'test_helper'
 
 class BooksHelperTest < ActionView::TestCase
   describe '#available_ai_judges_for_book' do
-    it 'returns empty when book has no teams' do
-      # Create a book with no teams for this specific test case
-      teamless_book = Book.create!(name: 'Teamless Book')
-      result = available_ai_judges_for_book(teamless_book)
+    it 'returns empty when book has no owner' do
+      # Create a book with no owner for this specific test case
+      ownerless_book = Book.create!(name: 'Ownerless Book')
+      result = available_ai_judges_for_book(ownerless_book)
       assert_empty result
     end
 
-    it 'returns AI judges from book teams that are not already assigned' do
-      # Use empty_book which belongs to shared team but has no AI judges assigned
+    it "returns AI judges the book's owner can see via a shared team, not already assigned" do
+      # empty_book is owned by doug, who shares the "shared" team with judge_judy
       book = books(:empty_book)
       judge_judy = users(:judge_judy)
 
-      # judge_judy is already a member of the shared team (via fixtures)
-      # and empty_book belongs to shared team but has no AI judges assigned
       available_judges = available_ai_judges_for_book(book)
       assert_includes available_judges, judge_judy
     end
@@ -42,9 +40,12 @@ class BooksHelperTest < ActionView::TestCase
       assert_not_includes available_judges, doug
     end
 
-    it 'returns empty when team has no AI judges' do
-      # book_of_comedy_films belongs to another_shared_team which has no AI judges
-      book = books(:book_of_comedy_films)
+    it 'returns empty when the book has no owner even if its team has AI judges' do
+      # "shared" team has judge_judy as a member - if this method looked at the
+      # book's own teams (the pre-ownership-model behavior) rather than the
+      # book's owner, it would find her here despite the book having no owner.
+      shared_team = teams(:shared)
+      book = Book.create!(name: 'Ownerless Book On A Judge Team', teams: [ shared_team ])
 
       available_judges = available_ai_judges_for_book(book)
       assert_empty available_judges
@@ -52,19 +53,22 @@ class BooksHelperTest < ActionView::TestCase
   end
 
   describe '#available_ai_judges_for_book?' do
-    it 'returns false when no AI judges are available in team' do
-      # book_of_comedy_films belongs to another_shared_team which has no AI judges
-      book = books(:book_of_comedy_films)
+    it 'returns false when the book has no owner' do
+      ownerless_book = Book.create!(name: 'Ownerless Book')
+      assert_not available_ai_judges_for_book?(ownerless_book)
+    end
+
+    it 'returns false when the book has no owner even if its team has AI judges' do
+      # Same regression this guards against as the #available_ai_judges_for_book
+      # test above: ownership, not the book's own team membership, must decide.
+      shared_team = teams(:shared)
+      book = Book.create!(name: 'Ownerless Book On A Judge Team', teams: [ shared_team ])
+
       assert_not available_ai_judges_for_book?(book)
     end
 
-    it 'returns false when book has no teams' do
-      teamless_book = Book.create!(name: 'Teamless Book')
-      assert_not available_ai_judges_for_book?(teamless_book)
-    end
-
     it 'returns true when AI judges are available' do
-      # Use empty_book which has shared team with judge_judy but no AI judges assigned
+      # empty_book is owned by doug, who shares the "shared" team with judge_judy
       book = books(:empty_book)
       assert available_ai_judges_for_book?(book)
     end

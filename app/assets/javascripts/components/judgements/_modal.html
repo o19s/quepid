@@ -11,37 +11,29 @@
     </p>
   </div>
   <p>
-    Explicit Judgements created by humans and <i class="bi bi-robot"></i> LLMs are a good way to start measuring your search quality.
+    Explicit judgements created by humans and <i class="bi bi-robot"></i>AI judges (LLMs) are an effective way to start measuring your search quality.
+    Quepid organizes these judgements into <strong>Books</strong> —collections of query and document pairs evaluated by human reviewers or automated AI models.
   </p>
   <p>
-    Quepid organizes Judgements in a <strong>Book</strong> that consists of query and document pairs for human evaluation.
+    Select a Book below and configure how data syncs between your Case and Book.
   </p>
+
   <p>
-    <strong>Select a Book below</strong> and configure how data syncs between your Case and Book.
     <a href="https://quepid-docs.dev.o19s.com/2/quepid/64/thinking-about-cases-and-books-of-judgements" target="_blank" rel="noopener noreferrer">
       Learn more <i class="bi bi-box-arrow-up-right"></i>
     </a>
   </p>
 
-  <div class="alert alert-info text-center" role="alert" ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading">
+  <div class="alert alert-info text-center" role="alert" ng-show="ctrl.share.teams.length === 0 && ctrl.share.books.length === 0 && !ctrl.share.loading">
     <p>
-      Judgements are meant to be shared with a team, so either
-      <a
-        ng-click="ctrl.goToTeamsPage()"
-      >create a new team</a>
-      or
-      <a
-        ng-click="ctrl.openShareCase()"
-      >share case</a> first.
+      You don't have any Books yet. Teams in Quepid let you collaborate and share Books with colleagues. You can create your own Book below, <a
+        ng-click="ctrl.goToTeamsPage()">create a new team</a> to start collaborating, or <a
+        ng-click="ctrl.openShareCase()">share this case</a> with a team to access their Books.
     </p>
 
   </div>
 
-  <div class="text-center" ng-show="ctrl.share.teams.length > 0 &&  ctrl.share.books.length === 0 && !ctrl.share.loading">
-    <p>
-      You have not created any Books of Judgements yet, so go ahead and create a new Book!
-    </p>
-
+  <div class="text-center" ng-show="ctrl.share.books.length === 0 && !ctrl.share.loading">
     <a class="btn btn-primary btn-lg" ng-href="{{ctrl.createNewBookLink()}}" target="_self">
       <i class="bi bi-plus-lg"></i>
       Create a book
@@ -50,7 +42,7 @@
 
   <div ng-show="ctrl.share.books.length > 0 && !ctrl.share.loading">
     <div>
-      <label>Select a Book of Judgements <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" bs-static-popover data-bs-placement="right" data-bs-content="All the Books related to all the Teams this Case has been shared with are listed below.  If you don't see the Book you want, check that you shared the Case with the right Team."></i></label>
+      <label>Select a Book of Judgements <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" bs-static-popover data-bs-placement="right" data-bs-content="Books you own are always listed below. If this case is shared with a team, Books shared with that team are listed too - share the case with the right team if you don't see the Book you want."></i></label>
 
       <ul class="list-group">
         <li class="list-group-item"

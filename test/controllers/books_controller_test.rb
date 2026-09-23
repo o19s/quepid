@@ -425,6 +425,93 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'AI judge assignment' do
+    let(:doug) { users(:doug) }
+    let(:random_1) { users(:random_1) }
+
+    setup { login_user_for_integration_test doug }
+
+    test 'edit includes an ai judge owned directly by the book owner, even with no team share' do
+      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
+
+      # Bullet fires on the pre-existing @other_books N+1, not our new query — suppress it.
+      Bullet.enable = false
+      get "/books/#{james_bond_movies.id}/edit"
+      Bullet.enable = true
+
+      assert_response :success
+      assert_includes assigns(:ai_judges), owner_only_judge
+    end
+
+    test 'update rejects an ai judge id the book owner cannot access' do
+      unrelated_judge = AiJudge.create!(name: 'Unrelated Judge', llm_key: '1234', owner: random_1)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:         james_bond_movies.name,
+          team_ids:     james_bond_movies.team_ids,
+          ai_judge_ids: [ unrelated_judge.id ],
+        },
+      }
+
+      assert_not_includes james_bond_movies.reload.ai_judges, unrelated_judge
+    end
+
+    test 'update assigns an owned ai judge when no team checkboxes are submitted' do
+      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
+      james_bond_movies.teams.clear
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:         james_bond_movies.name,
+          ai_judge_ids: [ owner_only_judge.id ],
+        },
+      }
+
+      assert_response :redirect
+      assert_includes james_bond_movies.reload.ai_judges, owner_only_judge
+    end
+
+    test 'new includes an ai judge owned directly by the current user, even with no team share' do
+      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
+
+      get '/books/new'
+
+      assert_response :success
+      assert_includes assigns(:ai_judges), owner_only_judge
+    end
+
+    test 'create assigns an ai judge owned directly by the creator, even with no team share' do
+      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
+
+      post '/books', params: {
+        book: {
+          name:         'New Book With Owned Judge',
+          team_ids:     [],
+          ai_judge_ids: [ owner_only_judge.id ],
+        },
+      }
+
+      created_book = Book.find_by(name: 'New Book With Owned Judge')
+      assert_includes created_book.ai_judges, owner_only_judge
+    end
+
+    test 'create rejects an ai judge id the creator cannot access' do
+      unrelated_judge = AiJudge.create!(name: 'Unrelated Judge', llm_key: '1234', owner: random_1)
+
+      post '/books', params: {
+        book: {
+          name:         'New Book Rejecting Unrelated Judge',
+          team_ids:     [],
+          ai_judge_ids: [ unrelated_judge.id ],
+        },
+      }
+
+      created_book = Book.find_by(name: 'New Book Rejecting Unrelated Judge')
+      assert_not_includes created_book.ai_judges, unrelated_judge
+    end
+  end
+
   def test_scorer_id_copies_scale_fields_when_creating_book
     login_user_for_integration_test user
 
@@ -443,5 +530,24 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal scorer.scale, created_book.scale
     assert_nil created_book.scale_with_labels
+  end
+
+  def test_create_does_not_link_the_origin_case_when_synchronization_is_disabled
+    login_user_for_integration_test user
+    origin_case = cases(:with_scorer)
+
+    post '/books', params: {
+      book: {
+        name:                          'Unlinked Book',
+        link_the_case:                 '0',
+        origin_case_id:                origin_case.id,
+        auto_populate_book_pairs:      '1',
+        auto_populate_case_judgements: '1',
+        team_ids:                      [],
+      },
+    }
+
+    assert_response :redirect
+    assert_nil origin_case.reload.book
   end
 end

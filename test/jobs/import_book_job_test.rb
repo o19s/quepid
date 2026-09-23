@@ -45,7 +45,7 @@ class ImportBookJobTest < ActiveJob::TestCase
 
       book.reload
       assert_equal 'Imported Book', book.name
-      assert_equal user, book.owner
+      assert_equal users(:doug), book.owner
       assert_nil book.import_job
 
       query_doc_pair = book.query_doc_pairs.find_by(query_text: 'imported query', doc_id: 'doc_1')
@@ -55,6 +55,20 @@ class ImportBookJobTest < ActiveJob::TestCase
 
       # the uploaded file is purged once the import finishes
       assert_not book.import_file.attached?
+    end
+
+    test 'assigns an ownerless book to the importing user' do
+      ownerless_book = Book.create!(name: 'Ownerless Book', scale: '0,1')
+      test_data = {
+        name:  'Imported Ownerless Book',
+        scale: '0,1',
+      }
+
+      attach_import_file ownerless_book, test_data
+
+      ImportBookJob.perform_now user, ownerless_book
+
+      assert_equal user, ownerless_book.reload.owner
     end
 
     test 'handles data with no query_doc_pairs without error' do
