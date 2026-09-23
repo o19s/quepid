@@ -278,10 +278,10 @@ parts:
         paths: ["app/controllers/api/v1/annotations_controller.rb"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
-        last_run: 2026-09-15T16:48:00Z
+        last_run: 2026-09-23T16:37:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP. Copy icon on the 'butter' query (case 6840) copied its query text to the clipboard, confirmed via navigator.clipboard.readText(). Delete Query separately re-verified on SOLR CASE (case 1, see 4.4): native 'Are you absolutely sure you want to delete?' confirm() shown, query removed on accept and case's query count decremented correctly."
-        paths: ["app/models/query.rb"]
+        notes: "Re-verified via Playwright MCP on case 6 with the new Stimulus-owned DELETE path: added a disposable query, expanded it, accepted the native confirm, observed DELETE /api/cases/6/queries/306 returning 204, and confirmed the row disappeared with no console errors. Copy icon was not re-driven in this pass."
+        paths: ["app/models/query.rb", "app/assets/templates/views/searchResults.html", "app/assets/javascripts/controllers/searchResults.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/controllers/query_delete_controller.js"]
       "4.16":
         title: "Query Notes & Information Need"
         last_run: 2026-09-21T19:55:00Z

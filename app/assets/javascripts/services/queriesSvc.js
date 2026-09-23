@@ -1526,6 +1526,14 @@ angular.module('QuepidApp')
           });
       };
 
+      // Temporary in-memory bridge for the Stimulus delete controller. The
+      // controller owns the DELETE request; Angular only drops the confirmed
+      // query from its live collection until the store becomes authoritative.
+      this.removeQueryFromState = function(queryId) {
+        delete svc.queries[queryId];
+        svcVersion++;
+      };
+
       // Move a query
       this.moveQuery = function(query, targetCase) {
         var that = svc;

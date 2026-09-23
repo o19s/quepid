@@ -129,6 +129,7 @@
           class="btn btn-danger btn-sm"
           data-controller="query-delete"
           data-query-delete-query-id-value="{{query.queryId}}"
+          data-query-delete-delete-url-value="api/cases/{{query.caseNo}}/queries/{{query.queryId}}"
           data-action="click->query-delete#remove">
           Delete Query
         </button>

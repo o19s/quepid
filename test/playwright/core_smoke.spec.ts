@@ -143,6 +143,34 @@ test.describe('core layout golden paths', () => {
     expect(moveRequest?.body).toContain('other_case_id');
   });
 
+  test('delete query persists through the Stimulus controller', async ({ page }) => {
+    let deleteRequest: string | undefined;
+    await page.route('**/api/cases/*/queries/*', async route => {
+      if (route.request().method() !== 'DELETE') {
+        await route.continue();
+        return;
+      }
+
+      deleteRequest = route.request().url();
+      await route.fulfill({ status: 204 });
+    });
+
+    await gotoCase(page, '', 6);
+    await expandFirstQuery(page);
+
+    const row = page.locator('.results-list-element li').first();
+    const queryText = (await row.locator('[data-query-row-target="text"]').textContent())?.trim();
+    expect(queryText).toBeTruthy();
+    await page.once('dialog', dialog => {
+      expect(dialog.message()).toBe('Are you absolutely sure you want to delete?');
+      void dialog.accept();
+    });
+    await row.getByRole('button', { name: 'Delete Query', exact: true }).click();
+
+    await expect.poll(() => deleteRequest).toMatch(/\/api\/cases\/\d+\/queries\/\d+$/);
+    await expect(page.locator('[data-query-row-target="text"]', { hasText: queryText })).toHaveCount(0);
+  });
+
   test('add query reports a persistence failure', async ({ page }) => {
     await page.route('**/api/cases/6/queries*', async route => {
       if (route.request().method() !== 'POST') {

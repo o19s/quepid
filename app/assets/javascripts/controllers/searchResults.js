@@ -84,22 +84,17 @@ angular.module('QuepidApp')
         }
       });
 
-      var queryDeleteHandler = function(event) {
+      var queryDeleteCompletedHandler = function(event) {
         var originalEvent = event.originalEvent;
         if (!originalEvent || originalEvent.detail.queryId !== $scope.query.queryId) {
           return;
         }
 
-        queriesSvc.deleteQuery(originalEvent.detail.queryId).then(function() {
-          $log.info('rescoring queries after removing query');
-          queriesSvc.updateScores();
-        }, function() {
-          // deleteQuery rejects on failure, so say so rather than rescoring as
-          // though the query had gone.
-          window.quepidDom.flash.show('error', 'Unable to delete query.');
-        });
+        queriesSvc.removeQueryFromState(originalEvent.detail.queryId);
+        $log.info('rescoring queries after removing query');
+        queriesSvc.updateScores();
       };
-      $element.on('query-delete:submit', queryDeleteHandler);
+      $element.on('query-delete:completed', queryDeleteCompletedHandler);
 
       // Watch for diff changes - unified logic for all diff scenarios
       $scope.$watch('query.diffs', function() {
@@ -173,7 +168,7 @@ angular.module('QuepidApp')
       });
 
       $scope.$on('$destroy', function() {
-        $element.off('query-row:toggle query-delete:submit', queryDeleteHandler);
+        $element.off('query-delete:completed', queryDeleteCompletedHandler);
         $element.off('rating-popover:rate rating-popover:reset');
         if (window.quepidStore && window.quepidStore.scoring) {
           window.quepidStore.scoring.removeEventListener('rating-changed', ratingChangedHandler);
