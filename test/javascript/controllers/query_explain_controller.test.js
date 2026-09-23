@@ -92,6 +92,22 @@ describe("QueryExplainController", () => {
     )
   })
 
+  it("refreshes its data synchronously before opening", () => {
+    const controller = buildController(element, baseData({ queryDetails: "stale" }))
+    QueryExplainController.prototype.connect.call(controller)
+    element.addEventListener("query-explain:before-open", event => {
+      event.detail.data = baseData({ queryDetails: "fresh" })
+    })
+
+    element.querySelector("button").click()
+
+    expect(renderJsonExplorer).toHaveBeenCalledWith(
+      dynamicModal.element.querySelector(".query-explain-params"),
+      "fresh",
+      { collapsed: false }
+    )
+  })
+
   it("shows a warning instead of the Params tree when queryDetailsMessage is set", () => {
     const data = baseData({ queryDetails: null, queryDetailsMessage: "Query parameters are not returned by the current Search Engine." })
     const controller = buildController(element, data)

@@ -7,7 +7,7 @@
  * still need Angular-owned Query objects. The expanded-results read path,
  * footer, errors, and pagination controls are Stimulus-owned.
  */
-export function searchResultsTemplate({ caseId, queryId }) {
+export function searchResultsTemplate({ caseId, queryId, queryExplainData }) {
   return `
     <div data-controller="search-results">
       <div data-search-results-target="content" class="sub-results container-fluid d-none">
@@ -22,8 +22,10 @@ export function searchResultsTemplate({ caseId, queryId }) {
           <div class="btn-group me-2">
             <button class="btn btn-outline-secondary btn-sm" data-action="click->search-results#toggleNotes">Toggle Notes</button>
           </div>
+          <div class="btn-group me-2">
+            <div data-controller="query-explain" data-query-explain-data-value="${queryExplainData}"></div>
+          </div>
           <div data-angular-deferred class="d-flex">
-            <div class="btn-group me-2"><query-explain query="query"></query-explain></div>
             <div class="btn-group me-2">
               <button class="btn btn-outline-secondary btn-sm" ng-controller="TargetedSearchCtrl" ng-click="targetedSearch.triggerModal()">Missing Documents</button>
             </div>

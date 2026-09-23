@@ -261,10 +261,11 @@ export default class extends Controller {
 
     visibleQueries.forEach((query, index) => {
       const row = document.createElement("li")
-      row.className = query.isToggled?.() ? "unsortable" : ""
+      const expanded = this.queryExpanded(query)
+      row.className = expanded ? "unsortable" : ""
       row.dataset.queryId = String(query.queryId)
-      this.renderQueryShell(row, query, start + index + 1)
-      this.renderAngularIslands(row, query)
+      this.renderQueryShell(row, query, start + index + 1, expanded)
+      this.renderDeferredAngularIslands(row, query)
       this.listTarget.appendChild(row)
     })
 
@@ -311,6 +312,11 @@ export default class extends Controller {
     return matchesQueryFilter(query, this.filterValue)
   }
 
+  queryExpanded(query) {
+    const snapshot = this.store?.query?.(query.queryId)
+    return Boolean(snapshot?.expanded ?? query.isToggled?.())
+  }
+
   sortValue(query, sortName) {
     if (sortName === "query") return query.queryText
     if (sortName === "modified") return query.modifiedAt || query.modified || ""
@@ -319,7 +325,7 @@ export default class extends Controller {
     return ""
   }
 
-  renderQueryShell(row, query, rank) {
+  renderQueryShell(row, query, rank, expanded = this.queryExpanded(query)) {
     const queryId = String(query.queryId)
     const queryText = escapeAttribute(query.queryText || "")
     const informationNeed = escapeAttribute(query.informationNeed || "")
@@ -327,7 +333,7 @@ export default class extends Controller {
     const numFound = Number(queryResultCount(query, this.showOnlyRatedValue) || 0)
     const querqyTriggered = querqyRuleTriggered(query.searcher?.parsedQueryDetails)
     const hasDiffs = Boolean(query.diffs)
-    const toggled = Boolean(query.isToggled?.())
+    const toggled = Boolean(expanded)
     const sorting = Boolean(this.angularScope?.queries?.isSortingEnabled?.())
 
     row.innerHTML = `
@@ -370,30 +376,34 @@ export default class extends Controller {
     `
   }
 
-  renderAngularIslands(row, query) {
+  // Keep the remaining Angular components isolated to the controls that still
+  // need live Query objects. The expanded-results shell and document list are
+  // Stimulus-owned; compiling the whole generated subtree would hand that
+  // ownership back to Angular and make the migration boundary porous.
+  renderDeferredAngularIslands(row, query) {
     const injector = window.angular?.element(document.body).injector?.()
     const compile = injector?.get?.("$compile")
     if (!compile || !this.angularScope) return
 
     const childScope = this.angularScope.$new()
     childScope.query = query
-    childScope.queries = this.angularScope.queries
 
     const rowController = row.querySelector('[data-controller="query-row"]')
     const expanded = rowController.querySelector('[data-query-row-target="expanded"]')
     const searchResults = document.createElement("div")
-    searchResults.innerHTML = searchResultsTemplate({ caseId: query.caseNo, queryId: query.queryId })
+    searchResults.innerHTML = searchResultsTemplate({
+      caseId: query.caseNo,
+      queryId: query.queryId,
+      queryExplainData: escapeAttribute(JSON.stringify(queryExplainData(query)))
+    })
     const searchResultsRoot = searchResults.firstElementChild
     expanded.appendChild(searchResultsRoot)
+
+    this.bridgeQueryExplainTemplate(query, searchResultsRoot)
 
     childScope.selectedTry = injector.get("settingsSvc").applicableSettings()
     childScope.queriesSvc = injector.get("queriesSvc")
     childScope.displayed = { resultsView: { finder: 1, results: 2, diffs: 3 }, results: 2 }
-    childScope.query.isToggled = () => injector.get("queryViewSvc").isQueryToggled(query.queryId)
-    childScope.query.toggle = () => {
-      const toggleQuery = window.quepidSearch?.queryState?.toggleQuery
-      return toggleQuery ? toggleQuery(query.queryId) : injector.get("queryViewSvc").toggleQuery(query.queryId)
-    }
     childScope.query.getNumFound = () => {
       const resultCount = window.quepidSearch?.queryState?.queryResultCount
       if (resultCount) return resultCount(query, childScope.queriesSvc.showOnlyRated)
@@ -415,6 +425,33 @@ export default class extends Controller {
     const linkedDiffs = compile(diffTemplate)(childScope)
     Array.from(linkedDiffs).forEach(element => diffScores.appendChild(element))
     this.angularRows.push({ scope: childScope })
+  }
+
+  bridgeQueryExplainTemplate(query, searchResultsRoot) {
+    const explain = searchResultsRoot.querySelector('[data-controller="query-explain"]')
+    if (!explain) return
+
+    explain.addEventListener("query-explain:before-open", event => {
+      event.detail.data = queryExplainData(query)
+    })
+
+    explain.addEventListener("query-explain:render-template", event => {
+      event.stopPropagation()
+      const searcher = query.searcher
+      if (!searcher || typeof searcher.isTemplateCall !== "function") return
+
+      const isTemplatedQuery = searcher.isTemplateCall(searcher.args)
+      const dispatchResult = detail => explain.dispatchEvent(new CustomEvent("query-explain:template-rendered", { detail }))
+
+      searcher.renderTemplate().then(() => {
+        dispatchResult({
+          isTemplatedQuery,
+          renderedQueryTemplate: JSON.stringify(searcher.renderedTemplateJson.template_output, null, 2)
+        })
+      }).catch(() => {
+        dispatchResult({ isTemplatedQuery, error: true })
+      })
+    })
   }
 
   forwardQueryToggle(event) {
@@ -476,4 +513,43 @@ function escapeAttribute(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
+}
+
+function queryExplainData(query) {
+  const searcher = query.searcher
+  if (!searcher) {
+    return {
+      parsedQueryDetails: "{}",
+      queryDetails: null,
+      queryDetailsMessage: "No results yet.",
+      supportsTemplate: false
+    }
+  }
+
+  const data = {
+    parsedQueryDetails: sortedJson(searcher.parsedQueryDetails),
+    queryDetails: null,
+    queryDetailsMessage: null,
+    supportsTemplate: typeof searcher.isTemplateCall === "function"
+  }
+
+  if (typeof searcher.queryDetails !== "undefined") {
+    if (Object.keys(searcher.queryDetails || {}).length === 0) {
+      data.queryDetailsMessage = "The list of query parameters used to construct the query was not returned by Solr."
+    } else {
+      data.queryDetails = sortedJson(searcher.queryDetails)
+    }
+  } else {
+    data.queryDetailsMessage = "Query parameters are not returned by the current Search Engine."
+  }
+
+  return data
+}
+
+function sortedJson(value) {
+  const sorted = Object.keys(value || {}).sort().reduce((result, key) => {
+    result[key] = value[key]
+    return result
+  }, {})
+  return JSON.stringify(sorted, null, 2)
 }

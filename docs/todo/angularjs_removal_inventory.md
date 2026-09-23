@@ -247,9 +247,9 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
-**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → qscore_query (86) → qscore_case (101) → query_explain (117) → query_options (137) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423) → import_ratings (674).
+**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → qscore_query (86) → qscore_case (101) → query_options (137) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423) → import_ratings (674).
 
-**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Annotations render through Stimulus, while qgraph still consumes them through a temporary Angular read bridge. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResult`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, `quepidTypeahead`, `queryParams`, `quepidCollapse`. The expanded-results shell and document rendering now run through Stimulus and the document store. Annotations render through Stimulus, while qgraph still consumes them through a temporary Angular read bridge. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
 
 #### `queriesSvc` seam inventory (phase 1)
 
@@ -281,9 +281,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Do not scope `scoreAll()` in the same change.** One rating rescores every query today; the performance lens says carry that forward. An explicit store makes per-query scoping possible later, but taking it here ships an unapproved behaviour change and makes any score discrepancy unattributable.
 
-**Remaining, in slice order (2026-09-23).** The next slice is:
-
-1. **Remove the expanded-results Angular bridge** — preserve browser-to-customer-engine search and client-side scoring, but move the `search-results` island's document rendering, errors, footer, and pagination intent onto the explicit store incrementally. The remaining live query tools and diff renderer stay in explicitly named deferred Angular islands until their own slices. Do not combine this with scorer sandboxing, diff migration, or wizard UI replacement.
+**Remaining, in slice order (2026-09-23).** The expanded-results Angular bridge is complete: the document shell, rendering, errors, footer, pagination intent, expansion state, copy action, and query notes are Stimulus-owned. The remaining live query tools and diff renderer stay in explicitly named deferred Angular islands until their own slices. Do not combine those slices with scorer sandboxing or wizard UI replacement.
 
 `query_documents_store.js` is the plain-document read model, and `search-results` renders document DOM from those snapshots. `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Stimulus owns the document modal, query-row shell, expansion/view state, copy-query, and query-notes interactions; Angular remains behind explicit adapters for live query state and rating mutations. Search, scoring, diff, finder, options, and pagination remain intentionally behind their existing Angular boundaries.
 
@@ -571,7 +569,7 @@ These Angular-specific wrappers are used across many templates:
 
 ---
 
-## Component inventory (14 folders)
+## Component inventory (13 folders)
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
@@ -584,7 +582,6 @@ These Angular-specific wrappers are used across many templates:
 | `qgraph` | `<qgraph>` | Score timeline |
 | `qscore_case` | `<qscore-case>` | Case score display |
 | `qscore_query` | `<qscore-query>` | Per-query score |
-| `query_explain` | `<query-explain>` | Thin Angular data bridge + Stimulus `query-explain` modal (sync params/parsing via `data-*-value`; live `renderTemplate()` via CustomEvent) |
 | `query_options` | `<query-options>` | Per-query options |
 
 ---

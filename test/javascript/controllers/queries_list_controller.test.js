@@ -194,6 +194,24 @@ describe("queries_list_controller", () => {
     expect(row.querySelector('[data-query-row-target="query"]').dataset.bsTooltipTitleValue).toBe('Info Need: Movies "with space"')
   })
 
+  it("uses the collection store expanded state when rebuilding a query shell", () => {
+    const { controller } = controllerFor()
+    controller.store = { query: () => ({ expanded: true }) }
+    const row = document.createElement("li")
+    const query = {
+      queryId: 7,
+      queryText: "Star Wars",
+      informationNeed: "Movies",
+      state: () => "ready",
+      diffs: null
+    }
+
+    controller.renderQueryShell(row, query, 2)
+
+    expect(row.querySelector('[data-query-row-toggled-value="true"]')).not.toBeNull()
+    expect(controller.queryExpanded(query)).toBe(true)
+  })
+
   it("forwards row toggles to the Stimulus expanded-results island", () => {
     const { controller } = controllerFor()
     const row = document.createElement("li")

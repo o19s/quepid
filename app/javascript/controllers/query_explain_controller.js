@@ -13,14 +13,13 @@ const TABS = [
  * "Explain Query" modal on the per-query toolbar (was the `query_explain`
  * Angular component's `$quepidModal` + `QueryExplainModalInstanceCtrl`).
  *
- * Params/Parsing tabs are sync data already computed by QueryExplainCtrl into
+ * Params/Parsing tabs are sync data computed by the query-list controller into
  * `data-query-explain-data-value` (same bridge pattern as match-explain).
  * The Query Template tab needs a live network call
- * (`query.searcher.renderTemplate()`, ES/OS-only) that still runs through
- * Angular/splainer-search, so it's requested via a bubbling
- * `query-explain:render-template` CustomEvent and delivered back via
- * `query-explain:template-rendered` — QueryExplainCtrl owns both listeners on
- * its own element. Re-requested every time the tab is shown, matching the
+ * (`query.searcher.renderTemplate()`, ES/OS-only) that still runs through the
+ * live searcher, so it's requested via a bubbling `query-explain:render-template`
+ * CustomEvent and delivered back via `query-explain:template-rendered`.
+ * Re-requested every time the tab is shown, matching the
  * deleted template's `ng-click="ctrl.renderQueryTemplate()"` on the tab
  * button itself.
  */
@@ -31,11 +30,17 @@ export default class extends Controller {
     this.element.innerHTML = `
       <button type="button" class="btn btn-outline-secondary btn-sm">Explain Query</button>
     `
-    this.element.querySelector("button").addEventListener("click", () => this.open())
+    this.element.querySelector("button").addEventListener("click", () => {
+      const event = new CustomEvent("query-explain:before-open", {
+        bubbles: true,
+        detail: { data: this.dataValue }
+      })
+      this.element.dispatchEvent(event)
+      this.open(event.detail.data)
+    })
   }
 
-  open() {
-    const data = this.dataValue
+  open(data = this.dataValue) {
     this.toggledPanel = "queryDetails"
 
     const modal = openDynamicModal({

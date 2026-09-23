@@ -224,9 +224,9 @@ parts:
         paths: ["app/models/query.rb", "app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js", "app/assets/javascripts/components/query_options/query_options_controller.js"]
       "4.6":
         title: "Rate a document"
-        last_run: 2026-09-23T20:20:00Z
+        last_run: 2026-09-23T20:38:00Z
         result: pass
-        notes: "Covered live: Playwright MCP on STATIC CASE (case 4). Expanded the query, rated the first result (badge '--' to '1', query score 0.00 to 1.00), then reopened the popover and used RESET (badge back to '--', score back to 0.00). Console showed 0 errors. Not covered live: reload persistence, Score All bulk rating, or missing/duplicate-document edge cases."
+        notes: "Partial re-run via Playwright MCP on E2E Static Fixture (case 219): expanded the first query and confirmed the Stimulus-rendered result list, score-all control, footer, and pagination affordance all rendered after the deferred Angular-island boundary cleanup. Also toggled the row and confirmed the rebuilt shell retained expanded=true, unsortable drag state, and the up-caret indicator. Matched before/after viewport screenshots were visually checked under .playwright-mcp/expanded-results/. Not covered in this pass: selecting a rating, reset, reload persistence, Score All bulk rating, or missing/duplicate-document edge cases."
         paths: ["app/controllers/ratings_controller.rb", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/query_row_controller.js", "app/javascript/controllers/query_unrated_badge_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/scoring.js", "app/javascript/quepid_search.js", "app/javascript/quepid_store.js", "app/javascript/stores/case_score_store.js", "app/javascript/stores/query_collection_store.js", "app/javascript/stores/query_documents_store.js", "app/assets/javascripts/controllers/searchResult.js", "app/assets/javascripts/directives/searchResult.js", "app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/services/rateScaleSvc.js", "app/assets/javascripts/services/queriesSvc.js", "app/assets/javascripts/filters/scoreDisplay.js", "app/assets/javascripts/filters/ratingBgStyle.js", "test/playwright/angular_case_helpers.ts"]
       "4.7":
         title: "Case & query score badges"
@@ -370,10 +370,10 @@ parts:
         paths: ["app/javascript/controllers/judgements_core_controller.js", "app/views/shared/_judgements_core_modal.html.erb", "app/assets/javascripts/services/queriesSvc.js", "app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
-        last_run: 2026-09-21T19:36:00Z
+        last_run: 2026-09-23T20:45:00Z
         result: pass
-        notes: "Covered live: Playwright MCP. All three tabs return engine-appropriate content: Params shows the processed parameters, Parsing shows the parsed query (QParser: LuceneQParser), and Query Template correctly reports 'This is not a templated query.' for an untemplated query. Copy control present. Not covered live: pasting a copied tab elsewhere to confirm clipboard content, and the populated-template rendering for a templated query."
-        paths: ["app/assets/javascripts/components/query_explain/", "app/javascript/controllers/query_explain_controller.js"]
+        notes: "Re-verified live via Playwright MCP on E2E Static Fixture (case 219) after removing the Angular query-explain directive/controller/template. Params and Parsing tabs rendered, the screenshot matched the pre-migration modal, and the checked-in tab-switching flow passed. Not covered live: pasting a copied tab elsewhere or the populated-template rendering for a templated query."
+        paths: ["app/javascript/controllers/query_explain_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/core_stimulus.js", "test/javascript/controllers/query_explain_controller.test.js", "test/playwright/core_smoke.spec.ts"]
       "6.8":
         title: "Explain a single document (Debug Explain)"
         last_run: 2026-09-21T19:36:00Z
