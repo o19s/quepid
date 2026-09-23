@@ -156,15 +156,23 @@ module LlmJudgeAdapters
       format('%g', number)
     end
 
-    def truncated_fields document_fields
-      document_fields.to_h.transform_values { |value| truncate(value, MAX_FIELD_CHARS) }
+    def truncated_fields document_fields, limit = MAX_FIELD_CHARS
+      document_fields.to_h.transform_values { |value| truncate(value, limit) }
     end
 
+    # Shrinks the document fields (the only part of state large enough to matter)
+    # by the state's actual overage, split evenly across fields, rather than
+    # truncating by some fixed amount that ignores how far over the limit the
+    # query/information_need push the whole state.
     def cap_state state
       serialized = state.to_json
       return state if serialized.length <= MAX_STATE_CHARS
 
-      state.merge(document: truncate(state[:document].to_json, MAX_STATE_CHARS - serialized.length.digits.size))
+      document = state[:document] || {}
+      overage = serialized.length - MAX_STATE_CHARS
+      per_field_limit = [ ((MAX_FIELD_CHARS * document.size) - overage) / [ document.size, 1 ].max, 0 ].max
+
+      state.merge(document: truncated_fields(document, per_field_limit))
     end
 
     def truncate value, limit
