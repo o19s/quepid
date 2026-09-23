@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { queryDocumentsStore } from "stores/query_documents_store"
 import { openDetailedDocumentModal } from "utils/detailed_document_modal"
+import { copyText } from "utils/clipboard"
 
 /**
  * Renders an expanded query from the plain document read model. Angular still
@@ -8,7 +9,7 @@ import { openDetailedDocumentModal } from "utils/detailed_document_modal"
  * command/state adapters rather than scope discovery.
  */
 export default class extends Controller {
-  static targets = ["content", "results"]
+  static targets = ["content", "results", "notesBox"]
 
   connect() {
     this.store = window.quepidStore?.documents || queryDocumentsStore
@@ -20,6 +21,8 @@ export default class extends Controller {
     this.element.addEventListener("rating-popover:rate", this.ratingHandler)
     this.element.addEventListener("rating-popover:reset", this.ratingHandler)
     this.element.addEventListener("search-result:show-document", this.showDocumentHandler)
+    this.notesCloseHandler = () => this.setNotesOpen(false)
+    this.element.addEventListener("query-notes:close", this.notesCloseHandler)
     this.render()
   }
 
@@ -29,6 +32,7 @@ export default class extends Controller {
     this.element.removeEventListener("rating-popover:rate", this.ratingHandler)
     this.element.removeEventListener("rating-popover:reset", this.ratingHandler)
     this.element.removeEventListener("search-result:show-document", this.showDocumentHandler)
+    this.element.removeEventListener("query-notes:close", this.notesCloseHandler)
   }
 
   renderFromStore(detail) {
@@ -47,6 +51,7 @@ export default class extends Controller {
 
     const expanded = snapshot.expanded === true
     this.contentTarget.classList.toggle("d-none", !expanded)
+    this.renderNotes(snapshot)
 
     if (!expanded || !this.isResultsView()) {
       this.resultsTarget.replaceChildren()
@@ -67,6 +72,31 @@ export default class extends Controller {
   isResultsView() {
     const snapshot = this.store.query(this.queryId)
     return !snapshot?.resultsView || snapshot.resultsView === "results" || snapshot.resultsView === 2
+  }
+
+  copyQuery(event) {
+    event.preventDefault()
+    const snapshot = this.store.query(this.queryId)
+    if (snapshot?.queryText) copyText(snapshot.queryText).catch(() => {})
+  }
+
+  toggleNotes(event) {
+    event.preventDefault()
+    const snapshot = this.store.query(this.queryId)
+    this.setNotesOpen(snapshot?.notes !== true)
+  }
+
+  setNotesOpen(open) {
+    this.store.updateQueryState(this.queryId, { notes: Boolean(open) })
+    if (open && this.hasNotesBoxTarget) {
+      this.notesBoxTarget.querySelector('[data-controller~="query-notes"]')?.dispatchEvent(
+        new CustomEvent("query-notes:open")
+      )
+    }
+  }
+
+  renderNotes(snapshot) {
+    if (this.hasNotesBoxTarget) this.notesBoxTarget.classList.toggle("d-none", snapshot?.notes !== true)
   }
 
   renderDocuments(docs, snapshot) {

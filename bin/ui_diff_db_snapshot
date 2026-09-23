@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Dumps the shared dev MySQL database so a mutating manual-testing scenario can be run once per
 # ui_diff instance and restored back to a clean state afterward (bin/ui_diff_db_restore).
-# Pairs with bin/ui_diff_up/down — see .claude/skills/branch-ui-diff/SKILL.md.
+# Pairs with bin/ui_diff_up/down — see .agents/skills/branch-ui-diff/SKILL.md.
 
 APP_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$APP_ROOT"

@@ -28,15 +28,15 @@
 ### Shared agent skills
 
 - Repository skills use the portable Agent Skills format: one `<skill>/SKILL.md` with YAML front matter and instructions.
-- The source of truth is `.claude/skills/`, which is discovered directly by both Claude and Codex in this repository.
-- When adding or changing a skill, edit the file under `.claude/skills/` and keep its instructions tool-agnostic unless a tool-specific step is essential.
+- The source of truth is `.agents/skills/`, the shared project skill directory used by Codex, Cursor, and Gemini; `.claude/skills` is a symlink to it for Claude Code.
+- When adding or changing a skill, edit the file under `.agents/skills/` and keep its instructions tool-agnostic unless a tool-specific step is essential.
 
 
 ## Frontend
 
 - The core case app is built using AngularJS 1.8 but we are in the process of removing our AngularJS dependency.
 - In place of AngularJS we are using vanilla JS and StimulusJS along with various components of Hotwire, our goal is to have a modern Rails stack application.
-- **Angular → Stimulus on core:** per-surface equivalence — core matches Angular; Rails pages keep their prior UX. **Do not collapse surfaces.** Playbook: `angular-case-migration` skill (`.claude/skills/angular-case-migration/SKILL.md`) — DoD is phases 5–6, not Vitest + a modal screenshot.
+- **Angular → Stimulus on core:** per-surface equivalence — core matches Angular; Rails pages keep their prior UX. **Do not collapse surfaces.** Playbook: `angular-case-migration` skill (`.agents/skills/angular-case-migration/SKILL.md`) — DoD is phases 5–6, not Vitest + a modal screenshot.
 
 
 ## Backend
@@ -93,7 +93,7 @@
 - Documentation goes in the `docs` directory, not a toplevel `doc` directory.
 - To understand the data model used by Quepid, consult `./docs/data_mapping.md`.
 - To understand how the application is built, consult `./docs/app_structure.md`.
-- **DEVELOPER_GUIDE.md is the primary human-facing doc; AGENTS.md is agent-only guidance.** When a rule applies to both, keep the full text in DEVELOPER_GUIDE.md and have AGENTS.md point to it — never the other way around. Skill files (`.claude/skills/**/SKILL.md`) are agent-only too, so they may reference AGENTS.md directly.
+- **DEVELOPER_GUIDE.md is the primary human-facing doc; AGENTS.md is agent-only guidance.** When a rule applies to both, keep the full text in DEVELOPER_GUIDE.md and have AGENTS.md point to it — never the other way around. Skill files (`.agents/skills/**/SKILL.md`, exposed to Claude Code through `.claude/skills`) are agent-only too, so they may reference AGENTS.md directly.
 - **State the rule, not the incident.** When you add a rule to a doc because something went wrong (a bug, a leak, a broken baseline), write the rule and, if genuinely non-obvious, *why* it holds — not a blow-by-blow of the specific occurrence (dates, counts, "this bit us on..."). Specifics like "16 leaked users" or a timestamp rot the moment the underlying state changes and read as clutter to a later reader who has no way to verify or care about that instance. Only keep instance detail when it's load-bearing — e.g. it teaches a non-obvious edge case the rule alone wouldn't convey.
 
 

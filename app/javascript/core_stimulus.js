@@ -44,6 +44,7 @@ import QueryLifecycleController from "controllers/query_lifecycle_controller"
 import QueryDeleteController from "controllers/query_delete_controller"
 import MoveQueryCoreController from "controllers/move_query_core_controller"
 import FlashController from "controllers/flash_controller"
+import QueryNotesController from "controllers/query_notes_controller"
 
 Turbo.session.drive = false
 
@@ -75,3 +76,4 @@ application.register("query-lifecycle", QueryLifecycleController)
 application.register("query-delete", QueryDeleteController)
 application.register("move-query-core", MoveQueryCoreController)
 application.register("flash", FlashController)
+application.register("query-notes", QueryNotesController)

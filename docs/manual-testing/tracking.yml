@@ -281,13 +281,13 @@ parts:
         last_run: 2026-09-23T16:37:00Z
         result: pass
         notes: "Re-verified via Playwright MCP on case 6 with the new Stimulus-owned DELETE path: added a disposable query, expanded it, accepted the native confirm, observed DELETE /api/cases/6/queries/306 returning 204, and confirmed the row disappeared with no console errors. Copy icon was not re-driven in this pass."
-        paths: ["app/models/query.rb", "app/assets/templates/views/searchResults.html", "app/assets/javascripts/controllers/searchResults.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/controllers/query_delete_controller.js"]
+        paths: ["app/models/query.rb", "app/assets/templates/views/searchResults.html", "app/assets/javascripts/controllers/searchResults.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/controllers/query_delete_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/clipboard.js", "config/importmap.rb"]
       "4.16":
         title: "Query Notes & Information Need"
-        last_run: 2026-09-21T19:55:00Z
+        last_run: 2026-09-23T16:01:00Z
         result: pass_with_fixes
-        notes: "Covered live: Playwright MCP. Information Need and Notes save with 'Success! Your query details have been saved.', the panel auto-collapses, and both survive a reload. FOUND AND FIXED TWO bugs: (1) a failed save flashed SUCCESS, collapsed the panel and discarded the user's edits -- queriesSvc#saveNotes returned from its rejection handler, which resolves the promise in $q, so the controller's error branch never ran; it now re-rejects. (2) the panel is editable before its own GET resolves and the late response overwrote in-progress typing; QueryNotesCtrl now only takes the fetched value if the field is untouched. Both are covered by test/playwright/query_notes.spec.ts, verified to fail without the fixes. Note fetchNotes still swallows its rejection - left alone as a read (stale display, not data loss)."
-        paths: ["app/models/query.rb", "app/assets/javascripts/controllers/queryNotes.js", "app/javascript/controllers/flash_controller.js", "app/javascript/utils/flash.js"]
+        notes: "Covered live via Playwright MCP on case 6 with PUT intercepted: Stimulus QueryNotesController loaded the panel, saved successfully and auto-collapsed; a forced 500 kept the panel open, preserved the edit, and showed the failure flash. Not covered live: persistence after an un-intercepted reload or the immediate-typing race in this pass; those remain covered by test/playwright/query_notes.spec.ts."
+        paths: ["app/models/query.rb", "app/assets/templates/views/searchResults.html", "app/javascript/controllers/query_notes_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/core_stimulus.js", "app/javascript/api/fetch.js", "app/javascript/controllers/flash_controller.js", "app/javascript/utils/flash.js", "config/importmap.rb", "test/javascript/controllers/query_notes_controller.test.js"]
       "4.17":
         title: "Workbench boot & case/try navigation"
         last_run: 2026-09-23T13:50:00Z

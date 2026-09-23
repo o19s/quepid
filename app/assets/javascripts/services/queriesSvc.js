@@ -160,6 +160,7 @@ angular.module('QuepidApp')
         }
 
         queryDocumentsStore.replaceQuery(query.queryId, {
+          queryText: query.queryText,
           docs: query.docs,
           ratedDocs: query.ratedDocs,
           numFound: query.numFound,
@@ -579,7 +580,7 @@ angular.module('QuepidApp')
       }
 
       function normalizeDocExplains(query, searcher, fieldSpec) {
-        let normed = [];
+        let normed;
 
         if (searcher.type === 'es' || searcher.type === 'os') {
           normed = esExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec);
@@ -1294,12 +1295,11 @@ angular.module('QuepidApp')
         let newQueries = [];
         let querySnapshots = [];
         angular.forEach(data.queries, function(queryWithRatings) {
-          let newQuery = null;
-          if (!(queryWithRatings.hasOwnProperty('deleted') &&
+          if (!(Object.prototype.hasOwnProperty.call(queryWithRatings, 'deleted') &&
                 queryWithRatings.deleted === 'true')) {
             let newQueryId = queryWithRatings.query_id;
             queryWithRatings.queryId = queryWithRatings.query_id;
-            newQuery = new Query(queryWithRatings);
+            let newQuery = new Query(queryWithRatings);
             that.queries[newQueryId] = newQuery;
             newQueries.push(newQueryId);
             querySnapshots.push(queryWithRatings);

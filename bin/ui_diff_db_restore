@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Restores the DB snapshot taken by bin/ui_diff_db_snapshot, undoing whatever a mutating
-# manual-testing scenario just did. See .claude/skills/branch-ui-diff/SKILL.md.
+# manual-testing scenario just did. See .agents/skills/branch-ui-diff/SKILL.md.
 
 APP_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$APP_ROOT"

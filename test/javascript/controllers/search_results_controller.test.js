@@ -1,5 +1,10 @@
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+import { copyText } from "utils/clipboard"
 import SearchResultsController from "controllers/search_results_controller"
+
+vi.mock("utils/clipboard", () => ({
+  copyText: vi.fn(() => Promise.resolve())
+}))
 
 function controllerFor({ showOnlyRated = false, results = true, expanded = true } = {}) {
   const element = document.createElement("div")
@@ -16,13 +21,17 @@ function controllerFor({ showOnlyRated = false, results = true, expanded = true 
   controller.hasResultsTarget = true
   const snapshot = {
     queryId: 1,
+    queryText: "meetings",
     docs: [{ id: "all" }],
     ratedDocs: [{ id: "rated" }],
     expanded,
     resultsView: results ? 2 : 3,
     showOnlyRated
   }
-  controller.store = { query: () => snapshot }
+  controller.store = {
+    query: () => snapshot,
+    updateQueryState: (_queryId, state) => Object.assign(snapshot, state)
+  }
   controller.element.dataset.queryId = "1"
   return { controller, snapshot }
 }
@@ -60,5 +69,20 @@ describe("SearchResultsController", () => {
     expect(controller.angularScope).toBeUndefined()
     controller.render()
     expect(controller.resultsTarget.childElementCount).toBe(1)
+  })
+
+  it("toggles notes in the document store", () => {
+    const { controller, snapshot } = controllerFor()
+    controller.toggleNotes({ preventDefault: vi.fn() })
+
+    expect(snapshot.notes).toBe(true)
+  })
+
+  it("copies the query text from the document store", () => {
+    const { controller } = controllerFor()
+
+    controller.copyQuery({ preventDefault: vi.fn() })
+
+    expect(copyText).toHaveBeenCalledWith("meetings")
   })
 })

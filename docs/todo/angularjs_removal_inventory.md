@@ -119,7 +119,7 @@ Before markup or controller work:
 
 **Collapse anti-pattern (share-case):** one list-group `_share_case_modal` everywhere — Angular-equivalent on core but **changed** cases index/teams away from `<select>` + always-visible disabled footers. Conversely, putting the old `<select>` partial on core **changed** the case toolbar away from Angular.
 
-Agents: `angular-case-migration` skill (`.claude/skills/angular-case-migration/SKILL.md`).
+Agents: `angular-case-migration` skill (`.agents/skills/angular-case-migration/SKILL.md`).
 
 ### Category playbooks
 
@@ -290,6 +290,8 @@ The first two substeps are now in place: `query_documents_store.js` is a dual-ru
 The detailed-document adapter is now narrowed: `detailed_document_modal.js` owns the modal markup, escaping, JSON explorer wiring, and field-toggle behavior for both the Stimulus results renderer and Angular Document Finder. The Stimulus path no longer instantiates a temporary `SearchResultCtrl` scope; for this modal command, Angular remains only for resolving the live document and its URL/auth/proxy settings. The separate Document Finder surface remains Angular-owned.
 
 The expanded-results adapter is now scope-free: `search_results_controller.js` reads expansion, view selection, and rated-only state from `query_documents_store.js`, while `queriesSvc` exposes explicit query/document commands for rating and document URLs. Angular still owns the live Query objects and the legacy query-row `$compile` host; removing that host is the next separate substep and must preserve the existing query controls (explain, finder, options, notes, diff, and pagination).
+
+Copy-query and query-notes are now Stimulus-owned inside that adapter. Search, scoring, diff, finder, options, and pagination remain intentionally behind their existing Angular boundaries.
 
 The query-list collection shell is Stimulus-rendered from `query_collection_store.js`, including filtering, sorting, pagination, and row hosts. Each expanded `search-results` island is now Stimulus-rendered from plain document snapshots; Angular continues to own search, ratings, and scoring, with explicit adapters for the remaining commands.
 
