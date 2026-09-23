@@ -44,6 +44,7 @@ export default defineConfig({
       { find: "utils/query_state", replacement: path.resolve(repoRoot, "app/javascript/utils/query_state.js") },
       { find: "utils/query_lifecycle", replacement: path.resolve(repoRoot, "app/javascript/utils/query_lifecycle.js") },
       { find: "stores/case_score_store", replacement: path.resolve(repoRoot, "app/javascript/stores/case_score_store.js") },
+      { find: "stores/query_collection_store", replacement: path.resolve(repoRoot, "app/javascript/stores/query_collection_store.js") },
       { find: /^controllers\/(.*)$/, replacement: path.resolve(repoRoot, "app/javascript/controllers") + "/$1" }
     ],
   },

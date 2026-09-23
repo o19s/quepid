@@ -285,6 +285,8 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 1. **Move query bootstrap/read state toward the explicit client store** — preserve browser-to-customer-engine search and client-side scoring, but make the store authoritative for query collection snapshots and the Stimulus query-list/read controllers. This is the next live-state slice; do not combine it with scorer sandboxing, diff migration, or wizard UI replacement.
 
+**Slice progress (2026-09-23).** The first dual-run step is implemented: `query_collection_store.js` now owns bootstrap status, query metadata snapshots, and server display order; `queriesSvc` publishes bootstrap and add/delete/move/reorder changes into it, and reads the store's order when returning live Angular `Query` objects. Angular still owns the `Query` objects, search, documents, ratings, scoring, and DOM rendering. The next step is to move query-list/read rendering to Stimulus against this store, with the Angular bridge retained for expanded results until that seam is separately migrated.
+
 The diff/snapshot score badges stay Angular until `diffResultsSvc` migrates — out of this sequence.
 
 **The `window.quepidStore` bridge is temporary.** It exists so `queriesSvc` (still Angular) can push into a store that Stimulus (not yet the page owner) can read, during dual-run. Once the case workspace has its own entry bundle, the global goes away in favor of a module import — don't grow further ad hoc bridges on `window.quepidStore` as if it were the permanent integration point.

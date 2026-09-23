@@ -63,6 +63,10 @@ angular.module('QuepidApp')
       let mapperFunctionsCache = {};
 
       let svc = this;
+      // Temporary dual-run bridge: the store owns the query collection snapshot
+      // and display order while Angular keeps the live Query objects for search,
+      // ratings, documents, and scoring.
+      let queryCollectionStore = window.quepidStore && window.quepidStore.queries;
       this.displayOrder = [];
       this.queries = {};
       this.linkUrl = '';
@@ -91,6 +95,9 @@ angular.module('QuepidApp')
         svc.showOnlyRated = false;
         svc.isBootstrapping = false;
         svc.svcVersion++;
+        if (queryCollectionStore) {
+          queryCollectionStore.reset();
+        }
         // Clear sync cache when resetting
         syncedPairsCache = {};
       }
@@ -1190,13 +1197,14 @@ angular.module('QuepidApp')
       };
 
       let that = this;
-      let addQueriesFromResp = function(data) {
+      let addQueriesFromResp = function(data, collectionCaseId) {
         // Update the display order
         svcVersion++;
         that.displayOrder = data.display_order;
 
         // Parse query array
         let newQueries = [];
+        let querySnapshots = [];
         angular.forEach(data.queries, function(queryWithRatings) {
           let newQuery = null;
           if (!(queryWithRatings.hasOwnProperty('deleted') &&
@@ -1206,9 +1214,18 @@ angular.module('QuepidApp')
             newQuery = new Query(queryWithRatings);
             that.queries[newQueryId] = newQuery;
             newQueries.push(newQueryId);
+            querySnapshots.push(queryWithRatings);
             diffResultsSvc.createQueryDiff(newQuery);
           }
         });
+
+        if (queryCollectionStore) {
+          queryCollectionStore.replace({
+            caseId: collectionCaseId === undefined ? caseNo : collectionCaseId,
+            displayOrder: data.display_order,
+            queries: querySnapshots,
+          });
+        }
 
         return newQueries;
       };
@@ -1216,19 +1233,25 @@ angular.module('QuepidApp')
       let querySearchableDeferred = $q.defer();
       function bootstrapQueries(caseNo) {
         svc.isBootstrapping = true;
+        if (queryCollectionStore) {
+          queryCollectionStore.beginBootstrap(caseNo);
+        }
         querySearchableDeferred = $q.defer();
         var request = window.quepidSearch.queryLifecycle.bootstrapRequest(caseNo);
 
         $http(request)
           .then(function(response) {
             that.queries = {};
-            addQueriesFromResp(response.data);
+            addQueriesFromResp(response.data, caseNo);
 
             svc.isBootstrapping = false;
             querySearchableDeferred.resolve();
           }, function(response) {
             $log.debug('Failed to bootstrap queries: ', response);
             svc.isBootstrapping = false;
+            if (queryCollectionStore) {
+              queryCollectionStore.markError(response);
+            }
             return response;
           }).catch(function(response) {
             $log.debug('Failed to bootstrap queries');
@@ -1386,6 +1409,10 @@ angular.module('QuepidApp')
           query.queryId = persisted.data.query.query_id;
           query.ratingsStore.setQueryId(query.queryId);
           svc.queries[query.queryId] = query;
+          if (queryCollectionStore) {
+            queryCollectionStore.setDisplayOrder(svc.displayOrder);
+            queryCollectionStore.upsert(query);
+          }
           svcVersion++;
         }
 
@@ -1400,7 +1427,7 @@ angular.module('QuepidApp')
 
       function commitBulkQueries(persisted) {
         svc.queries = {};
-        addQueriesFromResp(persisted.data);
+        addQueriesFromResp(persisted.data, caseNo);
 
         return svc.searchAll().then(function() {
           return {};
@@ -1415,7 +1442,7 @@ angular.module('QuepidApp')
       // commit later.
       function commitPersistedQueries(persisted) {
         svc.queries = {};
-        addQueriesFromResp(persisted.data);
+        addQueriesFromResp(persisted.data, caseNo);
         return {};
       }
 
@@ -1430,6 +1457,15 @@ angular.module('QuepidApp')
       // get the full list of queries sorted by create/manual order
       // only call this when our version() changes
       this.queryArray = function() {
+        if (queryCollectionStore && queryCollectionStore.status === 'ready') {
+          // Keep the legacy defaultCaseOrder contract while taking the order
+          // itself from the store. Angular's existing orderBy and any other
+          // consumers still rely on this field being refreshed on each read.
+          return window.quepidSearch.queryState.orderedQueries(
+            queryCollectionStore.orderedQueryIds(),
+            this.queries
+          );
+        }
         return window.quepidSearch.queryState.orderedQueries(this.displayOrder, this.queries);
       };
 
@@ -1444,6 +1480,9 @@ angular.module('QuepidApp')
         return $http(request)
           .then(function(response) {
             svc.displayOrder = response.data.display_order;
+            if (queryCollectionStore) {
+              queryCollectionStore.setDisplayOrder(svc.displayOrder);
+            }
             svcVersion++;
           }, function() {
             svcVersion++;
@@ -1458,6 +1497,9 @@ angular.module('QuepidApp')
       // query store becomes authoritative.
       this.applyDisplayOrder = function(displayOrder) {
         svc.displayOrder = displayOrder;
+        if (queryCollectionStore) {
+          queryCollectionStore.setDisplayOrder(displayOrder);
+        }
         svcVersion++;
       };
 
@@ -1468,6 +1510,9 @@ angular.module('QuepidApp')
         return $http(window.quepidSearch.queryLifecycle.deleteRequest(caseNo, queryId))
           .then(function() {
             delete that.queries[queryId];
+            if (queryCollectionStore) {
+              queryCollectionStore.remove(queryId);
+            }
             svcVersion++;
           })
           .catch(function(response) {
@@ -1482,6 +1527,9 @@ angular.module('QuepidApp')
       // query from its live collection until the store becomes authoritative.
       this.removeQueryFromState = function(queryId) {
         delete svc.queries[queryId];
+        if (queryCollectionStore) {
+          queryCollectionStore.remove(queryId);
+        }
         svcVersion++;
       };
 
@@ -1491,6 +1539,9 @@ angular.module('QuepidApp')
         return $http(window.quepidSearch.queryLifecycle.moveRequest(query, targetCase.caseNo))
           .then(function() {
             delete that.queries[query.queryId];
+            if (queryCollectionStore) {
+              queryCollectionStore.remove(query.queryId);
+            }
             svcVersion++;
           })
           .catch(function(response) {
