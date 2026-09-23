@@ -3,8 +3,9 @@
  *
  * Stimulus owns this shell and the document list. The small Angular controls
  * that still depend on live Query objects are isolated under
- * `data-angular-bridge` islands and compiled explicitly by the query-list
- * bridge.
+ * `data-angular-deferred` islands. These are the remaining live-query tools that
+ * still need Angular-owned Query objects. The expanded-results read path,
+ * footer, errors, and pagination controls are Stimulus-owned.
  */
 export function searchResultsTemplate({ caseId, queryId }) {
   return `
@@ -21,7 +22,7 @@ export function searchResultsTemplate({ caseId, queryId }) {
           <div class="btn-group me-2">
             <button class="btn btn-outline-secondary btn-sm" data-action="click->search-results#toggleNotes">Toggle Notes</button>
           </div>
-          <div data-angular-bridge class="d-flex">
+          <div data-angular-deferred class="d-flex">
             <div class="btn-group me-2"><query-explain query="query"></query-explain></div>
             <div class="btn-group me-2">
               <button class="btn btn-outline-secondary btn-sm" ng-controller="TargetedSearchCtrl" ng-click="targetedSearch.triggerModal()">Missing Documents</button>
@@ -44,27 +45,20 @@ export function searchResultsTemplate({ caseId, queryId }) {
           </div>
         </div>
 
-        <div data-angular-bridge>
+        <div data-angular-deferred>
           <div ng-controller="QueryDiffResultsCtrl" ng-if="displayed.results == displayed.resultsView.diffs">
             <query-diff-results query="query" repeatlength="10" max-score="maxScore">Diff Results</query-diff-results>
           </div>
-          <div ng-if="query.state() === 'error'" class="alert alert-danger" ng-bind-html="query.errorText">{{query.errorText}}</div>
-          <div ng-if="!queriesSvc.showOnlyRated" ng-show="displayed.results == displayed.resultsView.results">
-            <div class="row results-pane-footer">
-              <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane"></i>
-              <span ng-if="query.numFound > query.docs.length && (selectedTry.searchEngine != 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination)"><a class="btn btn-outline-secondary" ng-click="query.paginate()">Peek at the next page of results</a></span>
-              <span ng-if="selectedTry.searchEngine == 'solr' || (selectedTry.searchEngine == 'searchapi' && selectedTry.apiMethod == 'GET')"><browse-query query="query" selected-try="selectedTry"></browse-query></span>
-              <div ng-if="query.depthOfRating" class="alert alert-warning mb-0" role="alert"><strong>Note:</strong> Only the top {{query.depthOfRating}} results are used in the scoring calculations.</div>
-            </div>
+        </div>
+        <div data-search-results-target="error" class="alert alert-danger d-none" role="alert"></div>
+        <div data-search-results-target="footer" class="row results-pane-footer d-none">
+          <i class="bi bi-caret-up-fill results-pane-toggle" data-action="click->search-results#collapse" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane"></i>
+          <button type="button" class="btn btn-outline-secondary d-none" data-search-results-target="nextPage" data-action="click->search-results#paginate">Peek at the next page of results</button>
+          <div data-search-results-target="deferredTools" data-angular-deferred>
+            <span ng-if="selectedTry.searchEngine == 'solr' || (selectedTry.searchEngine == 'searchapi' && selectedTry.apiMethod == 'GET')"><browse-query query="query" selected-try="selectedTry"></browse-query></span>
           </div>
-          <div ng-if="queriesSvc.showOnlyRated" ng-show="displayed.results == displayed.resultsView.results">
-            <div class="row results-pane-footer">
-              <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane"></i>
-              <span ng-if="query.getNumFound() > query.ratedDocs.length && (selectedTry.searchEngine != 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination)"><a class="btn btn-outline-secondary" ng-click="query.ratedPaginate()">Peek at the next page of results</a></span>
-              <span ng-if="selectedTry.searchEngine == 'solr' || (selectedTry.searchEngine == 'searchapi' && selectedTry.apiMethod == 'GET')"><browse-query query="query" selected-try="selectedTry"></browse-query></span>
-              <div class="alert alert-warning mb-0" role="alert"><strong>Note:</strong> You are only viewing documents that have been rated</div>
-            </div>
-          </div>
+          <div data-search-results-target="depthNote" class="alert alert-warning mb-0 d-none" role="alert"><strong>Note:</strong> Only the top <span data-search-results-target="depthValue"></span> results are used in the scoring calculations.</div>
+          <div data-search-results-target="ratedNote" class="alert alert-warning mb-0 d-none" role="alert"><strong>Note:</strong> You are only viewing documents that have been rated</div>
         </div>
 
         <div data-search-results-target="results"></div>

@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { queryDocumentsStore } from "stores/query_documents_store"
 import { openDetailedDocumentModal } from "utils/detailed_document_modal"
 import { copyText } from "utils/clipboard"
+import { sanitizeHtml } from "controllers/search_result_controller"
 
 /**
  * Renders an expanded query from the plain document read model. Angular still
@@ -9,7 +10,10 @@ import { copyText } from "utils/clipboard"
  * command/state adapters rather than scope discovery.
  */
 export default class extends Controller {
-  static targets = ["content", "results", "notesBox", "scoreAll"]
+  static targets = [
+    "content", "results", "notesBox", "scoreAll", "error", "footer", "nextPage",
+    "deferredTools", "depthNote", "depthValue", "ratedNote"
+  ]
 
   connect() {
     this.store = window.quepidStore?.documents || queryDocumentsStore
@@ -56,6 +60,7 @@ export default class extends Controller {
     this.contentTarget.classList.toggle("d-none", !expanded)
     this.renderNotes(snapshot)
     this.renderScoreAll(snapshot)
+    this.renderState(snapshot)
 
     if (!expanded || !this.isResultsView()) {
       this.resultsTarget.replaceChildren()
@@ -76,6 +81,43 @@ export default class extends Controller {
   isResultsView() {
     const snapshot = this.store.query(this.queryId)
     return !snapshot?.resultsView || snapshot.resultsView === "results" || snapshot.resultsView === 2
+  }
+
+  renderState(snapshot) {
+    const resultsVisible = snapshot?.resultsView === undefined || snapshot.resultsView === "results" || snapshot.resultsView === 2
+    const showOnlyRated = snapshot?.showOnlyRated === true
+    const hasError = Boolean(snapshot?.errorText)
+
+    if (this.hasErrorTarget) {
+      this.errorTarget.innerHTML = sanitizeHtml(snapshot?.errorText || "")
+      this.errorTarget.classList.toggle("d-none", !hasError)
+    }
+    if (this.hasFooterTarget) this.footerTarget.classList.toggle("d-none", !resultsVisible)
+    if (this.hasNextPageTarget) {
+      this.nextPageTarget.classList.toggle("d-none", !resultsVisible || !this.canPaginate(snapshot))
+    }
+    if (this.hasDepthNoteTarget) {
+      const showDepth = resultsVisible && !showOnlyRated && Boolean(snapshot?.depthOfRating)
+      this.depthNoteTarget.classList.toggle("d-none", !showDepth)
+      if (showDepth && this.hasDepthValueTarget) this.depthValueTarget.textContent = String(snapshot.depthOfRating)
+    }
+    if (this.hasRatedNoteTarget) this.ratedNoteTarget.classList.toggle("d-none", !resultsVisible || !showOnlyRated)
+  }
+
+  canPaginate(snapshot) {
+    const found = snapshot?.showOnlyRated ? snapshot.ratedDocsFound : snapshot?.numFound
+    const loaded = this.visibleDocuments(snapshot).length
+    return Number(found || 0) > loaded && snapshot?.paginationSupported !== false
+  }
+
+  paginate(event) {
+    event.preventDefault()
+    window.quepidSearch?.queryState?.paginateQuery?.(this.queryId, this.store.query(this.queryId)?.showOnlyRated === true)
+  }
+
+  collapse(event) {
+    event.preventDefault()
+    window.quepidSearch?.queryState?.toggleQuery?.(this.queryId)
   }
 
   copyQuery(event) {

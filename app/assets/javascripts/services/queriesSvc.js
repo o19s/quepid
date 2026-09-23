@@ -168,6 +168,11 @@ angular.module('QuepidApp')
           numFound: query.numFound,
           ratedDocsFound: query.ratedDocsFound,
           ratedDocsUnsupported: query.ratedDocsUnsupported,
+          paginationSupported: (function() {
+            var selectedTry = settingsSvc.applicableSettings() || {};
+            return selectedTry.searchEngine !== 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination === true;
+          }()),
+          resultsView: 2,
           errorText: query.errorText,
           depthOfRating: query.depthOfRating,
           ratingScale: query.ratings && query.ratings.scale || query.effectiveScorer().getColors(),
@@ -256,6 +261,20 @@ angular.module('QuepidApp')
             expanded: expanded
           });
         }
+        return true;
+      };
+
+      window.quepidSearch.queryState.paginateQuery = function(queryId, ratedOnly) {
+        var query = window.quepidSearch.queryState.getQuery(queryId);
+        if (!query) return false;
+
+        $scope.$evalAsync(function() {
+          if (ratedOnly) {
+            query.ratedPaginate();
+          } else {
+            query.paginate();
+          }
+        });
         return true;
       };
 

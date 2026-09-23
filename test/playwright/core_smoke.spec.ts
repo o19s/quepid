@@ -63,6 +63,11 @@ test.describe('core layout golden paths', () => {
     await expect(results.first().locator('.subTitle')).toContainText(/\S/);
     await expect(results.first().locator('.result-rank')).toHaveText(/Rank: #1/);
     await expect(results.first().locator('.single-rating')).toBeVisible();
+
+    const expandedResults = page.locator('.sub-results:visible').first();
+    await expect(expandedResults.locator('[data-search-results-target="footer"]')).toBeVisible();
+    await expect(expandedResults.locator('[data-search-results-target="nextPage"]')).toHaveCount(1);
+    await expect(expandedResults.locator('[data-angular-bridge]')).toHaveCount(0);
     await expect(page).toHaveScreenshot('query-results.png', expandedCaseScreenshotOpts(page));
   });
 

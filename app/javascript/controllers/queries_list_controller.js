@@ -7,7 +7,7 @@ import { searchResultsTemplate } from "controllers/search_results_template"
 
 /**
  * Query-list collection rendering, toolbar, and drag lifecycle. Angular still
- * owns live search/scoring and a few expanded-query controls; Stimulus owns
+ * owns live search/scoring and explicitly deferred query tools; Stimulus owns
  * the expanded-results shell, document rendering, and display state.
  */
 export default class extends Controller {
@@ -399,7 +399,7 @@ export default class extends Controller {
       if (resultCount) return resultCount(query, childScope.queriesSvc.showOnlyRated)
       return childScope.queriesSvc.showOnlyRated ? query.ratedDocsFound : query.numFound
     }
-    searchResultsRoot.querySelectorAll("[data-angular-bridge]").forEach(bridge => compile(bridge)(childScope))
+    searchResultsRoot.querySelectorAll("[data-angular-deferred]").forEach(deferred => compile(deferred)(childScope))
 
     const diffScores = rowController.querySelector('[data-query-row-target="diffScores"]')
     const diffTemplate = document.createElement("div")

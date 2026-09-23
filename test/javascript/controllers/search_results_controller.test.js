@@ -6,11 +6,17 @@ vi.mock("utils/clipboard", () => ({
   copyText: vi.fn(() => Promise.resolve())
 }))
 
-function controllerFor({ showOnlyRated = false, results = true, expanded = true } = {}) {
+function controllerFor({ showOnlyRated = false, results = true, expanded = true, errorText = "", numFound = 1, ratedDocsFound = 1, depthOfRating = null } = {}) {
   const element = document.createElement("div")
   element.innerHTML = `
     <div data-search-results-target="content">
       <div data-search-results-target="scoreAll"></div>
+      <div data-search-results-target="error"></div>
+      <div data-search-results-target="footer">
+        <button data-search-results-target="nextPage"></button>
+        <div data-search-results-target="depthNote"><span data-search-results-target="depthValue"></span></div>
+        <div data-search-results-target="ratedNote"></div>
+      </div>
       <div data-search-results-target="results"></div>
     </div>
   `
@@ -19,14 +25,31 @@ function controllerFor({ showOnlyRated = false, results = true, expanded = true 
   controller.contentTarget = element.querySelector('[data-search-results-target="content"]')
   controller.resultsTarget = element.querySelector('[data-search-results-target="results"]')
   controller.scoreAllTarget = element.querySelector('[data-search-results-target="scoreAll"]')
+  controller.errorTarget = element.querySelector('[data-search-results-target="error"]')
+  controller.footerTarget = element.querySelector('[data-search-results-target="footer"]')
+  controller.nextPageTarget = element.querySelector('[data-search-results-target="nextPage"]')
+  controller.depthNoteTarget = element.querySelector('[data-search-results-target="depthNote"]')
+  controller.depthValueTarget = element.querySelector('[data-search-results-target="depthValue"]')
+  controller.ratedNoteTarget = element.querySelector('[data-search-results-target="ratedNote"]')
   controller.hasContentTarget = true
   controller.hasResultsTarget = true
   controller.hasScoreAllTarget = true
+  controller.hasErrorTarget = true
+  controller.hasFooterTarget = true
+  controller.hasNextPageTarget = true
+  controller.hasDepthNoteTarget = true
+  controller.hasDepthValueTarget = true
+  controller.hasRatedNoteTarget = true
   const snapshot = {
     queryId: 1,
     queryText: "meetings",
     docs: [{ id: "all" }],
     ratedDocs: [{ id: "rated" }],
+    numFound,
+    ratedDocsFound,
+    errorText,
+    depthOfRating,
+    paginationSupported: true,
     expanded,
     resultsView: results ? 2 : 3,
     showOnlyRated,
@@ -85,6 +108,43 @@ describe("SearchResultsController", () => {
     expect(controller.scoreAllTarget.querySelector('[data-controller="rating-popover"]')
       .getAttribute("data-rating-popover-scale-value"))
       .toBe(JSON.stringify({ 2: { color: "rgb(1, 2, 3)" } }))
+  })
+
+  it("renders errors, pagination, and rated/depth notices from store state", () => {
+    const { controller } = controllerFor({ numFound: 3, depthOfRating: 2, errorText: "Search failed" })
+    controller.render()
+
+    expect(controller.errorTarget.textContent).toContain("Search failed")
+    expect(controller.errorTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.nextPageTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.depthNoteTarget.classList.contains("d-none")).toBe(false)
+
+    const rated = controllerFor({ showOnlyRated: true, ratedDocsFound: 3 })
+    rated.controller.render()
+    expect(rated.controller.ratedNoteTarget.classList.contains("d-none")).toBe(false)
+  })
+
+  it("preserves safe formatting and links in search errors", () => {
+    const { controller } = controllerFor({ errorText: 'Failed: <strong>Solr</strong> <a href="https://example.com">troubleshooting</a> <script>alert(1)</script>' })
+    controller.render()
+
+    expect(controller.errorTarget.querySelector("strong").textContent).toBe("Solr")
+    expect(controller.errorTarget.querySelector("a").getAttribute("href")).toBe("https://example.com/")
+    expect(controller.errorTarget.querySelector("script")).toBeNull()
+  })
+
+  it("routes pagination and collapse through explicit query-state adapters", () => {
+    const { controller } = controllerFor({ numFound: 2 })
+    controller.render()
+    const paginateQuery = vi.fn()
+    const toggleQuery = vi.fn()
+    window.quepidSearch = { queryState: { paginateQuery, toggleQuery } }
+
+    controller.paginate({ preventDefault: vi.fn() })
+    controller.collapse({ preventDefault: vi.fn() })
+
+    expect(paginateQuery).toHaveBeenCalledWith("1", false)
+    expect(toggleQuery).toHaveBeenCalledWith("1")
   })
 
   it("routes Score All ratings through the explicit query-state adapter", () => {

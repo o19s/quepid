@@ -283,7 +283,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Remaining, in slice order (2026-09-23).** The next slice is:
 
-1. **Remove the expanded-results Angular bridge** — preserve browser-to-customer-engine search and client-side scoring, but move the `search-results` island's document rendering and controls onto the explicit store incrementally. Do not combine it with scorer sandboxing, diff migration, or wizard UI replacement.
+1. **Remove the expanded-results Angular bridge** — preserve browser-to-customer-engine search and client-side scoring, but move the `search-results` island's document rendering, errors, footer, and pagination intent onto the explicit store incrementally. The remaining live query tools and diff renderer stay in explicitly named deferred Angular islands until their own slices. Do not combine this with scorer sandboxing, diff migration, or wizard UI replacement.
 
 `query_documents_store.js` is the plain-document read model, and `search-results` renders document DOM from those snapshots. `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Stimulus owns the document modal, query-row shell, expansion/view state, copy-query, and query-notes interactions; Angular remains behind explicit adapters for live query state and rating mutations. Search, scoring, diff, finder, options, and pagination remain intentionally behind their existing Angular boundaries.
 

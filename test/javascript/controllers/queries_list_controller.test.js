@@ -194,7 +194,7 @@ describe("queries_list_controller", () => {
     expect(row.querySelector('[data-query-row-target="query"]').dataset.bsTooltipTitleValue).toBe('Info Need: Movies "with space"')
   })
 
-  it("forwards row toggles to the Angular expanded-results island", () => {
+  it("forwards row toggles to the Stimulus expanded-results island", () => {
     const { controller } = controllerFor()
     const row = document.createElement("li")
     row.innerHTML = `

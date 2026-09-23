@@ -278,9 +278,9 @@ parts:
         paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/assets/templates/views/devQueryParams.html", "app/views/core/index.html.erb"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
-        last_run: 2026-09-23T16:37:00Z
+        last_run: 2026-09-23T19:29:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on case 6 with the new Stimulus-owned DELETE path: added a disposable query, expanded it, accepted the native confirm, observed DELETE /api/cases/6/queries/306 returning 204, and confirmed the row disappeared with no console errors. Copy icon was not re-driven in this pass."
+        notes: "Re-verified via Playwright MCP on case 6 after the expanded-results seam split: expanded the meetings query, confirmed Stimulus-rendered results, Score All, deferred query tools, depth/rated state area, and the next-page action; clicked next page and observed 0 console errors. The existing disposable-query DELETE coverage remains valid; Copy and forced search-error paths were not re-driven in this pass."
         paths: ["app/models/query.rb", "app/javascript/controllers/search_results_template.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/controllers/query_delete_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/clipboard.js", "config/importmap.rb"]
       "4.16":
         title: "Query Notes & Information Need"
