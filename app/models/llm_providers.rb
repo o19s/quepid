@@ -319,7 +319,7 @@ module LlmProviders
         help_html:           '<strong>Ollama</strong> &mdash; Local models via the Ollama container.<br>' \
                              "<b>URL:</b> <code>#{ERB::Util.html_escape(url)}</code><br>" \
                              '<b>Model:</b> e.g. <code>qwen3:0.6b</code>, <code>llama3</code><br>' \
-                             '<b>Key:</b> Any placeholder value (e.g. <code>abc123</code>)<br>' \
+                             '<b>Key:</b> Leave blank -- Ollama doesn\'t check one<br>' \
                              '<b>API Version:</b> Leave blank'
       )
     end
