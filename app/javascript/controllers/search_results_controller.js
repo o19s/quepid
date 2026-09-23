@@ -112,12 +112,21 @@ export default class extends Controller {
 
   paginate(event) {
     event.preventDefault()
-    window.quepidSearch?.queryState?.paginateQuery?.(this.queryId, this.store.query(this.queryId)?.showOnlyRated === true)
+    const ratedOnly = this.store.query(this.queryId)?.showOnlyRated === true
+    if (this.store.requestPaginateQuery) {
+      this.store.requestPaginateQuery(this.queryId, ratedOnly)
+    } else {
+      window.quepidSearch?.queryState?.paginateQuery?.(this.queryId, ratedOnly)
+    }
   }
 
   collapse(event) {
     event.preventDefault()
-    window.quepidSearch?.queryState?.toggleQuery?.(this.queryId)
+    if (this.store.requestToggleQuery) {
+      this.store.requestToggleQuery(this.queryId)
+    } else {
+      window.quepidSearch?.queryState?.toggleQuery?.(this.queryId)
+    }
   }
 
   copyQuery(event) {
@@ -174,12 +183,20 @@ export default class extends Controller {
     const result = event.target.closest("search-result")
     if (!result) {
       const rating = event.type === "rating-popover:rate" ? parseInt(event.detail.rating, 10) : null
-      window.quepidSearch?.queryState?.rateAll?.(this.queryId, rating)
+      if (this.store.requestRateAll) {
+        this.store.requestRateAll(this.queryId, rating)
+      } else {
+        window.quepidSearch?.queryState?.rateAll?.(this.queryId, rating)
+      }
       return
     }
     const docId = result?.__searchResultDocument?.id
     const rating = event.type === "rating-popover:rate" ? parseInt(event.detail.rating, 10) : null
-    window.quepidSearch?.queryState?.rateDocument?.(this.queryId, docId, rating)
+    if (this.store.requestRateDocument) {
+      this.store.requestRateDocument(this.queryId, docId, rating)
+    } else {
+      window.quepidSearch?.queryState?.rateDocument?.(this.queryId, docId, rating)
+    }
   }
 
   renderScoreAll(snapshot) {
@@ -215,7 +232,11 @@ export default class extends Controller {
   handleQueryToggle(event) {
     event.preventDefault()
     event.stopPropagation()
-    window.quepidSearch?.queryState?.toggleQuery?.(this.queryId)
+    if (this.store.requestToggleQuery) {
+      this.store.requestToggleQuery(this.queryId)
+    } else {
+      window.quepidSearch?.queryState?.toggleQuery?.(this.queryId)
+    }
   }
 
   handleShowDocument(event) {

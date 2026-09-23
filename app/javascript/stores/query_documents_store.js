@@ -70,6 +70,28 @@ export class QueryDocumentsStore extends EventTarget {
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
   }
 
+  request(command, detail = {}) {
+    this.dispatchEvent(new CustomEvent("command", {
+      detail: { command, ...detail }
+    }))
+  }
+
+  requestToggleQuery(queryId) {
+    this.request("toggle-query", { queryId })
+  }
+
+  requestPaginateQuery(queryId, ratedOnly) {
+    this.request("paginate-query", { queryId, ratedOnly: Boolean(ratedOnly) })
+  }
+
+  requestRateDocument(queryId, docId, rating) {
+    this.request("rate-document", { queryId, docId, rating })
+  }
+
+  requestRateAll(queryId, rating) {
+    this.request("rate-all", { queryId, rating })
+  }
+
   query(queryId) {
     return this._queries.get(String(queryId)) ?? null
   }

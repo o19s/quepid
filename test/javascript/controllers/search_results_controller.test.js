@@ -147,6 +147,21 @@ describe("SearchResultsController", () => {
     expect(toggleQuery).toHaveBeenCalledWith("1")
   })
 
+  it("publishes pagination and collapse intents through the document store", () => {
+    const { controller } = controllerFor({ numFound: 2 })
+    controller.render()
+    const requestPaginateQuery = vi.fn()
+    const requestToggleQuery = vi.fn()
+    controller.store.requestPaginateQuery = requestPaginateQuery
+    controller.store.requestToggleQuery = requestToggleQuery
+
+    controller.paginate({ preventDefault: vi.fn() })
+    controller.collapse({ preventDefault: vi.fn() })
+
+    expect(requestPaginateQuery).toHaveBeenCalledWith("1", false)
+    expect(requestToggleQuery).toHaveBeenCalledWith("1")
+  })
+
   it("routes Score All ratings through the explicit query-state adapter", () => {
     const { controller } = controllerFor()
     controller.render()

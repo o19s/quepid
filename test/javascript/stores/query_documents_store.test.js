@@ -79,6 +79,23 @@ describe("QueryDocumentsStore", () => {
     expect(store.query(2)).not.toBeNull()
   })
 
+  it("publishes live-query intents without knowing their Angular owner", () => {
+    const commands = []
+    store.addEventListener("command", event => commands.push(event.detail))
+
+    store.requestToggleQuery(12)
+    store.requestPaginateQuery(12, true)
+    store.requestRateDocument(12, "doc-1", 2)
+    store.requestRateAll(12, null)
+
+    expect(commands).toEqual([
+      { command: "toggle-query", queryId: 12 },
+      { command: "paginate-query", queryId: 12, ratedOnly: true },
+      { command: "rate-document", queryId: 12, docId: "doc-1", rating: 2 },
+      { command: "rate-all", queryId: 12, rating: null }
+    ])
+  })
+
   it("preserves display state when a search refreshes documents", () => {
     store.replaceQuery(8, { docs: [{ id: "first" }] })
     store.updateQueryState(8, { expanded: true, resultsView: 2 })

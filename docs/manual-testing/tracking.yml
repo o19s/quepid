@@ -224,9 +224,9 @@ parts:
         paths: ["app/models/query.rb", "app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js", "app/assets/javascripts/components/query_options/query_options_controller.js"]
       "4.6":
         title: "Rate a document"
-        last_run: 2026-09-22T20:56:00Z
+        last_run: 2026-09-23T20:20:00Z
         result: pass
-        notes: "Covered live: Playwright MCP on SOLR CASE (case 6), using the temporary bulk query 'deangularizing bulk one'. Opened its first result's rating popover, selected Relevant, and confirmed the rating badge changed from '--' to '1'. The associated query score updated to 1.00 and the case score updated from 0.46 to 0.51 without a reload. Deleted the temporary query afterward, removing its test rating. Console showed 0 errors. Not covered live: Score All bulk rating, reset-rating on an existing query, or the missing/duplicate-document edge cases."
+        notes: "Covered live: Playwright MCP on STATIC CASE (case 4). Expanded the query, rated the first result (badge '--' to '1', query score 0.00 to 1.00), then reopened the popover and used RESET (badge back to '--', score back to 0.00). Console showed 0 errors. Not covered live: reload persistence, Score All bulk rating, or missing/duplicate-document edge cases."
         paths: ["app/controllers/ratings_controller.rb", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/query_row_controller.js", "app/javascript/controllers/query_unrated_badge_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/scoring.js", "app/javascript/quepid_search.js", "app/javascript/quepid_store.js", "app/javascript/stores/case_score_store.js", "app/javascript/stores/query_collection_store.js", "app/javascript/stores/query_documents_store.js", "app/assets/javascripts/controllers/searchResult.js", "app/assets/javascripts/directives/searchResult.js", "app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/services/rateScaleSvc.js", "app/assets/javascripts/services/queriesSvc.js", "app/assets/javascripts/filters/scoreDisplay.js", "app/assets/javascripts/filters/ratingBgStyle.js", "test/playwright/angular_case_helpers.ts"]
       "4.7":
         title: "Case & query score badges"
@@ -278,10 +278,10 @@ parts:
         paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/assets/templates/views/devQueryParams.html", "app/views/core/index.html.erb"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
-        last_run: 2026-09-23T19:29:00Z
+        last_run: 2026-09-23T20:20:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on case 6 after the expanded-results seam split: expanded the meetings query, confirmed Stimulus-rendered results, Score All, deferred query tools, depth/rated state area, and the next-page action; clicked next page and observed 0 console errors. The existing disposable-query DELETE coverage remains valid; Copy and forced search-error paths were not re-driven in this pass."
-        paths: ["app/models/query.rb", "app/javascript/controllers/search_results_template.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/controllers/query_delete_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/clipboard.js", "config/importmap.rb"]
+        notes: "Covered live: Playwright MCP on STATIC CASE (case 4). Expanded the query, confirmed the Stimulus-rendered results/footer, collapsed and reopened the results pane through the new store intent path, and observed 0 console errors. Not covered live: copy-to-clipboard, delete confirmation, or forced search-error paths in this pass."
+        paths: ["app/models/query.rb", "app/javascript/controllers/search_results_template.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/controllers/query_delete_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/clipboard.js", "config/importmap.rb"]
       "4.16":
         title: "Query Notes & Information Need"
         last_run: 2026-09-23T16:01:00Z

@@ -202,7 +202,31 @@ angular.module('QuepidApp')
         return svc.queries[queryId] || svc.queries[String(queryId)] || null;
       };
 
-      window.quepidSearch.queryState.rateDocument = function(queryId, docId, rating) {
+      // The expanded-results renderer publishes user intents through the document
+      // store. Angular still owns these live-query operations, but no longer needs
+      // to be reached through a window command adapter from that renderer.
+      if (queryDocumentsStore) {
+        queryDocumentsStore.addEventListener('command', function(event) {
+          var detail = event.detail || {};
+          var handlers = {
+            'rate-document': function() {
+              return rateDocument(detail.queryId, detail.docId, detail.rating);
+            },
+            'rate-all': function() {
+              return rateAll(detail.queryId, detail.rating);
+            },
+            'toggle-query': function() {
+              return toggleQuery(detail.queryId);
+            },
+            'paginate-query': function() {
+              return paginateQuery(detail.queryId, detail.ratedOnly);
+            }
+          };
+          if (handlers[detail.command]) handlers[detail.command]();
+        });
+      }
+
+      function rateDocument(queryId, docId, rating) {
         var query = window.quepidSearch.queryState.getQuery(queryId);
         if (!query) return false;
 
@@ -221,9 +245,10 @@ angular.module('QuepidApp')
           query.touchModifiedAt();
         });
         return true;
-      };
+      }
+      window.quepidSearch.queryState.rateDocument = rateDocument;
 
-      window.quepidSearch.queryState.rateAll = function(queryId, rating) {
+      function rateAll(queryId, rating) {
         var query = window.quepidSearch.queryState.getQuery(queryId);
         if (!query) return false;
 
@@ -242,12 +267,13 @@ angular.module('QuepidApp')
           query.touchModifiedAt();
         });
         return true;
-      };
+      }
+      window.quepidSearch.queryState.rateAll = rateAll;
 
       // Explicit command adapters for the Stimulus expanded-results renderer.
       // Query objects remain Angular-owned, but the renderer does not discover
       // them through a compiled Angular controller.
-      window.quepidSearch.queryState.toggleQuery = function(queryId) {
+      function toggleQuery(queryId) {
         var query = window.quepidSearch.queryState.getQuery(queryId);
         if (!query) return false;
 
@@ -262,9 +288,10 @@ angular.module('QuepidApp')
           });
         }
         return true;
-      };
+      }
+      window.quepidSearch.queryState.toggleQuery = toggleQuery;
 
-      window.quepidSearch.queryState.paginateQuery = function(queryId, ratedOnly) {
+      function paginateQuery(queryId, ratedOnly) {
         var query = window.quepidSearch.queryState.getQuery(queryId);
         if (!query) return false;
 
@@ -276,7 +303,8 @@ angular.module('QuepidApp')
           }
         });
         return true;
-      };
+      }
+      window.quepidSearch.queryState.paginateQuery = paginateQuery;
 
       // Shared "clone settings with the selectedTry overridden" pattern for a one-off preview
       // search - used by both docFinder.js's findDocsByPreviewingQueryParams() (overriding args
