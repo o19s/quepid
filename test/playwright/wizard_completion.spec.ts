@@ -17,7 +17,7 @@ import { dynamicRegions } from './angular_case_helpers';
  * We do NOT run this against an existing fixture case (e.g. case id 1,
  * which other specs share): the wizard's Finish step renames the
  * *current* case and adds queries to it in place (WizardModalCtrl#submit
- * -> caseSvc.renameCase + queriesSvc.persistQueries), so completing it on
+ * -> caseSvc.renameCase + the query lifecycle persistence contract), so completing it on
  * a shared case would corrupt other tests' fixtures. Instead we first
  * create a disposable case via the header's "Create a case" button (same
  * caseSvc.createCase() the wizard's own "New Case" affordance uses), run

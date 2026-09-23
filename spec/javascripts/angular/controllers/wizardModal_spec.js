@@ -8,7 +8,7 @@ describe('Controller: WizardModalCtrl', function () {
   beforeEach(module('QuepidTest'));
 
   var WizardModalCtrl;
-  var $rootScope, scope;
+  var $rootScope, $q, scope;
   var settingsSvc;
   var $httpBackend;
 
@@ -73,8 +73,9 @@ describe('Controller: WizardModalCtrl', function () {
       $provide.value('userSvc', mockUserSvc);
       $provide.value('WizardHandler', mockWizardHandler);
     });
-    inject(function ($injector, $controller, _$rootScope_, _settingsSvc_) {
+    inject(function ($injector, $controller, _$rootScope_, _$q_, _settingsSvc_) {
       $rootScope = _$rootScope_;
+      $q = _$q_;
       scope = $rootScope.$new();
       settingsSvc = _settingsSvc_;
       $httpBackend = $injector.get('$httpBackend');
@@ -107,14 +108,6 @@ describe('Controller: WizardModalCtrl', function () {
       $httpBackend.verifyNoOutstandingExpectation();
     });
 
-    var newQueryResp = {
-      display_order: [2,3,1,0],
-      query: {
-        'query_text': 'foo',
-        'queryId': '3',
-        'deleted': 'false'
-      }
-    };
     var mockFullQueriesResp = {
       display_order: [2,1,0],
       queries: [
@@ -189,21 +182,25 @@ describe('Controller: WizardModalCtrl', function () {
       $httpBackend.expectGET('api/cases/0/scorers').respond(200, {});
       $httpBackend.expectGET('api/cases/0/queries?bootstrap=true').respond(200, mockFullQueriesResp);
 
+      var persistQueries = spyOn(window.quepidSearch.queryLifecycle, 'persistQueries')
+        .and.returnValue($q.when({status: 200, data: mockFullQueriesResp}));
+
       for (var i = 0; i < 10; i++) {
         var testQuery = 'foo ' + i;
         scope.pendingWizardSettings.addQuery(testQuery);
 
         expect(scope.pendingWizardSettings.newQueries).toContain({queryString: testQuery});
-
-        var newQueryRespIth = angular.copy(newQueryResp);
-        newQueryRespIth.query['query_text'] = testQuery;
-
-        $httpBackend.whenPOST('api/bulk/cases/0/queries').respond(200, newQueryRespIth);
-        $httpBackend.whenJSONP(expectedSolrUrl(mockTry.search_url)).respond(200, {});
       }
 
       scope.pendingWizardSettings.submit();
       $httpBackend.flush();
+      $rootScope.$digest();
+
+      expect(persistQueries).toHaveBeenCalledWith(0, [
+        'foo 0', 'foo 1', 'foo 2', 'foo 3', 'foo 4',
+        'foo 5', 'foo 6', 'foo 7', 'foo 8', 'foo 9'
+      ]);
+      expect(mockModalInstance.close).toHaveBeenCalled();
     });
 
     it('shows an error when finish save fails', function() {

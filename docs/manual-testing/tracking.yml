@@ -160,10 +160,10 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
       "3.2":
         title: "Create a new case (setup wizard)"
-        last_run: 2026-09-21T18:55:00Z
+        last_run: 2026-09-23T13:30:00Z
         result: pass
-        notes: "Covered live: driven by hand through Playwright MCP earlier today (full wizard: name, endpoint, fields, query, finish), then re-verified against the committed code by the automated wizard_completion.spec.ts run, which matters because case_toolbar_controller.js was rewritten after the hand drive. That spec asserts the finished case's heading matches the name typed into the wizard — the heading being the server-rendered case header — so it exercises the wizard's rename reaching the header over the quepid:case-renamed bridge, plus a screenshot baseline of the completed case. It cleans up after itself (deletes the case and resets completed_case_wizard in nested finallys). Not covered live: wizard error/validation states, the conditional Welcome step, and re-running the wizard against a case that already has data."
-        paths: ["app/controllers/core_controller.rb", "app/assets/javascripts/controllers/wizardCtrl.js", "app/assets/javascripts/controllers/wizardModal.js", "app/assets/templates/views/wizardModal.html", "app/javascript/angular_app.js"]
+        notes: "Covered live via Playwright MCP on disposable case 627: completed Welcome/Name/Endpoint/Fields/Query/Finish, observed POST api/bulk/cases/627/queries returning 200, confirmed the renamed workbench showed one persisted query, and inspected finish/completed screenshots under .playwright-mcp/wizard-query-persistence/. Deleted the case and reset completed_case_wizard afterward. Also passed the automated wizard_completion.spec.ts flow. Not covered live: wizard error/validation states or rerunning against a case that already has data."
+        paths: ["app/controllers/core_controller.rb", "app/assets/javascripts/controllers/wizardCtrl.js", "app/assets/javascripts/controllers/wizardModal.js", "app/assets/javascripts/services/queriesSvc.js", "app/assets/templates/views/wizardModal.html", "app/javascript/quepid_search.js", "app/javascript/utils/query_lifecycle.js"]
       "3.3":
         title: "Import a case from JSON"
         last_run: 2026-09-15T16:34:00Z

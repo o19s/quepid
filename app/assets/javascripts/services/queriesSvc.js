@@ -129,6 +129,7 @@ angular.module('QuepidApp')
       // still owns Query construction, search, and scoring until those seams migrate.
       window.quepidSearch.queryLifecycle.prepareQueries = prepareQueries;
       window.quepidSearch.queryLifecycle.commitQueries = commitQueries;
+      window.quepidSearch.queryLifecycle.commitPersistedQueries = commitPersistedQueries;
 
       // Rated-docs lookup rules live in app/javascript/utils/rated_docs.js (Vitest-covered);
       // these stay as the Angular-facing names that queriesCtrl.js and docFinder.js call.
@@ -1408,6 +1409,16 @@ angular.module('QuepidApp')
         });
       }
 
+      // The setup wizard historically persisted its bulk queries without
+      // searching them. Keep that behavior while moving the HTTP request out
+      // of this service; the live query/search migration will own this state
+      // commit later.
+      function commitPersistedQueries(persisted) {
+        svc.queries = {};
+        addQueriesFromResp(persisted.data);
+        return {};
+      }
+
       function commitQueries(prepared, persisted) {
         if (prepared.query) {
           return commitSingleQuery(prepared.query, persisted);
@@ -1415,88 +1426,6 @@ angular.module('QuepidApp')
 
         return commitBulkQueries(persisted);
       }
-
-      this.persistQuery = function(query) {
-        let self = this;
-
-        return $q(function(resolve, reject) {
-          if (query.persisted()) {
-            resolve();
-            return;
-          }
-
-          var request = window.quepidSearch.queryLifecycle.createRequest(caseNo, query.queryText);
-
-          $http(request)
-            .then(function(response) {
-              let data = response.data;
-              if ( response.status === 204 ) {
-                // This typically happens when the query already exists, so
-                // no change happened
-                resolve();
-              } else {
-                // Update the display order based on the new one after the query creation
-                self.displayOrder = data.display_order;
-
-                // Eric thinks we should be running this through a factory to map api to front end...
-                let addedQuery = data.query;
-                addedQuery.queryId = addedQuery.query_id;
-
-                query.queryId = addedQuery.query_id;
-                query.ratingsStore.setQueryId(addedQuery.queryId);
-
-                self.queries[query.queryId] = query;
-                svcVersion++;
-                //broadcastSvc.send('updatedQueriesList');
-
-                resolve();
-              }
-            }, function(response) {
-              let data = response.data;
-              reject(data);
-            }).catch(function(response) {
-              $log.debug('Failed to persist query');
-              return response;
-            });
-        });
-      };
-
-      this.persistQueries = function(queries) {
-        let deferred = $q.defer();
-
-        let queryTexts = [];
-        angular.forEach(queries, function(query) {
-          if ( !query.persisted() ) {
-            queryTexts.push(query.queryText);
-          }
-        });
-
-        if ( queryTexts.length === 0 ) {
-          deferred.resolve();
-          return deferred.promise;
-        }
-
-        var request = window.quepidSearch.queryLifecycle.bulkCreateRequest(caseNo, queryTexts);
-
-        let that = this;
-        $http(request)
-          .then(function(response) {
-            let data = response.data;
-
-            // Update the display order based on the new one after the query creation
-            that.queries = {};
-            addQueriesFromResp(data);
-            deferred.resolve();
-        }, function(response) {
-            let data = response.data;
-            deferred.reject(data);
-          }).catch(function(response) {
-            $log.debug('Failed to persist queries');
-            return response;
-          });
-
-        return deferred.promise;
-      };
 
       // get the full list of queries sorted by create/manual order
       // only call this when our version() changes

@@ -927,22 +927,28 @@ angular.module('QuepidApp')
             // Case name is already persisted above, before settingsSvc.update() could navigate.
             var length = $scope.pendingWizardSettings.newQueries.length;
             
-            var queries = [];
+            var queryTexts = [];
             for(var queryIndex = 0; queryIndex < length; queryIndex++){
               var query  = $scope.pendingWizardSettings.newQueries[queryIndex];
 
               if( typeof(query.queryString) !== 'undefined' && query.queryString !== '' ) {
-                //var q = queriesSvc.createQuery(query.queryString);
-                //queriesSvc.persistQuery(q);
-                queries.push(queriesSvc.createQuery(query.queryString));
+                queryTexts.push(query.queryString);
               }
             }
-            
-            queriesSvc.persistQueries(queries);
 
-            $rootScope.currentUser.shownIntroWizard();
+            var queryLifecycle = window.quepidSearch.queryLifecycle;
+            var persistQueries = $q.resolve();
+            if (queryTexts.length > 0) {
+              persistQueries = queryLifecycle.persistQueries(caseTryNavSvc.getCaseNo(), queryTexts)
+                .then(function(persisted) {
+                  return queryLifecycle.commitPersistedQueries(persisted);
+                });
+            }
 
-            $quepidModalInstance.close();
+            return persistQueries.then(function() {
+              $rootScope.currentUser.shownIntroWizard();
+              $quepidModalInstance.close();
+            });
           })
           .catch(function(response) {
             $log.error('Wizard finish save failed', response);
