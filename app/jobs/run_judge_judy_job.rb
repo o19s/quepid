@@ -126,22 +126,6 @@ class RunJudgeJudyJob < ApplicationJob
 
   private
 
-  # If we don't have a rating, assume it's not rateable and mark it so. If the
-  # LLM returned a rating outside this book's configured scale -- a human
-  # judge could never produce this (the judging UI only offers buttons for
-  # the book's actual scale values) -- don't trust it, but keep the raw value
-  # visible for review rather than silently dropping it. (A book with no
-  # scale configured at all is left alone here -- there's nothing to
-  # validate against, so its rating passes through as-is.)
-  def mark_unrateable_if_invalid judgement, book
-    if judgement.rating.blank?
-      judgement.mark_unrateable
-    elsif book.scale.present? && book.scale.map(&:to_f).exclude?(judgement.rating.to_f)
-      judgement.explanation = "#{judgement.explanation} [LLM returned rating #{judgement.rating.inspect}, outside this book's scale #{book.scale.inspect}]".strip
-      judgement.mark_unrateable
-    end
-  end
-
   def broadcast_judging_detail book, judge, counter, total_pairs, judgement
     Turbo::StreamsChannel.broadcast_update_to(
       book.judgements_broadcast_channel,
