@@ -1,5 +1,5 @@
 <% title = capture do %>
-  <i class="bi bi-book"></i> Import Data Into This Book
+  <i class="bi bi-book"></i> Import Data for <%= book_title(@book) %>
 <% end %>
 <%= page_header title do %>
   <div class="btn-toolbar mb-2 mb-md-0">
@@ -8,6 +8,9 @@
     </div>
   </div>
 <% end %>
+
+<%= render 'books/tabs', book: @book %>
+<p/>
 
 <div class="card" style="">
   <div class="card-body">
