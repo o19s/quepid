@@ -20,8 +20,8 @@ export class QueryDocumentsStore extends EventTarget {
     this._queries.set(String(queryId), {
       queryId: Number(queryId),
       ...state,
-      docs: docs.map(snapshotDocument),
-      ratedDocs: ratedDocs.map(snapshotDocument)
+      docs: docs.map(doc => snapshotDocument(doc, state)),
+      ratedDocs: ratedDocs.map(doc => snapshotDocument(doc, state))
     })
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(queryId) }))
   }
@@ -45,7 +45,29 @@ export class QueryDocumentsStore extends EventTarget {
   }
 }
 
-function snapshotDocument(doc) {
+function snapshotDocument(doc, state = {}) {
+  let matchExplain = null
+  if (doc.explain && doc.hotMatchesOutOf) {
+    try {
+      const explain = doc.explain()
+      const hasChildren = explain.children.length > 0
+      matchExplain = {
+        hasChildren,
+        hots: doc.hotMatchesOutOf(state.maxDocScore),
+        explainToStr: hasChildren ? explain.toStr() : null,
+        explainAsJson: hasChildren ? null : JSON.stringify(explain.asJson, null, 2),
+        explainRawStr: explain.rawStr(),
+        docTitle: doc.title,
+        docId: doc.id,
+        docScore: doc.score?.() ?? null
+      }
+    } catch (_error) {
+      // Explain data is optional display enhancement; a failed explanation
+      // must not prevent the search result itself from rendering.
+      matchExplain = null
+    }
+  }
+
   return {
     id: doc.id,
     title: doc.title ?? "",
@@ -60,6 +82,7 @@ function snapshotDocument(doc) {
     unabridgeds: { ...(doc.unabridgeds || {}) },
     snippets: { ...(doc.subSnippets?.("<strong>", "</strong>") || {}) },
     rawFields: doc.doc?.origin?.() || {},
+    matchExplain,
     error: doc.error,
     rating: doc.hasRating?.() ? doc.getRating?.() : null,
     score: doc.score?.() ?? null

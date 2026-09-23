@@ -15,19 +15,20 @@ function controllerFor({ showOnlyRated = false, results = true } = {}) {
   controller.hasContentTarget = true
   controller.hasResultsTarget = true
   const query = {
-    version: () => 3,
     isToggled: () => true,
-    state: () => "success",
+    queryId: 1
+  }
+  const snapshot = {
+    queryId: 1,
     docs: [{ id: "all" }],
-    ratedDocs: [{ id: "rated" }],
-    numFound: 1
+    ratedDocs: [{ id: "rated" }]
   }
   controller.angularScope = {
     query,
     queriesSvc: { showOnlyRated },
     displayed: { results: results ? 2 : 3, resultsView: { results: 2, diffs: 3 } }
   }
-  controller.childScopes = []
+  controller.store = { query: () => snapshot }
   return { controller, query }
 }
 
@@ -38,10 +39,10 @@ describe("SearchResultsController", () => {
 
   it("selects current or rated documents without changing the query service", () => {
     const current = controllerFor()
-    expect(current.controller.visibleDocuments(current.query)).toEqual([{ id: "all" }])
+    expect(current.controller.visibleDocuments(current.controller.store.query())).toEqual([{ id: "all" }])
 
     const rated = controllerFor({ showOnlyRated: true })
-    expect(rated.controller.visibleDocuments(rated.query)).toEqual([{ id: "rated" }])
+    expect(rated.controller.visibleDocuments(rated.controller.store.query())).toEqual([{ id: "rated" }])
   })
 
   it("does not render documents while the diff view is selected", () => {
@@ -62,9 +63,9 @@ describe("SearchResultsController", () => {
 
   it("changes the render key when the query replaces documents with the same ids", () => {
     const { controller, query } = controllerFor()
-    const initialVersion = controller.renderVersion()
-    query.version = () => 4
+    const initialVersion = controller.renderStateKey()
+    query.isToggled = () => false
 
-    expect(controller.renderVersion()).not.toBe(initialVersion)
+    expect(controller.renderStateKey()).not.toBe(initialVersion)
   })
 })

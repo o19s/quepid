@@ -167,6 +167,8 @@ angular.module('QuepidApp')
           ratedDocsUnsupported: query.ratedDocsUnsupported,
           errorText: query.errorText,
           depthOfRating: query.depthOfRating,
+          ratingScale: query.ratings && query.ratings.scale,
+          maxDocScore: query.maxDocScore(),
           version: query.version()
         });
       }

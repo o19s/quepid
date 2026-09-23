@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest"
 import SearchResultController from "controllers/search_result_controller"
 
-function buildController(scope) {
+function buildController(documentSnapshot, querySnapshot = {}) {
   const element = document.createElement("search-result")
   element.setAttribute("rank", "2")
   document.body.appendChild(element)
   const controller = Object.create(SearchResultController.prototype)
   controller.element = element
-  controller.angularScope = scope
+  element.__searchResultDocument = documentSnapshot
+  element.__searchResultQuery = querySnapshot
   controller.hasContentTarget = true
   controller.contentTarget = document.createElement("div")
   element.appendChild(controller.contentTarget)
@@ -15,8 +16,9 @@ function buildController(scope) {
   return controller
 }
 
-function scopeFor(overrides = {}) {
+function snapshotFor(overrides = {}) {
   const doc = {
+    id: "doc-1",
     title: "A result",
     thumb: null,
     image: null,
@@ -24,24 +26,18 @@ function scopeFor(overrides = {}) {
     translations: {},
     unabridgeds: {},
     error: undefined,
-    subSnippets: () => ({ title: "<strong>A result</strong>" }),
-    hasThumb: () => false,
-    hasImage: () => false,
-    hasRating: () => false,
-    getRating: () => null
+    snippets: { title: "<strong>A result</strong>" },
+    rawFields: { title: "A result" },
+    hasThumb: false,
+    hasImage: false,
+    rating: null
   }
-  const query = { depthOfRating: 0 }
-  return {
-    doc: { ...doc, ...overrides.doc },
-    query: { ...query, ...overrides.query },
-    ratings: { scale: {} },
-    resolveFieldValue: () => "A result"
-  }
+  return { ...doc, ...overrides }
 }
 
 describe("SearchResultController", () => {
   it("renders the document title, fields, and rank", () => {
-    const controller = buildController(scopeFor())
+    const controller = buildController(snapshotFor(), { depthOfRating: 0, ratingScale: {} })
     controller.render()
 
     expect(controller.contentTarget.querySelector(".subTitle").textContent).toContain("A result")
@@ -50,7 +46,7 @@ describe("SearchResultController", () => {
   })
 
   it("renders an error without a rating control", () => {
-    const controller = buildController(scopeFor({ doc: { error: "missing id" } }))
+    const controller = buildController(snapshotFor({ error: "missing id" }), { depthOfRating: 0, ratingScale: {} })
     controller.render()
 
     expect(controller.contentTarget.querySelector(".single-rating")).toBeNull()
@@ -58,11 +54,10 @@ describe("SearchResultController", () => {
   })
 
   it("preserves falsy field values", () => {
-    const controller = buildController(scopeFor({
-      doc: {
-        subSnippets: () => ({ zero: 0, falseValue: false })
-      }
-    }))
+    const controller = buildController(snapshotFor({
+      snippets: { zero: "0", falseValue: "false" },
+      rawFields: { zero: 0, falseValue: false }
+    }), { depthOfRating: 0, ratingScale: {} })
     controller.render()
 
     expect(controller.contentTarget.textContent).toContain("0")
@@ -70,10 +65,10 @@ describe("SearchResultController", () => {
   })
 
   it("uses the rating scale and preserves the Angular mutation bridge", () => {
-    const doc = scopeFor().doc
-    doc.hasRating = () => true
-    doc.getRating = () => 2
-    const controller = buildController({ ...scopeFor({ doc }), ratings: { scale: { 2: { color: "green" } } } })
+    const controller = buildController(snapshotFor({ rating: 2 }), {
+      depthOfRating: 0,
+      ratingScale: { 2: { color: "green" } }
+    })
     controller.render()
 
     const rating = controller.contentTarget.querySelector(".single-rating")

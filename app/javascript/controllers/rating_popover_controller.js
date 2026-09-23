@@ -67,14 +67,17 @@ export default class extends Controller {
   }
 
   rate(rating) {
+    const detail = { rating }
+    if (this.element.closest("search-result")) detail.source = "single-result"
     this.element.dispatchEvent(
-      new CustomEvent("rating-popover:rate", { bubbles: true, detail: { rating } })
+      new CustomEvent("rating-popover:rate", { bubbles: true, detail })
     )
     this.hide()
   }
 
   reset() {
-    this.element.dispatchEvent(new CustomEvent("rating-popover:reset", { bubbles: true }))
+    const detail = this.element.closest("search-result") ? { source: "single-result" } : {}
+    this.element.dispatchEvent(new CustomEvent("rating-popover:reset", { bubbles: true, detail }))
     this.hide()
   }
 

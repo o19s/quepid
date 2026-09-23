@@ -1,67 +1,32 @@
 import { Controller } from "@hotwired/stimulus"
 
 /**
- * Renders one live search result. Angular still owns the surrounding query
- * state and rating mutations; this controller temporarily reads that scope
- * until the query/document store migration is complete.
+ * Renders one document snapshot. Search, rating mutations, and detailed
+ * document commands remain outside this renderer behind the parent controller.
  */
 export default class extends Controller {
   static targets = ["content"]
   static values = { explainView: String }
 
   connect() {
-    this.handleRatingChange = () => {
-      requestAnimationFrame(() => this.refreshRating())
-    }
-    this.element.addEventListener("rating-popover:rate", this.handleRatingChange)
-    this.element.addEventListener("rating-popover:reset", this.handleRatingChange)
-    this.attachToAngularScope()
-  }
-
-  attachToAngularScope() {
-    const angularElement = this.element.__angularScope
-      ? null
-      : window.angular?.element(this.element)
-    this.angularScope = this.element.__angularScope || angularElement?.isolateScope?.() || angularElement?.scope?.()
-    if (!this.angularScope) {
-      this.retryHandle = requestAnimationFrame(() => this.attachToAngularScope())
-      return
-    }
-
-    this.angularScope.$watch(
-      () => this.angularScope.doc?.getRating?.(),
-      () => this.refreshRating()
-    )
-
     this.render()
   }
 
   disconnect() {
-    if (this.retryHandle) cancelAnimationFrame(this.retryHandle)
-    this.element.removeEventListener("rating-popover:rate", this.handleRatingChange)
-    this.element.removeEventListener("rating-popover:reset", this.handleRatingChange)
-    this.angularScope = null
+    // The parent search-results controller owns mutation listeners.
   }
 
   render() {
-    if (!this.angularScope || !this.hasContentTarget) return
-
-    const { doc, query } = this.angularScope
-    if (!doc || !query) return
-
-    this.contentTarget.replaceChildren(this.renderResult(doc, query))
+    if (!this.hasContentTarget || !this.documentSnapshot) return
+    this.contentTarget.replaceChildren(this.renderResult(this.documentSnapshot, this.querySnapshot))
   }
 
-  refreshRating() {
-    if (!this.angularScope) return
-    const trigger = this.element.querySelector(".single-rating .btn")
-    if (!trigger) return
-    const doc = this.angularScope.doc
-    const rating = doc.hasRating() ? doc.getRating() : "--"
-    trigger.firstChild.textContent = `${rating} `
-    const scale = this.angularScope.ratings?.scale || {}
-    const color = this.ratingColor(rating, scale)
-    trigger.style.backgroundColor = color
+  get documentSnapshot() {
+    return this.element.__searchResultDocument
+  }
+
+  get querySnapshot() {
+    return this.element.__searchResultQuery || {}
   }
 
   renderResult(doc, query) {
@@ -76,14 +41,14 @@ export default class extends Controller {
           <ul class="subfields flex-grow-1"></ul>
         </div>
       </div>
-      ${this.explainViewValue === "full" ? '<div class="col-md-2"><div class="stacked-chart-container" data-controller="match-explain"></div></div>' : ""}
+      ${this.explainViewValue === "full" && doc.matchExplain ? '<div class="col-md-2"><div class="stacked-chart-container" data-controller="match-explain"></div></div>' : ""}
     `
 
     const ratings = row.querySelector(".ratings")
-    if (doc.error === undefined) ratings.appendChild(this.ratingControl(doc))
+    if (doc.error === undefined) ratings.appendChild(this.ratingControl(doc, query.ratingScale || {}))
 
-    this.renderImage(row, ".result-thumb-col", ".result-thumbnail", doc.thumb, doc.thumb_options, doc.hasThumb?.())
-    this.renderImage(row, ".result-image-col", ".result-image", doc.image, doc.image_options, doc.hasImage?.())
+    this.renderImage(row, ".result-thumb-col", ".result-thumbnail", doc.thumb, doc.thumb_options, doc.hasThumb)
+    this.renderImage(row, ".result-image-col", ".result-image", doc.image, doc.image_options, doc.hasImage)
 
     const fields = row.querySelector(".subfields")
     const title = document.createElement("li")
@@ -93,7 +58,10 @@ export default class extends Controller {
     titleLink.textContent = doc.title ?? ""
     titleLink.addEventListener("click", (event) => {
       event.preventDefault()
-      this.angularScope.showDoc()
+      this.element.dispatchEvent(new CustomEvent("search-result:show-document", {
+        bubbles: true,
+        detail: { docId: doc.id }
+      }))
     })
     title.appendChild(titleLink)
     fields.appendChild(title)
@@ -109,17 +77,16 @@ export default class extends Controller {
     this.appendFields(fields, doc.translations, (name, value) => this.htmlField(name, value, true))
     this.appendFields(fields, doc.unabridgeds, (name, value) => this.htmlField(name, value))
 
-    const snippets = doc.subSnippets("<strong>", "</strong>")
-    this.appendFields(fields, snippets, (name, value) => this.snippetField(name, value, doc))
+    this.appendFields(fields, doc.snippets, (name, value) => this.snippetField(name, value, doc))
 
     const rank = document.createElement("li")
     rank.className = "result-rank"
     rank.textContent = `Rank: #${this.element.getAttribute("rank") || ""}`
     fields.appendChild(rank)
 
-    if (this.explainViewValue === "full") {
+    if (this.explainViewValue === "full" && doc.matchExplain) {
       const explain = row.querySelector("[data-controller=match-explain]")
-      explain.setAttribute("data-match-explain-data-value", JSON.stringify(this.angularScope.matchExplainData()))
+      explain.setAttribute("data-match-explain-data-value", JSON.stringify(doc.matchExplain))
     }
 
     const footer = document.createElement("div")
@@ -133,21 +100,20 @@ export default class extends Controller {
     return wrapper
   }
 
-  ratingControl(doc) {
+  ratingControl(doc, scale) {
     const container = document.createElement("div")
     container.className = "single-rating"
     container.dataset.controller = "rating-popover"
-    container.dataset.ratingPopoverScaleValue = JSON.stringify(this.angularScope.ratings?.scale || {})
+    container.dataset.ratingPopoverScaleValue = JSON.stringify(scale)
 
     const trigger = document.createElement("span")
     trigger.className = "btn"
-    const rating = doc.hasRating() ? doc.getRating() : "--"
+    const rating = doc.rating ?? "--"
     trigger.textContent = `${rating} `
     const icon = document.createElement("i")
     icon.className = "bi bi-caret-down-fill"
     icon.setAttribute("aria-hidden", "true")
     trigger.appendChild(icon)
-    const scale = this.angularScope.ratings?.scale || {}
     trigger.style.backgroundColor = this.ratingColor(rating, scale)
     container.appendChild(trigger)
     return container
@@ -225,7 +191,7 @@ export default class extends Controller {
 
   snippetField(name, value, doc) {
     const item = this.htmlField(name, value)
-    const rawValue = this.angularScope.resolveFieldValue(name)
+    const rawValue = this.resolveFieldValue(doc.rawFields, name)
     const text = String(rawValue ?? "")
     const content = item.lastElementChild
     if (typeof rawValue === "object") {
@@ -244,9 +210,34 @@ export default class extends Controller {
     return item
   }
 
-  appendSanitized(element, value, prefix = "") {
-    const injector = window.angular?.element(document.body).injector?.()
-    const sanitize = injector?.get?.("$sanitize")
-    element.innerHTML = `${prefix}${sanitize ? sanitize(String(value ?? "")) : String(value ?? "")}`
+  resolveFieldValue(raw, fieldName) {
+    if (Object.prototype.hasOwnProperty.call(raw || {}, fieldName)) return raw[fieldName]
+    return fieldName.split(".").reduce((value, key) => (value && typeof value === "object" ? value[key] : undefined), raw)
   }
+
+  appendSanitized(element, value, prefix = "") {
+    element.innerHTML = `${prefix}${sanitizeHtml(String(value ?? ""))}`
+  }
+}
+
+// Search snippets contain harmless markup such as <strong>, but their values
+// originate in search-engine responses. Keep the old ngSanitize boundary in
+// the snapshot renderer instead of assigning response HTML directly.
+function sanitizeHtml(value) {
+  const template = document.createElement("template")
+  template.innerHTML = value
+  const allowedTags = new Set(["B", "BR", "EM", "I", "MARK", "STRONG"])
+  const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_ELEMENT)
+  const elements = []
+  while (walker.nextNode()) elements.push(walker.currentNode)
+
+  elements.forEach(element => {
+    if (!allowedTags.has(element.tagName)) {
+      element.replaceWith(document.createTextNode(element.textContent || ""))
+      return
+    }
+    Array.from(element.attributes).forEach(attribute => element.removeAttribute(attribute.name))
+  })
+
+  return template.innerHTML
 }

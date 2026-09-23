@@ -285,9 +285,9 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 1. **Remove the expanded-results Angular bridge** — preserve browser-to-customer-engine search and client-side scoring, but move the `search-results` island's document rendering and controls onto the explicit store incrementally. Do not combine it with scorer sandboxing, diff migration, or wizard UI replacement.
 
-The first substep is now in place: `query_documents_store.js` is a dual-run plain-document read model, and `queriesSvc` publishes it after search, rated-document refresh, pagination, errors, and rating changes. The current DOM renderer still consumes the Angular `Query` objects; the next substep is switching that renderer to these snapshots while retaining Angular command adapters for mutations.
+The first two substeps are now in place: `query_documents_store.js` is a dual-run plain-document read model, and `search-results` renders its document DOM from those snapshots. `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Angular remains only behind explicit command/state adapters for live query state, rating mutations, and the detailed-document modal; the next substep is narrowing those adapters before removing the expanded-results bridge entirely.
 
-The query-list collection shell is Stimulus-rendered from `query_collection_store.js`, including filtering, sorting, pagination, and row hosts. Each expanded `search-results` island is still compiled against the live Angular `Query` object, so Angular continues to own search, documents, ratings, and scoring.
+The query-list collection shell is Stimulus-rendered from `query_collection_store.js`, including filtering, sorting, pagination, and row hosts. Each expanded `search-results` island is now Stimulus-rendered from plain document snapshots; Angular continues to own search, ratings, and scoring, with explicit adapters for the remaining commands.
 
 The diff/snapshot score badges stay Angular until `diffResultsSvc` migrates — out of this sequence.
 

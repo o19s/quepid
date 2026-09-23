@@ -249,15 +249,14 @@ test.describe('core layout golden paths', () => {
       await expect(queryScore).not.toHaveText('?');
       await expect(caseScore).not.toHaveText('?');
 
-      // Read query/doc identity and the actual rating value (not its
-      // formatted display text) via Angular scope, before any mutation, so
+      // Read query/doc identity and the snapshot rating before any mutation, so
       // afterEach can restore it precisely regardless of how this test ends.
       restoreState = await resultRating.evaluate((el) => {
-        const scope = (window as any).angular.element(el).scope();
+        const result = el.closest('search-result') as HTMLElement;
         return {
-          queryId: scope.query.queryId as number,
-          docId:   scope.doc.id as string,
-          rating:  (scope.doc.hasRating() ? scope.doc.getRating() : null) as number | null,
+          queryId: Number(result.dataset.queryId),
+          docId: result.dataset.docId as string,
+          rating: result.dataset.rating ? Number(result.dataset.rating) : null,
         };
       });
 

@@ -87,6 +87,21 @@ describe("RatingPopoverController", () => {
     expect(handle.instance.hide).toHaveBeenCalledTimes(1)
   })
 
+  it("marks a result rating so the surrounding Score All handler ignores it", () => {
+    const result = document.createElement("search-result")
+    result.appendChild(element)
+    document.body.appendChild(result)
+    const controller = buildController(element)
+    RatingPopoverController.prototype.connect.call(controller)
+
+    const listener = vi.fn()
+    element.addEventListener("rating-popover:rate", listener)
+    createBsPopover.mock.calls.at(-1)[1].body.querySelector(".ratingNum").click()
+
+    expect(listener.mock.calls[0][0].detail).toEqual({ rating: "1", source: "single-result" })
+    result.remove()
+  })
+
   it("re-renders and updates the popover body when the scale value changes", () => {
     const controller = buildController(element)
     RatingPopoverController.prototype.connect.call(controller)

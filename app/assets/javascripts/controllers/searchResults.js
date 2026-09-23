@@ -133,7 +133,11 @@ angular.module('QuepidApp')
       // source and stops the event there).
       $element.on('rating-popover:rate', function(event) {
         event.stopPropagation();
-        var newRating = parseInt(event.originalEvent.detail.rating, 10);
+        var detail = event.originalEvent.detail || {};
+        if (detail.source === 'single-result') {
+          return;
+        }
+        var newRating = parseInt(detail.rating, 10);
 
         src.query.rating = newRating;
 
@@ -152,6 +156,9 @@ angular.module('QuepidApp')
 
       $element.on('rating-popover:reset', function(event) {
         event.stopPropagation();
+        if ((event.originalEvent.detail || {}).source === 'single-result') {
+          return;
+        }
         src.query.rating = '--';
 
         var ids = [];
