@@ -3,7 +3,7 @@
 class AiJudgesController < ApplicationController
   before_action :set_team, only: [ :new, :clone ]
   before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy, :clone ]
-  before_action :set_book, only: [ :show, :new, :edit ]
+  before_action :set_book, only: [ :show, :new, :edit, :create, :update ]
 
   # Kept as a constant because tests and other callers refer to it; the text
   # itself now lives with the providers that use it (LlmProviders), since what
@@ -29,11 +29,9 @@ class AiJudgesController < ApplicationController
       llm_timeout:     30,
       llm_api_version: '',
     }
-    @book_id = params[:book_id]
   end
 
   def edit
-    @book_id = params[:book_id]
   end
 
   def clone
@@ -94,8 +92,11 @@ class AiJudgesController < ApplicationController
 
   # Arriving from a book (e.g. its Judgement Stats "Refine Prompt" link), the form shows
   # that book's scale as the judge will be sent it. Scoped like AiJudges::WizardController.
+  # Covers create/update too (via the form's hidden book_id field) so a
+  # validation failure re-render doesn't lose that context.
   def set_book
-    @book = current_user.books_involved_with.where(id: params[:book_id]).first if params[:book_id].present?
+    @book_id = params[:book_id]
+    @book = current_user.books_involved_with.where(id: @book_id).first if @book_id.present?
   end
 
   # Checkboxes suck: only touch teams the current user can actually see, so
