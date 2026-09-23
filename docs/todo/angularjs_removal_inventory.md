@@ -247,7 +247,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
-**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → qscore_query (86) → qscore_case (101) → query_options (137) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423) → import_ratings (674).
+**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → query_options (137) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423) → import_ratings (674).
 
 **Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResult`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, `quepidTypeahead`, `queryParams`, `quepidCollapse`. The expanded-results shell and document rendering now run through Stimulus and the document store. Annotations render through Stimulus, while qgraph still consumes them through a temporary Angular read bridge. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
 
@@ -275,7 +275,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Mechanism:** a plain-JS observable store built on `EventTarget` owns query/score/rating state. Stimulus controllers subscribe and write to the DOM directly. No reactive framework (React/Vue/Alpine/signals) and no bespoke reactivity layer — if the store grows a template syntax or a dependency graph, it has failed. Use the **Stimulus Values API + `xValueChanged()`** for display scalars (score, rating, max), as `rating_popover_controller.js` already does; keep data out of `data-*` attributes — never serialize a doc list into one.
 
-**The reactive surface is small and enumerable.** `ratingsStoreSvc.markDirty()` → `rating-changed` → the rated doc's badge (`ratingBgStyle`), the per-query score (`qscore_query.html`, 7 lines), the case score and label (`qscore_case.html`, 19 lines), `isNotAllRated` / `getNumFound()`, and diff scores when enabled. Four numbers and a background colour — the digest re-evaluates the world, the actual delta does not justify a framework.
+**The reactive surface is small and enumerable.** `ratingsStoreSvc.markDirty()` → `rating-changed` → the rated doc's badge (`ratingBgStyle`), the per-query score (`qscore-query` Stimulus controller), the case score and label (`qscore-case` Stimulus controller), `isNotAllRated` / `getNumFound()`, and diff scores when enabled. Four numbers and a background colour — the digest re-evaluates the world, the actual delta does not justify a framework.
 
 **This removes digest workarounds rather than porting them.** The version counters (`svcVersion`) and the 100 ms debounce in `queriesCtrl` exist because the digest offers no change notification. An explicit store with real change events deletes them — one reason to prefer it over any mechanism that reintroduces implicit invalidation.
 
@@ -421,13 +421,13 @@ Angular still compiles what is left, because custom elements inside `ng-app` are
 | Element | Why it stays |
 |---------|--------------|
 | `<qgraph>` | Score history chart; reads live off `MainCtrl`'s scope |
-| `<qscore-case>` (diff/snapshot usage only) | Snapshot scores come from `diffResultsSvc`; the primary badge is Stimulus |
+| Snapshot case score row | Snapshot scores come from the Angular diff engine and are rendered by the Stimulus `diff-case-scores` controller |
 | `<queries>` | The query list / search results island |
 | `<diff>`, `<import-ratings>` | Not yet migrated |
 | `ng-include 'views/_dev_settings.html'` | Tune Relevance drawer, still Angular |
 | `ng-click="toggleDevSettings()"` | Drawer toggle, on `MainCtrl` scope |
 
-**Keep `<qgraph>` and the diff `<qscore-case>` tags siblings of `<queries>` under the same `ng-controller`.** `<queries>` declares no isolate scope, so `QueriesCtrl` publishes `queries`, `maxScore`, `scores`, `annotations` and `getScorer()` onto `MainCtrl`'s scope — which is the only reason those bindings resolve. The primary case-score badge (`app/javascript/controllers/qscore_case_controller.js`) is a plain Stimulus-controlled `div` now, not an Angular element, but still lives at the same DOM position for `qscore.css`'s `:last-child`-based badge-spacing rules to apply correctly.
+**Keep `<qgraph>` as a sibling of `<queries>` under the same `ng-controller`.** `<queries>` declares no isolate scope, so `QueriesCtrl` publishes `queries`, `maxScore`, `scores`, `annotations` and `getScorer()` onto `MainCtrl`'s scope — which is the only reason those bindings resolve. The score badges are plain Stimulus-controlled elements and remain at the same DOM position for `qscore.css`'s `:last-child`-based badge-spacing rules to apply correctly.
 
 ### `app/assets/javascripts/routes.js`
 
@@ -488,11 +488,11 @@ Routing is server-side (Rails); `MainCtrl` is attached directly in `core/index.h
 | Item | Type | Key files |
 |------|------|-----------|
 | Case layout shell | Rails view | `app/views/core/index.html.erb` |
-| Case score display | component | Diff/snapshot `<qscore-case>` — `components/qscore_case/` |
-| Snapshot per-query score | component | Remaining Angular `<qscore-query>` snapshot usage — `components/qscore_query/` |
+| Case score display | component | Primary score is Stimulus; snapshot/diff case scores are now rendered by `diff-case-scores`; Angular still calculates the live diff read model |
+| Snapshot per-query score | component | Stimulus `qscore-query` badge is store-driven; no Angular component remains |
 | Nightly/public/archived badges, scorer name | Angular bridge | `CaseCtrl` (`controllers/case.js`) survives only for the drawer's nightly checkbox and `<import-ratings>`'s `acase` binding |
 | Import ratings | component | `<import-ratings>` — `components/import_ratings/` |
-| Diff renderer and picker | Stimulus renderer + temporary Angular state bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/stores/query_documents_store.js`; Angular still owns `diffResultsSvc` state/search/scoring |
+| Diff renderer and picker | Stimulus renderer + temporary Angular state bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`; Angular still owns `diffResultsSvc` state/search/scoring |
 | New-case wizard launcher | controller | `WizardCtrl` — `controllers/wizardCtrl.js` |
 
 Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `snapshotSearcherSvc`, `SnapshotFactory`, `importRatingsSvc`, `caseCSVSvc`, `bookSvc`, `diffResultsSvc`, `qscoreSvc`
@@ -576,8 +576,7 @@ These Angular-specific wrappers are used across many templates:
 | `move_query` | `<move-query>` | Move query to another case |
 | `new_case` | `<new-case>` | Header new-case entry |
 | `qgraph` | `<qgraph>` | Score timeline |
-| `qscore_case` | `<qscore-case>` | Case score display |
-| `qscore_query` | `<qscore-query>` | Per-query score |
+| `diff_case_scores_controller.js` | `diff-case-scores` | Snapshot/diff case score display |
 | `query_options` | `<query-options>` | Per-query options |
 
 ---

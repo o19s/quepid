@@ -48,6 +48,7 @@ import QueryNotesController from "controllers/query_notes_controller"
 import AnnotationsController from "controllers/annotations_controller"
 import DiffCoreController from "controllers/diff_core_controller"
 import DiffScoreController from "controllers/diff_score_controller"
+import DiffCaseScoresController from "controllers/diff_case_scores_controller"
 
 Turbo.session.drive = false
 
@@ -83,3 +84,4 @@ application.register("query-notes", QueryNotesController)
 application.register("annotations", AnnotationsController)
 application.register("diff-core", DiffCoreController)
 application.register("diff-score", DiffScoreController)
+application.register("diff-case-scores", DiffCaseScoresController)

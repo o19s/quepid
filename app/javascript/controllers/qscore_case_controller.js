@@ -7,12 +7,10 @@ import { formatScore, scoreToColor } from "utils/scoring"
  * — same pattern as `qscore_query_controller.js`, per
  * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4.
  *
- * The second `<qscore-case>` usage in that same template (snapshot/diff searcher
- * scores, `scorable="searcher"`) stays on the Angular component: those scores come
- * from `diffResultsSvc`, not `queriesSvc.scoreAll()`, and are not written into
- * `window.quepidStore.scoring`. The `<qgraph>` history chart also stays Angular,
+ * Snapshot/diff case scores are rendered separately by the Stimulus
+ * `diff-case-scores` controller. The `<qgraph>` history chart stays Angular,
  * as a sibling reading `scores`/`annotations`/`maxScore` straight off MainCtrl's
- * scope, same as before — only the score badge itself moved.
+ * scope, same as before.
  *
  * Reads `window.quepidStore.scoring` (the bridged `CaseScoreStore` singleton
  * `queriesSvc.scoreAll()` writes into), not a fresh `import` of

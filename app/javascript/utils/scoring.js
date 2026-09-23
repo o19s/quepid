@@ -73,9 +73,7 @@ export function ratingBackgroundColor({ rating, scale } = {}) {
 
 // Hue gradient from red (worst) to green (best), keyed by score rounded down
 // to the nearest 10% of maxScore. Mirrors `qscoreSvc.scoreToColor`'s lookup
-// table exactly (Angular's `qscoreSvc` keeps its own copy for the qscore-case
-// component and qscore-query's diff/snapshot-searcher usage, which aren't
-// covered by this extraction).
+// table exactly.
 const SCORE_HUE_STEPS = {
   "-1": "hsl(0, 100%, 40%)",
   0: "hsl(5, 95%, 45%)",

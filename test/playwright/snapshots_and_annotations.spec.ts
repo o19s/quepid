@@ -84,6 +84,7 @@ test.describe('snapshots', () => {
       await expect(compareModal).toBeHidden({ timeout: 30_000 });
 
       await expect(page.locator('.diff-score').first()).toBeVisible({ timeout: 30_000 });
+      await expect(page.locator('[data-controller="diff-case-scores"] .case-score').first()).toBeVisible({ timeout: 30_000 });
 
     } finally {
       // This case's dev DB row is shared across runs (there's no per-test

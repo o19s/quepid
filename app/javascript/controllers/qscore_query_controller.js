@@ -7,11 +7,6 @@ import { formatScore, scoreToColor } from "utils/scoring"
  * (`<qscore-query scorable="query">`) — the first store subscriber, per
  * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4.
  *
- * The second `<qscore-query>` usage in that same template (diff/snapshot
- * searcher scores, `scorable="searcher"`) stays on the Angular component:
- * those scores come from `diffResultsSvc`, not `queriesSvc.scoreAll()`, and
- * are not written into `window.quepidStore.scoring`.
- *
  * Reads `window.quepidStore.scoring` (the bridged `CaseScoreStore` singleton
  * `queriesSvc.scoreAll()` writes into) rather than importing
  * `stores/case_score_store` directly — that module is also esbuild-bundled

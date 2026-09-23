@@ -300,14 +300,17 @@ angular.module('QuepidApp')
 
 
 
+      var diffGeneration = 0;
+
       // Watch for any diff changes and trigger case-level diff scoring
       $scope.$watchCollection(function() {
         return queryViewSvc.getAllDiffSettings();
       }, function() {
+        var generation = ++diffGeneration;
         var isEnabled = queryViewSvc.isAnyDiffEnabled();
         if (isEnabled) {
           // Create case-level diffs object similar to individual query diffs
-          $scope.queries.avgQuery.diffs = {
+          var diffModel = {
             _caseSearchers: [],
             getSearchers: function() {
               return this._caseSearchers;
@@ -332,10 +335,23 @@ angular.module('QuepidApp')
               }
               
               return $q.all(fetchPromises).then(function() {
+                if (generation !== diffGeneration || $scope.queries.avgQuery.diffs !== diffModel) {
+                  return;
+                }
+
                 // After all individual query scores are calculated, compute case-level scores
-                return $scope.queries.avgQuery.diffs.calculateCaseScores();
+                return diffModel.calculateCaseScores();
               }).catch(function() {
-                // Case-level diff scoring error - silently handled
+                if (generation !== diffGeneration || $scope.queries.avgQuery.diffs !== diffModel) {
+                  return;
+                }
+
+                // Case-level diff scoring error - silently handled. Clear the
+                // Stimulus read model too, so failed refreshes cannot leave
+                // badges from the previous comparison visible.
+                if (window.quepidStore && window.quepidStore.documents) {
+                  window.quepidStore.documents.clearCaseDiffs();
+                }
               });
             },
             calculateCaseScores: function() {
@@ -360,6 +376,9 @@ angular.module('QuepidApp')
               
               if (!firstQuery) {
                 self._caseSearchers = [];
+                if (window.quepidStore && window.quepidStore.documents) {
+                  window.quepidStore.documents.clearCaseDiffs();
+                }
                 return $q.resolve();
               }
               
@@ -440,15 +459,35 @@ angular.module('QuepidApp')
                 
                 self._caseSearchers.push(caseSearcher);
               });
+
+              // The comparison header is Stimulus-owned. Publish the same
+              // case-level read model that qscore-case used to render from
+              // Angular scope, while Angular retains the live scoring engine.
+              if (window.quepidStore && window.quepidStore.documents) {
+                window.quepidStore.documents.setCaseDiffs(self._caseSearchers.map(function(searcher) {
+                  return {
+                    name: searcher.name(),
+                    version: searcher.version(),
+                    score: Object.assign({}, searcher.diffScore, {
+                      maxScore: $scope.maxScore || 1
+                    })
+                  };
+                }));
+              }
               
               return $q.resolve();
             }
           };
+
+          $scope.queries.avgQuery.diffs = diffModel;
           
           // Initialize the diffs
-          $scope.queries.avgQuery.diffs.fetch();
+          diffModel.fetch();
         } else {
           $scope.queries.avgQuery.diffs = null;
+          if (window.quepidStore && window.quepidStore.documents) {
+            window.quepidStore.documents.clearCaseDiffs();
+          }
         }
       });
 

@@ -122,6 +122,23 @@ describe("QueryDocumentsStore", () => {
     expect(store.query(2).showOnlyRated).toBe(true)
   })
 
+  it("publishes case-level diff scores separately from query documents", () => {
+    store.setCaseDiffs([
+      { name: "Baseline", version: 3, score: { score: 0.75, allRated: true } }
+    ])
+
+    expect(store.snapshot().caseDiffs).toEqual([
+      { name: "Baseline", version: 3, score: { score: 0.75, allRated: true } }
+    ])
+  })
+
+  it("clears case-level diff scores", () => {
+    store.setCaseDiffs([{ name: "Baseline", score: { score: 0.75 } }])
+    store.clearCaseDiffs()
+
+    expect(store.snapshot().caseDiffs).toEqual([])
+  })
+
   it("collapses every query", () => {
     store.replaceQuery(1, { docs: [], expanded: true })
     store.replaceQuery(2, { docs: [], expanded: true })

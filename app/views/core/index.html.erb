@@ -9,7 +9,6 @@
 
   What stays Angular, and why:
     * <qgraph>       - the case score history chart, still reads live off MainCtrl's scope.
-    * <qscore-case>  - only the snapshot/diff usage; scores come from diffResultsSvc, client-side.
     * <queries>      - the query list and search results island.
     * <import-ratings> - not yet migrated (see the removal inventory).
     * the east pane  - the Tune Relevance drawer, still Angular.
@@ -21,8 +20,8 @@
   Those Angular elements are compiled by Angular at bootstrap like any other markup inside
   `ng-app`, including inside the plain wrapper divs below. <queries> does not declare an
   isolate scope, so QueriesCtrl publishes `queries`, `maxScore`, `scores`, `annotations` and
-  `getScorer()` onto MainCtrl's scope - which is why <qgraph> and the diff <qscore-case>
-  bindings below resolve. Keep them under the same ng-controller.
+  `getScorer()` onto MainCtrl's scope - which is why <qgraph> bindings resolve. Keep it
+  under the same ng-controller.
 %>
 <div id="flash-messages">
   <div class="flash fade" data-controller="flash" data-flash-channel-value="main">
@@ -50,7 +49,10 @@
           <div class="pane_main results-control">
             <div id="case-header" class="row">
               <div class="col-sm-12">
-                <div style="display: inline-flex; align-items: flex-start;">
+                <div
+                  style="display: inline-flex; align-items: flex-start;"
+                  data-controller="diff-case-scores"
+                >
                   <!-- Current case score (Stimulus, store-driven — see
                        docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4) -->
                   <div class="case-score">
@@ -72,18 +74,6 @@
                     </div>
                   </div>
 
-                  <!-- Snapshot case scores -->
-                  <qscore-case
-                    ng-if="queries.avgQuery.diffs"
-                    ng-repeat="searcher in queries.avgQuery.diffs.getSearchers() track by $index"
-                    class="case-score diff-score"
-                    max-score="maxScore || 1"
-                    scorable="searcher"
-                    score-label="searcher.name()"
-                    scores="[]"
-                    annotations="[]"
-                  >
-                  </qscore-case>
                 </div>
 
                 <%= render 'core/case_header', kase: @case, a_try: @try, error: nil %>
