@@ -9,7 +9,7 @@ class BroadcastLinkedCasesJob < ApplicationJob
 
   def perform book
     Turbo::StreamsChannel.broadcast_update_to(
-      "book_#{book.id}_judgements",
+      book.judgements_broadcast_channel,
       target:  'linked-cases-list',
       partial: 'books/linked_cases_list',
       locals:  { book: book, cases: book.cases.includes(:owner) }

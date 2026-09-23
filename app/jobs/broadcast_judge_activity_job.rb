@@ -16,7 +16,7 @@ class BroadcastJudgeActivityJob < ApplicationJob
   # gets the "just updated" flash animation, not every row in the table.
   def perform book, judge
     Turbo::StreamsChannel.broadcast_update_to(
-      "book_#{book.id}_judgements",
+      book.judgements_broadcast_channel,
       target:  'judge-activity-table',
       partial: 'books/judge_activity_table_body',
       locals:  { judge_activity: book.judge_activity_rows, book: book, flashing_judge_id: judge.id }

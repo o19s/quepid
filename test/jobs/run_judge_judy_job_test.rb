@@ -8,6 +8,25 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
 
   setup { register_default_openai_stubs }
 
+  describe '.actively_judging_user_ids' do
+    test "finds an ai judge's id even though its GlobalID class segment is AiJudge, not User" do
+      SolidQueue::Job.create!(
+        active_job_id: SecureRandom.uuid,
+        class_name:    'RunJudgeJudyJob',
+        queue_name:    'default',
+        arguments:     {
+          'arguments' => [
+            { '_aj_globalid' => book.to_global_id.to_s },
+            { '_aj_globalid' => judge_judy.to_global_id.to_s },
+            nil
+          ],
+        }
+      )
+
+      assert_includes RunJudgeJudyJob.actively_judging_user_ids(book), judge_judy.id
+    end
+  end
+
   describe 'successful judging' do
     test 'judges pair and broadcasts updates' do
       assert_difference 'book.judgements.count', 1 do

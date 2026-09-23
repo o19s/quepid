@@ -1,4 +1,4 @@
-<%= turbo_stream_from("book_#{@book.id}_judgements") %>
+<%= turbo_stream_from(@book.judgements_broadcast_channel) %>
 
 <script>
 function updateModalTitle(judgeId) {
@@ -125,11 +125,21 @@ function updateModalTitle(judgeId) {
     <% if @cases.empty? %>
       <p>You can populate this Book with query/doc pairs for judging by <%= link_to 'picking a Case', cases_path, class: 'alert-link' %> and using the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this book with query/doc pairs from your search engine.</p>
     <% else %>
-      <p>Return to the linked Case
-      <% @cases.each do |kase| %>
-        <%= link_to_core_case case_title(kase), kase, kase.last_try_number, class: 'alert-link' %>
+      <% linked_cases_auto_populate = @cases.all?(&:auto_populate_book_pairs) %>
+      <% cases_are_plural = @cases.many? %>
+      <% if linked_cases_auto_populate %>
+        <p>Load query/doc pairs for judging by returning to the linked Case<%= 's' if cases_are_plural %>
+        <% @cases.each do |kase| %>
+          <%= link_to_core_case case_title(kase), kase, kase.last_try_number, class: 'alert-link' %>
+        <% end %>
+        and letting <%= cases_are_plural ? 'them' : 'it' %> run <%= cases_are_plural ? 'their' : 'its' %> queries - <%= cases_are_plural ? 'they are' : 'it is' %> set to auto-populate this Book.</p>
+      <% else %>
+        <p>Return to the linked Case<%= 's' if cases_are_plural %>
+        <% @cases.each do |kase| %>
+          <%= link_to_core_case case_title(kase), kase, kase.last_try_number, class: 'alert-link' %>
+        <% end %>
+        and use the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this Book with query/doc pairs for judging.</p>
       <% end %>
-      and use the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this Book with query/doc pairs for judging.</p>
     <% end %>
   </div>
 <% end %>
@@ -155,11 +165,11 @@ function updateModalTitle(judgeId) {
       </tbody>
     </table>
   </div>
-  <% if available_ai_judges_for_book?(@book) %>
+  <% if available_ai_judges.any? %>
     <div class="card-footer d-flex justify-content-between align-items-center flex-wrap gap-2">
       <small class="text-muted">
         <i class="bi bi-robot"></i>
-        These AI judges are available on your team: <strong><%= available_ai_judges_for_book(@book).pluck(:name).to_sentence %></strong>
+        These AI judges are available on your team: <strong><%= available_ai_judges.pluck(:name).to_sentence %></strong>
       </small>
       <%= link_to 'Add AI Judge to this Book', edit_book_path(@book), class: 'btn btn-sm btn-outline-primary' %>
     </div>

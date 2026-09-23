@@ -203,6 +203,14 @@ class Book < ApplicationRecord
     end
   end
 
+  # The Turbo Streams channel the book overview page's Judge Activity table
+  # subscribes to (books/show.html.erb) and every job that broadcasts a
+  # judgement-related update re-renders into. Single source of truth so the
+  # channel name can't drift between the view and its broadcasters.
+  def judgements_broadcast_channel
+    "book_#{id}_judgements"
+  end
+
   # One row per judge for the book overview's Judge Activity table: every
   # human judge who has judged anything, plus every assigned AI judge (shown
   # even at zero judgements, since being assigned is itself worth showing).

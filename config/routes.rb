@@ -93,6 +93,17 @@ Rails.application.routes.draw do
 
   resources :ai_judges
 
+  # Cloning starts from a specific team's context (the team page's "Clone"
+  # action) and posts the new judge back through that same team, so it's
+  # created with that team pre-selected/shared rather than owner-only.
+  resources :teams, only: [] do
+    resources :ai_judges, only: [ :create ] do
+      member do
+        get :clone
+      end
+    end
+  end
+
   resources :cases, only: [] do
     resource :book
     resources :ratings, only: [ :index ]

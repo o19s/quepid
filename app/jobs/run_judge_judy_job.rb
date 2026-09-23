@@ -46,7 +46,10 @@ class RunJudgeJudyJob < ApplicationJob
         args = job.arguments['arguments'] || []
         next unless args.any? { |a| a.is_a?(Hash) && a['_aj_globalid'] == book_gid }
 
-        judge_gid_arg = args.find { |a| a.is_a?(Hash) && a['_aj_globalid']&.include?('/User/') }
+        # The judge argument is always an AiJudge (an STI subclass of User,
+        # perform_later is only ever called with one) - its GlobalID encodes
+        # the concrete class name, e.g. gid://app/AiJudge/6, never /User/.
+        judge_gid_arg = args.find { |a| a.is_a?(Hash) && a['_aj_globalid']&.include?('/AiJudge/') }
         judge_gid_arg ? GlobalID::Locator.locate(judge_gid_arg['_aj_globalid'])&.id : nil
       end.compact
   end
@@ -125,7 +128,7 @@ class RunJudgeJudyJob < ApplicationJob
 
   def broadcast_judging_detail book, judge, qdp, counter, judgement
     Turbo::StreamsChannel.broadcast_update_to(
-      "book_#{book.id}_judgements",
+      book.judgements_broadcast_channel,
       target:  "judging-activity-#{judge.id}",
       partial: 'books/judging_activity_detail',
       locals:  { book: book, judge: judge, qdp: qdp, counter: counter, judgement: judgement }
@@ -158,7 +161,7 @@ class RunJudgeJudyJob < ApplicationJob
       locals:  { book: book, judge: judge }
     )
     Turbo::StreamsChannel.broadcast_update_to(
-      "book_#{book.id}_judgements",
+      book.judgements_broadcast_channel,
       target:  "judging-activity-#{judge.id}",
       partial: 'books/judging_activity_complete',
       locals:  { book: book, judge: judge }

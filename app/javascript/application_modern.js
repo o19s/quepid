@@ -93,19 +93,23 @@ function setCookie() {
 // with ActionController::InvalidAuthenticityToken. The page's own <meta
 // name="csrf-token"> tag is always valid for the current session, so refresh
 // (or add) every form's token from it right before it submits.
-document.addEventListener('submit', function (event) {
-  const form = event.target;
-  if (!(form instanceof HTMLFormElement)) return;
+document.addEventListener("submit", (event) => {
+  const form = event.target
+  if (!(form instanceof HTMLFormElement)) return
+  // GET forms serialize every field into the resulting URL - injecting the
+  // token there would leak it into browser history, server access logs, and
+  // any Referer header. Only non-GET forms use authenticity_token at all.
+  if ("get" === form.method) return
 
-  const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-  if (!csrfMeta) return;
+  const csrfMeta = document.querySelector('meta[name="csrf-token"]')
+  if (!csrfMeta) return
 
-  let tokenInput = form.querySelector('input[name="authenticity_token"]');
+  let tokenInput = form.querySelector('input[name="authenticity_token"]')
   if (!tokenInput) {
-    tokenInput = document.createElement('input');
-    tokenInput.type = 'hidden';
-    tokenInput.name = 'authenticity_token';
-    form.appendChild(tokenInput);
+    tokenInput = document.createElement("input")
+    tokenInput.type = "hidden"
+    tokenInput.name = "authenticity_token"
+    form.appendChild(tokenInput)
   }
-  tokenInput.value = csrfMeta.content;
-});
+  tokenInput.value = csrfMeta.content
+})

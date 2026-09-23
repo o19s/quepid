@@ -9,11 +9,6 @@ class BooksController < ApplicationController
                         :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
                         :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy,
                         :judgement_stats, :judge_overview, :export, :archive, :unarchive ]
-  before_action :check_book,
-                only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
-                        :reset_unrateable, :reset_judge_later, :delete_query_doc_pairs_below_position,
-                        :eric_steered_us_wrong, :remap_judgement_ratings, :run_judge_judy, :cancel_judge_judy,
-                        :judgement_stats, :judge_overview, :export, :archive, :unarchive ]
 
   before_action :find_user, only: [ :reset_unrateable, :reset_judge_later, :delete_ratings_by_assignee ]
 
@@ -222,7 +217,7 @@ class BooksController < ApplicationController
     apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
 
     if @book.save
-      assign_ai_judges @book, book_params[:ai_judge_ids], current_user
+      sync_book_ai_judges @book, book_params[:ai_judge_ids], book_params[:auto_run_ai_judge_ids], current_user
 
       if deserialize_bool_param(params[:book][:link_the_case])
         @origin_case = current_user.cases_involved_with.where(id: params[:book][:origin_case_id]).first
@@ -257,17 +252,7 @@ class BooksController < ApplicationController
 
     @book.teams.replace(teams)
 
-    # checkboxes suck, but we diff (rather than clear-and-recreate) so an
-    # unrelated book save doesn't reset every judge's auto_run flag back to
-    # false.
-    ai_judge_ids = Array(book_params[:ai_judge_ids]).compact_blank.map(&:to_i)
-    auto_run_ai_judge_ids = Array(book_params[:auto_run_ai_judge_ids]).compact_blank.map(&:to_i)
-
-    @book.books_ai_judges.where.not(user_id: ai_judge_ids).destroy_all
-    assign_ai_judges @book, ai_judge_ids, current_user
-    @book.books_ai_judges.where(user_id: ai_judge_ids).find_each do |books_ai_judge|
-      books_ai_judge.update(auto_run: auto_run_ai_judge_ids.include?(books_ai_judge.user_id))
-    end
+    sync_book_ai_judges @book, book_params[:ai_judge_ids], book_params[:auto_run_ai_judge_ids], current_user
 
     # Handle scorer selection
     apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
@@ -527,11 +512,30 @@ class BooksController < ApplicationController
     AiJudge.for_owner(owner)
   end
 
+  # Checkboxes suck, but we diff (rather than clear-and-recreate) the book's
+  # judges, so an unrelated save doesn't reset every judge's auto_run flag
+  # back to false. Shared by #create (book.books_ai_judges starts empty, so
+  # the destroy_all is a no-op) and #update.
+  def sync_book_ai_judges book, ai_judge_ids, auto_run_ai_judge_ids, scope_owner
+    ai_judge_ids = Array(ai_judge_ids).compact_blank.map(&:to_i)
+    auto_run_ai_judge_ids = Array(auto_run_ai_judge_ids).compact_blank.map(&:to_i)
+
+    book.books_ai_judges.where.not(user_id: ai_judge_ids).destroy_all
+    assign_ai_judges book, ai_judge_ids, scope_owner
+    book.books_ai_judges.where(user_id: ai_judge_ids).find_each do |books_ai_judge|
+      books_ai_judge.update(auto_run: auto_run_ai_judge_ids.include?(books_ai_judge.user_id))
+    end
+  end
+
   # Checkboxes suck: only assign ids that are actually visible to scope_owner,
   # so a submitted id for someone else's private judge is silently ignored.
+  # Only inserts ids not already assigned - a judge left checked across an
+  # unrelated save must not be re-inserted into books_ai_judges, which would
+  # violate its unique (book_id, user_id) index.
   def assign_ai_judges book, ai_judge_ids, scope_owner
-    ids = Array(ai_judge_ids).compact_blank
-    book.ai_judges << visible_ai_judges_for(scope_owner).where(id: ids) if ids.any?
+    ids = Array(ai_judge_ids).compact_blank.map(&:to_i)
+    new_ids = ids - book.ai_judges.pluck(:id)
+    book.ai_judges << visible_ai_judges_for(scope_owner).where(id: new_ids) if new_ids.any?
   end
 
   def apply_scorer_to_book book, scorer_id
