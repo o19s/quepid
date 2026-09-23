@@ -37,8 +37,7 @@ module Api
 
       def set_user
         @user = User.where('LOWER(users.email) = ? OR users.id = ?',
-                           params[:id].to_s.strip.downcase, params[:id].to_i).first
-        render json: { message: 'User not found!' }, status: :not_found unless @user
+                           params[:id].to_s.strip.downcase, params[:id].to_i).first!
       end
 
       def user_params

@@ -1,16 +1,7 @@
 <%= form_with model: scorer, local: true, data: { controller: 'scorer-scale' } do |f| %>
   <div class="card">
     <div class="card-body">
-      <% if scorer.errors.any? %>
-        <div id="error_explanation">
-          <h2><%= pluralize(scorer.errors.count, "error") %> prohibited this scorer from being saved:</h2>
-          <ul>
-            <% scorer.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
+      <%= render "shared/error_messages", record: scorer, subject: "scorer" %>
 
       <% if scorer.communal? && current_user.administrator? %>
         <div class="row mb-3">

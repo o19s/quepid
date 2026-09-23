@@ -4,7 +4,6 @@ class BulkJudgeController < ApplicationController
   include Pagy::Method
 
   before_action :set_book
-  before_action :check_book
 
   # GET /books/:book_id/judge/bulk
   # rubocop:disable-next Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity

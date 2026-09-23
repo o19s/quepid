@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Restores the DB snapshot taken by bin/ui_diff_db_snapshot, undoing whatever a mutating
+# manual-testing scenario just did. See .claude/skills/branch-ui-diff/SKILL.md.
+
+APP_ROOT=$(cd "$(dirname "$0")/.." && pwd)
+cd "$APP_ROOT"
+
+set -a
+source .env
+set +a
+
+SNAPSHOT_FILE="$APP_ROOT/tmp/ui_diff/db_snapshot.sql"
+if [ ! -f "$SNAPSHOT_FILE" ]; then
+  echo "No snapshot at $SNAPSHOT_FILE — run bin/ui_diff_db_snapshot first" >&2
+  exit 1
+fi
+
+# config/database.yml's development entry is "${DB_NAME}_development", not DB_NAME itself.
+DB_NAME="${DB_NAME:-quepid}_development"
+DB_USERNAME="${DB_USERNAME:-root}"
+DB_PASSWORD="${DB_PASSWORD:-password}"
+
+echo "==> Restoring $DB_NAME (quepid_db) from $SNAPSHOT_FILE"
+docker exec -i quepid_db mysql -u"$DB_USERNAME" -p"$DB_PASSWORD" "$DB_NAME" < "$SNAPSHOT_FILE"
+echo "==> Restore complete"

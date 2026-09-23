@@ -47,31 +47,54 @@ class ApplicationHelperTest < ActionView::TestCase
   end
 
   describe 'flash_messages' do
-    test 'renders a visible alert for a normal flash message' do
-      flash[:notice] = 'Something happened'
+    test 'renders a dismissible alert for a displayable flash message' do
+      flash[:notice] = 'Saved successfully.'
+      self.output_buffer = ActionView::OutputBuffer.new
 
-      html = capture { flash_messages }
+      flash_messages
 
-      assert_includes html, 'Something happened'
+      rendered = output_buffer.to_s
+      assert_includes rendered, 'Saved successfully.'
+      assert_includes rendered, 'alert-info'
+      assert_includes rendered, 'alert-dismissible'
+      assert_includes rendered, 'data-controller="auto-dismiss"'
     end
 
-    test 'does not leak the internal kraken_unleashed flag as a visible message' do
+    test 'maps each flash type to its bootstrap alert class' do
+      flash[:success] = 'Success message'
+      flash[:error] = 'Error message'
+      flash[:alert] = 'Alert message'
+      self.output_buffer = ActionView::OutputBuffer.new
+
+      flash_messages
+
+      rendered = output_buffer.to_s
+      assert_includes rendered, 'alert-success'
+      assert_includes rendered, 'alert-danger'
+      assert_includes rendered, 'alert-warning'
+    end
+
+    test 'suppresses structural, non-displayable flash keys' do
+      flash[:unfurl] = 'true'
+      flash[:kraken_unleashed] = 'true'
+      self.output_buffer = ActionView::OutputBuffer.new
+
+      flash_messages
+
+      assert_equal '', output_buffer.to_s.strip
+    end
+
+    test 'does not leak the internal kraken_unleashed flag alongside a visible message' do
       flash[:notice] = 'AI Judge Foo will start evaluating query/doc pairs.'
       flash[:kraken_unleashed] = true
+      self.output_buffer = ActionView::OutputBuffer.new
 
-      html = capture { flash_messages }
+      flash_messages
 
-      assert_includes html, 'AI Judge Foo will start evaluating query/doc pairs.'
-      assert_not_includes html, 'true'
+      rendered = output_buffer.to_s
+      assert_includes rendered, 'AI Judge Foo will start evaluating query/doc pairs.'
+      assert_not_includes rendered, '>true<'
     end
-
-    test 'does not leak the internal kraken_unleashed flag when false' do
-      flash[:notice] = 'AI Judge Foo will start evaluating query/doc pairs.'
-      flash[:kraken_unleashed] = false
-
-      html = capture { flash_messages }
-
-      assert_not_includes html, 'false'
     end
   end
 

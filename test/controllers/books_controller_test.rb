@@ -20,6 +20,8 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
           patch "/books/#{james_bond_movies.id}/run_judge_judy/#{judge_judy.id}", params: { number_of_pairs: 1 }
           follow_redirect!
           assert_equal "AI Judge #{judge_judy.name} will start evaluating query/doc pairs.", flash[:notice]
+          # a bounded run isn't "judge all", so no kraken-unleashed celebration modal
+          assert_no_match(/successModal/, response.body)
         end
       end
     end
@@ -32,6 +34,10 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
         follow_redirect!
         assert_equal "AI Judge #{judge_judy.name} will start evaluating query/doc pairs.", flash[:notice]
         assert_equal james_bond_movies.query_doc_pairs.count, james_bond_movies.judgements.where(user: judge_judy).count
+        # "judge all" mode should still trigger the kraken-unleashed celebration modal
+        assert_match(/successModal/, response.body)
+        # ...and that boolean must never leak out as a literal "true"/"false" flash alert
+        assert_no_match(%r{alert.*>\s*(true|false)\s*</div>}m, response.body)
       end
     end
   end
@@ -213,6 +219,31 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_match 'No Query/Doc Pairs Available', response.body
+      assert_match 'use the', response.body
+      assert_match 'Judgements', response.body
+      assert_no_match 'letting it run its queries', response.body
+    end
+
+    test 'points to letting the case auto-populate when its linked case is set up for it' do
+      login_user_for_integration_test user
+      james_bond_movies.query_doc_pairs.delete_all
+      cases(:james_bond_case).update!(auto_populate_book_pairs: true)
+
+      get "/books/#{james_bond_movies.id}"
+
+      assert_response :success
+      assert_match 'Load query/doc pairs for judging by returning', response.body
+      assert_match 'letting it run its queries', response.body
+      assert_no_match 'use the', response.body
+    end
+
+    test 'redirects an inaccessible book to the books page with sharing guidance' do
+      login_user_for_integration_test user
+
+      get '/books/99999'
+
+      assert_redirected_to books_path
+      assert_equal 'Could not retrieve book 99999. Confirm that the book has been shared with you via a team you are a member of!', flash[:alert]
     end
   end
 
@@ -273,6 +304,21 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
         ],
         assigns(:rating_distribution_data)
       )
+    end
+
+    test 'does not link to Refine Prompt for a judge the current user cannot access' do
+      login_user_for_integration_test user
+
+      other_owner = users(:case_finder_user)
+      inaccessible_judge = AiJudge.create!(name: 'Inaccessible Judge', owner: other_owner,
+                                           llm_key: '1234asdf5678', system_prompt: 'Judge it.')
+      james_bond_movies.query_doc_pairs.first.judgements.create! rating: 1, user: inaccessible_judge
+
+      get "/books/#{james_bond_movies.id}/judgement_stats"
+
+      assert_response :success
+      assert_not_includes assigns(:refinable_ai_judge_ids), inaccessible_judge.id
+      assert_no_match edit_ai_judge_path(inaccessible_judge, book_id: james_bond_movies.id), response.body
     end
   end
 
@@ -407,6 +453,49 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'searching the index' do
+    let(:doug) { users(:doug) }
+
+    test 'matches by book name' do
+      login_user_for_integration_test doug
+
+      get '/books', params: { q: 'james bond' }
+
+      assert_response :success
+      assert_match james_bond_movies.name, response.body
+    end
+
+    test 'matches by team name without erroring (books.teams is not implicitly joined)' do
+      login_user_for_integration_test doug
+
+      get '/books', params: { q: 'a shared team' }
+
+      assert_response :success
+      assert_match james_bond_movies.name, response.body
+    end
+
+    test 'is case-insensitive' do
+      login_user_for_integration_test doug
+
+      get '/books', params: { q: 'JAMES BOND' }
+
+      assert_response :success
+      assert_match james_bond_movies.name, response.body
+    end
+
+    test 'does not duplicate a book shared with multiple matching teams' do
+      login_user_for_integration_test doug
+
+      teams(:case_finder_owned_team).books << james_bond_movies
+
+      get '/books', params: { q: 'team' }
+
+      assert_response :success
+      book_ids = assigns(:books).map(&:id)
+      assert_equal 1, book_ids.count(james_bond_movies.id)
+    end
+  end
+
   def test_combining_single_rater_strategy_into_multiple_rater_strategy_book_works
     login_user_for_integration_test user
 
@@ -502,6 +591,124 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'AI judge assignment' do
+    let(:doug) { users(:doug) }
+    let(:random_1) { users(:random_1) }
+
+    setup { login_user_for_integration_test doug }
+
+    test 'edit includes an ai judge owned directly by the book owner, even with no team share' do
+      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
+
+      # Bullet fires on the pre-existing @other_books N+1, not our new query — suppress it.
+      Bullet.enable = false
+      get "/books/#{james_bond_movies.id}/edit"
+      Bullet.enable = true
+
+      assert_response :success
+      assert_includes assigns(:ai_judges), owner_only_judge
+    end
+
+    test 'edit shows ai judges visible to the current user even when the book has no owner' do
+      ownerless_book = books(:book_of_star_wars_judgements)
+      assert_nil ownerless_book.owner
+
+      # judge_judy has no owner either, but is shared via the same "shared"
+      # team doug belongs to - visibility must come from the editor
+      # (current_user), not the (here, absent) book owner.
+      # Bullet fires on the pre-existing @other_books N+1, not our new query — suppress it.
+      Bullet.enable = false
+      get "/books/#{ownerless_book.id}/edit"
+      Bullet.enable = true
+
+      assert_response :success
+      assert_includes assigns(:ai_judges), users(:judge_judy)
+    end
+
+    test 'update assigns an ai judge shared via the team even when the book has no owner' do
+      ownerless_book = books(:book_of_star_wars_judgements)
+      assert_nil ownerless_book.owner
+
+      patch "/books/#{ownerless_book.id}", params: {
+        book: {
+          name:         ownerless_book.name,
+          team_ids:     ownerless_book.team_ids,
+          ai_judge_ids: [ users(:judge_judy).id ],
+        },
+      }
+
+      assert_includes ownerless_book.reload.ai_judges, users(:judge_judy)
+    end
+
+    test 'update rejects an ai judge id the book owner cannot access' do
+      unrelated_judge = AiJudge.create!(name: 'Unrelated Judge', llm_key: '1234', owner: random_1)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:         james_bond_movies.name,
+          team_ids:     james_bond_movies.team_ids,
+          ai_judge_ids: [ unrelated_judge.id ],
+        },
+      }
+
+      assert_not_includes james_bond_movies.reload.ai_judges, unrelated_judge
+    end
+
+    test 'update assigns an owned ai judge when no team checkboxes are submitted' do
+      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
+      james_bond_movies.teams.clear
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:         james_bond_movies.name,
+          ai_judge_ids: [ owner_only_judge.id ],
+        },
+      }
+
+      assert_response :redirect
+      assert_includes james_bond_movies.reload.ai_judges, owner_only_judge
+    end
+
+    test 'new includes an ai judge owned directly by the current user, even with no team share' do
+      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
+
+      get '/books/new'
+
+      assert_response :success
+      assert_includes assigns(:ai_judges), owner_only_judge
+    end
+
+    test 'create assigns an ai judge owned directly by the creator, even with no team share' do
+      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
+
+      post '/books', params: {
+        book: {
+          name:         'New Book With Owned Judge',
+          team_ids:     [],
+          ai_judge_ids: [ owner_only_judge.id ],
+        },
+      }
+
+      created_book = Book.find_by(name: 'New Book With Owned Judge')
+      assert_includes created_book.ai_judges, owner_only_judge
+    end
+
+    test 'create rejects an ai judge id the creator cannot access' do
+      unrelated_judge = AiJudge.create!(name: 'Unrelated Judge', llm_key: '1234', owner: random_1)
+
+      post '/books', params: {
+        book: {
+          name:         'New Book Rejecting Unrelated Judge',
+          team_ids:     [],
+          ai_judge_ids: [ unrelated_judge.id ],
+        },
+      }
+
+      created_book = Book.find_by(name: 'New Book Rejecting Unrelated Judge')
+      assert_not_includes created_book.ai_judges, unrelated_judge
+    end
+  end
+
   def test_scorer_id_copies_scale_fields_when_creating_book
     login_user_for_integration_test user
 
@@ -520,5 +727,44 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal scorer.scale, created_book.scale
     assert_nil created_book.scale_with_labels
+  end
+
+  def test_new_preselects_a_scorer_id_the_dropdown_actually_offers
+    login_user_for_integration_test user
+
+    # p@10 and quepid_default_scorer are two distinct communal scorers that
+    # share the same scale/labels - scorer_options_for_select only lists one
+    # representative id per unique scale combination, so passing the *other*
+    # scorer's id (as the case's scorer_id) must still resolve to whichever
+    # id the dropdown actually renders, not be left unmatched.
+    other_scorer = scorers(:'p@10')
+    duplicate_scale_scorer = scorers(:quepid_default_scorer)
+    assert_equal other_scorer.scale, duplicate_scale_scorer.scale
+    assert_nil duplicate_scale_scorer.scale_with_labels
+    assert_nil other_scorer.scale_with_labels
+
+    get '/books/new', params: { scorer_id: duplicate_scale_scorer.id }
+
+    assert_response :success
+    assert_match(/<option selected="selected" value="#{assigns(:book).scorer_id}">/, response.body)
+  end
+
+  def test_create_does_not_link_the_origin_case_when_synchronization_is_disabled
+    login_user_for_integration_test user
+    origin_case = cases(:with_scorer)
+
+    post '/books', params: {
+      book: {
+        name:                          'Unlinked Book',
+        link_the_case:                 '0',
+        origin_case_id:                origin_case.id,
+        auto_populate_book_pairs:      '1',
+        auto_populate_case_judgements: '1',
+        team_ids:                      [],
+      },
+    }
+
+    assert_response :redirect
+    assert_nil origin_case.reload.book
   end
 end

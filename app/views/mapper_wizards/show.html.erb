@@ -1,5 +1,4 @@
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1>Mapper Wizard</h1>
+<%= page_header "Mapper Wizard" do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <% if @search_endpoint.persisted? %>
       <%= link_to "Back to Endpoint", search_endpoint_path(@search_endpoint), class: "btn btn-sm btn-outline-secondary" %>
@@ -7,7 +6,7 @@
       <%= link_to "Back to Search Endpoints", search_endpoints_path, class: "btn btn-sm btn-outline-secondary" %>
     <% end %>
   </div>
-</div>
+<% end %>
 
 <% search_endpoint_id = @search_endpoint.persisted? ? @search_endpoint.id : 'new' %>
 
@@ -46,7 +45,7 @@
           <input type="url"
                  class="form-control"
                  id="searchUrl"
-                 placeholder="https://opensourceconnections.com/"
+                 placeholder="https://www.opensourceconnections.com/"
                  data-mapper-wizard-target="searchUrl"
                  value="<%= @search_endpoint.endpoint_url %>">
           <div class="form-text">Base URL saved to endpoint.</div>
@@ -70,7 +69,7 @@
                     id="testQuery"
                     rows="4"
                     data-mapper-wizard-target="testQuery"
-                    placeholder="<%= @search_endpoint.api_method == 'POST' ? '{"query": "test", "size": 10}' : 'q=shirts&rows=10' %>"><%= existing_test_query %></textarea>
+                    placeholder="<%= @search_endpoint.api_method == 'POST' ? '{"query": "test", "size": 10}' : 's=quepid&rows=10' %>"><%= existing_test_query %></textarea>
           <div class="form-text" data-mapper-wizard-target="testQueryHint">
             <% if @search_endpoint.api_method == 'POST' %>
               Enter JSON body for POST request. Saved with endpoint for easy iteration.
@@ -139,36 +138,46 @@
     <hr>
 
     <!-- Step 2: Generate with AI -->
-    <div class="mb-4" data-mapper-wizard-target="step2" style="display: none;">
+    <div class="mb-4">
       <h4><span class="badge bg-primary">2</span> Generate Mappers with AI</h4>
-      <p class="text-muted">Enter your OpenAI API key to generate JavaScript mapper functions.</p>
 
-      <div class="row g-3">
-        <div class="col-md-8">
-          <label for="apiKey" class="form-label">OpenAI API Key</label>
-          <input type="password"
-                 class="form-control"
-                 id="apiKey"
-                 placeholder="sk-..."
-                 data-mapper-wizard-target="apiKey">
-          <div class="form-text">Your API key is used only for this request and is not stored.</div>
-        </div>
-        <div class="col-md-4 d-flex align-items-end">
-          <button type="button"
-                  class="btn btn-success w-100"
-                  data-mapper-wizard-target="generateButton"
-                  data-action="click->mapper-wizard#generateMappers">
-            <i class="bi bi-stars"></i> Generate Mappers with AI
-          </button>
+      <div data-mapper-wizard-target="step2" style="display: none;">
+        <p class="text-muted">Enter your OpenAI API key to generate JavaScript mapper functions.</p>
+
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label for="apiKey" class="form-label">OpenAI API Key</label>
+            <input type="password"
+                   class="form-control"
+                   id="apiKey"
+                   placeholder="sk-..."
+                   data-mapper-wizard-target="apiKey">
+            <div class="form-text">Your API key is used only for this request and is not stored.</div>
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <button type="button"
+                    class="btn btn-success w-100"
+                    data-mapper-wizard-target="generateButton"
+                    data-action="click->mapper-wizard#generateMappers">
+              <i class="bi bi-stars"></i> Generate Mappers with AI
+            </button>
+          </div>
         </div>
       </div>
+      <p class="mt-2 mb-0">
+        <a href="#" data-action="click->mapper-wizard#showStep3Manually">
+          No OpenAI key? Write the mapper code by hand instead.
+        </a>
+      </p>
     </div>
 
     <hr>
 
     <!-- Step 3: Edit, Test, and Refine -->
-    <div class="mb-4" data-mapper-wizard-target="step3" style="display: none;">
+    <div class="mb-4">
       <h4><span class="badge bg-primary">3</span> Edit, Test &amp; Refine</h4>
+
+      <div data-mapper-wizard-target="step3" style="display: none;">
       <p class="text-muted">Test your mapper functions and refine them as needed. You can edit the code directly or ask AI for improvements.</p>
 
       <!-- numberOfResultsMapper -->
@@ -245,6 +254,7 @@
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
 

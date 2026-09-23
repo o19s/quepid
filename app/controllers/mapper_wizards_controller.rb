@@ -123,6 +123,9 @@ class MapperWizardsController < ApplicationController
         success:                  true,
         number_of_results_mapper: result[:number_of_results_mapper],
         docs_mapper:              result[:docs_mapper],
+        truncated:                result[:truncated],
+        original_length:          result[:original_length],
+        sent_length:              result[:sent_length],
       }
     else
       render json: { success: false, error: result[:error] }, status: :unprocessable_content

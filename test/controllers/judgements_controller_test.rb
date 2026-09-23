@@ -25,82 +25,87 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  #   test 'should get new' do
-  #     get new_judgement_url
-  #     assert_response :success
-  #   end
+  describe 'judgement CRUD, nested under a book the user has access to' do
+    let(:jbm_book) { books(:james_bond_movies) }
+    let(:existing_judgement) { judgements(:low_judgement) }
 
-  #   test 'should create judgement' do
-  #     assert_difference('Judgement.count') do
-  #       post judgements_url,
-  #            params: { judgement: { query_doc_pair_id: @judgement.query_doc_pair_id, rating: @judgement.rating,
-  # user_id: @judgement.user_id } }
-  #     end
-
-  #     assert_redirected_to judgement_url(Judgement.last)
-  #   end
-
-  #   test 'should show judgement' do
-  #     get judgement_url(@judgement)
-  #     assert_response :success
-  #   end
-
-  #   test 'should get edit' do
-  #     get edit_judgement_url(@judgement)
-  #     assert_response :success
-  #   end
-
-  #   test 'should update judgement' do
-  #     patch judgement_url(@judgement),
-  #           params: { judgement: { query_doc_pair_id: @judgement.query_doc_pair_id, rating: @judgement.rating,
-  # user_id: @judgement.user_id } }
-  #     assert_redirected_to judgement_url(@judgement)
-  #   end
-
-  #   test 'should destroy judgement' do
-  #     assert_difference('Judgement.count', -1) do
-  #       delete judgement_url(@judgement)
-  #     end
-
-  #     assert_redirected_to judgements_url
-  #   end
-
-  describe 'broadcasting judge activity' do
-    let(:query_doc_pair) { query_doc_pairs(:book_of_comedy_qdp1) }
-
-    test 'create broadcasts judge activity' do
-      assert_enqueued_with(job: BroadcastJudgeActivityJob) do
-        post book_judgements_url(book), params: { judgement: { query_doc_pair_id: query_doc_pair.id, rating: 1 } }
-      end
+    test 'should get new' do
+      get new_book_judgement_url(jbm_book)
+      assert_response :success
     end
 
-    test 'unrateable broadcasts judge activity' do
-      assert_enqueued_with(job: BroadcastJudgeActivityJob) do
-        patch book_query_doc_pair_unrateable_path(book, query_doc_pair),
-              params: { judgement: { explanation: 'not rateable' } }
+    test 'should create judgement' do
+      query_doc_pair = query_doc_pairs(:jbm_qdp1)
+
+      assert_difference('Judgement.count') do
+        post book_judgements_url(jbm_book), params: { judgement: { query_doc_pair_id: query_doc_pair.id, rating: 2 } }
       end
+
+      assert_redirected_to book_judge_path(jbm_book)
+      assert_equal user, Judgement.last.user
     end
 
-    test 'judge_later broadcasts judge activity' do
-      assert_enqueued_with(job: BroadcastJudgeActivityJob) do
-        get book_query_doc_pair_judge_later_path(book, query_doc_pair)
-      end
+    test 'should show judgement' do
+      get book_judgement_url(jbm_book, existing_judgement)
+      assert_response :success
     end
 
-    test 'update broadcasts judge activity' do
-      judgement = judgements(:comedy_qdp1_judgement)
-
-      assert_enqueued_with(job: BroadcastJudgeActivityJob) do
-        patch book_judgement_url(book, judgement), params: { judgement: { rating: 2 } }
-      end
+    test 'should get edit' do
+      get edit_book_judgement_url(jbm_book, existing_judgement)
+      assert_response :success
     end
 
-    test 'destroy broadcasts judge activity' do
-      judgement = judgements(:comedy_qdp1_judgement)
+    test 'should update judgement' do
+      patch book_judgement_url(jbm_book, existing_judgement), params: { judgement: { rating: 3 } }
 
-      assert_enqueued_with(job: BroadcastJudgeActivityJob) do
-        delete book_judgement_url(book, judgement)
+      assert_redirected_to book_judge_path(jbm_book)
+      assert_equal 3, existing_judgement.reload.rating
+    end
+
+    test 'should destroy judgement' do
+      assert_difference('Judgement.count', -1) do
+        delete book_judgement_url(jbm_book, existing_judgement)
       end
+
+      assert_redirected_to book_judge_path(jbm_book)
+    end
+
+    describe 'broadcasting judge activity' do
+      let(:query_doc_pair) { query_doc_pairs(:book_of_comedy_qdp1) }
+
+      test 'create broadcasts judge activity' do
+        assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+          post book_judgements_url(book), params: { judgement: { query_doc_pair_id: query_doc_pair.id, rating: 1 } }
+        end
+      end
+
+      test 'unrateable broadcasts judge activity' do
+        assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+          patch book_query_doc_pair_unrateable_path(book, query_doc_pair),
+                params: { judgement: { explanation: 'not rateable' } }
+        end
+      end
+
+      test 'judge_later broadcasts judge activity' do
+        assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+          get book_query_doc_pair_judge_later_path(book, query_doc_pair)
+        end
+      end
+
+      test 'update broadcasts judge activity' do
+        judgement = judgements(:comedy_qdp1_judgement)
+
+        assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+          patch book_judgement_url(book, judgement), params: { judgement: { rating: 2 } }
+        end
+      end
+
+      test 'destroy broadcasts judge activity' do
+        judgement = judgements(:comedy_qdp1_judgement)
+
+        assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+          delete book_judgement_url(book, judgement)
+        end
     end
   end
 end

@@ -219,9 +219,8 @@ module Api
 
           queries = response.parsed_body['queries']
 
-          assert_equal 1, queries[0]['arranged_at']
-          assert_equal 2, queries[1]['arranged_at']
-          assert_equal 3, queries[2]['arranged_at']
+          assert_equal(acase.queries.map(&:id), queries.map { |query| query['query_id'] })
+          assert(queries.none? { |query| query.key?('arranged_at') || query.key?('arranged_next') })
         end
       end
 

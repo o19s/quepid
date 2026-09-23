@@ -49,6 +49,27 @@ angular.module('QuepidApp')
           });
       };
 
+      // Books owned directly by the current user - used when there's no team
+      // to list books through (e.g. a case that hasn't been shared yet).
+      // Different endpoint/shape from list(team): { all_books: [{ book_id, name }] }.
+      this.listMine = function() {
+        var url  = 'api/books?owned=true';
+        var self = this;
+
+        self.books = [];
+
+        return $http.get(url)
+          .then(function(response) {
+            angular.forEach(response.data.all_books, function(dataBook) {
+              var book = new Book(dataBook.book_id, dataBook.name);
+
+              if(!contains(self.books, book)) {
+                self.books.push(book);
+              }
+            });
+          });
+      };
+
 
 
       this.updateQueryDocPairs = function(bookId, caseId, queries) {

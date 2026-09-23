@@ -6,6 +6,17 @@
  *
  * Inspired by https://github.com/asafdav/ng-csv/blob/master/src/ng-csv/services/csv-service.js
  *
+ * Only the "detailed" export format lives here now — every other format the
+ * AngularJS <export-case> component used to build was ported to
+ * app/javascript/utils/case_csv.js (Stimulus `export-case-core`), since it's
+ * reconstructable from persisted API data alone. "detailed" needs the live,
+ * already-searched documents held in queriesSvc (not reconstructable from the
+ * server without re-running the search), so it stays here and is triggered
+ * via a `document` CustomEvent from the Stimulus modal — see the bridge
+ * listener at the bottom of this file.
+ *
+ * `arrayContains` and `fixObjectKeys` also stay here — they're still used by
+ * import-ratings and the new-case wizard's CSV import, unrelated to export.
  */
 
 /*jslint latedef:false*/
@@ -13,64 +24,37 @@
 (function() {
   angular.module('QuepidApp')
     .service('caseCSVSvc', [
-      '$http',
-      '$filter',
+      'caseSvc',
       'queriesSvc',
-      function($http, $filter, queriesSvc) {
+      function(caseSvc, queriesSvc) {
         var self          = this;
         var EOL           = '\r\n';
         var textDelimiter = '"';
 
-        self.caseHeaderToCSV            = caseHeaderToCSV;
         self.detailedQueriesHeaderToCSV = detailedQueriesHeaderToCSV;
-        self.queriesHeaderToCSV         = queriesHeaderToCSV;
-        self.snapshotHeaderToCSV        = snapshotHeaderToCSV;
-        self.stringify                  = stringify;
-        self.stringifyQueries           = stringifyQueries;
-        self.exportBasicFormat          = exportBasicFormat;
-        self.exportBasicFormatSnapshot  = exportBasicFormatSnapshot;
-        self.exportTrecFormat           = exportTrecFormat;
-        self.exportTrecFormatSnapshot   = exportTrecFormatSnapshot;
-        self.exportQuepidFormat         = exportQuepidFormat;
-        self.exportRREFormat            = exportRREFormat;
-        self.exportLTRFormat            = exportLTRFormat;
-        self.exportInformationNeed      = exportInformationNeed;
         self.stringifyQueriesDetailed   = stringifyQueriesDetailed;
-        self.stringifySnapshot          = stringifySnapshot;
         self.formatDownloadFileName     = formatDownloadFileName;
         self.arrayContains              = arrayContains;
         self.fixObjectKeys              = fixObjectKeys;
 
-        function caseHeaderToCSV () {
-          var header = [
-            'Team Name',
-            'Case Name',
-            'Case ID',
-            'Query Text',
-            'Score',
-            'Date Last Scored',
-            'Count',
-            'Information Need',
-            'Notes',
-            'Options'
-          ];
+        // Bridge from the Stimulus export-case-core modal (core case toolbar):
+        // "detailed" needs the live, already-searched documents held in
+        // queriesSvc, so the modal dispatches this event instead of exporting
+        // it itself. See app/javascript/controllers/export_case_core_controller.js.
+        document.addEventListener('export-case:detailed', function(event) {
+          var theCase = caseSvc.getSelectedCase();
+          if (!theCase || String(theCase.caseNo) !== String(event.detail.caseId)) {
+            return; // the case changed (or isn't loaded yet) since the modal was opened
+          }
 
-          var headerString = header.join(',');
+          var csv  = self.stringifyQueriesDetailed(theCase, queriesSvc.queries, true);
+          var blob = new Blob([csv], {
+            type: 'text/csv'
+          });
 
-          return '' + headerString + EOL;
-        }
-
-        function queriesHeaderToCSV () {
-          var header = [
-            'query',
-            'doc_id',
-            'rating',
-          ];
-
-          var headerString = header.join(',');
-
-          return '' + headerString + EOL;
-        }
+          /*global saveAs */
+          saveAs(blob, self.formatDownloadFileName(theCase.caseName + '_detailed.csv'));
+        });
 
         function detailedQueriesHeaderToCSV (fieldList) {
           var header = [
@@ -91,229 +75,6 @@
           var headerString = header.join(',');
 
           return '' + headerString + EOL;
-        }
-
-        function snapshotHeaderToCSV (fieldList) {
-          var header = [
-            'Snapshot Name',
-            'Snapshot Time',
-            'Case ID',
-            'Query Text',
-            'Doc ID',
-            'Doc Position',
-          ];
-          
-          angular.forEach(fieldList, function(fieldName) {
-            header.push(fieldName);
-          });
-
-          var headerString = header.join(',');
-
-          return '' + headerString + EOL;
-        }
-
-        /**
-         * Creates CSV string of case from a case object
-         *
-         * @param aCase
-         *
-         */
-        function stringify (aCase, queries, withHeader) {
-          // queries is sourced from queriesSvc.queries for query info and
-          // aCase.lastScore.queries has the scoring info for the queries.
-          var csvContent  = '';
-
-          if (withHeader) {
-            csvContent += self.caseHeaderToCSV();
-          }
-
-          if (aCase.lastScore === undefined || aCase.lastScore === null) {
-            return csvContent;
-          }
-
-          angular.forEach(aCase.lastScore.queries, function (data, id) {
-            var dataString, infoArray;
-            var score = data.score;
-            var text  = data.text;
-            var count = data.numFound;
-
-            id = parseInt(id,10); // Convert from string
-            
-            var query = null;
-            angular.forEach(queries, function (data, queryId) {
-              if (parseInt(queryId,10) === id){
-                query = data;
-                return false;
-              }
-            });
-
-            var notes = query.notes || null;
-            var informationNeed = query.informationNeed || null;
-            var options = query.options || null;
-            
-            if (Object.keys(options).length === 0){
-              options = null; // blank out boiler plate options json.
-            }
-
-            infoArray = [];
-
-            infoArray.push(stringifyField(aCase.teamNames()));
-            infoArray.push(stringifyField(aCase.caseName));
-            infoArray.push(stringifyField(aCase.caseNo));
-            infoArray.push(stringifyField(text));
-            infoArray.push(stringifyField(score));
-            infoArray.push(stringifyField(aCase.lastScore.updated_at));
-            infoArray.push(stringifyField(count));
-            infoArray.push(stringifyField(informationNeed));
-            infoArray.push(stringifyField(notes));
-            infoArray.push(stringifyField(options));
-
-            dataString = infoArray.join(',');
-            csvContent += dataString + EOL;
-          });
-
-          return csvContent;
-        }
-
-        /**
-         * Creates CSV string of queries from a case object
-         *
-         * @param aCase
-         *
-         */
-        function stringifyQueries (aCase, withHeader) {
-          var csvContent  = '';
-
-          if (withHeader) {
-            csvContent += self.queriesHeaderToCSV();
-          }
-
-          if (aCase.lastScore === undefined || aCase.lastScore === null) {
-            return csvContent;
-          }
-
-          return queriesSvc.bootstrapQueries(aCase.caseNo)
-            .then(function() {
-              angular.forEach(queriesSvc.queries, function (query) {
-
-                var ratings  = query.ratingsStore.bestDocs(50);
-
-                angular.forEach(ratings, function (rating) {
-                  var dataString;
-
-                  var infoArray = [];
-                  infoArray.push(stringifyField(query.queryText));
-                  infoArray.push(stringifyField(rating.id));
-                  infoArray.push(stringifyField(rating.rating));
-
-                  dataString = infoArray.join(',');
-                  csvContent += dataString + EOL;
-                });
-              });
-
-              return csvContent;
-            });
-        }
-
-        /**
-         * Somewhat similar to stringifyQueries, but the logic is all
-         * on the server side.
-         *
-         * @param aCase
-         *
-         */
-        function exportBasicFormat(aCase) {
-          $http.get('api/export/ratings/' + aCase.caseNo + '.csv?file_format=basic')
-            .then(function(response) {
-              var blob = new Blob([response.data], {
-                type: 'text/csv'
-              });
-
-              /*global saveAs */
-              saveAs(blob, formatDownloadFileName(aCase.caseName + '_basic.csv'));
-            });
-        }
-        function exportBasicFormatSnapshot(aCase, snapshotId) {
-          $http.get('api/export/ratings/' + aCase.caseNo + '.csv?file_format=basic_snapshot&snapshot_id=' + snapshotId)
-            .then(function(response) {
-              var blob = new Blob([response.data], {
-                type: 'text/csv'
-              });
-
-              /*global saveAs */
-              saveAs(blob, formatDownloadFileName(aCase.caseName + '_basic_snapshot.csv'));
-            });
-        }
-
-        function exportTrecFormat(aCase) {
-          $http.get('api/export/ratings/' + aCase.caseNo + '.txt?file_format=trec')
-            .then(function(response) {
-              var blob = new Blob([response.data], {
-                type: 'text/plain'
-              });
-
-              /*global saveAs */
-              saveAs(blob, formatDownloadFileName(aCase.caseName + '_trec.txt'));
-            });
-        }
-        function exportTrecFormatSnapshot(aCase, snapshotId) {
-          $http.get('api/export/ratings/' + aCase.caseNo + '.txt?file_format=trec_snapshot&snapshot_id=' + snapshotId)
-            .then(function(response) {
-              var blob = new Blob([response.data], {
-                type: 'text/plain'
-              });
-
-              /*global saveAs */
-              saveAs(blob, formatDownloadFileName(aCase.caseName + '_trec_snapshot.txt'));
-            });
-        }
-        
-        function exportQuepidFormat(aCase) {
-          $http.get('api/export/cases/' + aCase.caseNo)
-            .then(function(response) {
-              var blob = new Blob([$filter('json')(response.data)], {
-                type: 'application/json'
-              });
-
-              /*global saveAs */
-              saveAs(blob, formatDownloadFileName(aCase.caseName + '_case.json'));
-            });
-        }
-
-        function exportRREFormat(aCase) {
-          $http.get('api/export/ratings/' + aCase.caseNo + '.json?file_format=rre')
-            .then(function(response) {
-              var blob = new Blob([$filter('json')(response.data)], {
-                type: 'application/json'
-              });
-
-              /*global saveAs */
-              saveAs(blob, formatDownloadFileName(aCase.caseName + '_rre.json'));
-            });
-        }
-
-        function exportLTRFormat(aCase) {
-          $http.get('api/export/ratings/' + aCase.caseNo + '.txt?file_format=ltr')
-            .then(function(response) {
-              var blob = new Blob([response.data], {
-                type: 'text/plain'
-              });
-
-              /*global saveAs */
-              saveAs(blob, formatDownloadFileName(aCase.caseName + '_ltr.txt'));
-            });
-        }
-
-        function exportInformationNeed(aCase) {
-          $http.get('api/export/queries/information_needs/' + aCase.caseNo + '.csv')
-            .then(function(response) {
-              var blob = new Blob([response.data], {
-                type: 'text/csv'
-              });
-
-              /*global saveAs */
-              saveAs(blob, formatDownloadFileName(aCase.caseName + '_information_need.csv'));
-            });
         }
 
         /**
@@ -396,71 +157,21 @@
             }
           }
           else if (typeof data === 'string') {
-            data = data.trim().replace(/"/g, '""'); // Escape double quotes
+            data = data.trim();
 
-            if (data.indexOf(',') > -1 || data.indexOf('\n') > -1 || data.indexOf('\r') > -1) {
-              data = textDelimiter + data + textDelimiter;
-            }
-
+            // Neutralize spreadsheet formulas before adding CSV quoting.
             if (data.startsWith('=') || data.startsWith('@') || data.startsWith('+') || data.startsWith('-')) {
               data = ` ${data}`;
+            }
+
+            data = data.replace(/"/g, '""'); // Escape double quotes
+
+            if (data.indexOf(',') > -1 || data.indexOf('\n') > -1 || data.indexOf('\r') > -1 || data.indexOf('"') > -1) {
+              data = textDelimiter + data + textDelimiter;
             }
           }
           return data;
         };
-
-        /**
-         * Creates CSV string of snapshot
-         *
-         * @param snapshot
-         *
-         */
-
-        function stringifySnapshot (aCase, snapshot, withHeader) {
-          const snapshotName = snapshot.name();
-          const snapshotTime = snapshot.time;
-          const caseNumber = aCase.caseNo;
-          let csvContent = '';
-          
-          var fields = [];
-          angular.forEach(snapshot.docs, function (docs) {
-            angular.forEach(docs, function (doc) {
-              fields = mergeArrays(fields, Object.keys(doc.fields));
-            });
-          });
-
-          if (withHeader) {
-            csvContent += self.snapshotHeaderToCSV(fields);
-          }
-          angular.forEach(snapshot.docs, function (docs, queryId) {
-            const queryIdToMatch = parseInt(queryId, 10);
-            const matchingQuery = snapshot.queries.filter(function(query) {
-              return query.queryId === queryIdToMatch;
-            });
-            if (matchingQuery[0]) {
-              const matchingQueryText = matchingQuery[0].queryText;
-              if (matchingQueryText) {
-                angular.forEach(docs, function (doc, idx) {
-                  let infoArray = [];
-                  infoArray.push(stringifyField(snapshotName));
-                  infoArray.push(stringifyField(snapshotTime));
-                  infoArray.push(stringifyField(caseNumber));
-                  infoArray.push(stringifyField(matchingQueryText));
-                  infoArray.push(stringifyField(doc.id));
-                  infoArray.push(stringifyField(idx + 1));
-                  
-                  angular.forEach(fields, function (field) {
-                    infoArray.push(stringifyField(doc.fields[field]));
-                  });
-                  
-                  csvContent += infoArray.join(',') + EOL;
-                });
-              }
-            }
-          });
-
-          return csvContent;
-        }
 
         /**
          * Take a string and make it ready for being a downloaded file name
@@ -474,20 +185,6 @@
           return downloadFileName;
         }
 
-        function mergeArrays(...arrays) {
-          var mergedArray = [];
-        
-          arrays.forEach(function(array) {
-            array.forEach(function(value) {
-              if (!mergedArray.includes(value)) {
-                mergedArray.push(value);
-              }
-            });
-          });
-        
-          return mergedArray;
-        }
-        
         function arrayContains(containingArray, subsetArray){
            subsetArray.forEach(function(value) {
              if (!containingArray.includes(value)) {
@@ -501,14 +198,22 @@
           var newDocs = [];
           angular.forEach(docs, function (doc) {
             var newDoc = {};
-            Object.keys(doc).forEach(key => {              
+            Object.keys(doc).forEach(key => {
               const trimmedKey = key.trim();
               newDoc[trimmedKey] = doc[key];
             });
             newDocs.push(newDoc);
           });
           return newDocs;
-        }          
+        }
       }
-    ]);
+    ])
+    // Nothing on the core case page injects caseCSVSvc anymore now that the
+    // export-case modal is Stimulus (import-ratings/the wizard only pull in
+    // arrayContains/fixObjectKeys when THEIR modals open). AngularJS services
+    // are lazy, so without this the "detailed" bridge listener above would
+    // never attach. Force eager instantiation at app bootstrap instead.
+    .run(['caseCSVSvc', function(caseCSVSvc) {
+      return caseCSVSvc;
+    }]);
 })();

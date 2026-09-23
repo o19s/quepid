@@ -60,6 +60,28 @@ module Api
           assert_response :ok
           assert_empty response.parsed_body['all_books']
         end
+
+        test 'owned=true excludes books only accessible via a team' do
+          owned_book = books(:james_bond_movies) # owner: doug
+          team_only_book = books(:book_of_star_wars_judgements) # no owner, shared via doug's "shared" team
+
+          get :index, params: { owned: true }
+
+          assert_response :ok
+          book_names = response.parsed_body['all_books'].map { |b| b['name'] }
+          assert_includes book_names, owned_book.name
+          assert_not_includes book_names, team_only_book.name
+        end
+
+        test 'without owned, books accessible via a team are included' do
+          team_only_book = books(:book_of_star_wars_judgements)
+
+          get :index
+
+          assert_response :ok
+          book_names = response.parsed_body['all_books'].map { |b| b['name'] }
+          assert_includes book_names, team_only_book.name
+        end
       end
 
       describe 'Creating a book' do
@@ -80,6 +102,7 @@ module Api
           assert_equal response.parsed_body['name'], book_name
 
           assert_equal doug.books_involved_with.count, count + 1
+          assert_equal doug, assigns(:book).owner
         end
       end
 

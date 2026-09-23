@@ -1,0 +1,220 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Reports which docs/manual-testing/*.md scenarios are due for a re-run, by cross-referencing
+# docs/manual-testing/tracking.yml against git + on-disk state. Plain Ruby + git, no Rails boot,
+# no Docker needed, so it's fast enough to run before/after any change.
+#
+# A scenario is DUE when any of:
+#   - it has never been run (last_run: null)
+#   - a file under its `paths` changed after last_run - committed or not
+#     ("code changed since last verified")
+#   - last_run is older than policy.default_max_age_days ("stale by pure time")
+#
+# "Changed" is measured two different ways depending on whether git currently sees the file as
+# dirty (staged, unstaged, or untracked):
+#   - dirty file: use its on-disk mtime. It was just edited, so mtime already reflects that the
+#     moment you save - no need to wait for a commit. Using commit time here would mean last_run,
+#     stamped when you finish verifying (necessarily BEFORE you commit), is always older than the
+#     commit that's about to land, so every scenario re-flags as due the instant you commit, even
+#     though nothing changed since you tested it.
+#   - clean file: use its last `git log` commit time. mtime alone can't tell "content changed"
+#     apart from "file got rewritten to the same bytes" - a checkout, merge, or reset touches
+#     every file that differed on either side, even ones that land back on identical content, and
+#     that's ordinary activity here (branch switches, merges), not just a rare fresh-clone case.
+#     Commit time is immune to that because it's tied to the content's real history, not the disk.
+#
+# The one gap this still leaves: right after you commit a file you just tested, it flips from
+# "dirty" (mtime, already satisfied) to "clean" (commit time, which necessarily postdates the
+# last_run you stamped before committing) - so it re-flags as due once, until you re-stamp
+# last_run after committing (amend is fine).
+#
+# `last_run` should be a full UTC timestamp (YYYY-MM-DDTHH:MM:SSZ), compared at full precision -
+# not truncated to a date - so two events on the same calendar day (e.g. a verification pass and a
+# later same-day edit) compare correctly. Older bare-date entries (YYYY-MM-DD, no time) are treated
+# as the END of that UTC day, preserving the same-day-doesn't-count-as-stale behavior those entries
+# were originally written under - reinterpreting ~100+ pre-existing entries under a stricter
+# same-day rule would itself cause a wave of unnecessary reruns, the opposite of this tool's
+# purpose. New entries should use full timestamps so this guesswork doesn't apply to them.
+#
+# Usage:
+#   bin/manual_test_status                 # full report, grouped by part
+#   bin/manual_test_status --due-only       # only scenarios needing attention
+#   bin/manual_test_status --part 07        # limit to one part
+#   bin/manual_test_status --paths-for 3.2  # show the exact files tracked for one scenario
+
+require 'yaml'
+require 'date'
+require 'time'
+require 'optparse'
+require 'open3'
+require 'set'
+
+ROOT = File.expand_path('..', __dir__)
+TRACKING_FILE = File.join(ROOT, 'docs/manual-testing/tracking.yml')
+
+options = { due_only: false, part: nil, paths_for: nil }
+OptionParser.new do |opts|
+  opts.banner = 'Usage: bin/manual_test_status [options]'
+  opts.on('--due-only', 'Only print scenarios that need a rerun') { options[:due_only] = true }
+  opts.on('--part PART', 'Limit to one part, e.g. 07') { |v| options[:part] = v }
+  opts.on('--paths-for SCENARIO', 'Print tracked paths for one scenario id, e.g. 3.2') { |v| options[:paths_for] = v }
+end.parse!
+
+unless File.exist?(TRACKING_FILE)
+  warn "No tracking file at #{TRACKING_FILE}"
+  exit 1
+end
+
+data = YAML.safe_load(File.read(TRACKING_FILE), permitted_classes: [Date, Time], aliases: true)
+default_max_age = (data['policy'] || {})['default_max_age_days'] || 90
+
+# Cache one lookup per unique path list so we don't re-stat/re-shell-out per scenario.
+last_change_cache = {}
+
+# A `paths` entry may be a single file or a directory (trailing slash, e.g. "app/jobs/") - walk
+# directories recursively so a change to any file under them counts.
+def files_under(root, path)
+  full = File.join(root, path)
+  return [full] if File.file?(full)
+  return [] unless File.directory?(full)
+
+  Dir.glob(File.join(full, '**', '*')).select { |f| File.file?(f) }
+end
+
+# git status --porcelain lines are "XY path" or "XY old -> new" for renames; either way the
+# current on-disk path is the last whitespace-separated field after the two-char status code.
+# An untracked directory reports as a single "?? dir/" line rather than one line per file inside
+# it, so route each path through `files_under` to expand that case the same way a `paths:` entry
+# naming a directory already gets expanded.
+def dirty_files_for(root)
+  out, status = Open3.capture2('git', '-C', root, 'status', '--porcelain')
+  return Set.new unless status.success?
+
+  out.lines.flat_map { |line| files_under(root, line[3..].to_s.strip.split(' -> ').last) }.to_set
+end
+
+def last_change_for(paths, root, cache, dirty_files)
+  return nil if paths.nil? || paths.empty?
+
+  key = paths.sort.join('|')
+  return cache[key] if cache.key?(key)
+
+  files = paths.flat_map { |p| files_under(root, p) }.uniq
+  if files.empty?
+    cache[key] = nil
+    return nil
+  end
+
+  dirty, clean = files.partition { |f| dirty_files.include?(f) }
+  times = dirty.map { |f| File.mtime(f).utc }
+
+  unless clean.empty?
+    cmd = ['git', '-C', root, 'log', '-1', '--format=%cI', '--'] + clean
+    out, status = Open3.capture2(*cmd)
+    times << Time.iso8601(out.strip).utc if status.success? && !out.strip.empty?
+  end
+
+  cache[key] = times.max
+end
+
+# Bare YYYY-MM-DD entries (recorded before full-timestamp last_run was required) become the END of
+# that UTC day, not the start — preserving the old date-vs-date behavior these entries were written
+# under (same-day code change does NOT count as "after"). Reinterpreting ~128 pre-existing entries
+# under a stricter same-day rule they were never written against would itself cause a wave of
+# unnecessary reruns, which is exactly what this tool exists to avoid. Full-timestamp entries (the
+# new convention, going forward) aren't affected by this and compare at true precision.
+def normalize_last_run(value)
+  return nil unless value
+
+  case value
+  when Time then value
+  when Date then Time.utc(value.year, value.month, value.day, 23, 59, 59)
+  else Time.parse(value.to_s)
+  end
+end
+
+def days_since(time)
+  # Both sides must be the same zone — Date.today is system-local, which can disagree with a
+  # UTC-derived last_run by a day right around either zone's midnight.
+  (Time.now.utc.to_date - time.to_date).to_i
+end
+
+dirty_files = dirty_files_for(ROOT)
+
+rows = []
+(data['parts'] || {}).each do |part_id, part|
+  next if options[:part] && options[:part] != part_id
+
+  (part['scenarios'] || {}).each do |scenario_id, s|
+    next if options[:paths_for] && options[:paths_for] != scenario_id
+
+    last_run = normalize_last_run(s['last_run'])
+    code_changed = last_change_for(s['paths'], ROOT, last_change_cache, dirty_files)
+
+    reasons = []
+    reasons << 'never run' if last_run.nil?
+    if last_run && code_changed && code_changed > last_run
+      reasons << "file changed #{code_changed.strftime('%Y-%m-%d %H:%M UTC')} " \
+                 "(after last_run #{last_run.getutc.strftime('%Y-%m-%d %H:%M UTC')})"
+    end
+    if last_run && days_since(last_run) > default_max_age
+      reasons << "stale (#{days_since(last_run)}d > #{default_max_age}d)"
+    end
+
+    rows << {
+      part: part_id,
+      file: part['file'],
+      id: scenario_id,
+      title: s['title'],
+      last_run: last_run,
+      result: s['result'],
+      due: !reasons.empty?,
+      reasons: reasons,
+      paths: s['paths'] || []
+    }
+  end
+end
+
+if options[:paths_for]
+  row = rows.first
+  if row
+    puts "#{row[:id]} #{row[:title]}"
+    row[:paths].each { |p| puts "  #{p}" }
+  else
+    warn "No scenario #{options[:paths_for]} found"
+  end
+  exit 0
+end
+
+def natural_sort_key(scenario_id)
+  # "10.6a" -> [10, 6, "a"], "4.2" -> [4, 2, ""] — sorts numeric parts numerically.
+  scenario_id.to_s.split('.').map do |segment|
+    match = segment.match(/\A(\d+)([a-z]*)\z/)
+    match ? [match[1].to_i, match[2]] : [0, segment]
+  end
+end
+
+rows.sort_by! { |r| [r[:part], natural_sort_key(r[:id])] }
+due_count = rows.count { |r| r[:due] }
+
+current_part = nil
+rows.each do |r|
+  next if options[:due_only] && !r[:due]
+
+  if r[:part] != current_part
+    puts
+    puts "== Part #{r[:part]} (#{r[:file]}) =="
+    current_part = r[:part]
+  end
+
+  status = if r[:due]
+             "DUE  — #{r[:reasons].join('; ')}"
+           else
+             "ok   — last run #{r[:last_run].getutc.strftime('%Y-%m-%d %H:%M UTC')} (#{r[:result]})"
+           end
+  printf("  %-6s %-55s %s\n", r[:id], r[:title][0, 55], status)
+end
+
+puts
+puts "#{due_count} / #{rows.size} scenarios due for a rerun (never run, code changed since last_run, or stale > #{default_max_age}d)."

@@ -1,11 +1,10 @@
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1>Teams</h1>
+<%= page_header "Teams" do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to '+ Add New', new_team_path, class: 'btn btn-success' %>
     </div>
   </div>
-</div>
+<% end %>
 
 <div class="card">
   <div class="card-header">
@@ -43,26 +42,35 @@
   </div>
 
   <div class="card-body">
-    <table class="table table-hover table-sm">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th class="text-center">Members</th>
-          <th class="text-center">Cases</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @teams.each do |team| %>
-          <tr>
-            <td><%= team.id %></td>
-            <td><%= link_to team.name, team_path(team) %></td>
-            <td class="text-center"><%= team.members.count %></td>
-            <td class="text-center"><%= team.cases.count %></td>
-          </tr>
+    <% if @teams.empty? && params[:q].blank? %>
+      <div class="text-center py-4">
+        <p class="mb-3">You're not on any teams yet. Working solo is perfectly fine &mdash; create a team whenever you want to share cases, books, scorers, or AI judges with others.</p>
+        <%= link_to new_team_path, class: 'btn btn-primary' do %>
+          <i class="bi bi-plus-lg" aria-hidden="true"></i> Create your first team
         <% end %>
-      </tbody>
-    </table>
+      </div>
+    <% else %>
+      <table class="table table-hover table-sm">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th class="text-center">Members</th>
+            <th class="text-center">Cases</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @teams.each do |team| %>
+            <tr>
+              <td><%= team.id %></td>
+              <td><%= link_to team.name, team_path(team) %></td>
+              <td class="text-center"><%= team.members.count %></td>
+              <td class="text-center"><%= team.cases.count %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
   </div>
   <div class="card-footer d-flex justify-content-center">
     <%== @pagy && @pagy.series_nav(:bootstrap) %>

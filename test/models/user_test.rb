@@ -32,10 +32,12 @@ require 'test_helper'
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
 #  system_prompt               :string(4000)
+#  type                        :string(255)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
 #  invited_by_id               :integer
+#  owner_id                    :integer
 #
 # Indexes
 #
@@ -44,6 +46,8 @@ require 'test_helper'
 #  index_users_on_invited_by_id         (invited_by_id)
 #  index_users_on_name                  (name)
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
+#  index_users_on_type                  (type)
+#  index_users_owner_id                 (owner_id)
 #  ix_user_username                     (email) UNIQUE
 #
 # Foreign Keys
@@ -119,7 +123,7 @@ class UserTest < ActiveSupport::TestCase
 
     test 'an AI judge is never promoted, even when no real users exist yet' do
       with_no_real_users_yet do
-        judge = User.create(llm_key: '1234', name: 'Judge Judy')
+        judge = AiJudge.create(llm_key: '1234', name: 'Judge Judy')
 
         assert_not judge.administrator
       end
@@ -348,6 +352,24 @@ class UserTest < ActiveSupport::TestCase
       shared_team_case.reload
       assert_not shared_team_case.destroyed?
     end
+
+    it 'deletes a user who authored an annotation, destroying the annotation rather than raising a foreign key error' do
+      annotation = Annotation.create!(user: random, message: 'a note')
+      random.judgements.each do |j|
+        j.update!(user: nil)
+      end
+      random.owned_scorers.each do |s|
+        s.teams.each { |t| s.teams.delete(t) }
+      end
+      random.reload
+
+      random.destroy
+      assert_predicate random, :destroyed?
+
+      # :destroy, not :nullify - Annotation requires a user, so the annotation
+      # must go with its author rather than being left in an invalid state.
+      assert_nil Annotation.find_by(id: annotation.id)
+    end
   end
 
   describe 'User accessing Books' do
@@ -402,62 +424,49 @@ class UserTest < ActiveSupport::TestCase
   end
 
   describe 'User is AI Judge' do
-    let(:joey) { users(:joey) }
-    it 'uses the existence of the key to decide ai_judge' do
+    # AiJudge-specific behavior (validations, judge_options, ai_judge? on an
+    # actual AiJudge instance) lives in test/models/ai_judge_test.rb. This is
+    # just the regression guard that setting the llm_key column alone,
+    # without actually being an AiJudge row, no longer flips ai_judge? -
+    # that heuristic is what STI replaced.
+    it 'is not decided by the llm_key column - only by being an AiJudge' do
       user = User.new
       assert_not user.ai_judge?
-      user.llm_key = ''
-      assert_predicate user, :ai_judge?
-      assert_not user.valid?
+      user.llm_key = '1234'
+      assert_not user.ai_judge?
+    end
+  end
+
+  describe 'for_user scope (ownership + team sharing for AI judges)' do
+    let(:owner) { User.create!(name: 'Owner', email: 'for-user-owner@example.com', password: 'password1') }
+    let(:teammate) { User.create!(name: 'Teammate', email: 'for-user-teammate@example.com', password: 'password1') }
+    let(:outsider) { User.create!(name: 'Outsider', email: 'for-user-outsider@example.com', password: 'password1') }
+    let(:team) { Team.create!(name: 'for_user scope test team') }
+
+    it 'is visible to its owner' do
+      judge = AiJudge.create!(name: 'Owned Judge', llm_key: '1234', owner: owner)
+      assert_includes AiJudge.for_user(owner), judge
     end
 
-    it 'does not require an email or password address to be valid when is a judge' do
-      user = User.new(llm_key: '1234', name: 'Judge Judy')
-      assert_predicate user, :ai_judge?
-      assert_predicate user, :valid?
+    it 'is visible to a teammate the judge is shared with' do
+      judge = AiJudge.create!(name: 'Shared Judge', llm_key: '1234')
+      team.members << judge
+      team.members << teammate
+      assert_includes AiJudge.for_user(teammate), judge
     end
 
-    it 'does require name to be valid when is a judge' do
-      user = User.new(llm_key: '1234')
-      assert_predicate user, :ai_judge?
-      assert_not user.valid?
-      user.name = 'Judge Judy'
-      assert_predicate user, :valid?
+    it 'is not visible to a user who neither owns it nor shares a team with it' do
+      judge = AiJudge.create!(name: 'Private Judge', llm_key: '1234', owner: owner)
+      team.members << judge
+      assert_not_includes AiJudge.for_user(outsider), judge
     end
 
-    describe 'options to configure the llm server' do
-      it 'provides an empty hash' do
-        user = User.new(llm_key: '1234', name: 'Judge Judy')
-        opts_hash = user.judge_options
-        assert_empty(opts_hash)
-      end
-
-      it 'lets you update the options hash via passing in a hash with new values' do
-        user = User.new(llm_key: '1234', name: 'Judge Judy')
-        opts_hash = user.judge_options
-
-        opts_hash[:model] = 'gpt-3.5-turbo'
-        assert_equal('gpt-3.5-turbo', opts_hash[:model])
-        user.judge_options = opts_hash
-        user.save!
-
-        user.reload
-        assert_equal('gpt-3.5-turbo', user.judge_options[:model])
-      end
-
-      it 'works with other prexisting options' do
-        joey.options = { special_options: { key1: 'opt1', key2: 2, key3: true } }
-        assert joey.save
-
-        judge_options = joey.judge_options
-        judge_options[:model] = 'gpt-3.5-turbo'
-        joey.judge_options = judge_options
-        assert joey.save!
-        joey.reload
-
-        judge_options = joey.judge_options
-        assert_equal('gpt-3.5-turbo', judge_options[:model])
-      end
+    it 'excludes regular (non-AI-judge) users even when team-shared' do
+      human = User.create!(name: 'Human', email: 'for-user-human@example.com', password: 'password1')
+      team.members << human
+      team.members << teammate
+      assert_not_includes AiJudge.for_user(owner), human
+      assert_not_includes AiJudge.for_user(teammate), human
     end
   end
 

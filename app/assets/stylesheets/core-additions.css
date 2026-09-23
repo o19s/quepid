@@ -276,6 +276,11 @@ header .dropdown-item:focus {
 	padding: 75px 15px 15px 15px;
 	position: relative;
 	min-width: 650px;
+	/* Right edge of the "Score All" column below (.col-ratings.query-rating: 15px
+	 * margin-left + 75px width) — consumed by .sub-results .btn-toolbar's `left`
+	 * in bootstrap5-compat.css so the two rules stay in sync from one source of
+	 * truth instead of two independently-hardcoded pixel values. */
+	--score-col-end: 90px;
 }
 
 .sub-results td {

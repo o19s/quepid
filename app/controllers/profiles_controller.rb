@@ -10,7 +10,7 @@ class ProfilesController < ApplicationController
         format.html { redirect_to profile_path, notice: 'Profile updated successfully.' }
         format.json { render :show, status: :ok, location: current_user }
       else
-        format.html { redirect_to profile_path }
+        format.html { render :show, status: :unprocessable_content, locals: { active_error_section: :profile } }
         format.json { render json: current_user.errors, status: :unprocessable_content }
       end
     end

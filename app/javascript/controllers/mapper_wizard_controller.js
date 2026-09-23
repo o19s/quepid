@@ -1,5 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
+import { showStatusMessage } from "utils/status_message"
+import { setButtonLoading, escapeHtml } from "utils/stimulus_ui"
 
 export default class extends Controller {
   static targets = [
@@ -61,6 +63,15 @@ export default class extends Controller {
       this.step3Target.style.display = "block"
       this.showStatus("Existing mappers loaded. Fetch HTML to test them, or edit and save directly.", "info")
     }
+  }
+
+  // Lets a user without an OpenAI key (or who just prefers to write the mapper by hand) reach
+  // Step 3 directly, instead of it only ever being revealed by a successful AI generation.
+  showStep3Manually(event) {
+    event.preventDefault()
+    this.step2Target.style.display = "block"
+    this.step3Target.style.display = "block"
+    this.step3Target.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
   captureEditors() {
@@ -132,7 +143,7 @@ export default class extends Controller {
       }
     }
 
-    this.setButtonLoading(this.fetchButtonTarget, true)
+    setButtonLoading(this.fetchButtonTarget, true)
     this.showStatus(`Fetching via ${httpMethod}...`, "info")
 
     try {
@@ -163,7 +174,7 @@ export default class extends Controller {
     } catch (error) {
       this.showStatus(`Error: ${error.message}`, "error")
     } finally {
-      this.setButtonLoading(this.fetchButtonTarget, false)
+      setButtonLoading(this.fetchButtonTarget, false)
     }
   }
 
@@ -177,7 +188,7 @@ export default class extends Controller {
       return
     }
 
-    this.setButtonLoading(this.generateButtonTarget, true)
+    setButtonLoading(this.generateButtonTarget, true)
     this.showStatus("Generating mapper functions with AI... This may take a moment.", "info")
 
     try {
@@ -208,7 +219,14 @@ export default class extends Controller {
           this.docsMapperTarget.value = data.docs_mapper
         }
 
-        this.showStatus("Mapper functions generated successfully!", "success")
+        if (data.truncated) {
+          this.showStatus(
+            `Mapper functions generated, but the fetched HTML was long (${data.original_length.toLocaleString()} characters) and had to be truncated to ${data.sent_length.toLocaleString()} characters before the AI saw it. If docsMapper doesn't find results below, the real markup may be past that cutoff — try "Refine with AI" with more specific feedback, or edit the mapper by hand.`,
+            "warning"
+          )
+        } else {
+          this.showStatus("Mapper functions generated successfully!", "success")
+        }
         this.step3Target.style.display = "block"
       } else {
         this.showStatus(data.error || "Failed to generate mappers", "error")
@@ -216,7 +234,7 @@ export default class extends Controller {
     } catch (error) {
       this.showStatus(`Error: ${error.message}`, "error")
     } finally {
-      this.setButtonLoading(this.generateButtonTarget, false)
+      setButtonLoading(this.generateButtonTarget, false)
     }
   }
 
@@ -257,7 +275,7 @@ export default class extends Controller {
       return
     }
 
-    this.setButtonLoading(button, true)
+    setButtonLoading(button, true)
 
     try {
       const response = await apiFetch(this.testUrlValue, {
@@ -275,19 +293,19 @@ export default class extends Controller {
 
       if (data.success) {
         const resultStr = JSON.stringify(data.result, null, 2)
-        resultTarget.innerHTML = `<pre class="text-success mb-0" style="white-space: pre-wrap;">${this.escapeHtml(resultStr)}</pre>`
+        resultTarget.innerHTML = `<pre class="text-success mb-0" style="white-space: pre-wrap;">${escapeHtml(resultStr)}</pre>`
         this.showStatus(`${mapperType} test successful!`, "success")
       } else {
-        resultTarget.innerHTML = `<pre class="text-danger mb-0">${this.escapeHtml(data.error)}</pre>`
+        resultTarget.innerHTML = `<pre class="text-danger mb-0">${escapeHtml(data.error)}</pre>`
         this.showStatus(`${mapperType} test failed`, "error")
       }
 
       // Display console logs if any were captured
       this.displayLogs(data.logs, logsTarget, logsContainerTarget)
     } catch (error) {
-      resultTarget.innerHTML = `<pre class="text-danger mb-0">Error: ${this.escapeHtml(error.message)}</pre>`
+      resultTarget.innerHTML = `<pre class="text-danger mb-0">Error: ${escapeHtml(error.message)}</pre>`
     } finally {
-      this.setButtonLoading(button, false)
+      setButtonLoading(button, false)
     }
   }
 
@@ -307,7 +325,7 @@ export default class extends Controller {
       const levelIcon = log.level === 'error' ? '[ERROR]' :
                         log.level === 'warn' ? '[WARN]' :
                         log.level === 'info' ? '[INFO]' : '[LOG]'
-      return `<div class="${levelClass}">${this.escapeHtml(levelIcon)} ${this.escapeHtml(log.message)}</div>`
+      return `<div class="${levelClass}">${escapeHtml(levelIcon)} ${escapeHtml(log.message)}</div>`
     }).join('')
 
     logsTarget.innerHTML = logHtml
@@ -353,7 +371,7 @@ export default class extends Controller {
     this.captureEditors()
     const currentCode = editor ? editor.getValue() : textarea.value
 
-    this.setButtonLoading(button, true)
+    setButtonLoading(button, true)
     this.showStatus(`Refining ${mapperType} with AI...`, "info")
 
     try {
@@ -378,14 +396,21 @@ export default class extends Controller {
         } else {
           textarea.value = data.code
         }
-        this.showStatus(`${mapperType} refined successfully!`, "success")
+        if (data.truncated) {
+          this.showStatus(
+            `${mapperType} refined, but the HTML sample was long (${data.original_length.toLocaleString()} characters) and had to be truncated to ${data.sent_length.toLocaleString()} characters before the AI saw it. Test the result below to confirm it still works.`,
+            "warning"
+          )
+        } else {
+          this.showStatus(`${mapperType} refined successfully!`, "success")
+        }
       } else {
         this.showStatus(data.error || "Refinement failed", "error")
       }
     } catch (error) {
       this.showStatus(`Error: ${error.message}`, "error")
     } finally {
-      this.setButtonLoading(button, false)
+      setButtonLoading(button, false)
     }
   }
 
@@ -413,7 +438,7 @@ export default class extends Controller {
       return
     }
 
-    this.setButtonLoading(this.saveButtonTarget, true)
+    setButtonLoading(this.saveButtonTarget, true)
     this.showStatus("Saving search endpoint...", "info")
 
     const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
@@ -459,7 +484,7 @@ export default class extends Controller {
     } catch (error) {
       this.showStatus(`Error: ${error.message}`, "error")
     } finally {
-      this.setButtonLoading(this.saveButtonTarget, false)
+      setButtonLoading(this.saveButtonTarget, false)
     }
   }
 
@@ -502,36 +527,16 @@ export default class extends Controller {
 
   // Helper methods
   showStatus(message, type) {
-    if (this.hasStatusTarget) {
-      this.statusTarget.textContent = message
-      this.statusTarget.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'}`
-      this.statusTarget.style.display = "block"
+    if (!this.hasStatusTarget) return
 
+    this.statusTarget.style.display = "block"
+    showStatusMessage(this.statusTarget, {
+      message,
+      className: `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'}`,
       // Auto-hide success messages after 5 seconds
-      if (type === 'success') {
-        setTimeout(() => {
-          if (this.statusTarget.textContent === message) {
-            this.statusTarget.style.display = "none"
-          }
-        }, 5000)
-      }
-    }
+      autoHideMs: type === 'success' ? 5000 : undefined,
+      onExpire: (el) => { el.style.display = "none" }
+    })
   }
 
-  setButtonLoading(button, loading) {
-    if (loading) {
-      button.disabled = true
-      button.dataset.originalText = button.innerHTML
-      button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
-    } else {
-      button.disabled = false
-      button.innerHTML = button.dataset.originalText || button.innerHTML
-    }
-  }
-
-  escapeHtml(text) {
-    const div = document.createElement('div')
-    div.textContent = text
-    return div.innerHTML
-  }
 }

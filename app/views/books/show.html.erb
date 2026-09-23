@@ -14,13 +14,13 @@ function updateModalTitle(judgeId) {
 
 <%= turbo_frame_tag "modal" %>
 
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1>
-    <i class="bi bi-book"></i> <%= book_title @book %>
-    <% if @book.archived? %>
-      <span class="badge bg-warning">Archived</span>
-    <% end %>
-  </h1>
+<% title = capture do %>
+  <i class="bi bi-book"></i> <%= book_title @book %>
+  <% if @book.archived? %>
+    <span class="badge bg-warning">Archived</span>
+  <% end %>
+<% end %>
+<%= page_header title do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <% if @book.archived? %>
@@ -34,7 +34,7 @@ function updateModalTitle(judgeId) {
       <% end %>
     </div>
   </div>
-</div>
+<% end %>
 
 <%= render 'tabs', book: @book %>
 <p class="text-muted mt-2">
@@ -43,6 +43,23 @@ function updateModalTitle(judgeId) {
 </p>
 
 <%= render 'kraken_unleashed', book: @book if @kraken_unleashed %>
+
+<% available_ai_judges = available_ai_judges_for_book(@book, current_user).to_a %>
+<% if @book.ai_judges.present? %>
+  <div class="mb-2">
+    <i class="bi bi-robot"></i>
+    We have <%= @book.ai_judges.count == 1 ? 'an' : 'some' %> AI <%= @book.ai_judges.count == 1 ? 'Judge' : 'Judges' %>
+    <i><%= @book.ai_judges.map(&:name).to_sentence %></i> helping us rate documents.
+  </div>
+<% elsif available_ai_judges.any? %>
+  <div class="alert alert-info mb-3" role="alert">
+    <h6><i class="bi bi-robot"></i> AI Judges Available</h6>
+    <p class="mb-2">
+      You have AI judges available that could help rate documents automatically: <strong><%= available_ai_judges.pluck(:name).to_sentence %></strong>
+    </p>
+    <%= link_to 'Add AI Judge to this Book', edit_book_path(@book), class: 'btn btn-sm btn-outline-primary' %>
+  </div>
+<% end %>
 
 <%# ── Status alerts ────────────────────────────────────────────────────────── %>
 <% if @book.import_file.attached? %>

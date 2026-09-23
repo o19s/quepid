@@ -1,0 +1,873 @@
+# Manual-testing coverage tracker.
+#
+# One entry per numbered scenario in docs/manual-testing/*.md (same numbering). Tracks when a
+# scenario was last actually driven end-to-end (via Playwright MCP or by hand) so we know:
+#
+#   1. whether it's DUE for a rerun because related source files changed since last_run, and
+#   2. whether it's STALE by pure time (rerun periodically even absent code changes — seed data,
+#      dependencies, and external services like Ollama/Solr drift independently of app code).
+#
+# Update rules:
+#   - After actually exercising a scenario: set last_run to a full UTC timestamp in
+#     YYYY-MM-DDTHH:MM:SSZ format (e.g. 2026-09-09T15:47:00Z) — NOT a bare date. This must parse
+#     as a YAML timestamp (Ruby Time), not a plain Date or String; unquoted "YYYY-MM-DD HH:MM"
+#     without seconds+zone silently parses as a String and breaks bin/manual_test_status. Date-only
+#     granularity can't tell "verified this morning" from "edited again this afternoon" on the same
+#     day — exactly the case that causes redundant or missed reruns — so always include the time.
+#     Also set result to pass / pass_with_fixes / fail / blocked, and a one-line note (what you did,
+#     what you found).
+#   - `notes` describes THE LATEST PASS ONLY, in the form "Covered live: ... Not covered live: ...".
+#     Don't append this pass's narrative to the previous one — git log -p holds the history, and a
+#     note that mixes passes leaves the reader unable to tell which sentence is still true. Keep it
+#     near one or two sentences; bin/manual_test_status never reads notes, a human does.
+#   - Timing gotcha: bin/manual_test_status compares last_run against the COMMIT timestamp of the
+#     files in `paths`, so a last_run stamped before you commit re-flags the scenario as due the
+#     moment the commit lands. Stamp it after committing (amend), or expect it to read as due.
+#   - If you skip a scenario, leave it alone — last_run: null means "never verified", which is
+#     honest and useful. Don't backfill a timestamp for something you didn't actually run.
+#   - Older entries recorded before this rule (bare YYYY-MM-DD dates) are still valid and don't need
+#     backfilling — bin/manual_test_status treats a bare date as the END of that UTC day, preserving
+#     the same-day-doesn't-count-as-stale behavior these entries were written under. (Full-timestamp
+#     entries compare at true precision, so this only matters for pre-existing bare-date entries.)
+#   - `paths` are repo-relative glob-ish hints at the source most likely to affect this scenario.
+#     They're a best-effort heuristic for `bin/manual_test_status`, not exhaustive — improve them
+#     when you learn a scenario touches a file this list is missing.
+#   - result: pass_with_fixes means bugs were found AND fixed in the same pass (see notes for what).
+#
+# Check status: bin/manual_test_status  (or `bin/manual_test_status --due-only`)
+
+policy:
+  default_max_age_days: 90
+
+parts:
+  "01":
+    file: 01-environment-setup-and-accounts.md
+    scenarios:
+      "1.1":
+        title: "Sign up for a new account"
+        last_run: 2026-09-15T16:16:00Z
+        result: pass
+        notes: "Full submit tested via Playwright MCP this time (previous pass only checked the panel rendered): signed up quepid+manualtest20260915@o19s.com with Full Name/Password/Confirm Password, landed logged-in on the dashboard's first-time empty state (see 2.1). Account was then deleted via Danger Zone as part of 1.9. Did not test the duplicate-email, mismatched-password, or terms-checkbox edge cases this pass."
+        paths: ["app/controllers/users/signups_controller.rb", "app/views/sessions/new.html.erb"]
+      "1.2":
+        title: "Log in / log out"
+        last_run: 2026-09-15T16:01:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP after the subpath-deployment /users/sign_in redirect fix (e9eb080d): plain (non-subpath) sign-in via email/password at /sessions/new still works, landing on the dashboard as expected. Did not test the subpath-deployment scenario itself (requires APP_RELATIVE_URL_ROOT configured, not set up on this host) or sign-out."
+        paths: ["app/controllers/sessions_controller.rb", "app/views/sessions/"]
+      "1.3":
+        title: "OAuth login"
+        last_run: 2026-09-15
+        result: blocked
+        notes: "Re-verified via Playwright MCP after the case-insensitive-email-match commit: same environment limitation as before, not a regression. Google button present but untested (placeholder client id/secret). Keycloak click still produces 'Could not sign user in with OAuth provider' — confirmed via /etc/hosts that this host still has no `127.0.0.1 keycloak` entry. Did not add it (host-level system file change outside the repo)."
+        paths: ["app/controllers/users/omniauth_callbacks_controller.rb", "config/initializers/devise.rb"]
+      "1.4":
+        title: "Password reset"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Full round-trip verified: requested reset, found the real token in development.log (letter_opener doesn't write tmp/letter_opener/ in this headless setup, but the mailer content is logged), completed reset, tested mismatched-password validation, confirmed old password stops working and new one works. Reset password back to 'password' afterward via Profile (also covers 1.7)."
+        paths: ["app/controllers/users/passwords_controller.rb"]
+      "1.5":
+        title: "Invitations (accepting one)"
+        last_run: 2026-09-15T18:50:00Z
+        result: pass
+        notes: "Re-verified full flow via Playwright MCP: invited quepid+manualtestinvite20260915@o19s.com from a team (9.3), copied its invite link (via the 📋 button, read from the clipboard), logged out, visited the link — form had Email pre-filled; filled Full Name/Password/Confirm Password, clicked Accept Invite — landed on the team page, logged in as the new user, INVITED badge gone (now a full member). Deleted the disposable user afterward via admin. Did not re-test the reused-token-rejected edge case this pass."
+        paths: ["app/controllers/users/invitations_controller.rb", "app/controllers/teams_controller.rb"]
+      "1.6":
+        title: "Profile page"
+        last_run: 2026-09-15T16:14:00Z
+        result: pass_with_fixes
+        notes: "Functionally re-verified via Playwright MCP (previous passes only checked rendering). Stats card (Cases/Teams/Queries/Ratings), Update profile (set Company Name to a test value, got 'Profile updated successfully.', value persisted, reverted it back to empty), Account Security, Personal Access Tokens, and Danger Zone sections all present and working. FOUND A PRE-EXISTING BUG (not introduced by this branch, see 1.7): the new shared `_error_messages` partial (extracted in e3e36e71 from inline duplicated code that already existed pre-branch) is rendered 3 times on this page — once each under Profile, Account Security, and Danger Zone, all showing the *same* `current_user.errors` — so a validation error from any one form (e.g. a password mismatch) appears duplicated under all three unrelated section headings simultaneously. Confusing but not a regression from this branch's refactor (verified via git blame the triplicated render predates this branch); flagged for the user to decide whether to fix. Did not fix given the scope of this test sweep."
+        paths: ["app/controllers/profiles_controller.rb", "app/views/profiles/show.html.erb", "app/views/shared/_error_messages.html.erb"]
+      "1.7":
+        title: "Change password from Profile"
+        last_run: 2026-09-15T16:14:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: submitted a mismatched New Password/Confirm New Password (old password correct) — correctly rejected with 'Password confirmation doesn't match Password', no password change applied (confirmed by logging back in with the original 'password' afterward for other scenarios in this pass). See the triplicated-error-display bug noted under 1.6, reproduced here. Did not test the successful password-change path, to avoid invalidating the documented seed credentials for other testers/sessions."
+        paths: ["app/controllers/accounts_controller.rb", "app/views/profiles/show.html.erb", "app/views/shared/_error_messages.html.erb"]
+      "1.8":
+        title: "API Keys (Personal Access Tokens)"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Generated, used via curl, destroyed, confirmed token stops working."
+        paths: ["app/controllers/api_keys_controller.rb", "app/models/api_key.rb"]
+      "1.9":
+        title: "Account deletion (Danger Zone)"
+        last_run: 2026-09-15T16:16:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: signed up quepid+manualtest20260915@o19s.com (see 1.1), clicked 'Delete your account' on its own Profile page — no confirmation step appeared before the request was submitted — got flash 'Account was deleted', landed on the sign-in page, no console errors. Logged back in as the real seed account with no issues afterward. Pending-team-invitation edge case still not tested."
+        paths: ["app/controllers/accounts_controller.rb", "app/models/user.rb"]
+
+  "02":
+    file: 02-home-dashboard.md
+    scenarios:
+      "2.1":
+        title: "First-time / empty state"
+        last_run: 2026-09-15T16:16:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on the freshly signed-up throwaway account from 1.1: 'Welcome to Quepid!' banner + 'Create Your First Relevancy Case' CTA rendered correctly. Did not click through case creation from this entry point (covered by 3.2's wizard test)."
+        paths: ["app/controllers/home_controller.rb", "app/views/home/"]
+      "2.2":
+        title: "Case summary cards"
+        last_run: 2026-09-15T16:01:00Z
+        result: pass
+        notes: "Spot-checked via Playwright MCP (widely-used surface, longest-stale part of this sweep — no functional change to this area on this branch). 4 case cards (10s Of Queries, Solr Case, Static Case, Typeahead: Dairy) rendered with sparkline, AP@10 score, date range, and trend delta text; case links intact. No console errors. Did not test the 'moves up after viewing' recency edge case."
+        paths: ["app/controllers/home_controller.rb", "app/helpers/home_helper.rb"]
+      "2.3":
+        title: "Book summary cards"
+        last_run: 2026-09-15T16:01:00Z
+        result: pass
+        notes: "Spot-checked via Playwright MCP alongside 2.2/2.4/2.6. 3 book cards (Of Ratings, Haystack Icecat Rating Party, Playwright Import Test Book) rendered with query/judgement/pair counts and a Judge button each. Did not click through Judge this pass (last done 2026-09-02)."
+        paths: ["app/controllers/home_controller.rb"]
+      "2.4":
+        title: "Case score trend card (case_prophet)"
+        last_run: 2026-09-15T16:01:00Z
+        result: pass
+        notes: "Spot-checked via Playwright MCP alongside 2.2/2.3/2.6. Trend/delta/sparkline visually correct on populated cases (e.g. 'Typeahead: Dairy' 567% increase since 18 days ago). Did not test the 0/1/2-score, zero-changepoint, or annotation-marker-hover edge cases."
+        paths: ["app/services/case_prophet.rb", "app/views/home/"]
+      "2.5":
+        title: "Book summary detail"
+        last_run: 2026-09-15T16:17:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: clicked into 'Book Of Ratings' from the dashboard card, landed on its Overview tab with all sub-nav tabs (Query/Doc Pairs, Judgement Stats, Judgements, Import, Share book, Export, Settings), unjudged-pairs banner, AI Judges list, Teams, Scale Labels, and Associated Files all rendering correctly. No console errors. Did not re-verify a brand-new zero-pair book this pass."
+        paths: ["app/controllers/home_controller.rb"]
+      "2.6":
+        title: "Cases table"
+        last_run: 2026-09-15T16:01:00Z
+        result: pass
+        notes: "Spot-checked via Playwright MCP alongside 2.2/2.3/2.4. Columns (ID, Name, # of Queries, Last Score, Last Run, Last Run By) rendered correctly across 10 cases including never-run ones (blank score/run columns). Did not click 'View all Cases' this pass."
+        paths: ["app/controllers/home_controller.rb"]
+      "2.7":
+        title: "Cookie consent toast"
+        last_run: 2026-09-15
+        result: pass
+        notes: "Re-verified via Playwright MCP: same environment limitation as before (no COOKIES_URL configured here), so live-browser re-check could again only confirm the toast is absent on the dashboard after logging in — consistent with the server-side gating logic, still covered by the integration test suite (app/views/home/_consent_toast.html.erb via a with_cookies_url test helper). Client-side show/dismiss/autohide is standard Bootstrap Toast API (app/javascript/application_modern.js), already exercised elsewhere in the app. Did not re-verify the positive path live."
+        paths: ["app/javascript/application_modern.js", "app/views/home/_consent_toast.html.erb", "app/controllers/home_controller.rb", "test/controllers/home_controller_test.rb"]
+
+  "03":
+    file: 03-case-management.md
+    scenarios:
+      "3.1":
+        title: "Cases list — browsing and filtering"
+        last_run: 2026-09-15T19:04:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP. Partial-name filter ('Typeahead') correctly narrowed to the 3 Typeahead cases; exact-ID filter ('6789') matched the single case by ID; Team dropdown ('OSC') correctly narrowed to only that team's cases; Archived checkbox auto-submitted and toggled the list correctly (see 3.5 for the archive/unarchive round trip exercised in the same pass). No console errors. Filter-matches-nothing, pagination, and multi-account isolation not tested this pass."
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
+      "3.2":
+        title: "Create a new case (setup wizard)"
+        last_run: 2026-09-15T16:32:00Z
+        result: pass
+        notes: "Full wizard re-run via Playwright MCP after today's shared-header/BS5-navbar work (no direct changes to wizard files themselves since the 09-14 pass). New case (6838) auto-created and wizard triggered on showWizard=true; Name step blocked Continue until filled ('Manual Test Wizard Case 20260915'); Endpoint step's 'Use an existing Search Endpoint' path with TMDB Solr — 'ping it' returned 'Quepid can search this! Hit Continue...'; Fields step pre-filled Title Field with 'title' from the endpoint's saved field mappings, Continue enabled immediately (no custom-field confirm() this time since the endpoint already had fields mapped); Query step accepted 'star wars'; Finish landed in the workbench with showWizard stripped from the URL, correct case name and 1 query ('Number of Queries: 1'). Deleted the test case afterward via the toolbar's Delete Case Options modal. Did not test invalid-endpoint-URL, HTTPS/HTTP protocol-mismatch messaging, the custom-field confirm() dialog, or the /cases/new direct-URL re-trigger edge case this pass."
+        paths: ["app/controllers/core_controller.rb", "app/assets/javascripts/controllers/wizardCtrl.js", "app/assets/javascripts/controllers/wizardModal.js", "app/assets/templates/views/wizardModal.html", "app/javascript/angular_app.js"]
+      "3.3":
+        title: "Import a case from JSON"
+        last_run: 2026-09-15T16:34:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP. Fetched a live export (api/export/cases/4.json, STATIC CASE) via fetch(), renamed the case_name to 'Manual Test Import 20260915', uploaded it — imported successfully into new case 6839 with the same 1 query, navigated straight to its workbench; deleted afterward via the Delete Case Options modal. Separately uploaded a .json-named file with invalid JSON syntax — no client-side block (extension check passed) but server-side rejection was correct and clear: 'Invalid JSON file. Please check the file format.', no crash. Did not re-test the .txt-extension client-side block or large-export/progress-indicator behavior this pass."
+        paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb"]
+      "3.4":
+        title: "Import snapshots from CSV"
+        last_run: 2026-09-15T16:35:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP after today's sequential-import fix (commit ac2301f2 'Send snapshot imports sequentially to avoid a find-or-create deadlock'). With no file chosen, Import stayed disabled as documented. Uploaded a 2-row CSV against STATIC CASE (id 4) with two distinct Snapshot Name values ('Manual Test Snap A', 'Manual Test Snap B') — CSV Preview panel appeared, Import enabled, submit succeeded with no error and no deadlock/hang. Verified via Compare Snapshots that BOTH snapshots were created as separate entries (not merged/dropped), confirming the sequential-send fix handles multi-row/multi-name imports correctly. Left the two test snapshots on the shared demo case (no UI path found to delete a snapshot) — harmless test data, same as other pre-existing leftover fixtures on this instance. Did not test the nonexistent-Case-ID or missing-header rejection edge cases this pass."
+        paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "test/javascript/controllers/import_snapshot_controller.test.js"]
+      "3.5":
+        title: "Archive / unarchive a case from the list"
+        last_run: 2026-09-15T19:04:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP. Archived a disposable test case ('Manual Test Zero Score Sparkline', id 6820) via the row's Archive icon — confirm modal appeared, confirmed, flash 'Case #Manual Test Zero Score Sparkline archived.', removed from active list. Found it under the Archived checkbox filter, unarchived via the row's icon — separate confirm modal, confirmed, flash 'Case #Manual Test Zero Score Sparkline unarchived.', restored to active list in its original state. No console errors throughout. Ownership-transfer-on-archive and the two-tabs-race edge case not tested."
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
+      "3.6":
+        title: "Share a case from the list"
+        last_run: 2026-09-15T16:36:00Z
+        result: pass
+        notes: "Full round trip re-verified via Playwright MCP after today's ShareEntityControllerBase/shared-partial extractions. Shared 'Typeahead: Dessert' with OSC from the list-row Share icon — flash 'Typeahead: Dessert shared with OSC.', Teams column updated live to show the 'OSC' link without a page reload. Reopened the modal — OSC correctly moved to 'Already shared with:'; unshared it — flash 'Typeahead: Dessert unshared from OSC.', restored to original state. No console errors."
+        paths: ["app/controllers/cases_controller.rb", "app/views/shared/_share_case_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js"]
+
+  "04":
+    file: 04-core-workbench-queries-and-scoring.md
+    scenarios:
+      "4.1":
+        title: "Rename case / rename try"
+        last_run: 2026-09-15T16:38:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on a disposable clone (case 6840). Double-clicked the case name to enter edit mode, renamed to 'Manual Test Part4 Renamed Case', clicked Rename — applied immediately in the header. Double-clicked the try name, renamed 'Try 20' to 'Manual Test Try Renamed', Rename applied immediately. Reloaded the page — both names persisted correctly. Did not re-test the blank-name guard this pass (confirmed previously)."
+        paths: ["app/assets/javascripts/controllers/case.js", "app/assets/javascripts/controllers/currSettings.js", "app/assets/templates/views/queriesLayout.html", "app/models/case.rb"]
+      "4.2":
+        title: "Add a query (single)"
+        last_run: 2026-09-15T16:39:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on disposable case 6840 (Solr-backed). Add query button disabled while input empty, enabled once 'cheese' was typed; clicking it added, ran, and scored the query with no errors ('Number of Queries' incremented 1→2). Did not test the static-engine-disabled or search-failure edge cases this pass."
+        paths: ["app/assets/javascripts/directives/", "app/models/query.rb"]
+      "4.3":
+        title: "Add multiple queries (bulk)"
+        last_run: 2026-09-15T16:39:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Typed 'butter;yogurt' — button label switched from 'Add query' to 'Add queries' as documented; clicking it added and scored both queries ('Number of Queries' went 2→4), no errors. Did not independently confirm a distinct bulk success/failure flash text (the toast likely auto-dismissed before the snapshot) or the single-failed-query-doesn't-block-others edge case this pass."
+        paths: ["app/assets/javascripts/components/add_query/"]
+      "4.4":
+        title: "Move a query to another case"
+        last_run: 2026-09-15T16:40:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: expanded 'yogurt' on disposable case 6840, clicked Move Query — modal listed all cases; picked SOLR CASE, footer button correctly relabeled to 'Move to SOLR CASE', clicked it — flash 'Query moved successfully!', query count on the source case dropped 4→3. Verified on SOLR CASE (case 1) that 'yogurt' now appeared (count 1→2), then deleted it there via Delete Query (native confirm() accepted) to restore SOLR CASE to its original single query. Did not test moving a query with existing ratings/history, or the failure-path edge case."
+        paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb"]
+      "4.5":
+        title: "Set per-query options (Query Options)"
+        last_run: 2026-09-15T16:41:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on disposable case 6840 (no functional changes to this area since the prior pass). Opened Set Options on the 'cheese' query, replaced the default '{}' with '{\"manualTestKey\": \"manualTestValue\"}', clicked Set Options — flash 'Query options saved successfully.' Gotcha reconfirmed: click the visible Ace content div first, then type into the textbox ref (clicking the textbox ref directly times out). Did not re-test the invalid-JSON rejection path this pass."
+        paths: ["app/models/query.rb", "app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js", "app/assets/javascripts/components/query_options/query_options_controller.js"]
+      "4.6":
+        title: "Rate a document"
+        last_run: 2026-09-15T16:42:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Clicked a 'cheese' result's rating badge, popover opened with Irrelevant/Relevant/RESET; clicked '1 Relevant' — badge updated to '1' immediately, and both the query score (0.00→1.00) and overall case score (0.33→0.67) updated live in the same request (see 4.7). Reloaded the page — rating and scores persisted correctly. Did not re-test RESET, the duplicate/missing-doc-id banner, or depth-of-rating-cutoff edge cases this pass."
+        paths: ["app/controllers/ratings_controller.rb", "app/assets/javascripts/directives/quepidPopover.js"]
+      "4.7":
+        title: "Case & query score badges"
+        last_run: 2026-09-15T16:42:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP as part of 4.6's rating flow: rating a previously-unrated top result live-updated both the query-level score badge (0.00→1.00, green) and the case-level score badge in the header (0.33→0.67), with no page reload, and both persisted after a manual reload."
+        paths: ["app/models/score.rb"]
+      "4.8":
+        title: "Select a scorer for the case"
+        last_run: 2026-09-15T16:43:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Select Scorer modal listed the built-in AP@10/nDCG@10 pair plus the account's custom scorers; picked nDCG@10 and clicked Select Scorer — header and score badge updated to nDCG@10 immediately, no reload needed. Case is disposable so did not restore the original scorer. Custom-scorer / not-shared-with-you warning not tested."
+        paths: ["app/controllers/scores_controller.rb", "app/models/scorer.rb"]
+      "4.9":
+        title: "Missing Documents finder"
+        last_run: 2026-09-15T16:44:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on disposable case 6840, query 'butter': opened Missing Documents, pre-filled query (q=butter&magicBoost=20) shown with the 'Changing ratings will affect the query score' warning; clicked Search, got '4 matching documents'; rated the top doc '3 Perfect' inline from within the modal — rating and the query's score badge (0.00→1.00) updated live in the underlying workbench behind the modal. Did not test 'Reset to All Rated Docs' or the blank-URL/invalid-query edge cases this pass."
+        paths: ["app/assets/javascripts/"]
+      "4.10":
+        title: "Tune Relevance drawer — Query tab"
+        last_run: 2026-09-15T16:45:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Opened the drawer via Tune Relevance, landed on the Query tab showing the real stored template (q=#$query##&magicBoost=20); edited magicBoost to 50 and clicked 'Rerun My Searches!' — a new Try (Try 2) was created, all 3 queries re-ran with the new param, and scores updated accordingly. Did not test static-engine empty-state or TLS/protocol-mismatch messaging this pass."
+        paths: ["app/assets/javascripts/controllers/"]
+      "4.11":
+        title: "Tune Relevance drawer — Tuning Knobs tab"
+        last_run: 2026-09-15T16:46:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on disposable case 6840. After adding ##titleBoost## to the Query tab's template (4.10), switching to Tuning Knobs auto-showed a 'titleBoost:' numeric spinbutton (defaulted to 10, the first numeric token after the placeholder); changed it to 25 and clicked 'Rerun My Searches!' — rerun completed with no errors. Empty-state (no placeholders) messaging not re-tested this pass."
+        paths: ["app/assets/javascripts/controllers/"]
+      "4.12":
+        title: "Tune Relevance drawer — Settings tab"
+        last_run: 2026-09-15T16:47:00Z
+        result: pass_with_fixes
+        notes: "Reconfirmed via Playwright MCP on disposable case 6840 (no code changes to this area since the fix below): typed 500 into Number of Results to Show, clicked Rerun My Searches — flash 'Number of Results to Show must be between 1 and 100.', try count stayed at Try 3 (no new try created from the rejected save), confirming the fix described below still holds. Prior pass's notes: Endpoint Details (read-only name/URL + More link), Displayed Fields, Number of Results, Evaluate Nightly, Escape Queries, and the Search Endpoints picker all rendered correctly. CONFIRMED AND FIXED real bug: typing 500 into Number of Results (max=100) triggered AngularJS's built-in max validator, which sets the bound model to `undefined` while the input still visually showed '500' (no error styling anywhere in the template) — settingsSvc.js then dropped the undefined value from the POST body entirely, so Try#set_defaults (try.rb:247, `number_of_rows = 10 if blank?`) silently substituted 10 with zero user feedback. Root-caused via a code investigation, then fixed: added an explicit range check (1-100) at the top of SettingsCtrl.submit() (app/assets/javascripts/controllers/settings.js) that rejects out-of-range/non-numeric values with a clear flash error ('Number of Results to Show must be between 1 and 100.') and refuses to save, instead of silently defaulting; also added a matching `min=\"1\"` to the template input (devQueryParams.html) alongside the existing `max=\"100\"`. Rebuilt Angular bundles (yarn build:angular-app / build:angular-templates) and re-verified live: typing 500 now shows the error and leaves the try unchanged (no new try created, field still shows '500' so the user can correct it); typing a valid value (50) still saves correctly and round-trips via the API (`number_of_rows: 50` confirmed on the saved try). jshint clean on the modified file. No test coverage existed for SettingsCtrl (spec/javascripts/angular/controllers/settings_spec.js is a placeholder) — did not add new Karma tests given this is legacy AngularJS code being phased out, per the migration effort; scope kept to the minimal fix. Did not toggle Evaluate Nightly or verify a queued background job via Job Manager."
+        paths: ["app/assets/javascripts/controllers/settings.js", "app/assets/templates/views/devQueryParams.html", "app/models/try.rb", "app/assets/javascripts/services/settingsSvc.js"]
+      "4.13":
+        title: "Tune Relevance drawer — History tab"
+        last_run: 2026-09-15T16:47:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on disposable case 6840 after generating 3 tries via the Query/Tuning-Knobs/Settings tabs in this same pass. History tab correctly listed all 3 tries each with its own query-param preview and search-endpoint URL, plus 'Visualize your tries'/'Check Scores'/'Check Ratings' links. Clicked the oldest try ('Manual Test Try Renamed - Try 1') — switched the workbench to /case/6840/try/1 correctly. Did not test the bulk-delete/Check-All partial-selection edge cases this pass."
+        paths: ["app/controllers/scores_controller.rb", "app/views/scores/", "app/controllers/concerns/authentication/current_case_manager.rb"]
+      "4.14":
+        title: "Tune Relevance drawer — Annotations tab"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Covered via Part 5.4 (same tab)."
+        paths: ["app/controllers/api/v1/annotations_controller.rb"]
+      "4.15":
+        title: "Per-query quick actions (Copy, Delete Query)"
+        last_run: 2026-09-15T16:48:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP. Copy icon on the 'butter' query (case 6840) copied its query text to the clipboard, confirmed via navigator.clipboard.readText(). Delete Query separately re-verified on SOLR CASE (case 1, see 4.4): native 'Are you absolutely sure you want to delete?' confirm() shown, query removed on accept and case's query count decremented correctly."
+        paths: ["app/models/query.rb"]
+      "4.16":
+        title: "Query Notes & Information Need"
+        last_run: 2026-09-15T16:49:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Filled Information Need ('Find butter products') and Notes ('Manual test note for query 4.16') on the 'butter' query, saved — flash 'Success! Your query details have been saved.'; reloaded the page and re-expanded Toggle Notes, both values persisted correctly. Did not re-test the blank-fields or forced-failure edge cases this pass."
+        paths: ["app/models/query.rb"]
+
+  "05":
+    file: 05-core-workbench-history-snapshots-and-annotations.md
+    scenarios:
+      "5.1":
+        title: "Try history (History tab)"
+        last_run: 2026-09-14T18:50:17Z
+        result: pass
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. History tab lists all tries (4, generated during this session's 4.1/4.10/4.11 testing), color-coded per endpoint URL, each showing its tieBoost value. Clicking an older try (Try 2) switched the whole page (URL, header, settings) live to that try's configuration; navigating back to the newest try (Try 4) round-tripped cleanly with no data loss. Did not specifically re-test the 'changing a setting creates a new try rather than mutating the old one' edge case in isolation this pass (implicitly exercised by 4.10/4.11 each creating a new try)."
+        paths: ["app/models/try.rb", "app/controllers/core_controller.rb"]
+      "5.2":
+        title: "Create a snapshot"
+        last_run: 2026-09-14T18:35:09Z
+        result: pass
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main (snapshotFactory/querySnapshotSvc/snapshotModal.html all touched). On case 6, clicked Take Snapshot with the name field left blank — same pre-existing behavior noted 2026-09-02: not blocked (no required-field error), falls back to an auto-generated name ('Snapshot 09/14/26'); 'Snapshot created successfully' flash shown and score badge updated (0.00→1.00 reflecting a rating made earlier in this pass). Doc's edge case ('should be blocked') still doesn't match actual behavior — flagging again, still not a regression. Forced-server-error and large-case-background behavior not tested."
+        paths: ["app/services/snapshot_generator.rb", "app/models/snapshot.rb"]
+      "5.3":
+        title: "Compare snapshots (diff)"
+        last_run: 2026-09-14T18:36:16Z
+        result: pass
+        notes: "Re-verified via Playwright MCP after the same merge (snapshotFactory/querySnapshotSvc touched). Selected the case-6 snapshot in the compare modal, clicked Update Comparison Settings — flash 'Snapshot loaded successfully for comparison.' and the snapshot's results appeared in a diff column alongside the live results. Clear Comparison View removed it cleanly. Multi-row add, duplicate-selection warning, in-progress-snapshot warning, and the in-modal delete-snapshot confirm were not tested this pass (only one snapshot existed for the case)."
+        paths: ["app/models/snapshot.rb"]
+      "5.4":
+        title: "Annotations"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Created an annotation, verified it appears with try/score/message. Did not test edit/cancel/delete."
+        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb"]
+      "5.5":
+        title: "Score graph (sparkline) & annotation markers"
+        last_run: 2026-09-14T19:10:10Z
+        result: pass
+        notes: "Follow-up investigation confirms the graph DOES render with an all-zero score history — it just isn't visible. Gating logic (qscore_case.html:2, `ng-if=\"ctrl.scores.length > 1\"`) has no zero/null/distinctness filter anywhere in the pipeline (qgraph_controller.js, case_scores_controller.rb, score.rb all checked). Built a throwaway case (rails runner) with 5 case_scores all score=0.0 and confirmed via screenshot + raw SVG inspection: the `<qgraph>` mounts and Vega renders a real path (`d=\"M0,72L35,72L...\"`, stroke `#4c78a8`) — but that path sits exactly on the bottom pixel row of the 72px drawable area (80px svg minus 4px+4px translate padding), which is where `qgraph svg { border: 2px solid grey }` (qscore.css:104) also sits. The blue line is visually swallowed by the grey border, reading as 'nothing rendered' even though it's technically there. Confirmed by contrast: case 6, which has real varied non-zero score history (0.10 → 1.0), shows a clearly visible diagonal sparkline. So this is a real (minor) visual bug — a flat 0-score history gives no usable visual feedback — not a gating-logic bug and not a regression; not fixed (cosmetic, low-priority, and would need a design decision on how to make a flat-zero line visible, e.g. inset padding or a different baseline color). Cleaned up the throwaway case afterward. Annotation marker/tooltip behavior still not tested."
+        paths: ["app/assets/javascripts/components/qscore_case/", "app/assets/javascripts/components/qgraph/", "app/assets/stylesheets/qscore.css", "app/controllers/api/v1/case_scores_controller.rb"]
+
+  "06":
+    file: 06-core-workbench-import-export-and-explain-tools.md
+    scenarios:
+      "6.1":
+        title: "Export a case"
+        last_run: 2026-09-17T15:30:00Z
+        result: pass
+        notes: "Re-verified live via Playwright MCP on case 5 (real click-through this pass, working around the prior session's transport errors by hooking URL.createObjectURL/anchor-click/saveAs/window.open client-side to capture the blob instead of letting a real OS Save-As dialog block the CDP connection). All 9 formats clicked through the actual UI and confirmed byte-for-byte against the modal's documented headers: Information Need (query,information_need), General, Detailed (bridges to legacy caseCSVSvc via CustomEvent + FileSaver saveAs — confirmed this is the one that trips the OS save dialog/transport error if saveAs isn't hooked), Snapshot (Export button confirmed disabled until a snapshot is picked, then enabled), Basic, TREC, RRE, Learning to Rank, and Quepid (full case JSON). Filenames all matched the `{caseName}_{format}.csv/txt/json` pattern. 0 console errors across the whole run; before/after toolbar screenshots identical. Quepid API links section (Case/Queries/Annotations/Scores/Ratings/Snapshot) spot-checked by URL only, not clicked through. Detailed export is exposed directly from the individual Case toolbar."
+        paths: ["app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/assets/javascripts/services/caseCSVSvc.js", "app/controllers/api/v1/export"]
+      "6.2":
+        title: "Import into a case (ratings / information needs / snapshots)"
+        last_run: 2026-09-15T16:53:00Z
+        result: pass
+        notes: "Re-verified the Ratings tab via Playwright MCP on disposable case 6840: selected CSV format, uploaded a 1-row 'query,docid,rating' CSV rating the 'cheese' query — Import enabled once the file was chosen, submitted, flash 'Successfully imported ratings from CSV.' Confirmed the Information Needs tab still renders correctly (its own CSV-format radio, header hint, Choose File). Did not re-test the Snapshots tab this pass (see 3.4/6.2's 2026-09-04 notes and 3.4's 2026-09-15 sequential-import re-verification) or the Clear-existing-queries/Create-missing-queries toggles."
+        paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb", "app/services/snapshot_importer.rb", "app/assets/javascripts/components/import_ratings/import_ratings_controller.js"]
+      "6.3":
+        title: "Clone a case"
+        last_run: 2026-09-15T16:19:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP after today's full migration off the Angular clone_case component (commit f876f35e: 'Migrate clone-case modal to Stimulus, remove Angular component'). On case 6 (Typeahead: Dairy): Clone button stayed disabled with a blank name; entered a name, checked Include Ratings (Include Queries was on by default), left 'Only include a specific try' at Try 20 — Clone button enabled, submitted, landed in the new case's (#6837) workbench with 'Number of Queries: 1' copied over correctly. Deleted the test clone afterward via the in-case toolbar's new Delete Case Options modal (see 6.4). No console errors. Did not test 'Include the entire try history', unchecking Include Queries, or forced-failure edge cases this pass."
+        paths: ["app/controllers/api/v1/clone/cases_controller.rb", "app/models/case.rb", "app/views/shared/_clone_case_core_modal.html.erb", "app/javascript/controllers/clone_case_core_controller.js", "app/assets/templates/views/queriesLayout.html"]
+      "6.4":
+        title: "Delete / Archive / Delete-all-queries (in-case toolbar)"
+        last_run: 2026-09-15T16:19:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP after today's fuller migration (961d313a 'Wire delete-case-options-core into the case toolbar, remove Angular component'; 18fa8d83 'Migrate delete-case-options modal to Stimulus'; ca1ff16b's getOrCreateBsModal leak fix). Used a disposable clone of case 6 (see 6.3). Modal opened with heading 'Delete Options for Case: ...', 3 option buttons (Delete All Queries / Archive Case / Delete Case) in a group, Delete button correctly disabled until one was picked. Picked Delete Case: warning read \"You're about to delete this case forever! If you think you might want it later, use the Archive function instead.\"; confirming permanently deleted it (flash 'Case #Manual Test Clone 20260915 deleted.'), landed on the Cases list. No console errors. Did not re-exercise the Delete All Queries or Archive Case options this pass (Archive Case's shared confirm-delete/modal-leak plumbing was separately verified today via 3.5's list-level archive flow) or the forced-server-failure edge case."
+        paths: ["app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
+      "6.5":
+        title: "Share a case (in-case toolbar)"
+        last_run: 2026-09-15T19:06:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP. On case 4 (STATIC CASE, workbench toolbar's Share case icon): opened the modal, shared with 'Manual Test Team Renamed 20260915' — flash 'Case shared with team successfully.', team moved into 'Already shared with:'. Selected it there, clicked 'Unshare from...' — flash 'Case unshared from team successfully.', case returned to its unshared starting state. No console errors. Did not re-test the 'Create a team' shortcut's navigation-without-losing-context edge case this pass."
+        paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js"]
+      "6.6":
+        title: "Judgements link (connect a case to a Book)"
+        last_run: 2026-09-22
+        result: pass_with_fixes
+        notes: "Added app/assets/javascripts/components/judgements/judgements_modal_instance_controller.js and its template to paths - the actual book-picker logic lives there, not in judgements_controller.rb/judgements/show.html.erb. Code review found a real bug there: the modal only loaded books the current user owns directly when the case had ZERO teams (an if/else), even though the modal's own help text says 'Books you own are always listed below. If this case is shared with a team, Books shared with that team are listed too' - so for the common case (case shared with a team, user also owns a private book), owned books never appeared. Also fixed a related bug where addBooksToLists() replaced ctrl.share.books instead of merging, so if the fix above triggered multiple async loads (per-team + owned), the last one to resolve would silently drop the others' books. Re-verified via Playwright MCP: created a private book not shared with any team, opened the Judgements modal on case 6 (shared with the OSC team) - both 'Book of Ratings' (team-shared) and the new private book now appear together in the picker. This is exactly the shared-case Book-picker path the prior pass explicitly skipped. Separately, found and fixed a second bug in the 'Create a book' path that createNewBookLink() generates (books/new?scorer_id=X&origin_case_id=Y): BooksController#new set @book.scorer_id to the case's literal scorer_id, but scorer_options_for_select dedupes the dropdown to one representative scorer id per unique scale/labels combination - if the case's scorer_id wasn't the representative one (e.g. two communal scorers sharing the same 0,1 scale), no <option> matched and the Rating Scale dropdown silently rendered blank instead of showing the case's actual scale. Fixed by resolving through matching_scorer_id_for_book (the same helper edit already used) instead of the raw scorer id; covered by a new controller test using the p@10/quepid_default_scorer fixture collision. Re-verified via Playwright MCP on /books/new?scorer_id=5&origin_case_id=6: Rating Scale now correctly shows '0,1 (Irrelevant, Relevant)' selected and the Scoring Guidelines textarea auto-populated, instead of blank. Did not re-test the zero-teams path this pass (unaffected by the fix, covered by the prior pass's notes) or the Populate Now/Refresh Ratings sync settings."
+        paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb", "app/assets/javascripts/components/judgements/judgements_modal_instance_controller.js", "app/assets/javascripts/components/judgements/_modal.html", "app/assets/javascripts/services/bookSvc.js", "app/controllers/books_controller.rb", "app/helpers/books_helper.rb"]
+      "6.7":
+        title: "Explain a query (Explain Query modal)"
+        last_run: 2026-09-15T16:49:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Opened Explain Query on the 'butter' query — Params/Parsing/Query Template tabs all present; Parsing tab showed real Solr debug data (parsedquery: \"text:butter\", querystring, rawquerystring). Did not test the Query Template tab or the Copy icon this pass."
+        paths: ["app/assets/javascripts/directives/"]
+      "6.8":
+        title: "Explain a single document (Debug Explain)"
+        last_run: 2026-09-15T16:50:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on disposable case 6840. Clicked the 'Matches' info icon on a butter-query result — popover opened correctly showing 'Relevancy Score: 11.295498' with a Debug/Expand action for the score-computation expression. No console errors."
+        paths: ["app/assets/javascripts/directives/"]
+      "6.9":
+        title: "Frog Report"
+        last_run: 2026-09-15T16:25:00Z
+        result: pass_with_fixes
+        notes: "CONFIRMED FIX via Playwright MCP for the previously-documented crash (commit 32dfffa6 'Fix frog report crash when a query has no currentScore yet'): opening the Frog Report on 'Haystack Rating Party' (all 137 queries return 0 results because chorus.dev.o19s.com is unreachable from this sandbox — same environment limitation as before) now opens successfully with a Summary and 'Distribution of Queries Needing Ratings' chart, instead of throwing 'Cannot read properties of undefined (reading countMissingRatings)'. The only console errors were the expected net::ERR_CONNECTION_REFUSED to chorus.dev.o19s.com, no JS exceptions. Minor cosmetic quirk noticed (not a crash, not re-tested for severity): the Summary text read '0 ratings missing, leading to NaN% missing rate' when every query returns zero results (divide-by-zero in the missing-rate percentage) — separate from the fixed crash, not investigated further. Also re-confirmed the golden path still works on case 3 (SEARCHAPI CASE, an unrun/unscored query) with no crash."
+        paths: ["app/assets/javascripts/", "app/assets/javascripts/components/frog_report/frog_report_modal_instance_controller.js"]
+      "6.10":
+        title: "Unarchive case (from a list's Archived filter)"
+        last_run: 2026-09-15T19:05:00Z
+        result: pass
+        notes: "Re-verified directly (not just via 3.5's cross-reference) via Playwright MCP: checked the Archived filter on /cases, found the just-archived test case, clicked its per-row unarchive icon — separate confirm dialog ('Unarchive {name}?'), confirmed, flash '{name} unarchived.', case restored to the active list. No console errors."
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb"]
+
+  "07":
+    file: 07-search-endpoints-and-mapper-wizard.md
+    scenarios:
+      "7.1":
+        title: "Browse / filter the Search Endpoints list"
+        last_run: 2026-09-15T16:26:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: list renders correctly (6 endpoints, all engine types represented — solr/static/searchapi/es), filter box, Mine/Archived checkboxes, Team dropdown, and per-row Share icons all present with no console errors. Did not re-drive the actual filter/search this pass (see 7.6 for the share-icon exercise on this page)."
+        paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/index.html.erb"]
+      "7.2":
+        title: "Create a Search Endpoint — one per engine type"
+        last_run: 2026-09-15T16:56:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP for the Solr engine type (representative sample). Filled Name/Search engine (Solr)/Endpoint url/Api method (GET), clicked Create Search endpoint — redirected to the new endpoint's Show page successfully. Did not test the other 6 engine types, blank-form validation, or Custom Headers JSON-type rejection this pass (see prior pass for that)."
+        paths: ["app/controllers/search_endpoints_controller.rb", "app/models/search_endpoint.rb", "app/views/search_endpoints/_form.html.erb"]
+      "7.3":
+        title: "View / Edit a Search Endpoint"
+        last_run: 2026-09-15T16:56:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: edited a freshly-created test endpoint's Rate Limit to 30, clicked Update Search endpoint — Show page reflected the new value immediately. Did not re-test the Basic Auth masking behavior this pass (see prior pass for that detailed check)."
+        paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/show.html.erb"]
+      "7.4":
+        title: "Clone a Search Endpoint"
+        last_run: 2026-09-15T16:56:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: cloned a test Solr endpoint — Clone form pre-filled Name as 'Clone of {original}' and carried over the Rate Limit (30); submitting created a distinct endpoint (id 24, vs. original's 23). Deleted both after verification."
+        paths: ["app/controllers/search_endpoints_controller.rb"]
+      "7.5":
+        title: "Archive / Delete a Search Endpoint"
+        last_run: 2026-09-15T16:57:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: checked the Archived checkbox on a test endpoint's Edit form and saved — Show page correctly displayed 'Archived: true You must unarchive this search endpoint to use it with new cases.' Then deleted it via the Edit page's Delete button (native confirm() accepted) — flash 'Search Endpoint was deleted.', removed from the list. Also deleted a second test endpoint the same way to clean up."
+        paths: ["app/controllers/search_endpoints_controller.rb"]
+      "7.6":
+        title: "Share / unshare a Search Endpoint"
+        last_run: 2026-09-15T16:27:00Z
+        result: pass
+        notes: "Full share/unshare round trip re-verified via Playwright MCP on the already-shared 'TMDB Solr' endpoint (after today's ShareEntityControllerBase/shared-partial extractions, commit e3e36e71 among others). Unshared it from OSC (flash 'TMDB Solr unshared from OSC.'), then re-shared it (flash 'TMDB Solr shared with OSC.') to restore original state. No console errors. Did not test the no-access edge case this pass."
+        paths: ["app/views/shared/_share_search_endpoint_modal.html.erb", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
+      "7.7":
+        title: "Mapper Wizard — Step 1: Fetch Search Results"
+        last_run: 2026-09-14T18:37:01Z
+        result: pass
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main (new adapter_functions/v8_mapper_executor/mapper_based_search_engine backend). Blank-URL submit correctly blocked ('Please enter a search URL' — close to but not verbatim the doc's 'URL is required', worth a doc wording tweak). Pointed at an unreachable host (chorus.dev.o19s.com:8983, not routable from this sandbox) and got the expected 'Connection failed: ...' message verbatim. Fetched http://example.com successfully — 'Response fetched successfully (559 characters)', HTML preview displayed with Copy/Expand controls, Steps 2–3 revealed. Did not test invalid-URL-format, slow-endpoint-timeout, or invalid-JSON-headers edge cases this pass."
+        paths: ["app/controllers/mapper_wizards_controller.rb"]
+      "7.8":
+        title: "Mapper Wizard — Step 2: Generate Mappers with AI"
+        last_run: 2026-09-14T18:37:11Z
+        result: blocked
+        notes: "AI generation itself still not testable — needs a real OpenAI key, none configured in this environment. Did confirm the blank-key client-side guard still works: clicking 'Generate Mappers with AI' with an empty key field showed 'Please enter your OpenAI API key' and did not attempt a request. Used the 'No OpenAI key? Write the mapper code by hand instead.' link to proceed to Step 3."
+        paths: ["app/controllers/mapper_wizards_controller.rb"]
+      "7.9":
+        title: "Mapper Wizard — Step 3: Edit, Test & Refine"
+        last_run: 2026-09-15T16:58:00Z
+        result: pass
+        notes: "Light recheck only this pass (no functional changes to mapper_wizards_controller.rb/v8_mapper_executor.rb since the prior thorough pass below): loaded the Mapper Wizard page, confirmed the 4-step layout still renders with no console errors. Prior pass's full verification: reached Step 3 via the hand-write-it link; both editors pre-populated with skeleton numberOfResultsMapper/docsMapper code. Test on numberOfResultsMapper ran sandboxed and showed 'Test Result: 0' (the stub's hardcoded return); Test on docsMapper showed alert 'docsMapper test successful!' with 'Test Result: []'. Clicked 'Refine with AI' on docsMapper with no API key set — native prompt appeared for feedback text, submitting it correctly surfaced 'Please enter your OpenAI API key' rather than sending a request. Did not test with a real API key (blocked, see 7.8), nor the empty/broken-code or test-before-fetch error messages."
+        paths: ["app/controllers/mapper_wizards_controller.rb", "app/services/v8_mapper_executor.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb"]
+      "7.10":
+        title: "Mapper Wizard — Step 4: Save Search Endpoint"
+        last_run: 2026-09-14T18:37:50Z
+        result: pass
+        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Entered an Endpoint Name; confirmed 'Proxy requests through Quepid' defaults on and the sole team (OSC) is auto-checked for a new endpoint. Saved — redirected to the endpoint's Show page (/search_endpoints/21) with search_engine correctly forced to 'searchapi' and the two mapper functions combined into one Custom Code Mapper blob. Deleted the test endpoint afterward via its Edit page's Delete button. Did not test invalid-headers/missing-URL validation, the fresh-session-on-return edge case, the nonexistent-search_endpoint_id redirect, or the masked-credential-on-reopen edge case this pass."
+        paths: ["app/controllers/mapper_wizards_controller.rb"]
+
+  "08":
+    file: 08-scorers.md
+    scenarios:
+      "8.1":
+        title: "Scorers list"
+        last_run: 2026-09-15T16:58:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: Communal/Custom filter checkboxes, filter searchbox, counts, and table all render correctly with no console errors. Did not re-verify the non-admin Clone-not-Edit visibility rule this pass."
+        paths: ["app/controllers/scorers_controller.rb", "app/views/scorers/index.html.erb"]
+      "8.2":
+        title: "Set your default scorer"
+        last_run: 2026-09-15T16:59:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: changed default scorer to nDCG@10, clicked Save — selection persisted (option shown selected on reload of the response). Restored to AP@10 afterward, same result."
+        paths: ["app/controllers/scorers_controller.rb"]
+      "8.3":
+        title: "Create a custom scorer"
+        last_run: 2026-09-15T16:59:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: /scorers/new pre-fills a default name ('Scorer 17') and skeleton code; renamed to 'Manual Test Scorer 20260915' and saved — created successfully (scorer 19), landed on its Edit page. Did not re-test the >10-values or non-integer-values validation errors this pass."
+        paths: ["app/controllers/scorers_controller.rb", "app/models/scorer.rb"]
+      "8.4":
+        title: "Edit a scorer"
+        last_run: 2026-09-15T16:59:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: changed the test scorer's Scale list to '0,1,2,3' and saved — flash 'Scorer updated.', Scale column on the index reflected '[0, 1, 2, 3]' immediately. Did not re-test the communal-scorer-as-admin warning banner this pass."
+        paths: ["app/controllers/scorers_controller.rb"]
+      "8.5":
+        title: "Clone a scorer"
+        last_run: 2026-09-15T17:00:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: cloned the test custom scorer from the index — got an editable 'Clone of Manual Test Scorer 20260915' (distinct id 20) with the Graded Scale (0,1,2,3) carried over from the original."
+        paths: ["app/controllers/scorers_controller.rb"]
+      "8.6":
+        title: "Delete a scorer"
+        last_run: 2026-09-15T17:01:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: deleted both test scorers created this pass (the original and its clone) via the Edit page's Delete button — native confirm() 'Are you sure you want to delete this Scorer?' accepted each time, flash 'Scorer deleted.', both removed from the index."
+        paths: ["app/controllers/scorers_controller.rb"]
+      "8.7":
+        title: "Share / unshare a scorer with a team"
+        last_run: 2026-09-15T17:00:00Z
+        result: pass
+        notes: "Re-verified the share half of the cycle via Playwright MCP on a fresh test scorer: opened Share from the index, selected OSC, clicked 'Share with team' — flash 'Manual Test Scorer 20260915 shared with OSC.' Did not re-test unshare this pass (the scorer was deleted afterward as part of 8.6's cleanup, which implicitly removes the share)."
+        paths: ["app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb"]
+      "8.8":
+        title: "Confirm the seeded communal scorers"
+        last_run: 2026-09-02
+        result: pass
+        notes: "All 7 communal scorers present with correct scales/labels/owner=System."
+        paths: ["db/seeds.rb"]
+
+  "09":
+    file: 09-teams-and-sharing.md
+    scenarios:
+      "9.1":
+        title: "Create, rename, and browse teams"
+        last_run: 2026-09-15T17:02:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: created 'Manual Test Team 20260915' (creator auto-added as member), then renamed it to 'Manual Test Team Renamed 20260915' via the Rename Team form — flash 'Team renamed.', heading updated immediately. Left the team in place (no delete-team option found in the UI) as harmless test data, same as other pre-existing test fixtures on this instance."
+        paths: ["app/controllers/teams_controller.rb", "app/models/team.rb"]
+      "9.2":
+        title: "Add a team member (existing user)"
+        last_run: 2026-09-15T17:02:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: typed the seed oscMember's email, selected the autocomplete suggestion, clicked Add user — flash 'Osc Team Member added to the team.', member appeared in the Members list. Did not re-test the already-a-member or cross-domain-suppression edge cases this pass."
+        paths: ["app/controllers/teams_controller.rb"]
+      "9.3":
+        title: "Invite a new (non-existing) user"
+        last_run: 2026-09-15T17:03:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: typed a non-existing email, clicked Add user — flash 'Invitation email was sent to ...', INVITED badge appeared with an Invite link. Did not re-verify the acceptance half or mailer content this pass (see 1.5 and the prior pass)."
+        paths: ["app/controllers/teams_controller.rb", "app/controllers/users/invitations_controller.rb"]
+      "9.4":
+        title: "Remove a team member"
+        last_run: 2026-09-15T17:02:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: clicked Remove member on the just-added oscMember — confirm dialog read 'Remove Osc Team Member from this team?', confirming removed them (flash 'Osc Team Member removed from the team.', Members count dropped 2→1)."
+        paths: ["app/controllers/teams_controller.rb"]
+      "9.5":
+        title: "Sharing a Case/Book/Search Endpoint/Scorer with a team"
+        last_run: 2026-09-15T19:16:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP across all four entity types from their own index pages (the /cases-index entry point specifically, plus 6.5 for the in-case-toolbar entry point): Case (share + already-shared-with + unshare, SOLR CASE with Manual Test Team), Book (Book of Ratings with Manual Test Team, including the 'No other teams to share with' disabled-dropdown state once fully shared), Search Endpoint (Edinburgh University Website with Manual Test Team), Scorer (a disposable Playwright-fixture scorer with OSC). Confirmed the doc's noted uncertainty: Scorers DO have a working Unshare control (not share-only as previously flagged) — share and unshare both round-tripped correctly with success alerts. Note: mid-pass, an external/concurrent process (not this session) deleted the 'Manual Test Team Renamed 20260915' team while a share modal was open, causing one unshare attempt to correctly surface 'Team not found.' rather than crash — confirmed via server logs this was not caused by any action in this session. Did not re-test the 'You do not have access to that X' access-denial edge case or the Team-page entry point specifically this pass."
+        paths: ["app/views/shared/_share_case_modal.html.erb", "app/views/shared/_share_book_modal.html.erb", "app/views/shared/_share_search_endpoint_modal.html.erb", "app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_book_controller.js", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb", "app/views/books/_book.html.erb", "app/views/teams/_books.html.erb", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
+      "9.6":
+        title: "Archive/unarchive a Case or Search Endpoint from the team page"
+        last_run: 2026-09-15T16:30:00Z
+        result: pass
+        notes: "Re-verified indirectly this pass: the underlying confirm_delete_controller.js + destructive_form.js + bs_modal.js mechanism (same code this team-page UI uses) was directly re-driven and confirmed working in 3.5 today. Did not re-drive the team-page-specific archived-cases-filter UI itself this pass. Shared a disposable test case with OSC, archived it from the Cases list, then confirmed it appears under the team page's 'Archived Cases' checkbox filter with its own 'Unarchive case' icon — clicking it showed the same 'Unarchive {name}?' confirm dialog as 3.5/6.10, and confirming restored it. Search Endpoint archive/unarchive from the team page not separately tested (same UI pattern visible in the page, e.g. 'Archive search endpoint' buttons)."
+        paths: ["app/controllers/teams_controller.rb", "app/views/teams/_cases.html.erb"]
+
+  "10":
+    file: 10-books-management.md
+    scenarios:
+      "10.1":
+        title: "Books list"
+        last_run: 2026-09-15T17:04:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: New Book link, filter textbox, and table all render correctly with no console errors."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/index.html.erb"]
+      "10.2":
+        title: "Create a new book"
+        last_run: 2026-09-15T17:04:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: filled Name, submitted with Rating Scale left at 'Select a rating scale...' — blocked by the required-field validation (form stayed on /books/new, no error banner shown, field auto-focused). Selected '0,1 (Irrelevant, Relevant)' and resubmitted — created successfully (book 49), landed on its Overview page. Edge case found (not investigated further): the Rating Scale required-field rejection gives no visible error message, only native focus."
+        paths: ["app/controllers/books_controller.rb", "app/models/book.rb"]
+      "10.3":
+        title: "Edit book settings"
+        last_run: 2026-09-22
+        result: pass_with_fixes
+        notes: "User reported the 'AI Judges Assigned to this Book' checkboxes were empty on Edit even though the Overview/Show page correctly listed the same judges as team-accessible. Root cause: BooksController#edit/#update scoped AI-judge visibility and assignment to @book.owner (visible_ai_judges_for(@book.owner) / assign_ai_judges(..., @book.owner)), while #new/#create already correctly used current_user - any book with no owner set (AiJudge.for_owner(nil) => AiJudge.none) silently showed zero checkboxes on Edit regardless of the editor's own team access, and any submitted ai_judge_ids would be silently rejected on Update for the same reason. 'Book of Ratings' itself had owner_id nil in the dev seed (lib/tasks/sample_data.thor never set book.owner) - fixed the seed task too. Made #edit/#update consistently use current_user, matching #new/#create; covered with new controller tests using the (deliberately ownerless) book_of_star_wars_judgements/judge_judy fixtures, confirmed to fail without the fix. Re-verified via Playwright MCP on /books/1/edit before and after backfilling its owner - all three AI judge checkboxes render checked/correct in both cases now. Did not re-test the plain rename flow this pass (unaffected, covered by the prior pass's notes)."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb", "app/views/books/_form.html.erb", "app/helpers/books_helper.rb", "lib/tasks/sample_data.thor"]
+      "10.4":
+        title: "Book Overview / Show page"
+        last_run: 2026-09-15T17:04:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: Overview page renders correctly immediately after book creation, and again after merging in 222 query/doc pairs (query count, Critical Unjudged Pairs banner, Start with Unjudged Pairs/Judge in Bulk buttons all appeared correctly once there was data)."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/show.html.erb"]
+      "10.5":
+        title: "Combine (merge) books"
+        last_run: 2026-09-15T17:05:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: on the disposable test book's Edit page, checked 'Book Of Ratings' in 'Populate This Book from other Books' and clicked Merge — flash 'Combined 222 query/doc pairs.', Overview immediately reflected 24 queries / 45 judged of 222. Did not re-test the scale-mismatch validation this pass."
+        paths: ["app/controllers/books_controller.rb"]
+      "10.6a":
+        title: "Assign anonymous judgements/ratings to a user"
+        last_run: 2026-09-15T17:05:00Z
+        result: pass
+        notes: "Re-verified rendering via Playwright MCP: the 'Assign Anonymous Judgements & Ratings to a User' section renders correctly with an Assignee dropdown and 'Related cases to be updated' text. Could not exercise the actual assignment this pass — the merged-in judgements were all attributed to real users, so the Assignee dropdown had no anonymous-judge options to pick from (no anonymous ratings existed in this environment to test against)."
+        paths: ["app/controllers/books_controller.rb"]
+      "10.6b":
+        title: "Delete judgements by user"
+        last_run: 2026-09-15T17:06:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: on the disposable test book (after merging in Book Of Ratings' 222 pairs), selected 'Osc Team Member' in the User dropdown and clicked Delete Judgements — flash 'Deleted 200 judgements belonging to Osc Team Member.' Confirmed this only affected the disposable copy, not the source Book Of Ratings."
+        paths: ["app/controllers/books_controller.rb"]
+      "10.6c":
+        title: "Delete query doc pairs below a rank"
+        last_run: 2026-09-15T17:06:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: selected Position '10' and clicked Delete Query Doc Pairs on the disposable test book — flash 'Deleted 0 query/doc pairs below position 10.' (no pairs exceeded that rank in this dataset, but the action completed without error)."
+        paths: ["app/controllers/books_controller.rb", "app/models/query_doc_pair.rb"]
+      "10.6d":
+        title: "Assign rating to Judge Later judgements"
+        last_run: 2026-09-15T17:06:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: selected Rating '1' and clicked Assign Rating and Clear Judge Later on the disposable test book — flash 'Mapped 0 judgements to have rating 1.' (no Judge Later entries existed in this dataset, but the action completed without error)."
+        paths: ["app/controllers/books_controller.rb"]
+      "10.7":
+        title: "Import a new book from JSON"
+        last_run: 2026-09-10T19:58:24Z
+        result: pass_with_fixes
+        notes: "Covered live: two judgements with no user_email on one pair landed as separate 'anonymous' rows (Overview: 'This book has 2 anonymous judgements that could be mapped to a user.'), and re-uploading the same file doubles them as designed - which also moves computed case ratings once a pair passes 3 judgements, see docs/todo/todo.md. A crafted payload carrying another book's query_doc_pair_id plus an existing judgement id reparented nothing and claimed no id. Also covered: missing file, malformed JSON, and unknown user_email with Force create users OFF. Not covered live: structurally-invalid JSON, Force-create-users ON."
+        paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb"]
+      "10.8":
+        title: "Import additional data into an existing book"
+        last_run: 2026-09-15T17:08:00Z
+        result: fail
+        notes: "CONFIRMED BUG via Playwright MCP + code reading, pre-existing (not introduced by this branch — app/controllers/books/import_controller.rb and app/views/books/import/edit.html.erb last touched by an unrelated cosmetic header-partial commit today; core logic unchanged since cf0673cf). The 'Import Data Into This Book' page at /books/:id/import/edit (edit_books_import route) displays the target book's context, but BOTH of its file-upload forms (Import Query Doc Pairs, Import Judgements) are `form_with model: @book, url: books_import_index_path` — i.e. they POST to the generic /books/import endpoint (Books::Import#create), which unconditionally does `@book = Book.new; @book.owner = current_user` with no reference to params[:id]. So a user who uploads a file through this page's buttons does NOT import into the book they're viewing — the code path creates a disconnected new book instead (or fails validation, in which case nothing happens, no orphan book is created, per rails runner check). Reproduced: uploaded a valid query_doc_pairs-only JSON on /books/49/import/edit; no new book was created (Book.save presumably failed on a missing required field for the generic new-book path) and the response ended in an unstyled 404 at GET /books/import rather than a friendly re-rendered error — did not fully root-cause the 404 itself, but the endpoint-mismatch is confirmed directly from the view/controller/route source, independent of that symptom. The book-scoped API routes referenced in the page's own help text (POST /books/:book_id/query_doc_pairs, POST /books/:book_id/judgements) DO exist and DO operate on the correct book — this is very likely how the 2026-09-10 pass below actually verified this scenario (via direct API calls, matching the doc text), not via the page's own upload buttons, which is why the bug went undetected until this pass drove the actual UI. Not fixed given the scope of this test sweep; flagging for a decision on priority. Prior (API-level) pass's notes, still accurate for the API itself: a query_doc_pairs payload whose new pair carried two user_email-less judgements landed both as separate anonymous rows; an all_judgements payload with a nested query_doc_pair upserted one pair carrying both the email-attributed and the anonymous judgement, confirming query_doc_pair_id still resolves for lookup while being blocked from assignment. Book-level keys (name, scale, show_rank, support_implicit_judgements) in an update payload were ignored, leaving the book's settings unchanged."
+        paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb", "app/views/books/import/edit.html.erb", "config/routes.rb"]
+      "10.9":
+        title: "Export a book"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Clicked Export on 'Book of Ratings' — flash 'Queued up export of book as file.'; the background job completed within seconds, the button switched to 'Re-Export' with a 'created less than a minute ago' download link that downloaded a valid 86KB .json.zip. 'Quepid APIs' link correctly points to /api/docs. Immediate-double-click blocking and the 'currently being exported' interstitial state not directly observed (job finished too fast to catch it)."
+        paths: ["app/controllers/books/export_controller.rb"]
+
+  "11":
+    file: 11-judging-workflows.md
+    scenarios:
+      "11.1":
+        title: "Single-pair judging screen"
+        last_run: 2026-09-15T17:11:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on Book Of Ratings: screen renders Query, Scoring Guidelines link, I will Judge Later/I Can't Tell buttons, and Irrelevant/Relevant rating buttons with keyboard-hint letters (A/S). Rated a pair Relevant — advanced to the next pair without a full page reload."
+        paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb"]
+      "11.2":
+        title: "Keyboard-shortcut rating"
+        last_run: 2026-09-15T17:11:00Z
+        result: pass
+        notes: "Partial re-check via Playwright MCP: confirmed the A/S keyboard-hint letters render under Irrelevant/Relevant. A single Playwright key press() (instant keydown+keyup) did not visibly trigger the ~500ms-hold auto-submit behavior — consistent with the documented hold requirement rather than a bug, but this pass could not simulate a true sustained hold to confirm the auto-submit path itself, or the must-not-fire-in-a-textarea/modal guard. Rating via direct button click (11.1) worked correctly."
+        paths: ["app/assets/", "app/javascript/controllers/"]
+      "11.3":
+        title: "I will Judge Later"
+        last_run: 2026-09-15T17:12:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: clicked 'I will Judge Later' on Book Of Ratings' judging screen — advanced to the next pair; confirmed the judgement appears under the Judgements list's 'Later' filter (11.6)."
+        paths: ["app/controllers/judgements_controller.rb"]
+      "11.4":
+        title: "I Can't Tell (mark unrateable)"
+        last_run: 2026-09-15T17:12:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: clicked 'I Can't Tell' — 'Record Explanation' modal appeared, typed an explanation, clicked Skip Judging — advanced to the next pair; confirmed the judgement appears under the Judgements list's 'Unrateable' filter (11.6) with the correct query/doc/rater shown."
+        paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb"]
+      "11.5":
+        title: "Session milestones, navigation, and completion"
+        last_run: 2026-09-15T18:52:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: rated a pair Relevant, clicked 'Go Back to Previous Query/Doc Pair' — correctly reopened it as an 'Editing Judgement' screen. Clicked 'Quit Judging' — returned to the Book Overview page. Did not re-test the 50-pair completion/confetti screen, show_rank toggle, or different-user warning banner this pass (too expensive/slow; see 2026-09-04 notes)."
+        paths: ["app/controllers/judgements_controller.rb"]
+      "11.6":
+        title: "Judgements list (audit view)"
+        last_run: 2026-09-15T17:13:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP on Book Of Ratings: checked the Unrateable filter — showed exactly this pass's 'I Can't Tell' judgement (11.4); unchecked it and checked Later instead — showed exactly this pass's Judge Later judgement (11.3). Both filters round-tripped their query params correctly (?unrateable=true, ?judge_later=true)."
+        paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/"]
+      "11.7":
+        title: "Judgement Stats (leaderboard)"
+        last_run: 2026-09-22
+        result: pass_with_fixes
+        notes: "Code review found the 'Refine Prompt' link could point at an AI judge the viewer isn't allowed to open (edit_ai_judge_path is gated by AiJudge.for_user(current_user), but the leaderboard lists any judge that has ever judged the book, regardless of the viewer's current relationship to that specific judge) - a teammate could hit a 404. Fixed by computing @refinable_ai_judge_ids = AiJudge.for_user(current_user).pluck(:id) in BooksController#judgement_stats and only rendering the link when the row's judge id is in that set; covered with a new controller test (creates a judge owned by a different user with no shared team, asserts the link is absent). Re-verified via Playwright MCP on Book Of Ratings: all three visible judges (Azure Anthropic, Azure OpenAI, OSC AI Judge - all owned/shared via the current user's OSC team) still show 'Refine Prompt', and clicking it navigated correctly to the judge's edit page (no regression for the normal/accessible case). Did not re-test the fixed 404-avoidance case live (the automated test covers it) since it requires seeding a second team's private judge with judging history on a shared book."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/judgement_stats.html.erb"]
+      "11.8":
+        title: "Bulk Judge (grid mode)"
+        last_run: 2026-09-15T17:14:00Z
+        result: pass
+        notes: "Light recheck via Playwright MCP this pass: page rendered correctly ('Page 1 of 7 - Showing 1 to 25 of 175 unrated documents...'), clicked a Relevant radio on the first grid item — confirmed checked/selected state applied. Prior (2026-09-04) full golden-path pass, still the deepest coverage on record: results grouped by query with doc count, default-filtered to Unrated. Clicked Relevant on a doc — confirmed via rails console it saved via AJAX (no page reload, no URL change) and visually marked selected/bordered. Reloaded — rating persisted, and the doc correctly disappeared from the default Unrated-only view. Unchecked Unrated — the rated doc reappeared, pre-selected/bordered, with a Reset control now showing. Clicked Reset — confirmed the judgement was actually deleted (AJAX, no reload). Re-rated it, toggled Show Explanations on, typed into its explanation field, tabbed out — confirmed via rails console it auto-saved (no explicit save button) and persisted across a reload. Toggled Show Explanations off with that explanation present — confirmed it now renders as read-only text (not an editable textbox), not vanished. Entered a query-text filter matching nothing — got the 'No documents match your current filters' empty state listing the active filter with working 'Clear query filter'/'Clear all filters' buttons. Did not test the Rank Depth dropdown."
+        paths: ["app/controllers/bulk_judge_controller.rb"]
+      "11.9":
+        title: "Query/Doc Pairs management"
+        last_run: 2026-09-15T16:26:00Z
+        result: pass
+        notes: "CONFIRMED FIX via Playwright MCP (commit 52a45e6d 'Fix query_doc_pairs create/update to redirect to the pair, not the index'): created a new pair on Book Of Ratings ('manual test query' / 'manual-test-doc-1') — after Create, landed on /books/1/query_doc_pairs/3101 (the pair's own show page), not the index. Edited it and clicked Update — again landed on the pair's show page. Deleted it via the Edit page's Delete button (native confirm() dialog, accepted), redirected to the book Overview page. No console errors."
+        paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query_doc_pair.rb", "test/controllers/query_doc_pairs_controller_test.rb"]
+
+  "12":
+    file: 12-ai-judges.md
+    scenarios:
+      "12.1":
+        title: "Create a per-team AI Judge"
+        last_run: 2026-09-15T17:16:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: form correctly blocked submission with 'LLM Key can't be blank' when left empty; filled it and resubmitted — created successfully, appeared in the team's member list as an AI Judge. Removed it afterward via Remove member (same confirm-dialog flow as 9.4)."
+        paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/models/ai_judge.rb"]
+      "12.2":
+        title: "Edit / delete an AI Judge"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Edited the LLM Service URL to apply the port fix. Deleting an AI judge from a team not tested."
+        paths: ["app/controllers/ai_judges_controller.rb"]
+      "12.3":
+        title: "Assign an AI Judge to a Book"
+        last_run: 2026-09-22
+        result: pass_with_fixes
+        notes: "Code review found BooksController#assign_ai_judges did a separate find_by query per submitted ai_judge_id (2N queries for N judges) on both create and update - a regression on create specifically, since book_params used to exclude :ai_judge_ids and let Rails' bulk ai_judge_ids= setter handle the whole set in ~1-2 queries. Fixed to a single scoped where(id: ids) query plus one bulk book.ai_judges << relation. Re-verified the create path via Playwright MCP: created a new book, checked the 'OSC AI Judge' checkbox, submitted - the book's Overview page correctly showed 'We have an AI Judge OSC AI Judge helping us rate documents.', confirming the assignment persisted correctly after the query-count fix. Separately, user-reported bug: the assigned-judges checkboxes on Edit were empty for a book with no owner (see 10.3 for the full root cause/fix - #edit/#update now scope to current_user instead of @book.owner). Did not re-test the update path live this pass beyond the 10.3 verification (unchanged code path otherwise, covered by test/controllers/books_controller_test.rb's existing assignment assertions)."
+        paths: ["app/controllers/books_controller.rb"]
+      "12.4":
+        title: "Refine an AI Judge's prompt"
+        last_run: 2026-09-22
+        result: pass_with_fixes
+        notes: "This flow moved from ai_judges/prompts_controller.rb (deleted) to ai_judges/wizard_controller.rb#test_prompt as part of combining AI judge creation with prompt testing into one wizard. Code review caught a regression in that migration: test_prompt had dropped the book: @book kwarg to llm_service.perform_safe_judgement, silently losing the book-scoped rating-scale prompt augmentation that prompts_controller.rb#update used to apply. Fixed (restored before_action :set_book for both wizard actions and passed book: @book) and covered with a new automated request spec asserting the outgoing LLM request body contains the scale text. Manually re-verified end-to-end via Playwright MCP: navigated to /ai_judges/6/edit?book_id=1 (OSC AI Judge, provider Ollama/qwen3:0.6b) and ran a real prompt against local Ollama - got back 'LLM Response: 0' with a real explanation, confirming the wizard's Test & Refine step still works against a real LLM after the fix. Did not re-verify the scale text is actually in the *outgoing* prompt visually (covered by the automated spec instead, since Ollama's response doesn't echo the system prompt back). Malformed-JSON and zero-pairs edge cases not tested."
+        paths: ["app/controllers/ai_judges/wizard_controller.rb", "app/javascript/controllers/ai_judge_wizard_controller.js"]
+      "12.5":
+        title: "Trigger a judging run (Judge Judy)"
+        last_run: 2026-09-15T19:24:00Z
+        result: pass_with_fixes
+        notes: "Ran a bounded run (default 10) against local Ollama (qwen3:0.6b) for OSC AI Judge on Book of Ratings (id 1, 222 pairs, 0/1 scale) via Playwright MCP from Judgement Stats — flash 'AI Judge OSC AI Judge will start evaluating query/doc pairs.', judged 8-10 pairs (settled at 10 once the async job caught up), Judging Stats table updated accordingly. FOUND AND FIXED the `updateModalTitle is not defined` bug previously flagged on 2026-09-09 as 'pre-existing, not a regression': the inline `<script>` defining it lived only in books/show.html.erb, which never actually renders this modal — the modal is only ever rendered from judgement_stats.html.erb (confirmed via grep), so the checkbox's onchange always threw. Replaced with a `judge-documents-modal` Stimulus controller (app/javascript/controllers/judge_documents_modal_controller.js) wired via data-action/data-target instead of a global function, and deleted the dead script from show.html.erb. Re-verified after the fix: checking 'Judge All Pairs' now correctly flips the button to 'Unleash the Kraken!!' (and back) with zero console errors. Triggered the full 'Judge All Pairs' run afterward — confirmed live Turbo/ActionCable progress notifications ('Query/Doc Pairs So Far: N, Processing query X') updating correctly over several minutes, judged count climbing steadily (10 to 119+) with no errors, and the book Overview's guidance banner correctly progressing from 'Critical: Unjudged Pairs Need Attention' to 'Finishing Up Judgements'. Did NOT wait for the ~200-pair run to fully finish (~15+ more minutes against a local LLM) to see the final kraken celebratory modal — left the job running in the background; the steady, error-free progress across 100+ processed pairs is strong evidence it completes correctly. unrateable/zero-pairs-left/gating-once-nothing-left-to-judge edge cases not re-tested this pass."
+        paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/services/llm_service.rb"]
+
+  "13":
+    file: 13-analytics.md
+    scenarios:
+      "13.1":
+        title: "Tries visualization"
+        last_run: 2026-09-15T17:17:00Z
+        result: pass_with_fixes
+        notes: "Re-verified via Playwright MCP: the tree renders correctly (ROOT + numbered Try nodes with diagonal links, labels/layout/links/separation controls present), and the 'Make public' button on a private case still shows the properly padded/bordered container fix from the 2026-09-09 pass. Did not re-test anonymous access to a public case's URL this pass."
+        paths: ["app/controllers/analytics/tries_visualization_controller.rb", "app/views/layouts/analytics.html.erb"]
+      "13.2":
+        title: "Case visibility (Public / Private toggle)"
+        last_run: 2026-09-09T21:41:32Z
+        result: pass_with_fixes
+        notes: "Re-verified after tries_visualization_controller.rb added a real new guard (render_404_page_unless_case) that renders a proper 404 page instead of crashing on a nil @case — previously any nonexistent-or-inaccessible public_id would have hit the view directly with @case nil. Confirmed: a garbage public_id 404s cleanly; SOLR CASE's real public_id 404s while private, then renders correctly once toggled public (via rails runner), then 404s again once toggled back to private. No crash/500 in any state. Branch-ui-diff sweep against main confirmed this is a genuine fix, not just new-code-self-consistency: toggle/badge/public-page-load states are pixel-identical, but revoking access to an already-public URL crashes main with a raw Rails 500 debug page (NoMethodError: undefined method 'last_try_number' for nil, exposing source/stack trace) while this branch renders the normal styled 404."
+        paths: ["app/controllers/analytics/tries_visualization_controller.rb", "app/models/case.rb"]
+      "13.3":
+        title: "Duplicate scores diagnostic"
+        last_run: 2026-09-15T17:17:00Z
+        result: pass_with_fixes
+        notes: "Re-verified via Playwright MCP: page rendered correctly ('List out scores for a specific day and try, grouping by duplicate. Count of 1 is okay!'), no console errors. Prior pass (2026-09-09) root-caused and fixed a real bug: the Public/Make Private controls were absent on main not due to CSS, but because Analytics::Cases::DuplicateScoresController was missing `layout 'analytics'` (main used the default `application` layout for this action, which has no badge markup at all) — this branch already fixed that (added the layout declaration). That fix correctly exposed the badge/button, which then rendered flush against the raw viewport edge (no container wrapper) — confirmed via tries_visualization (which has always used the analytics layout) that this unstyled look is long-standing, pre-existing, unrelated to any header change. Fixed by wrapping both in a `container d-flex align-items-center gap-2 py-2` in app/views/layouts/analytics.html.erb, verified on both duplicate_scores and tries_visualization, public and private cases."
+        paths: ["app/controllers/analytics/cases/duplicate_scores_controller.rb", "app/views/analytics/cases/duplicate_scores/show.html.erb", "app/views/layouts/analytics.html.erb", "test/controllers/analytics/cases/duplicate_scores_test.rb"]
+
+  "14":
+    file: 14-admin-area.md
+    scenarios:
+      "14.1":
+        title: "Admin access gating"
+        last_run: 2026-09-15T17:19:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: logged in as quepid+oscmember@o19s.com (non-admin) and navigated to /admin — correctly redirected to / with flash 'You must be a Quepid Administrator.' Note: the primary test account quepid+realisticactivity@o19s.com is itself flagged as an administrator in this environment's seed data, so it cannot be used for the negative case (a genuinely non-admin account like oscMember is needed)."
+        paths: ["app/controllers/admin/admin_controller.rb", "app/controllers/admin/websocket_tester_controller.rb"]
+      "14.2":
+        title: "Admin Home dashboard"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Verified all three cards and links."
+        paths: ["app/controllers/admin/home_controller.rb"]
+      "14.3":
+        title: "User management — list & search"
+        last_run: 2026-09-15T17:19:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: filtered by 'oscmember' — correctly narrowed the table to just that one row with working Show/Edit links."
+        paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/index.html.erb"]
+      "14.4":
+        title: "User show page & Pulse activity"
+        last_run: 2026-09-15T18:43:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: Pulse section and all 6 stat headings (Cases viewed/scored/created, Queries created, Books created, Judgements created) present; Lock/Unlock button also visible here (see 14.5)."
+        paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/show.html.erb"]
+      "14.5":
+        title: "Lock / unlock a user"
+        last_run: 2026-09-15T18:43:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: clicked Lock on oscMember's show page — button flipped to Unlock and 'Locked?' field updated; clicked Unlock — reverted correctly. Did not re-test the login-blocked message this pass."
+        paths: ["app/controllers/admin/users_controller.rb"]
+      "14.6":
+        title: "Edit a user"
+        last_run: 2026-09-15T18:43:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: set oscMember's Company field to a test value, clicked Update User — persisted and displayed on the show page; reverted it back to empty."
+        paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/edit.html.erb"]
+      "14.7":
+        title: "Assign judgements to anonymous user (admin-level)"
+        last_run: 2026-09-15T18:46:00Z
+        result: pass
+        notes: "Re-verified rendering via Playwright MCP: 'Assign Judgements to Anonymous User' section on oscMember's admin Edit page correctly shows 'This user has 200 judgements total.' with its action button. Did not click it this pass — oscMember's 200 judgements are real attributions on the shared Book Of Ratings demo dataset, and reassigning them to anonymous is not easily reversible; the prior 2026-09-02 pass already exercised the actual click-through on a disposable target. See 2026-09-08's own 10.6b/10.6a-adjacent testing in this pass for a fresh live exercise of the underlying assign/delete-by-user mechanics on a disposable book copy instead."
+        paths: ["app/controllers/admin/users_controller.rb"]
+      "14.8":
+        title: "Delete a user"
+        last_run: 2026-09-15T18:46:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: signed up a disposable throwaway account (0 judgements), then as admin clicked 'Delete this User' on its Edit page — confirm() dialog correctly read 'Are you sure you want to delete this User?' (the copy-paste-bug fix from the prior pass still holds), confirming deleted it — flash 'User account was successfully deleted.', removed from the Users list."
+        paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/edit.html.erb"]
+      "14.9":
+        title: "Announcements"
+        last_run: 2026-09-15T18:45:00Z
+        result: pass
+        notes: "Re-verified rendering via Playwright MCP: index page loads with heading 'Quepid Announcements for Users' and table. Did not re-drive the full create/dismiss/view-count lifecycle this pass (see 2026-09-09 for that)."
+        paths: ["app/controllers/admin/announcements_controller.rb", "app/models/announcement.rb", "app/views/admin/announcements/edit.html.erb"]
+      "14.10":
+        title: "Websocket Tester"
+        last_run: 2026-09-15T18:45:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: clicked 'Run Test Background Job' — live ActionCable-driven countdown appeared and updated ('Iterations Remaining: 23'), confirming the flash-typo fix (Websocket, not Websocker) and the live-update mechanism both still work."
+        paths: ["app/controllers/admin/websocket_tester_controller.rb"]
+      "14.11":
+        title: "Mounted engines (Job Manager, SQL Analytics)"
+        last_run: 2026-09-15T18:44:00Z
+        result: pass
+        notes: "Tested via Playwright MCP as admin: /admin/jobs (Mission Control::Jobs) loaded correctly ('Mission control - Queues'); /admin/blazer (Blazer SQL Analytics) loaded correctly. No console errors on either. Did not separately re-verify non-admin gating on these two specific mount points this pass (general /admin gating reconfirmed in 14.1). Also fixed a malformed duplicate-key entry found in this file for '14.11' this pass — the previous version repeated title/result/notes/paths twice within the same mapping, so only the second, unset copy actually took effect in YAML."
+        paths: ["config/routes.rb"]
+
+  "15":
+    file: 15-global-navigation-and-notebooks.md
+    scenarios:
+      "15.1":
+        title: "Left icon sidebar"
+        last_run: 2026-09-15T16:30:00Z
+        result: pass_with_fixes
+        notes: "Re-verified via Playwright MCP this pass (also directly re-confirmed in 16.1): hovering the sidebar's Home icon on /cases showed the correct tooltip ('Home'), computed display:block/opacity:0.9/font-size:14px — the bs-tooltip Stimulus controller fix from the prior pass still holds. Prior pass found and fixed the original bug: sidebar icon tooltips never appeared on hover at all — the BS5 tooltip-init script in _sidebar.html.erb was entirely commented out (dead code), and each icon used a bare data-bs-toggle=\"tooltip\" pattern that nothing in the current JS actually initializes (the shared app/javascript/utils/bs_tooltip.js helper only wires up [quepid-tooltip] and [data-controller~=\"bs-tooltip\"] elements). Fixed by switching every sidebar icon to the existing bs-tooltip Stimulus controller (data-controller=\"bs-tooltip\" + data-bs-tooltip-*-value attributes) and removing the dead commented-out script block. Active-state highlighting and click-navigation confirmed for all 7 icons in that pass."
+        paths: ["app/views/layouts/_sidebar.html.erb"]
+      "15.2":
+        title: "Top navbar quick-access dropdowns"
+        last_run: 2026-09-15T16:30:00Z
+        result: pass
+        notes: "Re-verified indirectly this pass: the Relevancy Cases/Books quick-access dropdowns in the top navbar were opened and used repeatedly throughout this session's other scenarios (e.g. 3.2's wizard trigger) with no issues, and the responsive collapse of this same header was directly re-verified in 16.2."
+        paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_page_header.html.erb", "app/views/shared/_account_dropdown.html.erb"]
+      "15.3":
+        title: "External links (User Manual, Wiki, API Docs)"
+        last_run: 2026-09-15T18:47:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: User Manual (https://quepid-docs.dev.o19s.com/2/quepid) and Wiki (https://github.com/o19s/quepid/wiki) links present with correct hrefs in the top navbar across many pages visited this pass."
+        paths: ["config/routes.rb"]
+      "15.4":
+        title: "Avatar dropdown & admin shortcuts"
+        last_run: 2026-09-15T18:47:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: avatar dropdown correctly shows My profile, Logout, and Admin shortcuts (Admin Home, Users, Announcements, Job Manager) for quepid+realisticactivity@o19s.com, which is itself a Quepid Administrator in this environment's seed data. Did not re-test the non-admin variant this pass (oscMember's dropdown was not inspected, though 14.1 confirmed oscMember is correctly blocked from /admin itself)."
+        paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_account_dropdown.html.erb"]
+      "15.5":
+        title: "Cookies static page"
+        last_run: 2026-09-15T18:47:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: page renders correctly with real headings and paragraphs (COOKIES, TYPES OF COOKIES, Necessary cookies), confirming the prior ERB-interpolation fix still holds (no raw #{...} text visible)."
+        paths: ["app/controllers/pages_controller.rb", "app/views/pages/cookies.html.erb"]
+      "15.6":
+        title: "Notebooks (JupyterLite integration)"
+        last_run: 2026-09-15T18:48:00Z
+        result: pass_with_fixes
+        notes: "This dev environment had never run bin/setup_jupyterlite_docker, so clicking Notebooks 404'd with a Rails routing error (public/notebooks/ didn't exist) — expected per the doc's own noted edge case, not a Quepid bug. While fixing this, found and fixed a real bug in bin/docker: the run|r case used an unquoted $@ (docker compose ... run --rm app $@), which word-splits any multi-word quoted argument (e.g. bash -c '...with spaces...') — confirmed via `bin/docker r bash -c 'echo hello world'` printing nothing before the fix. Fixed by quoting it (\"$@\"), re-confirmed the same command now prints 'hello world'. This unblocked running bin/setup_jupyterlite_docker successfully. With the real JupyterLite build in place: Notebooks link opened /notebooks/lab/index.html in a new tab (tab title 'JupyterLite'), the file browser showed the bundled examples/ folder with 4 sample notebooks, opened 'Scoring Comparison.ipynb', and ran its first cell (imports pandas/matplotlib under Pyodide) via Shift+Enter successfully with no errors and the selection advanced to the next cell. Minor: the bundled jupyterlab-tour extension throws console errors and fails to activate (TypeError: n.addFactory is not a function) — cosmetic, upstream in the quepid-jupyterlite release, does not block file browser/kernel/notebook execution. Did not verify a deployed (baked-into-image) environment separately."
+        paths: ["bin/setup_jupyterlite", "bin/setup_jupyterlite_docker", "bin/docker", "public/notebooks/"]
+
+  "16":
+    file: 16-cross-cutting-bs5-responsive-and-accessibility.md
+    scenarios:
+      "16.1":
+        title: "Popover & tooltip paint check (BS3↔BS5 trap)"
+        last_run: 2026-09-15T16:21:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP after today's new generic bs_popover_controller.js/bs_tooltip_controller.js (commit 18fa8d83). Two checks, both confirmed via getComputedStyle (not just eyeballing): (1) a rating-badge popover in the Core Workbench (case 6, 'dairy' query, first doc's '1' badge) — visible on first click, .popover.bs-popover-auto.show, display:block, opacity:1, transform is a plain translate (not scale(0)), font-size:14px. (2) the left sidebar's 'Home' icon tooltip on a Rails page (/cases) — visible on first hover, display:block, opacity:0.9, font-size:14px, correct text. Neither showed the BS3-leak symptoms (invisible-but-present, tiny font, stuck opacity). Did not check a share-modal info-icon popover this pass; narrow-viewport RFS scaling not explicitly rechecked here (see 16.2)."
+        paths: ["app/javascript/controllers/bs_popover_controller.js", "app/javascript/controllers/bs_tooltip_controller.js", "app/assets/javascripts/directives/quepidPopover.js", "app/assets/javascripts/directives/quepidTooltip.js", "app/assets/stylesheets/bootstrap5-compat.css"]
+      "16.2":
+        title: "Narrow viewport reflow sweep"
+        last_run: 2026-09-15T19:00:00Z
+        result: pass_with_fixes
+        notes: "CONFIRMED AND FIXED. Re-verified via Playwright MCP at 768x900 after today's navbar-toggler/BS5-spacing commit (b85bc847). Confirmed good: the Rails header's hamburger ('Toggle navigation') opens a clean stacked nav, and the Angular core case-workbench header collapses the same way with the toolbar wrapping cleanly (case 6, no overflow). Found a real bug and traced its origin precisely (not pre-existing as first assumed): the Cases list page (/cases) overflowed horizontally at 768px — the pre-Angular-removal cases list (deleted `case_listing.html`/`components/case_listing`) laid out each row with Bootstrap's responsive `row`/`col-xs-N` grid (no `<table>` at all); the Rails rewrite in `e52cec3a` ('Migrate teams, scorers and case listings away from angularjs') replaced that with a rigid 11-column `<table>` and never added a `.table-responsive` wrapper, so the migration itself dropped the old layout's responsiveness. Fixed by wrapping the `<table>` in `app/views/cases/index.html.erb` with `<div class=\"table-responsive\">`. Verified at 768px: `window.scrollX` can no longer move (page itself doesn't scroll horizontally), the table now scrolls internally within its own bounded box, and a full-page screenshot confirms no page-level scrollbar. Verified at 1280px desktop width: full table still renders normally, unaffected. (Note: `document.documentElement.scrollWidth` still reads ~930 after the fix due to a `.card` being `display:flex` with a nested `overflow-x:auto` descendant — a known scrollWidth-measurement quirk, not an actual scrollable page; confirmed via `window.scrollX`/screenshot instead.) Other wide list tables (Search Endpoints, Scorers, Books, Admin Users) may share the same unwrapped-table pattern from other Angular-removal migrations — not individually checked this pass, so not confirmed either way. Wizard endpoint-step accordion at 768px not re-tested this pass."
+        paths: ["app/views/layouts/_header.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/bootstrap5-compat.css", "app/views/cases/index.html.erb"]
+      "16.3":
+        title: "Case header typography"
+        last_run: 2026-09-15T18:49:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: measured via getComputedStyle on case 6's header — h1 font-size 35px, small font-size 30.625px, ratio exactly 0.875, matching the expected fix."
+        paths: ["app/assets/stylesheets/bootstrap5-compat.css"]
+      "16.4":
+        title: "Modal accessibility spot-check"
+        last_run: 2026-09-15T18:49:00Z
+        result: pass
+        notes: "Re-verified via Playwright MCP: opened the Clone modal on case 6, pressed Escape — confirmed via document.querySelector('.modal.show') that the modal closed. Did not re-test Tab-trap this pass."
+        paths: ["app/assets/javascripts/"]
+      "16.5":
+        title: "General visual sanity sweep after any CSS/JS change"
+        last_run: 2026-09-02
+        result: pass
+        notes: "Not run as a single standalone sweep, but every JS/view change made this session (case.js, currSettings.js, query_options_modal_instance_controller.js, import_snapshot_controller.js, mapper_wizard_controller.js, queriesLayout.html, wizardModal.html, _sidebar.html.erb) was individually verified live via Playwright MCP screenshots immediately after the change, with no visual regressions observed in any of the affected pages (case workbench header, query options modal, mapper wizard, cases list import modals, sidebar icons)."
+        paths: []

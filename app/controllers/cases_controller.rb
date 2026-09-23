@@ -3,7 +3,7 @@
 class CasesController < ApplicationController
   include Pagy::Method
 
-  before_action :set_case, only: [ :archive, :unarchive ]
+  before_action :set_case, only: [ :archive, :unarchive, :destroy, :destroy_queries ]
 
   def index
     @archived = deserialize_bool_param(params[:archived])
@@ -46,36 +46,49 @@ class CasesController < ApplicationController
 
   # Archive a case (mark archived and set current_user as owner)
   def archive
-    unless @case
-      flash[:alert] = 'Case not found.'
-      redirect_to cases_path and return
-    end
-
     @case.owner = current_user
     @case.mark_archived!
     Analytics::Tracker.track_case_archived_event(current_user, @case) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_archived_event)
-    flash[:notice] = "Case ##{@case.case_name} archived."
+    flash[:notice] = "Case #{@case.case_name} archived."
 
     redirect_to cases_path
   end
 
   # Unarchive a case
   def unarchive
-    unless @case
-      flash[:alert] = 'Case not found.'
-      redirect_to cases_path and return
-    end
-
     @case.archived = false
     @case.save
-    flash[:notice] = "Case ##{@case.case_name} unarchived."
+    flash[:notice] = "Case #{@case.case_name} unarchived."
 
     redirect_to cases_path
+  end
+
+  # Permanently delete a case
+  def destroy
+    case_name = @case.case_name
+    @case.really_destroy
+    Analytics::Tracker.track_case_deleted_event(current_user, @case) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_deleted_event)
+    flash[:notice] = "Case #{case_name} deleted."
+
+    redirect_to cases_path
+  end
+
+  # Delete all queries (and their ratings) for a case
+  def destroy_queries
+    @case.queries.destroy_all
+    flash[:notice] = "All queries deleted for case #{@case.case_name}."
+
+    redirect_to case_core_path(id: @case.id, try_number: @case.last_try_number)
   end
 
   private
 
   def set_case
-    @case = Case.find_by(id: params[:id])
+    @case = current_user.cases_involved_with.find_by(id: params[:id])
+
+    return if @case
+
+    flash[:alert] = 'Case not found.'
+    redirect_to cases_path
   end
 end

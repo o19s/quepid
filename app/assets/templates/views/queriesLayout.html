@@ -15,7 +15,7 @@
               scores="scores"
             >
             </qscore-case>
-            
+
             <!-- Snapshot case scores -->
             <qscore-case
               ng-if="queries.avgQuery.diffs"
@@ -34,7 +34,7 @@
             <h1 class="fs-1 fw-normal lh-sm mb-3">
               <small class="d-block fw-normal text-muted">
                 Current case
-                <i class="bi bi-repeat" ng-show="caseModel.selectedCase().nightly" quepid-tooltip="Queries are run on a nightly basis." tooltip-popup-delay="1000" tooltip-placement="right"></i>
+                <i class="bi bi-repeat" ng-show="caseModel.selectedCase().nightly" data-controller="bs-tooltip" data-bs-tooltip-title-value="Queries are run on a nightly basis." data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right"></i>
                 <span ng-show="caseModel.selectedCase().public">PUBLIC</span>
                 <span ng-show="caseModel.selectedCase().archived">ARCHIVED</span>
               </small>
@@ -45,9 +45,9 @@
                 </span>
                 <span ng-show="caseName.startRename">
                   <form class="d-flex flex-wrap align-items-center gap-2" ng-submit="caseName.rename()">
-                      <input style="background:#FFFF99" type="text" ng-model="caseName.name" />
-                      <input type="submit" class="btn btn-sm btn-primary" value="Rename" />
-                      <button class="btn btn-sm btn-outline-secondary" ng-click="caseName.cancel()">Cancel</button>
+                    <input style="background:#FFFF99" type="text" ng-model="caseName.name">
+                    <input type="submit" class="btn btn-sm btn-primary" value="Rename" ng-disabled="!caseName.name || !caseName.name.trim()">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="caseName.cancel()">Cancel</button>
                   </form>
                 </span>
               </span>
@@ -61,9 +61,9 @@
                 </span>
                 <span ng-show="tryName.startRename">
                   <form class="d-flex flex-wrap align-items-center gap-2" ng-submit="tryName.rename()">
-                      <input style="background:#FFFF99" type="text" ng-model="tryName.name" />
-                      <input type="submit" class="btn btn-sm btn-primary" value="Rename" />
-                      <button class="btn btn-sm btn-outline-secondary" ng-click="tryName.cancel()">Cancel</button>
+                    <input style="background:#FFFF99" type="text" ng-model="tryName.name">
+                    <input type="submit" class="btn btn-sm btn-primary" value="Rename" ng-disabled="!tryName.name || !tryName.name.trim()">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="tryName.cancel()">Cancel</button>
                   </form>
                 </span>
               </small>
@@ -122,21 +122,41 @@
               >Share case</a>
             </li>
             <li class="list-inline-item">
-              <clone-case
-                acase="caseModel.selectedCase()"
-              ></clone-case>
+              <i class="bi bi-copy" aria-hidden="true"></i>
+              <a
+                href="#"
+                data-controller="clone-case-core"
+                data-action="click->clone-case-core#open"
+                data-bs-toggle="modal"
+                data-bs-target="#cloneCaseModal"
+                data-clone-case-core-id-value="{{ caseModel.selectedCase().caseNo }}"
+                data-clone-case-core-name-value="{{ caseModel.selectedCase().caseName }}"
+                data-clone-case-core-last-try-value="{{ caseModel.selectedCase().lastTry }}"
+              >Clone</a>
             </li>
             <li class="list-inline-item">
-              <delete-case-options
-                acase="caseModel.selectedCase()"
-              ></delete-case-options>
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+              <a
+                href="#"
+                data-controller="delete-case-options-core"
+                data-action="click->delete-case-options-core#open"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteCaseOptionsModal"
+                data-delete-case-options-core-id-value="{{ caseModel.selectedCase().caseNo }}"
+                data-delete-case-options-core-name-value="{{ caseModel.selectedCase().caseName }}"
+              >Delete</a>
             </li>
             <li class="list-inline-item">
-              <export-case
-                icon-only="false"
-                acase="caseModel.selectedCase()"
-                supports-detailed-export="true"
-              ></export-case>
+              <i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i>
+              <a
+                href="#"
+                data-controller="export-case-core"
+                data-action="click->export-case-core#open"
+                data-bs-toggle="modal"
+                data-bs-target="#exportCaseModal"
+                data-export-case-core-id-value="{{ caseModel.selectedCase().caseNo }}"
+                data-export-case-core-name-value="{{ caseModel.selectedCase().caseName }}"
+              >Export</a>
             </li>
             <li class="list-inline-item" id="tune-relevance-link">
               <i class="bi bi-wrench-adjustable"></i>

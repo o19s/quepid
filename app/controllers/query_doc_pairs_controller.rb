@@ -4,7 +4,6 @@ class QueryDocPairsController < ApplicationController
   include Pagy::Method
 
   before_action :set_book
-  before_action :check_book
   before_action :set_query_doc_pair, only: [ :show, :edit, :update, :destroy ]
 
   def index
@@ -38,18 +37,17 @@ class QueryDocPairsController < ApplicationController
     @query_doc_pair = QueryDocPair.new query_doc_pair_params
     @book.query_doc_pairs << @query_doc_pair
     if @book.save
-      redirect_to book_query_doc_pairs_path(@book, @query_doc_pair)
+      redirect_to book_query_doc_pair_path(@book, @query_doc_pair)
     else
-      render action: :new
+      render action: :new, status: :unprocessable_content
     end
   end
 
   def update
-    @query_doc_pair.update query_doc_pair_params
-    if @query_doc_pair.save
-      redirect_to book_query_doc_pairs_path(@book, @query_doc_pair)
+    if @query_doc_pair.update query_doc_pair_params
+      redirect_to book_query_doc_pair_path(@book, @query_doc_pair)
     else
-      render action: :edit
+      render action: :edit, status: :unprocessable_content
     end
   end
 

@@ -44,6 +44,7 @@ james_bond_movies:
 
 
 empty_book:
+  owner: :doug
   name: Empty Book
   scale: "0,1,2,3"
   scale_with_labels: null

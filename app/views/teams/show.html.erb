@@ -1,5 +1,4 @@
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1>Team: <%= @team.name %></h1>
+<%= page_header "Team: #{@team.name}" do %>
   <div class="text-end">
     <small class="text-muted">Members: <strong><%= @members.count %></strong></small>
     &nbsp;&nbsp;
@@ -11,7 +10,7 @@
     &nbsp;&nbsp;
     <small class="text-muted">Scorers: <strong><%= @scorers_count %></strong></small>
   </div>
-</div>
+<% end %>
 
 <div class="row mb-4">
   <div class="col-md-4">
@@ -117,7 +116,7 @@
         </style>
         <hr>
         
-        <%= link_to new_team_ai_judge_path(@team), class: 'btn btn-primary btn-sm w-100' do %>
+        <%= link_to new_ai_judge_path(team_id: @team.id), class: 'btn btn-primary btn-sm w-100' do %>
           <i class="bi bi-robot"></i> Create AI Judge
         <% end %>
       </div>
@@ -168,7 +167,7 @@
               <div class="ms-3">
                 
                 <% if member.ai_judge? %>
-                  <%= link_to edit_team_ai_judge_path(@team, member), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
+                  <%= link_to edit_ai_judge_path(member), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
                     <i class="bi bi-pencil" aria-hidden="true"></i>
                   <% end %>
                 <% end %>

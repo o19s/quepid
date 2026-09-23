@@ -1,12 +1,14 @@
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1><i class="bi bi-book"></i> <%= book_title @book %></h1>
+<% title = capture do %>
+  <i class="bi bi-book"></i> <%= book_title @book %>
+<% end %>
+<%= page_header title do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
       <span data-feather="calendar" class="align-text-bottom"></span>
       This week
     </button>
   </div>
-</div>
+<% end %>
 
 <%= render 'tabs', book: @book %>
 <p/>
@@ -15,7 +17,7 @@
 <div class="card">
   <div class="card-body">
 
-    <h5 class="card-title" href="#collapseExample">Leaderboard</h3>
+    <h5 class="card-title" href="#collapseExample">Leaderboard</h5>
     <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
     <%
       total_pairs = @book.query_doc_pairs.count
@@ -104,7 +106,9 @@
         <% if row[:judge] && row[:judge].ai_judge? %>
           <i class="bi bi-robot"></i>
           <div class="float-end d-flex gap-2">
-            <%= button_to 'Refine Prompt', edit_ai_judge_prompt_path(row[:judge]), params: { book_id: @book.id }, class: 'btn btn-light', role: 'button', method: :get %>
+            <% if @refinable_ai_judge_ids.include?(row[:judge].id) %>
+              <%= link_to 'Refine Prompt', edit_ai_judge_path(row[:judge], book_id: @book.id), class: 'btn btn-light', role: 'button' %>
+            <% end %>
             <button type="button" class="btn btn-light" <%= (row[:can_judge_more] && @moar_judgements_needed )? '' : 'disabled' %> data-bs-toggle="modal" data-bs-target="#unleash_modal_<%= row[:judge].id %>">
               Prepare to Judge!
             </button>      

@@ -40,7 +40,14 @@ class BooksController < ApplicationController
 
     if params[:q].present?
       q = "%#{params[:q].to_s.downcase}%"
-      query = query.where('LOWER(books.name) LIKE ? OR LOWER(teams.name) LIKE ?', q, q)
+
+      # `includes([:teams])` alone won't JOIN teams for a raw SQL condition (only a
+      # hash condition like `where(teams: {...})` makes Rails switch to eager_load),
+      # so match on ids first - same pattern as ForUserScope and CasesController#index.
+      matching_ids = Book.left_joins(:teams)
+        .where('LOWER(books.name) LIKE ? OR LOWER(teams.name) LIKE ?', q, q)
+        .reselect(:id).distinct
+      query = query.where(id: matching_ids)
     end
 
     @pagy, @books = pagy(query)
@@ -120,6 +127,12 @@ class BooksController < ApplicationController
     @ai_judges = @book.ai_judges
     assigned_ai_judges = @ai_judges.pluck(:user_id)
 
+    # A judge that judged this book historically may since have been
+    # unassigned, or belong to a teammate whose team doesn't share the judge
+    # itself even though it shares this book - guard the "Refine Prompt"
+    # link so it isn't shown for a judge the viewer can't actually open.
+    @refinable_ai_judge_ids = AiJudge.for_user(current_user).pluck(:id)
+
     stats_judges_ids = (unique_judge_ids + assigned_ai_judges).uniq
 
     stats_judges = []
@@ -165,12 +178,17 @@ class BooksController < ApplicationController
       if scorer
         @book.scale = scorer.scale
         @book.scale_with_labels = scorer.scale_with_labels
-        @book.scorer_id = scorer.id
+        # The dropdown (scorer_options_for_select) lists one representative
+        # scorer id per unique scale/labels combination, so the case's exact
+        # scorer_id may not appear as an <option> - resolve to whichever
+        # scorer id the dropdown actually offers for this scale, or the
+        # select silently falls back to blank.
+        @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
         @book.scoring_guidelines = @book.default_scoring_guidelines
       end
     end
 
-    @ai_judges = []
+    @ai_judges = AiJudge.for_user(current_user)
 
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
@@ -183,7 +201,7 @@ class BooksController < ApplicationController
   end
 
   def edit
-    @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @ai_judges = visible_ai_judges_for(current_user)
 
     @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
 
@@ -197,15 +215,16 @@ class BooksController < ApplicationController
   end
 
   def create
-    @book = Book.new(book_params.except(:auto_run_ai_judge_ids))
+    @book = Book.new(book_params.except(:ai_judge_ids, :auto_run_ai_judge_ids))
     @book.owner = current_user
 
     # Handle scorer selection
     apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
 
     if @book.save
+      assign_ai_judges @book, book_params[:ai_judge_ids], current_user
 
-      if params[:book][:link_the_case]
+      if deserialize_bool_param(params[:book][:link_the_case])
         @origin_case = current_user.cases_involved_with.where(id: params[:book][:origin_case_id]).first
         @origin_case.book = @book
         @origin_case.auto_populate_book_pairs = deserialize_bool_param(
@@ -219,6 +238,7 @@ class BooksController < ApplicationController
 
       redirect_to @book, notice: 'Book was successfully created.'
     else
+      @ai_judges = []
       render :new
     end
   end
@@ -231,7 +251,7 @@ class BooksController < ApplicationController
     team_ids_belonging_to_user = current_user.teams.pluck(:id)
     teams = @book.teams.reject { |t| team_ids_belonging_to_user.include?(t.id) }
     @book.teams.clear
-    book_params[:team_ids].each do |team_id|
+    Array(book_params[:team_ids]).each do |team_id|
       teams << Team.find(team_id)
     end
 
@@ -240,24 +260,20 @@ class BooksController < ApplicationController
     # checkboxes suck, but we diff (rather than clear-and-recreate) so an
     # unrelated book save doesn't reset every judge's auto_run flag back to
     # false.
-    # Array() guards against a non-standard caller (API client, curl) omitting
-    # the key entirely - the standard form always submits both as arrays via
-    # hidden fields, but nothing at the request layer guarantees that.
     ai_judge_ids = Array(book_params[:ai_judge_ids]).compact_blank.map(&:to_i)
     auto_run_ai_judge_ids = Array(book_params[:auto_run_ai_judge_ids]).compact_blank.map(&:to_i)
 
     @book.books_ai_judges.where.not(user_id: ai_judge_ids).destroy_all
-    ai_judge_ids.each do |ai_judge_id|
-      books_ai_judge = @book.books_ai_judges.find_or_initialize_by(user_id: ai_judge_id)
-      books_ai_judge.auto_run = auto_run_ai_judge_ids.include?(ai_judge_id)
-      books_ai_judge.save
+    assign_ai_judges @book, ai_judge_ids, current_user
+    @book.books_ai_judges.where(user_id: ai_judge_ids).find_each do |books_ai_judge|
+      books_ai_judge.update(auto_run: auto_run_ai_judge_ids.include?(books_ai_judge.user_id))
     end
 
     # Handle scorer selection
     apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
 
     @book.update(book_params.except(
-                   :team_ids, :ai_judge_ids, :auto_run_ai_judge_ids, :link_the_case, :origin_case_id, :scorer_id,
+                   :team_ids, :ai_judges, :ai_judge_ids, :auto_run_ai_judge_ids, :link_the_case, :origin_case_id, :scorer_id,
                    :delete_export_file, :delete_import_file,
                    :auto_populate_book_pairs,
                    :auto_populate_case_judgements
@@ -268,7 +284,7 @@ class BooksController < ApplicationController
 
     @book.save
 
-    @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @ai_judges = visible_ai_judges_for(current_user)
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
     respond_with(@book)
@@ -501,6 +517,23 @@ class BooksController < ApplicationController
 
   private
 
+  # AI judges the given user can access - owned directly, or shared via any
+  # of their teams. Called with @book.owner on #show (whose judges are
+  # already attached and don't need re-checking) and with current_user on
+  # #edit/#update (so a team member editing a book they don't own still sees
+  # - and can assign - judges visible to *them*, rather than depending on
+  # the book having an owner at all).
+  def visible_ai_judges_for owner
+    AiJudge.for_owner(owner)
+  end
+
+  # Checkboxes suck: only assign ids that are actually visible to scope_owner,
+  # so a submitted id for someone else's private judge is silently ignored.
+  def assign_ai_judges book, ai_judge_ids, scope_owner
+    ids = Array(ai_judge_ids).compact_blank
+    book.ai_judges << visible_ai_judges_for(scope_owner).where(id: ids) if ids.any?
+  end
+
   def apply_scorer_to_book book, scorer_id
     scorer = current_user.scorers_involved_with.find_by(id: scorer_id)
     if scorer
@@ -512,6 +545,13 @@ class BooksController < ApplicationController
   # This set_book is different because we use :id, not :book_id.
   def set_book
     @book = current_user.books_involved_with.where(id: params[:id]).first
+
+    unless @book
+      redirect_to books_path,
+                  alert: "Could not retrieve book #{params[:id]}. Confirm that the book has been shared with you via a team you are a member of!"
+      return
+    end
+
     TrackBookViewedJob.perform_later current_user, @book
   end
 

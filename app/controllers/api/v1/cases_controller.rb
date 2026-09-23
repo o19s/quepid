@@ -5,7 +5,6 @@ module Api
     # @tags cases
     class CasesController < Api::ApiController
       before_action :set_case, only: [ :show, :update, :destroy, :run_evaluation ]
-      before_action :check_case, only: [ :show, :update, :destroy, :run_evaluation ]
 
       # Special handling for cases that are "public"
       def authenticate_api!

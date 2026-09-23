@@ -36,15 +36,11 @@ class UserScorerFinderTest < ActiveSupport::TestCase
       assert_includes result, shared_scorer
     end
 
-    # In ActiveRecord 4.2 we don't have the OR clause
-    # working in AREL so we can't OR on the scorer table in
-    # the scorer.for_user method.  When we upgrade then
-    # enable this test!
-    # test 'includes all communal scorers' do
-    #   result = user.scorers.all
+    test 'includes all communal scorers' do
+      result = user.scorers_involved_with.all
 
-    #   assert_includes result, communal_scorer
-    # end
+      assert_includes result, communal_scorer
+    end
   end
 
   describe 'Find all scorers that match params' do

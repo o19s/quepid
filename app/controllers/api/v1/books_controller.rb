@@ -7,16 +7,15 @@ module Api
     # @tags books
     class BooksController < Api::ApiController
       before_action :set_book, only: [ :show, :update, :destroy ]
-      before_action :check_book, only: [ :show, :update, :destroy ]
 
       # @parameter archived(query) [Boolean] Whether or not to return only archived books in the response.
+      # @parameter owned(query) [Boolean] Whether to return only books owned by the current user, excluding ones only shared via a team.
       def index
         archived = deserialize_bool_param(params[:archived])
-        @books = if archived
-                   current_user.books_involved_with.archived
-                 else
-                   current_user.books_involved_with.active
-                 end
+        owned = deserialize_bool_param(params[:owned])
+
+        scope = owned ? current_user.books : current_user.books_involved_with
+        @books = archived ? scope.archived : scope.active
 
         respond_with @books
       end
@@ -28,7 +27,7 @@ module Api
       # @request_body [Reference:#/components/schemas/Book]
       # @request_body_example basic book [Reference:#/components/examples/BasicBook]
       def create
-        @book = Book.new(book_params)
+        @book = current_user.books.build(book_params)
         if params[:book][:team_id]
           team = Team.find_by(id: params[:book][:team_id])
           @book.teams << team
@@ -67,12 +66,8 @@ module Api
       end
 
       def set_book
-        @book = current_user.books_involved_with.where(id: params[:id]).first
+        @book = current_user.books_involved_with.find(params.expect(:id))
         TrackBookViewedJob.perform_later current_user, @book
-      end
-
-      def check_book
-        render json: { message: 'Book not found!' }, status: :not_found unless @book
       end
     end
   end
