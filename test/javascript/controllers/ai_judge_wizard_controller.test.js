@@ -132,6 +132,7 @@ describe("AiJudgeWizardController runPrompt", () => {
     const controller = buildController()
 
     apiFetch.mockResolvedValue({
+      ok: true,
       json: () =>
         Promise.resolve({
           rating: 3,
@@ -159,6 +160,23 @@ describe("AiJudgeWizardController runPrompt", () => {
 
     expect(controller.ratingInfoTarget.innerHTML).toContain("Perfectly relevant.")
     expect(controller.ratingInfoTarget.style.display).toBe("block")
+  })
+
+  it("shows an error and does not render a rating when the request fails", async () => {
+    const controller = buildController()
+
+    apiFetch.mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: () => Promise.resolve({ error: "Document fields must be valid JSON" })
+    })
+
+    await AiJudgeWizardController.prototype.runPrompt.call(controller, {
+      preventDefault: vi.fn()
+    })
+
+    expect(controller.statusTarget.textContent).toContain("Document fields must be valid JSON")
+    expect(controller.ratingInfoTarget.style.display).not.toBe("block")
   })
 })
 

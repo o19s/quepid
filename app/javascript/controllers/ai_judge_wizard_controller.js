@@ -297,6 +297,8 @@ export default class extends Controller {
 
       const data = await response.json()
 
+      if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`)
+
       if (this.hasRatingInfoTarget) {
         this.ratingInfoTarget.innerHTML =
           `<h2>Rating Information</h2><div>LLM Response: ${escapeHtml(String(data.rating))}<br>${escapeHtml(data.explanation || "")}</div>`
