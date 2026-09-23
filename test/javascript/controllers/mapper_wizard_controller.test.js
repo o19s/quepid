@@ -28,7 +28,6 @@ function buildController(overrides = {}) {
   controller.statusTarget = document.createElement("div")
   controller.hasStatusTarget = true
   controller.captureEditors = vi.fn()
-  controller.setButtonLoading = vi.fn()
 
   Object.assign(controller, overrides)
   return controller

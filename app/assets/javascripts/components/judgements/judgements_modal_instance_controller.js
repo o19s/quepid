@@ -71,17 +71,19 @@ angular.module('QuepidApp')
         }).length === 0;
       };
 
+      // Merges into ctrl.share.books rather than replacing it, since
+      // owned-book and per-team loads resolve independently and each calls
+      // this as its own promise settles - replacing would drop whichever
+      // list resolved first.
       var addBooksToLists = function(books) {
-        
-        let sortedBooks = [];
         angular.forEach(books, function (book) {
-          if (listDoesNotHaveBook(sortedBooks, book)) {
-            sortedBooks.push(book);
+          if (listDoesNotHaveBook(ctrl.share.books, book)) {
+            ctrl.share.books.push(book);
           }
         });
-        
+
         // Now sort the entire list with active book at the top
-        sortedBooks.sort(function(a, b) {
+        ctrl.share.books.sort(function(a, b) {
           // If a is the active book, it should come first
           if (a.id === ctrl.activeBookId) {
             return -1;
@@ -93,28 +95,22 @@ angular.module('QuepidApp')
           // If neither is the active book, sort alphabetically by name
           return a.name.localeCompare(b.name);
         });
-        
-        ctrl.share.books = sortedBooks;
       };
       var addTeamToLists = function(team) {
         ctrl.share.teams.push(team);
       };
 
-      // Start loading the list of teams from the case
-      if (acase.teams.length > 0) {
-        angular.forEach(acase.teams, function(team) {
-          addTeamToLists(team);
-          bookSvc.list(team).then(function(){
-            addBooksToLists(bookSvc.books);
-          });
-        });
-      } else {
-        // Case isn't shared with any team yet - fall back to books the
-        // current user owns directly, rather than showing no books at all.
-        bookSvc.listMine().then(function(){
+      // Books you own are always listed, plus books shared via any team the
+      // case is shared with.
+      angular.forEach(acase.teams, function(team) {
+        addTeamToLists(team);
+        bookSvc.list(team).then(function(){
           addBooksToLists(bookSvc.books);
         });
-      }
+      });
+      bookSvc.listMine().then(function(){
+        addBooksToLists(bookSvc.books);
+      });
       ctrl.share.loading = false;
       // And done, hide loading message.
 

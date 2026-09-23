@@ -24,5 +24,11 @@ module ForUserScope
       # cannot do here anyway once a json column is in the table.
       where(id: by_team.or(direct).reselect(:id))
     end
+
+    # Nil-safe variant of for_user: no owner (e.g. an orphaned record) means
+    # no visible records, rather than raising on `for_user(nil)`.
+    def self.for_owner owner
+      owner ? for_user(owner) : none
+    end
   end
 end

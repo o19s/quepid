@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
-import AiJudgeWizardController from "./ai_judge_wizard_controller"
+import AiJudgeWizardController from "controllers/ai_judge_wizard_controller"
 
 vi.mock("api/fetch", () => ({
-  apiFetch: vi.fn(),
+  apiFetch: vi.fn()
 }))
 
 function buildController(overrides = {}) {
@@ -59,7 +59,6 @@ function buildController(overrides = {}) {
   controller.captureEditors = vi.fn()
   controller.documentFieldsEditor = null
   controller.optionsEditor = null
-  controller.setButtonLoading = vi.fn()
 
   Object.assign(controller, overrides)
   return controller
@@ -106,17 +105,17 @@ describe("AiJudgeWizardController sampleQueryDocPair", () => {
             document_fields: { title: "Red Shirt" },
             options: {},
             notes: "",
-            position: 1,
-          },
-        }),
+            position: 1
+          }
+        })
     })
 
     await AiJudgeWizardController.prototype.sampleQueryDocPair.call(controller, {
-      preventDefault: vi.fn(),
+      preventDefault: vi.fn()
     })
 
     expect(apiFetch).toHaveBeenCalledWith("/ai_judges/new/sample_query_doc_pair", {
-      headers: { Accept: "application/json" },
+      headers: { Accept: "application/json" }
     })
     expect(controller.queryTextTarget.value).toBe("shirts")
     expect(controller.docIdTarget.value).toBe("d1")
@@ -136,12 +135,12 @@ describe("AiJudgeWizardController runPrompt", () => {
       json: () =>
         Promise.resolve({
           rating: 3,
-          explanation: "Perfectly relevant.",
-        }),
+          explanation: "Perfectly relevant."
+        })
     })
 
     await AiJudgeWizardController.prototype.runPrompt.call(controller, {
-      preventDefault: vi.fn(),
+      preventDefault: vi.fn()
     })
 
     expect(apiFetch).toHaveBeenCalledOnce()
@@ -155,7 +154,7 @@ describe("AiJudgeWizardController runPrompt", () => {
       llm_service_url: "https://api.openai.com",
       llm_model: "gpt-4o",
       llm_timeout: "30",
-      llm_api_version: "",
+      llm_api_version: ""
     })
 
     expect(controller.ratingInfoTarget.innerHTML).toContain("Perfectly relevant.")

@@ -60,6 +60,11 @@ class AiJudge < User
 
   belongs_to :owner, class_name: 'User', optional: true
 
+  # Only AiJudge (not User generally) has an owner to scope by - keep the
+  # concern here rather than on User, where for_user(user) would build SQL
+  # against a nonexistent users.owner column.
+  include ForUserScope
+
   validates :name, presence: true
   validates :llm_key, length: { maximum: 255 }, allow_blank: true
   validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true

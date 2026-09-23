@@ -1,5 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
+import { showStatusMessage } from "utils/status_message"
+import { setButtonLoading, escapeHtml } from "utils/stimulus_ui"
 
 // Provider presets for auto-filling URL/model/API version and the help text
 // shown beside the structured fields.
@@ -262,7 +264,7 @@ export default class extends Controller {
     event.preventDefault()
 
     this.captureEditors()
-    this.setButtonLoading(this.runPromptButtonTarget, true)
+    setButtonLoading(this.runPromptButtonTarget, true)
     if (this.hasRatingInfoTarget) this.ratingInfoTarget.style.display = "none"
     if (this.hasLoadingSpinnerTarget) this.loadingSpinnerTarget.style.display = "block"
 
@@ -297,40 +299,24 @@ export default class extends Controller {
 
       if (this.hasRatingInfoTarget) {
         this.ratingInfoTarget.innerHTML =
-          `<h2>Rating Information</h2><div>LLM Response: ${this.escapeHtml(String(data.rating))}<br>${this.escapeHtml(data.explanation || "")}</div>`
+          `<h2>Rating Information</h2><div>LLM Response: ${escapeHtml(String(data.rating))}<br>${escapeHtml(data.explanation || "")}</div>`
         this.ratingInfoTarget.style.display = "block"
       }
     } catch (error) {
       this.showStatus(`Error: ${error.message}`, "danger")
     } finally {
       if (this.hasLoadingSpinnerTarget) this.loadingSpinnerTarget.style.display = "none"
-      this.setButtonLoading(this.runPromptButtonTarget, false)
+      setButtonLoading(this.runPromptButtonTarget, false)
     }
   }
 
   showStatus(message, variant) {
     if (!this.hasStatusTarget) return
-    this.statusTarget.textContent = message
-    this.statusTarget.className = `alert alert-${variant}`
+
     this.statusTarget.style.display = "block"
-  }
-
-  setButtonLoading(button, loading) {
-    if (!button) return
-
-    if (loading) {
-      button.disabled = true
-      button.dataset.originalText = button.innerHTML
-      button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
-    } else {
-      button.disabled = false
-      button.innerHTML = button.dataset.originalText || button.innerHTML
-    }
-  }
-
-  escapeHtml(text) {
-    const div = document.createElement("div")
-    div.textContent = text
-    return div.innerHTML
+    showStatusMessage(this.statusTarget, {
+      message,
+      className: `alert alert-${variant}`
+    })
   }
 }

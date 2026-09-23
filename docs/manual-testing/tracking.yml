@@ -353,10 +353,10 @@ parts:
         paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
-        last_run: 2026-09-15T16:52:00Z
-        result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840 (unshared with any team). Clicking Judgements correctly gated with 'Judgements are meant to be shared with a team, so either create a new team or share case first.' plus a 'Create a book' shortcut (pre-filled /books/new?scorer_id=1&origin_case_id=6840). Clicked it, form was pre-filled with a sensible name ('Book For Manual Test Part4 Renamed Case'); clicked Create Book — landed on the new book's Overview page (book 48) with 'Related cases:' correctly linking back to the originating case. Did not re-test the shared-case Book-picker path (existing book selection, Populate Now/Refresh Ratings sync) this pass — see prior pass's notes for that."
-        paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb"]
+        last_run: 2026-09-22
+        result: pass_with_fixes
+        notes: "Added app/assets/javascripts/components/judgements/judgements_modal_instance_controller.js and its template to paths - the actual book-picker logic lives there, not in judgements_controller.rb/judgements/show.html.erb. Code review found a real bug there: the modal only loaded books the current user owns directly when the case had ZERO teams (an if/else), even though the modal's own help text says 'Books you own are always listed below. If this case is shared with a team, Books shared with that team are listed too' - so for the common case (case shared with a team, user also owns a private book), owned books never appeared. Also fixed a related bug where addBooksToLists() replaced ctrl.share.books instead of merging, so if the fix above triggered multiple async loads (per-team + owned), the last one to resolve would silently drop the others' books. Re-verified via Playwright MCP: created a private book not shared with any team, opened the Judgements modal on case 6 (shared with the OSC team) - both 'Book of Ratings' (team-shared) and the new private book now appear together in the picker. This is exactly the shared-case Book-picker path the prior pass explicitly skipped. Separately, found and fixed a second bug in the 'Create a book' path that createNewBookLink() generates (books/new?scorer_id=X&origin_case_id=Y): BooksController#new set @book.scorer_id to the case's literal scorer_id, but scorer_options_for_select dedupes the dropdown to one representative scorer id per unique scale/labels combination - if the case's scorer_id wasn't the representative one (e.g. two communal scorers sharing the same 0,1 scale), no <option> matched and the Rating Scale dropdown silently rendered blank instead of showing the case's actual scale. Fixed by resolving through matching_scorer_id_for_book (the same helper edit already used) instead of the raw scorer id; covered by a new controller test using the p@10/quepid_default_scorer fixture collision. Re-verified via Playwright MCP on /books/new?scorer_id=5&origin_case_id=6: Rating Scale now correctly shows '0,1 (Irrelevant, Relevant)' selected and the Scoring Guidelines textarea auto-populated, instead of blank. Did not re-test the zero-teams path this pass (unaffected by the fix, covered by the prior pass's notes) or the Populate Now/Refresh Ratings sync settings."
+        paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb", "app/assets/javascripts/components/judgements/judgements_modal_instance_controller.js", "app/assets/javascripts/components/judgements/_modal.html", "app/assets/javascripts/services/bookSvc.js", "app/controllers/books_controller.rb", "app/helpers/books_helper.rb"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
         last_run: 2026-09-15T16:49:00Z
@@ -555,10 +555,10 @@ parts:
         paths: ["app/controllers/books_controller.rb", "app/models/book.rb"]
       "10.3":
         title: "Edit book settings"
-        last_run: 2026-09-15T17:04:00Z
-        result: pass
-        notes: "Re-verified via Playwright MCP: renamed the test book via its Edit form, clicked Update Book — heading and flash updated immediately to the new name."
-        paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb"]
+        last_run: 2026-09-22
+        result: pass_with_fixes
+        notes: "User reported the 'AI Judges Assigned to this Book' checkboxes were empty on Edit even though the Overview/Show page correctly listed the same judges as team-accessible. Root cause: BooksController#edit/#update scoped AI-judge visibility and assignment to @book.owner (visible_ai_judges_for(@book.owner) / assign_ai_judges(..., @book.owner)), while #new/#create already correctly used current_user - any book with no owner set (AiJudge.for_owner(nil) => AiJudge.none) silently showed zero checkboxes on Edit regardless of the editor's own team access, and any submitted ai_judge_ids would be silently rejected on Update for the same reason. 'Book of Ratings' itself had owner_id nil in the dev seed (lib/tasks/sample_data.thor never set book.owner) - fixed the seed task too. Made #edit/#update consistently use current_user, matching #new/#create; covered with new controller tests using the (deliberately ownerless) book_of_star_wars_judgements/judge_judy fixtures, confirmed to fail without the fix. Re-verified via Playwright MCP on /books/1/edit before and after backfilling its owner - all three AI judge checkboxes render checked/correct in both cases now. Did not re-test the plain rename flow this pass (unaffected, covered by the prior pass's notes)."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb", "app/views/books/_form.html.erb", "app/helpers/books_helper.rb", "lib/tasks/sample_data.thor"]
       "10.4":
         title: "Book Overview / Show page"
         last_run: 2026-09-15T17:04:00Z
@@ -655,9 +655,9 @@ parts:
         paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/"]
       "11.7":
         title: "Judgement Stats (leaderboard)"
-        last_run: 2026-09-15T17:14:00Z
-        result: pass
-        notes: "Re-verified via Playwright MCP: page rendered Leaderboard, Judgement Distribution, and Judging Stats sections correctly, with no console errors. (Also incidentally verified the dev server's known self-restart behavior: a brief connection-refused blip recovered automatically within ~10s.)"
+        last_run: 2026-09-22
+        result: pass_with_fixes
+        notes: "Code review found the 'Refine Prompt' link could point at an AI judge the viewer isn't allowed to open (edit_ai_judge_path is gated by AiJudge.for_user(current_user), but the leaderboard lists any judge that has ever judged the book, regardless of the viewer's current relationship to that specific judge) - a teammate could hit a 404. Fixed by computing @refinable_ai_judge_ids = AiJudge.for_user(current_user).pluck(:id) in BooksController#judgement_stats and only rendering the link when the row's judge id is in that set; covered with a new controller test (creates a judge owned by a different user with no shared team, asserts the link is absent). Re-verified via Playwright MCP on Book Of Ratings: all three visible judges (Azure Anthropic, Azure OpenAI, OSC AI Judge - all owned/shared via the current user's OSC team) still show 'Refine Prompt', and clicking it navigated correctly to the judge's edit page (no regression for the normal/accessible case). Did not re-test the fixed 404-avoidance case live (the automated test covers it) since it requires seeding a second team's private judge with judging history on a shared book."
         paths: ["app/controllers/books_controller.rb", "app/views/books/judgement_stats.html.erb"]
       "11.8":
         title: "Bulk Judge (grid mode)"
@@ -689,16 +689,16 @@ parts:
         paths: ["app/controllers/ai_judges_controller.rb"]
       "12.3":
         title: "Assign an AI Judge to a Book"
-        last_run: 2026-09-15T16:52:00Z
-        result: pass
-        notes: "Re-verified indirectly this pass: 'We have some AI Judges OSC AI Judge, Azure OpenAI Judge, and Azure Anthropic Judge helping us rate documents.' rendered correctly on Book Of Ratings' Overview page in several screenshots this pass (2.5, 6.6-adjacent). Did not re-drive the assignment flow itself this pass."
+        last_run: 2026-09-22
+        result: pass_with_fixes
+        notes: "Code review found BooksController#assign_ai_judges did a separate find_by query per submitted ai_judge_id (2N queries for N judges) on both create and update - a regression on create specifically, since book_params used to exclude :ai_judge_ids and let Rails' bulk ai_judge_ids= setter handle the whole set in ~1-2 queries. Fixed to a single scoped where(id: ids) query plus one bulk book.ai_judges << relation. Re-verified the create path via Playwright MCP: created a new book, checked the 'OSC AI Judge' checkbox, submitted - the book's Overview page correctly showed 'We have an AI Judge OSC AI Judge helping us rate documents.', confirming the assignment persisted correctly after the query-count fix. Separately, user-reported bug: the assigned-judges checkboxes on Edit were empty for a book with no owner (see 10.3 for the full root cause/fix - #edit/#update now scope to current_user instead of @book.owner). Did not re-test the update path live this pass beyond the 10.3 verification (unchanged code path otherwise, covered by test/controllers/books_controller_test.rb's existing assignment assertions)."
         paths: ["app/controllers/books_controller.rb"]
       "12.4":
         title: "Refine an AI Judge's prompt"
-        last_run: 2026-09-08
-        result: pass
-        notes: "No functional changes to app/controllers/ai_judges/prompts_controller.rb since the prior thorough pass; not re-driven this pass given the cost of a live local-LLM call. Prior pass: re-verified specifically because prompts_controller.rb#update changed real behavior: llm_service.perform_safe_judgement now receives book: @book (was called with no book context before), tying into the 'harden LLM judgement scoring against out-of-scale/non-numeric ratings' work in llm_service.rb. Navigated with ?book_id=1 in the URL (so @book is actually populated — the route takes book_id as a query param, not a nested path segment) and ran a real prompt against local Ollama (qwen3:0.6b) for OSC AI Judge against Book of Ratings' 0-3 scale: got back 'LLM Response: 3.0' with a real explanation, confirming the book-scoped scale validation path works end-to-end. Malformed-JSON and zero-pairs edge cases not tested."
-        paths: ["app/controllers/ai_judges/prompts_controller.rb"]
+        last_run: 2026-09-22
+        result: pass_with_fixes
+        notes: "This flow moved from ai_judges/prompts_controller.rb (deleted) to ai_judges/wizard_controller.rb#test_prompt as part of combining AI judge creation with prompt testing into one wizard. Code review caught a regression in that migration: test_prompt had dropped the book: @book kwarg to llm_service.perform_safe_judgement, silently losing the book-scoped rating-scale prompt augmentation that prompts_controller.rb#update used to apply. Fixed (restored before_action :set_book for both wizard actions and passed book: @book) and covered with a new automated request spec asserting the outgoing LLM request body contains the scale text. Manually re-verified end-to-end via Playwright MCP: navigated to /ai_judges/6/edit?book_id=1 (OSC AI Judge, provider Ollama/qwen3:0.6b) and ran a real prompt against local Ollama - got back 'LLM Response: 0' with a real explanation, confirming the wizard's Test & Refine step still works against a real LLM after the fix. Did not re-verify the scale text is actually in the *outgoing* prompt visually (covered by the automated spec instead, since Ollama's response doesn't echo the system prompt back). Malformed-JSON and zero-pairs edge cases not tested."
+        paths: ["app/controllers/ai_judges/wizard_controller.rb", "app/javascript/controllers/ai_judge_wizard_controller.js"]
       "12.5":
         title: "Trigger a judging run (Judge Judy)"
         last_run: 2026-09-15T19:24:00Z

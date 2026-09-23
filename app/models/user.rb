@@ -212,20 +212,17 @@ class User < ApplicationRecord
 
   # Concerns
   include Profile
-  include ForUserScope
 
   # Scopes
+
+  scope :real_users, -> { where(type: 'User') }
 
   # A fresh install (e.g. SQLite with no seed data) has no real users - and so no
   # administrator to grant one via the admin UI or `thor user:grant_administrator`.
   # Used by promote_to_first_administrator? below to make the first real signup an
   # administrator automatically, so there's always a way in.
   def self.no_real_users_yet?
-    # Match NULL type too (the STI base-class default, e.g. a test fixture
-    # that never sets `type:`) - `where.not(type: 'AiJudge')` would silently
-    # exclude those rows, since SQL's three-valued logic means `!=` never
-    # matches NULL.
-    where(type: [ nil, 'User' ]).none?
+    real_users.none?
   end
 
   # Email matching is case insensitive on MySQL only because the users table
@@ -304,6 +301,11 @@ class User < ApplicationRecord
 
   def set_defaults
     # rubocop:disable Style/RedundantSelf
+    # Rails' STI machinery stamps `type` for subclasses (e.g. AiJudge) at
+    # initialization, but leaves the base class NULL unless told otherwise -
+    # stamp it explicitly so every scope/query on `type` (real_users, admin
+    # filters, etc.) never has to special-case NULL.
+    self.type ||= 'User'
     self.completed_case_wizard = false if completed_case_wizard.nil?
     self.num_logins       = 0 if num_logins.nil?
     self.default_scorer   = Scorer.system_default_scorer if self.default_scorer.nil?
