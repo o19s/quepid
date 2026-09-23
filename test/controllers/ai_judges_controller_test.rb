@@ -47,6 +47,15 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Renamed Judge', ai_judge.reload.name
   end
 
+  test 'a validation failure on update keeps the book context the request arrived with' do
+    book = books(:james_bond_movies)
+
+    patch ai_judge_url(ai_judge), params: { book_id: book.id, user: { name: '' } }
+
+    assert_response :success
+    assert_select '[data-ai-judge-wizard-has-book-value=true]'
+  end
+
   test 'should create ai_judge with no team (owner-only)' do
     assert_difference('User.count') do
       post ai_judges_url,
@@ -105,6 +114,15 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal '0.4', judge.judge_options[:jev_min_confidence]
     assert_equal '0.4', judge.options.dig('judge_options', 'jev_min_confidence')
+  end
+
+  test 'edit renders the provider dropdown for judge_options saved before llm_provider existed' do
+    assert_nil ai_judge.judge_options[:llm_provider], "fixture shouldn't carry llm_provider, to match a pre-existing judge"
+
+    get edit_ai_judge_url(ai_judge)
+
+    assert_response :success
+    assert_select 'select#judge_options_llm_provider'
   end
 
   test 'new renders the banner element placeholder providers would use' do
