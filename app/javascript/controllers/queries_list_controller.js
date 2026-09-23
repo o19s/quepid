@@ -36,6 +36,10 @@ export default class extends Controller {
     this.storeChange = () => this.scheduleRender()
     this.store.addEventListener("change", this.storeChange)
     this.store.addEventListener("reset", this.storeChange)
+    this.documentStore = window.quepidStore?.documents
+    this.documentStoreChange = () => this.scheduleRender()
+    this.documentStore?.addEventListener("change", this.documentStoreChange)
+    this.documentStore?.addEventListener("reset", this.documentStoreChange)
     this.queryToggle = event => {
       this.forwardQueryToggle(event)
       this.scheduleRender()
@@ -51,6 +55,8 @@ export default class extends Controller {
   disconnect() {
     this.store?.removeEventListener("change", this.storeChange)
     this.store?.removeEventListener("reset", this.storeChange)
+    this.documentStore?.removeEventListener("change", this.documentStoreChange)
+    this.documentStore?.removeEventListener("reset", this.documentStoreChange)
     this.element.removeEventListener("query-row:toggle", this.queryToggle)
     this.element.removeEventListener("query-delete:completed", this.queryDeleteCompleted)
     if (this.angularRetryHandle) cancelAnimationFrame(this.angularRetryHandle)
@@ -412,18 +418,16 @@ export default class extends Controller {
     searchResultsRoot.querySelectorAll("[data-angular-deferred]").forEach(deferred => compile(deferred)(childScope))
 
     const diffScores = rowController.querySelector('[data-query-row-target="diffScores"]')
-    const diffTemplate = document.createElement("div")
-    diffTemplate.innerHTML = `
-      <qscore-query
-        ng-if="query.diffs"
-        ng-repeat="searcher in query.diffs.getSearchers() track by $index"
-        class="results-score diff-score"
-        max-score="maxScore || 100"
-        scorable="searcher">
-      </qscore-query>
-    `
-    const linkedDiffs = compile(diffTemplate)(childScope)
-    Array.from(linkedDiffs).forEach(element => diffScores.appendChild(element))
+    const diffSnapshot = window.quepidStore?.documents?.query(query.queryId)?.diffs
+    diffSnapshot?.searchers?.forEach((searcher, index) => {
+      const badge = document.createElement("div")
+      badge.className = "results-score diff-score"
+      badge.dataset.controller = "diff-score"
+      badge.dataset.diffScoreQueryIdValue = String(query.queryId)
+      badge.dataset.diffScoreIndexValue = String(index)
+      badge.innerHTML = '<span class="overall-rating"><span class="scorable-score" data-diff-score-target="value"></span></span>'
+      diffScores.appendChild(badge)
+    })
     this.angularRows.push({ scope: childScope })
   }
 

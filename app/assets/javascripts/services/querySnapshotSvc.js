@@ -77,11 +77,15 @@ angular.module('QuepidApp')
           // and scores render immediately after the picker closes.
           $rootScope.$evalAsync(function() {
             queryViewSvc.enableDiffs(selections);
-            $q.when(queriesSvc.refreshAllDiffs()).then(function() {
-              if (detail.done) { detail.done(null); }
-            }).catch(function(error) {
+            try {
+              $q.when(queriesSvc.refreshAllDiffs()).then(function() {
+                if (detail.done) { detail.done(null); }
+              }, function(error) {
+                if (detail.done) { detail.done(error); }
+              });
+            } catch (error) {
               if (detail.done) { detail.done(error); }
-            });
+            }
           });
         }).catch(function(error) {
           if (detail.done) { detail.done(error); }
@@ -97,11 +101,15 @@ angular.module('QuepidApp')
         // digest, so schedule both the state mutation and refresh in Angular.
         $rootScope.$evalAsync(function() {
           queryViewSvc.disableComparisons();
-          $q.when(queriesSvc.refreshAllDiffs()).then(function() {
-            if (detail.done) { detail.done(null); }
-          }).catch(function(error) {
+          try {
+            $q.when(queriesSvc.refreshAllDiffs()).then(function() {
+              if (detail.done) { detail.done(null); }
+            }, function(error) {
+              if (detail.done) { detail.done(error); }
+            });
+          } catch (error) {
             if (detail.done) { detail.done(error); }
-          });
+          }
         });
       });
 

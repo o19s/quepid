@@ -184,6 +184,9 @@ angular.module('QuepidApp')
           ratingScale: ratingScale || {},
           queryRating: query.rating,
           maxDocScore: angular.isFunction(query.maxDocScore) ? query.maxDocScore() : null,
+          browseUrl: angular.isFunction(query.browseUrl) ? query.browseUrl() : null,
+          searchEngine: (settingsSvc.applicableSettings() || {}).searchEngine,
+          queryState: angular.isFunction(query.state) ? query.state() : null,
           documentUrlFor: function(doc) {
             if (!doc || !angular.isFunction(doc._url)) return null;
 
@@ -203,7 +206,37 @@ angular.module('QuepidApp')
             return linkUrl;
           },
           version: angular.isFunction(query.version) ? query.version() : null
+          ,diffs: buildDiffReadModel(query)
         });
+      }
+
+      function buildDiffReadModel(query) {
+        if (!query || !query.diffs || !angular.isFunction(query.diffs.getSearchers)) {
+          return null;
+        }
+
+        var showOnlyRated = svc.showOnlyRated === true;
+        return {
+          searchers: query.diffs.getSearchers().map(function(searcher, index) {
+            var score = searcher.diffScore || { score: '?', allRated: false };
+            var docs = query.diffs.docs(index, false) || [];
+            var ratedDocs = query.diffs.docs(index, true) || [];
+            var maxDocScore = docs.reduce(function(max, doc) {
+              return Math.max(max, angular.isFunction(doc.score) ? doc.score() : 0);
+            }, 0);
+
+            return {
+              name: angular.isFunction(searcher.name) ? searcher.name() : 'Snapshot',
+              version: angular.isFunction(searcher.version) ? searcher.version() : null,
+              inError: searcher.inError,
+              searchError: searcher.searchError,
+              score: score,
+              maxDocScore: maxDocScore,
+              docs: showOnlyRated ? [] : docs,
+              ratedDocs: ratedDocs
+            };
+          })
+        };
       }
 
       // Explicit command adapter for the Stimulus results renderer. The live
@@ -1834,8 +1867,17 @@ angular.module('QuepidApp')
 
       // Refresh diff objects for all queries after state changes
       this.refreshAllDiffs = function() {
+        var refreshes = [];
         angular.forEach(this.queries, function(query) {
-          diffResultsSvc.createQueryDiff(query);
+          refreshes.push(diffResultsSvc.createQueryDiff(query));
+          // Publish the initialized snapshot documents immediately. Score
+          // values are refreshed asynchronously below, but the Stimulus
+          // renderer should not wait for every query's scoring promise before
+          // it can show the comparison columns.
+          publishQueryDocuments(query);
+        });
+        return $q.all(refreshes).then(function() {
+          angular.forEach(svc.queries, publishQueryDocuments);
         });
       };
 

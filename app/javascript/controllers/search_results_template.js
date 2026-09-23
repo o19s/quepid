@@ -47,11 +47,7 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData }) {
           </div>
         </div>
 
-        <div data-angular-deferred>
-          <div ng-controller="QueryDiffResultsCtrl" ng-if="displayed.results == displayed.resultsView.diffs">
-            <query-diff-results query="query" repeatlength="10" max-score="maxScore">Diff Results</query-diff-results>
-          </div>
-        </div>
+        <div data-search-results-target="diffResults"></div>
         <div data-search-results-target="error" class="alert alert-danger d-none" role="alert"></div>
         <div data-search-results-target="footer" class="row results-pane-footer d-none">
           <i class="bi bi-caret-up-fill results-pane-toggle" data-action="click->search-results#collapse" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane"></i>

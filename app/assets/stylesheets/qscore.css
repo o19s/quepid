@@ -18,8 +18,8 @@ qscore-case, qscore-query, .case-score {
 /*
   Case score badge spacing (docs/todo/angularjs_removal_inventory.md § Re-render
   mechanism, step 4). The primary case score is a plain `.case-score` div now
-  (Stimulus-driven); the snapshot/diff scores remain `<qscore-case class="case-score
-  diff-score">` (Angular). Both share the `.case-score` class, so these rules key off
+  (Stimulus-driven); the snapshot/diff scores use the same `.case-score` / `.diff-score`
+  classes while their state is being migrated. Both share the `.case-score` class, so these rules key off
   DOM position (`:last-child`), not tag name, and apply the same regardless of which
   is which: only the rightmost badge keeps the outer margin - every other one sits
   flush against the next.
@@ -76,11 +76,13 @@ qscore-query.results-score .overall-rating,
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
 }
 
+.diff-score .overall-rating,
 qscore-query.diff-score .overall-rating {
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
 /* Diff score styling */
+.diff-score .overall-rating,
 qscore-case .overall-rating.diff-score,
 qscore-query.diff-score .overall-rating {
   border-radius: 0;

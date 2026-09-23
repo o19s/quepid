@@ -28,7 +28,8 @@ export class QueryDocumentsStore extends EventTarget {
       showOnlyRated: this._showOnlyRated,
       ...state,
       docs: docs.map(doc => snapshotDocument(doc, state)),
-      ratedDocs: ratedDocs.map(doc => snapshotDocument(doc, state))
+      ratedDocs: ratedDocs.map(doc => snapshotDocument(doc, state)),
+      diffs: snapshotDiffs(state.diffs, state)
     })
     this._pendingQueryState.delete(String(queryId))
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(queryId) }))
@@ -150,6 +151,28 @@ function snapshotDocument(doc, state = {}) {
     error: doc.error,
     rating: doc.hasRating?.() ? doc.getRating?.() : null,
     score: doc.score?.() ?? null
+  }
+}
+
+function snapshotDiffs(diffs, state = {}) {
+  if (!diffs) return null
+
+  return {
+    searchers: (diffs.searchers || []).map((searcher) => ({
+      name: searcher.name || "Snapshot",
+      version: searcher.version ?? null,
+      inError: Boolean(searcher.inError),
+      searchError: searcher.searchError || "",
+      score: searcher.score || { score: "?", allRated: false },
+      docs: (searcher.docs || []).map(doc => snapshotDocument(doc, {
+        ...state,
+        maxDocScore: searcher.maxDocScore
+      })),
+      ratedDocs: (searcher.ratedDocs || []).map(doc => snapshotDocument(doc, {
+        ...state,
+        maxDocScore: searcher.maxDocScore
+      }))
+    }))
   }
 }
 

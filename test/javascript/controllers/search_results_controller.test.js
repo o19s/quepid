@@ -1,12 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { copyText } from "utils/clipboard"
+import { openDetailedDocumentModal } from "utils/detailed_document_modal"
 import SearchResultsController from "controllers/search_results_controller"
+
+vi.mock("utils/detailed_document_modal", () => ({
+  openDetailedDocumentModal: vi.fn()
+}))
 
 vi.mock("utils/clipboard", () => ({
   copyText: vi.fn(() => Promise.resolve())
 }))
 
-function controllerFor({ showOnlyRated = false, results = true, expanded = true, errorText = "", numFound = 1, ratedDocsFound = 1, depthOfRating = null } = {}) {
+function controllerFor({ showOnlyRated = false, results = true, expanded = true, errorText = "", queryState = "loaded", numFound = 1, ratedDocsFound = 1, depthOfRating = null, diffError = false } = {}) {
   const element = document.createElement("div")
   element.innerHTML = `
     <div data-search-results-target="content">
@@ -18,12 +23,14 @@ function controllerFor({ showOnlyRated = false, results = true, expanded = true,
         <div data-search-results-target="ratedNote"></div>
       </div>
       <div data-search-results-target="results"></div>
+      <div data-search-results-target="diffResults"></div>
     </div>
   `
   const controller = Object.create(SearchResultsController.prototype)
   controller.element = element
   controller.contentTarget = element.querySelector('[data-search-results-target="content"]')
   controller.resultsTarget = element.querySelector('[data-search-results-target="results"]')
+  controller.diffResultsTarget = element.querySelector('[data-search-results-target="diffResults"]')
   controller.scoreAllTarget = element.querySelector('[data-search-results-target="scoreAll"]')
   controller.errorTarget = element.querySelector('[data-search-results-target="error"]')
   controller.footerTarget = element.querySelector('[data-search-results-target="footer"]')
@@ -33,6 +40,7 @@ function controllerFor({ showOnlyRated = false, results = true, expanded = true,
   controller.ratedNoteTarget = element.querySelector('[data-search-results-target="ratedNote"]')
   controller.hasContentTarget = true
   controller.hasResultsTarget = true
+  controller.hasDiffResultsTarget = true
   controller.hasScoreAllTarget = true
   controller.hasErrorTarget = true
   controller.hasFooterTarget = true
@@ -43,6 +51,9 @@ function controllerFor({ showOnlyRated = false, results = true, expanded = true,
   const snapshot = {
     queryId: 1,
     queryText: "meetings",
+    browseUrl: "https://solr.example.test/select?q=meetings",
+    searchEngine: "solr",
+    queryState,
     docs: [{ id: "all" }],
     ratedDocs: [{ id: "rated" }],
     numFound,
@@ -54,7 +65,17 @@ function controllerFor({ showOnlyRated = false, results = true, expanded = true,
     resultsView: results ? 2 : 3,
     showOnlyRated,
     ratingScale: { 2: { color: "rgb(1, 2, 3)" } },
-    queryRating: 2
+    queryRating: 2,
+    diffs: results ? null : {
+      searchers: [{
+        name: "Snapshot A",
+        docs: [{ id: "snapshot", title: "Snapshot doc" }],
+        ratedDocs: [{ id: "snapshot", title: "Snapshot doc" }],
+        inError: diffError,
+        searchError: diffError ? "Snapshot search failed" : "",
+        score: { score: 0.5, allRated: true }
+      }]
+    }
   }
   controller.store = {
     query: () => snapshot,
@@ -77,12 +98,53 @@ describe("SearchResultsController", () => {
     expect(rated.controller.visibleDocuments(rated.controller.store.query())).toEqual([{ id: "rated" }])
   })
 
-  it("does not render documents while the diff view is selected", () => {
+  it("renders diff columns from the document store", () => {
     const { controller } = controllerFor({ results: false })
     controller.render()
 
     expect(controller.contentTarget.classList.contains("d-none")).toBe(false)
     expect(controller.resultsTarget.childElementCount).toBe(0)
+    expect(controller.diffResultsTarget.querySelector(".diff-header").querySelectorAll(".diff-column")).toHaveLength(2)
+    expect(controller.diffResultsTarget.textContent).toContain("Snapshot A")
+    expect(controller.diffResultsTarget.querySelector('[data-doc-id="snapshot"]')).not.toBeNull()
+    expect(controller.diffResultsTarget.querySelector(".diff-actions a").textContent)
+      .toBe("Browse 1 Current Results on Solr")
+  })
+
+  it("does not show a no-result message beneath a snapshot error", () => {
+    const { controller } = controllerFor({ results: false, diffError: true })
+    controller.render()
+
+    const errorColumn = controller.diffResultsTarget.querySelector(".alert-danger")?.parentElement
+    expect(errorColumn?.textContent).toContain("Snapshot search failed")
+    expect(errorColumn?.textContent).not.toContain("No result")
+  })
+
+  it("hides the Solr browse action when the query is in error", () => {
+    const { controller } = controllerFor({ results: false, queryState: "error" })
+    controller.render()
+
+    expect(controller.diffResultsTarget.querySelector(".diff-actions")).toBeNull()
+  })
+
+  it("opens details for a snapshot-only diff document", () => {
+    const { controller, snapshot } = controllerFor({ results: false })
+    const snapshotDocument = snapshot.diffs.searchers[0].docs[0]
+    snapshotDocument.id = "snapshot-only"
+    const result = document.createElement("search-result")
+    controller.resultsTarget.appendChild(result)
+
+    controller.handleShowDocument({
+      detail: { docId: "snapshot-only" },
+      target: result,
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn()
+    })
+
+    expect(openDetailedDocumentModal).toHaveBeenCalledWith({
+      doc: snapshotDocument,
+      linkUrl: snapshotDocument.linkUrl
+    })
   })
 
   it("hides the expanded read path when the query is collapsed", () => {

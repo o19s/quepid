@@ -11,7 +11,7 @@ import { sanitizeHtml } from "controllers/search_result_controller"
  */
 export default class extends Controller {
   static targets = [
-    "content", "results", "notesBox", "scoreAll", "error", "footer", "nextPage",
+    "content", "results", "diffResults", "notesBox", "scoreAll", "error", "footer", "nextPage",
     "deferredTools", "depthNote", "depthValue", "ratedNote"
   ]
 
@@ -64,9 +64,12 @@ export default class extends Controller {
 
     if (!expanded || !this.isResultsView()) {
       this.resultsTarget.replaceChildren()
+      if (expanded && this.hasDiffResultsTarget) this.renderDiffResults(snapshot)
+      else if (this.hasDiffResultsTarget) this.diffResultsTarget.replaceChildren()
       return
     }
 
+    if (this.hasDiffResultsTarget) this.diffResultsTarget.replaceChildren()
     this.renderDocuments(this.visibleDocuments(snapshot), snapshot)
   }
 
@@ -175,6 +178,109 @@ export default class extends Controller {
     this.resultsTarget.replaceChildren(fragment)
   }
 
+  renderDiffResults(snapshot) {
+    const diffs = snapshot.diffs
+    if (!diffs || !diffs.searchers?.length) {
+      this.diffResultsTarget.replaceChildren()
+      return
+    }
+
+    const columns = [
+      { name: "Current Results", docs: this.visibleDocuments(snapshot), maxDocScore: snapshot.maxDocScore }
+    ].concat(diffs.searchers.map(searcher => ({
+      ...searcher,
+      docs: snapshot.showOnlyRated ? searcher.ratedDocs : searcher.docs
+    })))
+
+    const container = document.createElement("div")
+    container.className = "diff-container"
+    const header = document.createElement("div")
+    header.className = "diff-header"
+    columns.forEach(column => {
+      const cell = document.createElement("div")
+      cell.className = "diff-column"
+      const title = document.createElement("h2")
+      title.textContent = column.name
+      cell.appendChild(title)
+      header.appendChild(cell)
+    })
+    container.appendChild(header)
+
+    const rowCount = Math.max(10, ...columns.map(column => column.docs.length))
+    for (let index = 0; index < rowCount; index += 1) {
+      const row = document.createElement("div")
+      row.className = "diff-row"
+      const currentDoc = columns[0].docs[index]
+      columns.forEach((column, columnIndex) => {
+        const cell = document.createElement("div")
+        cell.className = "diff-column"
+        const doc = column.docs[index]
+        if (columnIndex > 0 && index === 0 && column.inError) {
+          const error = document.createElement("div")
+          error.className = "alert alert-danger"
+          error.setAttribute("role", "alert")
+          error.textContent = column.searchError
+          cell.appendChild(error)
+        } else if (columnIndex > 0 && index === 0 && !doc) {
+          const warning = document.createElement("div")
+          warning.className = "alert alert-warning"
+          warning.setAttribute("role", "alert")
+          warning.textContent = "This query is not present in the snapshot so it is treated as ZSR."
+          cell.appendChild(warning)
+        }
+
+        if (doc) {
+          const result = this.buildSearchResult(doc, snapshot, index + 1, column.maxDocScore)
+          if (columnIndex > 0) result.classList.add(this.resultDifferenceClass(currentDoc, doc))
+          cell.appendChild(result)
+        } else if (!(columnIndex > 0 && index === 0 && column.inError)) {
+          const empty = document.createElement("div")
+          empty.className = "alert alert-info"
+          empty.innerHTML = `<small>No result at position ${index + 1}</small>`
+          cell.appendChild(empty)
+        }
+        row.appendChild(cell)
+      })
+      container.appendChild(row)
+    }
+
+    if (snapshot.queryState !== "error" && snapshot.searchEngine === "solr" && snapshot.browseUrl) {
+      const actions = document.createElement("div")
+      actions.className = "diff-actions"
+      const link = document.createElement("a")
+      link.className = "btn btn-primary"
+      link.href = snapshot.browseUrl
+      link.target = "_blank"
+      link.rel = "noopener noreferrer"
+      link.textContent = `Browse ${snapshot.numFound || 0} Current Results on Solr`
+      actions.appendChild(link)
+      container.appendChild(actions)
+    }
+
+    this.diffResultsTarget.replaceChildren(container)
+  }
+
+  buildSearchResult(doc, snapshot, rank, maxDocScore) {
+    const result = document.createElement("search-result")
+    result.className = "search-result"
+    result.setAttribute("data-controller", "search-result")
+    result.setAttribute("data-search-result-explain-view-value", "full")
+    result.setAttribute("rank", String(rank))
+    result.dataset.queryId = String(snapshot.queryId)
+    result.dataset.docId = String(doc.id)
+    result.__searchResultDocument = doc
+    result.__searchResultQuery = { ...snapshot, maxDocScore }
+    result.innerHTML = '<div data-search-result-target="content"></div>'
+    return result
+  }
+
+  resultDifferenceClass(currentDoc, diffDoc) {
+    if (!currentDoc && !diffDoc) return ""
+    if (!currentDoc) return "missing"
+    if (!diffDoc) return "new"
+    return currentDoc.id === diffDoc.id ? "" : "different"
+  }
+
   handleRating(event) {
     event.stopPropagation()
     const snapshot = this.store.query(this.queryId)
@@ -244,9 +350,15 @@ export default class extends Controller {
     event.stopPropagation()
     const docId = event.detail?.docId
     const snapshot = this.store.query(this.queryId)
-    const snapshotDoc = [...(snapshot?.docs || []), ...(snapshot?.ratedDocs || [])].find(
-      item => String(item.id) === String(docId)
-    )
+    const diffDocuments = (snapshot?.diffs?.searchers || []).flatMap(searcher => [
+      ...(searcher.docs || []),
+      ...(searcher.ratedDocs || [])
+    ])
+    const snapshotDoc = [
+      ...(snapshot?.docs || []),
+      ...(snapshot?.ratedDocs || []),
+      ...diffDocuments
+    ].find(item => String(item.id) === String(docId))
     if (!snapshotDoc) return
     openDetailedDocumentModal({ doc: snapshotDoc, linkUrl: snapshotDoc.linkUrl })
   }

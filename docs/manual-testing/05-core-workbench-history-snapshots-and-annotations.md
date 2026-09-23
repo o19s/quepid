@@ -36,6 +36,8 @@ Core toolbar opens the Stimulus **take-snapshot-core** modal (`#takeSnapshotModa
 
 ### 5.3 Compare snapshots (diff)
 
+The picker, diff read renderer, and per-query diff score badges are Stimulus-owned. Snapshot hydration and diff scoring still bridge through Angular until the remaining diff state migration is complete.
+
 - [ ] **Steps:**
   1. Click "Compare snapshots" (bar-chart icon) in the case toolbar.
   2. For "Snapshot 1", pick a snapshot from the dropdown.

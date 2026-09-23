@@ -26,7 +26,7 @@ angular.module('QuepidApp')
         if (diffSettings.length === 0) {
           query.diffs = null;
           query.diffSearchers = [];
-          return;
+          return $q.resolve();
         }
 
         var settings = settingsSvc.editableSettings();
@@ -162,11 +162,12 @@ angular.module('QuepidApp')
           };
           
           // Initialize all diffs
-          query.diffs.fetch();
+          return query.diffs.fetch();
         } else {
           console.debug('no valid snapshots found for diff!');
           query.diffs = null;
           query.diffSearchers = [];
+          return $q.resolve();
         }
       }
 
@@ -179,9 +180,10 @@ angular.module('QuepidApp')
           query.diffSearcher = null;
           query.diffs = null;
           query.diffSearchers = [];
+          return $q.resolve();
         } else {
           // Create diffs using internal method
-          createQueryDiffs(query, allDiffSettings);
+          var refresh = createQueryDiffs(query, allDiffSettings);
           
           // For single diff, create compatibility wrapper to maintain old diff interface
           if (allDiffSettings.length === 1 && query.diffs) {
@@ -219,6 +221,7 @@ angular.module('QuepidApp')
             // Multi-diff mode - no need for compatibility wrapper
             query.diff = null;
           }
+          return refresh;
         }
       };
     }
