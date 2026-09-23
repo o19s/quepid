@@ -25,6 +25,7 @@ export default class extends Controller {
     this.filterValue = ""
     this.clientSortName = this.sortNameValue
     this.clientReverse = this.reverseValue
+    this.angularRows = []
     // The Angular and core Stimulus bundles currently compile separately, so
     // their module singletons are not shared. Use the temporary bridge while
     // Angular still owns the live query objects; the imported store remains a
@@ -33,7 +34,10 @@ export default class extends Controller {
     this.storeChange = () => this.scheduleRender()
     this.store.addEventListener("change", this.storeChange)
     this.store.addEventListener("reset", this.storeChange)
-    this.queryToggle = () => this.scheduleRender()
+    this.queryToggle = event => {
+      this.forwardQueryToggle(event)
+      this.scheduleRender()
+    }
     this.element.addEventListener("query-row:toggle", this.queryToggle)
     this.setupSortable()
     this.render()
@@ -254,7 +258,8 @@ export default class extends Controller {
       const row = document.createElement("li")
       row.className = query.isToggled?.() ? "unsortable" : ""
       row.dataset.queryId = String(query.queryId)
-      this.renderAngularQuery(row, query)
+      this.renderQueryShell(row, query, start + visibleQueries.indexOf(query) + 1)
+      this.renderAngularIslands(row, query)
       this.listTarget.appendChild(row)
     })
 
@@ -310,7 +315,60 @@ export default class extends Controller {
     return ""
   }
 
-  renderAngularQuery(row, query) {
+  renderQueryShell(row, query, rank) {
+    const queryId = String(query.queryId)
+    const queryText = escapeAttribute(query.queryText || "")
+    const informationNeed = escapeAttribute(query.informationNeed || "")
+    const state = escapeAttribute(query.state?.() || "")
+    const numFound = Number(window.quepidSearch?.queryState?.queryResultCount?.(query, this.showOnlyRatedValue) || 0)
+    const querqyTriggered = Boolean(window.quepidSearch?.queryState?.querqyRuleTriggered?.(
+      query.searcher?.parsedQueryDetails
+    ))
+    const hasDiffs = Boolean(query.diffs)
+    const toggled = Boolean(query.isToggled?.())
+    const sorting = Boolean(this.angularScope?.queries?.isSortingEnabled?.())
+
+    row.innerHTML = `
+      <div
+        data-controller="query-row"
+        data-query-row-query-id-value="${queryId}"
+        data-query-row-rank-value="${rank}"
+        data-query-row-query-text-value="${queryText}"
+        data-query-row-information-need-value="${informationNeed}"
+        data-query-row-num-found-value="${numFound}"
+        data-query-row-querqy-triggered-value="${querqyTriggered}"
+        data-query-row-state-value="${state}"
+        data-query-row-diff-value="${hasDiffs}"
+        data-query-row-toggled-value="${toggled}"
+        data-query-row-sorting-value="${sorting}">
+        <div class="result-header" data-query-row-target="header">
+          <div class="results-score qscore-query-badge" data-controller="qscore-query" data-qscore-query-query-id-value="${queryId}">
+            <span class="scorable-score" data-qscore-query-target="value"></span>
+          </div>
+          <div data-query-row-target="diffScores"></div>
+          <h2 class="results-title" data-action="click->query-row#toggle">
+            <span class="query" data-controller="bs-tooltip" data-query-row-target="query" data-bs-tooltip-title-value="Info Need: ${informationNeed}" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
+              <img class="img-thumbnail query-thumbnail d-none" data-query-row-target="image" alt="">
+              <span data-query-row-target="text">&nbsp;</span>
+            </span>
+          </h2>
+          <span class="float-end total-results">
+            <span data-query-row-target="resultCount" data-controller="count-up" data-count-up-number-value="${numFound}"></span>
+            <small class="text-muted" data-query-row-target="resultLabel"></small>
+          </span>
+          <i class="error-warning bi bi-exclamation-triangle-fill ms-2" role="img" aria-label="Query failed" title="Query failed"></i>
+          <span class="float-end d-none" style="margin-right: 20px;" title="Hop to it!  There are unrated results!" data-controller="query-unrated-badge" data-query-unrated-badge-query-id-value="${queryId}">
+            <div class="icon-container"><i class="frog-icon">🐸</i><div class="notification-bubble" data-query-unrated-badge-target="count"></div></div>
+          </span>
+          <span class="float-end d-none" style="margin-right: 20px;" title="Querqy Strikes Again!" data-query-row-target="querqy"><i class="querqy-icon"></i></span>
+          <i class="toggleSign bi" data-query-row-target="toggle" data-action="click->query-row#toggle"></i>
+        </div>
+        <div data-query-row-target="expanded"></div>
+      </div>
+    `
+  }
+
+  renderAngularIslands(row, query) {
     const injector = window.angular?.element(document.body).injector?.()
     const compile = injector?.get?.("$compile")
     if (!compile || !this.angularScope) return
@@ -318,12 +376,40 @@ export default class extends Controller {
     const childScope = this.angularScope.$new()
     childScope.query = query
     childScope.queries = this.angularScope.queries
+
+    const rowController = row.querySelector('[data-controller="query-row"]')
+    const expanded = rowController.querySelector('[data-query-row-target="expanded"]')
     const searchResults = document.createElement("search-results")
     searchResults.setAttribute("query", "query")
     searchResults.setAttribute("issortingenabled", "queries.isSortingEnabled")
-    const linked = compile(searchResults)(childScope)
-    Array.from(linked).forEach(element => row.appendChild(element))
+    const linkedResults = compile(searchResults)(childScope)
+    Array.from(linkedResults).forEach(element => expanded.appendChild(element))
+
+    const diffScores = rowController.querySelector('[data-query-row-target="diffScores"]')
+    const diffTemplate = document.createElement("div")
+    diffTemplate.innerHTML = `
+      <qscore-query
+        ng-if="query.diffs"
+        ng-repeat="searcher in query.diffs.getSearchers() track by $index"
+        class="results-score diff-score"
+        max-score="maxScore || 100"
+        scorable="searcher">
+      </qscore-query>
+    `
+    const linkedDiffs = compile(diffTemplate)(childScope)
+    Array.from(linkedDiffs).forEach(element => diffScores.appendChild(element))
     this.angularRows.push({ scope: childScope })
+  }
+
+  forwardQueryToggle(event) {
+    const row = event.target.closest("[data-query-row-query-id-value]")
+    const expanded = row?.querySelector('[data-query-row-target="expanded"]')
+    const searchResults = expanded?.firstElementChild
+    if (!searchResults) return
+
+    searchResults.dispatchEvent(new CustomEvent("query-row:toggle", {
+      detail: event.detail
+    }))
   }
 
   renderPagination(pageCount, totalCount) {
@@ -355,4 +441,12 @@ export default class extends Controller {
     this.angularRows?.forEach(({ scope }) => scope.$destroy())
     this.angularRows = []
   }
+}
+
+function escapeAttribute(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
 }

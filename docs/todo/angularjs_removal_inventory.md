@@ -289,7 +289,7 @@ The first two substeps are now in place: `query_documents_store.js` is a dual-ru
 
 The detailed-document adapter is now narrowed: `detailed_document_modal.js` owns the modal markup, escaping, JSON explorer wiring, and field-toggle behavior for both the Stimulus results renderer and Angular Document Finder. The Stimulus path no longer instantiates a temporary `SearchResultCtrl` scope; for this modal command, Angular remains only for resolving the live document and its URL/auth/proxy settings. The separate Document Finder surface remains Angular-owned.
 
-The expanded-results adapter is now scope-free: `search_results_controller.js` reads expansion, view selection, and rated-only state from `query_documents_store.js`, while `queriesSvc` exposes explicit query/document commands for rating and document URLs. Angular still owns the live Query objects and the legacy query-row `$compile` host; removing that host is the next separate substep and must preserve the existing query controls (explain, finder, options, notes, diff, and pagination).
+The expanded-results adapter is now scope-free: `search_results_controller.js` reads expansion, view selection, and rated-only state from `query_documents_store.js`, while `queriesSvc` exposes explicit query/document commands for rating and document URLs. The query-row shell is now Stimulus-rendered; Angular compiles only the expanded `search-results` island and the deferred diff/snapshot score badges. The row toggle is forwarded into that island so the existing query-view state remains authoritative.
 
 Copy-query and query-notes are now Stimulus-owned inside that adapter. Search, scoring, diff, finder, options, and pagination remain intentionally behind their existing Angular boundaries.
 

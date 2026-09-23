@@ -174,6 +174,46 @@ describe("queries_list_controller", () => {
     expect(controller.orderedLiveQueries().map(query => query.queryId)).toEqual([2, 1])
   })
 
+  it("renders the query shell without an Angular search-results host", () => {
+    const { controller } = controllerFor()
+    const row = document.createElement("li")
+    const query = {
+      queryId: 7,
+      queryText: "Star & Wars",
+      informationNeed: 'Movies "with space"',
+      state: () => "ready",
+      isToggled: () => false,
+      diffs: null
+    }
+
+    controller.renderQueryShell(row, query, 2)
+
+    expect(row.querySelector('[data-controller="query-row"]')).not.toBeNull()
+    expect(row.querySelector('[data-query-row-target="text"]').textContent).toBe("\u00a0")
+    expect(row.querySelector('[data-query-row-target="expanded"]').childElementCount).toBe(0)
+    expect(row.querySelector('[data-query-row-target="query"]').dataset.bsTooltipTitleValue).toBe('Info Need: Movies "with space"')
+  })
+
+  it("forwards row toggles to the Angular expanded-results island", () => {
+    const { controller } = controllerFor()
+    const row = document.createElement("li")
+    row.innerHTML = `
+      <div data-query-row-query-id-value="7">
+        <div data-query-row-target="expanded"><div data-controller="search-results"></div></div>
+      </div>
+    `
+    const expandedIsland = row.querySelector('[data-controller="search-results"]')
+    const toggle = vi.fn()
+    expandedIsland.addEventListener("query-row:toggle", event => toggle(event.detail))
+
+    controller.forwardQueryToggle({
+      target: row.querySelector('[data-query-row-query-id-value="7"]'),
+      detail: { queryId: 7 }
+    })
+
+    expect(toggle).toHaveBeenCalledWith({ queryId: 7 })
+  })
+
   it("bridges drag start while reorder persistence owns drag end", () => {
     const { controller } = controllerFor()
     const events = []

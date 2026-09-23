@@ -7,7 +7,7 @@ import { isImageUrl, queryStateClass } from "utils/query_state"
  * intent so the row can be migrated incrementally.
  */
 export default class extends Controller {
-  static targets = ["query", "text", "image", "resultCount", "resultLabel", "querqy", "header", "toggle"]
+  static targets = ["query", "text", "image", "resultCount", "resultLabel", "querqy", "header", "toggle", "expanded", "diffScores"]
   static values = {
     queryId: Number,
     rank: Number,
