@@ -379,7 +379,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await page.getByText('Tune Relevance', { exact: false }).click();
     await page.locator('#annotationsTab').click();
     if ((await page.locator('.annotations-time').count()) === 0) {
-      await page.locator('#annotations textarea, annotations textarea').first().fill('Migration screenshot annotation');
+      await page.locator('#annotation-message').fill('Migration screenshot annotation');
       await page.getByRole('button', { name: 'Create', exact: true }).click();
     }
     await expect(page.locator('.annotations-time').first()).toBeVisible({ timeout: 10_000 });

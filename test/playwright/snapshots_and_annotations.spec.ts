@@ -3,15 +3,15 @@ import { DEFAULT_RICH_CASE_ID } from './angular_case_helpers';
 
 /**
  * Behavioral (non-visual) coverage for snapshots and annotations on the
- * Angular case UI. dom_migration_screenshots.spec.ts already screenshot-diffs
- * the annotation timeAgo display, but nothing previously asserted that a
+ * case UI. dom_migration_screenshots.spec.ts already screenshot-diffs
+ * the annotation relative-time display, but nothing previously asserted that a
  * snapshot actually gets created/listed, or exercised annotation creation.
  *
  * These use a case with a *working* search endpoint and existing queries —
  * DEFAULT_RICH_CASE_ID (angular_case_helpers.ts), same case the suite's own
  * default CASE_ID now points at. Snapshot creation doesn't strictly require
  * live results (it posts whatever query docs are in memory, even none), but
- * annotation creation does: AnnotationsCtrl#create refuses with "Can't create
+ * annotation creation does: the annotation controller refuses with "Can't create
  * a new annotation until searches have been run!" unless the case already has
  * a last score, which this one does.
  */
@@ -100,7 +100,7 @@ test.describe('annotations', () => {
 
     // "Tune Relevance" toggles the east dev-settings panel (queryParams.js /
     // devQueryParams.html), which has an "Annotations" tab (#annotationsTab)
-    // hosting the <annotations> component (create form + existing list).
+    // hosting the Stimulus annotation controller (create form + existing list).
     await page.locator('#tune-relevance-link a').click();
     await page.locator('#annotationsTab').click();
 
@@ -108,7 +108,7 @@ test.describe('annotations', () => {
     await expect(annotations).toBeVisible();
 
     const message = `Playwright annotation ${Date.now()}`;
-    await annotations.locator('textarea').fill(message);
+    await annotations.locator('#annotation-message').fill(message);
     await annotations.getByRole('button', { name: 'Create', exact: true }).click();
 
     // Appending to the list is the authoritative signal here for the same
@@ -117,11 +117,19 @@ test.describe('annotations', () => {
     const annotationItem = annotations.locator('li.annotation').filter({ hasText: message });
     await expect(annotationItem).toBeVisible({ timeout: 10_000 });
 
+    await annotationItem.locator('.dropdown-toggle').click();
+    await annotationItem.getByText('Edit', { exact: true }).click();
+    const editedMessage = `${message} edited`;
+    await page.locator('#edit-annotation-message').fill(editedMessage);
+    await page.getByRole('button', { name: 'Update', exact: true }).click();
+    await expect(annotations.locator('li.annotation').filter({ hasText: editedMessage })).toBeVisible({ timeout: 10_000 });
+
     // Same cleanup rationale as the snapshot test — this case's dev DB row is
     // shared across runs, so remove what we added via the UI's own delete
     // action rather than leaving it to accumulate.
-    await annotationItem.locator('.dropdown-toggle').click();
-    await annotationItem.getByText('Delete', { exact: true }).click();
-    await expect(annotationItem).toBeHidden({ timeout: 10_000 });
+    const editedItem = annotations.locator('li.annotation').filter({ hasText: editedMessage });
+    await editedItem.locator('.dropdown-toggle').click();
+    await editedItem.getByText('Delete', { exact: true }).click();
+    await expect(editedItem).toBeHidden({ timeout: 10_000 });
   });
 });

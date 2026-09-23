@@ -82,7 +82,19 @@ angular.module('QuepidApp')
           }
         });
       });
-      $scope.$on('$destroy', function () { $element.off('queries-list:toggle-rated queries-list:collapse-all queries-list:sort queries-list:filter queries-list:position-saved'); });
+      $element.on('annotations:changed', function () {
+        $scope.$evalAsync(function () {
+          var selectedCase = caseSvc.getSelectedCase();
+          if (!selectedCase) { return; }
+          selectedCase.fetchCaseScores().then(function(returnedCase) {
+            $scope.scores = returnedCase.scores;
+          });
+          annotationsSvc.fetchAll(selectedCase.caseNo).then(function(annotations) {
+            $scope.annotations = annotations;
+          });
+        });
+      });
+      $scope.$on('$destroy', function () { $element.off('queries-list:toggle-rated queries-list:collapse-all queries-list:sort queries-list:filter queries-list:position-saved annotations:changed'); });
       // The scoringCompleteListener is a workaround for the fact that
       // we create multiple instances of this controller when we reselect the
       // same Case in the core app.  Which leads to multiple calls to the backend for the same scoring complete calculation

@@ -272,10 +272,10 @@ parts:
         paths: ["app/controllers/scores_controller.rb", "app/views/scores/", "app/controllers/concerns/authentication/current_case_manager.rb"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
-        last_run: 2026-09-02
-        result: pass
-        notes: "Covered via Part 5.4 (same tab)."
-        paths: ["app/controllers/api/v1/annotations_controller.rb"]
+        last_run: 2026-09-23T17:01:47Z
+        result: pass_with_fixes
+        notes: "Focused Playwright rerun on existing case 6 covered the Stimulus-owned create, edit, and delete flow. Found and fixed the edit modal's east-pane stacking-context bug, where the body-level Bootstrap backdrop intercepted Update. Not covered live: edit cancellation or screenshot comparison."
+        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/assets/templates/views/devQueryParams.html", "app/views/core/index.html.erb"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
         last_run: 2026-09-23T16:37:00Z
@@ -318,10 +318,10 @@ parts:
         paths: ["app/models/snapshot.rb"]
       "5.4":
         title: "Annotations"
-        last_run: 2026-09-02
-        result: pass
-        notes: "Created an annotation, verified it appears with try/score/message. Did not test edit/cancel/delete."
-        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb"]
+        last_run: 2026-09-23T17:01:47Z
+        result: pass_with_fixes
+        notes: "Focused Playwright rerun on existing case 6 created an annotation, verified try/score/message, edited it, and deleted it. Found and fixed the edit modal's east-pane stacking-context bug. Not covered live: edit cancellation or screenshot comparison."
+        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/assets/templates/views/devQueryParams.html", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts"]
       "5.5":
         title: "Score graph (sparkline) & annotation markers"
         last_run: 2026-09-14T19:10:10Z

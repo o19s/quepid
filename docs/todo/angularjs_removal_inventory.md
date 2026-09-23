@@ -247,9 +247,9 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
-**Component LOC** (all JS and HTML files in each component folder, easiest → hardest): new_case (74) → qscore_query (86) → qscore_case (101) → query_explain (117) → annotations (129) → query_options (137) → annotation (152) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423) → import_ratings (674).
+**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → qscore_query (86) → qscore_case (101) → query_explain (117) → query_options (137) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423) → import_ratings (674).
 
-**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Annotations are migrated; qgraph still consumes them through a temporary Angular read bridge. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
 
 #### `queriesSvc` seam inventory (phase 1)
 
@@ -542,8 +542,8 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Rate elements | service | `rateScaleSvc`, `ratingsStoreSvc` |
 | Rating background styling | filter | `ratingBgStyle` |
 | Query notes | controller | `QueryNotesCtrl` |
-| Annotations list | component | `<annotations>` — `components/annotations/` |
-| Single annotation | component | `<annotation>` — `components/annotation/` (uses `timeAgo` filter) |
+| Annotations list | Stimulus controller | `app/javascript/controllers/annotations_controller.js`; qgraph still receives a temporary Angular read bridge |
+| Single annotation | Stimulus-rendered DOM | Rendered by `annotations_controller.js` (uses `Intl.RelativeTimeFormat`) |
 | Query options modal | component | `<query-options>` — `components/query_options/` |
 | Move query modal | component | `<move-query>` — `components/move_query/` |
 | Missing documents search | controllers + template | `TargetedSearchCtrl`, `DocFinderCtrl`, `TargetedSearchModalCtrl`, `templates/views/targetedSearchModal.html` |
@@ -585,8 +585,8 @@ These Angular-specific wrappers are used across many templates:
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
-| `annotation` | `<annotation>` | Single annotation CRUD |
-| `annotations` | `<annotations>` | Annotation list |
+| `annotation` | — | Migrated to `annotations_controller.js` |
+| `annotations` | — | Migrated to `annotations_controller.js`; Angular read bridge remains only for qgraph |
 | `browse_query` | `<browse-query>` | "Browse N Results on {engine}" link, opens results in a new tab/window |
 | `diff` | `<diff>` | Snapshot diff picker |
 | `frog_report` | `<frog-report>` | Zero-results report + Vega |
@@ -627,7 +627,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 `broadcastSvc` wraps `$rootScope.$broadcast` — used by `caseSvc`, `settingsSvc`, `queriesSvc`, `annotationsSvc`, `bookSvc`. See [event bus inventory](./event_bus_inventory.md).
 
-**Filters (7 under `filters/`):** `caseType`, `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`, `timeAgo`
+**Filters (6 under `filters/`):** `caseType`, `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`
 
 **Directive-local filters (1):** `plusOrMinus` (`searchResults.js`)
 
@@ -685,7 +685,7 @@ Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (6 packages; see [vendo
 
 ### Tests
 
-- **Karma:** 38 specs in `spec/javascripts/angular/` (incl. `timeAgo`); loads all three Angular bundles + `angular-mocks`
+- **Karma:** 37 specs in `spec/javascripts/angular/`; loads all three Angular bundles + `angular-mocks`
 - **Vitest (63 specs):** incl. `controllers/{share_case,share_case_core}_controller.test.js` and `utils/share_case_teams.js`
 - **Playwright (24 specs; Angular core and Stimulus):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
 - **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case_smoke.spec.ts` — core toolbar share/unshare; `dom_migration_screenshots.spec.ts` — per-surface before/after shots (`share-case/` core, `share-case-rails/` index)

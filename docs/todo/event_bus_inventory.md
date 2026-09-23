@@ -54,11 +54,11 @@ deregister). `R` and `S` columns below distinguish them.
 | `caseSelected` | `caseSvc.js:183` | *(none found)* | — | **Dead emit** — `headerCtrl.js` was the only listener; removed when the core header dropdowns moved to Turbo Frames (see angularjs_removal_inventory.md) |
 | `updatedCasesList` | `caseSvc.js:215,276,541`, `move_query_modal_instance_controller.js:63` | `move_query_modal_instance_controller.js:39` (loop) | S | `headerCtrl.js`'s listener is gone (same removal as above) |
 | `fetchedDropdownCasesList` | `caseSvc.js:295` | *(none found)* | — | **Dead emit** — same removal as `caseSelected` |
-| `updatedCaseScore` | `caseSvc.js:357`, `annotationsSvc.js:29,39,71` | `queriesCtrl.js:173`, `annotations_controller.js:40`, `move_query_modal_instance_controller.js:39` (loop) | S | |
+| `updatedCaseScore` | `caseSvc.js:357`, `annotationsSvc.js:29,39,71` | `queriesCtrl.js:173`, `move_query_modal_instance_controller.js:39` (loop) | S | Annotation CRUD no longer listens directly; the Stimulus controller emits `annotations:changed` for the temporary qgraph bridge |
 | `caseRenamed` | `caseSvc.js:126,421` | `caseSvc.js:102`, `move_query_modal_instance_controller.js:39` (loop) | R + S | `caseSvc` listens via `$rootScope.$on`. `:126` is the Stimulus bridge — a `case-header:renamed` CustomEvent from the server-rendered header re-broadcast into Angular. `headerCtrl.js`'s listener is gone (same removal as `caseSelected`) — the recent-cases dropdown is its own Turbo Frame now and doesn't live-refresh on rename either, matching the Rails-page navbar's identical frame |
 | `caseUpdate` | `caseSvc.js:454` | *(none found)* | — | **Dead emit** — no `$on('caseUpdate')` matches |
 | `associateBook` | `caseSvc.js:168,501` | `queriesSvc.js:74` | R | `queriesSvc` listener is `$rootScope.$on` (aliased `$scope`). `:168` is the Stimulus bridge from `quepid:case-team-changed`. `headerCtrl.js`'s listener is gone (same removal as `caseSelected`) |
-| `annotationDeleted` | `annotationsSvc.js:40` | `annotations_controller.js:36` | S | |
+| `annotationDeleted` | `annotationsSvc.js:40` | *(none)* | — | **Dead emit** — annotation CRUD now uses Stimulus `apiFetch`; `annotationsSvc.fetchAll` remains only as the temporary qgraph read bridge |
 | `settings-changed` | `settingsSvc.js:496` | *(none found)* | — | **Dead emit** — emitted on try-list fetch; no listener (COREUI doc reference is stale) |
 | `settings-updated` | `settingsSvc.js:637,727` | `caseSvc.js:94` (per `Case` instance), `move_query_modal_instance_controller.js:39` (loop) | R + S | **Leak:** listener registered inside `Case` constructor — one `$rootScope.$on` per constructed case |
 | `rating-changed` | `ratingsStoreSvc.js:29` → `window.quepidStore.scoring` (legacy `$rootScope.$emit` fallback) | Store listeners in `queriesSvc.js`, `queriesCtrl.js`, `searchResults.js` (legacy service fallback only) | R | Store event carries `{ detail: { queryId } }`; per-row listeners deregister on `$destroy` |
@@ -94,7 +94,6 @@ above as a result: it registered zero other `broadcastSvc.send` calls.
 | `services/caseSvc.js` | R | `caseRenamed` | **no** (singleton; acceptable) |
 | `services/caseSvc.js` (`Case` ctor) | R | `settings-updated` | **no** — **multiplies per constructed case** |
 | `services/queriesSvc.js` | R | `associateBook`, `rating-changed` | **no** (singleton; acceptable) |
-| `components/annotations/annotations_controller.js` | S | `annotationDeleted`, `updatedCaseScore` | scope teardown |
 | `components/move_query/move_query_modal_instance_controller.js` | S | `caseRenamed`, `deepCaseListUpdated`, `settings-updated`, `updatedCaseScore`, `updatedCasesList` | scope teardown |
 
 ## Migration-relevant observations

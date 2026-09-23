@@ -6,17 +6,15 @@
 - We run Quepid in Docker primarily, don't run Rails and other build tasks locally.
 - To set up the environment use:
     `bin/setup_docker`.
-- To start Quepid use:
-    `bin/docker s`
+- To start Quepid, use the existing permanent app container when it is running; do not start a replacement container.
 - Do not stop (you may restart) the dev server unless the user explicitly asks. Leave it running across tasks.
-- **Check before starting Docker.** First run `docker compose ps app`. If `app` is running, use it with `docker compose exec app` and do not run `bin/docker s` again. If `app` is not running, check the published port before starting:
+- **Check before any Docker command.** First run `docker compose ps app`. If `app` is running, use it with `docker compose exec app` and do not start, stop, restart, recreate, or replace it. If `app` is not running, do not invoke `bin/docker s`, `docker compose run --service-ports app`, or create an alternate app container; report the state and ask the user before changing Docker state. The permanent app must remain running across tasks.
     `lsof -nP -iTCP:${APP_PORT:-3000} -sTCP:LISTEN`.
-  A port-3000 bind error means the host port is occupied; it is not a reason to retry `bin/docker s`, stop an unknown process, or create more throwaway containers. Start Quepid on the alternate published port instead:
-    `APP_PORT=33000 bin/docker s`
-  Then use `http://localhost:33000` for browser/manual checks and set `QUEPID_BASE_URL=http://localhost:33000` for Playwright. Verify the chosen port responds before continuing. The app still listens on port 3000 inside Docker, so this does not change Rails' internal port or the nginx service link.
+  A port-3000 bind error is not permission to stop anything, retry, or create a throwaway app. Resolve the exact owner and report it.
 - When a correction or lesson applies to how you work in this repo, fix it in the actual project file it belongs to (this file, a skill's `SKILL.md`, a doc) — not only in your own private memory, which no other session or person can see or review.
 - **Default to `docker compose exec app`, which runs the command IN the already-running app container.** So `rails console --environment=test` becomes `docker compose exec app rails console --environment=test`.
-- **Use `bin/docker r` only when there is no running container to use** (the stack is down, or you deliberately want a clean one). `r` is `docker compose run --rm`: a NEW throwaway container with its own loopback and its own filesystem, so it silently breaks anything that needs the running dev server or that must persist installed state. Both failure modes look like app bugs rather than wrong-container mistakes:
+- **Default to `docker compose exec app` for every command.** Do not use `bin/docker r`, `docker compose run`, or any app-run container while `app` is running. A run container is never a substitute for the permanent app.
+- **Never stop, recreate, remove, or replace `quepid_app` unless the user explicitly asks.** If duplicate app-run containers exist, do not clean them up autonomously; report their exact names and ask first.
     - **Can't reach the app.** In the running container the app is plain `http://localhost:3000`. In an `r` container `localhost` is itself, and the host is only reachable as `host.docker.internal` — which Rails rejects with a 403 "Blocked hosts" page, since its dev allow-list takes any bare IP but only a few names.
     - **Installs never stick.** `npx playwright install` and friends land in the throwaway container and vanish on exit, so the install appears to "never take" however many times it is rerun.
 - After CSS or vendor JS changes make sure you rebuild:
