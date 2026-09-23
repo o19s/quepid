@@ -28,6 +28,7 @@ export default defineConfig({
       { find: "utils/bs_popover", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_popover.js") },
       { find: "utils/bs_modal", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_modal.js") },
       { find: "utils/dynamic_modal", replacement: path.resolve(repoRoot, "app/javascript/utils/dynamic_modal.js") },
+      { find: "utils/detailed_document_modal", replacement: path.resolve(repoRoot, "app/javascript/utils/detailed_document_modal.js") },
       { find: "utils/clipboard", replacement: path.resolve(repoRoot, "app/javascript/utils/clipboard.js") },
       { find: "utils/json_explorer", replacement: path.resolve(repoRoot, "app/javascript/utils/json_explorer.js") },
       { find: "utils/text_paste", replacement: path.resolve(repoRoot, "app/javascript/utils/text_paste.js") },

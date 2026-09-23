@@ -66,6 +66,25 @@ test.describe('core layout golden paths', () => {
     await expect(page).toHaveScreenshot('query-results.png', expandedCaseScreenshotOpts(page));
   });
 
+  test('detailed document modal uses the Stimulus results path', async ({ page }) => {
+    await gotoCase(page);
+    await expandFirstQuery(page);
+
+    const result = page.locator('search-result').first();
+    await result.locator('.subTitle a').click();
+
+    const modal = page.locator('.modal.show').filter({ hasText: 'Detailed Document View of doc:' }).last();
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('.detailed-doc-all-fields')).toBeHidden();
+
+    await modal.getByRole('link', { name: 'View All Fields' }).click();
+    await expect(modal.locator('.detailed-doc-all-fields')).toBeVisible();
+    await expect(modal.getByRole('link', { name: 'Hide All Fields' })).toBeVisible();
+
+    await modal.getByRole('button', { name: 'Close' }).click();
+    await expect(modal).toBeHidden();
+  });
+
   test('query row header renders through Stimulus', async ({ page }) => {
     await gotoCase(page);
 

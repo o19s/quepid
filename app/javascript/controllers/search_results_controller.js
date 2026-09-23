@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { queryDocumentsStore } from "stores/query_documents_store"
+import { openDetailedDocumentModal } from "utils/detailed_document_modal"
 
 /**
  * Renders an expanded query from the plain document read model. Angular still
@@ -143,19 +144,25 @@ export default class extends Controller {
     const doc = query && this.liveDocuments(query).find(candidate => String(candidate.id) === String(docId))
     if (!doc) return
 
-    // Keep the existing detailed-document modal as a command adapter until
-    // that modal is migrated. SearchResultCtrl owns no result rendering here.
+    const snapshot = this.store.query(query.queryId)
+    const snapshotDoc = [...(snapshot?.docs || []), ...(snapshot?.ratedDocs || [])].find(
+      item => String(item.id) === String(docId)
+    )
+    const linkUrl = this.documentLinkUrl(doc)
+    openDetailedDocumentModal({ doc: snapshotDoc || doc, linkUrl })
+  }
+
+  documentLinkUrl(doc) {
     const injector = window.angular?.element(document.body).injector?.()
-    const controller = injector?.get?.("$controller")
-    if (!controller) return
-    const scope = this.angularScope.$new()
-    scope.doc = doc
-    scope.query = query
-    // Use a detached element: SearchResultCtrl registers legacy rating
-    // listeners on its element and must not remove this controller's listeners
-    // when the temporary command scope is destroyed.
-    controller("SearchResultCtrl", { $scope: scope, $element: window.angular.element(document.createElement("div")) })
-    scope.showDoc()
-    scope.$destroy()
+    const settingsSvc = injector?.get?.("settingsSvc")
+    const caseTryNavSvc = injector?.get?.("caseTryNavSvc")
+    const settings = settingsSvc?.applicableSettings?.() || {}
+    let linkUrl = doc._url?.() || null
+    if (!linkUrl) return null
+    if (settings.basicAuthCredential) linkUrl = linkUrl.replace("://", `://${settings.basicAuthCredential}@`)
+    if (settings.proxyRequests === true) {
+      linkUrl = `${caseTryNavSvc.getQuepidProxyUrl(settings.searchEndpointId)}${linkUrl}`
+    }
+    return linkUrl
   }
 }

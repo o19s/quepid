@@ -287,6 +287,8 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 The first two substeps are now in place: `query_documents_store.js` is a dual-run plain-document read model, and `search-results` renders its document DOM from those snapshots. `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Angular remains only behind explicit command/state adapters for live query state, rating mutations, and the detailed-document modal; the next substep is narrowing those adapters before removing the expanded-results bridge entirely.
 
+The detailed-document adapter is now narrowed: `detailed_document_modal.js` owns the modal markup, escaping, JSON explorer wiring, and field-toggle behavior for both the Stimulus results renderer and Angular Document Finder. The Stimulus path no longer instantiates a temporary `SearchResultCtrl` scope; for this modal command, Angular remains only for resolving the live document and its URL/auth/proxy settings. The separate Document Finder surface remains Angular-owned.
+
 The query-list collection shell is Stimulus-rendered from `query_collection_store.js`, including filtering, sorting, pagination, and row hosts. Each expanded `search-results` island is now Stimulus-rendered from plain document snapshots; Angular continues to own search, ratings, and scoring, with explicit adapters for the remaining commands.
 
 The diff/snapshot score badges stay Angular until `diffResultsSvc` migrates — out of this sequence.

@@ -71,6 +71,7 @@ function snapshotDocument(doc, state = {}) {
   return {
     id: doc.id,
     title: doc.title ?? "",
+    subs: { ...(doc.subs || {}) },
     thumb: doc.thumb,
     thumb_options: doc.thumb_options,
     image: doc.image,

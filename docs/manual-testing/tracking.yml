@@ -385,7 +385,7 @@ parts:
         last_run: 2026-09-21T19:36:00Z
         result: pass
         notes: "Covered live: Playwright MCP. Clicking a result title opens 'Detailed Document View of doc: <id>' listing the document's sub-fields; 'View All Fields' reveals the full raw document and toggles to 'Hide All Fields'. Not covered live: following 'View Document' out to the search engine, and the disabled state for a doc with no resolvable URL."
-        paths: ["app/assets/javascripts/controllers/searchResult.js", "app/assets/templates/views/searchResult.html", "app/javascript/utils/dynamic_modal.js", "app/javascript/utils/json_explorer.js", "app/javascript/quepid_dom.js"]
+        paths: ["app/assets/javascripts/controllers/searchResult.js", "app/assets/templates/views/searchResult.html", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/utils/json_explorer.js", "app/javascript/quepid_dom.js", "test/playwright/core_smoke.spec.ts"]
       "6.9":
         title: "Frog Report"
         last_run: 2026-09-18T17:15:00Z

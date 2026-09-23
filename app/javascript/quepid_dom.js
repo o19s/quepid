@@ -22,6 +22,7 @@ import { hideFlash, showFlash } from "./utils/flash"
 // pins, so build:angular-vendor passes --alias:utils=./app/javascript/utils
 // to resolve it (see package.json).
 import { openDynamicModal } from "./utils/dynamic_modal"
+import { openDetailedDocumentModal } from "./utils/detailed_document_modal"
 import { renderJsonExplorer, escapeHtml } from "./utils/json_explorer"
 
 /**
@@ -59,6 +60,9 @@ const quepidDom = {
     showStacked: showStackedModal,
     restoreBodyLock: restoreModalBodyLock,
     open: openDynamicModal
+  },
+  detailedDocument: {
+    open: openDetailedDocumentModal
   },
   jsonExplorer: {
     render: renderJsonExplorer,
