@@ -24,13 +24,13 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 118 files, 113 register `angular.module` |
-| HTML templates (components + `app/assets/templates`) | 34 (21 component + 13 under `app/assets/templates`) |
-| Controllers | 39 (`.controller()` registrations; 18 files under `controllers/`) |
+| Angular JS source files (`app/assets/javascripts`) | 115 files, 110 register `angular.module` |
+| HTML templates (components + `app/assets/templates`) | 32 (20 component + 12 under `app/assets/templates`) |
+| Controllers | 38 (`.controller()` registrations; 18 files under `controllers/`) |
 | Services | 26 (`.service()` registrations; 27 files under `services/` — `quepidModalSvc.js` registers a factory) |
 | Factories | 8 |
-| Filters | 8 under `filters/` (+ 1 directive-local: `plusOrMinus`) |
-| Custom directives / components | 27 (21 `.directive()` + 6 `.component()`) |
+| Filters | 7 under `filters/` (+ 1 directive-local: `plusOrMinus`) |
+| Custom directives / components | 25 (19 `.directive()` + 6 `.component()`) |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 10 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 6 packages (+ `angular` core from npm) |
 | Karma unit specs (`spec/javascripts/angular`) | 38 |
@@ -43,8 +43,8 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Priority | Item | Notes |
 |----------|------|-------|
-| **P0** | AngularJS 1.8.3 EOL | 118 JS files, 34 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
-| **P0** | `queriesSvc` god object (1,690 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
+| **P0** | AngularJS 1.8.3 EOL | 115 JS files, 32 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
+| **P0** | `queriesSvc` god object (1,805 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
 | **P0** | `eval()` scorers | Inside `$timeout()`, no sandbox; Web Worker timeout commented out |
 | **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
 | **P1** | `new Function()` mappers | SearchAPI mappers; MiniRacer on server; mapper wizard already Stimulus |
@@ -239,21 +239,21 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 | Name | LOC | Why |
 |------|-----|-----|
-| **queriesSvc** | 1,690 | Central case state — search, docs, scores, persistence |
-| **wizardModal** | 1,066 | Onboarding wizard (ACE, CSV, tags, tour) |
-| **queriesCtrl** | 609 | Query list UX (sort, filter, paginate, keyboard) |
+| **queriesSvc** | 1,805 | Central case state — search, docs, scores, persistence |
+| **wizardModal** | 1,072 | Onboarding wizard (ACE, CSV, tags, tour) |
+| **queriesCtrl** | 607 | Query list UX (sort, filter, paginate, keyboard) |
 | **settingsSvc** / **caseSvc** | 754 / 552 | Try / case domain model |
 | **$quepidModal** | 272 | BS5 modals + `$compile` — 11 `.open()` call sites (23 files reference `$quepidModal`) |
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
-**Component LOC** (all JS and HTML files in each component folder, easiest → hardest): new_case (74) → qscore_query (86) → qscore_case (101) → query_explain (117) → annotations (129) → query_options (137) → annotation (152) → add_query (180) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423) → import_ratings (674).
+**Component LOC** (all JS and HTML files in each component folder, easiest → hardest): new_case (74) → qscore_query (86) → qscore_case (101) → query_explain (117) → annotations (129) → query_options (137) → annotation (152) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423) → import_ratings (674).
 
 **Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, annotations, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
 
 #### `queriesSvc` seam inventory (phase 1)
 
-22 Angular files reach into `queriesSvc`; the four `*_core_controller.js` Stimulus controllers reach it only through `document` CustomEvents (already bridged). Grouped by what a caller actually needs:
+22 Angular files reach into `queriesSvc`; the eight `*_core_controller.js` Stimulus controllers reach it only through `document` CustomEvents (already bridged). Grouped by what a caller actually needs:
 
 | Surface | Members | Callers |
 |---------|---------|---------|
@@ -265,7 +265,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 **`static` is normalized to `solr` by mutation.** `createSearcherFromSettings()` assigns `passedInSettings.searchEngine = 'solr'` for a static engine, and `Query.search()` passes `currSettings` uncopied — so the rewrite persists on the service until the next `changeSettings()`. It is load-bearing: `Query.search()` builds `ratedSearcher` with `filterToRated: true` on every search, and `filterToRatings()` has no `static` branch, so without the rewrite a static case pushes `undefined` into `fq`. The rewrite reaches only the settings-level copy — `selectedTry.searchEngine` stays `static`, which is why `trySupportsRatedDocsLookup()` (read off the try) correctly leaves "Show only rated" disabled for static cases. Extractions must normalize `static` → `solr` at the searcher/filter seam **only**, never in the capability predicates, or the toggle silently turns on. No Karma or Vitest example covers a static engine.
 
-**Contract to port from:** `spec/javascripts/angular/services/queriesSvc_spec.js` (1,258 lines) — notably `createSearcherFromSettings` (Solr `echoParams`, `jsonQueryDsl`, `fq` vs `filter` ratings filter), the query factory scoring/doc-state examples, and bootstrap/add/delete/move versioning. Port per skill phase 3 before deleting Angular sources.
+**Contract to port from:** `spec/javascripts/angular/services/queriesSvc_spec.js` (1,121 lines) — notably `createSearcherFromSettings` (Solr `echoParams`, `jsonQueryDsl`, `fq` vs `filter` ratings filter), the query factory scoring/doc-state examples, and bootstrap/add/delete/move versioning. Port per skill phase 3 before deleting Angular sources.
 
 #### Re-render mechanism
 
@@ -284,6 +284,8 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 **Remaining, in slice order (2026-09-23).** The query-list collection shell and query-mutation persistence seam are complete. The next slice is:
 
 1. **Remove the expanded-results Angular bridge** — preserve browser-to-customer-engine search and client-side scoring, but move the `search-results` island's document rendering and controls onto the explicit store incrementally. Do not combine it with scorer sandboxing, diff migration, or wizard UI replacement.
+
+The first substep is now in place: `query_documents_store.js` is a dual-run plain-document read model, and `queriesSvc` publishes it after search, rated-document refresh, pagination, errors, and rating changes. The current DOM renderer still consumes the Angular `Query` objects; the next substep is switching that renderer to these snapshots while retaining Angular command adapters for mutations.
 
 The query-list collection shell is Stimulus-rendered from `query_collection_store.js`, including filtering, sorting, pagination, and row hosts. Each expanded `search-results` island is still compiled against the live Angular `Query` object, so Angular continues to own search, documents, ratings, and scoring.
 
@@ -309,7 +311,7 @@ The diff/snapshot score badges stay Angular until `diffResultsSvc` migrates — 
 
 3. **Multi-snapshot diff + scoring** — ≤5 snapshots, snapshot-as-searcher, client `scoreOthers()`, per-position diff, case averages. `diffResultsSvc.js` is ~225 lines but sits on fake-Solr snapshots and rating-driven refetch — line count understates the work.
 
-4. **Angular templates → target syntax** — 34 templates (`ng-repeat`, `ng-if`, `ng-model`, `dir-paginate`, `quepid-sortable`, `ui-ace`, …) become ERB partials plus Stimulus targets, with store subscriptions doing the updates Angular's bindings did (see [Re-render mechanism](#re-render-mechanism)).
+4. **Angular templates → target syntax** — 32 templates (`ng-repeat`, `ng-if`, `ng-model`, `dir-paginate`, `quepid-sortable`, `ui-ace`, …) become ERB partials plus Stimulus targets, with store subscriptions doing the updates Angular's bindings did (see [Re-render mechanism](#re-render-mechanism)).
 
 5. **Field spec parsing and display** — `id:id title:name …` — type detection (JSON / URL / text), thumb prefixes, media by extension, snippet `<strong>` wrapping. Domain logic in splainer-search + Quepid display code, not framework glue.
 
@@ -627,7 +629,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 ---
 
-## Templates (34 HTML files)
+## Templates (32 HTML files)
 
 **Shell:** `queries.html`, `embed.html`
 
@@ -639,7 +641,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 **Wizard:** `wizardModal.html`
 
-**Components:** 21 HTML files under `app/assets/javascripts/components/`
+**Components:** 20 HTML files under `app/assets/javascripts/components/`
 
 Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 
@@ -678,7 +680,7 @@ Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (6 packages; see [vendo
 ### Tests
 
 - **Karma:** 38 specs in `spec/javascripts/angular/` (incl. `timeAgo`); loads all three Angular bundles + `angular-mocks`
-- **Vitest (51 specs):** incl. `controllers/{share_case,share_case_core}_controller.test.js` and `utils/share_case_teams.js`
+- **Vitest (63 specs):** incl. `controllers/{share_case,share_case_core}_controller.test.js` and `utils/share_case_teams.js`
 - **Playwright (24 specs; Angular core and Stimulus):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
 - **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case_smoke.spec.ts` — core toolbar share/unshare; `dom_migration_screenshots.spec.ts` — per-surface before/after shots (`share-case/` core, `share-case-rails/` index)
 - **Rails:** `core_controller_test.rb`, `tls_flow_test.rb`, `user_invite_flow_test.rb`, `cases_controller_test.rb` (Stimulus cases index), `application_helper_test.rb` (`quepid_root_url`)

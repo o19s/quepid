@@ -67,6 +67,7 @@ angular.module('QuepidApp')
       // and display order while Angular keeps the live Query objects for search,
       // ratings, documents, and scoring.
       let queryCollectionStore = window.quepidStore && window.quepidStore.queries;
+      let queryDocumentsStore = window.quepidStore && window.quepidStore.documents;
       this.displayOrder = [];
       this.queries = {};
       this.linkUrl = '';
@@ -97,6 +98,9 @@ angular.module('QuepidApp')
         svc.svcVersion++;
         if (queryCollectionStore) {
           queryCollectionStore.reset();
+        }
+        if (queryDocumentsStore) {
+          queryDocumentsStore.reset();
         }
         // Clear sync cache when resetting
         syncedPairsCache = {};
@@ -148,6 +152,25 @@ angular.module('QuepidApp')
         return window.quepidSearch.ratedDocs.supportsLookup(aTry);
       }
 
+      // Temporary dual-run publisher: Angular keeps the live Query objects, but
+      // Stimulus receives a plain read model for expanded result rendering.
+      function publishQueryDocuments(query) {
+        if (!queryDocumentsStore || !query) {
+          return;
+        }
+
+        queryDocumentsStore.replaceQuery(query.queryId, {
+          docs: query.docs,
+          ratedDocs: query.ratedDocs,
+          numFound: query.numFound,
+          ratedDocsFound: query.ratedDocsFound,
+          ratedDocsUnsupported: query.ratedDocsUnsupported,
+          errorText: query.errorText,
+          depthOfRating: query.depthOfRating,
+          version: query.version()
+        });
+      }
+
       // Shared "clone settings with the selectedTry overridden" pattern for a one-off preview
       // search - used by both docFinder.js's findDocsByPreviewingQueryParams() (overriding args
       // and queryParams) and searchApiRatedDocs() below (overriding just args), so a resolved
@@ -168,6 +191,9 @@ angular.module('QuepidApp')
         var queryId = window.quepidSearch.queryState.ratingChangedQueryId(event, legacyQueryId);
         if (queryId !== undefined && svc.queries[queryId]) {
           window.quepidSearch.queryState.invalidateRatedDocsCache(svc.queries[queryId]);
+          publishQueryDocuments(svc.queries[queryId]);
+        } else {
+          angular.forEach(svc.queries, publishQueryDocuments);
         }
         $scope.$evalAsync(function() {
           svc.scoreAll();
@@ -772,6 +798,7 @@ angular.module('QuepidApp')
             self.ratedDocs = ratedDocsStaging;
             self.ratedDocsFound = normed.length;
             self.ratingsReady = true;
+            publishQueryDocuments(self);
             self.ratingsPromise = null;
           });
           var ratedDocsRequest = self.ratingsPromise;
@@ -833,6 +860,7 @@ angular.module('QuepidApp')
             // at next page" link (searchResults.html) knows there's more via ratedPaginate().
             self.ratedDocsFound = result.searcher.numFound;
             self.ratingsReady = true;
+            publishQueryDocuments(self);
             self.ratingsPromise = null;
           });
         }
@@ -845,6 +873,7 @@ angular.module('QuepidApp')
           self.ratedDocs = [];
           self.ratedDocsFound = 0;
           self.ratingsReady = true;
+          publishQueryDocuments(self);
           self.ratingsPromise = null;
           return $q.resolve();
         }
@@ -873,12 +902,14 @@ angular.module('QuepidApp')
           }
 
           that.docsSet = true;
+          publishQueryDocuments(that);
 
           return error;
         };
 
         this.onError = function(errorText) {
           that.errorText = errorText;
+          publishQueryDocuments(that);
         };
 
         this.browseUrl = function() {
@@ -1038,6 +1069,7 @@ angular.module('QuepidApp')
               let fieldSpec     = currSettings.createFieldSpec();
               let docList       = new DocListFactory(docs, fieldSpec, ratingsStore, matchFeaturesExplain);
               self.docs         = self.docs.concat(docList.list());
+              publishQueryDocuments(self);
             }, function(response) {
               $log.debug('Failed to load search: ', response);
               return response;
@@ -1068,6 +1100,7 @@ angular.module('QuepidApp')
               .then(function() {
                 let normed = svc.normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
                 self.ratedDocs = self.ratedDocs.concat(normed);
+                publishQueryDocuments(self);
               });
         };
 
@@ -1513,6 +1546,9 @@ angular.module('QuepidApp')
             if (queryCollectionStore) {
               queryCollectionStore.remove(queryId);
             }
+            if (queryDocumentsStore) {
+              queryDocumentsStore.removeQuery(queryId);
+            }
             svcVersion++;
           })
           .catch(function(response) {
@@ -1530,6 +1566,9 @@ angular.module('QuepidApp')
         if (queryCollectionStore) {
           queryCollectionStore.remove(queryId);
         }
+        if (queryDocumentsStore) {
+          queryDocumentsStore.removeQuery(queryId);
+        }
         svcVersion++;
       };
 
@@ -1541,6 +1580,9 @@ angular.module('QuepidApp')
             delete that.queries[query.queryId];
             if (queryCollectionStore) {
               queryCollectionStore.remove(query.queryId);
+            }
+            if (queryDocumentsStore) {
+              queryDocumentsStore.removeQuery(query.queryId);
             }
             svcVersion++;
           })

@@ -1,5 +1,6 @@
 import { caseScoreStore } from "./stores/case_score_store"
 import { queryCollectionStore } from "./stores/query_collection_store"
+import { queryDocumentsStore } from "./stores/query_documents_store"
 
 /**
  * Dual-run shadow stores for the case workspace's live state, built ahead of
@@ -12,7 +13,8 @@ import { queryCollectionStore } from "./stores/query_collection_store"
  */
 const quepidStore = {
   scoring: caseScoreStore,
-  queries: queryCollectionStore
+  queries: queryCollectionStore,
+  documents: queryDocumentsStore
 }
 
 export default quepidStore

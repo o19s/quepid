@@ -1,0 +1,70 @@
+import { beforeEach, describe, expect, it } from "vitest"
+import { QueryDocumentsStore } from "stores/query_documents_store"
+
+describe("QueryDocumentsStore", () => {
+  let store
+
+  beforeEach(() => {
+    store = new QueryDocumentsStore()
+  })
+
+  it("publishes plain snapshots for current and rated documents", () => {
+    const doc = {
+      id: "doc-1",
+      title: "A document",
+      thumb_options: { prefix: "https://images.example/" },
+      image_options: { prefix: "https://images.example/" },
+      subs: { description: "text" },
+      subSnippets: () => ({ description: "<strong>text</strong>" }),
+      hasRating: () => true,
+      getRating: () => 2,
+      score: () => 0.75,
+      doc: { origin: () => ({ description: "text" }) }
+    }
+
+    store.replaceQuery(12, {
+      docs: [doc],
+      ratedDocs: [],
+      numFound: 1,
+      errorText: ""
+    })
+
+    const snapshot = store.query(12)
+    expect(snapshot.queryId).toBe(12)
+    expect(snapshot.docs[0]).toMatchObject({
+      id: "doc-1",
+      title: "A document",
+      thumb_options: { prefix: "https://images.example/" },
+      image_options: { prefix: "https://images.example/" },
+      rating: 2,
+      score: 0.75,
+      snippets: { description: "<strong>text</strong>" }
+    })
+    expect(snapshot.docs[0].thumb_options).toEqual({ prefix: "https://images.example/" })
+    expect(snapshot.docs[0].image_options).toEqual({ prefix: "https://images.example/" })
+    expect(snapshot.docs[0].thumbOptions).toBeUndefined()
+    expect(snapshot.docs[0].imageOptions).toBeUndefined()
+    expect(snapshot.docs[0].hasRating).toBeUndefined()
+  })
+
+  it("replaces a query atomically and notifies subscribers", () => {
+    const changes = []
+    store.addEventListener("change", event => changes.push(event.detail))
+
+    store.replaceQuery(4, { docs: [{ id: "first" }] })
+    store.replaceQuery(4, { docs: [{ id: "second" }] })
+
+    expect(changes).toHaveLength(2)
+    expect(store.query(4).docs.map(doc => doc.id)).toEqual(["second"])
+  })
+
+  it("removes query state without affecting other queries", () => {
+    store.replaceQuery(1, { docs: [] })
+    store.replaceQuery(2, { docs: [] })
+
+    store.removeQuery(1)
+
+    expect(store.query(1)).toBeNull()
+    expect(store.query(2)).not.toBeNull()
+  })
+})
