@@ -16,7 +16,7 @@
  * listener at the bottom of this file.
  *
  * `arrayContains` and `fixObjectKeys` also stay here — they're still used by
- * import-ratings and the new-case wizard's CSV import, unrelated to export.
+ * the new-case wizard's CSV import, unrelated to export.
  */
 
 /*jslint latedef:false*/
@@ -209,7 +209,7 @@
       }
     ])
     // Nothing on the core case page injects caseCSVSvc anymore now that the
-    // export-case modal is Stimulus (import-ratings/the wizard only pull in
+    // export-case modal is Stimulus (the wizard only pulls in
     // arrayContains/fixObjectKeys when THEIR modals open). AngularJS services
     // are lazy, so without this the "detailed" bridge listener above would
     // never attach. Force eager instantiation at app bootstrap instead.

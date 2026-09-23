@@ -31,7 +31,7 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
 - [ ] **Steps — Snapshots tab:**
   1. Upload a CSV with headers containing `Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position` (the file's Case ID column is ignored — it always imports into the current case).
   2. Click **Import**.
-- **Expected:** Each import type validates headers strictly and refreshes the relevant data (queries/scores) after success, with a flash confirming the result.
+- **Expected:** The Stimulus core modal validates headers strictly and refreshes the relevant data (queries/scores) after success, with a flash confirming the result.
 - **Edge cases:**
   - [ ] Upload a Ratings CSV with mismatched headers — confirm a red "Headers mismatch!" alert lists the expected headers.
   - [ ] Upload a Ratings CSV where a row has more than 3 comma-separated values without quote-wrapping — confirm a red alert lists the specific offending line number(s). Repeat for Information Needs with the 2-column limit.

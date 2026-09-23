@@ -10,7 +10,7 @@
   What stays Angular, and why:
     * <qgraph>       - the case score history chart, still reads live off MainCtrl's scope.
     * <queries>      - the query list and search results island.
-    * <import-ratings> - not yet migrated (see the removal inventory).
+    * the import action is Stimulus-owned; live query refresh remains bridged to Angular.
     * the east pane  - the Tune Relevance drawer, still Angular.
 
   The primary case score badge (docs/todo/angularjs_removal_inventory.md § Re-render
@@ -103,3 +103,5 @@
     </div>
   </div>
 </div>
+<%# Keep the modal outside the pane stacking context so Bootstrap's body-level backdrop stays behind it. %>
+<%= render 'shared/import_ratings_core_modal', kase: @case %>

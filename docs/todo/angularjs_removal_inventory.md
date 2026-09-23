@@ -128,7 +128,7 @@ Use the class that matches the work. Details and phase checklist live in the ski
 | Class | Examples | Do | Don't |
 |-------|----------|----|--------|
 | **Management modals** | share, clone, export, delete/archive | **Per surface:** core matches Angular; Rails pages match their prior partial; split UI when they differ | One modal UX everywhere; Angular UX on index/teams; Rails `<select>` on core toolbar |
-| **Heavy widgets** | diff, import-ratings, export+job, wizard | Inventory jobs/Cable/multi-step UI; esbuild or large Stimulus; step screenshots | Block on rewriting `queriesSvc` |
+| **Heavy widgets** | diff, export+job, wizard | Inventory jobs/Cable/multi-step UI; esbuild or large Stimulus; step screenshots | Block on rewriting `queriesSvc` |
 | **Live query state** | `queriesSvc`, search results, ratings, live score | Explicit state plan; dual-run read path first; keep client `scoreAll()` + browser→engine search | Start casually; move live search/score server-side as a “migration” |
 | **App-level seams** | scorers, splainer-search, TLS/JSONP, mappers | Port with the UI that needs them; reuse `splainer-search` 3.x ESM | Rebuild search/scoring stacks from scratch without a fork decision |
 
@@ -182,9 +182,9 @@ See [Re-render mechanism](#re-render-mechanism) for the client/server state boun
 
 ### Core toolbar
 
-The toolbar is server-rendered from `@case`/`@try` (`app/views/core/_case_toolbar.html.erb`). Still Angular *inside* it: `<import-ratings>` and the diff renderer/state; the snapshot comparison picker is Stimulus-owned (`diff-core`) with a temporary document-event bridge into Angular until `diffResultsSvc` migrates.
+The toolbar is server-rendered from `@case`/`@try` (`app/views/core/_case_toolbar.html.erb`). The import action is now Stimulus-owned (`import-ratings-core`) with a temporary query refresh bridge into Angular; the diff renderer/state remains Angular while the snapshot comparison picker is Stimulus-owned (`diff-core`).
 
-**The toolbar keeps `ng-if="caseModel.caseLoaded()"`, and it is load-bearing.** Its attributes no longer need Angular, but several of its actions do: "Create snapshot" clicked before `queriesSvc` has bootstrapped posts an empty snapshot that never resolves, leaving the modal stuck on "Snapshot Being Created". Server-rendering made the toolbar clickable from first paint, roughly 1.5s earlier than Angular exposed it, which is long enough to hit. Drop the gate only when `<import-ratings>` and the remaining snapshot/export flows no longer depend on live query state.
+**The toolbar keeps `ng-if="caseModel.caseLoaded()"`, and it is load-bearing.** Its attributes no longer need Angular, but several of its actions do: "Create snapshot" clicked before `queriesSvc` has bootstrapped posts an empty snapshot that never resolves, leaving the modal stuck on "Snapshot Being Created". Server-rendering made the toolbar clickable from first paint, roughly 1.5s earlier than Angular exposed it, which is long enough to hit. Drop the gate only when the remaining snapshot/export flows no longer depend on live query state.
 
 ### Stimulus twins already on Rails pages
 
@@ -220,11 +220,11 @@ New Stimulus logic in `app/javascript/api/` or `utils/` needs a `*.test.js` unde
 
 When replacing the case SPA (not just toolbar actions), work in dependency order:
 
-`MainCtrl` stays Angular-authored — it still calls `caseSvc`/`settingsSvc`/`queriesSvc` (next up below) — but is no longer route-triggered; see [Application shell](#1-application-shell). `CaseCtrl` is reduced to what the still-Angular drawer and `<import-ratings>` need.
+`MainCtrl` stays Angular-authored — it still calls `caseSvc`/`settingsSvc`/`queriesSvc` (next up below) — but is no longer route-triggered; see [Application shell](#1-application-shell). `CaseCtrl` is reduced to what the still-Angular drawer needs.
 
 **Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
-1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). **Not separable (checked 2026-09-19):** every remaining call site of all three lives inside a component already on the defer list (`$quepidModal`: `browse_query`, `query_options`, `new_case`, `annotation`, `diff`, `frog_report`, `import_ratings`, `move_query`, `wizardModal`/`wizardCtrl`, `queryParamsDetails`/`queryParamsHistory`, `targetedSearchModal`, `searchResult`, `case.js`; `quepidTypeahead`/`quepidCollapse`: `wizardModal.html`, `devQueryParams.html`, `searchEndpoint_popup.html`). They fall out as each of those components migrates in steps 4–7 below — don't plan a standalone PR for this step.
+1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). **Not separable (checked 2026-09-19):** every remaining call site of all three lives inside a component already on the defer list (`$quepidModal`: `browse_query`, `query_options`, `new_case`, `annotation`, `diff`, `frog_report`, `move_query`, `wizardModal`/`wizardCtrl`, `queryParamsDetails`/`queryParamsHistory`, `targetedSearchModal`, `searchResult`, `case.js`; `quepidTypeahead`/`quepidCollapse`: `wizardModal.html`, `devQueryParams.html`, `searchEndpoint_popup.html`). They fall out as each of those components migrates in steps 4–7 below — don't plan a standalone PR for this step.
 2. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
 3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
 4. Query list + results — `queries`, `search-results`, rating UI
@@ -247,9 +247,9 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
-**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → query_options (137) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423) → import_ratings (674).
+**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → query_options (137) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423).
 
-**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResult`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, `quepidTypeahead`, `queryParams`, `quepidCollapse`. The expanded-results shell and document rendering now run through Stimulus and the document store. Annotations render through Stimulus, while qgraph still consumes them through a temporary Angular read bridge. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResult`, `qgraph` / qscore\*, `diff`, `query-options`, `new-case` / wizard, `frog-report`, `quepidTypeahead`, `queryParams`, `quepidCollapse`. The expanded-results shell and document rendering now run through Stimulus and the document store. Annotations render through Stimulus, while qgraph still consumes them through a temporary Angular read bridge. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
 
 #### `queriesSvc` seam inventory (phase 1)
 
@@ -258,7 +258,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | Surface | Members | Callers |
 |---------|---------|---------|
 | **Read / display** | `queryArray`, `latestScoreInfo`, `version`, `hasUnscoredQueries`, `scoredQueryCount`, `queryCount`, `isBootstrapping`, `queries`, `showOnlyRated` | `queriesCtrl`, `frog_report`, `caseCSVSvc` / `utils/case_csv.js`, `querySnapshotSvc` |
-| **Mutation / lifecycle** | `bootstrapQueries`, `changeSettings`, `searchAll`, `createQuery`, `deleteQuery`, `moveQuery`, `updateQueryDisplayPosition`, `reset`, `updateScores`, `scoreAll`, `refreshAllDiffs`, `syncToBook` | `mainCtrl`, `wizardModal`, `add_query`, `move_query`, `searchResults`, `diff`, `import_ratings`, `query_options`, `caseSvc` |
+| **Mutation / lifecycle** | `bootstrapQueries`, `changeSettings`, `searchAll`, `createQuery`, `deleteQuery`, `moveQuery`, `updateQueryDisplayPosition`, `reset`, `updateScores`, `scoreAll`, `refreshAllDiffs`, `syncToBook` | `mainCtrl`, `wizardModal`, `add_query`, `move_query`, `searchResults`, `diff`, `query_options`, `caseSvc` |
 | **Search / score engine** (`Query`) | `search`, `searchFromSnapshot`, `paginate`, `ratedPaginate`, `score` / `scoreOthers`, `refreshRatedDocs`, `setDocs`, `filterToRatings`, plus svc-level `createSearcherFromSettings`, `normalizeDocExplains`, `searchApiRatedDocs`, `pAll`, mapper `eval` | `docFinder`; otherwise internal |
 
 **Framework-free today (extract ahead of any UI decision):** `pAll`, `evaluateMapperFunctions` + cache, `matchFeaturesExplain`, `settingsWithTryOverrides`. These keep the same signatures under any target stack, so extracting them to tested ESM under `app/javascript/` is not a bet on the UI framework. Wiring already exists — `utils/*.js` → `quepid_dom.js` → `window.quepidDom`, with `build:angular-vendor` passing `--alias:utils=./app/javascript/utils`.
@@ -339,7 +339,7 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 
 **Cause:** `caseCSVSvc.arrayContains` always returns `true` because `return false` inside `forEach` only exits the callback, so required-header checks (including `Doc ID`) never fail.
 
-**Fix during migration:** Reimplement header validation in the new CSV import path (wizard + `<import-ratings>`). Product decision still needed on how strict to be.
+**Fix during migration:** Reimplement header validation in the new CSV import path (wizard + `import-ratings-core`). Product decision still needed on how strict to be.
 
 **Touches:** `caseCSVSvc`, wizard CSV step, `<ng-csv-import>`, [Feature area § New-case wizard](#4-new-case-wizard).
 
@@ -376,7 +376,7 @@ several copies with a reconciler, especially when the copies are only read at a 
 
 **A `$scope` function returning a fresh object literal is an infinite digest waiting to happen.**
 `CaseCtrl.caseModel.selectedCase()` returned `{ caseNo: -1, caseName: '' }` on every call before the
-case loaded. `<import-ratings>` binds it with `=`, so a new object identity each digest is a change
+case loaded. Remaining Angular bindings read the selected case, so a new object identity each digest is a change
 each digest. Angular's template had hidden this behind `ng-if="caseModel.caseLoaded()"`; rendering
 the toolbar unconditionally exposed it as `$rootScope:infdig`. Return a single stable instance.
 
@@ -423,7 +423,7 @@ Angular still compiles what is left, because custom elements inside `ng-app` are
 | `<qgraph>` | Score history chart; reads live off `MainCtrl`'s scope |
 | Snapshot case score row | Snapshot scores come from the Angular diff engine and are rendered by the Stimulus `diff-case-scores` controller |
 | `<queries>` | The query list / search results island |
-| `<diff>`, `<import-ratings>` | Not yet migrated |
+| `<diff>` | Snapshot diff renderer/state remains Angular |
 | `ng-include 'views/_dev_settings.html'` | Tune Relevance drawer, still Angular |
 | `ng-click="toggleDevSettings()"` | Drawer toggle, on `MainCtrl` scope |
 
@@ -490,12 +490,12 @@ Routing is server-side (Rails); `MainCtrl` is attached directly in `core/index.h
 | Case layout shell | Rails view | `app/views/core/index.html.erb` |
 | Case score display | component | Primary score is Stimulus; snapshot/diff case scores are now rendered by `diff-case-scores`; Angular still calculates the live diff read model |
 | Snapshot per-query score | component | Stimulus `qscore-query` badge is store-driven; no Angular component remains |
-| Nightly/public/archived badges, scorer name | Angular bridge | `CaseCtrl` (`controllers/case.js`) survives only for the drawer's nightly checkbox and `<import-ratings>`'s `acase` binding |
-| Import ratings | component | `<import-ratings>` — `components/import_ratings/` |
+| Nightly/public/archived badges, scorer name | Angular bridge | `CaseCtrl` (`controllers/case.js`) survives only for the drawer's nightly checkbox |
+| Import ratings | Stimulus controller + Angular refresh bridge | `app/javascript/controllers/import_ratings_core_controller.js`, `app/views/shared/_import_ratings_core_modal.html.erb`; refreshes live query state through `imports:queries-need-reload` |
 | Diff renderer and picker | Stimulus renderer + temporary Angular state bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`; Angular still owns `diffResultsSvc` state/search/scoring |
 | New-case wizard launcher | controller | `WizardCtrl` — `controllers/wizardCtrl.js` |
 
-Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `snapshotSearcherSvc`, `SnapshotFactory`, `importRatingsSvc`, `caseCSVSvc`, `bookSvc`, `diffResultsSvc`, `qscoreSvc`
+Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `snapshotSearcherSvc`, `SnapshotFactory`, `caseCSVSvc`, `bookSvc`, `diffResultsSvc`, `qscoreSvc`
 
 ### 4. New-case wizard
 
@@ -503,7 +503,7 @@ Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `
 |------|------|-----------|
 | Wizard modal | controller + template | `WizardModalCtrl`, `templates/views/wizardModal.html` |
 | Custom headers step | directive + controller | `<custom-headers>`, `CustomHeadersCtrl`, `templates/views/customHeaders.html` |
-| CSV import (queries/ratings) | third-party | `<ng-csv-import>` in wizard and import-ratings modals |
+| CSV import (queries/ratings) | third-party | `<ng-csv-import>` remains in the wizard; core import uses `import-ratings-core` |
 | Tags for additional fields | third-party | `<tags-input>` in wizard |
 | ACE editors in wizard | third-party | `ui-ace` attributes |
 | Wizard cancel cleanup | service call | `caseSvc.deleteCase` from `wizardModal.js` |
@@ -572,7 +572,6 @@ These Angular-specific wrappers are used across many templates:
 | `browse_query` | `<browse-query>` | "Browse N Results on {engine}" link, opens results in a new tab/window |
 | `diff` | `<diff>` | Snapshot diff renderer/state remains Angular; picker migrated to `diff-core` |
 | `frog_report` | `<frog-report>` | Zero-results report + Vega |
-| `import_ratings` | `<import-ratings>` | CSV import |
 | `move_query` | `<move-query>` | Move query to another case |
 | `new_case` | `<new-case>` | Header new-case entry |
 | `qgraph` | `<qgraph>` | Score timeline |
@@ -600,7 +599,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 ## Services, factories, and filters
 
-**Services (26):** `annotationsSvc`, `bookSvc`, `bootstrapSvc`*, `caseCSVSvc`, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `diffResultsSvc`, `docCacheSvc`, `importRatingsSvc`, `paneSvc`, `qscoreSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateScaleSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `snapshotSearcherSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`).
+**Services (25):** `annotationsSvc`, `bookSvc`, `bootstrapSvc`*, `caseCSVSvc`, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `diffResultsSvc`, `docCacheSvc`, `paneSvc`, `qscoreSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateScaleSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `snapshotSearcherSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`).
 
 **Factories (8):** `$quepidModal` (`services/quepidModalSvc.js`), `AnnotationFactory`, `broadcastSvc`, `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `SnapshotFactory`, `TryFactory`
 

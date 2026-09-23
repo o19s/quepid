@@ -1,0 +1,45 @@
+<% modal_body = capture do %>
+  <div data-import-ratings-core-target="alert" class="alert alert-danger d-none" role="alert"></div>
+  <div data-import-ratings-core-target="warning" class="alert alert-warning d-none">
+    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+    This operation will override existing data. Proceed with caution!
+  </div>
+
+  <ul class="nav nav-tabs" role="tablist">
+    <% [["ratings", "Ratings"], ["information_needs", "Information Needs"], ["snapshots", "Snapshots"]].each_with_index do |(key, label), index| %>
+      <li class="nav-item" role="presentation">
+        <button type="button" class="nav-link <%= 'active' if index.zero? %>" data-bs-toggle="tab" data-bs-target="#import-<%= key %>-pane" role="tab" aria-selected="<%= index.zero? %>" data-action="click->import-ratings-core#clearSelection"><%= label %></button>
+      </li>
+    <% end %>
+  </ul>
+
+  <div class="tab-content pt-3">
+    <div class="tab-pane active show" id="import-ratings-pane" role="tabpanel">
+      <p>Importing ratings is a great way to manage the rating process outside of Quepid. Select the file format to import.</p>
+      <div class="form-check"><input id="core-clear-existing-queries" type="checkbox" class="form-check-input" data-import-ratings-core-target="clearQueries"><label class="form-check-label" for="core-clear-existing-queries">Clear existing queries?</label></div>
+      <% [["csv", "CSV", "csvFile"], ["rre", "Rated Ranking Evaluator", "rreFile"], ["ltr", "Learning to Rank", "ltrFile"]].each do |key, label, target| %>
+        <div class="mb-3 mt-3"><div class="form-check"><input id="core-<%= key %>" type="radio" name="core-import-format" value="<%= key %>" class="form-check-input" data-action="change->import-ratings-core#selectType"><label class="form-check-label fw-bold" for="core-<%= key %>"><%= label %></label></div><input type="file" class="form-control mt-2" accept="<%= key == 'rre' ? '.json,application/json' : key == 'ltr' ? '.txt,text/plain' : '.csv,text/csv' %>" data-import-ratings-core-target="<%= target %>" data-import-type="<%= key %>" data-action="change->import-ratings-core#fileSelected"><pre class="small bg-light p-2 mt-2" data-import-ratings-core-target="<%= key == 'csv' ? 'csvPreview' : 'content' %>"></pre></div>
+      <% end %>
+    </div>
+    <div class="tab-pane" id="import-information_needs-pane" role="tabpanel">
+      <p>Import information needs from a CSV exported from Quepid. Missing queries can optionally be created.</p>
+      <div class="form-check mb-2"><input id="core-create-missing-queries" type="checkbox" class="form-check-input" data-import-ratings-core-target="createQueries"><label class="form-check-label" for="core-create-missing-queries">Create missing queries?</label></div>
+      <input type="radio" name="core-import-format" value="information_needs" id="core-information-needs" class="form-check-input" data-action="change->import-ratings-core#selectType"><label class="form-check-label fw-bold" for="core-information-needs">Information Needs CSV</label>
+      <input type="file" class="form-control mt-2" accept=".csv,text/csv" data-import-ratings-core-target="informationNeedsFile" data-import-type="information_needs" data-action="change->import-ratings-core#fileSelected"><pre class="small bg-light p-2 mt-2" data-import-ratings-core-target="informationNeedsPreview"></pre>
+    </div>
+    <div class="tab-pane" id="import-snapshots-pane" role="tabpanel">
+      <p>Importing snapshots creates any missing queries and replaces snapshots with the same name. The Case ID column is ignored.</p>
+      <input type="radio" name="core-import-format" value="snapshots" id="core-snapshots" class="form-check-input" data-action="change->import-ratings-core#selectType"><label class="form-check-label fw-bold" for="core-snapshots">Snapshot CSV</label>
+      <input type="file" class="form-control mt-2" accept=".csv,text/csv" data-import-ratings-core-target="snapshotsFile" data-import-type="snapshots" data-action="change->import-ratings-core#fileSelected"><pre class="small bg-light p-2 mt-2" data-import-ratings-core-target="snapshotsPreview"></pre>
+    </div>
+  </div>
+  <div data-import-ratings-core-target="loading" class="d-none text-center py-2"><i class="bi bi-arrow-repeat spintime" aria-hidden="true"></i> Importing…</div>
+<% end %>
+
+<% modal_footer = capture do %>
+  <button type="button" class="btn btn-primary" data-import-ratings-core-target="importButton" data-action="click->import-ratings-core#submit" disabled>Import</button>
+<% end %>
+
+<%= render "shared/modal_shell", id: "importRatingsModal", title: "Import into Case", dialog_class: "modal-xl",
+  data: { controller: "import-ratings-core", import_ratings_core_case_id_value: kase.id, import_ratings_core_ratings_url_value: api_import_ratings_path, import_ratings_core_information_needs_url_value: api_import_queries_information_needs_path, import_ratings_core_snapshots_url_value: api_case_snapshots_imports_path(case_id: kase.id) },
+  title_data: { import_ratings_core_target: "title" }, footer: modal_footer, body: modal_body %>

@@ -340,10 +340,10 @@ parts:
         paths: ["app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/assets/javascripts/services/caseCSVSvc.js", "app/controllers/api/v1/export"]
       "6.2":
         title: "Import into a case (ratings / information needs / snapshots)"
-        last_run: 2026-09-21T19:36:00Z
-        result: pass
-        notes: "Covered live: Playwright MCP on a disposable case. Modal title carries the case name and all three tabs render. Ratings tab: a mismatched-header CSV produces the 'Headers mismatch!' alert listing the expected 'query,docid,rating'; a valid CSV shows the override warning and imports (both ratings confirmed in the database). Information Needs tab: a valid CSV imported and the value was confirmed on the query. Not covered live: the Snapshots tab, the RRE/LTR formats, the too-many-columns line-number error, and cancelling after upload."
-        paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb", "app/services/snapshot_importer.rb", "app/assets/javascripts/components/import_ratings/import_ratings_controller.js", "app/assets/javascripts/components/import_ratings/_modal.html"]
+        last_run: 2026-09-23T22:48:00Z
+        result: pass_with_fixes
+        notes: "Covered live: Playwright MCP on the core case page. Opened the Stimulus-owned modal, uploaded a valid ratings CSV, confirmed the override warning and preview, imported successfully, observed the success flash, and confirmed the modal closed. Fixed the modal stacking-context issue found during verification so the body-level backdrop no longer intercepts modal controls. Also captured the modal and warning states. Information Needs, Snapshots, RRE/LTR, malformed-row edge cases, and cancellation were not covered in this pass."
+        paths: ["app/controllers/api/v1/import/ratings_controller.rb", "app/controllers/api/v1/import/queries/information_needs_controller.rb", "app/services/snapshot_importer.rb", "app/javascript/controllers/import_ratings_core_controller.js", "app/views/shared/_import_ratings_core_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/assets/javascripts/services/queriesSvc.js", "test/javascript/controllers/import_ratings_core_controller.test.js", "test/playwright/dom_migration_screenshots.spec.ts"]
       "6.3":
         title: "Clone a case"
         last_run: 2026-09-21T18:09:00Z

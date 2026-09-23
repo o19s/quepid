@@ -362,15 +362,15 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await shot(page, 'judgements-popover');
   });
 
-  test('import-ratings popover', async ({ page }) => {
+  test('import-ratings modal', async ({ page }) => {
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page);
-    await page.locator('import-ratings a').click();
-    const modal = page.locator('.modal.show').first();
+    await page.locator('a[data-controller="import-ratings-core"]').click();
+    const modal = page.locator('#importRatingsModal.show');
     await expect(modal).toBeVisible();
     await page.setViewportSize({ width: 900, height: 900 });
-    await openHelpPopover(page, modal, /Select to clear all the existing queries on a case/);
-    await shot(page, 'import-ratings-popover');
+    await expect(modal.getByText('Ratings', { exact: true })).toBeVisible();
+    await shot(page, 'import-ratings-modal');
   });
 
   test('annotation timeAgo', async ({ page }) => {

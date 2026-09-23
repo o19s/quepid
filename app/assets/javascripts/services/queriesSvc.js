@@ -431,6 +431,22 @@ angular.module('QuepidApp')
         });
       });
 
+      // Stimulus import-ratings-core: imported data needs the same live query
+      // refresh as the judgements modal.
+      document.addEventListener('imports:queries-need-reload', function(event) {
+        var detail = event.detail || {};
+        if (Number(detail.caseId) !== Number(svc.getCaseNo())) {
+          return;
+        }
+        $scope.$applyAsync(function() {
+          svc.reset();
+          svc.bootstrapQueries(detail.caseId)
+            .then(function() {
+              svc.searchAll();
+            });
+        });
+      });
+
       /**
        * mapper_code (a try's JS source defining numberOfResultsMapper/docsMapper/
        * nextPageArgsMapper/ratedDocsQueryParamsMapper - see

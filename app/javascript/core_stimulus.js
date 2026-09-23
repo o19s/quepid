@@ -49,6 +49,7 @@ import AnnotationsController from "controllers/annotations_controller"
 import DiffCoreController from "controllers/diff_core_controller"
 import DiffScoreController from "controllers/diff_score_controller"
 import DiffCaseScoresController from "controllers/diff_case_scores_controller"
+import ImportRatingsCoreController from "controllers/import_ratings_core_controller"
 
 Turbo.session.drive = false
 
@@ -85,3 +86,4 @@ application.register("annotations", AnnotationsController)
 application.register("diff-core", DiffCoreController)
 application.register("diff-score", DiffScoreController)
 application.register("diff-case-scores", DiffCaseScoresController)
+application.register("import-ratings-core", ImportRatingsCoreController)

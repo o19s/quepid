@@ -5,15 +5,14 @@
   (`{{ caseModel.selectedCase().caseNo }}` and friends). Every one of those values is Rails model
   data that CoreController already has, so they are rendered from `kase`/`a_try` directly.
 
-  This is deliberately NOT inside the `case_header` Turbo Frame: <import-ratings> is
-  still Angular components, and Angular only compiles the page once at bootstrap, so a frame
-  re-render would leave them dead.
+  This is deliberately NOT inside the `case_header` Turbo Frame: the case toolbar contains
+  live-query bridges, and Angular only compiles the page once at bootstrap.
 
   The case *name* is deliberately absent from these triggers. Each modal reads it live from the
   header through `utils/case_header` when it opens, so a rename needs nothing copied or resynced
   here - which also means an `ng-if` rebuild of this toolbar cannot reinstate a stale name.
 
-  `ng-controller="CaseCtrl"` stays for <import-ratings>, which binds `acase="caseModel.selectedCase()"`.
+  `ng-controller="CaseCtrl"` remains for the other live-query bridges.
 %>
 <%#
   `case-toolbar` is mounted out here rather than on the gated div below, so it is never torn
@@ -31,7 +30,7 @@
 >
   <%#
     The `ng-if` is not leftover Angular data binding - the attributes below are all server
-    rendered. It gates *visibility* only, and it has to stay until <diff>/<import-ratings> and
+    rendered. It gates *visibility* only, and it has to stay until <diff> and the remaining
     the snapshot/export flows stop depending on live queriesSvc state.
 
     Without it the toolbar is clickable from the first paint, roughly 1.5s before Angular has
@@ -105,9 +104,8 @@
           >Compare snapshots</a>
       </li>
       <li class="list-inline-item">
-        <import-ratings
-          acase="caseModel.selectedCase()"
-        ></import-ratings>
+        <i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i>
+        <a href="#" data-controller="import-ratings-core" data-action="click->import-ratings-core#open" data-bs-toggle="modal" data-bs-target="#importRatingsModal">Import</a>
       </li>
       <li class="list-inline-item">
         <i
