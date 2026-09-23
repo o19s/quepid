@@ -18,6 +18,14 @@ import {
   querqyRuleTriggered,
   ratingChangedQueryId
 } from "./utils/query_state"
+import {
+  bootstrapRequest,
+  bulkCreateRequest,
+  createRequest,
+  deleteRequest,
+  moveRequest,
+  positionRequest
+} from "./utils/query_lifecycle"
 
 /**
  * Framework-free query/search logic lifted out of the Angular `queriesSvc`, kept
@@ -50,6 +58,15 @@ const quepidSearch = {
     queryStateClass,
     querqyRuleTriggered,
     ratingChangedQueryId
+  },
+  queryLifecycle: {
+    bootstrapRequest,
+    bulkCreateRequest,
+    createRequest,
+    deleteRequest,
+    moveRequest,
+    positionRequest,
+    addQueries: null
   }
 }
 

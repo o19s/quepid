@@ -124,6 +124,12 @@ angular.module('QuepidApp')
       this.settingsWithTryOverrides = settingsWithTryOverrides;
       this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
+      this.addQueryTexts = addQueryTexts;
+
+      // Temporary adapter for the Stimulus query-lifecycle controller. The
+      // controller owns the user-facing workflow; this service still owns
+      // Query construction, search, and scoring until those seams migrate.
+      window.quepidSearch.queryLifecycle.addQueries = addQueryTexts;
 
       // Rated-docs lookup rules live in app/javascript/utils/rated_docs.js (Vitest-covered);
       // these stay as the Angular-facing names that queriesCtrl.js and docFinder.js call.
@@ -1211,9 +1217,9 @@ angular.module('QuepidApp')
       function bootstrapQueries(caseNo) {
         svc.isBootstrapping = true;
         querySearchableDeferred = $q.defer();
-        var path = 'api/cases/' + caseNo + '/queries?bootstrap=true';
+        var request = window.quepidSearch.queryLifecycle.bootstrapRequest(caseNo);
 
-        $http.get(path)
+        $http(request)
           .then(function(response) {
             that.queries = {};
             addQueriesFromResp(response.data);
@@ -1372,14 +1378,9 @@ angular.module('QuepidApp')
             return;
           }
 
-          var path = 'api/cases/' + caseNo + '/queries';
-          var postData = {
-            query: {
-              query_text: query.queryText
-            }
-          };
+          var request = window.quepidSearch.queryLifecycle.createRequest(caseNo, query.queryText);
 
-          $http.post(path, postData)
+          $http(request)
             .then(function(response) {
               let data = response.data;
               if ( response.status === 204 ) {
@@ -1428,13 +1429,10 @@ angular.module('QuepidApp')
           return deferred.promise;
         }
 
-        var path = 'api/bulk/cases/' + caseNo + '/queries';
-        var data = {
-          queries: queryTexts
-        };
+        var request = window.quepidSearch.queryLifecycle.bulkCreateRequest(caseNo, queryTexts);
 
         let that = this;
-        $http.post(path, data)
+        $http(request)
           .then(function(response) {
             let data = response.data;
 
@@ -1453,6 +1451,39 @@ angular.module('QuepidApp')
         return deferred.promise;
       };
 
+      function addQueryTexts(queryTexts) {
+        if (queryTexts.length === 0) {
+          return $q.when({});
+        }
+
+        if (queryTexts.length === 1) {
+          var query = svc.createQuery(queryTexts[0]);
+          return svc.persistQuery(query).then(function() {
+            return query.searchAndScore().then(function() {
+              return {};
+            }, function(searchError) {
+              return { searchError: searchError };
+            }).then(function(result) {
+              $log.info('rescoring queries after adding query');
+              svc.updateScores();
+              return result;
+            });
+          });
+        }
+
+        var queries = queryTexts.map(function(queryText) {
+          return svc.createQuery(queryText);
+        });
+
+        return svc.persistQueries(queries).then(function() {
+          return svc.searchAll().then(function() {
+            return {};
+          }, function(searchError) {
+            return { searchError: searchError };
+          });
+        });
+      }
+
       // get the full list of queries sorted by create/manual order
       // only call this when our version() changes
       this.queryArray = function() {
@@ -1460,13 +1491,14 @@ angular.module('QuepidApp')
       };
 
       this.updateQueryDisplayPosition = function(queryId, oldQueryId, reverse) {
-        var url     = 'api/cases/' + caseNo + '/queries/' + queryId + '/position';
-        var data    = {
-          after:    oldQueryId,
-          reverse:  reverse
-        };
+        var request = window.quepidSearch.queryLifecycle.positionRequest(
+          caseNo,
+          queryId,
+          oldQueryId,
+          reverse
+        );
 
-        return $http.put(url, data)
+        return $http(request)
           .then(function(response) {
             svc.displayOrder = response.data.display_order;
             svcVersion++;
@@ -1480,10 +1512,9 @@ angular.module('QuepidApp')
 
       // Delete a query
       this.deleteQuery = function(queryId) {
-        var path = 'api/cases/' + caseNo + '/queries/' + queryId;
         var that = this;
 
-        return $http.delete(path)
+        return $http(window.quepidSearch.queryLifecycle.deleteRequest(caseNo, queryId))
           .then(function() {
             delete that.queries[queryId];
             svcVersion++;
@@ -1497,10 +1528,7 @@ angular.module('QuepidApp')
 
       // Move a query
       this.moveQuery = function(query, targetCase) {
-        var path = 'api/cases/' + query.caseNo + '/queries/' + query.queryId;
-        var data = {'other_case_id': targetCase.caseNo};
-
-        return $http.put(path, data)
+        return $http(window.quepidSearch.queryLifecycle.moveRequest(query, targetCase.caseNo))
           .then(function() {
             delete that.queries[query.queryId];
             svcVersion++;
