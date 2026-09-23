@@ -47,6 +47,17 @@ describe("QueryDocumentsStore", () => {
     expect(snapshot.docs[0].hasRating).toBeUndefined()
   })
 
+  it("keeps the resolved document link in the plain snapshot", () => {
+    const doc = { id: "doc-1" }
+
+    store.replaceQuery(12, {
+      docs: [doc],
+      documentUrlFor: candidate => `https://search.example/doc/${candidate.id}`
+    })
+
+    expect(store.query(12).docs[0].linkUrl).toBe("https://search.example/doc/doc-1")
+  })
+
   it("replaces a query atomically and notifies subscribers", () => {
     const changes = []
     store.addEventListener("change", event => changes.push(event.detail))

@@ -170,6 +170,19 @@ angular.module('QuepidApp')
           depthOfRating: query.depthOfRating,
           ratingScale: query.ratings && query.ratings.scale,
           maxDocScore: query.maxDocScore(),
+          documentUrlFor: function(doc) {
+            if (!doc || !doc._url) return null;
+
+            var linkUrl = doc._url();
+            var settings = settingsSvc.applicableSettings() || {};
+            if (settings.basicAuthCredential) {
+              linkUrl = linkUrl.replace('://', '://' + settings.basicAuthCredential + '@');
+            }
+            if (settings.proxyRequests === true) {
+              linkUrl = caseTryNavSvc.getQuepidProxyUrl(settings.searchEndpointId) + linkUrl;
+            }
+            return linkUrl;
+          },
           version: query.version()
         });
       }
@@ -200,27 +213,6 @@ angular.module('QuepidApp')
           query.touchModifiedAt();
         });
         return true;
-      };
-
-      window.quepidSearch.queryState.documentUrl = function(queryId, docId) {
-        var query = window.quepidSearch.queryState.getQuery(queryId);
-        if (!query) return null;
-
-        var docs = (query.docs || []).concat(query.ratedDocs || []);
-        var doc = docs.find(function(candidate) {
-          return String(candidate.id) === String(docId);
-        });
-        if (!doc || !doc._url) return null;
-
-        var linkUrl = doc._url();
-        var settings = settingsSvc.applicableSettings() || {};
-        if (settings.basicAuthCredential) {
-          linkUrl = linkUrl.replace('://', '://' + settings.basicAuthCredential + '@');
-        }
-        if (settings.proxyRequests === true) {
-          linkUrl = caseTryNavSvc.getQuepidProxyUrl(settings.searchEndpointId) + linkUrl;
-        }
-        return linkUrl;
       };
 
       // Shared "clone settings with the selectedTry overridden" pattern for a one-off preview

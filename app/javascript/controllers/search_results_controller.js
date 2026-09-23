@@ -140,7 +140,6 @@ export default class extends Controller {
       item => String(item.id) === String(docId)
     )
     if (!snapshotDoc) return
-    const linkUrl = window.quepidSearch?.queryState?.documentUrl?.(this.queryId, docId)
-    openDetailedDocumentModal({ doc: snapshotDoc, linkUrl })
+    openDetailedDocumentModal({ doc: snapshotDoc, linkUrl: snapshotDoc.linkUrl })
   }
 }

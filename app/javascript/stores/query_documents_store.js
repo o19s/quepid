@@ -111,6 +111,7 @@ function snapshotDocument(doc, state = {}) {
     unabridgeds: { ...(doc.unabridgeds || {}) },
     snippets: { ...(doc.subSnippets?.("<strong>", "</strong>") || {}) },
     rawFields: doc.doc?.origin?.() || {},
+    linkUrl: state.documentUrlFor?.(doc) || null,
     matchExplain,
     error: doc.error,
     rating: doc.hasRating?.() ? doc.getRating?.() : null,
