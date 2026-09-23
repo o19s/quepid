@@ -106,6 +106,7 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
         assert_enqueued_with(job: BroadcastJudgeActivityJob) do
           delete book_judgement_url(book, judgement)
         end
+      end
     end
   end
 end

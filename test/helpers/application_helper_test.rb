@@ -95,7 +95,6 @@ class ApplicationHelperTest < ActionView::TestCase
       assert_includes rendered, 'AI Judge Foo will start evaluating query/doc pairs.'
       assert_not_includes rendered, '>true<'
     end
-    end
   end
 
   describe 'Smart handling of links to HTTPS search end points' do
