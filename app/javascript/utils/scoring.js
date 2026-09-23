@@ -162,9 +162,9 @@ export function averageMaxScore(queryScores) {
 
 /**
  * Whether a query has been scored but still has results left to rate — the
- * "hop to it" frog badge's visibility rule. Mirrors `SearchResultsCtrl`'s
- * `$scope.query.isNotAllRated()` (`app/assets/javascripts/controllers/searchResults.js`)
- * exactly: no score yet, an explicit `null` score (scoring hasn't resolved),
+ * "hop to it" frog badge's visibility rule. Mirrors the legacy Query
+ * object's `isNotAllRated()` implementation exactly: no score yet, an
+ * explicit `null` score (scoring hasn't resolved),
  * or already fully rated all read as "nothing to flag".
  */
 export function isNotAllRated(queryScore) {

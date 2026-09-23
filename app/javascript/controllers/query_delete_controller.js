@@ -4,7 +4,7 @@ import { apiFetch } from "api/fetch"
 /**
  * Owns query-delete confirmation and persistence.
  *
- * SearchResultsCtrl remains the temporary Angular adapter for removing the
+ * The legacy query service remains the temporary adapter for removing the
  * deleted query from its in-memory collection and refreshing scores.
  */
 export default class extends Controller {

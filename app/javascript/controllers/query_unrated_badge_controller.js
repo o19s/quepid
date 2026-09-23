@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { isNotAllRated } from "utils/scoring"
 
 /**
- * Store-driven replacement for `searchResults.html`'s per-query "unrated
+ * Store-driven replacement for the expanded-results template's per-query "unrated
  * results" frog badge — the first `searchResults`/`queriesCtrl` slice, per
  * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 5.
  *
@@ -15,8 +15,8 @@ import { isNotAllRated } from "utils/scoring"
  * `qscore_query_controller.js`.
  *
  * `isNotAllRated()` had exactly one caller before this
- * (`SearchResultsCtrl.query.isNotAllRated` in
- * `app/assets/javascripts/controllers/searchResults.js`), now deleted there.
+ * (`query.isNotAllRated` in the legacy Query object), now read from the
+ * explicit query/document stores.
  */
 export default class extends Controller {
   static targets = ["count"]

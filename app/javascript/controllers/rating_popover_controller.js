@@ -4,9 +4,9 @@ import { createBsPopover } from "utils/bs_popover"
 // Rating-scale popover for search results, "Score All", and the Document
 // Finder. Content here is plain DOM built from the scale value — the actual
 // rating mutation (doc.rate / doc.resetRating, scoreAll propagation, etc.)
-// still lives in Angular. This dispatches bubbling CustomEvents so whichever
-// Angular controller wraps this element (SearchResultCtrl, SearchResultsCtrl,
-// DocFinderCtrl) can handle the mutation without any id-based correlation.
+// still lives in the legacy query service. This dispatches bubbling
+// CustomEvents so the owning result/search controller or document finder can
+// handle the mutation without any id-based correlation.
 export default class extends Controller {
   static values = {
     scale: Object,

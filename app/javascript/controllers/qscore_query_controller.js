@@ -3,7 +3,7 @@ import { formatScore, scoreToColor } from "utils/scoring"
 
 /**
  * Store-driven replacement for the Angular `<qscore-query>` component's
- * primary "current query score" usage in `searchResults.html`
+ * primary "current query score" usage in the expanded-results template
  * (`<qscore-query scorable="query">`) — the first store subscriber, per
  * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4.
  *

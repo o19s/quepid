@@ -170,7 +170,8 @@ angular.module('QuepidApp')
           ratedDocsUnsupported: query.ratedDocsUnsupported,
           errorText: query.errorText,
           depthOfRating: query.depthOfRating,
-          ratingScale: query.ratings && query.ratings.scale,
+          ratingScale: query.ratings && query.ratings.scale || query.effectiveScorer().getColors(),
+          queryRating: query.rating,
           maxDocScore: query.maxDocScore(),
           documentUrlFor: function(doc) {
             if (!doc || !doc._url) return null;
@@ -217,9 +218,30 @@ angular.module('QuepidApp')
         return true;
       };
 
+      window.quepidSearch.queryState.rateAll = function(queryId, rating) {
+        var query = window.quepidSearch.queryState.getQuery(queryId);
+        if (!query) return false;
+
+        var docs = svc.showOnlyRated ? query.ratedDocs : query.docs;
+        if (!docs || docs.length === 0) return true;
+
+        var ids = docs.map(function(doc) { return doc.id; });
+        $scope.$evalAsync(function() {
+          if (rating === null || rating === undefined) {
+            docs[0].resetBulkRatings(ids);
+            query.rating = '--';
+          } else {
+            docs[0].rateBulk(ids, parseInt(rating, 10));
+            query.rating = parseInt(rating, 10);
+          }
+          query.touchModifiedAt();
+        });
+        return true;
+      };
+
       // Explicit command adapters for the Stimulus expanded-results renderer.
-      // Query objects remain Angular-owned, but the renderer no longer needs
-      // SearchResultsCtrl to discover them through a compiled scope.
+      // Query objects remain Angular-owned, but the renderer does not discover
+      // them through a compiled Angular controller.
       window.quepidSearch.queryState.toggleQuery = function(queryId) {
         var query = window.quepidSearch.queryState.getQuery(queryId);
         if (!query) return false;
@@ -927,7 +949,7 @@ angular.module('QuepidApp')
             self.ratedDocs = ratedDocsStaging;
             // Vespa's own totalCount (unlike result.docs.length, a page's worth) covers every
             // rated doc the "in (...)" filter matched, not just this page - needed so the "peek
-            // at next page" link (searchResults.html) knows there's more via ratedPaginate().
+            // at next page" link knows there's more via ratedPaginate().
             self.ratedDocsFound = result.searcher.numFound;
             self.ratingsReady = true;
             publishQueryDocuments(self);

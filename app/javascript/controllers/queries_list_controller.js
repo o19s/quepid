@@ -3,11 +3,12 @@ import { apiFetch } from "api/fetch"
 import { hideTooltipsWithin } from "utils/bs_tooltip"
 import { matchesQueryFilter, queryResultCount, querqyRuleTriggered } from "utils/query_state"
 import { queryCollectionStore } from "stores/query_collection_store"
+import { searchResultsTemplate } from "controllers/search_results_template"
 
 /**
  * Query-list collection rendering, toolbar, and drag lifecycle. Angular still
- * owns each expanded query's live search/results island and scoring; this
- * controller owns the collection order, filtering, pagination, and row hosts.
+ * owns live search/scoring and a few expanded-query controls; Stimulus owns
+ * the expanded-results shell, document rendering, and display state.
  */
 export default class extends Controller {
   static targets = ["ratedCheckbox", "ratedLabel", "filter", "sortLink", "manualSortLink", "sortIcon", "manualHelp", "list", "pagination", "count"]
@@ -377,11 +378,25 @@ export default class extends Controller {
 
     const rowController = row.querySelector('[data-controller="query-row"]')
     const expanded = rowController.querySelector('[data-query-row-target="expanded"]')
-    const searchResults = document.createElement("search-results")
-    searchResults.setAttribute("query", "query")
-    searchResults.setAttribute("issortingenabled", "queries.isSortingEnabled")
-    const linkedResults = compile(searchResults)(childScope)
-    Array.from(linkedResults).forEach(element => expanded.appendChild(element))
+    const searchResults = document.createElement("div")
+    searchResults.innerHTML = searchResultsTemplate({ caseId: query.caseNo, queryId: query.queryId })
+    const searchResultsRoot = searchResults.firstElementChild
+    expanded.appendChild(searchResultsRoot)
+
+    childScope.selectedTry = injector.get("settingsSvc").applicableSettings()
+    childScope.queriesSvc = injector.get("queriesSvc")
+    childScope.displayed = { resultsView: { finder: 1, results: 2, diffs: 3 }, results: 2 }
+    childScope.query.isToggled = () => injector.get("queryViewSvc").isQueryToggled(query.queryId)
+    childScope.query.toggle = () => {
+      const toggleQuery = window.quepidSearch?.queryState?.toggleQuery
+      return toggleQuery ? toggleQuery(query.queryId) : injector.get("queryViewSvc").toggleQuery(query.queryId)
+    }
+    childScope.query.getNumFound = () => {
+      const resultCount = window.quepidSearch?.queryState?.queryResultCount
+      if (resultCount) return resultCount(query, childScope.queriesSvc.showOnlyRated)
+      return childScope.queriesSvc.showOnlyRated ? query.ratedDocsFound : query.numFound
+    }
+    searchResultsRoot.querySelectorAll("[data-angular-bridge]").forEach(bridge => compile(bridge)(childScope))
 
     const diffScores = rowController.querySelector('[data-query-row-target="diffScores"]')
     const diffTemplate = document.createElement("div")
@@ -402,7 +417,10 @@ export default class extends Controller {
   forwardQueryToggle(event) {
     const row = event.target.closest("[data-query-row-query-id-value]")
     const expanded = row?.querySelector('[data-query-row-target="expanded"]')
-    const searchResults = expanded?.firstElementChild
+    const firstChild = expanded?.firstElementChild
+    const searchResults = firstChild?.matches('[data-controller="search-results"]')
+      ? firstChild
+      : firstChild?.querySelector('[data-controller="search-results"]')
     if (!searchResults) return
 
     searchResults.dispatchEvent(new CustomEvent("query-row:toggle", {

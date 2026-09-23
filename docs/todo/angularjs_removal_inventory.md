@@ -351,7 +351,7 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 
 **Fix during migration:** Add `aria-label` (or visible text) on the replacement controls. Align with [decision lens § A11y](#decision-lenses) — scores and rating controls need real ARIA, not color-only state.
 
-**Touches:** `searchResults.html`, diff/snapshot Compare UI, [Feature area § Search results](#6-search-results-and-rating-ui).
+**Touches:** `search_results_template.js`, diff/snapshot Compare UI, [Feature area § Search results](#6-search-results-and-rating-ui).
 
 #### "Show only rated" serves a stale list after a new rating
 
@@ -526,9 +526,9 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Results panel | Stimulus controller + Angular bridge | `app/javascript/controllers/search_results_controller.js`; `<search-results>`, `SearchResultsCtrl` remain as the temporary query/mutation bridge |
+| Results panel | Stimulus shell + isolated Angular controls | `app/javascript/controllers/search_results_controller.js` and `search_results_template.js` own the expanded-results shell/document rendering; live search, diff, finder, options, pagination, and scoring remain explicit Angular control islands |
 | Single result row | directive + controller | `<search-result>`, `SearchResultCtrl` |
-| Results template | template | `templates/views/searchResults.html` |
+| Results template | Stimulus template | `app/javascript/controllers/search_results_template.js` |
 | Rating popover | Stimulus controller | `rating_popover_controller.js` — mutation still bridges back to Angular via `rating-popover:rate`/`:reset` events |
 | Rate elements | service | `rateScaleSvc`, `ratingsStoreSvc` |
 | Rating background styling | filter | `ratingBgStyle` |
@@ -538,7 +538,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Move query modal | component | `<move-query>` — `components/move_query/` |
 | Missing documents search | controllers + template | `TargetedSearchCtrl`, `DocFinderCtrl`, `TargetedSearchModalCtrl`, `templates/views/targetedSearchModal.html` |
 | Diff results view | directive + controller | `<query-diff-results>`, `QueryDiffResultsCtrl`, `templates/views/queryDiffResults.html` |
-| Hit count display | template | `searchResults.html` (`{{ query.getNumFound() }}`) |
+| Hit count display | Angular control island | `search_results_template.js` (`{{ query.getNumFound() }}`) |
 | Copy query text | service | `clipboardSvc` — `services/clipboardSvc.js` |
 
 Backing services/factories: `docCacheSvc`, `DocListFactory`, `annotationsSvc`, `AnnotationFactory`, `searchEndpointSvc`
@@ -594,8 +594,8 @@ These Angular-specific wrappers are used across many templates:
 | Directive | Element | Template | Controller |
 |-----------|---------|----------|------------|
 | `queries` | `<queries>` | `queries.html` | `QueriesCtrl` |
-| `searchResults` | `<search-results>` | nested | `SearchResultsCtrl` |
-| `searchResult` | `<search-result>` | inline in `searchResults.html` | `SearchResultCtrl` |
+| `searchResults` | expanded-results shell | Stimulus | `SearchResultsController` |
+| `searchResult` | `<search-result>` | `queryDiffResults.html`, `targetedSearchModal.html` | `SearchResultCtrl` |
 | `queryParams` | `<query-params>` | `devQueryParams.html` | `QueryParamsCtrl` |
 | `queryParamsHistory` | `<query-params-history>` | `queryParamsHistory.html` | `queryParamsHistoryCtrl` |
 | `queryDiffResults` | `<query-diff-results>` | `queryDiffResults.html` | `QueryDiffResultsCtrl` |
@@ -627,7 +627,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 **Shell:** `queries.html`, `embed.html`
 
-**Search/results:** `searchResults.html`, `queryDiffResults.html`, `targetedSearchModal.html`
+**Search/results:** `search_results_template.js`, `queryDiffResults.html`, `targetedSearchModal.html`
 
 **Case-action modals:** `searchEndpoint_popup.html`
 

@@ -13,6 +13,7 @@
   A port-3000 bind error is not permission to stop anything, retry, or create a throwaway app. Resolve the exact owner and report it.
 - When a correction or lesson applies to how you work in this repo, fix it in the actual project file it belongs to (this file, a skill's `SKILL.md`, a doc) — not only in your own private memory, which no other session or person can see or review.
 - **Default to `docker compose exec app`, which runs the command IN the already-running app container.** So `rails console --environment=test` becomes `docker compose exec app rails console --environment=test`.
+- Keep `app` immediately after `docker compose exec` so the command matches the approved Docker execution rule. For environment overrides, use `docker compose exec app env KEY=value command ...`; do not put `-e KEY=value` before `app`.
 - **Default to `docker compose exec app` for every command.** Do not use `bin/docker r`, `docker compose run`, or any app-run container while `app` is running. A run container is never a substitute for the permanent app.
 - **Never stop, recreate, remove, or replace `quepid_app` unless the user explicitly asks.** If duplicate app-run containers exist, do not clean them up autonomously; report their exact names and ask first.
     - **Can't reach the app.** In the running container the app is plain `http://localhost:3000`. In an `r` container `localhost` is itself, and the host is only reachable as `host.docker.internal` — which Rails rejects with a 403 "Blocked hosts" page, since its dev allow-list takes any bare IP but only a few names.

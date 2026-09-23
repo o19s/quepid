@@ -10,6 +10,7 @@ function controllerFor({ showOnlyRated = false, results = true, expanded = true 
   const element = document.createElement("div")
   element.innerHTML = `
     <div data-search-results-target="content">
+      <div data-search-results-target="scoreAll"></div>
       <div data-search-results-target="results"></div>
     </div>
   `
@@ -17,8 +18,10 @@ function controllerFor({ showOnlyRated = false, results = true, expanded = true 
   controller.element = element
   controller.contentTarget = element.querySelector('[data-search-results-target="content"]')
   controller.resultsTarget = element.querySelector('[data-search-results-target="results"]')
+  controller.scoreAllTarget = element.querySelector('[data-search-results-target="scoreAll"]')
   controller.hasContentTarget = true
   controller.hasResultsTarget = true
+  controller.hasScoreAllTarget = true
   const snapshot = {
     queryId: 1,
     queryText: "meetings",
@@ -26,7 +29,9 @@ function controllerFor({ showOnlyRated = false, results = true, expanded = true 
     ratedDocs: [{ id: "rated" }],
     expanded,
     resultsView: results ? 2 : 3,
-    showOnlyRated
+    showOnlyRated,
+    ratingScale: { 2: { color: "rgb(1, 2, 3)" } },
+    queryRating: 2
   }
   controller.store = {
     query: () => snapshot,
@@ -69,6 +74,34 @@ describe("SearchResultsController", () => {
     expect(controller.angularScope).toBeUndefined()
     controller.render()
     expect(controller.resultsTarget.childElementCount).toBe(1)
+  })
+
+  it("renders Score All from the document store", () => {
+    const { controller } = controllerFor()
+    controller.render()
+
+    expect(controller.scoreAllTarget.textContent).toContain("Score All")
+    expect(controller.scoreAllTarget.querySelector(".btn").textContent).toContain("2")
+    expect(controller.scoreAllTarget.querySelector('[data-controller="rating-popover"]')
+      .getAttribute("data-rating-popover-scale-value"))
+      .toBe(JSON.stringify({ 2: { color: "rgb(1, 2, 3)" } }))
+  })
+
+  it("routes Score All ratings through the explicit query-state adapter", () => {
+    const { controller } = controllerFor()
+    controller.render()
+    const rateAll = vi.fn()
+    window.quepidSearch = { queryState: { rateAll } }
+    const event = {
+      type: "rating-popover:rate",
+      detail: { rating: "3" },
+      target: controller.scoreAllTarget.querySelector(".single-rating"),
+      stopPropagation: vi.fn()
+    }
+
+    controller.handleRating(event)
+
+    expect(rateAll).toHaveBeenCalledWith("1", 3)
   })
 
   it("toggles notes in the document store", () => {

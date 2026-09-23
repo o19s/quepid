@@ -21,7 +21,7 @@ angular.module('QuepidApp')
       // controller (data-controller="rating-popover" in searchResult.html);
       // it dispatches these events on its own element, which bubble up to
       // whichever DOM node this controller is attached to. Stop propagation
-      // so an ancestor's own rating-popover listener (e.g. SearchResultsCtrl's
+      // so an ancestor's own rating-popover listener (e.g. a document finder's
       // "Score All" bulk rating) doesn't also fire for this single doc.
       $element.on('rating-popover:rate', function(event) {
         event.stopPropagation();

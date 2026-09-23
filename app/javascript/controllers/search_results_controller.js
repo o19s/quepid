@@ -9,7 +9,7 @@ import { copyText } from "utils/clipboard"
  * command/state adapters rather than scope discovery.
  */
 export default class extends Controller {
-  static targets = ["content", "results", "notesBox"]
+  static targets = ["content", "results", "notesBox", "scoreAll"]
 
   connect() {
     this.store = window.quepidStore?.documents || queryDocumentsStore
@@ -55,6 +55,7 @@ export default class extends Controller {
     const expanded = snapshot.expanded === true
     this.contentTarget.classList.toggle("d-none", !expanded)
     this.renderNotes(snapshot)
+    this.renderScoreAll(snapshot)
 
     if (!expanded || !this.isResultsView()) {
       this.resultsTarget.replaceChildren()
@@ -129,9 +130,44 @@ export default class extends Controller {
     if (!snapshot) return
 
     const result = event.target.closest("search-result")
+    if (!result) {
+      const rating = event.type === "rating-popover:rate" ? parseInt(event.detail.rating, 10) : null
+      window.quepidSearch?.queryState?.rateAll?.(this.queryId, rating)
+      return
+    }
     const docId = result?.__searchResultDocument?.id
     const rating = event.type === "rating-popover:rate" ? parseInt(event.detail.rating, 10) : null
     window.quepidSearch?.queryState?.rateDocument?.(this.queryId, docId, rating)
+  }
+
+  renderScoreAll(snapshot) {
+    if (!this.hasScoreAllTarget) return
+
+    this.scoreAllTarget.replaceChildren()
+    const container = document.createElement("div")
+    container.className = "col-ratings query-rating"
+    container.innerHTML = `
+      <strong>Score All</strong>
+      <div class="ratings"><div class="single-rating" data-controller="rating-popover"></div></div>
+    `
+
+    const popover = container.querySelector('[data-controller="rating-popover"]')
+    popover.dataset.ratingPopoverScaleValue = JSON.stringify(snapshot.ratingScale || {})
+    const trigger = document.createElement("span")
+    trigger.className = "btn"
+    const rating = snapshot.queryRating || "--"
+    trigger.textContent = `${rating} `
+    trigger.style.backgroundColor = this.ratingColor(rating, snapshot.ratingScale || {})
+    const icon = document.createElement("i")
+    icon.className = "bi bi-caret-down-fill"
+    icon.setAttribute("aria-hidden", "true")
+    trigger.appendChild(icon)
+    popover.appendChild(trigger)
+    this.scoreAllTarget.appendChild(container)
+  }
+
+  ratingColor(rating, scale) {
+    return window.quepidSearch?.scoring?.ratingBackgroundColor?.({ rating, scale })?.["background-color"] || scale[rating]?.color || ""
   }
 
   handleQueryToggle(event) {
