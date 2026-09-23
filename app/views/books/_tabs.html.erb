@@ -14,13 +14,13 @@
 <% if book_overview_family_active? %>
   <ul class="nav nav-pills small mt-2 mb-3">
     <li class="nav-item">
-      <%= link_to book_query_doc_pairs_path(book), class: "nav-link #{'active' if make_active?({controller: 'query_doc_pairs'})}", method: :get do %>
-        Query/Doc Pairs
+      <%= link_to judgement_stats_book_path(book), class: "nav-link #{'active' if make_active?({action: 'judgement_stats'})}", method: :get do %>
+        <i class="bi bi-bar-chart-fill text-body"></i> Judgement Stats
       <% end %>
     </li>
     <li class="nav-item">
-      <%= link_to judgement_stats_book_path(book), class: "nav-link #{'active' if make_active?({action: 'judgement_stats'})}", method: :get do %>
-        <i class="bi bi-bar-chart-fill text-body"></i> Judgement Stats
+      <%= link_to book_query_doc_pairs_path(book), class: "nav-link #{'active' if make_active?({controller: 'query_doc_pairs'})}", method: :get do %>
+        Query/Doc Pairs
       <% end %>
     </li>
     <li class="nav-item">
