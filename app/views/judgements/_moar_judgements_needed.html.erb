@@ -17,11 +17,21 @@
     <% if book.cases.empty? %>
       <p>You can populate this Book with query/doc pairs for judging by <%= link_to 'picking a Case', cases_path, class: 'alert-link' %> and using the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this book with query/doc pairs from your search engine.</p>
     <% else %>
-      <p>Return to the linked Case
-      <% book.cases.each do |kase| %>
-        <%= link_to_core_case case_title(kase), kase, kase.last_try_number, class: 'alert-link' %>
+      <% linked_cases_auto_populate = book.cases.all?(&:auto_populate_book_pairs) %>
+      <% cases_are_plural = book.cases.many? %>
+      <% if linked_cases_auto_populate %>
+        <p>Load query/doc pairs for judging by returning to the linked Case<%= 's' if cases_are_plural %>
+        <% book.cases.each do |kase| %>
+          <%= link_to_core_case case_title(kase), kase, kase.last_try_number, class: 'alert-link' %>
+        <% end %>
+        and letting <%= cases_are_plural ? 'them' : 'it' %> run <%= cases_are_plural ? 'their' : 'its' %> queries - <%= cases_are_plural ? 'they are' : 'it is' %> set to auto-populate this Book.</p>
+      <% else %>
+        <p>Return to the linked Case<%= 's' if cases_are_plural %>
+        <% book.cases.each do |kase| %>
+          <%= link_to_core_case case_title(kase), kase, kase.last_try_number, class: 'alert-link' %>
+        <% end %>
+        and use the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this Book with query/doc pairs for judging.</p>
       <% end %>
-      and use the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this Book with query/doc pairs for judging.</p>
     <% end %>
   </div>
 

@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { showStatusMessage } from "utils/status_message"
+import { setButtonLoading, escapeHtml } from "utils/stimulus_ui"
 
 export default class extends Controller {
   static targets = [
@@ -142,7 +143,7 @@ export default class extends Controller {
       }
     }
 
-    this.setButtonLoading(this.fetchButtonTarget, true)
+    setButtonLoading(this.fetchButtonTarget, true)
     this.showStatus(`Fetching via ${httpMethod}...`, "info")
 
     try {
@@ -173,7 +174,7 @@ export default class extends Controller {
     } catch (error) {
       this.showStatus(`Error: ${error.message}`, "error")
     } finally {
-      this.setButtonLoading(this.fetchButtonTarget, false)
+      setButtonLoading(this.fetchButtonTarget, false)
     }
   }
 
@@ -187,7 +188,7 @@ export default class extends Controller {
       return
     }
 
-    this.setButtonLoading(this.generateButtonTarget, true)
+    setButtonLoading(this.generateButtonTarget, true)
     this.showStatus("Generating mapper functions with AI... This may take a moment.", "info")
 
     try {
@@ -233,7 +234,7 @@ export default class extends Controller {
     } catch (error) {
       this.showStatus(`Error: ${error.message}`, "error")
     } finally {
-      this.setButtonLoading(this.generateButtonTarget, false)
+      setButtonLoading(this.generateButtonTarget, false)
     }
   }
 
@@ -274,7 +275,7 @@ export default class extends Controller {
       return
     }
 
-    this.setButtonLoading(button, true)
+    setButtonLoading(button, true)
 
     try {
       const response = await apiFetch(this.testUrlValue, {
@@ -292,19 +293,19 @@ export default class extends Controller {
 
       if (data.success) {
         const resultStr = JSON.stringify(data.result, null, 2)
-        resultTarget.innerHTML = `<pre class="text-success mb-0" style="white-space: pre-wrap;">${this.escapeHtml(resultStr)}</pre>`
+        resultTarget.innerHTML = `<pre class="text-success mb-0" style="white-space: pre-wrap;">${escapeHtml(resultStr)}</pre>`
         this.showStatus(`${mapperType} test successful!`, "success")
       } else {
-        resultTarget.innerHTML = `<pre class="text-danger mb-0">${this.escapeHtml(data.error)}</pre>`
+        resultTarget.innerHTML = `<pre class="text-danger mb-0">${escapeHtml(data.error)}</pre>`
         this.showStatus(`${mapperType} test failed`, "error")
       }
 
       // Display console logs if any were captured
       this.displayLogs(data.logs, logsTarget, logsContainerTarget)
     } catch (error) {
-      resultTarget.innerHTML = `<pre class="text-danger mb-0">Error: ${this.escapeHtml(error.message)}</pre>`
+      resultTarget.innerHTML = `<pre class="text-danger mb-0">Error: ${escapeHtml(error.message)}</pre>`
     } finally {
-      this.setButtonLoading(button, false)
+      setButtonLoading(button, false)
     }
   }
 
@@ -324,7 +325,7 @@ export default class extends Controller {
       const levelIcon = log.level === 'error' ? '[ERROR]' :
                         log.level === 'warn' ? '[WARN]' :
                         log.level === 'info' ? '[INFO]' : '[LOG]'
-      return `<div class="${levelClass}">${this.escapeHtml(levelIcon)} ${this.escapeHtml(log.message)}</div>`
+      return `<div class="${levelClass}">${escapeHtml(levelIcon)} ${escapeHtml(log.message)}</div>`
     }).join('')
 
     logsTarget.innerHTML = logHtml
@@ -370,7 +371,7 @@ export default class extends Controller {
     this.captureEditors()
     const currentCode = editor ? editor.getValue() : textarea.value
 
-    this.setButtonLoading(button, true)
+    setButtonLoading(button, true)
     this.showStatus(`Refining ${mapperType} with AI...`, "info")
 
     try {
@@ -409,7 +410,7 @@ export default class extends Controller {
     } catch (error) {
       this.showStatus(`Error: ${error.message}`, "error")
     } finally {
-      this.setButtonLoading(button, false)
+      setButtonLoading(button, false)
     }
   }
 
@@ -437,7 +438,7 @@ export default class extends Controller {
       return
     }
 
-    this.setButtonLoading(this.saveButtonTarget, true)
+    setButtonLoading(this.saveButtonTarget, true)
     this.showStatus("Saving search endpoint...", "info")
 
     const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
@@ -483,7 +484,7 @@ export default class extends Controller {
     } catch (error) {
       this.showStatus(`Error: ${error.message}`, "error")
     } finally {
-      this.setButtonLoading(this.saveButtonTarget, false)
+      setButtonLoading(this.saveButtonTarget, false)
     }
   }
 
@@ -538,20 +539,4 @@ export default class extends Controller {
     })
   }
 
-  setButtonLoading(button, loading) {
-    if (loading) {
-      button.disabled = true
-      button.dataset.originalText = button.innerHTML
-      button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
-    } else {
-      button.disabled = false
-      button.innerHTML = button.dataset.originalText || button.innerHTML
-    }
-  }
-
-  escapeHtml(text) {
-    const div = document.createElement('div')
-    div.textContent = text
-    return div.innerHTML
-  }
 }

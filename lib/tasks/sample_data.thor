@@ -418,6 +418,7 @@ class SampleData < Thor
 
     book = ::Book.where(name: 'Book of Ratings').first_or_create
 
+    book.owner = realistic_activity_user
     book.scale = Scorer.system_default_scorer.scale
     book.scale_with_labels = Scorer.system_default_scorer.scale_with_labels
 

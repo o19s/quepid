@@ -39,12 +39,20 @@ module AiJudges
       # validations, so the JsonFormatValidator hasn't parsed them into Hashes
       # yet. Trigger validation so the LLM service sees a proper Hash (otherwise
       # document_fields['image'] does substring matching on the raw JSON text
-      # and the image branch never fires).
+      # and the image branch never fires). This query_doc_pair is deliberately
+      # never linked to a real book (it's an ephemeral, unsaved object for
+      # testing a prompt), so `belongs_to :book` is expected to "fail" here and
+      # must be ignored - only bail out on an actual JSON format error.
       query_doc_pair.valid?
+      json_errors = query_doc_pair.errors[:document_fields] + query_doc_pair.errors[:options]
+      if json_errors.any?
+        render json: { error: json_errors.to_sentence }, status: :unprocessable_content
+        return
+      end
 
       llm_service = LlmService.new(ai_judge.llm_key, ai_judge.judge_options)
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: ai_judge)
-      llm_service.perform_safe_judgement judgement
+      llm_service.perform_safe_judgement judgement, book: @book
 
       render json: { rating: judgement.rating, explanation: judgement.explanation }
     end
