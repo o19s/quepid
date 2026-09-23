@@ -138,6 +138,20 @@ module AiJudges
         assert_in_delta(1.0, body['rating'])
       end
 
+      test 'refuses to preview a judge that needs a book when there is no book, and says where to go' do
+        post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
+          system_prompt:  'Judge this',
+          llm_key:        'abc123',
+          judge_options:  { llm_provider: 'typesafe_jev' },
+          query_doc_pair: { query_text: 'cheese', doc_id: 'd1', document_fields: '{}' },
+        }
+
+        assert_response :unprocessable_content
+        assert_match(/can only be tested from a book/, response.parsed_body['error'])
+        assert_match(/Judgement Stats/, response.parsed_body['error'])
+        assert_not_requested(:post, /api\.typesafe\.ai/)
+      end
+
       test 'returns a validation error instead of running the LLM when document_fields is malformed JSON' do
         post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
           system_prompt:  'You are a grocery store shopper. You like cheese. Is this a cheese?',

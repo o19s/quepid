@@ -77,6 +77,12 @@ class LlmProvider
     @scale_as_criteria
   end
 
+  # A provider that is sent the book's scale as its criteria has nothing to judge
+  # against without one, so it can only be run (or previewed) from a book.
+  def needs_book?
+    scale_as_criteria?
+  end
+
   # True for a provider that is visible in the form but that Quepid cannot actually
   # judge with yet -- selecting it shows `notice_html` and saving is refused.
   def coming_soon?

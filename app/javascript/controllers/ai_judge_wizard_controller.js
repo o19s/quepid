@@ -72,7 +72,8 @@ export default class extends Controller {
     "status",
     "ratingInfo",
     "loadingSpinner",
-    "runPromptButton"
+    "runPromptButton",
+    "needsBookNotice"
   ]
 
   static values = {
@@ -80,7 +81,8 @@ export default class extends Controller {
     testUrl: String,
     existing: Boolean,
     presets: Object,
-    stockPrompts: Array
+    stockPrompts: Array,
+    hasBook: Boolean
   }
 
   connect() {
@@ -201,6 +203,16 @@ export default class extends Controller {
     this.describePromptField(preset)
     this.showProviderOptionFields(provider)
     this.showCriteria(preset)
+    this.updateRunAvailability(preset)
+  }
+
+  // A provider that is sent the book's scale as its criteria (Jev) has nothing to
+  // judge against without a book, so don't offer a run that can only fail.
+  updateRunAvailability(preset) {
+    const needsBook = Boolean(preset?.scale_as_criteria) && !this.hasBookValue
+
+    if (this.hasRunPromptButtonTarget) this.runPromptButtonTarget.disabled = needsBook
+    if (this.hasNeedsBookNoticeTarget) this.needsBookNoticeTarget.style.display = needsBook ? "" : "none"
   }
 
   // Fields the provider fixes for us (e.g. a single endpoint and model) are shown

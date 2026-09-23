@@ -24,8 +24,7 @@ module LlmJudgeAdapters
     MAX_STATE_CHARS = 80_000
     TRUNCATION_MARKER = ' ...[truncated]'
 
-    NO_BOOK_MESSAGE = 'Jev judges against a book\'s rating scale, so it needs a book -- open the prompt ' \
-                      'preview with a book (?book_id=...) or run the judge from a book.'
+    NO_BOOK_MESSAGE = 'Jev judges against a book\'s rating scale, so it needs a book -- run it from a book.'
 
     def path
       'v1/systemone'

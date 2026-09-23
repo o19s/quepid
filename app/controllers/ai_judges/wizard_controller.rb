@@ -34,6 +34,14 @@ module AiJudges
       ai_judge = AiJudge.new(system_prompt: params[:system_prompt], llm_key: params[:llm_key])
       ai_judge.judge_options = judge_options_params.to_h
 
+      provider = LlmProviders[ai_judge.judge_options[:llm_provider]]
+      if provider&.needs_book? && @book.nil?
+        error = "#{provider.label} rates against a book's scale, so it can only be tested from a book: " \
+                "open this judge from the book's Judgement Stats page (Refine Prompt)."
+        render json: { error: error }, status: :unprocessable_content
+        return
+      end
+
       query_doc_pair = QueryDocPair.new(query_doc_pair_params)
       # Form posts document_fields/options as JSON strings; .new doesn't run
       # validations, so the JsonFormatValidator hasn't parsed them into Hashes

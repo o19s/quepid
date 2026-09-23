@@ -3,6 +3,7 @@
      data-ai-judge-wizard-sample-url-value="<%= ai_judge_sample_query_doc_pair_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
      data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
      data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>"
+     data-ai-judge-wizard-has-book-value="<%= @book.present? %>"
      data-ai-judge-wizard-presets-value="<%= LlmProviders.presets_json %>"
      data-ai-judge-wizard-stock-prompts-value="<%= LlmProviders.stock_system_prompts_json %>">
   <div class="card-header">
@@ -234,7 +235,11 @@
               </div>
             <% end %>
 
-            <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt">Run Judgement</button>
+            <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt" <%= 'disabled' if provider&.needs_book? && @book.nil? %>>Run Judgement</button>
+            <div class="form-text" data-ai-judge-wizard-target="needsBookNotice" <%= 'style=display:none;'.html_safe unless provider&.needs_book? && @book.nil? %>>
+              This provider rates against a book's scale, so it can only be tested from a book:
+              open this judge from the book's <strong>Judgement Stats</strong> page (<strong>Refine Prompt</strong>).
+            </div>
 
             <div data-ai-judge-wizard-target="loadingSpinner" style="display: none;" class="text-center my-4">
               <div class="spinner-border text-primary" role="status">

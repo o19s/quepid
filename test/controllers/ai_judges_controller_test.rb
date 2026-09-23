@@ -176,6 +176,27 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       assert_select '#judging-criteria p', text: /0 \(labeled "Not Relevant"\)/
     end
 
+    test 'a judge that needs a book cannot be run without one, and says where to go' do
+      ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
+
+      get edit_ai_judge_url(ai_judge)
+
+      assert_response :success
+      assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]'
+      assert_select '[data-ai-judge-wizard-target=needsBookNotice]:not([style*="display:none"])',
+                    text: /Judgement Stats/
+    end
+
+    test 'a judge that needs a book can be run once it has one' do
+      ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
+
+      get edit_ai_judge_url(ai_judge, book_id: book.id)
+
+      assert_response :success
+      assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]', count: 0
+      assert_select '[data-ai-judge-wizard-target=needsBookNotice][style*="display:none"]'
+    end
+
     test 'shows no criteria when there is no book to take them from' do
       get edit_ai_judge_url(ai_judge)
 
