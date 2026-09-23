@@ -52,6 +52,16 @@ angular.module('QuepidApp')
 
       $scope.displayed = new DisplayConfig();
 
+      var syncDisplayState = function() {
+        if (window.quepidStore && window.quepidStore.documents) {
+          window.quepidStore.documents.updateQueryState($scope.query.queryId, {
+            expanded: $scope.query.isToggled(),
+            resultsView: $scope.displayed.results,
+            showOnlyRated: queriesSvc.showOnlyRated
+          });
+        }
+      };
+
       $scope.numFound = 0;
       $scope.query.getNumFound = function() {
         $scope.numFound = window.quepidSearch.queryState.queryResultCount(
@@ -67,7 +77,9 @@ angular.module('QuepidApp')
       };
       $scope.query.toggle = function() {
           queryViewSvc.toggleQuery($scope.query.queryId);
+          syncDisplayState();
       };
+      syncDisplayState();
 
       // The query-row Stimulus controller owns the header click. Keep the
       // expanded content and query-view state in Angular until that island is
@@ -103,6 +115,7 @@ angular.module('QuepidApp')
         } else {
           $scope.displayed.results = $scope.displayed.resultsView.results;
         }
+        syncDisplayState();
       });
 
       // Watch for query version changes - unified logic for all diff scenarios

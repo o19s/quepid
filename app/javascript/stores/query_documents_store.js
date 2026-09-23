@@ -12,18 +12,45 @@ export class QueryDocumentsStore extends EventTarget {
   }
 
   reset() {
+    this._showOnlyRated = false
     this._queries = new Map()
     this.dispatchEvent(new CustomEvent("reset", { detail: this.snapshot() }))
   }
 
   replaceQuery(queryId, { docs = [], ratedDocs = [], ...state } = {}) {
+    const previous = this._queries.get(String(queryId)) || {}
     this._queries.set(String(queryId), {
+      ...previous,
       queryId: Number(queryId),
+      showOnlyRated: this._showOnlyRated,
       ...state,
       docs: docs.map(doc => snapshotDocument(doc, state)),
       ratedDocs: ratedDocs.map(doc => snapshotDocument(doc, state))
     })
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(queryId) }))
+  }
+
+  updateQueryState(queryId, state = {}) {
+    const current = this._queries.get(String(queryId))
+    if (!current) return
+
+    this._queries.set(String(queryId), { ...current, ...state })
+    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(queryId) }))
+  }
+
+  setShowOnlyRated(showOnlyRated) {
+    this._showOnlyRated = Boolean(showOnlyRated)
+    this._queries.forEach((query, queryId) => {
+      this._queries.set(queryId, { ...query, showOnlyRated: this._showOnlyRated })
+    })
+    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+  }
+
+  collapseAll() {
+    this._queries.forEach((query, queryId) => {
+      this._queries.set(queryId, { ...query, expanded: false })
+    })
+    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
   }
 
   removeQuery(queryId) {
@@ -39,6 +66,7 @@ export class QueryDocumentsStore extends EventTarget {
     const queries = Object.fromEntries(this._queries)
     return {
       queryId: queryId == null ? null : Number(queryId),
+      showOnlyRated: this._showOnlyRated,
       query: queryId == null ? null : queries[String(queryId)] ?? null,
       queries
     }

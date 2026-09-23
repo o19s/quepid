@@ -4,8 +4,8 @@ import { openDetailedDocumentModal } from "utils/detailed_document_modal"
 
 /**
  * Renders an expanded query from the plain document read model. Angular still
- * owns live search and mutations, but it is used here only as an explicit
- * command/state adapter while that seam is being migrated.
+ * owns live search and mutations, but those are reached through explicit
+ * command/state adapters rather than scope discovery.
  */
 export default class extends Controller {
   static targets = ["content", "results"]
@@ -20,58 +20,32 @@ export default class extends Controller {
     this.element.addEventListener("rating-popover:rate", this.ratingHandler)
     this.element.addEventListener("rating-popover:reset", this.ratingHandler)
     this.element.addEventListener("search-result:show-document", this.showDocumentHandler)
-    this.attachToAngularScope()
-  }
-
-  attachToAngularScope() {
-    const angularElement = window.angular?.element(this.element)
-    this.angularScope = angularElement?.isolateScope?.() || angularElement?.scope?.()
-    if (!this.angularScope) {
-      this.retryHandle = requestAnimationFrame(() => this.attachToAngularScope())
-      return
-    }
-
-    this.watchHandle = this.angularScope.$watch(
-      () => this.renderStateKey(),
-      () => this.render()
-    )
     this.render()
   }
 
   disconnect() {
-    if (this.retryHandle) cancelAnimationFrame(this.retryHandle)
-    if (this.watchHandle) this.watchHandle()
     this.store?.removeEventListener("change", this.storeChange)
     this.store?.removeEventListener("reset", this.storeChange)
     this.element.removeEventListener("rating-popover:rate", this.ratingHandler)
     this.element.removeEventListener("rating-popover:reset", this.ratingHandler)
     this.element.removeEventListener("search-result:show-document", this.showDocumentHandler)
-    this.angularScope = null
-  }
-
-  renderStateKey() {
-    const query = this.angularScope?.query
-    if (!query) return ""
-    return [query.isToggled?.(), this.angularScope.displayed?.results, this.angularScope.queriesSvc?.showOnlyRated].join(":")
   }
 
   renderFromStore(detail) {
-    if (!this.angularScope) return
-    if (!detail || detail.queryId == null || detail.queryId === this.angularScope.query?.queryId) this.render()
+    if (!detail || detail.queryId == null || String(detail.queryId) === String(this.queryId)) this.render()
   }
 
   render() {
-    if (!this.angularScope || !this.hasContentTarget || !this.hasResultsTarget) return
+    if (!this.hasContentTarget || !this.hasResultsTarget) return
 
-    const query = this.angularScope.query
-    const snapshot = query && this.store.query(query.queryId)
-    if (!query || !snapshot) {
+    const snapshot = this.store.query(this.queryId)
+    if (!snapshot) {
       this.contentTarget.classList.add("d-none")
       this.resultsTarget.replaceChildren()
       return
     }
 
-    const expanded = query.isToggled?.() === true
+    const expanded = snapshot.expanded === true
     this.contentTarget.classList.toggle("d-none", !expanded)
 
     if (!expanded || !this.isResultsView()) {
@@ -82,13 +56,17 @@ export default class extends Controller {
     this.renderDocuments(this.visibleDocuments(snapshot), snapshot)
   }
 
+  get queryId() {
+    return this.element.closest("[data-query-row-query-id-value]")?.dataset.queryRowQueryIdValue || this.element.dataset.queryId
+  }
+
   visibleDocuments(snapshot) {
-    return this.angularScope.queriesSvc?.showOnlyRated ? snapshot.ratedDocs || [] : snapshot.docs || []
+    return snapshot.showOnlyRated ? snapshot.ratedDocs || [] : snapshot.docs || []
   }
 
   isResultsView() {
-    const displayed = this.angularScope.displayed
-    return !displayed || displayed.results === displayed.resultsView?.results
+    const snapshot = this.store.query(this.queryId)
+    return !snapshot?.resultsView || snapshot.resultsView === "results" || snapshot.resultsView === 2
   }
 
   renderDocuments(docs, snapshot) {
@@ -114,55 +92,25 @@ export default class extends Controller {
 
   handleRating(event) {
     event.stopPropagation()
-    const query = this.angularScope?.query
-    const snapshot = query && this.store.query(query.queryId)
-    if (!query || !snapshot) return
+    const snapshot = this.store.query(this.queryId)
+    if (!snapshot) return
 
     const result = event.target.closest("search-result")
     const docId = result?.__searchResultDocument?.id
-    const doc = this.liveDocuments(query).find(candidate => String(candidate.id) === String(docId))
-    if (!doc) return
-
-    this.angularScope.$apply(() => {
-      if (event.type === "rating-popover:rate") doc.rate(parseInt(event.detail.rating, 10))
-      else doc.resetRating()
-      query.touchModifiedAt()
-    })
-  }
-
-  liveDocuments(query) {
-    return [...(query.docs || []), ...(query.ratedDocs || [])].filter(
-      (doc, index, docs) => docs.findIndex(candidate => String(candidate.id) === String(doc.id)) === index
-    )
+    const rating = event.type === "rating-popover:rate" ? parseInt(event.detail.rating, 10) : null
+    window.quepidSearch?.queryState?.rateDocument?.(this.queryId, docId, rating)
   }
 
   handleShowDocument(event) {
     event.preventDefault()
     event.stopPropagation()
-    const query = this.angularScope?.query
     const docId = event.detail?.docId
-    const doc = query && this.liveDocuments(query).find(candidate => String(candidate.id) === String(docId))
-    if (!doc) return
-
-    const snapshot = this.store.query(query.queryId)
+    const snapshot = this.store.query(this.queryId)
     const snapshotDoc = [...(snapshot?.docs || []), ...(snapshot?.ratedDocs || [])].find(
       item => String(item.id) === String(docId)
     )
-    const linkUrl = this.documentLinkUrl(doc)
-    openDetailedDocumentModal({ doc: snapshotDoc || doc, linkUrl })
-  }
-
-  documentLinkUrl(doc) {
-    const injector = window.angular?.element(document.body).injector?.()
-    const settingsSvc = injector?.get?.("settingsSvc")
-    const caseTryNavSvc = injector?.get?.("caseTryNavSvc")
-    const settings = settingsSvc?.applicableSettings?.() || {}
-    let linkUrl = doc._url?.() || null
-    if (!linkUrl) return null
-    if (settings.basicAuthCredential) linkUrl = linkUrl.replace("://", `://${settings.basicAuthCredential}@`)
-    if (settings.proxyRequests === true) {
-      linkUrl = `${caseTryNavSvc.getQuepidProxyUrl(settings.searchEndpointId)}${linkUrl}`
-    }
-    return linkUrl
+    if (!snapshotDoc) return
+    const linkUrl = window.quepidSearch?.queryState?.documentUrl?.(this.queryId, docId)
+    openDetailedDocumentModal({ doc: snapshotDoc, linkUrl })
   }
 }

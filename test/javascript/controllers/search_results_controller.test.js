@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import SearchResultsController from "controllers/search_results_controller"
 
-function controllerFor({ showOnlyRated = false, results = true } = {}) {
+function controllerFor({ showOnlyRated = false, results = true, expanded = true } = {}) {
   const element = document.createElement("div")
   element.innerHTML = `
     <div data-search-results-target="content">
@@ -14,22 +14,17 @@ function controllerFor({ showOnlyRated = false, results = true } = {}) {
   controller.resultsTarget = element.querySelector('[data-search-results-target="results"]')
   controller.hasContentTarget = true
   controller.hasResultsTarget = true
-  const query = {
-    isToggled: () => true,
-    queryId: 1
-  }
   const snapshot = {
     queryId: 1,
     docs: [{ id: "all" }],
-    ratedDocs: [{ id: "rated" }]
-  }
-  controller.angularScope = {
-    query,
-    queriesSvc: { showOnlyRated },
-    displayed: { results: results ? 2 : 3, resultsView: { results: 2, diffs: 3 } }
+    ratedDocs: [{ id: "rated" }],
+    expanded,
+    resultsView: results ? 2 : 3,
+    showOnlyRated
   }
   controller.store = { query: () => snapshot }
-  return { controller, query }
+  controller.element.dataset.queryId = "1"
+  return { controller, snapshot }
 }
 
 describe("SearchResultsController", () => {
@@ -54,18 +49,16 @@ describe("SearchResultsController", () => {
   })
 
   it("hides the expanded read path when the query is collapsed", () => {
-    const { controller, query } = controllerFor()
-    query.isToggled = () => false
+    const { controller } = controllerFor({ expanded: false })
     controller.render()
 
     expect(controller.contentTarget.classList.contains("d-none")).toBe(true)
   })
 
-  it("changes the render key when the query replaces documents with the same ids", () => {
-    const { controller, query } = controllerFor()
-    const initialVersion = controller.renderStateKey()
-    query.isToggled = () => false
-
-    expect(controller.renderStateKey()).not.toBe(initialVersion)
+  it("renders from store state without an Angular scope", () => {
+    const { controller } = controllerFor()
+    expect(controller.angularScope).toBeUndefined()
+    controller.render()
+    expect(controller.resultsTarget.childElementCount).toBe(1)
   })
 })

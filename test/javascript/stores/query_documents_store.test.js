@@ -67,4 +67,33 @@ describe("QueryDocumentsStore", () => {
     expect(store.query(1)).toBeNull()
     expect(store.query(2)).not.toBeNull()
   })
+
+  it("preserves display state when a search refreshes documents", () => {
+    store.replaceQuery(8, { docs: [{ id: "first" }] })
+    store.updateQueryState(8, { expanded: true, resultsView: 2 })
+
+    store.replaceQuery(8, { docs: [{ id: "second" }] })
+
+    expect(store.query(8)).toMatchObject({ expanded: true, resultsView: 2 })
+  })
+
+  it("updates rated-only state for every query", () => {
+    store.replaceQuery(1, { docs: [] })
+    store.replaceQuery(2, { docs: [] })
+
+    store.setShowOnlyRated(true)
+
+    expect(store.query(1).showOnlyRated).toBe(true)
+    expect(store.query(2).showOnlyRated).toBe(true)
+  })
+
+  it("collapses every query", () => {
+    store.replaceQuery(1, { docs: [], expanded: true })
+    store.replaceQuery(2, { docs: [], expanded: true })
+
+    store.collapseAll()
+
+    expect(store.query(1).expanded).toBe(false)
+    expect(store.query(2).expanded).toBe(false)
+  })
 })

@@ -173,6 +173,55 @@ angular.module('QuepidApp')
         });
       }
 
+      // Explicit command adapter for the Stimulus results renderer. The live
+      // Query objects remain here until search and scoring migrate, but the
+      // renderer does not need to discover them through an Angular scope.
+      window.quepidSearch.queryState.getQuery = function(queryId) {
+        return svc.queries[queryId] || svc.queries[String(queryId)] || null;
+      };
+
+      window.quepidSearch.queryState.rateDocument = function(queryId, docId, rating) {
+        var query = window.quepidSearch.queryState.getQuery(queryId);
+        if (!query) return false;
+
+        var docs = (query.docs || []).concat(query.ratedDocs || []);
+        var doc = docs.find(function(candidate) {
+          return String(candidate.id) === String(docId);
+        });
+        if (!doc) return false;
+
+        $scope.$evalAsync(function() {
+          if (rating === null || rating === undefined) {
+            doc.resetRating();
+          } else {
+            doc.rate(parseInt(rating, 10));
+          }
+          query.touchModifiedAt();
+        });
+        return true;
+      };
+
+      window.quepidSearch.queryState.documentUrl = function(queryId, docId) {
+        var query = window.quepidSearch.queryState.getQuery(queryId);
+        if (!query) return null;
+
+        var docs = (query.docs || []).concat(query.ratedDocs || []);
+        var doc = docs.find(function(candidate) {
+          return String(candidate.id) === String(docId);
+        });
+        if (!doc || !doc._url) return null;
+
+        var linkUrl = doc._url();
+        var settings = settingsSvc.applicableSettings() || {};
+        if (settings.basicAuthCredential) {
+          linkUrl = linkUrl.replace('://', '://' + settings.basicAuthCredential + '@');
+        }
+        if (settings.proxyRequests === true) {
+          linkUrl = caseTryNavSvc.getQuepidProxyUrl(settings.searchEndpointId) + linkUrl;
+        }
+        return linkUrl;
+      };
+
       // Shared "clone settings with the selectedTry overridden" pattern for a one-off preview
       // search - used by both docFinder.js's findDocsByPreviewingQueryParams() (overriding args
       // and queryParams) and searchApiRatedDocs() below (overriding just args), so a resolved
@@ -557,6 +606,10 @@ angular.module('QuepidApp')
 
       function toggleShowOnlyRated() {
         svc.showOnlyRated = !svc.showOnlyRated;
+
+        if (queryDocumentsStore) {
+          queryDocumentsStore.setShowOnlyRated(svc.showOnlyRated);
+        }
 
         if (svc.showOnlyRated) {
           angular.forEach(svc.queries, function(query) {

@@ -535,6 +535,9 @@ angular.module('QuepidApp')
 
       $scope.collapseAll = function() {
         queryViewSvc.collapseAll();
+        if (window.quepidStore && window.quepidStore.documents) {
+          window.quepidStore.documents.collapseAll();
+        }
       };
 
       // Delegates to queriesSvc.trySupportsRatedDocsLookup(), the single source of truth also

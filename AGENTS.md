@@ -9,6 +9,11 @@
 - To start Quepid use:
     `bin/docker s`
 - Do not stop (you may restart) the dev server unless the user explicitly asks. Leave it running across tasks.
+- **Check before starting Docker.** First run `docker compose ps app`. If `app` is running, use it with `docker compose exec app` and do not run `bin/docker s` again. If `app` is not running, check the published port before starting:
+    `lsof -nP -iTCP:${APP_PORT:-3000} -sTCP:LISTEN`.
+  A port-3000 bind error means the host port is occupied; it is not a reason to retry `bin/docker s`, stop an unknown process, or create more throwaway containers. Start Quepid on the alternate published port instead:
+    `APP_PORT=33000 bin/docker s`
+  Then use `http://localhost:33000` for browser/manual checks and set `QUEPID_BASE_URL=http://localhost:33000` for Playwright. Verify the chosen port responds before continuing. The app still listens on port 3000 inside Docker, so this does not change Rails' internal port or the nginx service link.
 - When a correction or lesson applies to how you work in this repo, fix it in the actual project file it belongs to (this file, a skill's `SKILL.md`, a doc) — not only in your own private memory, which no other session or person can see or review.
 - **Default to `docker compose exec app`, which runs the command IN the already-running app container.** So `rails console --environment=test` becomes `docker compose exec app rails console --environment=test`.
 - **Use `bin/docker r` only when there is no running container to use** (the stack is down, or you deliberately want a clean one). `r` is `docker compose run --rm`: a NEW throwaway container with its own loopback and its own filesystem, so it silently breaks anything that needs the running dev server or that must persist installed state. Both failure modes look like app bugs rather than wrong-container mistakes:
@@ -19,6 +24,12 @@
     `docker compose exec app yarn build:css`          # core.css / application.css only
     `docker compose exec app yarn build:angular-vendor`  # BS5 + splainer-search bundle
 - In general, prefer using a single agent and not spawning sub-agents unless it will make a big difference. Even then, ask before spawning.
+
+### Shared agent skills
+
+- Repository skills use the portable Agent Skills format: one `<skill>/SKILL.md` with YAML front matter and instructions.
+- The source of truth is `.claude/skills/`, which is discovered directly by both Claude and Codex in this repository.
+- When adding or changing a skill, edit the file under `.claude/skills/` and keep its instructions tool-agnostic unless a tool-specific step is essential.
 
 
 ## Frontend
