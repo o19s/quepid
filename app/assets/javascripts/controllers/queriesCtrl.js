@@ -73,7 +73,16 @@ angular.module('QuepidApp')
           $scope.queryFilter = value !== undefined && value !== null ? value : '';
         });
       });
-      $scope.$on('$destroy', function () { $element.off('queries-list:toggle-rated queries-list:collapse-all queries-list:sort queries-list:filter queries-list:drag-start queries-list:drag-end'); });
+      $element.on('queries-list:position-saved', function (event) {
+        $scope.$evalAsync(function () {
+          var originalEvent = event.originalEvent || {};
+          var detail = originalEvent.detail || event.detail || {};
+          if (detail.displayOrder) {
+            queriesSvc.applyDisplayOrder(detail.displayOrder);
+          }
+        });
+      });
+      $scope.$on('$destroy', function () { $element.off('queries-list:toggle-rated queries-list:collapse-all queries-list:sort queries-list:filter queries-list:position-saved'); });
       // The scoringCompleteListener is a workaround for the fact that
       // we create multiple instances of this controller when we reselect the
       // same Case in the core app.  Which leads to multiple calls to the backend for the same scoring complete calculation
@@ -135,49 +144,6 @@ angular.module('QuepidApp')
         if (caseScoreUpdateTimeout) {
           clearTimeout(caseScoreUpdateTimeout); // Clean up timeout
         }
-      });
-      var originalList;
-      $element.on('queries-list:drag-start', function () {
-        $scope.$evalAsync(function () {
-          $scope.dragging = true;
-          originalList = angular.copy($scope.queriesList);
-
-          if ( $scope.reverse ) {
-            originalList = originalList.reverse();
-          }
-        });
-      });
-      $element.on('queries-list:drag-end', function (event) {
-        $scope.$evalAsync(function () {
-          $scope.dragging = false;
-          var detail = (event.originalEvent && event.originalEvent.detail) || event.detail || {};
-          var oldIndex = detail.oldIndex;
-          var newIndex = detail.newIndex;
-
-          if ( angular.isUndefined(newIndex) || oldIndex === newIndex ) {
-            return;
-          }
-
-          var displayPositions = window.quepidSearch.queryState.queryDisplayPositions({
-            oldIndex: oldIndex,
-            newIndex: newIndex,
-            currentPage: $scope.pagination.currentPage,
-            pageSize: $scope.pagination.pageSize,
-            reverse: $scope.reverse
-          });
-
-          var item = originalList[displayPositions.fromIndex];
-          var oldItem = originalList[displayPositions.toIndex];
-
-          queriesSvc.updateQueryDisplayPosition(
-            item.queryId,
-            oldItem.queryId,
-            displayPositions.reverse
-          )
-            .then(function() {
-              originalList = $scope.queriesList;
-            });
-        });
       });
       $scope.queries = {};
 

@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from "vitest"
 import QueriesListController from "controllers/queries_list_controller"
 
+vi.mock("api/fetch", () => ({
+  apiFetch: vi.fn()
+}))
+
+import { apiFetch } from "api/fetch"
+
 function controllerFor(values = {}) {
   const element = document.createElement("div")
   element.innerHTML = `
@@ -23,6 +29,7 @@ function controllerFor(values = {}) {
     sortNameValue: "default",
     reverseValue: false,
     queryListSortableValue: true,
+    positionUrlValue: "api/cases/4/queries",
     ...values
   }
   Object.keys(state).forEach(key => {
@@ -91,7 +98,7 @@ describe("queries_list_controller", () => {
     expect(controller.sortable.option).toHaveBeenCalledWith("disabled", true)
   })
 
-  it("bridges drag lifecycle events with Sortable indexes", () => {
+  it("bridges drag start while reorder persistence owns drag end", () => {
     const { controller } = controllerFor()
     const events = []
     controller.element.addEventListener("queries-list:drag-start", () => events.push("start"))
@@ -100,6 +107,62 @@ describe("queries_list_controller", () => {
     controller.dragStart()
     controller.dragEnd({ oldIndex: 1, newIndex: 3 })
 
-    expect(events).toEqual(["start", [1, 3]])
+    expect(events).toEqual(["start"])
+    expect(controller.listTarget.classList.contains("dragging")).toBe(false)
+  })
+
+  it("persists a drag using the visible query order and updates Angular through an event", async () => {
+    const { controller, element } = controllerFor()
+    controller.listTarget.innerHTML = `
+      <li><div data-query-row-query-id-value="11"></div></li>
+      <li><div data-query-row-query-id-value="12"></div></li>
+    `
+    apiFetch.mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ display_order: [12, 11] }) })
+    const saved = vi.fn()
+    element.addEventListener("queries-list:position-saved", event => saved(event.detail))
+
+    controller.dragStart()
+    await controller.dragEnd({ oldIndex: 0, newIndex: 1 })
+
+    expect(apiFetch).toHaveBeenCalledWith("api/cases/4/queries/11/position", expect.objectContaining({
+      method: "PUT",
+      body: JSON.stringify({ after: "12", reverse: false })
+    }))
+    expect(saved).toHaveBeenCalledWith({ displayOrder: [12, 11] })
+    expect(controller.listTarget.classList.contains("dragging")).toBe(false)
+  })
+
+  it("uses indexes local to the visible page", async () => {
+    const { controller } = controllerFor()
+    controller.listTarget.innerHTML = `
+      <li><div data-query-row-query-id-value="31"></div></li>
+      <li><div data-query-row-query-id-value="32"></div></li>
+    `
+    apiFetch.mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ display_order: [32, 31] }) })
+
+    controller.dragStart()
+    await controller.dragEnd({ oldIndex: 0, newIndex: 1 })
+
+    expect(apiFetch).toHaveBeenCalledWith("api/cases/4/queries/31/position", expect.objectContaining({
+      body: JSON.stringify({ after: "32", reverse: false })
+    }))
+  })
+
+  it("restores the original DOM order when reorder persistence fails", async () => {
+    const { controller, element } = controllerFor()
+    controller.listTarget.innerHTML = `
+      <li><div data-query-row-query-id-value="11"></div></li>
+      <li><div data-query-row-query-id-value="12"></div></li>
+    `
+    apiFetch.mockResolvedValue({ ok: false, status: 500 })
+    window.quepidDom = { flash: { show: vi.fn() } }
+
+    controller.dragStart()
+    controller.listTarget.append(controller.listTarget.firstElementChild)
+    await controller.dragEnd({ oldIndex: 0, newIndex: 1 })
+
+    expect([...controller.listTarget.children].map(item => item.querySelector("[data-query-row-query-id-value]").dataset.queryRowQueryIdValue)).toEqual(["11", "12"])
+    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to reorder queries.")
+    delete window.quepidDom
   })
 })

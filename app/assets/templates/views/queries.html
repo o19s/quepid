@@ -6,7 +6,8 @@
   data-queries-list-show-only-rated-unsupported-value="{{showOnlyRatedUnsupported()}}"
   data-queries-list-sort-name-value="{{sortName}}"
   data-queries-list-reverse-value="{{reverse}}"
-  data-queries-list-query-list-sortable-value="{{queryListSortable}}">
+  data-queries-list-query-list-sortable-value="{{queryListSortable}}"
+  data-queries-list-position-url-value="api/cases/{{caseSvc.selectedCase().caseNo}}/queries">
   <div class="row">
     <div class="col-sm-12 mb-3">
       <form
@@ -125,7 +126,7 @@
       </div>
 
       <!-- let the user know what we're looking at-->
-      <ul class="results-list-element" data-queries-list-target="list" ng-class="!queryListSortable ? 'unsortable' : dragging === true ? 'dragging' : ''">
+      <ul class="results-list-element" data-queries-list-target="list" ng-class="!queryListSortable ? 'unsortable' : ''">
         <li ng-class="query.isToggled() ? 'unsortable' : ''" dir-paginate="query in queriesList | filter:matchQueryFilter | orderBy:sort:reverse | itemsPerPage: pagination.pageSize" current-page="pagination.currentPage">
           <search-results query="query" issortingenabled="queries.isSortingEnabled">
           </search-results>

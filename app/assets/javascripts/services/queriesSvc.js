@@ -1510,6 +1510,14 @@ angular.module('QuepidApp')
           });
       };
 
+      // Temporary adapter for the Stimulus reorder controller. The controller
+      // owns the PUT; Angular keeps the live display order in sync until the
+      // query store becomes authoritative.
+      this.applyDisplayOrder = function(displayOrder) {
+        svc.displayOrder = displayOrder;
+        svcVersion++;
+      };
+
       // Delete a query
       this.deleteQuery = function(queryId) {
         var that = this;

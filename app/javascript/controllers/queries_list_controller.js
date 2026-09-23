@@ -1,10 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
+import { apiFetch } from "api/fetch"
 import { hideTooltipsWithin } from "utils/bs_tooltip"
 
 /**
  * Query-list toolbar and drag lifecycle. Angular still owns query rows,
- * pagination, and mutations; this controller bridges actions back to
- * QueriesCtrl with semantic CustomEvents during the incremental migration.
+ * pagination, and search/scoring; this controller owns reorder persistence
+ * during the incremental migration.
  */
 export default class extends Controller {
   static targets = ["ratedCheckbox", "ratedLabel", "filter", "sortLink", "manualSortLink", "sortIcon", "manualHelp", "list"]
@@ -13,7 +14,8 @@ export default class extends Controller {
     showOnlyRatedUnsupported: Boolean,
     sortName: String,
     reverse: Boolean,
-    queryListSortable: Boolean
+    queryListSortable: Boolean,
+    positionUrl: String
   }
 
   connect() {
@@ -70,12 +72,65 @@ export default class extends Controller {
 
   dragStart() {
     hideTooltipsWithin(this.listTarget)
+    this.listTarget.classList.add("dragging")
+    this.draggedQueryIds = [...this.listTarget.children].map(item =>
+      item.querySelector("[data-query-row-query-id-value]")?.dataset.queryRowQueryIdValue
+    )
     this.dispatch("drag-start")
   }
 
-  dragEnd(event) {
+  async dragEnd(event) {
     hideTooltipsWithin(this.listTarget)
-    this.dispatch("drag-end", { detail: { oldIndex: event.oldIndex, newIndex: event.newIndex } })
+    const { oldIndex, newIndex } = event
+    if (oldIndex === undefined || newIndex === undefined || oldIndex === newIndex) {
+      this.clearDraggingState()
+      return
+    }
+
+    const queryId = this.draggedQueryIds?.[oldIndex]
+    const previousQueryId = this.draggedQueryIds?.[newIndex]
+    if (!queryId || !previousQueryId || !this.positionUrlValue) {
+      this.clearDraggingState()
+      return
+    }
+
+    const reverse = newIndex < oldIndex ? !this.reverseValue : this.reverseValue
+    const url = `${this.positionUrlValue}/${queryId}/position`
+
+    try {
+      const response = await apiFetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ after: previousQueryId, reverse })
+      })
+      if (!response.ok) throw new Error(`Reorder failed (${response.status})`)
+
+      const data = await response.json()
+      this.dispatch("position-saved", {
+        detail: { displayOrder: data.display_order }
+      })
+    } catch (error) {
+      console.error("queries-list: reorder failed", error)
+      this.restoreDraggedOrder()
+      window.quepidDom?.flash?.show("error", "Unable to reorder queries.")
+    } finally {
+      this.clearDraggingState()
+    }
+  }
+
+  clearDraggingState() {
+    this.listTarget.classList.remove("dragging")
+  }
+
+  restoreDraggedOrder() {
+    if (!this.draggedQueryIds) return
+    const items = [...this.listTarget.children]
+    this.draggedQueryIds.forEach(queryId => {
+      const item = items.find(candidate =>
+        candidate.querySelector("[data-query-row-query-id-value]")?.dataset.queryRowQueryIdValue === queryId
+      )
+      if (item) this.listTarget.appendChild(item)
+    })
   }
 
   setupSortable() {
