@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class AiJudgesController < ApplicationController
-  before_action :set_team, only: [ :new ]
-  before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_team, only: [ :new, :clone ]
+  before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy, :clone ]
   before_action :set_book, only: [ :show, :new, :edit ]
 
   # Kept as a constant because tests and other callers refer to it; the text
@@ -36,6 +36,14 @@ class AiJudgesController < ApplicationController
     @book_id = params[:book_id]
   end
 
+  def clone
+    @ai_judge = @ai_judge.dup
+    @ai_judge.name = "Clone of #{@ai_judge.name}"
+    # dup doesn't copy has_and_belongs_to_many associations - pre-select the
+    # team this clone was started from, matching #new's behavior.
+    @ai_judge.team_ids = [ @team.id ] if @team
+  end
+
   def create
     @ai_judge = current_user.owned_ai_judges.build(ai_judge_params)
 
@@ -54,7 +62,9 @@ class AiJudgesController < ApplicationController
       render 'edit'
     else
       apply_team_ids(@ai_judge, submitted_team_ids)
-      redirect_to ai_judge_path(@ai_judge)
+      redirect_to ai_judge_path(@ai_judge), notice: 'AI Judge was successfully updated.'
+    else
+      render 'edit'
     end
   end
 

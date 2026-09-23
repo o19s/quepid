@@ -17,7 +17,7 @@ class RunCaseEvaluationJob < ApplicationJob
 
     @fetch_service.score_run(user)
 
-    broadcast_completion_notifications(acase, acase.queries.count)
+    broadcast_general_notification(nil, acase.queries.count, -1)
 
     @fetch_service.complete
   end
@@ -39,7 +39,7 @@ class RunCaseEvaluationJob < ApplicationJob
 
     acase.queries.each_with_index do |query, counter|
       process_single_query(query, atry)
-      broadcast_progress_notifications(acase, query, query_count, counter)
+      broadcast_general_notification(query, query_count, counter)
     end
   end
 
@@ -89,31 +89,12 @@ class RunCaseEvaluationJob < ApplicationJob
     [ [], e.message ]
   end
 
-  def broadcast_progress_notifications acase, query, query_count, counter
-    broadcast_general_notification(query, query_count, counter)
-    broadcast_case_specific_notification(acase, query, query_count, counter)
-  end
-
-  def broadcast_completion_notifications acase, query_count
-    broadcast_general_notification(nil, query_count, -1)
-    broadcast_case_specific_notification(acase, nil, query_count, -1)
-  end
-
   def broadcast_general_notification query, query_count, counter
     Turbo::StreamsChannel.broadcast_render_to(
       :notifications,
       target:  'notifications',
       partial: 'admin/run_case/notification',
       locals:  { query: query, query_count: query_count, counter: counter }
-    )
-  end
-
-  def broadcast_case_specific_notification acase, query, query_count, counter
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
-      target:  "notifications-case-#{acase.id}",
-      partial: 'admin/run_case/notification_case',
-      locals:  { acase: acase, query: query, query_count: query_count, counter: counter }
     )
   end
 end

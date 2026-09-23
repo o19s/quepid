@@ -1,0 +1,18 @@
+<%# Live judging detail modal for an AI judge. locals: ai_judge, book %>
+<% modal_footer = render 'books/cancel_judging_button', book: book, judge: ai_judge,
+     css_class: 'btn btn-danger', icon: 'bi-stop-circle', label: 'Stop Judging' %>
+
+<% modal_body = capture do %>
+  <div id="judging-activity-<%= ai_judge.id %>">
+    <div class="d-flex align-items-center gap-2 text-muted">
+      <span class="spinner-border spinner-border-sm" role="status"></span>
+      Waiting for next judgement...
+    </div>
+  </div>
+<% end %>
+
+<%= render "shared/modal_shell", id: "judging-modal-#{ai_judge.id}",
+                                 title: '<i class="bi bi-robot text-primary"></i> '.html_safe + "#{ai_judge.fullname} — Live Judging Activity",
+                                 dialog_class: "modal-lg",
+                                 footer: modal_footer,
+                                 body: modal_body %>

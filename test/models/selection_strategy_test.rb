@@ -255,7 +255,6 @@ class SelectionStrategyTest < ActiveSupport::TestCase
 
       it 'correctly identifies unjudged pairs' do
         # Initially all pairs are unjudged
-        assert(SelectionStrategy.unjudged_pairs?(book))
         assert_equal total_pairs, SelectionStrategy.unjudged_pairs_count(book)
         assert_equal 0, SelectionStrategy.partially_judged_pairs_count(book)
 
@@ -266,7 +265,6 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         end
 
         # Should have fewer unjudged pairs and some partially judged
-        assert(SelectionStrategy.unjudged_pairs?(book))
         assert_equal total_pairs - 2, SelectionStrategy.unjudged_pairs_count(book)
         assert_equal 2, SelectionStrategy.partially_judged_pairs_count(book)
 
@@ -276,7 +274,6 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         end
 
         # Should have no unjudged pairs, all are partially judged
-        assert_not(SelectionStrategy.unjudged_pairs?(book))
         assert_equal 0, SelectionStrategy.unjudged_pairs_count(book)
         assert_equal total_pairs, SelectionStrategy.partially_judged_pairs_count(book)
 
@@ -286,7 +283,6 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         end
 
         # Still no unjudged, still all partially judged (need 3rd judgement)
-        assert_not(SelectionStrategy.unjudged_pairs?(book))
         assert_equal 0, SelectionStrategy.unjudged_pairs_count(book)
         assert_equal total_pairs, SelectionStrategy.partially_judged_pairs_count(book)
 
@@ -296,10 +292,56 @@ class SelectionStrategyTest < ActiveSupport::TestCase
         end
 
         # Should have no unjudged or partially judged pairs
-        assert_not(SelectionStrategy.unjudged_pairs?(book))
         assert_equal 0, SelectionStrategy.unjudged_pairs_count(book)
         assert_equal 0, SelectionStrategy.partially_judged_pairs_count(book)
       end
+    end
+  end
+
+  describe 'rank depth scoping' do
+    let(:book) { books(:james_bond_movies) }
+    let(:matt) { users(:matt) }
+
+    before do
+      book.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
+    end
+
+    it 'counts only pairs within the book rank_depth as unjudged' do
+      book.update!(rank_depth: 2)
+      expected_count = book.query_doc_pairs.where(position: ..2).count
+
+      assert_equal expected_count, SelectionStrategy.unjudged_pairs_count(book)
+    end
+
+    it 'treats a nil rank_depth as unrestricted, matching the pre-existing default' do
+      assert_nil book.rank_depth
+      assert_equal book.query_doc_pairs.count, SelectionStrategy.unjudged_pairs_count(book)
+    end
+
+    it 'only selects pairs within rank_depth for judging' do
+      book.update!(rank_depth: 2)
+
+      book.query_doc_pairs.size.times do
+        query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(book, matt)
+        break if query_doc_pair.nil?
+
+        assert_operator query_doc_pair.position, :<=, 2
+        query_doc_pair.judgements.create rating: 2.0, user: matt
+      end
+
+      # No pair below the rank_depth should ever have been surfaced to judge.
+      assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book, matt)
+    end
+
+    it 'considers every_query_doc_pair_has_three_judgements? only against pairs within rank_depth' do
+      book.update!(rank_depth: 1)
+
+      # Judge the two pairs at position 1 (one per query group) three times each.
+      book.query_doc_pairs.where(position: 1).find_each do |qdp|
+        [ :matt, :joe, :jane ].each { |name| qdp.judgements.create rating: 2.0, user: users(name) }
+      end
+
+      assert(SelectionStrategy.every_query_doc_pair_has_three_judgements?(book))
     end
   end
 

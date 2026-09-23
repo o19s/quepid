@@ -1,0 +1,61 @@
+<%# Rendered inside the live judging modal. locals: book, judge, qdp, counter, total_pairs, judgement: nil %>
+<div class="mb-3">
+  <div class="d-flex justify-content-between align-items-center mb-1">
+    <small class="text-muted">Progress</small>
+    <small class="text-muted"><%= counter %> judged so far</small>
+  </div>
+  <div class="progress" style="height:8px;">
+    <% pct = total_pairs.positive? ? ((counter.to_f / total_pairs) * 100).round : 0 %>
+    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+         style="width:<%= pct %>%"
+         role="progressbar"
+         aria-valuenow="<%= pct %>" aria-valuemin="0" aria-valuemax="100">
+    </div>
+  </div>
+  <div class="d-flex justify-content-between">
+    <small class="text-muted"><%= counter %> of <%= total_pairs %></small>
+    <small class="text-muted"><%= pct %>%</small>
+  </div>
+</div>
+
+<div class="card bg-light border-0">
+  <div class="card-body py-2 px-3">
+    <div class="mb-1">
+      <span class="text-muted small">Query</span>
+      <div class="fw-semibold"><code><%= qdp.query_text %></code></div>
+    </div>
+    <div>
+      <span class="text-muted small">Document ID</span>
+      <div><code class="text-truncate d-block"><%= qdp.doc_id %></code></div>
+    </div>
+    <% if qdp.document_fields.present? %>
+      <% title_field = qdp.document_fields['title'] || qdp.document_fields['name'] || qdp.document_fields['catch_line'] %>
+      <% if title_field %>
+        <div class="mt-1">
+          <span class="text-muted small">Title</span>
+          <div class="text-truncate"><%= title_field %></div>
+        </div>
+      <% end %>
+    <% end %>
+    <% if local_assigns[:judgement] %>
+      <div class="mt-2 pt-2 border-top">
+        <span class="text-muted small">Judgement</span>
+        <div>
+          <% if judgement.unrateable? %>
+            <span class="badge bg-warning text-dark">Unrateable</span>
+          <% elsif judgement.rating.present? %>
+            <span class="badge bg-primary">Rating: <%= judgement.rating %></span>
+          <% end %>
+          <% if judgement.explanation.present? %>
+            <div class="small text-muted mt-1"><%= judgement.explanation %></div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="mt-2 d-flex align-items-center gap-2 text-muted small">
+  <span class="spinner-grow spinner-grow-sm text-primary" role="status"></span>
+  Judging in progress — updates automatically
+</div>

@@ -36,6 +36,17 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_equal LlmProviders.presets.deep_stringify_keys, JSON.parse(presets_json)
   end
 
+  test 'should update ai_judge and flash a success notice' do
+    patch ai_judge_url(ai_judge),
+          params: { user: {
+            name: 'Renamed Judge', llm_key: ai_judge.llm_key, system_prompt: ai_judge.system_prompt
+          } }
+
+    assert_redirected_to ai_judge_path(ai_judge)
+    assert_equal 'AI Judge was successfully updated.', flash[:notice]
+    assert_equal 'Renamed Judge', ai_judge.reload.name
+  end
+
   test 'should create ai_judge with no team (owner-only)' do
     assert_difference('User.count') do
       post ai_judges_url,
@@ -240,6 +251,41 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       private_judge = AiJudge.create!(name: 'Not Mine', llm_key: '1234', owner: other_user)
 
       get edit_ai_judge_url(private_judge)
+
+      assert_response :not_found
+    end
+  end
+
+  describe 'cloning an ai_judge' do
+    test 'renders a pre-filled form without creating a record' do
+      assert_no_difference('User.count') do
+        get clone_team_ai_judge_url(team_id: team.id, id: ai_judge.id)
+      end
+
+      assert_response :success
+      assert_select "input[name='user[name]'][value=?]", "Clone of #{ai_judge.name}"
+    end
+
+    test 'submitting the cloned form creates a new ai_judge with the same settings' do
+      get clone_team_ai_judge_url(team_id: team.id, id: ai_judge.id)
+
+      assert_difference('User.count') do
+        post team_ai_judges_url(team_id: team.id),
+             params: { user: {
+               name: "Clone of #{ai_judge.name}", llm_key: ai_judge.llm_key, system_prompt: ai_judge.system_prompt
+             } }
+      end
+
+      clone = User.order(:id).last
+      assert_equal "Clone of #{ai_judge.name}", clone.name
+      assert_equal ai_judge.llm_key, clone.llm_key
+      assert_predicate clone, :ai_judge?
+    end
+
+    test 'returns not found for an ai_judge id that does not belong to the team' do
+      other_team_ai_judge = users(:matt)
+
+      get clone_team_ai_judge_url(team_id: team.id, id: other_team_ai_judge.id)
 
       assert_response :not_found
     end
