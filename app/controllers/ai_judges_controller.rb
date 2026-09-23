@@ -3,61 +3,12 @@
 class AiJudgesController < ApplicationController
   before_action :set_team, only: [ :new ]
   before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_book, only: [ :show, :new, :edit ]
 
-  DEFAULT_SYSTEM_PROMPT = <<~TEXT
-    You are evaluating the results from a search engine. For each query, you will be provided with multiple documents. Your task is to evaluate each document and assign a judgment on a scale of 0 to 3, where:
-    - 0 indicates the document is irrelevant to the query.
-    - 1 indicates the document is somewhat relevant to the query.
-    - 2 indicates the document is mostly relevant to the query.
-    - 3 indicates the document is perfectly relevant to the query.
-
-    For each document, provide:
-    1. An explanation of the judgment.
-    2. The judgment value.
-
-    The response should be in the following JSON format:
-    {
-      "explanation": "Your detailed reasoning behind the judgment",
-      "judgment": <numeric value>
-    }
-
-    Here is an example:
-    User:
-    Query: Farm animals
-
-    doc1:
-      title: All about farm animals
-      abstract: This document is all about farm animals
-    Assistant:
-    {
-      "explanation": "This document appears to perfectly respond to the user's query",
-      "judgment": 3
-    }
-
-    User:
-    Query: Farm animals
-
-    doc2:
-      title: Somewhat about farm animals
-      abstract: This document somewhat talks about farm animals
-    Assistant:
-    {
-      "explanation": "This document is somewhat relevant to the user's query",
-      "judgment": 1
-    }
-
-    User:
-    Query: Farm animals
-
-    doc3:
-      title: This document has nothing to do with farm animals
-      abstract: We will talk about everything except for farm animals.
-    Assistant:
-    {
-      "explanation": "This document is not relevant at all to the user's query",
-      "judgment": 0
-    }
-  TEXT
+  # Kept as a constant because tests and other callers refer to it; the text
+  # itself now lives with the providers that use it (LlmProviders), since what
+  # a judge should be told depends on the dialect it speaks.
+  DEFAULT_SYSTEM_PROMPT = LlmProviders::CHAT_SYSTEM_PROMPT
 
   def index
     @ai_judges = AiJudge.for_user(current_user).includes(:owner, :teams).order(:name)
@@ -70,7 +21,7 @@ class AiJudgesController < ApplicationController
   def new
     @ai_judge = AiJudge.new
     @ai_judge.team_ids = [ @team.id ] if @team
-    @ai_judge.system_prompt = DEFAULT_SYSTEM_PROMPT
+    @ai_judge.system_prompt = LlmProviders['openai'].default_system_prompt
     @ai_judge.judge_options = {
       llm_provider:    'openai',
       llm_service_url: 'https://api.openai.com',
@@ -88,20 +39,22 @@ class AiJudgesController < ApplicationController
   def create
     @ai_judge = current_user.owned_ai_judges.build(ai_judge_params)
 
-    if @ai_judge.save
+    if unavailable_provider?(@ai_judge) || !@ai_judge.save
+      render :new
+    else
       apply_team_ids(@ai_judge, submitted_team_ids)
       redirect_to ai_judge_path(@ai_judge), notice: 'AI Judge was successfully created.'
-    else
-      render :new
     end
   end
 
   def update
-    if @ai_judge.update(ai_judge_params)
+    @ai_judge.assign_attributes(ai_judge_params)
+
+    if unavailable_provider?(@ai_judge) || !@ai_judge.save
+      render 'edit'
+    else
       apply_team_ids(@ai_judge, submitted_team_ids)
       redirect_to ai_judge_path(@ai_judge)
-    else
-      render 'edit'
     end
   end
 
@@ -112,12 +65,29 @@ class AiJudgesController < ApplicationController
 
   private
 
+  # A provider can appear in the form before Quepid can actually judge with it, so teams
+  # can see what it will need and get a key ready (LlmProviders#coming_soon). Selecting
+  # one is fine; saving a judge that would fail on its first run is not.
+  def unavailable_provider? ai_judge
+    provider = LlmProviders[ai_judge.judge_options[:llm_provider]]
+    return false unless provider&.coming_soon?
+
+    ai_judge.errors.add(:base, "#{provider.label} is not available yet, so an AI Judge cannot use it.")
+    true
+  end
+
   def set_team
     @team = current_user.teams.find_by(id: params[:team_id])
   end
 
   def set_ai_judge
     @ai_judge = AiJudge.for_user(current_user).find(params.expect(:id))
+  end
+
+  # Arriving from a book (e.g. its Judgement Stats "Refine Prompt" link), the form shows
+  # that book's scale as the judge will be sent it. Scoped like AiJudges::WizardController.
+  def set_book
+    @book = current_user.books_involved_with.where(id: params[:book_id]).first if params[:book_id].present?
   end
 
   # Checkboxes suck: only touch teams the current user can actually see, so

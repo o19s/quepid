@@ -53,8 +53,12 @@ module AiJudges
       llm_service = LlmService.new(ai_judge.llm_key, ai_judge.judge_options)
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: ai_judge)
       llm_service.perform_safe_judgement judgement, book: @book
+      # Hold the preview to the same rules a real judging run applies, so a
+      # rating this book would reject can't look fine while you tune the prompt.
+      # Nothing is persisted here -- the finalizer only marks the in-memory record.
+      JudgementFinalizer.call judgement, book: @book
 
-      render json: { rating: judgement.rating, explanation: judgement.explanation }
+      render json: { rating: judgement.rating, explanation: judgement.explanation, unrateable: judgement.unrateable }
     end
 
     private
@@ -68,9 +72,12 @@ module AiJudges
                                       :information_need, { options: {} } ])
     end
 
+    # The common options plus any a provider declares for itself (e.g. Jev's
+    # confidence floor), so the preview runs with what the form would save.
     def judge_options_params
       params.fetch(:judge_options, {})
-        .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version)
+        .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version,
+                *LlmProviders.option_field_specs.keys)
     end
   end
 end

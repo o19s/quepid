@@ -2,7 +2,9 @@
      data-controller="ai-judge-wizard"
      data-ai-judge-wizard-sample-url-value="<%= ai_judge_sample_query_doc_pair_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
      data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
-     data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>">
+     data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>"
+     data-ai-judge-wizard-presets-value="<%= LlmProviders.presets_json %>"
+     data-ai-judge-wizard-stock-prompts-value="<%= LlmProviders.stock_system_prompts_json %>">
   <div class="card-header">
     <h5 class="mb-0"><i class="bi bi-robot"></i> AI Judge</h5>
   </div>
@@ -20,6 +22,11 @@
     <% end %>
 
     <div data-ai-judge-wizard-target="status" class="alert" style="display: none;"></div>
+
+    <%# The saved provider decides the page's first render; the wizard controller
+        keeps these in step as the provider is changed. %>
+    <% provider = LlmProviders[ai_judge.judge_options[:llm_provider]] %>
+    <% foreign_prompt = provider&.stock_prompt_from_another_provider?(ai_judge.system_prompt) %>
 
     <!-- Step 1: Configure -->
     <div class="mb-4">
@@ -63,33 +70,42 @@
           <div class="tab-content" id="pills-tabContent">
             <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
 
-              <% sorted_judge_options = @ai_judge.judge_options.sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
-              <% sorted_judge_options.each do |key, value| %>
-                <div class="row mb-3">
-                  <%= label_tag "judge_options[#{key}]", key.to_s.humanize.titleize, class: 'col-sm-5 col-form-label text-nowrap' %>
+              <%# Options a provider declares are rendered as the widget it asked for, whether or
+                  not this judge has them saved yet, and are shown only with the provider that
+                  owns them -- so nobody has to hand-edit the JSON tab to reach a known setting. %>
+              <% specs = LlmProviders.option_field_specs %>
+              <% stored = @ai_judge.judge_options.map { |key, value| [ key.to_s, value ] } %>
+              <% unsaved = specs.keys.reject { |key| stored.any? { |stored_key, _| stored_key == key } } %>
+              <% rows = (stored + unsaved.map { |key| [ key, nil ] }).sort_by { |key, _| 'llm_provider' == key ? 0 : 1 } %>
+              <% rows.each do |key, value| %>
+                <% spec = specs[key] %>
+                <div class="row mb-3 <%= 'provider-option-field' if spec %>"
+                     <%= "data-provider=#{spec[:provider]}".html_safe if spec %>
+                     <%= 'data-ai-judge-wizard-target=providerOptionField'.html_safe if spec %>
+                     <%= 'style=display:none;'.html_safe if spec %>>
+                  <%= label_tag "judge_options[#{key}]", spec&.dig(:label) || key.humanize.titleize, class: 'col-sm-5 col-form-label text-nowrap' %>
                   <div class="col-sm-7">
-                    <% if key.to_s == 'llm_provider' %>
+                    <% if 'llm_provider' == key %>
                       <%= select_tag "user[judge_options][llm_provider]",
-                            options_for_select([
-                              ['OpenAI',                          'openai'],
-                              ['Azure OpenAI',                    'azure_openai'],
-                              ['Azure AI Foundry',                'azure_ai_foundry'],
-                              ['Azure AI Foundry (Serverless)',    'azure_ai_foundry_serverless'],
-                              ['Azure AI Foundry (Anthropic)',     'azure_ai_foundry_anthropic'],
-                              ['Anthropic',                       'anthropic'],
-                              ['Google Gemini',                   'google_gemini'],
-                              ['Ollama',                          'ollama'],
-                            ], value.to_s),
+                            options_for_select(LlmProviders.select_options, value.to_s),
                             id: 'judge_options_llm_provider',
                             class: 'form-select form-select-sm structured-field',
                             data: { ai_judge_wizard_target: "llmProvider structuredField", action: "change->ai-judge-wizard#updateProviderPreset" }
                       %>
+                    <% elsif :number == spec&.dig(:type) %>
+                      <%= number_field_tag "user[judge_options][#{key}]", value,
+                            id: "judge_options_#{key}", min: spec[:min], max: spec[:max], step: spec[:step],
+                            class: 'form-control form-control-sm structured-field',
+                            data: { ai_judge_wizard_target: "#{key.camelize(:lower)} structuredField" } %>
                     <% else %>
                       <%= text_field_tag "user[judge_options][#{key}]", value,
                         id: "judge_options_#{key}",
                         class: 'form-control form-control-sm structured-field',
-                        data: { ai_judge_wizard_target: "#{key.to_s.camelize(:lower)} structuredField" }
+                        data: { ai_judge_wizard_target: "#{key.camelize(:lower)} structuredField" }
                       %>
+                    <% end %>
+                    <% if spec&.dig(:hint).present? %>
+                      <div class="form-text"><%= spec[:hint] %></div>
                     <% end %>
                   </div>
                 </div>
@@ -110,14 +126,23 @@
         </div>
         <div class="col-md-6">
           <div class="fw-semibold mb-2">Model Configuration</div>
-          <div data-ai-judge-wizard-target="providerHelp" class="alert alert-info small" style="display:none;">
+          <div id="provider-notice" data-ai-judge-wizard-target="providerNotice" class="alert alert-warning small" style="display:none;">
+          </div>
+          <div id="provider-help" data-ai-judge-wizard-target="providerHelp" class="alert alert-info small" style="display:none;">
           </div>
         </div>
       </div>
 
       <div class="row mb-3">
-        <%= form.label :system_prompt, class: 'col-sm-2 col-form-label' %>
+        <%= form.label :system_prompt, provider&.prompt_label || 'System prompt', class: 'col-sm-2 col-form-label', id: 'system-prompt-label', data: { ai_judge_wizard_target: "systemPromptLabel" } %>
         <%= form.textarea :system_prompt, class: "form-control", rows: 6, data: { ai_judge_wizard_target: "systemPrompt" } %>
+        <div id="system-prompt-hint" class="form-text" style="display:none;" data-ai-judge-wizard-target="systemPromptHint"></div>
+        <div id="system-prompt-warning" class="alert alert-warning mt-2 mb-0 small" <%= 'style=display:none;'.html_safe unless foreign_prompt %> data-ai-judge-wizard-target="systemPromptWarning">
+          This text is another provider's default, written for a different kind of model.
+          <button type="button" class="btn btn-sm btn-outline-secondary ms-1" data-action="click->ai-judge-wizard#useDefaultPrompt">
+            Use <span data-ai-judge-wizard-target="defaultPromptProvider"><%= provider&.label %></span>'s default
+          </button>
+        </div>
       </div>
     </div>
 
@@ -176,7 +201,40 @@
           </div>
           <div class="col-md-6">
             <h6>Rating Information</h6>
-            <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt">Run Prompt</button>
+
+            <%# The other half of what gets sent: for a typed model the book's scale IS the
+                question's criteria, so show them here rather than making people guess. %>
+            <% scale = JudgeScale.for(@book) %>
+            <% if @book && scale.present? %>
+              <div class="mb-3" id="judging-criteria">
+                <div data-ai-judge-wizard-target="criteriaTable" <%= 'style=display:none;'.html_safe unless provider&.scale_as_criteria? %>>
+                  <h3 class="h6 mb-1">
+                    Criteria sent with the question
+                    <small class="text-muted fw-normal">&mdash; from <%= link_to @book.name, book_path(@book) %>'s scale</small>
+                  </h3>
+                  <table class="table table-sm table-borderless small mb-1 w-auto">
+                    <tbody>
+                      <% scale.values.each_with_index do |value, level| %>
+                        <tr>
+                          <td class="pe-3 text-muted">level <%= level %> &rarr; rating <strong><%= value %></strong></td>
+                          <td><%= scale.criteria[level] %></td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+                <div data-ai-judge-wizard-target="criteriaProse" <%= 'style=display:none;'.html_safe if provider&.scale_as_criteria? %>>
+                  <h3 class="h6 mb-1">
+                    Rating scale added to the prompt
+                    <small class="text-muted fw-normal">&mdash; from <%= link_to @book.name, book_path(@book) %>'s scale</small>
+                  </h3>
+                  <p class="small mb-1"><%= scale.describe %></p>
+                </div>
+                <div class="form-text">Read-only here. Edit the labels in the book's settings to change them.</div>
+              </div>
+            <% end %>
+
+            <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt">Run Judgement</button>
 
             <div data-ai-judge-wizard-target="loadingSpinner" style="display: none;" class="text-center my-4">
               <div class="spinner-border text-primary" role="status">

@@ -96,6 +96,48 @@ module AiJudges
         end
       end
 
+      test 'a rating this book would reject is shown as unrateable, not as a usable rating' do
+        # the book's scale is 0,1 and the judge answers 3
+        stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+          .with(headers: { 'Authorization' => "Bearer #{OPENAI_VALID_KEY}" })
+          .to_return(status: 200,
+                     body:   { choices: [ { message: { content: '{"judgment": 3, "explanation": "Perfect"}' } } ] }.to_json, headers: {})
+
+        assert_no_difference 'Judgement.count' do
+          post ai_judge_test_prompt_url(ai_judge_id: 'new', book_id: book.id), params: {
+            system_prompt:  'Judge this',
+            llm_key:        OPENAI_VALID_KEY,
+            judge_options:  { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o' },
+            query_doc_pair: { query_text: 'what year was this released?', doc_id: 'goldeneye', document_fields: '{}' },
+          }
+        end
+
+        assert_response :success
+        body = response.parsed_body
+        assert body['unrateable']
+        assert_nil body['rating']
+        assert_match(/outside this book's scale/, body['explanation'])
+      end
+
+      test 'a rating on the book scale is still shown as the rating' do
+        stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+          .with(headers: { 'Authorization' => "Bearer #{OPENAI_VALID_KEY}" })
+          .to_return(status: 200,
+                     body:   { choices: [ { message: { content: '{"judgment": 1, "explanation": "Relevant"}' } } ] }.to_json, headers: {})
+
+        post ai_judge_test_prompt_url(ai_judge_id: 'new', book_id: book.id), params: {
+          system_prompt:  'Judge this',
+          llm_key:        OPENAI_VALID_KEY,
+          judge_options:  { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o' },
+          query_doc_pair: { query_text: 'what year was this released?', doc_id: 'goldeneye', document_fields: '{}' },
+        }
+
+        assert_response :success
+        body = response.parsed_body
+        assert_not body['unrateable']
+        assert_in_delta(1.0, body['rating'])
+      end
+
       test 'returns a validation error instead of running the LLM when document_fields is malformed JSON' do
         post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
           system_prompt:  'You are a grocery store shopper. You like cheese. Is this a cheese?',

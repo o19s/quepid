@@ -26,20 +26,7 @@ class RunJudgeJudyJob < ApplicationJob
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
 
       llm_service.perform_safe_judgement(judgement, book: book)
-
-      if judgement.rating.blank?
-        # if we don't have a rating, let's assume it's not rateable and mark it so.
-        judgement.mark_unrateable
-      elsif book.scale.present? && book.scale.map(&:to_f).exclude?(judgement.rating.to_f)
-        # the LLM returned a rating outside this book's configured scale -- a
-        # human judge could never produce this (the judging UI only offers
-        # buttons for the book's actual scale values), so don't trust it, but
-        # keep the raw value visible for review rather than silently dropping it.
-        # (A book with no scale configured at all is left alone here -- there's
-        # nothing to validate against, so its rating passes through as-is.)
-        judgement.explanation = "#{judgement.explanation} [LLM returned rating #{judgement.rating.inspect}, outside this book's scale #{book.scale.inspect}]".strip
-        judgement.mark_unrateable
-      end
+      JudgementFinalizer.call(judgement, book: book)
 
       judgement.save!
       counter += 1

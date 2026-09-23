@@ -3,99 +3,9 @@ import { apiFetch } from "api/fetch"
 import { showStatusMessage } from "utils/status_message"
 import { setButtonLoading, escapeHtml } from "utils/stimulus_ui"
 
-// Provider presets for auto-filling URL/model/API version and the help text
-// shown beside the structured fields.
-const PROVIDER_PRESETS = {
-  openai: {
-    llmServiceUrl: "https://api.openai.com",
-    llmApiVersion: "",
-    llmModel: "gpt-4o",
-    help:
-      "<strong>OpenAI</strong> &mdash; Direct API access.<br>" +
-      "<b>URL:</b> <code>https://api.openai.com</code><br>" +
-      "<b>Model:</b> e.g. <code>gpt-4o</code>, <code>gpt-4.1</code><br>" +
-      "<b>Key:</b> Your OpenAI API key (starts with <code>sk-</code>)<br>" +
-      "<b>API Version:</b> Leave blank"
-  },
-  azure_openai: {
-    llmServiceUrl: "https://RESOURCE.openai.azure.com",
-    llmApiVersion: "",
-    llmModel: "gpt-4.1",
-    help:
-      "<strong>Azure OpenAI</strong> &mdash; OpenAI models hosted on Azure.<br>" +
-      "<b>URL:</b> <code>https://YOUR-RESOURCE.openai.azure.com</code><br>" +
-      "<b>Model:</b> Your deployment name, e.g. <code>gpt-4.1</code>, <code>gpt-5.1</code><br>" +
-      "<b>Key:</b> Azure resource API key<br>" +
-      "<b>API Version:</b> Set to use deployment-based routing " +
-      "(e.g. <code>2024-12-01-preview</code>), or leave blank for <code>/openai/v1/</code> path"
-  },
-  azure_ai_foundry: {
-    llmServiceUrl: "https://RESOURCE.services.ai.azure.com",
-    llmApiVersion: "2025-01-01-preview",
-    llmModel: "gpt-4o",
-    help:
-      "<strong>Azure AI Foundry</strong> &mdash; Unified Azure AI endpoint.<br>" +
-      "<b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com</code><br>" +
-      "<b>Model:</b> Model name, e.g. <code>gpt-4o</code><br>" +
-      "<b>Key:</b> Azure AI services key<br>" +
-      "<b>API Version:</b> Defaults to <code>2025-01-01-preview</code>"
-  },
-  azure_ai_foundry_serverless: {
-    llmServiceUrl: "https://MODEL-NAME.REGION.models.ai.azure.com",
-    llmApiVersion: "",
-    llmModel: "",
-    help:
-      "<strong>Azure AI Foundry (Serverless)</strong> &mdash; Models-as-a-Service pay-per-token endpoint.<br>" +
-      "<b>URL:</b> <code>https://MODEL-NAME.REGION.models.ai.azure.com</code><br>" +
-      "<b>Model:</b> Model name from the deployment<br>" +
-      "<b>Key:</b> Serverless endpoint key<br>" +
-      "<b>API Version:</b> Leave blank"
-  },
-  azure_ai_foundry_anthropic: {
-    llmServiceUrl: "https://RESOURCE.services.ai.azure.com/anthropic",
-    llmApiVersion: "",
-    llmModel: "claude-3-5-haiku-20241022",
-    help:
-      "<strong>Azure AI Foundry (Anthropic)</strong> &mdash; Claude models via Azure using the native Anthropic Messages API.<br>" +
-      "<b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com/anthropic</code><br>" +
-      "<b>Model:</b> e.g. <code>claude-3-5-haiku-20241022</code><br>" +
-      "<b>Key:</b> Azure AI services key (sent as <code>x-api-key</code> header)<br>" +
-      "<b>API Version:</b> Leave blank (the <code>anthropic-version</code> header is set automatically)"
-  },
-  anthropic: {
-    llmServiceUrl: "https://api.anthropic.com",
-    llmApiVersion: "",
-    llmModel: "claude-sonnet-4-5-20250514",
-    help:
-      "<strong>Anthropic</strong> &mdash; Direct Anthropic API access.<br>" +
-      "<b>URL:</b> <code>https://api.anthropic.com</code><br>" +
-      "<b>Model:</b> e.g. <code>claude-opus-4-6</code>, <code>claude-sonnet-4-5-20250514</code><br>" +
-      "<b>Key:</b> Your Anthropic API key (sent as <code>x-api-key</code> header)<br>" +
-      "<b>API Version:</b> Leave blank"
-  },
-  google_gemini: {
-    llmServiceUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
-    llmApiVersion: "",
-    llmModel: "gemini-2.0-flash",
-    help:
-      "<strong>Google Gemini</strong> &mdash; Uses the OpenAI-compatible endpoint.<br>" +
-      "<b>URL:</b> <code>https://generativelanguage.googleapis.com/v1beta/openai</code><br>" +
-      "<b>Model:</b> e.g. <code>gemini-2.0-flash</code><br>" +
-      "<b>Key:</b> Your Google AI API key<br>" +
-      "<b>API Version:</b> Leave blank"
-  },
-  ollama: {
-    llmServiceUrl: "http://ollama:31434",
-    llmApiVersion: "",
-    llmModel: "qwen3:0.6b",
-    help:
-      "<strong>Ollama</strong> &mdash; Local models via the Ollama container.<br>" +
-      "<b>URL:</b> <code>http://ollama:31434</code> (Docker) or <code>http://localhost:31434</code> (local)<br>" +
-      "<b>Model:</b> e.g. <code>qwen3:0.6b</code>, <code>llama3</code><br>" +
-      "<b>Key:</b> Leave blank - Ollama doesn't check one<br>" +
-      "<b>API Version:</b> Leave blank"
-  }
-}
+// Normalize line endings before comparing prompts: a textarea gives back CRLF
+// where the stored text had LF.
+const normalizePrompt = (text) => (text || "").replace(/\r\n?/g, "\n").trim()
 
 /**
  * Combined AI judge create/edit wizard: step 1 (configure) is a normal Rails
@@ -103,6 +13,10 @@ const PROVIDER_PRESETS = {
  * only handles step 2 (test & refine), which runs entirely against the
  * *current* form values via AiJudges::WizardController's stateless JSON
  * endpoints. Nothing step 2 does is ever saved until the real form submits.
+ *
+ * Provider presets (URL/model/API version, help text, prompt defaults) come
+ * from the LlmProviders registry (app/models/llm_providers.rb) via the
+ * presets value -- add providers there, not here.
  */
 export default class extends Controller {
   static targets = [
@@ -114,11 +28,19 @@ export default class extends Controller {
     "llmTimeout",
     "llmApiVersion",
     "providerHelp",
+    "providerNotice",
+    "providerOptionField",
     "structuredTab",
     "jsonTab",
     "structuredField",
     "jsonField",
     "systemPrompt",
+    "systemPromptLabel",
+    "systemPromptHint",
+    "systemPromptWarning",
+    "defaultPromptProvider",
+    "criteriaTable",
+    "criteriaProse",
     "step2",
     "queryText",
     "docId",
@@ -136,7 +58,9 @@ export default class extends Controller {
   static values = {
     sampleUrl: String,
     testUrl: String,
-    existing: Boolean
+    existing: Boolean,
+    presets: Object,
+    stockPrompts: Array
   }
 
   connect() {
@@ -144,8 +68,10 @@ export default class extends Controller {
     this.optionsEditor = null
     setTimeout(() => this.captureEditors(), 500)
 
+    this.readStoredOptions()
+
     if (this.hasLlmProviderTarget) {
-      this.updateProviderHelp(this.llmProviderTarget.value)
+      this.updateProviderPanels(this.llmProviderTarget.value)
     }
 
     if (this.existingValue) {
@@ -178,47 +104,210 @@ export default class extends Controller {
     }
   }
 
+  // The two tabs are one set of values seen two ways, and only the visible one is
+  // submitted. Without syncing, editing a field and switching tabs shows the *stored*
+  // value instead of what you just typed -- and saving from there silently discards it.
+  // Anything in options that has no field of its own (or belongs to another provider)
+  // is carried through untouched.
   showStructuredTab() {
+    this.applyJsonToFields()
     this.jsonFieldTargets.forEach((field) => { field.disabled = true })
     this.structuredFieldTargets.forEach((field) => { field.disabled = false })
+    this.showProviderOptionFields(this.hasLlmProviderTarget ? this.llmProviderTarget.value : "")
   }
 
   showJsonTab() {
+    this.showFieldsAsJson()
     this.structuredFieldTargets.forEach((field) => { field.disabled = true })
     this.jsonFieldTargets.forEach((field) => { field.disabled = false })
   }
 
+  readStoredOptions() {
+    this.otherOptions = {}
+    if (!this.hasJsonFieldTarget) return
+
+    try {
+      const { judge_options: _ignored, ...rest } = JSON.parse(this.jsonFieldTarget.value || "{}")
+      this.otherOptions = rest
+    } catch {
+      this.otherOptions = {}
+    }
+  }
+
+  showFieldsAsJson() {
+    if (!this.hasJsonFieldTarget) return
+
+    this.jsonFieldTarget.value = JSON.stringify({ ...this.otherOptions, judge_options: this.judgeOptions() }, null, 2)
+  }
+
+  applyJsonToFields() {
+    if (!this.hasJsonFieldTarget) return
+
+    let parsed
+    try {
+      parsed = JSON.parse(this.jsonFieldTarget.value)
+    } catch {
+      return // leave the fields alone rather than wiping them over a typo
+    }
+
+    const { judge_options: judgeOptions = {}, ...rest } = parsed
+    this.otherOptions = rest
+
+    Object.entries(judgeOptions).forEach(([key, value]) => {
+      const field = this.element.querySelector(`#judge_options_${key}`)
+      if (field) field.value = value === null || value === undefined ? "" : value
+    })
+
+    if (this.hasLlmProviderTarget && judgeOptions.llm_provider) {
+      this.llmProviderTarget.value = judgeOptions.llm_provider
+      this.updateProviderPanels(this.llmProviderTarget.value)
+    }
+  }
+
   updateProviderPreset() {
-    const preset = PROVIDER_PRESETS[this.llmProviderTarget.value]
+    const preset = this.presetsValue[this.llmProviderTarget.value]
     if (!preset) return
 
-    if (this.hasLlmServiceUrlTarget) this.llmServiceUrlTarget.value = preset.llmServiceUrl
-    if (this.hasLlmApiVersionTarget) this.llmApiVersionTarget.value = preset.llmApiVersion
-    if (this.hasLlmModelTarget) this.llmModelTarget.value = preset.llmModel
+    if (this.hasLlmServiceUrlTarget) this.llmServiceUrlTarget.value = preset.llm_service_url
+    if (this.hasLlmApiVersionTarget) this.llmApiVersionTarget.value = preset.llm_api_version
+    if (this.hasLlmModelTarget) this.llmModelTarget.value = preset.llm_model
 
-    this.updateProviderHelp(this.llmProviderTarget.value)
+    this.offerDefaultSystemPrompt(preset)
+    this.updateProviderPanels(this.llmProviderTarget.value)
   }
 
-  updateProviderHelp(provider) {
-    const preset = PROVIDER_PRESETS[provider]
-    if (!this.hasProviderHelpTarget) return
+  updateProviderPanels(provider) {
+    const preset = this.presetsValue[provider]
 
-    if (preset?.help) {
-      this.providerHelpTarget.innerHTML = preset.help
-      this.providerHelpTarget.style.display = "block"
+    this.panel(this.hasProviderNoticeTarget && this.providerNoticeTarget, preset?.notice)
+    this.panel(this.hasProviderHelpTarget && this.providerHelpTarget, preset?.help)
+    this.applyReadOnlyFields(preset)
+    this.describePromptField(preset)
+    this.showProviderOptionFields(provider)
+    this.showCriteria(preset)
+  }
+
+  panel(element, html) {
+    if (!element) return
+
+    if (html) {
+      element.innerHTML = html
+      element.style.display = "block"
     } else {
-      this.providerHelpTarget.style.display = "none"
+      element.style.display = "none"
     }
   }
 
-  judgeOptions() {
-    return {
-      llm_provider: this.hasLlmProviderTarget ? this.llmProviderTarget.value : "",
-      llm_service_url: this.hasLlmServiceUrlTarget ? this.llmServiceUrlTarget.value : "",
-      llm_model: this.hasLlmModelTarget ? this.llmModelTarget.value : "",
-      llm_timeout: this.hasLlmTimeoutTarget ? this.llmTimeoutTarget.value : "",
-      llm_api_version: this.hasLlmApiVersionTarget ? this.llmApiVersionTarget.value : ""
+  // Fields the provider fixes for us (e.g. a single endpoint and model) are shown
+  // read-only rather than hidden, so it is clear what the judge will actually call.
+  applyReadOnlyFields(preset) {
+    const readOnly = preset?.read_only || []
+    const fields = {
+      llm_service_url: this.hasLlmServiceUrlTarget && this.llmServiceUrlTarget,
+      llm_api_version: this.hasLlmApiVersionTarget && this.llmApiVersionTarget,
+      llm_model: this.hasLlmModelTarget && this.llmModelTarget
     }
+
+    Object.entries(fields).forEach(([name, field]) => {
+      if (!field) return
+
+      field.readOnly = readOnly.includes(name)
+      field.classList.toggle("bg-body-secondary", field.readOnly)
+    })
+  }
+
+  // A field only one provider understands is disabled while another is selected, so
+  // switching away never posts a setting the chosen provider has no idea about.
+  showProviderOptionFields(provider) {
+    this.providerOptionFieldTargets.forEach((row) => {
+      const mine = row.dataset.provider === provider
+
+      row.style.display = mine ? "" : "none"
+      row.querySelectorAll("input").forEach((input) => { input.disabled = !mine })
+    })
+  }
+
+  // For a typed model the book's scale is sent as the question's criteria; a chat
+  // model gets it described in prose inside the prompt. Show whichever this is.
+  showCriteria(preset) {
+    const asCriteria = Boolean(preset?.scale_as_criteria)
+
+    if (this.hasCriteriaTableTarget) this.criteriaTableTarget.style.display = asCriteria ? "" : "none"
+    if (this.hasCriteriaProseTarget) this.criteriaProseTarget.style.display = asCriteria ? "none" : ""
+  }
+
+  isStockPrompt(text) {
+    const current = normalizePrompt(text)
+    return this.stockPromptsValue.some((prompt) => normalizePrompt(prompt) === current)
+  }
+
+  // What a judge should be told depends on the dialect it speaks: a chat model
+  // needs the rating scale and an output format spelled out, while a typed
+  // model is handed both as part of the request and only needs to be told what
+  // to weigh. So offer the new provider's prompt -- but never over one somebody
+  // has edited.
+  offerDefaultSystemPrompt(preset) {
+    if (!this.hasSystemPromptTarget || !preset?.system_prompt) return
+
+    const current = this.systemPromptTarget.value
+    if (normalizePrompt(current) !== "" && !this.isStockPrompt(current)) return
+
+    this.systemPromptTarget.value = preset.system_prompt
+  }
+
+  // A chat model is given a system prompt; a typed model is given instructions
+  // on a question. Same stored text, different thing, so say which one this is.
+  describePromptField(preset) {
+    if (this.hasSystemPromptLabelTarget && preset?.prompt_label) {
+      this.systemPromptLabelTarget.textContent = preset.prompt_label
+    }
+    if (this.hasSystemPromptHintTarget) {
+      this.systemPromptHintTarget.textContent = preset?.prompt_hint || ""
+      this.systemPromptHintTarget.style.display = preset?.prompt_hint ? "block" : "none"
+    }
+    if (!this.hasSystemPromptWarningTarget) return
+
+    // An existing judge switched to another dialect keeps text written for the
+    // old one, which is worse than useless: the stock chat prompt dictates a
+    // 0-3 scale this book may not use, and an output format Jev cannot follow.
+    const current = this.hasSystemPromptTarget ? this.systemPromptTarget.value : ""
+    const foreign = Boolean(preset?.system_prompt) &&
+      this.isStockPrompt(current) &&
+      normalizePrompt(preset.system_prompt) !== normalizePrompt(current)
+
+    if (foreign && this.hasDefaultPromptProviderTarget && this.hasLlmProviderTarget) {
+      const select = this.llmProviderTarget
+      this.defaultPromptProviderTarget.textContent = select.options[select.selectedIndex].text
+    }
+    this.systemPromptWarningTarget.style.display = foreign ? "block" : "none"
+  }
+
+  useDefaultPrompt(event) {
+    event?.preventDefault?.()
+    if (!this.hasLlmProviderTarget || !this.hasSystemPromptTarget) return
+
+    const preset = this.presetsValue[this.llmProviderTarget.value]
+    if (!preset) return
+
+    this.systemPromptTarget.value = preset.system_prompt
+    this.describePromptField(preset)
+  }
+
+  // Every judge option currently on the structured tab, including options only
+  // the selected provider understands (hidden rows belong to other providers).
+  judgeOptions() {
+    const collected = {}
+
+    this.structuredFieldTargets.forEach((field) => {
+      if (!field.id.startsWith("judge_options_")) return
+
+      const optionRow = field.closest(".provider-option-field")
+      if (optionRow && optionRow.style.display === "none") return
+
+      collected[field.id.replace("judge_options_", "")] = field.value
+    })
+
+    return collected
   }
 
   async sampleQueryDocPair(event) {
@@ -300,8 +389,13 @@ export default class extends Controller {
       if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`)
 
       if (this.hasRatingInfoTarget) {
+        // The server holds the preview to the same rules a real judging run applies, so a
+        // rating this book would reject shows as unrateable rather than as a usable rating.
+        const rating = data.unrateable
+          ? "<span class=\"badge text-bg-warning\">Unrateable</span>"
+          : escapeHtml(String(data.rating))
         this.ratingInfoTarget.innerHTML =
-          `<h2>Rating Information</h2><div>LLM Response: ${escapeHtml(String(data.rating))}<br>${escapeHtml(data.explanation || "")}</div>`
+          `<h2>Rating Information</h2><div>LLM Response: ${rating}<br>${escapeHtml(data.explanation || "")}</div>`
         this.ratingInfoTarget.style.display = "block"
       }
     } catch (error) {

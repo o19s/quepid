@@ -110,6 +110,12 @@ Rails.application.config.quepid_domain = ENV.fetch('QUEPID_DOMAIN', '')
 # when Rails runs directly on the host or uses a custom Ollama deployment.
 Rails.application.config.ollama_service_url = ENV.fetch('OLLAMA_SERVICE_URL', Rails.env.production? ? 'http://ollama:11434' : 'http://ollama:31434')
 
+# == LLM retry backoff
+# Base seconds between retries when an LLM provider answers "too many requests"
+# or "overloaded" (see LlmConnection). Zero in test so a stubbed 429 doesn't
+# make the suite sit through a real backoff.
+Rails.application.config.llm_retry_interval = ENV.fetch('LLM_RETRY_INTERVAL') { Rails.env.test? ? 0 : 2 }.to_f
+
 # == If we have nested Quepid under a context, like tools.bigcorp.com/quepid then this deal with that situation.
 Rails.application.config.action_cable.url = "#{ENV.fetch('RAILS_RELATIVE_URL_ROOT', '')}/cable"
 
