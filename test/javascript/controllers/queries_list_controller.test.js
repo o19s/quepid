@@ -214,6 +214,18 @@ describe("queries_list_controller", () => {
     expect(toggle).toHaveBeenCalledWith({ queryId: 7 })
   })
 
+  it("removes a query after the delete controller reports success", () => {
+    const { controller } = controllerFor()
+    const removeQueryFromState = vi.fn()
+    controller.angularScope = { queriesSvc: { removeQueryFromState } }
+    controller.scheduleRender = vi.fn()
+
+    controller.handleQueryDeleteCompleted({ detail: { queryId: 7 } })
+
+    expect(removeQueryFromState).toHaveBeenCalledWith(7)
+    expect(controller.scheduleRender).toHaveBeenCalled()
+  })
+
   it("bridges drag start while reorder persistence owns drag end", () => {
     const { controller } = controllerFor()
     const events = []

@@ -16,6 +16,7 @@
 - Keep `app` immediately after `docker compose exec` so the command matches the approved Docker execution rule. For environment overrides, use `docker compose exec app env KEY=value command ...`; do not put `-e KEY=value` before `app`.
 - **Default to `docker compose exec app` for every command.** Do not use `bin/docker r`, `docker compose run`, or any app-run container while `app` is running. A run container is never a substitute for the permanent app.
 - **Never stop, recreate, remove, or replace `quepid_app` unless the user explicitly asks.** If duplicate app-run containers exist, do not clean them up autonomously; report their exact names and ask first.
+    If Docker reports permission denied while connecting to its socket, rerun the same in-scope command once with the execution tool's elevated Docker-socket permission. Do not work around the failure with another container. If the elevated retry also fails, report the permission blocker and continue only with non-Docker checks that are safe and relevant.
     - **Can't reach the app.** In the running container the app is plain `http://localhost:3000`. In an `r` container `localhost` is itself, and the host is only reachable as `host.docker.internal` — which Rails rejects with a 403 "Blocked hosts" page, since its dev allow-list takes any bare IP but only a few names.
     - **Installs never stick.** `npx playwright install` and friends land in the throwaway container and vanish on exit, so the install appears to "never take" however many times it is rerun.
 - After CSS or vendor JS changes make sure you rebuild:
@@ -155,6 +156,8 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 ## UI changes — screenshots via Playwright MCP (`playwright` server)
 
 For any user-visible change, prove the behavior with Playwright MCP screenshots — never substitute prose or memory. App: `http://localhost:33000`; sign in with `quepid+realisticactivity@o19s.com` / `password`.
+
+The Playwright MCP tools may be exposed as deferred tools rather than a direct namespace. In that case, discover `mcp__playwright__*` from the tool catalog and invoke them through the tool orchestrator; do not treat an empty computer-surface/browser inventory as proof that Playwright is unavailable. Start with `mcp__playwright__browser_tabs` (`action: "list"`), then use the browser snapshot/click/fill/screenshot tools for the required flow.
 
 - **Before & after**: capture the affected flow before editing, then repeat the identical steps after. Capture every relevant state (modal open/closed, accordion expanded, error vs success, etc.). `browser_snapshot` is only for driving clicks; `browser_take_screenshot` is the proof.
 - **Capturing a screenshot is not verifying it.** Before claiming two states match or differ, actually open and look at every before/after pair (Read tool or equivalent) — don't infer "identical" from the code diff not touching that template, and don't treat a console-log error as a substitute for looking at what the page actually rendered.

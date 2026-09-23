@@ -80,7 +80,7 @@ test.describe('Angular pages — interaction screenshots', () => {
     await expect(page.locator('.modal.show')).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Toggle Notes', exact: true }).first().click();
-    await page.locator('#notes').focus();
+    await page.locator('textarea[data-query-notes-target="notes"]:visible').first().focus();
     await expect(page).toHaveScreenshot('query-editor-04-notes-focused.png', expandedCaseScreenshotOpts(page));
 
     await page.locator('search-result .single-rating').first().click();
@@ -216,10 +216,10 @@ test.describe('Angular pages — interaction screenshots', () => {
     await page.locator('search-result .single-rating').first().click();
     await expect(page.locator('.popover, [class*="popover"]').first()).toBeVisible({ timeout: 5_000 });
     await expect(page).toHaveScreenshot('wizard-06-judgement-popover.png', {
-      // Same expanded-result backdrop as wizard-05 above; the popover itself
-      // renders as its own overlay so masking the row behind it doesn't hide
-      // what this screenshot actually tests.
-      mask: [...dynamicRegions(page), page.locator('search-result')],
+      // Keep the expanded result visible here: the judgement popover is
+      // rendered inside that result, so masking the whole <search-result>
+      // would mask the very UI this screenshot is meant to prove.
+      mask: dynamicRegions(page),
       maxDiffPixelRatio: 0.025,
     });
     await page.keyboard.press('Escape');

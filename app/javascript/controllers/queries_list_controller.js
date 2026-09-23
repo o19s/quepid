@@ -40,7 +40,9 @@ export default class extends Controller {
       this.forwardQueryToggle(event)
       this.scheduleRender()
     }
+    this.queryDeleteCompleted = event => this.handleQueryDeleteCompleted(event)
     this.element.addEventListener("query-row:toggle", this.queryToggle)
+    this.element.addEventListener("query-delete:completed", this.queryDeleteCompleted)
     this.setupSortable()
     this.render()
     this.attachToAngularScope()
@@ -50,6 +52,7 @@ export default class extends Controller {
     this.store?.removeEventListener("change", this.storeChange)
     this.store?.removeEventListener("reset", this.storeChange)
     this.element.removeEventListener("query-row:toggle", this.queryToggle)
+    this.element.removeEventListener("query-delete:completed", this.queryDeleteCompleted)
     if (this.angularRetryHandle) cancelAnimationFrame(this.angularRetryHandle)
     if (this.renderHandle) cancelAnimationFrame(this.renderHandle)
     this.destroyAngularRows()
@@ -426,6 +429,14 @@ export default class extends Controller {
     searchResults.dispatchEvent(new CustomEvent("query-row:toggle", {
       detail: event.detail
     }))
+  }
+
+  handleQueryDeleteCompleted(event) {
+    const queryId = event.detail?.queryId
+    if (queryId === undefined || queryId === null) return
+
+    this.angularScope?.queriesSvc?.removeQueryFromState?.(queryId)
+    this.scheduleRender()
   }
 
   renderPagination(pageCount, totalCount) {
