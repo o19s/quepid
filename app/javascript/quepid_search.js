@@ -24,7 +24,9 @@ import {
   createRequest,
   deleteRequest,
   moveRequest,
-  positionRequest
+  positionRequest,
+  persistQuery,
+  persistQueries
 } from "./utils/query_lifecycle"
 
 /**
@@ -66,7 +68,11 @@ const quepidSearch = {
     deleteRequest,
     moveRequest,
     positionRequest,
-    addQueries: null,
+    persistQuery,
+    persistQueries,
+    caseId: null,
+    prepareQueries: null,
+    commitQueries: null,
     moveQuery: null
   }
 }

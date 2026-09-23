@@ -200,16 +200,16 @@ parts:
         paths: ["app/views/core/_case_header.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/controllers/core/case_header_controller.rb", "app/javascript/controllers/case_rename_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/assets/javascripts/controllers/case.js", "app/assets/javascripts/services/caseSvc.js", "app/assets/javascripts/services/settingsSvc.js", "app/models/case.rb", "app/models/try.rb"]
       "4.2":
         title: "Add a query (single)"
-        last_run: 2026-09-22T20:56:00Z
+        last_run: 2026-09-23T13:10:00Z
         result: pass
-        notes: "Covered live: Playwright MCP on SOLR CASE (case 6). Added one query ('deangularizing smoke query'), confirmed the list count increased 20→21 and the query rendered with a real result count, then deleted it through the row's Delete Query flow and restored the case to 20 queries. Also confirmed the input clears after submit. Not covered live: the static-endpoint 'adding not supported' state, empty/whitespace validation in this pass, or a forced search/scoring failure."
-        paths: ["app/assets/templates/views/queries.html", "app/assets/javascripts/controllers/queriesCtrl.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/utils/query_state.js", "app/models/query.rb", "test/javascript/utils/query_state.test.js", "spec/javascripts/angular/controllers/queriesCtrl_spec.js"]
+        notes: "Covered live: Playwright MCP on SOLR case 6 after the query persistence seam moved to Stimulus. Added a unique single query, confirmed the POST returned 200 and the new query entered the Angular state with real search results, then deleted it through the API cleanup path. Also confirmed the input clears after submit. Not covered live: the static-endpoint 'adding not supported' state, empty/whitespace validation in this pass, or a forced search/scoring failure."
+        paths: ["app/assets/templates/views/queries.html", "app/assets/javascripts/controllers/queriesCtrl.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/query_lifecycle_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_state.js", "app/models/query.rb", "test/javascript/controllers/query_lifecycle_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/javascript/utils/query_state.test.js", "spec/javascripts/angular/controllers/queriesCtrl_spec.js"]
       "4.3":
         title: "Add multiple queries (bulk)"
-        last_run: 2026-09-22T20:56:00Z
+        last_run: 2026-09-23T13:10:00Z
         result: pass
-        notes: "Covered live: Playwright MCP on SOLR CASE (case 6). Semicolon-separated input added two queries, the list count increased 21→23, and both rendered with real result counts. Deleted both through the row Delete Query flow afterward; the case returned to its original 20 queries. Not covered live: multiline paste in this pass, or a bulk submit where one query fails and the rest must still be added."
-        paths: ["app/assets/templates/views/queries.html", "app/assets/javascripts/controllers/queriesCtrl.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/utils/query_state.js", "test/javascript/utils/query_state.test.js"]
+        notes: "Covered live: Playwright MCP on SOLR case 6 after the bulk persistence seam moved to Stimulus. Semicolon-separated input posted two queries to the bulk endpoint; both returned in the response and entered the live state with real result counts. Deleted the two bulk queries and the single probe query through the API cleanup path, restoring the case. Not covered live: multiline paste in this pass, or a bulk submit where one query fails and the rest must still be added."
+        paths: ["app/assets/templates/views/queries.html", "app/assets/javascripts/controllers/queriesCtrl.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/query_lifecycle_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_state.js", "test/javascript/controllers/query_lifecycle_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/javascript/utils/query_state.test.js"]
       "4.4":
         title: "Move a query to another case"
         last_run: 2026-09-23T12:25:00Z

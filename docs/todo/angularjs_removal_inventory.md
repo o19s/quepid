@@ -281,9 +281,9 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Do not scope `scoreAll()` in the same change.** One rating rescores every query today; the performance lens says carry that forward. An explicit store makes per-query scoping possible later, but taking it here ships an unapproved behaviour change and makes any score discrepancy unattributable.
 
-**Remaining, in slice order (2026-09-22).** Next:
+**Remaining, in slice order (2026-09-23).** Next:
 
-1. **Migrate query mutations last** — add, move, delete, and persist — matching the [decision lenses](#decision-lenses) ordering (search/score stay client-owned throughout; nothing here moves them server-side). The add-query form and its user-facing orchestration are now Stimulus-owned (`add_query_controller.js` + `query_lifecycle_controller.js`). The Move Query modal is now Stimulus-owned (`move_query_core_controller.js` + `_move_query_core_modal.html.erb`), while `queriesSvc` remains the temporary adapter for removing the moved query and refreshing scores. The query lifecycle API request contracts live in tested ESM (`utils/query_lifecycle.js`); `queriesSvc` remains the temporary adapter for Query construction, persistence, search, and scoring. Query deletion now performs its API request in `query_delete_controller.js`; Angular only removes the confirmed query from its in-memory collection and refreshes scores. Query reorder persistence is now Stimulus-owned (`queries_list_controller.js`); Angular only applies the returned display order through a temporary adapter. Query creation persistence remains the next query-lifecycle seam.
+1. **Migrate query mutations last** — add, move, delete, and persist — matching the [decision lenses](#decision-lenses) ordering (search/score stay client-owned throughout; nothing here moves them server-side). The add-query form and its user-facing orchestration are Stimulus-owned (`add_query_controller.js` + `query_lifecycle_controller.js`). The Move Query modal is Stimulus-owned (`move_query_core_controller.js` + `_move_query_core_modal.html.erb`), while `queriesSvc` remains the temporary adapter for removing the moved query and refreshing scores. The query lifecycle API request contracts and single/bulk persistence live in tested ESM (`utils/query_lifecycle.js`); Angular temporarily owns only Query construction plus the existing search/scoring continuation. Query deletion performs its API request in `query_delete_controller.js`; Angular only removes the confirmed query from its in-memory collection and refreshes scores. Query reorder persistence is Stimulus-owned (`queries_list_controller.js`); Angular only applies the returned display order through a temporary adapter. The next query-lifecycle seam is removing the legacy `queriesSvc.persistQuery`/`persistQueries` callers used by the wizard, after which those methods can be deleted.
 
 The diff/snapshot score badges stay Angular until `diffResultsSvc` migrates — out of this sequence.
 
@@ -514,7 +514,7 @@ Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `
 |------|------|-----------|
 | Query list container | directive + controller | `<queries>`, `QueriesCtrl` — `directives/queries.js`, `controllers/queriesCtrl.js` |
 | Query list template | template | `templates/views/queries.html` |
-| Add query | Stimulus controller + Angular service bridge | `app/javascript/controllers/add_query_controller.js` + `QueriesCtrl`'s `add-query:submit` bridge; persistence/search remain in `queriesSvc` for now |
+| Add query | Stimulus controller + temporary Angular state bridge | `app/javascript/controllers/add_query_controller.js`, `app/javascript/controllers/query_lifecycle_controller.js`, and `app/javascript/utils/query_lifecycle.js`; Angular retains Query construction and search/scoring only |
 | Sort / filter / collapse | controller logic | `QueriesCtrl` |
 | Drag reorder | directive | `quepidSortable` — `directives/quepidSortable.js` (uses SortableJS via `window.Sortable`) |
 | Pagination | third-party | `dir-paginate`, `<dir-pagination-controls>` |

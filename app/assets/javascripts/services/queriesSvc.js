@@ -124,12 +124,11 @@ angular.module('QuepidApp')
       this.settingsWithTryOverrides = settingsWithTryOverrides;
       this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
-      this.addQueryTexts = addQueryTexts;
-
       // Temporary adapter for the Stimulus query-lifecycle controller. The
-      // controller owns the user-facing workflow; this service still owns
-      // Query construction, search, and scoring until those seams migrate.
-      window.quepidSearch.queryLifecycle.addQueries = addQueryTexts;
+      // controller owns persistence and the user-facing workflow; this service
+      // still owns Query construction, search, and scoring until those seams migrate.
+      window.quepidSearch.queryLifecycle.prepareQueries = prepareQueries;
+      window.quepidSearch.queryLifecycle.commitQueries = commitQueries;
 
       // Rated-docs lookup rules live in app/javascript/utils/rated_docs.js (Vitest-covered);
       // these stay as the Angular-facing names that queriesCtrl.js and docFinder.js call.
@@ -1251,6 +1250,7 @@ angular.module('QuepidApp')
 
       this.changeSettings = function(newCaseNo, newSettings) {
         currSettings = newSettings;
+        window.quepidSearch.queryLifecycle.caseId = newCaseNo;
 
         if (caseNo !== newCaseNo) {
           // Clear sync cache when switching cases
@@ -1369,6 +1369,53 @@ angular.module('QuepidApp')
         return newQuery;
       };
 
+      function prepareQueries(queryTexts) {
+        if (queryTexts.length === 1) {
+          return { query: svc.createQuery(queryTexts[0]) };
+        }
+
+        return { queries: queryTexts.map(function(queryText) {
+          return svc.createQuery(queryText);
+        }) };
+      }
+
+      function commitSingleQuery(query, persisted) {
+        if (persisted.status !== 204) {
+          svc.displayOrder = persisted.data.display_order;
+          query.queryId = persisted.data.query.query_id;
+          query.ratingsStore.setQueryId(query.queryId);
+          svc.queries[query.queryId] = query;
+          svcVersion++;
+        }
+
+        return query.searchAndScore().then(function() {
+          $log.info('rescoring queries after adding query');
+          svc.updateScores();
+          return {};
+        }, function(searchError) {
+          return { searchError: searchError };
+        });
+      }
+
+      function commitBulkQueries(persisted) {
+        svc.queries = {};
+        addQueriesFromResp(persisted.data);
+
+        return svc.searchAll().then(function() {
+          return {};
+        }, function(searchError) {
+          return { searchError: searchError };
+        });
+      }
+
+      function commitQueries(prepared, persisted) {
+        if (prepared.query) {
+          return commitSingleQuery(prepared.query, persisted);
+        }
+
+        return commitBulkQueries(persisted);
+      }
+
       this.persistQuery = function(query) {
         let self = this;
 
@@ -1450,39 +1497,6 @@ angular.module('QuepidApp')
 
         return deferred.promise;
       };
-
-      function addQueryTexts(queryTexts) {
-        if (queryTexts.length === 0) {
-          return $q.when({});
-        }
-
-        if (queryTexts.length === 1) {
-          var query = svc.createQuery(queryTexts[0]);
-          return svc.persistQuery(query).then(function() {
-            return query.searchAndScore().then(function() {
-              return {};
-            }, function(searchError) {
-              return { searchError: searchError };
-            }).then(function(result) {
-              $log.info('rescoring queries after adding query');
-              svc.updateScores();
-              return result;
-            });
-          });
-        }
-
-        var queries = queryTexts.map(function(queryText) {
-          return svc.createQuery(queryText);
-        });
-
-        return svc.persistQueries(queries).then(function() {
-          return svc.searchAll().then(function() {
-            return {};
-          }, function(searchError) {
-            return { searchError: searchError };
-          });
-        });
-      }
 
       // get the full list of queries sorted by create/manual order
       // only call this when our version() changes

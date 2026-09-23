@@ -5,6 +5,8 @@ import { Controller } from "@hotwired/stimulus"
  * remains in the temporary Angular service adapter.
  */
 export default class extends Controller {
+  static values = { caseId: Number }
+
   connect() {
     this.onAddQueries = event => this.addQueries(event.detail?.queryTexts || [])
     this.element.addEventListener("add-query:submit", this.onAddQueries)
@@ -15,16 +17,21 @@ export default class extends Controller {
   }
 
   async addQueries(queryTexts) {
-    const addQueryTexts = window.quepidSearch?.queryLifecycle?.addQueries
     if (queryTexts.length === 0) return
-    if (!addQueryTexts) {
+    const lifecycle = window.quepidSearch?.queryLifecycle
+    if (!lifecycle?.prepareQueries || !lifecycle?.commitQueries) {
       window.quepidDom?.flash?.show("error", "Unable to add queries.")
       this.complete(false)
       return
     }
 
     try {
-      const result = await addQueryTexts(queryTexts)
+      const prepared = lifecycle.prepareQueries(queryTexts)
+      const caseId = this.caseIdValue || lifecycle.caseId
+      const persisted = queryTexts.length === 1
+        ? await lifecycle.persistQuery(caseId, queryTexts[0])
+        : await lifecycle.persistQueries(caseId, queryTexts)
+      const result = await lifecycle.commitQueries(prepared, persisted)
       if (result.searchError) {
         const message = result.searchError.message || result.searchError
         window.quepidDom.flash.show("error", queryTexts.length === 1
