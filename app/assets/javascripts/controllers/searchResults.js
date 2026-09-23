@@ -2,16 +2,12 @@
 angular.module('QuepidApp')
   .controller('SearchResultsCtrl', [
     '$rootScope', '$scope', '$element', '$log',
-    'clipboardSvc', 'rateScaleSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
+    'rateScaleSvc', 'queriesSvc', 'queryViewSvc', 'settingsSvc',
     function (
       $rootScope, $scope, $element, $log,
-      clipboardSvc, rateScaleSvc, queriesSvc, queryViewSvc, settingsSvc
+      rateScaleSvc, queriesSvc, queryViewSvc, settingsSvc
     ) {
       $scope.queriesSvc = queriesSvc;
-
-      $scope.copyQueryText = function() {
-        clipboardSvc.copy($scope.query.queryText).catch(angular.noop);
-      };
 
       // Settings for query display
       var DisplayConfig = function() {
@@ -49,7 +45,6 @@ angular.module('QuepidApp')
         });
       }
 
-
       $scope.displayed = new DisplayConfig();
 
       var syncDisplayState = function() {
@@ -80,21 +75,6 @@ angular.module('QuepidApp')
           syncDisplayState();
       };
       syncDisplayState();
-
-      // The query-row Stimulus controller owns the header click. Keep the
-      // expanded content and query-view state in Angular until that island is
-      // migrated, and bridge only the intent here.
-      $element.on('query-row:toggle', function(event) {
-        var originalEvent = event.originalEvent;
-        if (!originalEvent || originalEvent.detail.queryId !== $scope.query.queryId) {
-          return;
-        }
-        if (!$scope.isSortingEnabled()) {
-          $scope.$apply(function() {
-            $scope.query.toggle();
-          });
-        }
-      });
 
       var queryDeleteCompletedHandler = function(event) {
         var originalEvent = event.originalEvent;
@@ -151,9 +131,7 @@ angular.module('QuepidApp')
           return;
         }
         var newRating = parseInt(detail.rating, 10);
-
         src.query.rating = newRating;
-
         var ids = [];
         var docs = queriesSvc.showOnlyRated ? src.query.ratedDocs : src.query.docs;
         angular.forEach(docs, function(doc) {
@@ -173,7 +151,6 @@ angular.module('QuepidApp')
           return;
         }
         src.query.rating = '--';
-
         var ids = [];
         var docs = queriesSvc.showOnlyRated ? src.query.ratedDocs : src.query.docs;
         angular.forEach(docs, function(doc) {

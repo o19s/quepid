@@ -85,4 +85,18 @@ describe("SearchResultsController", () => {
 
     expect(copyText).toHaveBeenCalledWith("meetings")
   })
+
+  it("routes query expansion through the explicit query-state adapter", () => {
+    const { controller } = controllerFor()
+    const toggleQuery = vi.fn()
+    window.quepidSearch = { queryState: { toggleQuery } }
+    const event = { preventDefault: vi.fn(), stopPropagation: vi.fn() }
+
+    controller.handleQueryToggle(event)
+
+    expect(toggleQuery).toHaveBeenCalledWith("1")
+    expect(event.preventDefault).toHaveBeenCalled()
+    expect(event.stopPropagation).toHaveBeenCalled()
+  })
+
 })

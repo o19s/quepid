@@ -17,9 +17,11 @@ export default class extends Controller {
     this.store.addEventListener("change", this.storeChange)
     this.store.addEventListener("reset", this.storeChange)
     this.ratingHandler = event => this.handleRating(event)
+    this.queryToggleHandler = event => this.handleQueryToggle(event)
     this.showDocumentHandler = event => this.handleShowDocument(event)
     this.element.addEventListener("rating-popover:rate", this.ratingHandler)
     this.element.addEventListener("rating-popover:reset", this.ratingHandler)
+    this.element.addEventListener("query-row:toggle", this.queryToggleHandler)
     this.element.addEventListener("search-result:show-document", this.showDocumentHandler)
     this.notesCloseHandler = () => this.setNotesOpen(false)
     this.element.addEventListener("query-notes:close", this.notesCloseHandler)
@@ -31,6 +33,7 @@ export default class extends Controller {
     this.store?.removeEventListener("reset", this.storeChange)
     this.element.removeEventListener("rating-popover:rate", this.ratingHandler)
     this.element.removeEventListener("rating-popover:reset", this.ratingHandler)
+    this.element.removeEventListener("query-row:toggle", this.queryToggleHandler)
     this.element.removeEventListener("search-result:show-document", this.showDocumentHandler)
     this.element.removeEventListener("query-notes:close", this.notesCloseHandler)
   }
@@ -129,6 +132,12 @@ export default class extends Controller {
     const docId = result?.__searchResultDocument?.id
     const rating = event.type === "rating-popover:rate" ? parseInt(event.detail.rating, 10) : null
     window.quepidSearch?.queryState?.rateDocument?.(this.queryId, docId, rating)
+  }
+
+  handleQueryToggle(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    window.quepidSearch?.queryState?.toggleQuery?.(this.queryId)
   }
 
   handleShowDocument(event) {

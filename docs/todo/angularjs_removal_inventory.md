@@ -249,7 +249,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 **Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → qscore_query (86) → qscore_case (101) → query_explain (117) → query_options (137) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423) → import_ratings (674).
 
-**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Annotations are migrated; qgraph still consumes them through a temporary Angular read bridge. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResults` / `searchResult`, `qgraph` / qscore\*, `diff`, `import-ratings`, `query-options`, `new-case` / wizard, `frog-report`, `quepidTypeahead`, `queryParams`, `quepidCollapse`. Annotations render through Stimulus, while qgraph still consumes them through a temporary Angular read bridge. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
 
 #### `queriesSvc` seam inventory (phase 1)
 
@@ -281,19 +281,11 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Do not scope `scoreAll()` in the same change.** One rating rescores every query today; the performance lens says carry that forward. An explicit store makes per-query scoping possible later, but taking it here ships an unapproved behaviour change and makes any score discrepancy unattributable.
 
-**Remaining, in slice order (2026-09-23).** The query-list collection shell and query-mutation persistence seam are complete. The next slice is:
+**Remaining, in slice order (2026-09-23).** The next slice is:
 
 1. **Remove the expanded-results Angular bridge** — preserve browser-to-customer-engine search and client-side scoring, but move the `search-results` island's document rendering and controls onto the explicit store incrementally. Do not combine it with scorer sandboxing, diff migration, or wizard UI replacement.
 
-The first two substeps are now in place: `query_documents_store.js` is a dual-run plain-document read model, and `search-results` renders its document DOM from those snapshots. `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Angular remains only behind explicit command/state adapters for live query state and rating mutations; the next substep is narrowing those adapters before removing the expanded-results bridge entirely.
-
-The detailed-document adapter is now removed from the Stimulus results path: `detailed_document_modal.js` owns the modal markup, escaping, JSON explorer wiring, and field-toggle behavior for both the Stimulus results renderer and Angular Document Finder. `queriesSvc` resolves each document's authenticated/proxied link while publishing the plain snapshot, and Stimulus opens the modal directly from that snapshot. The separate Document Finder surface remains Angular-owned.
-
-The expanded-results adapter is now scope-free: `search_results_controller.js` reads expansion, view selection, rated-only state, and detailed-document links from `query_documents_store.js`, while `queriesSvc` exposes the remaining explicit query command for rating. The query-row shell is now Stimulus-rendered; Angular compiles only the expanded `search-results` island and the deferred diff/snapshot score badges. The row toggle is forwarded into that island so the existing query-view state remains authoritative.
-
-Copy-query and query-notes are now Stimulus-owned inside that adapter. Search, scoring, diff, finder, options, and pagination remain intentionally behind their existing Angular boundaries.
-
-The query-list collection shell is Stimulus-rendered from `query_collection_store.js`, including filtering, sorting, pagination, and row hosts. Each expanded `search-results` island is now Stimulus-rendered from plain document snapshots; Angular continues to own search, ratings, and scoring, with explicit adapters for the remaining commands.
+`query_documents_store.js` is the plain-document read model, and `search-results` renders document DOM from those snapshots. `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Stimulus owns the document modal, query-row shell, expansion/view state, copy-query, and query-notes interactions; Angular remains behind explicit adapters for live query state and rating mutations. Search, scoring, diff, finder, options, and pagination remain intentionally behind their existing Angular boundaries.
 
 The diff/snapshot score badges stay Angular until `diffResultsSvc` migrates — out of this sequence.
 
@@ -522,7 +514,6 @@ Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Query-list collection shell | Stimulus controller + store | `app/javascript/controllers/queries_list_controller.js`, `app/javascript/stores/query_collection_store.js`; filtering, sorting, pagination, row hosts, and reorder persistence are complete |
 | Add query | Stimulus controller + temporary Angular state bridge | `app/javascript/controllers/add_query_controller.js`, `app/javascript/controllers/query_lifecycle_controller.js`, and `app/javascript/utils/query_lifecycle.js`; Angular retains Query construction and search/scoring only |
 | Queries-without-results report | component | `<frog-report>` — `components/frog_report/` (includes Vega chart) |
 | Score-over-time graph | component | `<qgraph>` — `components/qgraph/` |
@@ -543,7 +534,6 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Rating background styling | filter | `ratingBgStyle` |
 | Query notes | controller | `QueryNotesCtrl` |
 | Annotations list | Stimulus controller | `app/javascript/controllers/annotations_controller.js`; qgraph still receives a temporary Angular read bridge |
-| Single annotation | Stimulus-rendered DOM | Rendered by `annotations_controller.js` (uses `Intl.RelativeTimeFormat`) |
 | Query options modal | component | `<query-options>` — `components/query_options/` |
 | Move query modal | component | `<move-query>` — `components/move_query/` |
 | Missing documents search | controllers + template | `TargetedSearchCtrl`, `DocFinderCtrl`, `TargetedSearchModalCtrl`, `templates/views/targetedSearchModal.html` |
@@ -585,8 +575,6 @@ These Angular-specific wrappers are used across many templates:
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
-| `annotation` | — | Migrated to `annotations_controller.js` |
-| `annotations` | — | Migrated to `annotations_controller.js`; Angular read bridge remains only for qgraph |
 | `browse_query` | `<browse-query>` | "Browse N Results on {engine}" link, opens results in a new tab/window |
 | `diff` | `<diff>` | Snapshot diff picker |
 | `frog_report` | `<frog-report>` | Zero-results report + Vega |

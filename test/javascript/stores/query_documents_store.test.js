@@ -88,6 +88,13 @@ describe("QueryDocumentsStore", () => {
     expect(store.query(8)).toMatchObject({ expanded: true, resultsView: 2 })
   })
 
+  it("preserves an early display-state update until documents arrive", () => {
+    store.updateQueryState(8, { expanded: true })
+    store.replaceQuery(8, { docs: [{ id: "first" }] })
+
+    expect(store.query(8).expanded).toBe(true)
+  })
+
   it("updates rated-only state for every query", () => {
     store.replaceQuery(1, { docs: [] })
     store.replaceQuery(2, { docs: [] })

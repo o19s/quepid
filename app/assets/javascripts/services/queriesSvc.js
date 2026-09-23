@@ -17,6 +17,7 @@ angular.module('QuepidApp')
     'scorerSvc',
     'qscoreSvc',
     'searchSvc',
+    'queryViewSvc',
     'ratingsStoreSvc',
     'caseTryNavSvc',
     'snapshotSearcherSvc',
@@ -38,6 +39,7 @@ angular.module('QuepidApp')
       scorerSvc,
       qscoreSvc,
       searchSvc,
+      queryViewSvc,
       ratingsStoreSvc,
       caseTryNavSvc,
       snapshotSearcherSvc,
@@ -212,6 +214,26 @@ angular.module('QuepidApp')
           }
           query.touchModifiedAt();
         });
+        return true;
+      };
+
+      // Explicit command adapters for the Stimulus expanded-results renderer.
+      // Query objects remain Angular-owned, but the renderer no longer needs
+      // SearchResultsCtrl to discover them through a compiled scope.
+      window.quepidSearch.queryState.toggleQuery = function(queryId) {
+        var query = window.quepidSearch.queryState.getQuery(queryId);
+        if (!query) return false;
+
+        queryViewSvc.toggleQuery(queryId);
+        var expanded = queryViewSvc.isQueryToggled(queryId);
+        if (queryCollectionStore) {
+          queryCollectionStore.setExpanded(queryId, expanded);
+        }
+        if (queryDocumentsStore) {
+          queryDocumentsStore.updateQueryState(queryId, {
+            expanded: expanded
+          });
+        }
         return true;
       };
 

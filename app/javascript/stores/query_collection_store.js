@@ -17,6 +17,7 @@ export class QueryCollectionStore extends EventTarget {
     this._status = "idle"
     this._displayOrder = []
     this._queries = new Map()
+    this._expandedQueries = new Map()
     this.dispatchEvent(new CustomEvent("reset", { detail: this.snapshot() }))
   }
 
@@ -25,6 +26,7 @@ export class QueryCollectionStore extends EventTarget {
     this._status = "bootstrapping"
     this._displayOrder = []
     this._queries = new Map()
+    this._expandedQueries = new Map()
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
   }
 
@@ -36,6 +38,14 @@ export class QueryCollectionStore extends EventTarget {
         .filter(query => query.deleted !== true && query.deleted !== "true")
         .map(query => [String(this.queryId(query)), this.querySnapshot(query)])
     )
+    this._queries.forEach((query, queryId) => {
+      if (this._expandedQueries.has(queryId)) {
+        this._queries.set(queryId, {
+          ...query,
+          expanded: this._expandedQueries.get(queryId)
+        })
+      }
+    })
     this._status = "ready"
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
   }
@@ -63,6 +73,15 @@ export class QueryCollectionStore extends EventTarget {
 
   setDisplayOrder(displayOrder = []) {
     this._displayOrder = displayOrder.map(Number)
+    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+  }
+
+  setExpanded(queryId, expanded) {
+    const key = String(queryId)
+    const value = Boolean(expanded)
+    this._expandedQueries.set(key, value)
+    const query = this._queries.get(key)
+    if (query) this._queries.set(key, { ...query, expanded: value })
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
   }
 
@@ -101,13 +120,16 @@ export class QueryCollectionStore extends EventTarget {
   }
 
   querySnapshot(query) {
-    return {
-      queryId: Number(this.queryId(query)),
+    const queryId = Number(this.queryId(query))
+    const snapshot = {
+      queryId,
       queryText: query.queryText ?? query.query_text ?? "",
       informationNeed: query.informationNeed ?? query.information_need ?? "",
       modified: query.modified ?? query.updated_at ?? null,
       created: query.created ?? query.created_at ?? null
     }
+    if (this._expandedQueries.has(String(queryId))) snapshot.expanded = this._expandedQueries.get(String(queryId))
+    return snapshot
   }
 }
 

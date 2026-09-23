@@ -54,4 +54,22 @@ describe("QueryCollectionStore", () => {
     expect(store.orderedQueryIds()).toEqual([1])
     expect(store.query(1).queryText).toBe("live")
   })
+
+  it("preserves an early expansion toggle when the query is bootstrapped", () => {
+    store.setExpanded(4, true)
+    store.replace({ caseId: 7, displayOrder: [4], queries: [{ queryId: 4, queryText: "early" }] })
+
+    expect(store.query(4).expanded).toBe(true)
+  })
+
+  it("publishes expansion changes for an existing query", () => {
+    store.replace({ caseId: 7, displayOrder: [4], queries: [{ queryId: 4, queryText: "ready" }] })
+    const changes = []
+    store.addEventListener("change", event => changes.push(event.detail))
+
+    store.setExpanded(4, true)
+
+    expect(store.query(4).expanded).toBe(true)
+    expect(changes.at(-1).queries["4"].expanded).toBe(true)
+  })
 })

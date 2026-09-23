@@ -14,25 +14,37 @@ export class QueryDocumentsStore extends EventTarget {
   reset() {
     this._showOnlyRated = false
     this._queries = new Map()
+    this._pendingQueryState = new Map()
     this.dispatchEvent(new CustomEvent("reset", { detail: this.snapshot() }))
   }
 
   replaceQuery(queryId, { docs = [], ratedDocs = [], ...state } = {}) {
     const previous = this._queries.get(String(queryId)) || {}
+    const pending = this._pendingQueryState.get(String(queryId)) || {}
     this._queries.set(String(queryId), {
       ...previous,
+      ...pending,
       queryId: Number(queryId),
       showOnlyRated: this._showOnlyRated,
       ...state,
       docs: docs.map(doc => snapshotDocument(doc, state)),
       ratedDocs: ratedDocs.map(doc => snapshotDocument(doc, state))
     })
+    this._pendingQueryState.delete(String(queryId))
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(queryId) }))
   }
 
   updateQueryState(queryId, state = {}) {
     const current = this._queries.get(String(queryId))
-    if (!current) return
+    if (!current) {
+      const key = String(queryId)
+      this._pendingQueryState.set(key, {
+        ...(this._pendingQueryState.get(key) || {}),
+        ...state
+      })
+      this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(queryId) }))
+      return
+    }
 
     this._queries.set(String(queryId), { ...current, ...state })
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(queryId) }))
