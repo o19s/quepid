@@ -8,7 +8,7 @@ require 'json'
 # like and what the answer means belong to the adapter (LlmJudgeAdapters).
 class LlmService
   DEFAULT_OPTIONS = begin
-    openai = LlmProviders['openai']
+    openai = LlmProvider.find('openai')
     {
       llm_service_url: openai.default_service_url,
       llm_model:       openai.default_model,

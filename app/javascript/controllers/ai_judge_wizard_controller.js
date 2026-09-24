@@ -35,7 +35,7 @@ function showPanel(element, html) {
  * endpoints. Nothing step 2 does is ever saved until the real form submits.
  *
  * Provider presets (URL/model/API version, help text, prompt defaults) come
- * from the LlmProviders registry (app/models/llm_providers.rb) via the
+ * from the LlmProvider registry (app/models/llm_provider.rb) via the
  * presets value -- add providers there, not here.
  */
 export default class extends Controller {

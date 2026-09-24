@@ -6,9 +6,9 @@ class AiJudgesController < ApplicationController
   before_action :set_book, only: [ :show, :new, :edit, :create, :update ]
 
   # Kept as a constant because tests and other callers refer to it; the text
-  # itself now lives with the providers that use it (LlmProviders), since what
+  # itself now lives with the providers that use it (LlmProvider), since what
   # a judge should be told depends on the dialect it speaks.
-  DEFAULT_SYSTEM_PROMPT = LlmProviders::CHAT_SYSTEM_PROMPT
+  DEFAULT_SYSTEM_PROMPT = LlmProvider::CHAT_SYSTEM_PROMPT
 
   def index
     @ai_judges = AiJudge.for_user(current_user).includes(:owner, :teams).order(:name)
@@ -21,7 +21,7 @@ class AiJudgesController < ApplicationController
   def new
     @ai_judge = AiJudge.new
     @ai_judge.team_ids = [ @team.id ] if @team
-    openai = LlmProviders['openai']
+    openai = LlmProvider.find('openai')
     @ai_judge.system_prompt = openai.default_system_prompt
     @ai_judge.judge_options = {
       llm_provider:    openai.key,
@@ -73,10 +73,10 @@ class AiJudgesController < ApplicationController
   private
 
   # A provider can appear in the form before Quepid can actually judge with it, so teams
-  # can see what it will need and get a key ready (LlmProviders#coming_soon). Selecting
+  # can see what it will need and get a key ready (LlmProvider#coming_soon?). Selecting
   # one is fine; saving a judge that would fail on its first run is not.
   def unavailable_provider? ai_judge
-    provider = LlmProviders[ai_judge.judge_options[:llm_provider]]
+    provider = LlmProvider.find(ai_judge.judge_options[:llm_provider])
     return false unless provider&.coming_soon?
 
     ai_judge.errors.add(:base, "#{provider.label} is not available yet, so an AI Judge cannot use it.")

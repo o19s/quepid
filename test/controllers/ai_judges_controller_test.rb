@@ -23,17 +23,17 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[type=checkbox][value='#{team.id}'][checked]"
   end
 
-  test 'new renders the provider dropdown and presets from the LlmProviders registry' do
+  test 'new renders the provider dropdown and presets from the LlmProvider registry' do
     get new_ai_judge_url
 
-    LlmProviders.each do |provider|
+    LlmProvider.each do |provider|
       assert_select 'select#judge_options_llm_provider option[value=?]', provider.key, text: provider.label
     end
     wizard = css_select('[data-controller="ai-judge-wizard"]').first
     presets_json = wizard['data-ai-judge-wizard-presets-value']
 
     assert_not_nil presets_json, 'presets were not rendered into the wizard'
-    assert_equal LlmProviders.presets.deep_stringify_keys, JSON.parse(presets_json)
+    assert_equal LlmProvider.presets.deep_stringify_keys, JSON.parse(presets_json)
   end
 
   test 'should update ai_judge and flash a success notice' do
@@ -90,7 +90,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     stock = css_select('[data-controller="ai-judge-wizard"]').first['data-ai-judge-wizard-stock-prompts-value']
 
     assert_not_nil stock, 'stock prompts were not rendered into the wizard'
-    assert_equal LlmProviders.stock_system_prompts, JSON.parse(stock)
+    assert_equal LlmProvider.stock_system_prompts, JSON.parse(stock)
   end
 
   test 'new offers a provider own option as a field, inert until that provider is chosen' do
@@ -134,7 +134,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
   # The refusal path (a provider carrying a coming-soon notice cannot be saved)
   # has no provider to exercise it now that Jev is real; the rule itself is
-  # tested as LlmProvider#coming_soon? in test/models/llm_providers_test.rb.
+  # tested as LlmProvider#coming_soon? in test/models/llm_provider_test.rb.
   test 'saves a judge pointed at a provider that is available' do
     assert_difference('User.count', 1) do
       post ai_judges_url,
@@ -154,7 +154,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     let(:book) { books(:james_bond_movies) }
 
     test 'flags instructions written for another kind of model, and offers the right default' do
-      ai_judge.update!(system_prompt: LlmProviders::CHAT_SYSTEM_PROMPT,
+      ai_judge.update!(system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
                        judge_options: { llm_provider: 'typesafe_jev' })
 
       get edit_ai_judge_url(ai_judge)
@@ -165,7 +165,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     end
 
     test 'says nothing when the instructions already belong to this provider' do
-      ai_judge.update!(system_prompt: LlmProviders::JEV_SYSTEM_PROMPT,
+      ai_judge.update!(system_prompt: LlmProvider::JEV_SYSTEM_PROMPT,
                        judge_options: { llm_provider: 'typesafe_jev' })
 
       get edit_ai_judge_url(ai_judge)

@@ -105,7 +105,7 @@ module LlmJudgeAdapters
     end
 
     def auth_headers
-      case LlmProviders[options[:llm_provider]]&.auth_style
+      case LlmProvider.find(options[:llm_provider])&.auth_style
       when :x_api_key then { 'x-api-key' => llm_key }
       when :api_key then { 'api-key' => llm_key }
       else { 'Authorization' => "Bearer #{llm_key}" }
