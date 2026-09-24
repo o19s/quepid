@@ -119,9 +119,6 @@ class LlmProvider
   attribute :default_api_version,   :string, default: ''
   # Provider guidance rendered into the form's help panel.
   attribute :help_html,             :string
-  # A warning banner shown above the help panel, for a provider Quepid cannot judge
-  # with yet -- see coming_soon?.
-  attribute :notice_html,           :string
   # judge_options fields the form locks for this provider, for settings the vendor
   # fixes rather than the team choosing.
   attribute :read_only_fields,      default: -> { [] }
@@ -349,12 +346,6 @@ class LlmProvider
     scale_as_criteria?
   end
 
-  # True for a provider that is visible in the form but that Quepid cannot actually
-  # judge with yet -- selecting it shows `notice_html` and saving is refused.
-  def coming_soon?
-    notice_html.present?
-  end
-
   # Is this text one of the prompts Quepid ships for some *other* provider? That is a
   # judge carrying instructions written for a different kind of model -- worth flagging,
   # unlike text somebody wrote themselves, which is none of our business.
@@ -375,7 +366,6 @@ class LlmProvider
       llm_api_version:   default_api_version,
       llm_model:         default_model,
       help:              help_html,
-      notice:            notice_html,
       read_only:         read_only_fields,
       system_prompt:     default_system_prompt,
       prompt_label:      prompt_label,

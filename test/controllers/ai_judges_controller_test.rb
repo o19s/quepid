@@ -125,16 +125,6 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select#judge_options_llm_provider'
   end
 
-  test 'new renders the banner element placeholder providers would use' do
-    get new_ai_judge_url
-
-    assert_select 'div#provider-notice'
-    assert_select 'select#judge_options_llm_provider option[value=?]', 'typesafe_jev'
-  end
-
-  # The refusal path (a provider carrying a coming-soon notice cannot be saved)
-  # has no provider to exercise it now that Jev is real; the rule itself is
-  # tested as LlmProvider#coming_soon? in test/models/llm_provider_test.rb.
   test 'saves a judge pointed at a provider that is available' do
     assert_difference('User.count', 1) do
       post ai_judges_url,

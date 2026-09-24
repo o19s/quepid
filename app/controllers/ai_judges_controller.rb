@@ -46,22 +46,22 @@ class AiJudgesController < ApplicationController
   def create
     @ai_judge = current_user.owned_ai_judges.build(ai_judge_params)
 
-    if unavailable_provider?(@ai_judge) || !@ai_judge.save
-      render :new
-    else
+    if @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
       redirect_to ai_judge_path(@ai_judge), notice: 'AI Judge was successfully created.'
+    else
+      render :new
     end
   end
 
   def update
     @ai_judge.assign_attributes(ai_judge_params)
 
-    if unavailable_provider?(@ai_judge) || !@ai_judge.save
-      render 'edit'
-    else
+    if @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
       redirect_to ai_judge_path(@ai_judge), notice: 'AI Judge was successfully updated.'
+    else
+      render 'edit'
     end
   end
 
@@ -71,17 +71,6 @@ class AiJudgesController < ApplicationController
   end
 
   private
-
-  # A provider can appear in the form before Quepid can actually judge with it, so teams
-  # can see what it will need and get a key ready (LlmProvider#coming_soon?). Selecting
-  # one is fine; saving a judge that would fail on its first run is not.
-  def unavailable_provider? ai_judge
-    provider = LlmProvider.find(ai_judge.judge_options[:llm_provider])
-    return false unless provider&.coming_soon?
-
-    ai_judge.errors.add(:base, "#{provider.label} is not available yet, so an AI Judge cannot use it.")
-    true
-  end
 
   def set_team
     @team = current_user.teams.find_by(id: params[:team_id])

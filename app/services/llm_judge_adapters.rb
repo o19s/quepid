@@ -15,8 +15,6 @@ module LlmJudgeAdapters
   def self.for llm_key, options = {}
     provider = LlmProvider.find(options[:llm_provider])
 
-    raise "#{provider.label} is not available as an LLM judge yet, so it cannot be used to judge" if provider&.coming_soon?
-
     (provider&.adapter || DEFAULT_ADAPTER).constantize.new(llm_key, options)
   end
 end

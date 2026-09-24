@@ -48,7 +48,6 @@ export default class extends Controller {
     "llmTimeout",
     "llmApiVersion",
     "providerHelp",
-    "providerNotice",
     "providerOptionField",
     "structuredTab",
     "jsonTab",
@@ -197,7 +196,6 @@ export default class extends Controller {
   updateProviderPanels(provider) {
     const preset = this.presetsValue[provider]
 
-    showPanel(this.hasProviderNoticeTarget && this.providerNoticeTarget, preset?.notice)
     showPanel(this.hasProviderHelpTarget && this.providerHelpTarget, preset?.help)
     this.applyReadOnlyFields(preset)
     this.describePromptField(preset)

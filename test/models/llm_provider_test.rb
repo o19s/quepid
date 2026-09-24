@@ -72,7 +72,7 @@ class LlmProviderTest < ActiveSupport::TestCase
   test 'presets carry the keys the form javascript reads' do
     preset = LlmProvider.presets.fetch('openai')
 
-    assert_equal [ :llm_service_url, :llm_api_version, :llm_model, :help, :notice, :read_only,
+    assert_equal [ :llm_service_url, :llm_api_version, :llm_model, :help, :read_only,
                    :system_prompt, :prompt_label, :prompt_hint, :scale_as_criteria, :needs_book ],
                  preset.keys
     assert_equal 'https://api.openai.com', preset[:llm_service_url]
@@ -126,22 +126,6 @@ class LlmProviderTest < ActiveSupport::TestCase
 
       assert_operator adapter, :<, LlmJudgeAdapters::Base, "#{provider.key} adapter"
     end
-  end
-
-  test 'every listed provider can actually be judged with' do
-    assert_empty LlmProvider.all.select(&:coming_soon?),
-                 'a provider carrying a notice is a placeholder; none should be listed as one right now'
-    assert_not_predicate LlmProvider.find('typesafe_jev'), :coming_soon?
-    assert_nil LlmProvider.find('openai').to_preset[:notice]
-    assert_empty LlmProvider.find('openai').read_only_fields
-  end
-
-  test 'a provider carrying a notice is treated as a placeholder' do
-    placeholder = LlmProvider.new(key: 'someday', label: 'Someday', default_service_url: 'https://example.com',
-                                  default_model: 'x', help_html: 'h', notice_html: 'Not yet')
-
-    assert_predicate placeholder, :coming_soon?
-    assert_equal 'Not yet', placeholder.to_preset[:notice]
   end
 
   test 'a chat provider ships the prompt that spells out the scale and the answer format' do
