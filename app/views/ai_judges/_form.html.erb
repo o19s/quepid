@@ -4,8 +4,8 @@
      data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
      data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>"
      data-ai-judge-wizard-has-book-value="<%= @book.present? %>"
-     data-ai-judge-wizard-presets-value="<%= LlmProviders.presets_json %>"
-     data-ai-judge-wizard-stock-prompts-value="<%= LlmProviders.stock_system_prompts_json %>">
+     data-ai-judge-wizard-presets-value="<%= LlmProviders.presets.to_json %>"
+     data-ai-judge-wizard-stock-prompts-value="<%= LlmProviders.stock_system_prompts.to_json %>">
   <div class="card-header">
     <h5 class="mb-0"><i class="bi bi-robot"></i> AI Judge</h5>
   </div>

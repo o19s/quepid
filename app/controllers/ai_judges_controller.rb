@@ -72,7 +72,7 @@ class AiJudgesController < ApplicationController
   private
 
   # A provider can appear in the form before Quepid can actually judge with it, so teams
-  # can see what it will need and get a key ready (LlmProviders#coming_soon). Selecting
+  # can see what it will need and get a key ready (LlmProvider#coming_soon?). Selecting
   # one is fine; saving a judge that would fail on its first run is not.
   def unavailable_provider? ai_judge
     provider = LlmProviders[ai_judge.judge_options[:llm_provider]]

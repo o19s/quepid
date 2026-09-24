@@ -111,10 +111,8 @@ module LlmProviders
       all.find { |provider| provider.key == key.to_s }
     end
 
-    def keys
-      all.map(&:key)
-    end
-
+    # Not just indirection: `LlmProviders.all.each` reads to Rails/FindEach like an
+    # ActiveRecord relation and gets flagged.
     def each(&)
       all.each(&)
     end
@@ -122,11 +120,6 @@ module LlmProviders
     # [[label, key], ...] for options_for_select
     def select_options
       all.map(&:to_select_option)
-    end
-
-    # Providers listed in the form that Quepid cannot judge with yet.
-    def coming_soon
-      all.select(&:coming_soon?)
     end
 
     def presets
@@ -147,16 +140,6 @@ module LlmProviders
     # offer the right default without ever clobbering real work.
     def stock_system_prompts
       all.filter_map(&:default_system_prompt).uniq
-    end
-
-    def stock_system_prompts_json
-      stock_system_prompts.to_json
-    end
-
-    # Safe to interpolate into a <script> tag: ActiveSupport escapes HTML entities
-    # (including any "</script>") as \u-escapes when serializing to JSON.
-    def presets_json
-      presets.to_json
     end
 
     private

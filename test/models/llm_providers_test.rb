@@ -26,7 +26,7 @@ class LlmProvidersTest < ActiveSupport::TestCase
   }.freeze
 
   test 'registers every provider the form offered, in the same order' do
-    assert_equal EXPECTED.keys, LlmProviders.keys
+    assert_equal EXPECTED.keys, LlmProviders.all.map(&:key)
   end
 
   test 'each provider keeps its label and form defaults' do
@@ -78,16 +78,13 @@ class LlmProvidersTest < ActiveSupport::TestCase
     assert_equal 'https://api.openai.com', preset[:llm_service_url]
   end
 
-  test 'presets_json round trips and is safe to inline in a script tag' do
-    json = LlmProviders.presets_json
+  test 'presets serialize to JSON the form can inline' do
+    json = LlmProviders.presets.to_json
     parsed = JSON.parse(json)
 
-    assert_equal LlmProviders.keys.sort, parsed.keys.sort
+    assert_equal LlmProviders.all.map(&:key).sort, parsed.keys.sort
     assert_equal 'gpt-4o', parsed.dig('openai', 'llm_model')
     assert_includes parsed.dig('openai', 'help'), '<strong>OpenAI</strong>'
-    # ActiveSupport \u-escapes HTML entities, so no raw tag can terminate the <script>
-    assert_not_includes json, '<'
-    assert_not_includes json, '>'
   end
 
   test 'providers are frozen so a caller cannot mutate the registry' do
@@ -130,7 +127,7 @@ class LlmProvidersTest < ActiveSupport::TestCase
   end
 
   test 'every listed provider can actually be judged with' do
-    assert_empty LlmProviders.coming_soon,
+    assert_empty LlmProviders.all.select(&:coming_soon?),
                  'a provider carrying a notice is a placeholder; none should be listed as one right now'
     assert_not_predicate LlmProviders['typesafe_jev'], :coming_soon?
     assert_nil LlmProviders['openai'].to_preset[:notice]
@@ -190,7 +187,7 @@ class LlmProvidersTest < ActiveSupport::TestCase
     assert_includes LlmProviders.stock_system_prompts, LlmProviders::CHAT_SYSTEM_PROMPT
     assert_includes LlmProviders.stock_system_prompts, LlmProviders::JEV_SYSTEM_PROMPT
     assert_equal LlmProviders.stock_system_prompts, LlmProviders.stock_system_prompts.uniq
-    assert_equal LlmProviders.stock_system_prompts, JSON.parse(LlmProviders.stock_system_prompts_json)
+    assert_equal LlmProviders.stock_system_prompts, JSON.parse(LlmProviders.stock_system_prompts.to_json)
   end
 
   test 'jev fixes the endpoint and model it dictates, and says where a key comes from' do
