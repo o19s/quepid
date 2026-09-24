@@ -3,61 +3,12 @@
 class AiJudgesController < ApplicationController
   before_action :set_team, only: [ :new, :clone ]
   before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy, :clone ]
+  before_action :set_book, only: [ :show, :new, :edit, :create, :update ]
 
-  DEFAULT_SYSTEM_PROMPT = <<~TEXT
-    You are evaluating the results from a search engine. For each query, you will be provided with multiple documents. Your task is to evaluate each document and assign a judgment on a scale of 0 to 3, where:
-    - 0 indicates the document is irrelevant to the query.
-    - 1 indicates the document is somewhat relevant to the query.
-    - 2 indicates the document is mostly relevant to the query.
-    - 3 indicates the document is perfectly relevant to the query.
-
-    For each document, provide:
-    1. An explanation of the judgment.
-    2. The judgment value.
-
-    The response should be in the following JSON format:
-    {
-      "explanation": "Your detailed reasoning behind the judgment",
-      "judgment": <numeric value>
-    }
-
-    Here is an example:
-    User:
-    Query: Farm animals
-
-    doc1:
-      title: All about farm animals
-      abstract: This document is all about farm animals
-    Assistant:
-    {
-      "explanation": "This document appears to perfectly respond to the user's query",
-      "judgment": 3
-    }
-
-    User:
-    Query: Farm animals
-
-    doc2:
-      title: Somewhat about farm animals
-      abstract: This document somewhat talks about farm animals
-    Assistant:
-    {
-      "explanation": "This document is somewhat relevant to the user's query",
-      "judgment": 1
-    }
-
-    User:
-    Query: Farm animals
-
-    doc3:
-      title: This document has nothing to do with farm animals
-      abstract: We will talk about everything except for farm animals.
-    Assistant:
-    {
-      "explanation": "This document is not relevant at all to the user's query",
-      "judgment": 0
-    }
-  TEXT
+  # Kept as a constant because tests and other callers refer to it; the text
+  # itself now lives with the providers that use it (LlmProvider), since what
+  # a judge should be told depends on the dialect it speaks.
+  DEFAULT_SYSTEM_PROMPT = LlmProvider::CHAT_SYSTEM_PROMPT
 
   def index
     @ai_judges = AiJudge.for_user(current_user).includes(:owner, :teams).order(:name)
@@ -70,19 +21,18 @@ class AiJudgesController < ApplicationController
   def new
     @ai_judge = AiJudge.new
     @ai_judge.team_ids = [ @team.id ] if @team
-    @ai_judge.system_prompt = DEFAULT_SYSTEM_PROMPT
+    openai = LlmProvider.find('openai')
+    @ai_judge.system_prompt = openai.default_system_prompt
     @ai_judge.judge_options = {
-      llm_provider:    'openai',
-      llm_service_url: 'https://api.openai.com',
-      llm_model:       'gpt-4o',
+      llm_provider:    openai.key,
+      llm_service_url: openai.default_service_url,
+      llm_model:       openai.default_model,
       llm_timeout:     30,
-      llm_api_version: '',
+      llm_api_version: openai.default_api_version,
     }
-    @book_id = params[:book_id]
   end
 
   def edit
-    @book_id = params[:book_id]
   end
 
   def clone
@@ -105,7 +55,9 @@ class AiJudgesController < ApplicationController
   end
 
   def update
-    if @ai_judge.update(ai_judge_params)
+    @ai_judge.assign_attributes(ai_judge_params)
+
+    if @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
       redirect_to ai_judge_path(@ai_judge), notice: 'AI Judge was successfully updated.'
     else
@@ -126,6 +78,15 @@ class AiJudgesController < ApplicationController
 
   def set_ai_judge
     @ai_judge = AiJudge.for_user(current_user).find(params.expect(:id))
+  end
+
+  # Arriving from a book (e.g. its Judgement Stats "Refine Prompt" link), the form shows
+  # that book's scale as the judge will be sent it. Scoped like AiJudges::WizardController.
+  # Covers create/update too (via the form's hidden book_id field) so a
+  # validation failure re-render doesn't lose that context.
+  def set_book
+    @book_id = params[:book_id]
+    @book = current_user.books_involved_with.where(id: @book_id).first if @book_id.present?
   end
 
   # Checkboxes suck: only touch teams the current user can actually see, so
