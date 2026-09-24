@@ -400,7 +400,8 @@ export default class extends Controller {
     searchResults.innerHTML = searchResultsTemplate({
       caseId: query.caseNo,
       queryId: query.queryId,
-      queryExplainData: escapeAttribute(JSON.stringify(queryExplainData(query)))
+      queryExplainData: escapeAttribute(JSON.stringify(queryExplainData(query))),
+      queryOptionsData: escapeAttribute(JSON.stringify(query.options || {}))
     })
     const searchResultsRoot = searchResults.firstElementChild
     expanded.appendChild(searchResultsRoot)

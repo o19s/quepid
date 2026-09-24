@@ -71,6 +71,36 @@ test.describe('core layout golden paths', () => {
     await expect(page).toHaveScreenshot('query-results.png', expandedCaseScreenshotOpts(page));
   });
 
+  test('query options saves through the Stimulus modal', async ({ page }) => {
+    let optionsRequest: { url: string; body: string } | undefined;
+    await page.route('**/api/cases/*/queries/*/options', async route => {
+      if (route.request().method() !== 'PUT') {
+        await route.continue();
+        return;
+      }
+      optionsRequest = { url: route.request().url(), body: route.request().postData() || '' };
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+    });
+
+    await gotoCase(page);
+    await expandFirstQuery(page);
+    await page.getByRole('button', { name: 'Set Options', exact: true }).first().click();
+
+    const modal = page.locator('#queryOptionsModal');
+    await expect(modal).toBeVisible();
+    await modal.locator('.cm-content').fill('not json');
+    await modal.getByRole('button', { name: 'Set Options', exact: true }).click();
+    await expect(modal).toBeVisible();
+    await expect(page.locator('.flash:visible')).toContainText('Please provide a valid JSON object.');
+
+    await modal.locator('.cm-content').fill('{"boost": 2}');
+    await modal.getByRole('button', { name: 'Set Options', exact: true }).click();
+    await expect(modal).toBeHidden();
+    await expect(page.locator('.flash:visible')).toContainText('Query options saved successfully.');
+    expect(optionsRequest?.url).toMatch(/\/api\/cases\/\d+\/queries\/\d+\/options$/);
+    expect(optionsRequest?.body).toContain('"boost":2');
+  });
+
   test('detailed document modal uses the Stimulus results path', async ({ page }) => {
     await gotoCase(page);
     await expandFirstQuery(page);

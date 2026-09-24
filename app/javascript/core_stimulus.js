@@ -51,6 +51,7 @@ import DiffScoreController from "controllers/diff_score_controller"
 import DiffCaseScoresController from "controllers/diff_case_scores_controller"
 import ImportRatingsCoreController from "controllers/import_ratings_core_controller"
 import BrowseQueryController from "controllers/browse_query_controller"
+import QueryOptionsCoreController from "controllers/query_options_core_controller"
 
 Turbo.session.drive = false
 
@@ -89,3 +90,4 @@ application.register("diff-score", DiffScoreController)
 application.register("diff-case-scores", DiffCaseScoresController)
 application.register("import-ratings-core", ImportRatingsCoreController)
 application.register("browse-query", BrowseQueryController)
+application.register("query-options-core", QueryOptionsCoreController)

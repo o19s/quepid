@@ -218,10 +218,10 @@ parts:
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb", "app/views/shared/_move_query_core_modal.html.erb", "app/javascript/controllers/move_query_core_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/core_stimulus.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/move_query_core_controller.test.js", "test/playwright/core_smoke.spec.ts"]
       "4.5":
         title: "Set per-query options (Query Options)"
-        last_run: 2026-09-21T19:55:00Z
+        last_run: 2026-09-24T14:28:48Z
         result: pass_with_fixes
-        notes: "Covered live: Playwright MCP. Invalid JSON flashes 'Please provide a valid JSON object.' and the modal stays open; valid JSON saves, closes and round-trips. FOUND AND FIXED: a failed save flashed 'Query options saved successfully.' -- queriesSvc#saveOptions swallowed the rejection (same $q defect as saveNotes), so QueryOptionsCtrl's already-written error callback could never fire. Now re-rejects and flashes 'Unable to save query options.', verified live with a forced 500. Not covered live: asserting the rescore a save triggers."
-        paths: ["app/models/query.rb", "app/assets/javascripts/components/query_options/query_options_modal_instance_controller.js", "app/assets/javascripts/components/query_options/query_options_controller.js"]
+        notes: "Covered live: Playwright MCP drove the Stimulus modal on the static fixture: invalid JSON kept the modal open with the expected flash; a valid JSON PUT (routed to a safe 200) closed the modal with the success flash; a forced 500 kept it open with 'Unable to save query options.'. Visually checked the final modal against the prior Angular baseline; the editor height and BS5 heading/close/cancel styling were adjusted for parity. Not covered live: an un-intercepted persistence or observable score change after save."
+        paths: ["app/models/query.rb", "app/javascript/controllers/query_options_core_controller.js", "app/views/shared/_query_options_core_modal.html.erb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/core_stimulus.js", "app/assets/javascripts/services/queriesSvc.js", "config/importmap.rb", "vitest.config.js", "test/javascript/controllers/query_options_core_controller.test.js", "test/playwright/core_smoke.spec.ts"]
       "4.6":
         title: "Rate a document"
         last_run: 2026-09-23T20:38:00Z

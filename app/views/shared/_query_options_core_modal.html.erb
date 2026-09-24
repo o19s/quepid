@@ -1,0 +1,25 @@
+<div class="modal fade" id="queryOptionsModal" tabindex="-1" aria-labelledby="queryOptionsModalLabel" aria-hidden="true" data-controller="query-options-core">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="queryOptionsModalLabel" data-query-options-core-target="title">Query Options</h3>
+        <button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>Provide a JSON object specifying query specific options</p>
+        <label for="query-options-editor">
+          This key =&gt; value object will be available in the scorer so you can use it to access query specifics.
+          You can access the values using the <code>qOption('key')</code> method in Scorers or
+          <code>#$qOption.key##</code> in Query Sandbox.
+        </label>
+        <textarea id="query-options-editor" class="d-none" data-query-options-core-target="editor"></textarea>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-query-options-core-target="saveButton" data-action="click->query-options-core#save">Set Options</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -399,6 +399,23 @@ angular.module('QuepidApp')
       }
 
       // Stimulus pick-scorer-core: API save already done; apply scorer + rescore live queries.
+      document.addEventListener('query-options:saved', function(event) {
+        var detail = event.detail || {};
+        var query = svc.queries[detail.queryId] || svc.queries[String(detail.queryId)];
+        if (Number(detail.caseId) && Number(detail.caseId) !== Number(svc.getCaseNo())) {
+          return;
+        }
+        if (!query || detail.options === undefined) {
+          return;
+        }
+        $scope.$evalAsync(function() {
+          query.options = detail.options;
+          query.setDirty();
+          svc.updateScores();
+        });
+      });
+
+      // Stimulus pick-scorer-core: API save already done; apply scorer + rescore live queries.
       document.addEventListener('pick-scorer:selected', function(event) {
         var detail = event.detail || {};
         if (Number(detail.caseId) !== Number(svc.getCaseNo()) || !detail.scorer) {
@@ -1348,41 +1365,6 @@ angular.module('QuepidApp')
               return response;
             }).catch(function(response) {
               $log.debug('Failed to fetch notes');
-              return response;
-            });
-        };
-
-        this.saveOptions = function(options) {
-          var that = this;
-          var optionsJson = { query: { options: options } };
-          var url = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/options';
-
-          return $http.put(url , optionsJson)
-            .then(function() {
-              that.options = options;
-
-              that.setDirty();
-            })
-            .catch(function(response) {
-              // Re-reject: returning here would RESOLVE the promise, so QueryOptionsCtrl's
-              // error callback could never run and a failed save still flashed success.
-              $log.debug('Failed to save options: ', response);
-              return $q.reject(response);
-            });
-        };
-
-        this.fetchOptions = function() {
-          var that  = this;
-          var url   = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/options';
-
-          return $http.get(url)
-            .then(function(response) {
-              that.options = JSON.parse(response.data.options);
-            }, function(response) {
-              $log.debug('Failed to load options: ', response);
-              return response;
-            }).catch(function(response) {
-              $log.debug('Failed to fetch options');
               return response;
             });
         };

@@ -7,7 +7,7 @@
  * still need Angular-owned Query objects. The expanded-results read path,
  * footer, errors, and pagination controls are Stimulus-owned.
  */
-export function searchResultsTemplate({ caseId, queryId, queryExplainData }) {
+export function searchResultsTemplate({ caseId, queryId, queryExplainData, queryOptionsData = "{}" }) {
   return `
     <div data-controller="search-results">
       <div data-search-results-target="content" class="sub-results container-fluid d-none">
@@ -29,7 +29,9 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData }) {
             <div class="btn-group me-2">
               <button class="btn btn-outline-secondary btn-sm" ng-controller="TargetedSearchCtrl" ng-click="targetedSearch.triggerModal()">Missing Documents</button>
             </div>
-            <div class="btn-group me-2"><query-options query="query"></query-options></div>
+            <div class="btn-group me-2">
+              <button class="btn btn-outline-secondary btn-sm" data-controller="query-options-core" data-query-options-core-query-id-value="${queryId}" data-query-options-core-save-url-value="api/cases/${caseId}/queries/${queryId}/options" data-query-options-core-options-value="${queryOptionsData}" data-bs-toggle="modal" data-bs-target="#queryOptionsModal" data-action="click->query-options-core#open">Set Options</button>
+            </div>
           </div>
           <div class="btn-group">
             <button class="btn btn-warning btn-sm" data-controller="move-query-core" data-move-query-core-query-id-value="${queryId}" data-move-query-core-case-id-value="${caseId}" data-bs-toggle="modal" data-bs-target="#moveQueryModal" data-action="click->move-query-core#open">Move Query</button>
