@@ -104,17 +104,15 @@
                             class: 'form-select form-select-sm structured-field',
                             data: { ai_judge_wizard_target: "llmProvider structuredField", action: "change->ai-judge-wizard#updateProviderPreset" }
                       %>
-                    <% elsif :number == spec&.dig(:type) %>
-                      <%= number_field_tag "user[judge_options][#{key}]", value,
-                            id: "judge_options_#{key}", min: spec[:min], max: spec[:max], step: spec[:step],
-                            class: 'form-control form-control-sm structured-field',
-                            data: { ai_judge_wizard_target: "#{key.camelize(:lower)} structuredField" } %>
                     <% else %>
-                      <%= text_field_tag "user[judge_options][#{key}]", value,
-                        id: "judge_options_#{key}",
-                        class: 'form-control form-control-sm structured-field',
-                        data: { ai_judge_wizard_target: "#{key.camelize(:lower)} structuredField" }
-                      %>
+                      <% common_field_attrs = { id: "judge_options_#{key}", class: 'form-control form-control-sm structured-field',
+                           data: { ai_judge_wizard_target: "#{key.camelize(:lower)} structuredField" } } %>
+                      <% if :number == spec&.dig(:type) %>
+                        <%= number_field_tag "user[judge_options][#{key}]", value,
+                              common_field_attrs.merge(min: spec[:min], max: spec[:max], step: spec[:step]) %>
+                      <% else %>
+                        <%= text_field_tag "user[judge_options][#{key}]", value, common_field_attrs %>
+                      <% end %>
                     <% end %>
                     <% if spec&.dig(:hint).present? %>
                       <div class="form-text"><%= spec[:hint] %></div>
@@ -226,10 +224,11 @@
                   </h3>
                   <table class="table table-sm table-borderless small mb-1 w-auto">
                     <tbody>
+                      <% criteria = scale.criteria %>
                       <% scale.values.each_with_index do |value, level| %>
                         <tr>
                           <td class="pe-3 text-muted">level <%= level %> &rarr; rating <strong><%= value %></strong></td>
-                          <td><%= scale.criteria[level] %></td>
+                          <td><%= criteria[level] %></td>
                         </tr>
                       <% end %>
                     </tbody>

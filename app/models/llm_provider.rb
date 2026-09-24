@@ -35,7 +35,7 @@ class LlmProvider
   # rubocop:disable-next Metrics/ParameterLists -- keyword arguments, all of them required data
   def initialize(key:, label:, default_service_url:, default_model:, help_html:,
                  default_api_version: '', notice_html: nil, read_only_fields: [],
-                 adapter: 'LlmJudgeAdapters::OpenAi', auth_style: :bearer,
+                 adapter: LlmJudgeAdapters::DEFAULT_ADAPTER, auth_style: :bearer,
                  default_system_prompt: LlmProviders::CHAT_SYSTEM_PROMPT,
                  prompt_label: 'System prompt', prompt_hint: nil, scale_as_criteria: false,
                  option_fields: {})
@@ -102,6 +102,7 @@ class LlmProvider
       prompt_label:      prompt_label,
       prompt_hint:       prompt_hint,
       scale_as_criteria: scale_as_criteria?,
+      needs_book:        needs_book?,
     }
   end
 

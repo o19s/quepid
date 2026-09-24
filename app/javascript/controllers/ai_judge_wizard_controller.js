@@ -206,10 +206,11 @@ export default class extends Controller {
     this.updateRunAvailability(preset)
   }
 
-  // A provider that is sent the book's scale as its criteria (Jev) has nothing to
-  // judge against without a book, so don't offer a run that can only fail.
+  // A provider that needs a book (currently: one sent the book's scale as its
+  // criteria, like Jev) has nothing to judge against without one, so don't offer
+  // a run that can only fail.
   updateRunAvailability(preset) {
-    const needsBook = Boolean(preset?.scale_as_criteria) && !this.hasBookValue
+    const needsBook = Boolean(preset?.needs_book) && !this.hasBookValue
 
     if (this.hasRunPromptButtonTarget) this.runPromptButtonTarget.disabled = needsBook
     if (this.hasNeedsBookNoticeTarget) this.needsBookNoticeTarget.style.display = needsBook ? "" : "none"

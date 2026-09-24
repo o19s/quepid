@@ -60,7 +60,7 @@ class JudgeScale
   # Same thing keyed by the rating, for a model that picks an option rather
   # than a position on a spectrum.
   def criteria_by_value
-    values.index_by(&:to_s).transform_values { |value| label_for(value) || "Rating #{value} on this book's scale" }
+    values.map(&:to_s).zip(criteria).to_h
   end
 
   # Turns a position on the level spectrum (0 .. size - 1, possibly fractional,

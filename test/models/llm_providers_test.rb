@@ -73,7 +73,7 @@ class LlmProvidersTest < ActiveSupport::TestCase
     preset = LlmProviders.presets.fetch('openai')
 
     assert_equal [ :llm_service_url, :llm_api_version, :llm_model, :help, :notice, :read_only,
-                   :system_prompt, :prompt_label, :prompt_hint, :scale_as_criteria ],
+                   :system_prompt, :prompt_label, :prompt_hint, :scale_as_criteria, :needs_book ],
                  preset.keys
     assert_equal 'https://api.openai.com', preset[:llm_service_url]
   end

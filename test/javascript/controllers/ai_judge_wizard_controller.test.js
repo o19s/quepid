@@ -309,11 +309,11 @@ describe("AiJudgeWizardController provider switching", () => {
     const controller = buildController({ hasBookValue: false, hasNeedsBookNoticeTarget: true, needsBookNoticeTarget: notice })
     controller.hasRunPromptButtonTarget = true
 
-    AiJudgeWizardController.prototype.updateRunAvailability.call(controller, { scale_as_criteria: true })
+    AiJudgeWizardController.prototype.updateRunAvailability.call(controller, { needs_book: true })
     expect(controller.runPromptButtonTarget.disabled).toBe(true)
     expect(notice.style.display).toBe("")
 
-    AiJudgeWizardController.prototype.updateRunAvailability.call(controller, { scale_as_criteria: false })
+    AiJudgeWizardController.prototype.updateRunAvailability.call(controller, { needs_book: false })
     expect(controller.runPromptButtonTarget.disabled).toBe(false)
     expect(notice.style.display).toBe("none")
   })
@@ -322,7 +322,7 @@ describe("AiJudgeWizardController provider switching", () => {
     const controller = buildController({ hasBookValue: true })
     controller.hasRunPromptButtonTarget = true
 
-    AiJudgeWizardController.prototype.updateRunAvailability.call(controller, { scale_as_criteria: true })
+    AiJudgeWizardController.prototype.updateRunAvailability.call(controller, { needs_book: true })
     expect(controller.runPromptButtonTarget.disabled).toBe(false)
   })
 })

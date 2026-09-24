@@ -7,11 +7,14 @@ require 'json'
 # the request it describes, hand the answer back to it. What the request looks
 # like and what the answer means belong to the adapter (LlmJudgeAdapters).
 class LlmService
-  DEFAULT_OPTIONS = {
-    llm_service_url: 'https://api.openai.com',
-    llm_model:       'gpt-4o',
-    llm_timeout:     30,
-  }.freeze
+  DEFAULT_OPTIONS = begin
+    openai = LlmProviders['openai']
+    {
+      llm_service_url: openai.default_service_url,
+      llm_model:       openai.default_model,
+      llm_timeout:     30,
+    }
+  end.freeze
 
   def initialize llm_key, opts = {}
     @llm_key = llm_key
