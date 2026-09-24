@@ -275,10 +275,10 @@ module LlmProviders
       )
     end
 
-    # Placeholder entry: Jev is a typed "System One" model, not a chat model, so it needs
-    # its own adapter before a judging run can use it (docs/adr/0001, docs/todo/jev_llm_judge.md).
-    # It is listed now so teams can see what it will need -- an API key -- and get one;
-    # AiJudgesController refuses to save a judge pointed at it until the adapter lands.
+    # Jev is a typed "System One" model, not a chat model, so it speaks through its own
+    # adapter (LlmJudgeAdapters::Jev; docs/adr/0001). scale_as_criteria makes it need a
+    # book: without one there is no scale to send, so AiJudges::WizardController and the
+    # form refuse to preview it and a judging run can only start from a book.
     def typesafe_jev
       LlmProvider.new(
         key:                   'typesafe_jev',
