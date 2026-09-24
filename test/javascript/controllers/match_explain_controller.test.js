@@ -15,7 +15,15 @@ vi.mock("utils/bs_popover", () => ({
 const dynamicModal = { element: document.createElement("div"), dispose: vi.fn() }
 
 vi.mock("utils/dynamic_modal", () => ({
-  openDynamicModal: vi.fn(() => dynamicModal)
+  openDynamicModal: vi.fn(({ templateId }) => {
+    dynamicModal.element = document.createElement("div")
+    if (templateId === "match-explain-debug-modal-template") {
+      dynamicModal.element.innerHTML = '<em data-modal-target="title"></em><span data-modal-target="docId"></span><div data-modal-target="json"></div>'
+    } else {
+      dynamicModal.element.innerHTML = '<span data-modal-target="score"></span><pre data-modal-target="explanation"></pre>'
+    }
+    return dynamicModal
+  })
 }))
 
 vi.mock("utils/json_explorer", () => ({
@@ -208,8 +216,9 @@ describe("MatchExplainController", () => {
     const options = openDynamicModal.mock.calls[0][0]
     expect(options.size).toBe("lg")
     expect(options.windowClass).toBe("doc-detailed-explain-modal")
-    expect(options.html).toContain("Some Doc")
-    expect(options.html).toContain("doc-1")
+    expect(options.templateId).toBe("match-explain-debug-modal-template")
+    expect(dynamicModal.element.querySelector("[data-modal-target='title']").textContent).toBe("Some Doc")
+    expect(dynamicModal.element.querySelector("[data-modal-target='docId']").textContent).toBe("doc-1")
 
     expect(renderJsonExplorer).toHaveBeenCalledTimes(1)
     expect(renderJsonExplorer.mock.calls[0][1]).toBe(data.explainRawStr)
@@ -225,8 +234,9 @@ describe("MatchExplainController", () => {
     expect(openDynamicModal).toHaveBeenCalledTimes(1)
     const options = openDynamicModal.mock.calls[0][0]
     expect(options.windowClass).toBe("full-screen-modal")
-    expect(options.html).toContain("Relevancy Score: 3.5")
-    expect(options.html).toContain("3.5 weight(title:foo)")
+    expect(options.templateId).toBe("match-explain-expand-modal-template")
+    expect(dynamicModal.element.querySelector("[data-modal-target='score']").textContent).toBe("3.5")
+    expect(dynamicModal.element.querySelector("[data-modal-target='explanation']").textContent).toContain("3.5 weight(title:foo)")
   })
 
   it("updates the popover in place (setTitle/setBody) on a data change, without disposing or recreating it", () => {

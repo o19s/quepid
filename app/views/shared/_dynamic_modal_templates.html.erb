@@ -1,0 +1,103 @@
+<%# Client-owned modal shells. Stimulus clones these templates and fills their targets. %>
+<template id="browse-query-modal-template">
+  <div class="modal-header">
+    <h3 class="modal-title" id="browse-query-modal-title">Browse Results on <span data-modal-target="engineName"></span></h3>
+    <button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div class="modal-body">
+    <p>Run this in a terminal, or paste it into a tool like Postman, to see the raw response from <span data-modal-target="engineName"></span> for this query.</p>
+    <pre class="p-2 bg-light border rounded" data-modal-target="curl"></pre>
+    <p class="text-muted mb-0" data-modal-target="headersNotice">
+      <i class="bi bi-info-circle" aria-hidden="true"></i>
+      This includes the endpoint's configured headers/credentials — treat it like a secret.
+    </p>
+    <p class="text-muted mb-0 d-none" data-modal-target="noHeadersNotice">
+      <i class="bi bi-info-circle" aria-hidden="true"></i>
+      No headers or credentials are configured for this endpoint, so you can also open the URL directly below.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline-secondary float-start me-auto" data-modal-target="copy">
+      <i class="bi bi-copy" data-modal-target="copyIcon"></i>
+      <span data-modal-target="copyLabel">Copy curl command</span>
+    </button>
+    <button class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+  </div>
+</template>
+
+<template id="query-explain-modal-template">
+  <div class="modal-header">
+    <h3 class="modal-title" id="query-explain-modal-title">Explain Query Parsing</h3>
+    <button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div class="modal-body">
+    <p>These are details returned from the search engine on how it processed the input query</p>
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item" role="presentation"><button type="button" class="nav-link active" id="query-explain-tab-params" data-bs-toggle="tab" data-bs-target="#query-explain-pane-params" role="tab" aria-controls="query-explain-pane-params" aria-selected="true">Params</button></li>
+      <li class="nav-item" role="presentation"><button type="button" class="nav-link" id="query-explain-tab-parsing" data-bs-toggle="tab" data-bs-target="#query-explain-pane-parsing" role="tab" aria-controls="query-explain-pane-parsing" aria-selected="false">Parsing</button></li>
+      <li class="nav-item" role="presentation"><button type="button" class="nav-link" id="query-explain-tab-template" data-bs-toggle="tab" data-bs-target="#query-explain-pane-template" role="tab" aria-controls="query-explain-pane-template" aria-selected="false">Query Template</button></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="query-explain-pane-params" role="tabpanel" aria-labelledby="query-explain-tab-params">
+        <p data-modal-target="paramsMessage">
+          <i class="bi bi-exclamation-triangle-fill d-none" aria-hidden="true" data-modal-target="paramsWarningIcon"></i>
+          <span data-modal-target="paramsMessageText"></span>
+        </p>
+        <div class="query-explain-params" data-modal-target="params"></div>
+      </div>
+      <div class="tab-pane" id="query-explain-pane-parsing" role="tabpanel" aria-labelledby="query-explain-tab-parsing">
+        <p>This is how the search engine parsed the query.</p>
+        <div class="query-explain-parsing"></div>
+      </div>
+      <div class="tab-pane" id="query-explain-pane-template" role="tabpanel" aria-labelledby="query-explain-tab-template">
+        <div class="query-explain-template">
+          <p data-modal-target="templateMessage"></p>
+          <pre class="query-explain-template-json" data-modal-target="templateValue"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline-secondary float-start me-auto query-explain-copy" data-tab="queryDetails"><i class="bi bi-copy"></i> Copy</button>
+    <button class="btn btn-outline-secondary float-start me-auto query-explain-copy d-none" data-tab="parsedQueryDetails"><i class="bi bi-copy"></i> Copy</button>
+    <button class="btn btn-outline-secondary float-start me-auto query-explain-copy d-none" data-tab="renderedQueryTemplate"><i class="bi bi-copy"></i> Copy</button>
+    <button class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+  </div>
+</template>
+
+<template id="missing-documents-modal-template">
+  <div class="modal-header">
+    <h3 class="modal-title" id="missing-documents-modal-title">Find and Rate Missing Documents</h3>
+    <button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div class="modal-body" data-controller="missing-documents" data-missing-documents-modal-root="true"></div>
+  <div class="modal-footer"><button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button></div>
+</template>
+
+<template id="match-explain-debug-modal-template">
+  <div class="doc-detailed-explain">
+    <h3>Debug Explain for <em data-modal-target="title"></em> (id:<span data-modal-target="docId"></span>)</h3>
+    <div class="match-explain-json" data-modal-target="json"></div>
+  </div>
+</template>
+
+<template id="match-explain-expand-modal-template">
+  <div class="col-sm-12 pt-4 pb-4 px-4">
+    <h1>Relevancy Score: <span data-modal-target="score"></span></h1>
+    <div><pre data-modal-target="explanation"></pre></div>
+  </div>
+</template>
+
+<template id="detailed-document-modal-template">
+  <div style="margin: 20px">
+    <h3>Detailed Document View of doc: <span data-modal-target="docId"></span></h3>
+    <h4 data-modal-target="title"></h4>
+    <div data-modal-target="fields"></div>
+    <div class="row detaileddoc code detailed-doc-all-fields" style="margin-bottom: 10px; display: none">
+      <pre data-modal-target="allFields"></pre>
+    </div>
+    <button class="btn btn-primary detailed-doc-view" data-modal-target="view">View Document</button>
+    <a href="#" class="btn btn-outline-secondary detailed-doc-toggle-fields" data-modal-target="toggleFields">View All Fields</a>
+    <button type="button" class="btn btn-outline-secondary float-end detailed-doc-close" data-modal-target="close">Close</button>
+  </div>
+</template>

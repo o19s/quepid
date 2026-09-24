@@ -9,7 +9,7 @@ import { createBsModal, restoreModalBodyLock, showStackedModal } from "utils/bs_
  * @param {{ html: string, size?: "sm"|"lg"|"xl", windowClass?: string, ariaLabelledBy?: string }} options
  * @returns {{ element: Element, dispose: () => void }}
  */
-export function openDynamicModal({ html, size, windowClass, ariaLabelledBy } = {}) {
+export function openDynamicModal({ html, templateId, size, windowClass, ariaLabelledBy } = {}) {
   const wrapper = document.createElement("div")
   wrapper.className = ["modal", "fade", windowClass].filter(Boolean).join(" ")
   wrapper.setAttribute("tabindex", "-1")
@@ -17,11 +17,20 @@ export function openDynamicModal({ html, size, windowClass, ariaLabelledBy } = {
   if (ariaLabelledBy) wrapper.setAttribute("aria-labelledby", ariaLabelledBy)
 
   const sizeClass = size ? `modal-${size}` : ""
-  wrapper.innerHTML = `
-    <div class="modal-dialog ${sizeClass}" role="document">
-      <div class="modal-content">${html}</div>
-    </div>
-  `
+  const dialog = document.createElement("div")
+  dialog.className = ["modal-dialog", sizeClass].filter(Boolean).join(" ")
+  dialog.setAttribute("role", "document")
+  const content = document.createElement("div")
+  content.className = "modal-content"
+  if (templateId) {
+    const template = document.getElementById(templateId)
+    if (!template) return null
+    content.append(template.content.cloneNode(true))
+  } else if (html) {
+    content.innerHTML = html
+  }
+  dialog.appendChild(content)
+  wrapper.appendChild(dialog)
   document.body.appendChild(wrapper)
 
   const bsModal = createBsModal(wrapper, { backdrop: true, keyboard: true, focus: true })

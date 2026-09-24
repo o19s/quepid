@@ -11,16 +11,11 @@ export default class extends Controller {
     const modal = openDynamicModal({
       size: "lg",
       ariaLabelledBy: "missing-documents-modal-title",
-      html: `
-        <div class="modal-header">
-          <h3 class="modal-title" id="missing-documents-modal-title">Find and Rate Missing Documents</h3>
-          <button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body" data-controller="missing-documents" data-missing-documents-modal-root="true" data-missing-documents-query-id-value="${this.queryIdValue}"></div>
-        <div class="modal-footer"><button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button></div>
-      `
+      templateId: "missing-documents-modal-template"
     })
-    modal.element.querySelector("[data-controller='missing-documents']").missingDocumentsModal = modal
+    const root = modal.element.querySelector("[data-controller='missing-documents']")
+    root.dataset.missingDocumentsQueryIdValue = String(this.queryIdValue)
+    root.missingDocumentsModal = modal
   }
 
   connect() {
@@ -46,24 +41,7 @@ export default class extends Controller {
   renderShell() {
     const supported = this.adapter.usesQueryParamsEditor
     const jsonEditor = supported && ["es", "os"].includes(this.adapter.settings?.searchEngine)
-    const queryEditor = jsonEditor
-      ? `<textarea class="form-control d-none" rows="4" data-missing-documents-target="queryParams"></textarea><div id="missing-documents-query-params-editor" class="es-query-params os-query-params" data-missing-documents-target="queryParamsEditor"></div>`
-      : `<textarea class="form-control" rows="4" data-missing-documents-target="queryParams"></textarea>`
-    this.element.innerHTML = `
-      ${supported ? `
-        <p>Often you know that a document is a good match for a query, but it doesn't match the current query. This lets you find that document and give it a grade, which then influences your scorer.</p>
-        <form data-action="submit->missing-documents#search">
-          <div class="row">
-            <div class="mb-3 col-sm-6">${queryEditor}<p class="form-text">This is pre-filled from your current try's query. Edit it however you like; it won't change your saved try.</p></div>
-            <div class="col-sm-3"><input type="submit" class="btn btn-primary form-control" value="Search" data-missing-documents-target="searchButton"></div>
-          </div>
-        </form>
-        <button type="button" class="btn btn-outline-secondary form-control mb-3" data-missing-documents-target="resetButton" data-action="missing-documents#reset">Reset to All Rated Docs</button>
-      ` : `<div class="alert alert-warning">Finding and rating missing documents isn't supported for the <strong data-missing-documents-target="engineName"></strong> search engine yet.</div>`}
-      <div data-missing-documents-target="status"></div>
-      <div data-missing-documents-target="results"></div>
-      <div class="row paging-row"><button type="button" class="btn btn-outline-secondary d-none" data-missing-documents-target="next" data-action="missing-documents#paginate">Peek at the next page of results</button><span class="ms-2 d-none" data-missing-documents-target="spinner"><i class="bi bi-arrow-repeat spintime"></i></span></div>
-    `
+    this.element.replaceChildren(this.missingDocumentsContentTemplate(jsonEditor, supported))
     const engineNameTarget = this.element.querySelector("[data-missing-documents-target='engineName']")
     if (engineNameTarget) engineNameTarget.textContent = this.adapter.engineName
     this.editor = null
@@ -80,6 +58,87 @@ export default class extends Controller {
       this.queryParamsTarget.classList.remove("d-none")
     }
     this.setQueryParams(this.adapter.initialQueryParams() || "")
+  }
+
+  missingDocumentsContentTemplate(jsonEditor, supported) {
+    const fragment = document.createDocumentFragment()
+    if (supported) {
+      const intro = document.createElement("p")
+      intro.textContent = "Often you know that a document is a good match for a query, but it doesn't match the current query. This lets you find that document and give it a grade, which then influences your scorer."
+      fragment.appendChild(intro)
+
+      const form = document.createElement("form")
+      form.dataset.action = "submit->missing-documents#search"
+      const row = document.createElement("div")
+      row.className = "row"
+      const editorColumn = document.createElement("div")
+      editorColumn.className = "mb-3 col-sm-6"
+      const queryParams = document.createElement("textarea")
+      queryParams.className = `form-control${jsonEditor ? " d-none" : ""}`
+      queryParams.rows = 4
+      queryParams.dataset.missingDocumentsTarget = "queryParams"
+      editorColumn.appendChild(queryParams)
+      if (jsonEditor) {
+        const editor = document.createElement("div")
+        editor.id = "missing-documents-query-params-editor"
+        editor.className = "es-query-params os-query-params"
+        editor.dataset.missingDocumentsTarget = "queryParamsEditor"
+        editorColumn.appendChild(editor)
+      }
+      const hint = document.createElement("p")
+      hint.className = "form-text"
+      hint.textContent = "This is pre-filled from your current try's query. Edit it however you like; it won't change your saved try."
+      editorColumn.appendChild(hint)
+      row.appendChild(editorColumn)
+      const searchColumn = document.createElement("div")
+      searchColumn.className = "col-sm-3"
+      const search = document.createElement("input")
+      search.type = "submit"
+      search.className = "btn btn-primary form-control"
+      search.value = "Search"
+      search.dataset.missingDocumentsTarget = "searchButton"
+      searchColumn.appendChild(search)
+      row.appendChild(searchColumn)
+      form.appendChild(row)
+      fragment.appendChild(form)
+      const reset = document.createElement("button")
+      reset.type = "button"
+      reset.className = "btn btn-outline-secondary form-control mb-3"
+      reset.dataset.missingDocumentsTarget = "resetButton"
+      reset.dataset.action = "missing-documents#reset"
+      reset.textContent = "Reset to All Rated Docs"
+      fragment.appendChild(reset)
+    } else {
+      const warning = document.createElement("div")
+      warning.className = "alert alert-warning"
+      const engineName = document.createElement("strong")
+      engineName.dataset.missingDocumentsTarget = "engineName"
+      engineName.textContent = this.adapter.engineName || ""
+      warning.append("Finding and rating missing documents isn't supported for the ", engineName, " search engine yet.")
+      fragment.appendChild(warning)
+    }
+    const status = document.createElement("div")
+    status.dataset.missingDocumentsTarget = "status"
+    const results = document.createElement("div")
+    results.dataset.missingDocumentsTarget = "results"
+    fragment.append(status, results)
+    const paging = document.createElement("div")
+    paging.className = "row paging-row"
+    const next = document.createElement("button")
+    next.type = "button"
+    next.className = "btn btn-outline-secondary d-none"
+    next.dataset.missingDocumentsTarget = "next"
+    next.dataset.action = "missing-documents#paginate"
+    next.textContent = "Peek at the next page of results"
+    const spinner = document.createElement("span")
+    spinner.className = "ms-2 d-none"
+    spinner.dataset.missingDocumentsTarget = "spinner"
+    const spinnerIcon = document.createElement("i")
+    spinnerIcon.className = "bi bi-arrow-repeat spintime"
+    spinner.appendChild(spinnerIcon)
+    paging.append(next, spinner)
+    fragment.appendChild(paging)
+    return fragment
   }
 
   get queryParams() {
@@ -166,8 +225,24 @@ export default class extends Controller {
 
     const scoreAll = document.createElement("div")
     scoreAll.className = "score-all float-start"
-    scoreAll.innerHTML = '<strong>Score All</strong><div class="ratings"><div class="single-rating" data-controller="rating-popover"><span class="btn" style="background-color: rgb(119, 119, 119);">- <i class="bi bi-caret-down-fill"></i></span></div></div>'
-    scoreAll.querySelector("[data-controller='rating-popover']").dataset.ratingPopoverScaleValue = JSON.stringify(this.adapter.ratingScale || {})
+    const scoreLabel = document.createElement("strong")
+    scoreLabel.textContent = "Score All"
+    const ratings = document.createElement("div")
+    ratings.className = "ratings"
+    const rating = document.createElement("div")
+    rating.className = "single-rating"
+    rating.dataset.controller = "rating-popover"
+    rating.dataset.ratingPopoverScaleValue = JSON.stringify(this.adapter.ratingScale || {})
+    const ratingButton = document.createElement("span")
+    ratingButton.className = "btn"
+    ratingButton.style.backgroundColor = "rgb(119, 119, 119)"
+    ratingButton.append("- ")
+    const ratingIcon = document.createElement("i")
+    ratingIcon.className = "bi bi-caret-down-fill"
+    ratingButton.appendChild(ratingIcon)
+    rating.appendChild(ratingButton)
+    ratings.appendChild(rating)
+    scoreAll.append(scoreLabel, ratings)
     this.resultsTarget.appendChild(scoreAll)
     const warning = document.createElement("div")
     warning.className = "alert alert-warning float-start score-all-alert"
@@ -184,7 +259,9 @@ export default class extends Controller {
       const maxDocScore = this.adapter.query.maxDocScore?.() || null
       result.__searchResultDocument = snapshotDocument(doc, { maxDocScore })
       result.__searchResultQuery = { ratingScale: this.adapter.ratingScale || {}, maxDocScore }
-      result.innerHTML = '<div data-search-result-target="content"></div>'
+      const content = document.createElement("div")
+      content.dataset.searchResultTarget = "content"
+      result.appendChild(content)
       this.resultsTarget.appendChild(result)
     })
     this.nextTarget.classList.toggle("d-none", this.adapter.numFound <= this.adapter.docs.length)

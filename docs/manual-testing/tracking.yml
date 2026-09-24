@@ -242,10 +242,10 @@ parts:
         paths: ["app/javascript/controllers/pick_scorer_core_controller.js", "app/views/shared/_pick_scorer_core_modal.html.erb", "app/assets/javascripts/services/queriesSvc.js", "app/models/scorer.rb"]
       "4.9":
         title: "Missing Documents finder"
-        last_run: 2026-09-24T17:29:00Z
+        last_run: 2026-09-24T18:04:00Z
         result: pass
-        notes: "Covered live: Playwright MCP on case 6. The Stimulus modal opened from an expanded query, loaded Already Rated Documents, ran a custom search with a no-results message, and reset back to the rated list with the original count. The persistent rating-warning text remained present and the browser reported zero errors. Not covered in this pass: inline rating and pagination through multiple rated pages."
-        paths: ["app/javascript/controllers/missing_documents_controller.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js"]
+        notes: "Re-verified live via Playwright MCP on case 6 after moving the modal shell to an ERB template and the dynamic body to DOM construction. Opened from an expanded query and confirmed the pre-filled search form, rated-document results, rating controls, persistent warning, and Close action. Not covered in this pass: inline rating and pagination through multiple rated pages."
+        paths: ["app/javascript/controllers/missing_documents_controller.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js", "app/views/shared/_dynamic_modal_templates.html.erb"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
         last_run: 2026-09-21T18:09:00Z
@@ -376,22 +376,22 @@ parts:
         paths: ["app/javascript/controllers/judgements_core_controller.js", "app/views/shared/_judgements_core_modal.html.erb", "app/assets/javascripts/services/queriesSvc.js", "app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
-        last_run: 2026-09-23T20:45:00Z
+        last_run: 2026-09-24T18:00:00Z
         result: pass
-        notes: "Re-verified live via Playwright MCP on E2E Static Fixture (case 219) after removing the Angular query-explain directive/controller/template. Params and Parsing tabs rendered, the screenshot matched the pre-migration modal, and the checked-in tab-switching flow passed. Not covered live: pasting a copied tab elsewhere or the populated-template rendering for a templated query."
-        paths: ["app/javascript/controllers/query_explain_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/core_stimulus.js", "test/javascript/controllers/query_explain_controller.test.js", "test/playwright/core_smoke.spec.ts"]
+        notes: "Re-verified live via Playwright MCP on case 6 after moving the modal shell to an ERB template. Params and Parsing rendered correctly, the modal opened from an expanded query, and the browser reported zero errors. Not covered live: pasting a copied tab elsewhere or populated-template rendering for a templated query."
+        paths: ["app/javascript/controllers/query_explain_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/core_stimulus.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/javascript/controllers/query_explain_controller.test.js", "test/playwright/core_smoke.spec.ts"]
       "6.8":
         title: "Explain a single document (Debug Explain)"
-        last_run: 2026-09-21T19:36:00Z
+        last_run: 2026-09-24T18:04:00Z
         result: pass
-        notes: "Covered live: Playwright MCP. Clicking a match bar in the score-breakdown widget opens 'Debug Explain for <doc title> (id:<doc id>)' with the raw explain rendered as a JSON tree (51 nodes). Note this surface is now the Stimulus match_explain controller rather than the old Angular debug_matches component. Not covered live: expanding/collapsing individual tree nodes."
-        paths: ["app/javascript/controllers/match_explain_controller.js", "app/javascript/utils/json_explorer.js", "app/javascript/utils/dynamic_modal.js", "app/assets/javascripts/controllers/searchResult.js", "app/assets/templates/views/searchResult.html"]
+        notes: "Re-verified live via Playwright MCP on case 6 after moving the Debug Explain modal shell to an ERB template and the explanation text to textContent. Clicking a match bar opened the expected modal and rendered the raw explain JSON tree. Not covered live: expanding/collapsing individual tree nodes."
+        paths: ["app/javascript/controllers/match_explain_controller.js", "app/javascript/utils/json_explorer.js", "app/javascript/utils/dynamic_modal.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/assets/javascripts/controllers/searchResult.js", "app/assets/templates/views/searchResult.html"]
       "6.11":
         title: "View a document's details (Detailed Document View)"
-        last_run: 2026-09-21T19:36:00Z
+        last_run: 2026-09-24T18:04:00Z
         result: pass
-        notes: "Covered live: Playwright MCP. Clicking a result title opens 'Detailed Document View of doc: <id>' listing the document's sub-fields; 'View All Fields' reveals the full raw document and toggles to 'Hide All Fields'. Not covered live: following 'View Document' out to the search engine, and the disabled state for a doc with no resolvable URL."
-        paths: ["app/assets/javascripts/controllers/searchResult.js", "app/assets/templates/views/searchResult.html", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/utils/json_explorer.js", "app/javascript/quepid_dom.js", "test/playwright/core_smoke.spec.ts"]
+        notes: "Re-verified live via Playwright MCP on case 6 after moving the detailed-document modal shell to an ERB template and constructing field rows with DOM APIs. Clicking a result title opened the expected document, listed fields, and exposed the View All Fields / Close controls. Not covered live: following View Document out to the search engine, and the disabled state for a doc with no resolvable URL."
+        paths: ["app/assets/javascripts/controllers/searchResult.js", "app/assets/templates/views/searchResult.html", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/utils/json_explorer.js", "app/javascript/quepid_dom.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/playwright/core_smoke.spec.ts"]
       "6.9":
         title: "Frog Report"
         last_run: 2026-09-18T17:15:00Z

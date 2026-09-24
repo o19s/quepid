@@ -7,8 +7,8 @@ const dynamicModal = { element: document.createElement("div"), dispose: vi.fn() 
 // modal (tab clicks, copy buttons, the async template-render round trip), so
 // the mock actually renders `html` into `element` rather than leaving it empty.
 vi.mock("utils/dynamic_modal", () => ({
-  openDynamicModal: vi.fn(({ html }) => {
-    dynamicModal.element.innerHTML = html
+  openDynamicModal: vi.fn(({ html, templateId }) => {
+    dynamicModal.element.innerHTML = html || document.getElementById(templateId).innerHTML
     return dynamicModal
   })
 }))
@@ -55,10 +55,15 @@ describe("QueryExplainController", () => {
     document.body.appendChild(element)
     vi.clearAllMocks()
     dynamicModal.element = document.createElement("div")
+    const template = document.createElement("template")
+    template.id = "query-explain-modal-template"
+    template.innerHTML = `<div class="query-explain-params"></div><div class="query-explain-parsing"></div><div class="query-explain-template"><p data-modal-target="templateMessage"></p><pre data-modal-target="templateValue"></pre></div><p data-modal-target="paramsMessage"><i data-modal-target="paramsWarningIcon"></i><span data-modal-target="paramsMessageText"></span></p><button id="query-explain-tab-params"></button><button id="query-explain-tab-parsing"></button><button id="query-explain-tab-template"></button><button class="query-explain-copy" data-tab="queryDetails"></button><button class="query-explain-copy d-none" data-tab="parsedQueryDetails"></button><button class="query-explain-copy d-none" data-tab="renderedQueryTemplate"></button>`
+    document.body.appendChild(template)
   })
 
   afterEach(() => {
     element.remove()
+    document.getElementById("query-explain-modal-template")?.remove()
   })
 
   it("renders an Explain Query trigger button on connect", () => {
@@ -78,7 +83,7 @@ describe("QueryExplainController", () => {
     expect(openDynamicModal).toHaveBeenCalledTimes(1)
     const options = openDynamicModal.mock.calls[0][0]
     expect(options.size).toBe("lg")
-    expect(options.html).toContain("Explain Query Parsing")
+    expect(options.templateId).toBe("query-explain-modal-template")
 
     expect(renderJsonExplorer).toHaveBeenCalledWith(
       dynamicModal.element.querySelector(".query-explain-params"),

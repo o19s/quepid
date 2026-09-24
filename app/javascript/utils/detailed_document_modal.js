@@ -1,5 +1,5 @@
 import { openDynamicModal } from "utils/dynamic_modal"
-import { escapeHtml, renderJsonExplorer } from "utils/json_explorer"
+import { renderJsonExplorer } from "utils/json_explorer"
 
 /**
  * Opens the detailed document view shared by the Stimulus results renderer and
@@ -19,65 +19,59 @@ export function openDetailedDocumentModal({ doc, linkUrl = null } = {}) {
   const hasImage = typeof doc.hasImage === "function" ? doc.hasImage() : Boolean(doc.hasImage)
   const rawFields = doc.rawFields || doc.doc?.origin?.() || {}
 
-  function fieldRow(name, valueHtml) {
-    return `<div class="row" style="margin-bottom: 10px"><div class="col-md-4">${escapeHtml(name)}</div><div class="col-md-8">${valueHtml}</div></div>`
+  function fieldRow(name, value) {
+    const row = document.createElement("div")
+    row.className = "row"
+    row.style.marginBottom = "10px"
+    const label = document.createElement("div")
+    label.className = "col-md-4"
+    label.textContent = name
+    const content = document.createElement("div")
+    content.className = "col-md-8"
+    content.textContent = value == null ? "" : String(value)
+    row.append(label, content)
+    return { row, content }
   }
 
   const subRows = Object.entries(subs).map(([name, value], index) => {
     const isObjectOrArray = value !== null && typeof value === "object"
-    const valueHtml = isObjectOrArray
-      ? `<div class="detailed-doc-sub-json" data-sub-index="${index}"></div>`
-      : escapeHtml(value)
-    return { name, valueHtml, rawValue: isObjectOrArray ? value : null, index }
+    return { name, value, rawValue: isObjectOrArray ? value : null, index }
   })
 
-  const translationRows = Object.entries(translations).map(([name, value]) =>
-    fieldRow(name, escapeHtml(value))
-  )
-  const embedRows = Object.entries(embeds).map(([name, value]) => fieldRow(name, escapeHtml(value)))
-  const thumbRow = hasThumb ? fieldRow("Thumb", escapeHtml(doc.thumb)) : ""
-  const imageRow = hasImage ? fieldRow("Image", escapeHtml(doc.image)) : ""
-  const allFieldsFormatted = JSON.stringify(rawFields, null, 2)
-
-  const html = `<div style="margin: 20px">
-    <h3>Detailed Document View of doc: ${escapeHtml(doc.id)}</h3>
-    <h4>${escapeHtml(doc.title)}</h4>
-    ${subRows.map((row) => fieldRow(row.name, row.valueHtml)).join("")}
-    ${translationRows.join("")}
-    ${embedRows.join("")}
-    ${thumbRow}
-    ${imageRow}
-    <div class="row detaileddoc code detailed-doc-all-fields" style="margin-bottom: 10px; display: none">
-      <pre>${escapeHtml(allFieldsFormatted)}</pre>
-    </div>
-    <button class="btn btn-primary detailed-doc-view" ${linkUrl ? "" : "disabled"}>View Document</button>
-    <a href="#" class="btn btn-outline-secondary detailed-doc-toggle-fields">View All Fields</a>
-    <button type="button" class="btn btn-outline-secondary float-end detailed-doc-close">Close</button>
-  </div>`
-
-  const modal = openDynamicModal({ html, size: "lg" })
+  const modal = openDynamicModal({ templateId: "detailed-document-modal-template", size: "lg" })
   if (!modal) return null
 
+  modal.element.querySelector("[data-modal-target='docId']").textContent = doc.id
+  modal.element.querySelector("[data-modal-target='title']").textContent = doc.title || ""
+  const fields = modal.element.querySelector("[data-modal-target='fields']")
   subRows.forEach((row) => {
-    if (row.rawValue === null) return
-    const container = modal.element.querySelector(
-      `.detailed-doc-sub-json[data-sub-index="${row.index}"]`
-    )
-    renderJsonExplorer(container, JSON.stringify(row.rawValue), { collapsed: false })
+    const field = fieldRow(row.name, row.rawValue === null ? row.value : "")
+    if (row.rawValue !== null) {
+      field.content.dataset.detailedDocSubJsonIndex = String(row.index)
+      renderJsonExplorer(field.content, JSON.stringify(row.rawValue), { collapsed: false })
+    }
+    fields.appendChild(field.row)
   })
+  Object.entries(translations).forEach(([name, value]) => fields.appendChild(fieldRow(name, value).row))
+  Object.entries(embeds).forEach(([name, value]) => fields.appendChild(fieldRow(name, value).row))
+  if (hasThumb) fields.appendChild(fieldRow("Thumb", doc.thumb).row)
+  if (hasImage) fields.appendChild(fieldRow("Image", doc.image).row)
+
+  modal.element.querySelector("[data-modal-target='allFields']").textContent = JSON.stringify(rawFields, null, 2)
+  modal.element.querySelector("[data-modal-target='view']").toggleAttribute("disabled", !linkUrl)
 
   modal.element
-    .querySelector(".detailed-doc-close")
+    .querySelector("[data-modal-target='close']")
     ?.addEventListener("click", () => modal.dispose())
 
   if (linkUrl) {
-    modal.element.querySelector(".detailed-doc-view")?.addEventListener("click", () => {
+    modal.element.querySelector("[data-modal-target='view']")?.addEventListener("click", () => {
       window.open(linkUrl, "_blank", "noopener,noreferrer")
     })
   }
 
   const allFields = modal.element.querySelector(".detailed-doc-all-fields")
-  const toggle = modal.element.querySelector(".detailed-doc-toggle-fields")
+  const toggle = modal.element.querySelector("[data-modal-target='toggleFields']")
   toggle?.addEventListener("click", (event) => {
     event.preventDefault()
     const showing = allFields.style.display !== "none"
