@@ -3,6 +3,7 @@
 class BooksController < ApplicationController
   include Pagy::Method
   include BooksHelper
+  include BookScorerAssignment
 
   before_action :set_book,
                 only: [ :show, :edit, :update, :destroy, :combine, :assign_anonymous, :delete_ratings_by_assignee,
@@ -538,14 +539,6 @@ class BooksController < ApplicationController
     ids = Array(ai_judge_ids).compact_blank.map(&:to_i)
     new_ids = ids - book.ai_judges.pluck(:id)
     book.ai_judges << visible_ai_judges_for(scope_owner).where(id: new_ids) if new_ids.any?
-  end
-
-  def apply_scorer_to_book book, scorer_id
-    scorer = current_user.scorers_involved_with.find_by(id: scorer_id)
-    if scorer
-      book.scale = scorer.scale
-      book.scale_with_labels = scorer.scale_with_labels
-    end
   end
 
   # This set_book is different because we use :id, not :book_id.
