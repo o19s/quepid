@@ -44,6 +44,7 @@ export default defineConfig({
       { find: "utils/browse_query", replacement: path.resolve(repoRoot, "app/javascript/utils/browse_query.js") },
       { find: "utils/rated_docs", replacement: path.resolve(repoRoot, "app/javascript/utils/rated_docs.js") },
       { find: "utils/scoring", replacement: path.resolve(repoRoot, "app/javascript/utils/scoring.js") },
+      { find: "utils/diff_scores", replacement: path.resolve(repoRoot, "app/javascript/utils/diff_scores.js") },
       { find: "utils/query_state", replacement: path.resolve(repoRoot, "app/javascript/utils/query_state.js") },
       { find: "utils/qgraph", replacement: path.resolve(repoRoot, "app/javascript/utils/qgraph.js") },
       { find: "utils/query_lifecycle", replacement: path.resolve(repoRoot, "app/javascript/utils/query_lifecycle.js") },

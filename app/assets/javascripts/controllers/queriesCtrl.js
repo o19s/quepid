@@ -20,7 +20,6 @@ angular.module('QuepidApp')
     'caseSvc',
     'scorerSvc',
     'configurationSvc',
-    'qscoreSvc',
     'settingsSvc',
     function (
       $scope,
@@ -34,7 +33,6 @@ angular.module('QuepidApp')
       caseSvc,
       scorerSvc,
       configurationSvc,
-      qscoreSvc,
       settingsSvc,
     ) {
       console.log('QueriesCtrl instantiated');
@@ -244,10 +242,6 @@ angular.module('QuepidApp')
         if (isEnabled) {
           // Create case-level diffs object similar to individual query diffs
           var diffModel = {
-            _caseSearchers: [],
-            getSearchers: function() {
-              return this._caseSearchers;
-            },
             fetch: function() {
               // Wait for all individual query diffs to be fetched first
               var fetchPromises = [];
@@ -288,126 +282,15 @@ angular.module('QuepidApp')
               });
             },
             calculateCaseScores: function() {
-              var self = this;
-              
-              // Get searchers from the first query's diffs to determine structure
-              var firstQuery = null;
-              if (queriesSvc.queries && Array.isArray(queriesSvc.queries)) {
-                firstQuery = queriesSvc.queries.find(function(q) {
-                  return q.diffs && q.diffs.getSearchers;
-                });
-              } else {
-                // Handle queries as object
-                for (var key in queriesSvc.queries) {
-                  var query = queriesSvc.queries[key];
-                  if (query && query.diffs && query.diffs.getSearchers) {
-                    firstQuery = query;
-                    break;
-                  }
-                }
-              }
-              
-              if (!firstQuery) {
-                self._caseSearchers = [];
-                if (window.quepidStore && window.quepidStore.documents) {
-                  window.quepidStore.documents.clearCaseDiffs();
-                }
-                return $q.resolve();
-              }
-              
-              var templateSearchers = firstQuery.diffs.getSearchers();
-              self._caseSearchers = [];
-              
-              // For each searcher position, create a case-level searcher with averaged scores
-              angular.forEach(templateSearchers, function(templateSearcher, searcherIndex) {
-                var caseSearcher = {
-                  name: function() { return templateSearcher.name(); },
-                  version: function() { return templateSearcher.version(); },
-                  diffScore: { score: '?', allRated: false },
-                  currentScore: null // Will be set as getter below
-                };
-                
-                // Add currentScore getter for qscore component compatibility
-                Object.defineProperty(caseSearcher, 'currentScore', {
-                  get: function() {
-                    return this.diffScore;
-                  },
-                  enumerable: true,
-                  configurable: true
-                });
-                
-                // Calculate average score across all queries for this searcher
-                var totalScore = 0;
-                var validScores = 0;
-                var allRated = true;
-                
-                // Collect scores from all queries for this searcher index
-                if (queriesSvc.queries && Array.isArray(queriesSvc.queries)) {
-                  angular.forEach(queriesSvc.queries, function(query) {
-                    if (query.diffs && query.diffs.getSearcher) {
-                      var querySearcher = query.diffs.getSearcher(searcherIndex);
-                      if (querySearcher && querySearcher.diffScore) {
-                        var score = querySearcher.diffScore.score;
-                        if (score !== null && score !== undefined && score !== 'zsr' && score !== '--') {
-                          totalScore += score;
-                          validScores++;
-                        }
-                        if (!querySearcher.diffScore.allRated) {
-                          allRated = false;
-                        }
-                      }
-                    }
-                  });
-                } else if (queriesSvc.queries && typeof queriesSvc.queries === 'object') {
-                  for (var key in queriesSvc.queries) {
-                    var query = queriesSvc.queries[key];
-                    if (query && query.diffs && query.diffs.getSearcher) {
-                      var querySearcher = query.diffs.getSearcher(searcherIndex);
-                      if (querySearcher && querySearcher.diffScore) {
-                        var score = querySearcher.diffScore.score;
-                        if (score !== null && score !== undefined && score !== 'zsr' && score !== '--') {
-                          totalScore += score;
-                          validScores++;
-                        }
-                        if (!querySearcher.diffScore.allRated) {
-                          allRated = false;
-                        }
-                      }
-                    }
-                  }
-                }
-                
-                // Calculate final average score
-                if (validScores > 0) {
-                  caseSearcher.diffScore.score = totalScore / validScores;
-                  // Add backgroundColor using qscoreSvc for proper color coding
-                  if ($scope.maxScore && $scope.maxScore > 0) {
-                    caseSearcher.diffScore.backgroundColor = qscoreSvc.scoreToColor(caseSearcher.diffScore.score, $scope.maxScore);
-                  }
-                } else {
-                  caseSearcher.diffScore.score = '--';
-                  caseSearcher.diffScore.backgroundColor = qscoreSvc.scoreToColor('--', $scope.maxScore || 1);
-                }
-                caseSearcher.diffScore.allRated = allRated;
-                
-                self._caseSearchers.push(caseSearcher);
-              });
+              var caseDiffScores = window.quepidSearch.diffScores.buildCaseDiffScores(
+                queriesSvc.queries,
+                $scope.maxScore || 1
+              );
 
-              // The comparison header is Stimulus-owned. Publish the same
-              // case-level read model that qscore-case used to render from
-              // Angular scope, while Angular retains the live scoring engine.
               if (window.quepidStore && window.quepidStore.documents) {
-                window.quepidStore.documents.setCaseDiffs(self._caseSearchers.map(function(searcher) {
-                  return {
-                    name: searcher.name(),
-                    version: searcher.version(),
-                    score: Object.assign({}, searcher.diffScore, {
-                      maxScore: $scope.maxScore || 1
-                    })
-                  };
-                }));
+                window.quepidStore.documents.setCaseDiffs(caseDiffScores);
               }
-              
+
               return $q.resolve();
             }
           };

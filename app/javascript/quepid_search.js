@@ -6,6 +6,7 @@ import {
   supportsSearchApiRatedDocsLookup
 } from "./utils/rated_docs"
 import { averageScore, formatScore, isUnratedScore, ratingBackgroundColor } from "./utils/scoring"
+import { buildCaseDiffScores } from "./utils/diff_scores"
 import {
   invalidateRatedDocsCache,
   matchesQueryFilter,
@@ -54,6 +55,9 @@ const quepidSearch = {
     formatDisplay: formatScore,
     isUnrated: isUnratedScore,
     ratingBackgroundColor
+  },
+  diffScores: {
+    buildCaseDiffScores
   },
   queryState: {
     invalidateRatedDocsCache,
