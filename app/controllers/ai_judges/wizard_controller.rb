@@ -85,7 +85,7 @@ module AiJudges
     def judge_options_params
       params.fetch(:judge_options, {})
         .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version,
-                *LlmProvider.option_field_specs.keys)
+                *LlmProvider.option_keys)
     end
   end
 end

@@ -320,6 +320,11 @@ class LlmProvider
       end
     end
 
+    # The names of those options, for a controller to permit alongside the common ones.
+    def option_keys
+      option_field_specs.keys
+    end
+
     # Every prompt the app ships. The AI Judge form uses this to tell a prompt
     # nobody has touched from one somebody wrote, so switching provider can
     # offer the right default without ever clobbering real work.

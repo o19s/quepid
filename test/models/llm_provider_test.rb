@@ -158,6 +158,11 @@ class LlmProviderTest < ActiveSupport::TestCase
     assert_no_match(/JSON tab/, LlmProvider.find('typesafe_jev').help_html)
   end
 
+  test 'option keys name every option a provider declares, for a controller to permit' do
+    assert_equal LlmProvider.option_field_specs.keys, LlmProvider.option_keys
+    assert_includes LlmProvider.option_keys, 'jev_min_confidence'
+  end
+
   test 'the field is called what it actually is for each provider' do
     assert_equal 'System prompt', LlmProvider.find('openai').prompt_label
     assert_nil LlmProvider.find('openai').prompt_hint
