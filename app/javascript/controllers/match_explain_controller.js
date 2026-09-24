@@ -10,10 +10,9 @@ import { renderJsonExplorer, escapeHtml } from "utils/json_explorer"
  * `quepidPopoverTemplate` directive) and the two modals reachable from that
  * popover (were the `debug-matches` and `expand-content` components).
  *
- * doc.explain()/doc.hotMatchesOutOf() are still Angular/splainer-search —
- * SearchResultCtrl computes them into `matchExplainData()` and serializes the
- * result onto `data-match-explain-data-value` (same bridge pattern as
- * rating-popover's scale value). This controller owns rendering only.
+ * doc.explain()/doc.hotMatchesOutOf() are still provided by splainer-search —
+ * the query document store computes the plain `matchExplain` snapshot and
+ * this controller owns rendering only.
  *
  * The popover trigger + BS5 popover instance are created once in connect()
  * and kept alive across re-renders (updated via setTitle()/setBody(), same

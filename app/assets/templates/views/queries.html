@@ -110,9 +110,12 @@
           <input type="search" data-queries-list-target="filter" data-action="input->queries-list#filter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id='queries-filter' />
         </div>
         <div class="pe-3">
-          <frog-report
-            the-case="caseSvc.selectedCase()"
-          ></frog-report>
+          <button type="button" class="btn btn-link p-0 frog-report-trigger"
+            data-controller="frog-report"
+            data-action="click->frog-report#open">
+            <span class="frog-icon" aria-hidden="true">🐸</span>
+            <span>Report</span>
+          </button>
         </div>
       </div>
 

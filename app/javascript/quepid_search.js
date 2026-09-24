@@ -44,6 +44,12 @@ import {
  * (`quepid_angular_app.js`); Stimulus controllers import the modules directly.
  */
 const quepidSearch = {
+  caseState: {
+    caseNo: null,
+    caseName: "",
+    bookId: null,
+    bookName: null
+  },
   ratedDocs: {
     buildFilter: buildRatedDocsFilter,
     ids: ratedDocIds,
@@ -87,6 +93,7 @@ const quepidSearch = {
     caseId: null,
     prepareQueries: null,
     commitQueries: null,
+    refreshQueries: null,
     moveQuery: null
   },
   queryService: {

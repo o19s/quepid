@@ -175,6 +175,14 @@ angular.module('QuepidApp')
       window.quepidSearch.queryLifecycle.prepareQueries = prepareQueries;
       window.quepidSearch.queryLifecycle.commitQueries = commitQueries;
       window.quepidSearch.queryLifecycle.commitPersistedQueries = commitPersistedQueries;
+      window.quepidSearch.queryLifecycle.refreshQueries = refreshQueries;
+
+      function refreshQueries(caseId) {
+        svc.reset();
+        return svc.bootstrapQueries(caseId).then(function() {
+          return svc.searchAll();
+        });
+      }
 
       // Rated-docs lookup rules live in app/javascript/utils/rated_docs.js (Vitest-covered);
       // these stay as the Angular-facing names that queriesCtrl.js and docFinder.js call.
@@ -215,6 +223,8 @@ angular.module('QuepidApp')
           depthOfRating: query.depthOfRating,
           ratingScale: ratingScale || {},
           queryRating: query.rating,
+          missingRatings: query.currentScore ? query.currentScore.countMissingRatings : null,
+          allRated: query.currentScore ? query.currentScore.allRated : false,
           maxDocScore: angular.isFunction(query.maxDocScore) ? query.maxDocScore() : null,
           browseUrl: angular.isFunction(query.browseUrl) ? query.browseUrl() : null,
           searchEngine: (settingsSvc.applicableSettings() || {}).searchEngine,
@@ -1150,6 +1160,11 @@ angular.module('QuepidApp')
 
               that.lastScoreVersion = that.version();
 
+              // Search/rating updates publish documents before scoring completes. Republish
+              // here so read-model consumers (including the Frog Report) receive the current
+              // missing-rating and all-rated state as soon as the score is available.
+              publishQueryDocuments(that);
+
               return that.currentScore;
             }
           );
@@ -1162,7 +1177,9 @@ angular.module('QuepidApp')
         this.maxDocScore = function() {
           let maxDocScore = 0;
           angular.forEach(this.docs, function(doc) {
-            maxDocScore = Math.max(doc.score(), maxDocScore);
+            if (angular.isFunction(doc.score)) {
+              maxDocScore = Math.max(doc.score(), maxDocScore);
+            }
           });
           return maxDocScore;
         };
@@ -1672,32 +1689,47 @@ angular.module('QuepidApp')
       };
 
       let querySearchableDeferred = $q.defer();
+      let bootstrapGeneration = 0;
       function bootstrapQueries(caseNo) {
+        var generation = ++bootstrapGeneration;
         svc.isBootstrapping = true;
         publishQueryListState();
         if (queryCollectionStore) {
           queryCollectionStore.beginBootstrap(caseNo);
         }
-        querySearchableDeferred = $q.defer();
+        var searchableDeferred = $q.defer();
+        querySearchableDeferred = searchableDeferred;
         var request = window.quepidSearch.queryLifecycle.bootstrapRequest(caseNo);
 
         $http(request)
           .then(function(response) {
+            if (generation !== bootstrapGeneration) {
+              searchableDeferred.reject({ status: 0, statusText: 'Stale bootstrap request' });
+              return response;
+            }
             that.queries = {};
             addQueriesFromResp(response.data, caseNo);
 
             svc.isBootstrapping = false;
             publishQueryListState();
-            querySearchableDeferred.resolve();
+            searchableDeferred.resolve();
           }, function(response) {
+            if (generation !== bootstrapGeneration) {
+              searchableDeferred.reject({ status: 0, statusText: 'Stale bootstrap request' });
+              return response;
+            }
             $log.debug('Failed to bootstrap queries: ', response);
             svc.isBootstrapping = false;
             publishQueryListState();
             if (queryCollectionStore) {
               queryCollectionStore.markError(response);
             }
+            searchableDeferred.reject(response);
             return response;
           }).catch(function(response) {
+            if (generation !== bootstrapGeneration) {
+              return response;
+            }
             $log.debug('Failed to bootstrap queries');
             svc.isBootstrapping = false;
             publishQueryListState();
@@ -1766,7 +1798,7 @@ angular.module('QuepidApp')
           $log.info('Rate limited to ' + currSettings.selectedTry.requestsPerMinute + ' requests per minute.');
         }
         return this.pAll(promises, currSettings.selectedTry.requestsPerMinute).then( () => {
-          $q.all(scorePromises).then( () => {
+          return $q.all(scorePromises).then( () => {
             /*
              * Why are we calling scoreAll after we called score() above?
              *
@@ -1777,10 +1809,10 @@ angular.module('QuepidApp')
              * We have the split here so the progress bar progresses instead of flying thru
              * after all searches complete.
              */
-            svc.scoreAll();
-
-            // Sync query results to associated Book if one exists
-            svc.syncToBook();
+            return svc.scoreAll().then(function() {
+              // Sync query results to associated Book if one exists
+              svc.syncToBook();
+            });
           });
         });
       };

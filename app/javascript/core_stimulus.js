@@ -55,6 +55,7 @@ import QueryOptionsCoreController from "controllers/query_options_core_controlle
 import QgraphController from "controllers/qgraph_controller"
 import MissingDocumentsController from "controllers/missing_documents_controller"
 import TuneRelevanceController from "controllers/tune_relevance_controller"
+import FrogReportController from "controllers/frog_report_controller"
 
 Turbo.session.drive = false
 
@@ -97,3 +98,4 @@ application.register("query-options-core", QueryOptionsCoreController)
 application.register("qgraph", QgraphController)
 application.register("missing-documents", MissingDocumentsController)
 application.register("tune-relevance", TuneRelevanceController)
+application.register("frog-report", FrogReportController)

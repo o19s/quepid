@@ -29,7 +29,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | Controllers | 36 (`.controller()` registrations; 18 files under `controllers/`) |
 | Services | 26 (`.service()` registrations; 27 files under `services/` — `quepidModalSvc.js` registers a factory) |
 | Factories | 8 |
-| Filters | 7 under `filters/` (+ 1 directive-local: `plusOrMinus`) |
+| Filters | 7 under `filters/` |
 | Custom directives / components | 25 (19 `.directive()` + 6 `.component()`) |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 10 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 6 packages (+ `angular` core from npm) |
@@ -224,14 +224,13 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 **Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
-1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). **Not separable (checked 2026-09-24):** every remaining call site of all three lives inside a component already on the defer list (`$quepidModal`: `new_case`, `annotation`, `diff`, `frog_report`, `wizardModal`/`wizardCtrl`, `queryParamsDetails`/`queryParamsHistory`, `searchResult`, `case.js`; `quepidTypeahead`/`quepidCollapse`: `wizardModal.html`, `devQueryParams.html`, `searchEndpoint_popup.html`). They fall out as each of those components migrates in steps 4–7 below — don't plan a standalone PR for this step.
+1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). **Not separable (checked 2026-09-24):** remaining call sites are concentrated in `new_case`, `diff`, `wizardModal`/`wizardCtrl`, and `case.js`; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
 2. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
 3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
 4. Query list + results — `queries`, `search-results`, rating UI
 5. Case action modals — import ratings, diff
 6. Wizard — largest template; ACE, CSV, tags, tour
-7. Tune Relevance pane — ACE, json explorer, try management
-8. Cleanup — removal checklist below
+7. Cleanup — removal checklist below
 
 ### Hardest — sequence last, needs the state plan first
 
@@ -247,9 +246,9 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
-**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → frog_report (422) → diff (423).
+**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → diff (423).
 
-**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResult`, `diff`, `new-case` / wizard, `frog-report`, `quepidTypeahead`, `queryParams`, `quepidCollapse`. The expanded-results shell and document rendering now run through Stimulus and the document store. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or large modals): `diff`, `new-case` / wizard, `quepidTypeahead`, `quepidCollapse`. The expanded-results shell, result rendering, document rendering, Frog Report, and Tune Relevance drawer now run through Stimulus and the document store. The remaining deferred pieces imply rebuilding the case SPA, not a framework swap.
 
 #### `queriesSvc` seam inventory (phase 1)
 
@@ -257,7 +256,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 | Surface | Members | Callers |
 |---------|---------|---------|
-| **Read / display** | `queryArray`, `latestScoreInfo`, `version`, `hasUnscoredQueries`, `scoredQueryCount`, `queryCount`, `isBootstrapping`, `queries`, `showOnlyRated` | `queriesCtrl`, `frog_report`, `caseCSVSvc` / `utils/case_csv.js`, `querySnapshotSvc` |
+| **Read / display** | `queryArray`, `latestScoreInfo`, `version`, `hasUnscoredQueries`, `scoredQueryCount`, `queryCount`, `isBootstrapping`, `queries`, `showOnlyRated` | `queriesCtrl`, `caseCSVSvc` / `utils/case_csv.js`, `querySnapshotSvc`; Frog Report reads `queryDocumentsStore` |
 | **Mutation / lifecycle** | `bootstrapQueries`, `changeSettings`, `searchAll`, `createQuery`, `deleteQuery`, `moveQuery`, `updateQueryDisplayPosition`, `reset`, `updateScores`, `scoreAll`, `refreshAllDiffs`, `syncToBook` | `mainCtrl`, `wizardModal`, `add_query`, `move_query_core` adapter, `searchResults`, `diff`, `caseSvc` |
 | **Search / score engine** (`Query`) | `search`, `searchFromSnapshot`, `paginate`, `ratedPaginate`, `score` / `scoreOthers`, `refreshRatedDocs`, `setDocs`, `filterToRatings`, plus svc-level `createSearcherFromSettings`, `normalizeDocExplains`, `searchApiRatedDocs`, `pAll`, mapper `eval` | `docFinder`; otherwise internal |
 
@@ -449,7 +448,6 @@ Angular still compiles what is left, because custom elements inside `ng-app` are
 | `ngTagsInput` | `ng-tags-input` | Wizard fields | Tom Select / tags Stimulus |
 | `ng-rails-csrf` | `interceptors/rails-csrf.js` | CSRF on `$http` | Fetch wrapper with CSRF meta tag |
 | `templates` | `build_templates.js` | `$templateCache` | ERB partials / Stimulus templates |
-| `ngVega` | `directives/angular-vega.js` | Frog report chart | `vegaEmbed` on `window` (keep until frog report migrates) |
 
 Non-Angular libs that **stay**: Bootstrap 5, D3, Vega, ACE, autocompleter, clipboard, URI.js, Shepherd, SortableJS.
 
@@ -511,7 +509,6 @@ Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `
 | Item | Type | Key files |
 |------|------|-----------|
 | Add query | Stimulus controller + temporary Angular state bridge | `app/javascript/controllers/add_query_controller.js`, `app/javascript/controllers/query_lifecycle_controller.js`, and `app/javascript/utils/query_lifecycle.js`; Angular retains Query construction and search/scoring only |
-| Queries-without-results report | component | `<frog-report>` — `components/frog_report/` (includes Vega chart) |
 
 Remaining backing services: `queriesSvc`, `queryViewSvc`, `searchErrorTranslatorSvc`, `varExtractorSvc`
 
@@ -522,14 +519,12 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Item | Type | Key files |
 |------|------|-----------|
 | Results panel | Stimulus shell + isolated Angular controls | `app/javascript/controllers/search_results_controller.js` and `search_results_template.js` own the expanded-results shell/document rendering and browse-results modal; live search, diff, finder, pagination, and scoring remain explicit Angular control islands |
-| Single result row | directive + controller | `<search-result>`, `SearchResultCtrl` |
 | Rating popover | Stimulus controller | `rating_popover_controller.js` — mutation still bridges back to Angular via `rating-popover:rate`/`:reset` events |
 | Rate elements | service | `rateScaleSvc`, `ratingsStoreSvc` |
 | Rating background styling | filter | `ratingBgStyle` |
 | Query options modal | Stimulus controller + Angular scoring bridge | `app/javascript/controllers/query_options_core_controller.js`, `app/views/shared/_query_options_core_modal.html.erb`; save dispatches `query-options:saved` so Angular updates the live Query and rescoring continues through `queriesSvc` |
 | Move query modal | Stimulus controller | `app/javascript/controllers/move_query_core_controller.js`; live query mutation still uses the temporary `queriesSvc` adapter |
 | Missing documents search | Stimulus controller + Angular search adapter | `app/javascript/controllers/missing_documents_controller.js`; `queriesSvc` retains the browser-to-engine search and rateable-document adapter |
-| Copy query text | service | `clipboardSvc` — `services/clipboardSvc.js` |
 
 Backing services/factories: `docCacheSvc`, `DocListFactory`, `searchEndpointSvc`
 
@@ -543,10 +538,6 @@ Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Dev settings shell | Stimulus controller + ERB partial | `app/javascript/controllers/tune_relevance_controller.js`, `app/views/core/_tune_relevance.html.erb` |
-| Query params editor | Stimulus + CodeMirror bridge | `tune_relevance_controller.js`, `utils/tune_relevance.js` |
-| Try details modal | Stimulus target modal | `_tune_relevance.html.erb` |
-| Try history | Stimulus-rendered repeated rows | `tune_relevance_controller.js` |
 | Settings persistence | service + factories | `settingsSvc`, `SettingsFactory`, `TryFactory` |
 | Search endpoint popup | template | `templates/views/searchEndpoint_popup.html` |
 
@@ -561,16 +552,14 @@ These Angular-specific wrappers are used across many templates:
 | `$quepidModal` | `services/quepidModalSvc.js` | Bootstrap 5 modals (already BS5-backed shim; call-site count in [Hardest § By file (LOC)](#by-file-loc)) |
 | `quepidCollapse` | `directives/quepidCollapse.js` | Bootstrap collapse (used by `wizardModal.html`) |
 | `quepidTypeahead` | `directives/quepidTypeahead.js` | `autocompleter` (already vanilla; wired via Angular directive) |
-| `vega` | `directives/angular-vega.js` | Vega embed (Vega loaded via importmap `vega_globals`) |
 
 ---
 
-## Component inventory (3 Angular folders + 2 Stimulus controllers)
+## Component inventory (2 Angular folders + 1 Stimulus controller)
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
 | `diff` | `<diff>` | Snapshot diff renderer/state remains Angular; picker migrated to `diff-core` |
-| `frog_report` | `<frog-report>` | Zero-results report + Vega |
 | `new_case` | `<new-case>` | Header new-case entry |
 | `diff_case_scores_controller.js` | `diff-case-scores` | Snapshot/diff case score display |
 
@@ -582,13 +571,12 @@ These Angular-specific wrappers are used across many templates:
 |-----------|---------|----------|------------|
 | `queries` | `<queries>` | `queries.html` | `QueriesCtrl` |
 | `searchResults` | expanded-results shell | Stimulus | `SearchResultsController` |
-| `searchResult` | `<search-result>` | diff/search-result Angular island | `SearchResultCtrl` |
 | `tune-relevance` | `#dev-settings` | `_tune_relevance.html.erb` | `TuneRelevanceController` |
 | `customHeaders` | `<custom-headers>` | `customHeaders.html` | `CustomHeadersCtrl` |
 
-Attribute directives: `quepidSortable`, `quepidCollapse`, `quepidTypeahead`, `vega`
+Attribute directives: `quepidSortable`, `quepidCollapse`, `quepidTypeahead`
 
-Thin shells (~14–16 LOC): `queries`, `customHeaders`. Heavy: `quepidTypeahead` (299), `searchResult` (79).
+Thin shells (~14–16 LOC): `queries`, `customHeaders`. Heavy: `quepidTypeahead` (299).
 
 ---
 
@@ -602,8 +590,6 @@ Thin shells (~14–16 LOC): `queries`, `customHeaders`. Heavy: `quepidTypeahead`
 
 **Filters (6 under `filters/`):** `caseType`, `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`
 
-**Directive-local filters (1):** `plusOrMinus` (`searchResults.js`)
-
 **Values (2):** `eastPaneWidth`, `settingsIdValue`
 
 ---
@@ -612,11 +598,7 @@ Thin shells (~14–16 LOC): `queries`, `customHeaders`. Heavy: `quepidTypeahead`
 
 **Shell:** `queries.html`, `embed.html`
 
-**Search/results:** Stimulus `missing_documents_controller.js`; the legacy `<search-result>` directive remains only for the deferred diff/search-result island.
-
 **Case-action modals:** `searchEndpoint_popup.html`
-
-**Dev pane:** `_dev_settings.html`, `devQueryParams.html`, `queryParamsDetails.html`, `queryParamsHistory.html`, `customHeaders.html`
 
 **Wizard:** `wizardModal.html`
 
@@ -634,7 +616,7 @@ Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 
 ### DOM bridge (`quepid_dom.js`)
 
-`app/javascript/quepid_dom.js` — side-effect entry that pins `window.quepidDom` (tooltip/popover/paste helpers, `countUp`, `flash`, `modal.open` (`utils/dynamic_modal.js`), `jsonExplorer.render`/`escapeHtml` (`utils/json_explorer.js`)) for thin Angular controllers that need to build one-off vanilla UI (e.g. `searchResult.js`'s detailed-doc modal). Loaded with the Angular vendor bundle (`build:angular-vendor` passes esbuild `--alias:utils=./app/javascript/utils` so bridged utils can keep their normal importmap-style bare imports); remove with Angular.
+`app/javascript/quepid_dom.js` — side-effect entry that pins `window.quepidDom` (tooltip/popover/paste helpers, `countUp`, `flash`, `modal.open` (`utils/dynamic_modal.js`), `jsonExplorer.render`/`escapeHtml` (`utils/json_explorer.js`)) for the remaining thin Angular controllers and compatibility bridges. Loaded with the Angular vendor bundle (`build:angular-vendor` passes esbuild `--alias:utils=./app/javascript/utils` so bridged utils can keep their normal importmap-style bare imports); remove with Angular.
 ### Non-Angular JS in the Angular bundle
 
 `footer.js`, `tour.js`, `ace_config.js`, `scorerEvalTest.js`, `mode-json.js` — relocate when bundle goes away.

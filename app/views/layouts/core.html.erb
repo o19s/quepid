@@ -16,7 +16,9 @@
 
 <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
 </head>
-<body ng-app="QuepidApp" data-quepid-root-url="<%= quepid_root_url %>">
+<body ng-app="QuepidApp"
+      data-quepid-root-url="<%= quepid_root_url %>"
+      data-frog-report-refresh-url-template="<%= api_book_refresh_path(book_id: '__BOOK_ID__', case_id: '__CASE_ID__', create_missing_queries: 'false', process_in_background: '__BACKGROUND__') %>">
   <%= render 'layouts/header_core_app', kase: @case %>
 
   <div id="main-content">

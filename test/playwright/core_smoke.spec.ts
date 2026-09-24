@@ -71,6 +71,21 @@ test.describe('core layout golden paths', () => {
     await expect(page).toHaveScreenshot('query-results.png', expandedCaseScreenshotOpts(page));
   });
 
+  test('frog report is Stimulus-owned', async ({ page }) => {
+    await gotoCase(page);
+    await page.getByRole('button', { name: 'Report', exact: true }).click();
+
+    const modal = page.locator('.modal.show').last();
+    await expect(modal).toBeVisible();
+    await expect(modal).toContainText('The Frog Pond Report: E2E Static Fixture');
+    await expect(modal.locator('#chart1 svg')).toHaveCount(1);
+    await expect(modal.locator('[data-controller="frog-report"]')).toHaveCount(1);
+    await expect(page.locator('frog-report')).toHaveCount(0);
+
+    await modal.locator('.btn-core-close').click();
+    await expect(modal).toBeHidden();
+  });
+
   test('missing documents finder is Stimulus-owned', async ({ page }) => {
     await gotoCase(page, '', 6);
     await expandFirstQuery(page);
@@ -264,7 +279,7 @@ test.describe('core layout golden paths', () => {
     await gotoCase(page);
     await expandFirstQuery(page);
 
-    // Per app/assets/templates/views/searchResult.html, each result has a
+    // Each Stimulus-rendered search-result has a
     // .single-rating popover trigger. Click the first one to open the
     // ratings popover (views/ratings/popover.html).
     await page.locator('search-result .single-rating').first().click();

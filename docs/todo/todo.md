@@ -358,15 +358,15 @@ Migrate to `apiFetch` when touched: `confirm_delete_controller.js` (form submit 
 
 ## P2 — match-explain Stimulus controller follow-ups
 
-From the match/explain popover + Debug/Expand modal migration (`match_explain_controller.js`, `utils/json_explorer.js`, `searchResult.js#matchExplainData`). Not blocking — flagged during review, deliberately deferred rather than fixed inline.
+From the match/explain popover + Debug/Expand modal migration (`match_explain_controller.js`, `utils/json_explorer.js`, and the former Angular result bridge). The result snapshot is now produced in `query_documents_store.js`; these notes remain historical follow-ups for the live query-state phase.
 
 ### Eager per-digest computation undoes the deleted code's lazy-compile optimization
 
-**Location:** `app/assets/javascripts/controllers/searchResult.js` (`matchExplainData`), `app/assets/templates/views/searchResult.html`
+**Location:** retired Angular result bridge; current read model: `app/javascript/stores/query_documents_store.js`
 
-`matchExplainData()` is bound via Angular interpolation (`data-match-explain-data-value="{{ matchExplainData() | json:0 }}"`), so it runs on every digest for every visible search-result row — including `explain.toStr()`/`explain.rawStr()` (memoized inside splainer-search, cheap after the first call) and `JSON.stringify(explain.asJson, null, 2)` (**not** memoized anywhere, re-stringified every digest). Only `hots`/`hasChildren`/`docScore` are needed for the always-visible chip+bars; the deleted `quepidPopover.js` had an explicit comment for why the rest was deferred: *"Compile lazily on first show — rating rows mount this on every result but most popovers are never opened."* That optimization is gone.
+The former Angular `matchExplainData()` eagerly serialized explanation details during every digest. The current plain-document snapshot computes the same display payload once while publishing the query read model, outside Angular's digest.
 
-**Fix direction:** Split `matchExplainData()` into an eager piece (`hots`, `hasChildren`, `docScore`) and a piece computed only when the popover/Debug/Expand modal is actually opened (e.g. a second data attribute populated lazily on first popover show, or a dedicated event the Stimulus controller dispatches back to Angular on click). Likely not worth doing in isolation — revisit as part of the live query-state phase, where `searchResult`'s digest cost is already in scope.
+**Status:** Obviated by the Stimulus/document-store migration. Revisit payload laziness only if profiling the live query-state phase shows explanation serialization is a measurable cost.
 
 ---
 

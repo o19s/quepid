@@ -16,6 +16,7 @@ export class QueryDocumentsStore extends EventTarget {
     this._queries = new Map()
     this._caseDiffs = []
     this._pendingQueryState = new Map()
+    this._caseSummary = { allRated: false }
     this.dispatchEvent(new CustomEvent("reset", { detail: this.snapshot() }))
   }
 
@@ -63,6 +64,11 @@ export class QueryDocumentsStore extends EventTarget {
 
   clearCaseDiffs() {
     this.setCaseDiffs([])
+  }
+
+  setCaseSummary(summary = {}) {
+    this._caseSummary = { ...this._caseSummary, ...summary }
+    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
   }
 
   setShowOnlyRated(showOnlyRated) {
@@ -118,7 +124,8 @@ export class QueryDocumentsStore extends EventTarget {
       showOnlyRated: this._showOnlyRated,
       query: queryId == null ? null : queries[String(queryId)] ?? null,
       queries,
-      caseDiffs: this._caseDiffs.map((searcher) => ({ ...searcher, score: { ...searcher.score } }))
+      caseDiffs: this._caseDiffs.map((searcher) => ({ ...searcher, score: { ...searcher.score } })),
+      caseSummary: { ...this._caseSummary }
     }
   }
 }

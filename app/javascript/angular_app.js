@@ -44,9 +44,8 @@ import './vendor/angular-ui-ace/src/ui-ace.js';
 // Splainer Search (vanilla-JS 3.x wrapped in a local Angular shim)
 import './splainer_search_adapter';
 
-// Vega for charts (angular-vega.js directive) is loaded separately via the
-// `vega_globals` importmap pin (see app/views/layouts/core.html.erb) instead
-// of being bundled here from npm — see config/importmap.rb for why.
+// Vega for charts is loaded separately via the `vega_globals` importmap pin
+// (see app/views/layouts/core.html.erb), not through Angular.
 
 // URI.js
 import URI from 'urijs';

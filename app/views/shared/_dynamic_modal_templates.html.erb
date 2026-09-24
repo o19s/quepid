@@ -74,6 +74,34 @@
   <div class="modal-footer"><button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button></div>
 </template>
 
+<template id="frog-report-modal-template">
+  <div class="modal-header">
+    <h3 class="modal-title" id="frog-report-modal-title">The Frog Pond Report: <span data-frog-report-target="caseName"></span></h3>
+    <button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div class="modal-body frog-pond">
+    <div class="frog-pond-content">
+      <p>The accuracy of the scores calculated by Quepid is directly impacted by the number of 🐸's you have. Chase the frogs into the pond (i.e rate your documents) so that you can have confidence in the changes you are making!</p>
+      <h4>Summary</h4>
+      <p>You have <span data-frog-report-target="queryCount"></span> Queries for this case, of which <span data-frog-report-target="withResults"></span> return results, and <span data-frog-report-target="withoutResults"></span> return <strong>zero</strong> results.</p>
+      <p>You need to maintain a total of <span data-frog-report-target="ratingsNeeded"></span> ratings to eliminate all the 🐸.<br/>
+        <span data-frog-report-target="allRated">All the queries have been fully rated! Congratulations!</span>
+        <span data-frog-report-target="notAllRated">There are currently <span data-frog-report-target="missingRatings"></span> ratings missing, leading to <span data-frog-report-target="missingRate"></span>% missing rate. We recommend maintaining less than a 5% missing ratings to have confidence in the scores you are calculating.<span data-frog-report-target="hopMessage"><br/>So hop to it!</span></span>
+      </p>
+      <h4 style="margin-top: 60px;">Distribution of Queries Needing Ratings</h4>
+      <div data-frog-report-target="chart" id="chart1"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" data-frog-report-target="refreshButton" data-action="click->frog-report#refresh">
+      <i class="bi bi-arrow-repeat" data-frog-report-target="refreshIcon"></i>
+      Refresh ratings from book <i data-frog-report-target="bookName"></i>
+    </button>
+    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+    <div class="text-danger d-none" data-frog-report-target="error"></div>
+  </div>
+</template>
+
 <template id="match-explain-debug-modal-template">
   <div class="doc-detailed-explain">
     <h3>Debug Explain for <em data-modal-target="title"></em> (id:<span data-modal-target="docId"></span>)</h3>

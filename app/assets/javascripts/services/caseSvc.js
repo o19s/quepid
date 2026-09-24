@@ -21,6 +21,16 @@ angular.module('QuepidApp')
       this.dropdownCases    = [];
       svc.casesCount        = 0;
 
+      function publishCaseState(theCase) {
+        if (!window.quepidSearch) return;
+        window.quepidSearch.caseState = {
+          caseNo: theCase ? theCase.caseNo : null,
+          caseName: theCase ? theCase.caseName : '',
+          bookId: theCase ? theCase.bookId : null,
+          bookName: theCase ? theCase.bookName : null
+        };
+      }
+
       // Functions
       svc.constructFromData = constructFromData;
       svc.get               = get;
@@ -123,6 +133,7 @@ angular.module('QuepidApp')
 
         $rootScope.$applyAsync(function() {
           selected.caseName = detail.caseName;
+          publishCaseState(selected);
           broadcastSvc.send('caseRenamed', selected);
         });
       });
@@ -163,6 +174,7 @@ angular.module('QuepidApp')
         $rootScope.$applyAsync(function() {
           selected.bookId = detail.bookId;
           selected.bookName = detail.bookName;
+          publishCaseState(selected);
           selected.autoPopulateBookPairs = detail.autoPopulateBookPairs;
           selected.autoPopulateCaseJudgements = detail.autoPopulateCaseJudgements;
           broadcastSvc.send('associateBook', svc.dropdownBooks);
@@ -174,12 +186,14 @@ angular.module('QuepidApp')
         angular.forEach(cases, function(aCase) {
           if (aCase.caseNo === caseNo) {
             selectedCase = aCase;
+            publishCaseState(selectedCase);
           }
         });
       };
 
       this.selectTheCase = function(theCase) {
         selectedCase = theCase;
+        publishCaseState(selectedCase);
         broadcastSvc.send('caseSelected', selectedCase);
       };
 

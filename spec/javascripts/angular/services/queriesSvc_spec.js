@@ -521,6 +521,37 @@ describe('Service: queriesSvc', function () {
       setupQuerySvc(3, emptyQueryResp);
       expect(queriesSvc.version()).not.toEqual(versionBefore);
     });
+
+    it('rejects the query lifecycle refresh when bootstrap fails', function() {
+      var rejection;
+      $httpBackend.expectGET('api/cases/4/queries?bootstrap=true').respond(500, {statusText: 'bootstrap failed'});
+
+      window.quepidSearch.queryLifecycle.refreshQueries(4).catch(function(response) {
+        rejection = response;
+      });
+
+      $httpBackend.flush();
+      $rootScope.$apply();
+
+      expect(rejection.status).toBe(500);
+    });
+
+    it('settles the deferred belonging to the bootstrap request that completed', function() {
+      var firstRejection;
+      var secondResolution = false;
+
+      $httpBackend.expectGET('api/cases/4/queries?bootstrap=true').respond(500, {statusText: 'first failed'});
+      queriesSvc.bootstrapQueries(4).catch(function(response) { firstRejection = response; });
+
+      $httpBackend.expectGET('api/cases/5/queries?bootstrap=true').respond(200, mockFullQueriesResp);
+      queriesSvc.bootstrapQueries(5).then(function() { secondResolution = true; });
+
+      $httpBackend.flush();
+      $rootScope.$apply();
+
+      expect(firstRejection.status).toBe(0);
+      expect(secondResolution).toBe(true);
+    });
   });
 
   describe('custom bootstrapping', function() {
