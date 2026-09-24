@@ -69,10 +69,11 @@ module LlmProviders
     }
   TEXT
 
-  # Jev needs almost none of that. The scale, its labels and the answer's shape
-  # are carried by the request itself, so instructions that repeat them only
-  # contradict the book (the stock prompt hardcodes 0-3) and spend tokens. What
-  # is left worth saying is what to weigh.
+  # Jev needs almost none of that. Its rating scale comes from the book
+  # (Book#scale / #scale_with_labels, copied from a scorer, via JudgeScale) and is
+  # sent as the question's `criteria` by LlmJudgeAdapters::Jev -- so the prompt
+  # must not restate it: CHAT_SYSTEM_PROMPT's hardcoded 0-3 would contradict any
+  # book on a different scale. What is left worth saying is what to weigh.
   JEV_SYSTEM_PROMPT = <<~TEXT
     Judge how well the document satisfies the user's query and, when one is given, the stated information need.
 
