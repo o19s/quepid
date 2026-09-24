@@ -8,6 +8,7 @@ module Api
       let(:team) { teams(:shared) }
       let(:multiple_raters) { selection_strategies(:multiple_raters) }
       let(:quepid_default_scorer) { scorers(:quepid_default_scorer) }
+      let(:communal_scorer) { scorers(:communal_scorer) }
 
       before do
         @controller = Api::V1::BooksController.new
@@ -104,6 +105,15 @@ module Api
           assert_equal doug.books_involved_with.count, count + 1
           assert_equal doug, assigns(:book).owner
         end
+
+        test 'applies the chosen scorer_id, copying its scale onto the book' do
+          post :create, params: {
+            book: { name: 'test book', scorer_id: quepid_default_scorer.id },
+          }
+
+          assert_response :ok
+          assert_equal quepid_default_scorer.scale, assigns(:book).scale
+        end
       end
 
       describe 'Updating book' do
@@ -123,6 +133,22 @@ module Api
 
             the_book.reload
             assert_equal 'New Name', the_book.name
+          end
+        end
+
+        describe 'when changing the scorer' do
+          # A book with existing judgements can't have its scale changed (see
+          # Book#scale_cannot_be_changed_if_judgements_exist), so this needs a
+          # judgement-free book rather than the_book (james_bond_movies).
+          test 'applies the chosen scorer_id, copying its scale onto the book' do
+            empty_book = books(:empty_book)
+            assert_not_equal communal_scorer.scale, empty_book.scale
+
+            patch :update, params: { id: empty_book.id, book: { scorer_id: communal_scorer.id } }
+            assert_response :ok
+
+            empty_book.reload
+            assert_equal communal_scorer.scale, empty_book.scale
           end
         end
 
