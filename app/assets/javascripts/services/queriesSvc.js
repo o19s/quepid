@@ -369,9 +369,7 @@ angular.module('QuepidApp')
       // and queryParams) and searchApiRatedDocs() below (overriding just args), so a resolved
       // query doesn't have to be spliced into settings by hand at each call site.
       function settingsWithTryOverrides(settings, tryOverrides) {
-        return angular.extend({}, settings, {
-          selectedTry: angular.extend({}, settings.selectedTry, tryOverrides)
-        });
+        return window.quepidSearch.queryService.settingsWithTryOverrides(settings, tryOverrides);
       }
 
       svc.bootstrapQueries = bootstrapQueries;
@@ -493,32 +491,12 @@ angular.module('QuepidApp')
        * PREVIOUS, unrelated try's mapper_code last left on window. Clearing all four before
        * each eval (only reached on a cache miss) avoids that cross-contamination.
        */
-      var MAPPER_FUNCTION_NAMES = [
-        'numberOfResultsMapper', 'docsMapper', 'nextPageArgsMapper', 'ratedDocsQueryParamsMapper'
-      ];
-
       function evaluateMapperFunctions(mapperCode) {
-        if (Object.hasOwn(mapperFunctionsCache, mapperCode)) {
-          return mapperFunctionsCache[mapperCode];
-        }
-
-        /*jshint evil:true */
-        /* jshint undef: false */
-        MAPPER_FUNCTION_NAMES.forEach(function(name) { delete window[name]; });
-
-        var mapperFunction = new Function(mapperCode);
-        mapperFunction.call(window);
-
-        var functions = {};
-        MAPPER_FUNCTION_NAMES.forEach(function(name) {
-          functions[name] = typeof window[name] === 'function' ? window[name] : undefined;
-        });
-        /*jshint evil:false */
-        /* jshint undef: true */
-
-        mapperFunctionsCache[mapperCode] = functions;
-
-        return functions;
+        return window.quepidSearch.queryService.evaluateMapperFunctions(
+          mapperCode,
+          mapperFunctionsCache,
+          window
+        );
       }
 
       /**
@@ -738,19 +716,7 @@ angular.module('QuepidApp')
        * renders as "no per-term score breakdown for doc" when a doc has no matchfeatures to show.
        */
       function matchFeaturesExplain(doc) {
-        let matchFeatures = doc.matchfeatures;
-
-        if (!matchFeatures || Object.keys(matchFeatures).length === 0) {
-          return undefined;
-        }
-
-        return {
-          description: 'sum of matched fields:',
-          value: doc.fields ? doc.fields.score : undefined,
-          details: Object.keys(matchFeatures).map(function(fieldName) {
-            return { description: fieldName, value: matchFeatures[fieldName], details: [] };
-          })
-        };
+        return window.quepidSearch.queryService.matchFeaturesExplain(doc);
       }
 
       function normalizeDocExplains(query, searcher, fieldSpec) {
@@ -1531,45 +1497,7 @@ angular.module('QuepidApp')
       // Process a queue of async functions with optional rate limiting
       // - No rate limit (null/0): runs up to 10 concurrent requests
       // - With rate limit: runs sequentially with delays between requests
-      this.pAll = async function (queue, requestsPerMinute) {
-        const results = [];
-
-        // With rate limiting, run sequentially with delays
-        if (requestsPerMinute && requestsPerMinute > 0) {
-          const minDelayMs = 60000 / requestsPerMinute;
-
-          for (let i = 0; i < queue.length; i++) {
-            if (i > 0) {
-              await new Promise(resolve => setTimeout(resolve, minDelayMs));
-            }
-            const promise = queue[i]();
-            await promise;
-            results[i] = promise;
-          }
-
-          return Promise.all(results);
-        }
-
-        // No rate limit: run with concurrency (max 10 parallel requests)
-        const concurrency = 10;
-        let index = 0;
-
-        const worker = async () => {
-          while (index < queue.length) {
-            const curIndex = index++;
-            const promise = queue[curIndex]();
-            await promise;
-            results[curIndex] = promise;
-          }
-        };
-
-        const workers = [];
-        for (let workerIdx = 0; workerIdx < concurrency; workerIdx++) {
-          workers.push(worker());
-        }
-        await Promise.all(workers);
-        return Promise.all(results);
-      };
+      this.pAll = window.quepidSearch.queryService.pAll;
 
       this.searchAll = function() {
         let promises = [];

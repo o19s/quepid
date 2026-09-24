@@ -12,13 +12,18 @@ export function graphData(scores = [], annotations = []) {
 
   const minDate = lastTenScores[0] ? new Date(lastTenScores[0].updated_at) : null
   const annotationData = annotations
-    .filter((annotation) => annotation.updatedAt && minDate && new Date(annotation.updatedAt) >= minDate)
+    .filter(
+      (annotation) => annotation.updatedAt && minDate && new Date(annotation.updatedAt) >= minDate
+    )
     .map((annotation) => {
       const annotationTime = new Date(annotation.updatedAt).getTime()
-      const nearest = lastTenScores.reduce((match, score, index) => {
-        const distance = Math.abs(new Date(score.updated_at).getTime() - annotationTime)
-        return distance < match.distance ? { index, distance } : match
-      }, { index: 0, distance: Infinity })
+      const nearest = lastTenScores.reduce(
+        (match, score, index) => {
+          const distance = Math.abs(new Date(score.updated_at).getTime() - annotationTime)
+          return distance < match.distance ? { index, distance } : match
+        },
+        { index: 0, distance: Infinity }
+      )
 
       return { index: nearest.index, message: annotation.message }
     })

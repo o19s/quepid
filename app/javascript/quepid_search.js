@@ -28,6 +28,12 @@ import {
   persistQuery,
   persistQueries
 } from "./utils/query_lifecycle"
+import {
+  evaluateMapperFunctions,
+  matchFeaturesExplain,
+  pAll,
+  settingsWithTryOverrides
+} from "./utils/query_service"
 
 /**
  * Framework-free query/search logic lifted out of the Angular `queriesSvc`, kept
@@ -74,6 +80,12 @@ const quepidSearch = {
     prepareQueries: null,
     commitQueries: null,
     moveQuery: null
+  },
+  queryService: {
+    evaluateMapperFunctions,
+    matchFeaturesExplain,
+    pAll,
+    settingsWithTryOverrides
   }
 }
 
