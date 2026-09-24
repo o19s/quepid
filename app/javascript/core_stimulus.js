@@ -53,6 +53,7 @@ import ImportRatingsCoreController from "controllers/import_ratings_core_control
 import BrowseQueryController from "controllers/browse_query_controller"
 import QueryOptionsCoreController from "controllers/query_options_core_controller"
 import QgraphController from "controllers/qgraph_controller"
+import MissingDocumentsController from "controllers/missing_documents_controller"
 
 Turbo.session.drive = false
 
@@ -93,3 +94,4 @@ application.register("import-ratings-core", ImportRatingsCoreController)
 application.register("browse-query", BrowseQueryController)
 application.register("query-options-core", QueryOptionsCoreController)
 application.register("qgraph", QgraphController)
+application.register("missing-documents", MissingDocumentsController)

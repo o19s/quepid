@@ -71,6 +71,19 @@ test.describe('core layout golden paths', () => {
     await expect(page).toHaveScreenshot('query-results.png', expandedCaseScreenshotOpts(page));
   });
 
+  test('missing documents finder is Stimulus-owned', async ({ page }) => {
+    await gotoCase(page, '', 6);
+    await expandFirstQuery(page);
+
+    await page.getByRole('button', { name: 'Missing Documents', exact: true }).first().click();
+    const modal = page.locator('.modal.show').last();
+    await expect(modal).toBeVisible();
+    await expect(modal).toContainText('Find and Rate Missing Documents');
+    await expect(modal.locator('[data-controller="missing-documents"]')).toHaveCount(1);
+    await expect(modal.locator('textarea')).toBeVisible();
+    await expect(page.locator('[ng-controller="DocFinderCtrl"]')).toHaveCount(0);
+  });
+
   test('query options saves through the Stimulus modal', async ({ page }) => {
     let optionsRequest: { url: string; body: string } | undefined;
     await page.route('**/api/cases/*/queries/*/options', async route => {

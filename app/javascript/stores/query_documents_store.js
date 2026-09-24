@@ -123,7 +123,7 @@ export class QueryDocumentsStore extends EventTarget {
   }
 }
 
-function snapshotDocument(doc, state = {}) {
+export function snapshotDocument(doc, state = {}) {
   let matchExplain = null
   if (doc.explain && doc.hotMatchesOutOf) {
     try {

@@ -27,7 +27,7 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData, query
           </div>
           <div data-angular-deferred class="d-flex">
             <div class="btn-group me-2">
-              <button class="btn btn-outline-secondary btn-sm" ng-controller="TargetedSearchCtrl" ng-click="targetedSearch.triggerModal()">Missing Documents</button>
+              <button class="btn btn-outline-secondary btn-sm" data-controller="missing-documents" data-missing-documents-query-id-value="${queryId}" data-action="click->missing-documents#open">Missing Documents</button>
             </div>
             <div class="btn-group me-2">
               <button class="btn btn-outline-secondary btn-sm" data-controller="query-options-core" data-query-options-core-query-id-value="${queryId}" data-query-options-core-save-url-value="api/cases/${caseId}/queries/${queryId}/options" data-query-options-core-options-value="${queryOptionsData}" data-bs-toggle="modal" data-bs-target="#queryOptionsModal" data-action="click->query-options-core#open">Set Options</button>

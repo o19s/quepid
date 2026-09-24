@@ -361,6 +361,212 @@ angular.module('QuepidApp')
       }
       window.quepidSearch.queryState.rateAll = rateAll;
 
+      // Explicit adapter for the Stimulus Missing Documents modal. The modal owns
+      // its DOM and lifecycle, while this service continues to own searcher creation,
+      // engine-specific rated-document lookup, and live rateable document objects.
+      window.quepidSearch.targetedSearch = function(queryId) {
+        var query = window.quepidSearch.queryState.getQuery(queryId);
+        if (!query) return null;
+
+        var settings = settingsSvc.editableSettings();
+        var selectedTry = settings.selectedTry;
+        var supportedEngines = ['solr', 'es', 'os', 'searchapi'];
+        var engineNames = {
+          solr: 'Solr',
+          es: 'Elasticsearch',
+          os: 'OpenSearch',
+          algolia: 'Algolia',
+          vectara: 'Vectara',
+          static: 'Static',
+          searchapi: 'Search API'
+        };
+        var engineName = selectedTry.mapperBasedSearchEngineName || settings.searchEngine;
+        var adapter = {
+          queryId: queryId,
+          query: query,
+          queryText: query.queryText,
+          settings: settings,
+          engineName: engineNames[engineName] || engineName,
+          usesQueryParamsEditor: supportedEngines.indexOf(settings.searchEngine) !== -1,
+          docs: [],
+          searcher: null,
+          defaultList: false,
+          lastQuery: '',
+          parseError: false,
+          searching: false,
+          paging: false,
+          ratedDocsLookupUnsupported: false,
+          totalRatings: 0,
+          numFound: 0,
+          ratingScale: query.ratings && query.ratings.scale ? query.ratings.scale : {}
+        };
+
+        adapter.initialQueryParams = function() {
+          return selectedTry.queryParams ? selectedTry.queryParams.replace(/#\$query##/g, function() {
+            return query.queryText;
+          }) : selectedTry.queryParams;
+        };
+
+        adapter.search = function(queryParams) {
+          var fieldSpec = settings.createFieldSpec();
+          adapter.defaultList = false;
+          adapter.searching = true;
+          return settingsSvc.previewArgs(selectedTry.tryNo, queryParams).then(function(resolvedArgs) {
+            adapter.searching = false;
+            adapter.lastQuery = queryParams;
+            if (resolvedArgs === null) {
+              adapter.numFound = 0;
+              adapter.docs = [];
+              adapter.parseError = true;
+              return adapter;
+            }
+
+            adapter.parseError = false;
+            var tempSettings = settingsWithTryOverrides(settings, {
+              args: resolvedArgs,
+              queryParams: queryParams
+            });
+            adapter.searcher = createSearcherFromSettings(tempSettings, query);
+            return adapter.searcher.search().then(function() {
+              adapter.numFound = adapter.searcher.numFound;
+              adapter.docs = normalizeDocExplains(query, adapter.searcher, fieldSpec);
+              return adapter;
+            });
+          });
+        };
+
+        adapter.resetToRated = function() {
+          adapter.docs = [];
+          adapter.lastQuery = '';
+          adapter.parseError = false;
+          adapter.defaultList = true;
+          adapter.ratedDocsLookupUnsupported = false;
+
+          var fieldSpec = settings.createFieldSpec();
+          var ratedIds = Object.keys(query.ratings || {}).filter(function(id) { return id.length > 0; });
+          adapter.totalRatings = ratedIds.length;
+          adapter.numFound = ratedIds.length;
+          if (!adapter.usesQueryParamsEditor || ratedIds.length === 0) return Promise.resolve(adapter);
+
+          adapter.searcher = createSearcherFromSettings(settings, query);
+          if (!trySupportsRatedDocsLookup(selectedTry)) {
+            adapter.ratedDocsLookupUnsupported = true;
+            adapter.numFound = 0;
+            return Promise.resolve(adapter);
+          }
+
+          if (adapter.searcher.type === 'searchapi') {
+            return searchApiRatedDocs(settings, query, ratedIds).then(function(result) {
+              if (result) {
+                adapter.searcher = result.searcher;
+                adapter.docs = result.docs;
+              }
+              return adapter;
+            });
+          }
+
+          if (adapter.searcher.type === 'es' || adapter.searcher.type === 'os') {
+            var filter = { query: query.filterToRatings(settings, adapter.docs.length) };
+            if (adapter.searcher.isTemplateCall(adapter.searcher.args)) {
+              delete adapter.searcher.args.id;
+              delete adapter.searcher.args.params;
+              adapter.searcher.queryDsl = filter;
+              return adapter.searcher.search(filter).then(function() {
+                adapter.docs = normalizeDocExplains(query, adapter.searcher, fieldSpec);
+                return adapter;
+              });
+            }
+            adapter.searcher.queryDsl = filter;
+            return adapter.searcher.search().then(function() {
+              adapter.docs = normalizeDocExplains(query, adapter.searcher, fieldSpec);
+              return adapter;
+            });
+          }
+
+          if (adapter.searcher.type === 'solr') {
+            delete adapter.searcher.args.start;
+            return adapter.searcher.explainOther(
+              query.filterToRatings(settings, adapter.docs.length), fieldSpec, 'lucene'
+            ).then(function() {
+              adapter.docs = normalizeDocExplains(query, adapter.searcher, fieldSpec);
+              return adapter;
+            });
+          }
+
+          return Promise.resolve(adapter);
+        };
+
+        adapter.paginate = function() {
+          if (!adapter.searcher) return Promise.resolve(adapter);
+          adapter.paging = true;
+
+          if (adapter.defaultList && (adapter.searcher.type === 'solr' || adapter.searcher.type === 'es' || adapter.searcher.type === 'os')) {
+            var ratedFieldSpec = settings.createFieldSpec();
+            adapter.searcher = createSearcherFromSettings(settings, query, { filterToRated: true });
+            if (adapter.searcher.type === 'es' || adapter.searcher.type === 'os') {
+              var ratedFilter = { query: query.filterToRatings(settings, adapter.docs.length) };
+              if (adapter.searcher.isTemplateCall(adapter.searcher.args)) {
+                delete adapter.searcher.args.id;
+                delete adapter.searcher.args.params;
+                adapter.searcher.queryDsl = ratedFilter;
+                return adapter.searcher.search(ratedFilter).then(function() {
+                  adapter.docs = adapter.docs.concat(normalizeDocExplains(query, adapter.searcher, ratedFieldSpec));
+                  adapter.paging = false;
+                  return adapter;
+                });
+              }
+              adapter.searcher.queryDsl = ratedFilter;
+              return adapter.searcher.search().then(function() {
+                adapter.docs = adapter.docs.concat(normalizeDocExplains(query, adapter.searcher, ratedFieldSpec));
+                adapter.paging = false;
+                return adapter;
+              });
+            }
+            delete adapter.searcher.args.start;
+            return adapter.searcher.explainOther(
+              query.filterToRatings(settings, adapter.docs.length), ratedFieldSpec, 'lucene'
+            ).then(function() {
+              adapter.docs = adapter.docs.concat(normalizeDocExplains(query, adapter.searcher, ratedFieldSpec));
+              adapter.paging = false;
+              return adapter;
+            });
+          }
+
+          adapter.searcher = adapter.searcher.pager();
+          if (!adapter.searcher) {
+            adapter.paging = false;
+            return Promise.resolve(adapter);
+          }
+          return adapter.searcher.search().then(function() {
+            var fieldSpec = settings.createFieldSpec();
+            adapter.numFound = adapter.searcher.numFound;
+            adapter.docs = adapter.docs.concat(normalizeDocExplains(query, adapter.searcher, fieldSpec));
+            adapter.paging = false;
+            return adapter;
+          });
+        };
+
+        adapter.rate = function(docId, rating) {
+          var doc = adapter.docs.find(function(candidate) { return String(candidate.id) === String(docId); });
+          if (!doc) return false;
+          if (rating === null || rating === undefined) doc.resetRating();
+          else doc.rate(parseInt(rating, 10));
+          query.touchModifiedAt();
+          return true;
+        };
+
+        adapter.rateAll = function(rating) {
+          if (adapter.docs.length === 0) return true;
+          var ids = adapter.docs.map(function(doc) { return doc.id; });
+          if (rating === null || rating === undefined) adapter.docs[0].resetBulkRatings(ids);
+          else adapter.docs[0].rateBulk(ids, parseInt(rating, 10));
+          query.touchModifiedAt();
+          return true;
+        };
+
+        return adapter;
+      };
+
       // Explicit command adapters for the Stimulus expanded-results renderer.
       // Query objects remain Angular-owned, but the renderer does not discover
       // them through a compiled Angular controller.

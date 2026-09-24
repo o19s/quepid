@@ -242,10 +242,10 @@ parts:
         paths: ["app/javascript/controllers/pick_scorer_core_controller.js", "app/views/shared/_pick_scorer_core_modal.html.erb", "app/assets/javascripts/services/queriesSvc.js", "app/models/scorer.rb"]
       "4.9":
         title: "Missing Documents finder"
-        last_run: 2026-09-21T19:36:00Z
+        last_run: 2026-09-24T17:29:00Z
         result: pass
-        notes: "Covered live: Playwright MCP. The modal pre-fills the try's query; a Lucene-syntax search (q=text:interpreters) returned 'returned 137 matching documents', the persistent 'Changing ratings will affect the query score.' warning is shown, an unrated result was rated inline (ratings 10 -> 11), and 'Reset to All Rated Docs' returned to the rated view. Not covered live: the no-results message."
-        paths: ["app/assets/javascripts/controllers/docFinder.js", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/services/rateScaleSvc.js", "app/assets/templates/views/targetedSearchModal.html", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/utils/rated_docs.js"]
+        notes: "Covered live: Playwright MCP on case 6. The Stimulus modal opened from an expanded query, loaded Already Rated Documents, ran a custom search with a no-results message, and reset back to the rated list with the original count. The persistent rating-warning text remained present and the browser reported zero errors. Not covered in this pass: inline rating and pagination through multiple rated pages."
+        paths: ["app/javascript/controllers/missing_documents_controller.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
         last_run: 2026-09-21T18:09:00Z

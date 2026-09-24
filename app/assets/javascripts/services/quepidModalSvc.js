@@ -233,7 +233,7 @@
             // open modals would tie and the inner backdrop would render
             // *under* the outer modal — leaving outer-modal buttons
             // clickable while the inner is open. Quepid does nest modals
-            // (targetedSearchModal and the diff modal embed <search-result>
+            // (the Missing Documents modal and the diff modal embed <search-result>
             // rows whose info button opens detailedDoc.html), so bump per
             // already-shown modal. Outer keeps the BS3 defaults; each
             // additional layer adds 20. BS5's Backdrop appends its element
