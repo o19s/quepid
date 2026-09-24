@@ -488,7 +488,7 @@ Routing is server-side (Rails); `MainCtrl` is attached directly in `core/index.h
 |------|------|-----------|
 | Case layout shell | Rails view | `app/views/core/index.html.erb` |
 | Case score display | component | Primary score is Stimulus; snapshot/diff case scores are now rendered by `diff-case-scores`; Angular still calculates the live diff read model |
-| Nightly/public/archived badges, scorer name | Angular bridge | `CaseCtrl` (`controllers/case.js`) survives only for the drawer's nightly checkbox |
+| Nightly/public/archived badges, scorer name | Angular bridge | `CaseCtrl` (`controllers/case.js`) survives only for the remaining toolbar gate and live case-model bindings |
 | Import ratings | Stimulus controller + Angular refresh bridge | `app/javascript/controllers/import_ratings_core_controller.js`, `app/views/shared/_import_ratings_core_modal.html.erb`; refreshes live query state through `imports:queries-need-reload` |
 | Diff renderer and picker | Stimulus renderer + temporary Angular state bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`, `app/javascript/utils/diff_results.js`; Angular still owns snapshot search/scoring |
 | New-case wizard launcher | controller | `WizardCtrl` — `controllers/wizardCtrl.js` |
@@ -543,14 +543,14 @@ Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Dev settings shell | controller + template | `SettingsCtrl`, `templates/views/_dev_settings.html` |
-| Query params editor | directive + controller | `<query-params>`, `QueryParamsCtrl`, `templates/views/devQueryParams.html` |
-| Try details popover/modal | controller + template | `QueryParamsDetailsCtrl`, `templates/views/queryParamsDetails.html` |
-| Try history | directive + controller | `<query-params-history>`, `queryParamsHistoryCtrl`, `templates/views/queryParamsHistory.html` |
+| Dev settings shell | Stimulus controller + ERB partial | `app/javascript/controllers/tune_relevance_controller.js`, `app/views/core/_tune_relevance.html.erb` |
+| Query params editor | Stimulus + CodeMirror bridge | `tune_relevance_controller.js`, `utils/tune_relevance.js` |
+| Try details modal | Stimulus target modal | `_tune_relevance.html.erb` |
+| Try history | Stimulus-rendered repeated rows | `tune_relevance_controller.js` |
 | Settings persistence | service + factories | `settingsSvc`, `SettingsFactory`, `TryFactory` |
 | Search endpoint popup | template | `templates/views/searchEndpoint_popup.html` |
 
-Uses heavily: `ui-ace`, `settingsIdValue`
+Uses the existing `settingsSvc`/`caseSvc` compatibility bridge; the drawer UI no longer depends on Angular templates or controllers.
 
 ### 8. Shared UI primitives (migrate before or alongside features)
 
@@ -583,13 +583,12 @@ These Angular-specific wrappers are used across many templates:
 | `queries` | `<queries>` | `queries.html` | `QueriesCtrl` |
 | `searchResults` | expanded-results shell | Stimulus | `SearchResultsController` |
 | `searchResult` | `<search-result>` | diff/search-result Angular island | `SearchResultCtrl` |
-| `queryParams` | `<query-params>` | `devQueryParams.html` | `QueryParamsCtrl` |
-| `queryParamsHistory` | `<query-params-history>` | `queryParamsHistory.html` | `queryParamsHistoryCtrl` |
+| `tune-relevance` | `#dev-settings` | `_tune_relevance.html.erb` | `TuneRelevanceController` |
 | `customHeaders` | `<custom-headers>` | `customHeaders.html` | `CustomHeadersCtrl` |
 
 Attribute directives: `quepidSortable`, `quepidCollapse`, `quepidTypeahead`, `vega`
 
-Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryParamsHistory`. Heavy: `quepidTypeahead` (299), `searchResult` (79).
+Thin shells (~14–16 LOC): `queries`, `customHeaders`. Heavy: `quepidTypeahead` (299), `searchResult` (79).
 
 ---
 

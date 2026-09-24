@@ -467,12 +467,9 @@ angular.module('QuepidApp')
         theTry.name = detail.name;
 
         /*
-         * Bumping settingsId is not free, so it must only happen on a real change. SettingsCtrl
-         * watches it and reinitialises `pendingSettings` from the service when it moves - which
-         * throws away whatever the user has typed into the Tune Relevance drawer but not yet
-         * submitted. The header frame re-renders (and so announces a try name) on any header
-         * change, a case rename included, so without the equality guard above renaming a case
-         * would silently discard unsaved query-param edits.
+         * Bumping settingsId is not free, so it must only happen on a real change. The Tune
+         * Relevance controller re-reads the editable copy when the page reloads after a save.
+         * The equality guard prevents a header-only refresh from discarding unsaved edits.
          */
         currSettings.settingsId++;
       });
@@ -565,7 +562,7 @@ angular.module('QuepidApp')
       };
 
       this.duplicateTry = function(tryNo) {
-        currSettings.duplicateTry(tryNo);
+        return currSettings.duplicateTry(tryNo);
       };
 
       this.renameTry = function(tryNo, newName) {

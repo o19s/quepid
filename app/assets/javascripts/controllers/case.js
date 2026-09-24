@@ -4,10 +4,7 @@
  * What is left of CaseCtrl after the case header moved to a server-rendered Rails partial
  * (app/views/core/_case_header.html.erb). Case rename lives there now, as a Turbo Frame.
  *
- * Two call sites still need this controller:
- *   - views/devQueryParams.html declares `ng-controller="CaseCtrl as ctrl"` for the
- *     "evaluate nightly" checkbox, which binds caseModel.selectedCase().nightly and
- *     ng-change="updateNightly()".
+ * One call site still needs this controller:
  *   - core/_case_toolbar.html.erb keeps it on #case-actions for the remaining Angular toolbar
  *     loading gate and live case-model bindings.
  *

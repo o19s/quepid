@@ -11,7 +11,7 @@
     * the score-history graph - Stimulus/Vega, backed by the case scores and annotations APIs.
     * <queries>      - the query list and search results island.
     * the import action is Stimulus-owned; live query refresh remains bridged to Angular.
-    * the east pane  - the Tune Relevance drawer, still Angular.
+    * the east pane  - the Tune Relevance drawer, Stimulus-owned with an Angular settings bridge.
 
   The primary case score badge (docs/todo/angularjs_removal_inventory.md § Re-render
   mechanism, step 4) is Stimulus now, driven by window.quepidStore.scoring - see
@@ -99,7 +99,7 @@
                data-annotations-url-template-value="<%= api_case_annotations_path(case_id: '__CASE_ID__') %>"
                data-annotations-case-id-value="<%= @case.id %>"
                data-annotations-try-id-value="<%= @try&.id %>">
-            <ng-include src="'views/_dev_settings.html'"></ng-include>
+            <%= render 'core/tune_relevance' %>
           </div>
         </div>
       </div>

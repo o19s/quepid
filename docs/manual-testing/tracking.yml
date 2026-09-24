@@ -248,34 +248,34 @@ parts:
         paths: ["app/javascript/controllers/missing_documents_controller.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js", "app/views/shared/_dynamic_modal_templates.html.erb"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
-        last_run: 2026-09-21T18:09:00Z
-        result: pass
-        notes: "Covered live: Playwright MCP on case 6 after the case-header/toolbar server-render. Tune Relevance opened from the server-rendered toolbar, Query tab showed the real stored template (q=##&magicBoost=31), and the regression the settingsSvc equality guard fixes was reproduced deliberately — typed an unsaved edit into the sandbox, renamed the case in the header, and the unsaved edit survived (previously a rename bumped settingsId and discarded it). Not covered live: running a rerun to create a new try, static-engine empty state, TLS/protocol-mismatch messaging."
-        paths: ["app/assets/javascripts/controllers/"]
+        last_run: 2026-09-24T18:26:00Z
+        result: pass_with_fixes
+        notes: "Covered live via Playwright MCP on case 219: opened the Stimulus-owned drawer and verified the static-engine empty state instead of a blank editor. Not covered live: editing a non-static query template, creating a new try, or TLS/protocol-mismatch messaging."
+        paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
-        last_run: 2026-09-21T18:09:00Z
-        result: pass
-        notes: "Covered live: Playwright MCP on case 6 — Tuning Knobs tab still renders its help text and empty 'Tuning Knobs' section after CurrSettingsCtrl was deleted and CaseCtrl shrank. Not covered live: adding a ##placeholder## to produce knobs, editing a knob value, or rerunning searches."
-        paths: ["app/assets/javascripts/controllers/"]
+        last_run: 2026-09-24T18:26:00Z
+        result: pass_with_fixes
+        notes: "Covered live via Playwright MCP on case 219: opened the replacement drawer and confirmed the Tuning Knobs tab is present. The static-engine empty-state path was covered; not covered live: adding a ##placeholder## to produce knobs, editing a knob value, or rerunning searches."
+        paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
-        last_run: 2026-09-21T19:55:00Z
+        last_run: 2026-09-24T18:50:00Z
         result: pass_with_fixes
-        notes: "Covered live: Playwright MCP. Settings tab renders Endpoint Details, Displayed Fields, Number of Results, Evaluate Nightly, Escape Queries and Search Endpoints; toggling Evaluate Nightly persists in both directions (confirmed via rails runner), which also proves caseModel.selectedCase() returns the real case rather than the NO_CASE placeholder. FOUND AND FIXED: the header's nightly indicator went stale on toggle, because the header is server-rendered and nothing refetched the frame. caseSvc now dispatches quepid:case-header-stale and case-toolbar refetches; covered by an e2e test that fails without the fix. Not covered live: the 1-100 Number of Results validation (unchanged), or a queued job in Job Manager."
-        paths: ["app/assets/javascripts/controllers/settings.js", "app/assets/templates/views/devQueryParams.html", "app/models/try.rb", "app/assets/javascripts/services/settingsSvc.js"]
+        notes: "Re-verified live via Playwright MCP on case 219 after review fixes: Settings rendered endpoint details, fields, result count, nightly controls, and the empty endpoint state; Escape Queries was hidden for the static engine. Not covered live: a successful settings save, endpoint switching with multiple endpoints, nightly job queuing, or archived endpoint warning."
+        paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/assets/javascripts/services/settingsSvc.js", "app/assets/javascripts/services/caseSvc.js"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
-        last_run: 2026-09-15T16:47:00Z
-        result: pass
-        notes: "Re-verified via Playwright MCP on disposable case 6840 after generating 3 tries via the Query/Tuning-Knobs/Settings tabs in this same pass. History tab correctly listed all 3 tries each with its own query-param preview and search-endpoint URL, plus 'Visualize your tries'/'Check Scores'/'Check Ratings' links. Clicked the oldest try ('Manual Test Try Renamed - Try 1') — switched the workbench to /case/6840/try/1 correctly. Did not test the bulk-delete/Check-All partial-selection edge cases this pass."
-        paths: ["app/controllers/scores_controller.rb", "app/views/scores/", "app/controllers/concerns/authentication/current_case_manager.rb"]
+        last_run: 2026-09-24T18:50:00Z
+        result: pass_with_fixes
+        notes: "Re-verified live via Playwright MCP on case 219 after review fixes: History listed both tries with query previews and endpoint names, and the full try-details modal structure was present. The static try-details modal retains Rename, Duplicate, Delete, and Dismiss controls. Not covered live: switching to an older try, executing rename/delete/duplicate, or the scores-page bulk actions."
+        paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/assets/javascripts/services/settingsSvc.js"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
-        last_run: 2026-09-23T17:01:47Z
+        last_run: 2026-09-24T18:44:00Z
         result: pass_with_fixes
-        notes: "Focused Playwright rerun on existing case 6 covered the Stimulus-owned create, edit, and delete flow. Found and fixed the edit modal's east-pane stacking-context bug, where the body-level Bootstrap backdrop intercepted Update. Not covered live: edit cancellation or screenshot comparison."
-        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/assets/templates/views/devQueryParams.html", "app/views/core/index.html.erb"]
+        notes: "Verified the replacement Tune Relevance partial contains the Stimulus edit modal target after the review fix; existing case-6 create/edit/delete flow was previously covered. Not covered live in this pass: edit cancellation or screenshot comparison."
+        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
         last_run: 2026-09-23T20:20:00Z
@@ -327,7 +327,7 @@ parts:
         last_run: 2026-09-23T17:01:47Z
         result: pass_with_fixes
         notes: "Focused Playwright rerun on existing case 6 created an annotation, verified try/score/message, edited it, and deleted it. Found and fixed the edit modal's east-pane stacking-context bug. Not covered live: edit cancellation or screenshot comparison."
-        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/assets/templates/views/devQueryParams.html", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts"]
+        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts"]
       "5.5":
         title: "Score graph (sparkline) & annotation markers"
         last_run: 2026-09-24T15:14:00Z

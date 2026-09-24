@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Core Workbench is the AngularJS-powered case-tuning screen you land on at `/case/:id` (or `/case/:id/try/:try_number`). This is where the actual relevance-tuning workflow happens: add queries, run them against your search endpoint, rate documents, watch the score change, and tweak query/engine settings live.
+The Core Workbench is the case-tuning screen you land on at `/case/:id` (or `/case/:id/try/:try_number`). The query/results workspace still has Angular live-search bridges, while the Tune Relevance drawer is Stimulus-owned with the existing settings services behind it. This is where the actual relevance-tuning workflow happens: add queries, run them against your search endpoint, rate documents, watch the score change, and tweak query/engine settings live.
 
 This part covers the query list and its per-query tools, rating, scoring, and the "Tune Relevance" settings drawer. Parts 5 and 6 cover the rest of this same page (history/snapshots/diff/annotations, and export/import/explain/case-level actions respectively).
 

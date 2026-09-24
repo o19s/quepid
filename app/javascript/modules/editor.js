@@ -1,11 +1,12 @@
 // Simplest CodeMirror 6 implementation
-import { EditorState } from "@codemirror/state";
+import { Compartment, EditorState } from "@codemirror/state";
 import { EditorView, lineNumbers } from "@codemirror/view";
 import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
 import { linter, lintGutter } from "@codemirror/lint";
 import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
+import { isJsonEditorMode } from "utils/editor_mode";
 
 // Syntax highlighting theme - CodeMirror 5 default colors
 const highlightStyle = HighlightStyle.define([
@@ -248,7 +249,7 @@ export function fromTextArea(textarea, options = {}) {
   let isJsonMode = false;
   if (options.mode === 'javascript') {
     languageExtension = javascript();
-  } else if (options.mode === 'application/json' || options.mode === 'json') {
+  } else if (isJsonEditorMode(options.mode)) {
     languageExtension = json();
     isJsonMode = true;
   } else {
@@ -260,18 +261,21 @@ export function fromTextArea(textarea, options = {}) {
   let linterExtension;
   if (options.mode === 'javascript') {
     linterExtension = javascriptLinter;
-  } else if (options.mode === 'application/json' || options.mode === 'json') {
+  } else if (isJsonEditorMode(options.mode)) {
     linterExtension = jsonLinter;
   } else {
     linterExtension = javascriptLinter; // Default to JavaScript linter
   }
+
+  const languageCompartment = new Compartment();
+  const linterCompartment = new Compartment();
   
   // Create editor with minimal extensions including linting
   const extensions = [
     lineNumbers(),
     lintGutter(),
-    languageExtension,
-    linterExtension,
+    languageCompartment.of(languageExtension),
+    linterCompartment.of(linterExtension),
     syntaxHighlighting(highlightStyle),
     basicStyles,
     // Additional enhancements
@@ -316,6 +320,15 @@ export function fromTextArea(textarea, options = {}) {
           to: view.state.doc.length,
           insert: value || ""
         }
+      });
+    },
+    setMode: (mode) => {
+      const isJson = isJsonEditorMode(mode);
+      view.dispatch({
+        effects: [
+          languageCompartment.reconfigure(isJson ? json() : javascript()),
+          linterCompartment.reconfigure(isJson ? jsonLinter : javascriptLinter)
+        ]
       });
     },
     setSize: (width, height) => {

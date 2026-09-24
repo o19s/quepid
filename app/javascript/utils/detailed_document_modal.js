@@ -52,12 +52,18 @@ export function openDetailedDocumentModal({ doc, linkUrl = null } = {}) {
     }
     fields.appendChild(field.row)
   })
-  Object.entries(translations).forEach(([name, value]) => fields.appendChild(fieldRow(name, value).row))
+  Object.entries(translations).forEach(([name, value]) =>
+    fields.appendChild(fieldRow(name, value).row)
+  )
   Object.entries(embeds).forEach(([name, value]) => fields.appendChild(fieldRow(name, value).row))
   if (hasThumb) fields.appendChild(fieldRow("Thumb", doc.thumb).row)
   if (hasImage) fields.appendChild(fieldRow("Image", doc.image).row)
 
-  modal.element.querySelector("[data-modal-target='allFields']").textContent = JSON.stringify(rawFields, null, 2)
+  modal.element.querySelector("[data-modal-target='allFields']").textContent = JSON.stringify(
+    rawFields,
+    null,
+    2
+  )
   modal.element.querySelector("[data-modal-target='view']").toggleAttribute("disabled", !linkUrl)
 
   modal.element

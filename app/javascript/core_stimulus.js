@@ -54,6 +54,7 @@ import BrowseQueryController from "controllers/browse_query_controller"
 import QueryOptionsCoreController from "controllers/query_options_core_controller"
 import QgraphController from "controllers/qgraph_controller"
 import MissingDocumentsController from "controllers/missing_documents_controller"
+import TuneRelevanceController from "controllers/tune_relevance_controller"
 
 Turbo.session.drive = false
 
@@ -95,3 +96,4 @@ application.register("browse-query", BrowseQueryController)
 application.register("query-options-core", QueryOptionsCoreController)
 application.register("qgraph", QgraphController)
 application.register("missing-documents", MissingDocumentsController)
+application.register("tune-relevance", TuneRelevanceController)
