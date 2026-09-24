@@ -83,21 +83,21 @@ module LlmProviders
   TEXT
 
   # Long enough to crowd the registry entry it belongs to.
-  JEV_HELP_HTML = '<strong>TypeSafe Jev</strong> &mdash; A typed evaluation model rather than a ' \
-                  'chat model: it answers with a rating, a probability distribution and a ' \
-                  'confidence, and cannot return a rating outside your scale.<br>' \
-                  '<b>URL:</b> <code>https://api.typesafe.ai</code> (fixed)<br>' \
-                  '<b>Model:</b> <code>jev-latest</code> (fixed)<br>' \
-                  '<b>Key:</b> Your TypeSafe API key from ' \
-                  '<a href="https://console.typesafe.ai/keys" target="_blank" rel="noopener">' \
-                  'console.typesafe.ai/keys</a><br>' \
-                  '<b>API Version:</b> Not used<br>' \
-                  'The book\'s rating scale and labels become the question\'s criteria, so a Jev ' \
-                  'judge must be run from a book, and the text below is sent as that ' \
-                  'question\'s instructions &mdash; not as a system prompt. It writes no ' \
-                  'prose, so the ' \
-                  'explanation Quepid stores is built from the score, confidence and ' \
-                  'distribution. Text only &mdash; document images are ignored.'
+  JEV_HELP_HTML = <<~HTML.squish
+    <strong>TypeSafe Jev</strong> &mdash; A typed evaluation model rather than a
+    chat model: it answers with a rating, a probability distribution and a
+    confidence, and cannot return a rating outside your scale.<br>
+    <b>URL:</b> <code>https://api.typesafe.ai</code> (fixed)<br>
+    <b>Model:</b> <code>jev-latest</code> (fixed)<br>
+    <b>Key:</b> Your TypeSafe API key from
+    <a href="https://console.typesafe.ai/keys" target="_blank" rel="noopener">console.typesafe.ai/keys</a><br>
+    <b>API Version:</b> Not used<br>
+    The book's rating scale and labels become the question's criteria, so a Jev
+    judge must be run from a book, and the text below is sent as that
+    question's instructions &mdash; not as a system prompt. It writes no prose,
+    so the explanation Quepid stores is built from the score, confidence and
+    distribution. Text only &mdash; document images are ignored.
+  HTML
 
   class << self
     def all
