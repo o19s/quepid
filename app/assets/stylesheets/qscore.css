@@ -103,14 +103,14 @@ qscore-query.diff-score .overall-rating {
 }
 
 /* Graph styling */
-.case-score qgraph {
+.case-score .qgraph {
   display: inline-block;
   height: 80px;
   margin: 0px calc(-1 * var(--qscore-spacing-md)) 0px 0px;
   width: 150px;
 }
 
-.case-score qgraph svg {
+.case-score .qgraph svg {
   border: var(--qscore-border-width-thick) solid grey;
   border-right-style: none;
   border-radius: var(--qscore-border-radius);

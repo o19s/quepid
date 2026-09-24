@@ -53,11 +53,9 @@ deregister). `R` and `S` columns below distinguish them.
 |------------|------------|-------------|---------------|-------|
 | `caseSelected` | `caseSvc.js:183` | *(none found)* | — | **Dead emit** — `headerCtrl.js` was the only listener; removed when the core header dropdowns moved to Turbo Frames (see angularjs_removal_inventory.md) |
 | `fetchedDropdownCasesList` | `caseSvc.js:295` | *(none found)* | — | **Dead emit** — same removal as `caseSelected` |
-| `updatedCaseScore` | `caseSvc.js:357`, `annotationsSvc.js:29,39,71` | `queriesCtrl.js:173` | S | Annotation CRUD no longer listens directly; the Stimulus controller emits `annotations:changed` for the temporary qgraph bridge |
 | `caseRenamed` | `caseSvc.js:126,421` | `caseSvc.js:102` | R | `caseSvc` listens via `$rootScope.$on`. `:126` is the Stimulus bridge — a `case-header:renamed` CustomEvent from the server-rendered header re-broadcast into Angular. `headerCtrl.js`'s listener is gone (same removal as `caseSelected`) — the recent-cases dropdown is its own Turbo Frame now and doesn't live-refresh on rename either, matching the Rails-page navbar's identical frame |
 | `caseUpdate` | `caseSvc.js:454` | *(none found)* | — | **Dead emit** — no `$on('caseUpdate')` matches |
 | `associateBook` | `caseSvc.js:168,501` | `queriesSvc.js:74` | R | `queriesSvc` listener is `$rootScope.$on` (aliased `$scope`). `:168` is the Stimulus bridge from `quepid:case-team-changed`. `headerCtrl.js`'s listener is gone (same removal as `caseSelected`) |
-| `annotationDeleted` | `annotationsSvc.js:40` | *(none)* | — | **Dead emit** — annotation CRUD now uses Stimulus `apiFetch`; `annotationsSvc.fetchAll` remains only as the temporary qgraph read bridge |
 | `settings-changed` | `settingsSvc.js:496` | *(none found)* | — | **Dead emit** — emitted on try-list fetch; no listener (COREUI doc reference is stale) |
 | `settings-updated` | `settingsSvc.js:637,727` | `caseSvc.js:94` (per `Case` instance) | R | **Leak:** listener registered inside `Case` constructor — one `$rootScope.$on` per constructed case |
 | `rating-changed` | `ratingsStoreSvc.js:29` → `window.quepidStore.scoring` (legacy `$rootScope.$emit` fallback) | Store listeners in `queriesSvc.js`, `queriesCtrl.js`, `searchResults.js` (legacy service fallback only) | R | Store event carries `{ detail: { queryId } }`; per-row listeners deregister on `$destroy` |
@@ -66,17 +64,16 @@ deregister). `R` and `S` columns below distinguish them.
 
 ## Emitter index (`broadcastSvc.send`)
 
-15 active calls across 3 files (+1 commented in `queriesSvc.js`; last counted 2026-09-24):
+11 active calls across 2 files (+1 commented in `queriesSvc.js`; last counted 2026-09-24):
 
 | File | Count | Events |
 |------|-------|--------|
-| `services/caseSvc.js` | 8 | `caseSelected`, `fetchedDropdownCasesList`, `updatedCaseScore`, `caseRenamed` ×2, `caseUpdate`, `associateBook` ×2 |
-| `services/annotationsSvc.js` | 4 | `updatedCaseScore` ×3, `annotationDeleted` |
+| `services/caseSvc.js` | 7 | `caseSelected`, `fetchedDropdownCasesList`, `caseRenamed` ×2, `caseUpdate`, `associateBook` ×2 |
 | `services/settingsSvc.js` | 3 | `settings-changed`, `settings-updated` ×2 |
 
 The former `updatedCasesList` emitters became dead after the Angular Move Query listener was removed; the Stimulus modal fetches its own case list through the API.
 
-Of the remaining 15, 2 became dead emits when `headerCtrl.js` was deleted (core header dropdowns → Turbo Frames):
+Of the remaining 11, 2 became dead emits when `headerCtrl.js` was deleted (core header dropdowns → Turbo Frames):
 `caseSelected`, `fetchedDropdownCasesList` (both `caseSvc.js`). A third, `fetchedDropdownBooksList`
 (`bookSvc.js`), went dead the same way but was deleted outright along with its now-unreachable
 `fetchDropdownBooks()` emitter — see [Migration-relevant observations](#migration-relevant-observations)
@@ -88,7 +85,6 @@ above as a result: it registered zero other `broadcastSvc.send` calls.
 | File | Kind | Events | Deregisters? |
 |------|------|--------|--------------|
 | `controllers/queriesCtrl.js` | R | `scoring-complete`, `rating-changed` | yes (`$destroy`) |
-| `controllers/queriesCtrl.js` | S | `updatedCaseScore` | scope teardown |
 | `controllers/searchResults.js` | R | `rating-changed` | **no** — one listener per `SearchResultsCtrl` instance |
 | `services/caseSvc.js` | R | `caseRenamed` | **no** (singleton; acceptable) |
 | `services/caseSvc.js` (`Case` ctor) | R | `settings-updated` | **no** — **multiplies per constructed case** |

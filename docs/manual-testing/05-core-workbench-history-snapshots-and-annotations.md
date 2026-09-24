@@ -73,6 +73,6 @@ The picker, diff read renderer, per-query diff score badges, and case-level diff
   1. Run searches multiple times on a case to build up score history, and create at least one annotation.
   2. Observe the small sparkline graph near the case score badge.
   3. Hover a vertical annotation marker on the graph.
-- **Expected:** With 2+ historical scores, the sparkline renders (last ~10 scores). Hovering a marker shows a tooltip with the annotation's message. With 0–1 scores, no graph is shown at all.
+- **Expected:** With 2+ historical scores, the Stimulus/Vega sparkline renders (last ~10 scores). Hovering a marker shows a tooltip with the annotation's message. With 0–1 scores, no graph is shown at all.
 - **Edge cases:**
   - [ ] Confirm the graph doesn't duplicate or flicker when scores/annotations update while the page is open (re-render should replace, not stack).

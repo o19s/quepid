@@ -8,9 +8,9 @@ import { formatScore, scoreToColor } from "utils/scoring"
  * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4.
  *
  * Snapshot/diff case scores are rendered separately by the Stimulus
- * `diff-case-scores` controller. The `<qgraph>` history chart stays Angular,
- * as a sibling reading `scores`/`annotations`/`maxScore` straight off MainCtrl's
- * scope, same as before.
+ * `diff-case-scores` controller. The score-history graph is now the Stimulus
+ * `qgraph` controller, as a sibling that reads the case scores and annotations
+ * APIs directly.
  *
  * Reads `window.quepidStore.scoring` (the bridged `CaseScoreStore` singleton
  * `queriesSvc.scoreAll()` writes into), not a fresh `import` of

@@ -1,4 +1,4 @@
-qgraph {
+.qgraph {
 	 height: 100px;
 	 display: block;
 	 margin-top: 20px;
@@ -7,19 +7,19 @@ qgraph {
    we disable). Left alone, that positioning would paint the chart above the
    static-positioned score badge that visually overlaps it, regardless of
    DOM order. */
- qgraph .vega-embed {
+ .qgraph .vega-embed {
 	 position: static;
 }
- qgraph svg {
+ .qgraph svg {
 	 background-color: white;
 }
- qgraph .mark-line path {
+ .qgraph .mark-line path {
 	 stroke: #587;
 	 stroke-width: 2;
 	 fill: none;
 	 stroke-linecap: round;
 }
- qgraph line {
+ .qgraph line {
 	 stroke: blue;
 	 stroke-width: 4;
 	 stroke-linecap: round;

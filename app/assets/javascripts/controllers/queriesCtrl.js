@@ -20,7 +20,6 @@ angular.module('QuepidApp')
     'caseSvc',
     'scorerSvc',
     'configurationSvc',
-    'annotationsSvc',
     'qscoreSvc',
     'settingsSvc',
     function (
@@ -35,7 +34,6 @@ angular.module('QuepidApp')
       caseSvc,
       scorerSvc,
       configurationSvc,
-      annotationsSvc,
       qscoreSvc,
       settingsSvc,
     ) {
@@ -43,7 +41,6 @@ angular.module('QuepidApp')
       $scope.queriesSvc = queriesSvc;
       $scope.caseSvc = caseSvc;
       $scope.queryListSortable = configurationSvc.isQueryListSortable();
-      $scope.annotations = []; // Initialize annotations array
 
       $element.on('queries-list:toggle-rated', function () {
         $scope.$evalAsync(function () {
@@ -82,19 +79,7 @@ angular.module('QuepidApp')
           }
         });
       });
-      $element.on('annotations:changed', function () {
-        $scope.$evalAsync(function () {
-          var selectedCase = caseSvc.getSelectedCase();
-          if (!selectedCase) { return; }
-          selectedCase.fetchCaseScores().then(function(returnedCase) {
-            $scope.scores = returnedCase.scores;
-          });
-          annotationsSvc.fetchAll(selectedCase.caseNo).then(function(annotations) {
-            $scope.annotations = annotations;
-          });
-        });
-      });
-      $scope.$on('$destroy', function () { $element.off('queries-list:toggle-rated queries-list:collapse-all queries-list:sort queries-list:filter queries-list:position-saved annotations:changed'); });
+      $scope.$on('$destroy', function () { $element.off('queries-list:toggle-rated queries-list:collapse-all queries-list:sort queries-list:filter queries-list:position-saved'); });
       // The scoringCompleteListener is a workaround for the fact that
       // we create multiple instances of this controller when we reselect the
       // same Case in the core app.  Which leads to multiple calls to the backend for the same scoring complete calculation
@@ -188,58 +173,6 @@ angular.module('QuepidApp')
       function addQueryMessage() {
         return canAddQueries() ? 'Add a query to this case' : 'Adding queries is not supported';
       }
-
-      // We continue to get multiple of these events, once each time the controller gets
-      // created by picking the case in the drop down.  
-      $scope.$on('updatedCaseScore', function(event, theCase) {
-        //event.stopPropagation(); // we are somehow duplicating this event.
-        if (theCase.caseNo === caseSvc.getSelectedCase().caseNo) {
-          caseSvc.getSelectedCase()
-            .fetchCaseScores()
-            .then(function(returnedCase) {
-              $scope.scores = returnedCase.scores;
-            });
-
-          // Also re-fetch annotations
-          annotationsSvc.fetchAll(theCase.caseNo)
-            .then(function(annotations) {
-              console.log('Fetched annotations:', annotations);
-              $scope.annotations = annotations;
-            })
-            .catch(function(err) {
-              console.error('Error fetching annotations:', err);
-              $scope.annotations = [];
-            });
-        }
-      });
-
-      // TODO, refactor this to look for case OR scorer changes
-      $scope.$watch(
-        function() {
-          return caseSvc.getSelectedCase();
-        }, function(acase) {
-          if (acase && acase.scores) {
-            $scope.scores = acase.scores;
-          } else {
-            $scope.scores = [];
-          }
-
-          // Fetch annotations for the case
-          if (acase && acase.caseNo) {
-            annotationsSvc.fetchAll(acase.caseNo)
-              .then(function(annotations) {
-                console.log('Initial fetch of annotations:', annotations);
-                $scope.annotations = annotations;
-              })
-              .catch(function(err) {
-                console.error('Error fetching annotations:', err);
-                $scope.annotations = [];
-              });
-          } else {
-            $scope.annotations = [];
-          }
-        }
-      );
 
       var runScore = function(resultObject) {
         if ( resultObject === undefined ) {

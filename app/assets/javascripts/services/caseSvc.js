@@ -351,7 +351,9 @@ angular.module('QuepidApp')
               };
             }
 
-            broadcastSvc.send('updatedCaseScore', theCase);
+            document.dispatchEvent(new CustomEvent('case-score:persisted', {
+              detail: { caseId: caseNo },
+            }));
             return response;
           });
       };

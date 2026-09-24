@@ -247,9 +247,9 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
-**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → qgraph (251) → frog_report (422) → diff (423).
+**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → frog_report (422) → diff (423). The qgraph score-history slice is now Stimulus-owned.
 
-**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResult`, `qgraph` / qscore\*, `diff`, `new-case` / wizard, `frog-report`, `quepidTypeahead`, `queryParams`, `quepidCollapse`. The expanded-results shell and document rendering now run through Stimulus and the document store. Annotations render through Stimulus, while qgraph still consumes them through a temporary Angular read bridge. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResult`, `diff`, `new-case` / wizard, `frog-report`, `quepidTypeahead`, `queryParams`, `quepidCollapse`. The expanded-results shell and document rendering now run through Stimulus and the document store. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
 
 #### `queriesSvc` seam inventory (phase 1)
 
@@ -420,14 +420,14 @@ Angular still compiles what is left, because custom elements inside `ng-app` are
 
 | Element | Why it stays |
 |---------|--------------|
-| `<qgraph>` | Score history chart; reads live off `MainCtrl`'s scope |
+| Score-history graph | Stimulus/Vega controller reads the case scores and annotations APIs |
 | Snapshot case score row | Snapshot scores come from the Angular diff engine and are rendered by the Stimulus `diff-case-scores` controller |
 | `<queries>` | The query list / search results island |
 | `<diff>` | Snapshot diff renderer/state remains Angular |
 | `ng-include 'views/_dev_settings.html'` | Tune Relevance drawer, still Angular |
 | `ng-click="toggleDevSettings()"` | Drawer toggle, on `MainCtrl` scope |
 
-**Keep `<qgraph>` as a sibling of `<queries>` under the same `ng-controller`.** `<queries>` declares no isolate scope, so `QueriesCtrl` publishes `queries`, `maxScore`, `scores`, `annotations` and `getScorer()` onto `MainCtrl`'s scope — which is the only reason those bindings resolve. The score badges are plain Stimulus-controlled elements and remain at the same DOM position for `qscore.css`'s `:last-child`-based badge-spacing rules to apply correctly.
+The score-history graph remains a sibling of `<queries>` in the same case-score region, but no longer depends on Angular scope. `<queries>` declares no isolate scope and continues to publish the remaining live-query state onto `MainCtrl`'s scope. The score badges remain at the same DOM position for `qscore.css`'s `:last-child`-based badge-spacing rules to apply correctly.
 
 ### `app/assets/javascripts/routes.js`
 
@@ -513,7 +513,7 @@ Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `
 |------|------|-----------|
 | Add query | Stimulus controller + temporary Angular state bridge | `app/javascript/controllers/add_query_controller.js`, `app/javascript/controllers/query_lifecycle_controller.js`, and `app/javascript/utils/query_lifecycle.js`; Angular retains Query construction and search/scoring only |
 | Queries-without-results report | component | `<frog-report>` — `components/frog_report/` (includes Vega chart) |
-| Score-over-time graph | component | `<qgraph>` — `components/qgraph/` |
+| Score-over-time graph | Stimulus controller + Vega utility | `app/javascript/controllers/qgraph_controller.js`, `app/javascript/utils/qgraph.js` |
 
 Remaining backing services: `queriesSvc`, `queryViewSvc`, `searchErrorTranslatorSvc`, `varExtractorSvc`
 
@@ -528,13 +528,13 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Rating popover | Stimulus controller | `rating_popover_controller.js` — mutation still bridges back to Angular via `rating-popover:rate`/`:reset` events |
 | Rate elements | service | `rateScaleSvc`, `ratingsStoreSvc` |
 | Rating background styling | filter | `ratingBgStyle` |
-| Annotations list | Stimulus controller | `app/javascript/controllers/annotations_controller.js`; qgraph still receives a temporary Angular read bridge |
+| Annotations list | Stimulus controller | `app/javascript/controllers/annotations_controller.js`; qgraph reads the same annotations API directly |
 | Query options modal | Stimulus controller + Angular scoring bridge | `app/javascript/controllers/query_options_core_controller.js`, `app/views/shared/_query_options_core_modal.html.erb`; save dispatches `query-options:saved` so Angular updates the live Query and rescoring continues through `queriesSvc` |
 | Move query modal | Stimulus controller | `app/javascript/controllers/move_query_core_controller.js`; live query mutation still uses the temporary `queriesSvc` adapter |
 | Missing documents search | controllers + template | `TargetedSearchCtrl`, `DocFinderCtrl`, `TargetedSearchModalCtrl`, `templates/views/targetedSearchModal.html` |
 | Copy query text | service | `clipboardSvc` — `services/clipboardSvc.js` |
 
-Backing services/factories: `docCacheSvc`, `DocListFactory`, `annotationsSvc`, `AnnotationFactory`, `searchEndpointSvc`
+Backing services/factories: `docCacheSvc`, `DocListFactory`, `searchEndpointSvc`
 
 Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 
@@ -571,7 +571,7 @@ These Angular-specific wrappers are used across many templates:
 | `diff` | `<diff>` | Snapshot diff renderer/state remains Angular; picker migrated to `diff-core` |
 | `frog_report` | `<frog-report>` | Zero-results report + Vega |
 | `new_case` | `<new-case>` | Header new-case entry |
-| `qgraph` | `<qgraph>` | Score timeline |
+| `qgraph_controller.js` | `.qgraph` | Score timeline |
 | `diff_case_scores_controller.js` | `diff-case-scores` | Snapshot/diff case score display |
 
 ---
@@ -595,11 +595,11 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 ## Services, factories, and filters
 
-**Services (25):** `annotationsSvc`, `bookSvc`, `bootstrapSvc`*, `caseCSVSvc`, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `diffResultsSvc`, `docCacheSvc`, `paneSvc`, `qscoreSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateScaleSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `snapshotSearcherSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`).
+**Services (24):** `bookSvc`, `bootstrapSvc`*, `caseCSVSvc`, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `diffResultsSvc`, `docCacheSvc`, `paneSvc`, `qscoreSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateScaleSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `snapshotSearcherSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`).
 
-**Factories (8):** `$quepidModal` (`services/quepidModalSvc.js`), `AnnotationFactory`, `broadcastSvc`, `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `SnapshotFactory`, `TryFactory`
+**Factories (7):** `$quepidModal` (`services/quepidModalSvc.js`), `broadcastSvc`, `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `SnapshotFactory`, `TryFactory`
 
-`broadcastSvc` wraps `$rootScope.$broadcast` — used by `caseSvc`, `settingsSvc`, `queriesSvc`, `annotationsSvc`, `bookSvc`. See [event bus inventory](./event_bus_inventory.md).
+`broadcastSvc` wraps `$rootScope.$broadcast` — used by `caseSvc`, `settingsSvc`, `queriesSvc`, and `bookSvc`. See [event bus inventory](./event_bus_inventory.md).
 
 **Filters (6 under `filters/`):** `caseType`, `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`
 
