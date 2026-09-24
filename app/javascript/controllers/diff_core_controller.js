@@ -5,10 +5,9 @@ import { showStatusMessage } from "utils/status_message"
 /**
  * Core snapshot comparison picker.
  *
- * The picker is Stimulus-owned, but the comparison engine still belongs to
- * Angular until diffResultsSvc is migrated. The document events are the
- * temporary seam: the controller owns the modal and Angular owns the live
- * query/diff state and rescoring.
+ * The picker and read renderer are Stimulus-owned. Snapshot fetching and the
+ * live Query/searcher adapter remain behind the temporary document-event seam
+ * until the broader live query-state migration is complete.
  */
 export default class extends ModalTriggerControllerBase {
   static targets = [

@@ -53,9 +53,10 @@ angular.module('QuepidApp')
           });
       });
 
-      // Stimulus owns the snapshot comparison picker while Angular still owns
-      // the live diff engine. Keep this bridge deliberately small: once
-      // diffResultsSvc moves out of Angular these listeners disappear with it.
+      // Stimulus owns the snapshot comparison picker and diff read model while
+      // Angular still owns snapshot fetching and the live Query/searcher adapter.
+      // Keep this bridge deliberately small: it disappears with that remaining
+      // live-query boundary, not with the framework-free diff orchestration.
       document.addEventListener('diff:selection-request', function(event) {
         var queryViewSvc = $injector.get('queryViewSvc');
         if (event.detail && event.detail.done) {

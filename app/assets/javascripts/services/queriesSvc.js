@@ -23,7 +23,6 @@ angular.module('QuepidApp')
     'snapshotSearcherSvc',
     'bookSvc',
     'DocListFactory',
-    'diffResultsSvc',
     'searchErrorTranslatorSvc',
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
@@ -45,7 +44,6 @@ angular.module('QuepidApp')
       snapshotSearcherSvc,
       bookSvc,
       DocListFactory,
-      diffResultsSvc,
       searchErrorTranslatorSvc,
       esExplainExtractorSvc,
       solrExplainExtractorSvc,
@@ -192,7 +190,7 @@ angular.module('QuepidApp')
             var settings = settingsSvc.applicableSettings() || {};
             var headers = settings.customHeaders;
             if (typeof headers === 'string') {
-              try { headers = JSON.parse(headers); } catch (error) { headers = {}; }
+              try { headers = JSON.parse(headers); } catch { headers = {}; }
             }
             headers = headers && typeof headers === 'object' && !Array.isArray(headers) ? angular.copy(headers) : {};
             if (settings.basicAuthCredential) {
@@ -207,7 +205,7 @@ angular.module('QuepidApp')
             var linkUrl;
             try {
               linkUrl = doc._url();
-            } catch (error) {
+            } catch {
               return null;
             }
             var settings = settingsSvc.applicableSettings() || {};
@@ -1408,7 +1406,12 @@ angular.module('QuepidApp')
             that.queries[newQueryId] = newQuery;
             newQueries.push(newQueryId);
             querySnapshots.push(queryWithRatings);
-            diffResultsSvc.createQueryDiff(newQuery);
+            window.quepidSearch.diff.createQueryDiff({
+              query: newQuery,
+              diffSettings: queryViewSvc.getAllDiffSettings(),
+              settings: settingsSvc.editableSettings(),
+              createSearcherFromSnapshot: snapshotSearcherSvc.createSearcherFromSnapshot
+            });
           }
         });
 
@@ -1544,7 +1547,12 @@ angular.module('QuepidApp')
           queryId:      -1
         };
         let newQuery = new Query(queryJson);
-        diffResultsSvc.createQueryDiff(newQuery);
+        window.quepidSearch.diff.createQueryDiff({
+          query: newQuery,
+          diffSettings: queryViewSvc.getAllDiffSettings(),
+          settings: settingsSvc.editableSettings(),
+          createSearcherFromSnapshot: snapshotSearcherSvc.createSearcherFromSnapshot
+        });
         return newQuery;
       };
 
@@ -1809,7 +1817,12 @@ angular.module('QuepidApp')
       this.refreshAllDiffs = function() {
         var refreshes = [];
         angular.forEach(this.queries, function(query) {
-          refreshes.push(diffResultsSvc.createQueryDiff(query));
+          refreshes.push(window.quepidSearch.diff.createQueryDiff({
+            query: query,
+            diffSettings: queryViewSvc.getAllDiffSettings(),
+            settings: settingsSvc.editableSettings(),
+            createSearcherFromSnapshot: snapshotSearcherSvc.createSearcherFromSnapshot
+          }));
           // Publish the initialized snapshot documents immediately. Score
           // values are refreshed asynchronously below, but the Stimulus
           // renderer should not wait for every query's scoring promise before

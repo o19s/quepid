@@ -14,12 +14,12 @@ angular.module('QuepidApp')
   .controller('MainCtrl', [
     '$scope', '$rootScope', '$log',
     'caseSvc', 'settingsSvc', 'querySnapshotSvc', 'caseTryNavSvc',
-    'queryViewSvc', 'queriesSvc', 'docCacheSvc', 'diffResultsSvc', 'scorerSvc',
+    'queryViewSvc', 'queriesSvc', 'docCacheSvc', 'scorerSvc',
     'paneSvc', 'configurationSvc',
     function (
       $scope, $rootScope, $log,
       caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
-      queryViewSvc, queriesSvc, docCacheSvc, diffResultsSvc, scorerSvc,
+      queryViewSvc, queriesSvc, docCacheSvc, scorerSvc,
       paneSvc, configurationSvc
     ) {
       $log.debug('NEW MAIN CTRL');
@@ -35,7 +35,7 @@ angular.module('QuepidApp')
 
       var getSearchEngine = function(tryNo) {
         var settings = settingsSvc.editableSettings();
-        if (settings.hasOwnProperty('getTry')) {
+        if (Object.prototype.hasOwnProperty.call(settings, 'getTry')) {
           var aTry = settings.getTry(tryNo);
           if (aTry) {
             return aTry.searchUrl;

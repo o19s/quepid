@@ -182,7 +182,7 @@ See [Re-render mechanism](#re-render-mechanism) for the client/server state boun
 
 ### Core toolbar
 
-The toolbar is server-rendered from `@case`/`@try` (`app/views/core/_case_toolbar.html.erb`). The import action is now Stimulus-owned (`import-ratings-core`) with a temporary query refresh bridge into Angular; the diff renderer/state remains Angular while the snapshot comparison picker is Stimulus-owned (`diff-core`).
+The toolbar is server-rendered from `@case`/`@try` (`app/views/core/_case_toolbar.html.erb`). The import action is now Stimulus-owned (`import-ratings-core`) with a temporary query refresh bridge into Angular. The diff picker, renderer, score read models, and diff orchestration are Stimulus/ESM-owned; snapshot fetching and the live Query/snapshot-searcher adapter remain Angular behind the `diff:*` bridge.
 
 **The toolbar keeps `ng-if="caseModel.caseLoaded()"`, and it is load-bearing.** Its attributes no longer need Angular, but several of its actions do: "Create snapshot" clicked before `queriesSvc` has bootstrapped posts an empty snapshot that never resolves, leaving the modal stuck on "Snapshot Being Created". Server-rendering made the toolbar clickable from first paint, roughly 1.5s earlier than Angular exposed it, which is long enough to hit. Drop the gate only when the remaining snapshot/export flows no longer depend on live query state.
 
@@ -281,11 +281,11 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Do not scope `scoreAll()` in the same change.** One rating rescores every query today; the performance lens says carry that forward. An explicit store makes per-query scoping possible later, but taking it here ships an unapproved behaviour change and makes any score discrepancy unattributable.
 
-**Remaining, in slice order (2026-09-23).** The expanded-results Angular bridge is complete: the document shell, rendering, errors, footer, pagination intent, expansion state, copy action, and query notes are Stimulus-owned. The remaining live query tools and diff renderer stay in explicitly named deferred Angular islands until their own slices. Do not combine those slices with scorer sandboxing or wizard UI replacement.
+**Remaining, in slice order (2026-09-24).** The expanded-results Angular bridge is complete: the document shell, rendering, errors, footer, pagination intent, expansion state, copy action, and query notes are Stimulus-owned. Diff orchestration is now framework-free in `utils/diff_results.js`; snapshot fetch/cache and the snapshot searcher remain an explicitly named Angular island behind the `diff:*` bridge. Do not combine that adapter with scorer sandboxing or wizard UI replacement.
 
 `query_documents_store.js` is the plain-document read model, and `search-results` renders document DOM from those snapshots. `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Stimulus owns the document modal, query-row shell, expansion/view state, copy-query, and query-notes interactions; Angular remains behind explicit adapters for live query state and rating mutations. Search, scoring, diff, finder, options, and pagination remain intentionally behind their existing Angular boundaries.
 
-The diff/snapshot read renderer, per-query score badges, and case-level snapshot score badges are Stimulus-owned. Case-level diff aggregation now lives in the framework-free `utils/diff_scores.js` helper and publishes a plain read model through `queryDocumentsStore`. Angular still owns `diffResultsSvc`, `snapshotSearcherSvc`, snapshot fetching, and per-query diff scoring behind the document-store bridge; those are the remaining diff seam.
+The diff/snapshot read renderer, per-query score badges, and case-level snapshot score badges are Stimulus-owned. Case-level diff aggregation now lives in the framework-free `utils/diff_scores.js` helper and publishes a plain read model through `queryDocumentsStore`. Diff construction is now framework-free in `utils/diff_results.js`; Angular still owns `snapshotSearcherSvc`, snapshot fetching, and per-query diff scoring behind the document-store bridge.
 
 **The `window.quepidStore` bridge is temporary.** It exists so `queriesSvc` (still Angular) can push into a store that Stimulus (not yet the page owner) can read, during dual-run. Once the case workspace has its own entry bundle, the global goes away in favor of a module import — don't grow further ad hoc bridges on `window.quepidStore` as if it were the permanent integration point.
 
@@ -305,7 +305,7 @@ The diff/snapshot read renderer, per-query score badges, and case-level snapshot
 
 2. **Scorer sandboxing** — Replace `eval()`. **Direction:** Web Worker (docs + scorer code in, score out). Budget for `scoreAll()` calling the worker per query per rating unless the flow is redesigned. MiniRacer stays for batch paths only.
 
-3. **Multi-snapshot diff + scoring** — ≤5 snapshots, snapshot-as-searcher, client `scoreOthers()`, per-position diff, case averages. `diffResultsSvc.js` is ~225 lines but sits on fake-Solr snapshots and rating-driven refetch — line count understates the work.
+3. **Multi-snapshot diff + scoring** — ≤5 snapshots, snapshot-as-searcher, client `scoreOthers()`, per-position diff, case averages. The remaining work sits on fake-Solr snapshots and rating-driven refetch.
 
 4. **Angular templates → target syntax** — 32 templates (`ng-repeat`, `ng-if`, `ng-model`, `dir-paginate`, `quepid-sortable`, `ui-ace`, …) become ERB partials plus Stimulus targets, with store subscriptions doing the updates Angular's bindings did (see [Re-render mechanism](#re-render-mechanism)).
 
@@ -423,7 +423,7 @@ Angular still compiles what is left, because custom elements inside `ng-app` are
 | Score-history graph | Stimulus/Vega controller reads the case scores and annotations APIs |
 | Snapshot case score row | Snapshot scores come from the Angular diff engine and are rendered by the Stimulus `diff-case-scores` controller |
 | `<queries>` | The query list / search results island |
-| `<diff>` | Snapshot diff renderer/state remains Angular |
+| `<diff>` | Retired; diff picker/renderer/orchestration now use Stimulus + ESM, with snapshot fetch/search remaining behind the temporary bridge |
 | `ng-include 'views/_dev_settings.html'` | Tune Relevance drawer, still Angular |
 | `ng-click="toggleDevSettings()"` | Drawer toggle, on `MainCtrl` scope |
 
@@ -491,10 +491,10 @@ Routing is server-side (Rails); `MainCtrl` is attached directly in `core/index.h
 | Case score display | component | Primary score is Stimulus; snapshot/diff case scores are now rendered by `diff-case-scores`; Angular still calculates the live diff read model |
 | Nightly/public/archived badges, scorer name | Angular bridge | `CaseCtrl` (`controllers/case.js`) survives only for the drawer's nightly checkbox |
 | Import ratings | Stimulus controller + Angular refresh bridge | `app/javascript/controllers/import_ratings_core_controller.js`, `app/views/shared/_import_ratings_core_modal.html.erb`; refreshes live query state through `imports:queries-need-reload` |
-| Diff renderer and picker | Stimulus renderer + temporary Angular state bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`; Angular still owns `diffResultsSvc` state/search/scoring |
+| Diff renderer and picker | Stimulus renderer + temporary Angular state bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`, `app/javascript/utils/diff_results.js`; Angular still owns snapshot search/scoring |
 | New-case wizard launcher | controller | `WizardCtrl` — `controllers/wizardCtrl.js` |
 
-Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `snapshotSearcherSvc`, `SnapshotFactory`, `caseCSVSvc`, `bookSvc`, `diffResultsSvc`, `qscoreSvc`
+Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `snapshotSearcherSvc`, `SnapshotFactory`, `caseCSVSvc`, `bookSvc`, `qscoreSvc`
 
 ### 4. New-case wizard
 
@@ -595,7 +595,7 @@ Thin shells (~14–16 LOC): `queries`, `queryParams`, `customHeaders`, `queryPar
 
 ## Services, factories, and filters
 
-**Services (24):** `bookSvc`, `bootstrapSvc`*, `caseCSVSvc`, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `diffResultsSvc`, `docCacheSvc`, `paneSvc`, `qscoreSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateScaleSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `snapshotSearcherSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`).
+**Services (23):** `bookSvc`, `bootstrapSvc`*, `caseCSVSvc`, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `docCacheSvc`, `paneSvc`, `qscoreSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateScaleSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `snapshotSearcherSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`).
 
 **Factories (7):** `$quepidModal` (`services/quepidModalSvc.js`), `broadcastSvc`, `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `SnapshotFactory`, `TryFactory`
 

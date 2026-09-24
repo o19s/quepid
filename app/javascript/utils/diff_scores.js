@@ -7,7 +7,7 @@ import { scoreToColor } from "utils/scoring"
  */
 export function buildCaseDiffScores(queries, maxScore = 1) {
   const queryList = Array.isArray(queries) ? queries : Object.values(queries || {})
-  const firstQuery = queryList.find(query => query?.diffs?.getSearchers)
+  const firstQuery = queryList.find((query) => query?.diffs?.getSearchers)
   if (!firstQuery) return []
 
   return firstQuery.diffs.getSearchers().map((templateSearcher, searcherIndex) => {
@@ -15,7 +15,7 @@ export function buildCaseDiffScores(queries, maxScore = 1) {
     let validScores = 0
     let allRated = true
 
-    queryList.forEach(query => {
+    queryList.forEach((query) => {
       const searcher = query?.diffs?.getSearcher?.(searcherIndex)
       const scoreInfo = searcher?.diffScore
       if (!scoreInfo) return

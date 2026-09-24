@@ -7,6 +7,7 @@ import {
 } from "./utils/rated_docs"
 import { averageScore, formatScore, isUnratedScore, ratingBackgroundColor } from "./utils/scoring"
 import { buildCaseDiffScores } from "./utils/diff_scores"
+import { createQueryDiff } from "./utils/diff_results"
 import {
   invalidateRatedDocsCache,
   matchesQueryFilter,
@@ -58,6 +59,9 @@ const quepidSearch = {
   },
   diffScores: {
     buildCaseDiffScores
+  },
+  diff: {
+    createQueryDiff
   },
   queryState: {
     invalidateRatedDocsCache,
