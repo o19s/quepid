@@ -102,9 +102,40 @@ angular.module('QuepidApp')
         if (queryDocumentsStore) {
           queryDocumentsStore.reset();
         }
+        publishQueryListState();
         // Clear sync cache when resetting
         syncedPairsCache = {};
       }
+
+      // Explicit adapter for the Stimulus query list. Angular retains the live
+      // Query objects, but the list no longer discovers them through an
+      // Angular controller scope.
+      function publishQueryListState() {
+        document.dispatchEvent(new CustomEvent('queries-state:changed'));
+      }
+
+      window.quepidSearch.queryState.getListState = function() {
+        var selectedTry = settingsSvc.applicableSettings() || {};
+        return {
+          showOnlyRated: svc.showOnlyRated === true,
+          // Match QueriesCtrl#showOnlyRatedUnsupported: while the case is
+          // still loading, no selected try means the capability is unknown,
+          // not unsupported.
+          showOnlyRatedUnsupported: settingsSvc.isTrySelected() ? !trySupportsRatedDocsLookup(selectedTry) : false,
+          isBootstrapping: svc.isBootstrapping === true,
+          searching: svc.hasUnscoredQueries(),
+          batchPosition: svc.scoredQueryCount(),
+          batchSize: svc.queryCount()
+        };
+      };
+      window.quepidSearch.queryState.toggleShowOnlyRated = toggleShowOnlyRated;
+      window.quepidSearch.queryState.isSortingEnabled = function() {
+        return false;
+      };
+      window.quepidSearch.queryState.collapseAll = function() {
+        queryViewSvc.collapseAll();
+        if (queryDocumentsStore) queryDocumentsStore.collapseAll();
+      };
 
       // Method to clear cache for a specific book
       this.clearSyncCache = function(bookId) {
@@ -256,6 +287,10 @@ angular.module('QuepidApp')
       // renderer does not need to discover them through an Angular scope.
       window.quepidSearch.queryState.getQuery = function(queryId) {
         return svc.queries[queryId] || svc.queries[String(queryId)] || null;
+      };
+
+      window.quepidSearch.queryState.removeQueryFromState = function(queryId) {
+        return svc.removeQueryFromState(queryId);
       };
 
       // The expanded-results renderer publishes user intents through the document
@@ -757,6 +792,7 @@ angular.module('QuepidApp')
             }
           });
         }
+        publishQueryListState();
       }
 
       /**
@@ -1429,6 +1465,7 @@ angular.module('QuepidApp')
       let querySearchableDeferred = $q.defer();
       function bootstrapQueries(caseNo) {
         svc.isBootstrapping = true;
+        publishQueryListState();
         if (queryCollectionStore) {
           queryCollectionStore.beginBootstrap(caseNo);
         }
@@ -1441,10 +1478,12 @@ angular.module('QuepidApp')
             addQueriesFromResp(response.data, caseNo);
 
             svc.isBootstrapping = false;
+            publishQueryListState();
             querySearchableDeferred.resolve();
           }, function(response) {
             $log.debug('Failed to bootstrap queries: ', response);
             svc.isBootstrapping = false;
+            publishQueryListState();
             if (queryCollectionStore) {
               queryCollectionStore.markError(response);
             }
@@ -1452,6 +1491,7 @@ angular.module('QuepidApp')
           }).catch(function(response) {
             $log.debug('Failed to bootstrap queries');
             svc.isBootstrapping = false;
+            publishQueryListState();
             return response;
           });
 
@@ -1808,6 +1848,8 @@ angular.module('QuepidApp')
           if (isFullScoreAll) {
             window.quepidStore.scoring.setLatestScoreInfo(svc.latestScoreInfo);
           }
+
+          publishQueryListState();
 
           return svc.latestScoreInfo;
         });

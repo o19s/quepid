@@ -101,13 +101,11 @@ describe("queries_list_controller", () => {
   it("orders live queries from the collection store and filters by query text", () => {
     const { controller } = controllerFor()
     controller.store = { orderedQueryIds: () => [2, 1] }
-    controller.angularScope = {
-      queriesSvc: {
-        queries: {
-          1: { queryId: 1, queryText: "Star Wars" },
-          2: { queryId: 2, queryText: "Dune" }
-        }
-      }
+    controller.queryState = {
+      getQuery: queryId => ({
+        1: { queryId: 1, queryText: "Star Wars" },
+        2: { queryId: 2, queryText: "Dune" }
+      })[queryId]
     }
     controller.filterValue = "star"
 
@@ -117,14 +115,12 @@ describe("queries_list_controller", () => {
   it("preserves manual order and renders pagination controls", () => {
     const { controller } = controllerFor()
     controller.store = { orderedQueryIds: () => [3, 2, 1] }
-    controller.angularScope = {
-      queriesSvc: {
-        queries: {
-          1: { queryId: 1, queryText: "one" },
-          2: { queryId: 2, queryText: "two" },
-          3: { queryId: 3, queryText: "three" }
-        }
-      }
+    controller.queryState = {
+      getQuery: queryId => ({
+        1: { queryId: 1, queryText: "one" },
+        2: { queryId: 2, queryText: "two" },
+        3: { queryId: 3, queryText: "three" }
+      })[queryId]
     }
     controller.currentPage = 2
     controller.paginationTarget = document.createElement("div")
@@ -140,13 +136,11 @@ describe("queries_list_controller", () => {
   it("sorts scores numerically and reverses the selected sort", () => {
     const { controller } = controllerFor()
     controller.store = { orderedQueryIds: () => [1, 2] }
-    controller.angularScope = {
-      queriesSvc: {
-        queries: {
-          1: { queryId: 1, queryText: "one", lastScore: 2 },
-          2: { queryId: 2, queryText: "two", lastScore: 10 }
-        }
-      }
+    controller.queryState = {
+      getQuery: queryId => ({
+        1: { queryId: 1, queryText: "one", lastScore: 2 },
+        2: { queryId: 2, queryText: "two", lastScore: 10 }
+      })[queryId]
     }
     controller.clientSortName = "score"
     controller.clientReverse = false
@@ -160,13 +154,11 @@ describe("queries_list_controller", () => {
   it("uses all-rated status as the Errors sort tie-breaker", () => {
     const { controller } = controllerFor()
     controller.store = { orderedQueryIds: () => [1, 2] }
-    controller.angularScope = {
-      queriesSvc: {
-        queries: {
-          1: { queryId: 1, errorText: "same error", allRated: true },
-          2: { queryId: 2, errorText: "same error", allRated: false }
-        }
-      }
+    controller.queryState = {
+      getQuery: queryId => ({
+        1: { queryId: 1, errorText: "same error", allRated: true },
+        2: { queryId: 2, errorText: "same error", allRated: false }
+      })[queryId]
     }
     controller.clientSortName = "error"
     controller.clientReverse = false

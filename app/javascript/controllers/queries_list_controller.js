@@ -11,7 +11,7 @@ import { searchResultsTemplate } from "controllers/search_results_template"
  * the expanded-results shell, document rendering, and display state.
  */
 export default class extends Controller {
-  static targets = ["ratedCheckbox", "ratedLabel", "filter", "sortLink", "manualSortLink", "sortIcon", "manualHelp", "list", "pagination", "count"]
+  static targets = ["ratedCheckbox", "ratedLabel", "filter", "sortLink", "manualSortLink", "sortIcon", "manualHelp", "list", "pagination", "count", "bootstrapFeedback", "searchFeedback", "batchPosition", "batchSize"]
   static values = {
     showOnlyRated: Boolean,
     showOnlyRatedUnsupported: Boolean,
@@ -28,6 +28,7 @@ export default class extends Controller {
     this.clientSortName = this.sortNameValue
     this.clientReverse = this.reverseValue
     this.angularRows = []
+    this.queryState = window.quepidSearch?.queryState
     // The Angular and core Stimulus bundles currently compile separately, so
     // their module singletons are not shared. Use the temporary bridge while
     // Angular still owns the live query objects; the imported store remains a
@@ -47,9 +48,10 @@ export default class extends Controller {
     this.queryDeleteCompleted = event => this.handleQueryDeleteCompleted(event)
     this.element.addEventListener("query-row:toggle", this.queryToggle)
     this.element.addEventListener("query-delete:completed", this.queryDeleteCompleted)
+    this.listStateChange = () => this.scheduleRender()
+    document.addEventListener("queries-state:changed", this.listStateChange)
     this.setupSortable()
     this.render()
-    this.attachToAngularScope()
   }
 
   disconnect() {
@@ -59,6 +61,7 @@ export default class extends Controller {
     this.documentStore?.removeEventListener("reset", this.documentStoreChange)
     this.element.removeEventListener("query-row:toggle", this.queryToggle)
     this.element.removeEventListener("query-delete:completed", this.queryDeleteCompleted)
+    document.removeEventListener("queries-state:changed", this.listStateChange)
     if (this.angularRetryHandle) cancelAnimationFrame(this.angularRetryHandle)
     if (this.renderHandle) cancelAnimationFrame(this.renderHandle)
     this.destroyAngularRows()
@@ -91,12 +94,16 @@ export default class extends Controller {
 
   toggleShowOnlyRated(event) {
     event.preventDefault()
-    if (!this.showOnlyRatedUnsupportedValue) this.dispatch("toggle-rated")
+    if (!(this.currentShowOnlyRatedUnsupported ?? this.showOnlyRatedUnsupportedValue)) {
+      if (this.queryState?.toggleShowOnlyRated) this.queryState.toggleShowOnlyRated()
+      else this.dispatch("toggle-rated")
+    }
   }
 
   collapseAll(event) {
     event.preventDefault()
-    this.dispatch("collapse-all")
+    if (this.queryState?.collapseAll) this.queryState.collapseAll()
+    else this.dispatch("collapse-all")
   }
 
   sort(event) {
@@ -203,12 +210,15 @@ export default class extends Controller {
   }
 
   render() {
+    this.syncListState()
+    const showOnlyRated = this.currentShowOnlyRated ?? this.showOnlyRatedValue
+    const showOnlyRatedUnsupported = this.currentShowOnlyRatedUnsupported ?? this.showOnlyRatedUnsupportedValue
     if (this.hasRatedCheckboxTarget) {
-      this.ratedCheckboxTarget.checked = this.showOnlyRatedValue
-      this.ratedCheckboxTarget.disabled = this.showOnlyRatedUnsupportedValue
+      this.ratedCheckboxTarget.checked = showOnlyRated
+      this.ratedCheckboxTarget.disabled = showOnlyRatedUnsupported
     }
     if (this.hasRatedLabelTarget) {
-      this.ratedLabelTarget.classList.toggle("text-muted", this.showOnlyRatedUnsupportedValue)
+      this.ratedLabelTarget.classList.toggle("text-muted", showOnlyRatedUnsupported)
     }
 
     this.sortLinkTargets.forEach(link => {
@@ -231,19 +241,21 @@ export default class extends Controller {
       this.manualSortLinkTarget.classList.toggle("d-none", !this.queryListSortableValue)
     }
 
-    if (this.hasListTarget && this.angularScope && this.store?.status === "ready") {
+    if (this.hasListTarget && this.store?.status === "ready") {
       this.renderQueryCollection()
     }
   }
 
-  attachToAngularScope() {
-    const angularElement = window.angular?.element(this.element)
-    this.angularScope = angularElement?.isolateScope?.() || angularElement?.scope?.()
-    if (!this.angularScope) {
-      this.angularRetryHandle = requestAnimationFrame(() => this.attachToAngularScope())
-      return
-    }
-    this.render()
+  syncListState() {
+    const state = this.queryState?.getListState?.()
+    if (!state) return
+
+    this.currentShowOnlyRated = state.showOnlyRated
+    this.currentShowOnlyRatedUnsupported = state.showOnlyRatedUnsupported
+    if (this.hasBootstrapFeedbackTarget) this.bootstrapFeedbackTarget.classList.toggle("d-none", !state.isBootstrapping)
+    if (this.hasSearchFeedbackTarget) this.searchFeedbackTarget.classList.toggle("d-none", !state.searching)
+    if (this.hasBatchPositionTarget) this.batchPositionTarget.textContent = String(state.batchPosition)
+    if (this.hasBatchSizeTarget) this.batchSizeTarget.textContent = String(state.batchSize)
   }
 
   scheduleRender() {
@@ -280,9 +292,11 @@ export default class extends Controller {
   }
 
   orderedLiveQueries({ ignoreFilter = false } = {}) {
-    const liveQueries = this.angularScope?.queriesSvc?.queries || {}
+    const getQuery = queryId => this.queryState?.getQuery?.(queryId) ||
+      this.angularScope?.queriesSvc?.queries?.[queryId] ||
+      this.angularScope?.queriesSvc?.queries?.[String(queryId)]
     const queries = this.store.orderedQueryIds()
-      .map(queryId => liveQueries[queryId] || liveQueries[String(queryId)])
+      .map(queryId => getQuery(queryId))
       .filter(Boolean)
       .filter(query => ignoreFilter || this.matchesFilter(query))
 
@@ -336,11 +350,13 @@ export default class extends Controller {
     const queryText = escapeAttribute(query.queryText || "")
     const informationNeed = escapeAttribute(query.informationNeed || "")
     const state = escapeAttribute(query.state?.() || "")
-    const numFound = Number(queryResultCount(query, this.showOnlyRatedValue) || 0)
+    const numFound = Number(queryResultCount(query, this.currentShowOnlyRated ?? this.showOnlyRatedValue) || 0)
     const querqyTriggered = querqyRuleTriggered(query.searcher?.parsedQueryDetails)
     const hasDiffs = Boolean(query.diffs)
     const toggled = Boolean(expanded)
-    const sorting = Boolean(this.angularScope?.queries?.isSortingEnabled?.())
+    const sorting = Boolean(
+      this.queryState?.isSortingEnabled?.() ?? this.angularScope?.queries?.isSortingEnabled?.()
+    )
 
     row.innerHTML = `
       <div
@@ -389,9 +405,10 @@ export default class extends Controller {
   renderDeferredAngularIslands(row, query) {
     const injector = window.angular?.element(document.body).injector?.()
     const compile = injector?.get?.("$compile")
-    if (!compile || !this.angularScope) return
+    const scope = this.angularScope || injector?.get?.("$rootScope")
+    if (!compile || !scope) return
 
-    const childScope = this.angularScope.$new()
+    const childScope = scope.$new()
     childScope.query = query
 
     const rowController = row.querySelector('[data-controller="query-row"]')
@@ -477,7 +494,11 @@ export default class extends Controller {
     const queryId = event.detail?.queryId
     if (queryId === undefined || queryId === null) return
 
-    this.angularScope?.queriesSvc?.removeQueryFromState?.(queryId)
+    if (this.queryState?.removeQueryFromState) {
+      this.queryState.removeQueryFromState(queryId)
+    } else {
+      this.angularScope?.queriesSvc?.removeQueryFromState?.(queryId)
+    }
     this.scheduleRender()
   }
 

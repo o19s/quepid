@@ -116,12 +116,12 @@
         </div>
       </div>
 
-      <div ng-show="isBootstrapping()" class="alert alert-info search-feedback" role="alert">
-        <i class="bi bi-arrow-repeat spintime"></i> <span ng-if="isBootstrapping()">Bootstrapping Queries</span>
+      <div class="alert alert-info search-feedback d-none" role="alert" data-queries-list-target="bootstrapFeedback">
+        <i class="bi bi-arrow-repeat spintime"></i> Bootstrapping Queries
       </div>
 
-      <div ng-show="searching()" class="alert alert-info search-feedback" role="alert">
-        <i class="bi bi-arrow-repeat spintime"></i> Updating Queries: {{batchPosition}} / {{batchSize}}
+      <div class="alert alert-info search-feedback d-none" role="alert" data-queries-list-target="searchFeedback">
+        <i class="bi bi-arrow-repeat spintime"></i> Updating Queries: <span data-queries-list-target="batchPosition">0</span> / <span data-queries-list-target="batchSize">0</span>
         <small class="text-muted">If the counter stalls, do a hard refresh of Quepid.</small>
       </div>
 

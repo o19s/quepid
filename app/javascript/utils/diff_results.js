@@ -7,7 +7,12 @@
  * seam here lets Stimulus own the diff read model without making the diff
  * engine depend on an Angular service.
  */
-export function createQueryDiff({ query, diffSettings = [], settings, createSearcherFromSnapshot }) {
+export function createQueryDiff({
+  query,
+  diffSettings = [],
+  settings,
+  createSearcherFromSnapshot
+}) {
   if (diffSettings.length === 0) {
     clearDiffs(query)
     return Promise.resolve()
@@ -37,13 +42,15 @@ export function createQueryDiff({ query, diffSettings = [], settings, createSear
   query.diffs = {
     fetch() {
       return Promise.all(diffSearchers.map((searcher) => searcher.search())).then(() => {
-        return Promise.all(diffSearchers.map((searcher) => {
-          const docsForScoring = searcher.docs.filter((doc) => doc.ratedOnly === false)
-          return Promise.resolve(query.scoreOthers(docsForScoring)).then((score) => {
-            searcher.diffScore = score
-            return score
+        return Promise.all(
+          diffSearchers.map((searcher) => {
+            const docsForScoring = searcher.docs.filter((doc) => doc.ratedOnly === false)
+            return Promise.resolve(query.scoreOthers(docsForScoring)).then((score) => {
+              searcher.diffScore = score
+              return score
+            })
           })
-        }))
+        )
       })
     },
 
@@ -81,11 +88,15 @@ export function createQueryDiff({ query, diffSettings = [], settings, createSear
 
     score(searcherIndex) {
       if (searcherIndex !== undefined && diffSearchers[searcherIndex]) {
-        return Promise.resolve(diffSearchers[searcherIndex].diffScore || { score: null, allRated: false })
+        return Promise.resolve(
+          diffSearchers[searcherIndex].diffScore || { score: null, allRated: false }
+        )
       }
-      return Promise.resolve(diffSearchers.map((searcher) => {
-        return searcher.diffScore || { score: null, allRated: false }
-      }))
+      return Promise.resolve(
+        diffSearchers.map((searcher) => {
+          return searcher.diffScore || { score: null, allRated: false }
+        })
+      )
     }
   }
 
