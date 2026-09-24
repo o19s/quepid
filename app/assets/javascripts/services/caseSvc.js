@@ -212,8 +212,6 @@ angular.module('QuepidApp')
             var caseTries = response.data.tries;
 
             that.allCases.push(newCase);
-            broadcastSvc.send('updatedCasesList', svc.allCases);
-
             var caseTryObj = {};
             caseTryObj.caseNo   = newCase.caseNo;
             caseTryObj.navTryNo = newCase.lastTry;
@@ -273,7 +271,6 @@ angular.module('QuepidApp')
               svc.allCases.splice(indexOfCase, 1);
             }
 
-            broadcastSvc.send('updatedCasesList', svc.allCases);
           });
       };
 
@@ -536,10 +533,7 @@ angular.module('QuepidApp')
       function refetchCaseLists () {
         return svc.getCases()
           .then(function () {
-            return svc.fetchDropdownCases()
-              .then(function() {
-                broadcastSvc.send('updatedCasesList', svc.allCases);
-              });
+            return svc.fetchDropdownCases();
           });
       }
 

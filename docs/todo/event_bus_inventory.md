@@ -52,32 +52,31 @@ deregister). `R` and `S` columns below distinguish them.
 | Event name | Emitter(s) | Listener(s) | Listener kind | Notes |
 |------------|------------|-------------|---------------|-------|
 | `caseSelected` | `caseSvc.js:183` | *(none found)* | — | **Dead emit** — `headerCtrl.js` was the only listener; removed when the core header dropdowns moved to Turbo Frames (see angularjs_removal_inventory.md) |
-| `updatedCasesList` | `caseSvc.js:215,276,541`, `move_query_modal_instance_controller.js:63` | `move_query_modal_instance_controller.js:39` (loop) | S | `headerCtrl.js`'s listener is gone (same removal as above) |
 | `fetchedDropdownCasesList` | `caseSvc.js:295` | *(none found)* | — | **Dead emit** — same removal as `caseSelected` |
-| `updatedCaseScore` | `caseSvc.js:357`, `annotationsSvc.js:29,39,71` | `queriesCtrl.js:173`, `move_query_modal_instance_controller.js:39` (loop) | S | Annotation CRUD no longer listens directly; the Stimulus controller emits `annotations:changed` for the temporary qgraph bridge |
-| `caseRenamed` | `caseSvc.js:126,421` | `caseSvc.js:102`, `move_query_modal_instance_controller.js:39` (loop) | R + S | `caseSvc` listens via `$rootScope.$on`. `:126` is the Stimulus bridge — a `case-header:renamed` CustomEvent from the server-rendered header re-broadcast into Angular. `headerCtrl.js`'s listener is gone (same removal as `caseSelected`) — the recent-cases dropdown is its own Turbo Frame now and doesn't live-refresh on rename either, matching the Rails-page navbar's identical frame |
+| `updatedCaseScore` | `caseSvc.js:357`, `annotationsSvc.js:29,39,71` | `queriesCtrl.js:173` | S | Annotation CRUD no longer listens directly; the Stimulus controller emits `annotations:changed` for the temporary qgraph bridge |
+| `caseRenamed` | `caseSvc.js:126,421` | `caseSvc.js:102` | R | `caseSvc` listens via `$rootScope.$on`. `:126` is the Stimulus bridge — a `case-header:renamed` CustomEvent from the server-rendered header re-broadcast into Angular. `headerCtrl.js`'s listener is gone (same removal as `caseSelected`) — the recent-cases dropdown is its own Turbo Frame now and doesn't live-refresh on rename either, matching the Rails-page navbar's identical frame |
 | `caseUpdate` | `caseSvc.js:454` | *(none found)* | — | **Dead emit** — no `$on('caseUpdate')` matches |
 | `associateBook` | `caseSvc.js:168,501` | `queriesSvc.js:74` | R | `queriesSvc` listener is `$rootScope.$on` (aliased `$scope`). `:168` is the Stimulus bridge from `quepid:case-team-changed`. `headerCtrl.js`'s listener is gone (same removal as `caseSelected`) |
 | `annotationDeleted` | `annotationsSvc.js:40` | *(none)* | — | **Dead emit** — annotation CRUD now uses Stimulus `apiFetch`; `annotationsSvc.fetchAll` remains only as the temporary qgraph read bridge |
 | `settings-changed` | `settingsSvc.js:496` | *(none found)* | — | **Dead emit** — emitted on try-list fetch; no listener (COREUI doc reference is stale) |
-| `settings-updated` | `settingsSvc.js:637,727` | `caseSvc.js:94` (per `Case` instance), `move_query_modal_instance_controller.js:39` (loop) | R + S | **Leak:** listener registered inside `Case` constructor — one `$rootScope.$on` per constructed case |
+| `settings-updated` | `settingsSvc.js:637,727` | `caseSvc.js:94` (per `Case` instance) | R | **Leak:** listener registered inside `Case` constructor — one `$rootScope.$on` per constructed case |
 | `rating-changed` | `ratingsStoreSvc.js:29` → `window.quepidStore.scoring` (legacy `$rootScope.$emit` fallback) | Store listeners in `queriesSvc.js`, `queriesCtrl.js`, `searchResults.js` (legacy service fallback only) | R | Store event carries `{ detail: { queryId } }`; per-row listeners deregister on `$destroy` |
 | `scoring-complete` | `CaseScoreStore.setLatestScoreInfo()`; legacy add-query emitter removed | Store listener in `queriesCtrl.js` | R | Published after the store's `change`; Angular consumers re-enter through `$evalAsync` |
-| `deepCaseListUpdated` | *(none found)* | `move_query_modal_instance_controller.js:39` (loop) | S | **Dead listener** — no emitter |
 | `updatedQueriesList` | `queriesSvc.js:1371` (commented out) | *(none)* | — | Commented-out emit; remove next time someone touches that file |
 
 ## Emitter index (`broadcastSvc.send`)
 
-19 active calls across 4 files (+1 commented in `queriesSvc.js`; last counted 2026-09-21):
+15 active calls across 3 files (+1 commented in `queriesSvc.js`; last counted 2026-09-24):
 
 | File | Count | Events |
 |------|-------|--------|
-| `services/caseSvc.js` | 11 | `caseSelected`, `updatedCasesList` ×3, `fetchedDropdownCasesList`, `updatedCaseScore`, `caseRenamed` ×2, `caseUpdate`, `associateBook` ×2 |
+| `services/caseSvc.js` | 8 | `caseSelected`, `fetchedDropdownCasesList`, `updatedCaseScore`, `caseRenamed` ×2, `caseUpdate`, `associateBook` ×2 |
 | `services/annotationsSvc.js` | 4 | `updatedCaseScore` ×3, `annotationDeleted` |
 | `services/settingsSvc.js` | 3 | `settings-changed`, `settings-updated` ×2 |
-| `components/move_query/move_query_modal_instance_controller.js` | 1 | `updatedCasesList` |
 
-Of the 19, 2 became dead emits when `headerCtrl.js` was deleted (core header dropdowns → Turbo Frames):
+The former `updatedCasesList` emitters became dead after the Angular Move Query listener was removed; the Stimulus modal fetches its own case list through the API.
+
+Of the remaining 15, 2 became dead emits when `headerCtrl.js` was deleted (core header dropdowns → Turbo Frames):
 `caseSelected`, `fetchedDropdownCasesList` (both `caseSvc.js`). A third, `fetchedDropdownBooksList`
 (`bookSvc.js`), went dead the same way but was deleted outright along with its now-unreachable
 `fetchDropdownBooks()` emitter — see [Migration-relevant observations](#migration-relevant-observations)
@@ -94,7 +93,6 @@ above as a result: it registered zero other `broadcastSvc.send` calls.
 | `services/caseSvc.js` | R | `caseRenamed` | **no** (singleton; acceptable) |
 | `services/caseSvc.js` (`Case` ctor) | R | `settings-updated` | **no** — **multiplies per constructed case** |
 | `services/queriesSvc.js` | R | `associateBook`, `rating-changed` | **no** (singleton; acceptable) |
-| `components/move_query/move_query_modal_instance_controller.js` | S | `caseRenamed`, `deepCaseListUpdated`, `settings-updated`, `updatedCaseScore`, `updatedCasesList` | scope teardown |
 
 ## Migration-relevant observations
 
@@ -118,11 +116,7 @@ above as a result: it registered zero other `broadcastSvc.send` calls.
    table above. Safe to remove the rest after a quick template grep confirms
    no `ng-{{…}}` bindings depended on the digest side-effect.
 
-3. **Dead listener.** `deepCaseListUpdated` in
-   `move_query_modal_instance_controller.js:31-43` listens for an event no one
-   emits. Safe to drop in the same change that touches that file.
-
-4. **`$rootScope.$on` leaks — audit before migrating.**
+3. **`$rootScope.$on` leaks — audit before migrating.**
    - `queriesCtrl` captures deregistration return values and calls them on
      `$destroy` — good pattern to copy.
    - `searchResults.js` registers `$rootScope.$on('rating-changed')` per controller
@@ -132,7 +126,7 @@ above as a result: it registered zero other `broadcastSvc.send` calls.
    - Singleton services (`caseSvc`, `queriesSvc`) register root listeners at init;
      acceptable for the app lifetime but must not be copied into per-instance code.
 
-5. **`$emit` on `$rootScope` is not bubbling.** `rating-changed` and
+4. **`$emit` on `$rootScope` is not bubbling.** `rating-changed` and
    `scoring-complete` both emit from `$rootScope` (directly or via the `$scope`
    alias). Listeners must be `$rootScope.$on`, not child `$scope.$on`. When
    migrating to `CustomEvent`, dispatch on `document` with `bubbles: true` so
@@ -151,7 +145,7 @@ rg "\$scope\.\$emit|\$rootScope\.\$emit" app/assets/javascripts/
 rg "\$scope\.\$on|\$rootScope\.\$on" app/assets/javascripts/
 
 # Dead-event sanity check (each event name)
-rg "caseUpdate|settings-changed|deepCaseListUpdated|updatedQueriesList" app/assets/javascripts/
+rg "caseUpdate|settings-changed|updatedQueriesList" app/assets/javascripts/
 ```
 
 Re-run on each Angular slice migration to keep the table honest. Drop rows

@@ -1781,7 +1781,7 @@ angular.module('QuepidApp')
             svcVersion++;
           })
           .catch(function(response) {
-            // Re-reject: MoveQueryCtrl already has an error callback that could never run.
+            // Re-reject so the Stimulus Move Query controller can show its error state.
             $log.debug('Failed to move query: ', response);
             return $q.reject(response);
           });

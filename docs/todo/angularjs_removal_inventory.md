@@ -24,9 +24,9 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 115 files, 110 register `angular.module` |
-| HTML templates (components + `app/assets/templates`) | 32 (20 component + 12 under `app/assets/templates`) |
-| Controllers | 38 (`.controller()` registrations; 18 files under `controllers/`) |
+| Angular JS source files (`app/assets/javascripts`) | 110 files, 105 register `angular.module` |
+| HTML templates (components + `app/assets/templates`) | 30 (18 component + 12 under `app/assets/templates`) |
+| Controllers | 36 (`.controller()` registrations; 18 files under `controllers/`) |
 | Services | 26 (`.service()` registrations; 27 files under `services/` — `quepidModalSvc.js` registers a factory) |
 | Factories | 8 |
 | Filters | 7 under `filters/` (+ 1 directive-local: `plusOrMinus`) |
@@ -43,7 +43,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Priority | Item | Notes |
 |----------|------|-------|
-| **P0** | AngularJS 1.8.3 EOL | 115 JS files, 32 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
+| **P0** | AngularJS 1.8.3 EOL | 110 JS files, 30 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
 | **P0** | `queriesSvc` god object (1,805 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
 | **P0** | `eval()` scorers | Inside `$timeout()`, no sandbox; Web Worker timeout commented out |
 | **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
@@ -224,7 +224,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 **Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
-1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). **Not separable (checked 2026-09-24):** every remaining call site of all three lives inside a component already on the defer list (`$quepidModal`: `new_case`, `annotation`, `diff`, `frog_report`, `move_query`, `wizardModal`/`wizardCtrl`, `queryParamsDetails`/`queryParamsHistory`, `targetedSearchModal`, `searchResult`, `case.js`; `quepidTypeahead`/`quepidCollapse`: `wizardModal.html`, `devQueryParams.html`, `searchEndpoint_popup.html`). They fall out as each of those components migrates in steps 4–7 below — don't plan a standalone PR for this step.
+1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). **Not separable (checked 2026-09-24):** every remaining call site of all three lives inside a component already on the defer list (`$quepidModal`: `new_case`, `annotation`, `diff`, `frog_report`, `wizardModal`/`wizardCtrl`, `queryParamsDetails`/`queryParamsHistory`, `targetedSearchModal`, `searchResult`, `case.js`; `quepidTypeahead`/`quepidCollapse`: `wizardModal.html`, `devQueryParams.html`, `searchEndpoint_popup.html`). They fall out as each of those components migrates in steps 4–7 below — don't plan a standalone PR for this step.
 2. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
 3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
 4. Query list + results — `queries`, `search-results`, rating UI
@@ -247,7 +247,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
-**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → move_query (184) → qgraph (251) → frog_report (422) → diff (423).
+**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → qgraph (251) → frog_report (422) → diff (423).
 
 **Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResult`, `qgraph` / qscore\*, `diff`, `new-case` / wizard, `frog-report`, `quepidTypeahead`, `queryParams`, `quepidCollapse`. The expanded-results shell and document rendering now run through Stimulus and the document store. Annotations render through Stimulus, while qgraph still consumes them through a temporary Angular read bridge. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
 
@@ -258,7 +258,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | Surface | Members | Callers |
 |---------|---------|---------|
 | **Read / display** | `queryArray`, `latestScoreInfo`, `version`, `hasUnscoredQueries`, `scoredQueryCount`, `queryCount`, `isBootstrapping`, `queries`, `showOnlyRated` | `queriesCtrl`, `frog_report`, `caseCSVSvc` / `utils/case_csv.js`, `querySnapshotSvc` |
-| **Mutation / lifecycle** | `bootstrapQueries`, `changeSettings`, `searchAll`, `createQuery`, `deleteQuery`, `moveQuery`, `updateQueryDisplayPosition`, `reset`, `updateScores`, `scoreAll`, `refreshAllDiffs`, `syncToBook` | `mainCtrl`, `wizardModal`, `add_query`, `move_query`, `searchResults`, `diff`, `caseSvc` |
+| **Mutation / lifecycle** | `bootstrapQueries`, `changeSettings`, `searchAll`, `createQuery`, `deleteQuery`, `moveQuery`, `updateQueryDisplayPosition`, `reset`, `updateScores`, `scoreAll`, `refreshAllDiffs`, `syncToBook` | `mainCtrl`, `wizardModal`, `add_query`, `move_query_core` adapter, `searchResults`, `diff`, `caseSvc` |
 | **Search / score engine** (`Query`) | `search`, `searchFromSnapshot`, `paginate`, `ratedPaginate`, `score` / `scoreOthers`, `refreshRatedDocs`, `setDocs`, `filterToRatings`, plus svc-level `createSearcherFromSettings`, `normalizeDocExplains`, `searchApiRatedDocs`, `pAll`, mapper `eval` | `docFinder`; otherwise internal |
 
 **Framework-free today (extract ahead of any UI decision):** `pAll`, `evaluateMapperFunctions` + cache, `matchFeaturesExplain`, `settingsWithTryOverrides`. These keep the same signatures under any target stack, so extracting them to tested ESM under `app/javascript/` is not a bet on the UI framework. Wiring already exists — `utils/*.js` → `quepid_dom.js` → `window.quepidDom`, with `build:angular-vendor` passing `--alias:utils=./app/javascript/utils`.
@@ -530,7 +530,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Rating background styling | filter | `ratingBgStyle` |
 | Annotations list | Stimulus controller | `app/javascript/controllers/annotations_controller.js`; qgraph still receives a temporary Angular read bridge |
 | Query options modal | Stimulus controller + Angular scoring bridge | `app/javascript/controllers/query_options_core_controller.js`, `app/views/shared/_query_options_core_modal.html.erb`; save dispatches `query-options:saved` so Angular updates the live Query and rescoring continues through `queriesSvc` |
-| Move query modal | component | `<move-query>` — `components/move_query/` |
+| Move query modal | Stimulus controller | `app/javascript/controllers/move_query_core_controller.js`; live query mutation still uses the temporary `queriesSvc` adapter |
 | Missing documents search | controllers + template | `TargetedSearchCtrl`, `DocFinderCtrl`, `TargetedSearchModalCtrl`, `templates/views/targetedSearchModal.html` |
 | Copy query text | service | `clipboardSvc` — `services/clipboardSvc.js` |
 
@@ -564,13 +564,12 @@ These Angular-specific wrappers are used across many templates:
 
 ---
 
-## Component inventory (11 folders)
+## Component inventory (10 folders)
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
 | `diff` | `<diff>` | Snapshot diff renderer/state remains Angular; picker migrated to `diff-core` |
 | `frog_report` | `<frog-report>` | Zero-results report + Vega |
-| `move_query` | `<move-query>` | Move query to another case |
 | `new_case` | `<new-case>` | Header new-case entry |
 | `qgraph` | `<qgraph>` | Score timeline |
 | `diff_case_scores_controller.js` | `diff-case-scores` | Snapshot/diff case score display |
