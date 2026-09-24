@@ -317,4 +317,19 @@ test.describe('core layout golden paths', () => {
       maxDiffPixelRatio: 0.065,
     });
   });
+
+  test('browse query opens the Stimulus curl modal', async ({ page }) => {
+    await gotoCase(page, '', 6);
+    await expandFirstQuery(page);
+
+    const browse = page.locator('a[data-controller="browse-query"]').first();
+    await expect(browse).toBeVisible();
+    await browse.click();
+
+    const modal = page.locator('.modal.show').last();
+    await expect(modal).toContainText('Browse Results on Solr');
+    await expect(modal.locator('.browse-query-curl')).toContainText('curl ');
+    await expect(modal.getByRole('button', { name: 'Copy curl command' })).toBeVisible();
+    await expect(modal.getByRole('link', { name: 'Open URL directly' })).toBeVisible();
+  });
 });

@@ -224,7 +224,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 **Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
-1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). **Not separable (checked 2026-09-19):** every remaining call site of all three lives inside a component already on the defer list (`$quepidModal`: `browse_query`, `query_options`, `new_case`, `annotation`, `diff`, `frog_report`, `move_query`, `wizardModal`/`wizardCtrl`, `queryParamsDetails`/`queryParamsHistory`, `targetedSearchModal`, `searchResult`, `case.js`; `quepidTypeahead`/`quepidCollapse`: `wizardModal.html`, `devQueryParams.html`, `searchEndpoint_popup.html`). They fall out as each of those components migrates in steps 4–7 below — don't plan a standalone PR for this step.
+1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). **Not separable (checked 2026-09-24):** every remaining call site of all three lives inside a component already on the defer list (`$quepidModal`: `query_options`, `new_case`, `annotation`, `diff`, `frog_report`, `move_query`, `wizardModal`/`wizardCtrl`, `queryParamsDetails`/`queryParamsHistory`, `targetedSearchModal`, `searchResult`, `case.js`; `quepidTypeahead`/`quepidCollapse`: `wizardModal.html`, `devQueryParams.html`, `searchEndpoint_popup.html`). They fall out as each of those components migrates in steps 4–7 below — don't plan a standalone PR for this step.
 2. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
 3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
 4. Query list + results — `queries`, `search-results`, rating UI
@@ -247,7 +247,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
-**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → query_options (137) → move_query (184) → browse_query (189) → qgraph (251) → frog_report (422) → diff (423).
+**Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → query_options (137) → move_query (184) → qgraph (251) → frog_report (422) → diff (423). `browse_query` migrated to Stimulus on 2026-09-24.
 
 **Defer on the case workspace** (Solr JSONP, live state, or large modals): `searchResult`, `qgraph` / qscore\*, `diff`, `query-options`, `new-case` / wizard, `frog-report`, `quepidTypeahead`, `queryParams`, `quepidCollapse`. The expanded-results shell and document rendering now run through Stimulus and the document store. Annotations render through Stimulus, while qgraph still consumes them through a temporary Angular read bridge. Moving these remaining pieces implies rebuilding the case SPA, not a framework swap.
 
@@ -524,7 +524,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Results panel | Stimulus shell + isolated Angular controls | `app/javascript/controllers/search_results_controller.js` and `search_results_template.js` own the expanded-results shell/document rendering; live search, diff, finder, options, pagination, and scoring remain explicit Angular control islands |
+| Results panel | Stimulus shell + isolated Angular controls | `app/javascript/controllers/search_results_controller.js` and `search_results_template.js` own the expanded-results shell/document rendering and browse-results modal; live search, diff, finder, options, pagination, and scoring remain explicit Angular control islands |
 | Single result row | directive + controller | `<search-result>`, `SearchResultCtrl` |
 | Rating popover | Stimulus controller | `rating_popover_controller.js` — mutation still bridges back to Angular via `rating-popover:rate`/`:reset` events |
 | Rate elements | service | `rateScaleSvc`, `ratingsStoreSvc` |
@@ -569,7 +569,7 @@ These Angular-specific wrappers are used across many templates:
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
-| `browse_query` | `<browse-query>` | "Browse N Results on {engine}" link, opens results in a new tab/window |
+| `browse_query` | `browse-query` Stimulus controller | "Browse N Results on {engine}" link and curl modal; migrated 2026-09-24 |
 | `diff` | `<diff>` | Snapshot diff renderer/state remains Angular; picker migrated to `diff-core` |
 | `frog_report` | `<frog-report>` | Zero-results report + Vega |
 | `move_query` | `<move-query>` | Move query to another case |

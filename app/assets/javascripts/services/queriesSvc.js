@@ -186,6 +186,20 @@ angular.module('QuepidApp')
           maxDocScore: angular.isFunction(query.maxDocScore) ? query.maxDocScore() : null,
           browseUrl: angular.isFunction(query.browseUrl) ? query.browseUrl() : null,
           searchEngine: (settingsSvc.applicableSettings() || {}).searchEngine,
+          apiMethod: (settingsSvc.applicableSettings() || {}).apiMethod,
+          mapperBasedSearchEngineName: (settingsSvc.applicableSettings() || {}).mapperBasedSearchEngineName,
+          browseHeaders: (function() {
+            var settings = settingsSvc.applicableSettings() || {};
+            var headers = settings.customHeaders;
+            if (typeof headers === 'string') {
+              try { headers = JSON.parse(headers); } catch (error) { headers = {}; }
+            }
+            headers = headers && typeof headers === 'object' && !Array.isArray(headers) ? angular.copy(headers) : {};
+            if (settings.basicAuthCredential) {
+              headers.Authorization = 'Basic ' + window.btoa(settings.basicAuthCredential);
+            }
+            return headers;
+          }()),
           queryState: angular.isFunction(query.state) ? query.state() : null,
           documentUrlFor: function(doc) {
             if (!doc || !angular.isFunction(doc._url)) return null;

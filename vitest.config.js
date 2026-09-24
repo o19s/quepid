@@ -40,6 +40,7 @@ export default defineConfig({
       { find: "utils/download_file", replacement: path.resolve(repoRoot, "app/javascript/utils/download_file.js") },
       { find: "utils/flash", replacement: path.resolve(repoRoot, "app/javascript/utils/flash.js") },
       { find: "utils/search_engine_name", replacement: path.resolve(repoRoot, "app/javascript/utils/search_engine_name.js") },
+      { find: "utils/browse_query", replacement: path.resolve(repoRoot, "app/javascript/utils/browse_query.js") },
       { find: "utils/rated_docs", replacement: path.resolve(repoRoot, "app/javascript/utils/rated_docs.js") },
       { find: "utils/scoring", replacement: path.resolve(repoRoot, "app/javascript/utils/scoring.js") },
       { find: "utils/query_state", replacement: path.resolve(repoRoot, "app/javascript/utils/query_state.js") },

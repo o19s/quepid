@@ -206,3 +206,13 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
 - **Edge cases:**
   - [ ] Switch try via "revert to last try" or a Settings-tab save that changes the selected try — confirm this also does a full navigation to the new try's URL.
   - [ ] A logged-in user with zero cases hitting bare `/case` sees the "You don't have any Cases created in Quepid" flash instead of a blank or broken page.
+
+### 4.18 Browse query results
+
+- [ ] **Steps:**
+  1. Expand a query whose search endpoint supports browsing (Solr, or a Search API using GET).
+  2. Click **Browse N Results on {engine}** in the results footer.
+  3. Confirm the modal shows a copyable curl command and the correct engine name.
+  4. Click **Copy curl command** and confirm the button changes to **Copied!**.
+  5. When the endpoint has no configured headers or credentials, click **Open URL directly** and confirm it opens the browse URL in a new tab.
+- **Expected:** The modal preserves the query's URL encoding, includes configured headers/credentials in the curl command, warns that those values are secret, and hides the direct-URL action when headers or credentials are present.

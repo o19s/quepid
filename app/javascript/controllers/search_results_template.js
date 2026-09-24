@@ -52,9 +52,7 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData }) {
         <div data-search-results-target="footer" class="row results-pane-footer d-none">
           <i class="bi bi-caret-up-fill results-pane-toggle" data-action="click->search-results#collapse" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane"></i>
           <button type="button" class="btn btn-outline-secondary d-none" data-search-results-target="nextPage" data-action="click->search-results#paginate">Peek at the next page of results</button>
-          <div data-search-results-target="deferredTools" data-angular-deferred>
-            <span ng-if="selectedTry.searchEngine == 'solr' || (selectedTry.searchEngine == 'searchapi' && selectedTry.apiMethod == 'GET')"><browse-query query="query" selected-try="selectedTry"></browse-query></span>
-          </div>
+          <div data-search-results-target="browseTool"></div>
           <div data-search-results-target="depthNote" class="alert alert-warning mb-0 d-none" role="alert"><strong>Note:</strong> Only the top <span data-search-results-target="depthValue"></span> results are used in the scoring calculations.</div>
           <div data-search-results-target="ratedNote" class="alert alert-warning mb-0 d-none" role="alert"><strong>Note:</strong> You are only viewing documents that have been rated</div>
         </div>

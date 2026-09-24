@@ -3,6 +3,7 @@ import { queryDocumentsStore } from "stores/query_documents_store"
 import { openDetailedDocumentModal } from "utils/detailed_document_modal"
 import { copyText } from "utils/clipboard"
 import { sanitizeHtml } from "controllers/search_result_controller"
+import { engineDisplayName } from "utils/browse_query"
 
 /**
  * Renders an expanded query from the plain document read model. Angular still
@@ -12,7 +13,7 @@ import { sanitizeHtml } from "controllers/search_result_controller"
 export default class extends Controller {
   static targets = [
     "content", "results", "diffResults", "notesBox", "scoreAll", "error", "footer", "nextPage",
-    "deferredTools", "depthNote", "depthValue", "ratedNote"
+    "browseTool", "depthNote", "depthValue", "ratedNote"
   ]
 
   connect() {
@@ -61,6 +62,7 @@ export default class extends Controller {
     this.renderNotes(snapshot)
     this.renderScoreAll(snapshot)
     this.renderState(snapshot)
+    this.renderBrowseTool(snapshot)
 
     if (!expanded || !this.isResultsView()) {
       this.resultsTarget.replaceChildren()
@@ -105,6 +107,29 @@ export default class extends Controller {
       if (showDepth && this.hasDepthValueTarget) this.depthValueTarget.textContent = String(snapshot.depthOfRating)
     }
     if (this.hasRatedNoteTarget) this.ratedNoteTarget.classList.toggle("d-none", !resultsVisible || !showOnlyRated)
+  }
+
+  renderBrowseTool(snapshot) {
+    if (!this.hasBrowseToolTarget) return
+    this.browseToolTarget.replaceChildren()
+
+    const supportsBrowse = snapshot?.queryState !== "error" && snapshot?.browseUrl && (
+      snapshot.searchEngine === "solr" ||
+      (snapshot.searchEngine === "searchapi" && snapshot.apiMethod === "GET")
+    )
+    if (!supportsBrowse) return
+
+    const button = document.createElement("a")
+    button.href = "#"
+    button.className = "btn btn-primary"
+    button.dataset.controller = "browse-query"
+    button.dataset.action = "click->browse-query#open"
+    button.dataset.browseQueryUrlValue = snapshot.browseUrl
+    button.dataset.browseQueryEngineNameValue = engineDisplayName(snapshot)
+    button.dataset.browseQueryHeadersValue = JSON.stringify(snapshot.browseHeaders || {})
+    const count = Number(snapshot.numFound || 0)
+    button.textContent = `Browse ${count} ${count === 1 ? "Result" : "Results"} on ${engineDisplayName(snapshot)}`
+    this.browseToolTarget.appendChild(button)
   }
 
   canPaginate(snapshot) {
