@@ -75,18 +75,21 @@ describe("queries_list_controller", () => {
     expect(element.querySelector('[data-queries-list-target="manualSortLink"]').classList.contains("d-none")).toBe(true)
   })
 
-  it("bridges toolbar actions as bubbling semantic events", () => {
+  it("owns toolbar actions without an Angular event bridge", () => {
     const { controller } = controllerFor()
-    const events = []
-    controller.element.addEventListener("queries-list:sort", event => events.push(event.detail.field))
-    controller.element.addEventListener("queries-list:collapse-all", () => events.push("collapse"))
-    controller.element.addEventListener("queries-list:filter", event => events.push(event.detail.value))
+    const collapseAll = vi.fn()
+    controller.queryState = { collapseAll }
+    const sortStateChanged = vi.fn()
+    controller.element.addEventListener("queries-list:sort-state-changed", event => sortStateChanged(event.detail))
 
     controller.sort({ preventDefault() {}, currentTarget: { dataset: { sortField: "score" } } })
     controller.collapseAll({ preventDefault() {} })
     controller.filter({ currentTarget: { value: "star" } })
 
-    expect(events).toEqual(["score", "collapse", "star"])
+    expect(controller.clientSortName).toBe("score")
+    expect(controller.filterValue).toBe("star")
+    expect(collapseAll).toHaveBeenCalled()
+    expect(sortStateChanged).toHaveBeenCalledWith({ sort: "score", reverse: "false" })
   })
 
   it("updates Sortable when the sort changes", () => {
@@ -249,15 +252,15 @@ describe("queries_list_controller", () => {
     expect(controller.listTarget.classList.contains("dragging")).toBe(false)
   })
 
-  it("persists a drag using the visible query order and updates Angular through an event", async () => {
-    const { controller, element } = controllerFor()
+  it("persists a drag using the visible query order and updates the query store directly", async () => {
+    const { controller } = controllerFor()
     controller.listTarget.innerHTML = `
       <li><div data-query-row-query-id-value="11"></div></li>
       <li><div data-query-row-query-id-value="12"></div></li>
     `
     apiFetch.mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ display_order: [12, 11] }) })
-    const saved = vi.fn()
-    element.addEventListener("queries-list:position-saved", event => saved(event.detail))
+    const setDisplayOrder = vi.fn()
+    controller.queryState = { setDisplayOrder }
 
     controller.dragStart()
     await controller.dragEnd({ oldIndex: 0, newIndex: 1 })
@@ -266,8 +269,25 @@ describe("queries_list_controller", () => {
       method: "PUT",
       body: JSON.stringify({ after: "12", reverse: false })
     }))
-    expect(saved).toHaveBeenCalledWith({ displayOrder: [12, 11] })
+    expect(setDisplayOrder).toHaveBeenCalledWith([12, 11])
     expect(controller.listTarget.classList.contains("dragging")).toBe(false)
+  })
+
+  it("uses the active URL-synchronized reverse state when reordering", async () => {
+    const { controller } = controllerFor({ reverseValue: true })
+    controller.clientReverse = false
+    controller.listTarget.innerHTML = `
+      <li><div data-query-row-query-id-value="11"></div></li>
+      <li><div data-query-row-query-id-value="12"></div></li>
+    `
+    apiFetch.mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ display_order: [12, 11] }) })
+
+    controller.dragStart()
+    await controller.dragEnd({ oldIndex: 0, newIndex: 1 })
+
+    expect(apiFetch).toHaveBeenCalledWith("api/cases/4/queries/11/position", expect.objectContaining({
+      body: JSON.stringify({ after: "12", reverse: false })
+    }))
   })
 
   it("uses indexes local to the visible page", async () => {

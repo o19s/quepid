@@ -29,6 +29,7 @@ export default class extends Controller {
     this.clientReverse = this.reverseValue
     this.angularRows = []
     this.queryState = window.quepidSearch?.queryState
+    this.syncSortFromUrl()
     // The Angular and core Stimulus bundles currently compile separately, so
     // their module singletons are not shared. Use the temporary bridge while
     // Angular still owns the live query objects; the imported store remains a
@@ -116,16 +117,23 @@ export default class extends Controller {
       this.clientSortName = field
       this.clientReverse = false
     }
+    this.element.dataset.queriesListSortNameValue = field
+    this.element.dataset.queriesListReverseValue = String(this.clientReverse)
+    this.persistSortToUrl()
+    this.dispatch("sort-state-changed", {
+      detail: {
+        sort: this.activeSortName(),
+        reverse: String(this.activeReverse())
+      }
+    })
     this.currentPage = 1
     this.render()
-    this.dispatch("sort", { detail: { field } })
   }
 
   filter(event) {
     this.filterValue = event.currentTarget.value
     this.currentPage = 1
     this.render()
-    this.dispatch("filter", { detail: { value: event.currentTarget.value } })
   }
 
   dragStart() {
@@ -152,7 +160,8 @@ export default class extends Controller {
       return
     }
 
-    const reverse = newIndex < oldIndex ? !this.reverseValue : this.reverseValue
+    const currentReverse = this.activeReverse()
+    const reverse = newIndex < oldIndex ? !currentReverse : currentReverse
     const url = `${this.positionUrlValue}/${queryId}/position`
 
     try {
@@ -164,9 +173,12 @@ export default class extends Controller {
       if (!response.ok) throw new Error(`Reorder failed (${response.status})`)
 
       const data = await response.json()
-      this.dispatch("position-saved", {
-        detail: { displayOrder: data.display_order }
-      })
+      if (this.queryState?.setDisplayOrder) {
+        this.queryState.setDisplayOrder(data.display_order)
+      } else {
+        this.store?.setDisplayOrder?.(data.display_order)
+      }
+      this.scheduleRender()
     } catch (error) {
       console.error("queries-list: reorder failed", error)
       this.restoreDraggedOrder()
@@ -206,7 +218,34 @@ export default class extends Controller {
   }
 
   updateSortableState() {
-    if (this.sortable) this.sortable.option("disabled", !this.queryListSortableValue || this.sortNameValue !== "default")
+    if (this.sortable) this.sortable.option("disabled", !this.queryListSortableValue || this.activeSortName() !== "default")
+  }
+
+  activeSortName() {
+    return this.clientSortName || this.sortNameValue || "default"
+  }
+
+  activeReverse() {
+    return this.clientReverse ?? this.reverseValue
+  }
+
+  syncSortFromUrl() {
+    const params = new URLSearchParams(window.location.search)
+    const sort = params.get("sort")
+    const reverse = params.get("reverse")
+    if (sort) {
+      this.clientSortName = sort
+    }
+    if (reverse !== null) {
+      this.clientReverse = reverse === "true"
+    }
+  }
+
+  persistSortToUrl() {
+    const url = new URL(window.location.href)
+    url.searchParams.set("sort", this.activeSortName())
+    url.searchParams.set("reverse", String(this.activeReverse()))
+    window.history.replaceState({}, "", url)
   }
 
   render() {
@@ -222,16 +261,16 @@ export default class extends Controller {
     }
 
     this.sortLinkTargets.forEach(link => {
-      const active = link.dataset.sortField === this.sortNameValue
+      const active = link.dataset.sortField === this.activeSortName()
       link.classList.toggle("active", active)
       link.setAttribute("aria-pressed", String(active))
     })
 
     this.sortIconTargets.forEach(icon => {
-      const active = icon.dataset.sortField === this.sortNameValue
+      const active = icon.dataset.sortField === this.activeSortName()
       icon.classList.toggle("d-none", !active)
-      icon.classList.toggle("bi-arrow-up", active && this.reverseValue)
-      icon.classList.toggle("bi-arrow-down", active && !this.reverseValue)
+      icon.classList.toggle("bi-arrow-up", active && this.activeReverse())
+      icon.classList.toggle("bi-arrow-down", active && !this.activeReverse())
     })
 
     if (this.hasManualHelpTarget) {
@@ -300,7 +339,7 @@ export default class extends Controller {
       .filter(Boolean)
       .filter(query => ignoreFilter || this.matchesFilter(query))
 
-    const sortName = this.clientSortName || "default"
+    const sortName = this.activeSortName()
     if (sortName === "default") return queries
 
     return queries.sort((left, right) => {
@@ -308,10 +347,10 @@ export default class extends Controller {
       const rightValue = this.sortValue(right, sortName)
       const comparison = this.compareValues(leftValue, rightValue)
       const direction = ["modified", "score", "error"].includes(sortName) ? -1 : 1
-      if (comparison !== 0) return (this.clientReverse ? -direction : direction) * comparison
+      if (comparison !== 0) return (this.activeReverse() ? -direction : direction) * comparison
       if (sortName === "error") {
         const tie = Number(Boolean(left.allRated)) - Number(Boolean(right.allRated))
-        return this.clientReverse ? -tie : tie
+        return this.activeReverse() ? -tie : tie
       }
       return 0
     })

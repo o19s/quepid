@@ -40,44 +40,22 @@ angular.module('QuepidApp')
       $scope.caseSvc = caseSvc;
       $scope.queryListSortable = configurationSvc.isQueryListSortable();
 
-      $element.on('queries-list:toggle-rated', function () {
-        $scope.$evalAsync(function () {
-          if (!$scope.showOnlyRatedUnsupported()) {
-            queriesSvc.toggleShowOnlyRated();
-          }
-        });
+      $element.on('queries-list:sort-state-changed', function (event) {
+        var originalEvent = event.originalEvent || {};
+        var detail = originalEvent.detail || event.detail || {};
+        if (detail.sort) {
+          $location.search('sort', detail.sort);
+        }
+        if (detail.reverse !== undefined) {
+          // Keep this as a string: caseTryNavSvc treats the value as a query
+          // parameter and must preserve the explicit "false" state.
+          $location.search('reverse', String(detail.reverse));
+        }
       });
-      $element.on('queries-list:collapse-all', function () {
-        $scope.$evalAsync($scope.collapseAll);
+      $scope.$on('$destroy', function () {
+        $element.off('queries-list:sort-state-changed');
       });
-      $element.on('queries-list:sort', function (event) {
-        $scope.$evalAsync(function () {
-          var originalEvent = event.originalEvent || {};
-          var field = (originalEvent.detail && originalEvent.detail.field) ||
-            (event.detail && event.detail.field);
-          $scope.sortBy(field);
-        });
-      });
-      $element.on('queries-list:filter', function (event) {
-        $scope.$evalAsync(function () {
-          var originalEvent = event.originalEvent || {};
-          var originalValue = originalEvent.detail && originalEvent.detail.value;
-          var value = originalValue !== undefined && originalValue !== null ?
-            originalValue :
-            (event.detail && event.detail.value);
-          $scope.queryFilter = value !== undefined && value !== null ? value : '';
-        });
-      });
-      $element.on('queries-list:position-saved', function (event) {
-        $scope.$evalAsync(function () {
-          var originalEvent = event.originalEvent || {};
-          var detail = originalEvent.detail || event.detail || {};
-          if (detail.displayOrder) {
-            queriesSvc.applyDisplayOrder(detail.displayOrder);
-          }
-        });
-      });
-      $scope.$on('$destroy', function () { $element.off('queries-list:toggle-rated queries-list:collapse-all queries-list:sort queries-list:filter queries-list:position-saved'); });
+
       // The scoringCompleteListener is a workaround for the fact that
       // we create multiple instances of this controller when we reselect the
       // same Case in the core app.  Which leads to multiple calls to the backend for the same scoring complete calculation
@@ -359,54 +337,6 @@ angular.module('QuepidApp')
 
       $scope.queries.avgQuery = avgQuery;
 
-      // get all the queries for this case for the query service
-      $scope.queriesList = [];
-      $scope.$watch(function(){
-        // only call if the query service has new information!
-        return queriesSvc.version();
-      }, function(){
-        $scope.queriesList = queriesSvc.queryArray();
-        updateBatchInfo();
-      });
-
-      $scope.searching = function() {
-        return queriesSvc.hasUnscoredQueries();
-      };
-      $scope.isBootstrapping = function() {
-        return queriesSvc.isBootstrapping;
-      };
-      $scope.batchPosition = 0;
-      $scope.batchSize = 0;
-      function getBatchPosition() {
-        return queriesSvc.scoredQueryCount();
-      }
-
-      function updateBatchInfo() {
-        $scope.batchSize = queriesSvc.queryCount();
-        $scope.batchPosition = queriesSvc.scoredQueryCount();
-      }
-      $scope.$watch(getBatchPosition, updateBatchInfo);
-
-      $scope.pagination = {
-        currentPage: 1,
-        pageSize: 15
-      };
-
-      $scope.queries.sortingEnabled = false;
-      $scope.queries.isSortingEnabled = function () {
-        return $scope.queries.sortingEnabled;
-      };
-      $scope.queries.toggleSorting = function() {
-        $scope.queries.sortingEnabled = !$scope.queries.sortingEnabled;
-      };
-
-      $scope.collapseAll = function() {
-        queryViewSvc.collapseAll();
-        if (window.quepidStore && window.quepidStore.documents) {
-          window.quepidStore.documents.collapseAll();
-        }
-      };
-
       // Delegates to queriesSvc.trySupportsRatedDocsLookup(), the single source of truth also
       // used by docFinder.js's "Already Rated Documents" section - keeping both gates on the
       // same function is what keeps them in sync. (This file previously kept its own copy of
@@ -469,6 +399,9 @@ angular.module('QuepidApp')
         $location.search('reverse', $scope.reverse);
       }
 
+      // Compatibility helper for remaining Angular callers/specs. The live
+      // query list filters through its Stimulus controller; this method stays
+      // available while deferred Angular result islands finish migrating.
       $scope.matchQueryFilter = function(query) {
         return window.quepidSearch.queryState.matchesQueryFilter(query, $scope.queryFilter);
       };

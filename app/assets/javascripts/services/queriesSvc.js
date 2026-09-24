@@ -136,6 +136,9 @@ angular.module('QuepidApp')
         queryViewSvc.collapseAll();
         if (queryDocumentsStore) queryDocumentsStore.collapseAll();
       };
+      window.quepidSearch.queryState.setDisplayOrder = function(displayOrder) {
+        svc.applyDisplayOrder(displayOrder);
+      };
 
       // Method to clear cache for a specific book
       this.clearSyncCache = function(bookId) {

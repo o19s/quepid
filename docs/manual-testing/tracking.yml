@@ -300,6 +300,12 @@ parts:
         result: pass
         notes: "Covered live via Playwright MCP on case 6: expanded the first query, opened the Stimulus Browse Results on Solr modal, verified the generated curl command, secret-header guidance state, and Open URL directly action. The checked-in core_smoke E2E also passed. Not covered live: a Search API GET endpoint or the configured-header/credential warning path; the utility has unit coverage for URL encoding and Basic Auth header generation. Before screenshot captured the case workbench; after screenshot captured the open modal under .playwright-mcp/browse-query/."
         paths: ["app/javascript/controllers/browse_query_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/utils/browse_query.js", "app/javascript/core_stimulus.js", "app/assets/javascripts/services/queriesSvc.js", "config/importmap.rb", "test/javascript/utils/browse_query.test.js", "test/playwright/core_smoke.spec.ts"]
+      "4.19":
+        title: "Query-list controls"
+        last_run: 2026-09-24T19:24:00Z
+        result: pass
+        notes: "Covered live via Playwright MCP on SOLR CASE (case 1): filtered to a non-matching query and restored the full list, sorted by Name without reload while the URL changed to sort=query&reverse=false, and used Collapse all to leave no expanded results. Console showed 0 errors. Not covered in this pass: manual drag reorder persistence or the unsupported Show only rated state."
+        paths: ["app/assets/javascripts/controllers/queriesCtrl.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/controllers/queries_list_controller.js", "app/assets/templates/views/queries.html", "test/javascript/controllers/queries_list_controller.test.js"]
 
   "05":
     file: 05-core-workbench-history-snapshots-and-annotations.md

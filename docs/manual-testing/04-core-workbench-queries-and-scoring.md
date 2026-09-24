@@ -217,3 +217,14 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   4. Click **Copy curl command** and confirm the button changes to **Copied!**.
   5. When the endpoint has no configured headers or credentials, click **Open URL directly** and confirm it opens the browse URL in a new tab.
 - **Expected:** The modal preserves the query's URL encoding, includes configured headers/credentials in the curl command, warns that those values are secret, and hides the direct-URL action when headers or credentials are present.
+
+### 4.19 Query-list controls
+
+- [ ] **Steps:**
+  1. Open a case with at least one query.
+  2. Enter text that matches no query in **Filter Queries**, then clear it.
+  3. Click **Name** under Sort and confirm the list reorders and the URL records the selected sort.
+  4. Expand a query, then click **Collapse all**.
+- **Expected:** Filtering, sorting, and collapse are handled without a page reload; the list returns to its full state after clearing the filter and no query remains expanded after **Collapse all**.
+- **Edge cases:**
+  - [ ] Reorder queries when manual sorting is enabled and confirm the order persists after reload.
