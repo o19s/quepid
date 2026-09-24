@@ -4,8 +4,8 @@
      data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
      data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>"
      data-ai-judge-wizard-has-book-value="<%= @book.present? %>"
-     data-ai-judge-wizard-presets-value="<%= LlmProviders.presets.to_json %>"
-     data-ai-judge-wizard-stock-prompts-value="<%= LlmProviders.stock_system_prompts.to_json %>">
+     data-ai-judge-wizard-presets-value="<%= LlmProvider.presets.to_json %>"
+     data-ai-judge-wizard-stock-prompts-value="<%= LlmProvider.stock_system_prompts.to_json %>">
   <div class="card-header">
     <h5 class="mb-0"><i class="bi bi-robot"></i> AI Judge</h5>
   </div>
@@ -26,7 +26,7 @@
 
     <%# The saved provider decides the page's first render; the wizard controller
         keeps these in step as the provider is changed. %>
-    <% provider = LlmProviders[ai_judge.judge_options[:llm_provider]] %>
+    <% provider = LlmProvider.find(ai_judge.judge_options[:llm_provider]) %>
     <% foreign_prompt = provider&.stock_prompt_from_another_provider?(ai_judge.system_prompt) %>
 
     <!-- Step 1: Configure -->
@@ -80,7 +80,7 @@
               <%# Options a provider declares are rendered as the widget it asked for, whether or
                   not this judge has them saved yet, and are shown only with the provider that
                   owns them -- so nobody has to hand-edit the JSON tab to reach a known setting. %>
-              <% specs = LlmProviders.option_field_specs %>
+              <% specs = LlmProvider.option_field_specs %>
               <% stored = @ai_judge.judge_options.map { |key, value| [ key.to_s, value ] } %>
               <%# llm_provider is a universal field, not one any provider declares via
                   option_fields (those are provider-specific extras) - list it explicitly
@@ -99,7 +99,7 @@
                   <div class="col-sm-7">
                     <% if 'llm_provider' == key %>
                       <%= select_tag "user[judge_options][llm_provider]",
-                            options_for_select(LlmProviders.select_options, value.to_s),
+                            options_for_select(LlmProvider.select_options, value.to_s),
                             id: 'judge_options_llm_provider',
                             class: 'form-select form-select-sm structured-field',
                             data: { ai_judge_wizard_target: "llmProvider structuredField", action: "change->ai-judge-wizard#updateProviderPreset" }

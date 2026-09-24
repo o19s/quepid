@@ -34,7 +34,7 @@ module AiJudges
       ai_judge = AiJudge.new(system_prompt: params[:system_prompt], llm_key: params[:llm_key])
       ai_judge.judge_options = judge_options_params.to_h
 
-      provider = LlmProviders[ai_judge.judge_options[:llm_provider]]
+      provider = LlmProvider.find(ai_judge.judge_options[:llm_provider])
       if provider&.needs_book? && @book.nil?
         error = "#{provider.label} rates against a book's scale, so it can only be tested from a book: " \
                 "open this judge from the book's Judgement Stats page (Refine Prompt)."
@@ -85,7 +85,7 @@ module AiJudges
     def judge_options_params
       params.fetch(:judge_options, {})
         .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version,
-                *LlmProviders.option_field_specs.keys)
+                *LlmProvider.option_field_specs.keys)
     end
   end
 end

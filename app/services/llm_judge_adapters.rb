@@ -13,7 +13,7 @@ module LlmJudgeAdapters
   DEFAULT_ADAPTER = 'LlmJudgeAdapters::OpenAi'
 
   def self.for llm_key, options = {}
-    provider = LlmProviders[options[:llm_provider]]
+    provider = LlmProvider.find(options[:llm_provider])
 
     raise "#{provider.label} is not available as an LLM judge yet, so it cannot be used to judge" if provider&.coming_soon?
 

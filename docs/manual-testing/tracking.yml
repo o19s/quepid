@@ -677,10 +677,10 @@ parts:
     scenarios:
       "12.1":
         title: "Create a per-team AI Judge"
-        last_run: 2026-09-21T18:35:00Z
+        last_run: 2026-09-24T03:30:00Z
         result: pass
-        notes: "Full pass after the provider registry, per-provider prompts, provider-owned option widgets and the JSON/structured tab sync. Cycled all 9 providers: URL / model / API version presets, help panel, read-only locking for Jev, prompt label and default prompt all correct, and provider-owned option rows shown only for their provider (hidden and disabled otherwise). Created a judge end to end with real clicks (name + LLM key + Save): saved with the OpenAI defaults, appeared on the team page. No console errors. Round trip between Structured Fields and JSON verified. The judge was deleted afterwards."
-        paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/models/ai_judge.rb", "app/models/llm_provider.rb", "app/models/llm_providers.rb"]
+        notes: "Re-driven after merging LlmProviders into a DEFINITIONS-based LlmProvider class, in Chrome: cycled all 9 providers on /ai_judges/new -- URL / model / API version presets, help panel shown for each, System prompt label and chat default for the 8 chat providers; Jev locked URL/model/API version, showed Judging instructions with its own default, and the Minimum confidence field only while selected. Ollama help carried the configured URL. Nothing was saved -- create/save path not re-driven this pass."
+        paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/models/ai_judge.rb", "app/models/llm_provider.rb"]
       "12.2":
         title: "Edit / delete an AI Judge"
         last_run: 2026-09-21T18:35:00Z
@@ -701,10 +701,10 @@ parts:
         paths: ["app/controllers/ai_judges/wizard_controller.rb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/views/ai_judges/_form.html.erb", "app/services/judgement_finalizer.rb", "app/services/llm_service.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/"]
       "12.6":
         title: "Judge with TypeSafe Jev"
-        last_run: 2026-09-23T13:55:00Z
+        last_run: 2026-09-24T03:30:00Z
         result: pass
-        notes: "Live against the real TypeSafe API via the wizard: URL/model/API version read-only; Minimum confidence rendered as a number field only while Jev is selected and disabled after switching away; Run Judgement returned 'Jev rated 1 (\"Relevant\") -- raw score 0.94 of 0-1, confidence 0.89'; raising Minimum confidence to 0.95 in the form (unsaved) made the same preview Unrateable, proving the option now reaches the preview. Not covered this pass: a Judge Judy batch run, saving a Jev judge, a scale over 10 values, image documents, and the no-book preview."
-        paths: ["app/services/llm_judge_adapters/jev.rb", "app/models/llm_provider.rb", "app/models/llm_providers.rb", "app/models/judge_scale.rb", "app/views/ai_judges/_form.html.erb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/controllers/ai_judges/wizard_controller.rb", "app/controllers/ai_judges_controller.rb"]
+        notes: "Re-driven after the LlmProvider refactor, in Chrome: existing Jev judge on Book of Ratings, Run Judgement returned a live rating (Jev rated 1 \"Relevant\", raw 0.98, confidence 0.97); without book_id the Run button was disabled and the needs-a-book notice shown. No console errors. Not covered: Judge Judy batch run, saving, a scale over 10 values, image documents."
+        paths: ["app/services/llm_judge_adapters/jev.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/views/ai_judges/_form.html.erb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/controllers/ai_judges/wizard_controller.rb", "app/controllers/ai_judges_controller.rb"]
       "12.5":
         title: "Trigger a judging run (Judge Judy)"
         last_run: 2026-09-21T18:35:00Z
