@@ -2,8 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 import { dynamicRegions } from './angular_case_helpers';
 
 /**
- * Full case-creation wizard (`WizardModalCtrl` /
- * app/assets/templates/views/wizardModal.html), run start to finish.
+ * Full case-creation wizard (Stimulus `wizard` controller /
+ * app/views/shared/_wizard_modal.html.erb), run start to finish.
  *
  * angular_pages.spec.ts and angular_pages_narrow_viewport.spec.ts both stop
  * partway through this same wizard — after opening the "Create a new
@@ -16,7 +16,7 @@ import { dynamicRegions } from './angular_case_helpers';
  *
  * We do NOT run this against an existing fixture case (e.g. case id 1,
  * which other specs share): the wizard's Finish step renames the
- * *current* case and adds queries to it in place (WizardModalCtrl#submit
+ * *current* case and adds queries to it in place (wizard_controller#finish
  * -> caseSvc.renameCase + the query lifecycle persistence contract), so completing it on
  * a shared case would corrupt other tests' fixtures. Instead we first
  * create a disposable case via the header's "Create a case" button (same
@@ -69,12 +69,11 @@ async function deleteCase(page: Page, caseId: number) {
 
 /**
  * Finishing the wizard below permanently flips this account's
- * `completed_case_wizard` to true (WizardModalCtrl#submit -> userSvc's
+ * `completed_case_wizard` to true (wizard_controller#finish -> userSvc's
  * shownIntroWizard(), PUT api/users/:id), which is account state, not case
  * state -- it survives this test and this process, since it's persisted in
  * the shared dev DB. Once set, every later `?showWizard=true` load for this
- * same account skips the Welcome step and lands directly on Name (see
- * wizardModal.js's `WizardHandler.wizard().goTo(1)` branch), which broke
+ * same account skips the Welcome step and lands directly on Name, which broke
  * angular_pages.spec.ts and angular_pages_narrow_viewport.spec.ts's wizard
  * specs when this spec ran first. Reset it back so later specs (and later
  * runs) see the same first-time Welcome step this test itself started from.
@@ -121,15 +120,14 @@ test.describe('Case creation wizard', () => {
 
       // --- Name step ---
       await expect(modal).toContainText('Name Your Case');
-      const nameInput = modal.locator('input[ng-model="pendingWizardSettings.caseName"]');
+      const nameInput = modal.getByLabel('New Case Name:');
       await nameInput.evaluate((el: HTMLElement) => el.focus());
       await nameInput.fill(caseName, { force: true });
       await continueButton().click();
 
       // --- Endpoint step: use the existing, real "TMDB Solr" endpoint ---
       await expect(modal.getByRole('heading', { name: /What Search Endpoint/i })).toBeVisible({ timeout: 15_000 });
-      await modal.getByRole('button', { name: 'Use an existing Search Endpoint' }).click();
-      await modal.locator('#searchEndpoint').selectOption({ label: 'TMDB Solr' });
+      await modal.getByLabel('Use an existing Search Endpoint').selectOption({ label: 'TMDB Solr' });
       // validate() makes a real search request to confirm the endpoint works
       // before advancing — give it real network time.
       await continueButton().click();
@@ -139,11 +137,13 @@ test.describe('Case creation wizard', () => {
       await expect(modal.getByRole('heading', { name: /How Should We Display Your Results/i })).toBeVisible({
         timeout: 20_000
       });
+      await modal.getByLabel('Title Field').fill('title');
+      await modal.getByLabel('ID Field').fill('id');
       await continueButton().click();
 
       // --- Query step ---
       await expect(modal.getByRole('heading', { name: /Add Your Search Queries/i })).toBeVisible({ timeout: 10_000 });
-      const queryInput = modal.locator('input[ng-model="pendingWizardSettings.text"]');
+      const queryInput = modal.getByPlaceholder('Search query');
       await queryInput.fill('star wars');
       await modal.getByRole('button', { name: 'Add Query', exact: true }).click();
       await expect(modal.getByText('star wars')).toBeVisible();

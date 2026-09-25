@@ -9,12 +9,8 @@
 angular.module('QuepidApp', [
   'UtilitiesModule',
   'ngSanitize',
-  'mgo-angular-wizard',
   'o19s.splainer-search',
-  'ui.ace',
   'angularUtils.directives.dirPagination',
-  'ngCsvImport',
-  'ngTagsInput',
   'ng-rails-csrf',
   'templates',
 ]);

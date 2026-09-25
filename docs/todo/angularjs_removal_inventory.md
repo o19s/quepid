@@ -323,24 +323,6 @@ Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJ
 
 **Backend still required:** `Api::V1::TriesController#destroy` must recompute `cases.last_try_number` — tracked in [todo.md § P0 backend](./todo.md#deleting-the-latest-try-bricks-the-case-backend).
 
-#### Wizard Esc orphans empty cases
-
-**Observed:** Wizard **X** prompts and deletes the empty case; **Esc** closes with no confirm and leaves the case.
-
-**Fix during migration:** Disable keyboard dismiss on the wizard modal, or route Esc through the same abandon handler as X (`caseSvc.deleteCase` cleanup).
-
-**Touches:** `wizardModal.html`, `angular-wizard`, [Feature area § New-case wizard](#4-new-case-wizard).
-
-#### Static CSV missing required headers
-
-**Observed:** Static CSV missing `Doc ID` header is accepted (help text says required).
-
-**Cause:** `caseCSVSvc.arrayContains` always returns `true` because `return false` inside `forEach` only exits the callback, so required-header checks (including `Doc ID`) never fail.
-
-**Fix during migration:** Reimplement header validation in the new CSV import path (wizard + `import-ratings-core`). Product decision still needed on how strict to be.
-
-**Touches:** `caseCSVSvc`, wizard CSV step, `<ng-csv-import>`, [Feature area § New-case wizard](#4-new-case-wizard).
-
 #### Icon-only controls lack accessible names
 
 **Observed:** Icon-only controls (copy-query; snapshot delete/clear in Compare) lack accessible names on the button.
@@ -405,7 +387,7 @@ The Rails cases index at `/cases` is **not** Angular.
 
 - `<body ng-app="QuepidApp">`
 - JS: `angular_app`, `angular_templates`, `quepid_angular_app`
-- CSS: `json-explorer` (Quepid-owned), `angular-wizard`, `ng-tags-input`
+- CSS: `json-explorer` (Quepid-owned)
 - Inline script: `bootstrapSvc.run()`, `configurationSvc` seeded from Rails config — including `caseNo`/`tryNo` from `params[:id]`/`params[:try_number]`/`@case`. Interpolate as bare integers/`"null"`, never `.to_json` — Rails' default HTML-escaping of `<%= %>` mangles `"`/`&` inside a `<script>` tag (`"1"` → `&quot;1&quot;`), silently breaking the whole inline script.
 
 ### Case shell (`app/views/core/index.html.erb`)
@@ -436,12 +418,8 @@ The query-list shell is Rails-rendered and no longer declares an Angular scope. 
 | Module | Source | Used for | Replace with |
 |--------|--------|----------|--------------|
 | `ngSanitize` | `angular-sanitize` | `ng-bind-html` | DOMPurify or server sanitize |
-| `mgo-angular-wizard` | `angular-wizard` | New-case wizard | Multi-step Stimulus or server wizard |
 | `o19s.splainer-search` | `splainer_search_adapter.js` | Search HTTP | `splainer-search/wired.js` directly |
-| `ui.ace` | `angular-ui-ace` | Query editors | Stimulus + `window.ace` |
 | `angularUtils.directives.dirPagination` | `angular-utils-pagination` | Query paging | Stimulus pager |
-| `ngCsvImport` | `angular-csv-import` | CSV upload | Papa Parse + file input |
-| `ngTagsInput` | `ng-tags-input` | Wizard fields | Tom Select / tags Stimulus |
 | `ng-rails-csrf` | `interceptors/rails-csrf.js` | CSRF on `$http` | Fetch wrapper with CSRF meta tag |
 | `templates` | `build_templates.js` | `$templateCache` | ERB partials / Stimulus templates |
 
@@ -466,7 +444,6 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | Item | Type | Key files |
 |------|------|-----------|
 | Case layout markup | Rails view | `app/views/core/index.html.erb` + `_case_header`/`_case_toolbar` partials |
-| App bootstrap & loading gate | controller | `LoadingCtrl` — removed; it only exposed a flag that was initialized false and never changed. `MainCtrl` remains the bootstrap seam. |
 | Case/try bootstrapping | controller | `MainCtrl` — `controllers/mainCtrl.js` |
 | Current user on `$rootScope` | service | `bootstrapSvc`, `userSvc` |
 | App config flags | service | `configurationSvc` |
@@ -491,13 +468,15 @@ Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `
 
 ### 4. New-case wizard
 
+The wizard UI and lifecycle moved to `app/javascript/controllers/wizard_controller.js` and
+`app/views/shared/_wizard_modal.html.erb`. The Angular wizard controller, template, custom-header
+directive, Angular wizard/tag-input/CSV modules, and their core CSS links are removed. Endpoint
+validation and case/settings persistence still use an explicit temporary adapter into the
+surviving Angular services; mapper-specific endpoint editing remains follow-up work before those
+services can be removed.
+
 | Item | Type | Key files |
 |------|------|-----------|
-| Wizard modal | controller + template | `WizardModalCtrl`, `templates/views/wizardModal.html` |
-| Custom headers step | directive + controller | `<custom-headers>`, `CustomHeadersCtrl`, `templates/views/customHeaders.html` |
-| CSV import (queries/ratings) | third-party | `<ng-csv-import>` remains in the wizard; core import uses `import-ratings-core` |
-| Tags for additional fields | third-party | `<tags-input>` in wizard |
-| ACE editors in wizard | third-party | `ui-ace` attributes |
 | Wizard cancel cleanup | service call | `caseSvc.deleteCase` from `wizardModal.js` |
 
 ### 5. Query list
@@ -546,7 +525,7 @@ These Angular-specific wrappers are used across many templates:
 | Primitive | File | Replaces |
 |-----------|------|----------|
 | `$quepidModal` | `services/quepidModalSvc.js` | Bootstrap 5 modals (already BS5-backed shim; call-site count in [Hardest § By file (LOC)](#by-file-loc)) |
-| `quepidCollapse` | `directives/quepidCollapse.js` | Bootstrap collapse (used by `wizardModal.html`) |
+| `quepidCollapse` | `directives/quepidCollapse.js` | Bootstrap collapse |
 | `quepidTypeahead` | `directives/quepidTypeahead.js` | `autocompleter` (already vanilla; wired via Angular directive) |
 
 ---
@@ -555,7 +534,6 @@ These Angular-specific wrappers are used across many templates:
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
-| `new_case` | — | Removed; header entry is server-rendered and Stimulus-owned |
 | `diff_case_scores_controller.js` | `diff-case-scores` | Snapshot/diff case score display |
 
 ---
@@ -565,11 +543,10 @@ These Angular-specific wrappers are used across many templates:
 | Directive | Element | Template | Controller |
 |-----------|---------|----------|------------|
 | `searchResults` | expanded-results shell | Stimulus | `SearchResultsController` |
-| `customHeaders` | `<custom-headers>` | `customHeaders.html` | `CustomHeadersCtrl` |
 
 Attribute directives: `quepidSortable`, `quepidCollapse`, `quepidTypeahead`
 
-Thin shells (~14–16 LOC): `queries`, `customHeaders`. Heavy: `quepidTypeahead` (299).
+Thin shells (~14–16 LOC): `queries`. Heavy: `quepidTypeahead` (299).
 
 ---
 
@@ -593,7 +570,7 @@ Thin shells (~14–16 LOC): `queries`, `customHeaders`. Heavy: `quepidTypeahead`
 
 **Case-action modals:** `searchEndpoint_popup.html`
 
-**Wizard:** `wizardModal.html`
+**Wizard:** shared ERB partial `_wizard_modal.html.erb`
 
 **Components:** 20 HTML files under `app/assets/javascripts/components/`
 
@@ -616,7 +593,7 @@ Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 
 ### Stylesheets
 
-Core layout loads: `json-explorer` (Quepid-owned, styles the vanilla JSON tree), plus vendored `angular-wizard` / `ng-tags-input`. `core.css` + `bootstrap5-compat.css` style the case UI.
+Core layout loads: `json-explorer` (Quepid-owned, styles the vanilla JSON tree). `core.css` + `bootstrap5-compat.css` style the case UI.
 
 ### Build toolchain
 
@@ -678,7 +655,6 @@ $window.location.href = caseTryNavSvc.getQuepidRootUrl() + '/cases'
 ### Built artifacts
 
 - [ ] `app/assets/builds/angular_app.js`, `quepid_angular_app.js`, `angular_templates.js`
-- [ ] Vendor CSS builds: `angular-wizard.css`, `ng-tags-input*.css` (`json-explorer.css` stays — owned by the vanilla JSON tree)
 
 ### Rails views
 

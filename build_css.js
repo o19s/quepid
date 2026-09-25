@@ -12,7 +12,6 @@ const WATCH_PATHS = [
   'app/assets/stylesheets',
   'node_modules/bootstrap/dist/css',
   'node_modules/bootstrap-icons/font',
-  'app/javascript/vendor/ng-tags-input/build'
 ];
 
 function ensureDirectoryExists(dirPath) {
@@ -194,18 +193,6 @@ function copyLinkedStylesheets() {
   copyFileIfExists(
     'app/assets/stylesheets/json-explorer.css',
     'app/assets/builds/json-explorer.css'
-  );
-  copyFileIfExists(
-    'app/javascript/vendor/angular-wizard/angular-wizard.css',
-    'app/assets/builds/angular-wizard.css'
-  );
-  copyFileIfExists(
-    'app/javascript/vendor/ng-tags-input/build/ng-tags-input.min.css',
-    'app/assets/builds/ng-tags-input.min.css'
-  );
-  copyFileIfExists(
-    'app/assets/stylesheets/ng-tags-input-theme.css',
-    'app/assets/builds/ng-tags-input.theme.css'
   );
 }
 

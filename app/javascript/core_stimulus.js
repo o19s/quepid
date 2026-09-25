@@ -57,12 +57,11 @@ import MissingDocumentsController from "controllers/missing_documents_controller
 import TuneRelevanceController from "controllers/tune_relevance_controller"
 import FrogReportController from "controllers/frog_report_controller"
 import WizardLauncherController from "controllers/wizard_launcher_controller"
+import WizardController from "controllers/wizard_controller"
 import * as wizardContracts from "utils/wizard_contracts"
 
 Turbo.session.drive = false
 
-// Temporary bridge for the Angular wizard while its DOM and lifecycle are ported.
-// The contracts themselves are framework-free and become the Stimulus wizard's API.
 window.quepidWizardContracts = wizardContracts
 
 application.register("case-rename", CaseRenameController)
@@ -106,3 +105,4 @@ application.register("missing-documents", MissingDocumentsController)
 application.register("tune-relevance", TuneRelevanceController)
 application.register("frog-report", FrogReportController)
 application.register("wizard-launcher", WizardLauncherController)
+application.register("wizard", WizardController)

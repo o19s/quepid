@@ -1,11 +1,9 @@
 import { Controller } from "@hotwired/stimulus"
+import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
 
 /**
- * Opens the legacy wizard through Angular's injector while the wizard body is being migrated.
- *
- * Keeping this seam in Stimulus lets the header and first-case auto-launch stop depending on
- * Angular directives now. The modal implementation remains unchanged until its validation and
- * persistence contracts have been ported.
+ * Opens the core wizard modal. Case creation itself remains an Angular service seam until the
+ * case workspace state migration is complete; the wizard UI and lifecycle are Stimulus-owned.
  */
 export default class extends Controller {
   static values = { auto: Boolean }
@@ -45,27 +43,17 @@ export default class extends Controller {
   }
 
   openWizard(createCase) {
-    const injector = this.angularInjector()
-    if (!injector) return
-
-    const rootScope = injector.get("$rootScope")
-    const caseSvc = injector.get("caseSvc")
-    if (createCase) caseSvc.createCase()
-
-    const modal = injector.get("$quepidModal").open({
-      templateUrl: "views/wizardModal.html",
-      controller: "WizardModalCtrl",
-      backdrop: "static",
-      windowClass: "wizard-modal-window"
-    })
-
-    if (!rootScope.currentUser?.completedCaseWizard) {
-      modal.result.then(() => {
-        if (typeof window.setupAndStartTour === "function") {
-          window.setTimeout(window.setupAndStartTour, 1500)
-        }
-      })
+    if (createCase) {
+      const caseSvc = this.angularInjector()?.get("caseSvc")
+      caseSvc?.createCase()
+      return
     }
+
+    const modal = document.getElementById("wizardModal")
+    if (!modal) return
+
+    modal.dispatchEvent(new CustomEvent("wizard:open", { bubbles: true }))
+    showBsModal(getOrCreateBsModal(modal, { backdrop: "static", keyboard: false }))
   }
 
   angularInjector() {

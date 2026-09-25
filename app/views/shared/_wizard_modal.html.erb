@@ -1,0 +1,65 @@
+<div class="modal fade wizard-modal-window" id="wizardModal" tabindex="-1" aria-labelledby="wizardModalLabel" aria-hidden="true"
+     data-controller="wizard">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header"><h1 class="modal-title" id="wizardModalLabel">Create a Quepid case</h1><button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-body">
+        <div class="alert alert-danger" role="alert" data-wizard-target="alert" hidden></div>
+        <section data-wizard-target="step">
+          <h2>Welcome To Quepid!</h2><p>Let me guide you through setting up your first Case.</p>
+          <button type="button" class="btn btn-primary float-end" data-action="wizard#next">Continue</button>
+        </section>
+        <section data-wizard-target="step" hidden>
+          <h2>Name Your Case!</h2><p>Give an informative name to the problem you're solving.</p>
+          <label for="wizardCaseName">New Case Name:</label><input id="wizardCaseName" class="form-control" data-wizard-target="caseName" data-wizard-field="caseName" data-action="input->wizard#updateSetting">
+          <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>
+        </section>
+        <section data-wizard-target="step" hidden>
+          <h2>What Search Endpoint do you want to connect to?</h2>
+          <label class="form-label" for="wizardEndpoint">Use an existing Search Endpoint</label>
+          <select id="wizardEndpoint" class="form-select" data-wizard-target="endpointSelect" data-action="change->wizard#selectEndpoint"></select>
+          <hr>
+          <label class="form-label" for="wizardEngine">Create a new endpoint</label>
+          <select id="wizardEngine" class="form-select" data-wizard-target="engine" data-wizard-field="searchEnginePreset" data-action="change->wizard#updateSetting">
+            <option value="solr">Solr</option><option value="es">Elasticsearch</option><option value="os">OpenSearch</option><option value="vectara">Vectara</option><option value="algolia">Algolia</option><option value="static">Static</option><option value="searchapi">Search API</option>
+          </select>
+          <label class="form-label mt-3" for="wizardStaticFile">Static CSV (when Static is selected)</label>
+          <input id="wizardStaticFile" type="file" accept=".csv,text/csv" class="form-control" data-wizard-target="staticFile" data-action="change->wizard#importStatic">
+          <input class="form-control mt-3" placeholder="Search endpoint URL" data-wizard-target="searchUrl" data-wizard-field="searchUrl" data-action="input->wizard#updateSetting">
+          <label class="form-label mt-3" for="wizardApiMethod">API method</label>
+          <select id="wizardApiMethod" class="form-select" data-wizard-target="apiMethod" data-wizard-field="apiMethod" data-action="change->wizard#updateSetting">
+            <option value="GET">GET</option><option value="POST">POST</option><option value="JSONP">JSONP</option>
+          </select>
+          <input class="form-control mt-3" placeholder="Test query (for Search API)" data-wizard-target="testQuery" data-wizard-field="testQuery" data-action="input->wizard#updateSetting">
+          <label class="form-label mt-3" for="wizardQueryParams">Query pattern / request body</label>
+          <textarea id="wizardQueryParams" class="form-control" rows="5" placeholder="Use #$query## where the search text belongs" data-wizard-target="queryParams queryPattern" data-wizard-field="queryParams" data-action="input->wizard#updateSetting"></textarea>
+          <textarea class="form-control mt-3" rows="3" placeholder="Custom headers JSON" data-wizard-target="customHeaders" data-wizard-field="customHeaders" data-action="input->wizard#updateSetting"></textarea>
+          <label class="form-label mt-3" for="wizardBasicAuth">Basic Authentication</label>
+          <input id="wizardBasicAuth" class="form-control" placeholder="username:password" data-wizard-target="basicAuth" data-wizard-field="basicAuthCredential" data-action="input->wizard#updateSetting">
+          <div class="form-check mt-3"><input id="wizardProxy" class="form-check-input" type="checkbox" data-wizard-target="proxyRequests" data-wizard-field="proxyRequests" data-action="change->wizard#updateSetting"><label class="form-check-label" for="wizardProxy">Proxy requests through Quepid</label></div>
+          <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>
+          <button type="button" class="btn btn-danger mt-3" data-wizard-target="skipButton" data-action="wizard#skipValidation">Skip Validation</button>
+        </section>
+        <section data-wizard-target="step" hidden>
+          <h2>How Should We Display Your Results?</h2>
+          <label class="form-label" for="wizardTitleField">Title Field</label><input id="wizardTitleField" class="form-control" data-wizard-target="titleField" data-wizard-field="titleField" data-action="input->wizard#updateSetting">
+          <label class="form-label mt-3" for="wizardIdField">ID Field</label><input id="wizardIdField" class="form-control" data-wizard-target="idField" data-wizard-field="idField" data-action="input->wizard#updateSetting">
+          <label class="form-label mt-3" for="wizardAdditionalFields">Additional Display Fields</label><input id="wizardAdditionalFields" class="form-control" data-wizard-target="additionalFields" data-wizard-field="additionalFields" data-action="input->wizard#updateSetting">
+          <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>
+        </section>
+        <section data-wizard-target="step" hidden>
+          <h2>Add Your Search Queries</h2>
+          <input class="form-control" data-wizard-target="queryText" data-wizard-field="text" data-action="input->wizard#updateSetting" placeholder="Search query">
+          <button type="button" class="btn btn-success mt-2" data-action="wizard#addQuery">Add Query</button>
+          <div class="mt-3" data-wizard-target="queryList"></div>
+          <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>
+        </section>
+        <section data-wizard-target="step" hidden>
+          <h2>That's It!</h2><p>Go to “Tune Relevance” to iterate on your relevance and manipulate searches.</p>
+          <button type="button" class="btn btn-primary float-end" data-wizard-target="finishButton" data-action="wizard#finish">Finish</button>
+        </section>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-action="wizard#close">Cancel</button></div>
+    </div>
+  </div>
+</div>

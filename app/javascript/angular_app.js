@@ -24,10 +24,7 @@ window.Sortable = Sortable;
 
 
 // Angular third-party modules (vendored sources; see vendor/README.md)
-import './vendor/angular-wizard/angular-wizard.js';
 import './vendor/angular-utils-pagination';
-import './vendor/angular-csv-import/lib/angular-csv-import.js';
-import './vendor/ng-tags-input/build/ng-tags-input.js';
 import 'file-saver';
 
 // ACE editor
@@ -39,7 +36,6 @@ import 'ace-builds/src-min-noconflict/mode-lucene';
 window.ace = ace;
 
 // Angular UI ACE
-import './vendor/angular-ui-ace/src/ui-ace.js';
 
 // Splainer Search (vanilla-JS 3.x wrapped in a local Angular shim)
 import './splainer_search_adapter';

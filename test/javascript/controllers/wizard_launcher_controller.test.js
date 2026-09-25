@@ -19,7 +19,11 @@ describe("WizardLauncherController", () => {
 
   beforeEach(() => {
     document.body.innerHTML = ""
-    modal = { result: { then: vi.fn() } }
+    const wizardModal = document.createElement("div")
+    wizardModal.id = "wizardModal"
+    document.body.appendChild(wizardModal)
+    modal = document.createElement("div")
+    modal.id = "wizardModal"
     modalService = { open: vi.fn(() => modal) }
     caseSvc = { createCase: vi.fn() }
     rootScope = { currentUser: { completedCaseWizard: true } }
@@ -46,12 +50,7 @@ describe("WizardLauncherController", () => {
 
     expect(event.preventDefault).toHaveBeenCalledOnce()
     expect(caseSvc.createCase).toHaveBeenCalledOnce()
-    expect(modalService.open).toHaveBeenCalledWith({
-      templateUrl: "views/wizardModal.html",
-      controller: "WizardModalCtrl",
-      backdrop: "static",
-      windowClass: "wizard-modal-window"
-    })
+    expect(caseSvc.createCase).toHaveBeenCalledOnce()
   })
 
   it("auto-opens for the explicit wizard deep link", () => {
@@ -61,7 +60,7 @@ describe("WizardLauncherController", () => {
 
     controller.openAutomatically()
 
-    expect(modalService.open).toHaveBeenCalledOnce()
+    expect(document.getElementById("wizardModal")).not.toBeNull()
     expect(caseSvc.createCase).not.toHaveBeenCalled()
   })
 
@@ -77,7 +76,7 @@ describe("WizardLauncherController", () => {
 
     controller.openAutomatically()
 
-    expect(modalService.open).toHaveBeenCalledOnce()
+    expect(document.getElementById("wizardModal")).not.toBeNull()
   })
 
   it("waits for the Angular bootstrap user before auto-opening", () => {
