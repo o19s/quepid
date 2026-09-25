@@ -160,7 +160,14 @@ class BooksController < ApplicationController
     @book.owner = current_user
 
     # Handle scorer selection
-    apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
+    if book_params[:scorer_id].blank?
+      @book.errors.add(:scorer_id, 'must be selected')
+      @ai_judges = []
+      render :new
+      return
+    end
+
+    apply_scorer_to_book(@book, book_params[:scorer_id])
 
     if @book.save
 
@@ -189,17 +196,13 @@ class BooksController < ApplicationController
     # an book that the current_user CAN NOT see, so we clear out of the relationship all the ones
     # they can see, and then repopulate it from the list of ids checked.  Checkboxes suck.
     team_ids_belonging_to_user = current_user.teams.pluck(:id)
-    teams = @book.teams.reject { |t| team_ids_belonging_to_user.include?(t.id) }
-    @book.teams.clear
-    book_params[:team_ids].each do |team_id|
-      teams << Team.find(team_id)
-    end
-
-    @book.teams.replace(teams)
+    preserved_team_ids = @book.team_ids - team_ids_belonging_to_user
+    selected_team_ids = Array(book_params[:team_ids]).compact_blank.map(&:to_i)
+    @book.team_ids = (preserved_team_ids + selected_team_ids).uniq
 
     # checkboxes suck
     @book.ai_judges.clear
-    ai_judge_ids = book_params[:ai_judge_ids].compact_blank
+    ai_judge_ids = Array(book_params[:ai_judge_ids]).compact_blank
     ai_judge_ids.each do |ai_judge_id|
       @book.ai_judges << User.find(ai_judge_id)
     end
@@ -448,7 +451,7 @@ class BooksController < ApplicationController
       return
     end
 
-    TrackBookViewedJob.perform_later current_user, @book
+    TrackBookViewedJob.perform_later current_user.id, @book.id
   end
 
   def find_user

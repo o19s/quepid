@@ -12,7 +12,7 @@ class TrackBookViewedJobTest < ActiveJob::TestCase
 
     assert_difference 'book.metadata.where(user: matt).count', 1 do
       perform_enqueued_jobs do
-        TrackBookViewedJob.perform_now(matt, book)
+        TrackBookViewedJob.perform_now(matt.id, book.id)
       end
     end
 
@@ -24,10 +24,22 @@ class TrackBookViewedJobTest < ActiveJob::TestCase
 
     assert_difference 'book.metadata.where(user: doug).count', 0 do
       perform_enqueued_jobs do
-        TrackBookViewedJob.perform_now(doug, book)
+        TrackBookViewedJob.perform_now(doug.id, book.id)
       end
     end
 
     assert_equal 1, book.metadata.where(user: doug).count
+  end
+
+  test 'ignores deleted users and books without failing' do
+    deleted_user_id = User.create!(email: 'deleted-book-viewer@example.com', password: 'password', name: 'Deleted Viewer').id
+    deleted_book_id = Book.create!(name: 'Deleted Book', owner: doug, scale: [ 0, 1 ]).id
+
+    User.find(deleted_user_id).destroy!
+    Book.find(deleted_book_id).really_destroy
+
+    assert_nothing_raised do
+      TrackBookViewedJob.perform_now(deleted_user_id, deleted_book_id)
+    end
   end
 end

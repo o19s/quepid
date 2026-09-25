@@ -444,4 +444,37 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal scorer.scale, created_book.scale
     assert_nil created_book.scale_with_labels
   end
+
+  def test_updating_a_book_removes_unchecked_visible_teams
+    login_user_for_integration_test user
+    team = user.teams.first
+    book.teams << team unless book.teams.include?(team)
+
+    patch "/books/#{book.id}", params: {
+      book: {
+        name:     book.name,
+        team_ids: [],
+      },
+    }
+
+    assert_redirected_to book_path(book)
+    assert_not_includes book.reload.team_ids, team.id
+  end
+
+  def test_creating_book_requires_a_rating_scale
+    login_user_for_integration_test user
+
+    post '/books', params: {
+      book: {
+        name:     'Book without a rating scale',
+        team_ids: [ user.teams.first.id ],
+      },
+    }
+
+    assert_response :success
+    assert_select '#error_explanation', /Scorer must be selected/
+    assert_select 'select[name="book[scorer_id]"].is-invalid'
+    assert_equal 'Book without a rating scale', assigns(:book).name
+    assert_not Book.exists?(name: 'Book without a rating scale')
+  end
 end

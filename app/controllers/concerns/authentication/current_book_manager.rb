@@ -8,7 +8,7 @@ module Authentication
 
     def set_book
       @book = current_user.books_involved_with.find(params.expect(:book_id))
-      TrackBookViewedJob.perform_later current_user, @book
+      TrackBookViewedJob.perform_later current_user.id, @book.id
     end
 
     def set_book_no_track
