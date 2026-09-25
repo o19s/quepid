@@ -2,6 +2,9 @@
 
 # rubocop:disable-next Metrics/ModuleLength
 module ApplicationHelper
+  def desktop_mode?
+    Rails.application.config.respond_to?(:desktop_mode) && Rails.application.config.desktop_mode
+  end
   # Returns the Quepid application root URL (no trailing slash).
   # Respects RAILS_RELATIVE_URL_ROOT so deployment under a subpath works.
   # Exposed on <body> as data-quepid-root-url for Stimulus/JS navigation fallbacks.

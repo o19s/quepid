@@ -812,6 +812,20 @@ The below steps are only if you want to customize the setup, and for basic testi
 
 For production deployments, you would typically configure Quepid to use your organization's existing OIDC provider (like Okta, Auth0, Azure AD, etc.) rather than Keycloak.
 
+## Desktop Mode
+
+The macOS application runs Quepid as a single local workspace. It enables Desktop Mode with:
+
+```env
+QUEPID_DESKTOP_MODE=true
+QUEPID_DESKTOP_USER_ID=1
+QUEPID_DESKTOP_USER_NAME=Your Mac Account Name
+```
+
+Desktop Mode selects the configured local user on every request and redirects login pages back to the application. The normal account and authentication behavior remains unchanged when `QUEPID_DESKTOP_MODE` is false. The desktop launcher creates the user and supplies the ID after initializing the SQLite database; `QUEPID_DESKTOP_USER_NAME` is used only for the initial display name.
+
+The packaged application should also bind Rails to loopback, keep its SQLite database and encryption keys outside the application bundle, and protect requests with its per-launch local access token. These are launcher responsibilities rather than defaults for general Quepid deployments.
+
 ## How to use the latest unreleased version via Docker
 
 There is a nightly build of the latest Quepid pushed to DockerHub, just use the tag `quepid:nightly`.
