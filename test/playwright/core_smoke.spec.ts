@@ -43,8 +43,9 @@ test.describe('core layout golden paths', () => {
   });
 
   test('open wizard', async ({ page }) => {
-    // wizardCtrl.js triggers the modal when ?showWizard=true is in the URL.
+    // wizard-launcher Stimulus controller triggers the legacy modal when ?showWizard=true is in the URL.
     await gotoCase(page, 'showWizard=true');
+    await expect(page.locator('[data-controller~="wizard-launcher"][data-wizard-launcher-auto-value="true"]')).toHaveCount(1);
     const modal = page.locator('.modal.show').first();
     await expect(modal).toBeVisible();
     await expect(modal).toContainText(/Name Your Case|Wizard/i);

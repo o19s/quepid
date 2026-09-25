@@ -160,10 +160,10 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
       "3.2":
         title: "Create a new case (setup wizard)"
-        last_run: 2026-09-25T15:32:00Z
+        last_run: 2026-09-25T17:12:00Z
         result: pass
-        notes: "Covered live via Playwright MCP on disposable case 254: captured Welcome/Name/Endpoint baseline screenshots, verified blank-name blocking, advanced through Name, expanded Create a new Search Endpoint, and confirmed the default Solr endpoint ping succeeded. Closed the wizard through the abandon confirmation and verified the disposable case was deleted via the API. Not covered live this pass: Fields/Query/Finish, tour completion, and other endpoint types."
-        paths: ["app/controllers/core_controller.rb", "app/assets/javascripts/controllers/wizardCtrl.js", "app/assets/javascripts/controllers/wizardModal.js", "app/assets/javascripts/services/queriesSvc.js", "app/assets/templates/views/wizardModal.html", "app/javascript/quepid_search.js", "app/javascript/utils/query_lifecycle.js"]
+        notes: "Re-drove the wizard Welcome state via Playwright MCP after moving the header/auto-launch entry point to Stimulus; the legacy modal still opened with the same appearance. Not covered live this pass: case creation, Fields/Query/Finish, tour completion, and other endpoint types."
+        paths: ["app/controllers/core_controller.rb", "app/javascript/controllers/wizard_launcher_controller.js", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/assets/javascripts/controllers/wizardModal.js", "app/assets/javascripts/services/queriesSvc.js", "app/assets/templates/views/wizardModal.html", "app/javascript/quepid_search.js", "app/javascript/utils/query_lifecycle.js"]
       "3.3":
         title: "Import a case from JSON"
         last_run: 2026-09-25T15:55:49Z

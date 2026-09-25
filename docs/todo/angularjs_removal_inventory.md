@@ -247,7 +247,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 **Component LOC** (all JS and HTML files in each remaining component folder, easiest → hardest): new_case (74) → diff (423).
 
-**Defer on the case workspace** (Solr JSONP, live state, or large modals): `diff`, `new-case` / wizard, `quepidTypeahead`, `quepidCollapse`. The expanded-results shell, result rendering, document rendering, Frog Report, and Tune Relevance drawer now run through Stimulus and the document store. The remaining deferred pieces imply rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or large modals): new-case / wizard, `quepidTypeahead`, `quepidCollapse`. The diff picker and renderer are now Stimulus-owned; snapshot search/scoring remains behind its explicit Angular bridge. The expanded-results shell, result rendering, document rendering, Frog Report, and Tune Relevance drawer now run through Stimulus and the document store. The remaining deferred pieces imply rebuilding the case SPA, not a framework swap.
 
 #### `queriesSvc` seam inventory (phase 1)
 
@@ -485,7 +485,7 @@ Routing is server-side (Rails); `MainCtrl` is attached directly in `core/index.h
 | Nightly/public/archived badges, scorer name | Angular bridge | `CaseCtrl` (`controllers/case.js`) survives only for the remaining toolbar gate and live case-model bindings |
 | Import ratings | Stimulus controller + Angular refresh bridge | `app/javascript/controllers/import_ratings_core_controller.js`, `app/views/shared/_import_ratings_core_modal.html.erb`; refreshes live query state through `imports:queries-need-reload` |
 | Diff renderer and picker | Stimulus renderer + temporary Angular state bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`, `app/javascript/utils/diff_results.js`; Angular still owns snapshot search/scoring |
-| New-case wizard launcher | controller | `WizardCtrl` — `controllers/wizardCtrl.js` |
+| New-case wizard launcher | Stimulus bridge | `app/javascript/controllers/wizard_launcher_controller.js`; the modal body remains the temporary Angular compatibility island |
 
 Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `snapshotSearcherSvc`, `SnapshotFactory`, `caseCSVSvc`, `bookSvc`, `qscoreSvc`
 
@@ -551,12 +551,11 @@ These Angular-specific wrappers are used across many templates:
 
 ---
 
-## Component inventory (2 Angular folders + 1 Stimulus controller)
+## Component inventory (1 Angular folder + 1 Stimulus controller)
 
 | Folder | Element | Purpose |
 |--------|---------|---------|
-| `diff` | `<diff>` | Snapshot diff renderer/state remains Angular; picker migrated to `diff-core` |
-| `new_case` | `<new-case>` | Header new-case entry |
+| `new_case` | — | Removed; header entry is server-rendered and Stimulus-owned |
 | `diff_case_scores_controller.js` | `diff-case-scores` | Snapshot/diff case score display |
 
 ---

@@ -31,7 +31,7 @@
   <%#
     The `ng-if` is not leftover Angular data binding - the attributes below are all server
     rendered. It gates *visibility* only, and it has to stay until <diff> and the remaining
-    the snapshot/export flows stop depending on live queriesSvc state.
+    the snapshot/diff/export flows stop depending on live queriesSvc state.
 
     Without it the toolbar is clickable from the first paint, roughly 1.5s before Angular has
     bootstrapped the case. "Create snapshot" clicked in that window posts with no query state

@@ -44,7 +44,15 @@
                 </small>
               </a>
 
-              <new-case button-text="'Create a case'"></new-case>
+              <button
+                type="button"
+                class="btn btn-success w-100"
+                data-controller="wizard-launcher"
+                data-action="click->wizard-launcher#newCase"
+              >
+                <i class="bi bi-plus-lg"></i>
+                Create a case
+              </button>
             </li>
           </ul>
         </li>

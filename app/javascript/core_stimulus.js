@@ -56,6 +56,7 @@ import QgraphController from "controllers/qgraph_controller"
 import MissingDocumentsController from "controllers/missing_documents_controller"
 import TuneRelevanceController from "controllers/tune_relevance_controller"
 import FrogReportController from "controllers/frog_report_controller"
+import WizardLauncherController from "controllers/wizard_launcher_controller"
 
 Turbo.session.drive = false
 
@@ -99,3 +100,4 @@ application.register("qgraph", QgraphController)
 application.register("missing-documents", MissingDocumentsController)
 application.register("tune-relevance", TuneRelevanceController)
 application.register("frog-report", FrogReportController)
+application.register("wizard-launcher", WizardLauncherController)
