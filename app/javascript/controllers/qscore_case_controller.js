@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { apiFetch } from "api/fetch"
 import { formatScore, scoreToColor } from "utils/scoring"
 
 /**
@@ -31,7 +32,9 @@ export default class extends Controller {
   static targets = ["value", "label"]
   static values = {
     caseId: Number,
-    scoreLabel: String
+    scoreLabel: String,
+    scoreUrl: String,
+    tryNumber: Number
   }
 
   initialize() {
@@ -101,30 +104,35 @@ export default class extends Controller {
       Object.keys(queries).length === 0
     ) return
 
-    const injector = window.angular?.element(document.body).injector?.()
-    const caseSvc = injector?.get?.("caseSvc")
-    const configurationSvc = injector?.get?.("configurationSvc")
-    if (!caseSvc || !configurationSvc) return
+    if (!this.hasScoreUrlValue || !this.scoreUrlValue) return
 
-    const caseId = this.caseIdValue
-    const tryNumber = configurationSvc.getTryNo()
+    const tryNumber = this.tryNumberValue
+    if (!Number.isInteger(tryNumber) || tryNumber <= 0) return
+
     const scoreData = {
       score: scoreInfo.score,
       all_rated: scoreInfo.allRated,
       try_number: tryNumber,
-      queries
+      queries: Object.fromEntries(
+        Object.entries(queries).map(([id, score]) => [
+          id,
+          score === null || score === undefined || score === "Null" ? "" : score
+        ])
+      )
     }
 
-    const persist = resolvedTryNumber => {
-      scoreData.try_number = resolvedTryNumber
-      return caseSvc.trackLastScore(caseId, scoreData)
-    }
-
-    if (Number.isNaN(tryNumber)) {
-      caseSvc.get(caseId).then(aCase => persist(aCase.lastTry))
-    } else {
-      persist(tryNumber)
-    }
+    return apiFetch(this.scoreUrlValue, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ case_score: scoreData })
+    }).then(response => {
+      if (!response.ok) throw new Error(`Unable to persist case score (${response.status})`)
+      document.dispatchEvent(new CustomEvent("case-score:persisted", {
+        detail: { caseId: this.caseIdValue }
+      }))
+    }).catch(error => {
+      console.error("qscore-case: score persistence failed", error)
+    })
   }
 
   async refreshCaseDiffScores({ refreshQueries = false, failed = false } = {}) {

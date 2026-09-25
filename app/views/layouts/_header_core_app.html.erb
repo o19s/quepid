@@ -49,6 +49,7 @@
                 class="btn btn-success w-100"
                 data-controller="wizard-launcher"
                 data-action="click->wizard-launcher#newCase"
+                data-wizard-launcher-create-url-value="<%= case_new_path.delete_prefix('/') %>"
               >
                 <i class="bi bi-plus-lg"></i>
                 Create a case

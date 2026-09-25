@@ -61,6 +61,8 @@
                       data-controller="qscore-case"
                       data-qscore-case-case-id-value="<%= @case.id %>"
                       data-qscore-case-score-label-value="<%= @case.scorer&.name %>"
+                      data-qscore-case-score-url-value="<%= api_case_scores_path(case_id: @case.id) %>"
+                      data-qscore-case-try-number-value="<%= @try&.try_number %>"
                     >
                       <span class="scorable-score" data-qscore-case-target="value"></span>
                       <span class="query-score-label low-profile" data-qscore-case-target="label"></span>
@@ -77,7 +79,14 @@
 
             <%= render 'core/queries', kase: @case %>
 
-            <div data-controller="wizard-launcher" data-wizard-launcher-auto-value="true"></div>
+            <div
+              data-controller="wizard-launcher"
+              data-wizard-launcher-auto-value="true"
+              data-wizard-launcher-completed-case-wizard-value="<%= current_user.completed_case_wizard %>"
+              data-wizard-launcher-cases-involved-with-count-value="<%= current_user.cases_involved_with.count %>"
+              data-wizard-launcher-teams-involved-with-count-value="<%= current_user.teams.count %>"
+              data-wizard-launcher-create-url-value="<%= case_new_path.delete_prefix('/') %>"
+            ></div>
           </div>
 
           <div class="east-slider">

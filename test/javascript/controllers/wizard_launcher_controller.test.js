@@ -11,11 +11,7 @@ function buildController({ auto = false } = {}) {
 }
 
 describe("WizardLauncherController", () => {
-  let injector
   let modal
-  let modalService
-  let caseSvc
-  let rootScope
 
   beforeEach(() => {
     document.body.innerHTML = ""
@@ -24,70 +20,46 @@ describe("WizardLauncherController", () => {
     document.body.appendChild(wizardModal)
     modal = document.createElement("div")
     modal.id = "wizardModal"
-    modalService = { open: vi.fn(() => modal) }
-    caseSvc = { createCase: vi.fn() }
-    rootScope = { currentUser: { completedCaseWizard: true } }
-    injector = {
-      get: vi.fn((name) => ({
-        $rootScope: rootScope,
-        $quepidModal: modalService,
-        caseSvc
-      }[name]))
-    }
-    window.angular = { element: vi.fn(() => ({ injector: () => injector })) }
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
-    delete window.angular
   })
 
   it("creates a case and opens the existing wizard from the header", () => {
     const controller = buildController()
+    controller.createUrlValue = "cases/new"
     const event = { preventDefault: vi.fn() }
+    const navigation = vi.spyOn(window.location, "assign").mockImplementation(() => {})
 
     controller.newCase(event)
 
     expect(event.preventDefault).toHaveBeenCalledOnce()
-    expect(caseSvc.createCase).toHaveBeenCalledOnce()
-    expect(caseSvc.createCase).toHaveBeenCalledOnce()
+    expect(navigation).toHaveBeenCalledWith("cases/new")
   })
 
   it("auto-opens for the explicit wizard deep link", () => {
     window.history.pushState({}, "", "/case/6/try/1?showWizard=true")
-    rootScope.currentUser = { completedCaseWizard: true }
     const controller = buildController({ auto: true })
+    controller.completedCaseWizardValue = true
+    controller.casesInvolvedWithCountValue = 2
+    controller.teamsInvolvedWithCountValue = 0
 
     controller.openAutomatically()
 
     expect(document.getElementById("wizardModal")).not.toBeNull()
-    expect(caseSvc.createCase).not.toHaveBeenCalled()
   })
 
   it("auto-opens for a first-case user", () => {
     window.history.pushState({}, "", "/case/6/try/1")
-    rootScope.currentUser = {
-      completedCaseWizard: false,
-      casesInvolvedWithCount: 1,
-      teamsInvolvedWithCount: 0,
-      introWizardSeen: false
-    }
     const controller = buildController({ auto: true })
+    controller.completedCaseWizardValue = false
+    controller.casesInvolvedWithCountValue = 1
+    controller.teamsInvolvedWithCountValue = 0
 
     controller.openAutomatically()
 
     expect(document.getElementById("wizardModal")).not.toBeNull()
   })
 
-  it("waits for the Angular bootstrap user before auto-opening", () => {
-    vi.useFakeTimers()
-    rootScope.currentUser = null
-    const controller = buildController({ auto: true })
-
-    controller.openAutomatically()
-    vi.advanceTimersByTime(100)
-
-    expect(modalService.open).not.toHaveBeenCalled()
-    vi.useRealTimers()
-  })
 })

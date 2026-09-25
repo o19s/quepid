@@ -6,7 +6,13 @@ import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
  * case workspace state migration is complete; the wizard UI and lifecycle are Stimulus-owned.
  */
 export default class extends Controller {
-  static values = { auto: Boolean }
+  static values = {
+    auto: Boolean,
+    completedCaseWizard: Boolean,
+    casesInvolvedWithCount: Number,
+    teamsInvolvedWithCount: Number,
+    createUrl: String
+  }
 
   connect() {
     if (!this.autoValue) return
@@ -24,28 +30,18 @@ export default class extends Controller {
   }
 
   openAutomatically() {
-    const rootScope = this.angularInjector()?.get("$rootScope")
-    const user = rootScope?.currentUser
-
-    if (!user) {
-      this.autoOpenTimer = window.setTimeout(() => this.openAutomatically(), 100)
-      return
-    }
-
     const query = new URLSearchParams(window.location.search)
     const deepLinked = query.get("showWizard") === "true"
-    const firstCase = !user.completedCaseWizard &&
-      user.casesInvolvedWithCount === 1 &&
-      user.teamsInvolvedWithCount === 0 &&
-      user.introWizardSeen !== true
+    const firstCase = !this.completedCaseWizardValue &&
+      this.casesInvolvedWithCountValue === 1 &&
+      this.teamsInvolvedWithCountValue === 0
 
     if (deepLinked || firstCase) this.openWizard(false)
   }
 
   openWizard(createCase) {
     if (createCase) {
-      const caseSvc = this.angularInjector()?.get("caseSvc")
-      caseSvc?.createCase()
+      window.location.assign(this.createUrlValue || "cases/new")
       return
     }
 
@@ -56,7 +52,4 @@ export default class extends Controller {
     showBsModal(getOrCreateBsModal(modal, { backdrop: "static", keyboard: false }))
   }
 
-  angularInjector() {
-    return window.angular?.element(document.body).injector?.()
-  }
 }

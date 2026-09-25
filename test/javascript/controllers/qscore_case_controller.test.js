@@ -19,6 +19,9 @@ function buildController(element, { caseId = 1, scoreLabel = "AP@10" } = {}) {
   controller.hasLabelTarget = !!controller.labelTarget
   controller.caseIdValue = caseId
   controller.scoreLabelValue = scoreLabel
+  controller.scoreUrlValue = ""
+  controller.tryNumberValue = 1
+  controller.hasScoreUrlValue = false
   return controller
 }
 
@@ -47,6 +50,7 @@ describe("QscoreCaseController", () => {
     delete window.quepidStore
     delete window.quepidSearch
     delete window.angular
+    vi.unstubAllGlobals()
   })
 
   it("renders '?' with the unscored color and the server-rendered label before the store has any data", () => {
@@ -156,24 +160,55 @@ describe("QscoreCaseController", () => {
   })
 
   it("does not persist the unrated '--' sentinel as a case score", () => {
-    const trackLastScore = vi.fn()
-    window.angular = {
-      element: () => ({
-        injector: () => ({
-          get: (service) => service === "caseSvc"
-            ? { trackLastScore }
-            : { getTryNo: () => 1 }
-        })
-      })
-    }
-
+    const fetch = vi.fn()
+    vi.stubGlobal("fetch", fetch)
     const controller = buildController(element)
     controller.persistScore({
       caseScore: { score: "--", allRated: false },
       queryScores: { 1: { score: "--" } }
     })
 
-    expect(trackLastScore).not.toHaveBeenCalled()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it("persists a scored case through the server-owned score URL", async () => {
+    const fetch = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal("fetch", fetch)
+    const controller = buildController(element, { caseId: 7 })
+    controller.scoreUrlValue = "api/cases/1/scores"
+    controller.hasScoreUrlValue = true
+
+    await controller.persistScore({
+      caseScore: { score: 0.8, allRated: true },
+      queryScores: { 1: { score: 0.8 }, 2: { score: null } }
+    })
+    expect(fetch).toHaveBeenCalledWith("api/cases/1/scores", expect.objectContaining({
+      method: "PUT",
+      body: JSON.stringify({
+        case_score: {
+          score: 0.8,
+          all_rated: true,
+          try_number: 1,
+          queries: { 1: { score: 0.8 }, 2: { score: null } }
+        }
+      })
+    }))
+  })
+
+  it("does not persist a score without a valid try number", () => {
+    const fetch = vi.fn()
+    vi.stubGlobal("fetch", fetch)
+    const controller = buildController(element)
+    controller.scoreUrlValue = "api/cases/1/scores"
+    controller.hasScoreUrlValue = true
+    controller.tryNumberValue = 0
+
+    controller.persistScore({
+      caseScore: { score: 0.8, allRated: true },
+      queryScores: { 1: { score: 0.8 } }
+    })
+
+    expect(fetch).not.toHaveBeenCalled()
   })
 
   it("recalculates and publishes case-level diff scores", async () => {
