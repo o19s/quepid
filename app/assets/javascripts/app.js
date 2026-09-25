@@ -10,7 +10,6 @@ angular.module('QuepidApp', [
   'UtilitiesModule',
   'ngSanitize',
   'o19s.splainer-search',
-  'angularUtils.directives.dirPagination',
   'ng-rails-csrf',
   'templates',
 ]);

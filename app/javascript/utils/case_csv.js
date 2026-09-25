@@ -1,14 +1,8 @@
 /**
- * CSV builders for the core case toolbar's "Export" modal (general and
- * snapshot formats). Ported from the AngularJS `caseCSVSvc.stringify` /
- * `stringifySnapshot` it replaces — see
- * `spec/javascripts/angular/services/caseCSVSvc_spec.js` (Karma) for the
- * escaping edge cases this preserves, now covered by this file's Vitest spec.
+ * CSV builders for the core case toolbar's "Export" modal.
  *
- * The "detailed" format is intentionally not ported here — it needs the
- * live, already-searched documents held in the still-running Angular
- * `queriesSvc`, not data the server can reconstruct. See
- * `export_case_core_controller.js` and `caseCSVSvc.js`.
+ * Detailed export also uses the live document read model. The search results
+ * are already published into `queryDocumentsStore`.
  */
 
 const EOL = "\r\n"
@@ -71,8 +65,8 @@ export function formatShortDate(dateString) {
 }
 
 /**
- * "General" export format: one row per scored query, mirroring the AngularJS
- * `caseCSVSvc.stringify(aCase, queriesSvc.queries, true)`.
+ * "General" export format: one row per scored query, mirroring the former
+ * AngularJS export service.
  *
  * @param {object} caseData - `GET api/cases/:id?shallow=false` response
  * @param {object[]} queries - `GET api/cases/:id/queries` response's `queries` array
@@ -123,8 +117,64 @@ export function buildGeneralCaseCsv(caseData, queries) {
 }
 
 /**
- * "Snapshot" export format, mirroring the AngularJS
- * `caseCSVSvc.stringifySnapshot(aCase, snapshot, true)`.
+ * Detailed export from the live document read model. The case endpoint
+ * supplies metadata and last-score state; each query contains the plain
+ * document snapshots published by queriesSvc.
+ */
+export function buildDetailedCaseCsv(caseData, queries) {
+  const lastScore = caseData.last_score
+  if (!lastScore) return ""
+
+  const firstQuery = Object.values(queries)[0]
+  if (!firstQuery) return ""
+
+  const fieldSpec = firstQuery.fieldSpec || {}
+  const idField = fieldSpec.id
+  const titleField = fieldSpec.title
+  const fields = (fieldSpec.fields || []).filter(
+    (field) => field !== idField && field !== titleField
+  )
+  const header = [
+    "Team Name",
+    "Case Name",
+    "Case ID",
+    "Query Text",
+    "Doc ID",
+    "Doc Position",
+    "Title",
+    "Rating",
+    ...fields
+  ]
+  const teamNames = (caseData.teams || []).map((team) => team.name).join(", ")
+  const caseId = lastScore.case_id ?? caseData.case_id
+  let csv = csvRow(header)
+
+  Object.values(queries).forEach((query) => {
+    const base = [teamNames, caseData.case_name, caseId, query.queryText]
+    const docs = query.docs || []
+
+    if (docs.length === 0) {
+      csv += csvRow(base)
+      return
+    }
+
+    docs.forEach((doc, index) => {
+      csv += csvRow([
+        ...base,
+        doc.id,
+        index + 1,
+        doc.title,
+        doc.rating,
+        ...fields.map((field) => doc.rawFields?.[field])
+      ])
+    })
+  })
+
+  return csv
+}
+
+/**
+ * "Snapshot" export format, mirroring the former AngularJS export service.
  *
  * @param {number|string} caseId
  * @param {object} snapshotData - `GET api/cases/:id/snapshots/:id?shallow=false` response

@@ -23,8 +23,6 @@ import Sortable from 'sortablejs';
 window.Sortable = Sortable;
 
 
-// Angular third-party modules (vendored sources; see vendor/README.md)
-import './vendor/angular-utils-pagination';
 import 'file-saver';
 
 // ACE editor

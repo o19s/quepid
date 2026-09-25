@@ -1,29 +1,21 @@
 import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
 import { apiFetch } from "api/fetch"
-import { buildGeneralCaseCsv, buildSnapshotCsv, formatDownloadFileName, formatShortDate } from "utils/case_csv"
+import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, formatDownloadFileName, formatShortDate } from "utils/case_csv"
 import { downloadBlob } from "utils/download_file"
 import { caseNameFromHeader } from "utils/case_header"
+import { queryDocumentsStore } from "stores/query_documents_store"
 
 const CASE_ID_PLACEHOLDER = "__CASE_ID__"
 const SNAPSHOT_ID_PLACEHOLDER = "__SNAPSHOT_ID__"
 const FORMAT_PLACEHOLDER = "__FORMAT__"
 
 /**
- * Export-case modal for the core case toolbar — mirrors the AngularJS
- * `<export-case>` component/`_modal.html` it replaces: one radio-button
+ * Export-case modal for the core case toolbar — one radio-button
  * choice of export format, then an immediate download (the modal always
- * closes on "Export", matching Angular's close-then-download flow — there is
- * no inline success/failure alert to preserve, Angular didn't show one).
+ * closes on "Export".
  *
- * Every format except "detailed" is reconstructed from persisted API data
- * (case/queries/snapshot endpoints already used elsewhere), so this fully
- * replaces AngularJS's `caseCSVSvc.stringify` / `stringifySnapshot` and the
- * plain `$http` + `saveAs` downloads. "detailed" needs the live,
- * already-searched documents held in the still-running Angular
- * `queriesSvc` (not reconstructable from the server without re-running the
- * search), so it stays bridged via a CustomEvent to `caseCSVSvc.js` until the
- * live-query-state migration phase — see
- * docs/todo/angularjs_removal_inventory.md.
+ * Every format is reconstructed from persisted API data plus the live
+ * document read model for "detailed" exports.
  *
  * Same dual-role pattern as share/clone/delete-case-options-core (shared via
  * ModalTriggerControllerBase): the trigger reads case id/name off its own
@@ -233,8 +225,19 @@ export default class extends ModalTriggerControllerBase {
     downloadBlob(new Blob([ csv ], { type: "text/csv" }), this._fileName("general.csv"))
   }
 
-  _downloadDetailed() {
-    document.dispatchEvent(new CustomEvent("export-case:detailed", { detail: { caseId: this.currentCaseId } }))
+  async _downloadDetailed() {
+    const response = await apiFetch(this._url(this.caseUrlTemplateValue), {
+      headers: { Accept: "application/json" }
+    })
+    if (!response.ok) {
+      console.error("export-case-core: detailed export failed", response.status)
+      return
+    }
+
+    const caseData = await response.json()
+    const queries = queryDocumentsStore.snapshot().queries
+    const csv = buildDetailedCaseCsv(caseData, queries)
+    downloadBlob(new Blob([ csv ], { type: "text/csv" }), this._fileName("detailed.csv"))
   }
 
   async _downloadSnapshot() {

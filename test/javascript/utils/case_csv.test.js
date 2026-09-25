@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest"
-import { buildGeneralCaseCsv, buildSnapshotCsv, csvField, formatDownloadFileName } from "utils/case_csv"
+import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, csvField, formatDownloadFileName } from "utils/case_csv"
 
-// Escaping edge cases below mirror spec/javascripts/angular/services/caseCSVSvc_spec.js's
-// "stringify" examples (Karma baseline for the AngularJS service this ports).
+// Escaping edge cases preserve the AngularJS export behavior this utility ports.
 describe("buildGeneralCaseCsv", () => {
   const baseCaseData = {
     case_name: "Test Case",
@@ -89,6 +88,46 @@ describe("buildSnapshotCsv", () => {
     const result = buildSnapshotCsv(8, { ...snapshotData, queries: [] })
 
     expect(result).toEqual("Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position,title\r\n")
+  })
+})
+
+describe("buildDetailedCaseCsv", () => {
+  it("exports the live document read model with configured fields", () => {
+    const result = buildDetailedCaseCsv(
+      {
+        case_name: "Test Case",
+        case_id: 8,
+        teams: [ { name: "Test Team" } ],
+        last_score: { case_id: 8 }
+      },
+      {
+        1: {
+          queryText: "dog",
+          fieldSpec: { fields: [ "id", "title", "brand" ], id: "id", title: "title" },
+          docs: [
+            { id: "doc-1", title: "Good dog", rating: 2, rawFields: { brand: "Acme" } }
+          ]
+        }
+      }
+    )
+
+    expect(result).toBe(
+      "Team Name,Case Name,Case ID,Query Text,Doc ID,Doc Position,Title,Rating,brand\r\n" +
+      "Test Team,Test Case,8,dog,doc-1,1,Good dog,2,Acme\r\n"
+    )
+  })
+
+  it("keeps empty-query rows compatible with the Angular export", () => {
+    const result = buildDetailedCaseCsv(
+      { case_name: "Test Case", case_id: 8, teams: [], last_score: { case_id: 8 } },
+      { 1: { queryText: "dog", fieldSpec: { fields: [ "id", "title" ], id: "id", title: "title" }, docs: [] } }
+    )
+
+    // The legacy implementation emits only the four available row fields.
+    expect(result).toBe(
+      "Team Name,Case Name,Case ID,Query Text,Doc ID,Doc Position,Title,Rating\r\n" +
+      ",Test Case,8,dog\r\n"
+    )
   })
 })
 

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import { downloadBlob } from "utils/download_file"
+import { queryDocumentsStore } from "stores/query_documents_store"
 import ExportCaseCoreController from "controllers/export_case_core_controller"
 import { mountCaseHeader } from "../support/case_header_dom"
 
@@ -92,6 +93,7 @@ function okJsonResponse(body) {
 describe("ExportCaseCoreController", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    queryDocumentsStore.reset()
   })
 
   afterEach(() => {
@@ -211,17 +213,30 @@ describe("ExportCaseCoreController", () => {
       expect(downloadBlob).toHaveBeenCalledWith(expect.any(Blob), "Movies_general.csv")
     })
 
-    it("detailed: dispatches a bridge event instead of fetching anything", async () => {
-      const dispatchSpy = vi.spyOn(document, "dispatchEvent")
+    it("detailed: fetches case metadata and exports the live document read model", async () => {
+      apiFetch.mockResolvedValue(okJsonResponse({
+        case_name: "Movies",
+        case_id: 5,
+        teams: [],
+        last_score: { case_id: 5 }
+      }))
+      queryDocumentsStore.replaceQuery(1, {
+        queryText: "star wars",
+        fieldSpec: { fields: [ "id", "title" ], id: "id", title: "title" },
+        docs: []
+      })
       const controller = buildModalController()
       controller.currentCaseId = "5"
+      controller.currentCaseName = "Movies"
       controller.selectedFormat = "detailed"
 
       await controller.submit()
 
-      expect(apiFetch).not.toHaveBeenCalled()
-      expect(dispatchSpy).toHaveBeenCalledWith(expect.objectContaining({ type: "export-case:detailed" }))
-      expect(dispatchSpy.mock.calls[0][0].detail).toEqual({ caseId: "5" })
+      expect(apiFetch).toHaveBeenCalledWith(
+        "/api/cases/5",
+        expect.objectContaining({ headers: { Accept: "application/json" } })
+      )
+      expect(downloadBlob).toHaveBeenCalledWith(expect.any(Blob), "Movies_detailed.csv")
     })
 
     it("basic: exports the plain ratings CSV when no snapshot is chosen", async () => {

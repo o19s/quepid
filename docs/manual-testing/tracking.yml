@@ -346,10 +346,10 @@ parts:
     scenarios:
       "6.1":
         title: "Export a case"
-        last_run: 2026-09-25T15:51:50Z
-        result: pass
-        notes: "Covered live via Playwright MCP: opened Export Case on case 219, selected General and downloaded E2E-Static-Fixture-10s-of-Queries-general.csv. Also selected the Quepid export format and downloaded E2E-Static-Fixture-10s-of-Queries-case.json for the import round-trip. Other export formats and the Detailed-unsupported warning were not covered."
-        paths: ["app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/assets/javascripts/services/caseCSVSvc.js", "app/controllers/api/v1/export"]
+        last_run: 2026-09-25T20:01:06Z
+        result: blocked
+        notes: "Partially re-driven live via Playwright MCP on case 6: opened Export Case, selected Detailed, and captured .playwright-mcp/export-case/detailed-modal-after.png. The Playwright transport closed when clicking Export, so the actual detailed download and file contents were not verified in this pass."
+        paths: ["app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/stores/query_documents_store.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/controllers/api/v1/export"]
       "6.2":
         title: "Import into a case (ratings / information needs / snapshots)"
         last_run: 2026-09-25T15:50:00Z

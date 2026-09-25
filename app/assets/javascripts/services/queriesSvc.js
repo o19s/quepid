@@ -211,6 +211,14 @@ angular.module('QuepidApp')
 
         queryDocumentsStore.replaceQuery(query.queryId, {
           queryText: query.queryText,
+          fieldSpec: (function() {
+            var fieldSpec = angular.isFunction(query.fieldSpec) ? query.fieldSpec() : {};
+            return {
+              fields: (fieldSpec.fields || []).slice(),
+              id: fieldSpec.id,
+              title: fieldSpec.title
+            };
+          }()),
           docs: query.docs,
           ratedDocs: query.ratedDocs,
           numFound: query.numFound,

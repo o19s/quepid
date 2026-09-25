@@ -7,7 +7,6 @@ Third-party JavaScript that Quepid previously loaded from `package.json` now liv
 | Directory | Role |
 |-----------|------|
 | `angular-sanitize` | AngularJS satellite: `ngSanitize` |
-| `angular-utils-pagination/` | `angularUtils.directives.dirPagination` |
 | `angular-ui-ace/` | `ui.ace` |
 
 JSON tree display no longer uses a vendored Angular directive — see `utils/json_explorer.js` and `app/assets/stylesheets/json-explorer.css` (copied to `builds/` by `build_css.js`).
