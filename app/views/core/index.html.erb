@@ -9,7 +9,7 @@
 
   What stays Angular, and why:
     * the score-history graph - Stimulus/Vega, backed by the case scores and annotations APIs.
-    * <queries>      - the query list and search results island.
+    * the query list and search results island - rendered by `core/_queries`.
     * the import action is Stimulus-owned; live query refresh remains bridged to Angular.
     * the east pane  - the Tune Relevance drawer, Stimulus-owned with an Angular settings bridge.
 
@@ -17,9 +17,8 @@
   mechanism, step 4) is Stimulus now, driven by window.quepidStore.scoring - see
   app/javascript/controllers/qscore_case_controller.js.
 
-  Those Angular elements are compiled by Angular at bootstrap like any other markup inside
-  `ng-app`, including inside the plain wrapper divs below. <queries> does not declare an
-  isolate scope, so QueriesCtrl publishes its remaining live-query state onto MainCtrl's scope.
+  The deferred live-result controls are compiled by Angular at bootstrap. The query-list shell
+  itself is Rails + Stimulus and no longer depends on an Angular controller scope.
 %>
 <div id="flash-messages">
   <div class="flash fade" data-controller="flash" data-flash-channel-value="main">
@@ -85,8 +84,7 @@
 
             <%= render 'core/case_toolbar', kase: @case, a_try: @try %>
 
-            <!-- see queries directive -->
-            <queries></queries>
+            <%= render 'core/queries', kase: @case %>
 
             <div ng-controller="WizardCtrl"></div>
           </div>

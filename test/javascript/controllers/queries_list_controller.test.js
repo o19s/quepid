@@ -71,8 +71,15 @@ describe("queries_list_controller", () => {
 
     expect(element.querySelector('[data-queries-list-target="ratedCheckbox"]').disabled).toBe(true)
     expect(element.querySelector('[data-queries-list-target="ratedLabel"]').classList.contains("text-muted")).toBe(true)
+    expect(element.querySelector('[data-queries-list-target="ratedLabel"]').title).toBe("Not supported for this search engine yet")
     expect(element.querySelector('[data-queries-list-target="manualHelp"]').classList.contains("d-none")).toBe(false)
     expect(element.querySelector('[data-queries-list-target="manualSortLink"]').classList.contains("d-none")).toBe(true)
+  })
+
+  it("removes the rated-filter tooltip when the control is supported", () => {
+    const { element } = controllerFor()
+
+    expect(element.querySelector('[data-queries-list-target="ratedLabel"]').title).toBe("")
   })
 
   it("owns toolbar actions without an Angular event bridge", () => {

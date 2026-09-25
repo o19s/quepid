@@ -117,8 +117,10 @@ angular.module('QuepidApp')
       window.quepidSearch.queryState.getListState = function() {
         var selectedTry = settingsSvc.applicableSettings() || {};
         return {
+          canAddQueries: selectedTry.searchEngine !== 'static',
+          addQueryMessage: selectedTry.searchEngine === 'static' ? 'Adding queries is not supported' : 'Add a query to this case',
           showOnlyRated: svc.showOnlyRated === true,
-          // Match QueriesCtrl#showOnlyRatedUnsupported: while the case is
+          // Match the query-list controller's showOnlyRatedUnsupported state: while the case is
           // still loading, no selected try means the capability is unknown,
           // not unsupported.
           showOnlyRatedUnsupported: settingsSvc.isTrySelected() ? !trySupportsRatedDocsLookup(selectedTry) : false,
@@ -185,7 +187,7 @@ angular.module('QuepidApp')
       }
 
       // Rated-docs lookup rules live in app/javascript/utils/rated_docs.js (Vitest-covered);
-      // these stay as the Angular-facing names that queriesCtrl.js and docFinder.js call.
+      // these stay as the Angular-facing names that deferred result controls and docFinder.js call.
       function trySupportsSearchApiRatedDocsLookup(aTry) {
         return window.quepidSearch.ratedDocs.supportsSearchApiLookup(aTry);
       }
@@ -1276,7 +1278,7 @@ angular.module('QuepidApp')
         // An engine that hasn't opted in via mapperBasedSearchEngineSupportsRatedDocsLookup
         // (no ratedDocsQueryParamsMapper) can't support "Show only rated" at all - rather than
         // silently show unfiltered results mislabeled as "rated", self.ratedDocsUnsupported is
-        // set so the UI can disable the control and say why (see queriesCtrl.js/queries.html).
+        // set so the UI can disable the control and say why (see core/_queries.html.erb).
         function refreshRatedDocsForSearchApi(settings, requestGeneration) {
           self.ratedDocsUnsupported = !svc.trySupportsSearchApiRatedDocsLookup(settings.selectedTry);
 
@@ -2078,7 +2080,7 @@ angular.module('QuepidApp')
           // Dual-run shadow store (docs/todo/angularjs_removal_inventory.md §
           // Re-render mechanism, step 3). Pure side effect — does not affect
           // Angular's own rendering, which still reads svc.latestScoreInfo via
-          // avgQuery.currentScore / queriesCtrl's $watchGroup.
+          // avgQuery.currentScore / the retired Angular query-list watch group.
           //
           // Only mirror a full-case scoreAll() — the store replaces its whole
           // query-score set on every write (by design, see
@@ -2114,6 +2116,14 @@ angular.module('QuepidApp')
         });
         return $q.all(refreshes).then(function() {
           angular.forEach(svc.queries, publishQueryDocuments);
+          document.dispatchEvent(new CustomEvent('query-diffs:refreshed', {
+            detail: { success: true }
+          }));
+        }, function(error) {
+          document.dispatchEvent(new CustomEvent('query-diffs:refreshed', {
+            detail: { success: false }
+          }));
+          return $q.reject(error);
         });
       };
 

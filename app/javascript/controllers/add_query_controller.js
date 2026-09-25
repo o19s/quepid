@@ -14,6 +14,12 @@ export default class extends Controller {
   }
 
   connect() {
+    this.queryState = window.quepidSearch?.queryState
+    this.onQueryStateChange = () => {
+      this.queryState = window.quepidSearch?.queryState
+      this.render()
+    }
+    document.addEventListener("queries-state:changed", this.onQueryStateChange)
     this.onComplete = event => this.complete(event)
     this.element.addEventListener("add-query:complete", this.onComplete)
     this.detachPaste = attachTextPaste(this.inputTarget, text => {
@@ -25,12 +31,13 @@ export default class extends Controller {
 
   disconnect() {
     this.detachPaste?.()
+    document.removeEventListener("queries-state:changed", this.onQueryStateChange)
     this.element.removeEventListener("add-query:complete", this.onComplete)
   }
 
   submit(event) {
     event.preventDefault()
-    if (this.loading || !this.canAddQueriesValue) return
+    if (this.loading || !this.canAddQueries()) return
 
     const queryTexts = this.inputTarget.value
       .split(";")
@@ -60,9 +67,15 @@ export default class extends Controller {
 
   render() {
     const empty = !this.inputTarget.value.trim()
-    this.submitTarget.disabled = !this.canAddQueriesValue || empty || this.loading
+    const canAdd = this.canAddQueries()
+    this.submitTarget.disabled = !canAdd || empty || this.loading
     this.submitTarget.value = this.inputTarget.value.includes(";") ? "Add queries" : "Add query"
-    this.inputTarget.placeholder = this.placeholderValue
+    this.inputTarget.placeholder = this.queryState?.getListState?.()?.addQueryMessage || this.placeholderValue || "Add a query to this case"
     this.spinnerTarget.classList.toggle("d-none", !this.loading)
+  }
+
+  canAddQueries() {
+    const state = this.queryState?.getListState?.()
+    return state ? state.canAddQueries !== false : this.canAddQueriesValue
   }
 }

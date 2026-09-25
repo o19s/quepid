@@ -36,12 +36,25 @@ export default class extends Controller {
 
   initialize() {
     this.store = window.quepidStore.scoring
+    this.diffRefreshGeneration = 0
     this.onStoreChange = () => this.renderScore()
+    this.onScoringComplete = event => {
+      this.persistScore(event.detail)
+      this.refreshCaseDiffScores()
+    }
+    this.onRatingChanged = () => this.refreshCaseDiffScores({ refreshQueries: true })
+    this.onDiffsRefreshed = event => this.refreshCaseDiffScores({
+      refreshQueries: false,
+      failed: event.detail?.success === false
+    })
     this.onScorerSelected = (event) => this.handleScorerSelected(event)
   }
 
   connect() {
     this.store.addEventListener("change", this.onStoreChange)
+    this.store.addEventListener("scoring-complete", this.onScoringComplete)
+    this.store.addEventListener("rating-changed", this.onRatingChanged)
+    document.addEventListener("query-diffs:refreshed", this.onDiffsRefreshed)
     document.addEventListener("pick-scorer:selected", this.onScorerSelected)
     this.renderScore()
     this.renderLabel()
@@ -49,6 +62,9 @@ export default class extends Controller {
 
   disconnect() {
     this.store.removeEventListener("change", this.onStoreChange)
+    this.store.removeEventListener("scoring-complete", this.onScoringComplete)
+    this.store.removeEventListener("rating-changed", this.onRatingChanged)
+    document.removeEventListener("query-diffs:refreshed", this.onDiffsRefreshed)
     document.removeEventListener("pick-scorer:selected", this.onScorerSelected)
   }
 
@@ -71,5 +87,85 @@ export default class extends Controller {
 
     this.element.style.backgroundColor = scoreToColor(score, maxScore)
     this.valueTarget.textContent = formatScore(score)
+  }
+
+  persistScore(snapshot) {
+    const scoreInfo = snapshot?.caseScore
+    const queries = snapshot?.queryScores
+    if (
+      !scoreInfo ||
+      typeof scoreInfo.score !== "number" ||
+      !Number.isFinite(scoreInfo.score) ||
+      scoreInfo.score === -1 ||
+      !queries ||
+      Object.keys(queries).length === 0
+    ) return
+
+    const injector = window.angular?.element(document.body).injector?.()
+    const caseSvc = injector?.get?.("caseSvc")
+    const configurationSvc = injector?.get?.("configurationSvc")
+    if (!caseSvc || !configurationSvc) return
+
+    const caseId = this.caseIdValue
+    const tryNumber = configurationSvc.getTryNo()
+    const scoreData = {
+      score: scoreInfo.score,
+      all_rated: scoreInfo.allRated,
+      try_number: tryNumber,
+      queries
+    }
+
+    const persist = resolvedTryNumber => {
+      scoreData.try_number = resolvedTryNumber
+      return caseSvc.trackLastScore(caseId, scoreData)
+    }
+
+    if (Number.isNaN(tryNumber)) {
+      caseSvc.get(caseId).then(aCase => persist(aCase.lastTry))
+    } else {
+      persist(tryNumber)
+    }
+  }
+
+  async refreshCaseDiffScores({ refreshQueries = false, failed = false } = {}) {
+    this.diffRefreshGeneration ??= 0
+    const refreshGeneration = ++this.diffRefreshGeneration
+    const injector = window.angular?.element(document.body).injector?.()
+    const queryViewSvc = injector?.get?.("queryViewSvc")
+    const queriesSvc = injector?.get?.("queriesSvc")
+    const documentsStore = window.quepidStore?.documents
+    const buildCaseDiffScores = window.quepidSearch?.diffScores?.buildCaseDiffScores
+
+    if (!queryViewSvc || !queriesSvc || !documentsStore || !buildCaseDiffScores) return
+
+    if (failed) {
+      documentsStore.clearCaseDiffs()
+      return
+    }
+
+    if (!queryViewSvc.isAnyDiffEnabled()) {
+      documentsStore.clearCaseDiffs()
+      return
+    }
+
+    const queries = Object.values(queriesSvc.queries || {})
+    try {
+      if (refreshQueries) {
+        await Promise.all(
+          queries
+            .filter(query => query?.diffs?.fetch)
+            .map(query => query.diffs.fetch())
+        )
+      }
+
+      if (refreshGeneration !== this.diffRefreshGeneration) return
+
+      const maxScore = this.store.caseScore?.maxScore || 1
+      documentsStore.setCaseDiffs(buildCaseDiffScores(queries, maxScore))
+    } catch (error) {
+      if (refreshGeneration === this.diffRefreshGeneration) {
+        documentsStore.clearCaseDiffs()
+      }
+    }
   }
 }

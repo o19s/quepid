@@ -58,8 +58,8 @@ deregister). `R` and `S` columns below distinguish them.
 | `associateBook` | `caseSvc.js:168,501` | `queriesSvc.js:74` | R | `queriesSvc` listener is `$rootScope.$on` (aliased `$scope`). `:168` is the Stimulus bridge from `quepid:case-team-changed`. `headerCtrl.js`'s listener is gone (same removal as `caseSelected`) |
 | `settings-changed` | `settingsSvc.js:496` | *(none found)* | — | **Dead emit** — emitted on try-list fetch; no listener (COREUI doc reference is stale) |
 | `settings-updated` | `settingsSvc.js:637,727` | `caseSvc.js:94` (per `Case` instance) | R | **Leak:** listener registered inside `Case` constructor — one `$rootScope.$on` per constructed case |
-| `rating-changed` | `ratingsStoreSvc.js:29` → `window.quepidStore.scoring` (legacy `$rootScope.$emit` fallback) | Store listeners in `queriesSvc.js`, `queriesCtrl.js`, `searchResults.js` (legacy service fallback only) | R | Store event carries `{ detail: { queryId } }`; per-row listeners deregister on `$destroy` |
-| `scoring-complete` | `CaseScoreStore.setLatestScoreInfo()`; legacy add-query emitter removed | Store listener in `queriesCtrl.js` | R | Published after the store's `change`; Angular consumers re-enter through `$evalAsync` |
+| `rating-changed` | `ratingsStoreSvc.js:29` → `window.quepidStore.scoring` (legacy `$rootScope.$emit` fallback) | Store listeners in `queriesSvc.js`, deferred `searchResults.js` (legacy service fallback only) | R | Store event carries `{ detail: { queryId } }`; per-row listeners deregister on `$destroy` |
+| `scoring-complete` | `CaseScoreStore.setLatestScoreInfo()`; legacy add-query emitter removed | Store listener in `qscore_case_controller.js` | R | Published after the store's `change`; Stimulus updates the case score and preserves score persistence through the Angular service bridge |
 | `updatedQueriesList` | `queriesSvc.js:1371` (commented out) | *(none)* | — | Commented-out emit; remove next time someone touches that file |
 
 ## Emitter index (`broadcastSvc.send`)
@@ -84,7 +84,7 @@ above as a result: it registered zero other `broadcastSvc.send` calls.
 
 | File | Kind | Events | Deregisters? |
 |------|------|--------|--------------|
-| `controllers/queriesCtrl.js` | R | `scoring-complete`, `rating-changed` | yes (`$destroy`) |
+| `controllers/qscore_case_controller.js` | S | `scoring-complete` | yes (`disconnect`) |
 | `controllers/searchResults.js` | R | `rating-changed` | **no** — one listener per `SearchResultsCtrl` instance |
 | `services/caseSvc.js` | R | `caseRenamed` | **no** (singleton; acceptable) |
 | `services/caseSvc.js` (`Case` ctor) | R | `settings-updated` | **no** — **multiplies per constructed case** |
@@ -113,8 +113,8 @@ above as a result: it registered zero other `broadcastSvc.send` calls.
    no `ng-{{…}}` bindings depended on the digest side-effect.
 
 3. **`$rootScope.$on` leaks — audit before migrating.**
-   - `queriesCtrl` captures deregistration return values and calls them on
-     `$destroy` — good pattern to copy.
+   - the retired query-list coordinator captured deregistration return values and called them on
+     `$destroy`; its replacement removes listeners in Stimulus `disconnect`.
    - `searchResults.js` registers `$rootScope.$on('rating-changed')` per controller
      instance with no deregister — leaks when query rows are recreated.
    - `Case` constructor (`caseSvc.js:94`) registers `$rootScope.$on('settings-updated')`

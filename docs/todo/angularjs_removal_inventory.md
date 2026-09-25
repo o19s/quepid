@@ -240,7 +240,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 |------|-----|-----|
 | **queriesSvc** | 1,767 | Central case state — search, docs, scores, persistence |
 | **wizardModal** | 1,072 | Onboarding wizard (ACE, CSV, tags, tour) |
-| **queriesCtrl** | 607 | Query list UX (sort, filter, paginate, keyboard) |
+| **queriesCtrl** | retired 2026-09-24 | Query-list UX moved to `queries_list_controller.js`; live search/scoring remains in `queriesSvc` |
 | **settingsSvc** / **caseSvc** | 754 / 552 | Try / case domain model |
 | **$quepidModal** | 272 | BS5 modals + `$compile` — 11 `.open()` call sites (23 files reference `$quepidModal`) |
 | **ScorerFactory** | 666 | Scoring model + judgement math |
@@ -282,7 +282,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Remaining, in slice order (2026-09-24).** The expanded-results Angular bridge is complete: the document shell, rendering, errors, footer, pagination intent, expansion state, copy action, and query notes are Stimulus-owned. The query-list controls are now also Stimulus-owned: filtering, sorting and URL state, collapse-all, pagination, and reorder persistence no longer route through `QueriesCtrl`; Angular remains only behind the live query/search/scoring adapter and deferred result islands. Diff orchestration is now framework-free in `utils/diff_results.js`; snapshot fetch/cache and the snapshot searcher remain an explicitly named Angular island behind the `diff:*` bridge. Do not combine that adapter with scorer sandboxing or wizard UI replacement.
 
-`query_documents_store.js` is the plain-document read model, and `search-results` renders document DOM from those snapshots. `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Stimulus owns the document modal, query-row shell, collection filtering/sorting/pagination, expansion/view state, copy-query, and query-notes interactions; Angular remains behind explicit adapters for live query state and rating mutations. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing Angular boundaries. The query list no longer discovers its live collection through `QueriesCtrl`'s scope; only the deferred Angular result islands receive a short-lived root-scope child for compilation.
+`query_documents_store.js` is the plain-document read model, and `search-results` renders document DOM from those snapshots. `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Stimulus owns the document modal, query-row shell, collection filtering/sorting/pagination, expansion/view state, copy-query, query-notes interactions, and case-score persistence trigger; Angular remains behind explicit adapters for live query state and rating mutations. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing Angular boundaries. The query list no longer discovers its live collection through `QueriesCtrl`'s scope; only the deferred Angular result islands receive a short-lived root-scope child for compilation.
 
 The diff/snapshot read renderer, per-query score badges, and case-level snapshot score badges are Stimulus-owned. Case-level diff aggregation now lives in the framework-free `utils/diff_scores.js` helper and publishes a plain read model through `queryDocumentsStore`. Diff construction is now framework-free in `utils/diff_results.js`; Angular still owns `snapshotSearcherSvc`, snapshot fetching, and per-query diff scoring behind the document-store bridge.
 
@@ -420,12 +420,12 @@ Angular still compiles what is left, because custom elements inside `ng-app` are
 | Element | Why it stays |
 |---------|--------------|
 | Snapshot case score row | Snapshot scores come from the Angular diff engine and are rendered by the Stimulus `diff-case-scores` controller |
-| `<queries>` | The query list / search results island |
+| `core/_queries` | Rails-rendered query-list / search-results island |
 | `<diff>` | Retired; diff picker/renderer/orchestration now use Stimulus + ESM, with snapshot fetch/search remaining behind the temporary bridge |
 | `ng-include 'views/_dev_settings.html'` | Tune Relevance drawer, still Angular |
 | `ng-click="toggleDevSettings()"` | Drawer toggle, on `MainCtrl` scope |
 
-`<queries>` declares no isolate scope and continues to publish the remaining live-query state onto `MainCtrl`'s scope. The score badges remain at the same DOM position for `qscore.css`'s `:last-child`-based badge-spacing rules to apply correctly.
+The query-list shell is Rails-rendered and no longer declares an Angular scope. Deferred live-result controls still receive a short-lived root-scope child for compilation. The score badges remain at the same DOM position for `qscore.css`'s `:last-child`-based badge-spacing rules to apply correctly.
 
 ### `app/assets/javascripts/routes.js`
 
@@ -569,7 +569,7 @@ These Angular-specific wrappers are used across many templates:
 
 | Directive | Element | Template | Controller |
 |-----------|---------|----------|------------|
-| `queries` | `<queries>` | `queries.html` | `QueriesCtrl` |
+| `core/_queries` | Rails partial | `_queries.html.erb` | `QueriesListController` |
 | `searchResults` | expanded-results shell | Stimulus | `SearchResultsController` |
 | `tune-relevance` | `#dev-settings` | `_tune_relevance.html.erb` | `TuneRelevanceController` |
 | `customHeaders` | `<custom-headers>` | `customHeaders.html` | `CustomHeadersCtrl` |
@@ -596,7 +596,7 @@ Thin shells (~14–16 LOC): `queries`, `customHeaders`. Heavy: `quepidTypeahead`
 
 ## Templates (32 HTML files)
 
-**Shell:** `queries.html`, `embed.html`
+**Shell:** `_queries.html.erb`, `embed.html`
 
 **Case-action modals:** `searchEndpoint_popup.html`
 

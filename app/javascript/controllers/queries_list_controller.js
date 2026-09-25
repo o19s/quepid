@@ -49,7 +49,10 @@ export default class extends Controller {
     this.queryDeleteCompleted = event => this.handleQueryDeleteCompleted(event)
     this.element.addEventListener("query-row:toggle", this.queryToggle)
     this.element.addEventListener("query-delete:completed", this.queryDeleteCompleted)
-    this.listStateChange = () => this.scheduleRender()
+    this.listStateChange = () => {
+      this.queryState = window.quepidSearch?.queryState
+      this.scheduleRender()
+    }
     document.addEventListener("queries-state:changed", this.listStateChange)
     this.setupSortable()
     this.render()
@@ -258,6 +261,9 @@ export default class extends Controller {
     }
     if (this.hasRatedLabelTarget) {
       this.ratedLabelTarget.classList.toggle("text-muted", showOnlyRatedUnsupported)
+      this.ratedLabelTarget.title = showOnlyRatedUnsupported
+        ? "Not supported for this search engine yet"
+        : ""
     }
 
     this.sortLinkTargets.forEach(link => {
@@ -331,9 +337,7 @@ export default class extends Controller {
   }
 
   orderedLiveQueries({ ignoreFilter = false } = {}) {
-    const getQuery = queryId => this.queryState?.getQuery?.(queryId) ||
-      this.angularScope?.queriesSvc?.queries?.[queryId] ||
-      this.angularScope?.queriesSvc?.queries?.[String(queryId)]
+    const getQuery = queryId => this.queryState?.getQuery?.(queryId)
     const queries = this.store.orderedQueryIds()
       .map(queryId => getQuery(queryId))
       .filter(Boolean)
@@ -444,7 +448,7 @@ export default class extends Controller {
   renderDeferredAngularIslands(row, query) {
     const injector = window.angular?.element(document.body).injector?.()
     const compile = injector?.get?.("$compile")
-    const scope = this.angularScope || injector?.get?.("$rootScope")
+    const scope = injector?.get?.("$rootScope")
     if (!compile || !scope) return
 
     const childScope = scope.$new()
