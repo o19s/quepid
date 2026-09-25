@@ -4,12 +4,11 @@
 
 angular.module('QuepidApp')
   .service('querySnapshotSvc', [
-    '$http', '$q', '$injector', '$rootScope',
+    '$http', '$q', '$injector',
     'settingsSvc', 'docCacheSvc', 'caseTryNavSvc', 'fieldSpecSvc',
     'SnapshotFactory',
     function querySnapshotSvc(
       $http, $q, $injector,
-      $rootScope,
       settingsSvc, docCacheSvc, caseTryNavSvc, fieldSpecSvc,
       SnapshotFactory
     ) {
@@ -53,81 +52,6 @@ angular.module('QuepidApp')
           });
       });
 
-      // Stimulus owns the snapshot comparison picker and diff read model while
-      // Angular still owns snapshot fetching and the live Query/searcher adapter.
-      // Keep this bridge deliberately small: it disappears with that remaining
-      // live-query boundary, not with the framework-free diff orchestration.
-      document.addEventListener('diff:selection-request', function(event) {
-        var queryViewSvc = $injector.get('queryViewSvc');
-        if (event.detail && event.detail.done) {
-          event.detail.done(queryViewSvc.getAllDiffSettings());
-        }
-      });
-
-      document.addEventListener('diff:apply', function(event) {
-        var detail = event.detail || {};
-        var queryViewSvc = $injector.get('queryViewSvc');
-        var queriesSvc = $injector.get('queriesSvc');
-        var selections = detail.selections || [];
-
-        Promise.all(selections.map(function(snapshotId) {
-          return svc.get(snapshotId);
-        })).then(function() {
-          // Native Promise callbacks run outside Angular's digest cycle.
-          // Re-enter Angular before changing diff state so the live columns
-          // and scores render immediately after the picker closes.
-          $rootScope.$evalAsync(function() {
-            queryViewSvc.enableDiffs(selections);
-            try {
-              $q.when(queriesSvc.refreshAllDiffs()).then(function() {
-                if (detail.done) { detail.done(null); }
-              }, function(error) {
-                if (detail.done) { detail.done(error); }
-              });
-            } catch (error) {
-              if (detail.done) { detail.done(error); }
-            }
-          });
-        }).catch(function(error) {
-          if (detail.done) { detail.done(error); }
-        });
-      });
-
-      document.addEventListener('diff:clear', function(event) {
-        var detail = event.detail || {};
-        var queryViewSvc = $injector.get('queryViewSvc');
-        var queriesSvc = $injector.get('queriesSvc');
-        // This listener is invoked by a native DOM event, outside Angular's
-        // digest cycle. Clearing has no subsequent $http request to trigger a
-        // digest, so schedule both the state mutation and refresh in Angular.
-        $rootScope.$evalAsync(function() {
-          queryViewSvc.disableComparisons();
-          try {
-            $q.when(queriesSvc.refreshAllDiffs()).then(function() {
-              if (detail.done) { detail.done(null); }
-            }, function(error) {
-              if (detail.done) { detail.done(error); }
-            });
-          } catch (error) {
-            if (detail.done) { detail.done(error); }
-          }
-        });
-      });
-
-      document.addEventListener('diff:delete', function(event) {
-        var detail = event.detail || {};
-        var queryViewSvc = $injector.get('queryViewSvc');
-        var queriesSvc = $injector.get('queriesSvc');
-        svc.deleteSnapshot(detail.snapshotId).then(function() {
-          queryViewSvc.disableComparisons();
-          return queriesSvc.refreshAllDiffs();
-        }).then(function() {
-          if (detail.done) { detail.done(null); }
-        }).catch(function(error) {
-          if (detail.done) { detail.done(error); }
-        });
-      });
-
       function mapFieldSpecToSolrFormat(fieldSpec) {
         let convertedfieldSpec = fieldSpec.replace(/id:_([^,]+)/, 'id:$1');
         return convertedfieldSpec;
@@ -152,7 +76,11 @@ angular.module('QuepidApp')
           // in the snapshot, and we look them up from the Snapshot.  To be clever
           // we pretend to be a "solr'" endpoint to drive the lookup.          
           if (snapshots.length > 0 ) {
-            if (settingsSvc.supportLookupById(settings.searchEngine) === false){
+            // Static cases use the same snapshot search endpoint as Solr, but
+            // splainer-search has no static searcher. Normalize static here as
+            // queriesSvc does for live searches so snapshot hydration can fetch
+            // the recorded documents before diff scoring starts.
+            if (settings.searchEngine === 'static' || settingsSvc.supportLookupById(settings.searchEngine) === false){
               var settingsForLookup  = angular.copy(settings);
               settingsForLookup.apiMethod = 'GET';
               settingsForLookup.searchEngine = 'solr';

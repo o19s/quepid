@@ -288,25 +288,6 @@ describe('Service: querySnapshotSvc', function () {
     });
   });
 
-  describe('Stimulus diff bridge', function() {
-    it('clears comparisons inside an Angular digest', function() {
-      var queryViewSvc = $injector.get('queryViewSvc');
-      var queriesSvc = $injector.get('queriesSvc');
-      spyOn(queryViewSvc, 'disableComparisons').and.callThrough();
-      spyOn(queriesSvc, 'refreshAllDiffs').and.returnValue($q.when());
-
-      var done = jasmine.createSpy('done');
-      document.dispatchEvent(new CustomEvent('diff:clear', { detail: { done: done } }));
-
-      expect(queryViewSvc.disableComparisons).not.toHaveBeenCalled();
-      $rootScope.$digest();
-
-      expect(queryViewSvc.disableComparisons).toHaveBeenCalled();
-      expect(queriesSvc.refreshAllDiffs).toHaveBeenCalled();
-      expect(done).toHaveBeenCalledWith(null);
-    });
-  });
-
   describe('querySnapshotSvc getters', function () {
 
     beforeEach(function() {
@@ -438,6 +419,29 @@ describe('Service: querySnapshotSvc', function () {
 
       expect(snapshot).not.toBe(null);
       expect(Object.keys(snapshot.docs).length).toBe(2);
+    });
+
+    it('normalizes static settings for snapshot document hydration', function() {
+      var settings = settingsSvc.editableSettings();
+      settings.searchEngine = 'static';
+      settings.apiMethod = 'GET';
+      settings.searchUrl = 'http://localhost/static';
+      settings.searchEndpointId = 8;
+      settings.customHeaders = '';
+      settings.fieldSpec = 'id:id';
+
+      var url = 'api/cases/2/snapshots/1?shallow=true';
+      $httpBackend.expectGET(url).respond(200, mockSnapResp);
+
+      querySnapshotSvc.get(1);
+
+      $httpBackend.flush();
+      $rootScope.$apply();
+
+      var resolverSettings = docResolverSvc.createResolver.calls.mostRecent().args[1];
+      expect(resolverSettings.searchEngine).toBe('solr');
+      expect(resolverSettings.apiMethod).toBe('GET');
+      expect(resolverSettings.searchUrl).toContain('/api/cases/0/snapshots/1/search');
     });
   });
 

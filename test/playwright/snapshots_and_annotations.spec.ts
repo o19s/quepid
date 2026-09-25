@@ -105,11 +105,10 @@ test.describe('annotations', () => {
   test('creating an annotation appends it to the case annotations list', async ({ page }) => {
     await gotoSnapshotCase(page);
 
-    // "Tune Relevance" toggles the east dev-settings panel (queryParams.js /
-    // devQueryParams.html), which has an "Annotations" tab (#annotationsTab)
-    // hosting the Stimulus annotation controller (create form + existing list).
+    // "Tune Relevance" toggles the east dev-settings panel, whose Stimulus
+    // "Annotations" tab hosts the annotation controller (create form + list).
     await page.locator('#tune-relevance-link a').click();
-    await page.locator('#annotationsTab').click();
+    await page.locator('#dev-settings button[data-tune-tab="annotations"]').click();
 
     const annotations = page.locator('#annotations');
     await expect(annotations).toBeVisible();

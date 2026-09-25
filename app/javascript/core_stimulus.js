@@ -58,6 +58,7 @@ import TuneRelevanceController from "controllers/tune_relevance_controller"
 import FrogReportController from "controllers/frog_report_controller"
 import WizardLauncherController from "controllers/wizard_launcher_controller"
 import WizardController from "controllers/wizard_controller"
+import SnapshotBridgeController from "controllers/snapshot_bridge_controller"
 import * as wizardContracts from "utils/wizard_contracts"
 
 Turbo.session.drive = false
@@ -106,3 +107,4 @@ application.register("tune-relevance", TuneRelevanceController)
 application.register("frog-report", FrogReportController)
 application.register("wizard-launcher", WizardLauncherController)
 application.register("wizard", WizardController)
+application.register("snapshot-bridge", SnapshotBridgeController)

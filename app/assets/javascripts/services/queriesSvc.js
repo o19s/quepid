@@ -1574,7 +1574,7 @@ angular.module('QuepidApp')
             })
             .catch(function(response) {
               // Re-reject rather than returning: returning a value from a rejection handler
-              // RESOLVES the promise, which made QueryNotesCtrl run its success path on a failed
+              // RESOLVES the promise, which made the query-notes controller run its success path on a failed
               // save -- flashing "saved", collapsing the panel and discarding the user's edits.
               $log.debug('Failed to save notes: ', response);
               return $q.reject(response);

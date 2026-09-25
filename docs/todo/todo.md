@@ -17,8 +17,6 @@ These affect the core case UI (`/case/...`) today but **should not be patched in
 | Item | Why not patch Angular | Where it moves |
 |------|----------------------|----------------|
 | Try delete bricks case (frontend) | `settingsSvc.editableSettings()` null guard, confirm dialog, console rejection noise | [inventory § try delete](./angularjs_removal_inventory.md#try-delete-bricks-case-on-reload) |
-| Wizard Esc orphans empty cases | `angular-wizard` modal | [inventory § wizard Esc](./angularjs_removal_inventory.md#wizard-esc-orphans-empty-cases) |
-| Static CSV missing required headers | `caseCSVSvc.arrayContains` | [inventory § static CSV](./angularjs_removal_inventory.md#static-csv-missing-required-headers) |
 | Icon-only controls lack accessible names | Copy-query; snapshot delete/clear in Compare | [inventory § a11y](./angularjs_removal_inventory.md#icon-only-controls-lack-accessible-names) |
 | Explain Query Copy silently fails | `ngclipboard` + modal dismiss race | [inventory § known bug](./angularjs_removal_inventory.md#known-bug-copy--explain-migration) |
 

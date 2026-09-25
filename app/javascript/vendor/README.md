@@ -7,11 +7,8 @@ Third-party JavaScript that Quepid previously loaded from `package.json` now liv
 | Directory | Role |
 |-----------|------|
 | `angular-sanitize` | AngularJS satellite: `ngSanitize` |
-| `angular-wizard/` | `mgo-angular-wizard` |
 | `angular-utils-pagination/` | `angularUtils.directives.dirPagination` |
-| `angular-csv-import/` | CSV import directives |
 | `angular-ui-ace/` | `ui.ace` |
-| `ng-tags-input/` | Tag input; upstream `build/ng-tags-input.min.css` copied in `build_css.js`; BS5-aligned skin is `app/assets/stylesheets/ng-tags-input-theme.css` → `builds/ng-tags-input.theme.css` |
 
 JSON tree display no longer uses a vendored Angular directive — see `utils/json_explorer.js` and `app/assets/stylesheets/json-explorer.css` (copied to `builds/` by `build_css.js`).
 
@@ -21,6 +18,6 @@ Angular unit tests load **`angular-mocks`** from `node_modules/` (see Karma conf
 
 Subdirectories retain upstream **`package.json` / license files** for version provenance where applicable.
 
-Imports in `app/javascript/angular_app.js` point at **explicit file paths** rather than directory/package names — they intentionally do **not** go through each upstream `package.json`'s `main` field. This is so the source we ship is the source we edit. For example, `ng-tags-input`'s upstream `main` is the minified `build/ng-tags-input.min.js`; we import `build/ng-tags-input.js` (unminified) so the vendored copy stays readable. Don't "fix" these to bare-name imports.
+Imports in `app/javascript/angular_app.js` point at **explicit file paths** rather than directory/package names — they intentionally do **not** go through each upstream `package.json`'s `main` field. This is so the source we ship is the source we edit. Don't replace these with bare-name imports without checking the bundle source.
 
 To **restore a dependency to npm**, add it again in `package.json` and replace the `./vendor/...` import(s) in `app/javascript/angular_app.js` (and Karma or `build_css.js` paths if needed).

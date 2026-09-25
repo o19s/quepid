@@ -49,9 +49,7 @@
     {
       "enabled": false,
       "matchPackageNames": [
-        "angular-csv-import",
         "angular-ui-ace",
-        "angular-wizard",
         "jquery"
       ]
     },

@@ -555,7 +555,7 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
 4. **Why bundles work this way**
    - Splainer-search ESM modules are inlined into **`app/assets/builds/angular_app.js`** at build time, not runtime (`splainer_search_adapter.js` registers wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI keeps working).
    - The vendor bundle also inlines npm **Bootstrap 5** JS (for `quepidPopover`, `quepidTooltip`, `quepidModalSvc`, etc.).
-   - Linked core stylesheets (`json-explorer` from stylesheets; vendored `angular-wizard` / `ng-tags-input`) are copied into **`app/assets/builds/`** by **`yarn build:css`** (`build_css.js` → `copyLinkedStylesheets()`), not by **`build:angular-vendor`**
+   - Linked core stylesheets (currently `json-explorer`) are copied into **`app/assets/builds/`** by **`yarn build:css`** (`build_css.js` → `copyLinkedStylesheets()`), not by **`build:angular-vendor`**
    - With **`bin/docker s`**, Foreman watches the vendor import graph (including **`node_modules/splainer-search`**) and keeps **`angular_app.js`** + **`quepid_angular_app.js`** in sync. Save edits and hard-refresh. Run **`yarn build:angular`** only if watchers are not running (that script runs both bundles).
 
 
@@ -840,7 +840,7 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 
 ## How does the Frontend work?
 
-We use Angular 1 for the core interactive application. **`splainer-search`** is **`3.x` from npm** (see root `package.json`); **`app/javascript/splainer_search_adapter.js`** registers the wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI (`fieldSpecSvc`, `searchSvc`, …) keeps working. Most other AngularJS-era UI libraries (wizard, pagination, ui-ace, `ng-tags-input`, etc.) remain **under `app/javascript/vendor/`** (see `vendor/README.md`). Only **`angular`**, **`splainer-search`**, and shared utilities (Bootstrap, autocompleter, ...) are npm dependencies for the core Case UI bundle. Esbuild bundles from **`app/javascript/angular_app.js`**.  
+We use Angular 1 for the core interactive application. **`splainer-search`** is **`3.x` from npm** (see root `package.json`); **`app/javascript/splainer_search_adapter.js`** registers the wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI (`fieldSpecSvc`, `searchSvc`, …) keeps working. Remaining AngularJS-era UI libraries (pagination and ui-ace) live **under `app/javascript/vendor/`** (see `vendor/README.md`). Only **`angular`**, **`splainer-search`**, and shared utilities (Bootstrap, autocompleter, ...) are npm dependencies for the core Case UI bundle. Esbuild bundles from **`app/javascript/angular_app.js`**.  
 The Angular **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5** plus Quepid sheets (`core-additions.css`, **`bootstrap5-compat.css`**, and screen CSS), wired in **`build_css.js`** (`buildCoreCSS()`). The historical **`bootstrap3-add.css`** navbar slice has been consolidated into **`bootstrap5-compat.css`**.
 
 For the rest of Quepid, we use Bootstrap 5 via npm; the non-Angular UI loads it through `app/javascript/application_modern.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the Angular core bundle and CSS).
