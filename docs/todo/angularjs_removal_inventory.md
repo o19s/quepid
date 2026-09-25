@@ -240,7 +240,6 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 |------|-----|-----|
 | **queriesSvc** | 1,767 | Central case state — search, docs, scores, persistence |
 | **wizardModal** | 1,072 | Onboarding wizard (ACE, CSV, tags, tour) |
-| **queriesCtrl** | retired 2026-09-24 | Query-list UX moved to `queries_list_controller.js`; live search/scoring remains in `queriesSvc` |
 | **settingsSvc** / **caseSvc** | 754 / 552 | Try / case domain model |
 | **$quepidModal** | 272 | BS5 modals + `$compile` — 11 `.open()` call sites (23 files reference `$quepidModal`) |
 | **ScorerFactory** | 666 | Scoring model + judgement math |
@@ -420,9 +419,6 @@ Angular still compiles what is left, because custom elements inside `ng-app` are
 | Element | Why it stays |
 |---------|--------------|
 | Snapshot case score row | Snapshot scores come from the Angular diff engine and are rendered by the Stimulus `diff-case-scores` controller |
-| `core/_queries` | Rails-rendered query-list / search-results island |
-| `<diff>` | Retired; diff picker/renderer/orchestration now use Stimulus + ESM, with snapshot fetch/search remaining behind the temporary bridge |
-| `ng-include 'views/_dev_settings.html'` | Tune Relevance drawer, still Angular |
 | `ng-click="toggleDevSettings()"` | Drawer toggle, on `MainCtrl` scope |
 
 The query-list shell is Rails-rendered and no longer declares an Angular scope. Deferred live-result controls still receive a short-lived root-scope child for compilation. The score badges remain at the same DOM position for `qscore.css`'s `:last-child`-based badge-spacing rules to apply correctly.
@@ -569,9 +565,7 @@ These Angular-specific wrappers are used across many templates:
 
 | Directive | Element | Template | Controller |
 |-----------|---------|----------|------------|
-| `core/_queries` | Rails partial | `_queries.html.erb` | `QueriesListController` |
 | `searchResults` | expanded-results shell | Stimulus | `SearchResultsController` |
-| `tune-relevance` | `#dev-settings` | `_tune_relevance.html.erb` | `TuneRelevanceController` |
 | `customHeaders` | `<custom-headers>` | `customHeaders.html` | `CustomHeadersCtrl` |
 
 Attribute directives: `quepidSortable`, `quepidCollapse`, `quepidTypeahead`

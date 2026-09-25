@@ -56,7 +56,7 @@ parts:
         paths: ["app/controllers/users/signups_controller.rb", "app/views/sessions/new.html.erb"]
       "1.2":
         title: "Log in / log out"
-        last_run: 2026-09-15T16:01:00Z
+        last_run: 2026-09-25T15:42:00Z
         result: pass
         notes: "Re-verified via Playwright MCP after the subpath-deployment /users/sign_in redirect fix (e9eb080d): plain (non-subpath) sign-in via email/password at /sessions/new still works, landing on the dashboard as expected. Did not test the subpath-deployment scenario itself (requires APP_RELATIVE_URL_ROOT configured, not set up on this host) or sign-out."
         paths: ["app/controllers/sessions_controller.rb", "app/views/sessions/"]
@@ -80,7 +80,7 @@ parts:
         paths: ["app/controllers/users/invitations_controller.rb", "app/controllers/teams_controller.rb"]
       "1.6":
         title: "Profile page"
-        last_run: 2026-09-15T16:14:00Z
+        last_run: 2026-09-25T15:42:00Z
         result: pass_with_fixes
         notes: "Functionally re-verified via Playwright MCP (previous passes only checked rendering). Stats card (Cases/Teams/Queries/Ratings), Update profile (set Company Name to a test value, got 'Profile updated successfully.', value persisted, reverted it back to empty), Account Security, Personal Access Tokens, and Danger Zone sections all present and working. FOUND A PRE-EXISTING BUG (not introduced by this branch, see 1.7): the new shared `_error_messages` partial (extracted in e3e36e71 from inline duplicated code that already existed pre-branch) is rendered 3 times on this page — once each under Profile, Account Security, and Danger Zone, all showing the *same* `current_user.errors` — so a validation error from any one form (e.g. a password mismatch) appears duplicated under all three unrelated section headings simultaneously. Confusing but not a regression from this branch's refactor (verified via git blame the triplicated render predates this branch); flagged for the user to decide whether to fix. Did not fix given the scope of this test sweep."
         paths: ["app/controllers/profiles_controller.rb", "app/views/profiles/show.html.erb", "app/views/shared/_error_messages.html.erb"]
@@ -114,15 +114,15 @@ parts:
         paths: ["app/controllers/home_controller.rb", "app/views/home/"]
       "2.2":
         title: "Case summary cards"
-        last_run: 2026-09-15T16:01:00Z
+        last_run: 2026-09-25T15:38:00Z
         result: pass
-        notes: "Spot-checked via Playwright MCP (widely-used surface, longest-stale part of this sweep — no functional change to this area on this branch). 4 case cards (10s Of Queries, Solr Case, Static Case, Typeahead: Dairy) rendered with sparkline, AP@10 score, date range, and trend delta text; case links intact. No console errors. Did not test the 'moves up after viewing' recency edge case."
+        notes: "Covered live via Playwright MCP: dashboard case cards rendered with case links, AP@10 scores, date ranges/trends, and Vega visualizations. Not covered live: recency reordering after viewing a case."
         paths: ["app/controllers/home_controller.rb", "app/helpers/home_helper.rb"]
       "2.3":
         title: "Book summary cards"
-        last_run: 2026-09-15T16:01:00Z
+        last_run: 2026-09-25T15:38:00Z
         result: pass
-        notes: "Spot-checked via Playwright MCP alongside 2.2/2.4/2.6. 3 book cards (Of Ratings, Haystack Icecat Rating Party, Playwright Import Test Book) rendered with query/judgement/pair counts and a Judge button each. Did not click through Judge this pass (last done 2026-09-02)."
+        notes: "Covered live via Playwright MCP: Book Of Ratings summary rendered with query, judgement, pair counts, and Judge action. Not covered live: Judge action."
         paths: ["app/controllers/home_controller.rb"]
       "2.4":
         title: "Case score trend card (case_prophet)"
@@ -132,21 +132,21 @@ parts:
         paths: ["app/services/case_prophet.rb", "app/views/home/"]
       "2.5":
         title: "Book summary detail"
-        last_run: 2026-09-15T16:17:00Z
+        last_run: 2026-09-25T15:38:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: clicked into 'Book Of Ratings' from the dashboard card, landed on its Overview tab with all sub-nav tabs (Query/Doc Pairs, Judgement Stats, Judgements, Import, Share book, Export, Settings), unjudged-pairs banner, AI Judges list, Teams, Scale Labels, and Associated Files all rendering correctly. No console errors. Did not re-verify a brand-new zero-pair book this pass."
+        notes: "Covered live via Playwright MCP: dashboard showed Book Of Ratings with its counts and Judge action. Not covered live: opening the book detail page or zero-pair book."
         paths: ["app/controllers/home_controller.rb"]
       "2.6":
         title: "Cases table"
-        last_run: 2026-09-15T16:01:00Z
+        last_run: 2026-09-25T15:38:00Z
         result: pass
-        notes: "Spot-checked via Playwright MCP alongside 2.2/2.3/2.4. Columns (ID, Name, # of Queries, Last Score, Last Run, Last Run By) rendered correctly across 10 cases including never-run ones (blank score/run columns). Did not click 'View all Cases' this pass."
+        notes: "Covered live via Playwright MCP: dashboard Cases table rendered ID, name, query count, score, last run, and last-run-by columns across seeded cases, including never-run cases. Not covered live: View all Cases action."
         paths: ["app/controllers/home_controller.rb"]
       "2.7":
         title: "Cookie consent toast"
-        last_run: 2026-09-15
+        last_run: 2026-09-25T15:38:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: same environment limitation as before (no COOKIES_URL configured here), so live-browser re-check could again only confirm the toast is absent on the dashboard after logging in — consistent with the server-side gating logic, still covered by the integration test suite (app/views/home/_consent_toast.html.erb via a with_cookies_url test helper). Client-side show/dismiss/autohide is standard Bootstrap Toast API (app/javascript/application_modern.js), already exercised elsewhere in the app. Did not re-verify the positive path live."
+        notes: "Covered live via Playwright MCP: dashboard loaded without a cookie consent toast. Positive path remains unavailable because COOKIES_URL is not configured in this environment."
         paths: ["app/javascript/application_modern.js", "app/views/home/_consent_toast.html.erb", "app/controllers/home_controller.rb", "test/controllers/home_controller_test.rb"]
 
   "03":
@@ -154,15 +154,15 @@ parts:
     scenarios:
       "3.1":
         title: "Cases list — browsing and filtering"
-        last_run: 2026-09-15T19:04:00Z
+        last_run: 2026-09-25T15:35:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP. Partial-name filter ('Typeahead') correctly narrowed to the 3 Typeahead cases; exact-ID filter ('6789') matched the single case by ID; Team dropdown ('OSC') correctly narrowed to only that team's cases; Archived checkbox auto-submitted and toggled the list correctly (see 3.5 for the archive/unarchive round trip exercised in the same pass). No console errors. Filter-matches-nothing, pagination, and multi-account isolation not tested this pass."
+        notes: "Covered live via Playwright MCP: cases list rendered its expected columns; partial-name filter ('Typeahead') narrowed to the Typeahead cases; exact-ID filter ('6') narrowed to case 6; Team dropdown ('OSC') narrowed the result; Archived checkbox auto-submitted and preserved the filters. Not covered live: zero-match messaging, pagination, and multi-account isolation."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
       "3.2":
         title: "Create a new case (setup wizard)"
-        last_run: 2026-09-23T13:30:00Z
+        last_run: 2026-09-25T15:32:00Z
         result: pass
-        notes: "Covered live via Playwright MCP on disposable case 627: completed Welcome/Name/Endpoint/Fields/Query/Finish, observed POST api/bulk/cases/627/queries returning 200, confirmed the renamed workbench showed one persisted query, and inspected finish/completed screenshots under .playwright-mcp/wizard-query-persistence/. Deleted the case and reset completed_case_wizard afterward. Also passed the automated wizard_completion.spec.ts flow. Not covered live: wizard error/validation states or rerunning against a case that already has data."
+        notes: "Covered live via Playwright MCP on disposable case 254: captured Welcome/Name/Endpoint baseline screenshots, verified blank-name blocking, advanced through Name, expanded Create a new Search Endpoint, and confirmed the default Solr endpoint ping succeeded. Closed the wizard through the abandon confirmation and verified the disposable case was deleted via the API. Not covered live this pass: Fields/Query/Finish, tour completion, and other endpoint types."
         paths: ["app/controllers/core_controller.rb", "app/assets/javascripts/controllers/wizardCtrl.js", "app/assets/javascripts/controllers/wizardModal.js", "app/assets/javascripts/services/queriesSvc.js", "app/assets/templates/views/wizardModal.html", "app/javascript/quepid_search.js", "app/javascript/utils/query_lifecycle.js"]
       "3.3":
         title: "Import a case from JSON"
@@ -416,9 +416,9 @@ parts:
     scenarios:
       "7.1":
         title: "Browse / filter the Search Endpoints list"
-        last_run: 2026-09-15T16:26:00Z
+        last_run: 2026-09-25T15:36:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: list renders correctly (6 endpoints, all engine types represented — solr/static/searchapi/es), filter box, Mine/Archived checkboxes, Team dropdown, and per-row Share icons all present with no console errors. Did not re-drive the actual filter/search this pass (see 7.6 for the share-icon exercise on this page)."
+        notes: "Covered live via Playwright MCP: list rendered endpoint rows and filters; name filter narrowed to Vespa; the list exposed engine types and share actions. Not covered live: Mine/Archived combinations and pagination."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/index.html.erb"]
       "7.2":
         title: "Create a Search Endpoint — one per engine type"
@@ -428,9 +428,9 @@ parts:
         paths: ["app/controllers/search_endpoints_controller.rb", "app/models/search_endpoint.rb", "app/views/search_endpoints/_form.html.erb"]
       "7.3":
         title: "View / Edit a Search Endpoint"
-        last_run: 2026-09-15T16:56:00Z
+        last_run: 2026-09-25T15:36:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: edited a freshly-created test endpoint's Rate Limit to 30, clicked Update Search endpoint — Show page reflected the new value immediately. Did not re-test the Basic Auth masking behavior this pass (see prior pass for that detailed check)."
+        notes: "Covered live via Playwright MCP: opened the TMDB Solr endpoint show page and verified name, engine, URL, API method, proxy/auth settings, rate limit, options, team sharing, case usage, archive state, and owner. Not covered live: editing and saving a field or Basic Auth masking."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/show.html.erb"]
       "7.4":
         title: "Clone a Search Endpoint"
@@ -480,9 +480,9 @@ parts:
     scenarios:
       "8.1":
         title: "Scorers list"
-        last_run: 2026-09-15T16:58:00Z
+        last_run: 2026-09-25T15:37:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: Communal/Custom filter checkboxes, filter searchbox, counts, and table all render correctly with no console errors. Did not re-verify the non-admin Clone-not-Edit visibility rule this pass."
+        notes: "Covered live via Playwright MCP: Scorers page rendered communal/custom counts, default scorer selector, filter controls, and all seven communal scorer rows. Not covered live: custom scorer creation or non-admin visibility."
         paths: ["app/controllers/scorers_controller.rb", "app/views/scorers/index.html.erb"]
       "8.2":
         title: "Set your default scorer"
@@ -532,9 +532,9 @@ parts:
     scenarios:
       "9.1":
         title: "Create, rename, and browse teams"
-        last_run: 2026-09-15T17:02:00Z
+        last_run: 2026-09-25T15:39:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: created 'Manual Test Team 20260915' (creator auto-added as member), then renamed it to 'Manual Test Team Renamed 20260915' via the Rename Team form — flash 'Team renamed.', heading updated immediately. Left the team in place (no delete-team option found in the UI) as harmless test data, same as other pre-existing test fixtures on this instance."
+        notes: "Covered live via Playwright MCP: Teams page rendered Add New, name filter, My Teams filter, ID/name/member/case columns, and the seeded OSC team. Not covered live: create, rename, or filter submission."
         paths: ["app/controllers/teams_controller.rb", "app/models/team.rb"]
       "9.2":
         title: "Add a team member (existing user)"
@@ -572,9 +572,9 @@ parts:
     scenarios:
       "10.1":
         title: "Books list"
-        last_run: 2026-09-15T17:04:00Z
+        last_run: 2026-09-25T15:39:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: New Book link, filter textbox, and table all render correctly with no console errors."
+        notes: "Covered live via Playwright MCP: Books page rendered New Book, Import Book, archived-books link, filter/team controls, and the seeded Of Ratings row with scale, pair count, and Share action. Not covered live: filtering or book creation."
         paths: ["app/controllers/books_controller.rb", "app/views/books/index.html.erb"]
       "10.2":
         title: "Create a new book"
@@ -590,7 +590,7 @@ parts:
         paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb"]
       "10.4":
         title: "Book Overview / Show page"
-        last_run: 2026-09-15T17:04:00Z
+        last_run: 2026-09-25T15:43:00Z
         result: pass
         notes: "Re-verified via Playwright MCP: Overview page renders correctly immediately after book creation, and again after merging in 222 query/doc pairs (query count, Critical Unjudged Pairs banner, Start with Unjudged Pairs/Judge in Bulk buttons all appeared correctly once there was data)."
         paths: ["app/controllers/books_controller.rb", "app/views/books/show.html.erb"]
@@ -774,9 +774,9 @@ parts:
         paths: ["app/controllers/admin/home_controller.rb"]
       "14.3":
         title: "User management — list & search"
-        last_run: 2026-09-15T17:19:00Z
+        last_run: 2026-09-25T15:39:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: filtered by 'oscmember' — correctly narrowed the table to just that one row with working Show/Edit links."
+        notes: "Covered live via Playwright MCP: Admin Users page rendered New User/export actions, email/name filter, administrator column, and seeded user rows with Show/Edit links. Not covered live: filter submission."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/index.html.erb"]
       "14.4":
         title: "User show page & Pulse activity"
@@ -810,15 +810,15 @@ parts:
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/edit.html.erb"]
       "14.9":
         title: "Announcements"
-        last_run: 2026-09-15T18:45:00Z
+        last_run: 2026-09-25T15:39:00Z
         result: pass
-        notes: "Re-verified rendering via Playwright MCP: index page loads with heading 'Quepid Announcements for Users' and table. Did not re-drive the full create/dismiss/view-count lifecycle this pass (see 2026-09-09 for that)."
+        notes: "Covered live via Playwright MCP: admin announcements page rendered its heading, New Announcement action, filter, and seeded announcement table with author, publish/expiry dates, views, and Edit links. Not covered live: create, dismiss, or view-count lifecycle."
         paths: ["app/controllers/admin/announcements_controller.rb", "app/models/announcement.rb", "app/views/admin/announcements/edit.html.erb"]
       "14.10":
         title: "Websocket Tester"
-        last_run: 2026-09-15T18:45:00Z
+        last_run: 2026-09-25T15:39:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: clicked 'Run Test Background Job' — live ActionCable-driven countdown appeared and updated ('Iterations Remaining: 23'), confirming the flash-typo fix (Websocket, not Websocker) and the live-update mechanism both still work."
+        notes: "Covered live via Playwright MCP: clicked Run Test Background Job, saw the queued flash, and confirmed the live countdown changed from 26 to 15 iterations."
         paths: ["app/controllers/admin/websocket_tester_controller.rb"]
       "14.11":
         title: "Mounted engines (Job Manager, SQL Analytics)"
@@ -832,15 +832,15 @@ parts:
     scenarios:
       "15.1":
         title: "Left icon sidebar"
-        last_run: 2026-09-15T16:30:00Z
+        last_run: 2026-09-25T15:37:00Z
         result: pass_with_fixes
-        notes: "Re-verified via Playwright MCP this pass (also directly re-confirmed in 16.1): hovering the sidebar's Home icon on /cases showed the correct tooltip ('Home'), computed display:block/opacity:0.9/font-size:14px — the bs-tooltip Stimulus controller fix from the prior pass still holds. Prior pass found and fixed the original bug: sidebar icon tooltips never appeared on hover at all — the BS5 tooltip-init script in _sidebar.html.erb was entirely commented out (dead code), and each icon used a bare data-bs-toggle=\"tooltip\" pattern that nothing in the current JS actually initializes (the shared app/javascript/utils/bs_tooltip.js helper only wires up [quepid-tooltip] and [data-controller~=\"bs-tooltip\"] elements). Fixed by switching every sidebar icon to the existing bs-tooltip Stimulus controller (data-controller=\"bs-tooltip\" + data-bs-tooltip-*-value attributes) and removing the dead commented-out script block. Active-state highlighting and click-navigation confirmed for all 7 icons in that pass."
+        notes: "Covered live via Playwright MCP on /scorers: all seven sidebar destinations were rendered with the active Scorers state. Not covered live: hover tooltip computation or every destination click."
         paths: ["app/views/layouts/_sidebar.html.erb"]
       "15.2":
         title: "Top navbar quick-access dropdowns"
-        last_run: 2026-09-15T16:30:00Z
+        last_run: 2026-09-25T15:37:00Z
         result: pass
-        notes: "Re-verified indirectly this pass: the Relevancy Cases/Books quick-access dropdowns in the top navbar were opened and used repeatedly throughout this session's other scenarios (e.g. 3.2's wizard trigger) with no issues, and the responsive collapse of this same header was directly re-verified in 16.2."
+        notes: "Covered live via Playwright MCP: opened the Relevancy Cases and Books top-navbar dropdowns on /scorers and confirmed the dropdown interaction completed without navigation errors. Not covered live: selecting every dropdown item or responsive collapse."
         paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_page_header.html.erb", "app/views/shared/_account_dropdown.html.erb"]
       "15.3":
         title: "External links (User Manual, Wiki, API Docs)"
@@ -850,9 +850,9 @@ parts:
         paths: ["config/routes.rb"]
       "15.4":
         title: "Avatar dropdown & admin shortcuts"
-        last_run: 2026-09-15T18:47:00Z
+        last_run: 2026-09-25T15:37:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: avatar dropdown correctly shows My profile, Logout, and Admin shortcuts (Admin Home, Users, Announcements, Job Manager) for quepid+realisticactivity@o19s.com, which is itself a Quepid Administrator in this environment's seed data. Did not re-test the non-admin variant this pass (oscMember's dropdown was not inspected, though 14.1 confirmed oscMember is correctly blocked from /admin itself)."
+        notes: "Covered live via Playwright MCP: avatar dropdown opened and showed My profile, Logout, API Docs, Admin Settings, Users, Announcements, and Job Manager for the seeded administrator. Not covered live: non-admin visibility."
         paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_account_dropdown.html.erb"]
       "15.5":
         title: "Cookies static page"
