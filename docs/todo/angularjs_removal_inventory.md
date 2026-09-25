@@ -24,17 +24,17 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 110 files, 105 register `angular.module` |
-| HTML templates (components + `app/assets/templates`) | 30 (18 component + 12 under `app/assets/templates`) |
-| Controllers | 36 (`.controller()` registrations; 18 files under `controllers/`) |
-| Services | 26 (`.service()` registrations; 27 files under `services/` — `quepidModalSvc.js` registers a factory) |
-| Factories | 8 |
-| Filters | 7 under `filters/` |
-| Custom directives / components | 25 (19 `.directive()` + 6 `.component()`) |
+| Angular JS source files (`app/assets/javascripts`) | 52 files, 47 register with Angular |
+| HTML templates (`app/assets/templates`) | 2 |
+| Controllers | 2 (`.controller()` registrations; 2 files under `controllers/`) |
+| Services | 22 (`.service()` registrations; 22 files under `services/`) |
+| Factories | 7 |
+| Filters | 6 under `filters/` |
+| Custom directives / components | 4 directives, no components |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 10 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 6 packages (+ `angular` core from npm) |
-| Karma unit specs (`spec/javascripts/angular`) | 38 |
-| Vitest unit specs (`test/javascript/**/*.test.js`) | 51 |
+| Karma unit specs (`spec/javascripts/angular`) | 25 |
+| Vitest unit specs (`test/javascript/**/*.test.js`) | 83 |
 | Playwright specs (`test/playwright/*.spec.ts`) | 24 |
 
 ---
@@ -143,7 +143,7 @@ Use when sizing a PR:
 
 ### Remaining PR order
 
-Everything left routes through the [live query-state phase](#live-query-state-phase-committed-final-phase): the expanded `search-results` bridge, `queriesSvc`, and the scoring/diff/import stacks — not skipped, but gated on that phase's state plan being signed off before any code starts.
+Everything left routes through the [live query-state phase](#live-query-state-phase-committed-final-phase): the deferred result islands, `queriesSvc`, and the scoring/diff/import stacks — not skipped, but gated on that phase's state plan being signed off before any code starts.
 
 Prefer **Rails view + route + Hotwire/Stimulus** for management actions over embedding new Stimulus inside the Angular bundle.
 
@@ -247,7 +247,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 
 #### `queriesSvc` seam inventory (phase 1)
 
-22 Angular files reach into `queriesSvc`; the eight `*_core_controller.js` Stimulus controllers reach it only through `document` CustomEvents (already bridged). Grouped by what a caller actually needs:
+22 Angular files reach into `queriesSvc`; the eight `*_core_controller.js` Stimulus controllers reach it only through `document` CustomEvents (already bridged). The shadow `queryCollectionStore` now also receives bootstrap, collection, and search-lifecycle state, without changing Angular's search/scoring ownership. Grouped by what a caller actually needs:
 
 | Surface | Members | Callers |
 |---------|---------|---------|
@@ -509,11 +509,7 @@ These Angular-specific wrappers are used across many templates:
 
 ---
 
-## Page-level directives
-
-| Directive | Element | Template | Controller |
-|-----------|---------|----------|------------|
-| `searchResults` | expanded-results shell | Stimulus | `SearchResultsController` |
+## Remaining Angular directives
 
 Attribute directives: `quepidSortable`, `quepidCollapse`, `quepidTypeahead`
 
@@ -537,11 +533,9 @@ Thin shells (~14–16 LOC): `queries`. Heavy: `quepidTypeahead` (299).
 
 ## Templates (2 Angular HTML files)
 
-**Shell:** `_queries.html.erb`, `embed.html`
+**Views:** `views/embed.html`, `views/searchEndpoint_popup.html`
 
-**Case-action modals:** `searchEndpoint_popup.html`
-
-The former Angular diff component templates were removed after the Rails/Stimulus modal became the only live diff UI.
+The Rails query-list shell and former Angular diff component templates were removed after their Stimulus replacements became the only live UI.
 
 Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 

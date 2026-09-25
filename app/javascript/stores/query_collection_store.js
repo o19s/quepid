@@ -15,6 +15,9 @@ export class QueryCollectionStore extends EventTarget {
   reset() {
     this._caseId = null
     this._status = "idle"
+    this._searchGeneration = (this._searchGeneration ?? 0) + 1
+    this._searchStatus = "idle"
+    this._searchError = null
     this._displayOrder = []
     this._queries = new Map()
     this._expandedQueries = new Map()
@@ -24,6 +27,9 @@ export class QueryCollectionStore extends EventTarget {
   beginBootstrap(caseId) {
     this._caseId = Number(caseId)
     this._status = "bootstrapping"
+    this._searchGeneration += 1
+    this._searchStatus = "idle"
+    this._searchError = null
     this._displayOrder = []
     this._queries = new Map()
     this._expandedQueries = new Map()
@@ -53,6 +59,35 @@ export class QueryCollectionStore extends EventTarget {
   markError(error) {
     this._status = "error"
     this.dispatchEvent(new CustomEvent("error", { detail: { error, ...this.snapshot() } }))
+  }
+
+  beginSearch() {
+    const generation = ++this._searchGeneration
+    this._searchStatus = "searching"
+    this._searchError = null
+    this.dispatchEvent(new CustomEvent("search-started", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    return generation
+  }
+
+  finishSearch(generation = this._searchGeneration) {
+    if (generation !== this._searchGeneration) return false
+
+    this._searchStatus = "ready"
+    this._searchError = null
+    this.dispatchEvent(new CustomEvent("search-completed", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    return true
+  }
+
+  failSearch(error, generation = this._searchGeneration) {
+    if (generation !== this._searchGeneration) return false
+
+    this._searchStatus = "error"
+    this._searchError = error
+    this.dispatchEvent(new CustomEvent("search-failed", { detail: { error, ...this.snapshot() } }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    return true
   }
 
   upsert(query) {
@@ -93,6 +128,14 @@ export class QueryCollectionStore extends EventTarget {
     return this._caseId
   }
 
+  get searchStatus() {
+    return this._searchStatus
+  }
+
+  get searchError() {
+    return this._searchError
+  }
+
   query(queryId) {
     return this._queries.get(String(queryId)) ?? null
   }
@@ -110,6 +153,10 @@ export class QueryCollectionStore extends EventTarget {
     return {
       caseId: this._caseId,
       status: this._status,
+      search: {
+        status: this._searchStatus,
+        error: this._searchError
+      },
       displayOrder: [...this._displayOrder],
       queries: Object.fromEntries(this._queries)
     }

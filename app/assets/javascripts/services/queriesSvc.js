@@ -1820,6 +1820,18 @@ angular.module('QuepidApp')
       this.searchAll = function() {
         let promises = [];
         let scorePromises = [];
+        let searchGeneration = null;
+
+        if (queryCollectionStore) {
+          searchGeneration = queryCollectionStore.beginSearch();
+        }
+
+        let failSearch = function(error) {
+          if (queryCollectionStore) {
+            queryCollectionStore.failSearch(error, searchGeneration);
+          }
+          return $q.reject(error);
+        };
 
         angular.forEach(this.queries, function(query) {
           let searchPromiseFn = () => query.search().then(() => {
@@ -1845,9 +1857,20 @@ angular.module('QuepidApp')
              */
             return svc.scoreAll().then(function() {
               // Sync query results to associated Book if one exists
-              svc.syncToBook();
+              try {
+                svc.syncToBook();
+              } catch (error) {
+                return failSearch(error);
+              }
+              if (queryCollectionStore) {
+                queryCollectionStore.finishSearch(searchGeneration);
+              }
+            }, function(error) {
+              return failSearch(error);
             });
-          });
+          }, failSearch);
+        }, function(error) {
+          return failSearch(error);
         });
       };
 

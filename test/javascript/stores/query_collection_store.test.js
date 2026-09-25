@@ -72,4 +72,47 @@ describe("QueryCollectionStore", () => {
     expect(store.query(4).expanded).toBe(true)
     expect(changes.at(-1).queries["4"].expanded).toBe(true)
   })
+
+  it("tracks the search lifecycle independently from query bootstrap", () => {
+    store.beginBootstrap(7)
+    store.replace({ caseId: 7, displayOrder: [1], queries: [{ queryId: 1 }] })
+
+    store.beginSearch()
+    expect(store.status).toBe("ready")
+    expect(store.searchStatus).toBe("searching")
+    expect(store.snapshot().search).toEqual({ status: "searching", error: null })
+
+    store.finishSearch()
+    expect(store.searchStatus).toBe("ready")
+    expect(store.searchError).toBe(null)
+  })
+
+  it("publishes a failed search without changing the bootstrapped collection", () => {
+    const error = { status: 503, message: "search unavailable" }
+    store.replace({ caseId: 7, displayOrder: [1], queries: [{ queryId: 1 }] })
+
+    const failed = []
+    store.addEventListener("search-failed", event => failed.push(event.detail))
+    store.failSearch(error)
+
+    expect(store.searchStatus).toBe("error")
+    expect(store.searchError).toBe(error)
+    expect(store.orderedQueryIds()).toEqual([1])
+    expect(failed).toHaveLength(1)
+    expect(failed[0].error).toBe(error)
+    expect(failed[0].queries["1"]).toBeDefined()
+  })
+
+  it("ignores completion from an older search generation", () => {
+    const firstGeneration = store.beginSearch()
+    const secondGeneration = store.beginSearch()
+
+    expect(store.finishSearch(firstGeneration)).toBe(false)
+    expect(store.searchStatus).toBe("searching")
+    expect(store.failSearch(new Error("stale"), firstGeneration)).toBe(false)
+    expect(store.searchStatus).toBe("searching")
+
+    expect(store.finishSearch(secondGeneration)).toBe(true)
+    expect(store.searchStatus).toBe("ready")
+  })
 })
