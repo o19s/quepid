@@ -30,6 +30,9 @@ export default class extends Controller {
       const response = await apiFetch(this.deleteUrlValue, { method: "DELETE" })
       if (!response.ok) throw new Error(`Delete failed (${response.status})`)
 
+      document.dispatchEvent(new CustomEvent("query-command:delete-completed", {
+        detail: { queryId: this.queryIdValue }
+      }))
       this.dispatch("completed", { detail: { queryId: this.queryIdValue } })
     } catch (error) {
       console.error("query-delete: delete failed", error)

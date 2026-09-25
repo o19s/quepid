@@ -1110,6 +1110,20 @@ describe('Service: queriesSvc', function () {
       expect(queriesSvc.updateScores).toHaveBeenCalled();
     });
 
+    it('rescores after Stimulus moves a query out of the current case', function() {
+      // Use a case id that is unique to this test so stale document listeners
+      // from earlier service instances cannot consume the synthetic event.
+      setupQuerySvc(987);
+      spyOn(queriesSvc, 'updateScores');
+
+      document.dispatchEvent(new CustomEvent('query-command:move-completed', {
+        detail: { caseId: 987, queryId: 0, targetCaseId: 1 }
+      }));
+
+      expect(queriesSvc.updateScores).toHaveBeenCalled();
+      expect(queriesSvc.queries[0]).toBeUndefined();
+    });
+
     it('re-bootstraps and searches on judgements:queries-need-reload for the current case', function() {
       spyOn(queriesSvc, 'reset');
       spyOn(queriesSvc, 'bootstrapQueries').and.callFake(function() {

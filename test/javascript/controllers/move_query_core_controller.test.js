@@ -53,7 +53,6 @@ describe("MoveQueryCoreController", () => {
       })
     })
     window.quepidDom = { flash: { show: vi.fn() } }
-    window.quepidSearch = { queryLifecycle: { moveQuery: vi.fn().mockResolvedValue({}) } }
   })
 
   afterEach(() => {
@@ -74,7 +73,7 @@ describe("MoveQueryCoreController", () => {
     expect(controller.submitButtonTarget.disabled).toBe(true)
   })
 
-  it("selects a case and moves the query through the temporary Angular adapter", async () => {
+  it("selects a case and moves the query through the API command seam", async () => {
     const controller = buildController()
     await controller.open({ preventDefault: vi.fn(), currentTarget: trigger() })
 
@@ -85,14 +84,17 @@ describe("MoveQueryCoreController", () => {
 
     await controller.submit({ preventDefault: vi.fn() })
 
-    expect(window.quepidSearch.queryLifecycle.moveQuery).toHaveBeenCalledWith("12", 8)
+    expect(apiFetch).toHaveBeenCalledWith("api/cases/4/queries/12", expect.objectContaining({
+      method: "PUT",
+      body: JSON.stringify({ other_case_id: 8 })
+    }))
     expect(window.quepidDom.flash.show).toHaveBeenCalledWith("success", "Query moved successfully!")
   })
 
-  it("reports an unavailable adapter without submitting", async () => {
-    delete window.quepidSearch.queryLifecycle.moveQuery
+  it("reports missing query identity without submitting", async () => {
     const controller = buildController()
     controller.queryId = "12"
+    controller.currentCaseId = ""
     controller.selectedCase = { case_id: 8, case_name: "Other Case" }
 
     await controller.submit({ preventDefault: vi.fn() })

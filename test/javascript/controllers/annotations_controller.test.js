@@ -35,7 +35,6 @@ describe("AnnotationsController", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     document.body.innerHTML = ""
-    document.body.appendChild(document.createElement("queries"))
   })
 
   it("creates an annotation from the current case score and renders it", async () => {
@@ -84,9 +83,8 @@ describe("AnnotationsController", () => {
     apiFetch.mockResolvedValue({ ok: true })
     const controller = buildController()
     controller.annotations = [{ id: 9, message: "Old", score: {} }]
-    const queries = document.querySelector("queries")
     const changed = vi.fn()
-    queries.addEventListener("annotations:changed", changed)
+    document.addEventListener("annotations:changed", changed)
     controller.render()
 
     await controller.delete({ preventDefault: vi.fn(), currentTarget: { dataset: { annotationId: "9" } } })

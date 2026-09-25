@@ -235,7 +235,7 @@ export default class extends ModalTriggerControllerBase {
     }
 
     const caseData = await response.json()
-    const queries = queryDocumentsStore.snapshot().queries
+    const queries = (window.quepidStore?.documents || queryDocumentsStore).snapshot().queries
     const csv = buildDetailedCaseCsv(caseData, queries)
     downloadBlob(new Blob([ csv ], { type: "text/csv" }), this._fileName("detailed.csv"))
   }

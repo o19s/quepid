@@ -21,7 +21,7 @@ export function buildBrowseCurlCommand({ url, headers = {} } = {}) {
   const continuation = " " + "\\" + "\n"
   const lines = [`curl ${shellQuoteSingle(encodeQueryString(url))}`, continuation + " -X GET"]
   Object.entries(headers || {}).forEach(([name, value]) => {
-    lines.push(`${continuation} -H '${name}: ${String(value).replace(/([\\'])/g, "\\$1")}'`)
+    lines.push(`${continuation} -H ${shellQuoteSingle(`${name}: ${value}`)}`)
   })
   return lines.join("")
 }

@@ -189,7 +189,7 @@ test.describe('core layout golden paths', () => {
     await expect(queryList.locator('.sub-results:visible')).toHaveCount(0);
   });
 
-  test('move query modal is Stimulus-owned and submits through the Angular state adapter', async ({ page }) => {
+  test('move query modal is Stimulus-owned and submits through the query API seam', async ({ page }) => {
     let moveRequest: { url: string; body: string } | undefined;
     await page.route('**/api/cases/*/queries/*', async route => {
       if (route.request().method() !== 'PUT') {

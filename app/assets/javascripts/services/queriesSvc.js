@@ -675,6 +675,30 @@ angular.module('QuepidApp')
         });
       });
 
+      // Stimulus owns query command persistence. These events only reconcile
+      // the still-live Angular Query objects until the query store becomes
+      // authoritative; they must not issue a second API request.
+      document.addEventListener('query-command:delete-completed', function(event) {
+        var detail = event.detail || {};
+        var queryId = detail.queryId;
+        if (queryId === undefined || queryId === null) {
+          return;
+        }
+        delete svc.queries[queryId];
+        svcVersion++;
+      });
+
+      document.addEventListener('query-command:move-completed', function(event) {
+        var detail = event.detail || {};
+        if (Number(detail.caseId) !== Number(svc.getCaseNo()) ||
+            detail.queryId === undefined || detail.queryId === null) {
+          return;
+        }
+        delete svc.queries[detail.queryId];
+        svcVersion++;
+        svc.updateScores();
+      });
+
       // Stimulus pick-scorer-core: API save already done; apply scorer + rescore live queries.
       document.addEventListener('pick-scorer:selected', function(event) {
         var detail = event.detail || {};
@@ -2012,19 +2036,6 @@ angular.module('QuepidApp')
             $log.debug('Failed to move query: ', response);
             return $q.reject(response);
           });
-      };
-
-      // Temporary bridge for the Stimulus Move Query modal until the live query
-      // store owns query mutations and score refreshes.
-      window.quepidSearch.queryLifecycle.moveQuery = function(queryId, targetCaseId) {
-        var query = svc.queries[queryId];
-        if (!query) {
-          return $q.reject({ error: 'Unable to move query.' });
-        }
-
-        return svc.moveQuery(query, { caseNo: targetCaseId }).then(function() {
-          svc.updateScores();
-        });
       };
 
       this.version = function() {

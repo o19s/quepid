@@ -59,6 +59,12 @@ export default class extends Controller {
   }
 
   async loadWizard() {
+    this.loadAttempts = (this.loadAttempts || 0) + 1
+    if (this.loadAttempts > 100) {
+      this.error = "Unable to load the case wizard. Please refresh the page and try again."
+      this.render()
+      return
+    }
     if (!this.injector) {
       window.setTimeout(() => {
         this.injector = window.angular?.element(document.body).injector?.()
@@ -309,9 +315,11 @@ export default class extends Controller {
         const persisted = await window.quepidSearch.queryLifecycle.persistQueries(caseTryNavSvc.getCaseNo(), texts)
         await window.quepidSearch.queryLifecycle.commitPersistedQueries(persisted)
       }
-      userSvc.getUser().shownIntroWizard()
+      const user = userSvc.getUser()
+      const isFirstCaseWizard = !user.completedCaseWizard
+      user.shownIntroWizard()
       getOrCreateBsModal(this.element)?.hide()
-      if (typeof window.setupAndStartTour === "function") window.setTimeout(window.setupAndStartTour, 1500)
+      if (isFirstCaseWizard && typeof window.setupAndStartTour === "function") window.setTimeout(window.setupAndStartTour, 1500)
     } catch (error) {
       this.saving = false
       this.showError(formatWizardSaveError(error))
@@ -388,6 +396,7 @@ export default class extends Controller {
     if (this.hasIdFieldTarget) this.idFieldTarget.value = this.settings?.idField || ""
     if (this.hasAdditionalFieldsTarget) this.additionalFieldsTarget.value = (this.settings?.additionalFields || []).map((field) => field.text ?? field).join(", ")
     if (this.hasQueryPatternTarget) this.queryPatternTarget.value = this.settings?.queryParams || ""
+    if (this.hasQueryTextTarget) this.queryTextTarget.value = this.settings?.text || ""
     if (this.hasQueryListTarget) {
       this.queryListTarget.replaceChildren(...this.newQueries.map((query, index) => {
         const item = document.createElement("span")

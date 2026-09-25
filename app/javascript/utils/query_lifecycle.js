@@ -76,3 +76,11 @@ export function persistQuery(caseId, queryText) {
 export function persistQueries(caseId, queryTexts) {
   return persist(bulkCreateRequest(caseId, queryTexts))
 }
+
+export function moveQuery(caseId, queryId, targetCaseId) {
+  return persist(moveRequest({ caseNo: caseId, queryId }, targetCaseId))
+}
+
+export function deleteQuery(caseId, queryId) {
+  return persist(deleteRequest(caseId, queryId))
+}

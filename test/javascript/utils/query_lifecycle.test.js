@@ -4,7 +4,9 @@ import {
   bulkCreateRequest,
   createRequest,
   deleteRequest,
+  deleteQuery,
   moveRequest,
+  moveQuery,
   positionRequest,
   persistQuery,
   persistQueries
@@ -75,6 +77,24 @@ describe("query_lifecycle", () => {
     await expect(persistQueries(42, ["star wars", "dune"])).rejects.toEqual({
       error: "Unable to add queries."
     })
+    vi.unstubAllGlobals()
+  })
+
+  it("persists move and delete commands without an Angular adapter", async () => {
+    vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValueOnce(new Response("", { status: 204 }))
+      .mockResolvedValueOnce(new Response("", { status: 204 })))
+
+    await expect(moveQuery(42, 7, 99)).resolves.toEqual({ status: 204, data: null })
+    await expect(deleteQuery(42, 7)).resolves.toEqual({ status: 204, data: null })
+
+    expect(fetch).toHaveBeenNthCalledWith(1, "api/cases/42/queries/7", expect.objectContaining({
+      method: "PUT",
+      body: JSON.stringify({ other_case_id: 99 })
+    }))
+    expect(fetch).toHaveBeenNthCalledWith(2, "api/cases/42/queries/7", expect.objectContaining({
+      method: "DELETE"
+    }))
     vi.unstubAllGlobals()
   })
 })

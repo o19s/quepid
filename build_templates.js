@@ -46,7 +46,10 @@ function generateTemplateModule() {
   
   // Process all template directories
   TEMPLATE_DIRS.forEach(dir => {
-    processDirectory(dir, '', templates);
+    // The legacy Angular component tree disappears as deangularization
+    // completes. Keep the generator usable while only the remaining template
+    // directories are present.
+    if (fs.existsSync(dir)) processDirectory(dir, '', templates);
   });
 
   let output = `// Angular Templates Bundle
@@ -84,7 +87,8 @@ if (process.argv.includes('--watch')) {
   let debounceTimer;
   const DEBOUNCE_DELAY = 300; // Wait 300ms before rebuilding
   
-  const watcher = chokidar.watch(TEMPLATE_DIRS, {
+  const watchDirs = TEMPLATE_DIRS.filter(dir => fs.existsSync(dir));
+  const watcher = chokidar.watch(watchDirs, {
     ignored: [/(^|[\/\\])\./, 'node_modules', 'app/assets/builds'],
     persistent: true,
     awaitWriteFinish: {

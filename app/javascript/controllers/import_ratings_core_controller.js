@@ -82,7 +82,7 @@ export default class extends ModalTriggerControllerBase {
       this.files[type] = file
       this.contents[type] = content
       this.errors[type] = this.validate(type, content)
-      this.renderPreview(type, content)
+      this.renderPreview(type, content, event.currentTarget)
       this.refreshUi()
     } catch (error) {
       this.errors[type] = "Unable to read this file. Please try again."
@@ -170,6 +170,9 @@ export default class extends ModalTriggerControllerBase {
       try { JSON.parse(content) } catch (_) { return "Invalid RRE JSON file." }
       return ""
     }
+    if (type === "ltr") {
+      return content.trim() ? "" : "The selected file is empty."
+    }
     if (!content.trim()) return "The selected file is empty."
     const { headers, rows, errors } = this.parseCsv(content)
     const missing = REQUIRED_HEADERS[type].filter((header) => !headers.includes(header))
@@ -225,8 +228,9 @@ export default class extends ModalTriggerControllerBase {
     return { headers, rows, errors }
   }
 
-  renderPreview(type, content) {
+  renderPreview(type, content, sourceInput) {
     const target = { csv: this.csvPreviewTarget, information_needs: this.informationNeedsPreviewTarget, snapshots: this.snapshotsPreviewTarget }[type]
+      || sourceInput?.parentElement?.querySelector("[data-import-ratings-core-target='content']")
     if (target) target.textContent = content
   }
 

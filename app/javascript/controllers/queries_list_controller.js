@@ -47,8 +47,10 @@ export default class extends Controller {
       this.scheduleRender()
     }
     this.queryDeleteCompleted = event => this.handleQueryDeleteCompleted(event)
+    this.queryMoveCompleted = event => this.handleQueryMoveCompleted(event)
     this.element.addEventListener("query-row:toggle", this.queryToggle)
     this.element.addEventListener("query-delete:completed", this.queryDeleteCompleted)
+    document.addEventListener("query-command:move-completed", this.queryMoveCompleted)
     this.listStateChange = () => {
       this.queryState = window.quepidSearch?.queryState
       this.scheduleRender()
@@ -65,6 +67,7 @@ export default class extends Controller {
     this.documentStore?.removeEventListener("reset", this.documentStoreChange)
     this.element.removeEventListener("query-row:toggle", this.queryToggle)
     this.element.removeEventListener("query-delete:completed", this.queryDeleteCompleted)
+    document.removeEventListener("query-command:move-completed", this.queryMoveCompleted)
     document.removeEventListener("queries-state:changed", this.listStateChange)
     if (this.angularRetryHandle) cancelAnimationFrame(this.angularRetryHandle)
     if (this.renderHandle) cancelAnimationFrame(this.renderHandle)
@@ -542,6 +545,15 @@ export default class extends Controller {
     } else {
       this.angularScope?.queriesSvc?.removeQueryFromState?.(queryId)
     }
+    this.scheduleRender()
+  }
+
+  handleQueryMoveCompleted(event) {
+    const detail = event.detail || {}
+    if (String(detail.caseId) !== String(this.store?.caseId) || detail.queryId == null) return
+
+    this.store?.remove?.(detail.queryId)
+    this.documentStore?.removeQuery?.(detail.queryId)
     this.scheduleRender()
   }
 

@@ -25,7 +25,9 @@ import {
   bulkCreateRequest,
   createRequest,
   deleteRequest,
+  deleteQuery,
   moveRequest,
+  moveQuery,
   positionRequest,
   persistQuery,
   persistQueries
@@ -86,15 +88,16 @@ const quepidSearch = {
     bulkCreateRequest,
     createRequest,
     deleteRequest,
+    deleteQuery,
     moveRequest,
+    moveQuery,
     positionRequest,
     persistQuery,
     persistQueries,
     caseId: null,
     prepareQueries: null,
     commitQueries: null,
-    refreshQueries: null,
-    moveQuery: null
+    refreshQueries: null
   },
   queryService: {
     evaluateMapperFunctions,

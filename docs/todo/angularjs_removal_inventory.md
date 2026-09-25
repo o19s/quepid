@@ -252,7 +252,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 | Surface | Members | Callers |
 |---------|---------|---------|
 | **Read / display** | `queryArray`, `latestScoreInfo`, `version`, `hasUnscoredQueries`, `scoredQueryCount`, `queryCount`, `isBootstrapping`, `queries`, `showOnlyRated` | `queriesCtrl`, `utils/case_csv.js`, `querySnapshotSvc`; Frog Report reads `queryDocumentsStore` |
-| **Mutation / lifecycle** | `bootstrapQueries`, `changeSettings`, `searchAll`, `createQuery`, `deleteQuery`, `moveQuery`, `updateQueryDisplayPosition`, `reset`, `updateScores`, `scoreAll`, `refreshAllDiffs`, `syncToBook` | `mainCtrl`, `add_query`, `move_query_core` adapter, `diff`, `caseSvc` |
+| **Mutation / lifecycle** | `bootstrapQueries`, `changeSettings`, `searchAll`, `createQuery`, `deleteQuery`, `moveQuery`, `updateQueryDisplayPosition`, `reset`, `updateScores`, `scoreAll`, `refreshAllDiffs`, `syncToBook` | `mainCtrl`, `add_query`, `diff`, `caseSvc`; move/delete persistence is Stimulus-owned and only reconciles Angular's live objects |
 | **Search / score engine** (`Query`) | `search`, `searchFromSnapshot`, `paginate`, `ratedPaginate`, `score` / `scoreOthers`, `refreshRatedDocs`, `setDocs`, `filterToRatings`, plus svc-level `createSearcherFromSettings`, `normalizeDocExplains`, `searchApiRatedDocs`, `pAll`, mapper `eval` | `docFinder`; otherwise internal |
 
 **Framework-free today (extract ahead of any UI decision):** `pAll`, `evaluateMapperFunctions` + cache, `matchFeaturesExplain`, `settingsWithTryOverrides`. These keep the same signatures under any target stack, so extracting them to tested ESM under `app/javascript/` is not a bet on the UI framework. Wiring already exists — `utils/*.js` → `quepid_dom.js` → `window.quepidDom`, with `build:angular-vendor` passing `--alias:utils=./app/javascript/utils`.
@@ -477,7 +477,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Rate elements | service | `rateScaleSvc`, `ratingsStoreSvc` |
 | Rating background styling | filter | `ratingBgStyle` |
 | Query options modal | Stimulus controller + Angular scoring bridge | `app/javascript/controllers/query_options_core_controller.js`, `app/views/shared/_query_options_core_modal.html.erb`; save dispatches `query-options:saved` so Angular updates the live Query and rescoring continues through `queriesSvc` |
-| Move query modal | Stimulus controller | `app/javascript/controllers/move_query_core_controller.js`; live query mutation still uses the temporary `queriesSvc` adapter |
+| Move query modal | Stimulus controller + query API seam | `app/javascript/controllers/move_query_core_controller.js` and `app/javascript/utils/query_lifecycle.js`; Stimulus owns persistence, while `queriesSvc` only reconciles its live object through `query-command:move-completed` |
 | Missing documents search | Stimulus controller + Angular search adapter | `app/javascript/controllers/missing_documents_controller.js`; `queriesSvc` retains the browser-to-engine search and rateable-document adapter |
 
 Backing services/factories: `docCacheSvc`, `DocListFactory`, `searchEndpointSvc`

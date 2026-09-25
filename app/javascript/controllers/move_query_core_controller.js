@@ -1,13 +1,14 @@
 import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
 import { apiFetch } from "api/fetch"
 import { getOrCreateBsModal } from "utils/bs_modal"
+import { moveQuery } from "utils/query_lifecycle"
 
 /**
  * Move a query from the core case workspace to another case.
  *
- * The modal and case-list loading are Stimulus-owned. Query removal and score
- * refresh still go through the temporary Angular queriesSvc adapter because the
- * live query store has not migrated yet.
+ * The modal and case-list loading are Stimulus-owned. Stimulus owns the PUT;
+ * the completion event lets the remaining Angular live objects be reconciled
+ * without issuing a second request.
  */
 export default class extends ModalTriggerControllerBase {
   static targets = ["title", "loading", "empty", "caseList", "submitButton"]
@@ -69,8 +70,7 @@ export default class extends ModalTriggerControllerBase {
     event.preventDefault()
     if (!this.selectedCase || !this.queryId) return
 
-    const moveQuery = window.quepidSearch?.queryLifecycle?.moveQuery
-    if (!moveQuery) {
+    if (!this.currentCaseId || !this.queryId) {
       window.quepidDom?.flash?.show("error", "Unable to move query.")
       return
     }
@@ -78,7 +78,14 @@ export default class extends ModalTriggerControllerBase {
     this.submitButtonTarget.disabled = true
 
     try {
-      await moveQuery(this.queryId, this.selectedCase.case_id)
+      await moveQuery(this.currentCaseId, this.queryId, this.selectedCase.case_id)
+      document.dispatchEvent(new CustomEvent("query-command:move-completed", {
+        detail: {
+          caseId: Number(this.currentCaseId),
+          queryId: Number(this.queryId),
+          targetCaseId: Number(this.selectedCase.case_id)
+        }
+      }))
       window.quepidDom?.flash?.show("success", "Query moved successfully!")
       getOrCreateBsModal(this.element)?.hide()
     } catch (error) {

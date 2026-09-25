@@ -156,7 +156,7 @@ export default class extends Controller {
   }
 
   notifyAngular() {
-    document.querySelector("queries")?.dispatchEvent(new CustomEvent("annotations:changed", {
+    document.dispatchEvent(new CustomEvent("annotations:changed", {
       bubbles: true,
       detail: { caseId: this.caseIdValue }
     }))
