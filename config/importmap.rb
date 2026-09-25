@@ -36,6 +36,7 @@ pin 'utils/query_state', to: 'utils/query_state.js'
 pin 'utils/qgraph', to: 'utils/qgraph.js'
 pin 'utils/tune_relevance', to: 'utils/tune_relevance.js'
 pin 'utils/editor_mode', to: 'utils/editor_mode.js'
+pin 'utils/wizard_contracts', to: 'utils/wizard_contracts.js'
 
 pin 'local-time' # @3.0.3
 

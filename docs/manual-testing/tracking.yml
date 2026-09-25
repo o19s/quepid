@@ -160,10 +160,10 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
       "3.2":
         title: "Create a new case (setup wizard)"
-        last_run: 2026-09-25T17:12:00Z
-        result: pass
-        notes: "Re-drove the wizard Welcome state via Playwright MCP after moving the header/auto-launch entry point to Stimulus; the legacy modal still opened with the same appearance. Not covered live this pass: case creation, Fields/Query/Finish, tour completion, and other endpoint types."
-        paths: ["app/controllers/core_controller.rb", "app/javascript/controllers/wizard_launcher_controller.js", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/assets/javascripts/controllers/wizardModal.js", "app/assets/javascripts/services/queriesSvc.js", "app/assets/templates/views/wizardModal.html", "app/javascript/quepid_search.js", "app/javascript/utils/query_lifecycle.js"]
+        last_run: 2026-09-25T17:29:50Z
+        result: pass_with_fixes
+        notes: "Covered live via the full checked-in Playwright wizard flow: Welcome, Name, existing Search Endpoint validation, Fields, Query, Finish, persisted query, and landing on the renamed case. The first run exposed a missing importmap pin for the extracted wizard contracts, which prevented the Stimulus entry from loading; adding the pin restored the modal and the rerun passed. Not covered live: other endpoint types, static CSV import, mapper-based endpoints, or tour completion."
+        paths: ["app/controllers/core_controller.rb", "app/javascript/controllers/wizard_launcher_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/wizard_contracts.js", "config/importmap.rb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/assets/javascripts/controllers/wizardModal.js", "app/assets/javascripts/services/queriesSvc.js", "app/assets/templates/views/wizardModal.html", "app/javascript/quepid_search.js", "app/javascript/utils/query_lifecycle.js"]
       "3.3":
         title: "Import a case from JSON"
         last_run: 2026-09-25T15:55:49Z

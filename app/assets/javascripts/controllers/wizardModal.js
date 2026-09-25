@@ -133,13 +133,8 @@ angular.module('QuepidApp')
              
              // If we are reloading, then use the new one we picked, otherwise
              // we default to Solr.
-             let searchEngineToUse = null;
-             if (angular.isDefined($location.search().searchEngine)){
-               searchEngineToUse = $location.search().searchEngine;
-             }
-             else {
-               searchEngineToUse = 'solr';
-             }
+             let searchEngineToUse = angular.isDefined($location.search().searchEngine) ?
+               $location.search().searchEngine : 'solr';
              $scope.pendingWizardSettings = {
                searchEngine: searchEngineToUse,
                searchEnginePreset: searchEngineToUse
@@ -524,7 +519,7 @@ angular.module('QuepidApp')
           if (settingsForValidation.args.trim().charAt(0) === '{') {
             try {
               settingsForValidation.args = JSON.parse(settingsForValidation.args);
-            } catch (e) {
+            } catch {
               // Not valid JSON despite looking like it - leave as a string and let
               // validateUrl() surface the resulting request failure.
             }
@@ -543,6 +538,9 @@ angular.module('QuepidApp')
             /*jshint evil:true */
             /* jshint undef: false */
             console.log('About to evaluate mapper code...');
+
+            var numberOfResultsMapper;
+            var docsMapper;
             
             // Alternative approach: Use Function constructor which runs in non-strict mode
             // and has access to global scope
@@ -653,17 +651,12 @@ angular.module('QuepidApp')
       }
 
       function validateHeaders () {
-        $scope.invalidHeaders = false;
+        var contracts = $window.quepidWizardContracts;
+        $scope.invalidHeaders = contracts
+          ? !contracts.parseCustomHeaders($scope.pendingWizardSettings.customHeaders).valid
+          : false;
 
-        if (
-          $scope.pendingWizardSettings.customHeaders && $scope.pendingWizardSettings.customHeaders.length > 0) {
-          try {
-            JSON.parse($scope.pendingWizardSettings.customHeaders);
-          } catch (e) {
-            $scope.invalidHeaders = true;
-            $scope.validating = false;
-          }
-        }
+        if ($scope.invalidHeaders) $scope.validating = false;
 
       }
       
@@ -676,15 +669,15 @@ angular.module('QuepidApp')
       }
       
       function validateProxyApiMethod () {
-        $scope.invalidProxyApiMethod = false;
-        if ($scope.pendingWizardSettings.proxyRequests === true){
-          if (
-            $scope.pendingWizardSettings.apiMethod && $scope.pendingWizardSettings.apiMethod === 'JSONP') {
-            
-              $scope.invalidProxyApiMethod = true;
-              $scope.validating = false;
-          }
-        }
+        var contracts = $window.quepidWizardContracts;
+        $scope.invalidProxyApiMethod = contracts
+          ? contracts.invalidProxyApiMethod(
+            $scope.pendingWizardSettings.proxyRequests,
+            $scope.pendingWizardSettings.apiMethod
+          )
+          : false;
+
+        if ($scope.invalidProxyApiMethod) $scope.validating = false;
       }
 
 
@@ -774,20 +767,25 @@ angular.module('QuepidApp')
           }
         }
 
-        var additionalFields = [];
-        angular.forEach($scope.pendingWizardSettings.additionalFields, function(field) {
-          additionalFields.push(field.text);
-        });
-        additionalFields = additionalFields.join(', ');
-
-        var fields = [
-          'id:' + $scope.pendingWizardSettings.idField,
-          'title:' + $scope.pendingWizardSettings.titleField,
-          additionalFields
-        ];
-
-        fields = fields.filter(function (n) { return n !== undefined && n !== ''; });
-        $scope.pendingWizardSettings.fieldSpec = fields.join(', ');
+        var contracts = $window.quepidWizardContracts;
+        if (contracts) {
+          $scope.pendingWizardSettings.fieldSpec = contracts.buildFieldSpec(
+            $scope.pendingWizardSettings.idField,
+            $scope.pendingWizardSettings.titleField,
+            $scope.pendingWizardSettings.additionalFields
+          );
+        } else {
+          var additionalFields = [];
+          angular.forEach($scope.pendingWizardSettings.additionalFields, function(field) {
+            additionalFields.push(field.text);
+          });
+          additionalFields = additionalFields.join(', ');
+          $scope.pendingWizardSettings.fieldSpec = [
+            'id:' + $scope.pendingWizardSettings.idField,
+            'title:' + $scope.pendingWizardSettings.titleField,
+            additionalFields
+          ].filter(function (n) { return n !== undefined && n !== ''; }).join(', ');
+        }
 
         $scope.validating = false;
         WizardHandler.wizard().next();
@@ -855,6 +853,16 @@ angular.module('QuepidApp')
           // This function is called on "Continue" which mean that the text
           // might actually be empty, so we shouldn't add that to the queries
           // list. Or even when the user clicks on "Add Query".
+          var contracts = $window.quepidWizardContracts;
+          if (contracts) {
+            var nextQueries = contracts.addUniqueQuery($scope.pendingWizardSettings.newQueries, text);
+            if (nextQueries.length !== $scope.pendingWizardSettings.newQueries.length) {
+              $scope.pendingWizardSettings.newQueries = nextQueries;
+              $scope.pendingWizardSettings.text = '';
+            }
+            return;
+          }
+
           if ( text !== '' && text !== null && text !== undefined ) {
             var length = $scope.pendingWizardSettings.newQueries.length;
             var unique = true;
@@ -960,6 +968,10 @@ angular.module('QuepidApp')
         };
 
         function formatFinishSaveError(response) {
+          if ($window.quepidWizardContracts) {
+            return $window.quepidWizardContracts.formatWizardSaveError(response);
+          }
+
           var data = response && response.data;
           var detail = '';
 
@@ -1028,37 +1040,17 @@ angular.module('QuepidApp')
       }
       $scope.checkStaticHeaders = checkStaticHeaders;
       function checkStaticHeaders () {
+        var contracts = $window.quepidWizardContracts;
+        if (!contracts || !$scope.staticContent.content) return;
 
-        var headers = $scope.staticContent.content.split('\n')[0];
-        headers = headers.split($scope.staticContent.separator);
+        var result = contracts.validateStaticHeaders(
+          $scope.staticContent.content.split('\n')[0],
+          $scope.staticContent.separator
+        );
 
-        var expectedHeaders = [
-          'Query Text', 'Doc ID', 'Doc Position'
-        ];
-        console.log(headers);
-        console.log(expectedHeaders);
-
-        if (!caseCSVSvc.arrayContains(headers, expectedHeaders)) {
-          let alert = 'Required headers mismatch! Please make sure you have the correct headers in your file (check for correct spelling and capitalization): ';
-          alert += '<br /><strong>';
-          alert += expectedHeaders.join(',');
-          alert += '</strong>';
-
-          $scope.staticContent.import.alert = alert;
-        }
-        
-        const documentHeaders = headers.filter(item => !expectedHeaders.includes(item));
-        const containsSpace = documentHeaders.some(item => item.trim().includes(' '));
-        if (containsSpace) {
-          let alert = 'Document field names may not contain whitespace: ';
-          alert += '<br /><strong>';
-          alert += documentHeaders.join(',');
-          alert += '</strong>';
-
-          $scope.staticContent.import.alert = alert;
-        }
-        
-        
+        $scope.staticContent.import.alert = result.errors.length > 0
+          ? result.errors.map(function(error) { return error; }).join('<br />')
+          : undefined;
       }
       
       $scope.$watch('staticContent.content', function (newVal, oldVal) {

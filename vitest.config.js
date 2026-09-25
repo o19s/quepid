@@ -52,6 +52,7 @@ export default defineConfig({
       { find: "utils/editor_mode", replacement: path.resolve(repoRoot, "app/javascript/utils/editor_mode.js") },
       { find: "utils/query_lifecycle", replacement: path.resolve(repoRoot, "app/javascript/utils/query_lifecycle.js") },
       { find: "utils/query_service", replacement: path.resolve(repoRoot, "app/javascript/utils/query_service.js") },
+      { find: "utils/wizard_contracts", replacement: path.resolve(repoRoot, "app/javascript/utils/wizard_contracts.js") },
       { find: "stores/case_score_store", replacement: path.resolve(repoRoot, "app/javascript/stores/case_score_store.js") },
       { find: "stores/query_collection_store", replacement: path.resolve(repoRoot, "app/javascript/stores/query_collection_store.js") },
       { find: "stores/query_documents_store", replacement: path.resolve(repoRoot, "app/javascript/stores/query_documents_store.js") },
