@@ -410,7 +410,7 @@ The Rails cases index at `/cases` is **not** Angular.
 
 ### Case shell (`app/views/core/index.html.erb`)
 
-Flash include, `LoadingCtrl`, `ng-controller="MainCtrl"` wrapping the case layout **rendered as ERB**.
+Flash include and `ng-controller="MainCtrl"` wrapping the case layout are **rendered as ERB**. The obsolete `LoadingCtrl` wrapper has been removed; its flag was initialized false and never changed.
 
 The layout lives in ERB, not an Angular template, because the header and toolbar read `@case`/`@try`: templates under `app/assets/templates` are compiled into the `angular_templates` bundle and cannot contain ERB.
 
@@ -466,7 +466,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | Item | Type | Key files |
 |------|------|-----------|
 | Case layout markup | Rails view | `app/views/core/index.html.erb` + `_case_header`/`_case_toolbar` partials |
-| App bootstrap & loading gate | controller | `LoadingCtrl` — `controllers/loading.js` |
+| App bootstrap & loading gate | controller | `LoadingCtrl` — removed; it only exposed a flag that was initialized false and never changed. `MainCtrl` remains the bootstrap seam. |
 | Case/try bootstrapping | controller | `MainCtrl` — `controllers/mainCtrl.js` |
 | Current user on `$rootScope` | service | `bootstrapSvc`, `userSvc` |
 | App config flags | service | `configurationSvc` |

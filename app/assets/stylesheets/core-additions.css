@@ -634,19 +634,6 @@ footer {
   margin-left:  20px;
 }
 
-.loading-app {
-  color: rgb(77, 183, 249);
-  font-size: 14px;
-}
-
-.loading-app .loading-text {
-  font-size: 0.5em !important;
-}
-
-.loading-app i {
-  background-color: transparent;
-}
-
 /* Import */
 .import-content {
   max-height: 200px;
