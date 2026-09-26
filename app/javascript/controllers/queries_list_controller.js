@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { hideTooltipsWithin } from "utils/bs_tooltip"
 import { matchesQueryFilter, queryResultCount, querqyRuleTriggered } from "utils/query_state"
+import { errorMessage } from "utils/error_message"
 import { queryCollectionStore } from "stores/query_collection_store"
 import { searchResultsTemplate } from "controllers/search_results_template"
 
@@ -38,6 +39,10 @@ export default class extends Controller {
     this.storeChange = () => this.scheduleRender()
     this.store.addEventListener("change", this.storeChange)
     this.store.addEventListener("reset", this.storeChange)
+    this.searchFailed = event => this.handleSearchFailed(event)
+    this.searchSettled = () => this.handleSearchSettled()
+    this.store.addEventListener("search-failed", this.searchFailed)
+    this.store.addEventListener("search-started", this.searchSettled)
     this.documentStore = window.quepidStore?.documents
     this.documentStoreChange = () => this.scheduleRender()
     this.documentStore?.addEventListener("change", this.documentStoreChange)
@@ -63,6 +68,8 @@ export default class extends Controller {
   disconnect() {
     this.store?.removeEventListener("change", this.storeChange)
     this.store?.removeEventListener("reset", this.storeChange)
+    this.store?.removeEventListener("search-failed", this.searchFailed)
+    this.store?.removeEventListener("search-started", this.searchSettled)
     this.documentStore?.removeEventListener("change", this.documentStoreChange)
     this.documentStore?.removeEventListener("reset", this.documentStoreChange)
     this.element.removeEventListener("query-row:toggle", this.queryToggle)
@@ -546,6 +553,18 @@ export default class extends Controller {
       this.angularScope?.queriesSvc?.removeQueryFromState?.(queryId)
     }
     this.scheduleRender()
+  }
+
+  // searchAll() failures were previously silent outside the add-query flow
+  // (e.g. re-search after an import/judgements reload, or a settings change) —
+  // the collection store now reports every generation-tracked failure here.
+  handleSearchFailed(event) {
+    const message = errorMessage(event.detail?.error, "Search failed. Some queries may not have updated.")
+    window.quepidDom?.flash?.show?.("error", message, "search-error")
+  }
+
+  handleSearchSettled() {
+    window.quepidDom?.flash?.hide?.("search-error")
   }
 
   handleQueryMoveCompleted(event) {

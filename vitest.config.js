@@ -40,6 +40,7 @@ export default defineConfig({
       { find: "utils/case_csv", replacement: path.resolve(repoRoot, "app/javascript/utils/case_csv.js") },
       { find: "utils/download_file", replacement: path.resolve(repoRoot, "app/javascript/utils/download_file.js") },
       { find: "utils/flash", replacement: path.resolve(repoRoot, "app/javascript/utils/flash.js") },
+      { find: "utils/error_message", replacement: path.resolve(repoRoot, "app/javascript/utils/error_message.js") },
       { find: "utils/search_engine_name", replacement: path.resolve(repoRoot, "app/javascript/utils/search_engine_name.js") },
       { find: "utils/browse_query", replacement: path.resolve(repoRoot, "app/javascript/utils/browse_query.js") },
       { find: "utils/rated_docs", replacement: path.resolve(repoRoot, "app/javascript/utils/rated_docs.js") },

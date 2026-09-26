@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import QueriesListController from "controllers/queries_list_controller"
+import { QueryCollectionStore } from "stores/query_collection_store"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
@@ -244,6 +245,70 @@ describe("queries_list_controller", () => {
 
     expect(removeQueryFromState).toHaveBeenCalledWith(7)
     expect(controller.scheduleRender).toHaveBeenCalled()
+  })
+
+  it("subscribes to the live collection store and flashes a sticky search-error on search-failed", () => {
+    const { controller } = controllerFor()
+    const store = new QueryCollectionStore()
+    window.quepidStore = { queries: store }
+    window.quepidDom = { flash: { show: vi.fn(), hide: vi.fn() } }
+
+    controller.connect()
+    const generation = store.beginSearch()
+    store.failSearch(new Error("Solr is unreachable"), generation)
+
+    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Solr is unreachable", "search-error")
+
+    controller.disconnect()
+    delete window.quepidStore
+    delete window.quepidDom
+  })
+
+  it("clears the sticky search-error flash once the store reports a new search starting", () => {
+    const { controller } = controllerFor()
+    const store = new QueryCollectionStore()
+    window.quepidStore = { queries: store }
+    window.quepidDom = { flash: { show: vi.fn(), hide: vi.fn() } }
+
+    controller.connect()
+    store.beginSearch()
+
+    expect(window.quepidDom.flash.hide).toHaveBeenCalledWith("search-error")
+
+    controller.disconnect()
+    delete window.quepidStore
+    delete window.quepidDom
+  })
+
+  it("stops reacting to the collection store's search events after disconnect", () => {
+    const { controller } = controllerFor()
+    const store = new QueryCollectionStore()
+    window.quepidStore = { queries: store }
+    window.quepidDom = { flash: { show: vi.fn(), hide: vi.fn() } }
+
+    controller.connect()
+    controller.disconnect()
+    const generation = store.beginSearch()
+    store.failSearch(new Error("too late"), generation)
+
+    expect(window.quepidDom.flash.show).not.toHaveBeenCalled()
+
+    delete window.quepidStore
+    delete window.quepidDom
+  })
+
+  it("falls back to a generic message when the search error has no message", () => {
+    const { controller } = controllerFor()
+    window.quepidDom = { flash: { show: vi.fn(), hide: vi.fn() } }
+
+    controller.handleSearchFailed({ detail: { error: {} } })
+
+    expect(window.quepidDom.flash.show).toHaveBeenCalledWith(
+      "error",
+      "Search failed. Some queries may not have updated.",
+      "search-error"
+    )
+    delete window.quepidDom
   })
 
   it("bridges drag start while reorder persistence owns drag end", () => {

@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { errorMessage } from "utils/error_message"
 
 /**
  * Owns query lifecycle orchestration while the search/scoring implementation
@@ -33,11 +34,21 @@ export default class extends Controller {
         : await lifecycle.persistQueries(caseId, queryTexts)
       const result = await lifecycle.commitQueries(prepared, persisted)
       if (result.searchError) {
-        const message = result.searchError.message || result.searchError
         window.quepidDom.flash.show("error", queryTexts.length === 1
           ? "Your new query had an error!"
           : "One (or many) of your new queries had an error!")
-        window.quepidDom.flash.show("error", message, "search-error")
+        // A single query's error comes from searchAndScore(), which never
+        // touches the query collection store — flash it here. A bulk add's
+        // error comes from searchAll(), which already reports through the
+        // store's search-failed event (queries_list_controller.js); flashing
+        // it here too would just be a redundant, race-prone second write to
+        // the same sticky channel.
+        if (queryTexts.length === 1) {
+          // Unlike the generic fallbacks below, preserve the raw rejection text
+          // here rather than a fixed message — this channel is meant to show
+          // search-engine detail, not just "something went wrong."
+          window.quepidDom.flash.show("error", errorMessage(result.searchError, String(result.searchError)), "search-error")
+        }
       } else {
         window.quepidDom.flash.show("success", queryTexts.length === 1
           ? "Query added successfully."
@@ -45,10 +56,8 @@ export default class extends Controller {
       }
       this.complete(true)
     } catch (error) {
-      const message = error?.error || error?.message || JSON.stringify(error)
-      window.quepidDom.flash.show("error", message || (queryTexts.length === 1
-        ? "Unable to add query."
-        : "Unable to add queries."))
+      const fallback = queryTexts.length === 1 ? "Unable to add query." : "Unable to add queries."
+      window.quepidDom.flash.show("error", errorMessage(error, fallback))
       this.complete(false)
     }
   }

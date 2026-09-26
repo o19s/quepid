@@ -56,6 +56,27 @@ describe("query_lifecycle_controller", () => {
     controller.disconnect()
   })
 
+  it("reports a bulk search error without duplicating the collection store's own flash", async () => {
+    const prepareQueries = vi.fn().mockReturnValue({ queries: [{}, {}] })
+    const persistQueries = vi.fn().mockResolvedValue({ status: 201, data: {} })
+    const commitQueries = vi.fn().mockResolvedValue({ searchError: new Error("timeout") })
+    const { controller, element } = controllerFor({ prepareQueries, persistQueries, commitQueries })
+
+    controller.connect()
+    element.dispatchEvent(new CustomEvent("add-query:submit", {
+      detail: { queryTexts: ["star wars", "dune"] }
+    }))
+    await Promise.resolve()
+    await Promise.resolve()
+
+    // svc.searchAll() (the bulk path) already reports this failure through the
+    // query collection store's search-failed event, which queries_list_controller.js
+    // flashes on the same sticky channel — a second write here would just race it.
+    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "One (or many) of your new queries had an error!")
+    expect(window.quepidDom.flash.show).not.toHaveBeenCalledWith("error", expect.anything(), "search-error")
+    controller.disconnect()
+  })
+
   it("reports persistence failures and marks the form unsuccessful", async () => {
     const prepareQueries = vi.fn().mockReturnValue({ query: {} })
     const persistQuery = vi.fn().mockRejectedValue({ error: "Unable to add query." })
@@ -72,6 +93,22 @@ describe("query_lifecycle_controller", () => {
 
     expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to add query.")
     expect(complete.mock.calls[0][0].detail).toEqual({ success: false })
+    controller.disconnect()
+  })
+
+  it("falls back to a generic message for a persistence failure with no usable error field", async () => {
+    const prepareQueries = vi.fn().mockReturnValue({ queries: [{}, {}] })
+    const persistQueries = vi.fn().mockRejectedValue({ foo: "bar" })
+    const commitQueries = vi.fn()
+    const { controller, element } = controllerFor({ prepareQueries, persistQueries, commitQueries })
+
+    controller.connect()
+    element.dispatchEvent(new CustomEvent("add-query:submit", {
+      detail: { queryTexts: ["star wars", "dune"] }
+    }))
+    await Promise.resolve()
+
+    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to add queries.")
     controller.disconnect()
   })
 
