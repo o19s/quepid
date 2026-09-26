@@ -5,7 +5,9 @@ import {
   evaluateMapperFunctions,
   matchFeaturesExplain,
   normalizeSearchResults,
+  paginateQuery,
   pAll,
+  searchQuery,
   settingsWithTryOverrides
 } from "utils/query_service"
 
@@ -175,6 +177,88 @@ describe("query service helpers", () => {
         rateable: true
       }
     ])
+  })
+
+  it("runs a query search and publishes normalized results", async () => {
+    const query = { searcher: { search: vi.fn().mockResolvedValue(undefined) } }
+    const setDocs = vi.fn(() => undefined)
+    const onError = vi.fn()
+
+    await searchQuery({
+      query,
+      createSearcher: () => query.searcher,
+      createRatedSearcher: () => ({ rated: true }),
+      setDocs,
+      onError,
+      parseError: vi.fn(),
+      logDebug: vi.fn()
+    })
+
+    expect(query.ratedSearcher).toEqual({ rated: true })
+    expect(setDocs).toHaveBeenCalledWith(undefined, undefined)
+    expect(onError).not.toHaveBeenCalled()
+  })
+
+  it("rejects after preserving the legacy search-error callbacks", async () => {
+    const query = {
+      searcher: { search: vi.fn().mockRejectedValue({ status: 502 }) }
+    }
+    const setDocs = vi.fn(() => undefined)
+    const onError = vi.fn()
+
+    await expect(
+      searchQuery({
+        query,
+        createSearcher: () => query.searcher,
+        createRatedSearcher: () => ({ rated: true }),
+        setDocs,
+        onError,
+        parseError: () => "translated error",
+        logDebug: vi.fn()
+      })
+    ).rejects.toBe("translated error")
+    expect(setDocs).toHaveBeenCalledWith([], 0)
+    expect(onError).toHaveBeenCalledWith("translated error")
+  })
+
+  it("rejects when the searcher reports an error state", async () => {
+    const query = {
+      searcher: {
+        inError: true,
+        search: vi.fn().mockResolvedValue(undefined)
+      }
+    }
+    const setDocs = vi.fn(() => undefined)
+    const onError = vi.fn()
+
+    await expect(
+      searchQuery({
+        query,
+        createSearcher: () => query.searcher,
+        createRatedSearcher: () => ({ rated: true }),
+        setDocs,
+        onError,
+        parseError: vi.fn(),
+        logDebug: vi.fn()
+      })
+    ).rejects.toBe("Please click browse to see the error")
+    expect(setDocs).toHaveBeenCalledWith([], 0)
+    expect(onError).toHaveBeenCalledWith("Please click browse to see the error")
+  })
+
+  it("appends documents from a paged search", async () => {
+    const nextSearcher = { docs: [{ id: "2" }], search: vi.fn().mockResolvedValue(undefined) }
+    const appendDocs = vi.fn()
+
+    await paginateQuery({
+      searcher: nextSearcher,
+      pager: (searcher) => searcher,
+      search: (searcher) => searcher.search(),
+      appendDocs,
+      logDebug: vi.fn()
+    })
+
+    expect(appendDocs).toHaveBeenCalledWith(nextSearcher)
   })
 
   it("runs an unrestricted queue with bounded concurrency", async () => {

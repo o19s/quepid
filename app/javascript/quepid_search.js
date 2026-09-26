@@ -38,7 +38,9 @@ import {
   evaluateMapperFunctions,
   matchFeaturesExplain,
   normalizeSearchResults,
+  paginateQuery,
   pAll,
+  searchQuery,
   settingsWithTryOverrides
 } from "./utils/query_service"
 
@@ -108,7 +110,9 @@ const quepidSearch = {
     evaluateMapperFunctions,
     matchFeaturesExplain,
     normalizeSearchResults,
+    paginateQuery,
     pAll,
+    searchQuery,
     settingsWithTryOverrides
   }
 }

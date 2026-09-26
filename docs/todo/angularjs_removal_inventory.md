@@ -26,7 +26,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 |----------|-----------------|
 | Angular JS source files (`app/assets/javascripts`) | 52 files, 47 register with Angular |
 | HTML templates (`app/assets/templates`) | 2 |
-| Controllers | 2 (`.controller()` registrations; 2 files under `controllers/`) |
+| Controllers | 0 |
 | Services | 22 (`.service()` registrations; 22 files under `services/`) |
 | Factories | 7 |
 | Filters | 6 under `filters/` |
@@ -182,7 +182,7 @@ See [Re-render mechanism](#re-render-mechanism) for the client/server state boun
 
 ### Core toolbar
 
-The toolbar is server-rendered from `@case`/`@try` (`app/views/core/_case_toolbar.html.erb`). The import action is now Stimulus-owned (`import-ratings-core`) with a temporary query refresh bridge into Angular. The diff picker, renderer, score read models, and diff orchestration are Stimulus/ESM-owned; snapshot fetching and the live Query/snapshot-searcher adapter remain Angular behind the `diff:*` bridge.
+The toolbar is server-rendered from `@case`/`@try` (`app/views/core/_case_toolbar.html.erb`). The import action is Stimulus-owned (`import-ratings-core`) with a temporary query refresh bridge into Angular. Snapshot fetching and the live Query/snapshot-searcher adapter remain Angular behind the `diff:*` bridge.
 
 **The toolbar keeps a Stimulus `hidden` readiness gate, and it is load-bearing.** Its actions
 still depend on live query state: "Create snapshot" clicked before `queriesSvc` has bootstrapped
@@ -224,13 +224,12 @@ New Stimulus logic in `app/javascript/api/` or `utils/` needs a `*.test.js` unde
 
 When replacing the case SPA (not just toolbar actions), work in dependency order:
 
-`MainCtrl` and `CaseCtrl` have been removed. The case page is bootstrapped by
-`core_bootstrap_controller.js`; the surviving Angular services remain behind the temporary
+The case page is bootstrapped by `core_bootstrap_controller.js`; the surviving Angular services remain behind the temporary
 compatibility adapter until live query/search/scoring migration is complete.
 
 **Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
-1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). Remaining call sites are concentrated in the diff bridge and surviving Angular service seams; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
+1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, and the remaining CSRF callers. Tooltip/popover/paste utils and flash are already Stimulus-owned. Remaining call sites are concentrated in the diff bridge and surviving Angular service seams; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
 2. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
 3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
 4. Query list + results — `queries`, `search-results`, rating UI
@@ -433,8 +432,6 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Case layout markup | Rails view | `app/views/core/index.html.erb` + `_case_header`/`_case_toolbar` partials |
-| Case/try bootstrapping | Stimulus controller + temporary Angular service adapter | `app/javascript/controllers/core_bootstrap_controller.js`, `app/javascript/utils/core_angular_adapter.js`; layout inline Angular run block removed |
 | Current user on `$rootScope` | service | `bootstrapSvc`, `userSvc` |
 | App config flags | service | `configurationSvc` |
 | CSRF on API requests | interceptor | `interceptors/rails-csrf.js` |
@@ -445,8 +442,6 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Case layout shell | Rails view | `app/views/core/index.html.erb` |
-| Case score display | component | Primary score is Stimulus; snapshot/diff case scores are now rendered by `diff-case-scores`; Angular still calculates the live diff read model |
 | Import ratings | Stimulus controller + Angular refresh bridge | `app/javascript/controllers/import_ratings_core_controller.js`, `app/views/shared/_import_ratings_core_modal.html.erb`; refreshes live query state through `imports:queries-need-reload` |
 | Diff renderer and picker | Stimulus renderer + explicit compatibility bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/snapshot_bridge_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`, `app/javascript/utils/diff_results.js`; Angular still owns snapshot search/scoring |
 

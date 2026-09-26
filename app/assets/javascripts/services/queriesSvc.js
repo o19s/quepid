@@ -922,6 +922,31 @@ angular.module('QuepidApp')
         });
       }
 
+      function searchQuery(query) {
+        return window.quepidSearch.queryService.searchQuery({
+          query: query,
+          createSearcher: function() {
+            return svc.createSearcherFromSettings(currSettings, query);
+          },
+          createRatedSearcher: function() {
+            return svc.createSearcherFromSettings(currSettings, query, { filterToRated: true });
+          },
+          setDocs: function(docs, numFound) {
+            return query.setDocs(docs, numFound);
+          },
+          onError: function(message) {
+            query.onError(message);
+          },
+          parseError: function(response, linkUrl) {
+            return searchErrorTranslatorSvc.parseResponseObject(response, linkUrl, currSettings.searchEngine);
+          },
+          logDebug: function() {
+            $log.debug.apply($log, arguments);
+          },
+          promiseApi: $q
+        });
+      }
+
       function toggleShowOnlyRated() {
         svc.showOnlyRated = !svc.showOnlyRated;
 
@@ -1306,78 +1331,8 @@ angular.module('QuepidApp')
         };
 
         this.search = function() {
-          let self = this;
-
-          return $q(function(resolve, reject) {
-            self.hasBeenScored = false;
-
-            self.searcher = svc.createSearcherFromSettings(
-              currSettings,
-              self
-            );
-
-            if (!self.searcher) {
-              let msg = 'No Search Endpoint configured. Please select a search endpoint in Settings.';
-              self.onError(msg);
-              reject(msg);
-              return;
-            }
-
-            self.ratedSearcher = svc.createSearcherFromSettings(
-              currSettings,
-              self,
-              { filterToRated: true }
-            );
-
-            resultsReturned = false;
-
-            let promises = [];
-
-            promises.push(self.searcher.search()
-              .then(function() {
-                            }, function(response) {
-                // splainer-search only ever sets searcher.linkUrl for Solr (see
-                // solrSearcherPreprocessorSvc.js); for a GET-method searchapi engine
-                // (e.g. Vespa), searcher.url already holds the same fully-resolved,
-                // real request URL by the time search() settles, so fall back to it
-                // rather than patching the vendored library for one more engine.
-                self.linkUrl = self.searcher.linkUrl || self.searcher.url;
-                self.setDocs([], 0);
-
-                let msg = searchErrorTranslatorSvc.parseResponseObject(response, self.linkUrl, currSettings.searchEngine);
-
-                self.onError(msg);
-                reject(msg);
-              }).catch(function(response) {
-                $log.debug('Failed to load search results');
-                return response;
-              }));
-
-
-            // This is okay for smaller cases but bogs down the app for 100's of queries
-            //promises.push(self.refreshRatedDocs());
-
-            $q.all(promises).then( () => {
-              self.linkUrl = self.searcher.linkUrl || self.searcher.url;
-
-              if (self.searcher.inError) {
-                //self.docs.length = 0;
-                self.setDocs([], 0);
-                self.onError('Please click browse to see the error');
-              } else {
-                let error = self.setDocs(self.searcher.docs, self.searcher.numFound);
-                if (error) {
-                  self.onError(error);
-                  reject(error);
-                } else {
-                  self.othersExplained = self.searcher.othersExplained;
-
-                  resolve();
-
-                }
-              }
-            });
-          });
+          resultsReturned = false;
+          return searchQuery(this);
         };
 
         // Method to search using a snapshot instead of live search engine
@@ -1437,27 +1392,27 @@ angular.module('QuepidApp')
           // whatever the try's mapper_code defines (see nextPageArgsMapper in
           // db/mapper_based_search_engines/vespa.js) - and returns null the same way
           // Solr/ES/Algolia/Vectara's own pager() do when there's no mapper or no more pages.
-          self.searcher = self.searcher.pager();
-
-          if (self.searcher === null) {
-            return;
-          }
-
-          return self.searcher.search()
-            .then(function() {
-              let ratingsStore  = self.ratingsStore;
-              let docs          = self.searcher.docs;
-              let fieldSpec     = currSettings.createFieldSpec();
-              let docList       = new DocListFactory(docs, fieldSpec, ratingsStore, matchFeaturesExplain);
-              self.docs         = self.docs.concat(docList.list());
+          return window.quepidSearch.queryService.paginateQuery({
+            searcher: self.searcher,
+            pager: function(searcher) {
+              self.searcher = searcher.pager();
+              return self.searcher;
+            },
+            search: function(searcher) { return searcher.search(); },
+            appendDocs: function(searcher) {
+              let docList = new DocListFactory(
+                searcher.docs,
+                currSettings.createFieldSpec(),
+                self.ratingsStore,
+                matchFeaturesExplain
+              );
+              self.docs = self.docs.concat(docList.list());
               publishQueryDocuments(self);
-            }, function(response) {
-              $log.debug('Failed to load search: ', response);
-              return response;
-            }).catch(function(response) {
-              $log.debug('Failed to load search');
-              return response;
-            });
+            },
+            logDebug: function() {
+              $log.debug.apply($log, arguments);
+            }
+          });
         };
 
         this.ratedPaginate = function() {
@@ -1725,16 +1680,23 @@ angular.module('QuepidApp')
         };
 
         angular.forEach(this.queries, function(query) {
-          let searchPromiseFn = () => query.search().then(() => {
-            scorePromises.push(query.score());
-          });
+          let searchPromiseFn = () => {
+            let searchPromise = query.search().then(
+              () => {
+                scorePromises.push(query.score());
+              },
+              (error) => $q.reject(error)
+            );
+            searchPromise.catch(angular.noop);
+            return searchPromise;
+          };
 
           promises.push(searchPromiseFn);
         });
         if (currSettings.selectedTry.requestsPerMinute > 0){
           $log.info('Rate limited to ' + currSettings.selectedTry.requestsPerMinute + ' requests per minute.');
         }
-        return this.pAll(promises, currSettings.selectedTry.requestsPerMinute).then( () => {
+        let searchAllPromise = this.pAll(promises, currSettings.selectedTry.requestsPerMinute).then( () => {
           return $q.all(scorePromises).then( () => {
             /*
              * Why are we calling scoreAll after we called score() above?
@@ -1763,6 +1725,8 @@ angular.module('QuepidApp')
         }, function(error) {
           return failSearch(error);
         });
+        searchAllPromise.catch(angular.noop);
+        return searchAllPromise;
       };
 
       // the try that the query results reflect

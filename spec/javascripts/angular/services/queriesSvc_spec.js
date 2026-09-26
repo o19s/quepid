@@ -849,7 +849,7 @@ describe('Service: queriesSvc', function () {
     $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
     queriesSvc.changeSettings(2, mockSettings);
     $httpBackend.flush();
-    queriesSvc.searchAll();
+    queriesSvc.searchAll().catch(angular.noop);
 
     var testQuery = queriesSvc.queries['0'];
     expect(testQuery.state()).toBe('loading');
