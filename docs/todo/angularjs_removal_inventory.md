@@ -469,13 +469,19 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 |------|------|-----------|
 | Results panel | Stimulus shell + isolated Angular controls | `app/javascript/controllers/search_results_controller.js` and `search_results_template.js` own the expanded-results shell/document rendering and browse-results modal; live search, diff, finder, pagination, and scoring remain explicit Angular control islands |
 | Rating popover | Stimulus controller | `rating_popover_controller.js` — mutation still bridges back to Angular via `rating-popover:rate`/`:reset` events |
-| Rate elements | service | `rateScaleSvc`, `ratingsStoreSvc` |
+| Rate elements | framework-free runtime + Angular adapter | `app/javascript/utils/ratings_store.js`, `app/assets/javascripts/services/ratingsStoreSvc.js`, `rateScaleSvc` |
 | Rating background styling | filter | `ratingBgStyle` |
 | Query options modal | Stimulus controller + Angular scoring bridge | `app/javascript/controllers/query_options_core_controller.js`, `app/views/shared/_query_options_core_modal.html.erb`; save dispatches `query-options:saved` so Angular updates the live Query and rescoring continues through `queriesSvc` |
 | Move query modal | Stimulus controller + query API seam | `app/javascript/controllers/move_query_core_controller.js` and `app/javascript/utils/query_lifecycle.js`; Stimulus owns persistence, while `queriesSvc` only reconciles its live object through `query-command:move-completed` |
 | Missing documents search | Stimulus controller + Angular search adapter | `app/javascript/controllers/missing_documents_controller.js`; `queriesSvc` retains the browser-to-engine search and rateable-document adapter |
 
 Backing services/factories: `docCacheSvc`, `DocListFactory`, `searchEndpointSvc`
+
+`ratingsStoreSvc` is now a compatibility adapter around the framework-free
+`RatingsStore`. The adapter still supplies Angular `$http` and the legacy
+`rating-changed` notification while query scoring remains Angular-owned; the
+ratings dictionary, mutation contract, and rateable-document behavior are
+covered by Vitest before the adapter is removed.
 
 The Missing Documents modal was migrated to Stimulus on 2026-09-24. Search-engine-specific
 searcher creation, rated-document lookup, pagination, and live rating mutations remain behind
