@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import {
+  buildSearcherRequest,
   evaluateMapperFunctions,
   matchFeaturesExplain,
   pAll,
@@ -7,6 +8,99 @@ import {
 } from "utils/query_service"
 
 describe("query service helpers", () => {
+  it("builds classic Solr requests with rating filters and query options", () => {
+    const settings = {
+      searchEngine: "solr",
+      selectedTry: { args: { q: "#$query##", fq: "type:movie" }, jsonQueryParams: false },
+      options: { boost: 1 },
+      customHeaders: { "X-Test": "yes" },
+      numberOfRows: 20,
+      escapeQuery: true,
+      apiMethod: "GET"
+    }
+
+    const result = buildSearcherRequest({
+      settings,
+      queryText: "star wars",
+      queryOptions: { tie: 0.1 },
+      options: { filterToRated: true },
+      ratingsFilter: "{!terms f=id}42",
+      mapperFunctions: {}
+    })
+
+    expect(result.args).toEqual({ q: "#$query##", fq: ["type:movie", "{!terms f=id}42"], echoParams: "all" })
+    expect(result.searchEngine).toBe("solr")
+    expect(result.searcherOptions).toMatchObject({
+      customHeaders: '{"X-Test":"yes"}',
+      qOption: { boost: 1, tie: 0.1 },
+      jsonQueryDsl: false
+    })
+    expect(settings.selectedTry.args).toEqual({ q: "#$query##", fq: "type:movie" })
+  })
+
+  it("uses ES filters and preserves mapper search options", () => {
+    const result = buildSearcherRequest({
+      settings: {
+        searchEngine: "es",
+        selectedTry: {
+          args: { query: "test" },
+          mapperBasedSearchEnginePaginationHitsParam: "limit",
+          mapperBasedSearchEnginePaginationOffsetParam: "offset"
+        },
+        options: {}
+      },
+      queryText: "test",
+      options: { forceApiMethod: "POST", filterToRated: true },
+      ratingsFilter: { term: { id: "42" } },
+      isEsOrOs: true
+    })
+
+    expect(result.searchEngine).toBe("es")
+    expect(result.args).toEqual({
+      query: { bool: { should: "test", filter: { term: { id: "42" } } } }
+    })
+    expect(result.searcherOptions).toMatchObject({ apiMethod: "POST" })
+  })
+
+  it("preserves mapper search options", () => {
+    const result = buildSearcherRequest({
+      settings: {
+        searchEngine: "searchapi",
+        selectedTry: {
+          args: { query: "test" },
+          mapperBasedSearchEnginePaginationHitsParam: "limit",
+          mapperBasedSearchEnginePaginationOffsetParam: "offset"
+        }
+      },
+      queryText: "test",
+      mapperFunctions: {
+        docsMapper: () => [],
+        numberOfResultsMapper: () => 1,
+        nextPageArgsMapper: () => ({})
+      },
+      options: { forceApiMethod: "POST" }
+    })
+
+    expect(result.searcherOptions).toMatchObject({
+      apiMethod: "POST",
+      docsMapper: expect.any(Function),
+      numberOfResultsMapper: expect.any(Function),
+      nextPageArgsMapper: expect.any(Function),
+      paginationHitsParam: "limit",
+      paginationOffsetParam: "offset"
+    })
+  })
+
+  it("normalizes static settings to the Solr request shape", () => {
+    const result = buildSearcherRequest({
+      settings: { searchEngine: "static", selectedTry: { args: { q: "test" }, jsonQueryParams: false } },
+      queryText: "test"
+    })
+
+    expect(result.searchEngine).toBe("solr")
+    expect(result.searcherOptions.jsonQueryDsl).toBe(false)
+  })
+
   it("overlays selected try settings without mutating either input", () => {
     const settings = { selectedTry: { searchEngine: "solr", args: { q: "old" } }, numberOfRows: 10 }
     const result = settingsWithTryOverrides(settings, { args: { q: "new" } })

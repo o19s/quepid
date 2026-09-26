@@ -790,143 +790,36 @@ angular.module('QuepidApp')
        * engine-specific behavior (proxy URL, static engine, searchapi mapper functions, rated-doc filters).
        */
       function createSearcherFromSettings(passedInSettings, query, options) {
-        let queryText = query.queryText;
-        let args = angular.copy(passedInSettings.selectedTry.args) || {};
         options = options == null ? {} : options;
-        // Only meaningful (and set) when searchEngine === 'solr' - hoisted out of that block
-        // below so the ratings filter branch further down can reuse the same resolved value
-        // instead of re-deriving it.
-        let solrQueryParamsIsJson = false;
+        if (!passedInSettings || !passedInSettings.selectedTry) return;
 
-        if (passedInSettings && passedInSettings.selectedTry) {
+        let mapperFunctions = passedInSettings.searchEngine === 'searchapi'
+          ? evaluateMapperFunctions(passedInSettings.mapperCode)
+          : {};
+        let request = window.quepidSearch.queryService.buildSearcherRequest({
+          settings: passedInSettings,
+          queryText: query.queryText,
+          queryOptions: query.options,
+          options: options,
+          mapperFunctions: mapperFunctions,
+          proxyUrl: passedInSettings.proxyRequests === true
+            ? caseTryNavSvc.getQuepidProxyUrl(passedInSettings.searchEndpointId)
+            : undefined,
+          isEsOrOs: searchEndpointSvc.isEsOrOsEngine(passedInSettings.searchEngine),
+          ratingsFilter: options.filterToRated ? query.filterToRatings(passedInSettings) : undefined
+        });
 
-          // Convert customHeaders to string if it's an object (from JSON serialization)
-          let customHeaders = typeof passedInSettings.customHeaders === 'object' && passedInSettings.customHeaders !== null ?
-            JSON.stringify(passedInSettings.customHeaders) :
-            passedInSettings.customHeaders;
-
-          let searcherOptions = {
-            customHeaders: customHeaders,
-            escapeQuery:   passedInSettings.escapeQuery,
-            numberOfRows:  passedInSettings.numberOfRows,
-            basicAuthCredential: passedInSettings.basicAuthCredential
-          };
-          if (passedInSettings.apiMethod !== undefined) {
-            searcherOptions.apiMethod = passedInSettings.apiMethod;
-          }
-          // Overrides the try's own apiMethod (which may be 'AUTO' for a mapper-based search
-          // engine like Vespa) - used by docFinder.js so "Find and Rate Missing Documents"
-          // always posts its (often long) rated-docs-lookup query rather than risking an
-          // oversized GET.
-          if (options.forceApiMethod !== undefined) {
-            searcherOptions.apiMethod = options.forceApiMethod;
-          }
-
-          if (passedInSettings.proxyRequests === true) {
-            searcherOptions.proxyUrl = caseTryNavSvc.getQuepidProxyUrl(passedInSettings.searchEndpointId);
-          }
-
-          if (passedInSettings.searchEngine === 'static'){
-            // Similar to logic in Splainer-search's searchSvc.createValidator for snapshots.
-            // we need a better way of handling this.   Basically we are saying a static search engine is
-            // treated like Solr.   But if we have more generic search apis, they will need a
-            // custom parser...
-            passedInSettings.searchEngine = 'solr';
-          }
-          else if (passedInSettings.searchEngine === 'searchapi'){
-            let mapperFunctions = evaluateMapperFunctions(passedInSettings.mapperCode);
-
-            if (mapperFunctions.docsMapper) {
-              searcherOptions.docsMapper = mapperFunctions.docsMapper;
-            }
-            if (mapperFunctions.numberOfResultsMapper) {
-              searcherOptions.numberOfResultsMapper = mapperFunctions.numberOfResultsMapper;
-            }
-            if (mapperFunctions.nextPageArgsMapper) {
-              // splainer-search's searchApiSearcherFactory.pager() calls this directly to
-              // build the next page's args - see nextPageArgsMapper in
-              // db/mapper_based_search_engines/vespa.js for the contract.
-              searcherOptions.nextPageArgsMapper = mapperFunctions.nextPageArgsMapper;
-            }
-
-            // splainer-search's searchApiSearcherPreprocessorSvc can't hardcode a page-size
-            // param name (unlike Solr's rows/ES's size) since that's whatever the target
-            // API/mapper calls it - these two names are all it needs to default hits/offset
-            // from numberOfRows on page 1, the same way Solr/ES already do internally.
-            searcherOptions.paginationHitsParam = passedInSettings.selectedTry.mapperBasedSearchEnginePaginationHitsParam;
-            searcherOptions.paginationOffsetParam = passedInSettings.selectedTry.mapperBasedSearchEnginePaginationOffsetParam;
-          }
-
-          if (passedInSettings.searchEngine === 'solr') {
-            // Trust the server's explicit signal over re-deriving it from args' shape; the
-            // shape check below only covers the case where that signal is missing.
-            solrQueryParamsIsJson = passedInSettings.selectedTry.jsonQueryParams;
-            if (solrQueryParamsIsJson === undefined) {
-              solrQueryParamsIsJson = !Object.keys(args).every(function(key) {
-                return Array.isArray(args[key]);
-              });
-            }
-            searcherOptions.jsonQueryDsl = solrQueryParamsIsJson;
-
-            // add echoParams=all if we don't have it defined to provide query details. Solr's
-            // JSON Query DSL has no bare top-level echoParams key - classic request-handler
-            // params like this nest under "params" instead for JSON requests
-            // (https://solr.apache.org/guide/solr/latest/query-guide/json-request-api.html).
-            if (solrQueryParamsIsJson) {
-              args.params = args.params || {};
-            }
-            let echoParamsTarget = solrQueryParamsIsJson ? args.params : args;
-            if (echoParamsTarget['echoParams'] === undefined) {
-              echoParamsTarget['echoParams'] = 'all';
-            }
-          }
-          // Modify query if ratings were passed in
-          if (options.filterToRated) {
-            if (searchEndpointSvc.isEsOrOsEngine(passedInSettings.searchEngine)) {
-              let mainQuery = args['query'];
-              args['query'] = {
-                'bool': {
-                  'should': mainQuery,
-                  'filter': query.filterToRatings(passedInSettings)
-                }
-              };
-            } else if (passedInSettings.searchEngine === 'solr') {
-              // Solr's JSON Query DSL has no fq key - it uses "filter" instead (a string or
-              // array of strings/objects, same query syntax filterToRatings() already
-              // produces, e.g. "{!terms f=id}doc1,doc2").
-              let filterKey = solrQueryParamsIsJson ? 'filter' : 'fq';
-              if (args[filterKey] === undefined) {
-                args[filterKey] = [];
-              } else if (!Array.isArray(args[filterKey])) {
-                args[filterKey] = [ args[filterKey] ];
-              }
-              args[filterKey].push(query.filterToRatings(passedInSettings));
-            } else if (passedInSettings.searchEngine === 'vectara') {
-              // currently doc id filtering frequently produces 0 results
-              // args['query'] = args['query'].map(function addFilter(query) {
-              //  query['metadata_filter'] = query.filterToRatings(passedInSettings);
-              // });
-            } else if (passedInSettings.searchEngine === 'algolia') {
-              // Not supported
-            }
-          }
-
-          // This is for Mattias!  Merge our query specific options in as "qOption"
-          // which is what splainer-search expects.
-          /*jshint ignore:start */
-          searcherOptions.qOption = { ...passedInSettings.options, ...query.options};
-          /*jshint ignore:end */
-
-
-          return searchSvc.createSearcher(
-            passedInSettings.createFieldSpec(),
-            passedInSettings.selectedTry.searchUrl,
-            args,
-            queryText,
-            searcherOptions,
-            passedInSettings.searchEngine
-          );
-        }
+        // Preserve the legacy normalization because later Query methods read
+        // the active settings object when constructing rated-doc searchers.
+        passedInSettings.searchEngine = request.searchEngine;
+        return searchSvc.createSearcher(
+          passedInSettings.createFieldSpec(),
+          passedInSettings.selectedTry.searchUrl,
+          request.args,
+          request.queryText,
+          request.searcherOptions,
+          request.searchEngine
+        );
       }
 
       function createSearcherFromSnapshot(snapshotId, query, settings) {

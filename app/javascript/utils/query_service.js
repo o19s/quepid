@@ -16,6 +16,84 @@ export function settingsWithTryOverrides(settings, tryOverrides) {
   }
 }
 
+/**
+ * Prepare the engine-specific arguments passed to splainer-search.
+ *
+ * This is deliberately independent of Angular services. The caller supplies
+ * the small engine predicates and the query's ratings filter, while this
+ * helper owns the mutation-prone Solr/ES/Search API argument rules that used
+ * to live inside queriesSvc.
+ */
+export function buildSearcherRequest({
+  settings,
+  queryText,
+  queryOptions = {},
+  options = {},
+  mapperFunctions = {},
+  proxyUrl,
+  isEsOrOs = false,
+  ratingsFilter
+}) {
+  const selectedTry = settings?.selectedTry
+  if (!selectedTry) return undefined
+
+  const args = JSON.parse(JSON.stringify(selectedTry.args || {}))
+  const searchEngine = settings.searchEngine === "static" ? "solr" : settings.searchEngine
+  const searcherOptions = {
+    customHeaders:
+      typeof settings.customHeaders === "object" && settings.customHeaders !== null
+        ? JSON.stringify(settings.customHeaders)
+        : settings.customHeaders,
+    escapeQuery: settings.escapeQuery,
+    numberOfRows: settings.numberOfRows,
+    basicAuthCredential: settings.basicAuthCredential,
+    qOption: { ...(settings.options || {}), ...queryOptions }
+  }
+
+  if (settings.apiMethod !== undefined) searcherOptions.apiMethod = settings.apiMethod
+  if (options.forceApiMethod !== undefined) searcherOptions.apiMethod = options.forceApiMethod
+  if (settings.proxyRequests === true) searcherOptions.proxyUrl = proxyUrl
+
+  if (searchEngine === "searchapi") {
+    if (mapperFunctions.docsMapper) searcherOptions.docsMapper = mapperFunctions.docsMapper
+    if (mapperFunctions.numberOfResultsMapper)
+      searcherOptions.numberOfResultsMapper = mapperFunctions.numberOfResultsMapper
+    if (mapperFunctions.nextPageArgsMapper)
+      searcherOptions.nextPageArgsMapper = mapperFunctions.nextPageArgsMapper
+    searcherOptions.paginationHitsParam = selectedTry.mapperBasedSearchEnginePaginationHitsParam
+    searcherOptions.paginationOffsetParam = selectedTry.mapperBasedSearchEnginePaginationOffsetParam
+  }
+
+  let solrQueryParamsIsJson = false
+  if (searchEngine === "solr") {
+    solrQueryParamsIsJson = selectedTry.jsonQueryParams
+    if (solrQueryParamsIsJson === undefined) {
+      solrQueryParamsIsJson = !Object.keys(args).every((key) => Array.isArray(args[key]))
+    }
+    searcherOptions.jsonQueryDsl = solrQueryParamsIsJson
+    const target = solrQueryParamsIsJson ? (args.params ||= {}) : args
+    if (target.echoParams === undefined) target.echoParams = "all"
+  }
+
+  if (options.filterToRated && ratingsFilter) {
+    if (isEsOrOs) {
+      args.query = {
+        bool: {
+          should: args.query,
+          filter: ratingsFilter
+        }
+      }
+    } else if (searchEngine === "solr") {
+      const filterKey = solrQueryParamsIsJson ? "filter" : "fq"
+      if (args[filterKey] === undefined) args[filterKey] = []
+      else if (!Array.isArray(args[filterKey])) args[filterKey] = [args[filterKey]]
+      args[filterKey].push(ratingsFilter)
+    }
+  }
+
+  return { args, queryText, searchEngine, searcherOptions, solrQueryParamsIsJson }
+}
+
 const MAPPER_FUNCTION_NAMES = [
   "numberOfResultsMapper",
   "docsMapper",

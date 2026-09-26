@@ -33,6 +33,7 @@ import {
   persistQueries
 } from "./utils/query_lifecycle"
 import {
+  buildSearcherRequest,
   evaluateMapperFunctions,
   matchFeaturesExplain,
   pAll,
@@ -100,6 +101,7 @@ const quepidSearch = {
     refreshQueries: null
   },
   queryService: {
+    buildSearcherRequest,
     evaluateMapperFunctions,
     matchFeaturesExplain,
     pAll,
