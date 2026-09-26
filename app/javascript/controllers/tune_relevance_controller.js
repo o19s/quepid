@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { fromTextArea } from "modules/editor"
+import { waitForAngularServices } from "utils/core_angular_adapter"
 import { curatorVariableEntries, formatJson, queryParamsMode, queryParamsWarning, urlBucket, validateNumberOfRows } from "utils/tune_relevance"
 
 const EDITABLE_TABS = new Set(["developer", "curator", "engineSettings"])
@@ -43,11 +44,10 @@ export default class extends Controller {
     this.element.addEventListener("change", this.handleChange)
     this.element.addEventListener("input", this.handleInput)
     this.element.addEventListener("submit", this.handleSubmit)
-    this.waitForAngular()
+    this.waitForAngularServices()
   }
 
   disconnect() {
-    if (this.pollHandle) window.clearInterval(this.pollHandle)
     if (this.settingsRetry) window.clearTimeout(this.settingsRetry)
     this.element.removeEventListener("click", this.handleClick)
     this.element.removeEventListener("change", this.handleChange)
@@ -56,30 +56,13 @@ export default class extends Controller {
     this.editor?.view?.destroy()
   }
 
-  waitForAngular() {
-    let attempts = 0
-    this.pollHandle = window.setInterval(() => {
-      attempts += 1
-      const injector = this.angularInjector()
-      if (injector) {
-        window.clearInterval(this.pollHandle)
-        this.pollHandle = null
-        this.settingsSvc = injector.get("settingsSvc")
-        this.searchEndpointSvc = injector.get("searchEndpointSvc")
-        this.esUrlSvc = injector.get("esUrlSvc")
-        this.caseTryNavSvc = injector.get("caseTryNavSvc")
-        this.caseSvc = injector.get("caseSvc")
+  waitForAngularServices() {
+    waitForAngularServices(["settingsSvc", "searchEndpointSvc", "esUrlSvc", "caseTryNavSvc", "caseSvc"])
+      .then(services => {
+        Object.assign(this, services)
         this.load()
-      } else if (attempts > 100) {
-        window.clearInterval(this.pollHandle)
-        this.showError("Unable to load Tune Relevance.")
-      }
-    }, 50)
-  }
-
-  angularInjector() {
-    const root = document.querySelector("[ng-app]")
-    return window.angular?.element(root)?.injector?.()
+      })
+      .catch(() => this.showError("Unable to load Tune Relevance."))
   }
 
   load() {

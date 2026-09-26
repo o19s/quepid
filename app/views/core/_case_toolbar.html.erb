@@ -12,7 +12,7 @@
   header through `utils/case_header` when it opens, so a rename needs nothing copied or resynced
   here - which also means an `ng-if` rebuild of this toolbar cannot reinstate a stale name.
 
-  `ng-controller="CaseCtrl"` remains for the other live-query bridges.
+  Live query services remain behind the explicit core bootstrap adapter.
 %>
 <%#
   `case-toolbar` is mounted out here rather than on the gated div below, so it is never torn
@@ -24,7 +24,6 @@
 <div
   id="case-actions"
   class="row"
-  ng-controller="CaseCtrl"
   data-controller="case-toolbar"
   data-case-toolbar-header-url-value="<%= case_header_path(kase, try_number: a_try&.try_number) %>"
 >
@@ -38,7 +37,7 @@
     and hangs on "Snapshot Being Created" forever. Angular hid the whole toolbar until the case
     loaded, so this also keeps the surface equivalent to what it shipped.
   %>
-  <div class="col-sm-12" ng-if="caseModel.caseLoaded()">
+  <div class="col-sm-12" data-case-toolbar-target="actions" hidden>
     <ul class="list-inline">
       <li class="list-inline-item">
         <i class="bi bi-card-list"></i>
@@ -159,7 +158,11 @@
       </li>
       <li class="list-inline-item" id="tune-relevance-link">
         <i class="bi bi-wrench-adjustable"></i>
-        <a type="button" ng-click="toggleDevSettings()">
+        <a
+          href="#"
+          type="button"
+          data-action="click->case-toolbar#toggleTuneRelevance"
+        >
           Tune Relevance
         </a>
       </li>

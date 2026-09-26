@@ -37,6 +37,7 @@ pin 'utils/query_state', to: 'utils/query_state.js'
 pin 'utils/query_lifecycle', to: 'utils/query_lifecycle.js'
 pin 'utils/qgraph', to: 'utils/qgraph.js'
 pin 'utils/tune_relevance', to: 'utils/tune_relevance.js'
+pin 'utils/core_angular_adapter', to: 'utils/core_angular_adapter.js'
 pin 'utils/editor_mode', to: 'utils/editor_mode.js'
 pin 'utils/wizard_contracts', to: 'utils/wizard_contracts.js'
 

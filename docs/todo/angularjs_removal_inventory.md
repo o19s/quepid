@@ -220,7 +220,7 @@ New Stimulus logic in `app/javascript/api/` or `utils/` needs a `*.test.js` unde
 
 When replacing the case SPA (not just toolbar actions), work in dependency order:
 
-`MainCtrl` stays Angular-authored — it still calls `caseSvc`/`settingsSvc`/`queriesSvc` (next up below) — but is no longer route-triggered; see [Application shell](#1-application-shell). `CaseCtrl` is reduced to what the still-Angular drawer needs.
+`MainCtrl` and `CaseCtrl` files remain only as deletion candidates until the Angular bundle no longer needs their registrations; they no longer own the rendered case shell or toolbar.
 
 **Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
@@ -380,8 +380,6 @@ The Rails cases index at `/cases` is **not** Angular.
 
 ### Case shell (`app/views/core/index.html.erb`)
 
-Flash include and `ng-controller="MainCtrl"` wrapping the case layout are **rendered as ERB**. The obsolete `LoadingCtrl` wrapper has been removed; its flag was initialized false and never changed.
-
 The layout lives in ERB, not an Angular template, because the header and toolbar read `@case`/`@try`: templates under `app/assets/templates` are compiled into the `angular_templates` bundle and cannot contain ERB.
 
 Angular still compiles what is left, because custom elements inside `ng-app` are compiled at bootstrap like any other markup. What remains Angular in the shell:
@@ -389,7 +387,6 @@ Angular still compiles what is left, because custom elements inside `ng-app` are
 | Element | Why it stays |
 |---------|--------------|
 | Snapshot case score row | Snapshot scores come from the Angular diff engine and are rendered by the Stimulus `diff-case-scores` controller |
-| `ng-click="toggleDevSettings()"` | Drawer toggle, on `MainCtrl` scope |
 
 The query-list shell is Rails-rendered and no longer declares an Angular scope. Deferred live-result controls still receive a short-lived root-scope child for compilation. The score badges remain at the same DOM position for `qscore.css`'s `:last-child`-based badge-spacing rules to apply correctly.
 
@@ -431,14 +428,12 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | Item | Type | Key files |
 |------|------|-----------|
 | Case layout markup | Rails view | `app/views/core/index.html.erb` + `_case_header`/`_case_toolbar` partials |
-| Case/try bootstrapping | controller | `MainCtrl` — `controllers/mainCtrl.js` |
+| Case/try bootstrapping | Stimulus controller + temporary Angular adapter | `app/javascript/controllers/core_bootstrap_controller.js`, `app/javascript/utils/core_angular_adapter.js` |
 | Current user on `$rootScope` | service | `bootstrapSvc`, `userSvc` |
 | App config flags | service | `configurationSvc` |
 | CSRF on API requests | interceptor | `interceptors/rails-csrf.js` |
 | Case/try URL helpers | service | `caseTryNavSvc` — still the Angular-facing navigation API (`navigateTo`/`navigationCompleted`/`isLoading`/`notFound`/`getCaseNo`/`getTryNo`); called from several still-Angular components (case rename, try switch, wizard). `navigateTo()` is a real `$window.location.assign()` (full reload, not an SPA transition); `notFound()` flashes an error and stays on the page rather than navigating anywhere — its ~6 callers are generic `$http`-failure handlers (case create/rename/etc.), not actual routing 404s, so there's no good page to send the user to. |
 | Pane layout (east slider) | service + value | `paneSvc`, `eastPaneWidth` |
-
-Routing is server-side (Rails); `MainCtrl` is attached directly in `core/index.html.erb`.
 
 ### 3. Case header, scoring, and case actions
 
@@ -446,7 +441,6 @@ Routing is server-side (Rails); `MainCtrl` is attached directly in `core/index.h
 |------|------|-----------|
 | Case layout shell | Rails view | `app/views/core/index.html.erb` |
 | Case score display | component | Primary score is Stimulus; snapshot/diff case scores are now rendered by `diff-case-scores`; Angular still calculates the live diff read model |
-| Nightly/public/archived badges, scorer name | Angular bridge | `CaseCtrl` (`controllers/case.js`) survives only for the remaining toolbar gate and live case-model bindings |
 | Import ratings | Stimulus controller + Angular refresh bridge | `app/javascript/controllers/import_ratings_core_controller.js`, `app/views/shared/_import_ratings_core_modal.html.erb`; refreshes live query state through `imports:queries-need-reload` |
 | Diff renderer and picker | Stimulus renderer + explicit compatibility bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/snapshot_bridge_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`, `app/javascript/utils/diff_results.js`; Angular still owns snapshot search/scoring |
 
@@ -495,7 +489,7 @@ Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 | Settings persistence | service + factories | `settingsSvc`, `SettingsFactory`, `TryFactory` |
 | Search endpoint popup | template | `templates/views/searchEndpoint_popup.html` |
 
-Uses the existing `settingsSvc`/`caseSvc` compatibility bridge; the drawer UI no longer depends on Angular templates or controllers.
+Uses the existing `settingsSvc`/`caseSvc` compatibility services through `core_angular_adapter.js`; the drawer UI no longer depends on Angular templates, controller scopes, or direct injector access.
 
 ### 8. Shared UI primitives (migrate before or alongside features)
 

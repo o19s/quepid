@@ -61,7 +61,21 @@ describe("CaseToolbarController", () => {
   })
 
   afterEach(() => {
+    delete window.jQuery
+    delete window.$
     vi.restoreAllMocks()
+  })
+
+  it("toggles the Tune Relevance pane through the legacy pane event", () => {
+    const trigger = vi.fn()
+    window.jQuery = vi.fn(() => ({ trigger }))
+    const preventDefault = vi.fn()
+
+    CaseToolbarController.prototype.toggleTuneRelevance.call(controller, { preventDefault })
+
+    expect(preventDefault).toHaveBeenCalled()
+    expect(window.jQuery).toHaveBeenCalledWith(document)
+    expect(trigger).toHaveBeenCalledWith("toggleEast")
   })
 
   describe("header frame re-rendered by Rails", () => {

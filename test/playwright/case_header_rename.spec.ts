@@ -83,11 +83,12 @@ test.describe('core case header: rename (server-rendered Turbo Frame)', () => {
     await page.locator('#shareCaseModal [data-bs-dismiss="modal"]').first().click();
     await expect(page.locator('#shareCaseModal.show')).toBeHidden({ timeout: 10_000 });
 
-    // Angular still owns the recent-cases dropdown, which refreshes off caseSvc.
+    // Angular still owns the recent-cases dropdown, which refreshes off caseSvc. The page shell
+    // no longer has a MainCtrl scope, so resolve the injector from the ng-app root directly.
     // Poll rather than sample once: this is an event bridge dispatched on
     // turbo:frame-render, so it is eventually consistent by design.
     await expect.poll(async () => page.evaluate(() => {
-      const el = (window as any).angular.element(document.querySelector('[ng-controller="MainCtrl"]'));
+      const el = (window as any).angular.element(document.querySelector('[ng-app]'));
       return el.injector().get('caseSvc').getSelectedCase().caseName;
     }), { timeout: 15_000 }).toBe(newName);
 
@@ -109,7 +110,7 @@ test.describe('core case header: rename (server-rendered Turbo Frame)', () => {
     // Same bridge, and settingsSvc may still be loading its tries when the frame
     // first re-renders, in which case the bridge no-ops and retries on the next one.
     await expect.poll(async () => page.evaluate(() => {
-      const el = (window as any).angular.element(document.querySelector('[ng-controller="MainCtrl"]'));
+      const el = (window as any).angular.element(document.querySelector('[ng-app]'));
       return el.injector().get('settingsSvc').applicableSettings().name;
     }), { timeout: 15_000 }).toBe('Baseline');
   });

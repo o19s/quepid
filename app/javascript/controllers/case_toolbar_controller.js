@@ -23,6 +23,7 @@ const HEADER_META_SELECTOR = "[data-case-header-case-no]"
 const CASE_NAME_SELECTOR = '[data-case-rename-target="caseDisplay"]'
 
 export default class extends Controller {
+  static targets = ["actions"]
   static values = { headerUrl: String }
 
   connect() {
@@ -30,10 +31,13 @@ export default class extends Controller {
     this.onAngularRename = this.handleAngularRename.bind(this)
     this.onScorerSelected = this.handleScorerSelected.bind(this)
     this.onHeaderStale = this.handleHeaderStale.bind(this)
+    this.onBootstrapReady = this.handleBootstrapReady.bind(this)
     document.addEventListener("turbo:frame-render", this.onFrameRender)
     document.addEventListener("quepid:case-renamed", this.onAngularRename)
     document.addEventListener("pick-scorer:selected", this.onScorerSelected)
     document.addEventListener("quepid:case-header-stale", this.onHeaderStale)
+    document.addEventListener("core-bootstrap:ready", this.onBootstrapReady)
+    if (window.quepidCoreBootstrap?.ready) this.showActions()
   }
 
   disconnect() {
@@ -41,6 +45,19 @@ export default class extends Controller {
     document.removeEventListener("quepid:case-renamed", this.onAngularRename)
     document.removeEventListener("pick-scorer:selected", this.onScorerSelected)
     document.removeEventListener("quepid:case-header-stale", this.onHeaderStale)
+    document.removeEventListener("core-bootstrap:ready", this.onBootstrapReady)
+  }
+
+  handleBootstrapReady() { this.showActions() }
+
+  showActions() {
+    if (this.hasActionsTarget) this.actionsTarget.hidden = false
+  }
+
+  toggleTuneRelevance(event) {
+    event?.preventDefault()
+    const jquery = window.jQuery || window.$
+    jquery?.(document).trigger("toggleEast")
   }
 
   /**

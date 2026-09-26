@@ -2,8 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 
 /**
  * E2E coverage for the core-case-shell migration: `ngRoute` was removed,
- * `MainCtrl` now bootstraps from `configurationSvc` (seeded server-side)
- * instead of `$routeParams`, and `caseTryNavSvc.navigateTo()`/`notFound()`
+ * `core-bootstrap` now bootstraps from server-rendered case/try values through
+ * the temporary Angular service adapter, and `caseTryNavSvc.navigateTo()`/`notFound()`
  * do a real `$window.location.assign()` instead of an in-SPA `$location`
  * route change. See docs/todo/angularjs_removal_inventory.md's shell
  * migration parity table.
