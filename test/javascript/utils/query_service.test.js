@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from "vitest"
 import {
   buildSearcherRequest,
+  buildSearchApiRatedDocsQueryParams,
   evaluateMapperFunctions,
   matchFeaturesExplain,
+  normalizeSearchResults,
   pAll,
   settingsWithTryOverrides
 } from "utils/query_service"
@@ -132,6 +134,47 @@ describe("query service helpers", () => {
       ]
     })
     expect(matchFeaturesExplain({ matchfeatures: {} })).toBeUndefined()
+  })
+
+  it("builds rated-document mapper params through the shared mapper seam", () => {
+    const evaluateMapper = vi.fn(() => ({
+      ratedDocsQueryParamsMapper: (ids, idField) => `${idField}:${ids.join(",")}`
+    }))
+
+    expect(buildSearchApiRatedDocsQueryParams("mapper", ["a", "b"], "doc_id", evaluateMapper)).toBe(
+      "doc_id:a,b"
+    )
+    expect(evaluateMapper).toHaveBeenCalledWith("mapper")
+  })
+
+  it("normalizes searchapi documents into rateable documents", () => {
+    const createNormalDoc = vi.fn((fieldSpec, doc, explain) => ({ fieldSpec, doc, explain }))
+    const createRateableDoc = vi.fn((doc) => ({ ...doc, rateable: true }))
+    const searcher = {
+      type: "searchapi",
+      docs: [{ id: "1", matchfeatures: { title: 2 }, fields: { score: 2 } }]
+    }
+
+    expect(
+      normalizeSearchResults({
+        searcher,
+        fieldSpec: { id: "id" },
+        extractors: { es: vi.fn(), solr: vi.fn() },
+        createNormalDoc,
+        createRateableDoc
+      })
+    ).toEqual([
+      {
+        fieldSpec: { id: "id" },
+        doc: searcher.docs[0],
+        explain: {
+          description: "sum of matched fields:",
+          value: 2,
+          details: [{ description: "title", value: 2, details: [] }]
+        },
+        rateable: true
+      }
+    ])
   })
 
   it("runs an unrestricted queue with bounded concurrency", async () => {

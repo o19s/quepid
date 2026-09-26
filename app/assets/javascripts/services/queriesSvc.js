@@ -840,9 +840,12 @@ angular.module('QuepidApp')
        * MapperBasedSearchEngine#supports_rated_docs_lookup being false.
        */
       function buildSearchApiRatedDocsQueryParams(mapperCode, ratedIds, idField) {
-        let mapper = evaluateMapperFunctions(mapperCode).ratedDocsQueryParamsMapper;
-
-        return typeof mapper === 'function' ? mapper(ratedIds, idField) : null;
+        return window.quepidSearch.queryService.buildSearchApiRatedDocsQueryParams(
+          mapperCode,
+          ratedIds,
+          idField,
+          evaluateMapperFunctions
+        );
       }
 
       /**
@@ -899,29 +902,24 @@ angular.module('QuepidApp')
       }
 
       function normalizeDocExplains(query, searcher, fieldSpec) {
-        let normed;
-
-        if (searcher.type === 'es' || searcher.type === 'os') {
-          normed = esExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec);
-        } else if (searcher.type === 'solr') {
-          normed = solrExplainExtractorSvc.docsWithExplainOther(searcher.docs, fieldSpec, searcher.othersExplained);
-        } else if (searcher.type === 'searchapi') {
-          normed = searcher.docs.map(function(doc) {
-            return normalDocsSvc.createNormalDoc(fieldSpec, doc, matchFeaturesExplain(doc));
-          });
-        } else {
-          // search engine with no explain output
-          normed = searcher.docs.map(function(doc) {
-            return normalDocsSvc.createNormalDoc(fieldSpec, doc);
-          });
-        }
-
-        let docs = [];
-        angular.forEach(normed, function(doc) {
-          docs.push(query.ratingsStore.createRateableDoc(doc));
+        return window.quepidSearch.queryService.normalizeSearchResults({
+          searcher: searcher,
+          fieldSpec: fieldSpec,
+          extractors: {
+            es: function(docs, spec) {
+              return esExplainExtractorSvc.docsWithExplainOther(docs, spec);
+            },
+            solr: function(docs, spec, othersExplained) {
+              return solrExplainExtractorSvc.docsWithExplainOther(docs, spec, othersExplained);
+            }
+          },
+          createNormalDoc: function(spec, doc, explain) {
+            return normalDocsSvc.createNormalDoc(spec, doc, explain);
+          },
+          createRateableDoc: function(doc) {
+            return query.ratingsStore.createRateableDoc(doc);
+          }
         });
-
-        return docs;
       }
 
       function toggleShowOnlyRated() {

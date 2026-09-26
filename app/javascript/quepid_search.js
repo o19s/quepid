@@ -34,8 +34,10 @@ import {
 } from "./utils/query_lifecycle"
 import {
   buildSearcherRequest,
+  buildSearchApiRatedDocsQueryParams,
   evaluateMapperFunctions,
   matchFeaturesExplain,
+  normalizeSearchResults,
   pAll,
   settingsWithTryOverrides
 } from "./utils/query_service"
@@ -101,9 +103,11 @@ const quepidSearch = {
     refreshQueries: null
   },
   queryService: {
+    buildSearchApiRatedDocsQueryParams,
     buildSearcherRequest,
     evaluateMapperFunctions,
     matchFeaturesExplain,
+    normalizeSearchResults,
     pAll,
     settingsWithTryOverrides
   }

@@ -143,6 +143,40 @@ export function matchFeaturesExplain(doc) {
   }
 }
 
+/**
+ * Convert a splainer-search response into Quepid's rateable document shape.
+ * Engine-specific explain extraction and the rateable-doc factory are injected
+ * so this helper remains independent of Angular services.
+ */
+export function normalizeSearchResults({
+  searcher,
+  fieldSpec,
+  extractors,
+  createNormalDoc,
+  createRateableDoc
+}) {
+  let normalized
+
+  if (searcher.type === "es" || searcher.type === "os") {
+    normalized = extractors.es(searcher.docs, fieldSpec)
+  } else if (searcher.type === "solr") {
+    normalized = extractors.solr(searcher.docs, fieldSpec, searcher.othersExplained)
+  } else if (searcher.type === "searchapi") {
+    normalized = searcher.docs.map((doc) =>
+      createNormalDoc(fieldSpec, doc, matchFeaturesExplain(doc))
+    )
+  } else {
+    normalized = searcher.docs.map((doc) => createNormalDoc(fieldSpec, doc))
+  }
+
+  return normalized.map(createRateableDoc)
+}
+
+export function buildSearchApiRatedDocsQueryParams(mapperCode, ratedIds, idField, evaluateMapper) {
+  const mapper = evaluateMapper(mapperCode).ratedDocsQueryParamsMapper
+  return typeof mapper === "function" ? mapper(ratedIds, idField) : null
+}
+
 export async function pAll(queue, requestsPerMinute) {
   const results = []
 
