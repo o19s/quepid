@@ -30,7 +30,7 @@ module Authentication
     end
 
     def set_current_user
-      if Rails.application.config.respond_to?(:desktop_mode) && Rails.application.config.desktop_mode
+      if Rails.application.config.desktop_mode
         @current_user = User.find_by(id: Rails.application.config.desktop_user_id)
         return if @current_user
 

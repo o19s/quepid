@@ -296,8 +296,8 @@ star wars,1921,3, Star Wars: Return of the Jedi
             <div quepid-collapse="!isHeaderConfigCollapsed">
               <div class="bg-light p-2 rounded border mb-3">
                 <div class="mb-3 row">
-                  <label class="col-sm-3 col-form-label">Proxy Requests</label>
-                  <div class="col-sm-9">
+                  <label class="col-sm-3 col-form-label" ng-if="!proxyRequiredForAllEndpoints">Proxy Requests</label>
+                  <div class="col-sm-9" ng-if="!proxyRequiredForAllEndpoints">
                     <div class="form-check">
                       <input id="proxy-requests" type="checkbox" class="form-check-input" ng-model="pendingWizardSettings.proxyRequests" ng-change="changeProxySetting()">
                       <label class="form-check-label form-text" for="proxy-requests">Route search requests through the Quepid server instead of the browser. Useful when CORS, mixed-content, or firewall rules block direct access; check with your operations team if unsure.</label>

@@ -36,14 +36,18 @@
       </div>
 
       <div class="mb-3">
-        <div class="form-check form-switch">
-          <%= form.check_box :proxy_requests, class:'form-check-input' %>
-          <%= form.label :proxy_requests, class:'form-check-label' %>
-        </div>
-        <div class="form-text">
-          Proxied requests avoids CORS and other browser security issues, however Quepid must be able to reach your Search Endpoint.
-          Requests will come from Quepid in the form of <code><%= "#{proxy_fetch_url}?url=[ENDPOINT_URL]" %></code>.
-        </div>
+        <% if require_proxy_for_all_search_endpoints? %>
+          <%= form.hidden_field :proxy_requests, value: true %>
+        <% else %>
+          <div class="form-check form-switch">
+            <%= form.check_box :proxy_requests, class:'form-check-input' %>
+            <%= form.label :proxy_requests, class:'form-check-label' %>
+          </div>
+          <div class="form-text">
+            Proxied requests avoids CORS and other browser security issues, however Quepid must be able to reach your Search Endpoint.
+            Requests will come from Quepid in the form of <code><%= "#{proxy_fetch_url}?url=[ENDPOINT_URL]" %></code>.
+          </div>
+        <% end %>
       </div>
 
       <div class="mb-3">

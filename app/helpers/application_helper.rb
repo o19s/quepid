@@ -3,7 +3,11 @@
 # rubocop:disable-next Metrics/ModuleLength
 module ApplicationHelper
   def desktop_mode?
-    Rails.application.config.respond_to?(:desktop_mode) && Rails.application.config.desktop_mode
+    Rails.application.config.desktop_mode
+  end
+
+  def require_proxy_for_all_search_endpoints?
+    Rails.application.config.require_proxy_for_all_search_endpoints
   end
   # Returns the Quepid application root URL (no trailing slash).
   # Respects RAILS_RELATIVE_URL_ROOT so deployment under a subpath works.
