@@ -144,6 +144,7 @@ Rails.application.config.require_proxy_for_all_search_endpoints = bool.deseriali
 # they take effect before the active_record.encryption Railtie initializer runs.
 # We provide some defaults, but you should set your own keys and NOT lose them.
 
+# rubocop:disable-next Metrics/BlockLength
 Rails.application.config.after_initialize do
   next if defined?(Rails::Console)
 

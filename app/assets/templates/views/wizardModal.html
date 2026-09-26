@@ -245,24 +245,24 @@ star wars,1921,3, Star Wars: Return of the Jedi
               </div>
             </span>
 
-            <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
-            <p>
-              <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
-            </p>
-            <div quepid-collapse="!isSolrCollapsed" class="mb-3">
-              <div class="bg-light p-2 rounded border">
-                <div class="mb-3 row">
-                  <label class="col-sm-3 col-form-label">API Method</label>
-                  <div class="col-sm-9">
-                    <select class="form-select" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
-                      <option>JSONP</option>
-                      <option>GET</option>
-                    </select>
-                    <p class="form-text">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
+            <span ng-if="pendingWizardSettings.searchEngine === 'solr' && !proxyRequiredForAllEndpoints">
+              <p>
+                <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
+              </p>
+              <div quepid-collapse="!isSolrCollapsed" class="mb-3">
+                <div class="bg-light p-2 rounded border">
+                  <div class="mb-3 row">
+                    <label class="col-sm-3 col-form-label">API Method</label>
+                    <div class="col-sm-9">
+                      <select class="form-select" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
+                        <option>JSONP</option>
+                        <option>GET</option>
+                      </select>
+                      <p class="form-text">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
             </span>
 
             <span ng-if="pendingWizardSettings.searchEnginePreset === 'searchapi'">
