@@ -42,6 +42,7 @@
         function(bootstrapSvc, configurationSvc) {
           configurationSvc.setCommunalScorersOnly('<%= Rails.application.config.communal_scorers_only %>');
           configurationSvc.setQueryListSortable('<%= Rails.application.config.query_list_sortable %>');
+          configurationSvc.setRequireProxyForAllSearchEndpoints('<%= Rails.application.config.require_proxy_for_all_search_endpoints %>');
 
           bootstrapSvc.run();
         }

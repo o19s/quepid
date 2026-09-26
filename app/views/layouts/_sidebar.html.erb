@@ -149,6 +149,7 @@
           ></i>
         <% end %>
       </li>
+      <% unless desktop_mode? %>
       <li>
         <%= link_to teams_path, data: { turbo_prefetch: false, controller: 'bs-tooltip', 'bs-tooltip-placement-value': 'right', 'bs-tooltip-title-value': 'Teams' }, class: "nav-link #{make_active?({path: 'teams'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'aria-label':'Teams' do %>
           <i
@@ -160,6 +161,7 @@
           ></i>
         <% end %>
       </li>
+      <% end %>
     </ul>
     <div class="dropdown border-top">
       <a href="#" class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class SessionsController < ApplicationController
+  before_action :redirect_from_desktop_mode, if: -> { Rails.application.config.desktop_mode }
   skip_before_action :require_login,              only: [ :create, :new ]
   skip_before_action :check_current_user_locked!, only: :create
   skip_before_action :verify_authenticity_token,  only: :create
@@ -45,6 +46,10 @@ class SessionsController < ApplicationController
   end
 
   private
+
+  def redirect_from_desktop_mode
+    redirect_to root_path
+  end
 
   def login email, password
     user = User.by_email(email).first

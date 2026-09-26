@@ -54,9 +54,11 @@
 
             </ul>
           </li>
-          <li class="nav-item">
-            <%= link_to "Teams", teams_path, class: "nav-link" %>
-          </li>
+          <% unless desktop_mode? %>
+            <li class="nav-item">
+              <%= link_to "Teams", teams_path, class: "nav-link" %>
+            </li>
+          <% end %>
           <li class="nav-item">
             <%= link_to "AI Judges", ai_judges_path, class: "nav-link" %>
           </li>
@@ -79,6 +81,11 @@
               Wiki
             </a>
           </li>
+          <% if desktop_mode? %>
+          <li class="nav-item">
+            <span class="nav-link" data-display-name><%= current_user.display_name %></span>
+          </li>
+          <% else %>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
               <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded', title: 'Avatar image' %>
@@ -88,6 +95,7 @@
               <%= render 'shared/account_dropdown', divider: account_dropdown_divider(:hr) %>
             </ul>
           </li>
+          <% end %>
         </ul>
       </div>
     <% end %>

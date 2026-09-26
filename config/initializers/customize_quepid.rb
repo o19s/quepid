@@ -55,6 +55,12 @@ Rails.application.config.signup_enabled = bool.deserialize(ENV.fetch('SIGNUP_ENA
 # This parameter controls whether or not signing in using email/password is supported
 Rails.application.config.email_login_enabled = bool.deserialize(ENV.fetch('EMAIL_LOGIN_ENABLED', true))
 
+# The packaged macOS application enables Desktop Mode explicitly. Normal
+# hosted and Docker deployments retain the existing account behavior.
+Rails.application.config.desktop_mode = bool.deserialize(ENV.fetch('QUEPID_DESKTOP_MODE', false))
+Rails.application.config.desktop_user_id = ENV['QUEPID_DESKTOP_USER_ID'].presence
+Rails.application.config.desktop_user_name = ENV['QUEPID_DESKTOP_USER_NAME'].presence
+
 # == Communal Scorers Only
 # Users can normally create custom scorers which run embedded javascript, this is a potential
 # security flaw as malicious javascript could be entered. This setting restricts users to
@@ -127,32 +133,53 @@ Rails.application.config.search_endpoint_views_admin_only = bool.deserialize(ENV
 #
 Rails.application.config.require_proxy_with_basic_auth_credentials = bool.deserialize(ENV.fetch('REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS', false))
 
+# == Require Proxy for All Search Endpoints
+# When enabled, every search endpoint must use proxy_requests, regardless of
+# basic auth credentials. Useful when the client (e.g. an embedded WebView)
+# should never make direct network requests to a user-configured endpoint.
+#
+Rails.application.config.require_proxy_for_all_search_endpoints = bool.deserialize(ENV.fetch('REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS', false))
+
 # NOTE: ActiveRecord encryption keys are configured in config/application.rb so
 # they take effect before the active_record.encryption Railtie initializer runs.
 # We provide some defaults, but you should set your own keys and NOT lose them.
 
+# rubocop:disable-next Metrics/BlockLength
 Rails.application.config.after_initialize do
   next if defined?(Rails::Console)
 
-  # Run only on server start
+  # Run only on server start.
+  #
+  # Loads matching endpoints once and reuses that array for both the emptiness
+  # check and the listing below, and warns about any that will fail validation.
+  warn_about_endpoints_needing_proxy = lambda do |flag_name, scope_builder, detail|
+    endpoints = scope_builder.call.to_a
+    next if endpoints.empty?
 
-  # Check for search endpoints that need proxy enabled
-  if Rails.application.config.require_proxy_with_basic_auth_credentials
-    begin
-      endpoints = SearchEndpoint.where.not(basic_auth_credential: nil).where(proxy_requests: false)
-      if endpoints.any?
-        Rails.logger.warn '=' * 80
-        Rails.logger.warn 'WARNING: REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS is enabled'
-        Rails.logger.warn 'The following search endpoints have basic auth credentials but proxy_requests disabled:'
-        endpoints.each do |endpoint|
-          Rails.logger.warn "  - #{endpoint.name} (ID: #{endpoint.id})"
-        end
-        Rails.logger.warn 'These endpoints will fail validation when edited.'
-        Rails.logger.warn 'Enable proxy_requests for these endpoints or set REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS=false'
-        Rails.logger.warn '=' * 80
-      end
-    rescue ActiveRecord::StatementInvalid, ActiveRecord::NoDatabaseError
-      # Database might not be set up yet, skip check
-    end
+    Rails.logger.warn '=' * 80
+    Rails.logger.warn "WARNING: #{flag_name} is enabled"
+    Rails.logger.warn detail
+    endpoints.each { |endpoint| Rails.logger.warn "  - #{endpoint.name} (ID: #{endpoint.id})" }
+    Rails.logger.warn 'These endpoints will fail validation when edited.'
+    Rails.logger.warn "Enable proxy_requests for these endpoints or set #{flag_name}=false"
+    Rails.logger.warn '=' * 80
+  rescue ActiveRecord::StatementInvalid, ActiveRecord::NoDatabaseError
+    # Database might not be set up yet, skip check
+  end
+
+  # The all-endpoints check below already covers every endpoint the
+  # basic-auth-only check would find, so only run one of them.
+  if Rails.application.config.require_proxy_for_all_search_endpoints
+    warn_about_endpoints_needing_proxy.call(
+      'REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS',
+      -> { SearchEndpoint.where(proxy_requests: false) },
+      'The following search endpoints have proxy_requests disabled:'
+    )
+  elsif Rails.application.config.require_proxy_with_basic_auth_credentials
+    warn_about_endpoints_needing_proxy.call(
+      'REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS',
+      -> { SearchEndpoint.where.not(basic_auth_credential: nil).where(proxy_requests: false) },
+      'The following search endpoints have basic auth credentials but proxy_requests disabled:'
+    )
   end
 end

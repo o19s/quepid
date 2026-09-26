@@ -5,6 +5,7 @@ angular.module('UtilitiesModule')
     function ConfigurationSvc() {
       var communalScorersOnly;
       var queryListSortable;
+      var requireProxyForAllSearchEndpoints;
 
       this.setCommunalScorersOnly = function(val) {
         communalScorersOnly = JSON.parse(val);
@@ -20,6 +21,14 @@ angular.module('UtilitiesModule')
 
       this.isQueryListSortable = function() {
         return queryListSortable;
+      };
+
+      this.setRequireProxyForAllSearchEndpoints = function (val) {
+        requireProxyForAllSearchEndpoints = JSON.parse(val);
+      };
+
+      this.isRequireProxyForAllSearchEndpoints = function() {
+        return requireProxyForAllSearchEndpoints;
       };
 
     }
