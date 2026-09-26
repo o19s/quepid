@@ -274,7 +274,7 @@ class SearchEndpointTest < ActiveSupport::TestCase
         )
         assert_not endpoint.valid?
         assert_includes endpoint.errors[:proxy_requests],
-                         'must be enabled: this Quepid instance requires all search requests to be proxied'
+                        'must be enabled: this Quepid instance requires all search requests to be proxied'
       end
     end
 

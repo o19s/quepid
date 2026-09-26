@@ -22,7 +22,7 @@ class DesktopModeTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, @user.display_name
-    refute_match(/href="\/teams/, response.body)
+    assert_no_match(%r{href="/teams}, response.body)
   end
 
   test 'desktop mode redirects login attempts to the application' do

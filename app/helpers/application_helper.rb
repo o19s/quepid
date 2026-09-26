@@ -9,6 +9,7 @@ module ApplicationHelper
   def require_proxy_for_all_search_endpoints?
     Rails.application.config.require_proxy_for_all_search_endpoints
   end
+
   # Returns the Quepid application root URL (no trailing slash).
   # Respects RAILS_RELATIVE_URL_ROOT so deployment under a subpath works.
   # Exposed on <body> as data-quepid-root-url for Stimulus/JS navigation fallbacks.
