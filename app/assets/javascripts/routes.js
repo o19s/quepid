@@ -1,9 +1,9 @@
 'use strict';
 
 /**
- * `$http`/`$location` configuration for the Quepid app shell. `MainCtrl` is instantiated
- * directly on `core/index.html.erb` (see `app/views/core/index.html.erb`), not via a client
- * route -- ngRoute/$routeProvider were removed, see docs/todo/angularjs_removal_inventory.md.
+ * `$http`/`$location` configuration for the surviving Angular service layer. The case page
+ * itself is bootstrapped by Stimulus, not via a client route -- ngRoute/$routeProvider were
+ * removed, see docs/todo/angularjs_removal_inventory.md.
  */
 
 angular.module('QuepidApp')

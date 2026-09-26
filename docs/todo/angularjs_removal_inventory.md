@@ -184,7 +184,11 @@ See [Re-render mechanism](#re-render-mechanism) for the client/server state boun
 
 The toolbar is server-rendered from `@case`/`@try` (`app/views/core/_case_toolbar.html.erb`). The import action is now Stimulus-owned (`import-ratings-core`) with a temporary query refresh bridge into Angular. The diff picker, renderer, score read models, and diff orchestration are Stimulus/ESM-owned; snapshot fetching and the live Query/snapshot-searcher adapter remain Angular behind the `diff:*` bridge.
 
-**The toolbar keeps `ng-if="caseModel.caseLoaded()"`, and it is load-bearing.** Its attributes no longer need Angular, but several of its actions do: "Create snapshot" clicked before `queriesSvc` has bootstrapped posts an empty snapshot that never resolves, leaving the modal stuck on "Snapshot Being Created". Server-rendering made the toolbar clickable from first paint, roughly 1.5s earlier than Angular exposed it, which is long enough to hit. Drop the gate only when the remaining snapshot/export flows no longer depend on live query state.
+**The toolbar keeps a Stimulus `hidden` readiness gate, and it is load-bearing.** Its actions
+still depend on live query state: "Create snapshot" clicked before `queriesSvc` has bootstrapped
+posts an empty snapshot that never resolves, leaving the modal stuck on "Snapshot Being Created".
+The gate is now controlled by `case-toolbar` after `core-bootstrap` readiness; remove it only when
+the remaining snapshot/export flows no longer depend on live query state.
 
 ### Stimulus twins already on Rails pages
 
@@ -220,11 +224,13 @@ New Stimulus logic in `app/javascript/api/` or `utils/` needs a `*.test.js` unde
 
 When replacing the case SPA (not just toolbar actions), work in dependency order:
 
-`MainCtrl` and `CaseCtrl` files remain only as deletion candidates until the Angular bundle no longer needs their registrations; they no longer own the rendered case shell or toolbar.
+`MainCtrl` and `CaseCtrl` have been removed. The case page is bootstrapped by
+`core_bootstrap_controller.js`; the surviving Angular services remain behind the temporary
+compatibility adapter until live query/search/scoring migration is complete.
 
 **Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
-1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). Remaining call sites are concentrated in the diff bridge and `case.js`; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
+1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, CSRF fetch wrapper (tooltip/popover/paste utils already extracted; flash done via the Stimulus `flash` controller + `utils/flash.js`). Remaining call sites are concentrated in the diff bridge and surviving Angular service seams; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
 2. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
 3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
 4. Query list + results — `queries`, `search-results`, rating UI
@@ -343,7 +349,7 @@ when the modal opens deletes the copies, the sync, and the repair. Prefer one li
 several copies with a reconciler, especially when the copies are only read at a single moment.
 
 **A `$scope` function returning a fresh object literal is an infinite digest waiting to happen.**
-`CaseCtrl.caseModel.selectedCase()` returned `{ caseNo: -1, caseName: '' }` on every call before the
+The former Angular `CaseCtrl.caseModel.selectedCase()` returned `{ caseNo: -1, caseName: '' }` on every call before the
 case loaded. Remaining Angular bindings read the selected case, so a new object identity each digest is a change
 each digest. Angular's template had hidden this behind `ng-if="caseModel.caseLoaded()"`; rendering
 the toolbar unconditionally exposed it as `$rootScope:infdig`. Return a single stable instance.
@@ -428,7 +434,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | Item | Type | Key files |
 |------|------|-----------|
 | Case layout markup | Rails view | `app/views/core/index.html.erb` + `_case_header`/`_case_toolbar` partials |
-| Case/try bootstrapping | Stimulus controller + temporary Angular adapter | `app/javascript/controllers/core_bootstrap_controller.js`, `app/javascript/utils/core_angular_adapter.js` |
+| Case/try bootstrapping | Stimulus controller + temporary Angular service adapter | `app/javascript/controllers/core_bootstrap_controller.js`, `app/javascript/utils/core_angular_adapter.js`; layout inline Angular run block removed |
 | Current user on `$rootScope` | service | `bootstrapSvc`, `userSvc` |
 | App config flags | service | `configurationSvc` |
 | CSRF on API requests | interceptor | `interceptors/rails-csrf.js` |

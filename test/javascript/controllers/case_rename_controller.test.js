@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import CaseRenameController from "controllers/case_rename_controller"
 
 /**
- * Contracts ported from the Angular header this replaced: `CaseCtrl.caseName` /
+ * Contracts ported from the Angular header this replaced: the former `CaseCtrl.caseName` /
  * `caseNameEditModeToggle` and `CurrSettingsCtrl.tryName` / `tryNameEditModeToggle` in
  * app/assets/javascripts/controllers/case.js and currSettings.js (no Karma specs existed for
  * either, so these are the first automated coverage of that behaviour).

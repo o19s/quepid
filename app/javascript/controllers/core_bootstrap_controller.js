@@ -2,7 +2,12 @@ import { Controller } from "@hotwired/stimulus"
 import { waitForAngularServices } from "utils/core_angular_adapter"
 
 export default class extends Controller {
-  static values = { caseNo: Number, tryNo: Number }
+  static values = {
+    caseNo: Number,
+    tryNo: Number,
+    communalScorersOnly: String,
+    queryListSortable: String
+  }
 
   connect() {
     if (this.started) return
@@ -13,14 +18,21 @@ export default class extends Controller {
   async bootstrap() {
     try {
       this.services = await waitForAngularServices([
-        "caseSvc", "settingsSvc", "querySnapshotSvc", "caseTryNavSvc",
+        "bootstrapSvc", "configurationSvc", "caseSvc", "settingsSvc", "querySnapshotSvc", "caseTryNavSvc",
         "queryViewSvc", "queriesSvc", "docCacheSvc", "scorerSvc", "paneSvc"
       ])
 
-      const { caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc, queryViewSvc,
+      const { bootstrapSvc, configurationSvc, caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc, queryViewSvc,
         queriesSvc, docCacheSvc, scorerSvc, paneSvc } = this.services
       const caseNo = this.caseNoValue || 0
       let tryNo = Number.isFinite(this.tryNoValue) ? this.tryNoValue : Number.NaN
+
+      configurationSvc.setCommunalScorersOnly(this.communalScorersOnlyValue)
+      configurationSvc.setQueryListSortable(this.queryListSortableValue)
+      configurationSvc.setCaseNo(caseNo)
+      configurationSvc.setTryNo(Number.isNaN(tryNo) ? null : tryNo)
+      bootstrapSvc.run()
+
       const initialCaseNo = caseTryNavSvc.getCaseNo()
 
       const caseChanged = () => initialCaseNo !== caseNo

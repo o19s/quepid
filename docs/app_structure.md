@@ -27,7 +27,9 @@ If what you're looking for isn't a component (we haven't been able to refactor t
 
 The AngularJS app starts with the `app/assets/javascripts/app.js` file and the `app/assets/javascripts/routes.js` file.
 
-The main entry to the app is through a case page, which is controller by the `app/assets/javascripts/controllers/mainCtrl.js` controller.
+The main entry to the app is through a case page, which is bootstrapped by the Stimulus
+`app/javascript/controllers/core_bootstrap_controller.js` controller. The live query/search
+services remain temporarily available through the Angular compatibility layer.
 
 This is the basic structure of the app and should get you started.
 

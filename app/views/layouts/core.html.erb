@@ -20,6 +20,8 @@
       data-core-bootstrap-case-no-value="<%= @case&.id || 0 %>"
       <%# Preserve an explicitly requested missing try so core-bootstrap can report it. %>
       data-core-bootstrap-try-no-value="<%= params[:try_number].presence || @try&.try_number || '' %>"
+      data-core-bootstrap-communal-scorers-only-value="<%= Rails.application.config.communal_scorers_only %>"
+      data-core-bootstrap-query-list-sortable-value="<%= Rails.application.config.query_list_sortable %>"
       data-quepid-root-url="<%= quepid_root_url %>"
       data-frog-report-refresh-url-template="<%= api_book_refresh_path(book_id: '__BOOK_ID__', case_id: '__CASE_ID__', create_missing_queries: 'false', process_in_background: '__BACKGROUND__') %>">
   <%= render 'layouts/header_core_app', kase: @case %>
@@ -45,21 +47,6 @@
   <%= javascript_include_tag 'angular_app' %>
   <%= javascript_include_tag 'angular_templates' %>
   <%= javascript_include_tag 'quepid_angular_app' %>
-
-  <script>
-    angular.module('QuepidApp')
-      .run([
-        'bootstrapSvc', 'configurationSvc',
-        function(bootstrapSvc, configurationSvc) {
-          configurationSvc.setCommunalScorersOnly('<%= Rails.application.config.communal_scorers_only %>');
-          configurationSvc.setQueryListSortable('<%= Rails.application.config.query_list_sortable %>');
-          configurationSvc.setCaseNo(<%= (params[:id].presence || @case&.id || 0).to_i %>);
-          configurationSvc.setTryNo(<%= params[:try_number].present? ? params[:try_number].to_i : "null" %>);
-
-          bootstrapSvc.run();
-        }
-      ]);
-  </script>
 
 </body>
 </html>
