@@ -112,9 +112,8 @@ export function createSearcherFromSettings({
   if (!settings?.selectedTry) return undefined
   options = options == null ? {} : options
 
-  const mapperFunctions = settings.searchEngine === "searchapi"
-    ? evaluateMapper(settings.mapperCode)
-    : {}
+  const mapperFunctions =
+    settings.searchEngine === "searchapi" ? evaluateMapper(settings.mapperCode) : {}
   const request = buildSearcherRequest({
     settings,
     queryText: query.queryText,

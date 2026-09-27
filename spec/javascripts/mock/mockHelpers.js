@@ -38,7 +38,7 @@ window.expectedSolrUrl = function(expected) {
 
 // Compiles `html` against `scope` and runs a digest so directive link
 // functions have run by the time the caller inspects the result. Shared by
-// the quepidPopover/quepidTooltip/quepidCollapse/quepidSortable specs.
+// the quepidPopover/quepidTooltip specs.
 window.compileDirective = function($compile, scope, html) {
   var element = $compile(html)(scope);
   scope.$digest();

@@ -17,8 +17,8 @@ import autocomplete from 'autocompleter';
 window.autocompleter = autocomplete;
 
 // SortableJS — vanilla replacement for angular-ui-sortable/jQuery UI's
-// $.fn.sortable(). Pinned to window so quepidSortable can use it without
-// importing into the Angular bundle (matches the pattern above).
+// $.fn.sortable(). Pinned to window for the Stimulus query-list controller
+// (matches the bootstrap pattern above).
 import Sortable from 'sortablejs';
 window.Sortable = Sortable;
 

@@ -1,6 +1,7 @@
 /**
  * Bootstrap 5 tooltip helpers shared by the Angular quepidTooltip directive,
- * Stimulus `bs-tooltip`, and quepidSortable (hide stuck tooltips mid-drag).
+ * Stimulus `bs-tooltip`, and query-list drag-and-drop (hide stuck tooltips
+ * mid-drag).
  */
 
 // quepid-tooltip: Angular. [data-controller~="bs-tooltip"]: Stimulus (core drag safety net).

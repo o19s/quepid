@@ -11,10 +11,16 @@ import { paginateQuery, searchQuery } from "utils/query_service"
 export function createQueryRuntime({
   query,
   getSettings,
+  copySettings = (settings) => ({ ...settings }),
   createSearcher,
+  createRatedSearcher,
+  searchApiRatedDocs,
+  supportsSearchApiRatedDocsLookup,
+  ratedDocIds = (ratings) => Object.keys(ratings || {}),
   createSnapshotSearcher,
   normalizeDocuments,
   createDocList,
+  createRateableDoc = (doc) => doc,
   matchFeaturesExplain,
   setDocs,
   onError,
@@ -23,7 +29,7 @@ export function createQueryRuntime({
   promiseApi = Promise,
   logger = console
 }) {
-  return {
+  const runtime = {
     search() {
       return searchQuery({
         query,
@@ -78,6 +84,88 @@ export function createQueryRuntime({
       }
     },
 
+    refreshRatedDocs(pageSize) {
+      if (query.ratingsPromise) return query.ratingsPromise
+
+      const requestGeneration = query.ratingsGeneration
+      const settings = copySettings(getSettings())
+
+      if (pageSize) settings.numberOfRows = pageSize
+
+      const resetRatedDocsToEmpty = () => {
+        query.ratedSearcher = null
+        query.ratedDocs = []
+        query.ratedDocsFound = 0
+        query.ratingsReady = true
+        publish(query)
+        query.ratingsPromise = null
+        return promiseApi.resolve()
+      }
+
+      const refreshSearchApiRatedDocs = () => {
+        query.ratedDocsUnsupported = !supportsSearchApiRatedDocsLookup(
+          settings.selectedTry
+        )
+
+        if (query.ratedDocsUnsupported) return resetRatedDocsToEmpty()
+
+        const ratedIds = ratedDocIds(query.ratings).filter((id) => id.length > 0)
+        if (ratedIds.length === 0) return resetRatedDocsToEmpty()
+
+        return searchApiRatedDocs(settings, query, ratedIds).then((result) => {
+          if (requestGeneration !== query.ratingsGeneration) {
+            query.ratingsPromise = null
+            return runtime.refreshRatedDocs(settings.numberOfRows)
+          }
+
+          if (result === null) {
+            query.ratedDocsUnsupported = true
+            return resetRatedDocsToEmpty()
+          }
+
+          query.ratedSearcher = result.searcher
+          query.ratedUrl = result.searcher.linkUrl
+          query.ratedDocs = result.docs.map(createRateableDoc)
+          query.ratedDocsFound = result.searcher.numFound
+          query.ratingsReady = true
+          publish(query)
+          query.ratingsPromise = null
+        })
+      }
+
+      let request
+      if (settings.searchEngine === "searchapi") {
+        request = refreshSearchApiRatedDocs()
+      } else {
+        query.ratedSearcher = createRatedSearcher(settings)
+        let ratedDocsStaging = []
+        request = query.ratedSearcher.search().then(() => {
+          if (requestGeneration !== query.ratingsGeneration) {
+            query.ratingsPromise = null
+            return runtime.refreshRatedDocs(pageSize)
+          }
+
+          query.ratedUrl = query.ratedSearcher.linkUrl
+          const normalized = normalizeDocuments(
+            query.ratedSearcher,
+            settings.createFieldSpec()
+          )
+          ratedDocsStaging = normalized.map(createRateableDoc)
+          query.ratedDocs = ratedDocsStaging
+          query.ratedDocsFound = normalized.length
+          query.ratingsReady = true
+          publish(query)
+          query.ratingsPromise = null
+        })
+      }
+
+      query.ratingsPromise = request.catch((error) => {
+        query.ratingsPromise = null
+        return promiseApi.reject(error)
+      })
+      return query.ratingsPromise
+    },
+
     paginate() {
       if (query.searcher === null) return undefined
 
@@ -115,4 +203,6 @@ export function createQueryRuntime({
       })
     }
   }
+
+  return runtime
 }

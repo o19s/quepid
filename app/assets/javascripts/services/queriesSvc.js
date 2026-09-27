@@ -824,7 +824,7 @@ angular.module('QuepidApp')
       /**
        * Shared "look up already-rated docs via the mapper" pipeline for a searchapi/mapper-based
        * engine - used by both docFinder.js's "Already Rated Documents" section and
-       * refreshRatedDocsForSearchApi() below (Query's "Show only rated" toggle), which otherwise
+       * the framework-free query runtime (Query's "Show only rated" toggle), which otherwise
        * duplicated this same build-query-params -> previewArgs -> search -> normalize sequence.
        * Callers are expected to have already checked trySupportsSearchApiRatedDocsLookup(); this
        * resolves to null when the mapper doesn't build a query (or previewArgs can't resolve it),
@@ -904,8 +904,20 @@ angular.module('QuepidApp')
           getSettings: function() {
             return currSettings;
           },
+          copySettings: function(settings) {
+            return angular.copy(settings);
+          },
           createSearcher: function(options) {
             return svc.createSearcherFromSettings(currSettings, query, options);
+          },
+          createRatedSearcher: function(settings) {
+            return svc.createSearcherFromSettings(settings, query, { filterToRated: true });
+          },
+          searchApiRatedDocs: function(settings, queryForRatedDocs, ratedIDs) {
+            return svc.searchApiRatedDocs(settings, queryForRatedDocs, ratedIDs);
+          },
+          supportsSearchApiRatedDocsLookup: function(aTry) {
+            return svc.trySupportsSearchApiRatedDocsLookup(aTry);
           },
           createSnapshotSearcher: function(snapshotId) {
             return svc.createSearcherFromSnapshot(snapshotId, query, currSettings);
@@ -915,6 +927,9 @@ angular.module('QuepidApp')
           },
           createDocList: function(docs, fieldSpec, ratingsStore, explain) {
             return new DocListFactory(docs, fieldSpec, ratingsStore, explain);
+          },
+          createRateableDoc: function(doc) {
+            return query.ratingsStore.createRateableDoc(doc);
           },
           matchFeaturesExplain: matchFeaturesExplain,
           setDocs: function(docs, numFound) {
@@ -1033,129 +1048,8 @@ angular.module('QuepidApp')
 
 
         this.refreshRatedDocs = function(pageSize) {
-          if (self.ratingsPromise) {
-            return self.ratingsPromise;
-          }
-
-          var requestGeneration = self.ratingsGeneration;
-          let settings = angular.copy(currSettings);
-
-          if (pageSize) {
-            settings.numberOfRows = pageSize;
-          }
-
-          if (settings.searchEngine === 'searchapi') {
-            self.ratingsPromise = refreshRatedDocsForSearchApi(settings, requestGeneration).catch(function(error) {
-              self.ratingsPromise = null;
-              return $q.reject(error);
-            });
-            return self.ratingsPromise;
-          }
-
-          self.ratedSearcher = svc.createSearcherFromSettings(
-              settings,
-              self,
-              { filterToRated: true }
-            );
-
-          let ratedDocsStaging = [];
-          self.ratingsPromise = self.ratedSearcher.search().then(function() {
-            if (requestGeneration !== self.ratingsGeneration) {
-              self.ratingsPromise = null;
-              return self.refreshRatedDocs(pageSize);
-            }
-
-            self.ratedUrl = self.ratedSearcher.linkUrl;
-
-            let normed = normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
-
-            angular.forEach(normed, function(doc) {
-              let rateableDoc = self.ratingsStore.createRateableDoc(doc);
-              ratedDocsStaging.push(rateableDoc);
-            });
-
-            self.ratedDocs = ratedDocsStaging;
-            self.ratedDocsFound = normed.length;
-            self.ratingsReady = true;
-            publishQueryDocuments(self);
-            self.ratingsPromise = null;
-          });
-          var ratedDocsRequest = self.ratingsPromise;
-          self.ratingsPromise = ratedDocsRequest.catch(function(error) {
-            self.ratingsPromise = null;
-            return $q.reject(error);
-          });
-          return self.ratingsPromise;
+          return createQueryRuntime(self).refreshRatedDocs(pageSize);
         };
-
-        // filterToRatings() (createSearcherFromSettings' filterToRated option, above) has no
-        // generic ID-filter syntax for a searchapi/mapper-based engine - unlike Solr's
-        // {!terms f=id} or ES's terms query, there's no one query language to target across
-        // arbitrary search APIs. Building the filter is also inherently async (mapper ->
-        // settingsSvc.previewArgs), unlike the other engines' synchronous filterToRated
-        // branches - svc.searchApiRatedDocs() is the shared pipeline for that, also used by
-        // docFinder.js's initializeToRatedDocs() ("Already Rated Documents").
-        //
-        // An engine that hasn't opted in via mapperBasedSearchEngineSupportsRatedDocsLookup
-        // (no ratedDocsQueryParamsMapper) can't support "Show only rated" at all - rather than
-        // silently show unfiltered results mislabeled as "rated", self.ratedDocsUnsupported is
-        // set so the UI can disable the control and say why (see core/_queries.html.erb).
-        function refreshRatedDocsForSearchApi(settings, requestGeneration) {
-          self.ratedDocsUnsupported = !svc.trySupportsSearchApiRatedDocsLookup(settings.selectedTry);
-
-          if (self.ratedDocsUnsupported) {
-            return resetRatedDocsToEmpty();
-          }
-
-          let ratedIDs = self.ratings ? Object.keys(self.ratings) : [];
-          ratedIDs = ratedIDs.filter(function(id) { return id.length > 0; });
-
-          if (ratedIDs.length === 0) {
-            return resetRatedDocsToEmpty();
-          }
-
-          return svc.searchApiRatedDocs(settings, self, ratedIDs).then(function(result) {
-            if (requestGeneration !== self.ratingsGeneration) {
-              self.ratingsPromise = null;
-              return self.refreshRatedDocs(settings.numberOfRows);
-            }
-
-            if (result === null) {
-              self.ratedDocsUnsupported = true;
-              return resetRatedDocsToEmpty();
-            }
-
-            self.ratedSearcher = result.searcher;
-            self.ratedUrl = result.searcher.linkUrl;
-
-            let ratedDocsStaging = [];
-            angular.forEach(result.docs, function(doc) {
-              ratedDocsStaging.push(self.ratingsStore.createRateableDoc(doc));
-            });
-
-            self.ratedDocs = ratedDocsStaging;
-            // Vespa's own totalCount (unlike result.docs.length, a page's worth) covers every
-            // rated doc the "in (...)" filter matched, not just this page - needed so the "peek
-            // at next page" link knows there's more via ratedPaginate().
-            self.ratedDocsFound = result.searcher.numFound;
-            self.ratingsReady = true;
-            publishQueryDocuments(self);
-            self.ratingsPromise = null;
-          });
-        }
-
-        // Shared "nothing to show" reset - used both when the engine can't look up rated docs
-        // at all, and when it can but there simply are none yet (self.ratedDocsUnsupported is
-        // left as whatever the caller already set, not touched here).
-        function resetRatedDocsToEmpty() {
-          self.ratedSearcher = null;
-          self.ratedDocs = [];
-          self.ratedDocsFound = 0;
-          self.ratingsReady = true;
-          publishQueryDocuments(self);
-          self.ratingsPromise = null;
-          return $q.resolve();
-        }
 
         this.setDocs = function(newDocs, numFound) {
           that.docs.length = 0;

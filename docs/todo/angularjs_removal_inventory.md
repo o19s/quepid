@@ -24,13 +24,13 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 52 files, 47 register with Angular |
+| Angular JS source files (`app/assets/javascripts`) | 48 files, 43 register with Angular |
 | HTML templates (`app/assets/templates`) | 2 |
 | Controllers | 0 |
 | Services | 22 (`.service()` registrations; 22 files under `services/`) |
 | Factories | 7 |
 | Filters | 6 under `filters/` |
-| Custom directives / components | 4 directives, no components |
+| Custom directives / components | 1 directive, no components |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 10 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 6 packages (+ `angular` core from npm) |
 | Karma unit specs (`spec/javascripts/angular`) | 25 |
@@ -229,7 +229,7 @@ compatibility adapter until live query/search/scoring migration is complete.
 
 **Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
-1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, and the remaining CSRF callers. Tooltip/popover/paste utils and flash are already Stimulus-owned. Remaining call sites are concentrated in the diff bridge and surviving Angular service seams; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
+1. Shared primitives — `$quepidModal`, `quepidTypeahead`, and the remaining CSRF callers. Tooltip/popover/paste utils and flash are already Stimulus-owned. Remaining call sites are concentrated in the diff bridge and surviving Angular service seams; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
 2. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
 3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
 4. Query list + results — `search-results`, rating UI
@@ -248,7 +248,7 @@ compatibility adapter until live query/search/scoring migration is complete.
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
-**Defer on the case workspace** (Solr JSONP, live state, or remaining Angular wrappers): `quepidTypeahead`, `quepidCollapse`. Snapshot search/scoring remains behind its explicit Angular bridge. The remaining deferred pieces imply rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or remaining Angular wrappers): `quepidTypeahead`. Snapshot search/scoring remains behind its explicit Angular bridge. The remaining deferred pieces imply rebuilding the case SPA, not a framework swap.
 
 #### `queriesSvc` seam inventory (phase 1)
 
@@ -453,11 +453,14 @@ adapter into those services.
 
 Remaining backing services: `queriesSvc`, `queryViewSvc`, `searchErrorTranslatorSvc`, `varExtractorSvc`
 
-`queriesSvc` remains the compatibility adapter for search, rated-document
-fetching, notes, and persistence. The next extraction can move those injected
-operations without changing the query-local contract.
+`queriesSvc` remains the compatibility adapter for live search construction,
+notes, persistence, and engine-specific callbacks. The framework-free query
+runtime now owns rated-document refresh and pagination, including Search API
+support checks and stale rating-generation retries. The next extraction can
+move the remaining injected operations without changing the query-local
+contract.
 
-Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
+Filters: `queryStateClass`, `scoreDisplay`, `searchEngineName`
 
 ### 6. Search results and rating UI
 
@@ -481,8 +484,9 @@ ratings dictionary, mutation contract, and rateable-document behavior are
 covered by Vitest before the adapter is removed.
 
 The Missing Documents modal was migrated to Stimulus on 2026-09-24. Search-engine-specific
-searcher creation, rated-document lookup, pagination, and live rating mutations remain behind
-`window.quepidSearch.targetedSearch` until the live query-state phase removes the Angular service.
+searcher creation and live rating mutations remain behind `window.quepidSearch.targetedSearch`
+until the live query-state phase removes the Angular service; rated-document refresh and
+pagination now share the framework-free query runtime boundary.
 
 Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 
@@ -502,14 +506,13 @@ These Angular-specific wrappers are used across many templates:
 | Primitive | File | Replaces |
 |-----------|------|----------|
 | `$quepidModal` | `services/quepidModalSvc.js` | Bootstrap 5 modals (already BS5-backed shim; call-site count in [Hardest § By file (LOC)](#by-file-loc)) |
-| `quepidCollapse` | `directives/quepidCollapse.js` | Bootstrap collapse |
 | `quepidTypeahead` | `directives/quepidTypeahead.js` | `autocompleter` (already vanilla; wired via Angular directive) |
 
 ---
 
 ## Remaining Angular directives
 
-Attribute directives: `quepidSortable`, `quepidCollapse`, `quepidTypeahead`
+Attribute directives: `quepidTypeahead`
 
 Heavy: `quepidTypeahead` (299).
 
@@ -523,7 +526,7 @@ Heavy: `quepidTypeahead` (299).
 
 `broadcastSvc` wraps `$rootScope.$broadcast` — used by `caseSvc`, `settingsSvc`, `queriesSvc`, and `bookSvc`. See [event bus inventory](./event_bus_inventory.md).
 
-**Filters (6 under `filters/`):** `caseType`, `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`
+**Filters (5 under `filters/`):** `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`
 
 **Values (2):** `eastPaneWidth`, `settingsIdValue`
 
