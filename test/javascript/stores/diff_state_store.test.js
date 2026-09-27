@@ -22,4 +22,13 @@ describe("DiffStateStore", () => {
     expect(store.selections()).toEqual([])
     expect(store.snapshot().disabled).toBe(true)
   })
+
+  it("resets selections and disabled state for a fresh case workspace", () => {
+    store.enable([7, 8])
+    store.disable()
+    store.reset()
+
+    expect(store.selections()).toEqual([])
+    expect(store.snapshot().disabled).toBe(false)
+  })
 })

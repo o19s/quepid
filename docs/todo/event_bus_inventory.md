@@ -19,15 +19,14 @@ covers only Quepid application events.
 
 | Mechanism | Purpose | Direction |
 |-----------|---------|-----------|
-| `broadcastSvc.send(name, data)` | App-wide pub/sub. Wraps `$rootScope.$broadcast` | downward (root → all child scopes) |
-| `$rootScope.$broadcast(name, data)` | Direct fan-out from root. Only used inside `broadcastSvc` itself | downward |
-| `$scope.$emit(name, data)` | Bubbles up the scope chain to ancestor `$on` handlers | upward |
-| `$rootScope.$emit(name, data)` | Fires `$on` handlers registered on `$rootScope` (no bubbling — root has no parent) | root only |
-| `$scope.$on(name, fn)` / `$rootScope.$on(name, fn)` | Subscribe | n/a |
+| `CustomEvent` | Named application boundary for lifecycle and one-shot actions | document/root → listeners |
+| `EventTarget` store | Observable state boundary for query/document and score/rating state | store → subscribers |
 
-`broadcastSvc` (`app/assets/javascripts/factories/broadcastSvc.js`) is a
-3-line wrapper around `$rootScope.$broadcast` — there is exactly one
-implementation, no other app-level broadcast mechanisms.
+The former Angular `$emit`, `$broadcast`, and `$on` mechanisms are retained
+here only as historical terminology for the migration audit; application code
+no longer uses them.
+
+There are no remaining application-level Angular broadcast implementations.
 
 ### `$rootScope` aliased as `$scope` (grep trap)
 
@@ -38,15 +37,15 @@ not the parameter name.
 | Service | File | Actual scope |
 |---------|------|--------------|
 | `queriesSvc` | `services/queriesSvc.js:12,31` | `$rootScope` |
-| `ratingsStoreSvc` | `services/ratingsStoreSvc.js:13,15` | `$rootScope` |
 
-`rating-changed` and `scoring-complete` therefore use `$rootScope.$emit` /
-`$rootScope.$on` throughout — not child-scope bubbling.
+The remaining Angular listener is now a native document event; no application
+event uses `$rootScope.$emit` / `$rootScope.$on`.
 
 ## Event table
 
 The migrated core uses explicit `CustomEvent`s and `EventTarget` stores. The
-legacy Angular bus is retained only as a compatibility fallback for ratings.
+legacy Angular bus is no longer used by application code. Ratings retain a
+native document-event fallback for bundles that do not load the modern store.
 
 | Event name | Emitter(s) | Listener(s) | Listener kind | Notes |
 |------------|------------|-------------|---------------|-------|
@@ -54,8 +53,19 @@ legacy Angular bus is retained only as a compatibility fallback for ratings.
 | `quepid:case-team-changed` | `share_case_core_controller.js` | `caseSvc.js` | native event | Core share/unshare updates the selected case in memory. |
 | `case-book:associated` | `caseSvc.js` | `queriesSvc.js` | native event | Replaces `associateBook`; the query service re-fetches case book-sync flags. |
 | `case-settings:updated` | `settingsSvc.js` | `caseSvc.js` | native event | Replaces `settings-updated`; one service-level listener updates current in-memory cases. |
-| `rating-changed` | `CaseScoreStore`; legacy fallback in `ratingsStoreSvc.js` | `queriesSvc.js`, `qscore_case_controller.js` | EventTarget store | Store event is the normal path; the Angular fallback remains for older bundles. |
+| `rating-changed` | `CaseScoreStore` | `queriesSvc.js`, `qscore_case_controller.js` | EventTarget store | Normal rating-change path. |
+| `ratings:changed` | `ratingsStoreSvc.js` | `queriesSvc.js` | native event | Compatibility fallback when an older Angular bundle has no `CaseScoreStore`; payload is `{ queryId }`. |
 | `scoring-complete` | `CaseScoreStore` | `qscore_case_controller.js`, `qgraph_controller.js` | EventTarget store | Fully migrated from the former Angular score event. |
+
+## Step 3 classification
+
+| Category | Events | Boundary |
+|----------|--------|----------|
+| Query/document state | `case-book:associated`, `query-options:saved`, `query-diffs:refreshed`, `queries-state:changed` | Named document `CustomEvent`s; Angular remains the live query owner where noted. |
+| Score/rating state | `rating-changed`, `scoring-complete`, `ratings:changed` | `CaseScoreStore` for the normal path; native document fallback only when the modern store is absent. |
+| Navigation/bootstrap lifecycle | `core-bootstrap:ready`, `core-bootstrap:failed`, `quepid:case-header-stale` | Named document `CustomEvent`s with Stimulus connect/disconnect ownership. |
+| Modal/action completion | `quepid:case-team-changed`, `case-header:renamed`, `case-score:persisted`, `judgements:book-settings-saved` | Named document `CustomEvent`s; payloads are documented at emitters and covered by focused tests. |
+| Legacy-only/dead | `caseSelected`, `fetchedDropdownCasesList`, `caseUpdate`, `settings-changed`, `updatedQueriesList` | Removed; no replacement event is emitted. |
 
 The dead broadcasts `caseSelected`, `fetchedDropdownCasesList`, `caseUpdate`,
 `settings-changed`, and the commented `updatedQueriesList` were removed rather
@@ -68,14 +78,13 @@ than replaced with no-op events.
 | `controllers/qscore_case_controller.js` | store | `scoring-complete`, `rating-changed` | yes (`disconnect`) |
 | `controllers/qgraph_controller.js` | store | `scoring-complete` | yes (`disconnect`) |
 | `services/caseSvc.js` | document | `case-header:renamed`, `quepid:case-team-changed`, `judgements:book-settings-saved`, `case-settings:updated` | app lifetime; one listener per event |
-| `services/queriesSvc.js` | document + store | `case-book:associated`, `query-options:saved`, `rating-changed` | app lifetime / store-owned |
+| `services/queriesSvc.js` | document + store | `case-book:associated`, `query-options:saved`, `rating-changed`, `ratings:changed` | app lifetime / store-owned |
 
 ## Migration-relevant observations
 
-1. The legacy `broadcastSvc` factory is now unused by Quepid code; remove its
-   registration with the final Angular cleanup once no bundle references it.
-2. The ratings fallback remains intentionally until the live query/scoring
-   migration removes the last Angular-only bundle path.
+1. The ratings compatibility path remains intentionally until the live
+   query/scoring migration removes the last Angular-only bundle path, but it no
+   longer crosses the Angular root event bus.
 
 
 ## Methodology

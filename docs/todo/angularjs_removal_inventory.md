@@ -544,12 +544,14 @@ Heavy: `quepidTypeahead` (299).
 
 **Services (20):** `bookSvc`, `bootstrapSvc`*, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `docCacheSvc`, `paneSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateScaleSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned.
 
-**Factories (7):** `$quepidModal` (`services/quepidModalSvc.js`), `broadcastSvc`, `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `SnapshotFactory`, `TryFactory`
+**Factories (6):** `$quepidModal` (`services/quepidModalSvc.js`), `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `SnapshotFactory`, `TryFactory`
 
-`broadcastSvc` wraps `$rootScope.$broadcast` and is currently registered only as
-an unused compatibility factory; the former `caseSvc`, `settingsSvc`, and
-`queriesSvc` consumers now use named native events or EventTarget stores. See
-[event bus inventory](./event_bus_inventory.md).
+The former `caseSvc`, `settingsSvc`, and `queriesSvc` consumers now use named native events or EventTarget stores. See [event bus inventory](./event_bus_inventory.md).
+
+`ratingsStoreSvc` retains ownership of rating persistence, but its no-store
+compatibility path now emits the named native `ratings:changed` event; the
+Angular root event relay is removed. The `CaseScoreStore` event remains the
+normal path until the live query/scoring migration is complete.
 
 **Filters (5 under `filters/`):** `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`
 

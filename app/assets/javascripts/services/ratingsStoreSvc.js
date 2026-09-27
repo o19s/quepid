@@ -10,9 +10,8 @@
 //
 angular.module('QuepidApp')
   .service('ratingsStoreSvc', [
-    '$rootScope',
     '$http',
-    function ratingsStoreSvc($rootScope, $http) {
+    function ratingsStoreSvc($http) {
       var svcVersion = 0;
 
       this.createRatingsStore = function(caseNo, queryId, ratingsDict) {
@@ -30,7 +29,11 @@ angular.module('QuepidApp')
               window.quepidStore.scoring.markRatingChanged(changedQueryId);
             } else {
               // Compatibility for an Angular bundle loaded without the modern store.
-              $rootScope.$emit('rating-changed', changedQueryId);
+              // Keep the fallback on the native event boundary so the service no
+              // longer depends on the Angular root event bus.
+              document.dispatchEvent(new CustomEvent('ratings:changed', {
+                detail: { queryId: changedQueryId }
+              }));
             }
           }
         });

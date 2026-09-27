@@ -644,8 +644,9 @@ angular.module('QuepidApp')
       svc.showOnlyRated = false;
       svc.isBootstrapping = false;
 
-      // Rescore on ratings update. The store is the native event source during
-      // the migration; keep the Angular listener as a fallback for older bundles.
+      // Rescore on ratings update. The EventTarget store is the normal source;
+      // the document event keeps older bundles without that store working without
+      // reintroducing an Angular root event relay.
       var ratingChangedHandler = function(event, legacyQueryId) {
         var queryId = window.quepidSearch.queryState.ratingChangedQueryId(event, legacyQueryId);
         if (queryId !== undefined && svc.queries[queryId]) {
@@ -661,7 +662,7 @@ angular.module('QuepidApp')
       if (window.quepidStore && window.quepidStore.scoring) {
         window.quepidStore.scoring.addEventListener('rating-changed', ratingChangedHandler);
       } else {
-        $scope.$on('rating-changed', ratingChangedHandler);
+        document.addEventListener('ratings:changed', ratingChangedHandler);
       }
 
       // Stimulus pick-scorer-core: API save already done; apply scorer + rescore live queries.

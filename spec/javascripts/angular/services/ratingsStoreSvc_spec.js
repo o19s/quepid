@@ -18,6 +18,23 @@ describe('Service: Ratingsstoresvc', function () {
     expect(ratingsStore.getRating('doc1')).toBe(10);
   });
 
+  it('publishes a native compatibility event when the scoring store is unavailable', function() {
+    var originalStore = window.quepidStore;
+    var event;
+    window.quepidStore = undefined;
+    document.addEventListener('ratings:changed', function(receivedEvent) {
+      event = receivedEvent;
+    }, {once: true});
+
+    var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {});
+    $httpBackend.expectPUT('api/cases/0/queries/1/ratings').respond(200, {});
+    ratingsStore.rateDocument('doc1', 10);
+    $httpBackend.flush();
+
+    expect(event.detail.queryId).toBe(1);
+    window.quepidStore = originalStore;
+  });
+
   it('should rate documents', function () {
     var ratingsStore = ratingsStoreSvc.createRatingsStore(0, 1, {});
     $httpBackend.expectPUT('api/cases/0/queries/1/ratings').respond(200, {});
