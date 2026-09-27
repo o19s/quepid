@@ -928,6 +928,43 @@ angular.module('QuepidApp')
         });
       }
 
+      // The query runtime owns live search and pagination. This
+      // service remains the compatibility adapter for Angular-owned searchers
+      // and document factories until the case workspace cutover.
+      function createQueryRuntime(query) {
+        return window.quepidSearch.queryRuntime.create({
+          query: query,
+          getSettings: function() {
+            return currSettings;
+          },
+          createSearcher: function(options) {
+            return svc.createSearcherFromSettings(currSettings, query, options);
+          },
+          createSnapshotSearcher: function(snapshotId) {
+            return svc.createSearcherFromSnapshot(snapshotId, query, currSettings);
+          },
+          normalizeDocuments: function(searcher, fieldSpec) {
+            return normalizeDocExplains(query, searcher, fieldSpec);
+          },
+          createDocList: function(docs, fieldSpec, ratingsStore, explain) {
+            return new DocListFactory(docs, fieldSpec, ratingsStore, explain);
+          },
+          matchFeaturesExplain: matchFeaturesExplain,
+          setDocs: function(docs, numFound) {
+            return query.setDocs(docs, numFound);
+          },
+          onError: function(message) {
+            query.onError(message);
+          },
+          parseError: function(response, linkUrl) {
+            return searchErrorTranslatorSvc.parseResponseObject(response, linkUrl, currSettings.searchEngine);
+          },
+          publish: publishQueryDocuments,
+          promiseApi: $q,
+          logger: $log
+        });
+      }
+
       function toggleShowOnlyRated() {
         svc.showOnlyRated = !svc.showOnlyRated;
 
@@ -1197,7 +1234,7 @@ angular.module('QuepidApp')
 
         this.search = function() {
           resultsReturned = false;
-          return searchQuery(this);
+          return createQueryRuntime(this).search();
         };
 
         // Method to search using a snapshot instead of live search engine
@@ -1246,63 +1283,11 @@ angular.module('QuepidApp')
         };
 
         this.paginate = function() {
-          let self = this;
-
-          if (self.searcher === null) {
-            return;
-          }
-
-          // searchApiSearcherFactory.pager() (splainer-search) defers to
-          // config.nextPageArgsMapper - set on the searcher by createSearcherFromSettings from
-          // whatever the try's mapper_code defines (see nextPageArgsMapper in
-          // db/mapper_based_search_engines/vespa.js) - and returns null the same way
-          // Solr/ES/Algolia/Vectara's own pager() do when there's no mapper or no more pages.
-          return window.quepidSearch.queryService.paginateQuery({
-            searcher: self.searcher,
-            pager: function(searcher) {
-              self.searcher = searcher.pager();
-              return self.searcher;
-            },
-            search: function(searcher) { return searcher.search(); },
-            appendDocs: function(searcher) {
-              let docList = new DocListFactory(
-                searcher.docs,
-                currSettings.createFieldSpec(),
-                self.ratingsStore,
-                matchFeaturesExplain
-              );
-              self.docs = self.docs.concat(docList.list());
-              publishQueryDocuments(self);
-            },
-            logDebug: function() {
-              $log.debug.apply($log, arguments);
-            }
-          });
+          return createQueryRuntime(this).paginate();
         };
 
         this.ratedPaginate = function() {
-            let self = this;
-
-            if (self.ratedSearcher === null) {
-              return;
-            }
-
-            // Same pager() as paginate() above - self.ratedSearcher already carries
-            // config.nextPageArgsMapper from however it was built (refreshRatedDocsForSearchApi's
-            // resolved rated-docs-filter args for searchapi, or the main query's args for
-            // es/os/solr/vectara/algolia), so it bumps whichever args it already has.
-            self.ratedSearcher = self.ratedSearcher.pager();
-
-            if (self.ratedSearcher === null) {
-              return;
-            }
-
-            return self.ratedSearcher.search()
-              .then(function() {
-                let normed = svc.normalizeDocExplains(self, self.ratedSearcher, currSettings.createFieldSpec());
-                self.ratedDocs = self.ratedDocs.concat(normed);
-                publishQueryDocuments(self);
-              });
+          return createQueryRuntime(this).ratedPaginate();
         };
 
         this.saveNotes = function(notes, informationNeed) {

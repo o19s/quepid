@@ -23,6 +23,7 @@ import {
 import { deleteSnapshot, fetchSnapshot } from "./utils/snapshot_api"
 import { scoreAllQueries, scoreQuery } from "./utils/query_scoring"
 import { createQueryModel } from "./utils/query_model"
+import { createQueryRuntime } from "./utils/query_runtime"
 import {
   invalidateRatedDocsCache,
   matchesQueryFilter,
@@ -95,6 +96,9 @@ const quepidSearch = {
   },
   queryModel: {
     create: createQueryModel
+  },
+  queryRuntime: {
+    create: createQueryRuntime
   },
   diffScores: {
     buildCaseDiffScores

@@ -57,7 +57,7 @@ export function createQueryModel({
         return deferred.promise
       }
 
-      return this.scoreOthers(query.docs).then(score => {
+      return this.scoreOthers(query.docs).then((score) => {
         query.currentScore = score
         query.hasBeenScored = true
         query.lastScore = score.score || 0
