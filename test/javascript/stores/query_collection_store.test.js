@@ -85,7 +85,11 @@ describe("QueryCollectionStore", () => {
       currentScore: { score: 0.75, maxScore: 1, allRated: false, countMissingRatings: 2 },
       state: () => "loaded",
       options: { rows: 10 },
-      searcher: { parsedQueryDetails: { q: "title" } },
+      searcher: {
+        parsedQueryDetails: { q: "title" },
+        queryDetails: { q: "title" },
+        isTemplateCall: () => true
+      },
       diffs: {}
     }
 
@@ -100,6 +104,8 @@ describe("QueryCollectionStore", () => {
       state: "loaded",
       options: { rows: 10 },
       parsedQueryDetails: { q: "title" },
+      queryDetails: { q: "title" },
+      supportsTemplate: true,
       diffs: true
     })
     expect(store.query(4).state).not.toBeInstanceOf(Function)

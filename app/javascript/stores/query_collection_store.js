@@ -206,6 +206,7 @@ export class QueryCollectionStore extends EventTarget {
     const queryId = Number(this.queryId(query))
     const currentScore = query.currentScore || {}
     const parsedQueryDetails = query.searcher?.parsedQueryDetails
+    const searcher = query.searcher
     const queryState = typeof query.state === "function" ? query.state() : query.state
     const snapshot = {
       queryId,
@@ -228,6 +229,8 @@ export class QueryCollectionStore extends EventTarget {
       state: queryState,
       options: query.options || {},
       parsedQueryDetails,
+      queryDetails: searcher?.queryDetails,
+      supportsTemplate: typeof searcher?.isTemplateCall === "function",
       diffs: query.diffs ? true : undefined
     }
     if (this._expandedQueries.has(String(queryId))) snapshot.expanded = this._expandedQueries.get(String(queryId))

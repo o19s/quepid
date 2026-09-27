@@ -291,7 +291,7 @@ comparison selection/reset state in the Stimulus case bootstrap and case-score c
 Query view state is now owned by the framework-free query collection/document stores and diff
 store; `queriesSvc` reads those stores directly for its remaining Angular compatibility callbacks.
 
-- `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing query-state adapter boundaries.
+- `queriesSvc` publishes the collection and document stores after search, rated-document refresh, pagination, errors, and rating changes. Query-list ordering, filtering, sorting, expansion, counts, state, Querqy flags, options, and explain metadata now read from the collection store; only on-demand query-template rendering remains behind a live-query compatibility callback. Search, scoring, diff, finder, and options remain behind their existing live-query boundaries; document rating, bulk rating, toggle, pagination, show-only-rated, and collapse-all cross the explicit `queryCommands` runtime.
 - Case-level score aggregation now runs through the framework-free `createCaseScoringRuntime`; Angular supplies live Query objects and remains only the compatibility adapter for scorer execution and legacy `latestScoreInfo` consumers.
 - Snapshot fetching and hydration now run through the Stimulus/framework-free snapshot registry; Angular still owns the live Query objects and per-query diff scoring behind the document-store bridge.
 - `snapshot_searcher.js` owns the framework-free snapshot searcher contract, including registry lookup; `queriesSvc` supplies the remaining Angular callbacks directly at the boundary.

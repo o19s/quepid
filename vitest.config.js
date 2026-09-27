@@ -56,6 +56,7 @@ export default defineConfig({
       { find: "utils/query_lifecycle", replacement: path.resolve(repoRoot, "app/javascript/utils/query_lifecycle.js") },
       { find: "utils/query_service", replacement: path.resolve(repoRoot, "app/javascript/utils/query_service.js") },
       { find: "utils/query_model", replacement: path.resolve(repoRoot, "app/javascript/utils/query_model.js") },
+      { find: "utils/query_documents", replacement: path.resolve(repoRoot, "app/javascript/utils/query_documents.js") },
       { find: "utils/query_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/query_runtime.js") },
       { find: "utils/curator_vars", replacement: path.resolve(repoRoot, "app/javascript/utils/curator_vars.js") },
       { find: "utils/book_sync", replacement: path.resolve(repoRoot, "app/javascript/utils/book_sync.js") },

@@ -143,11 +143,11 @@ angular.module('QuepidApp')
           batchSize: svc.queryCount()
         };
       };
-      window.quepidSearch.queryState.toggleShowOnlyRated = toggleShowOnlyRated;
+      window.quepidSearch.queryCommands.toggleShowOnlyRated = toggleShowOnlyRated;
       window.quepidSearch.queryState.isSortingEnabled = function() {
         return false;
       };
-      window.quepidSearch.queryState.collapseAll = function() {
+      window.quepidSearch.queryCommands.collapseAll = function() {
         if (queryDocumentsStore) queryDocumentsStore.collapseAll();
       };
       window.quepidSearch.queryState.setDisplayOrder = function(displayOrder) {
@@ -212,51 +212,13 @@ angular.module('QuepidApp')
         if (!ratingScale && effectiveScorer && angular.isFunction(effectiveScorer.getColors)) {
           ratingScale = effectiveScorer.getColors();
         }
-
-        queryDocumentsStore.replaceQuery(query.queryId, {
-          queryText: query.queryText,
-          fieldSpec: (function() {
-            var fieldSpec = angular.isFunction(query.fieldSpec) ? query.fieldSpec() : {};
-            return {
-              fields: (fieldSpec.fields || []).slice(),
-              id: fieldSpec.id,
-              title: fieldSpec.title
-            };
-          }()),
-          docs: query.docs,
-          ratedDocs: query.ratedDocs,
-          numFound: query.numFound,
-          ratedDocsFound: query.ratedDocsFound,
-          ratedDocsUnsupported: query.ratedDocsUnsupported,
-          paginationSupported: (function() {
-            var selectedTry = settingsSvc.applicableSettings() || {};
-            return selectedTry.searchEngine !== 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination === true;
-          }()),
-          resultsView: 2,
-          errorText: query.errorText,
-          depthOfRating: query.depthOfRating,
+        var applicableSettings = settingsSvc.applicableSettings() || {};
+        var readModel = window.quepidSearch.queryDocuments.buildState({
+          query: query,
+          settings: applicableSettings,
+          selectedTry: applicableSettings.selectedTry || {},
           ratingScale: ratingScale || {},
-          queryRating: query.rating,
-          missingRatings: query.currentScore ? query.currentScore.countMissingRatings : null,
-          allRated: query.currentScore ? query.currentScore.allRated : false,
-          maxDocScore: angular.isFunction(query.maxDocScore) ? query.maxDocScore() : null,
-          browseUrl: angular.isFunction(query.browseUrl) ? query.browseUrl() : null,
-          searchEngine: (settingsSvc.applicableSettings() || {}).searchEngine,
-          apiMethod: (settingsSvc.applicableSettings() || {}).apiMethod,
-          mapperBasedSearchEngineName: (settingsSvc.applicableSettings() || {}).mapperBasedSearchEngineName,
-          browseHeaders: (function() {
-            var settings = settingsSvc.applicableSettings() || {};
-            var headers = settings.customHeaders;
-            if (typeof headers === 'string') {
-              try { headers = JSON.parse(headers); } catch { headers = {}; }
-            }
-            headers = headers && typeof headers === 'object' && !Array.isArray(headers) ? angular.copy(headers) : {};
-            if (settings.basicAuthCredential) {
-              headers.Authorization = 'Basic ' + window.btoa(settings.basicAuthCredential);
-            }
-            return headers;
-          }()),
-          queryState: angular.isFunction(query.state) ? query.state() : null,
+          diffs: buildDiffReadModel(query),
           documentUrlFor: function(doc) {
             if (!doc || !angular.isFunction(doc._url)) return null;
 
@@ -266,18 +228,19 @@ angular.module('QuepidApp')
             } catch {
               return null;
             }
-            var settings = settingsSvc.applicableSettings() || {};
-            if (settings.basicAuthCredential) {
-              linkUrl = linkUrl.replace('://', '://' + settings.basicAuthCredential + '@');
+            if (applicableSettings.basicAuthCredential) {
+              linkUrl = linkUrl.replace('://', '://' + applicableSettings.basicAuthCredential + '@');
             }
-            if (settings.proxyRequests === true) {
-              linkUrl = caseTryNavSvc.getQuepidProxyUrl(settings.searchEndpointId) + linkUrl;
+            if (applicableSettings.proxyRequests === true) {
+              linkUrl = caseTryNavSvc.getQuepidProxyUrl(applicableSettings.searchEndpointId) + linkUrl;
             }
             return linkUrl;
-          },
-          version: angular.isFunction(query.version) ? query.version() : null
-          ,diffs: buildDiffReadModel(query)
+          }
         });
+        queryDocumentsStore.replaceQuery(query.queryId, readModel);
+        if (queryCollectionStore) {
+          queryCollectionStore.upsert(query);
+        }
       }
 
       function buildDiffReadModel(query) {
@@ -351,7 +314,7 @@ angular.module('QuepidApp')
         });
         return true;
       }
-      window.quepidSearch.queryState.rateDocument = rateDocument;
+      window.quepidSearch.queryCommands.rateDocument = rateDocument;
 
       function rateAll(queryId, rating) {
         var query = window.quepidSearch.queryState.getQuery(queryId);
@@ -373,7 +336,7 @@ angular.module('QuepidApp')
         });
         return true;
       }
-      window.quepidSearch.queryState.rateAll = rateAll;
+      window.quepidSearch.queryCommands.rateAll = rateAll;
 
       window.quepidSearch.targetedSearch = function(queryId) {
         var query = window.quepidSearch.queryState.getQuery(queryId);
@@ -427,7 +390,7 @@ angular.module('QuepidApp')
         }
         return true;
       }
-      window.quepidSearch.queryState.toggleQuery = toggleQuery;
+      window.quepidSearch.queryCommands.toggleQuery = toggleQuery;
 
       function paginateQuery(queryId, ratedOnly) {
         var query = window.quepidSearch.queryState.getQuery(queryId);
@@ -442,7 +405,7 @@ angular.module('QuepidApp')
         });
         return true;
       }
-      window.quepidSearch.queryState.paginateQuery = paginateQuery;
+      window.quepidSearch.queryCommands.paginateQuery = paginateQuery;
 
       // Shared "clone settings with the selectedTry overridden" pattern for a one-off preview
       // search - used by both docFinder.js's findDocsByPreviewingQueryParams() (overriding args

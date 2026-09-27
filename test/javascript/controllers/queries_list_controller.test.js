@@ -112,9 +112,9 @@ describe("queries_list_controller", () => {
 
   it("orders live queries from the collection store and filters by query text", () => {
     const { controller } = controllerFor()
-    controller.store = { orderedQueryIds: () => [2, 1] }
-    controller.queryState = {
-      getQuery: queryId => ({
+    controller.store = {
+      orderedQueryIds: () => [2, 1],
+      query: queryId => ({
         1: { queryId: 1, queryText: "Star Wars" },
         2: { queryId: 2, queryText: "Dune" }
       })[queryId]
@@ -127,9 +127,9 @@ describe("queries_list_controller", () => {
 
   it("preserves manual order and renders pagination controls", () => {
     const { controller } = controllerFor()
-    controller.store = { orderedQueryIds: () => [3, 2, 1] }
-    controller.queryState = {
-      getQuery: queryId => ({
+    controller.store = {
+      orderedQueryIds: () => [3, 2, 1],
+      query: queryId => ({
         1: { queryId: 1, queryText: "one" },
         2: { queryId: 2, queryText: "two" },
         3: { queryId: 3, queryText: "three" }
@@ -148,9 +148,9 @@ describe("queries_list_controller", () => {
 
   it("sorts scores numerically and reverses the selected sort", () => {
     const { controller } = controllerFor()
-    controller.store = { orderedQueryIds: () => [1, 2] }
-    controller.queryState = {
-      getQuery: queryId => ({
+    controller.store = {
+      orderedQueryIds: () => [1, 2],
+      query: queryId => ({
         1: { queryId: 1, queryText: "one", lastScore: 2 },
         2: { queryId: 2, queryText: "two", lastScore: 10 }
       })[queryId]
@@ -166,9 +166,9 @@ describe("queries_list_controller", () => {
 
   it("uses all-rated status as the Errors sort tie-breaker", () => {
     const { controller } = controllerFor()
-    controller.store = { orderedQueryIds: () => [1, 2] }
-    controller.queryState = {
-      getQuery: queryId => ({
+    controller.store = {
+      orderedQueryIds: () => [1, 2],
+      query: queryId => ({
         1: { queryId: 1, errorText: "same error", allRated: true },
         2: { queryId: 2, errorText: "same error", allRated: false }
       })[queryId]
@@ -186,7 +186,7 @@ describe("queries_list_controller", () => {
       queryId: 7,
       queryText: "Star & Wars",
       informationNeed: 'Movies "with space"',
-      state: () => "ready",
+      state: "ready",
       isToggled: () => false,
       diffs: null
     }
@@ -207,7 +207,7 @@ describe("queries_list_controller", () => {
       queryId: 7,
       queryText: "Star Wars",
       informationNeed: "Movies",
-      state: () => "ready",
+      state: "ready",
       diffs: null
     }
 
@@ -253,6 +253,28 @@ describe("queries_list_controller", () => {
     expect(row.querySelector("[data-angular-deferred]")).toBeNull()
     expect(row.querySelector('[data-controller="query-options-core"]')).not.toBeNull()
     expect(row.querySelector('[data-controller="missing-documents"]')).not.toBeNull()
+  })
+
+  it("renders query headers entirely from the collection read model", () => {
+    const { controller } = controllerFor()
+    controller.store = {
+      query: () => ({
+        queryId: 7,
+        queryText: "Star Wars",
+        informationNeed: "Movies",
+        state: "ready",
+        numFound: 12,
+        parsedQueryDetails: { querqy: { rewrite: "expanded" } },
+        options: {}
+      })
+    }
+    const row = document.createElement("li")
+
+    controller.renderQueryShell(row, controller.store.query(7), 1)
+
+    expect(row.querySelector('[data-query-row-state-value="ready"]')).not.toBeNull()
+    expect(row.querySelector('[data-query-row-num-found-value="12"]')).not.toBeNull()
+    expect(row.querySelector('[data-query-row-querqy-triggered-value="true"]')).not.toBeNull()
   })
 
   it("removes a query from the stores after the delete controller reports success", () => {

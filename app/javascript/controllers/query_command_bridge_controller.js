@@ -4,7 +4,7 @@ import { queryDocumentsStore } from "stores/query_documents_store"
 
 /**
  * Routes query-workspace intents from the framework-free stores to the
- * temporary live-query adapter. The adapter still delegates to Angular-owned
+ * explicit query-command runtime. The runtime still delegates to Angular-owned
  * Query objects today; keeping that compatibility boundary here means the
  * stores and Stimulus controllers do not need to know when the implementation
  * moves out of Angular.
@@ -32,22 +32,22 @@ export default class extends Controller {
   }
 
   routeDocumentCommand({ command, queryId, docId, rating, ratedOnly }) {
-    const queryState = window.quepidSearch?.queryState
+    const queryCommands = window.quepidSearch?.queryCommands
     const handlers = {
-      "rate-document": () => queryState?.rateDocument?.(queryId, docId, rating),
-      "rate-all": () => queryState?.rateAll?.(queryId, rating),
-      "toggle-query": () => queryState?.toggleQuery?.(queryId),
-      "paginate-query": () => queryState?.paginateQuery?.(queryId, ratedOnly)
+      "rate-document": () => queryCommands?.rateDocument?.(queryId, docId, rating),
+      "rate-all": () => queryCommands?.rateAll?.(queryId, rating),
+      "toggle-query": () => queryCommands?.toggleQuery?.(queryId),
+      "paginate-query": () => queryCommands?.paginateQuery?.(queryId, ratedOnly)
     }
 
     handlers[command]?.()
   }
 
   routeCollectionCommand({ command }) {
-    const queryState = window.quepidSearch?.queryState
-    if (command === "toggle-show-only-rated") queryState?.toggleShowOnlyRated?.()
+    const queryCommands = window.quepidSearch?.queryCommands
+    if (command === "toggle-show-only-rated") queryCommands?.toggleShowOnlyRated?.()
     if (command === "collapse-all") {
-      queryState?.collapseAll?.()
+      queryCommands?.collapseAll?.()
       this.collectionStore.collapseAll()
       this.documentsStore.collapseAll()
     }

@@ -22,6 +22,7 @@ import {
 } from "./utils/query_runtime"
 import { extractCuratorVars } from "./utils/curator_vars"
 import { buildQueryDocPairsPayload, createBookSyncRuntime, populateBook } from "./utils/book_sync"
+import { buildQueryDocumentsState } from "./utils/query_documents"
 import {
   invalidateRatedDocsCache,
   matchesQueryFilter,
@@ -107,6 +108,9 @@ const quepidSearch = {
   queryModel: {
     create: createQueryModel
   },
+  queryDocuments: {
+    buildState: buildQueryDocumentsState
+  },
   curatorVars: {
     extract: extractCuratorVars
   },
@@ -137,6 +141,14 @@ const quepidSearch = {
     queryStateClass,
     querqyRuleTriggered,
     ratingChangedQueryId
+  },
+  queryCommands: {
+    rateDocument: null,
+    rateAll: null,
+    toggleQuery: null,
+    paginateQuery: null,
+    toggleShowOnlyRated: null,
+    collapseAll: null
   },
   queryLifecycle: {
     bootstrapRequest,

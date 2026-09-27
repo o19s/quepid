@@ -24,14 +24,16 @@ describe("query_command_bridge_controller", () => {
     window.quepidStore = { queries: collectionStore, documents: documentsStore }
     window.quepidSearch = {
       queryState: {
+        reconcileQueryRemoval: vi.fn(),
+        getCaseNo: vi.fn(() => 7)
+      },
+      queryCommands: {
         rateDocument: vi.fn(),
         rateAll: vi.fn(),
         toggleQuery: vi.fn(),
         paginateQuery: vi.fn(),
         toggleShowOnlyRated: vi.fn(),
-        collapseAll: vi.fn(),
-        reconcileQueryRemoval: vi.fn(),
-        getCaseNo: vi.fn(() => 7)
+        collapseAll: vi.fn()
       }
     }
   })
@@ -54,7 +56,7 @@ describe("query_command_bridge_controller", () => {
     expect(document.removeEventListener).toHaveBeenCalledWith("query-command:move-completed", controller.handleQueryMoveCompleted)
   })
 
-  it("routes document commands through the temporary query-state adapter", () => {
+  it("routes document commands through the explicit query command runtime", () => {
     controller.connect()
 
     controller.routeDocumentCommand({ command: "rate-document", queryId: 4, docId: "doc-1", rating: 2 })
@@ -62,10 +64,10 @@ describe("query_command_bridge_controller", () => {
     controller.routeDocumentCommand({ command: "toggle-query", queryId: 4 })
     controller.routeDocumentCommand({ command: "paginate-query", queryId: 4, ratedOnly: true })
 
-    expect(window.quepidSearch.queryState.rateDocument).toHaveBeenCalledWith(4, "doc-1", 2)
-    expect(window.quepidSearch.queryState.rateAll).toHaveBeenCalledWith(4, 3)
-    expect(window.quepidSearch.queryState.toggleQuery).toHaveBeenCalledWith(4)
-    expect(window.quepidSearch.queryState.paginateQuery).toHaveBeenCalledWith(4, true)
+    expect(window.quepidSearch.queryCommands.rateDocument).toHaveBeenCalledWith(4, "doc-1", 2)
+    expect(window.quepidSearch.queryCommands.rateAll).toHaveBeenCalledWith(4, 3)
+    expect(window.quepidSearch.queryCommands.toggleQuery).toHaveBeenCalledWith(4)
+    expect(window.quepidSearch.queryCommands.paginateQuery).toHaveBeenCalledWith(4, true)
   })
 
   it("routes collection commands and keeps both stores in sync on collapse", () => {
@@ -74,8 +76,8 @@ describe("query_command_bridge_controller", () => {
     controller.routeCollectionCommand({ command: "toggle-show-only-rated" })
     controller.routeCollectionCommand({ command: "collapse-all" })
 
-    expect(window.quepidSearch.queryState.toggleShowOnlyRated).toHaveBeenCalledOnce()
-    expect(window.quepidSearch.queryState.collapseAll).toHaveBeenCalledOnce()
+    expect(window.quepidSearch.queryCommands.toggleShowOnlyRated).toHaveBeenCalledOnce()
+    expect(window.quepidSearch.queryCommands.collapseAll).toHaveBeenCalledOnce()
     expect(collectionStore.collapseAll).toHaveBeenCalledOnce()
     expect(documentsStore.collapseAll).toHaveBeenCalledOnce()
   })

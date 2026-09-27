@@ -7,9 +7,9 @@ import { queryCollectionStore } from "stores/query_collection_store"
 import { searchResultsTemplate } from "controllers/search_results_template"
 
 /**
- * Query-list collection rendering, toolbar, and drag lifecycle. Angular still
- * owns live search/scoring through the temporary query-state adapter; Stimulus
- * owns the expanded-results shell, document rendering, and display state.
+ * Query-list collection rendering, toolbar, and drag lifecycle. The collection
+ * store owns the rendered query read model; Angular remains behind narrow
+ * adapters for persistence, sorting capability, and query-template rendering.
  */
 export default class extends Controller {
   static targets = ["ratedCheckbox", "ratedLabel", "filter", "sortLink", "manualSortLink", "sortIcon", "manualHelp", "list", "pagination", "count", "bootstrapFeedback", "searchFeedback", "batchPosition", "batchSize"]
@@ -341,9 +341,8 @@ export default class extends Controller {
   }
 
   orderedLiveQueries({ ignoreFilter = false } = {}) {
-    const getQuery = queryId => this.queryState?.getQuery?.(queryId)
     const queries = this.store.orderedQueryIds()
-      .map(queryId => getQuery(queryId) || this.store.query?.(queryId))
+      .map(queryId => this.store.query?.(queryId))
       .filter(Boolean)
       .filter(query => ignoreFilter || this.matchesFilter(query))
 
@@ -396,9 +395,9 @@ export default class extends Controller {
     const queryId = String(query.queryId)
     const queryText = escapeAttribute(query.queryText || "")
     const informationNeed = escapeAttribute(query.informationNeed || "")
-    const state = escapeAttribute(query.state?.() || "")
+    const state = escapeAttribute(query.state || "")
     const numFound = Number(queryResultCount(query, this.currentShowOnlyRated ?? this.showOnlyRatedValue) || 0)
-    const querqyTriggered = querqyRuleTriggered(query.searcher?.parsedQueryDetails)
+    const querqyTriggered = querqyRuleTriggered(query.parsedQueryDetails)
     const hasDiffs = Boolean(query.diffs)
     const toggled = Boolean(expanded)
     const sorting = Boolean(
@@ -459,7 +458,7 @@ export default class extends Controller {
     const searchResultsRoot = searchResults.firstElementChild
     expanded.appendChild(searchResultsRoot)
 
-    this.bridgeQueryExplainTemplate(query, searchResultsRoot)
+    this.bridgeQueryExplainTemplate(query.queryId, searchResultsRoot)
 
     const diffScores = rowController.querySelector('[data-query-row-target="diffScores"]')
     const diffSnapshot = window.quepidStore?.documents?.query(query.queryId)?.diffs
@@ -474,17 +473,17 @@ export default class extends Controller {
     })
   }
 
-  bridgeQueryExplainTemplate(query, searchResultsRoot) {
+  bridgeQueryExplainTemplate(queryId, searchResultsRoot) {
     const explain = searchResultsRoot.querySelector('[data-controller="query-explain"]')
     if (!explain) return
 
     explain.addEventListener("query-explain:before-open", event => {
-      event.detail.data = queryExplainData(query)
+      event.detail.data = queryExplainData(this.store?.query?.(queryId) || {})
     })
 
     explain.addEventListener("query-explain:render-template", event => {
       event.stopPropagation()
-      const searcher = query.searcher
+      const searcher = this.queryState?.getQuery?.(queryId)?.searcher
       if (!searcher || typeof searcher.isTemplateCall !== "function") return
 
       const isTemplatedQuery = searcher.isTemplateCall(searcher.args)
@@ -585,8 +584,7 @@ function escapeAttribute(value) {
 }
 
 function queryExplainData(query) {
-  const searcher = query.searcher
-  if (!searcher) {
+  if (!query.parsedQueryDetails && !query.queryDetails && !query.supportsTemplate) {
     return {
       parsedQueryDetails: "{}",
       queryDetails: null,
@@ -596,17 +594,17 @@ function queryExplainData(query) {
   }
 
   const data = {
-    parsedQueryDetails: sortedJson(searcher.parsedQueryDetails),
+    parsedQueryDetails: sortedJson(query.parsedQueryDetails),
     queryDetails: null,
     queryDetailsMessage: null,
-    supportsTemplate: typeof searcher.isTemplateCall === "function"
+    supportsTemplate: query.supportsTemplate === true
   }
 
-  if (typeof searcher.queryDetails !== "undefined") {
-    if (Object.keys(searcher.queryDetails || {}).length === 0) {
+  if (query.queryDetails !== undefined) {
+    if (Object.keys(query.queryDetails || {}).length === 0) {
       data.queryDetailsMessage = "The list of query parameters used to construct the query was not returned by Solr."
     } else {
-      data.queryDetails = sortedJson(searcher.queryDetails)
+      data.queryDetails = sortedJson(query.queryDetails)
     }
   } else {
     data.queryDetailsMessage = "Query parameters are not returned by the current Search Engine."
