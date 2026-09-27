@@ -310,43 +310,6 @@ angular.module('QuepidApp')
         return svc.queries[queryId] || svc.queries[String(queryId)] || null;
       };
 
-      // The expanded-results renderer publishes user intents through the document
-      // store. Angular still owns these live-query operations, but no longer needs
-      // to be reached through a window command adapter from that renderer.
-      if (queryDocumentsStore) {
-        queryDocumentsStore.addEventListener('command', function(event) {
-          var detail = event.detail || {};
-          var handlers = {
-            'rate-document': function() {
-              return rateDocument(detail.queryId, detail.docId, detail.rating);
-            },
-            'rate-all': function() {
-              return rateAll(detail.queryId, detail.rating);
-            },
-            'toggle-query': function() {
-              return toggleQuery(detail.queryId);
-            },
-            'paginate-query': function() {
-              return paginateQuery(detail.queryId, detail.ratedOnly);
-            }
-          };
-          if (handlers[detail.command]) handlers[detail.command]();
-        });
-      }
-
-      if (queryCollectionStore) {
-        queryCollectionStore.addEventListener('command', function(event) {
-          var detail = event.detail || {};
-          if (detail.command === 'toggle-show-only-rated') {
-            toggleShowOnlyRated();
-          } else if (detail.command === 'collapse-all') {
-            queryViewSvc.collapseAll();
-            if (queryCollectionStore) queryCollectionStore.collapseAll();
-            if (queryDocumentsStore) queryDocumentsStore.collapseAll();
-          }
-        });
-      }
-
       function rateDocument(queryId, docId, rating) {
         var query = window.quepidSearch.queryState.getQuery(queryId);
         if (!query) return false;

@@ -39,6 +39,7 @@ import QueryExplainController from "controllers/query_explain_controller"
 import JsonExplorerController from "controllers/json_explorer_controller"
 import SearchResultController from "controllers/search_result_controller"
 import SearchResultsController from "controllers/search_results_controller"
+import QueryCommandBridgeController from "controllers/query_command_bridge_controller"
 import AddQueryController from "controllers/add_query_controller"
 import QueryLifecycleController from "controllers/query_lifecycle_controller"
 import QueryDeleteController from "controllers/query_delete_controller"
@@ -89,6 +90,7 @@ application.register("query-explain", QueryExplainController)
 application.register("json-explorer", JsonExplorerController)
 application.register("search-result", SearchResultController)
 application.register("search-results", SearchResultsController)
+application.register("query-command-bridge", QueryCommandBridgeController)
 application.register("add-query", AddQueryController)
 application.register("query-lifecycle", QueryLifecycleController)
 application.register("query-delete", QueryDeleteController)
