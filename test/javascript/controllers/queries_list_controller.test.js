@@ -235,6 +235,24 @@ describe("queries_list_controller", () => {
     expect(toggle).toHaveBeenCalledWith({ queryId: 7 })
   })
 
+  it("renders expanded query controls without an Angular compilation island", () => {
+    const { controller } = controllerFor()
+    const row = document.createElement("li")
+    row.innerHTML = `
+      <div data-controller="query-row">
+        <div data-query-row-target="expanded"></div>
+        <div data-query-row-target="diffScores"></div>
+      </div>
+    `
+
+    controller.renderSearchResults(row, { queryId: 7, caseNo: 4, options: {} })
+
+    expect(row.querySelector('[data-controller="search-results"]')).not.toBeNull()
+    expect(row.querySelector("[data-angular-deferred]")).toBeNull()
+    expect(row.querySelector('[data-controller="query-options-core"]')).not.toBeNull()
+    expect(row.querySelector('[data-controller="missing-documents"]')).not.toBeNull()
+  })
+
   it("removes a query after the delete controller reports success", () => {
     const { controller } = controllerFor()
     const removeQueryFromState = vi.fn()

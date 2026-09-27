@@ -1,11 +1,8 @@
 /**
  * Static shell for an expanded query.
  *
- * Stimulus owns this shell and the document list. The small Angular controls
- * that still depend on live Query objects are isolated under
- * `data-angular-deferred` islands. These are the remaining live-query tools that
- * still need Angular-owned Query objects. The expanded-results read path,
- * footer, errors, and pagination controls are Stimulus-owned.
+ * Stimulus owns this shell, the document list, and all of the query actions.
+ * Live search/scoring remains behind the query-state adapter.
  */
 export function searchResultsTemplate({ caseId, queryId, queryExplainData, queryOptionsData = "{}" }) {
   return `
@@ -25,7 +22,7 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData, query
           <div class="btn-group me-2">
             <div data-controller="query-explain" data-query-explain-data-value="${queryExplainData}"></div>
           </div>
-          <div data-angular-deferred class="d-flex">
+          <div class="d-flex">
             <div class="btn-group me-2">
               <button class="btn btn-outline-secondary btn-sm" data-controller="missing-documents" data-missing-documents-query-id-value="${queryId}" data-action="click->missing-documents#open">Missing Documents</button>
             </div>

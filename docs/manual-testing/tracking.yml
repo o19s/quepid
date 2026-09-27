@@ -278,9 +278,9 @@ parts:
         paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
-        last_run: 2026-09-25T15:57:41Z
+        last_run: 2026-09-27T12:34:00Z
         result: pass
-        notes: "Covered live: Playwright MCP on STATIC CASE (case 4). Expanded the query, confirmed the Stimulus-rendered results/footer, collapsed and reopened the results pane through the new store intent path, and observed 0 console errors. Not covered live: copy-to-clipboard, delete confirmation, or forced search-error paths in this pass."
+        notes: "Covered live: Playwright MCP on case 6 after removing the per-row Angular compilation island. Expanded a query and confirmed the Stimulus results controls/footer rendered with zero data-angular-deferred nodes; the workbench screenshot remained visually equivalent. Not covered live: copy-to-clipboard, delete confirmation, or forced search-error paths in this pass."
         paths: ["app/models/query.rb", "app/javascript/controllers/search_results_template.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/controllers/query_delete_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/clipboard.js", "config/importmap.rb"]
       "4.16":
         title: "Query Notes & Information Need"
@@ -290,9 +290,9 @@ parts:
         paths: ["app/models/query.rb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/query_notes_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/core_stimulus.js", "app/javascript/api/fetch.js", "app/javascript/controllers/flash_controller.js", "app/javascript/utils/flash.js", "config/importmap.rb", "test/javascript/controllers/query_notes_controller.test.js"]
       "4.17":
         title: "Workbench boot & case/try navigation"
-        last_run: 2026-09-26T17:42:18Z
+        last_run: 2026-09-27T12:34:00Z
         result: pass
-        notes: "Covered live via Playwright MCP: direct navigation to case 6 booted the Stimulus core bootstrap after removing the dead MainCtrl/CaseCtrl and inline Angular run block; verified case 6/try 31 readiness, visible toolbar/query list/Tune Relevance, no ng-controller elements, and 0 console errors. This pass did not cover dropdown case/try switching, bare /case, Rails 404, try switching, or zero-case behavior."
+        notes: "Covered live via Playwright MCP: direct navigation to case 6/try 31 booted correctly after removing the per-row Angular compilation island; verified the visible toolbar/query list and 0 console errors. This pass did not cover dropdown case/try switching, bare /case, Rails 404, try switching, or zero-case behavior."
         paths: ["app/assets/javascripts/routes.js", "app/assets/javascripts/app.js", "app/assets/javascripts/services/caseTryNavSvc.js", "app/assets/javascripts/services/configurationSvc.js", "app/assets/javascripts/services/queriesSvc.js", "app/views/core/_queries.html.erb", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "app/views/layouts/core.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/core/_case_header.html.erb", "app/views/core/_case_toolbar.html.erb", "app/controllers/dropdown_controller.rb", "app/views/dropdown/cases_core.html.erb", "app/views/dropdown/books_core.html.erb", "app/javascript/core_stimulus.js", "test/javascript/controllers/queries_list_controller.test.js"]
       "4.18":
         title: "Browse query results"

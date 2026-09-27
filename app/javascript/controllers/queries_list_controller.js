@@ -8,8 +8,8 @@ import { searchResultsTemplate } from "controllers/search_results_template"
 
 /**
  * Query-list collection rendering, toolbar, and drag lifecycle. Angular still
- * owns live search/scoring and explicitly deferred query tools; Stimulus owns
- * the expanded-results shell, document rendering, and display state.
+ * owns live search/scoring through the temporary query-state adapter; Stimulus
+ * owns the expanded-results shell, document rendering, and display state.
  */
 export default class extends Controller {
   static targets = ["ratedCheckbox", "ratedLabel", "filter", "sortLink", "manualSortLink", "sortIcon", "manualHelp", "list", "pagination", "count", "bootstrapFeedback", "searchFeedback", "batchPosition", "batchSize"]
@@ -28,7 +28,6 @@ export default class extends Controller {
     this.filterValue = ""
     this.clientSortName = this.sortNameValue
     this.clientReverse = this.reverseValue
-    this.angularRows = []
     this.queryState = window.quepidSearch?.queryState
     this.syncSortFromUrl()
     // The Angular and core Stimulus bundles currently compile separately, so
@@ -76,9 +75,7 @@ export default class extends Controller {
     this.element.removeEventListener("query-delete:completed", this.queryDeleteCompleted)
     document.removeEventListener("query-command:move-completed", this.queryMoveCompleted)
     document.removeEventListener("queries-state:changed", this.listStateChange)
-    if (this.angularRetryHandle) cancelAnimationFrame(this.angularRetryHandle)
     if (this.renderHandle) cancelAnimationFrame(this.renderHandle)
-    this.destroyAngularRows()
     this.sortable?.destroy()
   }
 
@@ -329,7 +326,6 @@ export default class extends Controller {
     const start = (this.currentPage - 1) * this.pageSize
     const visibleQueries = queries.slice(start, start + this.pageSize)
 
-    this.destroyAngularRows()
     this.listTarget.replaceChildren()
 
     visibleQueries.forEach((query, index) => {
@@ -338,7 +334,7 @@ export default class extends Controller {
       row.className = expanded ? "unsortable" : ""
       row.dataset.queryId = String(query.queryId)
       this.renderQueryShell(row, query, start + index + 1, expanded)
-      this.renderDeferredAngularIslands(row, query)
+      this.renderSearchResults(row, query)
       this.listTarget.appendChild(row)
     })
 
@@ -451,19 +447,7 @@ export default class extends Controller {
     `
   }
 
-  // Keep the remaining Angular components isolated to the controls that still
-  // need live Query objects. The expanded-results shell and document list are
-  // Stimulus-owned; compiling the whole generated subtree would hand that
-  // ownership back to Angular and make the migration boundary porous.
-  renderDeferredAngularIslands(row, query) {
-    const injector = window.angular?.element(document.body).injector?.()
-    const compile = injector?.get?.("$compile")
-    const scope = injector?.get?.("$rootScope")
-    if (!compile || !scope) return
-
-    const childScope = scope.$new()
-    childScope.query = query
-
+  renderSearchResults(row, query) {
     const rowController = row.querySelector('[data-controller="query-row"]')
     const expanded = rowController.querySelector('[data-query-row-target="expanded"]')
     const searchResults = document.createElement("div")
@@ -478,16 +462,6 @@ export default class extends Controller {
 
     this.bridgeQueryExplainTemplate(query, searchResultsRoot)
 
-    childScope.selectedTry = injector.get("settingsSvc").applicableSettings()
-    childScope.queriesSvc = injector.get("queriesSvc")
-    childScope.displayed = { resultsView: { finder: 1, results: 2, diffs: 3 }, results: 2 }
-    childScope.query.getNumFound = () => {
-      const resultCount = window.quepidSearch?.queryState?.queryResultCount
-      if (resultCount) return resultCount(query, childScope.queriesSvc.showOnlyRated)
-      return childScope.queriesSvc.showOnlyRated ? query.ratedDocsFound : query.numFound
-    }
-    searchResultsRoot.querySelectorAll("[data-angular-deferred]").forEach(deferred => compile(deferred)(childScope))
-
     const diffScores = rowController.querySelector('[data-query-row-target="diffScores"]')
     const diffSnapshot = window.quepidStore?.documents?.query(query.queryId)?.diffs
     diffSnapshot?.searchers?.forEach((searcher, index) => {
@@ -499,7 +473,6 @@ export default class extends Controller {
       badge.innerHTML = '<span class="overall-rating"><span class="scorable-score" data-diff-score-target="value"></span></span>'
       diffScores.appendChild(badge)
     })
-    this.angularRows.push({ scope: childScope })
   }
 
   bridgeQueryExplainTemplate(query, searchResultsRoot) {
@@ -601,10 +574,6 @@ export default class extends Controller {
     this.paginationTarget.appendChild(nav)
   }
 
-  destroyAngularRows() {
-    this.angularRows?.forEach(({ scope }) => scope.$destroy())
-    this.angularRows = []
-  }
 }
 
 function escapeAttribute(value) {

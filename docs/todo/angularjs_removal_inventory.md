@@ -143,7 +143,7 @@ Use when sizing a PR:
 
 ### Remaining PR order
 
-Everything left routes through the [live query-state phase](#live-query-state-phase-committed-final-phase): the deferred result islands, `queriesSvc`, and the scoring/diff/import stacks — not skipped, but gated on that phase's state plan being signed off before any code starts.
+Everything left routes through the [live query-state phase](#live-query-state-phase-committed-final-phase): `queriesSvc` and the scoring/search adapters — not skipped, but gated on that phase's state plan being signed off before any code starts.
 
 Prefer **Rails view + route + Hotwire/Stimulus** for management actions over embedding new Stimulus inside the Angular bundle.
 
@@ -280,11 +280,11 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 **Do not scope `scoreAll()` in the same change.** One rating rescores every query today; the performance lens says carry that forward. An explicit store makes per-query scoping possible later, but taking it here ships an unapproved behaviour change and makes any score discrepancy unattributable.
 
 **Remaining, in slice order (2026-09-24).**
-- Angular remains only behind the live query/search/scoring adapter and deferred result islands.
+- Angular remains only behind the live query/search/scoring adapter; the per-row result controls are now Stimulus-owned without an Angular compilation island.
 - Diff orchestration is now framework-free in `utils/diff_results.js`; snapshot fetch/cache and the snapshot searcher remain an explicitly named Angular island behind the `diff:*` bridge. Do not combine that adapter with scorer sandboxing or wizard UI replacement.
 
 - `query_documents_store.js` is the plain-document read model, and `search-results` renders document DOM from those snapshots.
-- `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing Angular boundaries. The query list no longer discovers its live collection through `QueriesCtrl`'s scope; only the deferred Angular result islands receive a short-lived root-scope child for compilation.
+- `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing query-state adapter boundaries. The query list no longer discovers its live collection through `QueriesCtrl`'s scope, and expanded query controls no longer require `$compile` or a short-lived Angular child scope.
 - Angular still owns `snapshotSearcherSvc`, snapshot fetching, and per-query diff scoring behind the document-store bridge.
 - `snapshot_searcher.js` now owns the framework-free snapshot searcher contract; `snapshotSearcherSvc` remains only as the Angular `$q`/factory adapter until snapshot fetching and diff scoring move.
 - `QueryCollectionStore` tracks `searchAll()`'s lifecycle with a generation counter (`beginSearch`/`finishSearch`/`failSearch`, added 2026-09-25 to settle stale/out-of-order completions). `queries_list_controller.js` now subscribes to `search-failed`/`search-started` and flashes the sticky `search-error` channel — previously a `searchAll()` rejection outside the add-query flow (e.g. the `judgements:queries-need-reload` / `imports:queries-need-reload` re-search, or a settings change) had no user-facing surfacing at all.
