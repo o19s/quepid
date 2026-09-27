@@ -96,9 +96,9 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 **Modern JS** (`app/javascript/`) — `.prettierrc.json`; full tooling in `docs/js_tooling.md`:
 
 - **Double quotes**, **no semicolons**, **no trailing commas** (`trailingComma: "none"`).
-- Prettier pre-commit is limited to **`api/` and `utils/`** (see `config/javascript_lint_scope.mjs`). Before committing there: `bin/docker r yarn format:js:check` and `bin/docker r yarn lint:js`.
+- Prettier is scoped to **`api/` and `utils/`** (see `config/javascript_lint_scope.mjs`). Check with `bin/docker r yarn format:js:check` and `bin/docker r yarn lint:js`.
 - ESLint covers the wider modern tree (`controllers/`, `modules/`, entry bundles, etc.) but **ignores `*.test.js`** — follow the conventions above manually when you add specs. 
-    - Pre-commit **still runs ESLint** on those paths — run it yourself before finishing: `bin/docker r npx eslint app/javascript/path/to/file.js` or tree-wide `bin/docker r yarn lint:js`.
+    - Run ESLint on changed paths yourself: `bin/docker r npx eslint app/javascript/path/to/file.js` or tree-wide `bin/docker r yarn lint:js`.
     - Do **not** run Prettier outside `api/`/`utils/` for now (it would churn older single-quote files); hand-apply modern style to **new** lines you add.
 - **Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style. Do not fall back to legacy Angular habits (`var`, semicolons) on greenfield Stimulus/importmap code.
 - **Importmap bare paths** — `import { apiFetch } from "api/fetch"`, not relative `../api/...`. Add new pins to `vitest.config.js` when tests import them.

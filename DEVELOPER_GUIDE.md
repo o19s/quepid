@@ -27,7 +27,6 @@ This guide provides detailed instructions for developers who want to set up, run
 	- [III. Run Tests](#iii-run-tests)
 		- [Minitest](#minitest)
 		- [Vitest](#vitest)
-		- [Pre-commit hooks](#pre-commit-hooks)
 		- [JS Lint](#js-lint)
 		- [CSS Lint](#css-lint)
 		- [Karma](#karma)
@@ -293,35 +292,6 @@ bin/docker r rails test:vitest       # same as yarn test:unit
 
 **Vitest PR policy:** new or materially changed logic in `app/javascript/api/` or `app/javascript/utils/` → a `*.test.js` under `test/javascript/` (mirroring the source path, e.g. `app/javascript/utils/foo.js` → `test/javascript/utils/foo.test.js`) in the same PR. Not colocated with the source. Stimulus `controllers/` → add tests when you touch them for migration or behavior changes, not a blanket rewrite for coverage.
 
-### Pre-commit hooks
-
-Git commits run RuboCop (Ruby), JSHint (`app/assets/javascripts/`), ESLint on the modern `app/javascript/` tree, and Prettier on `app/javascript/api/` and `utils/` only — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
-
-Hooks prefer Docker when it is available (`bin/docker r`), matching the usual Quepid development workflow.
-
-Enable hooks:
-
-```bash
-bin/install-git-hooks
-```
-
-`bin/setup` and `bin/setup_docker` call `bin/install-git-hooks` automatically.
-
-Run the hook manually against staged files:
-
-```bash
-.githooks/pre-commit
-```
-
-Run linters directly:
-
-```bash
-bin/pre-commit-rubocop path/to/file.rb
-bin/pre-commit-jshint path/to/file.js
-bin/eslint-staged path/to/app/javascript/file.js
-bin/prettier-staged path/to/app/javascript/file.js
-```
-
 ### JS Lint
 
 **Legacy Angular assets** (`app/assets/javascripts/`) — JSHint:
@@ -338,14 +308,11 @@ bin/docker r yarn format:js:check    # Prettier check — api/ and utils/ only; 
 bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
 ```
 
-Git commits can run linters on staged JS via [pre-commit](https://pre-commit.com):
+Run all Ruby, JavaScript, and CSS linters together:
 
 ```bash
-pip install pre-commit   # or: pipx install pre-commit
-pre-commit install
+bin/docker r rails tidy
 ```
-
-The hook lints staged `*.js` under `app/assets/javascripts` (JSHint) and scoped files under `app/javascript` (ESLint on controllers/modules/etc.; Prettier on `api/` and `utils/` only). JSHint paths and skips match `rake test:jshint` — `lib/jshint/configuration.rb` excludes `vendor/assets/javascripts` and `lib/assets/javascripts` from the default search paths. Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
 
 ### CSS Lint
 
@@ -358,14 +325,6 @@ bin/docker r rails test:stylelint
 ```
 
 Configuration lives in `.stylelintrc.json` (extends `stylelint-config-standard` with pragmatic overrides for legacy Quepid CSS). Built bundles under `app/assets/builds/` and vendored CSS are ignored (see `.stylelintignore`).
-
-Pre-commit can lint staged CSS the same way as JSHint:
-
-```bash
-pre-commit install
-```
-
-The `stylelint-staged` hook only runs on `app/assets/stylesheets/*.css`. Requires `yarn install` so `node_modules/stylelint` exists.
 
 ### Karma
 
@@ -811,6 +770,20 @@ The below steps are only if you want to customize the setup, and for basic testi
    When clicked, it will redirect you to the Keycloak login page.
 
 For production deployments, you would typically configure Quepid to use your organization's existing OIDC provider (like Okta, Auth0, Azure AD, etc.) rather than Keycloak.
+
+## Desktop Mode
+
+The macOS application runs Quepid as a single local workspace. It enables Desktop Mode with:
+
+```env
+QUEPID_DESKTOP_MODE=true
+QUEPID_DESKTOP_USER_ID=1
+QUEPID_DESKTOP_USER_NAME=Your Mac Account Name
+```
+
+Desktop Mode selects the configured local user on every request and redirects login pages back to the application. The normal account and authentication behavior remains unchanged when `QUEPID_DESKTOP_MODE` is false. The desktop launcher creates the user and supplies the ID after initializing the SQLite database; `QUEPID_DESKTOP_USER_NAME` is used only for the initial display name.
+
+The packaged application should also bind Rails to loopback, keep its SQLite database and encryption keys outside the application bundle, and protect requests with its per-launch local access token. These are launcher responsibilities rather than defaults for general Quepid deployments.
 
 ## How to use the latest unreleased version via Docker
 

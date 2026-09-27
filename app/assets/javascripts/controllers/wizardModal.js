@@ -12,15 +12,20 @@ angular.module('QuepidApp')
     '$rootScope', '$scope', '$quepidModalInstance', '$log', '$window', '$location',
     'WizardHandler',
     'settingsSvc', 'searchSvc',
-    'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc','searchEndpointSvc','mapperBasedSearchEngineSvc','caseCSVSvc','querySnapshotSvc',
+    'docCacheSvc', 'queriesSvc', 'caseTryNavSvc', 'caseSvc', 'userSvc','searchEndpointSvc','mapperBasedSearchEngineSvc','caseCSVSvc','querySnapshotSvc','configurationSvc',
     function (
       $rootScope, $scope, $quepidModalInstance, $log, $window, $location,
       WizardHandler,
       settingsSvc, searchSvc,
-      docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc, searchEndpointSvc, mapperBasedSearchEngineSvc, caseCSVSvc, querySnapshotSvc
+      docCacheSvc, queriesSvc, caseTryNavSvc, caseSvc, userSvc, searchEndpointSvc, mapperBasedSearchEngineSvc, caseCSVSvc, querySnapshotSvc, configurationSvc
     ) {
       $log.debug('Init Wizard settings ctrl');
-      
+
+      // Proxy Requests is not user-configurable when this is on, so the checkbox is
+      // hidden entirely rather than shown disabled. settingsSvc forces proxyRequests
+      // on (and fixes an incompatible JSONP api_method) wherever it builds settings.
+      $scope.proxyRequiredForAllEndpoints = configurationSvc.isRequireProxyForAllSearchEndpoints();
+
       $scope.cancel = function () {
         let confirm = $window.confirm('Are you sure you want to abandon this case?');
         if (confirm) {
@@ -244,6 +249,10 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.basicAuthCredential      = searchEndpointToUse.basicAuthCredential;
         $scope.pendingWizardSettings.mapperCode               = searchEndpointToUse.mapperCode;
         $scope.pendingWizardSettings.testQuery                = searchEndpointToUse.testQuery;
+        // searchEndpointToUse comes from an already-saved search endpoint, not a preset,
+        // so it isn't covered by settingsSvc's own normalization - apply the
+        // proxyRequests/apiMethod correction explicitly.
+        settingsSvc.forceProxyIfRequired($scope.pendingWizardSettings);
 
         // Now grab default settings for the type of search endpoint you are using
         // These are display/query settings that have sensible defaults per search engine type.
@@ -837,6 +846,9 @@ angular.module('QuepidApp')
         $scope.pendingWizardSettings.apiMethod = tempApiMethod;
         $scope.pendingWizardSettings.queryParams = tempQueryParams;
         $scope.pendingWizardSettings.searchEngine = tempSearchEngine;
+        // editableSettings() reflects whatever the saved search endpoint actually has,
+        // so it needs the same proxyRequests/apiMethod correction as searchEndpointToUse.
+        settingsSvc.forceProxyIfRequired($scope.pendingWizardSettings);
         $scope.pendingWizardSettings.newQueries = [];
 
         if(userSvc.getUser().completedCaseWizard===false){
