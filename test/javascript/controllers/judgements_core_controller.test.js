@@ -163,7 +163,7 @@ describe("JudgementsCoreController", () => {
     expect(controller.activeBookId).toBe(7)
   })
 
-  it("dispatches judgements:populate-book for Populate Now", async () => {
+  it("populates the book from the document store for Populate Now", async () => {
     apiFetch
       .mockResolvedValueOnce({
         ok: true,
@@ -186,14 +186,16 @@ describe("JudgementsCoreController", () => {
     trigger.dataset.judgementsCoreBookIdValue = "2"
     await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
 
-    const events = []
-    document.addEventListener("judgements:populate-book", (e) => events.push(e))
+    const documentsStore = window.quepidStore?.documents
+      || (await import("stores/query_documents_store")).queryDocumentsStore
+    documentsStore.replaceQuery(1, {
+      queryText: "search",
+      docs: [{ id: "doc-1", title: "Document" }]
+    })
 
     await controller.manualPopulateBook({ preventDefault() {} })
 
-    expect(events).toHaveLength(1)
-    expect(events[0].detail).toMatchObject({ caseId: 42, bookId: 2 })
-    expect(typeof events[0].detail.done).toBe("function")
+    expect(apiFetch).toHaveBeenLastCalledWith("api/books/2/populate", expect.objectContaining({ method: "PUT" }))
   })
 
   it("disables Cancel while a save is in flight, re-enables on completion", async () => {

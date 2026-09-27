@@ -77,7 +77,7 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
 
 ### 6.6 Judgements link (connect a case to a Book)
 
-Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). Populate Now still needs live search docs from Angular `queriesSvc` (CustomEvent bridge).
+Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). Populate Now reads the framework-free document store; live search still publishes that store from the compatibility adapter.
 
 - [ ] **Steps:**
   1. Click **Judgements** in the case toolbar.

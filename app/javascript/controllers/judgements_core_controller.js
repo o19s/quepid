@@ -4,6 +4,8 @@ import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import { showFlash } from "utils/flash"
 import { showStatusMessage } from "utils/status_message"
+import { queryDocumentsStore } from "stores/query_documents_store"
+import { populateBook } from "utils/book_sync"
 
 const CASE_ID_PLACEHOLDER = "__CASE_ID__"
 const TEAM_ID_PLACEHOLDER = "__TEAM_ID__"
@@ -15,9 +17,8 @@ const REDIRECT_DELAY_MS = 500
  * Judgements / book-link modal for the core case toolbar — mirrors AngularJS
  * `<judgements>` / `_modal.html`. Loads books from the case's teams, saves
  * book + sync settings via `PUT api/cases/:id`, and runs refresh/sync via
- * the books refresh API. "Populate Now" still needs live search docs in
- * Angular `queriesSvc`, so it dispatches `judgements:populate-book` until
- * the live-query-state migration owns that path. After ratings refresh that
+ * the books refresh API. "Populate Now" reads the framework-free document
+ * store, while live search continues publishing the store from Angular. After ratings refresh that
  * should re-bootstrap queries, dispatches `judgements:queries-need-reload`.
  *
  * Dual-role trigger/modal-root pattern via ModalTriggerControllerBase.
@@ -182,25 +183,19 @@ export default class extends ModalTriggerControllerBase {
     const caseId = this.currentCaseId
     const bookId = this.activeBookId
 
-    document.dispatchEvent(
-      new CustomEvent("judgements:populate-book", {
-        detail: {
-          caseId: Number(caseId),
-          bookId: Number(bookId),
-          done: (error) => {
-            if (String(this.currentCaseId) !== String(caseId)) return
-            this.setProgress(false)
-            if (error) {
-              this._handleActionError(error)
-              return
-            }
-            showFlash("success", "Updating Book with Query Doc Pairs.")
-            hideBsModal(getOrCreateBsModal(this.element))
-            this.setBusy(false)
-          }
-        }
-      })
-    )
+    try {
+      const queries = Object.values((window.quepidStore?.documents || queryDocumentsStore).snapshot().queries || {})
+      await populateBook({ bookId, caseId: Number(caseId), queries })
+      if (String(this.currentCaseId) !== String(caseId)) return
+      this.setProgress(false)
+      showFlash("success", "Updating Book with Query Doc Pairs.")
+      hideBsModal(getOrCreateBsModal(this.element))
+      this.setBusy(false)
+    } catch (error) {
+      if (String(this.currentCaseId) !== String(caseId)) return
+      this.setProgress(false)
+      this._handleActionError(error)
+    }
   }
 
   async manualRefreshRatings(event) {

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { createQueryRuntime } from "utils/query_runtime"
+import { createQueryRuntime, createSearchAllRuntime } from "utils/query_runtime"
 
 function buildRuntime(overrides = {}) {
   const { query: queryOverrides = {}, ...runtimeOverrides } = overrides
@@ -37,6 +37,34 @@ function buildRuntime(overrides = {}) {
 }
 
 describe("query runtime", () => {
+  it("orchestrates the complete search lifecycle through injected callbacks", async () => {
+    const callbacks = {
+      search: vi.fn(() => Promise.resolve()),
+      score: vi.fn(() => Promise.resolve()),
+      scoreAll: vi.fn(() => Promise.resolve()),
+      syncToBook: vi.fn(),
+      onSearchStarted: vi.fn(),
+      onSearchCompleted: vi.fn(),
+      onSearchFailed: vi.fn(),
+      logger: { debug: vi.fn() }
+    }
+    const runtime = createSearchAllRuntime({
+      queries: { first: { id: "first" } },
+      requestsPerMinute: 0,
+      ...callbacks
+    })
+
+    await runtime.run()
+
+    expect(callbacks.onSearchStarted).toHaveBeenCalled()
+    expect(callbacks.search).toHaveBeenCalledWith({ id: "first" })
+    expect(callbacks.score).toHaveBeenCalledWith({ id: "first" })
+    expect(callbacks.scoreAll).toHaveBeenCalled()
+    expect(callbacks.syncToBook).toHaveBeenCalled()
+    expect(callbacks.onSearchCompleted).toHaveBeenCalled()
+    expect(callbacks.onSearchFailed).not.toHaveBeenCalled()
+  })
+
   it("delegates live search while keeping searcher construction injected", async () => {
     const searcher = { search: vi.fn(() => Promise.resolve()), docs: [], numFound: 0 }
     const createSearcher = vi.fn(() => searcher)

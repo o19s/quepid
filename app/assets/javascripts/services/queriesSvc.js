@@ -67,35 +67,22 @@ angular.module('QuepidApp')
         return diffStateStore ? diffStateStore.selections() : [];
       }
 
-      // Cached case-book sync properties (updated via a named DOM event from caseSvc)
-      let cachedBookId = null;
-      let cachedAutoPopulateBookPairs = false;
-
-      function updateQueryDocPairs(bookId, caseId, queries) {
-        var payload = {
-          case_id: caseId,
-          query_doc_pairs: window.quepidSearch.bookSync.buildQueryDocPairsPayload(queries)
-        };
-
-        return $http.put('api/books/' + bookId + '/populate', payload)
-          .then(function() {
-            console.log('Updated book with case query data.');
-          });
-      }
+      let bookSyncRuntime = window.quepidSearch.bookSync.createRuntime({
+        logger: $log
+      });
 
       document.addEventListener('case-book:associated', function() {
         // Re-fetch case data to update cached sync properties
         if (caseNo && caseNo !== -1) {
           $http.get('api/cases/' + caseNo).then(function(response) {
-            cachedBookId = response.data.book_id;
-            cachedAutoPopulateBookPairs = response.data.auto_populate_book_pairs;
+            bookSyncRuntime.configure({
+              caseId: caseNo,
+              bookId: response.data.book_id,
+              autoPopulate: response.data.auto_populate_book_pairs
+            });
           });
         }
       });
-
-      // Cache for tracking synced query-doc pairs per book
-      // Format: { bookId: { 'queryText:docId': true } }
-      let syncedPairsCache = {};
 
       svc.reset = reset;
       function reset() {
@@ -109,9 +96,8 @@ angular.module('QuepidApp')
         if (queryDocumentsStore) {
           queryDocumentsStore.reset();
         }
+        bookSyncRuntime.reset();
         publishQueryListState();
-        // Clear sync cache when resetting
-        syncedPairsCache = {};
       }
 
       // Explicit adapter for the Stimulus query list. Angular retains the live
@@ -173,21 +159,13 @@ angular.module('QuepidApp')
 
       // Method to clear cache for a specific book
       this.clearSyncCache = function(bookId) {
-        if (bookId && syncedPairsCache[bookId]) {
-          delete syncedPairsCache[bookId];
-          $log.debug('Cleared sync cache for book ' + bookId);
-        }
+        bookSyncRuntime.clearSyncCache(bookId);
+        $log.debug('Cleared sync cache for book ' + bookId);
       };
 
       // Method to get cache stats for debugging
       this.getSyncCacheStats = function(bookId) {
-        if (bookId && syncedPairsCache[bookId]) {
-          return {
-            bookId: bookId,
-            syncedPairsCount: Object.keys(syncedPairsCache[bookId]).length
-          };
-        }
-        return null;
+        return bookSyncRuntime.getSyncCacheStats(bookId);
       };
 
       this.getCaseNo = getCaseNo;
@@ -400,210 +378,37 @@ angular.module('QuepidApp')
       }
       window.quepidSearch.queryState.rateAll = rateAll;
 
-      // Explicit adapter for the Stimulus Missing Documents modal. The modal owns
-      // its DOM and lifecycle, while this service continues to own searcher creation,
-      // engine-specific rated-document lookup, and live rateable document objects.
       window.quepidSearch.targetedSearch = function(queryId) {
         var query = window.quepidSearch.queryState.getQuery(queryId);
         if (!query) return null;
 
         var settings = settingsSvc.editableSettings();
         var selectedTry = settings.selectedTry;
-        var supportedEngines = ['solr', 'es', 'os', 'searchapi'];
-        var engineNames = {
-          solr: 'Solr',
-          es: 'Elasticsearch',
-          os: 'OpenSearch',
-          algolia: 'Algolia',
-          vectara: 'Vectara',
-          static: 'Static',
-          searchapi: 'Search API'
-        };
-        var engineName = selectedTry.mapperBasedSearchEngineName || settings.searchEngine;
-        var adapter = {
-          queryId: queryId,
+        return window.quepidSearch.queryRuntime.createTargetedSearch({
           query: query,
-          queryText: query.queryText,
+          queryId: queryId,
           settings: settings,
-          engineName: engineNames[engineName] || engineName,
-          usesQueryParamsEditor: supportedEngines.indexOf(settings.searchEngine) !== -1,
-          docs: [],
-          searcher: null,
-          defaultList: false,
-          lastQuery: '',
-          parseError: false,
-          searching: false,
-          paging: false,
-          ratedDocsLookupUnsupported: false,
-          totalRatings: 0,
-          numFound: 0,
-          ratingScale: query.ratings && query.ratings.scale ? query.ratings.scale : {}
-        };
-
-        adapter.initialQueryParams = function() {
-          return selectedTry.queryParams ? selectedTry.queryParams.replace(/#\$query##/g, function() {
-            return query.queryText;
-          }) : selectedTry.queryParams;
-        };
-
-        adapter.search = function(queryParams) {
-          var fieldSpec = settings.createFieldSpec();
-          adapter.defaultList = false;
-          adapter.searching = true;
-          return settingsSvc.previewArgs(selectedTry.tryNo, queryParams).then(function(resolvedArgs) {
-            adapter.searching = false;
-            adapter.lastQuery = queryParams;
-            if (resolvedArgs === null) {
-              adapter.numFound = 0;
-              adapter.docs = [];
-              adapter.parseError = true;
-              return adapter;
-            }
-
-            adapter.parseError = false;
-            var tempSettings = settingsWithTryOverrides(settings, {
-              args: resolvedArgs,
-              queryParams: queryParams
-            });
-            adapter.searcher = createSearcherFromSettings(tempSettings, query);
-            return adapter.searcher.search().then(function() {
-              adapter.numFound = adapter.searcher.numFound;
-              adapter.docs = normalizeDocExplains(query, adapter.searcher, fieldSpec);
-              return adapter;
-            });
-          });
-        };
-
-        adapter.resetToRated = function() {
-          adapter.docs = [];
-          adapter.lastQuery = '';
-          adapter.parseError = false;
-          adapter.defaultList = true;
-          adapter.ratedDocsLookupUnsupported = false;
-
-          var fieldSpec = settings.createFieldSpec();
-          var ratedIds = Object.keys(query.ratings || {}).filter(function(id) { return id.length > 0; });
-          adapter.totalRatings = ratedIds.length;
-          adapter.numFound = ratedIds.length;
-          if (!adapter.usesQueryParamsEditor || ratedIds.length === 0) return Promise.resolve(adapter);
-
-          adapter.searcher = createSearcherFromSettings(settings, query);
-          if (!trySupportsRatedDocsLookup(selectedTry)) {
-            adapter.ratedDocsLookupUnsupported = true;
-            adapter.numFound = 0;
-            return Promise.resolve(adapter);
-          }
-
-          if (adapter.searcher.type === 'searchapi') {
-            return searchApiRatedDocs(settings, query, ratedIds).then(function(result) {
-              if (result) {
-                adapter.searcher = result.searcher;
-                adapter.docs = result.docs;
-              }
-              return adapter;
-            });
-          }
-
-          if (adapter.searcher.type === 'es' || adapter.searcher.type === 'os') {
-            var filter = { query: query.filterToRatings(settings, adapter.docs.length) };
-            if (adapter.searcher.isTemplateCall(adapter.searcher.args)) {
-              delete adapter.searcher.args.id;
-              delete adapter.searcher.args.params;
-              adapter.searcher.queryDsl = filter;
-              return adapter.searcher.search(filter).then(function() {
-                adapter.docs = normalizeDocExplains(query, adapter.searcher, fieldSpec);
-                return adapter;
-              });
-            }
-            adapter.searcher.queryDsl = filter;
-            return adapter.searcher.search().then(function() {
-              adapter.docs = normalizeDocExplains(query, adapter.searcher, fieldSpec);
-              return adapter;
-            });
-          }
-
-          if (adapter.searcher.type === 'solr') {
-            delete adapter.searcher.args.start;
-            return adapter.searcher.explainOther(
-              query.filterToRatings(settings, adapter.docs.length), fieldSpec, 'lucene'
-            ).then(function() {
-              adapter.docs = normalizeDocExplains(query, adapter.searcher, fieldSpec);
-              return adapter;
-            });
-          }
-
-          return Promise.resolve(adapter);
-        };
-
-        adapter.paginate = function() {
-          if (!adapter.searcher) return Promise.resolve(adapter);
-          adapter.paging = true;
-
-          if (adapter.defaultList && (adapter.searcher.type === 'solr' || adapter.searcher.type === 'es' || adapter.searcher.type === 'os')) {
-            var ratedFieldSpec = settings.createFieldSpec();
-            adapter.searcher = createSearcherFromSettings(settings, query, { filterToRated: true });
-            if (adapter.searcher.type === 'es' || adapter.searcher.type === 'os') {
-              var ratedFilter = { query: query.filterToRatings(settings, adapter.docs.length) };
-              if (adapter.searcher.isTemplateCall(adapter.searcher.args)) {
-                delete adapter.searcher.args.id;
-                delete adapter.searcher.args.params;
-                adapter.searcher.queryDsl = ratedFilter;
-                return adapter.searcher.search(ratedFilter).then(function() {
-                  adapter.docs = adapter.docs.concat(normalizeDocExplains(query, adapter.searcher, ratedFieldSpec));
-                  adapter.paging = false;
-                  return adapter;
-                });
-              }
-              adapter.searcher.queryDsl = ratedFilter;
-              return adapter.searcher.search().then(function() {
-                adapter.docs = adapter.docs.concat(normalizeDocExplains(query, adapter.searcher, ratedFieldSpec));
-                adapter.paging = false;
-                return adapter;
-              });
-            }
-            delete adapter.searcher.args.start;
-            return adapter.searcher.explainOther(
-              query.filterToRatings(settings, adapter.docs.length), ratedFieldSpec, 'lucene'
-            ).then(function() {
-              adapter.docs = adapter.docs.concat(normalizeDocExplains(query, adapter.searcher, ratedFieldSpec));
-              adapter.paging = false;
-              return adapter;
-            });
-          }
-
-          adapter.searcher = adapter.searcher.pager();
-          if (!adapter.searcher) {
-            adapter.paging = false;
-            return Promise.resolve(adapter);
-          }
-          return adapter.searcher.search().then(function() {
-            var fieldSpec = settings.createFieldSpec();
-            adapter.numFound = adapter.searcher.numFound;
-            adapter.docs = adapter.docs.concat(normalizeDocExplains(query, adapter.searcher, fieldSpec));
-            adapter.paging = false;
-            return adapter;
-          });
-        };
-
-        adapter.rate = function(docId, rating) {
-          var doc = adapter.docs.find(function(candidate) { return String(candidate.id) === String(docId); });
-          if (!doc) return false;
-          if (rating === null || rating === undefined) doc.resetRating();
-          else doc.rate(parseInt(rating, 10));
-          query.touchModifiedAt();
-          return true;
-        };
-
-        adapter.rateAll = function(rating) {
-          if (adapter.docs.length === 0) return true;
-          var ids = adapter.docs.map(function(doc) { return doc.id; });
-          if (rating === null || rating === undefined) adapter.docs[0].resetBulkRatings(ids);
-          else adapter.docs[0].rateBulk(ids, parseInt(rating, 10));
-          query.touchModifiedAt();
-          return true;
-        };
-
-        return adapter;
+          selectedTry: selectedTry,
+          engineNames: {
+            solr: 'Solr',
+            es: 'Elasticsearch',
+            os: 'OpenSearch',
+            algolia: 'Algolia',
+            vectara: 'Vectara',
+            static: 'Static',
+            searchapi: 'Search API'
+          },
+          supportedEngines: ['solr', 'es', 'os', 'searchapi'],
+          previewArgs: function(tryNo, queryParams) {
+            return settingsSvc.previewArgs(tryNo, queryParams);
+          },
+          settingsWithTryOverrides: settingsWithTryOverrides,
+          createSearcherFromSettings: createSearcherFromSettings,
+          normalizeDocExplains: normalizeDocExplains,
+          searchApiRatedDocs: searchApiRatedDocs,
+          supportsRatedDocsLookup: trySupportsRatedDocsLookup,
+          promiseApi: $q
+        });
       };
 
       // Explicit command adapters for the Stimulus expanded-results renderer.
@@ -704,24 +509,6 @@ angular.module('QuepidApp')
             svc.updateScores();
           });
         });
-      });
-
-      // Stimulus judgements-core: populate book needs live searched docs from this service.
-      document.addEventListener('judgements:populate-book', function(event) {
-        var detail = event.detail || {};
-        if (Number(detail.caseId) !== Number(svc.getCaseNo())) {
-          if (detail.done) { detail.done('case mismatch'); }
-          return;
-        }
-        updateQueryDocPairs(detail.bookId, detail.caseId, svc.queryArray())
-          .then(function() {
-            if (detail.done) { detail.done(null); }
-          }, function(response) {
-            var message = (response && response.data && response.data.statusText) ||
-              (response && response.statusText) ||
-              'error';
-            if (detail.done) { detail.done(message); }
-          });
       });
 
       // Stimulus judgements-core: after ratings refresh, re-bootstrap queries + search.
@@ -1135,41 +922,6 @@ angular.module('QuepidApp')
           return createQueryRuntime(this).ratedPaginate();
         };
 
-        this.saveNotes = function(notes, informationNeed) {
-          var that = this;
-          var notesJson = { query: { notes: notes, information_need: informationNeed} };
-          var url = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/notes';
-
-          return $http.put(url , notesJson)
-            .then(function() {
-              that.notes = notes;
-              that.informationNeed = informationNeed;
-            })
-            .catch(function(response) {
-              // Re-reject rather than returning: returning a value from a rejection handler
-              // RESOLVES the promise, which made the query-notes controller run its success path on a failed
-              // save -- flashing "saved", collapsing the panel and discarding the user's edits.
-              $log.debug('Failed to save notes: ', response);
-              return $q.reject(response);
-            });
-        };
-
-        this.fetchNotes = function() {
-          var that  = this;
-          var url   = 'api/cases/' + caseNo + '/queries/' + that.queryId + '/notes';
-          return $http.get(url)
-            .then(function(response) {
-              that.notes = response.data.notes;
-              that.informationNeed = response.data.information_need;
-            }, function(response) {
-              $log.debug('Failed to load notes: ', response);
-              return response;
-            }).catch(function(response) {
-              $log.debug('Failed to fetch notes');
-              return response;
-            });
-        };
-
         this.reset = function() {
           this.errorText = '';
           resultsReturned = false;
@@ -1343,15 +1095,16 @@ angular.module('QuepidApp')
         window.quepidSearch.queryLifecycle.caseId = newCaseNo;
 
         if (caseNo !== newCaseNo) {
-          // Clear sync cache when switching cases
-          syncedPairsCache = {};
           scorerSvc.bootstrap(newCaseNo);
           bootstrapQueries(newCaseNo);
 
           // Fetch case data to initialize book sync properties
           $http.get('api/cases/' + newCaseNo).then(function(response) {
-            cachedBookId = response.data.book_id;
-            cachedAutoPopulateBookPairs = response.data.auto_populate_book_pairs;
+            bookSyncRuntime.configure({
+              caseId: newCaseNo,
+              bookId: response.data.book_id,
+              autoPopulate: response.data.auto_populate_book_pairs
+            });
           });
         } else {
           angular.forEach(this.queries, function(query) {
@@ -1367,13 +1120,10 @@ angular.module('QuepidApp')
         return querySearchableDeferred.promise;
       };
 
-      // Process a queue of async functions with optional rate limiting
-      // - No rate limit (null/0): runs up to 10 concurrent requests
-      // - With rate limit: runs sequentially with delays between requests
       this.pAll = window.quepidSearch.queryService.pAll;
 
       this.searchAll = function() {
-        let searchAllPromise = window.quepidSearch.queryService.runSearchAll({
+        let searchAllPromise = window.quepidSearch.queryRuntime.createSearchAll({
           queries: this.queries,
           search: function(query) {
             return query.search();
@@ -1403,7 +1153,7 @@ angular.module('QuepidApp')
           },
           promiseApi: $q,
           logger: $log
-        });
+        }).run();
         searchAllPromise.catch(angular.noop);
         return searchAllPromise;
       };
@@ -1594,98 +1344,7 @@ angular.module('QuepidApp')
       };
 
       this.syncToBook = function() {
-        // Only sync if we have a case with a book associated
-        if (!caseNo || caseNo === -1) {
-          return;
-        }
-
-        if (!cachedBookId) {
-          return; // No book associated with this case
-        }
-
-        if (!cachedAutoPopulateBookPairs) {
-          return; // Auto-populate of book query/doc pairs is disabled for this case
-        }
-
-        var bookId = cachedBookId;
-
-        // Initialize cache for this book if not exists
-        if (!syncedPairsCache[bookId]) {
-          syncedPairsCache[bookId] = {};
-        }
-
-        // Filter queries to only include those with new/unsynced results
-        let queriesToSync = [];
-        angular.forEach(svc.queries, function(query) {
-          if (query.docs && query.docs.length > 0) {
-            // Create a modified query with only unsynced docs
-            let unsyncedDocs = [];
-            let hasUnsyncedDocs = false;
-
-            angular.forEach(query.docs, function(doc) {
-              var cacheKey = query.queryText + ':' + doc.id;
-              if (!syncedPairsCache[bookId][cacheKey]) {
-                unsyncedDocs.push(doc);
-                hasUnsyncedDocs = true;
-                // Mark as synced (optimistically)
-                syncedPairsCache[bookId][cacheKey] = true;
-              }
-            });
-
-            // Only include query if it has unsynced docs
-            if (hasUnsyncedDocs) {
-              // Create a shallow copy of the query with only unsynced docs
-              var queryToSync = {
-                queryText: query.queryText,
-                informationNeed: query.informationNeed,
-                notes: query.notes,
-                docs: unsyncedDocs
-              };
-              queriesToSync.push(queryToSync);
-            }
-          }
-        });
-
-        // Process queries in batches of 100
-        var batchSize = 100;
-        var totalBatches = Math.ceil(queriesToSync.length / batchSize);
-        var batchPromises = [];
-
-        for (var i = 0; i < totalBatches; i++) {
-          var startIdx = i * batchSize;
-          var endIdx = Math.min(startIdx + batchSize, queriesToSync.length);
-          var batch = queriesToSync.slice(startIdx, endIdx);
-
-          if (batch.length > 0) {
-            // Use IIFE to capture all variables to prevent closure issues
-            var batchPromise = (function(currentBookId, currentCaseNo, currentBatch, currentSyncedPairsCache, currentLogger) {
-              return updateQueryDocPairs(currentBookId, currentCaseNo, currentBatch)
-                .then(function() {
-
-                }, function(error) {
-                  // On error, remove the failed items from cache so they can be retried
-                  angular.forEach(currentBatch, function(query) {
-                    angular.forEach(query.docs, function(doc) {
-                      var cacheKey = query.queryText + ':' + doc.id;
-                      delete currentSyncedPairsCache[currentBookId][cacheKey];
-                    });
-                  });
-                  currentLogger.error('Failed to sync book query_doc_pairs batch:', error);
-                });
-            })(bookId, caseNo, batch, syncedPairsCache, $log);
-
-            batchPromises.push(batchPromise);
-          }
-        }
-
-        // Wait for all batches to complete
-        if (batchPromises.length > 0) {
-          $q.all(batchPromises).then(function() {
-            $log.debug('All book sync batches completed. Total pairs synced: ' + Object.keys(syncedPairsCache[bookId]).length);
-          });
-        } else {
-          $log.debug('No new query-doc pairs to sync for book ' + bookId);
-        }
+        return bookSyncRuntime.sync(svc.queryArray());
       };
 
       /*jslint latedef:false*/

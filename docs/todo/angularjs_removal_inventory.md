@@ -467,11 +467,18 @@ adapter into those services.
 Remaining backing service: `queriesSvc`
 
 `queriesSvc` remains the compatibility adapter for live search construction,
-notes, persistence, and engine-specific callbacks. The framework-free query
+persistence, and engine-specific callbacks. The framework-free query
 runtime now owns rated-document refresh and pagination, including Search API
 support checks and stale rating-generation retries. The next extraction can
 move the remaining injected operations without changing the query-local
 contract.
+
+The case-wide search lifecycle now also runs through the tested
+`createSearchAllRuntime` seam. `queriesSvc` supplies the live Query search and
+score callbacks plus the query-store progress callbacks, but no longer owns the
+queue orchestration policy. Query notes are already owned by the Stimulus
+controller and its API endpoint, so the obsolete Angular `Query#saveNotes` and
+`Query#fetchNotes` methods and their Karma contracts were removed.
 
 Query persistence is now Stimulus/store-owned for create, bulk create, delete,
 move, and reorder. The only remaining mutation bridge for delete/move is
@@ -493,7 +500,11 @@ Filters: `queryStateClass`, `scoreDisplay`, `searchEngineName`
 | Rating background styling | filter | `ratingBgStyle` |
 | Query options modal | Stimulus controller + Angular scoring bridge | `app/javascript/controllers/query_options_core_controller.js`, `app/views/shared/_query_options_core_modal.html.erb`; save dispatches `query-options:saved` so Angular updates the live Query and rescoring continues through `queriesSvc` |
 | Move query modal | Stimulus controller + query API seam | `app/javascript/controllers/move_query_core_controller.js` and `app/javascript/utils/query_lifecycle.js`; Stimulus owns persistence, while `queriesSvc` only reconciles its live object through `query-command:move-completed` |
-| Missing documents search | Stimulus controller + Angular search adapter | `app/javascript/controllers/missing_documents_controller.js`; `queriesSvc` retains the browser-to-engine search and rateable-document adapter |
+| Missing documents search | Stimulus controller + framework-free targeted-search runtime + Angular dependency adapter | `app/javascript/controllers/missing_documents_controller.js`, `app/javascript/utils/query_runtime.js`, and `app/javascript/quepid_search.js`; `queriesSvc` now only injects legacy searcher/settings/document dependencies |
+
+Automatic post-search synchronization now uses the tested `createBookSyncRuntime`
+for configuration, deduplication, batching, and retry-on-failure; `queriesSvc`
+only invokes that runtime after a live search.
 
 Backing services/factories: `docCacheSvc`, `DocListFactory`, `searchEndpointSvc`
 
@@ -503,10 +514,11 @@ Backing services/factories: `docCacheSvc`, `DocListFactory`, `searchEndpointSvc`
 ratings dictionary, mutation contract, and rateable-document behavior are
 covered by Vitest before the adapter is removed.
 
-The Missing Documents modal was migrated to Stimulus on 2026-09-24. Search-engine-specific
-searcher creation and live rating mutations remain behind `window.quepidSearch.targetedSearch`
-until the live query-state phase removes the Angular service; rated-document refresh and
-pagination now share the framework-free query runtime boundary.
+The Missing Documents modal was migrated to Stimulus on 2026-09-24. Its targeted-search
+adapter now lives in the tested framework-free `createTargetedSearchAdapter` runtime;
+`queriesSvc` supplies only the legacy searcher/settings/document dependencies through
+`window.quepidSearch.targetedSearch`. Rated-document refresh and pagination share the same
+framework-free query runtime boundary.
 
 Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 

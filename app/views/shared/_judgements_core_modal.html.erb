@@ -1,6 +1,6 @@
 <%# Core case toolbar — judgements / book link modal. Mirrors AngularJS
-    judgements/_modal.html. Populate-from-case still bridges to Angular
-    queriesSvc via `judgements:populate-book`. %>
+    judgements/_modal.html. Populate-from-case reads the framework-free
+    document store populated by the live search adapter. %>
 <% modal_footer = capture do %>
   <div class="d-flex gap-2 me-auto">
     <a class="btn btn-primary" target="_self"

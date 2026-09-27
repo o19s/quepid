@@ -827,45 +827,6 @@ describe('Service: queriesSvc', function () {
     expect(testQuery.state()).toBe('error');
   });
 
-    /** Notes Testing **/
-  describe('- Notes Tests: ', function() {
-    var mockNotes = { notes: 'lorem ipsum lots of toast', information_need:'this is my need' };
-    var testQuery;
-
-    beforeEach(function() {
-      setupQuerySvc();
-      testQuery = queriesSvc.queries['0'];
-    });
-
-    it('Fetching notes from the backend', function() {
-      $httpBackend.expectGET('api/cases/2/queries/' + testQuery.queryId + '/notes')
-        .respond(200, mockNotes);
-
-      testQuery.fetchNotes()
-        .then(function() {
-          expect(testQuery.notes).toEqual(mockNotes.notes);
-          expect(testQuery.informationNeed).toEqual(mockNotes.information_need);
-        });
-
-      $httpBackend.flush();
-    });
-
-    it('Saving notes to the backend', function() {
-      var testNewNotes  = 'more notes! I HAS NOTES!';
-      mockNotes.notes   = testNewNotes;
-
-      $httpBackend.expectPUT('api/cases/2/queries/' + testQuery.queryId + '/notes')
-        .respond(200, mockNotes);
-
-      testQuery.saveNotes(testNewNotes)
-        .then(function() {
-          expect(testQuery.notes).toEqual(testNewNotes);
-        });
-
-      $httpBackend.flush();
-    });
-  });
-
   it('best docs have only doc ids', function() {
     setupQuerySvc();
     var testQuery = queriesSvc.queries['0'];
@@ -1105,19 +1066,6 @@ describe('Service: queriesSvc', function () {
       expect(queriesSvc.searchAll).toHaveBeenCalled();
     });
 
-    it('reports a case mismatch instead of hanging when judgements:populate-book is stale', function() {
-      var done = jasmine.createSpy('done');
-
-      document.dispatchEvent(new CustomEvent('judgements:populate-book', {
-        detail: { caseId: 999, bookId: 42, done: done }
-      }));
-
-      // Regression: this branch used to return without ever calling
-      // detail.done, leaving the Stimulus judgements-core modal (which sets
-      // its busy/progress state before dispatching and only clears it in
-      // the done callback) stuck mid-spinner forever.
-      expect(done).toHaveBeenCalledWith('case mismatch');
-    });
   });
 
   afterEach(function() {
