@@ -76,3 +76,85 @@ export async function runInAngular(operation) {
 export function resetCoreServiceCache() {
   servicePromises.clear()
 }
+
+const capabilityDefinitions = {
+  bootstrap: {
+    controller: "core_bootstrap_controller",
+    services: [
+      "bootstrapSvc",
+      "configurationSvc",
+      "caseSvc",
+      "settingsSvc",
+      "querySnapshotSvc",
+      "caseTryNavSvc",
+      "queriesSvc",
+      "docCacheSvc",
+      "scorerSvc",
+      "paneSvc"
+    ]
+  },
+  snapshots: {
+    controller: "snapshot_bridge_controller",
+    services: ["settingsSvc", "caseTryNavSvc", "fieldSpecSvc", "docCacheSvc", "normalDocsSvc"]
+  },
+  wizard: {
+    controller: "wizard_controller",
+    services: [
+      "caseSvc",
+      "caseTryNavSvc",
+      "docCacheSvc",
+      "mapperBasedSearchEngineSvc",
+      "queriesSvc",
+      "querySnapshotSvc",
+      "searchEndpointSvc",
+      "searchSvc",
+      "settingsSvc",
+      "userSvc"
+    ]
+  },
+  tuneRelevance: {
+    controller: "tune_relevance_controller",
+    services: ["settingsSvc", "searchEndpointSvc", "esUrlSvc", "caseTryNavSvc", "caseSvc"]
+  }
+}
+
+async function loadCapability(name) {
+  const definition = capabilityDefinitions[name]
+  if (!definition) throw new Error(`Unknown case runtime capability: ${name}`)
+
+  const runtime = window.quepidSearch?.caseRuntime
+  if (runtime?.[name]) return runtime[name]
+
+  let services
+  try {
+    services = await waitForAngularServices(definition.services)
+  } catch (error) {
+    throw new Error(
+      `Unable to load case runtime capability "${name}" for ${definition.controller}: ${error.message}`,
+      { cause: error }
+    )
+  }
+
+  window.quepidSearch ||= {}
+  window.quepidSearch.caseRuntime ||= {}
+  window.quepidSearch.caseRuntime[name] = services
+  return services
+}
+
+// Named capability entry points are the public contract. The Angular service names above are
+// implementation details of this compatibility adapter, not a service locator for controllers.
+export function getBootstrapCapabilities() {
+  return loadCapability("bootstrap")
+}
+
+export function getSnapshotCapabilities() {
+  return loadCapability("snapshots")
+}
+
+export function getWizardCapabilities() {
+  return loadCapability("wizard")
+}
+
+export function getTuneRelevanceCapabilities() {
+  return loadCapability("tuneRelevance")
+}

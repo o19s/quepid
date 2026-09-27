@@ -248,9 +248,9 @@ parts:
         paths: ["app/javascript/controllers/missing_documents_controller.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js", "app/views/shared/_dynamic_modal_templates.html.erb"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
-        last_run: 2026-09-27T13:30:46Z
+        last_run: 2026-09-27T19:02:57Z
         result: pass
-        notes: "Covered live via Playwright MCP on case 6: confirmed the drawer starts hidden, clicked Tune Relevance through the new Stimulus action, verified the east pane and slider became visible, and saw no console errors. Not covered live: editing a non-static query template, creating a new try, or TLS/protocol-mismatch messaging."
+        notes: "Re-verified live via Playwright MCP on case 1 after the case-runtime adapter migration: opened Tune Relevance, confirmed the east pane and Query tab rendered, and saw 0 console errors. Screenshot: .playwright-mcp/deangularization-step2/tune-relevance-after.png. Not covered live: editing a non-static query template, creating a new try, or TLS/protocol-mismatch messaging."
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/utils/core_angular_adapter.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
@@ -290,9 +290,9 @@ parts:
         paths: ["app/models/query.rb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/query_notes_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/core_stimulus.js", "app/javascript/api/fetch.js", "app/javascript/controllers/flash_controller.js", "app/javascript/utils/flash.js", "config/importmap.rb", "test/javascript/controllers/query_notes_controller.test.js"]
       "4.17":
         title: "Workbench boot & case/try navigation"
-        last_run: 2026-09-27T18:13:30Z
+        last_run: 2026-09-27T19:02:44Z
         result: pass
-        notes: "Covered live via Playwright MCP: direct navigation to case 6 / try 31 booted with 0 console errors, rendered the query list and score badges, and loaded the new framework-free case_runtime asset before the Angular bundles. Captured and visually inspected matched before/after workbench screenshots under .playwright-mcp/case-runtime/. This pass did not cover dropdown case/try switching, bare /case, Rails 404, try switching, or zero-case behavior."
+        notes: "Re-verified live via Playwright MCP: direct navigation to case 1 booted with 0 console errors, rendered the query list and score badges, and retained the expected core workbench appearance after moving controller service access behind named case-runtime capabilities. Captured and visually inspected .playwright-mcp/deangularization-step2/core-case-after.png. This pass did not cover dropdown case/try switching, bare /case, Rails 404, try switching, or zero-case behavior."
         paths: ["app/assets/javascripts/routes.js", "app/assets/javascripts/app.js", "app/assets/javascripts/services/caseTryNavSvc.js", "app/assets/javascripts/services/configurationSvc.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/utils/query_model.js", "app/javascript/utils/query_service.js", "app/javascript/utils/query_runtime.js", "app/javascript/quepid_search.js", "app/javascript/case_runtime.js", "test/javascript/utils/query_service.test.js", "test/javascript/utils/query_runtime.test.js", "app/views/core/_queries.html.erb", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "app/views/layouts/core.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/core/_case_header.html.erb", "app/views/core/_case_toolbar.html.erb", "app/controllers/dropdown_controller.rb", "app/views/dropdown/cases_core.html.erb", "app/views/dropdown/books_core.html.erb", "app/javascript/core_stimulus.js", "test/javascript/controllers/queries_list_controller.test.js"]
       "4.18":
         title: "Browse query results"

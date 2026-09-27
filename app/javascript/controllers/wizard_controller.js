@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { getOrCreateBsModal } from "utils/bs_modal"
-import { waitForAngularServices } from "utils/core_angular_adapter"
+import { getWizardCapabilities } from "utils/core_angular_adapter"
 import {
   addUniqueQuery,
   buildFieldSpec,
@@ -48,10 +48,7 @@ export default class extends Controller {
       return
     }
     try {
-      this.adapter = await waitForAngularServices([
-        "caseSvc", "caseTryNavSvc", "docCacheSvc", "mapperBasedSearchEngineSvc", "queriesSvc",
-        "querySnapshotSvc", "searchEndpointSvc", "searchSvc", "settingsSvc", "userSvc"
-      ])
+      this.adapter = await getWizardCapabilities()
     } catch (error) {
       if (this.loadAttempts < 100) {
         window.setTimeout(() => this.loadWizard(), 100)

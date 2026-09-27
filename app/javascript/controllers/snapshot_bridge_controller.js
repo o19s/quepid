@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { deleteSnapshot, fetchSnapshot } from "utils/snapshot_api"
 import { diffStateStore } from "stores/diff_state_store"
 import { registerAndHydrateSnapshots } from "utils/snapshot_hydration"
-import { waitForAngularServices } from "utils/core_angular_adapter"
+import { getSnapshotCapabilities } from "utils/core_angular_adapter"
 
 /*
  * Temporary compatibility bridge for snapshot comparison.
@@ -48,9 +48,7 @@ export default class extends Controller {
   }
 
   async registerSnapshots(payloads) {
-    const { settingsSvc, caseTryNavSvc, fieldSpecSvc, docCacheSvc, normalDocsSvc } = await waitForAngularServices([
-      "settingsSvc", "caseTryNavSvc", "fieldSpecSvc", "docCacheSvc", "normalDocsSvc"
-    ])
+    const { settingsSvc, caseTryNavSvc, fieldSpecSvc, docCacheSvc, normalDocsSvc } = await getSnapshotCapabilities()
     const snapshotSearch = window.quepidSearch?.snapshotSearch
     const registry = this.snapshotRegistry()
 

@@ -282,11 +282,12 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 **Remaining, in slice order (2026-09-24).**
 
 **Compatibility seam consolidation (2026-09-27).** Core Stimulus consumers now obtain the
-remaining Angular-owned services through the cached `core_angular_adapter` seam. Snapshot
-comparison, case-level diff scoring, and the new-case wizard no longer reach into the Angular
-injector directly; digest-bound work is routed through `runInAngular()`. This is an adapter
-cleanup, not an Angular-removal milestone: the next live-state slice can replace the seam's
-service lookup without changing those controllers.
+remaining Angular-owned services through named capabilities in the cached
+`core_angular_adapter` seam. Bootstrap, snapshot comparison, the new-case wizard, and Tune
+Relevance no longer reach into the Angular injector directly; a missing capability reports its
+controller and capability name. This is an adapter cleanup, not an Angular-removal milestone:
+the next live-state slice can replace the seam's internal service lookup without changing those
+controllers.
 
 **Comparison-state extraction (2026-09-27).** `diffStateStore` is now the direct owner for
 comparison selection/reset state in the Stimulus case bootstrap and case-score controller.

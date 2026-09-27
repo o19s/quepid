@@ -1,9 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { resetCoreServiceCache, runInAngular, waitForAngularServices } from "utils/core_angular_adapter"
+import {
+  getBootstrapCapabilities,
+  getSnapshotCapabilities,
+  getTuneRelevanceCapabilities,
+  getWizardCapabilities,
+  resetCoreServiceCache,
+  runInAngular,
+  waitForAngularServices
+} from "utils/core_angular_adapter"
 
 describe("core Angular adapter", () => {
   afterEach(() => {
     delete window.angular
+    delete window.quepidSearch
     document.body.innerHTML = ""
     resetCoreServiceCache()
     vi.restoreAllMocks()
@@ -34,5 +43,34 @@ describe("core Angular adapter", () => {
 
     await expect(runInAngular(() => "done")).resolves.toBe("done")
     expect(evalAsync).toHaveBeenCalledOnce()
+  })
+
+  it("publishes named capabilities without exposing a service lookup to callers", async () => {
+    const services = {
+      settingsSvc: { editableSettings: vi.fn() },
+      caseTryNavSvc: { getCaseNo: vi.fn() },
+      fieldSpecSvc: {},
+      docCacheSvc: {},
+      normalDocsSvc: {}
+    }
+    window.quepidSearch = { caseRuntime: { snapshots: services } }
+
+    await expect(getSnapshotCapabilities()).resolves.toBe(services)
+  })
+
+  it("reports the named controller when a capability cannot initialize", async () => {
+    await expect(getTuneRelevanceCapabilities()).rejects.toThrow(
+      'Unable to load case runtime capability "tuneRelevance" for tune_relevance_controller'
+    )
+  }, 10000)
+
+  it.each([
+    ["bootstrap", getBootstrapCapabilities],
+    ["wizard", getWizardCapabilities]
+  ])("exposes the %s capability through the case runtime namespace", async (name, getter) => {
+    const capability = { marker: name }
+    window.quepidSearch = { caseRuntime: { [name]: capability } }
+
+    await expect(getter()).resolves.toBe(capability)
   })
 })

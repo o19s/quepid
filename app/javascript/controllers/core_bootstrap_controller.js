@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { waitForAngularServices } from "utils/core_angular_adapter"
+import { getBootstrapCapabilities } from "utils/core_angular_adapter"
 import { diffStateStore } from "stores/diff_state_store"
 
 export default class extends Controller {
@@ -18,10 +18,7 @@ export default class extends Controller {
 
   async bootstrap() {
     try {
-      this.services = await waitForAngularServices([
-        "bootstrapSvc", "configurationSvc", "caseSvc", "settingsSvc", "querySnapshotSvc", "caseTryNavSvc",
-        "queriesSvc", "docCacheSvc", "scorerSvc", "paneSvc"
-      ])
+      this.services = await getBootstrapCapabilities()
 
       const { bootstrapSvc, configurationSvc, caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
         queriesSvc, docCacheSvc, scorerSvc, paneSvc } = this.services

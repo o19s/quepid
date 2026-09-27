@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { fromTextArea } from "modules/editor"
-import { waitForAngularServices } from "utils/core_angular_adapter"
+import { getTuneRelevanceCapabilities } from "utils/core_angular_adapter"
 import { curatorVariableEntries, formatJson, queryParamsMode, queryParamsWarning, urlBucket, validateNumberOfRows } from "utils/tune_relevance"
 
 const EDITABLE_TABS = new Set(["developer", "curator", "engineSettings"])
@@ -44,7 +44,7 @@ export default class extends Controller {
     this.element.addEventListener("change", this.handleChange)
     this.element.addEventListener("input", this.handleInput)
     this.element.addEventListener("submit", this.handleSubmit)
-    this.waitForAngularServices()
+    this.loadCapabilities()
   }
 
   disconnect() {
@@ -56,13 +56,13 @@ export default class extends Controller {
     this.editor?.view?.destroy()
   }
 
-  waitForAngularServices() {
-    waitForAngularServices(["settingsSvc", "searchEndpointSvc", "esUrlSvc", "caseTryNavSvc", "caseSvc"])
+  loadCapabilities() {
+    getTuneRelevanceCapabilities()
       .then(services => {
         Object.assign(this, services)
         this.load()
       })
-      .catch(() => this.showError("Unable to load Tune Relevance."))
+      .catch(error => this.showError(error.message || "Unable to load Tune Relevance."))
   }
 
   load() {
