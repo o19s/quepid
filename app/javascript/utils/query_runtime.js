@@ -66,7 +66,8 @@ export function createQueryRuntime({
             }
 
             return undefined
-          }, () => {
+          },
+          () => {
             const message = `Failed to load snapshot: ${snapshotId}`
             onError(message)
             return promiseApi.reject(message)
@@ -82,12 +83,12 @@ export function createQueryRuntime({
 
       return paginateQuery({
         searcher: query.searcher,
-        pager: searcher => {
+        pager: (searcher) => {
           query.searcher = searcher.pager()
           return query.searcher
         },
-        search: searcher => searcher.search(),
-        appendDocs: searcher => {
+        search: (searcher) => searcher.search(),
+        appendDocs: (searcher) => {
           const docList = createDocList(
             searcher.docs,
             getSettings().createFieldSpec(),

@@ -903,31 +903,6 @@ angular.module('QuepidApp')
         });
       }
 
-      function searchQuery(query) {
-        return window.quepidSearch.queryService.searchQuery({
-          query: query,
-          createSearcher: function() {
-            return svc.createSearcherFromSettings(currSettings, query);
-          },
-          createRatedSearcher: function() {
-            return svc.createSearcherFromSettings(currSettings, query, { filterToRated: true });
-          },
-          setDocs: function(docs, numFound) {
-            return query.setDocs(docs, numFound);
-          },
-          onError: function(message) {
-            query.onError(message);
-          },
-          parseError: function(response, linkUrl) {
-            return searchErrorTranslatorSvc.parseResponseObject(response, linkUrl, currSettings.searchEngine);
-          },
-          logDebug: function() {
-            $log.debug.apply($log, arguments);
-          },
-          promiseApi: $q
-        });
-      }
-
       // The query runtime owns live search and pagination. This
       // service remains the compatibility adapter for Angular-owned searchers
       // and document factories until the case workspace cutover.
@@ -1239,47 +1214,7 @@ angular.module('QuepidApp')
 
         // Method to search using a snapshot instead of live search engine
         this.searchFromSnapshot = function(snapshotId) {
-          let self = this;
-          
-          return $q(function(resolve, reject) {
-            self.hasBeenScored = false;
-
-            // Create snapshot searcher using the same interface as normal searchers
-            let settings = currSettings;
-            self.searcher = svc.createSearcherFromSnapshot(snapshotId, self, settings);
-
-            if (!self.searcher) {
-              let msg = 'Snapshot not found: ' + snapshotId;
-              self.onError(msg);
-              reject(msg);
-              return;
-            }
-
-            // Use the same search flow as normal search
-            self.searcher.search()
-              .then(function() {
-                self.linkUrl = self.searcher.linkUrl;
-
-                if (self.searcher.inError) {
-                  let msg = self.searcher.searchError || 'Error loading snapshot results';
-                  self.setDocs([], 0);
-                  self.onError(msg);
-                  reject(msg);
-                } else {
-                  let error = self.setDocs(self.searcher.docs, self.searcher.numFound);
-                  if (error) {
-                    self.onError(error);
-                    reject(error);
-                  } else {
-                    resolve();
-                  }
-                }
-              }, function() {
-                let msg = 'Failed to load snapshot: ' + snapshotId;
-                self.onError(msg);
-                reject(msg);
-              });
-          });
+          return createQueryRuntime(this).searchFromSnapshot(snapshotId);
         };
 
         this.paginate = function() {
