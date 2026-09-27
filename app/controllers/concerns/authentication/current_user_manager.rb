@@ -30,13 +30,7 @@ module Authentication
     end
 
     def set_current_user
-      if Rails.application.config.desktop_mode
-        @current_user = User.find_by(id: Rails.application.config.desktop_user_id)
-        return if @current_user
-
-        clear_user_session
-        return
-      end
+      session[:current_user_id] = Rails.application.config.desktop_user_id if Rails.application.config.desktop_mode
 
       if @current_user.present?
         session[:current_user_id] = @current_user.id
