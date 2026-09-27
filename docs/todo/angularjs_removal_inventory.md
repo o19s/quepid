@@ -281,7 +281,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Remaining, in slice order (2026-09-24).**
 - `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing query-state adapter boundaries.
-- **2026-09-27:** extracted the live batch orchestration (`search → per-query score → case aggregate → book sync`) into framework-free `query_service.js` as `runSearchAll()`. `queriesSvc.searchAll()` is now a compatibility facade that supplies Angular-owned Query callbacks and the temporary store bridge. The next slice is to move bootstrap/read-model ownership behind the same boundary; Query construction, searcher creation, document normalization, and scoring remain Angular-owned.
+- **2026-09-27:** extracted the live batch orchestration (`search → per-query score → case aggregate → book sync`) into framework-free `query_service.js` as `runSearchAll()`. `queriesSvc.searchAll()` is now a compatibility facade that supplies Angular-owned Query callbacks and the temporary store bridge. The bootstrap/read-model slice now normalizes API responses and owns collection size/order through `queryCollectionStore`; Query construction, searcher creation, document normalization, and scoring remain Angular-owned.
 - Angular still owns snapshot fetching and per-query diff scoring behind the document-store bridge.
 - `snapshot_searcher.js` owns the framework-free snapshot searcher contract, including registry lookup; `queriesSvc` supplies the remaining Angular callbacks directly at the boundary.
 

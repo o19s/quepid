@@ -30,6 +30,23 @@ describe("QueryCollectionStore", () => {
     expect(changes).toHaveLength(2)
   })
 
+  it("normalizes the bootstrap API response at the collection boundary", () => {
+    store.beginBootstrap(7)
+    store.replaceFromResponse(7, {
+      display_order: [2, 1],
+      queries: [
+        { query_id: 1, query_text: "first" },
+        { query_id: 2, query_text: "second" },
+        { query_id: 3, query_text: "deleted", deleted: "true" }
+      ]
+    })
+
+    expect(store.size).toBe(2)
+    expect(store.orderedQueryIds()).toEqual([2, 1])
+    expect(store.query(1)).toMatchObject({ queryText: "first" })
+    expect(store.query(3)).toBeNull()
+  })
+
   it("keeps the collection consistent across add, reorder, and remove", () => {
     store.replace({ caseId: 7, displayOrder: [1], queries: [{ queryId: 1, queryText: "first" }] })
     store.upsert({ queryId: 2, queryText: "second" })

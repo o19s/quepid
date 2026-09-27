@@ -1482,6 +1482,9 @@ angular.module('QuepidApp')
       };
 
       this.queryCount = function() {
+        if (queryCollectionStore && queryCollectionStore.status !== 'idle') {
+          return queryCollectionStore.size;
+        }
         return Object.keys(this.queries).length;
       };
 
@@ -1513,11 +1516,10 @@ angular.module('QuepidApp')
         });
 
         if (queryCollectionStore) {
-          queryCollectionStore.replace({
-            caseId: collectionCaseId === undefined ? caseNo : collectionCaseId,
-            displayOrder: data.display_order,
-            queries: querySnapshots,
-          });
+          queryCollectionStore.replaceFromResponse(
+            collectionCaseId === undefined ? caseNo : collectionCaseId,
+            data
+          );
         }
 
         return newQueries;

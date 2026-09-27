@@ -56,6 +56,14 @@ export class QueryCollectionStore extends EventTarget {
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
   }
 
+  replaceFromResponse(caseId, response = {}) {
+    this.replace({
+      caseId,
+      displayOrder: response.display_order,
+      queries: response.queries
+    })
+  }
+
   markError(error) {
     this._status = "error"
     this.dispatchEvent(new CustomEvent("error", { detail: { error, ...this.snapshot() } }))
@@ -162,6 +170,10 @@ export class QueryCollectionStore extends EventTarget {
 
   query(queryId) {
     return this._queries.get(String(queryId)) ?? null
+  }
+
+  get size() {
+    return this._queries.size
   }
 
   orderedQueryIds() {
