@@ -1,4 +1,13 @@
-<ng-include src="'views/common/flash.html'"></ng-include>
+<div id="flash-messages">
+  <div class="flash fade" data-controller="flash" data-flash-channel-value="main">
+    <button type="button" class="btn-core-close float-start" aria-label="Dismiss" data-action="flash#hide"></button>
+    <span class="alert-message" data-flash-target="message"></span>
+  </div>
+  <div class="flash fade" data-controller="flash" data-flash-channel-value="search-error" data-flash-duration-value="-1">
+    <button type="button" class="btn-core-close float-start" aria-label="Dismiss" data-action="flash#hide"></button>
+    <span class="alert-message" data-flash-target="message"></span>
+  </div>
+</div>
 
 <div ng-controller="LoadingCtrl">
   <div ng-show="loading.isLoading()">

@@ -12,8 +12,10 @@ import {
   parsePopoverTrigger,
   toBsPopoverTrigger
 } from "./utils/bs_popover"
+import { restoreModalBodyLock, showStackedModal } from "./utils/bs_modal"
 import { attachTextPaste } from "./utils/text_paste"
 import { animateCountUp, stopCountUp } from "./utils/count_up"
+import { hideFlash, showFlash } from "./utils/flash"
 
 /**
  * Shared DOM helpers for Bootstrap tooltips/popovers and paste handling.
@@ -41,6 +43,14 @@ const quepidDom = {
   countUp: {
     animate: animateCountUp,
     stop: stopCountUp
+  },
+  flash: {
+    show: showFlash,
+    hide: hideFlash
+  },
+  modal: {
+    showStacked: showStackedModal,
+    restoreBodyLock: restoreModalBodyLock
   }
 }
 

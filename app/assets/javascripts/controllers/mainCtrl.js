@@ -11,13 +11,11 @@ angular.module('QuepidApp')
   // is responsible for bootstrapping everyone so...
   .controller('MainCtrl', [
     '$scope', '$routeParams', '$rootScope', '$log',
-    'flash',
     'caseSvc', 'settingsSvc', 'querySnapshotSvc', 'caseTryNavSvc',
     'queryViewSvc', 'queriesSvc', 'docCacheSvc', 'diffResultsSvc', 'scorerSvc',
     'paneSvc',
     function (
       $scope, $routeParams, $rootScope, $log,
-      flash,
       caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
       queryViewSvc, queriesSvc, docCacheSvc, diffResultsSvc, scorerSvc,
       paneSvc
@@ -117,19 +115,18 @@ angular.module('QuepidApp')
             return queriesSvc.changeSettings(caseNo, newSettings)
               .then(function() {
                 if (!bootstrapped) {
-                  flash.error                    = '';
-                  flash.success                  = '';
-                  flash.to('search-error').error = '';
+                  window.quepidDom.flash.hide();
+                  window.quepidDom.flash.hide('search-error');
 
                   bootstrapped = true;
                   return queriesSvc.searchAll()
                     .then(function() {
-                      flash.success = 'All queries finished successfully!';
+                      window.quepidDom.flash.show('success', 'All queries finished successfully!');
                     }, function(errorMsg) {
                       var mainErrorMsg = 'Some queries failed to resolve!';
 
-                      flash.error = mainErrorMsg;
-                      flash.to('search-error').error = errorMsg;
+                      window.quepidDom.flash.show('error', mainErrorMsg);
+                      window.quepidDom.flash.show('error', errorMsg, 'search-error');
                     });
                 }
               });
@@ -155,7 +152,7 @@ angular.module('QuepidApp')
       // While not perfect, at least the site doesn't blow up if you don't
       // have any cases.
       if ( caseNo === 0 ) {
-        flash.error = 'You don\'t have any Cases created in Quepid.  Click \'Create a Case\' from the Relevancy Cases dropdown to get started.';
+        window.quepidDom.flash.show('error', 'You don\'t have any Cases created in Quepid.  Click \'Create a Case\' from the Relevancy Cases dropdown to get started.');
       }
       else if ( caseNo > 0 ) {
         queriesSvc.querySearchPromiseReset();
@@ -170,16 +167,16 @@ angular.module('QuepidApp')
             // brittle logic, but check if we throw the TLS error or if it's from something else.
             var message = error.message;
             if (message.startsWith('Blocked Request')){
-              flash.to('search-error').error = message;
+              window.quepidDom.flash.show('error', message, 'search-error', { html: true });
             }
             else if (message.startsWith('Could not retrieve case')){
-              flash.to('search-error').error = message;
+              window.quepidDom.flash.show('error', message, 'search-error');
             }
             else if (message.startsWith('try number ')){
-              flash.to('search-error').error = 'Could not load case ' + caseNo + ' due to ' + message;
+              window.quepidDom.flash.show('error', 'Could not load case ' + caseNo + ' due to ' + message, 'search-error');
             }
             else {
-              flash.to('search-error').error = 'Could not load the case ' + caseNo + ' due to: ' + message;
+              window.quepidDom.flash.show('error', 'Could not load the case ' + caseNo + ' due to: ' + message, 'search-error');
             }
             //loadSnapshots();
             //updateCaseMetadata();

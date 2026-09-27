@@ -1609,10 +1609,10 @@ cssesc@^3.0.0:
   resolved "https://registry.yarnpkg.com/cssesc/-/cssesc-3.0.0.tgz#37741919903b868565e1c09ea747445cd18983ee"
   integrity sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==
 
-curl-generator@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/curl-generator/-/curl-generator-0.5.0.tgz#1888c464c5bf7d2a063f23287dbe3fd9eb97ecc5"
-  integrity sha512-dKmp63AJfNSplajvPoWIRfBOmp0IT8NETJ9sFw9IABEUTiJqtXdJx09mXxUlTgVCZDYWVxkCPds+mO9puf1J+w==
+curl-generator@^0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/curl-generator/-/curl-generator-0.6.1.tgz#8b3071fca07afb5ac026f07c0ef944ccaf2a329d"
+  integrity sha512-5JNrNfzjuQQ2xsoTTKv7LKHDXCNe7ygiPtoVuvncaEbUgcNiNjVv47T6QhkBxkwRokwh7A5Y4CCuqrBNTOM56g==
   dependencies:
     ms "^2.0.0"
 

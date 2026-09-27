@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Client-side routes and HTTP/flash configuration for the Quepid app shell.
+ * Client-side routes and HTTP configuration for the Quepid app shell.
  * Case pages use `MainCtrl` with `views/queriesLayout.html`; unknown paths render the 404 view.
  */
 
@@ -10,12 +10,10 @@ angular.module('QuepidApp')
     '$locationProvider',
     '$routeProvider',
     '$httpProvider',
-    'flashProvider',
     function (
       $locationProvider,
       $routeProvider,
-      $httpProvider,
-      flashProvider
+      $httpProvider
      ) {
       $httpProvider.defaults.cache = false;
       if (!$httpProvider.defaults.headers.get) {
@@ -42,8 +40,5 @@ angular.module('QuepidApp')
           templateUrl: 'views/404.html',
           controller: '404Ctrl'
         });
-
-      // Support bootstrap 3.0 "alert-danger" class with error flash types
-      flashProvider.errorClassnames.push('alert-danger');
     }
   ]);

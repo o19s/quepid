@@ -8,7 +8,6 @@ angular.module('QuepidApp')
     '$log',
     '$location',
     '$window',
-    'flash',
     'caseSvc',
     'bookSvc',
     'queriesSvc',
@@ -21,7 +20,6 @@ angular.module('QuepidApp')
       $log,
       $location,
       $window,
-      flash,
       caseSvc,
       bookSvc,
       queriesSvc,
@@ -141,10 +139,10 @@ angular.module('QuepidApp')
             $quepidModalInstance.close(true);
 
             if (processInBackground) {
-              flash.success = 'Settings saved. Ratings are being refreshed in the background.';
+              window.quepidDom.flash.show('success', 'Settings saved. Ratings are being refreshed in the background.');
             }
             else {
-              flash.success = 'Settings saved. Ratings have been refreshed.';
+              window.quepidDom.flash.show('success', 'Settings saved. Ratings have been refreshed.');
             }
 
             // Check if we should redirect to homepage
@@ -160,7 +158,7 @@ angular.module('QuepidApp')
           return;
         }
 
-        flash.success = 'Settings saved.';
+        window.quepidDom.flash.show('success', 'Settings saved.');
         $quepidModalInstance.close(false);
       };
 
@@ -204,7 +202,7 @@ angular.module('QuepidApp')
         bookSvc.updateQueryDocPairs(ctrl.activeBookId, ctrl.share.acase.caseNo, queriesSvc.queryArray())
         .then(function() {
           $scope.processingPrompt.inProgress = false;
-          flash.success = 'Updating Book with Query Doc Pairs.';
+          window.quepidDom.flash.show('success', 'Updating Book with Query Doc Pairs.');
           $quepidModalInstance.close(false);
         }, function(response) {
           $scope.processingPrompt.inProgress = false;
@@ -228,7 +226,7 @@ angular.module('QuepidApp')
             return;
           }
 
-          flash.success = 'Case ratings refreshed from book.';
+          window.quepidDom.flash.show('success', 'Case ratings refreshed from book.');
           $quepidModalInstance.close(true);
         }, function(response) {
           $scope.processingPrompt.inProgress = false;
@@ -244,10 +242,10 @@ angular.module('QuepidApp')
           $scope.processingPrompt.inProgress = false;
 
           if (processInBackground) {
-            flash.success = 'Missing queries are being synced from book in the background.';
+            window.quepidDom.flash.show('success', 'Missing queries are being synced from book in the background.');
           }
           else {
-            flash.success = 'Missing queries synced from book.';
+            window.quepidDom.flash.show('success', 'Missing queries synced from book.');
           }
           $quepidModalInstance.close(true);
 

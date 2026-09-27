@@ -68,10 +68,10 @@ describe("bs_popover", () => {
     delete window.bootstrap
   })
 
-  it("exposes the selector matching all three popover directive attributes", () => {
+  it("exposes the selector matching the remaining Angular popover directive attributes", () => {
     expect(POPOVER_SELECTOR).toContain("quepid-popover")
     expect(POPOVER_SELECTOR).toContain("quepid-popover-template")
-    expect(POPOVER_SELECTOR).toContain("bs-static-popover")
+    expect(POPOVER_SELECTOR).not.toContain("bs-static-popover")
   })
 
   it("maps uib trigger strings to BS5 triggers", () => {

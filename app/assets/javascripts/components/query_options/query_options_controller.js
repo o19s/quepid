@@ -7,13 +7,11 @@ angular.module('QuepidApp')
     '$quepidModal',
     '$scope',
     '$log',
-    'flash',
     'queriesSvc',
     function (
       $quepidModal,
       $scope,
       $log,
-      flash,
       queriesSvc
     ) {
       var ctrl  = this;
@@ -37,17 +35,17 @@ angular.module('QuepidApp')
             try {
               JSON.parse(value);
             } catch (e) {
-              flash.error = 'Please provide a valid JSON object.';
+              window.quepidDom.flash.show('error', 'Please provide a valid JSON object.');
               return;
             }
 
             ctrl.query.saveOptions(JSON.parse(value))
               .then(function() {
-                flash.success = 'Query options saved successfully.';
+                window.quepidDom.flash.show('success', 'Query options saved successfully.');
                 $log.info('rescoring queries after changing query options');
                 queriesSvc.updateScores();
               }, function() {
-                flash.error = 'Unable to save query options.';
+                window.quepidDom.flash.show('error', 'Unable to save query options.');
               });
           },
           function() {

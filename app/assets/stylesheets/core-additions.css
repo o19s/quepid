@@ -574,6 +574,10 @@ footer {
   text-decoration:  underline;
 }
 
+.matches-popper .bi-info-circle-fill {
+  margin-left: 0.25rem;
+}
+
 .btn-circle {
   width: 30px;
   height: 30px;
@@ -608,9 +612,9 @@ footer {
 }
 
 /*
-	Flash — directive uses active-class="show alert" on class="flash fade"
-	(templates flash.html / search_flash.html). Dismiss control is
-	.btn-core-close (styled in misc.css), not Bootstrap’s .close.
+	Flash — Stimulus `flash` controller (app/javascript/controllers/flash_controller.js)
+	toggles "show alert" on class="flash fade" (markup in views/core/index.html.erb).
+	Dismiss control is .btn-core-close (styled in misc.css), not Bootstrap’s .close.
 */
 
 .flash {

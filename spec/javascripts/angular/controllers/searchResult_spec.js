@@ -19,7 +19,8 @@ describe('Controller: SearchResultCtrl', function () {
     scope = $rootScope.$new();
     scope.doc = mockDoc;
     SearchResultCtrl = $controller('SearchResultCtrl', {
-      $scope: scope
+      $scope:   scope,
+      $element: angular.element('<div></div>')
     });
 
   }));

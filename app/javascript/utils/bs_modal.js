@@ -50,3 +50,22 @@ export function hideBsModal(instance) {
   if (!instance) return
   instance.hide()
 }
+
+/** Show a modal above any currently visible Bootstrap modal. */
+export function showStackedModal(wrapper, modal) {
+  const index = document.querySelectorAll(".modal.show").length
+  if (index > 0) wrapper.style.zIndex = 1050 + index * 20
+
+  modal.show()
+
+  if (index > 0) {
+    const backdrops = document.querySelectorAll(".modal-backdrop")
+    const backdrop = backdrops[backdrops.length - 1]
+    if (backdrop) backdrop.style.zIndex = 1040 + index * 20
+  }
+}
+
+/** Restore the outer modal's scroll lock after an inner modal closes. */
+export function restoreModalBodyLock() {
+  if (document.querySelector(".modal.show")) document.body.classList.add("modal-open")
+}

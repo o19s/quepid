@@ -22,16 +22,16 @@
     </qscore-query>
 
     <h2 class="results-title">
-      <span class='query' data-controller="bs-tooltip" data-bs-tooltip-title-value="Info Need: {{query.informationNeed}}" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
+      <span class="query" data-controller="bs-tooltip" data-bs-tooltip-title-value="Info Need: {{query.informationNeed}}" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
         <img class="img-thumbnail query-thumbnail" ng-if="query.queryText | isImageUrl"
-             ng-src="{{query.queryText}}" />
+             ng-src="{{query.queryText}}">
         <span ng-if="!(query.queryText | isImageUrl)">
           {{query.queryText}}&nbsp;
         </span>
       </span>
     </h2>
 
-    <span class='float-end total-results'>
+    <span class="float-end total-results">
       <span count-up="query.getNumFound()"></span>
       <small class="text-muted">
         <ng-pluralize count="query.getNumFound()"
@@ -66,7 +66,7 @@
     <div class="col-ratings query-rating">
       <strong>Score All</strong>
       <div class="ratings">
-        <div class="single-rating" ng-click="ratings.open()" quepid-popover-template="'views/ratings/popover.html'" popover-trigger="outsideClick" popover-placement="auto right" popover-is-open="ratings.ratingsOn">
+        <div class="single-rating" data-controller="rating-popover" data-rating-popover-scale-value="{{ (ratings.scale || {}) | json:0 }}">
           <span class="btn" ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle">{{displayRating()}} <i class="bi bi-caret-down-fill"></i></span>
         </div>
       </div>
@@ -74,13 +74,12 @@
 
     <div class="btn-toolbar" role="toolbar">
       <div class="btn-group me-2">
-        <button class="btn btn-outline-secondary btn-sm" ngclipboard data-clipboard-text="{{query.queryText}}">
+        <button class="btn btn-outline-secondary btn-sm" ng-click="copyQueryText()">
           <i
           class="bi bi-copy"
           aria-hidden="true"
           title="Copy query"
-          alt="Copy query"
-        ></i></button>
+          alt="Copy query"></i></button>
 
       </div>
 
@@ -110,7 +109,7 @@
 
     <!-- Query note taker -->
     <div ng-class="{true: 'notes-box', false: 'd-none'}[displayed.notes]">
-      <div ng-controller = 'QueryNotesCtrl as ctrl' class="notes-content">
+      <div ng-controller="QueryNotesCtrl as ctrl" class="notes-content">
         <form ng-submit="saveNotes()">
           <div class="row mb-3">
             <label for="information-need" class="col-sm-2 col-form-label text-sm-end">Information Need</label>
@@ -150,7 +149,7 @@
       <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.docs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
       </search-result>
 
-      <div class='row results-pane-footer'>
+      <div class="row results-pane-footer">
         <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane"></i>
         <span ng-if="query.numFound > query.docs.length && (selectedTry.searchEngine != 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination)">
           <a
@@ -175,11 +174,11 @@
       <search-result explain-viewport="'#query-container'" explain-view="'full'" class="search-result" ng-repeat="doc in query.ratedDocs track by doc.id" max-doc-score="query.maxDocScore()" doc="doc" field-spec="query.fieldSpec" rank="{{$index + 1}}" query="query" doc-id="doc.id">
       </search-result>
 
-      <div class='row results-pane-footer'>
+      <div class="row results-pane-footer">
         <i class="bi bi-caret-up-fill results-pane-toggle" ng-click="query.toggle()" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane"></i>
         <span ng-if="query.getNumFound() > query.ratedDocs.length && (selectedTry.searchEngine != 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination)">
           <a
-            ng-show='query.getNumFound() > query.ratedDocs.length'
+            ng-show="query.getNumFound() > query.ratedDocs.length"
             class="btn btn-outline-secondary"
             ng-click="query.ratedPaginate()"
           >

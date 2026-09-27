@@ -7,13 +7,11 @@ angular.module('QuepidApp')
     '$scope',
     '$quepidModalInstance',
     '$log',
-    'flash',
     'querySnapshotSvc', 'queryViewSvc', 'queriesSvc', 'initialSelection',
     function(
       $scope,
       $quepidModalInstance,
       $log,
-      flash,
       querySnapshotSvc, queryViewSvc, queriesSvc, initialSelection
     ) {
       var ctrl = this;
@@ -163,7 +161,7 @@ angular.module('QuepidApp')
             queryViewSvc.disableComparisons();
             queriesSvc.refreshAllDiffs();
 
-            flash.success = 'Snapshot deleted successfully.';
+            window.quepidDom.flash.show('success', 'Snapshot deleted successfully.');
           });
       }
 
@@ -173,7 +171,7 @@ angular.module('QuepidApp')
         queryViewSvc.disableComparisons();
         queriesSvc.refreshAllDiffs();
         $quepidModalInstance.close(null);
-        flash.success = 'Comparison view has been cleared.';
+        window.quepidDom.flash.show('success', 'Comparison view has been cleared.');
       }
 
       function ok() {
@@ -183,7 +181,7 @@ angular.module('QuepidApp')
           queryViewSvc.disableComparisons();
           queriesSvc.refreshAllDiffs();
           $quepidModalInstance.close(null);
-          flash.success = 'Comparison view has been cleared.';
+          window.quepidDom.flash.show('success', 'Comparison view has been cleared.');
         } else {
           ctrl.inProgress = true;
           
@@ -202,11 +200,11 @@ angular.module('QuepidApp')
               });
               
               var message = `Snapshot${validSelections.length === 1 ? '' : 's'} loaded successfully for comparison.`;
-              flash.success = message;
+              window.quepidDom.flash.show('success', message);
             })
             .catch(function(response) {
               ctrl.inProgress = false;
-              flash.error = 'Could not fetch one or more snapshots!';
+              window.quepidDom.flash.show('error', 'Could not fetch one or more snapshots!');
               $log.debug('error fetching snapshots:');
               $log.debug(response);
             });
