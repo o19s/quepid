@@ -556,7 +556,7 @@ Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 
 ### DOM bridge (`quepid_dom.js`)
 
-`app/javascript/quepid_dom.js` — side-effect entry that pins `window.quepidDom` (tooltip/popover/paste helpers, `countUp`, `flash`, `modal.open` (`utils/dynamic_modal.js`), `jsonExplorer.render`/`escapeHtml` (`utils/json_explorer.js`)) for the remaining thin Angular controllers and compatibility bridges. Loaded with the Angular vendor bundle (`build:angular-vendor` passes esbuild `--alias:utils=./app/javascript/utils` so bridged utils can keep their normal importmap-style bare imports); remove with Angular.
+`app/javascript/quepid_dom.js` — side-effect entry that pins `window.quepidDom` (tooltip/popover/paste helpers, `countUp`, `flash`, `modal.open` (`utils/dynamic_modal.js`), `jsonExplorer.render`/`escapeHtml` (`utils/json_explorer.js`)) for the remaining thin Angular controllers and compatibility bridges. It is now loaded through the framework-free `case_runtime` bundle before Angular; remove the global when the remaining compatibility bridges are gone.
 ### Non-Angular JS in the Angular bundle
 
 `footer.js`, `tour.js`, `ace_config.js`, `scorerEvalTest.js`, `mode-json.js` — relocate when bundle goes away.
@@ -570,10 +570,11 @@ Core layout loads: `json-explorer` (Quepid-owned, styles the vanilla JSON tree).
 | Artifact | Path |
 |----------|------|
 | npm `angular`, `angular-mocks` | `package.json` |
+| Framework-free case runtime | `app/javascript/case_runtime.js` → `app/assets/builds/case_runtime.js` |
 | Vendor bundle | `app/javascript/angular_app.js` → `app/assets/builds/angular_app.js` |
 | App bundle | `build_angular_app.js` → `quepid_angular_app.js` |
 | Templates | `build_templates.js` → `angular_templates.js` |
-| yarn scripts | `build:angular*` included in `yarn build` |
+| yarn scripts | `build:case-runtime` and `build:angular*` included in `yarn build` |
 | Linked stylesheets | `build_css.js` → `copyLinkedStylesheets()` · audit: `audit_css.js` |
 
 Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (6 packages; see [vendor README](../../app/javascript/vendor/README.md))

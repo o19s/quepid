@@ -45,19 +45,9 @@ import './splainer_search_adapter';
 import URI from 'urijs';
 window.URI = URI;
 
-// Shared BS5 tooltip/popover/paste helpers (see app/javascript/quepid_dom.js).
-import quepidDom from './quepid_dom';
-window.quepidDom = quepidDom;
-
-// Framework-free query/search logic (see app/javascript/quepid_search.js).
-import quepidSearch from './quepid_search';
-window.quepidSearch = quepidSearch;
-
-// Dual-run shadow stores for the case-workspace re-render mechanism (see
-// app/javascript/quepid_store.js and docs/todo/angularjs_removal_inventory.md
-// § Re-render mechanism).
-import quepidStore from './quepid_store';
-window.quepidStore = quepidStore;
+// The framework-free case runtime is loaded by core.html.erb before this
+// legacy bundle. It remains available on window for compatibility services,
+// but is no longer bundled as part of Angular.
 
 // Shepherd for tours. Both are UMD builds; under esbuild's CommonJS-like
 // module scope they resolve to their `module.exports` branch instead of
