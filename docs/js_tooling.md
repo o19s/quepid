@@ -17,8 +17,6 @@ Lint/format scope is defined once in **`config/javascript_lint_scope.mjs`** and 
 
 - `eslint.config.mjs` (ignores + file globs) — **all** modern `app/javascript` except vendor/esbuild bridges
 - `scripts/javascript_lint.mjs` + `scripts/filter_javascript_prettier_paths.mjs` — **Prettier only on `api/` and `utils/`** for now (avoids a mass reformat of controllers/modules in one PR)
-- `scripts/filter_javascript_lint_paths.mjs` (ESLint pre-commit)
-- `bin/eslint-staged` / `bin/prettier-staged`
 
 That tree includes:
 
@@ -40,9 +38,9 @@ Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no t
 
 **Trailing commas:** unlike many JS projects, Quepid does **not** use them in modern JS. Ruby is the opposite — RuboCop **requires** trailing commas on multiline hashes. See `CLAUDE.md` § Agent checklist.
 
-**Prettier** is enforced on **`api/` and `utils/`** only (via pre-commit and `yarn format:js*`). Do **not** run Prettier on `controllers/`, `modules/`, or entry bundles for now — whole-file Prettier would churn older single-quote files. Hand-apply modern style to **new** lines you add there.
+**Prettier** is scoped to **`api/` and `utils/`** only (via `yarn format:js*`). Do **not** run Prettier on `controllers/`, `modules/`, or entry bundles for now — whole-file Prettier would churn older single-quote files. Hand-apply modern style to **new** lines you add there.
 
-**ESLint** covers the full modern tree under `app/javascript/`; Vitest specs live under `test/javascript/` and are out of scope entirely (not colocated, not linted/formatted by these tools). Pre-commit runs ESLint on staged `controllers/`, `modules/`, etc.; run it yourself before finishing. Specs follow formatting conventions manually.
+**ESLint** covers the full modern tree under `app/javascript/`; Vitest specs live under `test/javascript/` and are out of scope entirely (not colocated, not linted/formatted by these tools). Specs follow formatting conventions manually.
 
 **Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style.
 
@@ -69,16 +67,6 @@ bin/docker r npx eslint app/javascript/controllers/foo_controller.js
 Do not run `prettier --write` on paths outside `api/`/`utils/` unless you deliberately want a whole-file reformat.
 
 After pulling these dependencies, run `bin/docker r yarn install` once.
-
-### Pre-commit
-
-`.githooks/pre-commit` (via `bin/install-git-hooks`) runs on staged files:
-
-- `app/assets/javascripts/*.js` → JSHint
-- `app/javascript/**/*.js` (lint scope) → **ESLint** via `eslint-staged` + `filter_javascript_lint_paths.mjs`
-- `app/javascript/api/**`, `app/javascript/utils/**` → **Prettier** via `prettier-staged` + `filter_javascript_prettier_paths.mjs` (other modern paths are ESLint-only for now)
-
-[pre-commit.com](https://pre-commit.com) hooks: `jshint-staged`, `eslint-staged`, `prettier-staged`, `stylelint-staged`.
 
 ### Editor
 

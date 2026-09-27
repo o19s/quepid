@@ -245,24 +245,24 @@ star wars,1921,3, Star Wars: Return of the Jedi
               </div>
             </span>
 
-            <span ng-if="pendingWizardSettings.searchEngine === 'solr'">
-            <p>
-              <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
-            </p>
-            <div quepid-collapse="!isSolrCollapsed" class="mb-3">
-              <div class="bg-light p-2 rounded border">
-                <div class="mb-3 row">
-                  <label class="col-sm-3 col-form-label">API Method</label>
-                  <div class="col-sm-9">
-                    <select class="form-select" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
-                      <option>JSONP</option>
-                      <option>GET</option>
-                    </select>
-                    <p class="form-text">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
+            <span ng-if="pendingWizardSettings.searchEngine === 'solr' && !proxyRequiredForAllEndpoints">
+              <p>
+                <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="isSolrCollapsed = !isSolrCollapsed">Solr Configuration</button>
+              </p>
+              <div quepid-collapse="!isSolrCollapsed" class="mb-3">
+                <div class="bg-light p-2 rounded border">
+                  <div class="mb-3 row">
+                    <label class="col-sm-3 col-form-label">API Method</label>
+                    <div class="col-sm-9">
+                      <select class="form-select" ng-model="pendingWizardSettings.apiMethod" ng-change="resetUrlValid()">
+                        <option>JSONP</option>
+                        <option>GET</option>
+                      </select>
+                      <p class="form-text">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
             </span>
 
             <span ng-if="pendingWizardSettings.searchEnginePreset === 'searchapi'">
@@ -296,8 +296,8 @@ star wars,1921,3, Star Wars: Return of the Jedi
             <div quepid-collapse="!isHeaderConfigCollapsed">
               <div class="bg-light p-2 rounded border mb-3">
                 <div class="mb-3 row">
-                  <label class="col-sm-3 col-form-label">Proxy Requests</label>
-                  <div class="col-sm-9">
+                  <label class="col-sm-3 col-form-label" ng-if="!proxyRequiredForAllEndpoints">Proxy Requests</label>
+                  <div class="col-sm-9" ng-if="!proxyRequiredForAllEndpoints">
                     <div class="form-check">
                       <input id="proxy-requests" type="checkbox" class="form-check-input" ng-model="pendingWizardSettings.proxyRequests" ng-change="changeProxySetting()">
                       <label class="form-check-label form-text" for="proxy-requests">Route search requests through the Quepid server instead of the browser. Useful when CORS, mixed-content, or firewall rules block direct access; check with your operations team if unsure.</label>

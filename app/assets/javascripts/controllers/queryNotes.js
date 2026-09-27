@@ -3,8 +3,7 @@
 angular.module('QuepidApp')
   .controller('QueryNotesCtrl', [
     '$scope',
-    'flash',
-    function ($scope, flash) {
+    function ($scope) {
       $scope.queryNotes = '';
       $scope.informationNeed = '';
 
@@ -22,10 +21,10 @@ angular.module('QuepidApp')
       $scope.saveNotes = function() {
         $scope.query.saveNotes($scope.queryNotes, $scope.informationNeed)
           .then( function() {
-            flash.success = 'Success! Your query details have been saved.';
+            window.quepidDom.flash.show('success', 'Success! Your query details have been saved.');
             $scope.displayed.notes = false;
           }, function() {
-            flash.error = 'Ooooops! Could not save your query details. Please try again.';
+            window.quepidDom.flash.show('error', 'Ooooops! Could not save your query details. Please try again.');
           });
       };
     }

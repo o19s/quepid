@@ -54,9 +54,11 @@
 
             </ul>
           </li>
-          <li class="nav-item">
-            <%= link_to "Teams", teams_path, class: "nav-link" %>
-          </li>
+          <% unless desktop_mode? %>
+            <li class="nav-item">
+              <%= link_to "Teams", teams_path, class: "nav-link" %>
+            </li>
+          <% end %>
           <li class="nav-item">
             <%= link_to "AI Judges", ai_judges_path, class: "nav-link" %>
           </li>

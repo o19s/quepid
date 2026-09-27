@@ -41,6 +41,10 @@ function buildModalController(overrides = {}) {
   controller.titleTarget = document.createElement("h5")
   controller.hasSubmitButtonTarget = true
   controller.submitButtonTarget = document.createElement("button")
+  controller.hasDetailedRadioTarget = true
+  controller.detailedRadioTarget = document.createElement("input")
+  controller.hasDetailedWarningTarget = true
+  controller.detailedWarningTarget = document.createElement("p")
   controller.hasSnapshotRadioTarget = true
   controller.snapshotRadioTarget = document.createElement("input")
   controller.hasSnapshotSelectTarget = true
@@ -72,10 +76,11 @@ function buildModalController(overrides = {}) {
   return controller
 }
 
-function buildTrigger({ id = "5", name = "Movies" } = {}) {
+function buildTrigger({ id = "5", name = "Movies", supportsDetailedExport = "true" } = {}) {
   const trigger = document.createElement("a")
   trigger.dataset.exportCaseCoreIdValue = id
   trigger.dataset.exportCaseCoreNameValue = name
+  trigger.dataset.exportCaseCoreSupportsDetailedExportValue = supportsDetailedExport
   return trigger
 }
 
@@ -116,6 +121,17 @@ describe("ExportCaseCoreController", () => {
     expect(controller.ratingsLinkTarget.getAttribute("href")).toBe("/api/export/ratings/5.json")
   })
 
+  it("disables the detailed radio when the trigger says detailed export isn't supported", async () => {
+    apiFetch.mockResolvedValue(okJsonResponse({ snapshots: [] }))
+    const controller = buildModalController()
+    const trigger = buildTrigger({ supportsDetailedExport: "false" })
+
+    await controller.open({ preventDefault: () => {}, currentTarget: trigger })
+
+    expect(controller.detailedRadioTarget.disabled).toBe(true)
+    expect(controller.supportsDetailedExport).toBe(false)
+  })
+
   it("_loadSnapshots populates every snapshot select with a date-prefixed label", async () => {
     apiFetch.mockResolvedValue(okJsonResponse({
       snapshots: [
@@ -136,13 +152,15 @@ describe("ExportCaseCoreController", () => {
     expect(controller.snapshotSelectTarget.children[2].textContent).toBe("(1/1/26) Monthly")
   })
 
-  it("selectFormat enables submit for detailed export", () => {
+  it("selectFormat enables submit and shows the warning only for an unsupported detailed pick", () => {
     const controller = buildModalController()
+    controller.supportsDetailedExport = false
 
     controller.selectFormat({ params: { format: "detailed" } })
 
     expect(controller.selectedFormat).toBe("detailed")
-    expect(controller.submitButtonTarget.disabled).toBe(false)
+    expect(controller.submitButtonTarget.disabled).toBe(true)
+    expect(controller.detailedWarningTarget.classList.contains("d-none")).toBe(false)
   })
 
   it("selectSnapshot checks the snapshot radio but keeps submit disabled until a snapshot is actually chosen", () => {

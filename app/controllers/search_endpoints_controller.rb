@@ -58,8 +58,7 @@ class SearchEndpointsController < ApplicationController
 
   def update
     params_to_use = search_endpoint_params
-
-    params_to_use[:team_ids].compact_blank!
+    params_to_use[:team_ids] = params_to_use.fetch(:team_ids, []).compact_blank
 
     # this logic is crazy, but basically we don't want to touch the teams that are associated with
     # an endpoint that the current_user CAN NOT see, so we clear out of the relationship all the ones

@@ -1,6 +1,5 @@
 /**
- * Bootstrap 5 popover helpers shared by Angular quepidPopover / bsStaticPopover
- * and (future) Stimulus pages.
+ * Bootstrap 5 popover helpers shared by Angular quepidPopover and Stimulus pages.
  *
  * Trigger mapping (uib → BS5) for Angular attrs:
  *   'mouseenter'   → hover focus
@@ -9,7 +8,7 @@
  *   'outsideClick' → manual + document capture listener
  */
 
-export const POPOVER_SELECTOR = "[quepid-popover], [quepid-popover-template], [bs-static-popover]"
+export const POPOVER_SELECTOR = "[quepid-popover], [quepid-popover-template]"
 
 export function parsePopoverTrigger(raw) {
   if (!raw) return "click"
@@ -110,6 +109,13 @@ export function createBsPopover(element, options = {}) {
       ".popover-body": currentBody || " "
     })
   }
+
+  // The constructor above only seeds BS5's internal template with " " for
+  // title/content (a placeholder, not currentTitle/currentBody) - callers
+  // that pass a real title/body at creation time (rather than only via a
+  // later setTitle()/setBody(), as Stimulus value-changed callbacks do)
+  // would otherwise render blank until something else calls one of those.
+  refreshContent()
 
   function setTitle(val) {
     currentTitle = val || ""

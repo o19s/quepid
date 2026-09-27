@@ -2,9 +2,9 @@
 
 angular.module('QuepidApp')
   .controller('SearchResultCtrl', [
-    '$scope', '$quepidModal',
-    'rateElementSvc',
-    function ($scope, $quepidModal, rateElementSvc) {
+    '$scope', '$element', '$quepidModal',
+    'rateScaleSvc',
+    function ($scope, $element, $quepidModal, rateScaleSvc) {
 
       var src = {
         'query':  $scope.query,
@@ -14,7 +14,32 @@ angular.module('QuepidApp')
       $scope.ratings = { };
 
       $scope.$watch('query.effectiveScorer()', function() {
-        rateElementSvc.setScale(src, $scope.ratings);
+        rateScaleSvc.setScale(src, $scope.ratings);
+      });
+
+      // Content and open/close state now live in the rating-popover Stimulus
+      // controller (data-controller="rating-popover" in searchResult.html);
+      // it dispatches these events on its own element, which bubble up to
+      // whichever DOM node this controller is attached to. Stop propagation
+      // so an ancestor's own rating-popover listener (e.g. SearchResultsCtrl's
+      // "Score All" bulk rating) doesn't also fire for this single doc.
+      $element.on('rating-popover:rate', function(event) {
+        event.stopPropagation();
+        var newRating = parseInt(event.originalEvent.detail.rating, 10);
+        src.doc.rate(newRating);
+        src.query.touchModifiedAt();
+        $scope.$apply();
+      });
+
+      $element.on('rating-popover:reset', function(event) {
+        event.stopPropagation();
+        src.doc.resetRating();
+        src.query.touchModifiedAt();
+        $scope.$apply();
+      });
+
+      $scope.$on('$destroy', function() {
+        $element.off('rating-popover:rate rating-popover:reset');
       });
 
       // Note, as of 29-Feb-24, the Highest Rated has been removed..  So...
@@ -32,19 +57,7 @@ angular.module('QuepidApp')
         src.doc = $scope.doc;
       });
 
-      rateElementSvc.setScale(src, $scope.ratings);
-      rateElementSvc.handleRatingScale($scope.ratings,
-        function(ratingNo, extra) {
-          var newRating = parseInt(ratingNo, 10);
-          extra.doc.rate(newRating);
-          extra.query.touchModifiedAt();
-        },
-        function(extra) {
-          extra.doc.resetRating();
-          extra.query.touchModifiedAt();
-        },
-        src
-      );
+      rateScaleSvc.setScale(src, $scope.ratings);
 
       $scope.displayRating = function() {
         if (!$scope.doc.hasRating()) {
@@ -79,20 +92,46 @@ angular.module('QuepidApp')
         });
       };
 
-      $scope.showDetailed = function() {
-        $quepidModal.open({
-          templateUrl: 'views/detailedExplain.html',
-          controller: 'DocExplainCtrl',
-          //windowClass: 'detailed-explain-modal',
-          resolve: {
-            doc: function() {
-              return $scope.doc;
-            },
-            maxScore: function() {
-              return $scope.maxDocScore;
-            }
+      // Feeds the match-explain Stimulus controller (searchResult.html's
+      // stacked-chart-container) — see docs/todo/angularjs_removal_inventory.md's
+      // "DOM utilities" entry. doc.explain()/hotMatchesOutOf() stay Angular
+      // (splainer-search); this just serializes what the popover/bars/debug
+      // and expand modals need to render.
+      var matchExplainCache = {
+        doc: null,
+        queryVersion: null,
+        maxDocScore: null,
+        data: null
+      };
+
+      $scope.matchExplainData = function() {
+        var queryVersion = $scope.query.version();
+        var maxDocScore = $scope.maxDocScore;
+        if (matchExplainCache.doc === $scope.doc &&
+            matchExplainCache.queryVersion === queryVersion &&
+            matchExplainCache.maxDocScore === maxDocScore) {
+          return matchExplainCache.data;
+        }
+
+        var explain      = $scope.doc.explain();
+        var hasChildren  = explain.children.length > 0;
+
+        matchExplainCache = {
+          doc: $scope.doc,
+          queryVersion: queryVersion,
+          maxDocScore: maxDocScore,
+          data: {
+            hasChildren: hasChildren,
+            hots: $scope.doc.hotMatchesOutOf(maxDocScore),
+            explainToStr: hasChildren ? explain.toStr() : null,
+            explainAsJson: hasChildren ? null : JSON.stringify(explain.asJson, null, 2),
+            explainRawStr: explain.rawStr(),
+            docTitle: $scope.doc.title,
+            docId: $scope.doc.id,
+            docScore: $scope.doc.score()
           }
-        });
+        };
+        return matchExplainCache.data;
       };
 
       $scope.isObjectOrArray = function(value) {

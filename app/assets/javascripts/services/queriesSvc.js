@@ -429,8 +429,8 @@ angular.module('QuepidApp')
        * engine-agnostic bar rendering (explainSvc/normalDocsSvc) picks it up identically to
        * how it already does for Solr's real explain output. Returns undefined (falling back to
        * splainer-search's empty-explain placeholder - doc.explain().children.length === 0 - which
-       * stackedChart.html/matches.html render as "no per-term score breakdown/explanation
-       * available") when a doc has no matchfeatures to show.
+       * the match-explain Stimulus controller (app/javascript/controllers/match_explain_controller.js)
+       * renders as "no per-term score breakdown for doc" when a doc has no matchfeatures to show.
        */
       function matchFeaturesExplain(doc) {
         let matchFeatures = doc.matchfeatures;

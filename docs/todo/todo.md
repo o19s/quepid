@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-09-15
+**Last updated:** 2026-09-18
 
 Outstanding bugs, hardening, and cleanup on `main` only. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -353,3 +353,27 @@ Post-import navigation still built client-side: `` `${getQuepidRootUrl()}/case/$
 Migrate to `apiFetch` when touched: `confirm_delete_controller.js` (form submit — keep as-is unless moving to fetch).
 
 **Also:** add `data-quepid-root-url` to `analytics.html.erb` if that layout ever loads Stimulus HTTP code.
+
+---
+
+## P2 — match-explain Stimulus controller follow-ups
+
+From the match/explain popover + Debug/Expand modal migration (`match_explain_controller.js`, `utils/json_explorer.js`, `searchResult.js#matchExplainData`). Not blocking — flagged during review, deliberately deferred rather than fixed inline.
+
+### Eager per-digest computation undoes the deleted code's lazy-compile optimization
+
+**Location:** `app/assets/javascripts/controllers/searchResult.js` (`matchExplainData`), `app/assets/templates/views/searchResult.html`
+
+`matchExplainData()` is bound via Angular interpolation (`data-match-explain-data-value="{{ matchExplainData() | json:0 }}"`), so it runs on every digest for every visible search-result row — including `explain.toStr()`/`explain.rawStr()` (memoized inside splainer-search, cheap after the first call) and `JSON.stringify(explain.asJson, null, 2)` (**not** memoized anywhere, re-stringified every digest). Only `hots`/`hasChildren`/`docScore` are needed for the always-visible chip+bars; the deleted `quepidPopover.js` had an explicit comment for why the rest was deferred: *"Compile lazily on first show — rating rows mount this on every result but most popovers are never opened."* That optimization is gone.
+
+**Fix direction:** Split `matchExplainData()` into an eager piece (`hots`, `hasChildren`, `docScore`) and a piece computed only when the popover/Debug/Expand modal is actually opened (e.g. a second data attribute populated lazily on first popover show, or a dedicated event the Stimulus controller dispatches back to Angular on click). Likely not worth doing in isolation — revisit as part of the live query-state phase, where `searchResult`'s digest cost is already in scope.
+
+---
+
+### `json_explorer.js` doesn't escape object/array keys
+
+**Location:** `app/javascript/utils/json_explorer.js` (`parseChildren`)
+
+Faithfully ports the vendored `ng-json-explorer` Angular directive's own pre-existing gap: leaf string/number/boolean values are escaped, but a key name is inserted into the tree HTML raw. Unlike the vendor file, this is new code fully under our control — worth closing (`escapeHtml(key)`) next time this file is touched. Low real-world risk: reachable key names come from the search engine's explain payload or admin-configured field specs, not raw end-user input.
+
+Same file, lower priority: a `parseValue`/`parseChildren` entry for an `undefined` value renders a stray `<li>,</li>` instead of omitting the `<li>` entirely (the vendor's `if`/`else if` chain with no final `else` just skips it). Unreachable in practice — input always comes from `JSON.parse`, which never produces `undefined` — but worth matching exactly if this file is revisited.

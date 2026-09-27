@@ -8,13 +8,31 @@ angular.module('QuepidApp')
     'caseTryNavSvc',
     'SettingsFactory',
     'broadcastSvc',
+    'configurationSvc',
     function settingsSvc(
       $http,
       $q,
       caseTryNavSvc,
       SettingsFactory,
-      broadcastSvc
+      broadcastSvc,
+      configurationSvc
     ) {
+
+      // JSONP is inherently a direct-from-browser mechanism, so it can't be
+      // paired with a forced proxy - swap it for GET so a preset whose
+      // default is JSONP (e.g. Solr) doesn't land in an unfixable invalid
+      // state when every search endpoint is required to be proxied.
+      function forceProxyIfRequired(settings) {
+        if (!configurationSvc.isRequireProxyForAllSearchEndpoints()) {
+          return settings;
+        }
+        if (settings.apiMethod === 'JSONP') {
+          settings.apiMethod = 'GET';
+        }
+        settings.proxyRequests = true;
+        return settings;
+      }
+      this.forceProxyIfRequired = forceProxyIfRequired;
 
       /* jshint ignore:start */
       // Used by the wizard for any search engine.
@@ -417,7 +435,7 @@ angular.module('QuepidApp')
 
       this.pickSettingsToUse = function(searchEngine, newUrl) {
         if (this.demoSettingsChosen(searchEngine, newUrl)) {
-          return angular.copy(this.tmdbSettings[searchEngine]);
+          return forceProxyIfRequired(angular.copy(this.tmdbSettings[searchEngine]));
         }
         else {
           // Mapper-based engines (e.g. Vespa) are only registered into defaultSettings
@@ -425,7 +443,7 @@ angular.module('QuepidApp')
           // deep link/reload picks one of these before that async call finishes, or if
           // searchEngine is otherwise unrecognized, fall back to the generic searchapi
           // defaults rather than returning undefined and crashing the caller.
-          return angular.copy(this.defaultSettings[searchEngine] || this.defaultSettings.searchapi);
+          return forceProxyIfRequired(angular.copy(this.defaultSettings[searchEngine] || this.defaultSettings.searchapi));
         }
       };
 

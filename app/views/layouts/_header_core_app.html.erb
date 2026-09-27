@@ -77,7 +77,9 @@
         </li>
         <!-- End book selector -->
 
-        <li class="nav-item"><a class="nav-link" href="teams" target="_self">Teams</a></li>
+        <% unless desktop_mode? %>
+          <li class="nav-item"><a class="nav-link" href="teams" target="_self">Teams</a></li>
+        <% end %>
         <li class="nav-item"><a class="nav-link" href="scorers" target="_self">Scorers</a></li>
         <li class="nav-item"><a class="nav-link" href="notebooks/lab/index.html" target="_blank" rel="noopener noreferrer">Notebooks</a></li>
       </ul>

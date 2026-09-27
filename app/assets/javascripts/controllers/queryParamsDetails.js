@@ -3,11 +3,9 @@
 angular.module('QuepidApp')
   .controller('QueryParamsDetailsCtrl', [
     '$scope', '$quepidModalInstance',
-    'flash',
     'aTry', 'settingsSvc', 'caseTryNavSvc',
     function(
       $scope, $quepidModalInstance,
-      flash,
       aTry, settingsSvc, caseTryNavSvc
     ) {
       $scope.aTry = aTry;
@@ -30,16 +28,16 @@ angular.module('QuepidApp')
       $scope.deleteTry = function(aTry) {
         if (aTry.tryNo === caseTryNavSvc.getTryNo()){
           $quepidModalInstance.dismiss();
-          flash.error = 'You can not delete the currently active try (' + aTry.name + ')!  Please select another try first.';
+          window.quepidDom.flash.show('error', 'You can not delete the currently active try (' + aTry.name + ')!  Please select another try first.');
         }
         else {
           settingsSvc.deleteTry(aTry.tryNo)
             .then(function() {
               $quepidModalInstance.dismiss();
-              flash.success = 'Successfully deleted try!';
+              window.quepidDom.flash.show('success', 'Successfully deleted try!');
             }, function() {
               $quepidModalInstance.dismiss();
-              flash.error = 'Unable to delete try!';
+              window.quepidDom.flash.show('error', 'Unable to delete try!');
             });
         }
       };

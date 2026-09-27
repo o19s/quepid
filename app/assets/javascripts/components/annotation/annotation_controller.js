@@ -5,9 +5,8 @@
 angular.module('QuepidApp')
   .controller('AnnotationCtrl', [
     '$quepidModal',
-    'flash',
     'annotationsSvc',
-    function($quepidModal, flash, annotationsSvc) {
+    function($quepidModal, annotationsSvc) {
       var ctrl = this;
 
       // Functions
@@ -17,9 +16,9 @@ angular.module('QuepidApp')
       function deleteAnnotation () {
         annotationsSvc.delete(ctrl.theAnnotation)
           .then(function() {
-            flash.success = 'Annotation deleted successfully!';
+            window.quepidDom.flash.show('success', 'Annotation deleted successfully!');
           }, function() {
-            flash.error = 'Unable to delete Annotation.';
+            window.quepidDom.flash.show('error', 'Unable to delete Annotation.');
           });
       }
 
@@ -41,10 +40,10 @@ angular.module('QuepidApp')
           function(annotation) {
             annotationsSvc.update(annotation)
               .then(function() {
-                flash.success = 'Annotation updated successfully!';
+                window.quepidDom.flash.show('success', 'Annotation updated successfully!');
               },
               function(response) {
-                flash.error = response.data.message;
+                window.quepidDom.flash.show('error', response.data.message);
               });
           },
           function() {

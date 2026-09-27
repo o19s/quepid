@@ -174,8 +174,8 @@
             // inner modal would release the outer's scroll lock. Re-apply
             // here if any other modal is still showing. uib used
             // $$stackedMap for the same purpose.
-            if (document.querySelector('.modal.show')) {
-              document.body.classList.add('modal-open');
+            if (window.quepidDom && window.quepidDom.modal) {
+              window.quepidDom.modal.restoreBodyLock();
             }
           });
         }
@@ -240,13 +240,10 @@
             // synchronously inside show() regardless of animation (only the
             // fade-in itself is async), so we can grab the most-recent
             // .modal-backdrop right after show() returns.
-            const stackIdx = document.querySelectorAll('.modal.show').length;
-            if (stackIdx > 0) { wrapperEl.style.zIndex = 1050 + stackIdx * 20; }
-            bsModal.show();
-            if (stackIdx > 0) {
-              const backdrops = document.querySelectorAll('.modal-backdrop');
-              const ours = backdrops[backdrops.length - 1];
-              if (ours) { ours.style.zIndex = 1040 + stackIdx * 20; }
+            if (window.quepidDom && window.quepidDom.modal) {
+              window.quepidDom.modal.showStacked(wrapperEl, bsModal);
+            } else {
+              bsModal.show();
             }
           } catch (err) {
             // Controller construction or compile threw — abandon the open.

@@ -262,6 +262,36 @@ class SearchEndpointTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'proxy required for all search endpoints' do
+    it 'requires proxy_requests even without basic auth credentials when enabled' do
+      with_require_proxy_for_all_search_endpoints(true) do
+        endpoint = SearchEndpoint.new(
+          name:           'Test',
+          endpoint_url:   'http://test.example.com',
+          search_engine:  'solr',
+          api_method:     'GET',
+          proxy_requests: false
+        )
+        assert_not endpoint.valid?
+        assert_includes endpoint.errors[:proxy_requests],
+                        'must be enabled: this Quepid instance requires all search requests to be proxied'
+      end
+    end
+
+    it 'allows non-proxy when disabled' do
+      with_require_proxy_for_all_search_endpoints(false) do
+        endpoint = SearchEndpoint.new(
+          name:           'Test',
+          endpoint_url:   'http://test.example.com',
+          search_engine:  'solr',
+          api_method:     'GET',
+          proxy_requests: false
+        )
+        assert_predicate endpoint, :valid?
+      end
+    end
+  end
+
   describe 'custom_headers persistence' do
     it 'normalizes after saving and reloading' do
       endpoint = SearchEndpoint.create!(

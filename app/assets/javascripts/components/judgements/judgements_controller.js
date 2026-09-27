@@ -5,11 +5,9 @@
 angular.module('QuepidApp')
   .controller('JudgementsCtrl', [
     '$quepidModal',
-    'flash',
     'queriesSvc',
     function (
       $quepidModal,
-      flash,
       queriesSvc
     ) {
       var ctrl = this;
@@ -39,7 +37,7 @@ angular.module('QuepidApp')
                   queriesSvc.searchAll();
                 });
 
-              flash.success = 'Ratings refreshed successfully!';
+              window.quepidDom.flash.show('success', 'Ratings refreshed successfully!');
             }
           }, function() { }
         );

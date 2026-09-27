@@ -2,13 +2,13 @@
 
 angular.module('QuepidApp')
   .controller('DocFinderCtrl', [
-    '$scope',
+    '$scope', '$element',
     'queriesSvc', 'settingsSvc',
-    'rateBulkSvc',
+    'rateScaleSvc',
     function (
-      $scope,
+      $scope, $element,
       queriesSvc, settingsSvc,
-      rateBulkSvc
+      rateScaleSvc
     ) {
       $scope.defaultList = false;
       $scope.docFinder = {
@@ -166,35 +166,49 @@ angular.module('QuepidApp')
       $scope.ratings = { };
 
       $scope.$watch('query.effectiveScorer()', function() {
-        rateBulkSvc.setScale(src, $scope.ratings);
+        rateScaleSvc.setScale(src, $scope.ratings);
       });
 
-      rateBulkSvc.setScale(src, $scope.ratings);
-      rateBulkSvc.handleRatingScale($scope.ratings,
-        function(ratingNo) {
-          var newRating = parseInt(ratingNo, 10);
+      rateScaleSvc.setScale(src, $scope.ratings);
 
-          var ids = [];
-          angular.forEach($scope.docFinder.docs, function(doc) {
-            ids.push(doc.id);
-          });
+      // Content and open/close state now live in the rating-popover Stimulus
+      // controller (data-controller="rating-popover" in targetedSearchModal.html);
+      // it dispatches these events on its own element, which bubble up to
+      // this controller's root element (the modal body). Stop propagation so
+      // a per-doc search-result row's own rating-popover event never reaches
+      // here too (each search-result row registers its own listener closer
+      // to the source and stops the event there).
+      $element.on('rating-popover:rate', function(event) {
+        event.stopPropagation();
+        var newRating = parseInt(event.originalEvent.detail.rating, 10);
 
-          if ( ids.length > 0 ) {
-            $scope.docFinder.docs[0].rateBulk(ids, newRating);
-          }
-        },
-        function() {
-          var ids = [];
-          angular.forEach($scope.docFinder.docs, function(doc) {
-            ids.push(doc.id);
-          });
+        var ids = [];
+        angular.forEach($scope.docFinder.docs, function(doc) {
+          ids.push(doc.id);
+        });
 
-          if ( ids.length > 0 ) {
-            $scope.docFinder.docs[0].resetBulkRatings(ids);
-          }
-        },
-        src
-      );
+        if ( ids.length > 0 ) {
+          $scope.docFinder.docs[0].rateBulk(ids, newRating);
+        }
+        $scope.$apply();
+      });
+
+      $element.on('rating-popover:reset', function(event) {
+        event.stopPropagation();
+        var ids = [];
+        angular.forEach($scope.docFinder.docs, function(doc) {
+          ids.push(doc.id);
+        });
+
+        if ( ids.length > 0 ) {
+          $scope.docFinder.docs[0].resetBulkRatings(ids);
+        }
+        $scope.$apply();
+      });
+
+      $scope.$on('$destroy', function() {
+        $element.off('rating-popover:rate rating-popover:reset');
+      });
 
       $scope.resetToAllRatedDocs = function(){
         $scope.docFinder.queryText = '';
