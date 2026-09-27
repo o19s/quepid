@@ -112,6 +112,29 @@ angular.module('QuepidApp')
         document.dispatchEvent(new CustomEvent('queries-state:changed'));
       }
 
+      // Case-level scoring orchestration lives in the framework-free query
+      // runtime. Angular remains the compatibility adapter for the live Query
+      // objects and the legacy latestScoreInfo shape during dual-run.
+      let caseScoringRuntime = window.quepidSearch.queryScoring.createCaseScoringRuntime({
+        getScorables: function() {
+          return svc.queries;
+        },
+        promiseApi: $q,
+        logger: console,
+        onComplete: function(scoreInfo, metadata) {
+          svc.latestScoreInfo = scoreInfo;
+
+          // The score store replaces its complete query-score map. Partial
+          // scoring (for example diff-only scoring) must not erase live
+          // query badges from the store.
+          if (metadata.isFullScoreAll) {
+            window.quepidStore.scoring.setLatestScoreInfo(scoreInfo);
+          }
+
+          publishQueryListState();
+        }
+      });
+
       window.quepidSearch.queryState.getListState = function() {
         var selectedTry = settingsSvc.applicableSettings() || {};
         return {
@@ -1567,38 +1590,9 @@ angular.module('QuepidApp')
        *
        */
       this.scoreAll = function(scorables) {
-        // Aggregation math (sentinel exclusion + averaging) lives in
-        // app/javascript/utils/scoring.js (Vitest-covered).
-        let isFullScoreAll = (scorables === undefined);
-        if (scorables === undefined) {
-          scorables = this.queries;
-        }
-        return window.quepidSearch.queryScoring.scoreAllQueries({
-          scorableCollection: scorables,
-          promiseApi: $q,
-          logger: console
-        }).then(function(scoreInfo) {
-          svc.latestScoreInfo = scoreInfo;
-
-          // Dual-run shadow store (docs/todo/angularjs_removal_inventory.md §
-          // Re-render mechanism, step 3). Pure side effect — does not affect
-          // Angular's own rendering, which still reads svc.latestScoreInfo via
-          // avgQuery.currentScore / the retired Angular query-list watch group.
-          //
-          // Only mirror a full-case scoreAll() — the store replaces its whole
-          // query-score set on every write (by design, see
-          // case_score_store.test.js), so a partial-scorables call here (e.g.
-          // scoreAllDiffs() scoring just the diffed queries) would wipe every
-          // other query's entry and blank out the Stimulus badges that read
-          // from it (qscore_query_controller.js, query_unrated_badge_controller.js).
-          if (isFullScoreAll) {
-            window.quepidStore.scoring.setLatestScoreInfo(svc.latestScoreInfo);
-          }
-
-          publishQueryListState();
-
-          return svc.latestScoreInfo;
-        });
+        return scorables === undefined
+          ? caseScoringRuntime.scoreAll()
+          : caseScoringRuntime.scoreAll(scorables);
       };
 
       // Refresh diff objects for all queries after state changes

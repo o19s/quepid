@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { scoreAllQueries, scoreQuery } from "utils/query_scoring"
+import { createCaseScoringRuntime, scoreAllQueries, scoreQuery } from "utils/query_scoring"
 
 describe("query scoring runtime", () => {
   it("scores a query and counts missing ratings only through the scorer depth", async () => {
@@ -97,5 +97,45 @@ describe("query scoring runtime", () => {
 
     expect(result.score).toBe("--")
     expect(result.queries[9].score).toBe("zsr")
+  })
+
+  it("scores the current collection and publishes completion metadata", async () => {
+    const currentQueries = {
+      first: {
+        queryId: 1,
+        queryText: "one",
+        numFound: 1,
+        score: () => Promise.resolve({ score: 1, maxScore: 1, allRated: true })
+      }
+    }
+    const onComplete = vi.fn()
+    const runtime = createCaseScoringRuntime({
+      getScorables: () => currentQueries,
+      onComplete
+    })
+
+    await runtime.scoreAll()
+
+    expect(onComplete).toHaveBeenCalledWith(
+      expect.objectContaining({ score: 1 }),
+      { isFullScoreAll: true }
+    )
+  })
+
+  it("marks explicit collections as partial scoring", async () => {
+    const onComplete = vi.fn()
+    const runtime = createCaseScoringRuntime({
+      getScorables: () => [],
+      onComplete
+    })
+
+    await runtime.scoreAll([
+      { queryId: 2, score: () => Promise.resolve({ score: 0.5, maxScore: 1, allRated: true }) }
+    ])
+
+    expect(onComplete).toHaveBeenCalledWith(
+      expect.objectContaining({ score: 0.5 }),
+      { isFullScoreAll: false }
+    )
   })
 })

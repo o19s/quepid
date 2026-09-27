@@ -87,3 +87,35 @@ export function scoreAllQueries({ scorableCollection, promiseApi = Promise, logg
     queries: queryScores
   }))
 }
+
+/**
+ * Own the case-level scoring lifecycle without owning the live query objects.
+ *
+ * The current case page still injects Angular Query objects through
+ * `getScorables`, but the orchestration and completion contract are now
+ * framework-free. The callback is intentionally injected so the compatibility
+ * adapter can publish to Angular and the shadow score store during dual-run;
+ * the future case entry bundle can replace it with a store write directly.
+ */
+export function createCaseScoringRuntime({
+  getScorables,
+  promiseApi = Promise,
+  logger = console,
+  onComplete = () => {}
+}) {
+  return {
+    scoreAll(scorables) {
+      const isFullScoreAll = scorables === undefined
+      const collection = isFullScoreAll ? getScorables() : scorables
+
+      return scoreAllQueries({
+        scorableCollection: collection,
+        promiseApi,
+        logger
+      }).then((scoreInfo) => {
+        onComplete(scoreInfo, { isFullScoreAll })
+        return scoreInfo
+      })
+    }
+  }
+}

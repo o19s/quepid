@@ -281,6 +281,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Remaining, in slice order (2026-09-24).**
 - `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing query-state adapter boundaries.
+- Case-level score aggregation now runs through the framework-free `createCaseScoringRuntime`; Angular supplies live Query objects and remains only the compatibility adapter for scorer execution and legacy `latestScoreInfo` consumers.
 - Snapshot fetching and hydration now run through the Stimulus/framework-free snapshot registry; Angular still owns the live Query objects and per-query diff scoring behind the document-store bridge.
 - `snapshot_searcher.js` owns the framework-free snapshot searcher contract, including registry lookup; `queriesSvc` supplies the remaining Angular callbacks directly at the boundary.
 

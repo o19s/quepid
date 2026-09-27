@@ -21,7 +21,7 @@ import {
   registerSnapshotModels
 } from "./utils/snapshot_hydration"
 import { deleteSnapshot, fetchSnapshot } from "./utils/snapshot_api"
-import { scoreAllQueries, scoreQuery } from "./utils/query_scoring"
+import { createCaseScoringRuntime, scoreAllQueries, scoreQuery } from "./utils/query_scoring"
 import { createQueryModel } from "./utils/query_model"
 import { createQueryRuntime } from "./utils/query_runtime"
 import {
@@ -92,6 +92,7 @@ const quepidSearch = {
     RatingsStore
   },
   queryScoring: {
+    createCaseScoringRuntime,
     scoreAllQueries,
     scoreQuery
   },
