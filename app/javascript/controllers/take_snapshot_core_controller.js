@@ -6,9 +6,8 @@ import { showStatusMessage } from "utils/status_message"
 /**
  * Take-snapshot modal for the core case toolbar — mirrors AngularJS
  * `views/snapshotModal.html` / `PromptSnapshotCtrl`. Collects name + optional
- * document-fields checkbox, then dispatches `take-snapshot:create` so Angular
- * `querySnapshotSvc.addSnapshot` can build the payload from live
- * `queriesSvc` results until the live-query-state migration owns that path.
+ * document-fields checkbox, then dispatches `take-snapshot:create` so the
+ * Stimulus snapshot bridge can build the payload from live query results.
  *
  * Dual-role trigger/modal-root pattern via ModalTriggerControllerBase.
  */

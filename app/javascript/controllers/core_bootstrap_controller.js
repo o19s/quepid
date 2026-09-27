@@ -20,7 +20,7 @@ export default class extends Controller {
     try {
       this.services = await getBootstrapCapabilities()
 
-      const { configurationSvc, userSvc, caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
+      const { configurationSvc, userSvc, caseSvc, settingsSvc, caseTryNavSvc,
         queriesSvc, docCache, scorerSvc } = this.services
       // The case runtime bundle publishes the shared store on window. The
       // imported store is only a fallback for isolated/unit-test contexts;
@@ -85,7 +85,6 @@ export default class extends Controller {
         await queriesSvc.changeSettings(caseNo, newSettings)
         window.quepidDom?.flash?.hide()
         window.quepidDom?.flash?.hide("search-error")
-        querySnapshotSvc.bootstrap(caseNo)
         caseSvc.trackLastViewedAt(caseNo)
         caseSvc.fetchDropdownCases()
         this.ready({ caseNo, tryNo })

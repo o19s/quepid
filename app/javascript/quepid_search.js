@@ -9,23 +9,12 @@ import { averageScore, formatScore, isUnratedScore, ratingBackgroundColor } from
 import { buildCaseDiffScores } from "./utils/diff_scores"
 import { createQueryDiff } from "./utils/diff_results"
 import { RatingsStore } from "./utils/ratings_store"
-import {
-  createSnapshotSearcher,
-  createSnapshotSearcherFromRegistry
-} from "./utils/snapshot_searcher"
+import { createSnapshotSearcherFromRegistry } from "./utils/snapshot_searcher"
 import { createSnapshotModel } from "./utils/snapshot_model"
-import {
-  buildSnapshotLookupSettings,
-  mapFieldSpecToSolrFormat,
-  registerAndHydrateSnapshots,
-  registerSnapshotModels
-} from "./utils/snapshot_hydration"
-import { deleteSnapshot, fetchSnapshot } from "./utils/snapshot_api"
 import { codeToString, formatCode, parseResponseObject } from "./utils/search_error"
 import { createCaseScoringRuntime, scoreAllQueries, scoreQuery } from "./utils/query_scoring"
 import { createQueryModel } from "./utils/query_model"
 import { createDocCache } from "./utils/doc_cache"
-import { buildSnapshotPayload } from "./utils/snapshot_payload"
 import {
   createQueryRuntime,
   createSearchAllRuntime,
@@ -180,18 +169,8 @@ const quepidSearch = {
   },
   snapshotSearch: {
     snapshots: {},
-    createSnapshotSearcher,
     createSnapshotSearcherFromRegistry,
-    createSnapshotModel,
-    buildSnapshotLookupSettings,
-    mapFieldSpecToSolrFormat,
-    registerAndHydrateSnapshots,
-    registerSnapshotModels,
-    fetchSnapshot,
-    deleteSnapshot
-  },
-  snapshotPayload: {
-    build: buildSnapshotPayload
+    createSnapshotModel
   }
 }
 

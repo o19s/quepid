@@ -2,6 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import SnapshotBridgeController from "controllers/snapshot_bridge_controller"
 import { resetCoreServiceCache } from "utils/core_angular_adapter"
 
+const api = vi.hoisted(() => ({ apiFetch: vi.fn() }))
+
+vi.mock("api/fetch", () => api)
+
 const snapshotApi = vi.hoisted(() => ({
   fetchSnapshot: vi.fn(),
   deleteSnapshot: vi.fn()
@@ -29,6 +33,7 @@ describe("SnapshotBridgeController", () => {
   beforeEach(() => {
     snapshotApi.fetchSnapshot.mockResolvedValue({ id: 7 })
     snapshotApi.deleteSnapshot.mockResolvedValue(undefined)
+    api.apiFetch.mockReset()
     services = {
       settingsSvc: {
         editableSettings: vi.fn().mockReturnValue({}),
@@ -47,6 +52,7 @@ describe("SnapshotBridgeController", () => {
       },
       normalDocsSvc: { explainDoc: vi.fn() },
       queriesSvc: {
+        queryArray: vi.fn().mockReturnValue([]),
         refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
       },
       $rootScope: {
@@ -147,5 +153,40 @@ describe("SnapshotBridgeController", () => {
     const modelOptions = window.quepidSearch.snapshotSearch.createSnapshotModel.mock.calls.at(-1)[0]
     expect(modelOptions.getDoc("doc-1")).toBe(scopedDoc)
     expect(services.docCache.getDoc).toHaveBeenLastCalledWith("doc-1", 7)
+  })
+
+  it("bootstraps shallow snapshots into the shared registry", async () => {
+    controller.element = { dataset: { coreBootstrapCaseNoValue: "1" } }
+    api.apiFetch.mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({ snapshots: [{ id: 8 }] })
+    })
+
+    await controller.bootstrapSnapshots()
+
+    expect(api.apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots?shallow=true")
+    expect(snapshotHydration.registerAndHydrateSnapshots).toHaveBeenCalledWith(expect.objectContaining({
+      snapshots: [{ id: 8 }]
+    }))
+  })
+
+  it("creates a snapshot from the live query collection", async () => {
+    const done = vi.fn()
+    api.apiFetch.mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({ id: 9 })
+    })
+
+    await controller.create({
+      detail: { caseId: 1, name: "new snapshot", recordDocumentFields: true, done }
+    })
+
+    expect(api.apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots", expect.objectContaining({
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: expect.stringContaining('"name":"new snapshot"')
+    }))
+    expect(services.queriesSvc.queryArray).toHaveBeenCalledOnce()
+    expect(done).toHaveBeenCalledWith(null)
   })
 })

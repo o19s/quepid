@@ -31,7 +31,6 @@ describe("CoreBootstrapController", () => {
             setCurrentTry: vi.fn(),
             isTrySelected: vi.fn().mockReturnValue(true)
           },
-          querySnapshotSvc: { bootstrap: vi.fn() },
           docCache: { empty: vi.fn(), invalidate: vi.fn(), update: vi.fn().mockResolvedValue(undefined) },
           caseTryNavSvc: {
             getCaseNo: vi.fn().mockReturnValue(1),

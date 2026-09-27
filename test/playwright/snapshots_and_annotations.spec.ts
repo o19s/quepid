@@ -50,7 +50,7 @@ test.describe('snapshots', () => {
 
       await snapshotModal.locator('#snapshotName').fill(snapshotName);
 
-      // Wait on the actual querySnapshotSvc.addSnapshot() POST rather than only
+      // Wait on the actual snapshot bridge POST rather than only
       // the modal's closing animation — the save serializes explain data for
       // every query/doc in the case, so its response time varies with server
       // load. This is a stronger, faster-resolving signal than #flash-messages
@@ -92,10 +92,13 @@ test.describe('snapshots', () => {
       // up snapshots, each carrying full explain-data for every query/doc,
       // which otherwise bloats the case and slows every later run's save.
       if (snapshotId) {
-        await page.evaluate(id => {
-          const injector = (window as any).angular.element(document.body).injector();
-          return injector.get('querySnapshotSvc').deleteSnapshot(id);
-        }, snapshotId);
+        await page.evaluate(async ({ caseId, id }) => {
+          const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+          await fetch(`/api/cases/${caseId}/snapshots/${id}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-Token': token || '' }
+          });
+        }, { caseId: SNAPSHOT_CASE_ID, id: snapshotId });
       }
     }
   });

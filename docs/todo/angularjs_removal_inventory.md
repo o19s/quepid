@@ -24,17 +24,17 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 30 files, 26 register with Angular |
+| Angular JS source files (`app/assets/javascripts`) | 28 files, 24 register with Angular |
 | HTML templates (`app/assets/templates`) | 2 |
 | Controllers | 0 |
-| Services | 11 (`.service()` registrations; 11 files under `services/`) |
+| Services | 9 (`.service()` registrations; 9 files under `services/`) |
 | Factories | 4 |
 | Filters | 5 under `filters/` |
 | Custom directives / components | 1 directive, no components |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 10 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 6 packages (+ `angular` core from npm) |
-| Karma unit specs (`spec/javascripts/angular`) | 14 |
-| Vitest unit specs (`test/javascript/**/*.test.js`) | 101 |
+| Karma unit specs (`spec/javascripts/angular`) | 12 |
+| Vitest unit specs (`test/javascript/**/*.test.js`) | 104 |
 | Playwright specs (`test/playwright/*.spec.ts`) | 24 |
 
 ---
@@ -43,8 +43,8 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Priority | Item | Notes |
 |----------|------|-------|
-| **P0** | AngularJS 1.8.3 EOL | 30 JavaScript source files and 2 Angular templates remain under the legacy asset/template trees (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
-| **P0** | `queriesSvc` god object (1,368 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
+| **P0** | AngularJS 1.8.3 EOL | 28 JavaScript source files and 2 Angular templates remain under the legacy asset/template trees (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
+| **P0** | `queriesSvc` god object (1,366 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
 | **P0** | `eval()` scorers | Inside `$timeout()`, no sandbox; Web Worker timeout commented out |
 | **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
 | **P1** | `new Function()` mappers | SearchAPI mappers; MiniRacer on server; mapper wizard already Stimulus |
@@ -240,7 +240,7 @@ compatibility adapter until live query/search/scoring migration is complete.
 
 | Name | LOC | Why |
 |------|-----|-----|
-| **queriesSvc** | 1,368 | Central case state — search, docs, scores, persistence |
+| **queriesSvc** | 1,366 | Central case state — search, docs, scores, persistence |
 | **settingsSvc** / **caseSvc** | 745 / 563 | Try / case domain model |
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
@@ -249,11 +249,11 @@ compatibility adapter until live query/search/scoring migration is complete.
 
 #### `queriesSvc` seam inventory (phase 1)
 
-22 Angular files reach into `queriesSvc`; the eight `*_core_controller.js` Stimulus controllers reach it only through `document` CustomEvents (already bridged). The shadow `queryCollectionStore` now also receives bootstrap, collection, and search-lifecycle state, without changing Angular's search/scoring ownership. Grouped by what a caller actually needs:
+The remaining Angular and compatibility consumers reach into `queriesSvc`; the `*_core_controller.js` Stimulus controllers reach it only through `document` CustomEvents (already bridged). The shadow `queryCollectionStore` now also receives bootstrap, collection, and search-lifecycle state, without changing Angular's search/scoring ownership. Grouped by what a caller actually needs:
 
 | Surface | Members | Callers |
 |---------|---------|---------|
-| **Read / display** | `queryArray`, `latestScoreInfo`, `version`, `hasUnscoredQueries`, `scoredQueryCount`, `queryCount`, `isBootstrapping`, `queries`, `showOnlyRated` | `queriesCtrl`, `utils/case_csv.js`, `querySnapshotSvc`; Frog Report reads `queryDocumentsStore` |
+| **Read / display** | `queryArray`, `latestScoreInfo`, `version`, `hasUnscoredQueries`, `scoredQueryCount`, `queryCount`, `isBootstrapping`, `queries`, `showOnlyRated` | `utils/case_csv.js`; Frog Report reads `queryDocumentsStore` |
 | **Mutation / lifecycle** | `bootstrapQueries`, `changeSettings`, `searchAll`, `createQuery`, `deleteQuery`, `moveQuery`, `updateQueryDisplayPosition`, `reset`, `updateScores`, `scoreAll`, `refreshAllDiffs`, `syncToBook` | `mainCtrl`, `add_query`, `diff`, `caseSvc`; move/delete persistence is Stimulus-owned and only reconciles Angular's live objects |
 | **Search / score engine** (`Query`) | `search`, `searchFromSnapshot`, `paginate`, `ratedPaginate`, `score` / `scoreOthers`, `refreshRatedDocs`, `setDocs`, `filterToRatings`, plus svc-level `createSearcherFromSettings`, `normalizeDocExplains`, `searchApiRatedDocs`, `pAll`, mapper `eval` | `docFinder`; otherwise internal |
 
@@ -447,7 +447,9 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | Import ratings | Stimulus controller + Angular refresh bridge | `app/javascript/controllers/import_ratings_core_controller.js`, `app/views/shared/_import_ratings_core_modal.html.erb`; refreshes live query state through `imports:queries-need-reload` |
 | Diff renderer and picker | Stimulus renderer + explicit compatibility bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/snapshot_bridge_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`, `app/javascript/utils/diff_results.js`; Angular still owns snapshot search/scoring |
 
-Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`
+Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`; snapshot hydration and
+scoring now cross through `snapshot_bridge_controller.js` without a snapshot
+Angular service.
 
 ### 4. Wizard follow-up
 
@@ -542,15 +544,16 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (10):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `mapperBasedSearchEngineSvc`, `queriesSvc`, `querySnapshotSvc`, `scorerSvc`, `searchEndpointSvc`, `settingsSvc`, `userSvc`* (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned. `docCacheSvc` was removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by Angular snapshot orchestration and the Stimulus snapshot/bootstrap/wizard boundaries.
+**Services (9):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `mapperBasedSearchEngineSvc`, `queriesSvc`, `scorerSvc`, `searchEndpointSvc`, `settingsSvc`, `userSvc`* (* = `UtilitiesModule`). `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
 
-`queriesSvc` no longer injects `querySnapshotSvc`; it reads the framework-free
-snapshot registry directly. Static snapshot imports in the new-case wizard now
-use `app/javascript/utils/snapshot_import.js`, so `querySnapshotSvc` remains
-only for the live core bootstrap/create-snapshot bridge and its snapshot
-hydration compatibility boundary. Snapshot creation payload construction now
-lives in the tested `app/javascript/utils/snapshot_payload.js` utility, and the
-obsolete Angular CSV-import methods are gone.
+`queriesSvc` reads the framework-free snapshot registry directly. Static snapshot
+imports in the new-case wizard use `app/javascript/utils/snapshot_import.js`.
+Snapshot creation payload construction lives in the tested
+`app/javascript/utils/snapshot_payload.js` utility, and the obsolete Angular
+CSV-import methods are gone. The compatibility object now exposes only the
+snapshot registry, model factory, and registry searcher needed by the remaining
+live Query/scoring island; payload, API, hydration, and unused searcher helpers
+are no longer exported through the Angular bundle.
 
 **Factories (4):** `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `TryFactory`
 
@@ -614,8 +617,8 @@ Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (6 packages; see [vendo
 
 ### Tests
 
-- **Karma:** 14 specs in `spec/javascripts/angular/`; loads all three Angular bundles + `angular-mocks`
-- **Vitest (101 specs):** includes the framework-free stores, runtimes, and migrated Stimulus controllers under `test/javascript/`
+- **Karma:** 12 specs in `spec/javascripts/angular/`; loads all three Angular bundles + `angular-mocks`
+- **Vitest (104 specs):** includes the framework-free stores, runtimes, and migrated Stimulus controllers under `test/javascript/`
 - **Playwright (24 specs; Angular core and Stimulus):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
 - **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case_smoke.spec.ts` — core toolbar share/unshare; `dom_migration_screenshots.spec.ts` — per-surface before/after shots (`share-case/` core, `share-case-rails/` index)
 - **Rails:** `core_controller_test.rb`, `tls_flow_test.rb`, `user_invite_flow_test.rb`, `cases_controller_test.rb` (Stimulus cases index), `application_helper_test.rb` (`quepid_root_url`)

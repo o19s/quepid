@@ -1,5 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
+import { apiFetch } from "api/fetch"
 import { deleteSnapshot, fetchSnapshot } from "utils/snapshot_api"
+import { buildSnapshotPayload } from "utils/snapshot_payload"
 import { diffStateStore } from "stores/diff_state_store"
 import { registerAndHydrateSnapshots } from "utils/snapshot_hydration"
 import { getSnapshotCapabilities } from "utils/core_angular_adapter"
@@ -18,11 +20,15 @@ export default class extends Controller {
     this.onApply = (event) => this.apply(event)
     this.onClear = (event) => this.clear(event)
     this.onDelete = (event) => this.delete(event)
+    this.onCreate = (event) => this.create(event)
 
     document.addEventListener("diff:selection-request", this.onSelectionRequest)
     document.addEventListener("diff:apply", this.onApply)
     document.addEventListener("diff:clear", this.onClear)
     document.addEventListener("diff:delete", this.onDelete)
+    document.addEventListener("take-snapshot:create", this.onCreate)
+
+    void this.bootstrapSnapshots()
   }
 
   disconnect() {
@@ -30,6 +36,7 @@ export default class extends Controller {
     document.removeEventListener("diff:apply", this.onApply)
     document.removeEventListener("diff:clear", this.onClear)
     document.removeEventListener("diff:delete", this.onDelete)
+    document.removeEventListener("take-snapshot:create", this.onCreate)
   }
 
   diffStore() {
@@ -92,6 +99,53 @@ export default class extends Controller {
     })
 
     await hydration.promise
+  }
+
+  async bootstrapSnapshots() {
+    const caseNo = Number(this.element.dataset.coreBootstrapCaseNoValue)
+    if (!caseNo) return
+
+    try {
+      const response = await apiFetch(`api/cases/${caseNo}/snapshots?shallow=true`)
+      if (!response.ok) throw new Error(`Snapshot request failed (${response.status})`)
+      const payload = await response.json()
+      const registry = this.snapshotRegistry()
+      if (registry) Object.keys(registry).forEach((id) => delete registry[id])
+      await this.registerSnapshots(payload.snapshots || [])
+    } catch (error) {
+      console.error("Could not bootstrap snapshots", error)
+    }
+  }
+
+  async create(event) {
+    const detail = event.detail || {}
+    const services = await getSnapshotCapabilities()
+    const caseNo = Number(detail.caseId)
+
+    if (caseNo !== Number(services.caseTryNavSvc.getCaseNo())) {
+      detail.done?.("case mismatch")
+      return
+    }
+
+    try {
+      const payload = buildSnapshotPayload(
+        detail.name,
+        detail.recordDocumentFields,
+        services.queriesSvc.queryArray()
+      )
+      const response = await apiFetch(`api/cases/${caseNo}/snapshots`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      if (!response.ok) throw new Error(`Snapshot request failed (${response.status})`)
+      const snapshot = await response.json()
+      await this.registerSnapshots([snapshot])
+      window.quepidDom?.flash?.show("success", "Snapshot created successfully.")
+      detail.done?.(null)
+    } catch (error) {
+      detail.done?.(error?.message || error)
+    }
   }
 
   selectionRequest(event) {

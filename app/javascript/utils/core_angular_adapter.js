@@ -85,7 +85,6 @@ const capabilityDefinitions = {
       "userSvc",
       "caseSvc",
       "settingsSvc",
-      "querySnapshotSvc",
       "caseTryNavSvc",
       "queriesSvc",
       "scorerSvc"
@@ -93,7 +92,7 @@ const capabilityDefinitions = {
   },
   snapshots: {
     controller: "snapshot_bridge_controller",
-    services: ["settingsSvc", "caseTryNavSvc", "fieldSpecSvc", "normalDocsSvc"]
+    services: ["settingsSvc", "caseTryNavSvc", "fieldSpecSvc", "normalDocsSvc", "queriesSvc"]
   },
   wizard: {
     controller: "wizard_controller",
