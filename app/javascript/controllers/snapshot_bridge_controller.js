@@ -1,15 +1,15 @@
 import { Controller } from "@hotwired/stimulus"
 import { deleteSnapshot, fetchSnapshot } from "utils/snapshot_api"
 import { diffStateStore } from "stores/diff_state_store"
+import { registerAndHydrateSnapshots } from "utils/snapshot_hydration"
 
 /*
  * Temporary compatibility bridge for snapshot comparison.
  *
- * The comparison picker and renderer are Stimulus-owned. The live Query model
- * and snapshot scoring are still Angular-owned, so this controller is the
- * single, explicit boundary between them while that larger migration is in
- * progress. Keep the bridge narrow: it owns event wiring, not snapshot or
- * scoring policy.
+ * The comparison picker, snapshot registry/hydration, and renderer are
+ * Stimulus/framework-free. The live Query model and snapshot scoring are
+ * still Angular-owned, so this controller is the single, explicit boundary
+ * between them while that larger migration is in progress.
  */
 export default class extends Controller {
   connect() {
@@ -39,6 +39,65 @@ export default class extends Controller {
     return window.quepidStore?.diff || diffStateStore
   }
 
+  snapshotRegistry() {
+    const snapshotSearch = window.quepidSearch?.snapshotSearch
+    if (!snapshotSearch) return null
+    snapshotSearch.snapshots ||= {}
+    return snapshotSearch.snapshots
+  }
+
+  async registerSnapshots(payloads) {
+    const injector = this.injector()
+    const settingsSvc = injector?.get("settingsSvc")
+    const caseTryNavSvc = injector?.get("caseTryNavSvc")
+    const fieldSpecSvc = injector?.get("fieldSpecSvc")
+    const docCacheSvc = injector?.get("docCacheSvc")
+    const normalDocsSvc = injector?.get("normalDocsSvc")
+    const snapshotSearch = window.quepidSearch?.snapshotSearch
+    const registry = this.snapshotRegistry()
+
+    if (!settingsSvc || !caseTryNavSvc || !fieldSpecSvc || !docCacheSvc || !normalDocsSvc || !snapshotSearch || !registry) {
+      throw new Error("Snapshot runtime is not available")
+    }
+
+    const settings = settingsSvc.editableSettings()
+    const useSnapshotScopedCache = settings && Object.keys(settings).length > 0 && (
+      settings.searchEngine === "static" || settingsSvc.supportLookupById(settings.searchEngine) === false
+    )
+    const hydration = registerAndHydrateSnapshots({
+      snapshots: payloads,
+      registry,
+      settings,
+      supportsLookupById: settingsSvc.supportLookupById,
+      createFieldSpec: fieldSpecSvc.createFieldSpec,
+      rootUrl: caseTryNavSvc.getQuepidRootUrl(),
+      caseNo: caseTryNavSvc.getCaseNo(),
+      addDocIds: ids => docCacheSvc.addIds(ids),
+      addScopedDocIds: (ids, scope) => docCacheSvc.addIds(ids, scope),
+      clearScopedDocs: scope => docCacheSvc.empty(scope),
+      updateDocs: (hydrationSettings, scope) => docCacheSvc.update(hydrationSettings, scope),
+      createModel: options => {
+        const getDoc = useSnapshotScopedCache
+          ? id => docCacheSvc.getDoc(id, options.params.id)
+          : options.getDoc
+
+        return snapshotSearch.createSnapshotModel({
+          params: options.params,
+          getDoc,
+          explainDoc: options.explainDoc,
+          formatDate: time => new Date(time).toLocaleDateString("en-US"),
+          log: options.log
+        })
+      },
+      getDoc: docCacheSvc.getDoc,
+      explainDoc: normalDocsSvc.explainDoc,
+      formatDate: time => new Date(time).toLocaleDateString("en-US"),
+      log: message => console.debug(message)
+    })
+
+    await hydration.promise
+  }
+
   selectionRequest(event) {
     event.detail?.done?.(this.diffStore().selections())
   }
@@ -47,16 +106,15 @@ export default class extends Controller {
     const detail = event.detail || {}
     const injector = this.injector()
     const queries = injector?.get("queriesSvc")
-    const snapshots = injector?.get("querySnapshotSvc")
     const selections = detail.selections || []
 
-    if (!queries || !snapshots || !detail.snapshotsUrl) {
-      detail.done?.("Angular snapshot services are not available")
+    if (!queries || !detail.snapshotsUrl) {
+      detail.done?.("Snapshot comparison services are not available")
       return
     }
 
     Promise.all(selections.map((snapshotId) => fetchSnapshot(`${detail.snapshotsUrl}/${encodeURIComponent(snapshotId)}`)))
-      .then((payloads) => snapshots.registerSnapshots(payloads))
+      .then((payloads) => this.registerSnapshots(payloads))
       .then(() => {
         this.diffStore().enable(selections)
         this.inAngular(() => {
@@ -86,16 +144,15 @@ export default class extends Controller {
     const detail = event.detail || {}
     const injector = this.injector()
     const queries = injector?.get("queriesSvc")
-    const snapshots = injector?.get("querySnapshotSvc")
-
-    if (!queries || !snapshots || !detail.snapshotsUrl) {
-      detail.done?.("Angular snapshot services are not available")
+    if (!queries || !detail.snapshotsUrl) {
+      detail.done?.("Snapshot comparison services are not available")
       return
     }
 
     deleteSnapshot(detail.snapshotsUrl, detail.snapshotId)
       .then(() => {
-        snapshots.removeSnapshot(detail.snapshotId)
+        const registry = this.snapshotRegistry()
+        if (registry) delete registry[String(detail.snapshotId)]
         this.inAngular(() => {
           this.diffStore().disable()
           return queries.refreshAllDiffs()

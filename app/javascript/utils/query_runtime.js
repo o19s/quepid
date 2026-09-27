@@ -103,9 +103,7 @@ export function createQueryRuntime({
       }
 
       const refreshSearchApiRatedDocs = () => {
-        query.ratedDocsUnsupported = !supportsSearchApiRatedDocsLookup(
-          settings.selectedTry
-        )
+        query.ratedDocsUnsupported = !supportsSearchApiRatedDocsLookup(settings.selectedTry)
 
         if (query.ratedDocsUnsupported) return resetRatedDocsToEmpty()
 
@@ -146,10 +144,7 @@ export function createQueryRuntime({
           }
 
           query.ratedUrl = query.ratedSearcher.linkUrl
-          const normalized = normalizeDocuments(
-            query.ratedSearcher,
-            settings.createFieldSpec()
-          )
+          const normalized = normalizeDocuments(query.ratedSearcher, settings.createFieldSpec())
           ratedDocsStaging = normalized.map(createRateableDoc)
           query.ratedDocs = ratedDocsStaging
           query.ratedDocsFound = normalized.length

@@ -42,6 +42,7 @@ pin 'utils/core_angular_adapter', to: 'utils/core_angular_adapter.js'
 pin 'utils/editor_mode', to: 'utils/editor_mode.js'
 pin 'utils/wizard_contracts', to: 'utils/wizard_contracts.js'
 pin 'utils/snapshot_api', to: 'utils/snapshot_api.js'
+pin 'utils/snapshot_hydration', to: 'utils/snapshot_hydration.js'
 
 pin 'local-time' # @3.0.3
 

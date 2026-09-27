@@ -8,6 +8,12 @@ const snapshotApi = vi.hoisted(() => ({
 
 vi.mock("utils/snapshot_api", () => snapshotApi)
 
+const snapshotHydration = vi.hoisted(() => ({
+  registerAndHydrateSnapshots: vi.fn().mockReturnValue({ promise: Promise.resolve() })
+}))
+
+vi.mock("utils/snapshot_hydration", () => snapshotHydration)
+
 function buildController(services) {
   const controller = Object.create(SnapshotBridgeController.prototype)
   controller.injector = () => ({ get: (name) => services[name] })
@@ -22,6 +28,22 @@ describe("SnapshotBridgeController", () => {
     snapshotApi.fetchSnapshot.mockResolvedValue({ id: 7 })
     snapshotApi.deleteSnapshot.mockResolvedValue(undefined)
     services = {
+      settingsSvc: {
+        editableSettings: vi.fn().mockReturnValue({}),
+        supportLookupById: vi.fn()
+      },
+      caseTryNavSvc: {
+        getQuepidRootUrl: vi.fn().mockReturnValue("/"),
+        getCaseNo: vi.fn().mockReturnValue(1)
+      },
+      fieldSpecSvc: { createFieldSpec: vi.fn() },
+      docCacheSvc: {
+        addIds: vi.fn(),
+        empty: vi.fn(),
+        update: vi.fn(),
+        getDoc: vi.fn()
+      },
+      normalDocsSvc: { explainDoc: vi.fn() },
       queryViewSvc: {
         disableComparisons: vi.fn(),
         enableDiffs: vi.fn(),
@@ -30,12 +52,14 @@ describe("SnapshotBridgeController", () => {
       queriesSvc: {
         refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
       },
-      querySnapshotSvc: {
-        registerSnapshots: vi.fn().mockResolvedValue(undefined),
-        removeSnapshot: vi.fn()
-      },
       $rootScope: {
         $evalAsync: (callback) => callback()
+      }
+    }
+    window.quepidSearch = {
+      snapshotSearch: {
+        snapshots: {},
+        createSnapshotModel: vi.fn()
       }
     }
     window.quepidStore = {
@@ -50,6 +74,7 @@ describe("SnapshotBridgeController", () => {
 
   afterEach(() => {
     delete window.quepidStore
+    delete window.quepidSearch
     vi.restoreAllMocks()
   })
 
@@ -78,7 +103,10 @@ describe("SnapshotBridgeController", () => {
     await vi.waitFor(() => expect(done).toHaveBeenCalledWith(null))
 
     expect(snapshotApi.fetchSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots/7")
-    expect(services.querySnapshotSvc.registerSnapshots).toHaveBeenCalledWith([{ id: 7 }])
+    expect(snapshotHydration.registerAndHydrateSnapshots).toHaveBeenCalledWith(expect.objectContaining({
+      snapshots: [{ id: 7 }],
+      registry: window.quepidSearch?.snapshotSearch?.snapshots
+    }))
     expect(window.quepidStore.diff.enable).toHaveBeenCalledWith(["7"])
     expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()
   })
@@ -97,7 +125,7 @@ describe("SnapshotBridgeController", () => {
     await vi.waitFor(() => expect(done).toHaveBeenCalledWith(null))
 
     expect(snapshotApi.deleteSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots", "7")
-    expect(services.querySnapshotSvc.removeSnapshot).toHaveBeenCalledWith("7")
+    expect(window.quepidSearch.snapshotSearch.snapshots["7"]).toBeUndefined()
     expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
     expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()
   })
@@ -108,5 +136,24 @@ describe("SnapshotBridgeController", () => {
     controller.selectionRequest({ detail: { done } })
 
     expect(done).toHaveBeenCalledWith(["7"])
+  })
+
+  it("uses the snapshot-scoped cache for static engines", async () => {
+    services.settingsSvc.editableSettings.mockReturnValue({ searchEngine: "static" })
+    const scopedDoc = { id: "scoped" }
+    services.docCacheSvc.getDoc.mockReturnValue(scopedDoc)
+
+    await controller.registerSnapshots([{ id: 7 }])
+    const hydrationOptions = snapshotHydration.registerAndHydrateSnapshots.mock.calls.at(-1)[0]
+    hydrationOptions.createModel({
+      params: { id: 7 },
+      getDoc: () => sharedDoc,
+      explainDoc: vi.fn(),
+      log: vi.fn()
+    })
+
+    const modelOptions = window.quepidSearch.snapshotSearch.createSnapshotModel.mock.calls.at(-1)[0]
+    expect(modelOptions.getDoc("doc-1")).toBe(scopedDoc)
+    expect(services.docCacheSvc.getDoc).toHaveBeenLastCalledWith("doc-1", 7)
   })
 })

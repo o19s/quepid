@@ -22,7 +22,7 @@ Every time case/query/engine settings change, Quepid saves a new **Try** so you 
 
 ### 5.2 Create a snapshot
 
-Core toolbar opens the Stimulus **take-snapshot-core** modal (`#takeSnapshotModal`); the live result payload still bridges to Angular `querySnapshotSvc` until that state is migrated.
+Core toolbar opens the Stimulus **take-snapshot-core** modal (`#takeSnapshotModal`); building the live result payload still bridges to Angular `querySnapshotSvc` until live query state is migrated.
 
 - [ ] **Steps:**
   1. Click **Create snapshot** in the case toolbar.
@@ -36,7 +36,7 @@ Core toolbar opens the Stimulus **take-snapshot-core** modal (`#takeSnapshotModa
 
 ### 5.3 Compare snapshots (diff)
 
-The picker, diff read renderer, per-query diff score badges, and case-level diff score row are Stimulus-owned. Snapshot hydration and diff scoring still use the explicit `snapshot-bridge` compatibility controller while the live scoring engine remains in migration.
+The picker, snapshot hydration, diff read renderer, per-query diff score badges, and case-level diff score row are Stimulus/framework-free. The explicit `snapshot-bridge` compatibility controller still hands hydrated snapshots to Angular’s live Query model for diff scoring while that engine remains in migration.
 
 - [ ] **Steps:**
   1. Click "Compare snapshots" (bar-chart icon) in the case toolbar.

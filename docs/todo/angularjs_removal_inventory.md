@@ -281,7 +281,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Remaining, in slice order (2026-09-24).**
 - `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing query-state adapter boundaries.
-- Angular still owns snapshot fetching and per-query diff scoring behind the document-store bridge.
+- Snapshot fetching and hydration now run through the Stimulus/framework-free snapshot registry; Angular still owns the live Query objects and per-query diff scoring behind the document-store bridge.
 - `snapshot_searcher.js` owns the framework-free snapshot searcher contract, including registry lookup; `queriesSvc` supplies the remaining Angular callbacks directly at the boundary.
 
 **The `window.quepidStore` bridge is temporary.** It exists so `queriesSvc` (still Angular) can push into a store that Stimulus (not yet the page owner) can read, during dual-run. Once the case workspace has its own entry bundle, the global goes away in favor of a module import — don't grow further ad hoc bridges on `window.quepidStore` as if it were the permanent integration point.

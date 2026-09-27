@@ -785,9 +785,10 @@ angular.module('QuepidApp')
       }
 
       function createSearcherFromSnapshot(snapshotId, query, settings) {
+        var snapshotRegistry = window.quepidSearch.snapshotSearch.snapshots || querySnapshotSvc.snapshots;
         return window.quepidSearch.snapshotSearch.createSnapshotSearcherFromRegistry({
           snapshotId: snapshotId,
-          snapshots: querySnapshotSvc.snapshots,
+          snapshots: snapshotRegistry,
           query: query,
           settings: settings,
           createRateableDoc: function(doc) {

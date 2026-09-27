@@ -149,6 +149,7 @@ const quepidSearch = {
     settingsWithTryOverrides
   },
   snapshotSearch: {
+    snapshots: {},
     createSnapshotSearcher,
     createSnapshotSearcherFromRegistry,
     createSnapshotModel,
