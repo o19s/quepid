@@ -18,7 +18,6 @@ angular.module('QuepidApp')
     'ratingsStoreSvc',
     'caseTryNavSvc',
     'querySnapshotSvc',
-    'bookSvc',
     'DocListFactory',
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
@@ -35,7 +34,6 @@ angular.module('QuepidApp')
       ratingsStoreSvc,
       caseTryNavSvc,
       querySnapshotSvc,
-      bookSvc,
       DocListFactory,
       esExplainExtractorSvc,
       solrExplainExtractorSvc,
@@ -72,6 +70,18 @@ angular.module('QuepidApp')
       // Cached case-book sync properties (updated via a named DOM event from caseSvc)
       let cachedBookId = null;
       let cachedAutoPopulateBookPairs = false;
+
+      function updateQueryDocPairs(bookId, caseId, queries) {
+        var payload = {
+          case_id: caseId,
+          query_doc_pairs: window.quepidSearch.bookSync.buildQueryDocPairsPayload(queries)
+        };
+
+        return $http.put('api/books/' + bookId + '/populate', payload)
+          .then(function() {
+            console.log('Updated book with case query data.');
+          });
+      }
 
       document.addEventListener('case-book:associated', function() {
         // Re-fetch case data to update cached sync properties
@@ -703,7 +713,7 @@ angular.module('QuepidApp')
           if (detail.done) { detail.done('case mismatch'); }
           return;
         }
-        bookSvc.updateQueryDocPairs(detail.bookId, detail.caseId, svc.queryArray())
+        updateQueryDocPairs(detail.bookId, detail.caseId, svc.queryArray())
           .then(function() {
             if (detail.done) { detail.done(null); }
           }, function(response) {
@@ -1648,8 +1658,8 @@ angular.module('QuepidApp')
 
           if (batch.length > 0) {
             // Use IIFE to capture all variables to prevent closure issues
-            var batchPromise = (function(currentBookSvc, currentBookId, currentCaseNo, currentBatch, currentSyncedPairsCache, currentLogger) {
-              return currentBookSvc.updateQueryDocPairs(currentBookId, currentCaseNo, currentBatch)
+            var batchPromise = (function(currentBookId, currentCaseNo, currentBatch, currentSyncedPairsCache, currentLogger) {
+              return updateQueryDocPairs(currentBookId, currentCaseNo, currentBatch)
                 .then(function() {
 
                 }, function(error) {
@@ -1662,7 +1672,7 @@ angular.module('QuepidApp')
                   });
                   currentLogger.error('Failed to sync book query_doc_pairs batch:', error);
                 });
-            })(bookSvc, bookId, caseNo, batch, syncedPairsCache, $log);
+            })(bookId, caseNo, batch, syncedPairsCache, $log);
 
             batchPromises.push(batchPromise);
           }

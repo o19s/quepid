@@ -450,7 +450,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | Import ratings | Stimulus controller + Angular refresh bridge | `app/javascript/controllers/import_ratings_core_controller.js`, `app/views/shared/_import_ratings_core_modal.html.erb`; refreshes live query state through `imports:queries-need-reload` |
 | Diff renderer and picker | Stimulus renderer + explicit compatibility bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/snapshot_bridge_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`, `app/javascript/utils/diff_results.js`; Angular still owns snapshot search/scoring |
 
-Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `bookSvc`
+Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`
 
 ### 4. Wizard follow-up
 
@@ -464,7 +464,7 @@ adapter into those services.
 |------|------|-----------|
 | Add query | Stimulus controller + temporary Angular state bridge | `app/javascript/controllers/add_query_controller.js`, `app/javascript/controllers/query_lifecycle_controller.js`, and `app/javascript/utils/query_lifecycle.js`; Angular retains Query construction and search/scoring only |
 
-Remaining backing services: `queriesSvc`, `varExtractorSvc`
+Remaining backing service: `queriesSvc`
 
 `queriesSvc` remains the compatibility adapter for live search construction,
 notes, persistence, and engine-specific callbacks. The framework-free query
@@ -539,7 +539,7 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (14):** `bookSvc`, `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `docCacheSvc`, `paneSvc`, `queriesSvc`, `querySnapshotSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `settingsSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned.
+**Services (12):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `docCacheSvc`, `paneSvc`, `queriesSvc`, `querySnapshotSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `settingsSvc`, `userSvc`* (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned. `bookSvc` was removed after its only runtime consumer (`queriesSvc`) moved query-document-pair payload construction to tested `utils/book_sync.js`; the existing Angular `$http` transport remains in `queriesSvc`.
 
 **Factories (4):** `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `TryFactory`
 
@@ -573,6 +573,8 @@ Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 ### DOM bridge (`quepid_dom.js`)
 
 `app/javascript/quepid_dom.js` — side-effect entry that pins `window.quepidDom` (tooltip/popover/paste helpers, `countUp`, `flash`, `modal.open` (`utils/dynamic_modal.js`), `jsonExplorer.render`/`escapeHtml` (`utils/json_explorer.js`)) for the remaining thin Angular controllers and compatibility bridges. It is now loaded through the framework-free `case_runtime` bundle before Angular; remove the global when the remaining compatibility bridges are gone.
+
+`TryFactory` still remains Angular-owned for live query construction, but curator-variable extraction is now framework-free in `app/javascript/utils/curator_vars.js` and is exposed through `window.quepidSearch.curatorVars` until `TryFactory` itself moves. Book population similarly keeps its Angular transport in `queriesSvc`, while payload construction lives in `app/javascript/utils/book_sync.js`.
 ### Non-Angular JS in the Angular bundle
 
 `footer.js`, `tour.js`, `ace_config.js`, `scorerEvalTest.js` — relocate when bundle goes away.

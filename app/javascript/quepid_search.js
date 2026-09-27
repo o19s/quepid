@@ -25,6 +25,8 @@ import { codeToString, formatCode, parseResponseObject } from "./utils/search_er
 import { createCaseScoringRuntime, scoreAllQueries, scoreQuery } from "./utils/query_scoring"
 import { createQueryModel } from "./utils/query_model"
 import { createQueryRuntime } from "./utils/query_runtime"
+import { extractCuratorVars } from "./utils/curator_vars"
+import { buildQueryDocPairsPayload } from "./utils/book_sync"
 import {
   invalidateRatedDocsCache,
   matchesQueryFilter,
@@ -104,6 +106,12 @@ const quepidSearch = {
   },
   queryModel: {
     create: createQueryModel
+  },
+  curatorVars: {
+    extract: extractCuratorVars
+  },
+  bookSync: {
+    buildQueryDocPairsPayload
   },
   queryRuntime: {
     create: createQueryRuntime

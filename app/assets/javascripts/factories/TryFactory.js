@@ -6,13 +6,13 @@
   angular.module('QuepidApp')
     .factory('TryFactory', [
       '$http',
-      'fieldSpecSvc', 'caseTryNavSvc','varExtractorSvc',
+      'fieldSpecSvc', 'caseTryNavSvc',
       TryFactory
     ]);
 
   function TryFactory(
     $http,
-    fieldSpecSvc, caseTryNavSvc, varExtractorSvc
+    fieldSpecSvc, caseTryNavSvc
   ) {
     var Try = function(data) {
       // This method converts the response from the API to angular objects.
@@ -114,7 +114,7 @@
       function hasVar(varName) {
         // not terribly efficient, but there shouldn't be more than a handful
         var cvDict = self.curatorVarsDict();
-        return cvDict.hasOwnProperty(varName);
+        return Object.prototype.hasOwnProperty.call(cvDict, varName);
       }
 
       function getVar(varName) {
@@ -160,7 +160,7 @@
           curatorVar.inQueryParams = false;
         });
 
-        var varNames = varExtractorSvc.extract(self.queryParams);
+        var varNames = window.quepidSearch.curatorVars.extract(self.queryParams);
         angular.forEach(varNames, function(varName) {
           var foundVar = self.getVar(varName);
           if (!foundVar) {
