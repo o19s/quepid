@@ -88,23 +88,20 @@ const capabilityDefinitions = {
       "querySnapshotSvc",
       "caseTryNavSvc",
       "queriesSvc",
-      "docCacheSvc",
       "scorerSvc"
     ]
   },
   snapshots: {
     controller: "snapshot_bridge_controller",
-    services: ["settingsSvc", "caseTryNavSvc", "fieldSpecSvc", "docCacheSvc", "normalDocsSvc"]
+    services: ["settingsSvc", "caseTryNavSvc", "fieldSpecSvc", "normalDocsSvc"]
   },
   wizard: {
     controller: "wizard_controller",
     services: [
       "caseSvc",
       "caseTryNavSvc",
-      "docCacheSvc",
       "mapperBasedSearchEngineSvc",
       "queriesSvc",
-      "querySnapshotSvc",
       "searchEndpointSvc",
       "searchSvc",
       "settingsSvc",
@@ -136,8 +133,11 @@ async function loadCapability(name) {
 
   window.quepidSearch ||= {}
   window.quepidSearch.caseRuntime ||= {}
-  window.quepidSearch.caseRuntime[name] = services
-  return services
+  window.quepidSearch.caseRuntime[name] = {
+    ...services,
+    docCache: window.quepidSearch.docCache
+  }
+  return window.quepidSearch.caseRuntime[name]
 }
 
 // Named capability entry points are the public contract. The Angular service names above are

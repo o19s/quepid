@@ -39,7 +39,7 @@ describe("SnapshotBridgeController", () => {
         getCaseNo: vi.fn().mockReturnValue(1)
       },
       fieldSpecSvc: { createFieldSpec: vi.fn() },
-      docCacheSvc: {
+      docCache: {
         addIds: vi.fn(),
         empty: vi.fn(),
         update: vi.fn(),
@@ -54,6 +54,7 @@ describe("SnapshotBridgeController", () => {
       }
     }
     window.quepidSearch = {
+      docCache: services.docCache,
       snapshotSearch: {
         snapshots: {},
         createSnapshotModel: vi.fn()
@@ -132,7 +133,7 @@ describe("SnapshotBridgeController", () => {
   it("uses the snapshot-scoped cache for static engines", async () => {
     services.settingsSvc.editableSettings.mockReturnValue({ searchEngine: "static" })
     const scopedDoc = { id: "scoped" }
-    services.docCacheSvc.getDoc.mockReturnValue(scopedDoc)
+    services.docCache.getDoc.mockReturnValue(scopedDoc)
 
     await controller.registerSnapshots([{ id: 7 }])
     const hydrationOptions = snapshotHydration.registerAndHydrateSnapshots.mock.calls.at(-1)[0]
@@ -145,6 +146,6 @@ describe("SnapshotBridgeController", () => {
 
     const modelOptions = window.quepidSearch.snapshotSearch.createSnapshotModel.mock.calls.at(-1)[0]
     expect(modelOptions.getDoc("doc-1")).toBe(scopedDoc)
-    expect(services.docCacheSvc.getDoc).toHaveBeenLastCalledWith("doc-1", 7)
+    expect(services.docCache.getDoc).toHaveBeenLastCalledWith("doc-1", 7)
   })
 })

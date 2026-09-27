@@ -44,6 +44,8 @@ pin 'utils/wizard_contracts', to: 'utils/wizard_contracts.js'
 pin 'utils/book_sync', to: 'utils/book_sync.js'
 pin 'utils/snapshot_api', to: 'utils/snapshot_api.js'
 pin 'utils/snapshot_hydration', to: 'utils/snapshot_hydration.js'
+pin 'utils/snapshot_import', to: 'utils/snapshot_import.js'
+pin 'utils/snapshot_payload', to: 'utils/snapshot_payload.js'
 
 pin 'local-time' # @3.0.3
 

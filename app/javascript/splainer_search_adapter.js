@@ -29,6 +29,9 @@ function withAngularDigest(client) {
 const httpClient = withAngularDigest(createFetchClient({ credentials: 'include' }));
 const api = createWiredServices(httpClient);
 
+window.quepidSearch ||= {};
+window.quepidSearch.docResolverSvc = api.docResolverSvc;
+
 const ngModule = angular.module('o19s.splainer-search', []);
 
 [

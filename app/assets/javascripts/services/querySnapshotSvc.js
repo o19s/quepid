@@ -5,16 +5,22 @@
 angular.module('QuepidApp')
   .service('querySnapshotSvc', [
     '$http', '$q', '$injector', '$filter',
-    'settingsSvc', 'docCacheSvc', 'caseTryNavSvc', 'fieldSpecSvc', 'normalDocsSvc',
+    'settingsSvc', 'caseTryNavSvc', 'fieldSpecSvc', 'normalDocsSvc',
     function querySnapshotSvc(
       $http, $q, $injector, $filter,
-      settingsSvc, docCacheSvc, caseTryNavSvc, fieldSpecSvc, normalDocsSvc
+      settingsSvc, caseTryNavSvc, fieldSpecSvc, normalDocsSvc
     ) {
       // caches normal docs for all snapshots
       // TODO invalidation
 
       var svc       = this;
       var snapshotSearch = window.quepidSearch.snapshotSearch;
+      var snapshotPayload = window.quepidSearch.snapshotPayload;
+      var docCacheSvc = window.quepidSearch.docCache;
+      docCacheSvc.setResolver(function(ids, settings, batchSize) {
+        return $injector.get('docResolverSvc').createResolver(ids, settings, batchSize);
+      });
+      docCacheSvc.empty();
       var caseNo    = -1;
       var version   = 0;
       svc.snapshots = {};
@@ -22,8 +28,6 @@ angular.module('QuepidApp')
         return caseNo;
       };
 
-      svc.importSnapshots = importSnapshots;
-      svc.importSnapshotsToSpecificCase = importSnapshotsToSpecificCase;
       svc.get             = get;
       svc.mapFieldSpecToSolrFormat = mapFieldSpecToSolrFormat;
       svc.registerSnapshots = function(snapshots) { return addSnapshotResp(snapshots); };
@@ -141,66 +145,7 @@ angular.module('QuepidApp')
       };
 
       this.addSnapshot = function(name, recordDocumentFields, queries, deferHydration) {
-        // we may want to refactor the payload structure in the future.
-        var docs = {};
-        var queriesPayload = {};
-        angular.forEach(queries, function(query) {
-          var currentScore = query.currentScore || {};
-          queriesPayload[query.queryId] = {
-            'score': currentScore.score === undefined ? null : currentScore.score,
-            'all_rated': currentScore.allRated || false,
-            'number_of_results': query.numFound
-          };
-
-          // The score can be -- if it hasn't actually been scored, so convert
-          // that to null for the call to the backend.
-          if (queriesPayload[query.queryId].score === '--') {
-            queriesPayload[query.queryId].score = null;
-          }
-
-          docs[query.queryId] = [];
-
-          // Save all matches
-          angular.forEach(query.docs, function(doc) {
-
-            var docPayload = {'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': false};
-            if (recordDocumentFields) {
-              var fields = {};
-              angular.forEach(Object.values(doc.subsList), function(field) {
-                fields[field['field']] = field['value'];
-              });
-              fields[doc.titleField] = doc.title;
-
-              docPayload['fields'] = fields;
-            }
-
-            docs[query.queryId].push(docPayload);
-
-          });
-
-          // Save rated only matches
-          angular.forEach(query.ratedDocs, function(doc) {
-            var docPayload = {'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': true};
-
-            if (recordDocumentFields) {
-              var fields = {};
-              angular.forEach(Object.values(doc.subsList), function(field) {
-                fields[field['field']] = field['value'];
-              });
-
-              docPayload['fields'] = fields;
-            }
-            docs[query.queryId].push(docPayload);
-          });
-        });
-
-        var saved = {
-          'snapshot': {
-            'name': name,
-            'docs': docs,
-            'queries': queriesPayload
-          }
-        };
+        var saved = snapshotPayload.build(name, recordDocumentFields, queries);
 
         return $http.post('api/cases/' + caseNo + '/snapshots', saved)
           .then(function(response) {
@@ -223,85 +168,6 @@ angular.module('QuepidApp')
       this.version = function() {
         return version;
       };
-
-      function importSnapshotsToSpecificCase(docs, targetCaseNo) {
-        let docsWithCaseOverridden = docs;
-        angular.forEach(docsWithCaseOverridden, function(doc) {
-          doc['Case ID'] = targetCaseNo;
-        });
-        return importSnapshots(docsWithCaseOverridden);
-      }
-
-      function importSnapshots (docs) {
-        var cases = {};
-
-        angular.forEach(docs, function(doc) {
-          if( !angular.isDefined(cases[doc['Case ID']]) ) {
-            cases[doc['Case ID']] = { 'snapshots': {} };
-          }
-
-          var aCase = cases[doc['Case ID']];
-
-          if( !angular.isDefined(aCase.snapshots[doc['Snapshot Name']]) ) {
-            var time = doc['Snapshot Time'];
-            aCase.snapshots[doc['Snapshot Name']] = {
-              queries:      {},
-              created_time: time,
-              name:         doc['Snapshot Name']
-            };
-          }
-
-          var snapshot = aCase.snapshots[doc['Snapshot Name']];
-
-          if( !angular.isDefined(snapshot.queries[doc['Query Text']]) ) {
-            snapshot.queries[doc['Query Text']] = { 'docs': [] };
-          }
-
-          var query = snapshot.queries[doc['Query Text']];
-          
-          var docPayload = { 'id': doc['Doc ID'], 'position': doc['Doc Position'] };
-          
-          // Remove the properties of the doc that exist elsewhere.
-          delete doc['Doc ID'];
-          delete doc['Doc Position'];
-          
-          delete doc['Snapshot Name'];
-          delete doc['Snapshot Time'];
-          delete doc['Case ID'];
-          delete doc['Query Text'];
-          
-          // map any remaining properties of the doc as fields.
-          docPayload['fields'] = doc;
-
-          query.docs.push(docPayload );
-        });
-
-        function callApi (caseId, snapshotData) {
-          var url = 'api/cases/' + caseId + '/snapshots/imports';
-          return $http.post(url, { snapshots: [snapshotData] })
-            .then(function(response) {
-              return addSnapshotResp(response.data.snapshots);
-            });
-        }
-
-        var deferred  = $q.defer();
-        var promises  = [];
-
-        angular.forEach(cases, function(caseData, caseId) {
-          angular.forEach(caseData.snapshots, function(snapshot) {
-            promises.push(callApi(caseId, snapshot));
-          });
-        });
-
-        $q.all(promises)
-          .then(function() {
-            deferred.resolve('Snapshots imported.');
-          }, function(message) {
-            deferred.reject(message);
-          });
-
-        return deferred.promise;
-      }
 
       function get(snapshotId) {
         var url     = 'api/cases/' + caseNo + '/snapshots/' + snapshotId+ '?shallow=true';

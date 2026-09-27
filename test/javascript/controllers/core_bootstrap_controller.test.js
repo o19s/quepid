@@ -32,6 +32,7 @@ describe("CoreBootstrapController", () => {
             isTrySelected: vi.fn().mockReturnValue(true)
           },
           querySnapshotSvc: { bootstrap: vi.fn() },
+          docCache: { empty: vi.fn(), invalidate: vi.fn(), update: vi.fn().mockResolvedValue(undefined) },
           caseTryNavSvc: {
             getCaseNo: vi.fn().mockReturnValue(1),
             getTryNo: vi.fn().mockReturnValue(1),
@@ -45,7 +46,6 @@ describe("CoreBootstrapController", () => {
             changeSettings: vi.fn().mockResolvedValue(undefined),
             searchAll: vi.fn().mockResolvedValue(undefined)
           },
-          docCacheSvc: { empty: vi.fn(), invalidate: vi.fn(), update: vi.fn().mockResolvedValue(undefined) },
           scorerSvc: { bootstrap: vi.fn() }
         }
       }

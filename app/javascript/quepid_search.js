@@ -24,6 +24,8 @@ import { deleteSnapshot, fetchSnapshot } from "./utils/snapshot_api"
 import { codeToString, formatCode, parseResponseObject } from "./utils/search_error"
 import { createCaseScoringRuntime, scoreAllQueries, scoreQuery } from "./utils/query_scoring"
 import { createQueryModel } from "./utils/query_model"
+import { createDocCache } from "./utils/doc_cache"
+import { buildSnapshotPayload } from "./utils/snapshot_payload"
 import {
   createQueryRuntime,
   createSearchAllRuntime,
@@ -76,6 +78,11 @@ import {
  * (`quepid_angular_app.js`); Stimulus controllers import the modules directly.
  */
 const quepidSearch = {
+  docResolverSvc: null,
+  docCache: createDocCache({
+    resolver: (...args) => window.quepidSearch.docResolverSvc.createResolver(...args),
+    proxyUrlFor: (searchEndpointId) => window.quepidSearch.caseRuntime?.bootstrap?.caseTryNavSvc?.getQuepidProxyUrl(searchEndpointId)
+  }),
   caseState: {
     caseNo: null,
     caseName: "",
@@ -182,6 +189,9 @@ const quepidSearch = {
     registerSnapshotModels,
     fetchSnapshot,
     deleteSnapshot
+  },
+  snapshotPayload: {
+    build: buildSnapshotPayload
   }
 }
 

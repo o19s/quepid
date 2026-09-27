@@ -503,7 +503,7 @@ Automatic post-search synchronization now uses the tested `createBookSyncRuntime
 for configuration, deduplication, batching, and retry-on-failure; `queriesSvc`
 only invokes that runtime after a live search.
 
-Backing services/factories: `docCacheSvc`, `DocListFactory`, `searchEndpointSvc`
+Backing services/factories: `app/javascript/utils/doc_cache.js`, `DocListFactory`, `searchEndpointSvc`
 
 The Missing Documents modal was migrated to Stimulus on 2026-09-24. Its targeted-search
 adapter now lives in the tested framework-free `createTargetedSearchAdapter` runtime;
@@ -542,7 +542,15 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (11):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `docCacheSvc`, `mapperBasedSearchEngineSvc`, `queriesSvc`, `querySnapshotSvc`, `scorerSvc`, `searchEndpointSvc`, `settingsSvc`, `userSvc`* (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned.
+**Services (10):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `mapperBasedSearchEngineSvc`, `queriesSvc`, `querySnapshotSvc`, `scorerSvc`, `searchEndpointSvc`, `settingsSvc`, `userSvc`* (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned. `docCacheSvc` was removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by Angular snapshot orchestration and the Stimulus snapshot/bootstrap/wizard boundaries.
+
+`queriesSvc` no longer injects `querySnapshotSvc`; it reads the framework-free
+snapshot registry directly. Static snapshot imports in the new-case wizard now
+use `app/javascript/utils/snapshot_import.js`, so `querySnapshotSvc` remains
+only for the live core bootstrap/create-snapshot bridge and its snapshot
+hydration compatibility boundary. Snapshot creation payload construction now
+lives in the tested `app/javascript/utils/snapshot_payload.js` utility, and the
+obsolete Angular CSV-import methods are gone.
 
 **Factories (4):** `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `TryFactory`
 

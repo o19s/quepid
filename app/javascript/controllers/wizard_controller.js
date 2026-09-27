@@ -1,6 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { getWizardCapabilities } from "utils/core_angular_adapter"
+import { importSnapshotsToCase } from "utils/snapshot_import"
+import { getQuepidRootUrl } from "utils/quepid_root"
 import {
   addUniqueQuery,
   buildFieldSpec,
@@ -259,9 +261,12 @@ export default class extends Controller {
     this.staticAlert = "Importing static data…"
     this.render()
     try {
-      await this.adapter.querySnapshotSvc.importSnapshotsToSpecificCase(this.staticRows, this.adapter.caseTryNavSvc.getCaseNo())
-      const snapshots = this.adapter.querySnapshotSvc.snapshots || {}
-      const snapshotId = Object.keys(snapshots).at(-1)
+      const importedSnapshots = await importSnapshotsToCase(
+        this.staticRows,
+        this.adapter.caseTryNavSvc.getCaseNo(),
+        getQuepidRootUrl()
+      )
+      const snapshotId = importedSnapshots.at(-1)?.id
       this.settings.searchUrl = `${this.adapter.caseTryNavSvc.getQuepidRootUrl()}/api/cases/${this.adapter.caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`
       this.newQueries = [...new Set(this.staticRows.map((row) => row["Query Text"]).filter(Boolean))].map((queryString) => ({ queryString }))
       this.staticAlert = "Static data imported successfully."
@@ -277,7 +282,7 @@ export default class extends Controller {
     this.saving = true
     this.render()
     try {
-      const { caseSvc, searchEndpointSvc, settingsSvc, queriesSvc, caseTryNavSvc, docCacheSvc, userSvc } = this.adapter
+      const { caseSvc, searchEndpointSvc, settingsSvc, queriesSvc, caseTryNavSvc, docCache, userSvc } = this.adapter
       const selectedCase = caseSvc.getSelectedCase()
       if (this.settings.caseName) await caseSvc.renameCase(selectedCase, this.settings.caseName)
       if (!settingsSvc.demoSettingsChosen(this.settings.searchEngine, this.settings.searchUrl)) {
@@ -289,8 +294,8 @@ export default class extends Controller {
       this.settings.selectedTry ||= settingsSvc.applicableSettings()
       await settingsSvc.update({ ...this.settings, newQueries: this.newQueries })
       const latestSettings = settingsSvc.editableSettings()
-      docCacheSvc.invalidate()
-      docCacheSvc.update(latestSettings)
+      docCache.invalidate()
+      docCache.update(latestSettings)
       queriesSvc.changeSettings(caseTryNavSvc.getCaseNo(), latestSettings)
       const texts = this.newQueries.map((query) => query.queryString).filter(Boolean)
       if (texts.length && window.quepidSearch?.queryLifecycle) {

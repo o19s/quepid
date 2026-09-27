@@ -48,11 +48,11 @@ export default class extends Controller {
   }
 
   async registerSnapshots(payloads) {
-    const { settingsSvc, caseTryNavSvc, fieldSpecSvc, docCacheSvc, normalDocsSvc } = await getSnapshotCapabilities()
+    const { settingsSvc, caseTryNavSvc, fieldSpecSvc, docCache, normalDocsSvc } = await getSnapshotCapabilities()
     const snapshotSearch = window.quepidSearch?.snapshotSearch
     const registry = this.snapshotRegistry()
 
-    if (!settingsSvc || !caseTryNavSvc || !fieldSpecSvc || !docCacheSvc || !normalDocsSvc || !snapshotSearch || !registry) {
+    if (!settingsSvc || !caseTryNavSvc || !fieldSpecSvc || !docCache || !normalDocsSvc || !snapshotSearch || !registry) {
       throw new Error("Snapshot runtime is not available")
     }
 
@@ -68,13 +68,13 @@ export default class extends Controller {
       createFieldSpec: fieldSpecSvc.createFieldSpec,
       rootUrl: caseTryNavSvc.getQuepidRootUrl(),
       caseNo: caseTryNavSvc.getCaseNo(),
-      addDocIds: ids => docCacheSvc.addIds(ids),
-      addScopedDocIds: (ids, scope) => docCacheSvc.addIds(ids, scope),
-      clearScopedDocs: scope => docCacheSvc.empty(scope),
-      updateDocs: (hydrationSettings, scope) => docCacheSvc.update(hydrationSettings, scope),
+      addDocIds: ids => docCache.addIds(ids),
+      addScopedDocIds: (ids, scope) => docCache.addIds(ids, scope),
+      clearScopedDocs: scope => docCache.empty(scope),
+      updateDocs: (hydrationSettings, scope) => docCache.update(hydrationSettings, scope),
       createModel: options => {
         const getDoc = useSnapshotScopedCache
-          ? id => docCacheSvc.getDoc(id, options.params.id)
+          ? id => docCache.getDoc(id, options.params.id)
           : options.getDoc
 
         return snapshotSearch.createSnapshotModel({
@@ -85,7 +85,7 @@ export default class extends Controller {
           log: options.log
         })
       },
-      getDoc: docCacheSvc.getDoc,
+      getDoc: docCache.getDoc,
       explainDoc: normalDocsSvc.explainDoc,
       formatDate: time => new Date(time).toLocaleDateString("en-US"),
       log: message => console.debug(message)

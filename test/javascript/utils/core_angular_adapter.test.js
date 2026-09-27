@@ -50,7 +50,6 @@ describe("core Angular adapter", () => {
       settingsSvc: { editableSettings: vi.fn() },
       caseTryNavSvc: { getCaseNo: vi.fn() },
       fieldSpecSvc: {},
-      docCacheSvc: {},
       normalDocsSvc: {}
     }
     window.quepidSearch = { caseRuntime: { snapshots: services } }

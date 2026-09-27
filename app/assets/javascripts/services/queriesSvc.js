@@ -16,7 +16,6 @@ angular.module('QuepidApp')
     'scorerSvc',
     'searchSvc',
     'caseTryNavSvc',
-    'querySnapshotSvc',
     'DocListFactory',
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
@@ -31,7 +30,6 @@ angular.module('QuepidApp')
       scorerSvc,
       searchSvc,
       caseTryNavSvc,
-      querySnapshotSvc,
       DocListFactory,
       esExplainExtractorSvc,
       solrExplainExtractorSvc,
@@ -594,7 +592,7 @@ angular.module('QuepidApp')
       }
 
       function createSearcherFromSnapshot(snapshotId, query, settings) {
-        var snapshotRegistry = window.quepidSearch.snapshotSearch.snapshots || querySnapshotSvc.snapshots;
+        var snapshotRegistry = window.quepidSearch.snapshotSearch.snapshots;
         return window.quepidSearch.snapshotSearch.createSnapshotSearcherFromRegistry({
           snapshotId: snapshotId,
           snapshots: snapshotRegistry,
