@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { deleteSnapshot, fetchSnapshot } from "utils/snapshot_api"
+import { diffStateStore } from "stores/diff_state_store"
 
 /*
  * Temporary compatibility bridge for snapshot comparison.
@@ -34,21 +35,22 @@ export default class extends Controller {
     return window.angular?.element(document.body)?.injector?.()
   }
 
+  diffStore() {
+    return window.quepidStore?.diff || diffStateStore
+  }
+
   selectionRequest(event) {
-    const injector = this.injector()
-    const queryView = injector?.get("queryViewSvc")
-    event.detail?.done?.(queryView?.getAllDiffSettings?.() || [])
+    event.detail?.done?.(this.diffStore().selections())
   }
 
   apply(event) {
     const detail = event.detail || {}
     const injector = this.injector()
-    const queryView = injector?.get("queryViewSvc")
     const queries = injector?.get("queriesSvc")
     const snapshots = injector?.get("querySnapshotSvc")
     const selections = detail.selections || []
 
-    if (!queryView || !queries || !snapshots || !detail.snapshotsUrl) {
+    if (!queries || !snapshots || !detail.snapshotsUrl) {
       detail.done?.("Angular snapshot services are not available")
       return
     }
@@ -56,8 +58,8 @@ export default class extends Controller {
     Promise.all(selections.map((snapshotId) => fetchSnapshot(`${detail.snapshotsUrl}/${encodeURIComponent(snapshotId)}`)))
       .then((payloads) => snapshots.registerSnapshots(payloads))
       .then(() => {
+        this.diffStore().enable(selections)
         this.inAngular(() => {
-          queryView.enableDiffs(selections)
           return queries.refreshAllDiffs()
         }, detail.done)
       })
@@ -67,16 +69,15 @@ export default class extends Controller {
   clear(event) {
     const detail = event.detail || {}
     const injector = this.injector()
-    const queryView = injector?.get("queryViewSvc")
     const queries = injector?.get("queriesSvc")
 
-    if (!queryView || !queries) {
+    if (!queries) {
       detail.done?.("Angular query services are not available")
       return
     }
 
     this.inAngular(() => {
-      queryView.disableComparisons()
+      this.diffStore().disable()
       return queries.refreshAllDiffs()
     }, detail.done)
   }
@@ -84,11 +85,10 @@ export default class extends Controller {
   delete(event) {
     const detail = event.detail || {}
     const injector = this.injector()
-    const queryView = injector?.get("queryViewSvc")
     const queries = injector?.get("queriesSvc")
     const snapshots = injector?.get("querySnapshotSvc")
 
-    if (!queryView || !queries || !snapshots || !detail.snapshotsUrl) {
+    if (!queries || !snapshots || !detail.snapshotsUrl) {
       detail.done?.("Angular snapshot services are not available")
       return
     }
@@ -97,7 +97,7 @@ export default class extends Controller {
       .then(() => {
         snapshots.removeSnapshot(detail.snapshotId)
         this.inAngular(() => {
-          queryView.disableComparisons()
+          this.diffStore().disable()
           return queries.refreshAllDiffs()
         }, detail.done)
       })

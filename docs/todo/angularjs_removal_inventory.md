@@ -281,11 +281,10 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Remaining, in slice order (2026-09-24).**
 - Angular remains only behind the live query/search/scoring adapter; the per-row result controls are now Stimulus-owned without an Angular compilation island.
-- Diff orchestration is now framework-free in `utils/diff_results.js`; snapshot fetch/cache and the snapshot searcher remain an explicitly named Angular island behind the `diff:*` bridge. Do not combine that adapter with scorer sandboxing or wizard UI replacement.
 
 - `query_documents_store.js` is the plain-document read model, and `search-results` renders document DOM from those snapshots.
 - `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing query-state adapter boundaries. The query list no longer discovers its live collection through `QueriesCtrl`'s scope, and expanded query controls no longer require `$compile` or a short-lived Angular child scope.
-- Angular still owns `snapshotSearcherSvc`, snapshot fetching, and per-query diff scoring behind the document-store bridge.
+- Angular still owns `snapshotSearcherSvc`, snapshot fetching, and per-query diff scoring behind the document-store bridge; it no longer owns comparison selection state.
 - `snapshot_searcher.js` now owns the framework-free snapshot searcher contract; `snapshotSearcherSvc` remains only as the Angular `$q`/factory adapter until snapshot fetching and diff scoring move.
 - `QueryCollectionStore` tracks `searchAll()`'s lifecycle with a generation counter (`beginSearch`/`finishSearch`/`failSearch`, added 2026-09-25 to settle stale/out-of-order completions). `queries_list_controller.js` now subscribes to `search-failed`/`search-started` and flashes the sticky `search-error` channel — previously a `searchAll()` rejection outside the add-query flow (e.g. the `judgements:queries-need-reload` / `imports:queries-need-reload` re-search, or a settings change) had no user-facing surfacing at all.
 

@@ -38,10 +38,20 @@ describe("SnapshotBridgeController", () => {
         $evalAsync: (callback) => callback()
       }
     }
+    window.quepidStore = {
+      diff: {
+        selections: vi.fn().mockReturnValue(["7"]),
+        enable: vi.fn(),
+        disable: vi.fn()
+      }
+    }
     controller = buildController(services)
   })
 
-  afterEach(() => vi.restoreAllMocks())
+  afterEach(() => {
+    delete window.quepidStore
+    vi.restoreAllMocks()
+  })
 
   it("clears comparisons and completes through the event callback", async () => {
     const done = vi.fn()
@@ -49,12 +59,12 @@ describe("SnapshotBridgeController", () => {
     controller.clear({ detail: { done } })
     await Promise.resolve()
 
-    expect(services.queryViewSvc.disableComparisons).toHaveBeenCalledOnce()
+    expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
     expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()
     expect(done).toHaveBeenCalledWith(null)
   })
 
-  it("applies selections inside an Angular digest", async () => {
+  it("applies selections while keeping refresh and scoring in the adapter", async () => {
     const done = vi.fn()
     let digestCallback
     services.$rootScope.$evalAsync = vi.fn((callback) => {
@@ -64,17 +74,16 @@ describe("SnapshotBridgeController", () => {
     controller.apply({ detail: { selections: ["7"], snapshotsUrl: "api/cases/1/snapshots", done } })
     await vi.waitFor(() => expect(services.$rootScope.$evalAsync).toHaveBeenCalledOnce())
 
-    expect(services.queryViewSvc.enableDiffs).not.toHaveBeenCalled()
     digestCallback()
     await vi.waitFor(() => expect(done).toHaveBeenCalledWith(null))
 
     expect(snapshotApi.fetchSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots/7")
     expect(services.querySnapshotSvc.registerSnapshots).toHaveBeenCalledWith([{ id: 7 }])
-    expect(services.queryViewSvc.enableDiffs).toHaveBeenCalledWith(["7"])
+    expect(window.quepidStore.diff.enable).toHaveBeenCalledWith(["7"])
     expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()
   })
 
-  it("deletes snapshots and refreshes comparisons inside an Angular digest", async () => {
+  it("deletes snapshots and refreshes comparisons inside the adapter", async () => {
     const done = vi.fn()
     let digestCallback
     services.$rootScope.$evalAsync = vi.fn((callback) => {
@@ -84,13 +93,12 @@ describe("SnapshotBridgeController", () => {
     controller.delete({ detail: { snapshotId: "7", snapshotsUrl: "api/cases/1/snapshots", done } })
     await vi.waitFor(() => expect(services.$rootScope.$evalAsync).toHaveBeenCalledOnce())
 
-    expect(services.queryViewSvc.disableComparisons).not.toHaveBeenCalled()
     digestCallback()
     await vi.waitFor(() => expect(done).toHaveBeenCalledWith(null))
 
     expect(snapshotApi.deleteSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots", "7")
     expect(services.querySnapshotSvc.removeSnapshot).toHaveBeenCalledWith("7")
-    expect(services.queryViewSvc.disableComparisons).toHaveBeenCalledOnce()
+    expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
     expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()
   })
 

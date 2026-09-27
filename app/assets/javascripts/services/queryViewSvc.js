@@ -5,21 +5,31 @@
 angular.module('QuepidApp')
   .service('queryViewSvc', [
     function() {
+      var diffStore = window.quepidStore && window.quepidStore.diff;
       this.diffSettings = [];
       this.comparisonsDisabled = false;
       this.queryToggles = {};
 
       this.enableDiffs = function(snapshotIds) {
+        if (diffStore) {
+          diffStore.enable(snapshotIds);
+          return;
+        }
         this.diffSettings = snapshotIds;
         this.comparisonsDisabled = false;
       };
 
       this.disableComparisons = function() {
+        if (diffStore) {
+          diffStore.disable();
+          return;
+        }
         this.diffSettings = [];
         this.comparisonsDisabled = true;
       };
 
       this.areComparisonsDisabled = function() {
+        if (diffStore) return diffStore.snapshot().disabled;
         return this.comparisonsDisabled === true;
       };
 
@@ -42,13 +52,18 @@ angular.module('QuepidApp')
       };
 
       this.reset = function() {
-        this.diffSettings = [];
-        this.comparisonsDisabled = false;
+        if (diffStore) {
+          diffStore.reset();
+        } else {
+          this.diffSettings = [];
+          this.comparisonsDisabled = false;
+        }
         this.queryToggles = {}; // the toggles, they do nothing
       };
 
       // Unified getter for all diff settings - returns array format
       this.getAllDiffSettings = function() {
+        if (diffStore) return diffStore.selections();
         if (this.comparisonsDisabled === true) {
           return [];
         }
