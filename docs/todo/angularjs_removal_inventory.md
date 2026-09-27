@@ -454,6 +454,12 @@ adapter into those services.
 
 Remaining backing services: `queriesSvc`, `queryViewSvc`, `searchErrorTranslatorSvc`, `varExtractorSvc`
 
+The framework-free `query_model.js` now owns query-local state and scoring
+(`setDirty`, score caching, scorer selection, score aggregation, and rated
+filters). `queriesSvc` remains the compatibility adapter for search,
+rated-document fetching, notes, and persistence. The next extraction can move
+those injected operations without changing the query-local contract.
+
 Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 
 ### 6. Search results and rating UI

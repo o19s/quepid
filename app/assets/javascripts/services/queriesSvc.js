@@ -955,8 +955,6 @@ angular.module('QuepidApp')
         let self    = this;
 
         let qt      = 'query_text';
-        let version = 1;
-
         self.hasBeenScored  = false;
         self.docsSet        = false;
         self.allRated       = true;
@@ -1001,95 +999,11 @@ angular.module('QuepidApp')
         let resultsReturned = false;
         let that = this;
 
-        that.setDirty = function() {
-          version++;
-          svcVersion++;
-        };
-
-        // Reflect updates to query or ratings that happen in
-        // client side.
-        this.touchModifiedAt = function() {
-          this.modifiedAt = new Date().toISOString();
-        };
-
-        this.persisted = function() {
-          return (this.queryId && this.queryId >= 0);
-        };
-
-        this.effectiveScorer = function() {
-          let scorer = this.scorer;
-
-          if (!scorer) {
-          /* use the case default scorer if none
-             set for this query */
-            return scorerSvc.defaultScorer;
-          } else {
-            return scorer;
-          }
-        };
-
         // defaultCaseOrder is an index for this query using the default
         // order from the Quepid server
         this.defaultCaseOrder = 0;
         this.lastScore = 0; // the score of this query the last time it was tested
         this.lastScoreVersion = -5;
-
-        this.scoreOthers = function(otherDocs) {
-
-          return window.quepidSearch.queryScoring.scoreQuery({
-            query: this,
-            docs: otherDocs,
-            ratingsStore: this.ratingsStore,
-            scorer: this.effectiveScorer(),
-            promiseApi: $q,
-            depthOfRating: this.depthOfRating
-          });
-        };
-
-        this.score = function() {
-          if (this.lastScoreVersion === this.version()) {
-            let deferred = $q.defer();
-            deferred.resolve(this.currentScore);
-            return deferred.promise;
-          }
-
-          return this.scoreOthers(this.docs)
-            .then(function(score) {
-              that.currentScore = score;
-
-              that.hasBeenScored = true;
-
-              that.lastScore    = that.currentScore.score || 0;
-
-              that.allRated     = that.currentScore.allRated;
-
-              that.lastScoreVersion = that.version();
-
-              // Search/rating updates publish documents before scoring completes. Republish
-              // here so read-model consumers (including the Frog Report) receive the current
-              // missing-rating and all-rated state as soon as the score is available.
-              publishQueryDocuments(that);
-
-              return that.currentScore;
-            }
-          );
-        };
-
-        this.fieldSpec = function() {
-          return currSettings.createFieldSpec();
-        };
-
-        this.maxDocScore = function() {
-          let maxDocScore = 0;
-          angular.forEach(this.docs, function(doc) {
-            if (angular.isFunction(doc.score)) {
-              maxDocScore = Math.max(doc.score(), maxDocScore);
-            }
-          });
-          return maxDocScore;
-        };
-
-
         // This method allows scorers to wait on rated documents before trying to score
         this.awaitRatedDocs = function() {
           let deferred = $q.defer();
@@ -1281,10 +1195,6 @@ angular.module('QuepidApp')
           }
         };
 
-        this.version = function() {
-          return version + this.ratingsStore.version();
-        };
-
         this.search = function() {
           resultsReturned = false;
           return searchQuery(this);
@@ -1436,14 +1346,6 @@ angular.module('QuepidApp')
           this.docs.length = 0;
         };
 
-        this.state = function() {
-          return window.quepidSearch.queryState.queryLifecycleState({
-            errorText: this.errorText,
-            resultsReturned: resultsReturned,
-            docCount: this.docs.length
-          });
-        };
-
         this.searchAndScore = function() {
           return this.search().then( () => {
             return this.score();
@@ -1453,14 +1355,34 @@ angular.module('QuepidApp')
           });
         };
 
-        // Per-engine filter syntax lives in app/javascript/utils/rated_docs.js (Vitest-covered).
-        this.filterToRatings = function(settings, slice) {
-          return window.quepidSearch.ratedDocs.buildFilter({
-            searchEngine: settings.searchEngine,
-            idField:      settings.createFieldSpec().id,
-            ratedIds:     window.quepidSearch.ratedDocs.ids(self.ratings, slice, settings.numberOfRows)
-          });
-        };
+        // The framework-free query model now owns query-local state and scoring.
+        // Search, rated-document lookup, and persistence remain here as an
+        // explicit compatibility boundary until their callers migrate.
+        Object.assign(this, window.quepidSearch.queryModel.create({
+          query: this,
+          ratingsStore: this.ratingsStore,
+          getDefaultScorer: function() {
+            return scorerSvc.defaultScorer;
+          },
+          scoreQuery: window.quepidSearch.queryScoring.scoreQuery,
+          promiseApi: $q,
+          getFieldSpec: function() {
+            return currSettings.createFieldSpec();
+          },
+          getQueryState: function() {
+            return window.quepidSearch.queryState.queryLifecycleState({
+              errorText: self.errorText,
+              resultsReturned: resultsReturned,
+              docCount: self.docs.length
+            });
+          },
+          buildRatingsFilter: window.quepidSearch.ratedDocs.buildFilter,
+          ratedDocIds: window.quepidSearch.ratedDocs.ids,
+          onDirty: function() {
+            svcVersion++;
+          },
+          publish: publishQueryDocuments
+        }));
       };
 
       this.QueryFactory = Query;

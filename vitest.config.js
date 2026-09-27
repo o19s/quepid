@@ -54,6 +54,7 @@ export default defineConfig({
       { find: "utils/editor_mode", replacement: path.resolve(repoRoot, "app/javascript/utils/editor_mode.js") },
       { find: "utils/query_lifecycle", replacement: path.resolve(repoRoot, "app/javascript/utils/query_lifecycle.js") },
       { find: "utils/query_service", replacement: path.resolve(repoRoot, "app/javascript/utils/query_service.js") },
+      { find: "utils/query_model", replacement: path.resolve(repoRoot, "app/javascript/utils/query_model.js") },
       { find: "utils/ratings_store", replacement: path.resolve(repoRoot, "app/javascript/utils/ratings_store.js") },
       { find: "utils/snapshot_searcher", replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_searcher.js") },
       { find: "utils/snapshot_model", replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_model.js") },
