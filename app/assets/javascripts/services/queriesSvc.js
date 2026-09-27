@@ -760,36 +760,28 @@ angular.module('QuepidApp')
        * engine-specific behavior (proxy URL, static engine, searchapi mapper functions, rated-doc filters).
        */
       function createSearcherFromSettings(passedInSettings, query, options) {
-        options = options == null ? {} : options;
         if (!passedInSettings || !passedInSettings.selectedTry) return;
 
-        let mapperFunctions = passedInSettings.searchEngine === 'searchapi'
-          ? evaluateMapperFunctions(passedInSettings.mapperCode)
-          : {};
-        let request = window.quepidSearch.queryService.buildSearcherRequest({
+        return window.quepidSearch.queryService.createSearcherFromSettings({
           settings: passedInSettings,
-          queryText: query.queryText,
-          queryOptions: query.options,
+          query: query,
           options: options,
-          mapperFunctions: mapperFunctions,
           proxyUrl: passedInSettings.proxyRequests === true
             ? caseTryNavSvc.getQuepidProxyUrl(passedInSettings.searchEndpointId)
             : undefined,
           isEsOrOs: searchEndpointSvc.isEsOrOsEngine(passedInSettings.searchEngine),
-          ratingsFilter: options.filterToRated ? query.filterToRatings(passedInSettings) : undefined
+          evaluateMapper: evaluateMapperFunctions,
+          createSearcher: function(fieldSpec, searchUrl, args, queryText, searcherOptions, searchEngine) {
+            return searchSvc.createSearcher(
+              fieldSpec,
+              searchUrl,
+              args,
+              queryText,
+              searcherOptions,
+              searchEngine
+            );
+          }
         });
-
-        // Preserve the legacy normalization because later Query methods read
-        // the active settings object when constructing rated-doc searchers.
-        passedInSettings.searchEngine = request.searchEngine;
-        return searchSvc.createSearcher(
-          passedInSettings.createFieldSpec(),
-          passedInSettings.selectedTry.searchUrl,
-          request.args,
-          request.queryText,
-          request.searcherOptions,
-          request.searchEngine
-        );
       }
 
       function createSearcherFromSnapshot(snapshotId, query, settings) {

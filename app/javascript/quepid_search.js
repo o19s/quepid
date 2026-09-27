@@ -51,6 +51,7 @@ import {
 import {
   buildSearcherRequest,
   buildSearchApiRatedDocsQueryParams,
+  createSearcherFromSettings,
   evaluateMapperFunctions,
   matchFeaturesExplain,
   normalizeSearchResults,
@@ -137,6 +138,7 @@ const quepidSearch = {
   queryService: {
     buildSearchApiRatedDocsQueryParams,
     buildSearcherRequest,
+    createSearcherFromSettings,
     evaluateMapperFunctions,
     matchFeaturesExplain,
     normalizeSearchResults,

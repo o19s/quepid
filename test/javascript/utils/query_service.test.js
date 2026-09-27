@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import {
   buildSearcherRequest,
   buildSearchApiRatedDocsQueryParams,
+  createSearcherFromSettings,
   evaluateMapperFunctions,
   matchFeaturesExplain,
   normalizeSearchResults,
@@ -13,6 +14,65 @@ import {
 } from "utils/query_service"
 
 describe("query service helpers", () => {
+  it("creates a searcher through injected infrastructure and preserves static normalization", () => {
+    const createSearcher = vi.fn(() => ({ type: "solr" }))
+    const settings = {
+      searchEngine: "static",
+      selectedTry: {
+        args: { q: "#$query##" },
+        jsonQueryParams: false,
+        searchUrl: "https://search.test"
+      },
+      createFieldSpec: () => ({ id: "id" }),
+      options: {},
+      proxyRequests: false
+    }
+    const query = { queryText: "books", options: { boost: 2 }, filterToRatings: vi.fn() }
+
+    const searcher = createSearcherFromSettings({
+      settings,
+      query,
+      evaluateMapper: vi.fn(),
+      createSearcher
+    })
+
+    expect(searcher).toEqual({ type: "solr" })
+    expect(settings.searchEngine).toBe("solr")
+    expect(createSearcher).toHaveBeenCalledWith(
+      { id: "id" },
+      "https://search.test",
+      { q: "#$query##", echoParams: "all" },
+      "books",
+      expect.objectContaining({ qOption: { boost: 2 } }),
+      "solr"
+    )
+  })
+
+  it("passes rated filters to the framework-free searcher boundary", () => {
+    const createSearcher = vi.fn(() => ({ type: "es" }))
+    const filterToRatings = vi.fn(() => ({ terms: { id: ["1"] } }))
+    const settings = {
+      searchEngine: "es",
+      selectedTry: { args: { query: "books" }, searchUrl: "https://search.test" },
+      createFieldSpec: () => ({ id: "id" })
+    }
+    const query = { queryText: "books", options: {}, filterToRatings }
+
+    createSearcherFromSettings({
+      settings,
+      query,
+      options: { filterToRated: true },
+      isEsOrOs: true,
+      evaluateMapper: vi.fn(),
+      createSearcher
+    })
+
+    expect(filterToRatings).toHaveBeenCalledWith(settings)
+    expect(createSearcher.mock.calls[0][2]).toEqual({
+      query: { bool: { should: "books", filter: { terms: { id: ["1"] } } } }
+    })
+  })
+
   it("builds classic Solr requests with rating filters and query options", () => {
     const settings = {
       searchEngine: "solr",

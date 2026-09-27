@@ -94,6 +94,51 @@ export function buildSearcherRequest({
   return { args, queryText, searchEngine, searcherOptions, solrQueryParamsIsJson }
 }
 
+/**
+ * Create a splainer-search searcher without coupling the construction rules to
+ * Angular services. The caller injects the legacy searcher factory and the
+ * small environment-specific predicates; the settings/query contract stays
+ * portable for the future case-workspace bundle.
+ */
+export function createSearcherFromSettings({
+  settings,
+  query,
+  options = {},
+  evaluateMapper,
+  proxyUrl,
+  isEsOrOs = false,
+  createSearcher
+}) {
+  if (!settings?.selectedTry) return undefined
+  options = options == null ? {} : options
+
+  const mapperFunctions = settings.searchEngine === "searchapi"
+    ? evaluateMapper(settings.mapperCode)
+    : {}
+  const request = buildSearcherRequest({
+    settings,
+    queryText: query.queryText,
+    queryOptions: query.options,
+    options,
+    mapperFunctions,
+    proxyUrl,
+    isEsOrOs,
+    ratingsFilter: options.filterToRated ? query.filterToRatings(settings) : undefined
+  })
+
+  // Preserve the legacy normalization because later Query methods read the
+  // active settings object when constructing rated-doc searchers.
+  settings.searchEngine = request.searchEngine
+  return createSearcher(
+    settings.createFieldSpec(),
+    settings.selectedTry.searchUrl,
+    request.args,
+    request.queryText,
+    request.searcherOptions,
+    request.searchEngine
+  )
+}
+
 const MAPPER_FUNCTION_NAMES = [
   "numberOfResultsMapper",
   "docsMapper",
