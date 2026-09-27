@@ -106,15 +106,13 @@ export default class extends Controller {
   toggleShowOnlyRated(event) {
     event.preventDefault()
     if (!(this.currentShowOnlyRatedUnsupported ?? this.showOnlyRatedUnsupportedValue)) {
-      if (this.queryState?.toggleShowOnlyRated) this.queryState.toggleShowOnlyRated()
-      else this.dispatch("toggle-rated")
+      this.store?.requestToggleShowOnlyRated?.()
     }
   }
 
   collapseAll(event) {
     event.preventDefault()
-    if (this.queryState?.collapseAll) this.queryState.collapseAll()
-    else this.dispatch("collapse-all")
+    this.store?.requestCollapseAll?.()
   }
 
   sort(event) {

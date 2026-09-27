@@ -120,6 +120,30 @@ export class QueryCollectionStore extends EventTarget {
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
   }
 
+  collapseAll() {
+    this._expandedQueries.forEach((_expanded, queryId) => {
+      this._expandedQueries.set(queryId, false)
+    })
+    this._queries.forEach((query, queryId) => {
+      this._queries.set(queryId, { ...query, expanded: false })
+    })
+    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+  }
+
+  requestToggleShowOnlyRated() {
+    this.request("toggle-show-only-rated")
+  }
+
+  requestCollapseAll() {
+    this.request("collapse-all")
+  }
+
+  request(command, detail = {}) {
+    this.dispatchEvent(new CustomEvent("command", {
+      detail: { command, ...detail }
+    }))
+  }
+
   get status() {
     return this._status
   }

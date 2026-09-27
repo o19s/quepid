@@ -334,6 +334,19 @@ angular.module('QuepidApp')
         });
       }
 
+      if (queryCollectionStore) {
+        queryCollectionStore.addEventListener('command', function(event) {
+          var detail = event.detail || {};
+          if (detail.command === 'toggle-show-only-rated') {
+            toggleShowOnlyRated();
+          } else if (detail.command === 'collapse-all') {
+            queryViewSvc.collapseAll();
+            if (queryCollectionStore) queryCollectionStore.collapseAll();
+            if (queryDocumentsStore) queryDocumentsStore.collapseAll();
+          }
+        });
+      }
+
       function rateDocument(queryId, docId, rating) {
         var query = window.quepidSearch.queryState.getQuery(queryId);
         if (!query) return false;

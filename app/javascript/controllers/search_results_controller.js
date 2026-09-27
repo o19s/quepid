@@ -141,20 +141,12 @@ export default class extends Controller {
   paginate(event) {
     event.preventDefault()
     const ratedOnly = this.store.query(this.queryId)?.showOnlyRated === true
-    if (this.store.requestPaginateQuery) {
-      this.store.requestPaginateQuery(this.queryId, ratedOnly)
-    } else {
-      window.quepidSearch?.queryState?.paginateQuery?.(this.queryId, ratedOnly)
-    }
+    this.store.requestPaginateQuery?.(this.queryId, ratedOnly)
   }
 
   collapse(event) {
     event.preventDefault()
-    if (this.store.requestToggleQuery) {
-      this.store.requestToggleQuery(this.queryId)
-    } else {
-      window.quepidSearch?.queryState?.toggleQuery?.(this.queryId)
-    }
+    this.store.requestToggleQuery?.(this.queryId)
   }
 
   copyQuery(event) {
@@ -314,20 +306,12 @@ export default class extends Controller {
     const result = event.target.closest("search-result")
     if (!result) {
       const rating = event.type === "rating-popover:rate" ? parseInt(event.detail.rating, 10) : null
-      if (this.store.requestRateAll) {
-        this.store.requestRateAll(this.queryId, rating)
-      } else {
-        window.quepidSearch?.queryState?.rateAll?.(this.queryId, rating)
-      }
+      this.store.requestRateAll?.(this.queryId, rating)
       return
     }
     const docId = result?.__searchResultDocument?.id
     const rating = event.type === "rating-popover:rate" ? parseInt(event.detail.rating, 10) : null
-    if (this.store.requestRateDocument) {
-      this.store.requestRateDocument(this.queryId, docId, rating)
-    } else {
-      window.quepidSearch?.queryState?.rateDocument?.(this.queryId, docId, rating)
-    }
+    this.store.requestRateDocument?.(this.queryId, docId, rating)
   }
 
   renderScoreAll(snapshot) {
@@ -363,11 +347,7 @@ export default class extends Controller {
   handleQueryToggle(event) {
     event.preventDefault()
     event.stopPropagation()
-    if (this.store.requestToggleQuery) {
-      this.store.requestToggleQuery(this.queryId)
-    } else {
-      window.quepidSearch?.queryState?.toggleQuery?.(this.queryId)
-    }
+    this.store.requestToggleQuery?.(this.queryId)
   }
 
   handleShowDocument(event) {

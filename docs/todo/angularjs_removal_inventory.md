@@ -232,7 +232,7 @@ compatibility adapter until live query/search/scoring migration is complete.
 1. Shared primitives — `$quepidModal`, `quepidTypeahead`, `quepidCollapse`, and the remaining CSRF callers. Tooltip/popover/paste utils and flash are already Stimulus-owned. Remaining call sites are concentrated in the diff bridge and surviving Angular service seams; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
 2. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
 3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
-4. Query list + results — `queries`, `search-results`, rating UI
+4. Query list + results — `search-results`, rating UI
 5. Case action modals — import ratings, diff
 6. Cleanup — removal checklist below
 
@@ -280,10 +280,9 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 **Do not scope `scoreAll()` in the same change.** One rating rescores every query today; the performance lens says carry that forward. An explicit store makes per-query scoping possible later, but taking it here ships an unapproved behaviour change and makes any score discrepancy unattributable.
 
 **Remaining, in slice order (2026-09-24).**
-- `query_documents_store.js` is the plain-document read model, and `search-results` renders document DOM from those snapshots.
 - `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing query-state adapter boundaries.
 - Angular still owns snapshot fetching and per-query diff scoring behind the document-store bridge.
-- `snapshot_searcher.js` owns the framework-free snapshot searcher contract, including registry lookup. The former `snapshotSearcherSvc` adapter and unused `qscoreSvc` were removed; `queriesSvc` now supplies the remaining Angular callbacks directly at the boundary.
+- `snapshot_searcher.js` owns the framework-free snapshot searcher contract, including registry lookup; `queriesSvc` supplies the remaining Angular callbacks directly at the boundary.
 
 **The `window.quepidStore` bridge is temporary.** It exists so `queriesSvc` (still Angular) can push into a store that Stimulus (not yet the page owner) can read, during dual-run. Once the case workspace has its own entry bundle, the global goes away in favor of a module import — don't grow further ad hoc bridges on `window.quepidStore` as if it were the permanent integration point.
 
@@ -508,7 +507,7 @@ These Angular-specific wrappers are used across many templates:
 
 Attribute directives: `quepidSortable`, `quepidCollapse`, `quepidTypeahead`
 
-Thin shells (~14–16 LOC): `queries`. Heavy: `quepidTypeahead` (299).
+Heavy: `quepidTypeahead` (299).
 
 ---
 

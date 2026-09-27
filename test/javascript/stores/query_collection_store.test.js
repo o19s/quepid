@@ -73,6 +73,34 @@ describe("QueryCollectionStore", () => {
     expect(changes.at(-1).queries["4"].expanded).toBe(true)
   })
 
+  it("collapses every query and publishes the new display state", () => {
+    store.replace({
+      caseId: 7,
+      displayOrder: [1, 2],
+      queries: [{ queryId: 1 }, { queryId: 2 }]
+    })
+    store.setExpanded(1, true)
+    store.setExpanded(2, true)
+
+    store.collapseAll()
+
+    expect(store.query(1).expanded).toBe(false)
+    expect(store.query(2).expanded).toBe(false)
+  })
+
+  it("publishes query-list commands without knowing their Angular owner", () => {
+    const commands = []
+    store.addEventListener("command", event => commands.push(event.detail))
+
+    store.requestToggleShowOnlyRated()
+    store.requestCollapseAll()
+
+    expect(commands).toEqual([
+      { command: "toggle-show-only-rated" },
+      { command: "collapse-all" }
+    ])
+  })
+
   it("tracks the search lifecycle independently from query bootstrap", () => {
     store.beginBootstrap(7)
     store.replace({ caseId: 7, displayOrder: [1], queries: [{ queryId: 1 }] })

@@ -87,7 +87,7 @@ describe("queries_list_controller", () => {
   it("owns toolbar actions without an Angular event bridge", () => {
     const { controller } = controllerFor()
     const collapseAll = vi.fn()
-    controller.queryState = { collapseAll }
+    controller.store = { requestCollapseAll: collapseAll }
     const sortStateChanged = vi.fn()
     controller.element.addEventListener("queries-list:sort-state-changed", event => sortStateChanged(event.detail))
 

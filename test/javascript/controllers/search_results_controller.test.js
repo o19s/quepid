@@ -195,12 +195,13 @@ describe("SearchResultsController", () => {
     expect(controller.errorTarget.querySelector("script")).toBeNull()
   })
 
-  it("routes pagination and collapse through explicit query-state adapters", () => {
+  it("routes pagination and collapse through the document store", () => {
     const { controller } = controllerFor({ numFound: 2 })
     controller.render()
     const paginateQuery = vi.fn()
     const toggleQuery = vi.fn()
-    window.quepidSearch = { queryState: { paginateQuery, toggleQuery } }
+    controller.store.requestPaginateQuery = paginateQuery
+    controller.store.requestToggleQuery = toggleQuery
 
     controller.paginate({ preventDefault: vi.fn() })
     controller.collapse({ preventDefault: vi.fn() })
@@ -209,26 +210,11 @@ describe("SearchResultsController", () => {
     expect(toggleQuery).toHaveBeenCalledWith("1")
   })
 
-  it("publishes pagination and collapse intents through the document store", () => {
-    const { controller } = controllerFor({ numFound: 2 })
-    controller.render()
-    const requestPaginateQuery = vi.fn()
-    const requestToggleQuery = vi.fn()
-    controller.store.requestPaginateQuery = requestPaginateQuery
-    controller.store.requestToggleQuery = requestToggleQuery
-
-    controller.paginate({ preventDefault: vi.fn() })
-    controller.collapse({ preventDefault: vi.fn() })
-
-    expect(requestPaginateQuery).toHaveBeenCalledWith("1", false)
-    expect(requestToggleQuery).toHaveBeenCalledWith("1")
-  })
-
-  it("routes Score All ratings through the explicit query-state adapter", () => {
+  it("routes Score All ratings through the document store", () => {
     const { controller } = controllerFor()
     controller.render()
     const rateAll = vi.fn()
-    window.quepidSearch = { queryState: { rateAll } }
+    controller.store.requestRateAll = rateAll
     const event = {
       type: "rating-popover:rate",
       detail: { rating: "3" },
@@ -256,10 +242,10 @@ describe("SearchResultsController", () => {
     expect(copyText).toHaveBeenCalledWith("meetings")
   })
 
-  it("routes query expansion through the explicit query-state adapter", () => {
+  it("routes query expansion through the document store", () => {
     const { controller } = controllerFor()
     const toggleQuery = vi.fn()
-    window.quepidSearch = { queryState: { toggleQuery } }
+    controller.store.requestToggleQuery = toggleQuery
     const event = { preventDefault: vi.fn(), stopPropagation: vi.fn() }
 
     controller.handleQueryToggle(event)
