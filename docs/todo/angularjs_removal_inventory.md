@@ -470,6 +470,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 | Results panel | Stimulus shell + isolated Angular controls | `app/javascript/controllers/search_results_controller.js` and `search_results_template.js` own the expanded-results shell/document rendering and browse-results modal; live search, diff, finder, pagination, and scoring remain explicit Angular control islands |
 | Rating popover | Stimulus controller | `rating_popover_controller.js` — mutation still bridges back to Angular via `rating-popover:rate`/`:reset` events |
 | Rate elements | framework-free runtime + Angular adapter | `app/javascript/utils/ratings_store.js`, `app/assets/javascripts/services/ratingsStoreSvc.js`, `rateScaleSvc` |
+| Query scoring and case aggregation | framework-free runtime + Angular adapter | `app/javascript/utils/query_scoring.js`, `app/assets/javascripts/services/queriesSvc.js` |
 | Rating background styling | filter | `ratingBgStyle` |
 | Query options modal | Stimulus controller + Angular scoring bridge | `app/javascript/controllers/query_options_core_controller.js`, `app/views/shared/_query_options_core_modal.html.erb`; save dispatches `query-options:saved` so Angular updates the live Query and rescoring continues through `queriesSvc` |
 | Move query modal | Stimulus controller + query API seam | `app/javascript/controllers/move_query_core_controller.js` and `app/javascript/utils/query_lifecycle.js`; Stimulus owns persistence, while `queriesSvc` only reconciles its live object through `query-command:move-completed` |

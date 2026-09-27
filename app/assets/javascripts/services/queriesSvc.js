@@ -15,7 +15,6 @@ angular.module('QuepidApp')
     '$log',
     'broadcastSvc',
     'scorerSvc',
-    'qscoreSvc',
     'searchSvc',
     'queryViewSvc',
     'ratingsStoreSvc',
@@ -36,7 +35,6 @@ angular.module('QuepidApp')
       $log,
       broadcastSvc,
       scorerSvc,
-      qscoreSvc,
       searchSvc,
       queryViewSvc,
       ratingsStoreSvc,
@@ -1055,39 +1053,13 @@ angular.module('QuepidApp')
 
         this.scoreOthers = function(otherDocs) {
 
-          let bestDocs  = this.ratingsStore.bestDocs();
-          let scorer    = this.effectiveScorer();
-
-          // The defaults are set below because sometimes quepid saves out scores with no values.
-          // TODO: Defaults can be removed if the quepid scoring persistence issue is cleaned up
-          let promise   = scorer.score(this, this.numFound, otherDocs, bestDocs, this.options) || 0.0;
-          let maxScore  = scorer.maxScore() || 1.0;
-
-
-          return promise.then(function(score) {
-
-            // We want to flag missing ratings based on the scorer "k" property, not on the
-            // number of documents returned by the query.
-            let docsToCheck = that.docs.slice(0, that.depthOfRating);
-            let allRated = true;
-            let countMissingRatings = 0;
-
-            angular.forEach(docsToCheck, function(doc) {
-              if (!doc.hasRating()) {
-                allRated = false;
-                countMissingRatings = countMissingRatings + 1;
-              }
-            });
-
-            let color     = qscoreSvc.scoreToColor(score, maxScore);
-
-            return {
-              score:                score || 0.0,
-              maxScore:             maxScore,
-              allRated:             allRated,
-              countMissingRatings:  countMissingRatings,
-              backgroundColor:      color
-            };
+          return window.quepidSearch.queryScoring.scoreQuery({
+            query: this,
+            docs: otherDocs,
+            ratingsStore: this.ratingsStore,
+            scorer: this.effectiveScorer(),
+            promiseApi: $q,
+            depthOfRating: this.depthOfRating
           });
         };
 
@@ -1927,52 +1899,16 @@ angular.module('QuepidApp')
       this.scoreAll = function(scorables) {
         // Aggregation math (sentinel exclusion + averaging) lives in
         // app/javascript/utils/scoring.js (Vitest-covered).
-        let scores = [];
-        let allRated = true;
         let isFullScoreAll = (scorables === undefined);
         if (scorables === undefined) {
           scorables = this.queries;
         }
-
-        let queryScores =  {};
-
-        let promises = [];
-        angular.forEach(scorables, function(scorable) {
-          promises.push(scorable.score().then(function(scoreInfo) {
-            if (!scoreInfo.allRated) {
-              allRated = false;
-            }
-
-            if (scoreInfo.score === null) {
-              // Handle null scores gracefully in diff/snapshot comparisons
-              console.log('Skipping null score in scoreAll calculation');
-              return; // Skip this scorable and continue with others
-            }
-            scores.push(scoreInfo.score);
-            //TODO: make text be queryText
-            queryScores[scorable.queryId] = {
-              score:                scoreInfo.score,
-              maxScore:             scoreInfo.maxScore,
-              text:                 scorable.queryText,
-              numFound:             scorable.numFound,
-              allRated:             scoreInfo.allRated,
-              countMissingRatings:  scoreInfo.countMissingRatings,
-            };
-
-            return scoreInfo;
-          }));
-        });
-
-        return $q.all(promises).then(function() {
-          // Averages the numeric scores; if every query is still 'zsr'/'--'
-          // (nothing rated yet), the case-level score is '--' too.
-          let avg = window.quepidSearch.scoring.average(scores);
-
-          svc.latestScoreInfo = {
-            'allRated': allRated,
-            'score':    avg,
-            'queries':  queryScores,
-          };
+        return window.quepidSearch.queryScoring.scoreAllQueries({
+          scorableCollection: scorables,
+          promiseApi: $q,
+          logger: console
+        }).then(function(scoreInfo) {
+          svc.latestScoreInfo = scoreInfo;
 
           // Dual-run shadow store (docs/todo/angularjs_removal_inventory.md §
           // Re-render mechanism, step 3). Pure side effect — does not affect

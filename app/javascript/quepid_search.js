@@ -9,6 +9,7 @@ import { averageScore, formatScore, isUnratedScore, ratingBackgroundColor } from
 import { buildCaseDiffScores } from "./utils/diff_scores"
 import { createQueryDiff } from "./utils/diff_results"
 import { RatingsStore } from "./utils/ratings_store"
+import { scoreAllQueries, scoreQuery } from "./utils/query_scoring"
 import {
   invalidateRatedDocsCache,
   matchesQueryFilter,
@@ -73,6 +74,10 @@ const quepidSearch = {
   },
   ratings: {
     RatingsStore
+  },
+  queryScoring: {
+    scoreAllQueries,
+    scoreQuery
   },
   diffScores: {
     buildCaseDiffScores
