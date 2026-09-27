@@ -4,8 +4,8 @@ import { apiFetch } from "api/fetch"
 /**
  * Owns query-delete confirmation and persistence.
  *
- * The legacy query service remains the temporary adapter for removing the
- * deleted query from its in-memory collection and refreshing scores.
+ * The query-command bridge only reconciles the deleted live Query object;
+ * persistence and rendered collection state stay Stimulus/store-owned.
  */
 export default class extends Controller {
   static values = { queryId: Number, deleteUrl: String }

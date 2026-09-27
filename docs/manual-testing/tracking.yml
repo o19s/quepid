@@ -278,9 +278,9 @@ parts:
         paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
-        last_run: 2026-09-27T14:18:00Z
+        last_run: 2026-09-27T18:01:30Z
         result: pass
-        notes: "Covered live via Playwright MCP on case 6 with the DELETE request intercepted safely: expanded the first query, accepted the native confirmation, confirmed the query disappeared from the list, number of queries dropped from 20 to 19, and no delete-error flash appeared. Captured and visually inspected before/after workbench screenshots under .playwright-mcp/deangularize-query-lifecycle/. Copy-to-clipboard, persistent deletion, and forced search-error paths were not covered in this pass."
+        notes: "Covered live via Playwright MCP on case 6 with the DELETE request intercepted safely: expanded the first query, accepted the native confirmation, confirmed the query disappeared from the list, the count dropped from 20 to 19, and no delete-error flash appeared. This also verified the new query-command bridge reconciles the live Angular query without a duplicate request. Captured and visually inspected before/after workbench screenshots under .playwright-mcp/query-lifecycle/. Copy-to-clipboard, persistent deletion, and forced search-error paths were not covered in this pass."
         paths: ["app/models/query.rb", "app/javascript/controllers/search_results_template.js", "app/assets/javascripts/services/queriesSvc.js", "app/javascript/controllers/query_delete_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/stores/query_collection_store.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/clipboard.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js"]
       "4.16":
         title: "Query Notes & Information Need"

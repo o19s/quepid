@@ -332,6 +332,21 @@ angular.module('QuepidApp')
       window.quepidSearch.queryState.getQuery = function(queryId) {
         return svc.queries[queryId] || svc.queries[String(queryId)] || null;
       };
+      window.quepidSearch.queryState.getCaseNo = getCaseNo;
+
+      // Stimulus owns query persistence and the collection stores own the
+      // rendered list. Keep only this narrow adapter for the live Angular
+      // Query objects until search/scoring leave Angular as well.
+      window.quepidSearch.queryState.reconcileQueryRemoval = function(queryId, rescore) {
+        if (queryId === undefined || queryId === null) return false;
+        var key = String(queryId);
+        if (!svc.queries[key] && !svc.queries[queryId]) return false;
+        delete svc.queries[key];
+        if (key !== String(queryId)) delete svc.queries[queryId];
+        svcVersion++;
+        if (rescore) svc.updateScores();
+        return true;
+      };
 
       function rateDocument(queryId, docId, rating) {
         var query = window.quepidSearch.queryState.getQuery(queryId);
@@ -666,30 +681,6 @@ angular.module('QuepidApp')
           query.setDirty();
           svc.updateScores();
         });
-      });
-
-      // Stimulus owns query command persistence. These events only reconcile
-      // the still-live Angular Query objects until the query store becomes
-      // authoritative; they must not issue a second API request.
-      document.addEventListener('query-command:delete-completed', function(event) {
-        var detail = event.detail || {};
-        var queryId = detail.queryId;
-        if (queryId === undefined || queryId === null) {
-          return;
-        }
-        delete svc.queries[queryId];
-        svcVersion++;
-      });
-
-      document.addEventListener('query-command:move-completed', function(event) {
-        var detail = event.detail || {};
-        if (Number(detail.caseId) !== Number(svc.getCaseNo()) ||
-            detail.queryId === undefined || detail.queryId === null) {
-          return;
-        }
-        delete svc.queries[detail.queryId];
-        svcVersion++;
-        svc.updateScores();
       });
 
       // Stimulus pick-scorer-core: API save already done; apply scorer + rescore live queries.
@@ -1504,29 +1495,6 @@ angular.module('QuepidApp')
         return window.quepidSearch.queryState.orderedQueries(this.displayOrder, this.queries);
       };
 
-      this.updateQueryDisplayPosition = function(queryId, oldQueryId, reverse) {
-        var request = window.quepidSearch.queryLifecycle.positionRequest(
-          caseNo,
-          queryId,
-          oldQueryId,
-          reverse
-        );
-
-        return $http(request)
-          .then(function(response) {
-            svc.displayOrder = response.data.display_order;
-            if (queryCollectionStore) {
-              queryCollectionStore.setDisplayOrder(svc.displayOrder);
-            }
-            svcVersion++;
-          }, function() {
-            svcVersion++;
-          }).catch(function(response) {
-            $log.debug('Failed to update query display position');
-            return response;
-          });
-      };
-
       // Temporary adapter for the Stimulus reorder controller. The controller
       // owns the PUT; Angular keeps the live display order in sync until the
       // query store becomes authoritative.
@@ -1536,49 +1504,6 @@ angular.module('QuepidApp')
           queryCollectionStore.setDisplayOrder(displayOrder);
         }
         svcVersion++;
-      };
-
-      // Delete a query
-      this.deleteQuery = function(queryId) {
-        var that = this;
-
-        return $http(window.quepidSearch.queryLifecycle.deleteRequest(caseNo, queryId))
-          .then(function() {
-            delete that.queries[queryId];
-            if (queryCollectionStore) {
-              queryCollectionStore.remove(queryId);
-            }
-            if (queryDocumentsStore) {
-              queryDocumentsStore.removeQuery(queryId);
-            }
-            svcVersion++;
-          })
-          .catch(function(response) {
-            // Re-reject so a failed delete cannot look like a success to the caller.
-            $log.debug('Failed to delete query: ', response);
-            return $q.reject(response);
-          });
-      };
-
-      // Move a query
-      this.moveQuery = function(query, targetCase) {
-        var that = svc;
-        return $http(window.quepidSearch.queryLifecycle.moveRequest(query, targetCase.caseNo))
-          .then(function() {
-            delete that.queries[query.queryId];
-            if (queryCollectionStore) {
-              queryCollectionStore.remove(query.queryId);
-            }
-            if (queryDocumentsStore) {
-              queryDocumentsStore.removeQuery(query.queryId);
-            }
-            svcVersion++;
-          })
-          .catch(function(response) {
-            // Re-reject so the Stimulus Move Query controller can show its error state.
-            $log.debug('Failed to move query: ', response);
-            return $q.reject(response);
-          });
       };
 
       this.version = function() {

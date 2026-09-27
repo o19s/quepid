@@ -24,17 +24,17 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 48 files, 43 register with Angular |
+| Angular JS source files (`app/assets/javascripts`) | 44 files, 39 register with Angular |
 | HTML templates (`app/assets/templates`) | 2 |
 | Controllers | 0 |
-| Services | 22 (`.service()` registrations; 22 files under `services/`) |
+| Services | 21 (`.service()` registrations; 21 files under `services/`) |
 | Factories | 7 |
-| Filters | 6 under `filters/` |
+| Filters | 5 under `filters/` |
 | Custom directives / components | 1 directive, no components |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 10 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 6 packages (+ `angular` core from npm) |
-| Karma unit specs (`spec/javascripts/angular`) | 25 |
-| Vitest unit specs (`test/javascript/**/*.test.js`) | 83 |
+| Karma unit specs (`spec/javascripts/angular`) | 20 |
+| Vitest unit specs (`test/javascript/**/*.test.js`) | 95 |
 | Playwright specs (`test/playwright/*.spec.ts`) | 24 |
 
 ---
@@ -43,8 +43,8 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Priority | Item | Notes |
 |----------|------|-------|
-| **P0** | AngularJS 1.8.3 EOL | 110 JS files, 30 templates on the core case UI (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
-| **P0** | `queriesSvc` god object (1,805 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
+| **P0** | AngularJS 1.8.3 EOL | 44 JavaScript source files and 2 Angular templates remain under the legacy asset/template trees (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
+| **P0** | `queriesSvc` god object (1,748 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
 | **P0** | `eval()` scorers | Inside `$timeout()`, no sandbox; Web Worker timeout commented out |
 | **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
 | **P1** | `new Function()` mappers | SearchAPI mappers; MiniRacer on server; mapper wizard already Stimulus |
@@ -242,8 +242,8 @@ compatibility adapter until live query/search/scoring migration is complete.
 
 | Name | LOC | Why |
 |------|-----|-----|
-| **queriesSvc** | 1,767 | Central case state — search, docs, scores, persistence |
-| **settingsSvc** / **caseSvc** | 754 / 552 | Try / case domain model |
+| **queriesSvc** | 1,748 | Central case state — search, docs, scores, persistence |
+| **settingsSvc** / **caseSvc** | 751 / 562 | Try / case domain model |
 | **$quepidModal** | 272 | BS5 modals + `$compile` — 11 `.open()` call sites (23 files reference `$quepidModal`) |
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
@@ -460,6 +460,13 @@ runtime now owns rated-document refresh and pagination, including Search API
 support checks and stale rating-generation retries. The next extraction can
 move the remaining injected operations without changing the query-local
 contract.
+
+Query persistence is now Stimulus/store-owned for create, bulk create, delete,
+move, and reorder. The only remaining mutation bridge for delete/move is
+`queryState.reconcileQueryRemoval`, which removes the corresponding live
+Angular `Query` until search and scoring migrate. The Angular service no longer
+owns duplicate delete/move/reorder HTTP methods or listens directly for the
+Stimulus completion events.
 
 Filters: `queryStateClass`, `scoreDisplay`, `searchEngineName`
 

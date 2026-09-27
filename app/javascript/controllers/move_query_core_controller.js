@@ -7,8 +7,8 @@ import { moveQuery } from "utils/query_lifecycle"
  * Move a query from the core case workspace to another case.
  *
  * The modal and case-list loading are Stimulus-owned. Stimulus owns the PUT;
- * the completion event lets the remaining Angular live objects be reconciled
- * without issuing a second request.
+ * the completion event lets the remaining Angular live object be reconciled
+ * through the query-command bridge without issuing a second request.
  */
 export default class extends ModalTriggerControllerBase {
   static targets = ["title", "loading", "empty", "caseList", "submitButton"]

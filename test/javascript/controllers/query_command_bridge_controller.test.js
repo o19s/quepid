@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import QueryCommandBridgeController from "controllers/query_command_bridge_controller"
 
 function store() {
@@ -15,6 +15,8 @@ describe("query_command_bridge_controller", () => {
   let documentsStore
 
   beforeEach(() => {
+    vi.spyOn(document, "addEventListener")
+    vi.spyOn(document, "removeEventListener")
     collectionStore = store()
     documentsStore = store()
     controller = new QueryCommandBridgeController()
@@ -27,9 +29,15 @@ describe("query_command_bridge_controller", () => {
         toggleQuery: vi.fn(),
         paginateQuery: vi.fn(),
         toggleShowOnlyRated: vi.fn(),
-        collapseAll: vi.fn()
+        collapseAll: vi.fn(),
+        reconcileQueryRemoval: vi.fn(),
+        getCaseNo: vi.fn(() => 7)
       }
     }
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it("subscribes and removes the store command listeners", () => {
@@ -42,6 +50,8 @@ describe("query_command_bridge_controller", () => {
 
     expect(documentsStore.removeEventListener).toHaveBeenCalledWith("command", controller.handleDocumentCommand)
     expect(collectionStore.removeEventListener).toHaveBeenCalledWith("command", controller.handleCollectionCommand)
+    expect(document.removeEventListener).toHaveBeenCalledWith("query-command:delete-completed", controller.handleQueryDeleteCompleted)
+    expect(document.removeEventListener).toHaveBeenCalledWith("query-command:move-completed", controller.handleQueryMoveCompleted)
   })
 
   it("routes document commands through the temporary query-state adapter", () => {
@@ -68,5 +78,23 @@ describe("query_command_bridge_controller", () => {
     expect(window.quepidSearch.queryState.collapseAll).toHaveBeenCalledOnce()
     expect(collectionStore.collapseAll).toHaveBeenCalledOnce()
     expect(documentsStore.collapseAll).toHaveBeenCalledOnce()
+  })
+
+  it("keeps live Angular queries synchronized after Stimulus-owned mutations", () => {
+    controller.connect()
+
+    controller.handleQueryDeleteCompleted(new CustomEvent("query-command:delete-completed", {
+      detail: { queryId: 4 }
+    }))
+    controller.handleQueryMoveCompleted(new CustomEvent("query-command:move-completed", {
+      detail: { caseId: 7, queryId: 5 }
+    }))
+    controller.handleQueryMoveCompleted(new CustomEvent("query-command:move-completed", {
+      detail: { caseId: 8, queryId: 6 }
+    }))
+
+    expect(window.quepidSearch.queryState.reconcileQueryRemoval).toHaveBeenNthCalledWith(1, 4, false)
+    expect(window.quepidSearch.queryState.reconcileQueryRemoval).toHaveBeenNthCalledWith(2, 5, true)
+    expect(window.quepidSearch.queryState.reconcileQueryRemoval).toHaveBeenCalledTimes(2)
   })
 })

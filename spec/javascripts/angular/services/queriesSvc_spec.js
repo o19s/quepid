@@ -581,51 +581,15 @@ describe('Service: queriesSvc', function () {
     });
   });
 
-  describe('deleting queries', function() {
-    var versionBeforeDelete = 0;
-
-    beforeEach(function() {
+  describe('Stimulus-owned query mutations', function() {
+    it('exposes a narrow live-query reconciliation adapter', function() {
       setupQuerySvc();
 
-      versionBeforeDelete = queriesSvc.version();
-      $httpBackend.expectDELETE('api/cases/2/queries/0').respond(200, '');
-      queriesSvc.deleteQuery(0);
-      $httpBackend.flush();
-    });
-
-    it('deletes queries', function() {
-      var queriesInOrder = queriesSvc.queryArray();
-      expect(queriesInOrder[0].queryText).toBe('prognosis of alzheimers');
-      expect(queriesInOrder.length).toEqual(1);
-      $httpBackend.verifyNoOutstandingExpectation();
-    });
-
-    it('changes version on delete query', function() {
-      expect(queriesSvc.version()).not.toEqual(versionBeforeDelete);
-    });
-  });
-
-  describe('moving queries', function() {
-    var versionBeforeDelete = 0;
-
-    beforeEach(function() {
-      setupQuerySvc();
-
-      versionBeforeDelete = queriesSvc.version();
-      $httpBackend.expectPUT('api/cases/2/queries/0').respond(200, '');
-      queriesSvc.moveQuery({queryId: 0, caseNo: 2}, {caseNo:1});
-      $httpBackend.flush();
-    });
-
-    it('moves queries', function() {
-      var queriesInOrder = queriesSvc.queryArray();
-      expect(queriesInOrder[0].queryText).toBe('prognosis of alzheimers');
-      expect(queriesInOrder.length).toEqual(1);
-      $httpBackend.verifyNoOutstandingExpectation();
-    });
-
-    it('changes version on moving query', function() {
-      expect(queriesSvc.version()).not.toEqual(versionBeforeDelete);
+      var versionBeforeRemoval = queriesSvc.version();
+      expect(window.quepidSearch.queryState.reconcileQueryRemoval(0, false)).toBe(true);
+      expect(queriesSvc.queryArray().length).toEqual(1);
+      expect(queriesSvc.version()).not.toEqual(versionBeforeRemoval);
+      expect(window.quepidSearch.queryState.reconcileQueryRemoval(0, false)).toBe(false);
     });
   });
 
@@ -1110,15 +1074,12 @@ describe('Service: queriesSvc', function () {
       expect(queriesSvc.updateScores).toHaveBeenCalled();
     });
 
-    it('rescores after Stimulus moves a query out of the current case', function() {
-      // Use a case id that is unique to this test so stale document listeners
-      // from earlier service instances cannot consume the synthetic event.
+    it('reconciles a Stimulus-owned move through the query-state adapter', function() {
       setupQuerySvc(987);
       spyOn(queriesSvc, 'updateScores');
 
-      document.dispatchEvent(new CustomEvent('query-command:move-completed', {
-        detail: { caseId: 987, queryId: 0, targetCaseId: 1 }
-      }));
+      expect(window.quepidSearch.queryState.getCaseNo()).toBe(987);
+      expect(window.quepidSearch.queryState.reconcileQueryRemoval(0, true)).toBe(true);
 
       expect(queriesSvc.updateScores).toHaveBeenCalled();
       expect(queriesSvc.queries[0]).toBeUndefined();
