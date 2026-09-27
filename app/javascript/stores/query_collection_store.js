@@ -204,12 +204,31 @@ export class QueryCollectionStore extends EventTarget {
 
   querySnapshot(query) {
     const queryId = Number(this.queryId(query))
+    const currentScore = query.currentScore || {}
+    const parsedQueryDetails = query.searcher?.parsedQueryDetails
+    const queryState = typeof query.state === "function" ? query.state() : query.state
     const snapshot = {
       queryId,
+      caseNo: query.caseNo ?? query.case_no ?? this._caseId,
       queryText: query.queryText ?? query.query_text ?? "",
       informationNeed: query.informationNeed ?? query.information_need ?? "",
       modified: query.modified ?? query.updated_at ?? null,
-      created: query.created ?? query.created_at ?? null
+      created: query.created ?? query.created_at ?? null,
+      numFound: query.numFound ?? query.num_found,
+      ratedDocsFound: query.ratedDocsFound ?? query.rated_docs_found,
+      errorText: query.errorText ?? query.error_text,
+      lastScore: query.lastScore ?? currentScore.score,
+      currentScore: currentScore.score === undefined ? undefined : {
+        score: currentScore.score,
+        maxScore: currentScore.maxScore,
+        allRated: currentScore.allRated,
+        countMissingRatings: currentScore.countMissingRatings
+      },
+      allRated: query.allRated ?? currentScore.allRated,
+      state: queryState,
+      options: query.options || {},
+      parsedQueryDetails,
+      diffs: query.diffs ? true : undefined
     }
     if (this._expandedQueries.has(String(queryId))) snapshot.expanded = this._expandedQueries.get(String(queryId))
     return snapshot

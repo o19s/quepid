@@ -72,6 +72,39 @@ describe("QueryCollectionStore", () => {
     expect(store.query(1).queryText).toBe("live")
   })
 
+  it("publishes the read-only display model from a live query without leaking methods", () => {
+    const liveQuery = {
+      queryId: 4,
+      caseNo: 7,
+      queryText: "title",
+      informationNeed: "find titles",
+      numFound: 12,
+      ratedDocsFound: 3,
+      errorText: "",
+      lastScore: 0.75,
+      currentScore: { score: 0.75, maxScore: 1, allRated: false, countMissingRatings: 2 },
+      state: () => "loaded",
+      options: { rows: 10 },
+      searcher: { parsedQueryDetails: { q: "title" } },
+      diffs: {}
+    }
+
+    store.upsert(liveQuery)
+
+    expect(store.query(4)).toMatchObject({
+      caseNo: 7,
+      numFound: 12,
+      ratedDocsFound: 3,
+      lastScore: 0.75,
+      currentScore: { score: 0.75, maxScore: 1, allRated: false, countMissingRatings: 2 },
+      state: "loaded",
+      options: { rows: 10 },
+      parsedQueryDetails: { q: "title" },
+      diffs: true
+    })
+    expect(store.query(4).state).not.toBeInstanceOf(Function)
+  })
+
   it("preserves an early expansion toggle when the query is bootstrapped", () => {
     store.setExpanded(4, true)
     store.replace({ caseId: 7, displayOrder: [4], queries: [{ queryId: 4, queryText: "early" }] })

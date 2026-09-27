@@ -124,6 +124,7 @@ describe("queries_list_controller", () => {
     expect(controller.orderedLiveQueries().map(query => query.queryId)).toEqual([1])
   })
 
+
   it("preserves manual order and renders pagination controls", () => {
     const { controller } = controllerFor()
     controller.store = { orderedQueryIds: () => [3, 2, 1] }

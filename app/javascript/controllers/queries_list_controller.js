@@ -343,7 +343,7 @@ export default class extends Controller {
   orderedLiveQueries({ ignoreFilter = false } = {}) {
     const getQuery = queryId => this.queryState?.getQuery?.(queryId)
     const queries = this.store.orderedQueryIds()
-      .map(queryId => getQuery(queryId))
+      .map(queryId => getQuery(queryId) || this.store.query?.(queryId))
       .filter(Boolean)
       .filter(query => ignoreFilter || this.matchesFilter(query))
 
@@ -443,6 +443,7 @@ export default class extends Controller {
         <div data-query-row-target="expanded"></div>
       </div>
     `
+
   }
 
   renderSearchResults(row, query) {
