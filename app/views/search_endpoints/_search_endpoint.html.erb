@@ -27,11 +27,13 @@
     <%= search_endpoint.api_method %>
   </p>
   
-  <p>
-    <strong>Proxy Requests:</strong>
-    <%= search_endpoint.proxy_requests %>
-  </p>  
-  
+  <% unless require_proxy_for_all_search_endpoints? %>
+    <p>
+      <strong>Proxy Requests:</strong>
+      <%= search_endpoint.proxy_requests %>
+    </p>
+  <% end %>
+
   <p>
     <strong>Basic Auth Credential:</strong>
     <%= search_endpoint.masked_basic_auth_credential %>

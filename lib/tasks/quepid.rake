@@ -179,6 +179,14 @@ namespace :test do
   end
 end
 
+desc 'Run all Ruby, JavaScript, and CSS linters'
+task tidy: :environment do
+  Rake::Task['test:jshint'].invoke
+  Rake::Task['test:eslint'].invoke
+  Rake::Task['test:stylelint'].invoke
+  sh 'bundle exec rubocop'
+end
+
 namespace :erd do
   desc 'Generate Entity Relationship Diagram image at docs/erd.png'
   task image: :environment do

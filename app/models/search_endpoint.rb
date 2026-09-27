@@ -66,6 +66,7 @@ class SearchEndpoint < ApplicationRecord
   validate :validate_proxy_requests_api_method
   validate :validate_auto_api_method_requires_searchapi
   validate :validate_proxy_required_for_hidden_credentials
+  validate :validate_proxy_required_for_all_endpoints
   validate :validate_mapper_code_immutable_for_preset
 
   def fullname
@@ -169,6 +170,13 @@ class SearchEndpoint < ApplicationRecord
     return if basic_auth_credential.blank?
 
     errors.add(:proxy_requests, 'must be enabled when basic auth credentials are present') unless proxy_requests?
+  end
+
+  def validate_proxy_required_for_all_endpoints
+    return unless Rails.application.config.require_proxy_for_all_search_endpoints
+    return if proxy_requests?
+
+    errors.add(:proxy_requests, 'must be enabled: this Quepid instance requires all search requests to be proxied')
   end
 
   # mapper_code is copied in once from MapperBasedSearchEngine when a preset-linked endpoint

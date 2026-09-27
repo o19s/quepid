@@ -274,14 +274,14 @@
                  data-mapper-wizard-target="endpointName"
                  value="<%= @search_endpoint.name %>">
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6 <%= 'd-none' if require_proxy_for_all_search_endpoints? %>">
           <label class="form-label">Options</label>
           <div class="form-check form-switch">
             <input type="checkbox"
                    class="form-check-input"
                    id="proxyRequests"
                    data-mapper-wizard-target="proxyRequests"
-                   <%= @search_endpoint.proxy_requests? || !@search_endpoint.persisted? ? 'checked' : '' %>>
+                   <%= require_proxy_for_all_search_endpoints? || @search_endpoint.proxy_requests? || !@search_endpoint.persisted? ? 'checked' : '' %>>
             <label class="form-check-label" for="proxyRequests">Proxy requests through Quepid</label>
           </div>
           <div class="form-text">Recommended for avoiding CORS issues with external search APIs.</div>

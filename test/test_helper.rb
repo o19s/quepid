@@ -57,6 +57,14 @@ module ActiveSupport
       Rails.application.config.require_proxy_with_basic_auth_credentials = original
     end
 
+    def with_require_proxy_for_all_search_endpoints value
+      original = Rails.application.config.require_proxy_for_all_search_endpoints
+      Rails.application.config.require_proxy_for_all_search_endpoints = value
+      yield
+    ensure
+      Rails.application.config.require_proxy_for_all_search_endpoints = original
+    end
+
     def with_cookies_url value
       original = Rails.application.config.cookies_url
       Rails.application.config.cookies_url = value
