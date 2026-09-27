@@ -1549,6 +1549,20 @@ angular.module('QuepidApp')
         });
       };
 
+      // Framework-free controllers use this adapter instead of resolving the
+      // Angular service from the injector. Keep the digest boundary here with
+      // the live Query implementation until diff refresh leaves Angular.
+      window.quepidSearch.queryState.getQueries = function() {
+        return svc.queries;
+      };
+      window.quepidSearch.queryState.refreshAllDiffs = function() {
+        return new Promise(function(resolve, reject) {
+          $scope.$evalAsync(function() {
+            svc.refreshAllDiffs().then(resolve, reject);
+          });
+        });
+      };
+
       this.scoreAllDiffs = function() {
         let diffs = [];
         angular.forEach(this.queries, function(query) {

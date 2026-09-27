@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { deleteSnapshot, fetchSnapshot } from "utils/snapshot_api"
 import { diffStateStore } from "stores/diff_state_store"
 import { registerAndHydrateSnapshots } from "utils/snapshot_hydration"
-import { runInAngular, waitForAngularServices } from "utils/core_angular_adapter"
+import { waitForAngularServices } from "utils/core_angular_adapter"
 
 /*
  * Temporary compatibility bridge for snapshot comparison.
@@ -41,6 +41,10 @@ export default class extends Controller {
     if (!snapshotSearch) return null
     snapshotSearch.snapshots ||= {}
     return snapshotSearch.snapshots
+  }
+
+  refreshAllDiffs() {
+    return window.quepidSearch?.queryState?.refreshAllDiffs?.() || Promise.reject(new Error("Query diff services are not available"))
   }
 
   async registerSnapshots(payloads) {
@@ -106,13 +110,12 @@ export default class extends Controller {
     }
 
     try {
-      const [{ queriesSvc: queries }, ...payloads] = await Promise.all([
-        waitForAngularServices(["queriesSvc"]),
+      const [...payloads] = await Promise.all([
         ...selections.map((snapshotId) => fetchSnapshot(`${detail.snapshotsUrl}/${encodeURIComponent(snapshotId)}`))
       ])
       await this.registerSnapshots(payloads)
       this.diffStore().enable(selections)
-      await runInAngular(() => queries.refreshAllDiffs())
+      await this.refreshAllDiffs()
       detail.done?.(null)
     } catch (error) {
       detail.done?.(error)
@@ -122,9 +125,8 @@ export default class extends Controller {
   async clear(event) {
     const detail = event.detail || {}
     try {
-      const { queriesSvc: queries } = await waitForAngularServices(["queriesSvc"])
       this.diffStore().disable()
-      await runInAngular(() => queries.refreshAllDiffs())
+      await this.refreshAllDiffs()
       detail.done?.(null)
     } catch (error) {
       detail.done?.(error)
@@ -139,16 +141,11 @@ export default class extends Controller {
     }
 
     try {
-      const [{ queriesSvc: queries }] = await Promise.all([
-        waitForAngularServices(["queriesSvc"]),
-        deleteSnapshot(detail.snapshotsUrl, detail.snapshotId)
-      ])
+      await deleteSnapshot(detail.snapshotsUrl, detail.snapshotId)
       const registry = this.snapshotRegistry()
       if (registry) delete registry[String(detail.snapshotId)]
-      await runInAngular(() => {
-        this.diffStore().disable()
-        return queries.refreshAllDiffs()
-      })
+      this.diffStore().disable()
+      await this.refreshAllDiffs()
       detail.done?.(null)
     } catch (error) {
       detail.done?.(error)

@@ -46,11 +46,6 @@ describe("SnapshotBridgeController", () => {
         getDoc: vi.fn()
       },
       normalDocsSvc: { explainDoc: vi.fn() },
-      queryViewSvc: {
-        disableComparisons: vi.fn(),
-        enableDiffs: vi.fn(),
-        getAllDiffSettings: vi.fn().mockReturnValue(["7"])
-      },
       queriesSvc: {
         refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
       },
@@ -62,6 +57,9 @@ describe("SnapshotBridgeController", () => {
       snapshotSearch: {
         snapshots: {},
         createSnapshotModel: vi.fn()
+      },
+      queryState: {
+        refreshAllDiffs: services.queriesSvc.refreshAllDiffs
       }
     }
     window.quepidStore = {
@@ -96,15 +94,9 @@ describe("SnapshotBridgeController", () => {
 
   it("applies selections while keeping refresh and scoring in the adapter", async () => {
     const done = vi.fn()
-    let digestCallback
-    services.$rootScope.$evalAsync = vi.fn((callback) => {
-      digestCallback = callback
-    })
 
     controller.apply({ detail: { selections: ["7"], snapshotsUrl: "api/cases/1/snapshots", done } })
-    await vi.waitFor(() => expect(services.$rootScope.$evalAsync).toHaveBeenCalledOnce())
-
-    digestCallback()
+    await vi.waitFor(() => expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce())
     await vi.waitFor(() => expect(done).toHaveBeenCalledWith(null))
 
     expect(snapshotApi.fetchSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots/7")
@@ -118,15 +110,9 @@ describe("SnapshotBridgeController", () => {
 
   it("deletes snapshots and refreshes comparisons inside the adapter", async () => {
     const done = vi.fn()
-    let digestCallback
-    services.$rootScope.$evalAsync = vi.fn((callback) => {
-      digestCallback = callback
-    })
 
     controller.delete({ detail: { snapshotId: "7", snapshotsUrl: "api/cases/1/snapshots", done } })
-    await vi.waitFor(() => expect(services.$rootScope.$evalAsync).toHaveBeenCalledOnce())
-
-    digestCallback()
+    await vi.waitFor(() => expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce())
     await vi.waitFor(() => expect(done).toHaveBeenCalledWith(null))
 
     expect(snapshotApi.deleteSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots", "7")

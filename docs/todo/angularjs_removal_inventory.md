@@ -288,6 +288,11 @@ injector directly; digest-bound work is routed through `runInAngular()`. This is
 cleanup, not an Angular-removal milestone: the next live-state slice can replace the seam's
 service lookup without changing those controllers.
 
+**Comparison-state extraction (2026-09-27).** `diffStateStore` is now the direct owner for
+comparison selection/reset state in the Stimulus case bootstrap and case-score controller.
+`queryViewSvc` remains only as the compatibility surface consumed internally by `queriesSvc`;
+it is no longer requested by modern controllers.
+
 - `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing query-state adapter boundaries.
 - Case-level score aggregation now runs through the framework-free `createCaseScoringRuntime`; Angular supplies live Query objects and remains only the compatibility adapter for scorer execution and legacy `latestScoreInfo` consumers.
 - Snapshot fetching and hydration now run through the Stimulus/framework-free snapshot registry; Angular still owns the live Query objects and per-query diff scoring behind the document-store bridge.

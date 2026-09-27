@@ -30,7 +30,9 @@ export function waitForAngularServices(serviceNames, { intervalMs = 50, maxAttem
 
         if (injector) {
           try {
-            resolveServices(Object.fromEntries(serviceNames.map((name) => [name, injector.get(name)])))
+            resolveServices(
+              Object.fromEntries(serviceNames.map((name) => [name, injector.get(name)]))
+            )
             return
           } catch (error) {
             if (attempts >= maxAttempts) {

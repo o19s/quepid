@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { waitForAngularServices } from "utils/core_angular_adapter"
+import { diffStateStore } from "stores/diff_state_store"
 
 export default class extends Controller {
   static values = {
@@ -19,11 +20,15 @@ export default class extends Controller {
     try {
       this.services = await waitForAngularServices([
         "bootstrapSvc", "configurationSvc", "caseSvc", "settingsSvc", "querySnapshotSvc", "caseTryNavSvc",
-        "queryViewSvc", "queriesSvc", "docCacheSvc", "scorerSvc", "paneSvc"
+        "queriesSvc", "docCacheSvc", "scorerSvc", "paneSvc"
       ])
 
-      const { bootstrapSvc, configurationSvc, caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc, queryViewSvc,
+      const { bootstrapSvc, configurationSvc, caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
         queriesSvc, docCacheSvc, scorerSvc, paneSvc } = this.services
+      // The case runtime bundle publishes the shared store on window. The
+      // imported store is only a fallback for isolated/unit-test contexts;
+      // separate bundles must never reset different diff-store instances.
+      const comparisonStore = window.quepidStore?.diff || diffStateStore
       const caseNo = this.caseNoValue || 0
       let tryNo = Number.isFinite(this.tryNoValue) ? this.tryNoValue : Number.NaN
 
@@ -72,11 +77,11 @@ export default class extends Controller {
         const newSettings = settingsSvc.editableSettings()
         if (caseChanged() || searchEngineChanged()) {
           if (caseChanged()) {
-            queryViewSvc.reset()
+            comparisonStore.reset()
             docCacheSvc.empty()
             scorerSvc.bootstrap(caseNo)
           }
-          queryViewSvc.disableComparisons()
+          comparisonStore.disable()
           docCacheSvc.invalidate()
         }
 

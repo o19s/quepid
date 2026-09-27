@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { formatScore, scoreToColor } from "utils/scoring"
-import { runInAngular, waitForAngularServices } from "utils/core_angular_adapter"
+import { diffStateStore } from "stores/diff_state_store"
 
 /**
  * Store-driven replacement for the Angular `<qscore-case>` component's primary
@@ -149,27 +149,18 @@ export default class extends Controller {
       return
     }
 
-    let queryViewSvc
-    let queriesSvc
-    try {
-      ({ queryViewSvc, queriesSvc } = await waitForAngularServices(["queryViewSvc", "queriesSvc"]))
-    } catch {
-      return
-    }
-
-    if (!queryViewSvc.isAnyDiffEnabled()) {
+    const comparisonStore = window.quepidStore?.diff || diffStateStore
+    if (comparisonStore.selections().length === 0) {
       documentsStore.clearCaseDiffs()
       return
     }
 
-    const queries = Object.values(queriesSvc.queries || {})
+    const queryState = window.quepidSearch?.queryState
+    const queries = Object.values(queryState?.getQueries?.() || {})
+    if (!queryState?.refreshAllDiffs) return
     try {
       if (refreshQueries) {
-        await runInAngular(() => Promise.all(
-          queries
-            .filter(query => query?.diffs?.fetch)
-            .map(query => query.diffs.fetch())
-        ))
+        await queryState.refreshAllDiffs()
       }
 
       if (refreshGeneration !== this.diffRefreshGeneration) return

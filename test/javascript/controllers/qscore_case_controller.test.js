@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import QscoreCaseController from "controllers/qscore_case_controller"
 import { CaseScoreStore } from "stores/case_score_store"
+import { diffStateStore } from "stores/diff_state_store"
 import { resetCoreServiceCache } from "utils/core_angular_adapter"
 
 /**
@@ -51,6 +52,7 @@ describe("QscoreCaseController", () => {
     delete window.quepidStore
     delete window.quepidSearch
     delete window.angular
+    diffStateStore.reset()
     resetCoreServiceCache()
     vi.unstubAllGlobals()
   })
@@ -222,13 +224,18 @@ describe("QscoreCaseController", () => {
     ])
 
     window.quepidStore.documents = documentsStore
-    window.quepidSearch = { diffScores: { buildCaseDiffScores } }
+    diffStateStore.enable(["1"])
+    window.quepidSearch = {
+      diffScores: { buildCaseDiffScores },
+      queryState: {
+        getQueries: () => ({ 1: query }),
+        refreshAllDiffs: vi.fn(() => query.diffs.fetch())
+      }
+    }
     window.angular = {
       element: () => ({
         injector: () => ({
-          get: (service) => service === "queryViewSvc"
-            ? { isAnyDiffEnabled: () => true }
-            : service === "$rootScope"
+          get: (service) => service === "$rootScope"
               ? { $evalAsync: (callback) => callback() }
             : { queries: { 1: query } }
         })
@@ -253,13 +260,18 @@ describe("QscoreCaseController", () => {
     const buildCaseDiffScores = vi.fn().mockReturnValue([])
 
     window.quepidStore.documents = documentsStore
-    window.quepidSearch = { diffScores: { buildCaseDiffScores } }
+    diffStateStore.enable(["1"])
+    window.quepidSearch = {
+      diffScores: { buildCaseDiffScores },
+      queryState: {
+        getQueries: () => ({ 1: query }),
+        refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
+      }
+    }
     window.angular = {
       element: () => ({
         injector: () => ({
-          get: (service) => service === "queryViewSvc"
-            ? { isAnyDiffEnabled: () => true }
-            : service === "$rootScope"
+          get: (service) => service === "$rootScope"
               ? { $evalAsync: (callback) => callback() }
             : { queries: { 1: query } }
         })
@@ -284,13 +296,18 @@ describe("QscoreCaseController", () => {
     const query = { diffs: { fetch: vi.fn().mockRejectedValue(new Error("diff failed")) } }
 
     window.quepidStore.documents = documentsStore
-    window.quepidSearch = { diffScores: { buildCaseDiffScores: vi.fn() } }
+    diffStateStore.enable(["1"])
+    window.quepidSearch = {
+      diffScores: { buildCaseDiffScores: vi.fn() },
+      queryState: {
+        getQueries: () => ({ 1: query }),
+        refreshAllDiffs: vi.fn(() => query.diffs.fetch())
+      }
+    }
     window.angular = {
       element: () => ({
         injector: () => ({
-          get: (service) => service === "queryViewSvc"
-            ? { isAnyDiffEnabled: () => true }
-            : service === "$rootScope"
+          get: (service) => service === "$rootScope"
               ? { $evalAsync: (callback) => callback() }
             : { queries: { 1: query } }
         })
@@ -308,12 +325,19 @@ describe("QscoreCaseController", () => {
     const documentsStore = { setCaseDiffs: vi.fn(), clearCaseDiffs }
 
     window.quepidStore.documents = documentsStore
-    window.quepidSearch = { diffScores: { buildCaseDiffScores: vi.fn() } }
+    diffStateStore.enable(["1"])
+    window.quepidSearch = {
+      diffScores: { buildCaseDiffScores: vi.fn() },
+      queryState: {
+        getQueries: () => ({}),
+        refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
+      }
+    }
     window.angular = {
       element: () => ({
         injector: () => ({
-          get: (service) => service === "queryViewSvc"
-            ? { isAnyDiffEnabled: () => true }
+          get: (service) => service === "$rootScope"
+            ? { $evalAsync: (callback) => callback() }
             : { queries: {} }
         })
       })
@@ -342,13 +366,18 @@ describe("QscoreCaseController", () => {
     const documentsStore = { setCaseDiffs, clearCaseDiffs }
 
     window.quepidStore.documents = documentsStore
-    window.quepidSearch = { diffScores: { buildCaseDiffScores } }
+    diffStateStore.enable(["1"])
+    window.quepidSearch = {
+      diffScores: { buildCaseDiffScores },
+      queryState: {
+        getQueries: () => ({ 1: query }),
+        refreshAllDiffs: vi.fn(() => query.diffs.fetch())
+      }
+    }
     window.angular = {
       element: () => ({
         injector: () => ({
-          get: (service) => service === "queryViewSvc"
-            ? { isAnyDiffEnabled: () => true }
-            : service === "$rootScope"
+          get: (service) => service === "$rootScope"
               ? { $evalAsync: (callback) => callback() }
             : { queries: { 1: query } }
         })
