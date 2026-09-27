@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import SnapshotBridgeController from "controllers/snapshot_bridge_controller"
 
+const snapshotApi = vi.hoisted(() => ({
+  fetchSnapshot: vi.fn(),
+  deleteSnapshot: vi.fn()
+}))
+
+vi.mock("utils/snapshot_api", () => snapshotApi)
+
 function buildController(services) {
   const controller = Object.create(SnapshotBridgeController.prototype)
   controller.injector = () => ({ get: (name) => services[name] })
@@ -12,6 +19,8 @@ describe("SnapshotBridgeController", () => {
   let controller
 
   beforeEach(() => {
+    snapshotApi.fetchSnapshot.mockResolvedValue({ id: 7 })
+    snapshotApi.deleteSnapshot.mockResolvedValue(undefined)
     services = {
       queryViewSvc: {
         disableComparisons: vi.fn(),
@@ -22,8 +31,8 @@ describe("SnapshotBridgeController", () => {
         refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
       },
       querySnapshotSvc: {
-        get: vi.fn().mockResolvedValue(undefined),
-        deleteSnapshot: vi.fn().mockResolvedValue(undefined)
+        registerSnapshots: vi.fn().mockResolvedValue(undefined),
+        removeSnapshot: vi.fn()
       },
       $rootScope: {
         $evalAsync: (callback) => callback()
@@ -52,14 +61,15 @@ describe("SnapshotBridgeController", () => {
       digestCallback = callback
     })
 
-    controller.apply({ detail: { selections: ["7"], done } })
+    controller.apply({ detail: { selections: ["7"], snapshotsUrl: "api/cases/1/snapshots", done } })
     await vi.waitFor(() => expect(services.$rootScope.$evalAsync).toHaveBeenCalledOnce())
 
     expect(services.queryViewSvc.enableDiffs).not.toHaveBeenCalled()
     digestCallback()
     await vi.waitFor(() => expect(done).toHaveBeenCalledWith(null))
 
-    expect(services.querySnapshotSvc.get).toHaveBeenCalledWith("7")
+    expect(snapshotApi.fetchSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots/7")
+    expect(services.querySnapshotSvc.registerSnapshots).toHaveBeenCalledWith([{ id: 7 }])
     expect(services.queryViewSvc.enableDiffs).toHaveBeenCalledWith(["7"])
     expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()
   })
@@ -71,14 +81,15 @@ describe("SnapshotBridgeController", () => {
       digestCallback = callback
     })
 
-    controller.delete({ detail: { snapshotId: "7", done } })
+    controller.delete({ detail: { snapshotId: "7", snapshotsUrl: "api/cases/1/snapshots", done } })
     await vi.waitFor(() => expect(services.$rootScope.$evalAsync).toHaveBeenCalledOnce())
 
     expect(services.queryViewSvc.disableComparisons).not.toHaveBeenCalled()
     digestCallback()
     await vi.waitFor(() => expect(done).toHaveBeenCalledWith(null))
 
-    expect(services.querySnapshotSvc.deleteSnapshot).toHaveBeenCalledWith("7")
+    expect(snapshotApi.deleteSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots", "7")
+    expect(services.querySnapshotSvc.removeSnapshot).toHaveBeenCalledWith("7")
     expect(services.queryViewSvc.disableComparisons).toHaveBeenCalledOnce()
     expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()
   })

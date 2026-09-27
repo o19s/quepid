@@ -110,7 +110,7 @@ export default class extends ModalTriggerControllerBase {
     }
 
     this.setBusy(true)
-    await this.dispatchAndWait("diff:apply", { selections })
+    await this.dispatchAndWait("diff:apply", { selections, snapshotsUrl: this.snapshotsUrlValue })
   }
 
   async clear() {
@@ -134,7 +134,7 @@ export default class extends ModalTriggerControllerBase {
   async confirmDelete() {
     if (!this.deleteId) return
     this.setBusy(true)
-    await this.dispatchAndWait("diff:delete", { snapshotId: this.deleteId })
+    await this.dispatchAndWait("diff:delete", { snapshotId: this.deleteId, snapshotsUrl: this.snapshotsUrlValue })
   }
 
   validSelections() {

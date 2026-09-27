@@ -22,7 +22,34 @@ export function buildSnapshotLookupSettings({
   return settingsForLookup
 }
 
+export function registerSnapshotModels({
+  snapshots,
+  registry,
+  addDocIds,
+  createModel,
+  getDoc,
+  explainDoc,
+  formatDate,
+  log
+}) {
+  const models = snapshots.map((params) =>
+    createModel({
+      params,
+      getDoc,
+      explainDoc,
+      formatDate,
+      log
+    })
+  )
+
+  models.forEach((model, index) => {
+    registry[snapshots[index].id] = model
+    addDocIds(model.allDocIds())
+  })
+
+  return models
+}
+
 export function mapFieldSpecToSolrFormat(fieldSpec) {
   return fieldSpec.replace(/id:_([^,]+)/, "id:$1")
 }
-

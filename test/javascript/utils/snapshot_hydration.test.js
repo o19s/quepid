@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest"
 import {
   buildSnapshotLookupSettings,
-  mapFieldSpecToSolrFormat
+  mapFieldSpecToSolrFormat,
+  registerSnapshotModels
 } from "utils/snapshot_hydration"
 
 describe("snapshot hydration", () => {
@@ -53,5 +54,22 @@ describe("snapshot hydration", () => {
       snapshotId: 2
     })).toBe(settings)
   })
-})
 
+  it("registers models and adds their document ids to the cache", () => {
+    const registry = {}
+    const addedIds = []
+    const models = registerSnapshotModels({
+      snapshots: [{ id: 7 }, { id: 8 }],
+      registry,
+      addDocIds: (ids) => addedIds.push(...ids),
+      createModel: ({ params }) => ({ id: params.id, allDocIds: () => [String(params.id)] }),
+      getDoc: () => null,
+      explainDoc: (doc) => doc
+    })
+
+    expect(models.map((model) => model.id)).toEqual([7, 8])
+    expect(registry[7]).toBe(models[0])
+    expect(registry[8]).toBe(models[1])
+    expect(addedIds).toEqual(["7", "8"])
+  })
+})

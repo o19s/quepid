@@ -13,42 +13,60 @@ angular.module('QuepidApp')
       caseTryNavSvc
     ) {
       var docCache = {};
+      var scopedDocCaches = {};
 
-      this.addIds = function(moreIds) {
+      var cacheFor = function(scope) {
+        if (angular.isUndefined(scope) || scope === null) {
+          return docCache;
+        }
+
+        var scopeKey = '' + scope;
+        scopedDocCaches[scopeKey] = scopedDocCaches[scopeKey] || {};
+        return scopedDocCaches[scopeKey];
+      };
+
+      this.addIds = function(moreIds, scope) {
+        var cache = cacheFor(scope);
         angular.forEach(moreIds, function(id) {
-          if (!docCache.hasOwnProperty(id)) {
-            docCache[id] = null;
+          if (!cache.hasOwnProperty(id)) {
+            cache[id] = null;
           }
         });
       };
 
-      this.getDoc = function(id) {
-        return docCache[id];
+      this.getDoc = function(id, scope) {
+        return cacheFor(scope)[id];
       };
 
-      this.hasDoc = function(id) {
-        return this.knowsDoc(id) && docCache[id] !== null;
+      this.hasDoc = function(id, scope) {
+        return this.knowsDoc(id, scope) && cacheFor(scope)[id] !== null;
       };
 
-      this.knowsDoc = function(id) {
-        return docCache.hasOwnProperty(id);
+      this.knowsDoc = function(id, scope) {
+        return cacheFor(scope).hasOwnProperty(id);
       };
 
-      this.empty = function() {
-        docCache = {};
+      this.empty = function(scope) {
+        if (angular.isUndefined(scope) || scope === null) {
+          docCache = {};
+        } else {
+          delete scopedDocCaches['' + scope];
+        }
       };
 
-      this.invalidate = function() {
-        angular.forEach(Object.keys(docCache), function(docId) {
-          docCache[docId] = null;
+      this.invalidate = function(scope) {
+        var cache = cacheFor(scope);
+        angular.forEach(Object.keys(cache), function(docId) {
+          cache[docId] = null;
         });
       };
 
       // rebuild on new settings
-      this.update = function(settings) {
+      this.update = function(settings, scope) {
+        var cache = cacheFor(scope);
         var docsToFetch = {};
 
-        angular.forEach(docCache, function(doc, docId) {
+        angular.forEach(cache, function(doc, docId) {
           if (doc === null) {
             docsToFetch[docId] = null;
           }
@@ -62,11 +80,11 @@ angular.module('QuepidApp')
         var docIds    = Object.keys(docsToFetch);
 
         if ( docIds.length > 0 ) {           
-          var resolver  = docResolverSvc.createResolver(docIds, settings, 15);
-          return resolver.fetchDocs()
+            var resolver  = docResolverSvc.createResolver(docIds, settings, 15);
+            return resolver.fetchDocs()
             .then(function () {
               angular.forEach(resolver.docs, function (doc) {
-                docCache[doc.id] = doc;
+                cache[doc.id] = doc;
               });
             }, function(response) {
               $log.info('Error fetching Docs in docCacheSvc: ', response);

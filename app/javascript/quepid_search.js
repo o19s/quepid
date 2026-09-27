@@ -11,7 +11,8 @@ import { createQueryDiff } from "./utils/diff_results"
 import { RatingsStore } from "./utils/ratings_store"
 import { createSnapshotSearcher } from "./utils/snapshot_searcher"
 import { createSnapshotModel } from "./utils/snapshot_model"
-import { buildSnapshotLookupSettings, mapFieldSpecToSolrFormat } from "./utils/snapshot_hydration"
+import { buildSnapshotLookupSettings, mapFieldSpecToSolrFormat, registerSnapshotModels } from "./utils/snapshot_hydration"
+import { deleteSnapshot, fetchSnapshot } from "./utils/snapshot_api"
 import { scoreAllQueries, scoreQuery } from "./utils/query_scoring"
 import {
   invalidateRatedDocsCache,
@@ -131,7 +132,10 @@ const quepidSearch = {
     createSnapshotSearcher,
     createSnapshotModel,
     buildSnapshotLookupSettings,
-    mapFieldSpecToSolrFormat
+    mapFieldSpecToSolrFormat,
+    registerSnapshotModels,
+    fetchSnapshot,
+    deleteSnapshot
   }
 }
 

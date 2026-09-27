@@ -9,7 +9,7 @@ export function createSnapshotModel({
   params,
   getDoc,
   explainDoc,
-  parseExplain = (explain) => typeof explain === "string" ? JSON.parse(explain) : explain,
+  parseExplain = (explain) => (typeof explain === "string" ? JSON.parse(explain) : explain),
   formatDate = (time) => new Date(time).toLocaleDateString(),
   log = () => {}
 }) {
@@ -67,14 +67,18 @@ export function createSnapshotModel({
   }
 
   function getQueryError(queryId) {
-    const score = (snapshot.scores || []).find((entry) => String(entry.query_id) === String(queryId))
+    const score = (snapshot.scores || []).find(
+      (entry) => String(entry.query_id) === String(queryId)
+    )
     return score?.error || null
   }
 }
 
 function normalizeQueries(queries) {
   if (Array.isArray(queries)) return queries.map(normalizeQuery)
-  return Object.fromEntries(Object.entries(queries || {}).map(([key, query]) => [key, normalizeQuery(query)]))
+  return Object.fromEntries(
+    Object.entries(queries || {}).map(([key, query]) => [key, normalizeQuery(query)])
+  )
 }
 
 function normalizeQuery(query) {

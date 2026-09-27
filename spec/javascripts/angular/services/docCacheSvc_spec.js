@@ -145,4 +145,22 @@ describe('Service: docCacheSvc', function () {
       checkSetupFromScratch();
     });
   });
+
+  it('keeps scoped document caches isolated by scope', function() {
+    docCacheSvc.addIds(['same-id'], 'snapshot-1');
+    docCacheSvc.addIds(['same-id'], 'snapshot-2');
+
+    docCacheSvc.update(ignoredSettings, 'snapshot-1');
+    $rootScope.$apply();
+    var firstDoc = docCacheSvc.getDoc('same-id', 'snapshot-1');
+
+    docCacheSvc.update(ignoredSettings, 'snapshot-2');
+    $rootScope.$apply();
+    var secondDoc = docCacheSvc.getDoc('same-id', 'snapshot-2');
+
+    expect(firstDoc).not.toBe(null);
+    expect(secondDoc).not.toBe(null);
+    expect(secondDoc).not.toBe(firstDoc);
+    expect(docCacheSvc.getDoc('same-id')).toBeUndefined();
+  });
 });

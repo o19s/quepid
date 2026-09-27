@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { deleteSnapshot, fetchSnapshot } from "utils/snapshot_api"
 
 /*
  * Temporary compatibility bridge for snapshot comparison.
@@ -47,12 +48,13 @@ export default class extends Controller {
     const snapshots = injector?.get("querySnapshotSvc")
     const selections = detail.selections || []
 
-    if (!queryView || !queries || !snapshots) {
+    if (!queryView || !queries || !snapshots || !detail.snapshotsUrl) {
       detail.done?.("Angular snapshot services are not available")
       return
     }
 
-    Promise.all(selections.map((snapshotId) => snapshots.get(snapshotId)))
+    Promise.all(selections.map((snapshotId) => fetchSnapshot(`${detail.snapshotsUrl}/${encodeURIComponent(snapshotId)}`)))
+      .then((payloads) => snapshots.registerSnapshots(payloads))
       .then(() => {
         this.inAngular(() => {
           queryView.enableDiffs(selections)
@@ -86,13 +88,14 @@ export default class extends Controller {
     const queries = injector?.get("queriesSvc")
     const snapshots = injector?.get("querySnapshotSvc")
 
-    if (!queryView || !queries || !snapshots) {
+    if (!queryView || !queries || !snapshots || !detail.snapshotsUrl) {
       detail.done?.("Angular snapshot services are not available")
       return
     }
 
-    Promise.resolve(snapshots.deleteSnapshot(detail.snapshotId))
+    deleteSnapshot(detail.snapshotsUrl, detail.snapshotId)
       .then(() => {
+        snapshots.removeSnapshot(detail.snapshotId)
         this.inAngular(() => {
           queryView.disableComparisons()
           return queries.refreshAllDiffs()

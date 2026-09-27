@@ -443,6 +443,65 @@ describe('Service: querySnapshotSvc', function () {
       expect(resolverSettings.apiMethod).toBe('GET');
       expect(resolverSettings.searchUrl).toContain('/api/cases/0/snapshots/1/search');
     });
+
+    it('hydrates documents from every static snapshot', function() {
+      var settings = settingsSvc.editableSettings();
+      settings.searchEngine = 'static';
+      settings.apiMethod = 'GET';
+      settings.fieldSpec = 'id:id';
+
+      var firstSnapshot = {
+        id: '1',
+        name: 'First',
+        time: '1392318891',
+        docs: { '1': [{ id: 'only-in-first', explain: rawExpl }] }
+      };
+      var secondSnapshot = {
+        id: '2',
+        name: 'Second',
+        time: '1392318892',
+        docs: { '1': [{ id: 'only-in-second', explain: rawExpl }] }
+      };
+
+      var promise = querySnapshotSvc.registerSnapshots([firstSnapshot, secondSnapshot]);
+      $rootScope.$apply();
+
+      expect(promise).toBeDefined();
+      expect(docResolverSvc.createResolver.calls.count()).toBe(2);
+      expect(docResolverSvc.createResolver.calls.argsFor(0)[0]).toEqual(['only-in-first']);
+      expect(docResolverSvc.createResolver.calls.argsFor(1)[0]).toEqual(['only-in-second']);
+      expect(docResolverSvc.createResolver.calls.argsFor(0)[1].searchUrl)
+        .toContain('/api/cases/0/snapshots/1/search');
+      expect(docResolverSvc.createResolver.calls.argsFor(1)[1].searchUrl)
+        .toContain('/api/cases/0/snapshots/2/search');
+    });
+
+    it('keeps overlapping static snapshot documents scoped', function() {
+      var settings = settingsSvc.editableSettings();
+      settings.searchEngine = 'static';
+      settings.apiMethod = 'GET';
+      settings.fieldSpec = 'id:id';
+
+      var snapshots = [1, 2].map(function(id) {
+        return {
+          id: '' + id,
+          name: 'Snapshot ' + id,
+          time: '139231889' + id,
+          docs: { '1': [{ id: 'same-doc', explain: rawExpl }] }
+        };
+      });
+
+      querySnapshotSvc.registerSnapshots(snapshots);
+      $rootScope.$apply();
+
+      expect(docResolverSvc.createResolver.calls.count()).toBe(2);
+      expect(querySnapshotSvc.snapshots['1'].getSearchResults('1')[0].id).toBe('same-doc');
+      expect(querySnapshotSvc.snapshots['2'].getSearchResults('1')[0].id).toBe('same-doc');
+      expect(docResolverSvc.createResolver.calls.argsFor(0)[1].searchUrl)
+        .toContain('/api/cases/0/snapshots/1/search');
+      expect(docResolverSvc.createResolver.calls.argsFor(1)[1].searchUrl)
+        .toContain('/api/cases/0/snapshots/2/search');
+    });
   });
 
   describe('Import snapshots', function() {
