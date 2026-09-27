@@ -56,6 +56,8 @@ export default defineConfig({
       { find: "utils/query_service", replacement: path.resolve(repoRoot, "app/javascript/utils/query_service.js") },
       { find: "utils/ratings_store", replacement: path.resolve(repoRoot, "app/javascript/utils/ratings_store.js") },
       { find: "utils/snapshot_searcher", replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_searcher.js") },
+      { find: "utils/snapshot_model", replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_model.js") },
+      { find: "utils/snapshot_hydration", replacement: path.resolve(repoRoot, "app/javascript/utils/snapshot_hydration.js") },
       { find: "utils/query_scoring", replacement: path.resolve(repoRoot, "app/javascript/utils/query_scoring.js") },
       { find: "utils/wizard_contracts", replacement: path.resolve(repoRoot, "app/javascript/utils/wizard_contracts.js") },
       { find: "stores/case_score_store", replacement: path.resolve(repoRoot, "app/javascript/stores/case_score_store.js") },

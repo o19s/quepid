@@ -248,7 +248,7 @@ compatibility adapter until live query/search/scoring migration is complete.
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
-**Defer on the case workspace** (Solr JSONP, live state, or remaining Angular wrappers): `quepidTypeahead`, `quepidCollapse`. The diff picker and renderer are now Stimulus-owned; snapshot search/scoring remains behind its explicit Angular bridge. The expanded-results shell, result rendering, document rendering, Frog Report, and Tune Relevance drawer now run through Stimulus and the document store. The remaining deferred pieces imply rebuilding the case SPA, not a framework swap.
+**Defer on the case workspace** (Solr JSONP, live state, or remaining Angular wrappers): `quepidTypeahead`, `quepidCollapse`. Snapshot search/scoring remains behind its explicit Angular bridge. The remaining deferred pieces imply rebuilding the case SPA, not a framework swap.
 
 #### `queriesSvc` seam inventory (phase 1)
 
@@ -537,8 +537,6 @@ Thin shells (~14–16 LOC): `queries`. Heavy: `quepidTypeahead` (299).
 ## Templates (2 Angular HTML files)
 
 **Views:** `views/embed.html`, `views/searchEndpoint_popup.html`
-
-The Rails query-list shell and former Angular diff component templates were removed after their Stimulus replacements became the only live UI.
 
 Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 

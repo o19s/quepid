@@ -10,6 +10,8 @@ import { buildCaseDiffScores } from "./utils/diff_scores"
 import { createQueryDiff } from "./utils/diff_results"
 import { RatingsStore } from "./utils/ratings_store"
 import { createSnapshotSearcher } from "./utils/snapshot_searcher"
+import { createSnapshotModel } from "./utils/snapshot_model"
+import { buildSnapshotLookupSettings, mapFieldSpecToSolrFormat } from "./utils/snapshot_hydration"
 import { scoreAllQueries, scoreQuery } from "./utils/query_scoring"
 import {
   invalidateRatedDocsCache,
@@ -126,7 +128,10 @@ const quepidSearch = {
     settingsWithTryOverrides
   },
   snapshotSearch: {
-    createSnapshotSearcher
+    createSnapshotSearcher,
+    createSnapshotModel,
+    buildSnapshotLookupSettings,
+    mapFieldSpecToSolrFormat
   }
 }
 

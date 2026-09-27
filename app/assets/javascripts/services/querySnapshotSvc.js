@@ -4,18 +4,17 @@
 
 angular.module('QuepidApp')
   .service('querySnapshotSvc', [
-    '$http', '$q', '$injector',
-    'settingsSvc', 'docCacheSvc', 'caseTryNavSvc', 'fieldSpecSvc',
-    'SnapshotFactory',
+    '$http', '$q', '$injector', '$filter',
+    'settingsSvc', 'docCacheSvc', 'caseTryNavSvc', 'fieldSpecSvc', 'normalDocsSvc',
     function querySnapshotSvc(
-      $http, $q, $injector,
-      settingsSvc, docCacheSvc, caseTryNavSvc, fieldSpecSvc,
-      SnapshotFactory
+      $http, $q, $injector, $filter,
+      settingsSvc, docCacheSvc, caseTryNavSvc, fieldSpecSvc, normalDocsSvc
     ) {
       // caches normal docs for all snapshots
       // TODO invalidation
 
       var svc       = this;
+      var snapshotSearch = window.quepidSearch.snapshotSearch;
       var caseNo    = -1;
       var version   = 0;
       svc.snapshots = {};
@@ -53,14 +52,19 @@ angular.module('QuepidApp')
       });
 
       function mapFieldSpecToSolrFormat(fieldSpec) {
-        let convertedfieldSpec = fieldSpec.replace(/id:_([^,]+)/, 'id:$1');
-        return convertedfieldSpec;
+        return snapshotSearch.mapFieldSpecToSolrFormat(fieldSpec);
       }
 
       var addSnapshotResp = function(snapshots) {        
         angular.forEach(snapshots, function(snapshot) {
           // locally store snapshot data
-          var snapObj = new SnapshotFactory(snapshot);
+          var snapObj = snapshotSearch.createSnapshotModel({
+            params: snapshot,
+            getDoc: docCacheSvc.getDoc,
+            explainDoc: normalDocsSvc.explainDoc,
+            formatDate: function(time) { return $filter('date')(time, 'shortDate'); },
+            log: function(message) { console.debug(message); }
+          });
           svc.snapshots[snapshot.id] = snapObj;
           docCacheSvc.addIds(snapObj.allDocIds());
         });
@@ -81,19 +85,15 @@ angular.module('QuepidApp')
             // queriesSvc does for live searches so snapshot hydration can fetch
             // the recorded documents before diff scoring starts.
             if (settings.searchEngine === 'static' || settingsSvc.supportLookupById(settings.searchEngine) === false){
-              var settingsForLookup  = angular.copy(settings);
-              settingsForLookup.apiMethod = 'GET';
-              settingsForLookup.searchEngine = 'solr';
-  
-              let solrSpecificFieldSpecStr =  svc.mapFieldSpecToSolrFormat(settingsForLookup.fieldSpec);
-              settingsForLookup.fieldSpec = fieldSpecSvc.createFieldSpec(solrSpecificFieldSpecStr);
-              settingsForLookup.searchEndpointId = null;
-              settingsForLookup.customHeaders = null;
-              
               let snapshotId = snapshots[0].id;
-              settingsForLookup.searchUrl = `${caseTryNavSvc.getQuepidRootUrl()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
-              
-              settings = settingsForLookup;
+              settings = snapshotSearch.buildSnapshotLookupSettings({
+                settings,
+                supportsLookupById: settingsSvc.supportLookupById,
+                createFieldSpec: fieldSpecSvc.createFieldSpec,
+                rootUrl: caseTryNavSvc.getQuepidRootUrl(),
+                caseNo: caseTryNavSvc.getCaseNo(),
+                snapshotId
+              });
             }
           }
                     

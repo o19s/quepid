@@ -14,7 +14,7 @@ angular.module('QuepidApp')
     ) {
       var createSnapshotSearcher = window.quepidSearch.snapshotSearch.createSnapshotSearcher;
 
-      this.createSnapshotSearcher = function(snapshot, query, fieldSpec) {
+      function buildSnapshotSearcher(snapshot, query, fieldSpec) {
         return createSnapshotSearcher({
           snapshot: snapshot,
           query: query,
@@ -27,7 +27,9 @@ angular.module('QuepidApp')
           },
           promiseApi: $q
         });
-      };
+      }
+
+      this.createSnapshotSearcher = buildSnapshotSearcher;
 
       this.createSearcherFromSnapshot = function(snapshotId, query, settings) {
         var snapshot = querySnapshotSvc.snapshots[snapshotId];
@@ -38,7 +40,7 @@ angular.module('QuepidApp')
         }
 
         var fieldSpec = settings ? settings.createFieldSpec() : null;
-        return this.createSnapshotSearcher(snapshot, query, fieldSpec);
+        return buildSnapshotSearcher(snapshot, query, fieldSpec);
       };
     }
   ]);

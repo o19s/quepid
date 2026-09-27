@@ -1,0 +1,57 @@
+import { describe, expect, it } from "vitest"
+import {
+  buildSnapshotLookupSettings,
+  mapFieldSpecToSolrFormat
+} from "utils/snapshot_hydration"
+
+describe("snapshot hydration", () => {
+  it("maps the reserved snapshot id field", () => {
+    expect(mapFieldSpecToSolrFormat("title:title id:_id body:body")).toBe("title:title id:id body:body")
+  })
+
+  it("builds Solr lookup settings for static and unsupported engines", () => {
+    const settings = {
+      searchEngine: "searchapi",
+      fieldSpec: "id:_id title:title",
+      apiMethod: "POST",
+      searchEndpointId: 9,
+      customHeaders: { Authorization: "secret" },
+      searchUrl: "https://engine.example/search"
+    }
+
+    const result = buildSnapshotLookupSettings({
+      settings,
+      supportsLookupById: () => false,
+      createFieldSpec: (value) => ({ raw: value }),
+      rootUrl: "",
+      caseNo: 12,
+      snapshotId: 44
+    })
+
+    expect(result).toEqual({
+      ...settings,
+      apiMethod: "GET",
+      searchEngine: "solr",
+      fieldSpec: { raw: "id:id title:title" },
+      searchEndpointId: null,
+      customHeaders: null,
+      searchUrl: "/api/cases/12/snapshots/44/search"
+    })
+    expect(settings.searchEngine).toBe("searchapi")
+  })
+
+  it("keeps normal lookup settings unchanged", () => {
+    const settings = { searchEngine: "solr", fieldSpec: "id:id" }
+    expect(buildSnapshotLookupSettings({
+      settings,
+      supportsLookupById: () => true,
+      createFieldSpec: () => {
+        throw new Error("should not create a replacement field spec")
+      },
+      rootUrl: "",
+      caseNo: 1,
+      snapshotId: 2
+    })).toBe(settings)
+  })
+})
+
