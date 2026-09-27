@@ -397,7 +397,7 @@ describe("queries_list_controller", () => {
     `
     apiFetch.mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ display_order: [12, 11] }) })
     const setDisplayOrder = vi.fn()
-    controller.queryState = { setDisplayOrder }
+    controller.queryCapabilities = { setDisplayOrder }
 
     controller.dragStart()
     await controller.dragEnd({ oldIndex: 0, newIndex: 1 })

@@ -56,8 +56,8 @@ export default class extends Controller {
   reconcileQueryRemoval({ caseId, queryId }, rescore) {
     if (queryId == null) return
 
-    const queryState = window.quepidSearch?.queryState
-    if (rescore && caseId != null && String(caseId) !== String(queryState?.getCaseNo?.())) return
-    queryState?.reconcileQueryRemoval?.(queryId, rescore)
+    const capabilities = window.quepidSearch?.queryCapabilities
+    if (rescore && caseId != null && String(caseId) !== String(capabilities?.getCaseNo?.())) return
+    capabilities?.reconcileQueryRemoval?.(queryId, rescore)
   }
 }

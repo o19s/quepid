@@ -127,7 +127,7 @@ angular.module('QuepidApp')
         }
       });
 
-      window.quepidSearch.queryState.getListState = function() {
+      window.quepidSearch.queryCapabilities.getListState = function() {
         var selectedTry = settingsSvc.applicableSettings() || {};
         return {
           canAddQueries: selectedTry.searchEngine !== 'static',
@@ -143,16 +143,19 @@ angular.module('QuepidApp')
           batchSize: svc.queryCount()
         };
       };
+      window.quepidSearch.queryState.getListState = window.quepidSearch.queryCapabilities.getListState;
       window.quepidSearch.queryCommands.toggleShowOnlyRated = toggleShowOnlyRated;
-      window.quepidSearch.queryState.isSortingEnabled = function() {
+      window.quepidSearch.queryCapabilities.isSortingEnabled = function() {
         return false;
       };
+      window.quepidSearch.queryState.isSortingEnabled = window.quepidSearch.queryCapabilities.isSortingEnabled;
       window.quepidSearch.queryCommands.collapseAll = function() {
         if (queryDocumentsStore) queryDocumentsStore.collapseAll();
       };
-      window.quepidSearch.queryState.setDisplayOrder = function(displayOrder) {
+      window.quepidSearch.queryCapabilities.setDisplayOrder = function(displayOrder) {
         svc.applyDisplayOrder(displayOrder);
       };
+      window.quepidSearch.queryState.setDisplayOrder = window.quepidSearch.queryCapabilities.setDisplayOrder;
 
       // Method to clear cache for a specific book
       this.clearSyncCache = function(bookId) {
@@ -275,15 +278,17 @@ angular.module('QuepidApp')
       // Explicit command adapter for the Stimulus results renderer. The live
       // Query objects remain here until search and scoring migrate, but the
       // renderer does not need to discover them through an Angular scope.
-      window.quepidSearch.queryState.getQuery = function(queryId) {
+      window.quepidSearch.queryCapabilities.getQuery = function(queryId) {
         return svc.queries[queryId] || svc.queries[String(queryId)] || null;
       };
-      window.quepidSearch.queryState.getCaseNo = getCaseNo;
+      window.quepidSearch.queryState.getQuery = window.quepidSearch.queryCapabilities.getQuery;
+      window.quepidSearch.queryCapabilities.getCaseNo = getCaseNo;
+      window.quepidSearch.queryState.getCaseNo = window.quepidSearch.queryCapabilities.getCaseNo;
 
       // Stimulus owns query persistence and the collection stores own the
       // rendered list. Keep only this narrow adapter for the live Angular
       // Query objects until search/scoring leave Angular as well.
-      window.quepidSearch.queryState.reconcileQueryRemoval = function(queryId, rescore) {
+      window.quepidSearch.queryCapabilities.reconcileQueryRemoval = function(queryId, rescore) {
         if (queryId === undefined || queryId === null) return false;
         var key = String(queryId);
         if (!svc.queries[key] && !svc.queries[queryId]) return false;
@@ -293,6 +298,7 @@ angular.module('QuepidApp')
         if (rescore) svc.updateScores();
         return true;
       };
+      window.quepidSearch.queryState.reconcileQueryRemoval = window.quepidSearch.queryCapabilities.reconcileQueryRemoval;
 
       function rateDocument(queryId, docId, rating) {
         var query = window.quepidSearch.queryState.getQuery(queryId);

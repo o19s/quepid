@@ -23,7 +23,7 @@ describe("query_command_bridge_controller", () => {
     controller.element = document.createElement("body")
     window.quepidStore = { queries: collectionStore, documents: documentsStore }
     window.quepidSearch = {
-      queryState: {
+      queryCapabilities: {
         reconcileQueryRemoval: vi.fn(),
         getCaseNo: vi.fn(() => 7)
       },
@@ -95,8 +95,8 @@ describe("query_command_bridge_controller", () => {
       detail: { caseId: 8, queryId: 6 }
     }))
 
-    expect(window.quepidSearch.queryState.reconcileQueryRemoval).toHaveBeenNthCalledWith(1, 4, false)
-    expect(window.quepidSearch.queryState.reconcileQueryRemoval).toHaveBeenNthCalledWith(2, 5, true)
-    expect(window.quepidSearch.queryState.reconcileQueryRemoval).toHaveBeenCalledTimes(2)
+    expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(1, 4, false)
+    expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(2, 5, true)
+    expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval).toHaveBeenCalledTimes(2)
   })
 })

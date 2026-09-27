@@ -28,7 +28,7 @@ export default class extends Controller {
     this.filterValue = ""
     this.clientSortName = this.sortNameValue
     this.clientReverse = this.reverseValue
-    this.queryState = window.quepidSearch?.queryState
+    this.queryCapabilities = window.quepidSearch?.queryCapabilities
     this.syncSortFromUrl()
     // The Angular and core Stimulus bundles currently compile separately, so
     // their module singletons are not shared. Use the temporary bridge while
@@ -56,7 +56,7 @@ export default class extends Controller {
     document.addEventListener("query-command:delete-completed", this.queryDeleteCompleted)
     document.addEventListener("query-command:move-completed", this.queryMoveCompleted)
     this.listStateChange = () => {
-      this.queryState = window.quepidSearch?.queryState
+      this.queryCapabilities = window.quepidSearch?.queryCapabilities
       this.scheduleRender()
     }
     document.addEventListener("queries-state:changed", this.listStateChange)
@@ -181,8 +181,8 @@ export default class extends Controller {
       if (!response.ok) throw new Error(`Reorder failed (${response.status})`)
 
       const data = await response.json()
-      if (this.queryState?.setDisplayOrder) {
-        this.queryState.setDisplayOrder(data.display_order)
+      if (this.queryCapabilities?.setDisplayOrder) {
+        this.queryCapabilities.setDisplayOrder(data.display_order)
       } else {
         this.store?.setDisplayOrder?.(data.display_order)
       }
@@ -297,7 +297,7 @@ export default class extends Controller {
   }
 
   syncListState() {
-    const state = this.queryState?.getListState?.()
+    const state = this.queryCapabilities?.getListState?.()
     if (!state) return
 
     this.currentShowOnlyRated = state.showOnlyRated
@@ -401,7 +401,7 @@ export default class extends Controller {
     const hasDiffs = Boolean(query.diffs)
     const toggled = Boolean(expanded)
     const sorting = Boolean(
-      this.queryState?.isSortingEnabled?.() ?? this.angularScope?.queries?.isSortingEnabled?.()
+      this.queryCapabilities?.isSortingEnabled?.() ?? this.angularScope?.queries?.isSortingEnabled?.()
     )
 
     row.innerHTML = `
@@ -483,7 +483,7 @@ export default class extends Controller {
 
     explain.addEventListener("query-explain:render-template", event => {
       event.stopPropagation()
-      const searcher = this.queryState?.getQuery?.(queryId)?.searcher
+      const searcher = this.queryCapabilities?.getQuery?.(queryId)?.searcher
       if (!searcher || typeof searcher.isTemplateCall !== "function") return
 
       const isTemplatedQuery = searcher.isTemplateCall(searcher.args)

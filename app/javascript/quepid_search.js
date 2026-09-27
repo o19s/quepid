@@ -142,6 +142,17 @@ const quepidSearch = {
     querqyRuleTriggered,
     ratingChangedQueryId
   },
+  // Temporary capability boundary for modern case controllers. The
+  // implementation remains Angular-owned until live query/search state moves,
+  // but modern code must not depend on the legacy queryState namespace.
+  queryCapabilities: {
+    getListState: null,
+    isSortingEnabled: null,
+    setDisplayOrder: null,
+    getQuery: null,
+    getCaseNo: null,
+    reconcileQueryRemoval: null
+  },
   queryCommands: {
     rateDocument: null,
     rateAll: null,
