@@ -115,9 +115,24 @@ module LlmJudgeAdapters
     end
 
     def rating_from answer, scale
-      return answer['choice'].to_f if 'choice' == answer['type']
+      if 'choice' == answer['type']
+        choice = numeric_value(answer['choice'])
+        return choice if choice && scale.includes?(choice)
 
-      scale.value_for_level(answer['score'])&.to_f
+        return nil
+      end
+
+      score = numeric_value(answer['score'])
+      scale.value_for_level(score)&.to_f if score
+    end
+
+    # Avoid String#to_f's permissive conversion (`"garbage".to_f == 0.0`),
+    # which can turn a malformed provider answer into a valid lowest rating.
+    def numeric_value value
+      number = Float(value)
+      number if number.finite?
+    rescue ArgumentError, TypeError
+      nil
     end
 
     def below_confidence_floor? answer

@@ -109,6 +109,12 @@ module LlmJudgeAdapters
         assert_in_delta(0.0, judgement.rating)
       end
 
+      test 'a malformed score does not become the lowest rating' do
+        adapter.apply_response(judgement, score_answer(score: 'not a score'), book: book)
+
+        assert_nil judgement.rating
+      end
+
       test 'a scale that does not start at zero maps by level, not by value' do
         four_point = Book.new(name: 'Four', scale: [ 1, 2, 3, 4 ])
         answer = score_answer(score: 0.0, probabilities: { '0' => 1.0 })
@@ -139,6 +145,18 @@ module LlmJudgeAdapters
 
         assert_in_delta(7.0, judgement.rating)
         assert_includes judgement.explanation, 'Jev rated 7'
+      end
+
+      test 'a malformed or off-scale choice does not become the lowest rating' do
+        [ 'not a choice', '9' ].each do |choice|
+          answer = {
+            'answers' => { 'relevance' => { 'type' => 'choice', 'choice' => choice, 'confidence' => 0.8 } },
+          }
+
+          adapter.apply_response(judgement, answer, book: Book.new(name: 'Long', scale: (0..12).to_a))
+
+          assert_nil judgement.rating, "expected #{choice.inspect} to be rejected"
+        end
       end
 
       test 'a missing answer is an error the caller can turn into an unrateable judgement' do
