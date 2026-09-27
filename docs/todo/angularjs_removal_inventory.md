@@ -280,6 +280,14 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 **Do not scope `scoreAll()` in the same change.** One rating rescores every query today; the performance lens says carry that forward. An explicit store makes per-query scoping possible later, but taking it here ships an unapproved behaviour change and makes any score discrepancy unattributable.
 
 **Remaining, in slice order (2026-09-24).**
+
+**Compatibility seam consolidation (2026-09-27).** Core Stimulus consumers now obtain the
+remaining Angular-owned services through the cached `core_angular_adapter` seam. Snapshot
+comparison, case-level diff scoring, and the new-case wizard no longer reach into the Angular
+injector directly; digest-bound work is routed through `runInAngular()`. This is an adapter
+cleanup, not an Angular-removal milestone: the next live-state slice can replace the seam's
+service lookup without changing those controllers.
+
 - `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing query-state adapter boundaries.
 - Case-level score aggregation now runs through the framework-free `createCaseScoringRuntime`; Angular supplies live Query objects and remains only the compatibility adapter for scorer execution and legacy `latestScoreInfo` consumers.
 - Snapshot fetching and hydration now run through the Stimulus/framework-free snapshot registry; Angular still owns the live Query objects and per-query diff scoring behind the document-store bridge.

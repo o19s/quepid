@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import SnapshotBridgeController from "controllers/snapshot_bridge_controller"
+import { resetCoreServiceCache } from "utils/core_angular_adapter"
 
 const snapshotApi = vi.hoisted(() => ({
   fetchSnapshot: vi.fn(),
@@ -16,7 +17,8 @@ vi.mock("utils/snapshot_hydration", () => snapshotHydration)
 
 function buildController(services) {
   const controller = Object.create(SnapshotBridgeController.prototype)
-  controller.injector = () => ({ get: (name) => services[name] })
+  document.body.setAttribute("ng-app", "QuepidApp")
+  window.angular = { element: () => ({ injector: () => ({ get: (name) => services[name] }) }) }
   return controller
 }
 
@@ -75,6 +77,9 @@ describe("SnapshotBridgeController", () => {
   afterEach(() => {
     delete window.quepidStore
     delete window.quepidSearch
+    delete window.angular
+    document.body.removeAttribute("ng-app")
+    resetCoreServiceCache()
     vi.restoreAllMocks()
   })
 
@@ -82,7 +87,7 @@ describe("SnapshotBridgeController", () => {
     const done = vi.fn()
 
     controller.clear({ detail: { done } })
-    await Promise.resolve()
+    await vi.waitFor(() => expect(window.quepidStore.diff.disable).toHaveBeenCalled())
 
     expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
     expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()

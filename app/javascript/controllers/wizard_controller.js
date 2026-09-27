@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { getOrCreateBsModal } from "utils/bs_modal"
+import { waitForAngularServices } from "utils/core_angular_adapter"
 import {
   addUniqueQuery,
   buildFieldSpec,
@@ -24,8 +25,6 @@ export default class extends Controller {
   static values = { rootUrl: String, caseNo: String }
 
   connect() {
-    this.injector = window.angular?.element(document.body).injector?.()
-    this.adapter = this.serviceAdapter()
     this.stepIndex = 0
     this.searchEndpoints = []
     this.mapperEngines = []
@@ -41,23 +40,6 @@ export default class extends Controller {
     this.element.removeEventListener("wizard:open", this.boundOpen)
   }
 
-  serviceAdapter() {
-    const get = (name) => this.injector?.get(name)
-    return {
-      caseSvc: get("caseSvc"),
-      caseTryNavSvc: get("caseTryNavSvc"),
-      docCacheSvc: get("docCacheSvc"),
-      mapperSvc: get("mapperBasedSearchEngineSvc"),
-      queriesSvc: get("queriesSvc"),
-      querySnapshotSvc: get("querySnapshotSvc"),
-      searchEndpointSvc: get("searchEndpointSvc"),
-      searchSvc: get("searchSvc"),
-      settingsSvc: get("settingsSvc"),
-      userSvc: get("userSvc"),
-      rootScope: get("$rootScope")
-    }
-  }
-
   async loadWizard() {
     this.loadAttempts = (this.loadAttempts || 0) + 1
     if (this.loadAttempts > 100) {
@@ -65,19 +47,22 @@ export default class extends Controller {
       this.render()
       return
     }
-    if (!this.injector) {
-      window.setTimeout(() => {
-        this.injector = window.angular?.element(document.body).injector?.()
-        this.adapter = this.serviceAdapter()
-        this.loadWizard()
-      }, 100)
+    try {
+      this.adapter = await waitForAngularServices([
+        "caseSvc", "caseTryNavSvc", "docCacheSvc", "mapperBasedSearchEngineSvc", "queriesSvc",
+        "querySnapshotSvc", "searchEndpointSvc", "searchSvc", "settingsSvc", "userSvc"
+      ])
+    } catch (error) {
+      if (this.loadAttempts < 100) {
+        window.setTimeout(() => this.loadWizard(), 100)
+        return
+      }
+      this.error = error.message
+      this.render()
       return
     }
-    const { settingsSvc, searchEndpointSvc, mapperSvc, userSvc } = this.adapter
-    if (!settingsSvc) {
-      window.setTimeout(() => this.loadWizard(), 100)
-      return
-    }
+
+    const { settingsSvc, searchEndpointSvc, mapperBasedSearchEngineSvc: mapperSvc, userSvc } = this.adapter
 
     this.settings = { ...settingsSvc.editableSettings() }
     this.settings.searchEnginePreset = this.settings.searchEngine || "solr"

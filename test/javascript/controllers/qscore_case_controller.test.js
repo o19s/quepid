@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import QscoreCaseController from "controllers/qscore_case_controller"
 import { CaseScoreStore } from "stores/case_score_store"
+import { resetCoreServiceCache } from "utils/core_angular_adapter"
 
 /**
  * Store-driven Stimulus controller for the Angular <qscore-case> component's
@@ -50,6 +51,7 @@ describe("QscoreCaseController", () => {
     delete window.quepidStore
     delete window.quepidSearch
     delete window.angular
+    resetCoreServiceCache()
     vi.unstubAllGlobals()
   })
 
@@ -226,6 +228,8 @@ describe("QscoreCaseController", () => {
         injector: () => ({
           get: (service) => service === "queryViewSvc"
             ? { isAnyDiffEnabled: () => true }
+            : service === "$rootScope"
+              ? { $evalAsync: (callback) => callback() }
             : { queries: { 1: query } }
         })
       })
@@ -255,6 +259,8 @@ describe("QscoreCaseController", () => {
         injector: () => ({
           get: (service) => service === "queryViewSvc"
             ? { isAnyDiffEnabled: () => true }
+            : service === "$rootScope"
+              ? { $evalAsync: (callback) => callback() }
             : { queries: { 1: query } }
         })
       })
@@ -264,7 +270,7 @@ describe("QscoreCaseController", () => {
     QscoreCaseController.prototype.initialize.call(controller)
     QscoreCaseController.prototype.connect.call(controller)
     document.dispatchEvent(new CustomEvent("query-diffs:refreshed"))
-    await Promise.resolve()
+    await vi.waitFor(() => expect(buildCaseDiffScores).toHaveBeenCalled())
 
     expect(buildCaseDiffScores).toHaveBeenCalledWith([query], 1)
     expect(setCaseDiffs).toHaveBeenCalledWith([])
@@ -284,6 +290,8 @@ describe("QscoreCaseController", () => {
         injector: () => ({
           get: (service) => service === "queryViewSvc"
             ? { isAnyDiffEnabled: () => true }
+            : service === "$rootScope"
+              ? { $evalAsync: (callback) => callback() }
             : { queries: { 1: query } }
         })
       })
@@ -317,7 +325,7 @@ describe("QscoreCaseController", () => {
     document.dispatchEvent(new CustomEvent("query-diffs:refreshed", {
       detail: { success: false }
     }))
-    await Promise.resolve()
+    await vi.waitFor(() => expect(clearCaseDiffs).toHaveBeenCalled())
 
     expect(clearCaseDiffs).toHaveBeenCalledOnce()
 
@@ -340,6 +348,8 @@ describe("QscoreCaseController", () => {
         injector: () => ({
           get: (service) => service === "queryViewSvc"
             ? { isAnyDiffEnabled: () => true }
+            : service === "$rootScope"
+              ? { $evalAsync: (callback) => callback() }
             : { queries: { 1: query } }
         })
       })
@@ -350,6 +360,7 @@ describe("QscoreCaseController", () => {
     const oldRefresh = controller.refreshCaseDiffScores({ refreshQueries: true })
     const newRefresh = controller.refreshCaseDiffScores()
     await newRefresh
+    await vi.waitFor(() => expect(fetch).toHaveBeenCalled())
     resolveFetch()
     await oldRefresh
 

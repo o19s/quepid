@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { deleteSnapshot, fetchSnapshot } from "utils/snapshot_api"
 import { diffStateStore } from "stores/diff_state_store"
 import { registerAndHydrateSnapshots } from "utils/snapshot_hydration"
+import { runInAngular, waitForAngularServices } from "utils/core_angular_adapter"
 
 /*
  * Temporary compatibility bridge for snapshot comparison.
@@ -31,10 +32,6 @@ export default class extends Controller {
     document.removeEventListener("diff:delete", this.onDelete)
   }
 
-  injector() {
-    return window.angular?.element(document.body)?.injector?.()
-  }
-
   diffStore() {
     return window.quepidStore?.diff || diffStateStore
   }
@@ -47,12 +44,9 @@ export default class extends Controller {
   }
 
   async registerSnapshots(payloads) {
-    const injector = this.injector()
-    const settingsSvc = injector?.get("settingsSvc")
-    const caseTryNavSvc = injector?.get("caseTryNavSvc")
-    const fieldSpecSvc = injector?.get("fieldSpecSvc")
-    const docCacheSvc = injector?.get("docCacheSvc")
-    const normalDocsSvc = injector?.get("normalDocsSvc")
+    const { settingsSvc, caseTryNavSvc, fieldSpecSvc, docCacheSvc, normalDocsSvc } = await waitForAngularServices([
+      "settingsSvc", "caseTryNavSvc", "fieldSpecSvc", "docCacheSvc", "normalDocsSvc"
+    ])
     const snapshotSearch = window.quepidSearch?.snapshotSearch
     const registry = this.snapshotRegistry()
 
@@ -102,80 +96,62 @@ export default class extends Controller {
     event.detail?.done?.(this.diffStore().selections())
   }
 
-  apply(event) {
+  async apply(event) {
     const detail = event.detail || {}
-    const injector = this.injector()
-    const queries = injector?.get("queriesSvc")
     const selections = detail.selections || []
 
-    if (!queries || !detail.snapshotsUrl) {
+    if (!detail.snapshotsUrl) {
       detail.done?.("Snapshot comparison services are not available")
       return
     }
 
-    Promise.all(selections.map((snapshotId) => fetchSnapshot(`${detail.snapshotsUrl}/${encodeURIComponent(snapshotId)}`)))
-      .then((payloads) => this.registerSnapshots(payloads))
-      .then(() => {
-        this.diffStore().enable(selections)
-        this.inAngular(() => {
-          return queries.refreshAllDiffs()
-        }, detail.done)
-      })
-      .catch((error) => detail.done?.(error))
+    try {
+      const [{ queriesSvc: queries }, ...payloads] = await Promise.all([
+        waitForAngularServices(["queriesSvc"]),
+        ...selections.map((snapshotId) => fetchSnapshot(`${detail.snapshotsUrl}/${encodeURIComponent(snapshotId)}`))
+      ])
+      await this.registerSnapshots(payloads)
+      this.diffStore().enable(selections)
+      await runInAngular(() => queries.refreshAllDiffs())
+      detail.done?.(null)
+    } catch (error) {
+      detail.done?.(error)
+    }
   }
 
-  clear(event) {
+  async clear(event) {
     const detail = event.detail || {}
-    const injector = this.injector()
-    const queries = injector?.get("queriesSvc")
-
-    if (!queries) {
-      detail.done?.("Angular query services are not available")
-      return
-    }
-
-    this.inAngular(() => {
+    try {
+      const { queriesSvc: queries } = await waitForAngularServices(["queriesSvc"])
       this.diffStore().disable()
-      return queries.refreshAllDiffs()
-    }, detail.done)
+      await runInAngular(() => queries.refreshAllDiffs())
+      detail.done?.(null)
+    } catch (error) {
+      detail.done?.(error)
+    }
   }
 
-  delete(event) {
+  async delete(event) {
     const detail = event.detail || {}
-    const injector = this.injector()
-    const queries = injector?.get("queriesSvc")
-    if (!queries || !detail.snapshotsUrl) {
+    if (!detail.snapshotsUrl) {
       detail.done?.("Snapshot comparison services are not available")
       return
     }
 
-    deleteSnapshot(detail.snapshotsUrl, detail.snapshotId)
-      .then(() => {
-        const registry = this.snapshotRegistry()
-        if (registry) delete registry[String(detail.snapshotId)]
-        this.inAngular(() => {
-          this.diffStore().disable()
-          return queries.refreshAllDiffs()
-        }, detail.done)
+    try {
+      const [{ queriesSvc: queries }] = await Promise.all([
+        waitForAngularServices(["queriesSvc"]),
+        deleteSnapshot(detail.snapshotsUrl, detail.snapshotId)
+      ])
+      const registry = this.snapshotRegistry()
+      if (registry) delete registry[String(detail.snapshotId)]
+      await runInAngular(() => {
+        this.diffStore().disable()
+        return queries.refreshAllDiffs()
       })
-      .catch((error) => detail.done?.(error))
-  }
-
-  inAngular(operation, done) {
-    const injector = this.injector()
-    const rootScope = injector?.get("$rootScope")
-
-    if (!rootScope) {
-      done?.("Angular root scope is not available")
-      return
+      detail.done?.(null)
+    } catch (error) {
+      detail.done?.(error)
     }
-
-    rootScope.$evalAsync(() => {
-      try {
-        Promise.resolve(operation()).then(() => done?.(null), (error) => done?.(error))
-      } catch (error) {
-        done?.(error)
-      }
-    })
   }
 }

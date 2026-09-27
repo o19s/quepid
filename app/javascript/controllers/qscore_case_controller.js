@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { formatScore, scoreToColor } from "utils/scoring"
+import { runInAngular, waitForAngularServices } from "utils/core_angular_adapter"
 
 /**
  * Store-driven replacement for the Angular `<qscore-case>` component's primary
@@ -138,16 +139,21 @@ export default class extends Controller {
   async refreshCaseDiffScores({ refreshQueries = false, failed = false } = {}) {
     this.diffRefreshGeneration ??= 0
     const refreshGeneration = ++this.diffRefreshGeneration
-    const injector = window.angular?.element(document.body).injector?.()
-    const queryViewSvc = injector?.get?.("queryViewSvc")
-    const queriesSvc = injector?.get?.("queriesSvc")
     const documentsStore = window.quepidStore?.documents
     const buildCaseDiffScores = window.quepidSearch?.diffScores?.buildCaseDiffScores
 
-    if (!queryViewSvc || !queriesSvc || !documentsStore || !buildCaseDiffScores) return
+    if (!documentsStore || !buildCaseDiffScores) return
 
     if (failed) {
       documentsStore.clearCaseDiffs()
+      return
+    }
+
+    let queryViewSvc
+    let queriesSvc
+    try {
+      ({ queryViewSvc, queriesSvc } = await waitForAngularServices(["queryViewSvc", "queriesSvc"]))
+    } catch {
       return
     }
 
@@ -159,11 +165,11 @@ export default class extends Controller {
     const queries = Object.values(queriesSvc.queries || {})
     try {
       if (refreshQueries) {
-        await Promise.all(
+        await runInAngular(() => Promise.all(
           queries
             .filter(query => query?.diffs?.fetch)
             .map(query => query.diffs.fetch())
-        )
+        ))
       }
 
       if (refreshGeneration !== this.diffRefreshGeneration) return
