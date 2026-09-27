@@ -9,6 +9,7 @@ import { averageScore, formatScore, isUnratedScore, ratingBackgroundColor } from
 import { buildCaseDiffScores } from "./utils/diff_scores"
 import { createQueryDiff } from "./utils/diff_results"
 import { RatingsStore } from "./utils/ratings_store"
+import { createSnapshotSearcher } from "./utils/snapshot_searcher"
 import { scoreAllQueries, scoreQuery } from "./utils/query_scoring"
 import {
   invalidateRatedDocsCache,
@@ -123,6 +124,9 @@ const quepidSearch = {
     pAll,
     searchQuery,
     settingsWithTryOverrides
+  },
+  snapshotSearch: {
+    createSnapshotSearcher
   }
 }
 
