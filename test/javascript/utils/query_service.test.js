@@ -7,6 +7,7 @@ import {
   normalizeSearchResults,
   paginateQuery,
   pAll,
+  runSearchAll,
   searchQuery,
   settingsWithTryOverrides
 } from "utils/query_service"
@@ -288,5 +289,66 @@ describe("query service helpers", () => {
     await expect(promise).resolves.toEqual([1, 2, 3])
     expect(calls).toEqual([1, 2, 3])
     vi.useRealTimers()
+  })
+
+  it("runs the live search batch, scores queries, aggregates, and completes the read model", async () => {
+    const events = []
+    const queries = { first: { id: 1 }, second: { id: 2 } }
+    const search = vi.fn(async (query) => events.push(`search:${query.id}`))
+    const score = vi.fn(async (query) => events.push(`score:${query.id}`))
+    const scoreAll = vi.fn(async () => events.push("scoreAll"))
+    const syncToBook = vi.fn(() => events.push("sync"))
+
+    await runSearchAll({
+      queries,
+      search,
+      score,
+      requestsPerMinute: 0,
+      scoreAll,
+      syncToBook,
+      onSearchStarted: () => {
+        events.push("started")
+        return 7
+      },
+      onSearchCompleted: (generation) => events.push(`completed:${generation}`),
+      onSearchFailed: vi.fn(),
+      logger: { info: vi.fn() }
+    })
+
+    expect(search).toHaveBeenCalledTimes(2)
+    expect(score).toHaveBeenCalledTimes(2)
+    expect(scoreAll).toHaveBeenCalledOnce()
+    expect(syncToBook).toHaveBeenCalledOnce()
+    expect(events).toEqual([
+      "started",
+      "search:1",
+      "search:2",
+      "score:1",
+      "score:2",
+      "scoreAll",
+      "sync",
+      "completed:7"
+    ])
+  })
+
+  it("reports search, aggregation, and book-sync failures through one failure seam", async () => {
+    const onSearchFailed = vi.fn()
+    const error = new Error("search failed")
+
+    await expect(runSearchAll({
+      queries: { first: { id: 1 } },
+      search: vi.fn().mockRejectedValue(error),
+      score: vi.fn(),
+      requestsPerMinute: 0,
+      scoreAll: vi.fn(),
+      syncToBook: vi.fn(),
+      onSearchStarted: () => 3,
+      onSearchCompleted: vi.fn(),
+      onSearchFailed,
+      logger: { info: vi.fn() }
+    })).rejects.toBe(error)
+
+    expect(onSearchFailed).toHaveBeenCalledWith(error, 3)
+    expect(onSearchFailed).toHaveBeenCalledOnce()
   })
 })

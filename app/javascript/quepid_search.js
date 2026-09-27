@@ -54,6 +54,7 @@ import {
   normalizeSearchResults,
   paginateQuery,
   pAll,
+  runSearchAll,
   searchQuery,
   settingsWithTryOverrides
 } from "./utils/query_service"
@@ -133,6 +134,7 @@ const quepidSearch = {
     normalizeSearchResults,
     paginateQuery,
     pAll,
+    runSearchAll,
     searchQuery,
     settingsWithTryOverrides
   },

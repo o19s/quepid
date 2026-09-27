@@ -304,3 +304,64 @@ export async function pAll(queue, requestsPerMinute) {
   await Promise.all(Array.from({ length: concurrency }, worker))
   return Promise.all(results)
 }
+
+/**
+ * Run the case's live search-and-score batch without owning any Angular state.
+ *
+ * The callbacks deliberately keep Query construction, scoring, book sync, and
+ * the temporary read-model bridge outside this orchestration seam. That lets
+ * the Angular service remain a compatibility facade while Stimulus takes over
+ * the batch lifecycle incrementally.
+ */
+export function runSearchAll({
+  queries,
+  search,
+  score,
+  requestsPerMinute,
+  scoreAll,
+  syncToBook,
+  onSearchStarted,
+  onSearchCompleted,
+  onSearchFailed,
+  promiseApi = Promise,
+  logger = console
+}) {
+  const searchPromises = []
+  const generation = onSearchStarted?.()
+  let failureReported = false
+
+  const rejectAfterFailure = (error) => {
+    if (!failureReported) {
+      failureReported = true
+      onSearchFailed?.(error, generation)
+    }
+    return promiseApi.reject(error)
+  }
+
+  const searchQueue = Object.values(queries).map((query) => () => {
+    const searchPromise = search(query).then(() => {
+      searchPromises.push(score(query))
+    })
+
+    searchPromise.catch(() => undefined)
+    return searchPromise
+  })
+
+  if (requestsPerMinute > 0) {
+    logger.info(`Rate limited to ${requestsPerMinute} requests per minute.`)
+  }
+
+  return pAll(searchQueue, requestsPerMinute)
+    .then(() => promiseApi.all(searchPromises), rejectAfterFailure)
+    .then(() => scoreAll(), rejectAfterFailure)
+    .then((scoreInfo) => {
+      try {
+        syncToBook()
+      } catch (error) {
+        return rejectAfterFailure(error)
+      }
+
+      onSearchCompleted?.(generation)
+      return scoreInfo
+    }, rejectAfterFailure)
+}

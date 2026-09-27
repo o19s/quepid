@@ -1619,66 +1619,36 @@ angular.module('QuepidApp')
       this.pAll = window.quepidSearch.queryService.pAll;
 
       this.searchAll = function() {
-        let promises = [];
-        let scorePromises = [];
-        let searchGeneration = null;
-
-        if (queryCollectionStore) {
-          searchGeneration = queryCollectionStore.beginSearch();
-        }
-
-        let failSearch = function(error) {
-          if (queryCollectionStore) {
-            queryCollectionStore.failSearch(error, searchGeneration);
-          }
-          return $q.reject(error);
-        };
-
-        angular.forEach(this.queries, function(query) {
-          let searchPromiseFn = () => {
-            let searchPromise = query.search().then(
-              () => {
-                scorePromises.push(query.score());
-              },
-              (error) => $q.reject(error)
-            );
-            searchPromise.catch(angular.noop);
-            return searchPromise;
-          };
-
-          promises.push(searchPromiseFn);
-        });
-        if (currSettings.selectedTry.requestsPerMinute > 0){
-          $log.info('Rate limited to ' + currSettings.selectedTry.requestsPerMinute + ' requests per minute.');
-        }
-        let searchAllPromise = this.pAll(promises, currSettings.selectedTry.requestsPerMinute).then( () => {
-          return $q.all(scorePromises).then( () => {
+        let searchAllPromise = window.quepidSearch.queryService.runSearchAll({
+          queries: this.queries,
+          search: function(query) {
+            return query.search();
+          },
+          score: function(query) {
+            return query.score();
+          },
+          requestsPerMinute: currSettings.selectedTry.requestsPerMinute,
+          scoreAll: function() {
             /*
-             * Why are we calling scoreAll after we called score() above?
-             *
-             * Score just runs the scorer on each query
-             * scoreAll prepares the aggregation score for all queries (also runs scores if needed)
-             * but knows not to run anything if things haven't changed.
-             *
-             * We have the split here so the progress bar progresses instead of flying thru
-             * after all searches complete.
+             * Keep per-query score() separate from scoreAll(): the former drives
+             * progress, while the latter calculates the case aggregate.
              */
-            return svc.scoreAll().then(function() {
-              // Sync query results to associated Book if one exists
-              try {
-                svc.syncToBook();
-              } catch (error) {
-                return failSearch(error);
-              }
-              if (queryCollectionStore) {
-                queryCollectionStore.finishSearch(searchGeneration);
-              }
-            }, function(error) {
-              return failSearch(error);
-            });
-          }, failSearch);
-        }, function(error) {
-          return failSearch(error);
+            return svc.scoreAll();
+          },
+          syncToBook: function() {
+            svc.syncToBook();
+          },
+          onSearchStarted: function() {
+            return queryCollectionStore ? queryCollectionStore.beginSearch() : null;
+          },
+          onSearchCompleted: function(generation) {
+            if (queryCollectionStore) queryCollectionStore.finishSearch(generation);
+          },
+          onSearchFailed: function(error, generation) {
+            if (queryCollectionStore) queryCollectionStore.failSearch(error, generation);
+          },
+          promiseApi: $q,
+          logger: $log
         });
         searchAllPromise.catch(angular.noop);
         return searchAllPromise;

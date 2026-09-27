@@ -281,6 +281,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Remaining, in slice order (2026-09-24).**
 - `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing query-state adapter boundaries.
+- **2026-09-27:** extracted the live batch orchestration (`search → per-query score → case aggregate → book sync`) into framework-free `query_service.js` as `runSearchAll()`. `queriesSvc.searchAll()` is now a compatibility facade that supplies Angular-owned Query callbacks and the temporary store bridge. The next slice is to move bootstrap/read-model ownership behind the same boundary; Query construction, searcher creation, document normalization, and scoring remain Angular-owned.
 - Angular still owns snapshot fetching and per-query diff scoring behind the document-store bridge.
 - `snapshot_searcher.js` owns the framework-free snapshot searcher contract, including registry lookup; `queriesSvc` supplies the remaining Angular callbacks directly at the boundary.
 
@@ -459,7 +460,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `caseType`, `searchEngineName`
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Results panel | Stimulus shell + isolated Angular controls | `app/javascript/controllers/search_results_controller.js` and `search_results_template.js` own the expanded-results shell/document rendering and browse-results modal; live search, diff, finder, pagination, and scoring remain explicit Angular control islands |
+| Results panel | Stimulus shell + isolated Angular controls | `app/javascript/controllers/search_results_controller.js` and `search_results_template.js` own the expanded-results shell/document rendering and browse-results modal; live batch orchestration is framework-free in `app/javascript/utils/query_service.js`, while Query construction, searcher creation, diff, finder, pagination, and scoring remain explicit Angular control islands |
 | Rating popover | Stimulus controller | `rating_popover_controller.js` — mutation still bridges back to Angular via `rating-popover:rate`/`:reset` events |
 | Rate elements | framework-free runtime + Angular adapter | `app/javascript/utils/ratings_store.js`, `app/assets/javascripts/services/ratingsStoreSvc.js`, `rateScaleSvc` |
 | Query scoring and case aggregation | framework-free runtime + Angular adapter | `app/javascript/utils/query_scoring.js`, `app/assets/javascripts/services/queriesSvc.js` |
