@@ -131,7 +131,7 @@ a:not([href]):not([class]):hover {
 }
 
 /* core-additions.css restores BS3's muted link blue scoped to
- * `.results-control`, but $quepidModal appends its wrapper directly to
+ * `.results-control`, but the dynamic modal helper appends its wrapper directly to
  * `<body>` (outside that scope) — so nav-tabs and other link-colored
  * elements inside modals (e.g. the Import modal's "Information Needs" /
  * "Snapshots" tabs) fell back to BS5's brighter default #0d6efd. Repeat the
