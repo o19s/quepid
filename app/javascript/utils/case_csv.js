@@ -57,7 +57,7 @@ function mergeFieldNames(existing, names) {
   return merged
 }
 
-// Matches AngularJS SnapshotFactory's `snapshotName()`: "($filter('date')(time, 'shortDate')) name"
+// display name: "($filter('date')(time, 'shortDate')) name"
 export function formatShortDate(dateString) {
   const date = new Date(dateString)
   const year = String(date.getFullYear()).slice(-2)

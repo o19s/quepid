@@ -20,7 +20,7 @@ export default class extends Controller {
     try {
       this.services = await getBootstrapCapabilities()
 
-      const { bootstrapSvc, configurationSvc, caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
+      const { configurationSvc, userSvc, caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
         queriesSvc, docCacheSvc, scorerSvc, paneSvc } = this.services
       // The case runtime bundle publishes the shared store on window. The
       // imported store is only a fallback for isolated/unit-test contexts;
@@ -33,8 +33,7 @@ export default class extends Controller {
       configurationSvc.setQueryListSortable(this.queryListSortableValue)
       configurationSvc.setCaseNo(caseNo)
       configurationSvc.setTryNo(Number.isNaN(tryNo) ? null : tryNo)
-      bootstrapSvc.run()
-
+      await userSvc.getCurrentUser()
       const initialCaseNo = caseTryNavSvc.getCaseNo()
 
       const caseChanged = () => initialCaseNo !== caseNo

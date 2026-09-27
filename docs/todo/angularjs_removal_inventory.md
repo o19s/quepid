@@ -391,7 +391,7 @@ The Rails cases index at `/cases` is **not** Angular.
 - `<body ng-app="QuepidApp">`
 - JS: `angular_app`, `angular_templates`, `quepid_angular_app`
 - CSS: `json-explorer` (Quepid-owned)
-- Inline script: `bootstrapSvc.run()`, `configurationSvc` seeded from Rails config — including `caseNo`/`tryNo` from `params[:id]`/`params[:try_number]`/`@case`. Interpolate as bare integers/`"null"`, never `.to_json` — Rails' default HTML-escaping of `<%= %>` mangles `"`/`&` inside a `<script>` tag (`"1"` → `&quot;1&quot;`), silently breaking the whole inline script.
+- Inline script: `configurationSvc` seeded from Rails config — including `caseNo`/`tryNo` from `params[:id]`/`params[:try_number]`/`@case`. Interpolate as bare integers/`"null"`, never `.to_json` — Rails' default HTML-escaping of `<%= %>` mangles `"`/`&` inside a `<script>` tag (`"1"` → `&quot;1&quot;`), silently breaking the whole inline script.
 
 ### Case shell (`app/views/core/index.html.erb`)
 
@@ -424,7 +424,6 @@ Non-Angular libs that **stay**: Bootstrap 5, D3, Vega, ACE, autocompleter, clipb
 
 | Registration | File |
 |--------------|------|
-| `bootstrapSvc` | `services/bootstrapSvc.js` |
 | `userSvc` | `services/userSvc.js` |
 | `configurationSvc` | `services/configurationSvc.js` |
 
@@ -438,7 +437,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Current user on `$rootScope` | service | `bootstrapSvc`, `userSvc` |
+| Current user | Rails-rendered state | `userSvc` remains for wizard API/user mutations |
 | App config flags | service | `configurationSvc` |
 | CSRF on API requests | interceptor | `interceptors/rails-csrf.js` |
 | Case/try URL helpers | service | `caseTryNavSvc` — still the Angular-facing navigation API (`navigateTo`/`navigationCompleted`/`isLoading`/`notFound`/`getCaseNo`/`getTryNo`); called from several still-Angular components (case rename, try switch, wizard). `navigateTo()` is a real `$window.location.assign()` (full reload, not an SPA transition); `notFound()` flashes an error and stays on the page rather than navigating anywhere — its ~6 callers are generic `$http`-failure handlers (case create/rename/etc.), not actual routing 404s, so there's no good page to send the user to. |
@@ -451,7 +450,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | Import ratings | Stimulus controller + Angular refresh bridge | `app/javascript/controllers/import_ratings_core_controller.js`, `app/views/shared/_import_ratings_core_modal.html.erb`; refreshes live query state through `imports:queries-need-reload` |
 | Diff renderer and picker | Stimulus renderer + explicit compatibility bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/snapshot_bridge_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`, `app/javascript/utils/diff_results.js`; Angular still owns snapshot search/scoring |
 
-Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `SnapshotFactory`, `bookSvc`
+Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `bookSvc`
 
 ### 4. Wizard follow-up
 
@@ -540,9 +539,9 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (17):** `bookSvc`, `bootstrapSvc`*, `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `docCacheSvc`, `paneSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned.
+**Services (16):** `bookSvc`, `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `docCacheSvc`, `paneSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned.
 
-**Factories (5):** `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `SnapshotFactory`, `TryFactory`
+**Factories (4):** `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `TryFactory`
 
 The former `caseSvc`, `settingsSvc`, and `queriesSvc` consumers now use named native events or EventTarget stores. See [event bus inventory](./event_bus_inventory.md).
 

@@ -12,13 +12,13 @@ describe("CoreBootstrapController", () => {
     window.quepidSearch = {
       caseRuntime: {
         bootstrap: {
-          bootstrapSvc: { run: vi.fn() },
           configurationSvc: {
             setCommunalScorersOnly: vi.fn(),
             setQueryListSortable: vi.fn(),
             setCaseNo: vi.fn(),
             setTryNo: vi.fn()
           },
+          userSvc: { getCurrentUser: vi.fn().mockResolvedValue({ id: 7 }) },
           caseSvc: {
             get: vi.fn().mockResolvedValue({ tries: [], lastTry: 1 }),
             selectTheCase: vi.fn(),
@@ -69,5 +69,6 @@ describe("CoreBootstrapController", () => {
 
     expect(window.quepidStore.diff.reset).toHaveBeenCalledOnce()
     expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
+    expect(window.quepidSearch.caseRuntime.bootstrap.userSvc.getCurrentUser).toHaveBeenCalledOnce()
   })
 })

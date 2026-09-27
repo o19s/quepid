@@ -18,6 +18,7 @@ module.exports = async function(config) {
     // Built bundles come from esbuild/npm scripts (no Sprockets tmp/assets)
     files: [
       'app/assets/builds/jquery_bundle.js',
+      'app/assets/builds/case_runtime.js',
       // Bootstrap 5 JS and its Popper dependency are loaded via the
       // `bootstrap_globals` importmap pin in the browser (see
       // config/importmap.rb and app/javascript/bootstrap_globals.js)
