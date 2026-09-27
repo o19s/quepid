@@ -28,7 +28,7 @@ That tree includes:
 **Excluded** (esbuild bridges / vendor — not importmap Stimulus):
 
 - `app/javascript/vendor/**`
-- `app/javascript/angular_app.js`, `quepid_app.js`, `jquery_bundle.js`, `splainer_search_adapter.js`
+- `app/javascript/angular_app.js`, `jquery_bundle.js`, `splainer_search_adapter.js`
 
 Importmap bare imports (`api/fetch`, `utils/quepid_root`, npm pins) are not Node-resolvable; we do not use `eslint-plugin-import`.
 

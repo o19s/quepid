@@ -15,13 +15,11 @@ angular.module('QuepidApp')
     '$log',
     'scorerSvc',
     'searchSvc',
-    'queryViewSvc',
     'ratingsStoreSvc',
     'caseTryNavSvc',
     'querySnapshotSvc',
     'bookSvc',
     'DocListFactory',
-    'searchErrorTranslatorSvc',
     'esExplainExtractorSvc',
     'solrExplainExtractorSvc',
     'normalDocsSvc',
@@ -34,13 +32,11 @@ angular.module('QuepidApp')
       $log,
       scorerSvc,
       searchSvc,
-      queryViewSvc,
       ratingsStoreSvc,
       caseTryNavSvc,
       querySnapshotSvc,
       bookSvc,
       DocListFactory,
-      searchErrorTranslatorSvc,
       esExplainExtractorSvc,
       solrExplainExtractorSvc,
       normalDocsSvc,
@@ -64,9 +60,14 @@ angular.module('QuepidApp')
       // ratings, documents, and scoring.
       let queryCollectionStore = window.quepidStore && window.quepidStore.queries;
       let queryDocumentsStore = window.quepidStore && window.quepidStore.documents;
+      let diffStateStore = window.quepidStore && window.quepidStore.diff;
       this.displayOrder = [];
       this.queries = {};
       this.linkUrl = '';
+
+      function getAllDiffSettings() {
+        return diffStateStore ? diffStateStore.selections() : [];
+      }
 
       // Cached case-book sync properties (updated via a named DOM event from caseSvc)
       let cachedBookId = null;
@@ -154,7 +155,6 @@ angular.module('QuepidApp')
         return false;
       };
       window.quepidSearch.queryState.collapseAll = function() {
-        queryViewSvc.collapseAll();
         if (queryDocumentsStore) queryDocumentsStore.collapseAll();
       };
       window.quepidSearch.queryState.setDisplayOrder = function(displayOrder) {
@@ -603,8 +603,8 @@ angular.module('QuepidApp')
         var query = window.quepidSearch.queryState.getQuery(queryId);
         if (!query) return false;
 
-        queryViewSvc.toggleQuery(queryId);
-        var expanded = queryViewSvc.isQueryToggled(queryId);
+        var currentQuery = queryCollectionStore && queryCollectionStore.query(queryId);
+        var expanded = !(currentQuery && currentQuery.expanded === true);
         if (queryCollectionStore) {
           queryCollectionStore.setExpanded(queryId, expanded);
         }
@@ -953,7 +953,7 @@ angular.module('QuepidApp')
             query.onError(message);
           },
           parseError: function(response, linkUrl) {
-            return searchErrorTranslatorSvc.parseResponseObject(response, linkUrl, currSettings.searchEngine);
+            return window.quepidSearch.searchErrors.parseResponseObject(response, linkUrl, currSettings.searchEngine);
           },
           publish: publishQueryDocuments,
           promiseApi: $q,
@@ -1250,7 +1250,7 @@ angular.module('QuepidApp')
             querySnapshots.push(queryWithRatings);
             window.quepidSearch.diff.createQueryDiff({
               query: newQuery,
-              diffSettings: queryViewSvc.getAllDiffSettings(),
+              diffSettings: getAllDiffSettings(),
               settings: settingsSvc.editableSettings(),
               createSearcherFromSnapshot: createSearcherFromSnapshot
             });
@@ -1411,7 +1411,7 @@ angular.module('QuepidApp')
         let newQuery = new Query(queryJson);
         window.quepidSearch.diff.createQueryDiff({
           query: newQuery,
-          diffSettings: queryViewSvc.getAllDiffSettings(),
+          diffSettings: getAllDiffSettings(),
           settings: settingsSvc.editableSettings(),
           createSearcherFromSnapshot: createSearcherFromSnapshot
         });
@@ -1525,7 +1525,7 @@ angular.module('QuepidApp')
         angular.forEach(this.queries, function(query) {
           refreshes.push(window.quepidSearch.diff.createQueryDiff({
             query: query,
-            diffSettings: queryViewSvc.getAllDiffSettings(),
+            diffSettings: getAllDiffSettings(),
             settings: settingsSvc.editableSettings(),
             createSearcherFromSnapshot: createSearcherFromSnapshot
           }));

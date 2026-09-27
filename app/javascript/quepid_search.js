@@ -21,6 +21,7 @@ import {
   registerSnapshotModels
 } from "./utils/snapshot_hydration"
 import { deleteSnapshot, fetchSnapshot } from "./utils/snapshot_api"
+import { codeToString, formatCode, parseResponseObject } from "./utils/search_error"
 import { createCaseScoringRuntime, scoreAllQueries, scoreQuery } from "./utils/query_scoring"
 import { createQueryModel } from "./utils/query_model"
 import { createQueryRuntime } from "./utils/query_runtime"
@@ -87,6 +88,11 @@ const quepidSearch = {
     formatDisplay: formatScore,
     isUnrated: isUnratedScore,
     ratingBackgroundColor
+  },
+  searchErrors: {
+    codeToString,
+    formatCode,
+    parseResponseObject
   },
   ratings: {
     RatingsStore

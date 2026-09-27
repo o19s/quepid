@@ -290,8 +290,8 @@ controllers.
 
 **Comparison-state extraction (2026-09-27).** `diffStateStore` is now the direct owner for
 comparison selection/reset state in the Stimulus case bootstrap and case-score controller.
-`queryViewSvc` remains only as the compatibility surface consumed internally by `queriesSvc`;
-it is no longer requested by modern controllers.
+Query view state is now owned by the framework-free query collection/document stores and diff
+store; `queriesSvc` reads those stores directly for its remaining Angular compatibility callbacks.
 
 - `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing query-state adapter boundaries.
 - Case-level score aggregation now runs through the framework-free `createCaseScoringRuntime`; Angular supplies live Query objects and remains only the compatibility adapter for scorer execution and legacy `latestScoreInfo` consumers.
@@ -464,7 +464,7 @@ adapter into those services.
 |------|------|-----------|
 | Add query | Stimulus controller + temporary Angular state bridge | `app/javascript/controllers/add_query_controller.js`, `app/javascript/controllers/query_lifecycle_controller.js`, and `app/javascript/utils/query_lifecycle.js`; Angular retains Query construction and search/scoring only |
 
-Remaining backing services: `queriesSvc`, `queryViewSvc`, `searchErrorTranslatorSvc`, `varExtractorSvc`
+Remaining backing services: `queriesSvc`, `varExtractorSvc`
 
 `queriesSvc` remains the compatibility adapter for live search construction,
 notes, persistence, and engine-specific callbacks. The framework-free query
@@ -539,7 +539,7 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (16):** `bookSvc`, `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `docCacheSvc`, `paneSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned.
+**Services (14):** `bookSvc`, `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `docCacheSvc`, `paneSvc`, `queriesSvc`, `querySnapshotSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `settingsSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned.
 
 **Factories (4):** `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `TryFactory`
 
@@ -575,7 +575,9 @@ Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 `app/javascript/quepid_dom.js` — side-effect entry that pins `window.quepidDom` (tooltip/popover/paste helpers, `countUp`, `flash`, `modal.open` (`utils/dynamic_modal.js`), `jsonExplorer.render`/`escapeHtml` (`utils/json_explorer.js`)) for the remaining thin Angular controllers and compatibility bridges. It is now loaded through the framework-free `case_runtime` bundle before Angular; remove the global when the remaining compatibility bridges are gone.
 ### Non-Angular JS in the Angular bundle
 
-`footer.js`, `tour.js`, `ace_config.js`, `scorerEvalTest.js`, `mode-json.js` — relocate when bundle goes away.
+`footer.js`, `tour.js`, `ace_config.js`, `scorerEvalTest.js` — relocate when bundle goes away.
+
+`scorerEvalTest.js` remains because `ScorerFactory` still contains the legacy worker path, even though the worker check is not currently enabled.
 
 ### Stylesheets
 
@@ -635,7 +637,7 @@ $window.location.href = caseTryNavSvc.getQuepidRootUrl() + '/cases'
 ### JavaScript
 
 - [ ] `app/assets/javascripts/` (entire tree)
-- [ ] `app/javascript/angular_app.js`, `quepid_app.js`, `quepid_dom.js`, `splainer_search_adapter.js`
+- [ ] `app/javascript/angular_app.js`, `quepid_dom.js`, `splainer_search_adapter.js`
 - [ ] `app/javascript/vendor/angular-*`, `ng-*`
 - [ ] `app/assets/templates/`
 
