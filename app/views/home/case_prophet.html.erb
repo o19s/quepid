@@ -60,11 +60,7 @@
 
   <%= Vega.lite
     .data(@prophet_case_data[:vega_data])
-    .layer(layers)  
+    .layer(layers)
     .height(60)
     .config(axis: {title: nil, labelFontSize: 9}) %>
-
-  <span id="notification-case-<%= @case.id %>">
-    &nbsp;
-  </span>
 </turbo-frame>

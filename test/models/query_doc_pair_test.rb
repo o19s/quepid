@@ -35,6 +35,32 @@ class QueryDocPairTest < ActiveSupport::TestCase
       assert_equal '👍 👎 💩', query_doc_pair.document_fields
     end
 
+    describe 'auto-run AI judges' do
+      # james_bond_movies already has judge_judy assigned as an AI judge via
+      # fixtures, so use a book with no existing assignment to avoid a
+      # duplicate books_ai_judges row.
+      let(:book) { books(:book_of_star_wars_judgements) }
+      let(:ai_judge) { users(:judge_judy) }
+
+      it 'queues an auto-run AI judge when a new pair is created' do
+        book.books_ai_judges.create!(ai_judge: ai_judge, auto_run: true)
+
+        assert_enqueued_with(job: RunJudgeJudyJob, args: [ book, ai_judge, nil ]) do
+          book.query_doc_pairs.create!(query_text: 'auto run test', doc_id: 'auto_run_doc_1',
+                                       document_fields: '{"title":"Test"}')
+        end
+      end
+
+      it 'does not queue an AI judge that is not set to auto-run' do
+        book.books_ai_judges.create!(ai_judge: ai_judge, auto_run: false)
+
+        assert_no_enqueued_jobs(only: RunJudgeJudyJob) do
+          book.query_doc_pairs.create!(query_text: 'auto run test', doc_id: 'auto_run_doc_2',
+                                       document_fields: '{"title":"Test"}')
+        end
+      end
+    end
+
     describe 'case sensitivity' do
       test 'query_text is case sensitive' do
         # Create a query_doc_pair with uppercase query_text

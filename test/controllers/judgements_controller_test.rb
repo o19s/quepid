@@ -69,5 +69,44 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
 
       assert_redirected_to book_judge_path(jbm_book)
     end
+
+    describe 'broadcasting judge activity' do
+      let(:query_doc_pair) { query_doc_pairs(:book_of_comedy_qdp1) }
+
+      test 'create broadcasts judge activity' do
+        assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+          post book_judgements_url(book), params: { judgement: { query_doc_pair_id: query_doc_pair.id, rating: 1 } }
+        end
+      end
+
+      test 'unrateable broadcasts judge activity' do
+        assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+          patch book_query_doc_pair_unrateable_path(book, query_doc_pair),
+                params: { judgement: { explanation: 'not rateable' } }
+        end
+      end
+
+      test 'judge_later broadcasts judge activity' do
+        assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+          get book_query_doc_pair_judge_later_path(book, query_doc_pair)
+        end
+      end
+
+      test 'update broadcasts judge activity' do
+        judgement = judgements(:comedy_qdp1_judgement)
+
+        assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+          patch book_judgement_url(book, judgement), params: { judgement: { rating: 2 } }
+        end
+      end
+
+      test 'destroy broadcasts judge activity' do
+        judgement = judgements(:comedy_qdp1_judgement)
+
+        assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+          delete book_judgement_url(book, judgement)
+        end
+      end
+    end
   end
 end

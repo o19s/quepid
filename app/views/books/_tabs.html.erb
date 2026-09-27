@@ -1,43 +1,52 @@
 <ul class="nav nav-underline">
   <li class="nav-item">
-    <%= link_to book_path(book), class: "nav-link #{make_active?({action: 'show'}) ? 'active' : ''}", method: :get do %>
+    <%= link_to book_path(book), class: "nav-link #{'active' if book_overview_family_active?}", method: :get do %>
       Overview
-    <% end %> 
+    <% end %>
   </li>
   <li class="nav-item">
-    <%= link_to book_query_doc_pairs_path(book), class: "nav-link", method: :get do %>
-      Query/Doc Pairs
-    <% end %> 
-  </li>
-  <li class="nav-item">
-    <%= link_to judgement_stats_book_path(book), class: "nav-link #{make_active?({action: 'judgement_stats'}) ? 'active' : ''}", method: :get do %>
-      <i class="bi bi-bar-chart-fill text-body"></i> Judgement Stats
-    <% end %>      
-  </li>
-  <li class="nav-item">
-    <%= link_to book_judgements_path(book), class: "nav-link #{make_active?({controller: 'judgements'}) ? 'active' : ''}", method: :get do %>
-      <i class="bi bi-book-half text-body"></i> Judgements
-    <% end %>  
-  </li> 
-
-  <li class="nav-item">
-    <%= link_to edit_books_import_path(book), class: "nav-link #{make_active?({controller: 'import'}) ? 'active' : ''}", method: :get do %>
-      <i class="bi bi-file-earmark-arrow-down text-body"></i> Import
-    <% end %> 
-  </li>
-  <li class="nav-item">
-    <%= link_to edit_book_path(book), class: "nav-link #{make_active?({action: 'edit'}) ? 'active' : ''}" do %>
-      <i class="bi bi-share-fill text-body"></i> Share book
-    <% end %> 
-  </li>
-  <li class="nav-item">
-    <%= link_to export_book_path(book), class: "nav-link #{make_active?({action: 'export'}) ? 'active' : ''}" do %>
-      <i class="bi bi-file-earmark-arrow-up text-body"></i> Export
-    <% end %>    
-  </li>
-  <li class="nav-item">
-    <%= link_to edit_book_path(book), class: "nav-link #{make_active?({action: 'edit'}) ? 'active' : ''}" do %>
-      <i class="bi bi-gear-wide-connected text-body"></i> Settings
-    <% end %>   
+    <%= link_to judge_overview_book_path(book), class: "nav-link #{make_active?({action: 'judge_overview'}) ? 'active' : ''}", method: :get do %>
+      <i class="bi bi-person-check text-body"></i> Judge Overview
+    <% end %>
   </li>
 </ul>
+
+<% if book_overview_family_active? %>
+  <ul class="nav nav-pills small mt-2 mb-3">
+    <li class="nav-item">
+      <%= link_to judgement_stats_book_path(book), class: "nav-link #{'active' if make_active?({action: 'judgement_stats'})}", method: :get do %>
+        <i class="bi bi-bar-chart-fill text-body"></i> Judgement Stats
+      <% end %>
+    </li>
+    <li class="nav-item">
+      <%= link_to book_query_doc_pairs_path(book), class: "nav-link #{'active' if make_active?({controller: 'query_doc_pairs'})}", method: :get do %>
+        Query/Doc Pairs
+      <% end %>
+    </li>
+    <li class="nav-item">
+      <%= link_to book_judgements_path(book), class: "nav-link #{'active' if make_active?({controller: 'judgements'})}", method: :get do %>
+        <i class="bi bi-book-half text-body"></i> Judgements
+      <% end %>
+    </li>
+    <li class="nav-item">
+      <%= link_to edit_books_import_path(book), class: "nav-link #{'active' if make_active?({controller: 'import'})}", method: :get do %>
+        <i class="bi bi-file-earmark-arrow-down text-body"></i> Import
+      <% end %>
+    </li>
+    <li class="nav-item">
+      <%= link_to edit_book_path(book), class: "nav-link #{'active' if book_settings_active?}" do %>
+        <i class="bi bi-share-fill text-body"></i> Share book
+      <% end %>
+    </li>
+    <li class="nav-item">
+      <%= link_to export_book_path(book), class: "nav-link #{'active' if make_active?({action: 'export'})}" do %>
+        <i class="bi bi-file-earmark-arrow-up text-body"></i> Export
+      <% end %>
+    </li>
+    <li class="nav-item">
+      <%= link_to edit_book_path(book), class: "nav-link #{'active' if book_settings_active?}" do %>
+        <i class="bi bi-gear-wide-connected text-body"></i> Settings
+      <% end %>
+    </li>
+  </ul>
+<% end %>

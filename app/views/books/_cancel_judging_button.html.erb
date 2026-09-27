@@ -1,0 +1,9 @@
+<%# locals: (book:, judge:, css_class:, icon:, label: nil, style: nil, title: nil) %>
+<%= button_to cancel_judge_judy_book_path(book, ai_judge_id: judge.id),
+      method: :delete,
+      class: css_class,
+      style: style,
+      title: title,
+      form: { data: { turbo_confirm: "Stop #{judge.fullname} from judging?" } } do %>
+  <i class="bi <%= icon %>"></i><%= " #{label}" if label %>
+<% end %>

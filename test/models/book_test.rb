@@ -10,6 +10,7 @@
 #  import_job                  :string(255)
 #  name                        :string(255)
 #  populate_job                :string(255)
+#  rank_depth                  :integer
 #  scale                       :string(255)
 #  scale_with_labels           :text(65535)
 #  scoring_guidelines          :text(65535)
@@ -98,6 +99,42 @@ class BookTest < ActiveSupport::TestCase
 
     it 'is empty for a book nobody has judged' do
       assert_empty books(:empty_book).judges
+    end
+  end
+
+  describe 'judge_activity_rows' do
+    let(:book) { books(:james_bond_movies) }
+
+    it 'is empty for a book with no judgements and no assigned AI judges' do
+      assert_empty books(:empty_book).judge_activity_rows
+    end
+
+    it 'includes a human judge once they have judged something' do
+      book.query_doc_pairs.first.judgements.create!(user: users(:matt), rating: 1)
+
+      row = book.judge_activity_rows.find { |r| r[:judge] == users(:matt) }
+
+      assert_not_nil row
+      assert_equal 1, row[:count]
+    end
+
+    it 'includes an assigned AI judge even with zero judgements' do
+      star_wars_book = books(:book_of_star_wars_judgements)
+      star_wars_book.ai_judges << users(:judge_judy)
+
+      row = star_wars_book.judge_activity_rows.find { |r| r[:judge] == users(:judge_judy) }
+
+      assert_not_nil row
+      assert_equal 0, row[:count]
+    end
+
+    it 'sorts rows by judge full name' do
+      book.query_doc_pairs.first.judgements.create!(user: users(:jane), rating: 1)
+      book.query_doc_pairs.limit(2).last.judgements.create!(user: users(:doug), rating: 1)
+
+      names = book.judge_activity_rows.map { |row| row[:judge].fullname }
+
+      assert_equal names.sort, names
     end
   end
 
@@ -253,6 +290,40 @@ class BookTest < ActiveSupport::TestCase
       book.scale = original_scale.dup
       assert_predicate book, :valid?
       assert book.save
+    end
+  end
+
+  describe 'query_doc_pairs_within_rank_depth' do
+    let(:book) { books(:james_bond_movies) }
+
+    it 'returns all query_doc_pairs when rank_depth is nil' do
+      assert_nil book.rank_depth
+      assert_equal book.query_doc_pairs.to_a.sort, book.query_doc_pairs_within_rank_depth.to_a.sort
+    end
+
+    it 'excludes pairs ranked below rank_depth' do
+      book.update!(rank_depth: 2)
+
+      doc_ids = book.query_doc_pairs_within_rank_depth.pluck(:doc_id)
+
+      assert_includes doc_ids, 'SeanConnery'   # position 1
+      assert_includes doc_ids, 'DanielCraig'   # position 2
+      assert_not_includes doc_ids, 'TimothyDalton' # position 3
+      assert_not_includes doc_ids, 'GeorgeLazenby' # position 6
+    end
+
+    it 'excludes a nil-position pair even when rank_depth is set' do
+      nil_position_pair = book.query_doc_pairs.create!(
+        query_text:      'Nil Position Rank Depth Test',
+        doc_id:          'NilPositionRankDepthDoc',
+        position:        nil,
+        document_fields: '{"title":"Test"}'
+      )
+      book.update!(rank_depth: 100)
+
+      assert_not_includes book.query_doc_pairs_within_rank_depth, nil_position_pair
+    ensure
+      nil_position_pair&.destroy
     end
   end
 

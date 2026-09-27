@@ -1,0 +1,144 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1><i class="bi bi-book"></i> <%= book_title @book %></h1>
+</div>
+
+<%= render 'tabs', book: @book %>
+<p/>
+
+<%# ── Personal progress header ────────────────────────────────────────────── %>
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start mb-2">
+      <div>
+        <h5 class="card-title mb-0">Your Judging Progress</h5>
+        <p class="text-muted small mb-0">
+          <% if @last_judged_at %>
+            Last judged <%= time_ago_in_words(@last_judged_at) %> ago
+          <% else %>
+            You haven't judged anything in this book yet
+          <% end %>
+        </p>
+      </div>
+      <span class="badge bg-primary fs-6"><%= @user_progress_pct %>%</span>
+    </div>
+
+    <div class="progress mb-1" style="height: 20px;" role="progressbar"
+         aria-valuenow="<%= @user_judgement_count %>"
+         aria-valuemin="0" aria-valuemax="<%= @total_pairs %>">
+      <div class="progress-bar <%= @user_progress_pct == 100 ? 'bg-success' : 'bg-primary' %>"
+           style="width: <%= @user_progress_pct %>%">
+      </div>
+    </div>
+    <div class="d-flex justify-content-between">
+      <small class="text-muted"><%= @user_judgement_count %> judged</small>
+      <small class="text-muted"><%= @total_pairs %> total pairs</small>
+    </div>
+  </div>
+</div>
+
+<%# ── Row 1: what's left to do, and how to rate it ──────────────────────────── %>
+<div class="row g-3 mb-4">
+
+  <div class="col-md-6">
+    <div class="card h-100 border-warning">
+      <div class="card-body text-center">
+        <div class="display-4 fw-bold text-warning"><%= @pairs_needing_judgment_by_user %></div>
+        <h6 class="card-title mt-2">
+          <i class="bi bi-hourglass-split text-warning"></i> Need Judging
+        </h6>
+        <p class="card-text text-muted small">
+          Pairs still available for you to judge.
+        </p>
+
+        <% if @total_pairs.zero? %>
+          <div class="alert alert-warning text-start mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            No query/doc pairs set up yet.
+          </div>
+        <% elsif @user_has_judged_all && !@moar_judgements_needed %>
+          <div class="alert alert-success text-start mb-3" role="alert">
+            <i class="bi bi-trophy"></i> <strong>All done!</strong>
+            You've judged everything available and this book is complete.
+          </div>
+        <% elsif @user_has_judged_all %>
+          <div class="alert alert-info text-start mb-3" role="alert">
+            <i class="bi bi-person-check"></i>
+            You've judged all pairs available to you. Other judges still need to cover some pairs.
+          </div>
+        <% end %>
+
+        <div class="d-flex gap-2 flex-wrap justify-content-center">
+          <%= link_to book_judge_path(@book), class: "btn btn-primary #{'disabled' if @user_has_judged_all}", role: "button",
+                aria: { disabled: @user_has_judged_all } do %>
+            <i class="bi bi-lightning-fill"></i> Start Judging
+          <% end %>
+          <%= link_to book_judge_bulk_path(@book), class: "btn btn-outline-primary #{'disabled' if @user_has_judged_all}", role: "button",
+                aria: { disabled: @user_has_judged_all } do %>
+            <i class="bi bi-lightning"></i> Bulk Judging
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-clipboard-check"></i> Judging Rubric</h5>
+        <div class="scoring-guidelines-content">
+          <%= render_markdown(@book.effective_scoring_guidelines) %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<%# ── Row 2: your stats ──────────────────────────────────────────────────── %>
+<div class="row g-3 mb-4">
+
+  <div class="col-md-6">
+    <div class="card h-100 border-success">
+      <div class="card-body text-center">
+        <div class="display-4 fw-bold text-success"><%= @user_judgement_count %></div>
+        <h6 class="card-title mt-2">
+          <i class="bi bi-check-circle text-success"></i> Judged By You
+        </h6>
+        <p class="card-text text-muted small">
+          Total judgements you've contributed to this book.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Your Activity — Last 7 Days</h5>
+        <% if @sparkline_data.sum { |d| d[:count] }.positive? %>
+          <%=
+            Vega.lite
+              .data(@sparkline_data)
+              .width(400)
+              .height(140)
+              .autosize({ type: "fit", contains: "padding" })
+              .mark(type: "line", point: true, color: "#0d6efd")
+              .encoding(
+                x: { field: "date", type: "ordinal", axis: { labelAngle: 0, title: nil }, sort: nil },
+                y: { field: "count", type: "quantitative",
+                     axis: { title: "Judgements", tickMinStep: 1 } },
+                tooltip: [
+                  { field: "date",  type: "ordinal",      title: "Day" },
+                  { field: "count", type: "quantitative", title: "Judgements" }
+                ]
+              )
+              .config(view: { stroke: nil })
+          %>
+        <% else %>
+          <p class="text-muted mb-0">No judging activity in the last 7 days yet.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+</div>

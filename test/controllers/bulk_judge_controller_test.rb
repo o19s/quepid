@@ -37,6 +37,36 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
       Bullet.enable = true
     end
 
+    test 'defaults rank depth to the book setting when no param is given' do
+      book.update!(rank_depth: 5)
+
+      Bullet.enable = false
+      get book_judge_bulk_path(book)
+      assert_response :success
+      assert_equal 5, assigns(:rank_depth)
+      Bullet.enable = true
+    end
+
+    test 'an explicit rank_depth param overrides the book default' do
+      book.update!(rank_depth: 5)
+
+      Bullet.enable = false
+      get book_judge_bulk_path(book), params: { rank_depth: 10 }
+      assert_response :success
+      assert_equal 10, assigns(:rank_depth)
+      Bullet.enable = true
+    end
+
+    test 'has no rank depth limit when neither the book nor the param set one' do
+      assert_nil book.rank_depth
+
+      Bullet.enable = false
+      get book_judge_bulk_path(book)
+      assert_response :success
+      assert_nil assigns(:rank_depth)
+      Bullet.enable = true
+    end
+
     test 'defaults to showing only unrated items' do
       Bullet.enable = false
       get book_judge_bulk_path(book)
@@ -161,6 +191,29 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
+    test 'broadcasts judge activity' do
+      assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+        post book_judge_bulk_save_path(book),
+             params: { query_doc_pair_id: query_doc_pair.id, rating: 3 },
+             as:     :json
+      end
+    end
+
+    test 'broadcasts judge activity when resetting a judgement' do
+      Judgement.find_or_create_by!(
+        query_doc_pair: query_doc_pair,
+        user:           user
+      ) do |j|
+        j.rating = 3
+      end
+
+      assert_enqueued_with(job: BroadcastJudgeActivityJob) do
+        post book_judge_bulk_save_path(book),
+             params: { query_doc_pair_id: query_doc_pair.id, reset: true },
+             as:     :json
+      end
+    end
+
     test 'returns error for invalid judgement' do
       # Force an error by using an invalid query_doc_pair_id
       post book_judge_bulk_save_path(book),
@@ -221,6 +274,21 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
       end
 
       assert_enqueued_with(job: UpdateCaseRatingsJob) do
+        delete book_judge_bulk_delete_path(book),
+               params: { query_doc_pair_id: query_doc_pair.id },
+               as:     :json
+      end
+    end
+
+    test 'broadcasts judge activity' do
+      Judgement.find_or_create_by!(
+        query_doc_pair: query_doc_pair,
+        user:           user
+      ) do |j|
+        j.rating = 3
+      end
+
+      assert_enqueued_with(job: BroadcastJudgeActivityJob) do
         delete book_judge_bulk_delete_path(book),
                params: { query_doc_pair_id: query_doc_pair.id },
                as:     :json

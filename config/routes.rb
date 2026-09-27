@@ -82,12 +82,26 @@ Rails.application.routes.draw do
   get '/dropdown/cases' => 'dropdown#cases'
   get '/dropdown/books' => 'dropdown#books'
 
-  resources :teams, only: [] do
-    resources :ai_judges, controller: :ai_judges, except: [ :index ]
+  # ai_judge_id is either a real id or the literal 'new' (mirrors the
+  # mapper_wizard search_endpoint_id pattern above), since testing a prompt
+  # runs entirely in-memory and doesn't require a saved judge.
+  scope 'ai_judges' do
+    get  ':ai_judge_id/sample_query_doc_pair', to: 'ai_judges/wizard#sample_query_doc_pair',
+                                               as: :ai_judge_sample_query_doc_pair
+    post ':ai_judge_id/test_prompt', to: 'ai_judges/wizard#test_prompt', as: :ai_judge_test_prompt
   end
 
-  resources :ai_judges, only: [] do
-    resource :prompt, only: [ :show, :edit, :update ], module: :ai_judges
+  resources :ai_judges
+
+  # Cloning starts from a specific team's context (the team page's "Clone"
+  # action) and posts the new judge back through that same team, so it's
+  # created with that team pre-selected/shared rather than owner-only.
+  resources :teams, only: [] do
+    resources :ai_judges, only: [ :create ] do
+      member do
+        get :clone
+      end
+    end
   end
 
   resources :cases, only: [] do
@@ -116,12 +130,15 @@ Rails.application.routes.draw do
     get 'skip_judging' => 'judgements#skip_judging'
     member do
       get 'judgement_stats'
+      get 'judge_overview'
+      get 'judge_activity'
       get 'export'
       patch 'combine'
       patch 'archive'
       patch 'unarchive'
       patch 'assign_anonymous'
       patch 'run_judge_judy/:ai_judge_id', action: :run_judge_judy, as: :run_judge_judy
+      delete 'cancel_judge_judy/:ai_judge_id', action: :cancel_judge_judy, as: :cancel_judge_judy
       delete 'delete_ratings_by_assignee', action: :delete_ratings_by_assignee, as: :delete_ratings_by_assignee
       delete 'reset_unrateable/:user_id', action: :reset_unrateable, as: :reset_unrateable
       delete 'reset_judge_later/:user_id', action: :reset_judge_later, as: :reset_judge_later

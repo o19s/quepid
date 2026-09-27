@@ -28,7 +28,6 @@ function buildController(overrides = {}) {
   controller.statusTarget = document.createElement("div")
   controller.hasStatusTarget = true
   controller.captureEditors = vi.fn()
-  controller.setButtonLoading = vi.fn()
 
   Object.assign(controller, overrides)
   return controller
@@ -164,7 +163,7 @@ describe("MapperWizardController save", () => {
 })
 
 describe("MapperWizardController showStep3Manually", () => {
-  it("reveals step 3 and scrolls it into view", () => {
+  it("reveals the API-key form and step 3, then scrolls step 3 into view", () => {
     const controller = buildController()
     controller.step3Target = document.createElement("div")
     controller.step3Target.style = {}
@@ -174,6 +173,7 @@ describe("MapperWizardController showStep3Manually", () => {
       preventDefault: vi.fn(),
     })
 
+    expect(controller.step2Target.style.display).toBe("block")
     expect(controller.step3Target.style.display).toBe("block")
     expect(controller.step3Target.scrollIntoView).toHaveBeenCalledWith({
       behavior: "smooth",

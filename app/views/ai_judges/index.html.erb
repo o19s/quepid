@@ -1,0 +1,74 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1><i class="bi bi-robot"></i> AI Judges</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to new_ai_judge_path, class: 'btn btn-success' do %>
+      <i class="bi bi-plus-lg" aria-hidden="true"></i> Create AI Judge
+    <% end %>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <% if @ai_judges.any? %>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Provider</th>
+              <th>Owner</th>
+              <th>Teams</th>
+              <th class="text-end"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @ai_judges.each do |ai_judge| %>
+              <tr>
+                <td><%= ai_judge.name %></td>
+                <td><%= ai_judge.judge_options[:llm_provider] %></td>
+                <td>
+                  <% if ai_judge.owner == current_user %>
+                    <span class="badge bg-secondary">You</span>
+                  <% elsif ai_judge.owner %>
+                    <%= ai_judge.owner.fullname %>
+                  <% else %>
+                    <span class="text-muted">&mdash;</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if ai_judge.teams.any? %>
+                    <%= ai_judge.teams.map(&:name).to_sentence %>
+                  <% else %>
+                    <span class="text-muted">&mdash;</span>
+                  <% end %>
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <%= link_to edit_ai_judge_path(ai_judge), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
+                      <i class="bi bi-pencil" aria-hidden="true"></i>
+                    <% end %>
+                    <button type="button"
+                            class="btn btn-link text-danger p-0"
+                            title="Delete"
+                            aria-label="Delete"
+                            data-controller="confirm-delete"
+                            data-action="click->confirm-delete#open"
+                            data-confirm-delete-url-value="<%= ai_judge_path(ai_judge) %>"
+                            data-confirm-delete-message-value="<%= h("Delete AI judge #{ai_judge.name}?") %>"
+                            data-confirm-delete-method-value="delete">
+                      <i class="bi bi-x-circle" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-muted mb-0">
+        You don't have any AI judges yet. <%= link_to 'Create one', new_ai_judge_path %> to help rate documents automatically.
+      </p>
+    <% end %>
+  </div>
+</div>

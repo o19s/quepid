@@ -61,6 +61,17 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_includes assigns(:teams), acme
     end
+
+    it 'prompts a teamless user to create their first team instead of showing an empty table' do
+      solo_user = User.create!(name: 'Solo', email: 'solo-teams-index@example.com', password: 'password')
+      login_user_for_integration_test solo_user
+
+      get teams_path
+
+      assert_response :success
+      assert_empty assigns(:teams)
+      assert_select 'a[href=?]', new_team_path, text: /Create your first team/
+    end
   end
 
   describe 'suggest_members' do

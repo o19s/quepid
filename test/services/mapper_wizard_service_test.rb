@@ -357,4 +357,64 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
     assert_not result[:success]
     assert_equal 'No JavaScript code found in response', result[:error]
   end
+
+  test 'strip_boilerplate removes scripts, styles, comments, svg, and noscript' do
+    service = MapperWizardService.new
+
+    html = <<~HTML
+      <html>
+        <head>
+          <style>body { color: red; }</style>
+          <script src="app.js">var x = 1;</script>
+        </head>
+        <body>
+          <!-- a comment -->
+          <svg viewBox="0 0 10 10"><circle r="5"></circle></svg>
+          <noscript>Enable JS</noscript>
+          <div class="entry-title">Real content</div>
+        </body>
+      </html>
+    HTML
+
+    result = service.send(:strip_boilerplate, html)
+
+    assert_not_includes result, '<style'
+    assert_not_includes result, '<script'
+    assert_not_includes result, 'a comment'
+    assert_not_includes result, '<svg'
+    assert_not_includes result, 'Enable JS'
+    assert_includes result, 'entry-title'
+  end
+
+  test 'strip_boilerplate preserves ld+json and application/json script tags' do
+    service = MapperWizardService.new
+
+    html = '<script type="application/ld+json">{"result": "keep me"}</script>' \
+           '<script type="application/json">{"other": "keep me too"}</script>' \
+           '<script>var drop = "me";</script>'
+
+    result = service.send(:strip_boilerplate, html)
+
+    assert_includes result, 'keep me'
+    assert_includes result, 'keep me too'
+    assert_not_includes result, 'drop'
+  end
+
+  test 'truncate_for_llm leaves short text untouched' do
+    service = MapperWizardService.new
+
+    text, truncated = service.send(:truncate_for_llm, 'short text', 100)
+
+    assert_equal 'short text', text
+    assert_not truncated
+  end
+
+  test 'truncate_for_llm truncates text longer than the limit' do
+    service = MapperWizardService.new
+
+    text, truncated = service.send(:truncate_for_llm, 'a' * 200, 100)
+
+    assert_equal 100, text.length
+    assert truncated
+  end
 end

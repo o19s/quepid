@@ -4,7 +4,18 @@ require 'test_helper'
 
 class RunCaseEvaluationJobTest < ActiveJob::TestCase
   test 'job can be run' do
-    WebMock.allow_net_connect!
+    WebMock.disable_net_connect!(allow_localhost: true)
+    stub_request(:get, %r{\Ahttps://search\.ed\.ac\.uk/})
+      .to_return(
+        status:  200,
+        body:    <<~HTML,
+          <p class="lead">Found 1 results from all University websites.</p>
+          <div class="card card-search">
+            <h2 class="card-search-title"><a class="stretched-link" href="https://example.com/result">Example result</a></h2>
+          </div>
+        HTML
+        headers: { 'Content-Type' => 'text/html' }
+      )
     acase = cases(:one)
     atry = tries(:one)
     scorer = scorers(:'p@10')
@@ -32,9 +43,6 @@ class RunCaseEvaluationJobTest < ActiveJob::TestCase
   end
 
   test 'a mapper that throws records an error on the snapshot query instead of a silent zero-result' do
-    # 'job can be run' (above) calls WebMock.allow_net_connect! with no teardown, so
-    # depending on test order this run may inherit that global state - pin it back so an
-    # unmatched stub fails loudly instead of silently attempting a real connection.
     WebMock.disable_net_connect!(allow_localhost: true)
 
     acase = cases(:one)

@@ -36,6 +36,7 @@ export default defineConfig({
       { find: "utils/case_csv", replacement: path.resolve(repoRoot, "app/javascript/utils/case_csv.js") },
       { find: "utils/download_file", replacement: path.resolve(repoRoot, "app/javascript/utils/download_file.js") },
       { find: "utils/flash", replacement: path.resolve(repoRoot, "app/javascript/utils/flash.js") },
+      { find: "utils/stimulus_ui", replacement: path.resolve(repoRoot, "app/javascript/utils/stimulus_ui.js") },
       { find: /^controllers\/(.*)$/, replacement: path.resolve(repoRoot, "app/javascript/controllers") + "/$1" }
     ],
   },

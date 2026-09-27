@@ -4,75 +4,82 @@ require 'test_helper'
 
 class BooksHelperTest < ActionView::TestCase
   describe '#available_ai_judges_for_book' do
-    it 'returns empty when book has no teams' do
-      # Create a book with no teams for this specific test case
-      teamless_book = Book.create!(name: 'Teamless Book')
-      result = available_ai_judges_for_book(teamless_book)
-      assert_empty result
-    end
-
-    it 'returns AI judges from book teams that are not already assigned' do
-      # Use empty_book which belongs to shared team but has no AI judges assigned
+    it 'returns AI judges the viewing user can see via a shared team, not already assigned' do
+      # empty_book is owned by doug, who shares the "shared" team with judge_judy
       book = books(:empty_book)
+      doug = users(:doug)
       judge_judy = users(:judge_judy)
 
-      # judge_judy is already a member of the shared team (via fixtures)
-      # and empty_book belongs to shared team but has no AI judges assigned
-      available_judges = available_ai_judges_for_book(book)
+      available_judges = available_ai_judges_for_book(book, doug)
       assert_includes available_judges, judge_judy
     end
 
     it 'excludes AI judges already assigned to the book' do
       # Use james_bond_movies which already has judge_judy assigned as AI judge
       book = books(:james_bond_movies)
+      doug = users(:doug)
       judge_judy = users(:judge_judy)
 
-      available_judges = available_ai_judges_for_book(book)
+      available_judges = available_ai_judges_for_book(book, doug)
       assert_not_includes available_judges, judge_judy
     end
 
     it 'only returns actual AI judges (users with llm_key)' do
       book = books(:empty_book)
-      judge_judy = users(:judge_judy)  # Has llm_key (is AI judge)
-      doug = users(:doug)              # Regular user, no llm_key
+      doug = users(:doug)
+      judge_judy = users(:judge_judy) # Has llm_key (is AI judge)
 
       # Both are members of shared team, but only judge_judy is AI judge
-      available_judges = available_ai_judges_for_book(book)
+      available_judges = available_ai_judges_for_book(book, doug)
       assert_includes available_judges, judge_judy
       assert_not_includes available_judges, doug
     end
 
-    it 'returns empty when team has no AI judges' do
-      # book_of_comedy_films belongs to another_shared_team which has no AI judges
-      book = books(:book_of_comedy_films)
+    it 'returns judges visible to the viewer even when the book has no owner' do
+      # book_of_star_wars_judgements has no owner - availability must come
+      # from the *viewer's* own access, not the book's ownership.
+      ownerless_book = books(:book_of_star_wars_judgements)
+      doug = users(:doug)
+      judge_judy = users(:judge_judy)
 
-      available_judges = available_ai_judges_for_book(book)
+      available_judges = available_ai_judges_for_book(ownerless_book, doug)
+      assert_includes available_judges, judge_judy
+    end
+
+    it "returns empty when the viewing user has no access to any AI judge, even via the book's own team" do
+      # Guards against reverting to the pre-ownership-model bug: availability
+      # must come from the *viewer's* access, not the book's own team
+      # membership - case_finder_user isn't on the "shared" team (which has
+      # judge_judy), so judge_judy must not appear for them here even though
+      # book_of_star_wars_judgements itself is shared with that team.
+      book = books(:book_of_star_wars_judgements)
+      case_finder_user = users(:case_finder_user)
+
+      available_judges = available_ai_judges_for_book(book, case_finder_user)
       assert_empty available_judges
     end
   end
 
   describe '#available_ai_judges_for_book?' do
-    it 'returns false when no AI judges are available in team' do
-      # book_of_comedy_films belongs to another_shared_team which has no AI judges
-      book = books(:book_of_comedy_films)
-      assert_not available_ai_judges_for_book?(book)
-    end
+    it 'returns false when the viewing user has no AI judge access' do
+      book = books(:book_of_star_wars_judgements)
+      case_finder_user = users(:case_finder_user)
 
-    it 'returns false when book has no teams' do
-      teamless_book = Book.create!(name: 'Teamless Book')
-      assert_not available_ai_judges_for_book?(teamless_book)
+      assert_not available_ai_judges_for_book?(book, case_finder_user)
     end
 
     it 'returns true when AI judges are available' do
-      # Use empty_book which has shared team with judge_judy but no AI judges assigned
+      # empty_book is owned by doug, who shares the "shared" team with judge_judy
       book = books(:empty_book)
-      assert available_ai_judges_for_book?(book)
+      doug = users(:doug)
+      assert available_ai_judges_for_book?(book, doug)
     end
 
     it 'returns false when all team AI judges are already assigned' do
       # james_bond_movies already has judge_judy assigned
       book = books(:james_bond_movies)
-      assert_not available_ai_judges_for_book?(book)
+      doug = users(:doug)
+      assert_not available_ai_judges_for_book?(book, doug)
     end
   end
 

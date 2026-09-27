@@ -57,6 +57,7 @@ class ApplicationHelperTest < ActionView::TestCase
       assert_includes rendered, 'Saved successfully.'
       assert_includes rendered, 'alert-info'
       assert_includes rendered, 'alert-dismissible'
+      assert_includes rendered, 'data-controller="auto-dismiss"'
     end
 
     test 'maps each flash type to its bootstrap alert class' do
@@ -81,6 +82,18 @@ class ApplicationHelperTest < ActionView::TestCase
       flash_messages
 
       assert_equal '', output_buffer.to_s.strip
+    end
+
+    test 'does not leak the internal kraken_unleashed flag alongside a visible message' do
+      flash[:notice] = 'AI Judge Foo will start evaluating query/doc pairs.'
+      flash[:kraken_unleashed] = true
+      self.output_buffer = ActionView::OutputBuffer.new
+
+      flash_messages
+
+      rendered = output_buffer.to_s
+      assert_includes rendered, 'AI Judge Foo will start evaluating query/doc pairs.'
+      assert_not_includes rendered, '>true<'
     end
   end
 

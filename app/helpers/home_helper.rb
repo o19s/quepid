@@ -26,11 +26,6 @@ module HomeHelper
     five_pm = DateTime.now.change(:hour => 17 ).seconds_since_midnight
     eight_pm = DateTime.now.change(:hour => 20 ).seconds_since_midnight
 
-    puts "DateTime.current #{DateTime.current}"
-    puts "midnight: #{midnight}"
-    puts "noon: #{noon}"
-    puts "current_time: #{current_time}"
-
     if midnight.upto(noon).include?(current_time)
       greeting = 'Good Morning'
     elsif noon.upto(five_pm).include?(current_time)

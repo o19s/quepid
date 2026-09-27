@@ -78,6 +78,12 @@ module ApplicationHelper
     button_to(name, options, html_options) if condition
   end
 
+  # Transient, good-news flashes auto-dismiss after a few seconds (like a
+  # toast). Errors and warnings stay put until the user closes them - they
+  # need to actually read and act on those, so auto-hiding would risk
+  # yanking the message away before they can.
+  AUTO_DISMISS_FLASH_TYPES = %w[success notice].freeze
+
   # Flash keys that are structural flags consumed by a dedicated partial/controller,
   # not user-facing messages, so the generic flash banner must not render them.
   NON_DISPLAYABLE_FLASH_KEYS = %w[unfurl kraken_unleashed].freeze
@@ -87,12 +93,15 @@ module ApplicationHelper
     flash.each do |msg_type, message|
       next if NON_DISPLAYABLE_FLASH_KEYS.include?(msg_type.to_s)
 
+      data = AUTO_DISMISS_FLASH_TYPES.include?(msg_type.to_s) ? { controller: 'auto-dismiss' } : {}
+
       concat(
         content_tag(
           :div,
           message,
           class: "alert #{bootstrap_class_for(msg_type)} alert-dismissible fade show",
-          role:  'alert'
+          role:  'alert',
+          data:  data
         ) do
           concat(
             content_tag(
