@@ -46,8 +46,7 @@ describe("CoreBootstrapController", () => {
             searchAll: vi.fn().mockResolvedValue(undefined)
           },
           docCacheSvc: { empty: vi.fn(), invalidate: vi.fn(), update: vi.fn().mockResolvedValue(undefined) },
-          scorerSvc: { bootstrap: vi.fn() },
-          paneSvc: { refreshElements: vi.fn() }
+          scorerSvc: { bootstrap: vi.fn() }
         }
       }
     }

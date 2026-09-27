@@ -15,7 +15,6 @@ angular.module('QuepidApp')
     '$log',
     'scorerSvc',
     'searchSvc',
-    'ratingsStoreSvc',
     'caseTryNavSvc',
     'querySnapshotSvc',
     'DocListFactory',
@@ -31,7 +30,6 @@ angular.module('QuepidApp')
       $log,
       scorerSvc,
       searchSvc,
-      ratingsStoreSvc,
       caseTryNavSvc,
       querySnapshotSvc,
       DocListFactory,
@@ -46,6 +44,7 @@ angular.module('QuepidApp')
       let currSettings = {};
       this.error = false;
       let svcVersion = 0;
+      let ratingsVersion = 0;
 
       // Keyed by the mapper_code string itself, so a re-eval is only ever skipped for the
       // exact same code (editing a mapper - or switching to a different mapper-based try -
@@ -820,11 +819,25 @@ angular.module('QuepidApp')
           self.ratings = {};
         }
 
-        self.ratingsStore = ratingsStoreSvc.createRatingsStore(
-          caseNo,
-          self.queryId,
-          self.ratings
-        );
+        self.ratingsStore = new window.quepidSearch.ratings.RatingsStore({
+          caseNo: caseNo,
+          queryId: self.queryId,
+          ratingsDict: self.ratings,
+          request: function(options) {
+            return $http(options);
+          },
+          onChanged: function(changedQueryId) {
+            ratingsVersion++;
+
+            if (window.quepidStore && window.quepidStore.scoring) {
+              window.quepidStore.scoring.markRatingChanged(changedQueryId);
+            } else {
+              document.dispatchEvent(new CustomEvent('ratings:changed', {
+                detail: { queryId: changedQueryId }
+              }));
+            }
+          }
+        });
 
         let resultsReturned = false;
         let that = this;
@@ -1266,7 +1279,7 @@ angular.module('QuepidApp')
       };
 
       this.version = function() {
-        return svcVersion + ratingsStoreSvc.version();
+        return svcVersion + ratingsVersion;
       };
 
       /*

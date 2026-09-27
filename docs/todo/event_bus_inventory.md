@@ -54,7 +54,7 @@ native document-event fallback for bundles that do not load the modern store.
 | `case-book:associated` | `caseSvc.js` | `queriesSvc.js` | native event | Replaces `associateBook`; the query service re-fetches case book-sync flags. |
 | `case-settings:updated` | `settingsSvc.js` | `caseSvc.js` | native event | Replaces `settings-updated`; one service-level listener updates current in-memory cases. |
 | `rating-changed` | `CaseScoreStore` | `queriesSvc.js`, `qscore_case_controller.js` | EventTarget store | Normal rating-change path. |
-| `ratings:changed` | `ratingsStoreSvc.js` | `queriesSvc.js` | native event | Compatibility fallback when an older Angular bundle has no `CaseScoreStore`; payload is `{ queryId }`. |
+| `ratings:changed` | `queriesSvc.js` | `queriesSvc.js` | native event | Compatibility fallback when an older Angular bundle has no `CaseScoreStore`; payload is `{ queryId }`. The framework-free `RatingsStore` now calls the query service's notification callback directly. |
 | `scoring-complete` | `CaseScoreStore` | `qscore_case_controller.js`, `qgraph_controller.js` | EventTarget store | Fully migrated from the former Angular score event. |
 
 ## Step 3 classification
@@ -96,7 +96,7 @@ Emitters, listeners, and line numbers re-verified 2026-09-21 from:
 rg "broadcastSvc\.send" app/assets/javascripts/
 rg "\$scope\.\$emit|\$rootScope\.\$emit" app/assets/javascripts/
 
-# Listeners — also read DI arrays in queriesSvc.js and ratingsStoreSvc.js
+# Listeners — also read the DI array in queriesSvc.js
 rg "\$scope\.\$on|\$rootScope\.\$on" app/assets/javascripts/
 
 # Dead-event sanity check (each event name)

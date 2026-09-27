@@ -295,7 +295,10 @@ export default class extends Controller {
 
   updateNightly() {
     const selectedCase = this.caseSvc.getSelectedCase()
-    if (selectedCase) this.caseSvc.updateNightly(selectedCase)
+    if (selectedCase) {
+      selectedCase.nightly = this.nightlyTarget.checked
+      this.caseSvc.updateNightly(selectedCase)
+    }
   }
 
   runEvaluation() {

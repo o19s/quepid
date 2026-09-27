@@ -56,8 +56,7 @@ export default class extends Controller {
 
   toggleTuneRelevance(event) {
     event?.preventDefault()
-    const jquery = window.jQuery || window.$
-    jquery?.(document).trigger("toggleEast")
+    document.dispatchEvent(new CustomEvent("toggleEast"))
   }
 
   /**

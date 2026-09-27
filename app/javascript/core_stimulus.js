@@ -61,6 +61,7 @@ import WizardLauncherController from "controllers/wizard_launcher_controller"
 import WizardController from "controllers/wizard_controller"
 import SnapshotBridgeController from "controllers/snapshot_bridge_controller"
 import CoreBootstrapController from "controllers/core_bootstrap_controller"
+import PaneController from "controllers/pane_controller"
 import * as wizardContracts from "utils/wizard_contracts"
 
 Turbo.session.drive = false
@@ -112,3 +113,4 @@ application.register("wizard-launcher", WizardLauncherController)
 application.register("wizard", WizardController)
 application.register("snapshot-bridge", SnapshotBridgeController)
 application.register("core-bootstrap", CoreBootstrapController)
+application.register("pane", PaneController)

@@ -21,7 +21,7 @@ export default class extends Controller {
       this.services = await getBootstrapCapabilities()
 
       const { configurationSvc, userSvc, caseSvc, settingsSvc, querySnapshotSvc, caseTryNavSvc,
-        queriesSvc, docCacheSvc, scorerSvc, paneSvc } = this.services
+        queriesSvc, docCacheSvc, scorerSvc } = this.services
       // The case runtime bundle publishes the shared store on window. The
       // imported store is only a fallback for isolated/unit-test contexts;
       // separate bundles must never reset different diff-store instances.
@@ -88,7 +88,6 @@ export default class extends Controller {
         querySnapshotSvc.bootstrap(caseNo)
         caseSvc.trackLastViewedAt(caseNo)
         caseSvc.fetchDropdownCases()
-        paneSvc.refreshElements()
         this.ready({ caseNo, tryNo })
 
         queriesSvc.searchAll().then(
@@ -116,7 +115,6 @@ export default class extends Controller {
     } else if (message !== "No case selected") {
       window.quepidDom?.flash?.show("error", `Could not load the case ${this.caseNoValue} due to: ${message}`, "search-error")
     }
-    this.services?.paneSvc?.refreshElements?.()
   }
 
   ready(detail) {

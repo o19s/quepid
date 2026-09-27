@@ -89,8 +89,7 @@ const capabilityDefinitions = {
       "caseTryNavSvc",
       "queriesSvc",
       "docCacheSvc",
-      "scorerSvc",
-      "paneSvc"
+      "scorerSvc"
     ]
   },
   snapshots: {

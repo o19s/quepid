@@ -24,17 +24,17 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 44 files, 39 register with Angular |
+| Angular JS source files (`app/assets/javascripts`) | 30 files, 26 register with Angular |
 | HTML templates (`app/assets/templates`) | 2 |
 | Controllers | 0 |
-| Services | 21 (`.service()` registrations; 21 files under `services/`) |
-| Factories | 7 |
+| Services | 11 (`.service()` registrations; 11 files under `services/`) |
+| Factories | 4 |
 | Filters | 5 under `filters/` |
 | Custom directives / components | 1 directive, no components |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 10 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 6 packages (+ `angular` core from npm) |
-| Karma unit specs (`spec/javascripts/angular`) | 20 |
-| Vitest unit specs (`test/javascript/**/*.test.js`) | 95 |
+| Karma unit specs (`spec/javascripts/angular`) | 14 |
+| Vitest unit specs (`test/javascript/**/*.test.js`) | 101 |
 | Playwright specs (`test/playwright/*.spec.ts`) | 24 |
 
 ---
@@ -43,14 +43,12 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Priority | Item | Notes |
 |----------|------|-------|
-| **P0** | AngularJS 1.8.3 EOL | 44 JavaScript source files and 2 Angular templates remain under the legacy asset/template trees (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
-| **P0** | `queriesSvc` god object (1,748 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
+| **P0** | AngularJS 1.8.3 EOL | 30 JavaScript source files and 2 Angular templates remain under the legacy asset/template trees (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
+| **P0** | `queriesSvc` god object (1,368 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
 | **P0** | `eval()` scorers | Inside `$timeout()`, no sandbox; Web Worker timeout commented out |
 | **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
 | **P1** | `new Function()` mappers | SearchAPI mappers; MiniRacer on server; mapper wizard already Stimulus |
 | **P2** | Digest workarounds | Version counters / sentinels instead of clear data flow |
-| **P2** | Copy-paste debt | e.g. `ctrl.cancel = function () { $quepidModalInstance.dismiss('cancel'); }` repeated 12x across modal-instance controllers |
-| **Defer** | jQuery pane resize | Narrow scope (`toggleEast`, layout polling) — migrate with case page, not a driver |
 | **Defer** | `bootstrap5-compat.css` | Largely done; tuning shims, not a rewrite gate |
 
 ## Critical complexity inventory
@@ -230,7 +228,7 @@ compatibility adapter until live query/search/scoring migration is complete.
 **Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
 1. Shared primitives — `quepidTypeahead` and the remaining CSRF callers. Tooltip/popover/paste utils, dynamic modals, and flash are already Stimulus-owned. Remaining call sites are concentrated in the diff bridge and surviving Angular service seams; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
-2. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`, `ratingsStoreSvc`
+2. Services layer — `caseSvc`, `settingsSvc`, `queriesSvc`, `scorerSvc`
 3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
 4. Query list + results — `search-results`, rating UI
 5. Case action modals — import ratings, diff
@@ -242,8 +240,8 @@ compatibility adapter until live query/search/scoring migration is complete.
 
 | Name | LOC | Why |
 |------|-----|-----|
-| **queriesSvc** | 1,748 | Central case state — search, docs, scores, persistence |
-| **settingsSvc** / **caseSvc** | 751 / 562 | Try / case domain model |
+| **queriesSvc** | 1,368 | Central case state — search, docs, scores, persistence |
+| **settingsSvc** / **caseSvc** | 745 / 563 | Try / case domain model |
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
@@ -272,7 +270,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Mechanism:** a plain-JS observable store built on `EventTarget` owns query/score/rating state. Stimulus controllers subscribe and write to the DOM directly. No reactive framework (React/Vue/Alpine/signals) and no bespoke reactivity layer — if the store grows a template syntax or a dependency graph, it has failed. Use the **Stimulus Values API + `xValueChanged()`** for display scalars (score, rating, max), as `rating_popover_controller.js` already does; keep data out of `data-*` attributes — never serialize a doc list into one.
 
-**The reactive surface is small and enumerable.** `ratingsStoreSvc.markDirty()` → `rating-changed` → the rated doc's badge (`ratingBgStyle`), the per-query score (`qscore-query` Stimulus controller), the case score and label (`qscore-case` Stimulus controller), `isNotAllRated` / `getNumFound()`, and diff scores when enabled. Four numbers and a background colour — the digest re-evaluates the world, the actual delta does not justify a framework.
+**The reactive surface is small and enumerable.** `RatingsStore.markDirty()` → `rating-changed` → the rated doc's badge (`ratingBgStyle`), the per-query score (`qscore-query` Stimulus controller), the case score and label (`qscore-case` Stimulus controller), `isNotAllRated` / `getNumFound()`, and diff scores when enabled. Four numbers and a background colour — the digest re-evaluates the world, the actual delta does not justify a framework.
 
 **This removes digest workarounds rather than porting them.** The version counters (`svcVersion`) and the 100 ms debounce in `queriesCtrl` exist because the digest offers no change notification. An explicit store with real change events deletes them — one reason to prefer it over any mechanism that reintroduces implicit invalidation.
 
@@ -441,7 +439,6 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | App config flags | service | `configurationSvc` |
 | CSRF on API requests | interceptor | `interceptors/rails-csrf.js` |
 | Case/try URL helpers | service | `caseTryNavSvc` — still the Angular-facing navigation API (`navigateTo`/`navigationCompleted`/`isLoading`/`notFound`/`getCaseNo`/`getTryNo`); called from several still-Angular components (case rename, try switch, wizard). `navigateTo()` is a real `$window.location.assign()` (full reload, not an SPA transition); `notFound()` flashes an error and stays on the page rather than navigating anywhere — its ~6 callers are generic `$http`-failure handlers (case create/rename/etc.), not actual routing 404s, so there's no good page to send the user to. |
-| Pane layout (east slider) | service + value | `paneSvc`, `eastPaneWidth` |
 
 ### 3. Case header, scoring, and case actions
 
@@ -495,7 +492,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `searchEngineName`
 |------|------|-----------|
 | Results panel | Stimulus shell + isolated Angular controls | `app/javascript/controllers/search_results_controller.js` and `search_results_template.js` own the expanded-results shell/document rendering and browse-results modal; Query construction, searcher creation, diff, finder, pagination, and scoring remain explicit Angular control islands |
 | Rating popover | Stimulus controller | `rating_popover_controller.js` — mutation still bridges back to Angular via `rating-popover:rate`/`:reset` events |
-| Rate elements | framework-free runtime + Angular adapter | `app/javascript/utils/ratings_store.js`, `app/assets/javascripts/services/ratingsStoreSvc.js` |
+| Rate elements | framework-free runtime + Angular transport callback | `app/javascript/utils/ratings_store.js`, `app/assets/javascripts/services/queriesSvc.js` |
 | Query scoring and case aggregation | framework-free runtime + Angular adapter | `app/javascript/utils/query_scoring.js`, `app/assets/javascripts/services/queriesSvc.js` |
 | Rating background styling | filter | `ratingBgStyle` |
 | Query options modal | Stimulus controller + Angular scoring bridge | `app/javascript/controllers/query_options_core_controller.js`, `app/views/shared/_query_options_core_modal.html.erb`; save dispatches `query-options:saved` so Angular updates the live Query and rescoring continues through `queriesSvc` |
@@ -507,12 +504,6 @@ for configuration, deduplication, batching, and retry-on-failure; `queriesSvc`
 only invokes that runtime after a live search.
 
 Backing services/factories: `docCacheSvc`, `DocListFactory`, `searchEndpointSvc`
-
-`ratingsStoreSvc` is now a compatibility adapter around the framework-free
-`RatingsStore`. The adapter still supplies Angular `$http` and the legacy
-`rating-changed` notification while query scoring remains Angular-owned; the
-ratings dictionary, mutation contract, and rateable-document behavior are
-covered by Vitest before the adapter is removed.
 
 The Missing Documents modal was migrated to Stimulus on 2026-09-24. Its targeted-search
 adapter now lives in the tested framework-free `createTargetedSearchAdapter` runtime;
@@ -551,20 +542,22 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (12):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `docCacheSvc`, `paneSvc`, `queriesSvc`, `querySnapshotSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `settingsSvc`, `userSvc`* (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned. `bookSvc` was removed after its only runtime consumer (`queriesSvc`) moved query-document-pair payload construction to tested `utils/book_sync.js`; the existing Angular `$http` transport remains in `queriesSvc`.
+**Services (11):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `docCacheSvc`, `mapperBasedSearchEngineSvc`, `queriesSvc`, `querySnapshotSvc`, `scorerSvc`, `searchEndpointSvc`, `settingsSvc`, `userSvc`* (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned.
 
 **Factories (4):** `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `TryFactory`
 
 The former `caseSvc`, `settingsSvc`, and `queriesSvc` consumers now use named native events or EventTarget stores. See [event bus inventory](./event_bus_inventory.md).
 
-`ratingsStoreSvc` retains ownership of rating persistence, but its no-store
-compatibility path now emits the named native `ratings:changed` event; the
-Angular root event relay is removed. The `CaseScoreStore` event remains the
-normal path until the live query/scoring migration is complete.
+`queriesSvc` retains the temporary Angular ownership of rating persistence
+transport and query scoring, while the framework-free `RatingsStore` owns the
+rating dictionary and mutation behavior. Its no-store compatibility path emits
+the named native `ratings:changed` event; the Angular root event relay is
+removed. The `CaseScoreStore` event remains the normal path until the live
+query/scoring migration is complete.
 
 **Filters (5 under `filters/`):** `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`
 
-**Values (2):** `eastPaneWidth`, `settingsIdValue`
+**Values (1):** `settingsIdValue`
 
 ---
 
@@ -613,8 +606,8 @@ Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (6 packages; see [vendo
 
 ### Tests
 
-- **Karma:** 37 specs in `spec/javascripts/angular/`; loads all three Angular bundles + `angular-mocks`
-- **Vitest (63 specs):** incl. `controllers/{share_case,share_case_core}_controller.test.js` and `utils/share_case_teams.js`
+- **Karma:** 14 specs in `spec/javascripts/angular/`; loads all three Angular bundles + `angular-mocks`
+- **Vitest (101 specs):** includes the framework-free stores, runtimes, and migrated Stimulus controllers under `test/javascript/`
 - **Playwright (24 specs; Angular core and Stimulus):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
 - **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case_smoke.spec.ts` — core toolbar share/unshare; `dom_migration_screenshots.spec.ts` — per-surface before/after shots (`share-case/` core, `share-case-rails/` index)
 - **Rails:** `core_controller_test.rb`, `tls_flow_test.rb`, `user_invite_flow_test.rb`, `cases_controller_test.rb` (Stimulus cases index), `application_helper_test.rb` (`quepid_root_url`)
