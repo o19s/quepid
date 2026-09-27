@@ -12,7 +12,11 @@ module Api
           preserve_history    = params[:preserve_history]
           clone_queries       = params[:clone_queries]
           clone_ratings       = params[:clone_ratings]
-          the_try             = @case.tries.where(try_number: params[:try_number]).first
+          # A few legacy/imported cases can contain duplicate try numbers. The
+          # workbench presents the newest record for a selected try, so clone
+          # that same record instead of whichever duplicate the database happens
+          # to return first.
+          the_try             = @case.tries.where(try_number: params[:try_number]).order(id: :desc).first
           @new_case.case_name = params[:case_name].presence || "Cloned: #{@case.case_name}"
 
           transaction = @new_case.clone_case(

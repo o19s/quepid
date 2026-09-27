@@ -53,7 +53,7 @@ export default class extends Controller {
     this.queryDeleteCompleted = event => this.handleQueryDeleteCompleted(event)
     this.queryMoveCompleted = event => this.handleQueryMoveCompleted(event)
     this.element.addEventListener("query-row:toggle", this.queryToggle)
-    this.element.addEventListener("query-delete:completed", this.queryDeleteCompleted)
+    document.addEventListener("query-command:delete-completed", this.queryDeleteCompleted)
     document.addEventListener("query-command:move-completed", this.queryMoveCompleted)
     this.listStateChange = () => {
       this.queryState = window.quepidSearch?.queryState
@@ -72,7 +72,7 @@ export default class extends Controller {
     this.documentStore?.removeEventListener("change", this.documentStoreChange)
     this.documentStore?.removeEventListener("reset", this.documentStoreChange)
     this.element.removeEventListener("query-row:toggle", this.queryToggle)
-    this.element.removeEventListener("query-delete:completed", this.queryDeleteCompleted)
+    document.removeEventListener("query-command:delete-completed", this.queryDeleteCompleted)
     document.removeEventListener("query-command:move-completed", this.queryMoveCompleted)
     document.removeEventListener("queries-state:changed", this.listStateChange)
     if (this.renderHandle) cancelAnimationFrame(this.renderHandle)
@@ -520,11 +520,12 @@ export default class extends Controller {
     const queryId = event.detail?.queryId
     if (queryId === undefined || queryId === null) return
 
-    if (this.queryState?.removeQueryFromState) {
-      this.queryState.removeQueryFromState(queryId)
-    } else {
-      this.angularScope?.queriesSvc?.removeQueryFromState?.(queryId)
-    }
+    // Stimulus owns the persisted mutation and the stores own the rendered
+    // collection. Angular listens to the same document event separately and
+    // only drops its temporary live Query object; there is no need for the
+    // query list to call back into an Angular service.
+    this.store?.remove?.(queryId)
+    this.documentStore?.removeQuery?.(queryId)
     this.scheduleRender()
   }
 

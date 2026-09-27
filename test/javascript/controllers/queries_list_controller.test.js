@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import QueriesListController from "controllers/queries_list_controller"
 import { QueryCollectionStore } from "stores/query_collection_store"
+import { QueryDocumentsStore } from "stores/query_documents_store"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
@@ -253,16 +254,39 @@ describe("queries_list_controller", () => {
     expect(row.querySelector('[data-controller="missing-documents"]')).not.toBeNull()
   })
 
-  it("removes a query after the delete controller reports success", () => {
+  it("removes a query from the stores after the delete controller reports success", () => {
     const { controller } = controllerFor()
-    const removeQueryFromState = vi.fn()
-    controller.angularScope = { queriesSvc: { removeQueryFromState } }
+    const remove = vi.fn()
+    const removeQuery = vi.fn()
+    controller.store = { remove }
+    controller.documentStore = { removeQuery }
     controller.scheduleRender = vi.fn()
 
     controller.handleQueryDeleteCompleted({ detail: { queryId: 7 } })
 
-    expect(removeQueryFromState).toHaveBeenCalledWith(7)
+    expect(remove).toHaveBeenCalledWith(7)
+    expect(removeQuery).toHaveBeenCalledWith(7)
     expect(controller.scheduleRender).toHaveBeenCalled()
+  })
+
+  it("accepts the document-level delete completion event", () => {
+    const { controller } = controllerFor()
+    const store = new QueryCollectionStore()
+    const remove = vi.spyOn(store, "remove")
+    const documentStore = new QueryDocumentsStore()
+    const removeQuery = vi.spyOn(documentStore, "removeQuery")
+    window.quepidStore = { queries: store, documents: documentStore }
+    controller.scheduleRender = vi.fn()
+    controller.connect()
+
+    document.dispatchEvent(new CustomEvent("query-command:delete-completed", {
+      detail: { queryId: 7 }
+    }))
+
+    expect(remove).toHaveBeenCalledWith(7)
+    expect(removeQuery).toHaveBeenCalledWith(7)
+    controller.disconnect()
+    delete window.quepidStore
   })
 
   it("subscribes to the live collection store and flashes a sticky search-error on search-failed", () => {

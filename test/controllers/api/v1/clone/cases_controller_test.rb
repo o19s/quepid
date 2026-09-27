@@ -71,6 +71,24 @@ module Api
               end
             end
           end
+
+          it 'chooses the newest record when try numbers are duplicated' do
+            duplicate_try = the_try.dup
+            duplicate_try.save!
+
+            assert_difference 'Case.count' do
+              post :create, params: {
+                case_id:    the_case.id,
+                try_number: the_try.try_number,
+              }
+
+              assert_response :ok
+              cloned_case = assigns(:new_case)
+              assert_equal duplicate_try.search_endpoint, cloned_case.tries.latest.search_endpoint
+            end
+          ensure
+            duplicate_try&.destroy!
+          end
         end
       end
     end

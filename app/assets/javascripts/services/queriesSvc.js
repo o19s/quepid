@@ -310,10 +310,6 @@ angular.module('QuepidApp')
         return svc.queries[queryId] || svc.queries[String(queryId)] || null;
       };
 
-      window.quepidSearch.queryState.removeQueryFromState = function(queryId) {
-        return svc.removeQueryFromState(queryId);
-      };
-
       // The expanded-results renderer publishes user intents through the document
       // store. Angular still owns these live-query operations, but no longer needs
       // to be reached through a window command adapter from that renderer.
@@ -1862,20 +1858,6 @@ angular.module('QuepidApp')
             $log.debug('Failed to delete query: ', response);
             return $q.reject(response);
           });
-      };
-
-      // Temporary in-memory bridge for the Stimulus delete controller. The
-      // controller owns the DELETE request; Angular only drops the confirmed
-      // query from its live collection until the store becomes authoritative.
-      this.removeQueryFromState = function(queryId) {
-        delete svc.queries[queryId];
-        if (queryCollectionStore) {
-          queryCollectionStore.remove(queryId);
-        }
-        if (queryDocumentsStore) {
-          queryDocumentsStore.removeQuery(queryId);
-        }
-        svcVersion++;
       };
 
       // Move a query
