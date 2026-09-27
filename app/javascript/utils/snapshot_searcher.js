@@ -67,3 +67,30 @@ export function createSnapshotSearcher({
 
   return searcher
 }
+
+export function createSnapshotSearcherFromRegistry({
+  snapshotId,
+  snapshots,
+  query,
+  settings,
+  createRateableDoc,
+  explainDoc,
+  promiseApi = Promise,
+  log = () => {}
+}) {
+  const snapshot = snapshots[snapshotId]
+
+  if (!snapshot) {
+    log(`Snapshot not found: ${snapshotId}`)
+    return null
+  }
+
+  return createSnapshotSearcher({
+    snapshot,
+    query,
+    fieldSpec: settings ? settings.createFieldSpec() : null,
+    createRateableDoc,
+    explainDoc,
+    promiseApi
+  })
+}

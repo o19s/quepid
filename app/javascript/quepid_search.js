@@ -9,7 +9,10 @@ import { averageScore, formatScore, isUnratedScore, ratingBackgroundColor } from
 import { buildCaseDiffScores } from "./utils/diff_scores"
 import { createQueryDiff } from "./utils/diff_results"
 import { RatingsStore } from "./utils/ratings_store"
-import { createSnapshotSearcher } from "./utils/snapshot_searcher"
+import {
+  createSnapshotSearcher,
+  createSnapshotSearcherFromRegistry
+} from "./utils/snapshot_searcher"
 import { createSnapshotModel } from "./utils/snapshot_model"
 import {
   buildSnapshotLookupSettings,
@@ -135,6 +138,7 @@ const quepidSearch = {
   },
   snapshotSearch: {
     createSnapshotSearcher,
+    createSnapshotSearcherFromRegistry,
     createSnapshotModel,
     buildSnapshotLookupSettings,
     mapFieldSpecToSolrFormat,

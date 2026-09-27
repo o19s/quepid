@@ -19,7 +19,7 @@ angular.module('QuepidApp')
     'queryViewSvc',
     'ratingsStoreSvc',
     'caseTryNavSvc',
-    'snapshotSearcherSvc',
+    'querySnapshotSvc',
     'bookSvc',
     'DocListFactory',
     'searchErrorTranslatorSvc',
@@ -39,7 +39,7 @@ angular.module('QuepidApp')
       queryViewSvc,
       ratingsStoreSvc,
       caseTryNavSvc,
-      snapshotSearcherSvc,
+      querySnapshotSvc,
       bookSvc,
       DocListFactory,
       searchErrorTranslatorSvc,
@@ -821,7 +821,18 @@ angular.module('QuepidApp')
       }
 
       function createSearcherFromSnapshot(snapshotId, query, settings) {
-        return snapshotSearcherSvc.createSearcherFromSnapshot(snapshotId, query, settings);
+        return window.quepidSearch.snapshotSearch.createSnapshotSearcherFromRegistry({
+          snapshotId: snapshotId,
+          snapshots: querySnapshotSvc.snapshots,
+          query: query,
+          settings: settings,
+          createRateableDoc: function(doc) {
+            return query.ratingsStore.createRateableDoc(doc);
+          },
+          explainDoc: normalDocsSvc.explainDoc,
+          promiseApi: $q,
+          log: $log.error
+        });
       }
 
       /**
@@ -1524,7 +1535,7 @@ angular.module('QuepidApp')
               query: newQuery,
               diffSettings: queryViewSvc.getAllDiffSettings(),
               settings: settingsSvc.editableSettings(),
-              createSearcherFromSnapshot: snapshotSearcherSvc.createSearcherFromSnapshot
+              createSearcherFromSnapshot: createSearcherFromSnapshot
             });
           }
         });
@@ -1716,7 +1727,7 @@ angular.module('QuepidApp')
           query: newQuery,
           diffSettings: queryViewSvc.getAllDiffSettings(),
           settings: settingsSvc.editableSettings(),
-          createSearcherFromSnapshot: snapshotSearcherSvc.createSearcherFromSnapshot
+          createSearcherFromSnapshot: createSearcherFromSnapshot
         });
         return newQuery;
       };
@@ -1939,7 +1950,7 @@ angular.module('QuepidApp')
             query: query,
             diffSettings: queryViewSvc.getAllDiffSettings(),
             settings: settingsSvc.editableSettings(),
-            createSearcherFromSnapshot: snapshotSearcherSvc.createSearcherFromSnapshot
+            createSearcherFromSnapshot: createSearcherFromSnapshot
           }));
           // Publish the initialized snapshot documents immediately. Score
           // values are refreshed asynchronously below, but the Stimulus

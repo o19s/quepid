@@ -35,7 +35,7 @@ angular.module('QuepidApp')
       // Stimulus take-snapshot-core: modal collects name/options; this builds the
       // payload from live queriesSvc results until the live-query-state migration.
       // Lazy $injector.get avoids a circular DI
-      // (queriesSvc ← snapshotSearcherSvc ← querySnapshotSvc).
+      // (queriesSvc ← querySnapshotSvc).
       document.addEventListener('take-snapshot:create', function(event) {
         var detail = event.detail || {};
         if (Number(detail.caseId) !== Number(svc.getCaseNo())) {

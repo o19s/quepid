@@ -280,13 +280,10 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 **Do not scope `scoreAll()` in the same change.** One rating rescores every query today; the performance lens says carry that forward. An explicit store makes per-query scoping possible later, but taking it here ships an unapproved behaviour change and makes any score discrepancy unattributable.
 
 **Remaining, in slice order (2026-09-24).**
-- Angular remains only behind the live query/search/scoring adapter; the per-row result controls are now Stimulus-owned without an Angular compilation island.
-
 - `query_documents_store.js` is the plain-document read model, and `search-results` renders document DOM from those snapshots.
-- `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing query-state adapter boundaries. The query list no longer discovers its live collection through `QueriesCtrl`'s scope, and expanded query controls no longer require `$compile` or a short-lived Angular child scope.
-- Angular still owns `snapshotSearcherSvc`, snapshot fetching, and per-query diff scoring behind the document-store bridge; it no longer owns comparison selection state.
-- `snapshot_searcher.js` now owns the framework-free snapshot searcher contract; `snapshotSearcherSvc` remains only as the Angular `$q`/factory adapter until snapshot fetching and diff scoring move.
-- `QueryCollectionStore` tracks `searchAll()`'s lifecycle with a generation counter (`beginSearch`/`finishSearch`/`failSearch`, added 2026-09-25 to settle stale/out-of-order completions). `queries_list_controller.js` now subscribes to `search-failed`/`search-started` and flashes the sticky `search-error` channel — previously a `searchAll()` rejection outside the add-query flow (e.g. the `judgements:queries-need-reload` / `imports:queries-need-reload` re-search, or a settings change) had no user-facing surfacing at all.
+- `queriesSvc` publishes the store after search, rated-document refresh, pagination, errors, and rating changes. Search, scoring, diff, finder, options, and pagination commands remain intentionally behind their existing query-state adapter boundaries.
+- Angular still owns snapshot fetching and per-query diff scoring behind the document-store bridge.
+- `snapshot_searcher.js` owns the framework-free snapshot searcher contract, including registry lookup. The former `snapshotSearcherSvc` adapter and unused `qscoreSvc` were removed; `queriesSvc` now supplies the remaining Angular callbacks directly at the boundary.
 
 **The `window.quepidStore` bridge is temporary.** It exists so `queriesSvc` (still Angular) can push into a store that Stimulus (not yet the page owner) can read, during dual-run. Once the case workspace has its own entry bundle, the global goes away in favor of a module import — don't grow further ad hoc bridges on `window.quepidStore` as if it were the permanent integration point.
 
@@ -387,11 +384,7 @@ The Rails cases index at `/cases` is **not** Angular.
 
 The layout lives in ERB, not an Angular template, because the header and toolbar read `@case`/`@try`: templates under `app/assets/templates` are compiled into the `angular_templates` bundle and cannot contain ERB.
 
-Angular still compiles what is left, because custom elements inside `ng-app` are compiled at bootstrap like any other markup. What remains Angular in the shell:
-
-| Element | Why it stays |
-|---------|--------------|
-| Snapshot case score row | Snapshot scores come from the Angular diff engine and are rendered by the Stimulus `diff-case-scores` controller |
+Angular still compiles what is left, because custom elements inside `ng-app` are compiled at bootstrap like any other markup.
 
 The query-list shell is Rails-rendered and no longer declares an Angular scope. Deferred live-result controls still receive a short-lived root-scope child for compilation. The score badges remain at the same DOM position for `qscore.css`'s `:last-child`-based badge-spacing rules to apply correctly.
 
@@ -445,7 +438,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | Import ratings | Stimulus controller + Angular refresh bridge | `app/javascript/controllers/import_ratings_core_controller.js`, `app/views/shared/_import_ratings_core_modal.html.erb`; refreshes live query state through `imports:queries-need-reload` |
 | Diff renderer and picker | Stimulus renderer + explicit compatibility bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/snapshot_bridge_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`, `app/javascript/utils/diff_results.js`; Angular still owns snapshot search/scoring |
 
-Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `snapshotSearcherSvc`, `SnapshotFactory`, `bookSvc`, `qscoreSvc`
+Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`, `querySnapshotSvc`, `SnapshotFactory`, `bookSvc`
 
 ### 4. Wizard follow-up
 
@@ -521,7 +514,7 @@ Thin shells (~14–16 LOC): `queries`. Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (22):** `bookSvc`, `bootstrapSvc`*, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `docCacheSvc`, `paneSvc`, `qscoreSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateScaleSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `snapshotSearcherSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned.
+**Services (20):** `bookSvc`, `bootstrapSvc`*, `caseSvc`, `caseTryNavSvc`, `clipboardSvc`, `configurationSvc`*, `docCacheSvc`, `paneSvc`, `queriesSvc`, `querySnapshotSvc`, `queryViewSvc`, `rateScaleSvc`, `ratingsStoreSvc`, `scorerSvc`, `searchEndpointSvc`, `searchErrorTranslatorSvc`, `settingsSvc`, `userSvc`*, `varExtractorSvc` (* = `UtilitiesModule`). The diff event bridge moved out of `querySnapshotSvc` into `snapshot_bridge_controller.js`; snapshot hydration and scoring remain Angular-owned.
 
 **Factories (7):** `$quepidModal` (`services/quepidModalSvc.js`), `broadcastSvc`, `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `SnapshotFactory`, `TryFactory`
 

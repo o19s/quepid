@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
-import { createSnapshotSearcher } from "utils/snapshot_searcher"
+import {
+  createSnapshotSearcher,
+  createSnapshotSearcherFromRegistry
+} from "utils/snapshot_searcher"
 
 describe("snapshot searcher", () => {
   const query = { queryId: 7, version: vi.fn(() => 3) }
@@ -70,5 +73,36 @@ describe("snapshot searcher", () => {
     expect(searcher.searchError).toBe("mapper failed")
     expect(searcher.numFound).toBe(0)
     expect(searcher.docs).toEqual([])
+  })
+
+  it("creates a searcher from a snapshot registry", () => {
+    const settings = { createFieldSpec: vi.fn(() => ({ id: "id" })) }
+    const snapshot = makeSnapshot()
+    const searcher = createSnapshotSearcherFromRegistry({
+      snapshotId: "snapshot-1",
+      snapshots: { "snapshot-1": snapshot },
+      query,
+      settings,
+      createRateableDoc: (doc) => doc,
+      explainDoc: (doc) => doc
+    })
+
+    expect(searcher.snapshot).toBe(snapshot)
+    expect(searcher.fieldSpec).toEqual({ id: "id" })
+    expect(settings.createFieldSpec).toHaveBeenCalledOnce()
+  })
+
+  it("returns null and logs when a snapshot is missing", () => {
+    const log = vi.fn()
+
+    expect(createSnapshotSearcherFromRegistry({
+      snapshotId: "missing",
+      snapshots: {},
+      query,
+      createRateableDoc: (doc) => doc,
+      explainDoc: (doc) => doc,
+      log
+    })).toBeNull()
+    expect(log).toHaveBeenCalledWith("Snapshot not found: missing")
   })
 })
