@@ -50,6 +50,76 @@ export function registerSnapshotModels({
   return models
 }
 
+export function registerAndHydrateSnapshots({
+  snapshots,
+  registry,
+  settings,
+  supportsLookupById,
+  createFieldSpec,
+  rootUrl,
+  caseNo,
+  addDocIds,
+  addScopedDocIds,
+  clearScopedDocs,
+  updateDocs,
+  createModel,
+  getDoc,
+  explainDoc,
+  formatDate,
+  log,
+  promiseApi = Promise
+}) {
+  const snapshotDocIds = []
+  const useSnapshotScopedCache =
+    settings &&
+    Object.keys(settings).length > 0 &&
+    (settings.searchEngine === "static" || supportsLookupById(settings.searchEngine) === false)
+
+  const models = registerSnapshotModels({
+    snapshots,
+    registry,
+    addDocIds: (ids) => snapshotDocIds.push(ids),
+    createModel,
+    getDoc,
+    explainDoc,
+    formatDate,
+    log
+  })
+
+  if (!settings || Object.keys(settings).length === 0) {
+    return { models, promise: resolvedPromise(promiseApi) }
+  }
+
+  if (useSnapshotScopedCache && snapshots.length > 0) {
+    const promise = snapshots.reduce(
+      (chain, snapshot, index) =>
+        chain.then(() => {
+          clearScopedDocs(snapshot.id)
+          addScopedDocIds(snapshotDocIds[index], snapshot.id)
+          const snapshotSettings = buildSnapshotLookupSettings({
+            settings,
+            supportsLookupById,
+            createFieldSpec,
+            rootUrl,
+            caseNo,
+            snapshotId: snapshot.id
+          })
+          return updateDocs(snapshotSettings, snapshot.id)
+        }),
+      resolvedPromise(promiseApi)
+    )
+
+    return { models, promise }
+  }
+
+  snapshotDocIds.forEach((ids) => addDocIds(ids))
+  return { models, promise: updateDocs(settings) }
+}
+
+function resolvedPromise(promiseApi) {
+  return promiseApi.when ? promiseApi.when() : promiseApi.resolve()
+}
+
 export function mapFieldSpecToSolrFormat(fieldSpec) {
   return fieldSpec.replace(/id:_([^,]+)/, "id:$1")
 }

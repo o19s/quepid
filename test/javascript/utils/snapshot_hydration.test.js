@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   buildSnapshotLookupSettings,
   mapFieldSpecToSolrFormat,
+  registerAndHydrateSnapshots,
   registerSnapshotModels
 } from "utils/snapshot_hydration"
 
@@ -71,5 +72,42 @@ describe("snapshot hydration", () => {
     expect(registry[7]).toBe(models[0])
     expect(registry[8]).toBe(models[1])
     expect(addedIds).toEqual(["7", "8"])
+  })
+
+  it("hydrates each scoped snapshot independently", async () => {
+    const updates = []
+    const scopedIds = []
+    const clearedScopes = []
+
+    const result = registerAndHydrateSnapshots({
+      snapshots: [{ id: 7 }, { id: 8 }],
+      registry: {},
+      settings: { searchEngine: "static", fieldSpec: "id:id" },
+      supportsLookupById: () => true,
+      createFieldSpec: (value) => value,
+      rootUrl: "",
+      caseNo: 12,
+      addDocIds: () => {},
+      addScopedDocIds: (ids, scope) => scopedIds.push({ ids, scope }),
+      clearScopedDocs: (scope) => clearedScopes.push(scope),
+      updateDocs: (snapshotSettings, scope) => {
+        updates.push({ snapshotSettings, scope })
+        return Promise.resolve()
+      },
+      createModel: ({ params }) => ({ allDocIds: () => [`doc-${params.id}`] }),
+      getDoc: () => null,
+      explainDoc: (doc) => doc
+    })
+
+    await result.promise
+
+    expect(clearedScopes).toEqual([7, 8])
+    expect(scopedIds).toEqual([
+      { ids: ["doc-7"], scope: 7 },
+      { ids: ["doc-8"], scope: 8 }
+    ])
+    expect(updates.map(({ scope }) => scope)).toEqual([7, 8])
+    expect(updates[0].snapshotSettings.searchUrl).toBe("/api/cases/12/snapshots/7/search")
+    expect(updates[1].snapshotSettings.searchUrl).toBe("/api/cases/12/snapshots/8/search")
   })
 })

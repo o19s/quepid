@@ -28,7 +28,7 @@ angular.module('QuepidApp')
       this.addIds = function(moreIds, scope) {
         var cache = cacheFor(scope);
         angular.forEach(moreIds, function(id) {
-          if (!cache.hasOwnProperty(id)) {
+          if (!Object.prototype.hasOwnProperty.call(cache, id)) {
             cache[id] = null;
           }
         });
@@ -43,7 +43,7 @@ angular.module('QuepidApp')
       };
 
       this.knowsDoc = function(id, scope) {
-        return cacheFor(scope).hasOwnProperty(id);
+        return Object.prototype.hasOwnProperty.call(cacheFor(scope), id);
       };
 
       this.empty = function(scope) {

@@ -11,4 +11,3 @@ export async function deleteSnapshot(url, snapshotId, fetcher = apiFetch) {
   if (!response.ok) throw new Error(`Snapshot delete failed (${response.status})`)
   return response
 }
-

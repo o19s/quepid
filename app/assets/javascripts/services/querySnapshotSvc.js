@@ -44,7 +44,7 @@ angular.module('QuepidApp')
         }
 
         var queriesSvc = $injector.get('queriesSvc');
-        svc.addSnapshot(detail.name, detail.recordDocumentFields, queriesSvc.queryArray())
+        svc.addSnapshot(detail.name, detail.recordDocumentFields, queriesSvc.queryArray(), true)
           .then(function() {
             window.quepidDom.flash.show('success', 'Snapshot created successfully.');
             if (detail.done) { detail.done(null); }
@@ -60,9 +60,8 @@ angular.module('QuepidApp')
         return snapshotSearch.mapFieldSpecToSolrFormat(fieldSpec);
       }
 
-      var addSnapshotResp = function(snapshots) {        
+      var addSnapshotResp = function(snapshots, deferHydration) {
         var snapshotList = [];
-        var snapshotDocIds = [];
         var settings = settingsSvc.editableSettings();
         var useSnapshotScopedCache = !(angular.isUndefined(settings) ||
           settings === null ||
@@ -72,10 +71,20 @@ angular.module('QuepidApp')
           snapshotList.push(snapshot);
         });
 
-        snapshotSearch.registerSnapshotModels({
+        var hydration = snapshotSearch.registerAndHydrateSnapshots({
           snapshots: snapshotList,
           registry: svc.snapshots,
-          addDocIds: function(ids) { snapshotDocIds.push(ids); },
+          settings: settings,
+          supportsLookupById: settingsSvc.supportLookupById,
+          createFieldSpec: fieldSpecSvc.createFieldSpec,
+          rootUrl: caseTryNavSvc.getQuepidRootUrl(),
+          caseNo: caseTryNavSvc.getCaseNo(),
+          addDocIds: docCacheSvc.addIds,
+          addScopedDocIds: function(ids, scope) { docCacheSvc.addIds(ids, scope); },
+          clearScopedDocs: function(scope) { docCacheSvc.empty(scope); },
+          updateDocs: function(hydrationSettings, scope) {
+            return docCacheSvc.update(hydrationSettings, scope);
+          },
           createModel: function(options) {
             var getDoc = options.getDoc;
             if (useSnapshotScopedCache) {
@@ -94,50 +103,10 @@ angular.module('QuepidApp')
           getDoc: docCacheSvc.getDoc,
           explainDoc: normalDocsSvc.explainDoc,
           formatDate: function(time) { return $filter('date')(time, 'shortDate'); },
-          log: function(message) { console.debug(message); }
+          log: function(message) { console.debug(message); },
+          promiseApi: $q
         });
-        if ( !(angular.isUndefined(settings) ||
-            settings === null ||
-            Object.keys(settings).length === 0)
-        ) {
-          
-          // Some search endpoints let you look up the documents by an id
-          // however if that isnt' possible, then we require you to store the doc fields
-          // in the snapshot, and we look them up from the Snapshot.  To be clever
-          // we pretend to be a "solr'" endpoint to drive the lookup.          
-          if (snapshotList.length > 0 ) {
-            // Static cases use the same snapshot search endpoint as Solr, but
-            // splainer-search has no static searcher. Normalize static here as
-            // queriesSvc does for live searches so snapshot hydration can fetch
-            // the recorded documents before diff scoring starts.
-            if (settings.searchEngine === 'static' || settingsSvc.supportLookupById(settings.searchEngine) === false){
-              return snapshotList.reduce(function(promise, snapshot, index) {
-                return promise.then(function() {
-                  docCacheSvc.empty(snapshot.id);
-                  docCacheSvc.addIds(snapshotDocIds[index], snapshot.id);
-                  var snapshotSettings = snapshotSearch.buildSnapshotLookupSettings({
-                    settings,
-                    supportsLookupById: settingsSvc.supportLookupById,
-                    createFieldSpec: fieldSpecSvc.createFieldSpec,
-                    rootUrl: caseTryNavSvc.getQuepidRootUrl(),
-                    caseNo: caseTryNavSvc.getCaseNo(),
-                    snapshotId: snapshot.id
-                  });
-                  return docCacheSvc.update(snapshotSettings, snapshot.id);
-                });
-              }, $q.when());
-            }
-          }
-
-          angular.forEach(snapshotDocIds, function(ids) {
-            docCacheSvc.addIds(ids);
-          });
-          return docCacheSvc.update(settings);
-        } else {
-          return $q(function(resolve) {
-            resolve();
-          });
-        }
+        return deferHydration ? $q.when() : hydration.promise;
       };
 
       this.bootstrap = function(newCaseNo) {
@@ -171,14 +140,15 @@ angular.module('QuepidApp')
           });
       };
 
-      this.addSnapshot = function(name, recordDocumentFields, queries) {
+      this.addSnapshot = function(name, recordDocumentFields, queries, deferHydration) {
         // we may want to refactor the payload structure in the future.
         var docs = {};
         var queriesPayload = {};
         angular.forEach(queries, function(query) {
+          var currentScore = query.currentScore || {};
           queriesPayload[query.queryId] = {
-            'score': query.currentScore.score,
-            'all_rated': query.currentScore.allRated,
+            'score': currentScore.score === undefined ? null : currentScore.score,
+            'all_rated': currentScore.allRated || false,
             'number_of_results': query.numFound
           };
 
@@ -234,7 +204,7 @@ angular.module('QuepidApp')
 
         return $http.post('api/cases/' + caseNo + '/snapshots', saved)
           .then(function(response) {
-            return addSnapshotResp([response.data])
+            return addSnapshotResp([response.data], deferHydration)
               .then(function() {
                 version++;
               });

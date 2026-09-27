@@ -247,6 +247,24 @@ describe('Service: querySnapshotSvc', function () {
       expect(resolvedIds).toContain('banana');
       expect(resolvedIds).toContain('doc');
     });
+
+    it('creates a snapshot while a query score is still unavailable', function() {
+      var query = {
+        queryId: 99,
+        numFound: 0,
+        docs: [],
+        ratedDocs: []
+      };
+
+      $httpBackend.expectPOST('api/cases/2/snapshots', function(response) {
+        var payload = angular.fromJson(response);
+        return payload.snapshot.queries[99].score === null &&
+          payload.snapshot.queries[99].all_rated === false;
+      }).respond(200, addedSnapResp);
+
+      querySnapshotSvc.addSnapshot('in-progress', false, [query]);
+      $httpBackend.flush();
+    });
   });
 
   describe('deleting snapshots', function() {
@@ -614,6 +632,20 @@ describe('Service: querySnapshotSvc', function () {
       // sets submitting/progress state before dispatching and only clears
       // it in the done callback) stuck mid-spinner forever.
       expect(done).toHaveBeenCalledWith('case mismatch');
+    });
+
+    it('completes after the snapshot is created without waiting for hydration', function() {
+      var done = jasmine.createSpy('done');
+      spyOn($injector, 'get').and.returnValue({ queryArray: function() { return []; } });
+      spyOn(querySnapshotSvc, 'addSnapshot').and.returnValue($q.when());
+
+      document.dispatchEvent(new CustomEvent('take-snapshot:create', {
+        detail: { caseId: 2, name: 'ready snapshot', done: done }
+      }));
+      $rootScope.$apply();
+
+      expect(querySnapshotSvc.addSnapshot).toHaveBeenCalledWith('ready snapshot', undefined, [], true);
+      expect(done).toHaveBeenCalledWith(null);
     });
   });
 });
