@@ -584,11 +584,9 @@ describe('Service: caseSvc', function () {
 
   describe('judgements:book-settings-saved bridge', function() {
     var $rootScope;
-    var broadcastSvc;
 
-    beforeEach(inject(function(_$rootScope_, _broadcastSvc_) {
+    beforeEach(inject(function(_$rootScope_) {
       $rootScope   = _$rootScope_;
-      broadcastSvc = _broadcastSvc_;
 
       caseSvc.allCases = [
         {
@@ -600,8 +598,9 @@ describe('Service: caseSvc', function () {
       caseSvc.selectCase(5);
     }));
 
-    it('updates the selected case book/sync settings and re-broadcasts associateBook', function() {
-      spyOn(broadcastSvc, 'send');
+    it('updates the selected case book/sync settings and dispatches a named event', function() {
+      var eventSpy = jasmine.createSpy('case-book:associated listener');
+      document.addEventListener('case-book:associated', eventSpy);
 
       document.dispatchEvent(new CustomEvent('judgements:book-settings-saved', {
         detail: {
@@ -619,14 +618,14 @@ describe('Service: caseSvc', function () {
       expect(selected.bookName).toBe('Some Book');
       expect(selected.autoPopulateBookPairs).toBe(true);
       expect(selected.autoPopulateCaseJudgements).toBe(false);
-      // Regression: the Stimulus judgements-core save path used to skip this
-      // broadcast entirely, leaving queriesSvc's cached auto-populate gate
-      // stale until a page reload.
-      expect(broadcastSvc.send.calls.mostRecent().args[0]).toBe('associateBook');
+      expect(eventSpy).toHaveBeenCalled();
+      expect(eventSpy.calls.mostRecent().args[0].detail.caseNo).toBe(5);
+      document.removeEventListener('case-book:associated', eventSpy);
     });
 
     it('ignores events for a different case', function() {
-      spyOn(broadcastSvc, 'send');
+      var eventSpy = jasmine.createSpy('case-book:associated listener');
+      document.addEventListener('case-book:associated', eventSpy);
 
       document.dispatchEvent(new CustomEvent('judgements:book-settings-saved', {
         detail: { caseId: 99, bookId: 42 }
@@ -634,7 +633,8 @@ describe('Service: caseSvc', function () {
       $rootScope.$apply();
 
       expect(caseSvc.getSelectedCase().bookId).not.toBe(42);
-      expect(broadcastSvc.send).not.toHaveBeenCalled();
+      expect(eventSpy).not.toHaveBeenCalled();
+      document.removeEventListener('case-book:associated', eventSpy);
     });
   });
 });

@@ -45,88 +45,38 @@ not the parameter name.
 
 ## Event table
 
-Listeners are split between `$scope.$on` (component-local) and
-`$rootScope.$on` (lives until app teardown — leak-prone, must explicitly
-deregister). `R` and `S` columns below distinguish them.
+The migrated core uses explicit `CustomEvent`s and `EventTarget` stores. The
+legacy Angular bus is retained only as a compatibility fallback for ratings.
 
 | Event name | Emitter(s) | Listener(s) | Listener kind | Notes |
 |------------|------------|-------------|---------------|-------|
-| `caseSelected` | `caseSvc.js:183` | *(none found)* | — | **Dead emit** — `headerCtrl.js` was the only listener; removed when the core header dropdowns moved to Turbo Frames (see angularjs_removal_inventory.md) |
-| `fetchedDropdownCasesList` | `caseSvc.js:295` | *(none found)* | — | **Dead emit** — same removal as `caseSelected` |
-| `caseRenamed` | `caseSvc.js:126,421` | `caseSvc.js:102` | R | `caseSvc` listens via `$rootScope.$on`. `:126` is the Stimulus bridge — a `case-header:renamed` CustomEvent from the server-rendered header re-broadcast into Angular. `headerCtrl.js`'s listener is gone (same removal as `caseSelected`) — the recent-cases dropdown is its own Turbo Frame now and doesn't live-refresh on rename either, matching the Rails-page navbar's identical frame |
-| `caseUpdate` | `caseSvc.js:454` | *(none found)* | — | **Dead emit** — no `$on('caseUpdate')` matches |
-| `associateBook` | `caseSvc.js:168,501` | `queriesSvc.js:74` | R | `queriesSvc` listener is `$rootScope.$on` (aliased `$scope`). `:168` is the Stimulus bridge from `quepid:case-team-changed`. `headerCtrl.js`'s listener is gone (same removal as `caseSelected`) |
-| `settings-changed` | `settingsSvc.js:496` | *(none found)* | — | **Dead emit** — emitted on try-list fetch; no listener (COREUI doc reference is stale) |
-| `settings-updated` | `settingsSvc.js:637,727` | `caseSvc.js:94` (per `Case` instance) | R | **Leak:** listener registered inside `Case` constructor — one `$rootScope.$on` per constructed case |
-| `rating-changed` | `ratingsStoreSvc.js:29` → `window.quepidStore.scoring` (legacy `$rootScope.$emit` fallback) | Store listeners in `queriesSvc.js`, deferred `searchResults.js` (legacy service fallback only) | R | Store event carries `{ detail: { queryId } }`; per-row listeners deregister on `$destroy` |
-| `scoring-complete` | `CaseScoreStore.setLatestScoreInfo()`; legacy add-query emitter removed | Store listener in `qscore_case_controller.js` | R | Published after the store's `change`; Stimulus updates the case score and preserves score persistence through the Angular service bridge |
-| `updatedQueriesList` | `queriesSvc.js:1371` (commented out) | *(none)* | — | Commented-out emit; remove next time someone touches that file |
+| `case-header:renamed` | `case_toolbar_controller.js` | `caseSvc.js` | native event | Server-rendered header rename updates the Angular-owned case directly. |
+| `quepid:case-team-changed` | `share_case_core_controller.js` | `caseSvc.js` | native event | Core share/unshare updates the selected case in memory. |
+| `case-book:associated` | `caseSvc.js` | `queriesSvc.js` | native event | Replaces `associateBook`; the query service re-fetches case book-sync flags. |
+| `case-settings:updated` | `settingsSvc.js` | `caseSvc.js` | native event | Replaces `settings-updated`; one service-level listener updates current in-memory cases. |
+| `rating-changed` | `CaseScoreStore`; legacy fallback in `ratingsStoreSvc.js` | `queriesSvc.js`, `qscore_case_controller.js` | EventTarget store | Store event is the normal path; the Angular fallback remains for older bundles. |
+| `scoring-complete` | `CaseScoreStore` | `qscore_case_controller.js`, `qgraph_controller.js` | EventTarget store | Fully migrated from the former Angular score event. |
 
-## Emitter index (`broadcastSvc.send`)
+The dead broadcasts `caseSelected`, `fetchedDropdownCasesList`, `caseUpdate`,
+`settings-changed`, and the commented `updatedQueriesList` were removed rather
+than replaced with no-op events.
 
-11 active calls across 2 files (+1 commented in `queriesSvc.js`; last counted 2026-09-24):
-
-| File | Count | Events |
-|------|-------|--------|
-| `services/caseSvc.js` | 7 | `caseSelected`, `fetchedDropdownCasesList`, `caseRenamed` ×2, `caseUpdate`, `associateBook` ×2 |
-| `services/settingsSvc.js` | 3 | `settings-changed`, `settings-updated` ×2 |
-
-The former `updatedCasesList` emitters became dead after the Angular Move Query listener was removed; the Stimulus modal fetches its own case list through the API.
-
-Of the remaining 11, 2 became dead emits when `headerCtrl.js` was deleted (core header dropdowns → Turbo Frames):
-`caseSelected`, `fetchedDropdownCasesList` (both `caseSvc.js`). A third, `fetchedDropdownBooksList`
-(`bookSvc.js`), went dead the same way but was deleted outright along with its now-unreachable
-`fetchDropdownBooks()` emitter — see [Migration-relevant observations](#migration-relevant-observations)
-§2 — so it no longer appears in this count. `services/bookSvc.js` also drops out of the file list
-above as a result: it registered zero other `broadcastSvc.send` calls.
-
-## Listener index (`$on`)
+## Listener index
 
 | File | Kind | Events | Deregisters? |
 |------|------|--------|--------------|
-| `controllers/qscore_case_controller.js` | S | `scoring-complete` | yes (`disconnect`) |
-| `controllers/searchResults.js` | R | `rating-changed` | **no** — one listener per `SearchResultsCtrl` instance |
-| `services/caseSvc.js` | R | `caseRenamed` | **no** (singleton; acceptable) |
-| `services/caseSvc.js` (`Case` ctor) | R | `settings-updated` | **no** — **multiplies per constructed case** |
-| `services/queriesSvc.js` | R | `associateBook`, `rating-changed` | **no** (singleton; acceptable) |
+| `controllers/qscore_case_controller.js` | store | `scoring-complete`, `rating-changed` | yes (`disconnect`) |
+| `controllers/qgraph_controller.js` | store | `scoring-complete` | yes (`disconnect`) |
+| `services/caseSvc.js` | document | `case-header:renamed`, `quepid:case-team-changed`, `judgements:book-settings-saved`, `case-settings:updated` | app lifetime; one listener per event |
+| `services/queriesSvc.js` | document + store | `case-book:associated`, `query-options:saved`, `rating-changed` | app lifetime / store-owned |
 
 ## Migration-relevant observations
 
-1. **`caseSvc` is the bus hub.** 11 of the 20 active `broadcastSvc.send` calls originate
-   there. Any migration that touches `caseSvc` must account for every row above
-   where `caseSvc.js` appears — prefer `apiFetch` re-fetch for shared state and
-   `document.dispatchEvent(new CustomEvent(...))` only when a surviving Angular
-   listener still needs notification during a partial migration.
+1. The legacy `broadcastSvc` factory is now unused by Quepid code; remove its
+   registration with the final Angular cleanup once no bundle references it.
+2. The ratings fallback remains intentionally until the live query/scoring
+   migration removes the last Angular-only bundle path.
 
-2. **Dead emits to clean up.** `caseUpdate`, `settings-changed`,
-   `updatedQueriesList` (commented), `caseSelected`, and
-   `fetchedDropdownCasesList` have no `$on` listeners. The last two went dead
-   when `headerCtrl.js` was deleted (core header dropdowns → Turbo Frames).
-   `fetchDropdownCases()` (`caseSvc.js`) — which feeds `fetchedDropdownCasesList`
-   — was deliberately left in place despite that, because `caseSvc.casesCount`
-   (read by `NewCaseCtrl`'s default case-name fallback) has no other populator;
-   only the broadcast itself is dead. `fetchDropdownBooks()` (`bookSvc.js`) had
-   no such reason — `bookSvc.booksCount` had no reader anywhere — so it was
-   deleted outright along with `dropdownBooks`/`booksCount` and the
-   `fetchedDropdownBooksList` broadcast; that event no longer appears in the
-   table above. Safe to remove the rest after a quick template grep confirms
-   no `ng-{{…}}` bindings depended on the digest side-effect.
-
-3. **`$rootScope.$on` leaks — audit before migrating.**
-   - the retired query-list coordinator captured deregistration return values and called them on
-     `$destroy`; its replacement removes listeners in Stimulus `disconnect`.
-   - `searchResults.js` registers `$rootScope.$on('rating-changed')` per controller
-     instance with no deregister — leaks when query rows are recreated.
-   - `Case` constructor (`caseSvc.js:94`) registers `$rootScope.$on('settings-updated')`
-     once per `new Case(...)` — accumulates listeners as cases are loaded.
-   - Singleton services (`caseSvc`, `queriesSvc`) register root listeners at init;
-     acceptable for the app lifetime but must not be copied into per-instance code.
-
-4. **`$emit` on `$rootScope` is not bubbling.** `rating-changed` and
-   `scoring-complete` both emit from `$rootScope` (directly or via the `$scope`
-   alias). Listeners must be `$rootScope.$on`, not child `$scope.$on`. When
-   migrating to `CustomEvent`, dispatch on `document` with `bubbles: true` so
-   listeners do not depend on Angular scope ancestry.
 
 ## Methodology
 

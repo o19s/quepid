@@ -546,7 +546,10 @@ Heavy: `quepidTypeahead` (299).
 
 **Factories (7):** `$quepidModal` (`services/quepidModalSvc.js`), `broadcastSvc`, `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `SnapshotFactory`, `TryFactory`
 
-`broadcastSvc` wraps `$rootScope.$broadcast` — used by `caseSvc`, `settingsSvc`, `queriesSvc`, and `bookSvc`. See [event bus inventory](./event_bus_inventory.md).
+`broadcastSvc` wraps `$rootScope.$broadcast` and is currently registered only as
+an unused compatibility factory; the former `caseSvc`, `settingsSvc`, and
+`queriesSvc` consumers now use named native events or EventTarget stores. See
+[event bus inventory](./event_bus_inventory.md).
 
 **Filters (5 under `filters/`):** `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`
 

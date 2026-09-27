@@ -7,13 +7,11 @@ angular.module('QuepidApp')
     '$q',
     'caseTryNavSvc',
     'SettingsFactory',
-    'broadcastSvc',
     function settingsSvc(
       $http,
       $q,
       caseTryNavSvc,
-      SettingsFactory,
-      broadcastSvc
+      SettingsFactory
     ) {
 
       /* jshint ignore:start */
@@ -490,8 +488,6 @@ angular.module('QuepidApp')
               caseNo: caseNo,
               settings: currSettings
             };
-            broadcastSvc.send('settings-changed', args);
-
           }, function() {
             caseTryNavSvc.notFound();
           });
@@ -626,12 +622,11 @@ angular.module('QuepidApp')
             const newTry = currSettings.addTry(tryJson);
             currSettings.selectTry(newTry.tryNo);
 
-            // Broadcast that settings for case have been updated
             const args = {
               caseNo: currCaseNo,
               lastTry: newTry
             };
-            broadcastSvc.send('settings-updated', args);
+            document.dispatchEvent(new CustomEvent('case-settings:updated', { detail: args }));
 
             // navigate to what was selected in case try no changed
             caseTryNavSvc.navigateTo({ tryNo: newTry.tryNo });
@@ -716,12 +711,11 @@ angular.module('QuepidApp')
         return $http.put(`api/cases/${currCaseNo}/tries/${currTryNo}`, payload)
           .then(function() {
 
-            // Broadcast that settings for case have been updated
             const args = {
               caseNo: currCaseNo,
               lastTry: settingsToSave.selectedTry
             };
-            broadcastSvc.send('settings-updated', args);
+            document.dispatchEvent(new CustomEvent('case-settings:updated', { detail: args }));
 
             // navigate to what was selected in case try no changed
             caseTryNavSvc.navigateTo({ tryNo: settingsToSave.selectedTry.tryNo });

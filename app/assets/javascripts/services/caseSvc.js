@@ -5,12 +5,10 @@ angular.module('QuepidApp')
     '$http', '$filter', '$q', '$rootScope',
     '$log',
     'caseTryNavSvc', 'queriesSvc', 'settingsSvc',
-    'broadcastSvc',
     function caseSvc(
       $http, $filter, $q, $rootScope,
       $log,
-      caseTryNavSvc, queriesSvc, settingsSvc,
-      broadcastSvc
+      caseTryNavSvc, queriesSvc, settingsSvc
     ) {
 
       var cases = {};
@@ -102,17 +100,22 @@ angular.module('QuepidApp')
             });
         };
 
-        $rootScope.$on('settings-updated', function(event, args) {
-          if ( args.caseNo === theCase.caseNo ) {
+      };
+
+      // Keep the in-memory case objects current without registering one permanent
+      // document listener for every Case instance constructed during a refetch.
+      document.addEventListener('case-settings:updated', function(event) {
+        var args = event.detail || {};
+        if (!args.lastTry) return;
+
+        var knownCases = svc.allCases.concat(svc.dropdownCases);
+        if (selectedCase) knownCases.push(selectedCase);
+
+        knownCases.forEach(function(theCase) {
+          if (Number(args.caseNo) === Number(theCase.caseNo)) {
             theCase.lastTry = args.lastTry.tryNo;
           }
         });
-      };
-
-      $rootScope.$on('caseRenamed', function(event, args) {
-        if ( svc.isCaseSelected() && args.caseNo === svc.getSelectedCase().caseNo ) {
-          svc.getSelectedCase().caseName = args.caseName;
-        }
       });
 
       /*
@@ -134,7 +137,6 @@ angular.module('QuepidApp')
         $rootScope.$applyAsync(function() {
           selected.caseName = detail.caseName;
           publishCaseState(selected);
-          broadcastSvc.send('caseRenamed', selected);
         });
       });
 
@@ -177,7 +179,9 @@ angular.module('QuepidApp')
           publishCaseState(selected);
           selected.autoPopulateBookPairs = detail.autoPopulateBookPairs;
           selected.autoPopulateCaseJudgements = detail.autoPopulateCaseJudgements;
-          broadcastSvc.send('associateBook', svc.dropdownBooks);
+          document.dispatchEvent(new CustomEvent('case-book:associated', {
+            detail: { caseNo: selected.caseNo }
+          }));
         });
       });
 
@@ -194,7 +198,6 @@ angular.module('QuepidApp')
       this.selectTheCase = function(theCase) {
         selectedCase = theCase;
         publishCaseState(selectedCase);
-        broadcastSvc.send('caseSelected', selectedCase);
       };
 
       this.isCaseSelected = function() {
@@ -303,7 +306,6 @@ angular.module('QuepidApp')
               }
             });
 
-            broadcastSvc.send('fetchedDropdownCasesList', svc.allCases);
           });
       };
       
@@ -431,7 +433,6 @@ angular.module('QuepidApp')
           return $http.put(url, data)
             .then(function() {
               theCase.caseName = newName;
-              broadcastSvc.send('caseRenamed', theCase);
 
               /*
                * The case header is server-rendered now (core/_case_header.html.erb), so a rename
@@ -464,8 +465,6 @@ angular.module('QuepidApp')
 
         return $http.put(url, data)
           .then(function() {
-            broadcastSvc.send('caseUpdate', theCase);
-
             /*
              * The case header is server-rendered and shows the nightly indicator, so it cannot
              * see this change on its own. See app/views/core/_case_header.html.erb for the
@@ -511,7 +510,9 @@ angular.module('QuepidApp')
             theCase.bookName = response.data ? response.data.book_name : null;
             theCase.autoPopulateBookPairs = data.auto_populate_book_pairs;
             theCase.autoPopulateCaseJudgements = data.auto_populate_case_judgements;
-            broadcastSvc.send('associateBook', svc.dropdownBooks);
+            document.dispatchEvent(new CustomEvent('case-book:associated', {
+              detail: { caseNo: theCase.caseNo }
+            }));
           }, function() {
             caseTryNavSvc.notFound();
           });

@@ -13,7 +13,6 @@ angular.module('QuepidApp')
     '$http',
     '$q',
     '$log',
-    'broadcastSvc',
     'scorerSvc',
     'searchSvc',
     'queryViewSvc',
@@ -33,7 +32,6 @@ angular.module('QuepidApp')
       $http,
       $q,
       $log,
-      broadcastSvc,
       scorerSvc,
       searchSvc,
       queryViewSvc,
@@ -70,11 +68,11 @@ angular.module('QuepidApp')
       this.queries = {};
       this.linkUrl = '';
 
-      // Cached case-book sync properties (updated via broadcasts from caseSvc)
+      // Cached case-book sync properties (updated via a named DOM event from caseSvc)
       let cachedBookId = null;
       let cachedAutoPopulateBookPairs = false;
 
-      $scope.$on('associateBook', function() {
+      document.addEventListener('case-book:associated', function() {
         // Re-fetch case data to update cached sync properties
         if (caseNo && caseNo !== -1) {
           $http.get('api/cases/' + caseNo).then(function(response) {
