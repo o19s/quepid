@@ -521,8 +521,10 @@ Single/batch search transport and query-removal reconciliation now live in
 tested framework-free runtimes as well; the remaining service ownership is
 the Angular Query factory/searcher, scoring, and book-sync adapters.
 Live model/factory/document/execution composition now also lives in the
-tested `live_query_compatibility` runtime; only the injected Angular-specific
-callbacks remain in the service.
+tested `live_query_compatibility` runtime. Scorer selection/bootstrap and
+book configuration/reset/sync now cross the tested `live_query_adapters`
+contract; the remaining service-local assembly is searcher construction,
+normalization/explain wiring, and the final live Query compatibility callbacks.
 
 Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 

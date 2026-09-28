@@ -68,15 +68,41 @@ angular.module('QuepidApp')
         logger: $log
       });
 
+      let liveQueryAdapters = window.quepidSearch.liveQueryAdapters.create({
+        scoring: {
+          getDefault: function() {
+            return scorerSvc.defaultScorer;
+          },
+          select: function(scorerData) {
+            var scorer = scorerSvc.constructFromData(scorerData);
+            return scorerSvc.setDefault(scorer);
+          },
+          bootstrap: function(newCaseNo) {
+            return scorerSvc.bootstrap(newCaseNo);
+          }
+        },
+        book: {
+          configure: function(nextCaseNo, response) {
+            bookSyncRuntime.configure({
+              caseId: nextCaseNo,
+              bookId: response.data.book_id,
+              autoPopulate: response.data.auto_populate_book_pairs
+            });
+          },
+          reset: function() {
+            bookSyncRuntime.reset();
+          },
+          sync: function(queries) {
+            return bookSyncRuntime.sync(queries);
+          }
+        }
+      });
+
       document.addEventListener('case-book:associated', function() {
         // Re-fetch case data to update cached sync properties
         if (caseNo && caseNo !== -1) {
           $http.get('api/cases/' + caseNo).then(function(response) {
-            bookSyncRuntime.configure({
-              caseId: caseNo,
-              bookId: response.data.book_id,
-              autoPopulate: response.data.auto_populate_book_pairs
-            });
+            liveQueryAdapters.book.configure(caseNo, response);
           });
         }
       });
@@ -93,7 +119,7 @@ angular.module('QuepidApp')
         if (queryDocumentsStore) {
           queryDocumentsStore.reset();
         }
-        bookSyncRuntime.reset();
+        liveQueryAdapters.book.reset();
         publishQueryListState();
       }
 
@@ -181,7 +207,7 @@ angular.module('QuepidApp')
         factoryOptions: {
           model: {
             getDefaultScorer: function() {
-              return scorerSvc.defaultScorer;
+              return liveQueryAdapters.scoring.getDefault();
             },
             scoreQuery: window.quepidSearch.queryScoring.scoreQuery,
             promiseApi: $q,
@@ -297,7 +323,7 @@ angular.module('QuepidApp')
           return window.quepidSearch.queryCapabilities.scoreAll();
         },
         syncToBook: function() {
-          return syncToBook();
+          return liveQueryAdapters.book.sync(queryArray());
         },
         onSearchStarted: function() {
           return queryCollectionStore ? queryCollectionStore.beginSearch() : null;
@@ -349,8 +375,7 @@ angular.module('QuepidApp')
           query.setDirty();
         },
         setScorer: function(scorerData) {
-          var scorer = scorerSvc.constructFromData(scorerData);
-          return scorerSvc.setDefault(scorer);
+          return liveQueryAdapters.scoring.select(scorerData);
         },
         reloadQueries: function(caseId) {
           svc.reset();
@@ -454,18 +479,14 @@ angular.module('QuepidApp')
           caseNo = newCaseNo;
         },
         bootstrapScorer: function(newCaseNo) {
-          scorerSvc.bootstrap(newCaseNo);
+          liveQueryAdapters.scoring.bootstrap(newCaseNo);
         },
         bootstrapQueries: function(newCaseNo) {
           liveQueryCollectionRuntime.bootstrapQueries(newCaseNo);
         },
         configureBook: function(newCaseNo) {
           $http.get('api/cases/' + newCaseNo).then(function(response) {
-            bookSyncRuntime.configure({
-              caseId: newCaseNo,
-              bookId: response.data.book_id,
-              autoPopulate: response.data.auto_populate_book_pairs
-            });
+            liveQueryAdapters.book.configure(newCaseNo, response);
           });
         },
         refreshQueryDiff: function(query) {
@@ -1014,7 +1035,7 @@ angular.module('QuepidApp')
       window.quepidSearch.queryCapabilities.updateScores = updateScores;
 
       function syncToBook() {
-        return bookSyncRuntime.sync(queryArray());
+        return liveQueryAdapters.book.sync(queryArray());
       }
 
       /*jslint latedef:false*/
