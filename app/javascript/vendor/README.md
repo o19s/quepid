@@ -7,11 +7,10 @@ Third-party JavaScript that Quepid previously loaded from `package.json` now liv
 | Directory | Role |
 |-----------|------|
 | `angular-sanitize` | AngularJS satellite: `ngSanitize` |
-| `angular-ui-ace/` | `ui.ace` |
 
 JSON tree display no longer uses a vendored Angular directive — see `utils/json_explorer.js` and `app/assets/stylesheets/json-explorer.css` (copied to `builds/` by `build_css.js`).
 
-**splainer-search** is loaded from npm (see root `package.json`) and bridged onto Angular DI in **`app/javascript/splainer_search_adapter.js`**.
+**splainer-search** is loaded from npm (see root `package.json`) and initialized in the framework-free case bundle by **`app/javascript/utils/splainer_search_runtime.js`**.
 
 Angular unit tests load **`angular-mocks`** from `node_modules/` (see Karma config).
 

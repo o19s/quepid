@@ -35,9 +35,6 @@ window.ace = ace;
 
 // Angular UI ACE
 
-// Splainer Search (vanilla-JS 3.x wrapped in a local Angular shim)
-import './splainer_search_adapter';
-
 // Vega for charts is loaded separately via the `vega_globals` importmap pin
 // (see app/views/layouts/core.html.erb), not through Angular.
 

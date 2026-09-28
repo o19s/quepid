@@ -199,14 +199,18 @@ async function loadCapability(name) {
     name === "bootstrap"
       ? createScorerCatalog({
           request: nativeFramework.request,
-          constructFromData: (data) => createScorer(data, {
-            promiseApi: nativeFramework.promiseApi,
-            schedule: (callback) => nativeFramework.schedule(callback)
-          }),
-          initialDefault: createScorer({}, {
-            promiseApi: nativeFramework.promiseApi,
-            schedule: (callback) => nativeFramework.schedule(callback)
-          }),
+          constructFromData: (data) =>
+            createScorer(data, {
+              promiseApi: nativeFramework.promiseApi,
+              schedule: (callback) => nativeFramework.schedule(callback)
+            }),
+          initialDefault: createScorer(
+            {},
+            {
+              promiseApi: nativeFramework.promiseApi,
+              schedule: (callback) => nativeFramework.schedule(callback)
+            }
+          ),
           promiseApi: nativeFramework.promiseApi
         })
       : null

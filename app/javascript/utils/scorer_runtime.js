@@ -51,7 +51,10 @@ export function createScorer(data = {}, { promiseApi = Promise, schedule } = {})
   }
 
   function scaleToArray(string) {
-    return string.trim().split(/\s*,\s*/).map((item) => parseInt(item, 10))
+    return string
+      .trim()
+      .split(/\s*,\s*/)
+      .map((item) => parseInt(item, 10))
   }
 
   function scaleToColors(scale) {
@@ -86,10 +89,12 @@ export function createScorer(data = {}, { promiseApi = Promise, schedule } = {})
   }
 
   function showScaleLabel(value) {
-    return scorer.showScaleLabels === true &&
+    return (
+      scorer.showScaleLabels === true &&
       scorer.scaleWithLabels !== null &&
       scorer.scaleWithLabels !== undefined &&
       scorer.scaleWithLabels[value] !== undefined
+    )
   }
 
   function teamNames() {
@@ -121,7 +126,8 @@ export function createScorer(data = {}, { promiseApi = Promise, schedule } = {})
 
   function editDistance(first, second) {
     const matrix = Array.from({ length: first.length }, () => Array(second.length).fill(0))
-    const get = (row, column) => row < 0 || column < 0 || matrix.length === 0 ? 0 : matrix[row][column]
+    const get = (row, column) =>
+      row < 0 || column < 0 || matrix.length === 0 ? 0 : matrix[row][column]
     for (let row = 0; row < first.length; row += 1) {
       for (let column = 0; column < second.length; column += 1) {
         const cost = first[row] === second[column] ? 0 : 1
@@ -142,7 +148,9 @@ export function createScorer(data = {}, { promiseApi = Promise, schedule } = {})
   function distanceFromBest(docs, bestDocs, count = DEFAULT_NUM_DOCS) {
     const docCount = Math.min(count, docs.length)
     const bestCount = Math.min(count, bestDocs.length)
-    const ratings = docs.slice(0, docCount).map((doc) => doc.hasRating() ? parseInt(doc.getRating(), 10) : null)
+    const ratings = docs
+      .slice(0, docCount)
+      .map((doc) => (doc.hasRating() ? parseInt(doc.getRating(), 10) : null))
     const bestRatings = bestDocs.slice(0, bestCount).map((doc) => doc.rating)
     while (bestRatings.length < docCount) bestRatings.push(null)
     return Math.floor(editDistance(ratings, bestRatings))
@@ -171,35 +179,41 @@ export function createScorer(data = {}, { promiseApi = Promise, schedule } = {})
     if (mode !== undefined) {
       docs = docs.map((doc) => {
         const copy = copyValue(doc)
-        copy.getRating = () => mode === "max" ? max : undefined
+        copy.getRating = () => (mode === "max" ? max : undefined)
         return copy
       })
     }
 
-    const docAt = (position) => position >= docs.length ? {} : docs[position].doc
+    const docAt = (position) => (position >= docs.length ? {} : docs[position].doc)
     const docExistsAt = (position) => position < docs.length
-    const ratedDocAt = (position) => position >= query.ratedDocs.length ? {} : query.ratedDocs[position]
+    const ratedDocAt = (position) =>
+      position >= query.ratedDocs.length ? {} : query.ratedDocs[position]
     const ratedDocExistsAt = (position) => position < query.ratedDocs.length
     const hasDocRating = (position) => docExistsAt(position) && docs[position].hasRating()
-    const docRating = (position) => docExistsAt(position) ? docs[position].getRating() : undefined
+    const docRating = (position) => (docExistsAt(position) ? docs[position].getRating() : undefined)
     const numFound = () => total
     const numReturned = () => docs.length
     const avgRating = (count) => baseAvg(docs, count)
     const avgRating100 = (count) => avg100(docs, count)
     const editDistanceFromBest = (count) => distanceFromBest(docs, bestDocs, count)
     const eachDoc = (callback, count = DEFAULT_NUM_DOCS) => {
-      for (let index = 0; index < count; index += 1) if (docExistsAt(index)) callback(docAt(index), index)
+      for (let index = 0; index < count; index += 1)
+        if (docExistsAt(index)) callback(docAt(index), index)
     }
     const eachRatedDoc = (callback, count = DEFAULT_NUM_DOCS) => {
-      for (let index = 0; index < count; index += 1) if (ratedDocExistsAt(index)) callback(ratedDocAt(index), index)
+      for (let index = 0; index < count; index += 1)
+        if (ratedDocExistsAt(index)) callback(ratedDocAt(index), index)
     }
-    const refreshRatedDocs = (count) => window.quepidSearch.queryCapabilities.refreshRatedDocs(query.queryId, count)
-    const eachDocWithRatingEqualTo = (rating, callback) => bestDocs.forEach((doc) => {
-      if (doc.rating === rating) callback(doc)
-    })
+    const refreshRatedDocs = (count) =>
+      window.quepidSearch.queryCapabilities.refreshRatedDocs(query.queryId, count)
+    const eachDocWithRatingEqualTo = (rating, callback) =>
+      bestDocs.forEach((doc) => {
+        if (doc.rating === rating) callback(doc)
+      })
     const eachDocWithRating = (callback) => bestDocs.forEach(callback)
     const topRatings = (count) => getBestRatings(count, bestDocs)
-    const qOption = (key) => options && Object.prototype.hasOwnProperty.call(options, key) ? options[key] : null
+    const qOption = (key) =>
+      options && Object.prototype.hasOwnProperty.call(options, key) ? options[key] : null
     const recordDepthOfRanking = (count) => {
       query.depthOfRating = count
       scorer.depthOfRating = count
@@ -207,23 +221,78 @@ export function createScorer(data = {}, { promiseApi = Promise, schedule } = {})
     const pass = () => deferred.resolve(100)
     const fail = () => deferred.reject(0)
     const setScore = (score) => deferred.resolve(score)
-    const assert = (condition) => { if (!condition) fail() }
-    const assertOrScore = (condition, score) => { if (!condition) setScore(score) }
+    const assert = (condition) => {
+      if (!condition) fail()
+    }
+    const assertOrScore = (condition, score) => {
+      if (!condition) setScore(score)
+    }
 
     if (mode === "max" && (scorer.code || "").includes("pass()")) return 100
     const code = `${scorer.code || ""}\nif (typeof k !== 'undefined') { recordDepthOfRanking(k) }`
     const names = [
-      "query", "total", "docs", "bestDocs", "mode", "options", "docAt", "docExistsAt",
-      "ratedDocAt", "ratedDocExistsAt", "hasDocRating", "docRating", "numFound", "numReturned",
-      "avgRating", "avgRating100", "editDistanceFromBest", "eachDoc", "eachRatedDoc", "refreshRatedDocs",
-      "eachDocWithRatingEqualTo", "eachDocWithRating", "topRatings", "qOption", "recordDepthOfRanking",
-      "pass", "fail", "setScore", "assert", "assertOrScore"
+      "query",
+      "total",
+      "docs",
+      "bestDocs",
+      "mode",
+      "options",
+      "docAt",
+      "docExistsAt",
+      "ratedDocAt",
+      "ratedDocExistsAt",
+      "hasDocRating",
+      "docRating",
+      "numFound",
+      "numReturned",
+      "avgRating",
+      "avgRating100",
+      "editDistanceFromBest",
+      "eachDoc",
+      "eachRatedDoc",
+      "refreshRatedDocs",
+      "eachDocWithRatingEqualTo",
+      "eachDocWithRating",
+      "topRatings",
+      "qOption",
+      "recordDepthOfRanking",
+      "pass",
+      "fail",
+      "setScore",
+      "assert",
+      "assertOrScore"
     ]
     const values = [
-      query, total, docs, bestDocs, mode, options, docAt, docExistsAt, ratedDocAt, ratedDocExistsAt,
-      hasDocRating, docRating, numFound, numReturned, avgRating, avgRating100, editDistanceFromBest,
-      eachDoc, eachRatedDoc, refreshRatedDocs, eachDocWithRatingEqualTo, eachDocWithRating, topRatings,
-      qOption, recordDepthOfRanking, pass, fail, setScore, assert, assertOrScore
+      query,
+      total,
+      docs,
+      bestDocs,
+      mode,
+      options,
+      docAt,
+      docExistsAt,
+      ratedDocAt,
+      ratedDocExistsAt,
+      hasDocRating,
+      docRating,
+      numFound,
+      numReturned,
+      avgRating,
+      avgRating100,
+      editDistanceFromBest,
+      eachDoc,
+      eachRatedDoc,
+      refreshRatedDocs,
+      eachDocWithRatingEqualTo,
+      eachDocWithRating,
+      topRatings,
+      qOption,
+      recordDepthOfRanking,
+      pass,
+      fail,
+      setScore,
+      assert,
+      assertOrScore
     ]
 
     const execute = () => {
@@ -246,30 +315,47 @@ export function createScorer(data = {}, { promiseApi = Promise, schedule } = {})
   function score(query, total, docs, bestDocs, options) {
     bestDocs = bestDocs || []
     const max = scorer.maxScore()
-    return scorer.runCode(query, total, docs, bestDocs, undefined, options).then((calculated) => {
-      if (calculated === null) {
-        if (docs.length === 0) return "zsr"
-        if (bestDocs.length === 0) return "--"
+    return scorer.runCode(query, total, docs, bestDocs, undefined, options).then(
+      (calculated) => {
+        if (calculated === null) {
+          if (docs.length === 0) return "zsr"
+          if (bestDocs.length === 0) return "--"
+        }
+        if (typeof calculated === "number") {
+          if (calculated < 0 && calculated === max) return null
+          if (calculated < 0) return 0
+          if (calculated > max) return max
+          if (max === 0) return 0
+          return calculated
+        }
+        scorer.error = calculated
+        return null
+      },
+      (error) => {
+        scorer.error = error
+        return null
       }
-      if (typeof calculated === "number") {
-        if (calculated < 0 && calculated === max) return null
-        if (calculated < 0) return 0
-        if (calculated > max) return max
-        if (max === 0) return 0
-        return calculated
-      }
-      scorer.error = calculated
-      return null
-    }, (error) => {
-      scorer.error = error
-      return null
-    })
+    )
   }
 
   Object.assign(scorer, {
-    avg100, baseAvg, baseAvgRounded, checkCode, distanceFromBest, editDistance,
-    getBestRatings, getColors, hasLoop, maxScore, runCode, scaleToArray, scaleToColors,
-    scaleToScaleWithLabels, score, showScaleLabel, teamNames
+    avg100,
+    baseAvg,
+    baseAvgRounded,
+    checkCode,
+    distanceFromBest,
+    editDistance,
+    getBestRatings,
+    getColors,
+    hasLoop,
+    maxScore,
+    runCode,
+    scaleToArray,
+    scaleToColors,
+    scaleToScaleWithLabels,
+    score,
+    showScaleLabel,
+    teamNames
   })
   return scorer
 }

@@ -9,7 +9,6 @@
 
 angular.module('QuepidApp', [
   'ngSanitize',
-  'o19s.splainer-search',
   'ng-rails-csrf',
   'templates',
 ]);

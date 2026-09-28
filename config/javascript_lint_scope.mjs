@@ -11,7 +11,7 @@ import { join, relative } from 'node:path';
 export const LEGACY_ESBUILD_ENTRIES = [
   'app/javascript/angular_app.js',
   'app/javascript/jquery_bundle.js',
-  'app/javascript/splainer_search_adapter.js',
+  'app/javascript/utils/splainer_search_runtime.js',
 ];
 
 /** Directory names under app/javascript/ never linted (vendored Angular plugins). */

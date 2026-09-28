@@ -24,17 +24,17 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 12 files, 8 register with Angular |
+| Angular JS source files (`app/assets/javascripts`) | 8 files, 5 register with Angular |
 | HTML templates (`app/assets/templates`) | 2 |
 | Controllers | 0 |
 | Services | 0 (`.service()` registrations) |
-| Factories | 1 |
+| Factories | 0 |
 | Filters | 1 under `filters/` |
 | Custom directives / components | 1 directive, no components |
-| `QuepidApp` module dependencies | 4 |
-| Vendored Angular libraries (`app/javascript/vendor`) | 6 packages (+ `angular` core from npm) |
-| Karma unit specs (`spec/javascripts/angular`) | 4 |
-| Vitest unit specs (`test/javascript/**/*.test.js`) | 116 |
+| `QuepidApp` module dependencies | 3 |
+| Vendored Angular libraries (`app/javascript/vendor`) | 1 package (+ `angular` core from npm) |
+| Karma unit specs (`spec/javascripts/angular`) | 1 |
+| Vitest unit specs (`test/javascript/**/*.test.js`) | 134 |
 | Playwright specs (`test/playwright/*.spec.ts`) | 24 |
 
 ---
@@ -386,7 +386,7 @@ The query-list shell is Rails-rendered and no longer declares an Angular scope. 
 | Module | Source | Used for | Replace with |
 |--------|--------|----------|--------------|
 | `ngSanitize` | `angular-sanitize` | `ng-bind-html` | DOMPurify or server sanitize |
-| `o19s.splainer-search` | `splainer_search_adapter.js` | Search HTTP | `splainer-search/wired.js` directly |
+| `splainer-search` | `utils/splainer_search_runtime.js` | Native search HTTP and document services | `splainer-search/wired.js` directly |
 | `ng-rails-csrf` | `interceptors/rails-csrf.js` | CSRF on `$http` | Fetch wrapper with CSRF meta tag |
 | `templates` | `build_templates.js` | `$templateCache` | ERB partials / Stimulus templates |
 
@@ -540,9 +540,9 @@ Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 
 ## Other inventory
 
-### Splainer-search shim
+### Splainer-search runtime
 
-`app/javascript/splainer_search_adapter.js` — wraps fetch in Angular `$q` for digest cycles. Drop when off Angular.
+`app/javascript/utils/splainer_search_runtime.js` initializes the wired search and document services with native promises in the framework-free case bundle. The Angular `$q` shim has been removed; remaining consumers use explicit stores/events for UI updates.
 
 ### DOM bridge (`quepid_dom.js`)
 
@@ -572,11 +572,11 @@ Core layout loads: `json-explorer` (Quepid-owned, styles the vanilla JSON tree).
 | yarn scripts | `build:case-runtime` and `build:angular*` included in `yarn build` |
 | Linked stylesheets | `build_css.js` → `copyLinkedStylesheets()` · audit: `audit_css.js` |
 
-Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (6 packages; see [vendor README](../../app/javascript/vendor/README.md))
+Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (1 package; see [vendor README](../../app/javascript/vendor/README.md))
 
 ### Tests
 
-- **Karma:** 12 specs in `spec/javascripts/angular/`; loads all three Angular bundles + `angular-mocks`
+- **Karma:** 1 spec in `spec/javascripts/angular/`; loads the remaining Angular bundles + `angular-mocks`
 - **Vitest (116 specs):** includes the framework-free stores, runtimes, and migrated Stimulus controllers under `test/javascript/`
 - **Playwright (24 specs; Angular core and Stimulus):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
 - **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case_smoke.spec.ts` — core toolbar share/unshare; `dom_migration_screenshots.spec.ts` — per-surface before/after shots (`share-case/` core, `share-case-rails/` index)
@@ -614,7 +614,7 @@ window.location.href = navigationRuntime.getQuepidRootUrl() + '/cases'
 ### JavaScript
 
 - [ ] `app/assets/javascripts/` (entire tree)
-- [ ] `app/javascript/angular_app.js`, `quepid_dom.js`, `splainer_search_adapter.js`
+- [ ] `app/javascript/angular_app.js`, `quepid_dom.js`
 - [ ] `app/javascript/vendor/angular-*`, `ng-*`
 - [ ] `app/assets/templates/`
 
