@@ -68,7 +68,7 @@ export class CaseScoreStore extends EventTarget {
 }
 
 // One case workspace per page load — a case/try switch is a real navigation
-// (`caseTryNavSvc.navigateTo()` is `$window.location.assign`), not an SPA
+// (navigation uses a full-document location assignment), not an SPA
 // route change, so a module-scoped singleton is safe: a fresh page load gets
 // a fresh store.
 export const caseScoreStore = new CaseScoreStore()

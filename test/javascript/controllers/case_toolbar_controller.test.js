@@ -2,10 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import CaseToolbarController from "controllers/case_toolbar_controller"
 
 /**
- * This controller exists only to bridge the server-rendered case header to the Angular services
- * that still run the case page, in both directions. It deliberately does not copy the case name
- * onto the toolbar's modal triggers — those read it live via `utils/case_header` — so there is no
- * attribute synchronisation to cover here.
+ * This controller bridges the server-rendered case header to the framework-free case runtime.
+ * It deliberately does not copy the case name onto the toolbar's modal triggers — those read it
+ * live via `utils/case_header`.
  */
 function buildToolbar() {
   const element = document.createElement("div")
@@ -16,34 +15,21 @@ function buildToolbar() {
   return controller
 }
 
-function buildFrame({
-  id = "case_header",
-  caseNo = "7",
-  caseName = "New Name",
-  tryNo = "4",
-  tryName = "Try 4"
-} = {}) {
+function buildFrame({ caseName = "New Name" } = {}) {
   const frame = document.createElement("turbo-frame")
-  frame.id = id
+  frame.id = "case_header"
 
   const meta = document.createElement("div")
-  if (caseNo !== null) meta.setAttribute("data-case-header-case-no", caseNo)
-  if (caseName !== null) meta.setAttribute("data-case-header-case-name", caseName)
-  if (tryNo !== null) meta.setAttribute("data-case-header-try-no", tryNo)
-  if (tryName !== null) meta.setAttribute("data-case-header-try-name", tryName)
+  meta.setAttribute("data-case-header-case-no", "7")
+  meta.setAttribute("data-case-header-case-name", caseName)
 
   const display = document.createElement("span")
   display.setAttribute("data-case-rename-target", "caseDisplay")
-  display.textContent = caseName ?? ""
+  display.textContent = caseName
   meta.appendChild(display)
-
   frame.appendChild(meta)
   document.body.appendChild(frame)
   return frame
-}
-
-function renderFrame(controller, frame) {
-  CaseToolbarController.prototype.handleFrameRender.call(controller, { target: frame })
 }
 
 describe("CaseToolbarController", () => {
@@ -75,41 +61,8 @@ describe("CaseToolbarController", () => {
     expect(dispatched[0].type).toBe("toggleEast")
   })
 
-  describe("header frame re-rendered by Rails", () => {
-    it("bridges the rename to caseSvc and settingsSvc", () => {
-      renderFrame(controller, buildFrame())
-
-      const caseEvent = dispatched.find((e) => e.type === "case-header:renamed")
-      const tryEvent = dispatched.find((e) => e.type === "case-header:try-renamed")
-
-      expect(caseEvent.detail).toEqual({ caseNo: 7, caseName: "New Name" })
-      expect(tryEvent.detail).toEqual({ tryNo: 4, name: "Try 4" })
-    })
-
-    it("ignores frames other than the case header", () => {
-      renderFrame(controller, buildFrame({ id: "some_other_frame" }))
-
-      expect(dispatched).toHaveLength(0)
-    })
-
-    it("does not dispatch a try rename when the header has no try", () => {
-      renderFrame(controller, buildFrame({ tryNo: null, tryName: null }))
-
-      expect(dispatched.map((e) => e.type)).toEqual(["case-header:renamed"])
-    })
-
-    it("survives a frame render with no header metadata", () => {
-      const frame = document.createElement("turbo-frame")
-      frame.id = "case_header"
-      document.body.appendChild(frame)
-
-      expect(() => renderFrame(controller, frame)).not.toThrow()
-      expect(dispatched).toHaveLength(0)
-    })
-  })
-
   /**
-   * The wizard renames the case through Angular's caseSvc, and the header is server-rendered, so
+   * The wizard renames the case through the case runtime, and the header is server-rendered, so
    * nothing would update it. The name is patched synchronously rather than waiting on the frame
    * refetch: under load that round trip loses the race with whatever reads the header next, which
    * is exactly how the wizard E2E spec failed.
@@ -231,7 +184,6 @@ describe("CaseToolbarController", () => {
     CaseToolbarController.prototype.connect.call(controller)
     CaseToolbarController.prototype.disconnect.call(controller)
 
-    expect(remove).toHaveBeenCalledWith("turbo:frame-render", controller.onFrameRender)
     expect(remove).toHaveBeenCalledWith("quepid:case-renamed", controller.onAngularRename)
     expect(remove).toHaveBeenCalledWith("pick-scorer:selected", controller.onScorerSelected)
   })

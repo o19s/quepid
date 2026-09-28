@@ -2,7 +2,7 @@
   Server-rendered case header for the Angular core case page.
 
   Everything here is Rails model data that CoreController already loads, so it is rendered
-  from `kase`/`a_try` rather than interpolated out of the Angular caseSvc/settingsSvc models.
+  from `kase`/`a_try` rather than interpolated out of Angular models.
   The rename forms post to Core::CaseHeaderController and re-render this frame in place,
   which is what replaces Angular's digest on this surface.
 

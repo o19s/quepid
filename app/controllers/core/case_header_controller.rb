@@ -5,8 +5,8 @@ module Core
   #
   # The header (case name, try name, nightly/public/archived badges, scorer name) is
   # plain Rails model data that `CoreController` already loads, so it is rendered from
-  # `@case`/`@try` instead of being interpolated out of the Angular `caseSvc`/`settingsSvc`
-  # models. Renames post here and re-render the `case_header` Turbo Frame in place, which
+  # `@case`/`@try` instead of being interpolated out of Angular models. Renames post here and
+  # re-render the `case_header` Turbo Frame in place, which
   # is what replaces Angular's digest for this surface.
   #
   # Only the live, client-computed parts of the header (the score badges) stay in Angular.

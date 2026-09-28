@@ -35,14 +35,6 @@ describe("SnapshotBridgeController", () => {
     snapshotApi.deleteSnapshot.mockResolvedValue(undefined)
     api.apiFetch.mockReset()
     services = {
-      settingsSvc: {
-        editableSettings: vi.fn().mockReturnValue({}),
-        supportLookupById: vi.fn()
-      },
-      caseTryNavSvc: {
-        getQuepidRootUrl: vi.fn().mockReturnValue("/"),
-        getCaseNo: vi.fn().mockReturnValue(1)
-      },
       fieldSpecSvc: { createFieldSpec: vi.fn() },
       docCache: {
         addIds: vi.fn(),

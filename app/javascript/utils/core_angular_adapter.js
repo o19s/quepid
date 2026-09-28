@@ -7,6 +7,7 @@ import { createUserRuntime } from "utils/user_runtime"
 import { createConfigurationRuntime } from "utils/configuration_runtime"
 import { createNavigationRuntime } from "utils/navigation_runtime"
 import { createCaseRuntime } from "utils/case_runtime"
+import { apiFetch } from "api/fetch"
 
 /**
  * Temporary seam for the Angular services that still own live case state.
@@ -35,6 +36,63 @@ const settingsRuntime = createSettingsRuntime({
     window.quepidSearch?.splainerSearch?.fieldSpecSvc?.createFieldSpec(value) || {}
 })
 const userRuntime = createUserRuntime()
+
+function createPromiseApi() {
+  return {
+    resolve: (value) => Promise.resolve(value),
+    reject: (value) => Promise.reject(value),
+    all: (values) => Promise.all(values),
+    defer: () => {
+      let resolve
+      let reject
+      const promise = new Promise((promiseResolve, promiseReject) => {
+        resolve = promiseResolve
+        reject = promiseReject
+      })
+      return { promise, resolve, reject }
+    }
+  }
+}
+
+export function createNativeFramework(rootScope) {
+  const promiseApi = createPromiseApi()
+  const request = async (options = {}) => {
+    const method = options.method || "GET"
+    const url = new URL(options.url, document.baseURI || window.location.href)
+    Object.entries(options.params || {}).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) url.searchParams.set(key, value)
+    })
+
+    const headers = { ...(options.headers || {}) }
+    const init = { method, headers }
+    if (options.data !== undefined) {
+      headers["Content-Type"] ||= "application/json"
+      init.body = typeof options.data === "string" ? options.data : JSON.stringify(options.data)
+    }
+
+    const response = await apiFetch(url.toString(), init)
+    const data = response.status === 204 ? null : await response.json().catch(() => null)
+    const result = {
+      data,
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText
+    }
+    if (!response.ok) throw result
+    return result
+  }
+
+  return {
+    request,
+    get: (url) => request({ method: "GET", url }),
+    promiseApi,
+    schedule: (callback) => rootScope.$evalAsync(callback),
+    applyAsync: (callback) => rootScope.$applyAsync(callback),
+    logger: console,
+    reject: promiseApi.reject,
+    resolve: promiseApi.resolve
+  }
+}
 
 export function waitForAngularServices(serviceNames, { intervalMs = 50, maxAttempts = 100 } = {}) {
   return new Promise((resolve, reject) => {
@@ -112,7 +170,7 @@ export function resetCoreServiceCache() {
 const capabilityDefinitions = {
   bootstrap: {
     controller: "core_bootstrap_controller",
-    services: ["$rootScope", "$http", "$q", "$log", "ScorerFactory"]
+    services: ["$rootScope", "ScorerFactory"]
   },
   snapshots: {
     controller: "snapshot_bridge_controller",
@@ -149,13 +207,14 @@ async function loadCapability(name) {
 
   window.quepidSearch ||= {}
   window.quepidSearch.caseRuntime ||= {}
+  const nativeFramework = name === "bootstrap" ? createNativeFramework(services.$rootScope) : null
   const scorerCatalog =
     name === "bootstrap"
       ? createScorerCatalog({
-          request: services.$http,
+          request: nativeFramework.request,
           constructFromData: (data) => new services.ScorerFactory(data),
           initialDefault: new services.ScorerFactory(),
-          promiseApi: services.$q
+          promiseApi: nativeFramework.promiseApi
         })
       : null
   window.quepidSearch.caseRuntime[name] =
@@ -349,19 +408,10 @@ function createCoreCapabilities(services, scorerCatalog, userRuntime) {
 }
 
 function createLiveQueryCapabilities(services, scorerCatalog) {
-  const { $rootScope, $http, $q, $log } = services
+  const framework = createNativeFramework(services.$rootScope)
 
   return {
-    framework: {
-      request: (options) => $http(options),
-      get: (url) => $http.get(url),
-      promiseApi: $q,
-      schedule: (callback) => $rootScope.$evalAsync(callback),
-      applyAsync: (callback) => $rootScope.$applyAsync(callback),
-      logger: $log,
-      reject: (message) => $q.reject(message),
-      resolve: (value) => $q.resolve(value)
-    },
+    framework,
     domain: {
       settings: {
         editable: () => settingsRuntime.editable(),

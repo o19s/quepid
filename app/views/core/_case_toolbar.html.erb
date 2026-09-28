@@ -1,9 +1,9 @@
 <%#
   Server-rendered case-action toolbar for the Angular core case page.
 
-  Each link's `data-*` attributes used to be Angular interpolations of caseSvc/settingsSvc models
-  (`{{ caseModel.selectedCase().caseNo }}` and friends). Every one of those values is Rails model
-  data that CoreController already has, so they are rendered from `kase`/`a_try` directly.
+  Each link's `data-*` attributes used to be Angular interpolations of case and try models.
+  Every one of those values is Rails model data that CoreController already has, so they are
+  rendered from `kase`/`a_try` directly.
 
   This is deliberately NOT inside the `case_header` Turbo Frame: the case toolbar contains
   live-query bridges, and Angular only compiles the page once at bootstrap.

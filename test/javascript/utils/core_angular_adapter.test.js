@@ -4,6 +4,7 @@ import {
   getSnapshotCapabilities,
   getTuneRelevanceCapabilities,
   getWizardCapabilities,
+  createNativeFramework,
   resetCoreServiceCache,
   runInAngular,
   waitForAngularServices
@@ -20,17 +21,45 @@ describe("core Angular adapter", () => {
 
   it("resolves the requested services from the core injector", async () => {
     document.body.setAttribute("ng-app", "QuepidApp")
-    const services = { settingsSvc: { name: "settings" }, caseSvc: { name: "case" } }
+    const services = { $rootScope: { name: "root" }, ScorerFactory: { name: "scorer" } }
     const injector = { get: vi.fn(name => services[name]) }
     window.angular = { element: vi.fn(() => ({ injector: () => injector })) }
 
-    await expect(waitForAngularServices(["settingsSvc", "caseSvc"])).resolves.toEqual(services)
-    expect(injector.get).toHaveBeenCalledWith("settingsSvc")
-    expect(injector.get).toHaveBeenCalledWith("caseSvc")
+    await expect(waitForAngularServices(["$rootScope", "ScorerFactory"])).resolves.toEqual(services)
+    expect(injector.get).toHaveBeenCalledWith("$rootScope")
+    expect(injector.get).toHaveBeenCalledWith("ScorerFactory")
+  })
+
+  it("preserves mounted paths, serialized bodies, and failed-request rejection", async () => {
+    document.head.innerHTML = '<base href="/quepid-app/">'
+    const rootScope = { $evalAsync: vi.fn(), $applyAsync: vi.fn() }
+    const framework = createNativeFramework(rootScope)
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ saved: true }), { status: 200, statusText: "OK" })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "nope" }), { status: 422, statusText: "Unprocessable Entity" })
+      )
+
+    await framework.request({
+      method: "DELETE",
+      url: "api/cases/1/ratings",
+      data: JSON.stringify({ rating: { doc_id: "doc-1" } })
+    })
+
+    expect(fetchMock.mock.calls[0][0]).toBe("http://localhost:3000/quepid-app/api/cases/1/ratings")
+    expect(fetchMock.mock.calls[0][1].body).toBe(JSON.stringify({ rating: { doc_id: "doc-1" } }))
+    await expect(framework.request({ url: "api/cases/1/queries" })).rejects.toMatchObject({
+      data: { error: "nope" },
+      status: 422,
+      ok: false
+    })
   })
 
   it("rejects when Angular never becomes available", async () => {
-    await expect(waitForAngularServices(["settingsSvc"], { intervalMs: 0, maxAttempts: 1 }))
+    await expect(waitForAngularServices(["missingService"], { intervalMs: 0, maxAttempts: 1 }))
       .rejects.toThrow("Unable to load the Angular core services.")
   })
 
@@ -94,6 +123,9 @@ describe("core Angular adapter", () => {
     expect(injector.get).not.toHaveBeenCalledWith("queriesSvc")
     expect(injector.get).not.toHaveBeenCalledWith("configurationSvc")
     expect(injector.get).not.toHaveBeenCalledWith("caseTryNavSvc")
+    expect(injector.get).not.toHaveBeenCalledWith("$http")
+    expect(injector.get).not.toHaveBeenCalledWith("$q")
+    expect(injector.get).not.toHaveBeenCalledWith("$log")
   })
 
   it("reports the named controller when a capability cannot initialize", async () => {

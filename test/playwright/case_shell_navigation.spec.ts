@@ -3,9 +3,8 @@ import { test, expect, type Page } from '@playwright/test';
 /**
  * E2E coverage for the core-case-shell migration: `ngRoute` was removed,
  * `core-bootstrap` now bootstraps from server-rendered case/try values through
- * the temporary Angular service adapter, and `caseTryNavSvc.navigateTo()`/`notFound()`
- * do a real `$window.location.assign()` instead of an in-SPA `$location`
- * route change. See docs/todo/angularjs_removal_inventory.md's shell
+ * framework-free runtimes, and recent-case links do a full document navigation
+ * instead of an in-SPA route change. See docs/todo/angularjs_removal_inventory.md's shell
  * migration parity table.
  *
  * Uses disposable cases created via the API (same pattern as
@@ -77,8 +76,7 @@ test.describe('core case shell: boot without ngRoute', () => {
       const recentCases = page.locator('.dropdown-menu', { hasText: 'RECENT CASES' }).first();
       await expect(recentCases).toBeVisible();
 
-      // caseTryNavSvc.navigateTo() now calls $window.location.assign() --
-      // wait for an actual new-document load, not just a URL/DOM change,
+      // Wait for an actual new-document load, not just a URL/DOM change,
       // to prove this isn't an in-SPA route swap.
       const loadEvent = page.waitForEvent('load', { timeout: 15_000 });
       await recentCases.getByRole('link').filter({ hasText: /Shell-Nav-B/ }).click();

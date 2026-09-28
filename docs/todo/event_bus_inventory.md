@@ -49,10 +49,6 @@ native document-event fallback for bundles that do not load the modern store.
 
 | Event name | Emitter(s) | Listener(s) | Listener kind | Notes |
 |------------|------------|-------------|---------------|-------|
-| `case-header:renamed` | `case_toolbar_controller.js` | `caseSvc.js` | native event | Server-rendered header rename updates the Angular-owned case directly. |
-| `quepid:case-team-changed` | `share_case_core_controller.js` | `caseSvc.js` | native event | Core share/unshare updates the selected case in memory. |
-| `case-book:associated` | `caseSvc.js` | `queriesSvc.js` | native event | Replaces `associateBook`; the query service re-fetches case book-sync flags. |
-| `case-settings:updated` | `settingsSvc.js` | `caseSvc.js` | native event | Replaces `settings-updated`; one service-level listener updates current in-memory cases. |
 | `rating-changed` | `CaseScoreStore` | `queriesSvc.js`, `qscore_case_controller.js` | EventTarget store | Normal rating-change path. |
 | `ratings:changed` | `queriesSvc.js` | `queriesSvc.js` | native event | Compatibility fallback when an older Angular bundle has no `CaseScoreStore`; payload is `{ queryId }`. The framework-free `RatingsStore` now calls the query service's notification callback directly. |
 | `scoring-complete` | `CaseScoreStore` | `qscore_case_controller.js`, `qgraph_controller.js` | EventTarget store | Fully migrated from the former Angular score event. |
@@ -64,7 +60,7 @@ native document-event fallback for bundles that do not load the modern store.
 | Query/document state | `case-book:associated`, `query-options:saved`, `query-diffs:refreshed`, `queries-state:changed` | Named document `CustomEvent`s; Angular remains the live query owner where noted. |
 | Score/rating state | `rating-changed`, `scoring-complete`, `ratings:changed` | `CaseScoreStore` for the normal path; native document fallback only when the modern store is absent. |
 | Navigation/bootstrap lifecycle | `core-bootstrap:ready`, `core-bootstrap:failed`, `quepid:case-header-stale` | Named document `CustomEvent`s with Stimulus connect/disconnect ownership. |
-| Modal/action completion | `quepid:case-team-changed`, `case-header:renamed`, `case-score:persisted`, `judgements:book-settings-saved` | Named document `CustomEvent`s; payloads are documented at emitters and covered by focused tests. |
+| Modal/action completion | `quepid:case-team-changed`, `case-score:persisted`, `judgements:book-settings-saved` | Named document `CustomEvent`s; payloads are documented at emitters and covered by focused tests. |
 | Legacy-only/dead | `caseSelected`, `fetchedDropdownCasesList`, `caseUpdate`, `settings-changed`, `updatedQueriesList` | Removed; no replacement event is emitted. |
 
 The dead broadcasts `caseSelected`, `fetchedDropdownCasesList`, `caseUpdate`,
@@ -77,7 +73,6 @@ than replaced with no-op events.
 |------|------|--------|--------------|
 | `controllers/qscore_case_controller.js` | store | `scoring-complete`, `rating-changed` | yes (`disconnect`) |
 | `controllers/qgraph_controller.js` | store | `scoring-complete` | yes (`disconnect`) |
-| `services/caseSvc.js` | document | `case-header:renamed`, `quepid:case-team-changed`, `judgements:book-settings-saved`, `case-settings:updated` | app lifetime; one listener per event |
 | `utils/live_query_runtime_initializer.js` | document + store | `case-book:associated`, `query-options:saved`, `rating-changed`, `ratings:changed` | app lifetime / store-owned |
 
 ## Migration-relevant observations

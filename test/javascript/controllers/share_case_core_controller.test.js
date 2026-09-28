@@ -162,7 +162,7 @@ describe("ShareCaseCoreController — modal list UI", () => {
 
 describe("ShareCaseCoreController — API share/unshare", () => {
   // HTTP contracts: Karma teamSvc_spec.js shareCase / unshareCase (Stimulus uses apiFetch instead).
-  // Event emission: Karma caseSvc_spec.js quepid:case-team-changed bridge (receiver stays in Karma).
+  // Event emission: the core share flow dispatches a native case-team-changed event.
   beforeEach(() => {
     vi.clearAllMocks()
   })

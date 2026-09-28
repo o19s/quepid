@@ -11,8 +11,8 @@ import { test, expect, type Page } from '@playwright/test';
  *
  * What only an end-to-end test can catch here is the bridging, since the
  * things that must stay in step live *outside* the frame: the toolbar's modal
- * trigger attributes, and the Angular caseSvc/settingsSvc models that the rest
- * of the still-Angular page reads. Vitest covers the controllers in isolation.
+ * trigger attributes and the core Stimulus controllers. Vitest covers the
+ * controllers in isolation.
  *
  * Uses disposable cases created via the API (same pattern as
  * case_shell_navigation.spec.ts) so it never touches shared fixture data.
@@ -83,15 +83,6 @@ test.describe('core case header: rename (server-rendered Turbo Frame)', () => {
     await page.locator('#shareCaseModal [data-bs-dismiss="modal"]').first().click();
     await expect(page.locator('#shareCaseModal.show')).toBeHidden({ timeout: 10_000 });
 
-    // Angular still owns the recent-cases dropdown, which refreshes off caseSvc. The page shell
-    // no longer has a MainCtrl scope, so resolve the injector from the ng-app root directly.
-    // Poll rather than sample once: this is an event bridge dispatched on
-    // turbo:frame-render, so it is eventually consistent by design.
-    await expect.poll(async () => page.evaluate(() => {
-      const el = (window as any).angular.element(document.querySelector('[ng-app]'));
-      return el.injector().get('caseSvc').getSelectedCase().caseName;
-    }), { timeout: 15_000 }).toBe(newName);
-
     await page.reload();
     await expect(page.locator(caseDisplay)).toHaveText(newName, { timeout: 20_000 });
   });
@@ -107,12 +98,6 @@ test.describe('core case header: rename (server-rendered Turbo Frame)', () => {
 
     await expect(page.locator(tryDisplay)).toHaveText('Baseline - Try 1', { timeout: 15_000 });
 
-    // Same bridge, and settingsSvc may still be loading its tries when the frame
-    // first re-renders, in which case the bridge no-ops and retries on the next one.
-    await expect.poll(async () => page.evaluate(() => {
-      const el = (window as any).angular.element(document.querySelector('[ng-app]'));
-      return el.injector().get('settingsSvc').applicableSettings().name;
-    }), { timeout: 15_000 }).toBe('Baseline');
   });
 
   test('keeps Rename disabled for a blank name and restores on cancel', async ({ page }) => {

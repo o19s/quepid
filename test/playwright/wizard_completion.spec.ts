@@ -17,10 +17,9 @@ import { dynamicRegions } from './angular_case_helpers';
  * We do NOT run this against an existing fixture case (e.g. case id 1,
  * which other specs share): the wizard's Finish step renames the
  * *current* case and adds queries to it in place (wizard_controller#finish
- * -> caseSvc.renameCase + the query lifecycle persistence contract), so completing it on
+ * -> the case runtime + query lifecycle persistence contract), so completing it on
  * a shared case would corrupt other tests' fixtures. Instead we first
- * create a disposable case via the header's "Create a case" button (same
- * caseSvc.createCase() the wizard's own "New Case" affordance uses), run
+ * create a disposable case via the API, run
  * the wizard against that, then delete it via the API afterward.
  *
  * The Endpoint step is driven through "Use an existing Search Endpoint" ->
@@ -39,8 +38,7 @@ async function apiHeaders(page: Page) {
 }
 
 /**
- * Creates a disposable case the same way the header's "Create a case"
- * button does (caseSvc.createCase() -> POST api/cases), but via the API
+ * Creates a disposable case via POST api/cases rather than clicking through
  * directly rather than clicking through an existing case page first — case
  * id 1 (and other shared fixture cases) can be slow/flaky to render in
  * this environment (a known, separately-tracked issue; see
@@ -99,13 +97,9 @@ test.describe('Case creation wizard', () => {
     try {
       // Navigate with an explicit /try/1/ segment rather than the bare
       // `case/:id?showWizard=true` form other (unfinished) wizard specs use:
-      // without it, caseTryNavSvc never learns a try number (it stays NaN)
-      // even though the page renders "Try 1" from the API response, and the
-      // wizard's Finish step later 404s ("Try not found!") PATCHing
-      // `api/cases/:id/tries/NaN`. This is how real navigation always
-      // reaches a case (case-list clicks and caseSvc.createCase() both
-      // build `/case/:id/try/:tryNo/` paths), so it sidesteps what looks
-      // like a preexisting bug in the bare-URL path without masking it.
+      // Without the explicit try segment, the bare URL does not provide the
+      // try number needed by the wizard's Finish step. Real navigation also
+      // reaches a case through this `/case/:id/try/:tryNo/` shape.
       await page.goto(`case/${caseId}/try/1?showWizard=true`);
       const modal = page.locator('.modal.show').first();
       await expect(modal).toBeVisible({ timeout: 15_000 });

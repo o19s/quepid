@@ -9,7 +9,7 @@
   2. `target: "_self"`: AngularJS's own `$locationProvider.html5Mode(true)` installs a
      document-wide click handler that rewrites any same-origin link lacking a `target` attribute
      into a client-side route change - the same escape hatch every other link in
-     _header_core_app.html.erb already relies on (see caseTryNavSvc.js). Without both, Turbo
+     _header_core_app.html.erb already relies on. Without both, Turbo
      correctly steps aside but Angular then intercepts the click itself.
 
   Skipping either one leaves the URL changing while the page silently keeps showing the old case.
