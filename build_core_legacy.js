@@ -1,18 +1,17 @@
 #!/usr/bin/env node
 
-// Node.js script to build Angular application bundle with proper file watching
-// Replaces build_angular_app.sh with better file watching using chokidar
+// Node.js script to build the core legacy bundle with proper file watching
+// Replaces the old shell-based core bundle watcher with chokidar
 
 const fs = require('fs');
 const path = require('path');
 
-const OUTPUT_FILE = 'app/assets/builds/quepid_angular_app.js';
-const VENDOR_OUTPUT = 'app/assets/builds/angular_app.js';
+const OUTPUT_FILE = 'app/assets/builds/core_legacy.js';
+const VENDOR_OUTPUT = 'app/assets/builds/core_vendor.js';
 
 // Directories and files to watch
 const WATCH_PATHS = [
   'app/assets/javascripts/utilitiesModule.js',
-  'app/assets/javascripts/app.js',
   'app/assets/javascripts/components',
   'app/assets/javascripts/controllers',
   'app/assets/javascripts/directives',
@@ -26,12 +25,12 @@ const WATCH_PATHS = [
   'app/assets/javascripts/ace_config.js'
 ];
 
-function buildAngularApp() {
-  console.log('Building Quepid Angular application bundle...');
+function buildCoreLegacy() {
+  console.log('Building core legacy bundle...');
 
   try {
     // Start with a clean file
-    let output = '// Quepid Angular Application Bundle\n';
+    let output = '// Quepid core legacy bundle\n';
     output += `// Generated on ${new Date().toISOString()}\n`;
     output += '\n';
 
@@ -39,13 +38,6 @@ function buildAngularApp() {
     if (fs.existsSync('app/assets/javascripts/utilitiesModule.js')) {
       output += '// Utilities Module\n';
       output += fs.readFileSync('app/assets/javascripts/utilitiesModule.js', 'utf8');
-      output += '\n\n';
-    }
-
-    // Add main app module
-    if (fs.existsSync('app/assets/javascripts/app.js')) {
-      output += '// Main App Module\n';
-      output += fs.readFileSync('app/assets/javascripts/app.js', 'utf8');
       output += '\n\n';
     }
 
@@ -165,24 +157,24 @@ function buildAngularApp() {
     fs.writeFileSync(OUTPUT_FILE, output);
     
     const stats = fs.statSync(OUTPUT_FILE);
-    console.log(`Angular application bundle created at ${OUTPUT_FILE}`);
+    console.log(`Core legacy bundle created at ${OUTPUT_FILE}`);
     console.log(`File size: ${(stats.size / 1024).toFixed(1)}KB`);
     
     return true;
   } catch (error) {
-    console.error('Error building Angular app:', error.message);
+    console.error('Error building core legacy bundle:', error.message);
     return false;
   }
 }
 
-function rebuildCaseAngularBundles() {
-  console.log('Rebuilding quepid_angular_app.js...');
-  // In-process, not a shelled-out `yarn build:angular-vendor` — that step
-  // duplicates work the persistent angular_vendor esbuild --watch=forever
+function rebuildCoreBundles() {
+  console.log('Rebuilding core_legacy.js...');
+  // In-process, not a shelled-out `yarn build:core-vendor` — that step
+  // duplicates work the persistent core_vendor esbuild --watch=forever
   // process already does, and racing two esbuild writers against the same
   // output file could throw and (with no try/catch around a shell-out) crash
   // this process, which takes down the whole Procfile.dev group with it.
-  buildAngularApp();
+  buildCoreLegacy();
 }
 
 // Main execution
@@ -190,13 +182,13 @@ function main() {
   const isWatchMode = process.argv.includes('--watch');
   
   if (isWatchMode) {
-    rebuildCaseAngularBundles();
+    rebuildCoreBundles();
   } else {
-    buildAngularApp();
+    buildCoreLegacy();
   }
   
   if (isWatchMode) {
-    console.log('Watching for Angular app changes...');
+    console.log('Watching for core legacy changes...');
     
     try {
       const chokidar = require('chokidar');
@@ -229,16 +221,16 @@ function main() {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
           if (changedPath && path.resolve(changedPath) === path.resolve(VENDOR_OUTPUT)) {
-            console.log('Vendor bundle updated, rebuilding quepid_angular_app.js...');
-            buildAngularApp();
+            console.log('Vendor bundle updated, rebuilding core_legacy.js...');
+            buildCoreLegacy();
           } else {
-            rebuildCaseAngularBundles();
+            rebuildCoreBundles();
           }
         }, DEBOUNCE_DELAY);
       };
 
       watcher.on('change', (changedPath) => {
-        console.log(`Angular file changed: ${changedPath}`);
+        console.log(`Core file changed: ${changedPath}`);
         debouncedRebuild(changedPath);
       });
 
@@ -247,7 +239,7 @@ function main() {
       });
 
       watcher.on('unlink', (changedPath) => {
-        console.log(`Angular file removed: ${changedPath}`);
+        console.log(`Core file removed: ${changedPath}`);
         debouncedRebuild(changedPath);
       });
 

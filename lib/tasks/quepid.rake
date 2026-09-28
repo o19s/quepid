@@ -61,9 +61,6 @@ namespace :test do
     end
   end
 
-  desc 'Run js/karma tests (equivalent of karma:run)'
-  task 'js' => 'karma:run'
-
   desc 'Run Vitest unit tests for app/javascript (see vitest.config.js)'
   task vitest: :environment do
     puts '-' * 100
@@ -88,10 +85,9 @@ namespace :test do
     end
   end
 
-  desc 'Run all frontend tasks: test:vitest, test:js, test:eslint, test:stylelint'
+  desc 'Run all frontend tasks: test:vitest, test:eslint, test:stylelint'
   task frontend: :environment do
     Rake::Task['test:vitest'].invoke
-    Rake::Task['test:js'].invoke
     Rake::Task['test:eslint'].invoke
     Rake::Task['test:stylelint'].invoke
   end

@@ -292,7 +292,7 @@ label {
 }
 
 /* Dropdown: open/close plumbing comes from window.bootstrap.Dropdown
- * (auto-registered in angular_app.js). Font size inherits BS5's 1rem;
+ * (auto-registered in core_vendor.js). Font size inherits BS5's 1rem;
  * other vars restate BS5 defaults at 16px root for explicitness.
  *
  * Header dropdowns get their distinct look from `header .dropdown-menu`
@@ -319,36 +319,6 @@ header.navbar-secondary .dropdown-toggle::after,
  * that the w-100 migration didn't replace. */
 .dropdown-menu .actions .btn + .btn {
   margin-top: 10px;
-}
-
-/*
- * quepid-typeahead dropdown (kraaden/autocompleter). We don't load the
- * library's CSS — its green hover clashes with Quepid chrome. z-index
- * 1080 keeps it above modals (1050) so it isn't clipped inside wizardModal.
- */
-.quepid-typeahead-dropdown {
-  position: absolute;
-  z-index: 1080;
-  max-height: 240px;
-  overflow-y: auto;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.175);
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  font-size: 14px;
-  line-height: 22px;
-}
-.quepid-typeahead-dropdown > div {
-  padding: 4px 12px;
-  cursor: pointer;
-}
-.quepid-typeahead-dropdown > div.selected,
-.quepid-typeahead-dropdown > div:hover {
-  background: #e9ecef;
-}
-.quepid-typeahead-dropdown img {
-  vertical-align: middle;
-  margin-right: 6px;
 }
 
 /* BS5's `.modal-lg` only widens to 800px starting at a 992px viewport,

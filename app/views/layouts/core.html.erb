@@ -16,7 +16,7 @@
 
 <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
 </head>
-<body ng-app="QuepidApp" data-controller="snapshot-bridge core-bootstrap query-command-bridge"
+<body data-controller="snapshot-bridge core-bootstrap query-command-bridge"
       data-core-bootstrap-case-no-value="<%= @case&.id || 0 %>"
       <%# Preserve an explicitly requested missing try so core-bootstrap can report it. %>
       data-core-bootstrap-try-no-value="<%= params[:try_number].presence || @try&.try_number || '' %>"
@@ -45,9 +45,8 @@
 
   <%= javascript_include_tag 'jquery_bundle' %>
   <%= javascript_include_tag 'case_runtime' %>
-  <%= javascript_include_tag 'angular_app' %>
-  <%= javascript_include_tag 'angular_templates' %>
-  <%= javascript_include_tag 'quepid_angular_app' %>
+  <%= javascript_include_tag 'core_vendor' %>
+  <%= javascript_include_tag 'core_legacy' %>
 
 </body>
 </html>

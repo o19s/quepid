@@ -2,10 +2,8 @@
   Case page shell.
 
   The layout that used to live in the Angular template `views/queriesLayout.html` is rendered here
-  instead. That template was compiled into the `angular_templates` bundle, so it could not contain
-  ERB - which meant the case header and toolbar had to re-derive, through Angular models, data that
-  CoreController already loads. Rendering the shell from Rails lets the header and toolbar come
-  straight from `@case`/`@try`.
+  instead. Rendering the shell from Rails lets the header and toolbar come straight from
+  `@case`/`@try`.
 
   What stays Angular, and why:
     * the score-history graph - Stimulus/Vega, backed by the case scores and annotations APIs.

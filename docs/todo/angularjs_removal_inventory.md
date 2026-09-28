@@ -1,16 +1,15 @@
-# AngularJS removal: inventory & migration plan
+# AngularJS removal: remaining inventory
 
-Single reference for **what** AngularJS owns in Quepid, **why** to migrate, **how** to do it incrementally (the path in progress today), how the **live query/search/score state** — the case workspace's core and the largest remaining piece — gets replaced as the committed final phase, and **what to delete** when done.
+Open work and remaining compatibility risks from the AngularJS migration. Removed files and completed migration steps are intentionally omitted.
 
 
 Quepid’s frontend is split in two:
 
 | Surface | Stack | Entry |
 |---------|-------|-------|
-| **Core case UI** | AngularJS 1.8 SPA (queries, ratings, Solr JSONP) | `app/views/layouts/core.html.erb`, `QuepidApp` |
+| **Core case UI** | Rails + Stimulus with a legacy vendor bundle for active globals | `app/views/layouts/core.html.erb` |
 | **Rails pages** | ERB + Stimulus (+ Turbo Streams in places) | teams, books, scorers, cases index, home, admin, … |
 
-- **Removal is complete, not partial** — every Angular file is scheduled to go, including `queriesSvc` and live search/scoring. - **Sequencing, not scope:** chip away at isolated, lower-risk pieces first (toolbar Stimulus twins, management modals, heavy widgets); live query/search/score state is sequenced **last** because it's the highest-coupling, highest-regression-risk code.
 
 Backend stays on any path: Rails 8.1, existing models/services, MySQL, Solid Queue/Cable, REST API (`oas_rails` — extend, don't restart). **`splainer-search` 3.x is already vanilla ESM**.
 
@@ -20,20 +19,20 @@ See also: [App structure](../app_structure.md), [Vendor README](../../app/javasc
 
 ## Executive summary
 
-AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try_number`. Everything else already runs on Rails + Stimulus.
+The **core case UI** at `/case/:id` and `/case/:id/try/:try_number` now runs on Rails + Stimulus. AngularJS has been removed.
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 7 files, 4 register with Angular |
-| HTML templates (`app/assets/templates`) | 2 |
+| Angular JS source files (`app/assets/javascripts`) | 0 |
+| HTML templates (`app/assets/templates`) | 0 |
 | Controllers | 0 |
 | Services | 0 (`.service()` registrations) |
 | Factories | 0 |
-| Filters | 1 under `filters/` |
-| Custom directives / components | 1 directive, no components |
-| `QuepidApp` module dependencies | 2 |
-| Vendored Angular libraries (`app/javascript/vendor`) | 1 package (+ `angular` core from npm) |
-| Karma unit specs (`spec/javascripts/angular`) | 1 |
+| Filters | 0 |
+| Custom directives / components | 0 |
+| Angular module dependencies | 0 |
+| Vendored Angular libraries (`app/javascript/vendor`) | 0 |
+| Karma unit specs (`spec/javascripts/angular`) | 0 |
 | Vitest unit specs (`test/javascript/**/*.test.js`) | 134 |
 | Playwright specs (`test/playwright/*.spec.ts`) | 24 |
 
@@ -43,13 +42,11 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Priority | Item | Notes |
 |----------|------|-------|
-| **P0** | AngularJS 1.8.3 EOL | 28 JavaScript source files and 2 Angular templates remain under the legacy asset/template trees (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
-| **P0** | `queriesSvc` god object (1,366 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
-| **P0** | `eval()` scorers | Inside `$timeout()`, no sandbox; Web Worker timeout commented out |
+| **P0** | Unsandboxed scorer execution | Client scorer code runs through `new Function()`; server scoring runs in a V8 context. A dedicated browser sandbox is still outstanding. |
 | **P1** | Scorer dual-execution drift | `scorer_runtime.js` (client) vs `scorer_logic.js` (server) — client API is richer |
 | **P1** | `new Function()` mappers | SearchAPI mappers; MiniRacer on server; mapper wizard already Stimulus |
-| **P2** | Digest workarounds | Version counters / sentinels instead of clear data flow |
-| **Defer** | `bootstrap5-compat.css` | Largely done; tuning shims, not a rewrite gate |
+| **P2** | Compatibility version counters | `svcVersion` / ratings-version invalidation remain around the live-query compatibility boundary |
+| **Defer** | `bootstrap5-compat.css` cleanup | The core stylesheet remains active; audit Angular-era shims and stale safelists separately |
 
 ## Critical complexity inventory
 
@@ -86,12 +83,9 @@ The questions that must be answered before the [live query-state phase](#live-qu
 
 | Lens | Question | Decision |
 |------|----------|----------|
-| **Search/IR domain** | Does live tuning still search customer engines from the browser (proxy when needed)? Does batch eval stay on `FetchService`? | **Confirmed.** Live search stays browser → customer engine; batch stays server-side on `FetchService`. |
-| **UX fidelity** | Does rating still feel instant? (Today: client `scoreAll()` on every rating — not negotiable.) | **Confirmed.** Client `scoreAll()` on every rating stays non-negotiable. |
-| **Security** | What replaces browser `eval()` for scorers? (Web Worker — not server-only scoring.) | **Deferred.** Keep `eval()` as-is for the live-query-state phase; do not block the rewrite on building the Web Worker sandbox. Revisit as a follow-up once the rewrite ships — this is a known open risk, not a closed one. |
+| **Security** | What replaces browser-executed scorer code? (Web Worker — not server-only scoring.) | **Deferred.** Keep the current client execution contract for now; do not block the rewrite on building the Web Worker sandbox. Revisit as a follow-up — this is a known open risk, not a closed one. |
 | **Performance** | Large cases (1,000+ queries): `scoreAll()` is O(n queries) today — framework change alone doesn't fix that. | Not separately decided — no perf target set; carry current behavior forward, don't regress it. |
 | **A11y** | Scores can't be color-only; real ARIA on badges and rating controls. | Do it. |
-| **Re-render** | Angular's digest repaints `queriesCtrl` / `searchResults` / `qscore-*` on a rating. What replaces it? | **Confirmed 2026-09-22.** A plain-JS observable store (`EventTarget`) owns query/score/rating state; Stimulus controllers subscribe and write to the DOM directly. No reactive framework; no Turbo Streams for score or document state. See [Re-render mechanism](#re-render-mechanism). |
 
 ---
 
@@ -222,18 +216,16 @@ New Stimulus logic in `app/javascript/api/` or `utils/` needs a `*.test.js` unde
 
 When replacing the case SPA (not just toolbar actions), work in dependency order:
 
-The case page is bootstrapped by `core_bootstrap_controller.js`; the surviving Angular services remain behind the temporary
-compatibility adapter until live query/search/scoring migration is complete.
+The case page is bootstrapped by `core_bootstrap_controller.js`; framework-free capability runtimes provide the case state,
+search, scoring, and persistence APIs.
 
 **Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
-1. Shared primitives — `quepidTypeahead` and the remaining CSRF callers. Tooltip/popover/paste utils, dynamic modals, and flash are already Stimulus-owned. Remaining call sites are concentrated in the diff bridge and surviving Angular service seams; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
-2. Services layer — the former `caseSvc`, `caseTryNavSvc`, `settingsSvc`, and `queriesSvc`; scorer execution is now framework-free
-   registration is now a runtime initializer and is tracked with live query state.
-3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
-4. Query list + results — `search-results`, rating UI
-5. Case action modals — import ratings, diff
-6. Cleanup — removal checklist below
+1. Shared primitives — migrated to framework-free utilities and Stimulus controllers.
+2. Services layer — removed; scorer, search, settings, and case state now use framework-free runtimes.
+3. Splainer — uses native promises and explicit runtime dependencies.
+4. Query list, results, and case action modals — Rails + Stimulus.
+5. Cleanup — removal checklist below.
 
 ### Hardest — sequence last, needs the state plan first
 
@@ -245,7 +237,7 @@ compatibility adapter until live query/search/scoring migration is complete.
 | **scorer_runtime** | 286 | Framework-free scoring model + judgement math |
 | **angular core** | — | Remove last |
 
-**Defer on the case workspace** (Solr JSONP, live state, or remaining Angular wrappers): `quepidTypeahead`. Snapshot search/scoring remains behind its explicit Angular bridge. The remaining deferred pieces imply rebuilding the case SPA, not a framework swap.
+The case workspace no longer defers any Angular wrappers; its shell and behavior are Rails + Stimulus with framework-free runtimes.
 
 #### `queriesSvc` seam inventory (phase 1)
 
@@ -296,7 +288,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 #### UI-level (reimplement on any framework)
 
-1. **Scorer sandboxing** — Replace `eval()`. **Direction:** Web Worker (docs + scorer code in, score out). Budget for `scoreAll()` calling the worker per query per rating unless the flow is redesigned. MiniRacer stays for batch paths only.
+1. **Scorer sandboxing** — Isolate user-provided scorer code from the page. **Direction:** Web Worker (docs + scorer code in, score out). Budget for `scoreAll()` calling the worker per query per rating unless the flow is redesigned. V8/MiniRacer stays for batch paths only.
 
 2. **Multi-snapshot diff + scoring** — ≤5 snapshots, snapshot-as-searcher, client `scoreOthers()`, per-position diff, case averages. The remaining work sits on fake-Solr snapshots and rating-driven refetch.
 
@@ -360,32 +352,31 @@ The Rails cases index at `/cases` is **not** Angular.
 
 ### Layout and bootstrap (`app/views/layouts/core.html.erb`)
 
-- `<body ng-app="QuepidApp">`
-- JS: `angular_app`, `angular_templates`, `quepid_angular_app`
+- JS: `core_vendor`, `core_legacy`
 - CSS: `json-explorer` (Quepid-owned)
 - Inline core configuration is seeded from Rails config — including `caseNo`/`tryNo` from `params[:id]`/`params[:try_number]`/`@case`. Interpolate as bare integers/`"null"`, never `.to_json` — Rails' default HTML-escaping of `<%= %>` mangles `"`/`&` inside a `<script>` tag (`"1"` → `&quot;1&quot;`), silently breaking the whole inline script.
 
 ### Case shell (`app/views/core/index.html.erb`)
 
-The layout lives in ERB, not an Angular template, because the header and toolbar read `@case`/`@try`: templates under `app/assets/templates` are compiled into the `angular_templates` bundle and cannot contain ERB.
+The layout and shell live in ERB; there is no Angular template compilation step.
 
-Angular still compiles what is left, because custom elements inside `ng-app` are compiled at bootstrap like any other markup.
+The shell is now entirely Rails + Stimulus; no Angular compilation remains.
 
-The query-list shell is Rails-rendered and no longer declares an Angular scope. Deferred live-result controls still receive a short-lived root-scope child for compilation. The score badges remain at the same DOM position for `qscore.css`'s `:last-child`-based badge-spacing rules to apply correctly.
+The query-list shell is Rails-rendered and uses Stimulus controllers for behavior. The score badges remain at the same DOM position for `qscore.css`'s `:last-child`-based badge-spacing rules to apply correctly.
 
 ---
 
 ## Root module and dependencies
 
-### `QuepidApp` (`app/assets/javascripts/app.js`)
+### Legacy vendor bundle
+
+`app/javascript/core_vendor.js` retains only non-Angular globals used by the core page: Sortable, FileSaver, ACE, URI.js, and Shepherd.
 
 | Module | Source | Used for | Replace with |
 |--------|--------|----------|--------------|
-| `ngSanitize` | `angular-sanitize` | `ng-bind-html` | DOMPurify or server sanitize |
 | `splainer-search` | `utils/splainer_search_runtime.js` | Native search HTTP and document services | `splainer-search/wired.js` directly |
-| `templates` | `build_templates.js` | `$templateCache` | ERB partials / Stimulus templates |
 
-Non-Angular libs that **stay**: Bootstrap 5, D3, Vega, ACE, autocompleter, clipboard, URI.js, Shepherd, SortableJS.
+Non-Angular libs that **stay**: Bootstrap 5, D3, Vega, ACE, clipboard, URI.js, Shepherd, SortableJS.
 
 ---
 
@@ -460,7 +451,7 @@ only invokes that runtime after a live search.
 
 Backing runtimes: `app/javascript/utils/doc_cache.js`, `app/javascript/utils/search_endpoint_runtime.js`
 
-Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
+Filters: none; the former typeahead filter was removed with the Angular directive.
 
 ### 7. Tune Relevance (east pane / dev settings)
 
@@ -477,15 +468,7 @@ These Angular-specific wrappers are used across many templates:
 
 | Primitive | File | Replaces |
 |-----------|------|----------|
-| `quepidTypeahead` | `directives/quepidTypeahead.js` | `autocompleter` (already vanilla; wired via Angular directive) |
-
----
-
-## Remaining Angular directives
-
-Attribute directives: `quepidTypeahead`
-
-Heavy: `quepidTypeahead` (299).
+| Framework-free search controls | Stimulus controllers and search runtimes | Angular typeahead directive |
 
 ---
 
@@ -515,21 +498,15 @@ the named native `ratings:changed` event; the Angular root event relay is
 removed. The `CaseScoreStore` event remains the normal path until the live
 query/scoring migration is complete.
 
-**Filters (1 under `filters/`):** `quepidTypeaheadHighlight`
-
-Removed on 2026-09-28: `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, and
-`searchEngineName`. Their framework-free replacements are covered by Vitest
-and are the consumers used by the Stimulus case workspace.
+**Filters (0 under `filters/`).**
 
 **Values (0):** No Angular values remain.
 
 ---
 
-## Templates (2 Angular HTML files)
+## Templates
 
-**Views:** `views/embed.html`, `views/searchEndpoint_popup.html`
-
-Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
+No Angular templates remain. The former views are Rails/Stimulus surfaces.
 
 ---
 
@@ -561,13 +538,12 @@ Core layout loads: `json-explorer` (Quepid-owned, styles the vanilla JSON tree).
 | npm `angular`, `angular-mocks` | `package.json` |
 | Framework-free case runtime | `app/javascript/case_runtime.js` → `app/assets/builds/case_runtime.js` |
 | Case-domain runtime | `app/javascript/utils/case_runtime.js` |
-| Vendor bundle | `app/javascript/angular_app.js` → `app/assets/builds/angular_app.js` |
-| App bundle | `build_angular_app.js` → `quepid_angular_app.js` |
-| Templates | `build_templates.js` → `angular_templates.js` |
-| yarn scripts | `build:case-runtime` and `build:angular*` included in `yarn build` |
+| Vendor bundle | `app/javascript/core_vendor.js` → `app/assets/builds/core_vendor.js` |
+| Legacy bundle | `build_core_legacy.js` → `app/assets/builds/core_legacy.js` |
+| yarn scripts | `build:case-runtime`, `build:core-vendor`, and `build:core-legacy` included in `yarn build` |
 | Linked stylesheets | `build_css.js` → `copyLinkedStylesheets()` · audit: `audit_css.js` |
 
-Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (1 package; see [vendor README](../../app/javascript/vendor/README.md))
+Vendored Angular libs: none (see [vendor README](../../app/javascript/vendor/README.md)).
 
 ### Tests
 
@@ -608,30 +584,20 @@ window.location.href = navigationRuntime.getQuepidRootUrl() + '/cases'
 
 ### JavaScript
 
-- [ ] `app/assets/javascripts/` (entire tree)
-- [ ] `app/javascript/angular_app.js`, `quepid_dom.js`
-- [ ] `app/javascript/vendor/angular-*`, `ng-*`
-- [ ] `app/assets/templates/`
 
 ### Built artifacts
 
-- [ ] `app/assets/builds/angular_app.js`, `quepid_angular_app.js`, `angular_templates.js`
 
 ### Rails views
 
-- [ ] `ng-app` and inline bootstrap from `core.html.erb`
-- [ ] Angular attrs from `core/index.html.erb`, `_header_core_app.html.erb`
 - [ ] Angular vendor CSS from core layout
 
 ### Build & deps
 
-- [ ] `build_angular_app.js`, `build_templates.js`, angular yarn scripts
-- [ ] `angular`, `angular-mocks` from `package.json`
 - [ ] Angular steps in `build_css.js`, `audit_css.js`, `renovate.json`
 
 ### Tests
 
-- [ ] `spec/javascripts/angular/`, Karma bundle entries
 - [ ] `test/playwright/angular_pages*`, baselines
 - [ ] Rewrite Playwright specs that assume Angular DOM
 

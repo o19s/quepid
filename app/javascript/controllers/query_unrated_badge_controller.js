@@ -9,7 +9,7 @@ import { isNotAllRated } from "utils/scoring"
  * Reads `window.quepidStore.scoring` (the bridged `CaseScoreStore` singleton
  * `queriesSvc.scoreAll()` writes into) rather than importing
  * `stores/case_score_store` directly — that module is also esbuild-bundled
- * into `angular_app.js` (`build:angular-vendor`), and a second, separately
+ * into `core_vendor.js` (`build:core-vendor`), and a second, separately
  * imported copy here (this controller loads via importmap, unbundled) would
  * be a distinct singleton that never sees Angular's writes. Same pattern as
  * `qscore_query_controller.js`.

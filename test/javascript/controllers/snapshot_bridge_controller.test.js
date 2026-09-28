@@ -21,7 +21,6 @@ vi.mock("utils/snapshot_hydration", () => snapshotHydration)
 
 function buildController(services) {
   const controller = Object.create(SnapshotBridgeController.prototype)
-  document.body.setAttribute("ng-app", "QuepidApp")
   window.angular = { element: () => ({ injector: () => ({ get: (name) => services[name] }) }) }
   return controller
 }
@@ -76,7 +75,6 @@ describe("SnapshotBridgeController", () => {
     delete window.quepidStore
     delete window.quepidSearch
     delete window.angular
-    document.body.removeAttribute("ng-app")
     resetCoreServiceCache()
     vi.restoreAllMocks()
   })

@@ -1,11 +1,11 @@
 # Demonstrate how to load your own local copy of a node package into Quepid.
 # Commonly used when you are developing against an unreleased splainer-search package.
 #
-# With bin/docker s, Foreman rebuilds the AngularJS bundles just hard-refresh the browser.
+# With bin/docker s, Foreman rebuilds the core bundles; just hard-refresh the browser.
 #
-# If watchers are not running: bin/docker r yarn build:angular
+# If watchers are not running: bin/docker r yarn build:core
 #
-# The mounted files below will be bundled into app/assets/builds/angular_app.js during
+# The mounted files below will be bundled into app/assets/builds/core_vendor.js during
 # the build process, so any changes you make locally will be included after rebuilding.
 # Vendor CSS for the core layout is refreshed separately via:
 #   bin/docker r yarn build:css

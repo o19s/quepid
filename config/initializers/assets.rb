@@ -10,6 +10,3 @@ Rails.application.config.assets.version = '1.0'
 
 # We no longer add the entire node_modules tree; build scripts copy needed assets
 Rails.application.config.assets.paths << Rails.root.join('app/assets/builds')
-
-# Add Karma test files in development/test
-Rails.application.config.assets.paths << Rails.root.join('spec/karma') if Rails.env.local?

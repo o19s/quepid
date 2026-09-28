@@ -81,8 +81,8 @@ import {
 /**
  * Framework-free query/search logic lifted out of the Angular `queriesSvc`, kept
  * separate from `quepid_dom.js` (DOM helpers) because none of it touches the DOM.
- * Exposed on `window.quepidSearch` for the concatenated Angular bundle
- * (`quepid_angular_app.js`); Stimulus controllers import the modules directly.
+ * Exposed on `window.quepidSearch` for the concatenated core legacy bundle
+ * (`core_legacy.js`); Stimulus controllers import the modules directly.
  */
 const quepidSearch = {
   docResolverSvc: null,

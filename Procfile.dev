@@ -2,7 +2,6 @@ web: bundle exec puma -C config/puma.rb
 worker: bundle exec bin/jobs
 jquery: npm run build:jquery -- --watch=forever
 case_runtime: yarn build:case-runtime --watch=forever
-angular_vendor: npm run build:angular-vendor -- --watch=forever
-angular: npm run build:angular-app:watch
-templates: npm run build:angular-templates:watch
+core_vendor: npm run build:core-vendor -- --watch=forever
+core_legacy: npm run build:core-legacy:watch
 css: npm run build:css:watch

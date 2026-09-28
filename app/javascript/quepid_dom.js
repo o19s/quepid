@@ -17,9 +17,9 @@ import { attachTextPaste } from "./utils/text_paste"
 import { animateCountUp, stopCountUp } from "./utils/count_up"
 import { hideFlash, showFlash } from "./utils/flash"
 // dynamic_modal.js pulls in utils/bs_modal via the usual importmap bare
-// specifier ("utils/bs_modal", not "./bs_modal") — this bundle (angular_app.js)
+// specifier ("utils/bs_modal", not "./bs_modal") — this bundle (core_vendor.js)
 // is built with plain esbuild, which doesn't know about config/importmap.rb's
-// pins, so build:angular-vendor passes --alias:utils=./app/javascript/utils
+// pins, so build:core-vendor passes --alias:utils=./app/javascript/utils
 // to resolve it (see package.json).
 import { openDynamicModal } from "./utils/dynamic_modal"
 import { openDetailedDocumentModal } from "./utils/detailed_document_modal"
@@ -27,8 +27,8 @@ import { renderJsonExplorer, escapeHtml } from "./utils/json_explorer"
 
 /**
  * Shared DOM helpers for Bootstrap tooltips/popovers and paste handling.
- * Exposed on `window.quepidDom` for the concatenated Angular bundle
- * (`quepid_angular_app.js`); Stimulus controllers import the modules directly.
+ * Exposed on `window.quepidDom` for the concatenated core legacy bundle
+ * (`core_legacy.js`); Stimulus controllers import the modules directly.
  */
 const quepidDom = {
   tooltip: {

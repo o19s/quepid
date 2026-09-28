@@ -540,23 +540,23 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
    bin/docker s
    ```
 
-3. **After splainer changes**: **splainer-search 3.x** is installed under **`node_modules/splainer-search`** and pulled into the bundle via `app/javascript/angular_app.js` and **`splainer_search_adapter.js`**.
+3. **After splainer changes**: **splainer-search 3.x** is installed under **`node_modules/splainer-search`** and pulled into the core vendor bundle via **`splainer_search_adapter.js`**.
 
-   With **`bin/docker s`**, Foreman rebuilds the AngularJS bundles when you save; **hard-refresh** the case page.
+   With **`bin/docker s`**, Foreman rebuilds the core bundles when you save; **hard-refresh** the case page.
 
    Manual rebuild only if watchers are not running:
 
    ```bash
-   bin/docker r yarn build:angular
+   bin/docker r yarn build:core
    ```
 
    Then refresh your browser to see the changes.
 
 4. **Why bundles work this way**
-   - Splainer-search ESM modules are inlined into **`app/assets/builds/angular_app.js`** at build time, not runtime (`splainer_search_adapter.js` registers wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI keeps working).
+   - Splainer-search ESM modules are inlined into **`app/assets/builds/core_vendor.js`** at build time, not runtime.
    - The vendor bundle also inlines npm **Bootstrap 5** JS (for `quepidPopover`, `quepidTooltip`, `quepidModalSvc`, etc.).
-   - Linked core stylesheets (currently `json-explorer`) are copied into **`app/assets/builds/`** by **`yarn build:css`** (`build_css.js` → `copyLinkedStylesheets()`), not by **`build:angular-vendor`**
-   - With **`bin/docker s`**, Foreman watches the vendor import graph (including **`node_modules/splainer-search`**) and keeps **`case_runtime.js`**, **`angular_app.js`** + **`quepid_angular_app.js`** in sync. Save edits and hard-refresh. Run **`yarn build:angular`** only if watchers are not running (that script now rebuilds the framework-free case runtime as well).
+   - Linked core stylesheets (currently `json-explorer`) are copied into **`app/assets/builds/`** by **`yarn build:css`** (`build_css.js` → `copyLinkedStylesheets()`), not by **`build:core-vendor`**
+   - With **`bin/docker s`**, Foreman watches the vendor import graph (including **`node_modules/splainer-search`**) and keeps **`case_runtime.js`**, **`core_vendor.js`** + **`core_legacy.js`** in sync. Save edits and hard-refresh. Run **`yarn build:core`** only if watchers are not running (that script also rebuilds the framework-free case runtime).
 
 
 ## Convenience Scripts

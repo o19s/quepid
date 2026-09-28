@@ -9,7 +9,7 @@ import { join, relative } from 'node:path';
 
 /** Esbuild bridge files — not importmap/Stimulus; excluded from modern lint. */
 export const LEGACY_ESBUILD_ENTRIES = [
-  'app/javascript/angular_app.js',
+  'app/javascript/core_vendor.js',
   'app/javascript/jquery_bundle.js',
   'app/javascript/utils/splainer_search_runtime.js',
 ];
