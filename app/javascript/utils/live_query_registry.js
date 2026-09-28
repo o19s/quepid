@@ -10,7 +10,7 @@ export function createLiveQueryRegistry({ store = null } = {}) {
   const queries = {}
 
   function clear({ resetStore = false } = {}) {
-    Object.keys(queries).forEach(queryId => delete queries[queryId])
+    Object.keys(queries).forEach((queryId) => delete queries[queryId])
     if (resetStore) store?.reset()
   }
 
@@ -41,7 +41,7 @@ export function createLiveQueryRegistry({ store = null } = {}) {
   function all() {
     if (store && store.status !== "idle") {
       const ordered = {}
-      store.orderedQueryIds().forEach(queryId => {
+      store.orderedQueryIds().forEach((queryId) => {
         const query = get(queryId)
         if (query) ordered[String(queryId)] = query
       })

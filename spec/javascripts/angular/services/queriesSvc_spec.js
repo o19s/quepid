@@ -224,7 +224,7 @@ describe('Service: queriesSvc', function () {
     mockSearchSvc.reset();
 
     $httpBackend.expectGET(url).respond(200, qResp);
-    expect(queriesSvc.queries.length === 0);
+    expect(Object.keys(window.quepidSearch.queryCapabilities.getQueries()).length === 0);
 
     window.quepidSearch.queryCapabilities.changeSettings(caseNo, mockSettings);
     $httpBackend.flush();
@@ -261,7 +261,7 @@ describe('Service: queriesSvc', function () {
     beforeEach(function() {
       setupQuerySvc();
       query = window.quepidSearch.queryCapabilities.createQuery('test');
-      queriesSvc.queries[query.queryId] = query;
+      window.quepidSearch.queryCapabilities.registerQuery(query.queryId, query);
     });
 
     it('knows if it has not been scored', function() {
@@ -323,12 +323,12 @@ describe('Service: queriesSvc', function () {
     });
 
     it('knows if there are unscored queries', function() {
-      queriesSvc.queries[0].hasBeenScored = false;
+      window.quepidSearch.queryCapabilities.getQuery(0).hasBeenScored = false;
       expect(window.quepidSearch.queryCapabilities.getListState().searching).toBe(true);
     });
 
     it('knows how many queries are unscored', function() {
-      queriesSvc.queries[0].hasBeenScored = false;
+      window.quepidSearch.queryCapabilities.getQuery(0).hasBeenScored = false;
       expect(window.quepidSearch.queryCapabilities.getListState().batchSize - window.quepidSearch.queryCapabilities.getListState().batchPosition).toBe(1);
     });
 
@@ -354,9 +354,9 @@ describe('Service: queriesSvc', function () {
     });
 
     it('refreshes when changing try', function() {
-      expect(queriesSvc.queries.length === 3);
-      expect(queriesSvc.queries['0'].queryText).toBe('symptoms of heart attack');
-      expect(queriesSvc.queries['2'].queryText).toBe('prognosis of alzheimers');
+      expect(Object.keys(window.quepidSearch.queryCapabilities.getQueries()).length === 3);
+      expect(window.quepidSearch.queryCapabilities.getQuery('0').queryText).toBe('symptoms of heart attack');
+      expect(window.quepidSearch.queryCapabilities.getQuery('2').queryText).toBe('prognosis of alzheimers');
     });
 
     it('changes version when changing try', function() {
@@ -458,7 +458,7 @@ describe('Service: queriesSvc', function () {
     $httpBackend.flush();
     window.quepidSearch.queryCommands.searchAll();
 
-    var testQuery = queriesSvc.queries['0'];
+    var testQuery = window.quepidSearch.queryCapabilities.getQuery('0');
     expect(testQuery.state()).toBe('loading');
 
     mockSearchSvc.fulfill(mockResults);
@@ -477,7 +477,7 @@ describe('Service: queriesSvc', function () {
 
     $rootScope.$apply();
 
-    var testQuery = queriesSvc.queries['0'];
+    var testQuery = window.quepidSearch.queryCapabilities.getQuery('0');
     expect(testQuery.state()).toBe('loading');
 
     mockSearchSvc.fulfill({response: {docs: []}});
@@ -495,7 +495,7 @@ describe('Service: queriesSvc', function () {
     window.quepidSearch.queryCommands.searchAll();
     $rootScope.$apply();
 
-    var testQuery = queriesSvc.queries['0'];
+    var testQuery = window.quepidSearch.queryCapabilities.getQuery('0');
     expect(testQuery.state()).toBe('loading');
 
     mockSearchSvc.fulfill({response: {docs: []}});
@@ -516,7 +516,7 @@ describe('Service: queriesSvc', function () {
   it('stores docs after succesful search', function() {
     setupQuerySvc();
 
-    var testQuery = queriesSvc.queries['0'];
+    var testQuery = window.quepidSearch.queryCapabilities.getQuery('0');
     expect(testQuery.docs.length).toEqual(2);
     expect(testQuery.docs[0].id).toBe('doc1');
     expect(testQuery.docs[1].id).toBe('doc2');
@@ -527,7 +527,7 @@ describe('Service: queriesSvc', function () {
   it('reports browse url', function() {
     setupQuerySvc();
 
-    var testQuery = queriesSvc.queries['0'];
+    var testQuery = window.quepidSearch.queryCapabilities.getQuery('0');
     expect(testQuery.browseUrl().indexOf(mockSolrUrl))
     .toEqual(0);
   });
@@ -560,7 +560,10 @@ describe('Service: queriesSvc', function () {
     // Store write only happens for a full-case scoreAll() (scorables
     // defaulted from this.queries), not an arbitrary explicit subset — see
     // docs/todo/angularjs_removal_inventory.md § Re-render mechanism.
-    queriesSvc.queries = { 1: new Scorable(1), 2: new Scorable(2) };
+    window.quepidSearch.queryCapabilities.reconcileQueryRemoval(0, false);
+    window.quepidSearch.queryCapabilities.reconcileQueryRemoval(2, false);
+    window.quepidSearch.queryCapabilities.registerQuery(1, new Scorable(1));
+    window.quepidSearch.queryCapabilities.registerQuery(2, new Scorable(2));
     window.quepidSearch.queryCapabilities.scoreAll();
     $rootScope.$apply();
 
@@ -601,7 +604,7 @@ describe('Service: queriesSvc', function () {
 
   it('applies ratings to docs', function() {
     setupQuerySvc();
-    var testQuery = queriesSvc.queries['0'];
+    var testQuery = window.quepidSearch.queryCapabilities.getQuery('0');
 
     expect(testQuery.docs.length).toEqual(2);
     expect(testQuery.docs[0].getRating()).toBe(5);
@@ -619,7 +622,7 @@ describe('Service: queriesSvc', function () {
     beforeEach(function() {
       setupQuerySvc();
 
-      testQuery = queriesSvc.queries['0'];
+      testQuery = window.quepidSearch.queryCapabilities.getQuery('0');
       testDoc = testQuery.docs[0];
       $httpBackend.expectPUT('api/cases/2/queries/' + testQuery.queryId + '/ratings').respond(200, {doc_id: testDoc.id, rating: 10});
       versionBeforeRate = window.quepidSearch.queryCapabilities.getVersion();
@@ -650,7 +653,7 @@ describe('Service: queriesSvc', function () {
     mockSearchSvc.fulfill(mockResults);
     $rootScope.$apply();
 
-    var testQuery = queriesSvc.queries['0'];
+    var testQuery = window.quepidSearch.queryCapabilities.getQuery('0');
     var testDoc = testQuery.docs[0];
     $httpBackend.expectPUT('api/cases/3/queries/' + testQuery.queryId + '/ratings').respond(200, {doc_id: testDoc.id, rating: 10});
     //$httpBackend.expectPUT('api/cases/3/queries/' + testQuery.queryId + '/ratings/' + testDoc.id).respond(200, '');
@@ -669,7 +672,7 @@ describe('Service: queriesSvc', function () {
     $httpBackend.flush();
     window.quepidSearch.queryCommands.searchAll().catch(angular.noop);
 
-    var testQuery = queriesSvc.queries['0'];
+    var testQuery = window.quepidSearch.queryCapabilities.getQuery('0');
     expect(testQuery.state()).toBe('loading');
 
     mockSearchSvc.fail();
@@ -683,7 +686,7 @@ describe('Service: queriesSvc', function () {
 
   it('best docs have only doc ids', function() {
     setupQuerySvc();
-    var testQuery = queriesSvc.queries['0'];
+    var testQuery = window.quepidSearch.queryCapabilities.getQuery('0');
     var bestDocs = testQuery.ratingsStore.bestDocs(5);
     expect(bestDocs.length).toBe(2);
     expect(bestDocs[0].id).toEqual('doc2');
@@ -728,7 +731,7 @@ describe('Service: queriesSvc', function () {
       mockSearchSvc.fulfill(mockResults1);
       $rootScope.$apply();
 
-      var q = queriesSvc.queries[0];
+      var q = window.quepidSearch.queryCapabilities.getQuery(0);
       expect(q.maxDocScore()).toEqual(2.0);
     });
 
@@ -741,7 +744,7 @@ describe('Service: queriesSvc', function () {
 
       $rootScope.$apply();
 
-      var q = queriesSvc.queries[0];
+      var q = window.quepidSearch.queryCapabilities.getQuery(0);
       expect(q.maxDocScore()).toEqual(2.0);
 
       // search and return other results, max score should now be less
@@ -897,7 +900,7 @@ describe('Service: queriesSvc', function () {
       expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval(0, true)).toBe(true);
 
       expect(window.quepidSearch.queryCapabilities.updateScores).toHaveBeenCalled();
-      expect(queriesSvc.queries[0]).toBeUndefined();
+      expect(window.quepidSearch.queryCapabilities.getQuery(0)).toBeNull();
     });
 
     it('re-bootstraps and searches on judgements:queries-need-reload for the current case', function() {

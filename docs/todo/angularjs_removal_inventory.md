@@ -529,10 +529,10 @@ normalization/explain wiring, and the final live Query compatibility callbacks.
 The compatibility callback assembly is now also grouped behind
 `liveQueryAdapters`: searcher construction, rated-document lookup, snapshot
 search, document normalization/explain extraction, error translation, settings
-access, and publication are supplied as explicit adapter groups. The next
-step is a consumer inventory of `queriesSvc` capabilities and safe removal of
-aliases with no runtime consumers; the service itself still owns the live
-Angular Query collection and cannot be unregistered yet.
+access, and publication are supplied as explicit adapter groups. The live
+Query collection is now owned by the framework-free registry/store boundary;
+`queriesSvc` no longer exposes its mutable collection map. The service remains
+registered because it still owns the Angular Query execution island.
 
 The public service cleanup also removed `pAll`, `reset`, `bootstrapQueries`,
 and `getCaseNo` from the Angular service namespace. Their callers now use the
@@ -541,6 +541,32 @@ framework-free query service or explicit `queryCapabilities`.
 Collection membership and ordering are now read from the framework-free query
 collection store; Angular's query map remains only as the live-object execution
 index for search, rating, scoring, and diff compatibility.
+
+Document normalization for normal, targeted, and preview searches now crosses
+one explicit live-query execution adapter. The Angular service still supplies
+the document factory and explain extractors, but no longer owns a duplicate
+normalization helper.
+
+Active-try, rated-document, and snapshot searcher construction now crosses the
+explicit `liveQueryAdapters.search` group. Proxy URL resolution, mapper
+evaluation, engine selection, and snapshot behavior remain unchanged while the
+service-local call sites use one searcher boundary.
+
+Score-all orchestration, rating invalidation publication, and book synchronization
+now use explicit scoring, ratings, and book adapter groups. The public update
+score capability remains as a deliberate legacy listener boundary until the
+remaining Angular scorer and rating persistence callbacks are split out.
+
+Rating persistence now also uses the ratings adapter's request callback, so the
+live Query factory no longer reaches directly into the Angular `$http` service
+for rating writes. Scorer lookup, selection, bootstrap, and score-all remain
+behind the scoring adapter while the final compatibility provider is prepared
+for removal.
+
+The `queriesSvc` compatibility provider is now initialized separately from the
+Bootstrap controller's service bag. It remains an Angular-owned provider only
+because it installs the live Query capability functions; no modern controller
+receives the legacy service object.
 
 Persistence cleanup now clears and removes through the collection store at the
 same boundaries as the live-object execution cache; bootstrap remains the sole

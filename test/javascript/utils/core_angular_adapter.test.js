@@ -57,6 +57,34 @@ describe("core Angular adapter", () => {
     await expect(getSnapshotCapabilities()).resolves.toBe(services)
   })
 
+  it("initializes provider-only compatibility services without exposing them to controllers", async () => {
+    document.body.setAttribute("ng-app", "QuepidApp")
+    const services = {
+      configurationSvc: {},
+      userSvc: {},
+      caseSvc: {},
+      settingsSvc: {},
+      caseTryNavSvc: {},
+      scorerSvc: {},
+      queriesSvc: { legacy: true }
+    }
+    const injector = { get: vi.fn(name => services[name]) }
+    window.angular = { element: vi.fn(() => ({ injector: () => injector })) }
+
+    const capabilities = await getBootstrapCapabilities()
+
+    expect(capabilities).toEqual({
+      configurationSvc: services.configurationSvc,
+      userSvc: services.userSvc,
+      caseSvc: services.caseSvc,
+      settingsSvc: services.settingsSvc,
+      caseTryNavSvc: services.caseTryNavSvc,
+      scorerSvc: services.scorerSvc,
+      docCache: undefined
+    })
+    expect(injector.get).toHaveBeenCalledWith("queriesSvc")
+  })
+
   it("reports the named controller when a capability cannot initialize", async () => {
     await expect(getTuneRelevanceCapabilities()).rejects.toThrow(
       'Unable to load case runtime capability "tuneRelevance" for tune_relevance_controller'

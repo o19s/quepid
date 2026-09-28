@@ -80,17 +80,17 @@ export function resetCoreServiceCache() {
 const capabilityDefinitions = {
   bootstrap: {
     controller: "core_bootstrap_controller",
+    // Instantiate the live-query compatibility provider for its window
+    // capability side effects, but do not expose the legacy service to the
+    // Stimulus bootstrap controller's service bag.
+    providers: ["queriesSvc"],
     services: [
       "configurationSvc",
       "userSvc",
       "caseSvc",
       "settingsSvc",
       "caseTryNavSvc",
-      "scorerSvc",
-      // queriesSvc still installs the live-query capability functions during
-      // the Angular dual-run. This instantiates the provider without making
-      // modern controllers resolve or inject the legacy service directly.
-      "queriesSvc"
+      "scorerSvc"
     ]
   },
   snapshots: {
@@ -124,6 +124,7 @@ async function loadCapability(name) {
 
   let services
   try {
+    if (definition.providers?.length) await waitForAngularServices(definition.providers)
     services = await waitForAngularServices(definition.services)
   } catch (error) {
     throw new Error(

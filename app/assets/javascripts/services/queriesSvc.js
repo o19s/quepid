@@ -60,15 +60,6 @@ angular.module('QuepidApp')
         store: queryCollectionStore
       });
       this.displayOrder = [];
-      Object.defineProperty(svc, 'queries', {
-        configurable: true,
-        get: function() {
-          return liveQueryRegistry.raw();
-        },
-        set: function(nextQueries) {
-          liveQueryRegistry.replace(nextQueries);
-        }
-      });
       this.linkUrl = '';
 
       function getAllDiffSettings() {
@@ -128,18 +119,10 @@ angular.module('QuepidApp')
               },
               RatingsStore: window.quepidSearch.ratings.RatingsStore,
               request: function(options) {
-                return $http(options);
+                return liveQueryAdapters.ratings.request(options);
               },
               onRatingChanged: function(changedQueryId) {
-                ratingsVersion++;
-
-                if (window.quepidStore && window.quepidStore.scoring) {
-                  window.quepidStore.scoring.markRatingChanged(changedQueryId);
-                } else {
-                  document.dispatchEvent(new CustomEvent('ratings:changed', {
-                    detail: { queryId: changedQueryId }
-                  }));
-                }
+                liveQueryAdapters.ratings.changed(changedQueryId);
               },
               getQueryState: function(query) {
                 return window.quepidSearch.queryState.queryLifecycleState({
@@ -162,10 +145,10 @@ angular.module('QuepidApp')
             },
             searchers: {
               create: function(query, options) {
-                return createSearcherFromSettings(currSettings, query, options);
+                return liveQueryAdapters.search.create(currSettings, query, options);
               },
               createRated: function(settings, query) {
-                return createSearcherFromSettings(settings, query, { filterToRated: true });
+                return liveQueryAdapters.search.create(settings, query, { filterToRated: true });
               },
               searchApiRatedDocs: function(settings, query, ratedIDs) {
                 return searchApiRatedDocs(settings, query, ratedIDs);
@@ -174,12 +157,29 @@ angular.module('QuepidApp')
                 return trySupportsSearchApiRatedDocsLookup(aTry);
               },
               createSnapshot: function(snapshotId, query) {
-                return createSearcherFromSnapshot(snapshotId, query, currSettings);
+                return liveQueryAdapters.search.createSnapshot(snapshotId, query, currSettings);
               }
             },
             documents: {
               normalize: function(query, searcher, fieldSpec) {
-                return normalizeDocExplains(query, searcher, fieldSpec);
+                return window.quepidSearch.queryService.normalizeSearchResults({
+                  searcher: searcher,
+                  fieldSpec: fieldSpec,
+                  extractors: {
+                    es: function(docs, spec) {
+                      return esExplainExtractorSvc.docsWithExplainOther(docs, spec);
+                    },
+                    solr: function(docs, spec, othersExplained) {
+                      return solrExplainExtractorSvc.docsWithExplainOther(docs, spec, othersExplained);
+                    }
+                  },
+                  createNormalDoc: function(spec, doc, explain) {
+                    return normalDocsSvc.createNormalDoc(spec, doc, explain);
+                  },
+                  createRateableDoc: function(doc) {
+                    return query.ratingsStore.createRateableDoc(doc);
+                  }
+                });
               },
               createRateable: function(query, doc) {
                 return query.ratingsStore.createRateableDoc(doc);
@@ -205,6 +205,9 @@ angular.module('QuepidApp')
           },
           bootstrap: function(newCaseNo) {
             return scorerSvc.bootstrap(newCaseNo);
+          },
+          run: function(scorables) {
+            return scoreAll(scorables);
           }
         },
         book: {
@@ -220,6 +223,30 @@ angular.module('QuepidApp')
           },
           sync: function(queries) {
             return bookSyncRuntime.sync(queries);
+          }
+        },
+        search: {
+          create: function(settings, query, options) {
+            return createSearcherFromSettings(settings, query, options);
+          },
+          createSnapshot: function(snapshotId, query, settings) {
+            return createSearcherFromSnapshot(snapshotId, query, settings);
+          }
+        },
+        ratings: {
+          request: function(options) {
+            return $http(options);
+          },
+          changed: function(changedQueryId) {
+            ratingsVersion++;
+
+            if (window.quepidStore && window.quepidStore.scoring) {
+              window.quepidStore.scoring.markRatingChanged(changedQueryId);
+            } else {
+              document.dispatchEvent(new CustomEvent('ratings:changed', {
+                detail: { queryId: changedQueryId }
+              }));
+            }
           }
         }
       });
@@ -346,7 +373,7 @@ angular.module('QuepidApp')
           liveQueryDocumentsRuntime.publish(query);
         },
         scoreAll: function() {
-          return window.quepidSearch.queryCapabilities.scoreAll();
+          return liveQueryAdapters.scoring.run();
         },
         syncToBook: function() {
           return liveQueryAdapters.book.sync(queryArray());
@@ -391,7 +418,7 @@ angular.module('QuepidApp')
         },
         publishQuery: publishQueryDocuments,
         scoreAll: function() {
-          return window.quepidSearch.queryCapabilities.scoreAll();
+          return liveQueryAdapters.scoring.run();
         },
         updateScores: function() {
           return window.quepidSearch.queryCapabilities.updateScores();
@@ -486,8 +513,8 @@ angular.module('QuepidApp')
         },
         scoreAll: function(scorables) {
           return scorables === undefined
-            ? window.quepidSearch.queryCapabilities.scoreAll()
-            : window.quepidSearch.queryCapabilities.scoreAll(scorables);
+            ? liveQueryAdapters.scoring.run()
+            : liveQueryAdapters.scoring.run(scorables);
         },
         applySettings: function(newSettings) {
           currSettings = newSettings;
@@ -669,6 +696,7 @@ angular.module('QuepidApp')
 
       window.quepidSearch.queryCapabilities.getQuery = getLiveQuery;
       window.quepidSearch.queryCapabilities.createQuery = createQuery;
+      window.quepidSearch.queryCapabilities.registerQuery = registerQueryInCollection;
       window.quepidSearch.queryCapabilities.getQueries = function() {
         return getLiveQueries();
       };
@@ -724,7 +752,7 @@ angular.module('QuepidApp')
           },
           settingsWithTryOverrides: settingsWithTryOverrides,
           createSearcherFromSettings: createSearcherFromSettings,
-          normalizeDocExplains: normalizeDocExplains,
+          normalizeDocExplains: liveQueryAdapters.compatibility.executionOptions.documents.normalize,
           searchApiRatedDocs: searchApiRatedDocs,
           supportsRatedDocsLookup: trySupportsRatedDocsLookup,
           promiseApi: $q
@@ -885,7 +913,11 @@ angular.module('QuepidApp')
           let searcher = createSearcherFromSettings(tempSettings, query, { forceApiMethod: 'POST' });
 
           return searcher.search().then(function() {
-            let normed = normalizeDocExplains(query, searcher, settings.createFieldSpec());
+            let normed = liveQueryAdapters.compatibility.executionOptions.documents.normalize(
+              query,
+              searcher,
+              settings.createFieldSpec()
+            );
             return { searcher: searcher, docs: normed };
           });
         });
@@ -907,27 +939,6 @@ angular.module('QuepidApp')
         return window.quepidSearch.queryService.matchFeaturesExplain(doc);
       }
 
-      function normalizeDocExplains(query, searcher, fieldSpec) {
-        return window.quepidSearch.queryService.normalizeSearchResults({
-          searcher: searcher,
-          fieldSpec: fieldSpec,
-          extractors: {
-            es: function(docs, spec) {
-              return esExplainExtractorSvc.docsWithExplainOther(docs, spec);
-            },
-            solr: function(docs, spec, othersExplained) {
-              return solrExplainExtractorSvc.docsWithExplainOther(docs, spec, othersExplained);
-            }
-          },
-          createNormalDoc: function(spec, doc, explain) {
-            return normalDocsSvc.createNormalDoc(spec, doc, explain);
-          },
-          createRateableDoc: function(doc) {
-            return query.ratingsStore.createRateableDoc(doc);
-          }
-        });
-      }
-
       function toggleShowOnlyRated() {
         svc.showOnlyRated = !svc.showOnlyRated;
 
@@ -936,7 +947,7 @@ angular.module('QuepidApp')
         }
 
         if (svc.showOnlyRated) {
-          angular.forEach(svc.queries, function(query) {
+          angular.forEach(getLiveQueries(), function(query) {
             if (!query.ratingsReady) {
               window.quepidSearch.queryCapabilities.refreshRatedDocs(query.queryId);
             }
@@ -965,7 +976,7 @@ angular.module('QuepidApp')
         if (queryCollectionStore && queryCollectionStore.status !== 'idle') {
           return queryCollectionStore.size;
         }
-        return Object.keys(svc.queries).length;
+        return Object.keys(getLiveQueries()).length;
       }
 
       function bootstrapQueries(caseNo) {
@@ -1002,10 +1013,10 @@ angular.module('QuepidApp')
           // consumers still rely on this field being refreshed on each read.
           return window.quepidSearch.queryState.orderedQueries(
             queryCollectionStore.orderedQueryIds(),
-            svc.queries
+            getLiveQueries()
           );
         }
-        return window.quepidSearch.queryState.orderedQueries(svc.displayOrder, svc.queries);
+        return window.quepidSearch.queryState.orderedQueries(svc.displayOrder, getLiveQueries());
       }
 
       // Temporary adapter for the Stimulus reorder controller. The controller
