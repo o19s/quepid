@@ -310,15 +310,13 @@ store; `queriesSvc` reads those stores directly for its remaining Angular compat
 
 #### UI-level (reimplement on any framework)
 
-1. **Concurrent search pool** — Client `pAll()` with ≤10 workers, dual-phase progress (search then score), rate-limit delays. **Reimplement on the client.** Batch evaluation already has a separate server path — moving live search server-side adds latency and routes customer traffic through Quepid workers without fixing Solr JSONP → HTTP case-page constraints.
+1. **Scorer sandboxing** — Replace `eval()`. **Direction:** Web Worker (docs + scorer code in, score out). Budget for `scoreAll()` calling the worker per query per rating unless the flow is redesigned. MiniRacer stays for batch paths only.
 
-2. **Scorer sandboxing** — Replace `eval()`. **Direction:** Web Worker (docs + scorer code in, score out). Budget for `scoreAll()` calling the worker per query per rating unless the flow is redesigned. MiniRacer stays for batch paths only.
+2. **Multi-snapshot diff + scoring** — ≤5 snapshots, snapshot-as-searcher, client `scoreOthers()`, per-position diff, case averages. The remaining work sits on fake-Solr snapshots and rating-driven refetch.
 
-3. **Multi-snapshot diff + scoring** — ≤5 snapshots, snapshot-as-searcher, client `scoreOthers()`, per-position diff, case averages. The remaining work sits on fake-Solr snapshots and rating-driven refetch.
+3. **Angular templates → target syntax** — 32 templates (`ng-repeat`, `ng-if`, `ng-model`, `dir-paginate`, `quepid-sortable`, `ui-ace`, …) become ERB partials plus Stimulus targets, with store subscriptions doing the updates Angular's bindings did (see [Re-render mechanism](#re-render-mechanism)).
 
-4. **Angular templates → target syntax** — 32 templates (`ng-repeat`, `ng-if`, `ng-model`, `dir-paginate`, `quepid-sortable`, `ui-ace`, …) become ERB partials plus Stimulus targets, with store subscriptions doing the updates Angular's bindings did (see [Re-render mechanism](#re-render-mechanism)).
-
-5. **Field spec parsing and display** — `id:id title:name …` — type detection (JSON / URL / text), thumb prefixes, media by extension, snippet `<strong>` wrapping. Domain logic in splainer-search + Quepid display code, not framework glue.
+4. **Field spec parsing and display** — `id:id title:name …` — type detection (JSON / URL / text), thumb prefixes, media by extension, snippet `<strong>` wrapping. Domain logic in splainer-search + Quepid display code, not framework glue.
 
 ### Open bugs & UX (address during migration)
 
@@ -618,7 +616,7 @@ Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (6 packages; see [vendo
 ### Tests
 
 - **Karma:** 12 specs in `spec/javascripts/angular/`; loads all three Angular bundles + `angular-mocks`
-- **Vitest (104 specs):** includes the framework-free stores, runtimes, and migrated Stimulus controllers under `test/javascript/`
+- **Vitest (106 specs):** includes the framework-free stores, runtimes, and migrated Stimulus controllers under `test/javascript/`
 - **Playwright (24 specs; Angular core and Stimulus):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
 - **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case_smoke.spec.ts` — core toolbar share/unshare; `dom_migration_screenshots.spec.ts` — per-surface before/after shots (`share-case/` core, `share-case-rails/` index)
 - **Rails:** `core_controller_test.rb`, `tls_flow_test.rb`, `user_invite_flow_test.rb`, `cases_controller_test.rb` (Stimulus cases index), `application_helper_test.rb` (`quepid_root_url`)

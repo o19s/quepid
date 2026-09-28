@@ -528,33 +528,32 @@ angular.module('QuepidApp')
         );
       }
 
+      let liveQuerySearchRuntime = window.quepidSearch.liveQuerySearch.create({
+        proxyUrlFor: function(searchEndpointId) {
+          return caseTryNavSvc.getQuepidProxyUrl(searchEndpointId);
+        },
+        isEsOrOs: function(searchEngine) {
+          return searchEndpointSvc.isEsOrOsEngine(searchEngine);
+        },
+        evaluateMapper: evaluateMapperFunctions,
+        createSearcher: function(fieldSpec, searchUrl, args, queryText, searcherOptions, searchEngine) {
+          return searchSvc.createSearcher(
+            fieldSpec,
+            searchUrl,
+            args,
+            queryText,
+            searcherOptions,
+            searchEngine
+          );
+        }
+      });
+
       /**
        * Builds a splainer-search Searcher from the active try's settings and a `Query`, including
        * engine-specific behavior (proxy URL, static engine, searchapi mapper functions, rated-doc filters).
        */
       function createSearcherFromSettings(passedInSettings, query, options) {
-        if (!passedInSettings || !passedInSettings.selectedTry) return;
-
-        return window.quepidSearch.queryService.createSearcherFromSettings({
-          settings: passedInSettings,
-          query: query,
-          options: options,
-          proxyUrl: passedInSettings.proxyRequests === true
-            ? caseTryNavSvc.getQuepidProxyUrl(passedInSettings.searchEndpointId)
-            : undefined,
-          isEsOrOs: searchEndpointSvc.isEsOrOsEngine(passedInSettings.searchEngine),
-          evaluateMapper: evaluateMapperFunctions,
-          createSearcher: function(fieldSpec, searchUrl, args, queryText, searcherOptions, searchEngine) {
-            return searchSvc.createSearcher(
-              fieldSpec,
-              searchUrl,
-              args,
-              queryText,
-              searcherOptions,
-              searchEngine
-            );
-          }
-        });
+        return liveQuerySearchRuntime.createSearcherFromSettings(passedInSettings, query, options);
       }
 
       function createSearcherFromSnapshot(snapshotId, query, settings) {

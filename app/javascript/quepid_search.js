@@ -23,6 +23,7 @@ import {
 import { extractCuratorVars } from "./utils/curator_vars"
 import { buildQueryDocPairsPayload, createBookSyncRuntime, populateBook } from "./utils/book_sync"
 import { buildQueryDocumentsState } from "./utils/query_documents"
+import { createLiveQuerySearchRuntime } from "./utils/live_query_search"
 import {
   invalidateRatedDocsCache,
   matchesQueryFilter,
@@ -123,6 +124,9 @@ const quepidSearch = {
     create: createQueryRuntime,
     createSearchAll: createSearchAllRuntime,
     createTargetedSearch: createTargetedSearchAdapter
+  },
+  liveQuerySearch: {
+    create: createLiveQuerySearchRuntime
   },
   diffScores: {
     buildCaseDiffScores

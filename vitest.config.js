@@ -55,6 +55,7 @@ export default defineConfig({
       { find: "utils/editor_mode", replacement: path.resolve(repoRoot, "app/javascript/utils/editor_mode.js") },
       { find: "utils/query_lifecycle", replacement: path.resolve(repoRoot, "app/javascript/utils/query_lifecycle.js") },
       { find: "utils/query_service", replacement: path.resolve(repoRoot, "app/javascript/utils/query_service.js") },
+      { find: "utils/live_query_search", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_search.js") },
       { find: "utils/query_model", replacement: path.resolve(repoRoot, "app/javascript/utils/query_model.js") },
       { find: "utils/query_documents", replacement: path.resolve(repoRoot, "app/javascript/utils/query_documents.js") },
       { find: "utils/query_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/query_runtime.js") },
