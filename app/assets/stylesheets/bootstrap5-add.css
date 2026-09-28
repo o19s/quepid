@@ -11,8 +11,12 @@ body {
   background: url('blue_bg.jpg') top center repeat;
 }
 
-.footer-bar {
-  background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
+/* Match the core case page's footer text size (14px, from its 87.5%
+ * root font-size — see core-additions.css) so the shared footer partial
+ * (layouts/_footer) reads the same size everywhere, even though this
+ * bundle's root font-size is the BS5 default 16px. */
+footer {
+  font-size: 14px;
 }
 
 /*

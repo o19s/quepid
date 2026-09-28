@@ -3,6 +3,19 @@
 $(function() {
   var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 
+  var lastFooterHeight = null;
+
+  function pinFooterCopy() {
+    var footerCopy = $('#footer-copy');
+    if ( footerCopy.length && footerCopy.is(':visible') ) {
+      var height = footerCopy.outerHeight();
+      if ( height !== lastFooterHeight ) {
+        lastFooterHeight = height;
+        $('.pane_main').css('padding-bottom', height);
+      }
+    }
+  }
+
   var observer = new MutationObserver(function() {
     if ( $('.pane_main').length ) {
       $('body > footer').hide();
@@ -17,6 +30,7 @@ $(function() {
       }
 
       footerCopy.show();
+      pinFooterCopy();
     } else {
       $('body > footer').show();
       $('#footer-copy').hide();
@@ -26,5 +40,11 @@ $(function() {
   observer.observe(document, {
     childList: true,
     subtree:   true,
+  });
+
+  var resizeTimeout;
+  $(window).on('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(pinFooterCopy, 100); // 100ms debounce
   });
 });

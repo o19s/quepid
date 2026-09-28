@@ -67,11 +67,6 @@
 </style>
 <div class="sidebar d-flex flex-column flex-shrink-0 bg-body-tertiary" style="width: 3.5rem;">
     <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
-      <li class="nav-item">
-        <a href="#" class="nav-link active py-3 border-bottom rounded-0" aria-current="page" data-controller="bs-tooltip" data-bs-tooltip-placement-value="right" aria-label="Home" data-bs-tooltip-title-value="Home">
-          <svg class="bi pe-none" width="24" height="24" role="img" aria-label="Home"><use xlink:href="#home"></use></svg>
-        </a>
-      </li>
       <li>
         <%= link_to root_path, class: "nav-link #{make_active?({controller: 'home'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-controller':'bs-tooltip', 'data-bs-tooltip-placement-value':'right', 'aria-label':'Dashboard', 'data-bs-tooltip-title-value':'Dashboard' do %>
           <i
