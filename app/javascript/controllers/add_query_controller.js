@@ -14,9 +14,9 @@ export default class extends Controller {
   }
 
   connect() {
-    this.queryState = window.quepidSearch?.queryState
+    this.queryCapabilities = window.quepidSearch?.queryCapabilities
     this.onQueryStateChange = () => {
-      this.queryState = window.quepidSearch?.queryState
+      this.queryCapabilities = window.quepidSearch?.queryCapabilities
       this.render()
     }
     document.addEventListener("queries-state:changed", this.onQueryStateChange)
@@ -70,12 +70,12 @@ export default class extends Controller {
     const canAdd = this.canAddQueries()
     this.submitTarget.disabled = !canAdd || empty || this.loading
     this.submitTarget.value = this.inputTarget.value.includes(";") ? "Add queries" : "Add query"
-    this.inputTarget.placeholder = this.queryState?.getListState?.()?.addQueryMessage || this.placeholderValue || "Add a query to this case"
+    this.inputTarget.placeholder = this.queryCapabilities?.getListState?.()?.addQueryMessage || this.placeholderValue || "Add a query to this case"
     this.spinnerTarget.classList.toggle("d-none", !this.loading)
   }
 
   canAddQueries() {
-    const state = this.queryState?.getListState?.()
+    const state = this.queryCapabilities?.getListState?.()
     return state ? state.canAddQueries !== false : this.canAddQueriesValue
   }
 }

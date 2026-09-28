@@ -51,7 +51,7 @@ export default class extends Controller {
   }
 
   refreshAllDiffs() {
-    return window.quepidSearch?.queryState?.refreshAllDiffs?.() || Promise.reject(new Error("Query diff services are not available"))
+    return window.quepidSearch?.queryCapabilities?.refreshAllDiffs?.() || Promise.reject(new Error("Query diff services are not available"))
   }
 
   async registerSnapshots(payloads) {

@@ -227,7 +227,7 @@ describe("QscoreCaseController", () => {
     diffStateStore.enable(["1"])
     window.quepidSearch = {
       diffScores: { buildCaseDiffScores },
-      queryState: {
+      queryCapabilities: {
         getQueries: () => ({ 1: query }),
         refreshAllDiffs: vi.fn(() => query.diffs.fetch())
       }
@@ -263,7 +263,7 @@ describe("QscoreCaseController", () => {
     diffStateStore.enable(["1"])
     window.quepidSearch = {
       diffScores: { buildCaseDiffScores },
-      queryState: {
+      queryCapabilities: {
         getQueries: () => ({ 1: query }),
         refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
       }
@@ -299,7 +299,7 @@ describe("QscoreCaseController", () => {
     diffStateStore.enable(["1"])
     window.quepidSearch = {
       diffScores: { buildCaseDiffScores: vi.fn() },
-      queryState: {
+      queryCapabilities: {
         getQueries: () => ({ 1: query }),
         refreshAllDiffs: vi.fn(() => query.diffs.fetch())
       }
@@ -328,7 +328,7 @@ describe("QscoreCaseController", () => {
     diffStateStore.enable(["1"])
     window.quepidSearch = {
       diffScores: { buildCaseDiffScores: vi.fn() },
-      queryState: {
+      queryCapabilities: {
         getQueries: () => ({}),
         refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
       }
@@ -369,7 +369,7 @@ describe("QscoreCaseController", () => {
     diffStateStore.enable(["1"])
     window.quepidSearch = {
       diffScores: { buildCaseDiffScores },
-      queryState: {
+      queryCapabilities: {
         getQueries: () => ({ 1: query }),
         refreshAllDiffs: vi.fn(() => query.diffs.fetch())
       }

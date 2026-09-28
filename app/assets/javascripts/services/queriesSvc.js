@@ -143,19 +143,16 @@ angular.module('QuepidApp')
           batchSize: svc.queryCount()
         };
       };
-      window.quepidSearch.queryState.getListState = window.quepidSearch.queryCapabilities.getListState;
       window.quepidSearch.queryCommands.toggleShowOnlyRated = toggleShowOnlyRated;
       window.quepidSearch.queryCapabilities.isSortingEnabled = function() {
         return false;
       };
-      window.quepidSearch.queryState.isSortingEnabled = window.quepidSearch.queryCapabilities.isSortingEnabled;
       window.quepidSearch.queryCommands.collapseAll = function() {
         if (queryDocumentsStore) queryDocumentsStore.collapseAll();
       };
       window.quepidSearch.queryCapabilities.setDisplayOrder = function(displayOrder) {
         svc.applyDisplayOrder(displayOrder);
       };
-      window.quepidSearch.queryState.setDisplayOrder = window.quepidSearch.queryCapabilities.setDisplayOrder;
 
       // Method to clear cache for a specific book
       this.clearSyncCache = function(bookId) {
@@ -278,10 +275,10 @@ angular.module('QuepidApp')
       // Explicit command adapter for the Stimulus results renderer. The live
       // Query objects remain here until search and scoring migrate, but the
       // renderer does not need to discover them through an Angular scope.
-      window.quepidSearch.queryCapabilities.getQuery = function(queryId) {
+      function getLiveQuery(queryId) {
         return svc.queries[queryId] || svc.queries[String(queryId)] || null;
-      };
-      window.quepidSearch.queryState.getQuery = window.quepidSearch.queryCapabilities.getQuery;
+      }
+      window.quepidSearch.queryCapabilities.getQuery = getLiveQuery;
       window.quepidSearch.queryCapabilities.getCaseNo = getCaseNo;
       window.quepidSearch.queryState.getCaseNo = window.quepidSearch.queryCapabilities.getCaseNo;
 
@@ -301,7 +298,7 @@ angular.module('QuepidApp')
       window.quepidSearch.queryState.reconcileQueryRemoval = window.quepidSearch.queryCapabilities.reconcileQueryRemoval;
 
       function rateDocument(queryId, docId, rating) {
-        var query = window.quepidSearch.queryState.getQuery(queryId);
+        var query = getLiveQuery(queryId);
         if (!query) return false;
 
         var docs = (query.docs || []).concat(query.ratedDocs || []);
@@ -323,7 +320,7 @@ angular.module('QuepidApp')
       window.quepidSearch.queryCommands.rateDocument = rateDocument;
 
       function rateAll(queryId, rating) {
-        var query = window.quepidSearch.queryState.getQuery(queryId);
+        var query = getLiveQuery(queryId);
         if (!query) return false;
 
         var docs = svc.showOnlyRated ? query.ratedDocs : query.docs;
@@ -345,7 +342,7 @@ angular.module('QuepidApp')
       window.quepidSearch.queryCommands.rateAll = rateAll;
 
       window.quepidSearch.targetedSearch = function(queryId) {
-        var query = window.quepidSearch.queryState.getQuery(queryId);
+        var query = getLiveQuery(queryId);
         if (!query) return null;
 
         var settings = settingsSvc.editableSettings();
@@ -381,7 +378,7 @@ angular.module('QuepidApp')
       // Query objects remain Angular-owned, but the renderer does not discover
       // them through a compiled Angular controller.
       function toggleQuery(queryId) {
-        var query = window.quepidSearch.queryState.getQuery(queryId);
+        var query = getLiveQuery(queryId);
         if (!query) return false;
 
         var currentQuery = queryCollectionStore && queryCollectionStore.query(queryId);
@@ -399,7 +396,7 @@ angular.module('QuepidApp')
       window.quepidSearch.queryCommands.toggleQuery = toggleQuery;
 
       function paginateQuery(queryId, ratedOnly) {
-        var query = window.quepidSearch.queryState.getQuery(queryId);
+        var query = getLiveQuery(queryId);
         if (!query) return false;
 
         $scope.$evalAsync(function() {
@@ -1291,10 +1288,10 @@ angular.module('QuepidApp')
       // Framework-free controllers use this adapter instead of resolving the
       // Angular service from the injector. Keep the digest boundary here with
       // the live Query implementation until diff refresh leaves Angular.
-      window.quepidSearch.queryState.getQueries = function() {
+      window.quepidSearch.queryCapabilities.getQueries = function() {
         return svc.queries;
       };
-      window.quepidSearch.queryState.refreshAllDiffs = function() {
+      window.quepidSearch.queryCapabilities.refreshAllDiffs = function() {
         return new Promise(function(resolve, reject) {
           $scope.$evalAsync(function() {
             svc.refreshAllDiffs().then(resolve, reject);

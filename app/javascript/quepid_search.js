@@ -151,7 +151,9 @@ const quepidSearch = {
     setDisplayOrder: null,
     getQuery: null,
     getCaseNo: null,
-    reconcileQueryRemoval: null
+    reconcileQueryRemoval: null,
+    getQueries: null,
+    refreshAllDiffs: null
   },
   queryCommands: {
     rateDocument: null,

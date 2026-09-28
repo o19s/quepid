@@ -155,12 +155,12 @@ export default class extends Controller {
       return
     }
 
-    const queryState = window.quepidSearch?.queryState
-    const queries = Object.values(queryState?.getQueries?.() || {})
-    if (!queryState?.refreshAllDiffs) return
+    const capabilities = window.quepidSearch?.queryCapabilities
+    const queries = Object.values(capabilities?.getQueries?.() || {})
+    if (!capabilities?.refreshAllDiffs) return
     try {
       if (refreshQueries) {
-        await queryState.refreshAllDiffs()
+        await capabilities.refreshAllDiffs()
       }
 
       if (refreshGeneration !== this.diffRefreshGeneration) return

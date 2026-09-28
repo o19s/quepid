@@ -65,7 +65,7 @@ describe("SnapshotBridgeController", () => {
         snapshots: {},
         createSnapshotModel: vi.fn()
       },
-      queryState: {
+      queryCapabilities: {
         refreshAllDiffs: services.queriesSvc.refreshAllDiffs
       }
     }
