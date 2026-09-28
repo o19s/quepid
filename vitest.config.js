@@ -54,6 +54,7 @@ export default defineConfig({
       { find: "utils/settings_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/settings_runtime.js") },
       { find: "utils/configuration_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/configuration_runtime.js") },
       { find: "utils/navigation_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/navigation_runtime.js") },
+      { find: "utils/case_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/case_runtime.js") },
       { find: "utils/diff_scores", replacement: path.resolve(repoRoot, "app/javascript/utils/diff_scores.js") },
       { find: "utils/diff_results", replacement: path.resolve(repoRoot, "app/javascript/utils/diff_results.js") },
       { find: "utils/query_state", replacement: path.resolve(repoRoot, "app/javascript/utils/query_state.js") },

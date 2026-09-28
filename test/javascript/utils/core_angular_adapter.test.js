@@ -97,8 +97,8 @@ describe("core Angular adapter", () => {
   })
 
   it("reports the named controller when a capability cannot initialize", async () => {
-    await expect(getTuneRelevanceCapabilities()).rejects.toThrow(
-      'Unable to load case runtime capability "tuneRelevance" for tune_relevance_controller'
+    await expect(getBootstrapCapabilities()).rejects.toThrow(
+      'Unable to load case runtime capability "bootstrap" for core_bootstrap_controller'
     )
   }, 10000)
 

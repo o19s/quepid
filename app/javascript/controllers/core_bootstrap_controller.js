@@ -90,7 +90,6 @@ export default class extends Controller {
         window.quepidDom?.flash?.hide()
         window.quepidDom?.flash?.hide("search-error")
         caseCapability.trackLastViewedAt(caseNo)
-        caseCapability.fetchDropdownCases()
         this.ready({ caseNo, tryNo })
 
         window.quepidSearch.queryCommands.searchAll().then(

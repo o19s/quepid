@@ -6,6 +6,7 @@ import { createSettingsRuntime } from "utils/settings_runtime"
 import { createUserRuntime } from "utils/user_runtime"
 import { createConfigurationRuntime } from "utils/configuration_runtime"
 import { createNavigationRuntime } from "utils/navigation_runtime"
+import { createCaseRuntime } from "utils/case_runtime"
 
 /**
  * Temporary seam for the Angular services that still own live case state.
@@ -25,6 +26,7 @@ const searchEndpointRuntime = createSearchEndpointRuntime()
 const settingsCatalog = createSettingsCatalog()
 const configurationRuntime = createConfigurationRuntime()
 const navigationRuntime = createNavigationRuntime()
+const caseRuntime = createCaseRuntime()
 const settingsRuntime = createSettingsRuntime({
   caseNo: () => navigationRuntime.getCaseNo(),
   tryNo: () => navigationRuntime.getTryNo(),
@@ -102,6 +104,7 @@ export function resetCoreServiceCache() {
   settingsCatalog.reset()
   configurationRuntime.reset()
   navigationRuntime.reset()
+  caseRuntime.reset()
   settingsRuntime.reset()
   userRuntime.reset()
 }
@@ -109,7 +112,7 @@ export function resetCoreServiceCache() {
 const capabilityDefinitions = {
   bootstrap: {
     controller: "core_bootstrap_controller",
-    services: ["$rootScope", "$http", "$q", "$log", "caseSvc", "ScorerFactory"]
+    services: ["$rootScope", "$http", "$q", "$log", "ScorerFactory"]
   },
   snapshots: {
     controller: "snapshot_bridge_controller",
@@ -117,11 +120,11 @@ const capabilityDefinitions = {
   },
   wizard: {
     controller: "wizard_controller",
-    services: ["caseSvc"]
+    services: []
   },
   tuneRelevance: {
     controller: "tune_relevance_controller",
-    services: ["caseSvc"]
+    services: []
   }
 }
 
@@ -132,14 +135,16 @@ async function loadCapability(name) {
   const runtime = window.quepidSearch?.caseRuntime
   if (runtime?.[name]) return runtime[name]
 
-  let services
-  try {
-    services = await waitForAngularServices(definition.services)
-  } catch (error) {
-    throw new Error(
-      `Unable to load case runtime capability "${name}" for ${definition.controller}: ${error.message}`,
-      { cause: error }
-    )
+  let services = {}
+  if (definition.services.length > 0) {
+    try {
+      services = await waitForAngularServices(definition.services)
+    } catch (error) {
+      throw new Error(
+        `Unable to load case runtime capability "${name}" for ${definition.controller}: ${error.message}`,
+        { cause: error }
+      )
+    }
   }
 
   window.quepidSearch ||= {}
@@ -222,7 +227,6 @@ function createWizardCapabilities(
   searchEndpointRuntime,
   mapperSearchRuntime
 ) {
-  const { caseSvc } = services
   const splainerSearch = window.quepidSearch?.splainerSearch || {}
 
   return {
@@ -237,9 +241,9 @@ function createWizardCapabilities(
       update: (value) => settingsRuntime.update(value)
     },
     case: {
-      selected: () => caseSvc.getSelectedCase(),
-      delete: (value) => caseSvc.deleteCase(value),
-      rename: (value, name) => caseSvc.renameCase(value, name)
+      selected: () => caseRuntime.selected(),
+      delete: (value) => caseRuntime.delete(value),
+      rename: (value, name) => caseRuntime.rename(value, name)
     },
     endpoints: {
       list: () => searchEndpointRuntime.list(),
@@ -268,7 +272,6 @@ function createWizardCapabilities(
 }
 
 function createTuneRelevanceCapabilities(services, searchEndpointRuntime) {
-  const { caseSvc } = services
   const esUrlSvc = window.quepidSearch?.splainerSearch?.esUrlSvc
 
   return {
@@ -292,9 +295,9 @@ function createTuneRelevanceCapabilities(services, searchEndpointRuntime) {
       isTemplateCall: (value) => esUrlSvc?.isTemplateCall(value)
     },
     case: {
-      selected: () => caseSvc.getSelectedCase(),
-      updateNightly: (value) => caseSvc.updateNightly(value),
-      runEvaluation: (caseNo, tryNo) => caseSvc.runEvaluation(caseNo, tryNo)
+      selected: () => caseRuntime.selected(),
+      updateNightly: (value) => caseRuntime.updateNightly(value),
+      runEvaluation: (caseNo, tryNo) => caseRuntime.runEvaluation(caseNo, tryNo)
     },
     navigation: {
       currentCaseNo: () => navigationRuntime.getCaseNo(),
@@ -308,8 +311,6 @@ function createTuneRelevanceCapabilities(services, searchEndpointRuntime) {
 }
 
 function createCoreCapabilities(services, scorerCatalog, userRuntime) {
-  const { caseSvc } = services
-
   return {
     configuration: {
       setCommunalScorersOnly: (value) => configurationRuntime.setCommunalScorersOnly(value),
@@ -321,10 +322,9 @@ function createCoreCapabilities(services, scorerCatalog, userRuntime) {
       loadCurrent: () => userRuntime.loadCurrent()
     },
     case: {
-      load: (caseNo) => caseSvc.get(caseNo),
-      select: (value) => caseSvc.selectTheCase(value),
-      trackLastViewedAt: (caseNo) => caseSvc.trackLastViewedAt(caseNo),
-      fetchDropdownCases: () => caseSvc.fetchDropdownCases()
+      load: (caseNo) => caseRuntime.load(caseNo),
+      select: (value) => caseRuntime.select(value),
+      trackLastViewedAt: (caseNo) => caseRuntime.trackLastViewedAt(caseNo)
     },
     settings: {
       editable: () => settingsRuntime.editable(),

@@ -8,7 +8,6 @@
  */
 
 angular.module('QuepidApp', [
-  'UtilitiesModule',
   'ngSanitize',
   'o19s.splainer-search',
   'ng-rails-csrf',

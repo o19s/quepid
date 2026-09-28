@@ -24,16 +24,16 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 28 files, 24 register with Angular |
+| Angular JS source files (`app/assets/javascripts`) | 12 files, 8 register with Angular |
 | HTML templates (`app/assets/templates`) | 2 |
 | Controllers | 0 |
-| Services | 9 (`.service()` registrations; 9 files under `services/`) |
-| Factories | 4 |
+| Services | 2 (`.service()` registrations) |
+| Factories | 1 |
 | Filters | 1 under `filters/` |
 | Custom directives / components | 1 directive, no components |
-| `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 10 |
+| `QuepidApp` module dependencies | 4 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 6 packages (+ `angular` core from npm) |
-| Karma unit specs (`spec/javascripts/angular`) | 12 |
+| Karma unit specs (`spec/javascripts/angular`) | 4 |
 | Vitest unit specs (`test/javascript/**/*.test.js`) | 116 |
 | Playwright specs (`test/playwright/*.spec.ts`) | 24 |
 
@@ -393,12 +393,6 @@ The query-list shell is Rails-rendered and no longer declares an Angular scope. 
 
 Non-Angular libs that **stay**: Bootstrap 5, D3, Vega, ACE, autocompleter, clipboard, URI.js, Shepherd, SortableJS.
 
-### `UtilitiesModule` (`app/assets/javascripts/utilitiesModule.js`)
-
-| Registration | File |
-|--------------|------|
-| Framework-free configuration runtime | `utils/configuration_runtime.js` |
-
 ---
 
 ## Feature areas to migrate
@@ -470,7 +464,7 @@ Automatic post-search synchronization now uses the tested `createBookSyncRuntime
 for configuration, deduplication, batching, and retry-on-failure; `queriesSvc`
 only invokes that runtime after a live search.
 
-Backing services/factories: `app/javascript/utils/doc_cache.js`, `app/javascript/utils/search_endpoint_runtime.js`, `DocListFactory`
+Backing runtimes: `app/javascript/utils/doc_cache.js`, `app/javascript/utils/search_endpoint_runtime.js`
 
 Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 
@@ -481,7 +475,7 @@ Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 | Settings persistence | framework-free runtime | `app/javascript/utils/settings_runtime.js`, `app/javascript/utils/settings_catalog_runtime.js` |
 | Search endpoint popup | template | `templates/views/searchEndpoint_popup.html` |
 
-Uses the framework-free settings runtimes plus the remaining `caseSvc` compatibility service through `core_angular_adapter.js`; the drawer UI no longer depends on Angular templates, controller scopes, or direct injector access.
+Uses the framework-free settings and case runtimes through `core_angular_adapter.js`; the drawer UI no longer depends on Angular templates, controller scopes, or direct injector access.
 
 ### 8. Shared UI primitives (migrate before or alongside features)
 
@@ -503,7 +497,7 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (2):** `caseSvc`, `caseTryNavSvc`. The former `configurationSvc`, `queriesSvc`, `scorerSvc`, `userSvc`, `settingsSvc`, `mapperBasedSearchEngineSvc`, and `searchEndpointSvc` registrations and module runtime initializer are gone. Core configuration and navigation helpers now live in the tested framework-free `configuration_runtime.js` and `navigation_runtime.js` modules. Settings presets, mutable try state, persistence, engine policy, and mapper registration now live in the tested framework-free `settings_catalog_runtime.js` and `settings_runtime.js` modules. `core_bootstrap_controller.js` invokes the explicit `live_query_runtime_initializer.js` factory instead. `ScorerFactory` remains as the custom scorer execution boundary. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
+**Services (2):** `caseSvc`, `caseTryNavSvc`. The former `configurationSvc`, `queriesSvc`, `scorerSvc`, `userSvc`, `settingsSvc`, `mapperBasedSearchEngineSvc`, and `searchEndpointSvc` registrations and module runtime initializer are gone. Modern bootstrap, wizard, and Tune Relevance capabilities no longer resolve `caseSvc`; their case loading, selection, mutation, and metadata requests now live in the tested framework-free `case_runtime.js` module. `caseSvc` remains only for the Angular-owned live query/scoring island and legacy case-list behavior. Core configuration and navigation helpers now live in the tested framework-free `configuration_runtime.js` and `navigation_runtime.js` modules. Settings presets, mutable try state, persistence, engine policy, and mapper registration now live in the tested framework-free `settings_catalog_runtime.js` and `settings_runtime.js` modules. `core_bootstrap_controller.js` invokes the explicit `live_query_runtime_initializer.js` factory instead. `ScorerFactory` remains as the custom scorer execution boundary. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
 
 `queriesSvc` reads the framework-free snapshot registry directly. Static snapshot
 imports in the new-case wizard use `app/javascript/utils/snapshot_import.js`.
@@ -514,7 +508,7 @@ snapshot registry, model factory, and registry searcher needed by the remaining
 live Query/scoring island; payload, API, hydration, and unused searcher helpers
 are no longer exported through the Angular bundle.
 
-**Factories (2):** `DocListFactory`, `ScorerFactory`
+**Factories (1):** `ScorerFactory`
 
 The former `caseSvc` and `queriesSvc` consumers now use named native events or EventTarget stores. See [event bus inventory](./event_bus_inventory.md).
 
@@ -533,7 +527,7 @@ Removed on 2026-09-28: `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, and
 `searchEngineName`. Their framework-free replacements are covered by Vitest
 and are the consumers used by the Stimulus case workspace.
 
-**Values (1):** `settingsIdValue`
+**Values (0):** No Angular values remain.
 
 ---
 
@@ -572,6 +566,7 @@ Core layout loads: `json-explorer` (Quepid-owned, styles the vanilla JSON tree).
 |----------|------|
 | npm `angular`, `angular-mocks` | `package.json` |
 | Framework-free case runtime | `app/javascript/case_runtime.js` → `app/assets/builds/case_runtime.js` |
+| Case-domain runtime | `app/javascript/utils/case_runtime.js` |
 | Vendor bundle | `app/javascript/angular_app.js` → `app/assets/builds/angular_app.js` |
 | App bundle | `build_angular_app.js` → `quepid_angular_app.js` |
 | Templates | `build_templates.js` → `angular_templates.js` |
