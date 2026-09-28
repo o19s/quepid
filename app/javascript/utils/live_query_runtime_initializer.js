@@ -1,12 +1,13 @@
 /* jslint latedef:false */
 
 /**
- * Creates the live-query compatibility runtime from explicit Angular service
- * dependencies. The runtime itself is framework-free; Angular only supplies
- * the still-legacy search, scoring, settings, and transport services.
+ * Creates the live-query compatibility runtime from explicit domain and state
+ * dependencies. The runtime itself is framework-free; the outer bootstrap
+ * boundary supplies the still-legacy search, scoring, settings, and transport
+ * services while the migration is in flight.
  */
-export function initializeLiveQueryRuntime({ framework, domain }) {
-  const splainerSearch = window.quepidSearch.splainerSearch || {}
+export function initializeLiveQueryRuntime({ framework, domain, search, store }) {
+  const splainerSearch = search.splainerSearch || {}
   const searchSvc = splainerSearch.searchSvc
   const normalDocsSvc = splainerSearch.normalDocsSvc
   const esExplainExtractorSvc = splainerSearch.esExplainExtractorSvc
@@ -76,10 +77,10 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
   // Temporary dual-run bridge: the store owns the query collection snapshot
   // and display order while Angular keeps the live Query objects for search,
   // ratings, documents, and scoring.
-  const queryCollectionStore = window.quepidStore && window.quepidStore.queries
-  const queryDocumentsStore = window.quepidStore && window.quepidStore.documents
-  const diffStateStore = window.quepidStore && window.quepidStore.diff
-  const liveQueryRegistry = window.quepidSearch.liveQueryRegistry.create({
+  const queryCollectionStore = store && store.queries
+  const queryDocumentsStore = store && store.documents
+  const diffStateStore = store && store.diff
+  const liveQueryRegistry = search.liveQueryRegistry.create({
     store: queryCollectionStore
   })
   function getAllDiffSettings() {
@@ -101,11 +102,11 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
     liveQueryRegistry.register(queryId, query)
   }
 
-  const bookSyncRuntime = window.quepidSearch.bookSync.createRuntime({
+  const bookSyncRuntime = search.bookSync.createRuntime({
     logger: framework.logger
   })
 
-  const liveQueryAdapters = window.quepidSearch.liveQueryAdapters.create({
+  const liveQueryAdapters = search.liveQueryAdapters.create({
     domain: {
       ...domain,
       search: {
@@ -148,13 +149,13 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
           getDefaultScorer: function () {
             return liveQueryAdapters.scoring.getDefault()
           },
-          scoreQuery: window.quepidSearch.queryScoring.scoreQuery,
+          scoreQuery: search.queryScoring.scoreQuery,
           promiseApi: framework.promiseApi,
           getFieldSpec: function () {
             return currSettings.createFieldSpec()
           },
-          buildRatingsFilter: window.quepidSearch.ratedDocs.buildFilter,
-          ratedDocIds: window.quepidSearch.ratedDocs.ids,
+          buildRatingsFilter: search.ratedDocs.buildFilter,
+          ratedDocIds: search.ratedDocs.ids,
           onDirty: function () {
             svcVersion++
           }
@@ -173,7 +174,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
           getShowOnlyRated: function () {
             return svc.showOnlyRated
           },
-          RatingsStore: window.quepidSearch.ratings.RatingsStore,
+          RatingsStore: search.ratings.RatingsStore,
           request: function (options) {
             return liveQueryAdapters.ratings.request(options)
           },
@@ -181,7 +182,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
             liveQueryAdapters.ratings.changed(changedQueryId)
           },
           getQueryState: function (query) {
-            return window.quepidSearch.queryState.queryLifecycleState({
+            return search.queryState.queryLifecycleState({
               errorText: query.errorText,
               resultsReturned: query.resultsReturned,
               docCount: query.docs.length
@@ -218,7 +219,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
         },
         documents: {
           normalize: function (query, searcher, fieldSpec) {
-            return window.quepidSearch.queryService.normalizeSearchResults({
+            return search.queryService.normalizeSearchResults({
               searcher: searcher,
               fieldSpec: fieldSpec,
               extractors: {
@@ -243,7 +244,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
         },
         errors: {
           parse: function (response, linkUrl) {
-            return window.quepidSearch.searchErrors.parseResponseObject(
+            return search.searchErrors.parseResponseObject(
               response,
               linkUrl,
               currSettings.searchEngine
@@ -300,8 +301,8 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
       changed: function (changedQueryId) {
         ratingsVersion++
 
-        if (window.quepidStore && window.quepidStore.scoring) {
-          window.quepidStore.scoring.markRatingChanged(changedQueryId)
+        if (store && store.scoring) {
+          store.scoring.markRatingChanged(changedQueryId)
         } else {
           document.dispatchEvent(
             new CustomEvent("ratings:changed", {
@@ -346,7 +347,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
   // Case-level scoring orchestration lives in the framework-free query
   // runtime. Angular remains the compatibility adapter for the live Query
   // objects and the legacy latestScoreInfo shape during dual-run.
-  const caseScoringRuntime = window.quepidSearch.queryScoring.createCaseScoringRuntime({
+  const caseScoringRuntime = search.queryScoring.createCaseScoringRuntime({
     getScorables: function () {
       return getLiveQueries()
     },
@@ -359,22 +360,22 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
       // scoring (for example diff-only scoring) must not erase live
       // query badges from the store.
       if (metadata.isFullScoreAll) {
-        window.quepidStore.scoring.setLatestScoreInfo(scoreInfo)
+        store.scoring.setLatestScoreInfo(scoreInfo)
       }
 
       publishQueryListState()
     }
   })
 
-  const liveQueryCollectionRuntime = window.quepidSearch.queryLifecycle.createCollectionRuntime({
+  const liveQueryCollectionRuntime = search.queryLifecycle.createCollectionRuntime({
     request: function (caseId) {
-      return runtimeFramework.request(window.quepidSearch.queryLifecycle.bootstrapRequest(caseId))
+      return runtimeFramework.request(search.queryLifecycle.bootstrapRequest(caseId))
     },
     createQuery: function (queryData) {
       return liveQueryFactory.create(queryData)
     },
     createDiff: function (query) {
-      window.quepidSearch.diff.createQueryDiff({
+      search.diff.createQueryDiff({
         query: query,
         diffSettings: getAllDiffSettings(),
         settings: runtimeDomain.settings.editable(),
@@ -412,20 +413,19 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
     logger: runtimeFramework.logger
   })
 
-  const liveQueryCompatibilityRuntime =
-    window.quepidSearch.queryLifecycle.createCompatibilityRuntime({
-      model: window.quepidSearch.liveQueryModel,
-      factory: window.quepidSearch.liveQueryFactory,
-      documents: window.quepidSearch.liveQueryDocuments,
-      execution: window.quepidSearch.liveQueryExecution,
-      factoryOptions: liveQueryAdapters.compatibility.factoryOptions,
-      executionOptions: liveQueryAdapters.compatibility.executionOptions
-    })
+  const liveQueryCompatibilityRuntime = search.queryLifecycle.createCompatibilityRuntime({
+    model: search.liveQueryModel,
+    factory: search.liveQueryFactory,
+    documents: search.liveQueryDocuments,
+    execution: search.liveQueryExecution,
+    factoryOptions: liveQueryAdapters.compatibility.factoryOptions,
+    executionOptions: liveQueryAdapters.compatibility.executionOptions
+  })
   const liveQueryDocumentsRuntime = liveQueryCompatibilityRuntime.documents
   const liveQueryRuntime = liveQueryCompatibilityRuntime.execution
   const liveQueryFactory = liveQueryCompatibilityRuntime.factory
 
-  const liveQueryTransportRuntime = window.quepidSearch.queryLifecycle.createTransportRuntime({
+  const liveQueryTransportRuntime = search.queryLifecycle.createTransportRuntime({
     queryRuntime: liveQueryRuntime,
     getQueries: function () {
       return getLiveQueries()
@@ -456,7 +456,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
     logger: runtimeFramework.logger
   })
 
-  const liveQueryCommandsRuntime = window.quepidSearch.liveQueryCommands.create({
+  const liveQueryCommandsRuntime = search.liveQueryCommands.create({
     getQuery: getLiveQuery,
     getShowOnlyRated: function () {
       return svc.showOnlyRated
@@ -471,22 +471,22 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
     }
   })
 
-  const liveQueryEventsRuntime = window.quepidSearch.liveQueryEvents.create({
-    scoringStore: window.quepidStore && window.quepidStore.scoring,
+  const liveQueryEventsRuntime = search.liveQueryEvents.create({
+    scoringStore: store && store.scoring,
     getCaseNo: getCaseNo,
     getQuery: getLiveQuery,
     getQueries: function () {
       return getLiveQueries()
     },
     invalidateRatedDocs: function (query) {
-      window.quepidSearch.queryState.invalidateRatedDocsCache(query)
+      search.queryState.invalidateRatedDocsCache(query)
     },
     publishQuery: publishQueryDocuments,
     scoreAll: function () {
       return liveQueryAdapters.scoring.run()
     },
     updateScores: function () {
-      return window.quepidSearch.queryCapabilities.updateScores()
+      return search.queryCapabilities.updateScores()
     },
     setQueryOptions: function (query, options) {
       query.options = options
@@ -496,9 +496,9 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
       return liveQueryAdapters.scoring.select(scorerData)
     },
     reloadQueries: function (caseId) {
-      window.quepidSearch.queryCapabilities.resetQueryState()
-      return window.quepidSearch.queryCapabilities.bootstrapQueries(caseId).then(function () {
-        return window.quepidSearch.queryCommands.searchAll()
+      search.queryCapabilities.resetQueryState()
+      return search.queryCapabilities.bootstrapQueries(caseId).then(function () {
+        return search.queryCommands.searchAll()
       })
     },
     schedule: function (callback) {
@@ -510,7 +510,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
   })
   liveQueryEventsRuntime.connect()
 
-  const liveQueryLifecycleRuntime = window.quepidSearch.queryLifecycle.createRuntime({
+  const liveQueryLifecycleRuntime = search.queryLifecycle.createRuntime({
     createQuery: function (queryText) {
       return createQuery(queryText)
     },
@@ -549,12 +549,12 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
       return searchAndScore(query)
     },
     updateScores: function () {
-      window.quepidSearch.queryCapabilities.updateScores()
+      search.queryCapabilities.updateScores()
     },
     logger: runtimeFramework.logger
   })
 
-  const liveQueryDiffRuntime = window.quepidSearch.liveQueryDiff.create({
+  const liveQueryDiffRuntime = search.liveQueryDiff.create({
     getQueries: function () {
       return getLiveQueries()
     },
@@ -574,7 +574,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
     promiseApi: runtimeFramework.promiseApi
   })
 
-  const liveQueryStateRuntime = window.quepidSearch.liveQueryState.create({
+  const liveQueryStateRuntime = search.liveQueryState.create({
     getQueries: function () {
       return getLiveQueries()
     },
@@ -587,7 +587,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
       currSettings = newSettings
     },
     setLifecycleCaseId: function (newCaseNo) {
-      window.quepidSearch.queryLifecycle.caseId = newCaseNo
+      search.queryLifecycle.caseId = newCaseNo
     },
     getCurrentCaseNo: getCaseNo,
     setCurrentCaseNo: function (newCaseNo) {
@@ -621,7 +621,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
     promiseApi: runtimeFramework.promiseApi
   })
 
-  window.quepidSearch.queryCapabilities.getListState = function () {
+  search.queryCapabilities.getListState = function () {
     const selectedTry = runtimeDomain.settings.applicable() || {}
     return {
       canAddQueries: selectedTry.searchEngine !== "static",
@@ -645,11 +645,11 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
   // Rated-docs lookup rules live in app/javascript/utils/rated_docs.js (Vitest-covered);
   // these stay as the Angular-facing names that deferred result controls and docFinder.js call.
   function trySupportsSearchApiRatedDocsLookup(aTry) {
-    return window.quepidSearch.ratedDocs.supportsSearchApiLookup(aTry)
+    return search.ratedDocs.supportsSearchApiLookup(aTry)
   }
 
   function trySupportsRatedDocsLookup(aTry) {
-    return window.quepidSearch.ratedDocs.supportsLookup(aTry)
+    return search.ratedDocs.supportsLookup(aTry)
   }
 
   // Temporary dual-run publisher: Angular keeps the live Query objects, but
@@ -665,7 +665,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
       ratingScale = effectiveScorer.getColors()
     }
     const applicableSettings = runtimeDomain.settings.applicable() || {}
-    const readModel = window.quepidSearch.queryDocuments.buildState({
+    const readModel = search.queryDocuments.buildState({
       query: query,
       settings: applicableSettings,
       selectedTry: applicableSettings.selectedTry || {},
@@ -756,7 +756,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
   // and queryParams) and searchApiRatedDocs() below (overriding just args), so a resolved
   // query doesn't have to be spliced into settings by hand at each call site.
   function settingsWithTryOverrides(settings, tryOverrides) {
-    return window.quepidSearch.queryService.settingsWithTryOverrides(settings, tryOverrides)
+    return search.queryService.settingsWithTryOverrides(settings, tryOverrides)
   }
 
   svc.showOnlyRated = false
@@ -778,14 +778,10 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
    * each eval (only reached on a cache miss) avoids that cross-contamination.
    */
   function evaluateMapperFunctions(mapperCode) {
-    return window.quepidSearch.queryService.evaluateMapperFunctions(
-      mapperCode,
-      mapperFunctionsCache,
-      window
-    )
+    return search.queryService.evaluateMapperFunctions(mapperCode, mapperFunctionsCache, window)
   }
 
-  const liveQuerySearchRuntime = window.quepidSearch.liveQuerySearch.create({
+  const liveQuerySearchRuntime = search.liveQuerySearch.create({
     proxyUrlFor: function (searchEndpointId) {
       return runtimeDomain.navigation.proxyUrlFor(searchEndpointId)
     },
@@ -821,8 +817,8 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
   }
 
   function createSearcherFromSnapshot(snapshotId, query, settings) {
-    const snapshotRegistry = window.quepidSearch.snapshotSearch.snapshots
-    return window.quepidSearch.snapshotSearch.createSnapshotSearcherFromRegistry({
+    const snapshotRegistry = search.snapshotSearch.snapshots
+    return search.snapshotSearch.createSnapshotSearcherFromRegistry({
       snapshotId: snapshotId,
       snapshots: snapshotRegistry,
       query: query,
@@ -850,7 +846,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
    * MapperBasedSearchEngine#supports_rated_docs_lookup being false.
    */
   function buildSearchApiRatedDocsQueryParams(mapperCode, ratedIds, idField) {
-    return window.quepidSearch.queryService.buildSearchApiRatedDocsQueryParams(
+    return search.queryService.buildSearchApiRatedDocsQueryParams(
       mapperCode,
       ratedIds,
       idField,
@@ -918,7 +914,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
    * renders as "no per-term score breakdown for doc" when a doc has no matchfeatures to show.
    */
   function matchFeaturesExplain(doc) {
-    return window.quepidSearch.queryService.matchFeaturesExplain(doc)
+    return search.queryService.matchFeaturesExplain(doc)
   }
 
   function toggleShowOnlyRated() {
@@ -931,7 +927,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
     if (svc.showOnlyRated) {
       angularForEach(getLiveQueries(), function (query) {
         if (!query.ratingsReady) {
-          window.quepidSearch.queryCapabilities.refreshRatedDocs(query.queryId)
+          search.queryCapabilities.refreshRatedDocs(query.queryId)
         }
       })
     }
@@ -992,12 +988,12 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
       // Keep the legacy defaultCaseOrder contract while taking the order
       // itself from the store. Angular's existing orderBy and any other
       // consumers still rely on this field being refreshed on each read.
-      return window.quepidSearch.queryState.orderedQueries(
+      return search.queryState.orderedQueries(
         queryCollectionStore.orderedQueryIds(),
         getLiveQueries()
       )
     }
-    return window.quepidSearch.queryState.orderedQueries(svc.displayOrder, getLiveQueries())
+    return search.queryState.orderedQueries(svc.displayOrder, getLiveQueries())
   }
 
   // Temporary adapter for the Stimulus reorder controller. The controller
@@ -1043,8 +1039,8 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
     return liveQueryStateRuntime.updateScores()
   }
 
-  window.quepidSearch.liveQueryCapabilities.install({
-    target: window.quepidSearch,
+  search.liveQueryCapabilities.install({
+    target: search,
     capabilities: {
       getListState: function () {
         const selectedTry = runtimeDomain.settings.applicable() || {}
@@ -1128,7 +1124,7 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
       if (!query) return null
 
       const settings = runtimeDomain.settings.editable()
-      return window.quepidSearch.queryRuntime.createTargetedSearch({
+      return search.queryRuntime.createTargetedSearch({
         query: query,
         queryId: queryId,
         settings: settings,
@@ -1161,5 +1157,5 @@ export function initializeLiveQueryRuntime({ framework, domain }) {
     return caseNo
   }
 
-  return window.quepidSearch
+  return search
 }

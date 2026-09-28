@@ -22,7 +22,11 @@ export default class extends Controller {
       this.capabilities = await getBootstrapCapabilities()
 
       if (this.capabilities.liveQuery && window.quepidSearch.splainerSearch?.searchSvc) {
-        initializeLiveQueryRuntime(this.capabilities.liveQuery)
+        initializeLiveQueryRuntime({
+          ...this.capabilities.liveQuery,
+          search: window.quepidSearch,
+          store: window.quepidStore
+        })
       }
 
       const { configuration, user, case: caseCapability, settings, navigation, scoring } = this.capabilities.core

@@ -30,6 +30,8 @@ describe("initializeLiveQueryRuntime", () => {
     }
 
     initializeLiveQueryRuntime({
+      search: quepidSearch,
+      store: window.quepidStore,
       framework: {
         request: vi.fn(() => Promise.resolve({ data: {} })),
         get: vi.fn(() => Promise.resolve({ data: {} })),
