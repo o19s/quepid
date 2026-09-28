@@ -60,6 +60,8 @@ export default defineConfig({
       { find: "utils/live_query_documents", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_documents.js") },
       { find: "utils/live_query_factory", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_factory.js") },
       { find: "utils/live_query_commands", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_commands.js") },
+      { find: "utils/live_query_events", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_events.js") },
+      { find: "utils/live_query_execution", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_execution.js") },
       { find: "utils/live_query_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_runtime.js") },
       { find: "utils/live_query_lifecycle", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_lifecycle.js") },
       { find: "utils/live_query_diff", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_diff.js") },

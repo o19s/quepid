@@ -187,7 +187,7 @@ angular.module('QuepidApp')
         publish: publishQueryDocuments
       });
 
-      let liveQueryRuntime = window.quepidSearch.queryRuntime.createLive({
+      let liveQueryRuntime = window.quepidSearch.liveQueryExecution.create({
         getSettings: function() {
           return currSettings;
         },
@@ -247,6 +247,46 @@ angular.module('QuepidApp')
           return $q.reject(message);
         }
       });
+
+      let liveQueryEventsRuntime = window.quepidSearch.liveQueryEvents.create({
+        scoringStore: window.quepidStore && window.quepidStore.scoring,
+        getCaseNo: getCaseNo,
+        getQuery: getLiveQuery,
+        getQueries: function() {
+          return svc.queries;
+        },
+        invalidateRatedDocs: function(query) {
+          window.quepidSearch.queryState.invalidateRatedDocsCache(query);
+        },
+        publishQuery: publishQueryDocuments,
+        scoreAll: function() {
+          return window.quepidSearch.queryCapabilities.scoreAll();
+        },
+        updateScores: function() {
+          return window.quepidSearch.queryCapabilities.updateScores();
+        },
+        setQueryOptions: function(query, options) {
+          query.options = options;
+          query.setDirty();
+        },
+        setScorer: function(scorerData) {
+          var scorer = scorerSvc.constructFromData(scorerData);
+          return scorerSvc.setDefault(scorer);
+        },
+        reloadQueries: function(caseId) {
+          svc.reset();
+          return svc.bootstrapQueries(caseId).then(function() {
+            return window.quepidSearch.queryCommands.searchAll();
+          });
+        },
+        schedule: function(callback) {
+          $scope.$evalAsync(callback);
+        },
+        scheduleApply: function(callback) {
+          $scope.$applyAsync(callback);
+        }
+      });
+      liveQueryEventsRuntime.connect();
 
       let liveQueryLifecycleRuntime = window.quepidSearch.queryLifecycle.createRuntime({
         createQuery: function(queryText) {
@@ -595,89 +635,6 @@ angular.module('QuepidApp')
       svc.bootstrapQueries = bootstrapQueries;
       svc.showOnlyRated = false;
       svc.isBootstrapping = false;
-
-      // Rescore on ratings update. The EventTarget store is the normal source;
-      // the document event keeps older bundles without that store working without
-      // reintroducing an Angular root event relay.
-      var ratingChangedHandler = function(event, legacyQueryId) {
-        var queryId = window.quepidSearch.queryState.ratingChangedQueryId(event, legacyQueryId);
-        if (queryId !== undefined && svc.queries[queryId]) {
-          window.quepidSearch.queryState.invalidateRatedDocsCache(svc.queries[queryId]);
-          publishQueryDocuments(svc.queries[queryId]);
-        } else {
-          angular.forEach(svc.queries, publishQueryDocuments);
-        }
-        $scope.$evalAsync(function() {
-          window.quepidSearch.queryCapabilities.scoreAll();
-        });
-      };
-      if (window.quepidStore && window.quepidStore.scoring) {
-        window.quepidStore.scoring.addEventListener('rating-changed', ratingChangedHandler);
-      } else {
-        document.addEventListener('ratings:changed', ratingChangedHandler);
-      }
-
-      // Stimulus pick-scorer-core: API save already done; apply scorer + rescore live queries.
-      document.addEventListener('query-options:saved', function(event) {
-        var detail = event.detail || {};
-        var query = svc.queries[detail.queryId] || svc.queries[String(detail.queryId)];
-        if (Number(detail.caseId) && Number(detail.caseId) !== Number(svc.getCaseNo())) {
-          return;
-        }
-        if (!query || detail.options === undefined) {
-          return;
-        }
-        $scope.$evalAsync(function() {
-          query.options = detail.options;
-          query.setDirty();
-          window.quepidSearch.queryCapabilities.updateScores();
-        });
-      });
-
-      // Stimulus pick-scorer-core: API save already done; apply scorer + rescore live queries.
-      document.addEventListener('pick-scorer:selected', function(event) {
-        var detail = event.detail || {};
-        if (Number(detail.caseId) !== Number(svc.getCaseNo()) || !detail.scorer) {
-          return;
-        }
-        $scope.$applyAsync(function() {
-          var scorer = scorerSvc.constructFromData(detail.scorer);
-          scorerSvc.setDefault(scorer).then(function() {
-            window.quepidSearch.queryCapabilities.updateScores();
-          });
-        });
-      });
-
-      // Stimulus judgements-core: after ratings refresh, re-bootstrap queries + search.
-      document.addEventListener('judgements:queries-need-reload', function(event) {
-        var detail = event.detail || {};
-        if (Number(detail.caseId) !== Number(svc.getCaseNo())) {
-          return;
-        }
-        $scope.$applyAsync(function() {
-          svc.reset();
-          svc.bootstrapQueries(detail.caseId)
-            .then(function() {
-              window.quepidSearch.queryCommands.searchAll();
-            });
-        });
-      });
-
-      // Stimulus import-ratings-core: imported data needs the same live query
-      // refresh as the judgements modal.
-      document.addEventListener('imports:queries-need-reload', function(event) {
-        var detail = event.detail || {};
-        if (Number(detail.caseId) !== Number(svc.getCaseNo())) {
-          return;
-        }
-        $scope.$applyAsync(function() {
-          svc.reset();
-          svc.bootstrapQueries(detail.caseId)
-            .then(function() {
-              window.quepidSearch.queryCommands.searchAll();
-            });
-        });
-      });
 
       /**
        * mapper_code (a try's JS source defining numberOfResultsMapper/docsMapper/
