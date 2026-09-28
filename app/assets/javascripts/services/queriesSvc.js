@@ -144,6 +144,94 @@ angular.module('QuepidApp')
         publish: publishQueryDocuments
       });
 
+      let liveQueryRuntime = window.quepidSearch.queryRuntime.createLive({
+        getSettings: function() {
+          return currSettings;
+        },
+        copySettings: function(settings) {
+          return angular.copy(settings);
+        },
+        createSearcher: function(query, options) {
+          return svc.createSearcherFromSettings(currSettings, query, options);
+        },
+        createRatedSearcher: function(settings, query) {
+          return svc.createSearcherFromSettings(settings, query, { filterToRated: true });
+        },
+        searchApiRatedDocs: function(settings, query, ratedIDs) {
+          return svc.searchApiRatedDocs(settings, query, ratedIDs);
+        },
+        supportsSearchApiRatedDocsLookup: function(aTry) {
+          return svc.trySupportsSearchApiRatedDocsLookup(aTry);
+        },
+        createSnapshotSearcher: function(snapshotId, query) {
+          return svc.createSearcherFromSnapshot(snapshotId, query, currSettings);
+        },
+        normalizeDocuments: function(query, searcher, fieldSpec) {
+          return normalizeDocExplains(query, searcher, fieldSpec);
+        },
+        createDocList: function(docs, fieldSpec, ratingsStore, explain) {
+          return new DocListFactory(docs, fieldSpec, ratingsStore, explain);
+        },
+        createRateableDoc: function(query, doc) {
+          return query.ratingsStore.createRateableDoc(doc);
+        },
+        matchFeaturesExplain: matchFeaturesExplain,
+        setDocs: function(query, docs, numFound) {
+          return query.setDocs(docs, numFound);
+        },
+        onError: function(query, message) {
+          query.onError(message);
+        },
+        parseError: function(response, linkUrl) {
+          return window.quepidSearch.searchErrors.parseResponseObject(response, linkUrl, currSettings.searchEngine);
+        },
+        publish: publishQueryDocuments,
+        promiseApi: $q,
+        logger: $log
+      });
+
+      let liveQueryLifecycleRuntime = window.quepidSearch.queryLifecycle.createRuntime({
+        createQuery: function(queryText) {
+          return svc.createQuery(queryText);
+        },
+        reset: function() {
+          svc.reset();
+        },
+        bootstrapQueries: function(caseId) {
+          return svc.bootstrapQueries(caseId);
+        },
+        searchAll: function() {
+          return svc.searchAll();
+        },
+        clearQueries: function() {
+          svc.queries = {};
+        },
+        addQueriesFromResponse: function(data, caseId) {
+          addQueriesFromResp(data, caseId);
+        },
+        getCaseNo: getCaseNo,
+        applyDisplayOrder: function(displayOrder) {
+          svc.applyDisplayOrder(displayOrder);
+        },
+        setQueryId: function(query, queryId) {
+          query.ratingsStore.setQueryId(queryId);
+        },
+        registerQuery: function(queryId, query) {
+          svc.queries[queryId] = query;
+          if (queryCollectionStore) queryCollectionStore.upsert(query);
+        },
+        onVersion: function() {
+          svcVersion++;
+        },
+        searchAndScore: function(query) {
+          return query.searchAndScore();
+        },
+        updateScores: function() {
+          svc.updateScores();
+        },
+        logger: $log
+      });
+
       window.quepidSearch.queryCapabilities.getListState = function() {
         var selectedTry = settingsSvc.applicableSettings() || {};
         return {
@@ -193,19 +281,12 @@ angular.module('QuepidApp')
       this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
       // Temporary adapter for the Stimulus query-lifecycle controller. The
-      // controller owns persistence and the user-facing workflow; this service
-      // still owns Query construction, search, and scoring until those seams migrate.
-      window.quepidSearch.queryLifecycle.prepareQueries = prepareQueries;
-      window.quepidSearch.queryLifecycle.commitQueries = commitQueries;
-      window.quepidSearch.queryLifecycle.commitPersistedQueries = commitPersistedQueries;
-      window.quepidSearch.queryLifecycle.refreshQueries = refreshQueries;
-
-      function refreshQueries(caseId) {
-        svc.reset();
-        return svc.bootstrapQueries(caseId).then(function() {
-          return svc.searchAll();
-        });
-      }
+      // framework-free runtime owns persistence orchestration while this
+      // service supplies the live Angular Query state callbacks.
+      window.quepidSearch.queryLifecycle.prepareQueries = liveQueryLifecycleRuntime.prepareQueries;
+      window.quepidSearch.queryLifecycle.commitQueries = liveQueryLifecycleRuntime.commitQueries.bind(liveQueryLifecycleRuntime);
+      window.quepidSearch.queryLifecycle.commitPersistedQueries = liveQueryLifecycleRuntime.commitPersistedQueries;
+      window.quepidSearch.queryLifecycle.refreshQueries = liveQueryLifecycleRuntime.refreshQueries;
 
       // Rated-docs lookup rules live in app/javascript/utils/rated_docs.js (Vitest-covered);
       // these stay as the Angular-facing names that deferred result controls and docFinder.js call.
@@ -685,58 +766,6 @@ angular.module('QuepidApp')
         });
       }
 
-      // The query runtime owns live search and pagination. This
-      // service remains the compatibility adapter for Angular-owned searchers
-      // and document factories until the case workspace cutover.
-      function createQueryRuntime(query) {
-        return window.quepidSearch.queryRuntime.create({
-          query: query,
-          getSettings: function() {
-            return currSettings;
-          },
-          copySettings: function(settings) {
-            return angular.copy(settings);
-          },
-          createSearcher: function(options) {
-            return svc.createSearcherFromSettings(currSettings, query, options);
-          },
-          createRatedSearcher: function(settings) {
-            return svc.createSearcherFromSettings(settings, query, { filterToRated: true });
-          },
-          searchApiRatedDocs: function(settings, queryForRatedDocs, ratedIDs) {
-            return svc.searchApiRatedDocs(settings, queryForRatedDocs, ratedIDs);
-          },
-          supportsSearchApiRatedDocsLookup: function(aTry) {
-            return svc.trySupportsSearchApiRatedDocsLookup(aTry);
-          },
-          createSnapshotSearcher: function(snapshotId) {
-            return svc.createSearcherFromSnapshot(snapshotId, query, currSettings);
-          },
-          normalizeDocuments: function(searcher, fieldSpec) {
-            return normalizeDocExplains(query, searcher, fieldSpec);
-          },
-          createDocList: function(docs, fieldSpec, ratingsStore, explain) {
-            return new DocListFactory(docs, fieldSpec, ratingsStore, explain);
-          },
-          createRateableDoc: function(doc) {
-            return query.ratingsStore.createRateableDoc(doc);
-          },
-          matchFeaturesExplain: matchFeaturesExplain,
-          setDocs: function(docs, numFound) {
-            return query.setDocs(docs, numFound);
-          },
-          onError: function(message) {
-            query.onError(message);
-          },
-          parseError: function(response, linkUrl) {
-            return window.quepidSearch.searchErrors.parseResponseObject(response, linkUrl, currSettings.searchEngine);
-          },
-          publish: publishQueryDocuments,
-          promiseApi: $q,
-          logger: $log
-        });
-      }
-
       function toggleShowOnlyRated() {
         svc.showOnlyRated = !svc.showOnlyRated;
 
@@ -852,7 +881,7 @@ angular.module('QuepidApp')
 
 
         this.refreshRatedDocs = function(pageSize) {
-          return createQueryRuntime(self).refreshRatedDocs(pageSize);
+          return liveQueryRuntime.create(self).refreshRatedDocs(pageSize);
         };
 
         this.setDocs = function(newDocs, numFound) {
@@ -899,20 +928,20 @@ angular.module('QuepidApp')
 
         this.search = function() {
           resultsReturned = false;
-          return createQueryRuntime(this).search();
+          return liveQueryRuntime.create(this).search();
         };
 
         // Method to search using a snapshot instead of live search engine
         this.searchFromSnapshot = function(snapshotId) {
-          return createQueryRuntime(this).searchFromSnapshot(snapshotId);
+          return liveQueryRuntime.create(this).searchFromSnapshot(snapshotId);
         };
 
         this.paginate = function() {
-          return createQueryRuntime(this).paginate();
+          return liveQueryRuntime.create(this).paginate();
         };
 
         this.ratedPaginate = function() {
-          return createQueryRuntime(this).ratedPaginate();
+          return liveQueryRuntime.create(this).ratedPaginate();
         };
 
         this.reset = function() {
@@ -1159,67 +1188,6 @@ angular.module('QuepidApp')
         });
         return newQuery;
       };
-
-      function prepareQueries(queryTexts) {
-        if (queryTexts.length === 1) {
-          return { query: svc.createQuery(queryTexts[0]) };
-        }
-
-        return { queries: queryTexts.map(function(queryText) {
-          return svc.createQuery(queryText);
-        }) };
-      }
-
-      function commitSingleQuery(query, persisted) {
-        if (persisted.status !== 204) {
-          svc.displayOrder = persisted.data.display_order;
-          query.queryId = persisted.data.query.query_id;
-          query.ratingsStore.setQueryId(query.queryId);
-          svc.queries[query.queryId] = query;
-          if (queryCollectionStore) {
-            queryCollectionStore.setDisplayOrder(svc.displayOrder);
-            queryCollectionStore.upsert(query);
-          }
-          svcVersion++;
-        }
-
-        return query.searchAndScore().then(function() {
-          $log.info('rescoring queries after adding query');
-          svc.updateScores();
-          return {};
-        }, function(searchError) {
-          return { searchError: searchError };
-        });
-      }
-
-      function commitBulkQueries(persisted) {
-        svc.queries = {};
-        addQueriesFromResp(persisted.data, caseNo);
-
-        return svc.searchAll().then(function() {
-          return {};
-        }, function(searchError) {
-          return { searchError: searchError };
-        });
-      }
-
-      // The setup wizard historically persisted its bulk queries without
-      // searching them. Keep that behavior while moving the HTTP request out
-      // of this service; the live query/search migration will own this state
-      // commit later.
-      function commitPersistedQueries(persisted) {
-        svc.queries = {};
-        addQueriesFromResp(persisted.data, caseNo);
-        return {};
-      }
-
-      function commitQueries(prepared, persisted) {
-        if (prepared.query) {
-          return commitSingleQuery(prepared.query, persisted);
-        }
-
-        return commitBulkQueries(persisted);
-      }
 
       // get the full list of queries sorted by create/manual order
       // only call this when our version() changes

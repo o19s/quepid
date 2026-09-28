@@ -25,6 +25,8 @@ import { buildQueryDocPairsPayload, createBookSyncRuntime, populateBook } from "
 import { buildQueryDocumentsState } from "./utils/query_documents"
 import { createLiveQuerySearchRuntime } from "./utils/live_query_search"
 import { createLiveQueryModelRuntime } from "./utils/live_query_model"
+import { createLiveQueryRuntime } from "./utils/live_query_runtime"
+import { createLiveQueryLifecycleRuntime } from "./utils/live_query_lifecycle"
 import {
   invalidateRatedDocsCache,
   matchesQueryFilter,
@@ -123,6 +125,7 @@ const quepidSearch = {
   },
   queryRuntime: {
     create: createQueryRuntime,
+    createLive: createLiveQueryRuntime,
     createSearchAll: createSearchAllRuntime,
     createTargetedSearch: createTargetedSearchAdapter
   },
@@ -182,6 +185,7 @@ const quepidSearch = {
     positionRequest,
     persistQuery,
     persistQueries,
+    createRuntime: createLiveQueryLifecycleRuntime,
     caseId: null,
     prepareQueries: null,
     commitQueries: null,
