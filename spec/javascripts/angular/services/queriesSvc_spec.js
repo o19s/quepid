@@ -230,7 +230,7 @@ describe('Service: queriesSvc', function () {
     $httpBackend.flush();
 
     // search all queries
-    var promise = queriesSvc.searchAll();
+    var promise = window.quepidSearch.queryCommands.searchAll();
 
     // fullfill a search that  occurs after succesful bootstrap
     mockSearchSvc.fulfill(mockResults);
@@ -243,24 +243,24 @@ describe('Service: queriesSvc', function () {
     var query;
     beforeEach(function() {
       setupQuerySvc();
-      query = new queriesSvc.QueryFactory({queryId: 1, query_text: 'test'});
+      query = queriesSvc.createQuery('test');
       query.ratings = {1:1, 2:1, 3:1};
     });
 
     it('toggles show only rated state', function() {
       expect(queriesSvc.showOnlyRated).toEqual(false);
-      queriesSvc.toggleShowOnlyRated();
+      window.quepidSearch.queryCommands.toggleShowOnlyRated();
       expect(queriesSvc.showOnlyRated).toEqual(true);
       queriesSvc.reset();
       expect(queriesSvc.showOnlyRated).toEqual(false);
     });
   });
 
-  describe('query factory', function() {
+  describe('query model', function() {
     var query;
     beforeEach(function() {
       setupQuerySvc();
-      query = new queriesSvc.QueryFactory({queryId: 1, query_text: 'test'});
+      query = queriesSvc.createQuery('test');
     });
 
     it('knows if it has not been scored', function() {
@@ -276,7 +276,7 @@ describe('Service: queriesSvc', function () {
 
     it('forces rescoring of provided docs', function() {
       var scorer = mockScorerSvc.defaultScorer;
-      query = new queriesSvc.QueryFactory({queryId: 1, query_text: 'test', 'doc1': '10'}, true);
+      query = queriesSvc.createQuery('test');
       query.docs = [{hasRating: function() {return true;},
                      getRating: function() {return 10;}}];
       query.score();
@@ -421,7 +421,7 @@ describe('Service: queriesSvc', function () {
 
       expect(called).toBe(1);
 
-      queriesSvc.searchAll();
+      window.quepidSearch.queryCommands.searchAll();
       mockSearchSvc.fulfill(mockResults);
       $httpBackend.verifyNoOutstandingExpectation();
     });
@@ -453,7 +453,7 @@ describe('Service: queriesSvc', function () {
     $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
     queriesSvc.changeSettings(2, mockSettings);
     $httpBackend.flush();
-    queriesSvc.searchAll();
+    window.quepidSearch.queryCommands.searchAll();
 
     var testQuery = queriesSvc.queries['0'];
     expect(testQuery.state()).toBe('loading');
@@ -470,7 +470,7 @@ describe('Service: queriesSvc', function () {
     $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
     queriesSvc.changeSettings(2, mockSettings);
     $httpBackend.flush();
-    queriesSvc.searchAll();
+    window.quepidSearch.queryCommands.searchAll();
 
     $rootScope.$apply();
 
@@ -489,7 +489,7 @@ describe('Service: queriesSvc', function () {
     $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
     queriesSvc.changeSettings(2, mockSettings);
     $httpBackend.flush();
-    queriesSvc.searchAll();
+    window.quepidSearch.queryCommands.searchAll();
     $rootScope.$apply();
 
     var testQuery = queriesSvc.queries['0'];
@@ -641,7 +641,7 @@ describe('Service: queriesSvc', function () {
     searchUrl: mockSolrUrl};
     queriesSvc.changeSettings(3, mockNewSettings);
     $httpBackend.flush();
-    queriesSvc.searchAll();
+    window.quepidSearch.queryCommands.searchAll();
     mockSearchSvc.fulfill(mockResults);
     $rootScope.$apply();
 
@@ -662,7 +662,7 @@ describe('Service: queriesSvc', function () {
     $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
     queriesSvc.changeSettings(2, mockSettings);
     $httpBackend.flush();
-    queriesSvc.searchAll().catch(angular.noop);
+    window.quepidSearch.queryCommands.searchAll().catch(angular.noop);
 
     var testQuery = queriesSvc.queries['0'];
     expect(testQuery.state()).toBe('loading');
@@ -718,7 +718,7 @@ describe('Service: queriesSvc', function () {
       $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
       queriesSvc.changeSettings(2, mockSettings);
       $httpBackend.flush();
-      queriesSvc.searchAll();
+    window.quepidSearch.queryCommands.searchAll();
 
       mockSearchSvc.fulfill(mockResults1);
       $rootScope.$apply();
@@ -731,7 +731,7 @@ describe('Service: queriesSvc', function () {
       $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
       queriesSvc.changeSettings(2, mockSettings);
       $httpBackend.flush();
-      queriesSvc.searchAll();
+    window.quepidSearch.queryCommands.searchAll();
       mockSearchSvc.fulfill(mockResults1);
 
       $rootScope.$apply();
@@ -900,7 +900,7 @@ describe('Service: queriesSvc', function () {
       spyOn(queriesSvc, 'bootstrapQueries').and.callFake(function() {
         return $q.when();
       });
-      spyOn(queriesSvc, 'searchAll');
+      spyOn(window.quepidSearch.queryCommands, 'searchAll');
 
       document.dispatchEvent(new CustomEvent('judgements:queries-need-reload', {
         detail: { caseId: 2 }
@@ -912,7 +912,7 @@ describe('Service: queriesSvc', function () {
 
       expect(queriesSvc.reset).toHaveBeenCalled();
       expect(queriesSvc.bootstrapQueries).toHaveBeenCalledWith(2);
-      expect(queriesSvc.searchAll).toHaveBeenCalled();
+      expect(window.quepidSearch.queryCommands.searchAll).toHaveBeenCalled();
     });
 
   });

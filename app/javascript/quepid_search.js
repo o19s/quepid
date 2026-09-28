@@ -180,6 +180,7 @@ const quepidSearch = {
     toggleQuery: null,
     paginateQuery: null,
     toggleShowOnlyRated: null,
+    searchAll: null,
     collapseAll: null
   },
   queryLifecycle: {

@@ -89,7 +89,7 @@ export default class extends Controller {
         caseSvc.fetchDropdownCases()
         this.ready({ caseNo, tryNo })
 
-        queriesSvc.searchAll().then(
+        window.quepidSearch.queryCommands.searchAll().then(
           () => window.quepidDom?.flash?.show("success", "All queries finished successfully!"),
           error => {
             window.quepidDom?.flash?.show("error", "Some queries failed to resolve!")

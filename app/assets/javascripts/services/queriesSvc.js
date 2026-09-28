@@ -201,7 +201,7 @@ angular.module('QuepidApp')
           return svc.bootstrapQueries(caseId);
         },
         searchAll: function() {
-          return svc.searchAll();
+          return searchAll();
         },
         clearQueries: function() {
           svc.queries = {};
@@ -327,7 +327,6 @@ angular.module('QuepidApp')
       };
 
       this.getCaseNo = getCaseNo;
-      this.toggleShowOnlyRated = toggleShowOnlyRated;
       // Temporary adapter for the Stimulus query-lifecycle controller. The
       // framework-free runtime owns persistence orchestration while this
       // service supplies the live Angular Query state callbacks.
@@ -628,7 +627,7 @@ angular.module('QuepidApp')
           svc.reset();
           svc.bootstrapQueries(detail.caseId)
             .then(function() {
-              svc.searchAll();
+              window.quepidSearch.queryCommands.searchAll();
             });
         });
       });
@@ -644,7 +643,7 @@ angular.module('QuepidApp')
           svc.reset();
           svc.bootstrapQueries(detail.caseId)
             .then(function() {
-              svc.searchAll();
+              window.quepidSearch.queryCommands.searchAll();
             });
         });
       });
@@ -1024,8 +1023,6 @@ angular.module('QuepidApp')
         }));
       };
 
-      this.QueryFactory = Query;
-
       this.hasUnscoredQueries = function() {
         return this.unscoredQueryCount() > 0;
       };
@@ -1153,9 +1150,9 @@ angular.module('QuepidApp')
 
       this.pAll = window.quepidSearch.queryService.pAll;
 
-      this.searchAll = function() {
+      function searchAll() {
         let searchAllPromise = window.quepidSearch.queryRuntime.createSearchAll({
-          queries: this.queries,
+          queries: svc.queries,
           search: function(query) {
             return query.search();
           },
@@ -1187,7 +1184,8 @@ angular.module('QuepidApp')
         }).run();
         searchAllPromise.catch(angular.noop);
         return searchAllPromise;
-      };
+      }
+      window.quepidSearch.queryCommands.searchAll = searchAll;
 
       // the try that the query results reflect
       this.displayedTryNo = function() {

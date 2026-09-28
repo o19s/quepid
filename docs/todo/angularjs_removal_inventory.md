@@ -463,12 +463,18 @@ adapter into those services.
 
 Remaining backing service: `queriesSvc`
 
-`queriesSvc` remains the compatibility adapter for live search construction,
+`queriesSvc` remains the compatibility adapter for live Query objects, search
 persistence, and engine-specific callbacks. The framework-free query
 runtime now owns rated-document refresh and pagination, including Search API
 support checks and stale rating-generation retries. The next extraction can
 move the remaining injected operations without changing the query-local
 contract.
+
+The service's public `QueryFactory`, `toggleShowOnlyRated`, and `searchAll`
+members have been removed. Query construction remains an internal Angular
+detail; the modern query command boundary owns show-rated toggling and
+case-wide search invocation. The live Query objects and their compatibility
+callbacks remain until search/scoring leave Angular.
 
 The case-wide search lifecycle now also runs through the tested
 `createSearchAllRuntime` seam. `queriesSvc` supplies the live Query search and

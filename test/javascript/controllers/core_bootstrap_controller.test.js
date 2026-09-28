@@ -10,6 +10,9 @@ describe("CoreBootstrapController", () => {
       }
     }
     window.quepidSearch = {
+      queryCommands: {
+        searchAll: vi.fn().mockResolvedValue(undefined)
+      },
       caseRuntime: {
         bootstrap: {
           configurationSvc: {
@@ -42,8 +45,7 @@ describe("CoreBootstrapController", () => {
             queries: {},
             reset: vi.fn(),
             querySearchPromiseReset: vi.fn(),
-            changeSettings: vi.fn().mockResolvedValue(undefined),
-            searchAll: vi.fn().mockResolvedValue(undefined)
+            changeSettings: vi.fn().mockResolvedValue(undefined)
           },
           scorerSvc: { bootstrap: vi.fn() }
         }
