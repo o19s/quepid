@@ -15,6 +15,7 @@ export function createLiveQueryLifecycleRuntime({
   applyDisplayOrder,
   setQueryId,
   registerQuery,
+  removeQuery,
   onVersion,
   searchAndScore,
   updateScores,
@@ -70,6 +71,13 @@ export function createLiveQueryLifecycleRuntime({
       clearQueries()
       addQueriesFromResponse(persisted.data, getCaseNo())
       return {}
+    },
+
+    reconcileQueryRemoval(queryId, rescore = false) {
+      if (!removeQuery(queryId)) return false
+      onVersion()
+      if (rescore) updateScores()
+      return true
     }
   }
 }

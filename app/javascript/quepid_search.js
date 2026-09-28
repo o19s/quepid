@@ -23,6 +23,7 @@ import {
 import { extractCuratorVars } from "./utils/curator_vars"
 import { buildQueryDocPairsPayload, createBookSyncRuntime, populateBook } from "./utils/book_sync"
 import { buildQueryDocumentsState } from "./utils/query_documents"
+import { createLiveQueryCollectionRuntime } from "./utils/live_query_collection"
 import { createLiveQuerySearchRuntime } from "./utils/live_query_search"
 import { createLiveQueryModelRuntime } from "./utils/live_query_model"
 import { createLiveQueryDocumentsRuntime } from "./utils/live_query_documents"
@@ -32,6 +33,8 @@ import { createLiveQueryEventsRuntime } from "./utils/live_query_events"
 import { createLiveQueryExecutionRuntime } from "./utils/live_query_execution"
 import { createLiveQueryRuntime } from "./utils/live_query_runtime"
 import { createLiveQueryLifecycleRuntime } from "./utils/live_query_lifecycle"
+import { createLiveQueryTransportRuntime } from "./utils/live_query_transport"
+import { createLiveQueryCompatibilityRuntime } from "./utils/live_query_compatibility"
 import { createLiveQueryDiffRuntime } from "./utils/live_query_diff"
 import { createLiveQueryStateRuntime } from "./utils/live_query_state"
 import {
@@ -189,13 +192,13 @@ const quepidSearch = {
     isSortingEnabled: null,
     setDisplayOrder: null,
     getQuery: null,
+    getQueries: null,
     getCaseNo: null,
     resetQueryState: null,
     resetQuery: null,
     searchQuery: null,
     refreshRatedDocs: null,
     reconcileQueryRemoval: null,
-    getQueries: null,
     refreshAllDiffs: null,
     scoreAll: null,
     updateScores: null,
@@ -225,6 +228,9 @@ const quepidSearch = {
     persistQuery,
     persistQueries,
     createRuntime: createLiveQueryLifecycleRuntime,
+    createCollectionRuntime: createLiveQueryCollectionRuntime,
+    createTransportRuntime: createLiveQueryTransportRuntime,
+    createCompatibilityRuntime: createLiveQueryCompatibilityRuntime,
     caseId: null,
     prepareQueries: null,
     commitQueries: null,

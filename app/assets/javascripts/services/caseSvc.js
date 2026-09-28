@@ -4,11 +4,11 @@ angular.module('QuepidApp')
   .service('caseSvc', [
     '$http', '$filter', '$q', '$rootScope',
     '$log',
-    'caseTryNavSvc', 'queriesSvc', 'settingsSvc',
+    'caseTryNavSvc', 'settingsSvc',
     function caseSvc(
       $http, $filter, $q, $rootScope,
       $log,
-      caseTryNavSvc, queriesSvc, settingsSvc
+      caseTryNavSvc, settingsSvc
     ) {
 
       var cases = {};
@@ -266,7 +266,10 @@ angular.module('QuepidApp')
             if( selectedCase !== null && selectedCase.caseNo === caseNumber ) {
               selectedCase = null;
             }
-            queriesSvc.reset();
+            if (window.quepidSearch && window.quepidSearch.queryCapabilities &&
+                angular.isFunction(window.quepidSearch.queryCapabilities.resetQueryState)) {
+              window.quepidSearch.queryCapabilities.resetQueryState();
+            }
           });
       };
 
@@ -349,23 +352,11 @@ angular.module('QuepidApp')
 
         return $http.put(url, data)
           .then(function(response) {
-            var caseExists = false;
-            var theCase;
-
             angular.forEach(self.allCases, function(c) {
               if (c.caseNo === caseNo) {
                 c.lastScore = response.data;
-                caseExists  = true;
-                theCase     = c;
               }
             });
-
-            if ( !caseExists || angular.isUndefined(theCase) ) {
-              theCase = {
-                caseNo:     caseNo,
-                lastScore:  response.data,
-              };
-            }
 
             document.dispatchEvent(new CustomEvent('case-score:persisted', {
               detail: { caseId: caseNo },

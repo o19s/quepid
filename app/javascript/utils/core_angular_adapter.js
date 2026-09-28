@@ -86,7 +86,11 @@ const capabilityDefinitions = {
       "caseSvc",
       "settingsSvc",
       "caseTryNavSvc",
-      "scorerSvc"
+      "scorerSvc",
+      // queriesSvc still installs the live-query capability functions during
+      // the Angular dual-run. This instantiates the provider without making
+      // modern controllers resolve or inject the legacy service directly.
+      "queriesSvc"
     ]
   },
   snapshots: {

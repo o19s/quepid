@@ -510,6 +510,19 @@ reading its live collection. The wizard and snapshot capability definitions no
 longer inject `queriesSvc` when they do not consume it. The service remains
 Angular-owned for the live query collection, transport callbacks, and legacy
 case operations until those contracts move behind the framework-free stores.
+`caseSvc` no longer injects `queriesSvc`; bulk query deletion resets through
+`queryCapabilities.resetQueryState()`. The unused external
+`queryCapabilities.getQueries` adapter is also gone. Remaining references are
+internal to the live query compatibility service and its legacy Karma contract.
+Collection bootstrap and stale-response handling now live in the tested
+framework-free `live_query_collection` runtime; `queriesSvc` supplies the
+remaining Angular HTTP, `$q`, and live Query callbacks through that seam.
+Single/batch search transport and query-removal reconciliation now live in
+tested framework-free runtimes as well; the remaining service ownership is
+the Angular Query factory/searcher, scoring, and book-sync adapters.
+Live model/factory/document/execution composition now also lives in the
+tested `live_query_compatibility` runtime; only the injected Angular-specific
+callbacks remain in the service.
 
 Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 
