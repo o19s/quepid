@@ -4,11 +4,11 @@ angular.module('QuepidApp')
   .service('caseSvc', [
     '$http', '$filter', '$q', '$rootScope',
     '$log',
-    'caseTryNavSvc', 'settingsSvc',
+    'caseTryNavSvc',
     function caseSvc(
       $http, $filter, $q, $rootScope,
       $log,
-      caseTryNavSvc, settingsSvc
+      caseTryNavSvc
     ) {
 
       var cases = {};
@@ -226,15 +226,12 @@ angular.module('QuepidApp')
         $http.post('api/cases', data)
           .then(function(response) {
             var newCase   = new Case(response.data);
-            var caseTries = response.data.tries;
 
             that.allCases.push(newCase);
             var caseTryObj = {};
             caseTryObj.caseNo   = newCase.caseNo;
             caseTryObj.navTryNo = newCase.lastTry;
 
-            // TODO: see if this is still necessary!
-            settingsSvc.setSettings(caseTries, newCase.lastTry);
             caseTryNavSvc.navigateTo(caseTryObj);
           }, function(){
             caseTryNavSvc.notFound();

@@ -2,6 +2,7 @@ import { createScorerCatalog } from "utils/scorer_catalog"
 import { createMapperSearchRuntime } from "utils/mapper_search_runtime"
 import { createSearchEndpointRuntime } from "utils/search_endpoint_runtime"
 import { createSettingsCatalog } from "utils/settings_catalog_runtime"
+import { createSettingsRuntime } from "utils/settings_runtime"
 import { createUserRuntime } from "utils/user_runtime"
 
 /**
@@ -20,6 +21,13 @@ const servicePromises = new Map()
 const mapperSearchRuntime = createMapperSearchRuntime()
 const searchEndpointRuntime = createSearchEndpointRuntime()
 const settingsCatalog = createSettingsCatalog()
+let settingsNavigation
+const settingsRuntime = createSettingsRuntime({
+  caseNo: () => settingsNavigation?.getCaseNo(),
+  tryNo: () => settingsNavigation?.getTryNo(),
+  navigate: values => settingsNavigation?.navigateTo(values),
+  createFieldSpec: value => window.quepidSearch?.splainerSearch?.fieldSpecSvc?.createFieldSpec(value) || {}
+})
 const userRuntime = createUserRuntime()
 
 export function waitForAngularServices(serviceNames, { intervalMs = 50, maxAttempts = 100 } = {}) {
@@ -88,6 +96,7 @@ export function resetCoreServiceCache() {
   mapperSearchRuntime.reset()
   searchEndpointRuntime.reset()
   settingsCatalog.reset()
+  settingsRuntime.reset()
   userRuntime.reset()
 }
 
@@ -101,22 +110,21 @@ const capabilityDefinitions = {
       "$log",
       "configurationSvc",
       "caseSvc",
-      "settingsSvc",
       "caseTryNavSvc",
       "ScorerFactory"
     ]
   },
   snapshots: {
     controller: "snapshot_bridge_controller",
-    services: ["settingsSvc", "caseTryNavSvc"]
+    services: ["caseTryNavSvc"]
   },
   wizard: {
     controller: "wizard_controller",
-    services: ["caseSvc", "caseTryNavSvc", "settingsSvc"]
+    services: ["caseSvc", "caseTryNavSvc"]
   },
   tuneRelevance: {
     controller: "tune_relevance_controller",
-    services: ["settingsSvc", "caseTryNavSvc", "caseSvc"]
+    services: ["caseTryNavSvc", "caseSvc"]
   }
 }
 
@@ -139,6 +147,7 @@ async function loadCapability(name) {
 
   window.quepidSearch ||= {}
   window.quepidSearch.caseRuntime ||= {}
+  settingsNavigation = services.caseTryNavSvc || settingsNavigation
   const scorerCatalog =
     name === "bootstrap"
       ? createScorerCatalog({
@@ -191,12 +200,12 @@ function createNamedCapability(
 }
 
 function createSnapshotCapabilities(services) {
-  const { settingsSvc, caseTryNavSvc } = services
+  const { caseTryNavSvc } = services
   const splainerSearch = window.quepidSearch?.splainerSearch || {}
 
   return {
     settings: {
-      editable: () => settingsSvc.editableSettings(),
+      editable: () => settingsRuntime.editable(),
       supportsLookupById: (searchEngine) => settingsCatalog.supportsLookupById(searchEngine)
     },
     navigation: {
@@ -218,19 +227,19 @@ function createWizardCapabilities(
   searchEndpointRuntime,
   mapperSearchRuntime
 ) {
-  const { caseSvc, caseTryNavSvc, settingsSvc } = services
+  const { caseSvc, caseTryNavSvc } = services
   const splainerSearch = window.quepidSearch?.splainerSearch || {}
 
   return {
     settings: {
-      editable: () => settingsSvc.editableSettings(),
+      editable: () => settingsRuntime.editable(),
       registerMapper: (engine) => settingsCatalog.registerMapper(engine),
       pick: (preset, url) => settingsCatalog.pickSettingsToUse(preset, url),
       proxyUrlFor: (searchEndpointId) => caseTryNavSvc.getQuepidProxyUrl(searchEndpointId),
       demoChosen: (engine, url) => settingsCatalog.demoSettingsChosen(engine, url),
       defaultSolrQueryParams: () => settingsCatalog.defaultSolrQueryParams(),
-      applicable: () => settingsSvc.applicableSettings(),
-      update: (value) => settingsSvc.update(value)
+      applicable: () => settingsRuntime.applicable(),
+      update: (value) => settingsRuntime.update(value)
     },
     case: {
       selected: () => caseSvc.getSelectedCase(),
@@ -264,19 +273,19 @@ function createWizardCapabilities(
 }
 
 function createTuneRelevanceCapabilities(services, searchEndpointRuntime) {
-  const { settingsSvc, caseTryNavSvc, caseSvc } = services
+  const { caseTryNavSvc, caseSvc } = services
   const esUrlSvc = window.quepidSearch?.splainerSearch?.esUrlSvc
 
   return {
     settings: {
-      editable: () => settingsSvc.editableSettings(),
+      editable: () => settingsRuntime.editable(),
       supportsEscapeQuery: (engine) => settingsCatalog.supportsEscapeQuery(engine),
       troubleshootingWikiUrl: (...args) => settingsCatalog.troubleshootingWikiUrl(...args),
-      save: (value) => settingsSvc.save(value),
-      duplicateTry: (tryNo) => settingsSvc.duplicateTry(tryNo),
-      renameTry: (tryNo, name) => settingsSvc.renameTry(tryNo, name),
-      deleteTry: (tryNo) => settingsSvc.deleteTry(tryNo),
-      reload: () => settingsSvc.editableSettings()
+      save: (value) => settingsRuntime.save(value),
+      duplicateTry: (tryNo) => settingsRuntime.duplicateTry(tryNo),
+      renameTry: (tryNo, name) => settingsRuntime.renameTry(tryNo, name),
+      deleteTry: (tryNo) => settingsRuntime.deleteTry(tryNo),
+      reload: () => settingsRuntime.editable()
     },
     endpoints: {
       fetchForCase: (caseNo) => searchEndpointRuntime.fetchForCase(caseNo),
@@ -304,7 +313,7 @@ function createTuneRelevanceCapabilities(services, searchEndpointRuntime) {
 }
 
 function createCoreCapabilities(services, scorerCatalog, userRuntime) {
-  const { configurationSvc, caseSvc, settingsSvc, caseTryNavSvc } = services
+  const { configurationSvc, caseSvc, caseTryNavSvc } = services
 
   return {
     configuration: {
@@ -323,10 +332,10 @@ function createCoreCapabilities(services, scorerCatalog, userRuntime) {
       fetchDropdownCases: () => caseSvc.fetchDropdownCases()
     },
     settings: {
-      editable: () => settingsSvc.editableSettings(),
-      setCaseTries: (tries) => settingsSvc.setCaseTries(tries),
-      setCurrentTry: (tryNo) => settingsSvc.setCurrentTry(tryNo),
-      isTrySelected: () => settingsSvc.isTrySelected()
+      editable: () => settingsRuntime.editable(),
+      setCaseTries: (tries) => settingsRuntime.setCaseTries(tries),
+      setCurrentTry: (tryNo) => settingsRuntime.setCurrentTry(tryNo),
+      isTrySelected: () => settingsRuntime.isTrySelected()
     },
     navigation: {
       currentCaseNo: () => caseTryNavSvc.getCaseNo(),
@@ -345,7 +354,7 @@ function createCoreCapabilities(services, scorerCatalog, userRuntime) {
 }
 
 function createLiveQueryCapabilities(services, scorerCatalog) {
-  const { $rootScope, $http, $q, $log, settingsSvc, caseTryNavSvc } = services
+  const { $rootScope, $http, $q, $log, caseTryNavSvc } = services
 
   return {
     framework: {
@@ -360,10 +369,10 @@ function createLiveQueryCapabilities(services, scorerCatalog) {
     },
     domain: {
       settings: {
-        editable: () => settingsSvc.editableSettings(),
-        applicable: () => settingsSvc.applicableSettings(),
-        isTrySelected: () => settingsSvc.isTrySelected(),
-        previewArgs: (tryNo, queryParams) => settingsSvc.previewArgs(tryNo, queryParams)
+        editable: () => settingsRuntime.editable(),
+        applicable: () => settingsRuntime.applicable(),
+        isTrySelected: () => settingsRuntime.isTrySelected(),
+        previewArgs: (tryNo, queryParams) => settingsRuntime.previewArgs(tryNo, queryParams)
       },
       scorer: {
         getDefault: () => scorerCatalog.getDefault(),

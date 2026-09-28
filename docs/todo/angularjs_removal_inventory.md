@@ -228,7 +228,7 @@ compatibility adapter until live query/search/scoring migration is complete.
 **Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
 1. Shared primitives — `quepidTypeahead` and the remaining CSRF callers. Tooltip/popover/paste utils, dynamic modals, and flash are already Stimulus-owned. Remaining call sites are concentrated in the diff bridge and surviving Angular service seams; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
-2. Services layer — `caseSvc`, `settingsSvc`, and the legacy `ScorerFactory`; the former `queriesSvc`
+2. Services layer — `caseSvc` and the legacy `ScorerFactory`; the former `settingsSvc` and `queriesSvc`
    registration is now a runtime initializer and is tracked with live query state.
 3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
 4. Query list + results — `search-results`, rating UI
@@ -242,7 +242,7 @@ compatibility adapter until live query/search/scoring migration is complete.
 | Name | LOC | Why |
 |------|-----|-----|
 | **live-query runtime initializer** | 1,072 | Compatibility assembly for case state, search, scores, and persistence; now invoked by the Stimulus core bootstrap with explicit Angular service dependencies |
-| **settingsSvc** / **caseSvc** | 745 / 563 | Try / case domain model |
+| **caseSvc** | 563 | Case domain model; try state now lives in `app/javascript/utils/settings_runtime.js` |
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
 
@@ -309,16 +309,6 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 Playwright MCP–verified issues on the core case UI. **Do not patch in AngularJS** — fix when migrating the owning surface (see [todo.md § Obviated](./todo.md#obviated-by-angular-removal-do-not-fix-in-angular)).
 
-#### Try delete bricks case on reload
-
-**Observed:** After deleting the latest try, reload shows *"Cannot read properties of null (reading 'tryNo')"* until DB repair.
-
-**Frontend cause:** `settingsSvc.editableSettings()` still assumes `selectedTry` is non-null (`settingsSvc.js:513-519`, `tryToUse.tryNo` with no guard, even though the file has a working `isTrySelected()` at `:440` it doesn't reuse). Try delete still has no confirm.
-
-**Fix during migration:** Fall back to the newest try when `selectedTry` is null; confirm before try delete.
-
-**Backend still required:** `Api::V1::TriesController#destroy` must recompute `cases.last_try_number` — tracked in [todo.md § P0 backend](./todo.md#deleting-the-latest-try-bricks-the-case-backend).
-
 #### Icon-only controls lack accessible names
 
 **Observed:** Icon-only controls (copy-query; snapshot delete/clear in Compare) lack accessible names on the button.
@@ -353,7 +343,7 @@ is one and falls back to the *relation* when the body is nil, so a case with no 
 actually read `@try`. It is a class method now.
 
 **A fire-and-forget request before a navigation gets aborted.**
-The wizard issued the case-rename `PUT` after `settingsSvc.update()`, which ends in a real
+The wizard issued the case-rename `PUT` after the settings runtime update, which ends in a real
 `$window.location.assign`. The browser cancelled the rename often enough that the case kept its
 scratch name — visible in a Playwright trace as a request with status `-1`. The rename runs first
 and is awaited now. Worth remembering generally: anything Angular fires near `caseTryNavSvc`
@@ -488,10 +478,10 @@ Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Settings persistence | service + factories | `settingsSvc`, `SettingsFactory`, `TryFactory` |
+| Settings persistence | framework-free runtime | `app/javascript/utils/settings_runtime.js`, `app/javascript/utils/settings_catalog_runtime.js` |
 | Search endpoint popup | template | `templates/views/searchEndpoint_popup.html` |
 
-Uses the existing `settingsSvc`/`caseSvc` compatibility services through `core_angular_adapter.js`; the drawer UI no longer depends on Angular templates, controller scopes, or direct injector access.
+Uses the framework-free settings runtimes plus the remaining `caseSvc` compatibility service through `core_angular_adapter.js`; the drawer UI no longer depends on Angular templates, controller scopes, or direct injector access.
 
 ### 8. Shared UI primitives (migrate before or alongside features)
 
@@ -513,7 +503,7 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (4):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `settingsSvc` (* = `UtilitiesModule`). The former `queriesSvc`, `scorerSvc`, `userSvc`, `mapperBasedSearchEngineSvc`, and `searchEndpointSvc` registrations and module runtime initializer are gone. The stateless settings catalog—presets, mapper registration, engine policy, demo selection, and troubleshooting links—now lives in the tested framework-free `settings_catalog_runtime.js`; mutable try state and persistence remain behind the explicit settings compatibility boundary. `core_bootstrap_controller.js` invokes the explicit `live_query_runtime_initializer.js` factory instead. `ScorerFactory` remains as the custom scorer execution boundary. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
+**Services (3):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`* (* = `UtilitiesModule`). The former `queriesSvc`, `scorerSvc`, `userSvc`, `settingsSvc`, `mapperBasedSearchEngineSvc`, and `searchEndpointSvc` registrations and module runtime initializer are gone. Settings presets, mutable try state, persistence, engine policy, and mapper registration now live in the tested framework-free `settings_catalog_runtime.js` and `settings_runtime.js` modules. `core_bootstrap_controller.js` invokes the explicit `live_query_runtime_initializer.js` factory instead. `ScorerFactory` remains as the custom scorer execution boundary. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
 
 `queriesSvc` reads the framework-free snapshot registry directly. Static snapshot
 imports in the new-case wizard use `app/javascript/utils/snapshot_import.js`.
@@ -524,9 +514,9 @@ snapshot registry, model factory, and registry searcher needed by the remaining
 live Query/scoring island; payload, API, hydration, and unused searcher helpers
 are no longer exported through the Angular bundle.
 
-**Factories (4):** `DocListFactory`, `ScorerFactory`, `SettingsFactory`, `TryFactory`
+**Factories (2):** `DocListFactory`, `ScorerFactory`
 
-The former `caseSvc`, `settingsSvc`, and `queriesSvc` consumers now use named native events or EventTarget stores. See [event bus inventory](./event_bus_inventory.md).
+The former `caseSvc` and `queriesSvc` consumers now use named native events or EventTarget stores. See [event bus inventory](./event_bus_inventory.md).
 
 `queriesSvc` retains the temporary Angular ownership of rating persistence
 transport and query scoring, while the framework-free `RatingsStore` owns the
@@ -565,7 +555,7 @@ Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 
 `app/javascript/quepid_dom.js` — side-effect entry that pins `window.quepidDom` (tooltip/popover/paste helpers, `countUp`, `flash`, `modal.open` (`utils/dynamic_modal.js`), `jsonExplorer.render`/`escapeHtml` (`utils/json_explorer.js`)) for the remaining thin Angular controllers and compatibility bridges. It is now loaded through the framework-free `case_runtime` bundle before Angular; remove the global when the remaining compatibility bridges are gone.
 
-`TryFactory` still remains Angular-owned for live query construction, but curator-variable extraction is now framework-free in `app/javascript/utils/curator_vars.js` and is exposed through `window.quepidSearch.curatorVars` until `TryFactory` itself moves. Book population similarly keeps its Angular transport in `queriesSvc`, while payload construction lives in `app/javascript/utils/book_sync.js`.
+Curator-variable extraction and try state are now framework-free in `app/javascript/utils/curator_vars.js` and `app/javascript/utils/settings_runtime.js`. Book population similarly keeps its Angular transport in `queriesSvc`, while payload construction lives in `app/javascript/utils/book_sync.js`.
 ### Non-Angular JS in the Angular bundle
 
 `footer.js`, `tour.js`, `ace_config.js`, `scorerEvalTest.js` — relocate when bundle goes away.

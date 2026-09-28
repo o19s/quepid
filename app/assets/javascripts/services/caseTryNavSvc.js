@@ -68,7 +68,7 @@ angular.module('QuepidApp')
       // settings fetch) -- none of these are really "not found" errors, and
       // none showed any feedback before this flash. Stay on the page and
       // flash instead of navigating away: those callers are deep in
-      // caseSvc/settingsSvc with no page-navigation context of their own, so
+      // caseSvc and the settings runtime with no page-navigation context of their own, so
       // there's nowhere good to navigate *to*, and a real navigation here
       // used to strand the user on a bare, unbranded error page.
       this.notFound = function () {

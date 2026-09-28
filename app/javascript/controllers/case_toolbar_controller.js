@@ -4,9 +4,9 @@ import { Controller } from "@hotwired/stimulus"
  * Bridges the server-rendered case header back to the Angular services that still run this page.
  *
  * Rename is a Rails round trip now (Core::CaseHeaderController re-renders the `case_header` Turbo
- * Frame), so caseSvc and settingsSvc never see the request and would hold a stale name: the
+ * Frame), so caseSvc and the settings runtime never see the request and would hold a stale name: the
  * recent-cases dropdown refreshes off caseSvc's `caseRenamed`, and the Tune Relevance drawer
- * reads the try name off settingsSvc. Angular got both for free from the digest.
+ * reads the try name from the framework-free settings runtime. Angular got both for free from the digest.
  *
  * It also handles the other direction: the new-case wizard still renames through
  * caseSvc.renameCase, and nothing would update the server-rendered header.
@@ -144,7 +144,7 @@ export default class extends Controller {
     )
   }
 
-  // settingsSvc holds the TryFactory the Tune Relevance drawer reads its name from. It ignores a
+  // The settings runtime holds the try object the Tune Relevance drawer reads its name from. It ignores a
   // name that has not changed, which matters because this fires on any header re-render.
   notifyTryRenamed(tryNo, name) {
     if (!tryNo || name === undefined) return
