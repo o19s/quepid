@@ -8,7 +8,9 @@ export function createLiveQueryAdapters({
   scoring = {},
   book = {},
   search = {},
-  ratings = {}
+  ratings = {},
+  framework = {},
+  domain = {}
 }) {
   const factoryOptions = compatibility.factoryOptions || {}
   const executionOptions = compatibility.executionOptions || {}
@@ -47,6 +49,23 @@ export function createLiveQueryAdapters({
     ratings: {
       request: ratings.request,
       changed: ratings.changed
+    },
+    framework: {
+      request: framework.request,
+      get: framework.get,
+      promiseApi: framework.promiseApi,
+      schedule: framework.schedule,
+      applyAsync: framework.applyAsync,
+      logger: framework.logger,
+      reject: framework.reject,
+      resolve: framework.resolve
+    },
+    domain: {
+      settings: domain.settings || {},
+      scorer: domain.scorer || {},
+      navigation: domain.navigation || {},
+      search: domain.search || {},
+      documents: domain.documents || {}
     }
   }
 }

@@ -21,13 +21,32 @@ describe("createLiveQueryAdapters", () => {
       createSnapshot: vi.fn()
     }
     const ratings = { request: vi.fn(), changed: vi.fn() }
+    const framework = {
+      request: vi.fn(),
+      get: vi.fn(),
+      promiseApi: {},
+      schedule: vi.fn(),
+      applyAsync: vi.fn(),
+      logger: {},
+      reject: vi.fn(),
+      resolve: vi.fn()
+    }
+    const domain = {
+      settings: { editable: vi.fn() },
+      scorer: { getDefault: vi.fn() },
+      navigation: { proxyUrlFor: vi.fn() },
+      search: { create: vi.fn() },
+      documents: { createDocList: vi.fn() }
+    }
 
     const adapters = createLiveQueryAdapters({
       compatibility: { factoryOptions, executionOptions },
       scoring,
       book,
       search,
-      ratings
+      ratings,
+      framework,
+      domain
     })
 
     expect(adapters.compatibility).toEqual({
@@ -47,6 +66,8 @@ describe("createLiveQueryAdapters", () => {
     expect(adapters.book).toEqual(book)
     expect(adapters.search).toEqual(search)
     expect(adapters.ratings).toEqual(ratings)
+    expect(adapters.framework).toEqual(framework)
+    expect(adapters.domain).toEqual(domain)
   })
 
   it("does not require optional callback groups", () => {
@@ -82,6 +103,23 @@ describe("createLiveQueryAdapters", () => {
       ratings: {
         request: undefined,
         changed: undefined
+      },
+      framework: {
+        request: undefined,
+        get: undefined,
+        promiseApi: undefined,
+        schedule: undefined,
+        applyAsync: undefined,
+        logger: undefined,
+        reject: undefined,
+        resolve: undefined
+      },
+      domain: {
+        settings: {},
+        scorer: {},
+        navigation: {},
+        search: {},
+        documents: {}
       }
     })
   })

@@ -36,6 +36,7 @@ import { createLiveQueryLifecycleRuntime } from "./utils/live_query_lifecycle"
 import { createLiveQueryTransportRuntime } from "./utils/live_query_transport"
 import { createLiveQueryCompatibilityRuntime } from "./utils/live_query_compatibility"
 import { createLiveQueryAdapters } from "./utils/live_query_adapters"
+import { installLiveQueryCapabilities } from "./utils/live_query_capabilities"
 import { createLiveQueryDiffRuntime } from "./utils/live_query_diff"
 import { createLiveQueryStateRuntime } from "./utils/live_query_state"
 import { createLiveQueryRegistry } from "./utils/live_query_registry"
@@ -141,6 +142,9 @@ const quepidSearch = {
   },
   liveQueryAdapters: {
     create: createLiveQueryAdapters
+  },
+  liveQueryCapabilities: {
+    install: installLiveQueryCapabilities
   },
   queryDocuments: {
     buildState: buildQueryDocumentsState
