@@ -241,7 +241,7 @@ compatibility adapter until live query/search/scoring migration is complete.
 
 | Name | LOC | Why |
 |------|-----|-----|
-| **live-query runtime initializer** | 1,072 | Compatibility assembly for case state, search, scores, and persistence; no Angular service registration |
+| **live-query runtime initializer** | 1,072 | Compatibility assembly for case state, search, scores, and persistence; now invoked by the Stimulus core bootstrap with explicit Angular service dependencies |
 | **settingsSvc** / **caseSvc** | 745 / 563 | Try / case domain model |
 | **ScorerFactory** | 666 | Scoring model + judgement math |
 | **angular core** | — | Remove last |
@@ -261,7 +261,7 @@ The remaining Angular and compatibility consumers reach into `queriesSvc`; the `
 
 **`static` is normalized to `solr` by mutation.** `createSearcherFromSettings()` assigns `passedInSettings.searchEngine = 'solr'` for a static engine, and `Query.search()` passes `currSettings` uncopied — so the rewrite persists on the service until the next `changeSettings()`. It is load-bearing: `Query.search()` builds `ratedSearcher` with `filterToRated: true` on every search, and `filterToRatings()` has no `static` branch, so without the rewrite a static case pushes `undefined` into `fq`. The rewrite reaches only the settings-level copy — `selectedTry.searchEngine` stays `static`, which is why `trySupportsRatedDocsLookup()` (read off the try) correctly leaves "Show only rated" disabled for static cases. Extractions must normalize `static` → `solr` at the searcher/filter seam **only**, never in the capability predicates, or the toggle silently turns on. No Karma or Vitest example covers a static engine.
 
-**Contract to port from:** `spec/javascripts/angular/services/liveQueryRuntimeInitializer_spec.js` (1,121 lines) — notably `createSearcherFromSettings` (Solr `echoParams`, `jsonQueryDsl`, `fq` vs `filter` ratings filter), the query factory scoring/doc-state examples, and bootstrap/add/delete/move versioning. Port per skill phase 3 before deleting Angular sources.
+**Contract ported from:** the former Angular/Karma initializer spec into the framework-free live-query modules and `test/javascript/utils/live_query_runtime_initializer.test.js`. The old Angular/Karma spec is deleted; the remaining query factory, searcher, collection, scoring, document, and lifecycle contracts are covered by the focused Vitest suite.
 
 #### Re-render mechanism
 
@@ -486,8 +486,8 @@ Filters: `queryStateClass`, `scoreDisplay`, `searchEngineName`
 |------|------|-----------|
 | Results panel | Stimulus shell + isolated Angular controls | `app/javascript/controllers/search_results_controller.js` and `search_results_template.js` own the expanded-results shell/document rendering and browse-results modal; Query construction, searcher creation, diff, finder, pagination, and scoring remain explicit Angular control islands |
 | Rating popover | Stimulus controller | `rating_popover_controller.js` — mutation still bridges back to Angular via `rating-popover:rate`/`:reset` events |
-| Rate elements | framework-free runtime + Angular transport callback | `app/javascript/utils/ratings_store.js`, `app/assets/javascripts/services/liveQueryRuntimeInitializer.js` |
-| Query scoring and case aggregation | framework-free runtime + Angular adapter | `app/javascript/utils/query_scoring.js`, `app/assets/javascripts/services/liveQueryRuntimeInitializer.js` |
+| Rate elements | framework-free runtime + Angular transport callback | `app/javascript/utils/ratings_store.js`, `app/javascript/utils/live_query_runtime_initializer.js` |
+| Query scoring and case aggregation | framework-free runtime + Angular adapter | `app/javascript/utils/query_scoring.js`, `app/javascript/utils/live_query_runtime_initializer.js` |
 | Rating background styling | filter | `ratingBgStyle` |
 | Query options modal | Stimulus controller + Angular scoring bridge | `app/javascript/controllers/query_options_core_controller.js`, `app/views/shared/_query_options_core_modal.html.erb`; save dispatches `query-options:saved` so Angular updates the live Query and rescoring continues through `queriesSvc` |
 | Move query modal | Stimulus controller + query API seam | `app/javascript/controllers/move_query_core_controller.js` and `app/javascript/utils/query_lifecycle.js`; Stimulus owns persistence, while `queriesSvc` only reconciles its live object through `query-command:move-completed` |
@@ -564,12 +564,13 @@ for rating writes. Scorer lookup, selection, bootstrap, and score-all remain
 behind the scoring adapter while the final compatibility provider is prepared
 for removal.
 
-The `queriesSvc` Angular service registration has now been removed. Its module
-runtime initializer installs the live Query capability functions without
-creating an injectable legacy service object, and the Bootstrap controller no
-longer performs a provider-only compatibility lookup. The remaining Angular
-ownership is inside the callback implementation itself and is the next removal
-boundary.
+The `queriesSvc` Angular service registration and module runtime initializer
+have now been removed. `core_bootstrap_controller.js` initializes the tested
+`live_query_runtime_initializer.js` factory through the named bootstrap
+capability, without creating an injectable legacy service object. Remaining
+Angular ownership is limited to the explicit service dependencies supplied to
+that factory: live Query construction, search transport, settings, scoring,
+and document normalization.
 
 Persistence cleanup now clears and removes through the collection store at the
 same boundaries as the live-object execution cache; bootstrap remains the sole
@@ -606,7 +607,7 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (8):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `mapperBasedSearchEngineSvc`, `scorerSvc`, `searchEndpointSvc`, `settingsSvc`, `userSvc`* (* = `UtilitiesModule`). The former `queriesSvc` registration is now `liveQueryRuntimeInitializer.js`, a module runtime initializer rather than an injectable service. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
+**Services (8):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `mapperBasedSearchEngineSvc`, `scorerSvc`, `searchEndpointSvc`, `settingsSvc`, `userSvc`* (* = `UtilitiesModule`). The former `queriesSvc` registration and module runtime initializer are gone; `core_bootstrap_controller.js` invokes the explicit `live_query_runtime_initializer.js` factory instead. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
 
 `queriesSvc` reads the framework-free snapshot registry directly. Static snapshot
 imports in the new-case wizard use `app/javascript/utils/snapshot_import.js`.
@@ -623,7 +624,9 @@ The former `caseSvc`, `settingsSvc`, and `queriesSvc` consumers now use named na
 
 `queriesSvc` retains the temporary Angular ownership of rating persistence
 transport and query scoring, while the framework-free `RatingsStore` owns the
-rating dictionary and mutation behavior. Its no-store compatibility path emits
+rating dictionary and mutation behavior. Splainer search, document factories,
+and explain normalization now cross `window.quepidSearch.splainerSearch`
+instead of the Angular injector. Its no-store compatibility path emits
 the named native `ratings:changed` event; the Angular root event relay is
 removed. The `CaseScoreStore` event remains the normal path until the live
 query/scoring migration is complete.

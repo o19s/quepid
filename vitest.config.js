@@ -72,6 +72,8 @@ export default defineConfig({
       { find: "utils/live_query_compatibility", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_compatibility.js") },
       { find: "utils/live_query_adapters", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_adapters.js") },
       { find: "utils/live_query_capabilities", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_capabilities.js") },
+      { find: "utils/live_query_runtime_initializer", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_runtime_initializer.js") },
+      { find: "quepid_search", replacement: path.resolve(repoRoot, "app/javascript/quepid_search.js") },
       { find: "utils/query_model", replacement: path.resolve(repoRoot, "app/javascript/utils/query_model.js") },
       { find: "utils/query_documents", replacement: path.resolve(repoRoot, "app/javascript/utils/query_documents.js") },
       { find: "utils/query_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/query_runtime.js") },

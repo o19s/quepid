@@ -31,6 +31,11 @@ const api = createWiredServices(httpClient);
 
 window.quepidSearch ||= {};
 window.quepidSearch.docResolverSvc = api.docResolverSvc;
+// The core runtime consumes the wired Splainer services through this named
+// capability. Keep the Angular module registrations below for legacy callers,
+// but do not make modern bootstrap code resolve these services from the
+// Angular injector.
+window.quepidSearch.splainerSearch = api;
 
 const ngModule = angular.module('o19s.splainer-search', []);
 

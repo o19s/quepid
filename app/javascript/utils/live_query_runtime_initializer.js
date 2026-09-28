@@ -1,44 +1,73 @@
-'use strict';
-
 /* jslint latedef:false */
 
 /**
- * Angular runtime initializer for query lifecycle: in-memory `Query` objects, search against the
- * current try (or snapshots), scoring, diffs, ratings, book sync, and bulk operations (`searchAll`,
- * persist, reorder). It installs the public capability namespace used by the core case runtime.
+ * Creates the live-query compatibility runtime from explicit Angular service
+ * dependencies. The runtime itself is framework-free; Angular only supplies
+ * the still-legacy search, scoring, settings, and transport services.
  */
-angular.module('QuepidApp')
-  .run([
-    '$rootScope',
-    '$http',
-    '$q',
-    '$log',
-    'scorerSvc',
-    'searchSvc',
-    'caseTryNavSvc',
-    'DocListFactory',
-    'esExplainExtractorSvc',
-    'solrExplainExtractorSvc',
-    'normalDocsSvc',
-    'settingsSvc',
-    'searchEndpointSvc',
-    function queriesRuntime(
-      $scope,
-      $http,
-      $q,
-      $log,
-      scorerSvc,
-      searchSvc,
-      caseTryNavSvc,
-      DocListFactory,
-      esExplainExtractorSvc,
-      solrExplainExtractorSvc,
-      normalDocsSvc,
-      settingsSvc,
-      searchEndpointSvc
-    ) {
+export function initializeLiveQueryRuntime({
+  $rootScope: rootScope,
+  $http: http,
+  $q: promiseApi,
+  $log: logger,
+  scorerSvc,
+  caseTryNavSvc,
+  settingsSvc
+}) {
+      const splainerSearch = window.quepidSearch.splainerSearch || {};
+      const searchSvc = splainerSearch.searchSvc;
+      const normalDocsSvc = splainerSearch.normalDocsSvc;
+      const esExplainExtractorSvc = splainerSearch.esExplainExtractorSvc;
+      const solrExplainExtractorSvc = splainerSearch.solrExplainExtractorSvc;
+      const createDocList = (docs, fieldSpec, ratingsStore, explain) => {
+        const normalizedDocs = [];
+        const ids = [];
+        let error = "";
 
-      var svc = {
+        (docs || []).forEach((doc, index) => {
+          const altExplainJson = explain ? explain(doc) : undefined;
+          const normalDoc = normalDocsSvc.createNormalDoc(fieldSpec, doc, altExplainJson);
+          const rateableDoc = ratingsStore.createRateableDoc(normalDoc);
+          if (normalDoc.id === undefined || normalDoc.id === "undefined") {
+            error = `Your selected id field <strong>${fieldSpec.id}</strong> is missing on one or more results.` +
+              " Quepid requires a unique identifier for each document to work correctly. Open the " +
+              "<strong>Tune Relevance</strong> pane, and under <strong>Settings</strong> in the " +
+              "<strong>Displayed Fields</strong> field change " +
+              `<strong>id:${fieldSpec.id}</strong> to specify your unique ID field.`;
+            rateableDoc.error = "ID Field Missing";
+            rateableDoc.id = `${rateableDoc.error}${index}`;
+          } else if (ids.includes(normalDoc.id)) {
+            error = `Your selected id field <strong>${fieldSpec.id}</strong> doesn't uniquely identify individual documents.` +
+              " Quepid requires a unique identifier for each document to work correctly. Open the " +
+              "<strong>Tune Relevance</strong> pane, and under <strong>Settings</strong> in the " +
+              "<strong>Displayed Fields</strong> field change " +
+              `<strong>id:${fieldSpec.id}</strong> to specify your unique ID field.`;
+            rateableDoc.error = `ID <strong>${normalDoc.id}</strong> Shared With Another Doc`;
+            rateableDoc.id = `${rateableDoc.error}${index}`;
+          }
+          normalizedDocs.push(rateableDoc);
+          ids.push(normalDoc.id);
+        });
+
+        return {
+          list: () => normalizedDocs,
+          hasErrors: () => error.length > 0,
+          errorMsg: () => error
+        };
+      };
+      const angularCopy = value => {
+        if (value === null || typeof value !== "object") return value;
+        if (Array.isArray(value)) return value.map(angularCopy);
+        return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, angularCopy(entry)]));
+      };
+      const angularForEach = (items, callback) => Object.values(items || {}).forEach(callback);
+      const isFunction = value => typeof value === "function";
+      const $scope = rootScope;
+      const $http = http;
+      const $q = promiseApi;
+      const $log = logger;
+
+      const svc = {
         error: false,
         displayOrder: [],
         linkUrl: ''
@@ -51,15 +80,15 @@ angular.module('QuepidApp')
       // Keyed by the mapper_code string itself, so a re-eval is only ever skipped for the
       // exact same code (editing a mapper - or switching to a different mapper-based try -
       // naturally busts the cache via a different key). See evaluateMapperFunctions() below.
-      let mapperFunctionsCache = {};
+      const mapperFunctionsCache = {};
 
       // Temporary dual-run bridge: the store owns the query collection snapshot
       // and display order while Angular keeps the live Query objects for search,
       // ratings, documents, and scoring.
-      let queryCollectionStore = window.quepidStore && window.quepidStore.queries;
-      let queryDocumentsStore = window.quepidStore && window.quepidStore.documents;
-      let diffStateStore = window.quepidStore && window.quepidStore.diff;
-      let liveQueryRegistry = window.quepidSearch.liveQueryRegistry.create({
+      const queryCollectionStore = window.quepidStore && window.quepidStore.queries;
+      const queryDocumentsStore = window.quepidStore && window.quepidStore.documents;
+      const diffStateStore = window.quepidStore && window.quepidStore.diff;
+      const liveQueryRegistry = window.quepidSearch.liveQueryRegistry.create({
         store: queryCollectionStore
       });
       function getAllDiffSettings() {
@@ -81,11 +110,11 @@ angular.module('QuepidApp')
         liveQueryRegistry.register(queryId, query);
       }
 
-      let bookSyncRuntime = window.quepidSearch.bookSync.createRuntime({
+      const bookSyncRuntime = window.quepidSearch.bookSync.createRuntime({
         logger: $log
       });
 
-      let liveQueryAdapters = window.quepidSearch.liveQueryAdapters.create({
+      const liveQueryAdapters = window.quepidSearch.liveQueryAdapters.create({
         domain: {
           settings: {
             editable: function() {
@@ -122,7 +151,7 @@ angular.module('QuepidApp')
           },
           search: {
             isEsOrOsEngine: function(searchEngine) {
-              return searchEndpointSvc.isEsOrOsEngine(searchEngine);
+              return searchEngine === 'es' || searchEngine === 'os';
             },
             create: function(fieldList, searchUrl, args, queryText, options, searchEngine) {
               return searchSvc.createSearcher(
@@ -137,7 +166,7 @@ angular.module('QuepidApp')
           },
           documents: {
             createDocList: function(docs, fieldSpec, ratingsStore, explain) {
-              return new DocListFactory(docs, fieldSpec, ratingsStore, explain);
+              return createDocList(docs, fieldSpec, ratingsStore, explain);
             },
             normalizeEs: function(docs, spec) {
               return esExplainExtractorSvc.docsWithExplainOther(docs, spec);
@@ -229,7 +258,7 @@ angular.module('QuepidApp')
                 return currSettings;
               },
               copy: function(settings) {
-                return angular.copy(settings);
+                return angularCopy(settings);
               }
             },
             searchers: {
@@ -289,7 +318,7 @@ angular.module('QuepidApp')
             return runtimeDomain.scorer.getDefault();
           },
           select: function(scorerData) {
-            var scorer = runtimeDomain.scorer.constructFromData(scorerData);
+            const scorer = runtimeDomain.scorer.constructFromData(scorerData);
             return runtimeDomain.scorer.setDefault(scorer);
           },
           bootstrap: function(newCaseNo) {
@@ -339,8 +368,8 @@ angular.module('QuepidApp')
           }
         }
       });
-      let runtimeFramework = liveQueryAdapters.framework;
-      let runtimeDomain = liveQueryAdapters.domain;
+      const runtimeFramework = liveQueryAdapters.framework;
+      const runtimeDomain = liveQueryAdapters.domain;
 
       document.addEventListener('case-book:associated', function() {
         // Re-fetch case data to update cached sync properties
@@ -373,7 +402,7 @@ angular.module('QuepidApp')
       // Case-level scoring orchestration lives in the framework-free query
       // runtime. Angular remains the compatibility adapter for the live Query
       // objects and the legacy latestScoreInfo shape during dual-run.
-      let caseScoringRuntime = window.quepidSearch.queryScoring.createCaseScoringRuntime({
+      const caseScoringRuntime = window.quepidSearch.queryScoring.createCaseScoringRuntime({
         getScorables: function() {
           return getLiveQueries();
         },
@@ -393,7 +422,7 @@ angular.module('QuepidApp')
         }
       });
 
-      let liveQueryCollectionRuntime = window.quepidSearch.queryLifecycle.createCollectionRuntime({
+      const liveQueryCollectionRuntime = window.quepidSearch.queryLifecycle.createCollectionRuntime({
         request: function(caseId) {
           return runtimeFramework.request(window.quepidSearch.queryLifecycle.bootstrapRequest(caseId));
         },
@@ -439,7 +468,7 @@ angular.module('QuepidApp')
         logger: runtimeFramework.logger
       });
 
-      let liveQueryCompatibilityRuntime = window.quepidSearch.queryLifecycle.createCompatibilityRuntime({
+      const liveQueryCompatibilityRuntime = window.quepidSearch.queryLifecycle.createCompatibilityRuntime({
         model: window.quepidSearch.liveQueryModel,
         factory: window.quepidSearch.liveQueryFactory,
         documents: window.quepidSearch.liveQueryDocuments,
@@ -447,11 +476,11 @@ angular.module('QuepidApp')
         factoryOptions: liveQueryAdapters.compatibility.factoryOptions,
         executionOptions: liveQueryAdapters.compatibility.executionOptions
       });
-      let liveQueryDocumentsRuntime = liveQueryCompatibilityRuntime.documents;
-      let liveQueryRuntime = liveQueryCompatibilityRuntime.execution;
-      let liveQueryFactory = liveQueryCompatibilityRuntime.factory;
+      const liveQueryDocumentsRuntime = liveQueryCompatibilityRuntime.documents;
+      const liveQueryRuntime = liveQueryCompatibilityRuntime.execution;
+      const liveQueryFactory = liveQueryCompatibilityRuntime.factory;
 
-      let liveQueryTransportRuntime = window.quepidSearch.queryLifecycle.createTransportRuntime({
+      const liveQueryTransportRuntime = window.quepidSearch.queryLifecycle.createTransportRuntime({
         queryRuntime: liveQueryRuntime,
         getQueries: function() {
           return getLiveQueries();
@@ -482,7 +511,7 @@ angular.module('QuepidApp')
         logger: runtimeFramework.logger
       });
 
-      let liveQueryCommandsRuntime = window.quepidSearch.liveQueryCommands.create({
+      const liveQueryCommandsRuntime = window.quepidSearch.liveQueryCommands.create({
         getQuery: getLiveQuery,
         getShowOnlyRated: function() {
           return svc.showOnlyRated;
@@ -497,7 +526,7 @@ angular.module('QuepidApp')
         }
       });
 
-      let liveQueryEventsRuntime = window.quepidSearch.liveQueryEvents.create({
+      const liveQueryEventsRuntime = window.quepidSearch.liveQueryEvents.create({
         scoringStore: window.quepidStore && window.quepidStore.scoring,
         getCaseNo: getCaseNo,
         getQuery: getLiveQuery,
@@ -536,7 +565,7 @@ angular.module('QuepidApp')
       });
       liveQueryEventsRuntime.connect();
 
-      let liveQueryLifecycleRuntime = window.quepidSearch.queryLifecycle.createRuntime({
+      const liveQueryLifecycleRuntime = window.quepidSearch.queryLifecycle.createRuntime({
         createQuery: function(queryText) {
           return createQuery(queryText);
         },
@@ -580,7 +609,7 @@ angular.module('QuepidApp')
         logger: runtimeFramework.logger
       });
 
-      let liveQueryDiffRuntime = window.quepidSearch.liveQueryDiff.create({
+      const liveQueryDiffRuntime = window.quepidSearch.liveQueryDiff.create({
         getQueries: function() {
           return getLiveQueries();
         },
@@ -598,7 +627,7 @@ angular.module('QuepidApp')
         promiseApi: runtimeFramework.promiseApi
       });
 
-      let liveQueryStateRuntime = window.quepidSearch.liveQueryState.create({
+      const liveQueryStateRuntime = window.quepidSearch.liveQueryState.create({
         getQueries: function() {
           return getLiveQueries();
         },
@@ -646,7 +675,7 @@ angular.module('QuepidApp')
       });
 
       window.quepidSearch.queryCapabilities.getListState = function() {
-        var selectedTry = runtimeDomain.settings.applicable() || {};
+        const selectedTry = runtimeDomain.settings.applicable() || {};
         return {
           canAddQueries: selectedTry.searchEngine !== 'static',
           addQueryMessage: selectedTry.searchEngine === 'static' ? 'Adding queries is not supported' : 'Add a query to this case',
@@ -678,22 +707,22 @@ angular.module('QuepidApp')
           return;
         }
 
-        var effectiveScorer = angular.isFunction(query.effectiveScorer) ? query.effectiveScorer() : null;
-        var ratingScale = query.ratings && query.ratings.scale;
-        if (!ratingScale && effectiveScorer && angular.isFunction(effectiveScorer.getColors)) {
+        const effectiveScorer = isFunction(query.effectiveScorer) ? query.effectiveScorer() : null;
+        let ratingScale = query.ratings && query.ratings.scale;
+        if (!ratingScale && effectiveScorer && isFunction(effectiveScorer.getColors)) {
           ratingScale = effectiveScorer.getColors();
         }
-        var applicableSettings = runtimeDomain.settings.applicable() || {};
-        var readModel = window.quepidSearch.queryDocuments.buildState({
+        const applicableSettings = runtimeDomain.settings.applicable() || {};
+        const readModel = window.quepidSearch.queryDocuments.buildState({
           query: query,
           settings: applicableSettings,
           selectedTry: applicableSettings.selectedTry || {},
           ratingScale: ratingScale || {},
           diffs: buildDiffReadModel(query),
           documentUrlFor: function(doc) {
-            if (!doc || !angular.isFunction(doc._url)) return null;
+            if (!doc || !isFunction(doc._url)) return null;
 
-            var linkUrl;
+            let linkUrl;
             try {
               linkUrl = doc._url();
             } catch {
@@ -715,23 +744,23 @@ angular.module('QuepidApp')
       }
 
       function buildDiffReadModel(query) {
-        if (!query || !query.diffs || !angular.isFunction(query.diffs.getSearchers)) {
+        if (!query || !query.diffs || !isFunction(query.diffs.getSearchers)) {
           return null;
         }
 
-        var showOnlyRated = svc.showOnlyRated === true;
+        const showOnlyRated = svc.showOnlyRated === true;
         return {
           searchers: query.diffs.getSearchers().map(function(searcher, index) {
-            var score = searcher.diffScore || { score: '?', allRated: false };
-            var docs = query.diffs.docs(index, false) || [];
-            var ratedDocs = query.diffs.docs(index, true) || [];
-            var maxDocScore = docs.reduce(function(max, doc) {
-              return Math.max(max, angular.isFunction(doc.score) ? doc.score() : 0);
+            const score = searcher.diffScore || { score: '?', allRated: false };
+            const docs = query.diffs.docs(index, false) || [];
+            const ratedDocs = query.diffs.docs(index, true) || [];
+            const maxDocScore = docs.reduce(function(max, doc) {
+              return Math.max(max, isFunction(doc.score) ? doc.score() : 0);
             }, 0);
 
             return {
-              name: angular.isFunction(searcher.name) ? searcher.name() : 'Snapshot',
-              version: angular.isFunction(searcher.version) ? searcher.version() : null,
+              name: isFunction(searcher.name) ? searcher.name() : 'Snapshot',
+              version: isFunction(searcher.version) ? searcher.version() : null,
               inError: searcher.inError,
               searchError: searcher.searchError,
               score: score,
@@ -754,11 +783,11 @@ angular.module('QuepidApp')
       // Query objects remain Angular-owned, but the renderer does not discover
       // them through a compiled Angular controller.
       function toggleQuery(queryId) {
-        var query = getLiveQuery(queryId);
+        const query = getLiveQuery(queryId);
         if (!query) return false;
 
-        var currentQuery = queryCollectionStore && queryCollectionStore.query(queryId);
-        var expanded = !(currentQuery && currentQuery.expanded === true);
+        const currentQuery = queryCollectionStore && queryCollectionStore.query(queryId);
+        const expanded = !(currentQuery && currentQuery.expanded === true);
         if (queryCollectionStore) {
           queryCollectionStore.setExpanded(queryId, expanded);
         }
@@ -803,7 +832,7 @@ angular.module('QuepidApp')
         );
       }
 
-      let liveQuerySearchRuntime = window.quepidSearch.liveQuerySearch.create({
+      const liveQuerySearchRuntime = window.quepidSearch.liveQuerySearch.create({
         proxyUrlFor: function(searchEndpointId) {
             return runtimeDomain.navigation.proxyUrlFor(searchEndpointId);
         },
@@ -832,7 +861,7 @@ angular.module('QuepidApp')
       }
 
       function createSearcherFromSnapshot(snapshotId, query, settings) {
-        var snapshotRegistry = window.quepidSearch.snapshotSearch.snapshots;
+        const snapshotRegistry = window.quepidSearch.snapshotSearch.snapshots;
         return window.quepidSearch.snapshotSearch.createSnapshotSearcherFromRegistry({
           snapshotId: snapshotId,
           snapshots: snapshotRegistry,
@@ -879,8 +908,8 @@ angular.module('QuepidApp')
        * which callers should treat as "can't show rated docs, disable/message accordingly."
        */
       function searchApiRatedDocs(settings, query, ratedIds) {
-        let idField = settings.createFieldSpec().id;
-        let ratedQueryParams = buildSearchApiRatedDocsQueryParams(settings.selectedTry.mapperCode, ratedIds, idField);
+        const idField = settings.createFieldSpec().id;
+        const ratedQueryParams = buildSearchApiRatedDocsQueryParams(settings.selectedTry.mapperCode, ratedIds, idField);
 
         if (!ratedQueryParams) {
           return runtimeFramework.resolve(null);
@@ -891,16 +920,16 @@ angular.module('QuepidApp')
             return null;
           }
 
-          let tempSettings = settingsWithTryOverrides(settings, { args: resolvedArgs });
+          const tempSettings = settingsWithTryOverrides(settings, { args: resolvedArgs });
 
           // Force POST regardless of the try's own apiMethod (which may be 'AUTO' for a
           // mapper-based search engine) - a rated-docs ID filter can grow arbitrarily long as
           // more docs get rated, so this always sends it as a body rather than gambling on it
           // fitting in a GET querystring.
-          let searcher = createSearcherFromSettings(tempSettings, query, { forceApiMethod: 'POST' });
+          const searcher = createSearcherFromSettings(tempSettings, query, { forceApiMethod: 'POST' });
 
           return searcher.search().then(function() {
-            let normed = liveQueryAdapters.compatibility.executionOptions.documents.normalize(
+            const normed = liveQueryAdapters.compatibility.executionOptions.documents.normalize(
               query,
               searcher,
               settings.createFieldSpec()
@@ -934,7 +963,7 @@ angular.module('QuepidApp')
         }
 
         if (svc.showOnlyRated) {
-          angular.forEach(getLiveQueries(), function(query) {
+          angularForEach(getLiveQueries(), function(query) {
             if (!query.ratingsReady) {
               window.quepidSearch.queryCapabilities.refreshRatedDocs(query.queryId);
             }
@@ -975,17 +1004,17 @@ angular.module('QuepidApp')
       }
 
       function searchAll() {
-        let searchAllPromise = liveQueryTransportRuntime.searchAll();
-        searchAllPromise.catch(angular.noop);
+        const searchAllPromise = liveQueryTransportRuntime.searchAll();
+        searchAllPromise.catch(() => {});
         return searchAllPromise;
       }
 
       function createQuery(queryText) {
-        let queryJson = {
+        const queryJson = {
           'query_text': queryText,
           queryId:      -1
         };
-        let newQuery = liveQueryFactory.create(queryJson);
+        const newQuery = liveQueryFactory.create(queryJson);
         liveQueryDiffRuntime.create(newQuery);
         return newQuery;
       };
@@ -1052,7 +1081,7 @@ angular.module('QuepidApp')
         target: window.quepidSearch,
         capabilities: {
           getListState: function() {
-            var selectedTry = runtimeDomain.settings.applicable() || {};
+            const selectedTry = runtimeDomain.settings.applicable() || {};
             return {
               canAddQueries: selectedTry.searchEngine !== 'static',
               addQueryMessage: selectedTry.searchEngine === 'static' ? 'Adding queries is not supported' : 'Add a query to this case',
@@ -1086,7 +1115,7 @@ angular.module('QuepidApp')
             return liveQueryStateRuntime.changeSettings(newCaseNo, newSettings);
           },
           resetQuery: function(queryId) {
-            var query = getLiveQuery(queryId);
+            const query = getLiveQuery(queryId);
             if (!query) return false;
             liveQueryDocumentsRuntime.reset(query);
             publishQueryDocuments(query);
@@ -1124,10 +1153,10 @@ angular.module('QuepidApp')
           refreshQueries: liveQueryLifecycleRuntime.refreshQueries
         },
         targetedSearch: function(queryId) {
-          var query = getLiveQuery(queryId);
+          const query = getLiveQuery(queryId);
           if (!query) return null;
 
-          var settings = runtimeDomain.settings.editable();
+          const settings = runtimeDomain.settings.editable();
           return window.quepidSearch.queryRuntime.createTargetedSearch({
             query: query,
             queryId: queryId,
@@ -1160,5 +1189,6 @@ angular.module('QuepidApp')
       function getCaseNo(){
         return caseNo;
       }
-    }
-  ]);
+
+      return window.quepidSearch;
+}

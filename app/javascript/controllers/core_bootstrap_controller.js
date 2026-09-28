@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { getBootstrapCapabilities } from "utils/core_angular_adapter"
 import { diffStateStore } from "stores/diff_state_store"
+import { initializeLiveQueryRuntime } from "utils/live_query_runtime_initializer"
 
 export default class extends Controller {
   static values = {
@@ -19,6 +20,10 @@ export default class extends Controller {
   async bootstrap() {
     try {
       this.services = await getBootstrapCapabilities()
+
+      if (this.services.$rootScope && window.quepidSearch.splainerSearch?.searchSvc) {
+        initializeLiveQueryRuntime(this.services)
+      }
 
       const { configurationSvc, userSvc, caseSvc, settingsSvc, caseTryNavSvc,
         docCache, scorerSvc } = this.services

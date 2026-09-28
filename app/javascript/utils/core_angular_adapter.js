@@ -81,6 +81,10 @@ const capabilityDefinitions = {
   bootstrap: {
     controller: "core_bootstrap_controller",
     services: [
+      "$rootScope",
+      "$http",
+      "$q",
+      "$log",
       "configurationSvc",
       "userSvc",
       "caseSvc",
