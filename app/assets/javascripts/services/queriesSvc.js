@@ -127,6 +127,23 @@ angular.module('QuepidApp')
         }
       });
 
+      let liveQueryModelRuntime = window.quepidSearch.liveQueryModel.create({
+        getDefaultScorer: function() {
+          return scorerSvc.defaultScorer;
+        },
+        scoreQuery: window.quepidSearch.queryScoring.scoreQuery,
+        promiseApi: $q,
+        getFieldSpec: function() {
+          return currSettings.createFieldSpec();
+        },
+        buildRatingsFilter: window.quepidSearch.ratedDocs.buildFilter,
+        ratedDocIds: window.quepidSearch.ratedDocs.ids,
+        onDirty: function() {
+          svcVersion++;
+        },
+        publish: publishQueryDocuments
+      });
+
       window.quepidSearch.queryCapabilities.getListState = function() {
         var selectedTry = settingsSvc.applicableSettings() || {};
         return {
@@ -916,30 +933,19 @@ angular.module('QuepidApp')
         // The framework-free query model now owns query-local state and scoring.
         // Search, rated-document lookup, and persistence remain here as an
         // explicit compatibility boundary until their callers migrate.
-        Object.assign(this, window.quepidSearch.queryModel.create({
+        self.resultsReturned = function() {
+          return resultsReturned;
+        };
+        Object.assign(this, liveQueryModelRuntime.create({
           query: this,
           ratingsStore: this.ratingsStore,
-          getDefaultScorer: function() {
-            return scorerSvc.defaultScorer;
-          },
-          scoreQuery: window.quepidSearch.queryScoring.scoreQuery,
-          promiseApi: $q,
-          getFieldSpec: function() {
-            return currSettings.createFieldSpec();
-          },
           getQueryState: function() {
             return window.quepidSearch.queryState.queryLifecycleState({
               errorText: self.errorText,
               resultsReturned: resultsReturned,
               docCount: self.docs.length
             });
-          },
-          buildRatingsFilter: window.quepidSearch.ratedDocs.buildFilter,
-          ratedDocIds: window.quepidSearch.ratedDocs.ids,
-          onDirty: function() {
-            svcVersion++;
-          },
-          publish: publishQueryDocuments
+          }
         }));
       };
 
