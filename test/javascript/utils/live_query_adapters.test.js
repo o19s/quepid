@@ -3,10 +3,8 @@ import { createLiveQueryAdapters } from "utils/live_query_adapters"
 
 describe("createLiveQueryAdapters", () => {
   it("keeps compatibility, scoring, and book callbacks in explicit groups", () => {
-    const model = { getDefaultScorer: vi.fn() }
-    const documents = { normalize: vi.fn() }
-    const factory = { create: vi.fn() }
-    const execution = { searchers: { create: vi.fn() } }
+    const factoryOptions = { model: { getDefaultScorer: vi.fn() } }
+    const executionOptions = { searchers: { create: vi.fn() } }
     const scoring = {
       getDefault: vi.fn(),
       select: vi.fn(),
@@ -18,9 +16,25 @@ describe("createLiveQueryAdapters", () => {
       sync: vi.fn()
     }
 
-    const adapters = createLiveQueryAdapters({ model, documents, factory, execution, scoring, book })
+    const adapters = createLiveQueryAdapters({
+      compatibility: { factoryOptions, executionOptions },
+      scoring,
+      book
+    })
 
-    expect(adapters.compatibility).toEqual({ model, documents, factory, execution })
+    expect(adapters.compatibility).toEqual({
+      factoryOptions: {
+        model: factoryOptions.model,
+        documents: {},
+        factory: {}
+      },
+      executionOptions: {
+        settings: {},
+        searchers: executionOptions.searchers,
+        documents: {},
+        errors: {}
+      }
+    })
     expect(adapters.scoring).toEqual(scoring)
     expect(adapters.book).toEqual(book)
   })
@@ -28,10 +42,17 @@ describe("createLiveQueryAdapters", () => {
   it("does not require optional callback groups", () => {
     expect(createLiveQueryAdapters({})).toEqual({
       compatibility: {
-        model: {},
-        documents: {},
-        factory: {},
-        execution: {}
+        factoryOptions: {
+          model: {},
+          documents: {},
+          factory: {}
+        },
+        executionOptions: {
+          settings: {},
+          searchers: {},
+          documents: {},
+          errors: {}
+        }
       },
       scoring: {
         getDefault: undefined,

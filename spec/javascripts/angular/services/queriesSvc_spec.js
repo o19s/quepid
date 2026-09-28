@@ -251,7 +251,7 @@ describe('Service: queriesSvc', function () {
       expect(queriesSvc.showOnlyRated).toEqual(false);
       window.quepidSearch.queryCommands.toggleShowOnlyRated();
       expect(queriesSvc.showOnlyRated).toEqual(true);
-      queriesSvc.reset();
+      window.quepidSearch.queryCapabilities.resetQueryState();
       expect(queriesSvc.showOnlyRated).toEqual(false);
     });
   });
@@ -395,10 +395,10 @@ describe('Service: queriesSvc', function () {
       var secondResolution = false;
 
       $httpBackend.expectGET('api/cases/4/queries?bootstrap=true').respond(500, {statusText: 'first failed'});
-      queriesSvc.bootstrapQueries(4).catch(function(response) { firstRejection = response; });
+      window.quepidSearch.queryCapabilities.bootstrapQueries(4).catch(function(response) { firstRejection = response; });
 
       $httpBackend.expectGET('api/cases/5/queries?bootstrap=true').respond(200, mockFullQueriesResp);
-      queriesSvc.bootstrapQueries(5).then(function() { secondResolution = true; });
+      window.quepidSearch.queryCapabilities.bootstrapQueries(5).then(function() { secondResolution = true; });
 
       $httpBackend.flush();
       $rootScope.$apply();
@@ -449,7 +449,7 @@ describe('Service: queriesSvc', function () {
     $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
     window.quepidSearch.queryCapabilities.changeSettings(2, mockSettings);
     $httpBackend.flush();
-    expect(queriesSvc.getCaseNo()).toBe(2);
+    expect(window.quepidSearch.queryCapabilities.getCaseNo()).toBe(2);
   });
 
   it('loading state reported' , function() {
@@ -766,7 +766,7 @@ describe('Service: queriesSvc', function () {
         function() { results.push(3); return Promise.resolve(3); }
       ];
 
-      queriesSvc.pAll(queue, null).then(function() {
+      window.quepidSearch.queryService.pAll(queue, null).then(function() {
         expect(results.length).toBe(3);
         expect(results).toContain(1);
         expect(results).toContain(2);
@@ -784,7 +784,7 @@ describe('Service: queriesSvc', function () {
         function() { results.push(2); return Promise.resolve(2); }
       ];
 
-      queriesSvc.pAll(queue, 0).then(function() {
+      window.quepidSearch.queryService.pAll(queue, 0).then(function() {
         expect(results.length).toBe(2);
         done();
       });
@@ -801,7 +801,7 @@ describe('Service: queriesSvc', function () {
       ];
 
       // 1200 requests per minute = 20 requests per second = 50ms between requests
-      queriesSvc.pAll(queue, 1200).then(function() {
+      window.quepidSearch.queryService.pAll(queue, 1200).then(function() {
         expect(timestamps.length).toBe(3);
         // With 1200 requests/minute, minimum delay is 50ms
         var delay1 = timestamps[1] - timestamps[0];
@@ -827,7 +827,7 @@ describe('Service: queriesSvc', function () {
       ];
 
       // 60 requests per minute = 1 request per second = 1000ms between requests
-      queriesSvc.pAll(queue, 60).then(function() {
+      window.quepidSearch.queryService.pAll(queue, 60).then(function() {
         expect(timestamps.length).toBe(3);
         // With 60 requests/minute, delay is 1000ms between each request
         var delay1 = timestamps[1] - timestamps[0];
@@ -853,7 +853,7 @@ describe('Service: queriesSvc', function () {
       ];
 
       // 60000 requests per minute = 1ms between requests (fast enough for testing)
-      queriesSvc.pAll(queue, 60000).then(function() {
+      window.quepidSearch.queryService.pAll(queue, 60000).then(function() {
         expect(results.length).toBe(3);
         expect(results).toContain(1);
         expect(results).toContain(2);
@@ -901,8 +901,8 @@ describe('Service: queriesSvc', function () {
     });
 
     it('re-bootstraps and searches on judgements:queries-need-reload for the current case', function() {
-      spyOn(queriesSvc, 'reset');
-      spyOn(queriesSvc, 'bootstrapQueries').and.callFake(function() {
+      spyOn(window.quepidSearch.queryCapabilities, 'resetQueryState').and.callThrough();
+      spyOn(window.quepidSearch.queryCapabilities, 'bootstrapQueries').and.callFake(function() {
         return $q.when();
       });
       spyOn(window.quepidSearch.queryCommands, 'searchAll');
@@ -915,8 +915,8 @@ describe('Service: queriesSvc', function () {
       // right after a "ratings refreshed" success flash.
       $rootScope.$apply();
 
-      expect(queriesSvc.reset).toHaveBeenCalled();
-      expect(queriesSvc.bootstrapQueries).toHaveBeenCalledWith(2);
+      expect(window.quepidSearch.queryCapabilities.resetQueryState).toHaveBeenCalled();
+      expect(window.quepidSearch.queryCapabilities.bootstrapQueries).toHaveBeenCalledWith(2);
       expect(window.quepidSearch.queryCommands.searchAll).toHaveBeenCalled();
     });
 

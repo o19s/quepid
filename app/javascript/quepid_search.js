@@ -199,6 +199,7 @@ const quepidSearch = {
     getQueries: null,
     getCaseNo: null,
     resetQueryState: null,
+    bootstrapQueries: null,
     resetQuery: null,
     searchQuery: null,
     refreshRatedDocs: null,

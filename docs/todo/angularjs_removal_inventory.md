@@ -526,6 +526,20 @@ book configuration/reset/sync now cross the tested `live_query_adapters`
 contract; the remaining service-local assembly is searcher construction,
 normalization/explain wiring, and the final live Query compatibility callbacks.
 
+The compatibility callback assembly is now also grouped behind
+`liveQueryAdapters`: searcher construction, rated-document lookup, snapshot
+search, document normalization/explain extraction, error translation, settings
+access, and publication are supplied as explicit adapter groups. The next
+step is a consumer inventory of `queriesSvc` capabilities and safe removal of
+aliases with no runtime consumers; the service itself still owns the live
+Angular Query collection and cannot be unregistered yet.
+
+The public service cleanup also removed `pAll`, `reset`, `bootstrapQueries`,
+and `getCaseNo` from the Angular service namespace. Their callers now use the
+framework-free query service or explicit `queryCapabilities`; the compatibility
+Query factory remains until its legacy model contracts have a framework-free
+replacement.
+
 Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 
 ### 7. Tune Relevance (east pane / dev settings)
