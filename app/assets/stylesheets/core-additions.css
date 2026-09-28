@@ -567,6 +567,29 @@ header .dropdown-item:focus {
 
 footer {
   margin-top: 30px;
+  /* Already 14px via this page's 87.5% root font-size, but pin it
+   * explicitly (matching bootstrap5-add.css's rule for the Rails-page
+   * footer) so the shared footer partial stays the same size everywhere
+   * even if this page's root font-size ever changes. */
+  font-size: 14px;
+}
+
+/* footer.js clones body's <footer> into #footer-copy inside .pane_main
+ * (a position:fixed, internally-scrolling pane — see .pane_main in
+ * panes.css) because the real body-level footer is never reachable there.
+ * Pin the copy to the bottom of the viewport instead of leaving it in
+ * .pane_main's scroll flow, where its position depends on result-list
+ * height. footer.js pads .pane_main to match so scrolled content doesn't
+ * hide behind it. */
+#footer-copy {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  /* Below #flash-messages' z-index: 100 (also fixed to the viewport bottom,
+   * further down this file) so a flash message shows over the footer. */
+  z-index: 5;
 }
 
 .matches-popper:hover {

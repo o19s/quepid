@@ -61,3 +61,13 @@ Whenever you're testing after a CSS, Bootstrap-version, or vendor-JS change (per
 - [ ] Compare against a recent baseline screenshot if one exists (see `.playwright-mcp/` conventions in `CLAUDE.md`, or the automated suite's own baselines).
 - [ ] If something looks subtly off (wrong spacing, wrong font size, a control that's technically clickable but visually washed-out/misaligned), don't dismiss it as "probably fine" — this exact category of bug is what this part exists to catch, and it's easy to unconsciously explain away.
 - [ ] Report anything found with a screenshot and the computed-style values from DevTools (display/opacity/font-size/transform) — that's what turns a vague "this looks wrong" into an actionable bug report for this specific class of issue.
+
+### 16.6 Core case-page footer stays pinned to the viewport bottom
+
+The Angular core case page (`/case/:id/try/:try`) doesn't render `body`'s footer directly — `footer.js` hides it and clones it into `.pane_main` (the `position: fixed`, internally-scrolling results pane from `panes.css`), since the real `body`-level footer is never reachable there. The clone (`#footer-copy`) is pinned with `position: fixed; bottom: 0` in `core-additions.css`, and `footer.js` pads `.pane_main`'s bottom by the clone's height so it doesn't cover the last result.
+
+- [ ] **Steps:**
+  1. Open a case with only one or two queries (short content) and confirm the footer sits flush against the bottom of the browser viewport, not immediately below the query list.
+  2. Open a case with enough queries/expanded results to overflow `.pane_main`, scroll to the very bottom, and confirm the last result is fully visible above the footer (not clipped behind it).
+  3. Resize the browser window and confirm the footer stays pinned to the bottom without overlapping content (the padding is recalculated on `resize`).
+- **Expected:** The footer never moves up/down with content height — it's always flush with the bottom of the viewport, and scrollable content is never hidden behind it.
