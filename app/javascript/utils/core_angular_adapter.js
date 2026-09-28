@@ -1,4 +1,6 @@
 import { createScorerCatalog } from "utils/scorer_catalog"
+import { createMapperSearchRuntime } from "utils/mapper_search_runtime"
+import { createSearchEndpointRuntime } from "utils/search_endpoint_runtime"
 import { createUserRuntime } from "utils/user_runtime"
 
 /**
@@ -14,6 +16,8 @@ export function angularInjector() {
 }
 
 const servicePromises = new Map()
+const mapperSearchRuntime = createMapperSearchRuntime()
+const searchEndpointRuntime = createSearchEndpointRuntime()
 const userRuntime = createUserRuntime()
 
 export function waitForAngularServices(serviceNames, { intervalMs = 50, maxAttempts = 100 } = {}) {
@@ -79,6 +83,8 @@ export async function runInAngular(operation) {
 
 export function resetCoreServiceCache() {
   servicePromises.clear()
+  mapperSearchRuntime.reset()
+  searchEndpointRuntime.reset()
   userRuntime.reset()
 }
 
@@ -103,17 +109,11 @@ const capabilityDefinitions = {
   },
   wizard: {
     controller: "wizard_controller",
-    services: [
-      "caseSvc",
-      "caseTryNavSvc",
-      "mapperBasedSearchEngineSvc",
-      "searchEndpointSvc",
-      "settingsSvc"
-    ]
+    services: ["caseSvc", "caseTryNavSvc", "settingsSvc"]
   },
   tuneRelevance: {
     controller: "tune_relevance_controller",
-    services: ["settingsSvc", "searchEndpointSvc", "caseTryNavSvc", "caseSvc"]
+    services: ["settingsSvc", "caseTryNavSvc", "caseSvc"]
   }
 }
 
@@ -154,16 +154,36 @@ async function loadCapability(name) {
         }
       : {
           ...services,
-          capability: createNamedCapability(name, services, userRuntime),
+          capability: createNamedCapability(
+            name,
+            services,
+            userRuntime,
+            searchEndpointRuntime,
+            mapperSearchRuntime
+          ),
           docCache: window.quepidSearch.docCache
         }
   return window.quepidSearch.caseRuntime[name]
 }
 
-function createNamedCapability(name, services, userRuntime) {
+function createNamedCapability(
+  name,
+  services,
+  userRuntime,
+  searchEndpointRuntime,
+  mapperSearchRuntime
+) {
   if (name === "snapshots") return createSnapshotCapabilities(services)
-  if (name === "wizard") return createWizardCapabilities(services, userRuntime)
-  if (name === "tuneRelevance") return createTuneRelevanceCapabilities(services)
+  if (name === "wizard") {
+    return createWizardCapabilities(
+      services,
+      userRuntime,
+      searchEndpointRuntime,
+      mapperSearchRuntime
+    )
+  }
+  if (name === "tuneRelevance")
+    return createTuneRelevanceCapabilities(services, searchEndpointRuntime)
   return {}
 }
 
@@ -189,9 +209,13 @@ function createSnapshotCapabilities(services) {
   }
 }
 
-function createWizardCapabilities(services, userRuntime) {
-  const { caseSvc, caseTryNavSvc, mapperBasedSearchEngineSvc, searchEndpointSvc, settingsSvc } =
-    services
+function createWizardCapabilities(
+  services,
+  userRuntime,
+  searchEndpointRuntime,
+  mapperSearchRuntime
+) {
+  const { caseSvc, caseTryNavSvc, settingsSvc } = services
   const splainerSearch = window.quepidSearch?.splainerSearch || {}
 
   return {
@@ -211,13 +235,13 @@ function createWizardCapabilities(services, userRuntime) {
       rename: (value, name) => caseSvc.renameCase(value, name)
     },
     endpoints: {
-      list: () => searchEndpointSvc?.list(),
-      all: () => searchEndpointSvc?.searchEndpoints || [],
-      isEsOrOs: (engine) => searchEndpointSvc?.isEsOrOsEngine(engine)
+      list: () => searchEndpointRuntime.list(),
+      all: () => searchEndpointRuntime.all(),
+      isEsOrOs: (engine) => searchEndpointRuntime.isEsOrOsEngine(engine)
     },
     mapper: {
-      list: () => mapperBasedSearchEngineSvc?.list(),
-      all: () => mapperBasedSearchEngineSvc?.engines || []
+      list: () => mapperSearchRuntime.list(),
+      all: () => mapperSearchRuntime.all()
     },
     search: {
       createValidator: (value) => splainerSearch.searchSvc.createValidator(value)
@@ -236,8 +260,8 @@ function createWizardCapabilities(services, userRuntime) {
   }
 }
 
-function createTuneRelevanceCapabilities(services) {
-  const { settingsSvc, searchEndpointSvc, caseTryNavSvc, caseSvc } = services
+function createTuneRelevanceCapabilities(services, searchEndpointRuntime) {
+  const { settingsSvc, caseTryNavSvc, caseSvc } = services
   const esUrlSvc = window.quepidSearch?.splainerSearch?.esUrlSvc
 
   return {
@@ -252,10 +276,10 @@ function createTuneRelevanceCapabilities(services) {
       reload: () => settingsSvc.editableSettings()
     },
     endpoints: {
-      fetchForCase: (caseNo) => searchEndpointSvc.fetchForCase(caseNo),
-      all: () => searchEndpointSvc.searchEndpoints || [],
-      isEsOrOs: (engine) => searchEndpointSvc.isEsOrOsEngine(engine),
-      usesJsonQueryParams: (engine) => searchEndpointSvc.usesJsonQueryParams(engine)
+      fetchForCase: (caseNo) => searchEndpointRuntime.fetchForCase(caseNo),
+      all: () => searchEndpointRuntime.all(),
+      isEsOrOs: (engine) => searchEndpointRuntime.isEsOrOsEngine(engine),
+      usesJsonQueryParams: (engine) => searchEndpointRuntime.usesJsonQueryParams(engine)
     },
     search: {
       isTemplateCall: (value) => esUrlSvc?.isTemplateCall(value)

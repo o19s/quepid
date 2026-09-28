@@ -261,8 +261,6 @@ The remaining Angular and compatibility consumers reach into `queriesSvc`; the `
 
 **`static` is normalized to `solr` by mutation.** `createSearcherFromSettings()` assigns `passedInSettings.searchEngine = 'solr'` for a static engine, and `Query.search()` passes `currSettings` uncopied — so the rewrite persists on the service until the next `changeSettings()`. It is load-bearing: `Query.search()` builds `ratedSearcher` with `filterToRated: true` on every search, and `filterToRatings()` has no `static` branch, so without the rewrite a static case pushes `undefined` into `fq`. The rewrite reaches only the settings-level copy — `selectedTry.searchEngine` stays `static`, which is why `trySupportsRatedDocsLookup()` (read off the try) correctly leaves "Show only rated" disabled for static cases. Extractions must normalize `static` → `solr` at the searcher/filter seam **only**, never in the capability predicates, or the toggle silently turns on. No Karma or Vitest example covers a static engine.
 
-**Contract ported from:** the former Angular/Karma initializer spec into the framework-free live-query modules and `test/javascript/utils/live_query_runtime_initializer.test.js`. The old Angular/Karma spec is deleted; the remaining query factory, searcher, collection, scoring, document, and lifecycle contracts are covered by the focused Vitest suite.
-
 #### Re-render mechanism
 
 Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` when a rating changes. Stimulus supplies no reactivity, so the replacement is explicit. **Decided 2026-09-22** (see [decision lenses](#decision-lenses)).
@@ -277,21 +275,6 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Do not scope `scoreAll()` in the same change.** One rating rescores every query today; the performance lens says carry that forward. An explicit store makes per-query scoping possible later, but taking it here ships an unapproved behaviour change and makes any score discrepancy unattributable.
 
-**Remaining, in slice order (2026-09-24).**
-
-**Compatibility seam consolidation (2026-09-27).** Core Stimulus consumers now obtain the
-remaining Angular-owned services through named capabilities in the cached
-`core_angular_adapter` seam. Bootstrap, snapshot comparison, the new-case wizard, and Tune
-Relevance no longer reach into the Angular injector directly; a missing capability reports its
-controller and capability name. This is an adapter cleanup, not an Angular-removal milestone:
-the next live-state slice can replace the seam's internal service lookup without changing those
-controllers.
-
-**Comparison-state extraction (2026-09-27).** `diffStateStore` is now the direct owner for
-comparison selection/reset state in the Stimulus case bootstrap and case-score controller.
-Query view state is now owned by the framework-free query collection/document stores and diff
-store; `queriesSvc` reads those stores directly for its remaining Angular compatibility callbacks.
-
 - `queriesSvc` publishes the collection and document stores after search, rated-document refresh, pagination, errors, and rating changes. Query-list ordering, filtering, sorting, expansion, counts, state, Querqy flags, options, and explain metadata now read from the collection store; only on-demand query-template rendering remains behind a live-query compatibility callback. Search, scoring, diff, finder, and options remain behind their existing live-query boundaries; document rating, bulk rating, toggle, pagination, show-only-rated, and collapse-all cross the explicit `queryCommands` runtime.
 - Case-level score aggregation now runs through the framework-free `createCaseScoringRuntime`; Angular supplies live Query objects and remains only the compatibility adapter for scorer execution and legacy `latestScoreInfo` consumers.
 - Snapshot fetching and hydration now run through the Stimulus/framework-free snapshot registry; Angular still owns the live Query objects and per-query diff scoring behind the document-store bridge.
@@ -299,7 +282,6 @@ store; `queriesSvc` reads those stores directly for its remaining Angular compat
 - Core case bootstrap now consumes one named `core` capability group rather than raw Angular service names. The adapter still owns the case/settings/navigation/scorer implementations, but modern code no longer destructures or stores those Angular services directly.
 - Snapshot comparison, case wizard, and Tune Relevance now consume named capability groups as well. Their Angular services remain adapter-owned for behavior parity; modern controllers no longer destructure the injector-shaped service object.
 - The named `splainerSearch` capability is now the sole source for field-spec creation, document explanation, search validation, and ES template detection; those four Splainer services are no longer requested from the Angular injector by the snapshot, wizard, or Tune Relevance capability definitions.
-- Scorer catalog/bootstrap ownership now lives in the framework-free `scorer_catalog` runtime; the dead `scorerSvc` service and its API/catalog specs are removed. Angular supplies only the legacy `ScorerFactory` construction/execution callback until custom scorer evaluation is migrated.
 
 **The `window.quepidStore` bridge is temporary.** It exists so `queriesSvc` (still Angular) can push into a store that Stimulus (not yet the page owner) can read, during dual-run. Once the case workspace has its own entry bundle, the global goes away in favor of a module import — don't grow further ad hoc bridges on `window.quepidStore` as if it were the permanent integration point.
 
@@ -500,84 +482,7 @@ Automatic post-search synchronization now uses the tested `createBookSyncRuntime
 for configuration, deduplication, batching, and retry-on-failure; `queriesSvc`
 only invokes that runtime after a live search.
 
-Backing services/factories: `app/javascript/utils/doc_cache.js`, `DocListFactory`, `searchEndpointSvc`
-
-The Missing Documents modal was migrated to Stimulus on 2026-09-24. Its targeted-search
-adapter now lives in the tested framework-free `createTargetedSearchAdapter` runtime;
-`queriesSvc` supplies only the legacy searcher/settings/document dependencies through
-`window.quepidSearch.targetedSearch`. Rated-document refresh and pagination share the same
-framework-free query runtime boundary.
-
-The core lifecycle boundary is now explicit as well: bootstrap calls
-`queryCapabilities.resetQueryState()` rather than resolving `queriesSvc` or
-reading its live collection. The wizard and snapshot capability definitions no
-longer inject `queriesSvc` when they do not consume it. The service remains
-Angular-owned for the live query collection, transport callbacks, and legacy
-case operations until those contracts move behind the framework-free stores.
-`caseSvc` no longer injects `queriesSvc`; bulk query deletion resets through
-`queryCapabilities.resetQueryState()`. The unused external
-`queryCapabilities.getQueries` adapter is also gone. Remaining references are
-internal to the live query compatibility service and its legacy Karma contract.
-Collection bootstrap and stale-response handling now live in the tested
-framework-free `live_query_collection` runtime; `queriesSvc` supplies the
-remaining Angular HTTP, `$q`, and live Query callbacks through that seam.
-Single/batch search transport and query-removal reconciliation now live in
-tested framework-free runtimes as well; the remaining service ownership is
-the Angular Query factory/searcher, scoring, and book-sync adapters.
-Live model/factory/document/execution composition now also lives in the
-tested `live_query_compatibility` runtime. Scorer selection/bootstrap and
-book configuration/reset/sync now cross the tested `live_query_adapters`
-contract; the remaining service-local assembly is searcher construction,
-normalization/explain wiring, and the final live Query compatibility callbacks.
-
-The compatibility callback assembly is now also grouped behind
-`liveQueryAdapters`: searcher construction, rated-document lookup, snapshot
-search, document normalization/explain extraction, error translation, settings
-access, and publication are supplied as explicit adapter groups. The live
-Query collection is now owned by the framework-free registry/store boundary;
-`queriesSvc` no longer exposes its mutable collection map. The service remains
-registered because it still owns the Angular Query execution island.
-
-The public service cleanup also removed `pAll`, `reset`, `bootstrapQueries`,
-and `getCaseNo` from the Angular service namespace. Their callers now use the
-framework-free query service or explicit `queryCapabilities`.
-
-Collection membership and ordering are now read from the framework-free query
-collection store; Angular's query map remains only as the live-object execution
-index for search, rating, scoring, and diff compatibility.
-
-Document normalization for normal, targeted, and preview searches now crosses
-one explicit live-query execution adapter. The Angular service still supplies
-the document factory and explain extractors, but no longer owns a duplicate
-normalization helper.
-
-Active-try, rated-document, and snapshot searcher construction now crosses the
-explicit `liveQueryAdapters.search` group. Proxy URL resolution, mapper
-evaluation, engine selection, and snapshot behavior remain unchanged while the
-service-local call sites use one searcher boundary.
-
-Score-all orchestration, rating invalidation publication, and book synchronization
-now use explicit scoring, ratings, and book adapter groups. The public update
-score capability remains as a deliberate legacy listener boundary until the
-remaining Angular scorer and rating persistence callbacks are split out.
-
-Rating persistence now also uses the ratings adapter's request callback, so the
-live Query factory no longer reaches directly into the Angular `$http` service
-for rating writes. Scorer lookup, selection, bootstrap, and score-all remain
-behind the scoring adapter while the final compatibility provider is prepared
-for removal.
-
-The `queriesSvc` Angular service registration and module runtime initializer
-have now been removed. `core_bootstrap_controller.js` initializes the tested
-`live_query_runtime_initializer.js` factory through the named bootstrap
-capability, without creating an injectable legacy service object. Remaining
-Angular ownership is limited to the explicit service dependencies supplied to
-that factory: live Query construction, search transport, settings, scoring,
-and document normalization.
-
-Persistence cleanup now clears and removes through the collection store at the
-same boundaries as the live-object execution cache; bootstrap remains the sole
-special case because it has its own stale-request lifecycle.
+Backing services/factories: `app/javascript/utils/doc_cache.js`, `app/javascript/utils/search_endpoint_runtime.js`, `DocListFactory`
 
 Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 
@@ -610,7 +515,7 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (6):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `mapperBasedSearchEngineSvc`, `searchEndpointSvc`, `settingsSvc` (* = `UtilitiesModule`). The former `queriesSvc`, `scorerSvc`, and `userSvc` registrations and module runtime initializer are gone; `core_bootstrap_controller.js` invokes the explicit `live_query_runtime_initializer.js` factory instead. `ScorerFactory` remains as the custom scorer execution boundary. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
+**Services (4):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `settingsSvc` (* = `UtilitiesModule`). The former `queriesSvc`, `scorerSvc`, `userSvc`, `mapperBasedSearchEngineSvc`, and `searchEndpointSvc` registrations and module runtime initializer are gone; catalog behavior now lives in the tested framework-free `search_endpoint_runtime.js` and `mapper_search_runtime.js` modules. `core_bootstrap_controller.js` invokes the explicit `live_query_runtime_initializer.js` factory instead. `ScorerFactory` remains as the custom scorer execution boundary. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
 
 `queriesSvc` reads the framework-free snapshot registry directly. Static snapshot
 imports in the new-case wizard use `app/javascript/utils/snapshot_import.js`.

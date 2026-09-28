@@ -337,7 +337,7 @@ angular.module('QuepidApp')
       /* jshint ignore:end */
 
       // Augments defaultSettings with a search engine fetched from the server
-      // (see mapperBasedSearchEngineSvc), so the wizard can offer it as a tile
+      // (see the mapper search runtime), so the wizard can offer it as a tile
       // alongside the built-in engines above.
       this.registerMapperBasedSearchEngine = function(engine) {
         this.defaultSettings[engine.id] = engine;
@@ -419,7 +419,7 @@ angular.module('QuepidApp')
         }
         else {
           // Mapper-based engines (e.g. Vespa) are only registered into defaultSettings
-          // once mapperBasedSearchEngineSvc.list() resolves (see wizardModal.js). If a
+          // once the mapper search runtime list resolves (see wizardModal.js). If a
           // deep link/reload picks one of these before that async call finishes, or if
           // searchEngine is otherwise unrecognized, fall back to the generic searchapi
           // defaults rather than returning undefined and crashing the caller.
