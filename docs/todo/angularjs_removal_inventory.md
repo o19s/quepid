@@ -364,7 +364,7 @@ The Rails cases index at `/cases` is **not** Angular.
 - `<body ng-app="QuepidApp">`
 - JS: `angular_app`, `angular_templates`, `quepid_angular_app`
 - CSS: `json-explorer` (Quepid-owned)
-- Inline script: `configurationSvc` seeded from Rails config — including `caseNo`/`tryNo` from `params[:id]`/`params[:try_number]`/`@case`. Interpolate as bare integers/`"null"`, never `.to_json` — Rails' default HTML-escaping of `<%= %>` mangles `"`/`&` inside a `<script>` tag (`"1"` → `&quot;1&quot;`), silently breaking the whole inline script.
+- Inline core configuration is seeded from Rails config — including `caseNo`/`tryNo` from `params[:id]`/`params[:try_number]`/`@case`. Interpolate as bare integers/`"null"`, never `.to_json` — Rails' default HTML-escaping of `<%= %>` mangles `"`/`&` inside a `<script>` tag (`"1"` → `&quot;1&quot;`), silently breaking the whole inline script.
 
 ### Case shell (`app/views/core/index.html.erb`)
 
@@ -397,7 +397,7 @@ Non-Angular libs that **stay**: Bootstrap 5, D3, Vega, ACE, autocompleter, clipb
 
 | Registration | File |
 |--------------|------|
-| `configurationSvc` | `services/configurationSvc.js` |
+| Framework-free configuration runtime | `utils/configuration_runtime.js` |
 
 ---
 
@@ -410,7 +410,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | Item | Type | Key files |
 |------|------|-----------|
 | Current user | Rails-rendered state + framework-free runtime | `app/javascript/utils/user_runtime.js` owns core bootstrap and wizard API mutations |
-| App config flags | service | `configurationSvc` |
+| App config flags | runtime | `configuration_runtime.js` |
 | CSRF on API requests | interceptor | `interceptors/rails-csrf.js` |
 | Case/try URL helpers | service | `caseTryNavSvc` — still the Angular-facing navigation API (`navigateTo`/`navigationCompleted`/`isLoading`/`notFound`/`getCaseNo`/`getTryNo`); called from several still-Angular components (case rename, try switch, wizard). `navigateTo()` is a real `$window.location.assign()` (full reload, not an SPA transition); `notFound()` flashes an error and stays on the page rather than navigating anywhere — its ~6 callers are generic `$http`-failure handlers (case create/rename/etc.), not actual routing 404s, so there's no good page to send the user to. |
 
@@ -503,7 +503,7 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (3):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`* (* = `UtilitiesModule`). The former `queriesSvc`, `scorerSvc`, `userSvc`, `settingsSvc`, `mapperBasedSearchEngineSvc`, and `searchEndpointSvc` registrations and module runtime initializer are gone. Settings presets, mutable try state, persistence, engine policy, and mapper registration now live in the tested framework-free `settings_catalog_runtime.js` and `settings_runtime.js` modules. `core_bootstrap_controller.js` invokes the explicit `live_query_runtime_initializer.js` factory instead. `ScorerFactory` remains as the custom scorer execution boundary. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
+**Services (2):** `caseSvc`, `caseTryNavSvc`. The former `configurationSvc`, `queriesSvc`, `scorerSvc`, `userSvc`, `settingsSvc`, `mapperBasedSearchEngineSvc`, and `searchEndpointSvc` registrations and module runtime initializer are gone. Core configuration and navigation helpers now live in the tested framework-free `configuration_runtime.js` and `navigation_runtime.js` modules. Settings presets, mutable try state, persistence, engine policy, and mapper registration now live in the tested framework-free `settings_catalog_runtime.js` and `settings_runtime.js` modules. `core_bootstrap_controller.js` invokes the explicit `live_query_runtime_initializer.js` factory instead. `ScorerFactory` remains as the custom scorer execution boundary. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
 
 `queriesSvc` reads the framework-free snapshot registry directly. Static snapshot
 imports in the new-case wizard use `app/javascript/utils/snapshot_import.js`.

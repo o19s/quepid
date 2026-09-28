@@ -189,6 +189,23 @@ describe("SnapshotBridgeController", () => {
 
   it("creates a snapshot from the live query collection", async () => {
     const done = vi.fn()
+    window.quepidSearch.caseRuntime = {
+      snapshots: {
+        capability: {
+          settings: {
+            editable: () => ({}),
+            supportsLookupById: () => true
+          },
+          navigation: {
+            rootUrl: () => "/",
+            caseNo: () => 1
+          },
+          fieldSpec: { create: vi.fn() },
+          documents: { explain: vi.fn() }
+        },
+        docCache: services.docCache
+      }
+    }
     api.apiFetch.mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue({ id: 9 })

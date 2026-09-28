@@ -4,6 +4,8 @@ import { createSearchEndpointRuntime } from "utils/search_endpoint_runtime"
 import { createSettingsCatalog } from "utils/settings_catalog_runtime"
 import { createSettingsRuntime } from "utils/settings_runtime"
 import { createUserRuntime } from "utils/user_runtime"
+import { createConfigurationRuntime } from "utils/configuration_runtime"
+import { createNavigationRuntime } from "utils/navigation_runtime"
 
 /**
  * Temporary seam for the Angular services that still own live case state.
@@ -21,11 +23,12 @@ const servicePromises = new Map()
 const mapperSearchRuntime = createMapperSearchRuntime()
 const searchEndpointRuntime = createSearchEndpointRuntime()
 const settingsCatalog = createSettingsCatalog()
-let settingsNavigation
+const configurationRuntime = createConfigurationRuntime()
+const navigationRuntime = createNavigationRuntime()
 const settingsRuntime = createSettingsRuntime({
-  caseNo: () => settingsNavigation?.getCaseNo(),
-  tryNo: () => settingsNavigation?.getTryNo(),
-  navigate: (values) => settingsNavigation?.navigateTo(values),
+  caseNo: () => navigationRuntime.getCaseNo(),
+  tryNo: () => navigationRuntime.getTryNo(),
+  navigate: (values) => navigationRuntime.navigateTo(values),
   createFieldSpec: (value) =>
     window.quepidSearch?.splainerSearch?.fieldSpecSvc?.createFieldSpec(value) || {}
 })
@@ -97,6 +100,8 @@ export function resetCoreServiceCache() {
   mapperSearchRuntime.reset()
   searchEndpointRuntime.reset()
   settingsCatalog.reset()
+  configurationRuntime.reset()
+  navigationRuntime.reset()
   settingsRuntime.reset()
   userRuntime.reset()
 }
@@ -104,28 +109,19 @@ export function resetCoreServiceCache() {
 const capabilityDefinitions = {
   bootstrap: {
     controller: "core_bootstrap_controller",
-    services: [
-      "$rootScope",
-      "$http",
-      "$q",
-      "$log",
-      "configurationSvc",
-      "caseSvc",
-      "caseTryNavSvc",
-      "ScorerFactory"
-    ]
+    services: ["$rootScope", "$http", "$q", "$log", "caseSvc", "ScorerFactory"]
   },
   snapshots: {
     controller: "snapshot_bridge_controller",
-    services: ["caseTryNavSvc"]
+    services: []
   },
   wizard: {
     controller: "wizard_controller",
-    services: ["caseSvc", "caseTryNavSvc"]
+    services: ["caseSvc"]
   },
   tuneRelevance: {
     controller: "tune_relevance_controller",
-    services: ["caseTryNavSvc", "caseSvc"]
+    services: ["caseSvc"]
   }
 }
 
@@ -148,7 +144,6 @@ async function loadCapability(name) {
 
   window.quepidSearch ||= {}
   window.quepidSearch.caseRuntime ||= {}
-  settingsNavigation = services.caseTryNavSvc || settingsNavigation
   const scorerCatalog =
     name === "bootstrap"
       ? createScorerCatalog({
@@ -201,7 +196,6 @@ function createNamedCapability(
 }
 
 function createSnapshotCapabilities(services) {
-  const { caseTryNavSvc } = services
   const splainerSearch = window.quepidSearch?.splainerSearch || {}
 
   return {
@@ -210,8 +204,8 @@ function createSnapshotCapabilities(services) {
       supportsLookupById: (searchEngine) => settingsCatalog.supportsLookupById(searchEngine)
     },
     navigation: {
-      rootUrl: () => caseTryNavSvc.getQuepidRootUrl(),
-      caseNo: () => caseTryNavSvc.getCaseNo()
+      rootUrl: () => navigationRuntime.getQuepidRootUrl(),
+      caseNo: () => navigationRuntime.getCaseNo()
     },
     fieldSpec: {
       create: (...args) => splainerSearch.fieldSpecSvc.createFieldSpec(...args)
@@ -228,7 +222,7 @@ function createWizardCapabilities(
   searchEndpointRuntime,
   mapperSearchRuntime
 ) {
-  const { caseSvc, caseTryNavSvc } = services
+  const { caseSvc } = services
   const splainerSearch = window.quepidSearch?.splainerSearch || {}
 
   return {
@@ -236,7 +230,7 @@ function createWizardCapabilities(
       editable: () => settingsRuntime.editable(),
       registerMapper: (engine) => settingsCatalog.registerMapper(engine),
       pick: (preset, url) => settingsCatalog.pickSettingsToUse(preset, url),
-      proxyUrlFor: (searchEndpointId) => caseTryNavSvc.getQuepidProxyUrl(searchEndpointId),
+      proxyUrlFor: (searchEndpointId) => navigationRuntime.getQuepidProxyUrl(searchEndpointId),
       demoChosen: (engine, url) => settingsCatalog.demoSettingsChosen(engine, url),
       defaultSolrQueryParams: () => settingsCatalog.defaultSolrQueryParams(),
       applicable: () => settingsRuntime.applicable(),
@@ -264,8 +258,8 @@ function createWizardCapabilities(
       shownIntroWizard: () => userRuntime.shownIntroWizard()
     },
     navigation: {
-      rootUrl: () => caseTryNavSvc.getQuepidRootUrl(),
-      caseNo: () => caseTryNavSvc.getCaseNo()
+      rootUrl: () => navigationRuntime.getQuepidRootUrl(),
+      caseNo: () => navigationRuntime.getCaseNo()
     },
     documents: {
       cache: window.quepidSearch.docCache
@@ -274,7 +268,7 @@ function createWizardCapabilities(
 }
 
 function createTuneRelevanceCapabilities(services, searchEndpointRuntime) {
-  const { caseTryNavSvc, caseSvc } = services
+  const { caseSvc } = services
   const esUrlSvc = window.quepidSearch?.splainerSearch?.esUrlSvc
 
   return {
@@ -303,25 +297,25 @@ function createTuneRelevanceCapabilities(services, searchEndpointRuntime) {
       runEvaluation: (caseNo, tryNo) => caseSvc.runEvaluation(caseNo, tryNo)
     },
     navigation: {
-      currentCaseNo: () => caseTryNavSvc.getCaseNo(),
-      rootUrl: () => caseTryNavSvc.getQuepidRootUrl(),
-      needToRedirectProtocol: (url) => caseTryNavSvc.needToRedirectQuepidProtocol(url),
-      swapUrlTls: () => caseTryNavSvc.swapQuepidUrlTLS(),
-      appendQueryParams: (...args) => caseTryNavSvc.appendQueryParams(...args),
-      goToTry: (tryNo) => caseTryNavSvc.navigateTo({ tryNo })
+      currentCaseNo: () => navigationRuntime.getCaseNo(),
+      rootUrl: () => navigationRuntime.getQuepidRootUrl(),
+      needToRedirectProtocol: (url) => navigationRuntime.needToRedirectQuepidProtocol(url),
+      swapUrlTls: () => navigationRuntime.swapQuepidUrlTLS(),
+      appendQueryParams: (...args) => navigationRuntime.appendQueryParams(...args),
+      goToTry: (tryNo) => navigationRuntime.navigateTo({ tryNo })
     }
   }
 }
 
 function createCoreCapabilities(services, scorerCatalog, userRuntime) {
-  const { configurationSvc, caseSvc, caseTryNavSvc } = services
+  const { caseSvc } = services
 
   return {
     configuration: {
-      setCommunalScorersOnly: (value) => configurationSvc.setCommunalScorersOnly(value),
-      setQueryListSortable: (value) => configurationSvc.setQueryListSortable(value),
-      setCaseNo: (value) => configurationSvc.setCaseNo(value),
-      setTryNo: (value) => configurationSvc.setTryNo(value)
+      setCommunalScorersOnly: (value) => configurationRuntime.setCommunalScorersOnly(value),
+      setQueryListSortable: (value) => configurationRuntime.setQueryListSortable(value),
+      setCaseNo: (value) => configurationRuntime.setCaseNo(value),
+      setTryNo: (value) => configurationRuntime.setTryNo(value)
     },
     user: {
       loadCurrent: () => userRuntime.loadCurrent()
@@ -339,14 +333,14 @@ function createCoreCapabilities(services, scorerCatalog, userRuntime) {
       isTrySelected: () => settingsRuntime.isTrySelected()
     },
     navigation: {
-      currentCaseNo: () => caseTryNavSvc.getCaseNo(),
-      currentTryNo: () => caseTryNavSvc.getTryNo(),
-      complete: (values) => caseTryNavSvc.navigationCompleted(values),
-      needToRedirectQuepidProtocol: (url) => caseTryNavSvc.needToRedirectQuepidProtocol(url),
-      getQuepidProtocol: () => caseTryNavSvc.getQuepidProtocol(),
+      currentCaseNo: () => navigationRuntime.getCaseNo(),
+      currentTryNo: () => navigationRuntime.getTryNo(),
+      complete: (values) => navigationRuntime.navigationCompleted(values),
+      needToRedirectQuepidProtocol: (url) => navigationRuntime.needToRedirectQuepidProtocol(url),
+      getQuepidProtocol: () => navigationRuntime.getQuepidProtocol(),
       createSearchEndpointLink: (searchEndpointId) =>
-        caseTryNavSvc.createSearchEndpointLink(searchEndpointId),
-      proxyUrlFor: (searchEndpointId) => caseTryNavSvc.getQuepidProxyUrl(searchEndpointId)
+        navigationRuntime.createSearchEndpointLink(searchEndpointId),
+      proxyUrlFor: (searchEndpointId) => navigationRuntime.getQuepidProxyUrl(searchEndpointId)
     },
     scoring: {
       bootstrap: (caseNo) => scorerCatalog.bootstrap(caseNo)
@@ -355,7 +349,7 @@ function createCoreCapabilities(services, scorerCatalog, userRuntime) {
 }
 
 function createLiveQueryCapabilities(services, scorerCatalog) {
-  const { $rootScope, $http, $q, $log, caseTryNavSvc } = services
+  const { $rootScope, $http, $q, $log } = services
 
   return {
     framework: {
@@ -382,7 +376,7 @@ function createLiveQueryCapabilities(services, scorerCatalog) {
         bootstrap: (caseNo) => scorerCatalog.bootstrap(caseNo)
       },
       navigation: {
-        proxyUrlFor: (searchEndpointId) => caseTryNavSvc.getQuepidProxyUrl(searchEndpointId)
+        proxyUrlFor: (searchEndpointId) => navigationRuntime.getQuepidProxyUrl(searchEndpointId)
       }
     }
   }

@@ -56,7 +56,7 @@ test.describe('core case shell: boot without ngRoute', () => {
       await gotoCase(page, caseId);
 
       await expect(page.locator('#case-actions')).toBeVisible();
-      await expect(page.locator('h1')).toContainText('Current case');
+      await expect(page.getByRole('heading', { name: /Current case/ })).toBeVisible();
       expect(consoleErrors).toEqual([]);
     } finally {
       await deleteCaseViaApi(page, caseId);

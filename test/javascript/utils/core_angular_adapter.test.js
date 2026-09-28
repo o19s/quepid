@@ -64,7 +64,6 @@ describe("core Angular adapter", () => {
       $http: Object.assign(vi.fn(), { get: vi.fn() }),
       $q: { reject: vi.fn(), resolve: vi.fn() },
       $log: {},
-      configurationSvc: {},
       caseSvc: {},
       settingsSvc: {},
       caseTryNavSvc: {},
@@ -93,6 +92,8 @@ describe("core Angular adapter", () => {
       domain: expect.any(Object)
     })
     expect(injector.get).not.toHaveBeenCalledWith("queriesSvc")
+    expect(injector.get).not.toHaveBeenCalledWith("configurationSvc")
+    expect(injector.get).not.toHaveBeenCalledWith("caseTryNavSvc")
   })
 
   it("reports the named controller when a capability cannot initialize", async () => {
