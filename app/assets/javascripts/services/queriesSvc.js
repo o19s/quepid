@@ -144,6 +144,49 @@ angular.module('QuepidApp')
         publish: publishQueryDocuments
       });
 
+      let liveQueryFactory = window.quepidSearch.liveQueryFactory.create({
+        getCaseNo: getCaseNo,
+        getShowOnlyRated: function() {
+          return svc.showOnlyRated;
+        },
+        RatingsStore: window.quepidSearch.ratings.RatingsStore,
+        request: function(options) {
+          return $http(options);
+        },
+        onRatingChanged: function(changedQueryId) {
+          ratingsVersion++;
+
+          if (window.quepidStore && window.quepidStore.scoring) {
+            window.quepidStore.scoring.markRatingChanged(changedQueryId);
+          } else {
+            document.dispatchEvent(new CustomEvent('ratings:changed', {
+              detail: { queryId: changedQueryId }
+            }));
+          }
+        },
+        createModel: function(options) {
+          return liveQueryModelRuntime.create(options);
+        },
+        getQueryState: function(query) {
+          return window.quepidSearch.queryState.queryLifecycleState({
+            errorText: query.errorText,
+            resultsReturned: query.resultsReturned,
+            docCount: query.docs.length
+          });
+        }
+      });
+
+      let liveQueryDocumentsRuntime = window.quepidSearch.liveQueryDocuments.create({
+        getFieldSpec: function() {
+          return currSettings.createFieldSpec();
+        },
+        createDocList: function(docs, fieldSpec, ratingsStore, explain) {
+          return new DocListFactory(docs, fieldSpec, ratingsStore, explain);
+        },
+        matchFeaturesExplain: matchFeaturesExplain,
+        publish: publishQueryDocuments
+      });
+
       let liveQueryRuntime = window.quepidSearch.queryRuntime.createLive({
         getSettings: function() {
           return currSettings;
@@ -177,10 +220,10 @@ angular.module('QuepidApp')
         },
         matchFeaturesExplain: matchFeaturesExplain,
         setDocs: function(query, docs, numFound) {
-          return setQueryDocs(query, docs, numFound);
+          return liveQueryDocumentsRuntime.setDocs(query, docs, numFound);
         },
         onError: function(query, message) {
-          setQueryError(query, message);
+          liveQueryDocumentsRuntime.setError(query, message);
         },
         parseError: function(response, linkUrl) {
           return window.quepidSearch.searchErrors.parseResponseObject(response, linkUrl, currSettings.searchEngine);
@@ -188,6 +231,21 @@ angular.module('QuepidApp')
         publish: publishQueryDocuments,
         promiseApi: $q,
         logger: $log
+      });
+
+      let liveQueryCommandsRuntime = window.quepidSearch.liveQueryCommands.create({
+        getQuery: getLiveQuery,
+        getShowOnlyRated: function() {
+          return svc.showOnlyRated;
+        },
+        queryRuntime: liveQueryRuntime,
+        documentRuntime: liveQueryDocumentsRuntime,
+        schedule: function(callback) {
+          $scope.$evalAsync(callback);
+        },
+        reject: function(message) {
+          return $q.reject(message);
+        }
       });
 
       let liveQueryLifecycleRuntime = window.quepidSearch.queryLifecycle.createRuntime({
@@ -437,66 +495,20 @@ angular.module('QuepidApp')
         return svc.queries[queryId] || svc.queries[String(queryId)] || null;
       }
 
-      function resetQueryState(query) {
-        query.errorText = '';
-        query.resultsReturned = false;
-        query.docs.length = 0;
-      }
-
-      function setQueryError(query, errorText) {
-        query.errorText = errorText;
-        publishQueryDocuments(query);
-      }
-
-      function setQueryDocs(query, newDocs, numFound) {
-        query.docs.length = 0;
-        query.numFound = numFound;
-        query.resultsReturned = true;
-        query.errorText = '';
-        query.setDirty();
-
-        let fieldSpec = currSettings.createFieldSpec();
-        let error = false;
-        let docList = new DocListFactory(
-          newDocs,
-          fieldSpec,
-          query.ratingsStore,
-          matchFeaturesExplain
-        );
-
-        query.docs = docList.list();
-
-        if (docList.hasErrors()) {
-          error = docList.errorMsg();
-          setQueryError(query, docList.errorMsg());
-        }
-
-        query.docsSet = true;
-        publishQueryDocuments(query);
-
-        return error;
-      }
-
       window.quepidSearch.queryCapabilities.getQuery = getLiveQuery;
       window.quepidSearch.queryCapabilities.getCaseNo = getCaseNo;
       window.quepidSearch.queryCapabilities.resetQuery = function(queryId) {
         var query = getLiveQuery(queryId);
         if (!query) return false;
-        resetQueryState(query);
+        liveQueryDocumentsRuntime.reset(query);
         publishQueryDocuments(query);
         return true;
       };
       window.quepidSearch.queryCapabilities.searchQuery = function(queryId) {
-        var query = getLiveQuery(queryId);
-        if (!query) return $q.reject('Query not found: ' + queryId);
-        resetQueryState(query);
-        publishQueryDocuments(query);
-        return liveQueryRuntime.create(query).search();
+        return liveQueryCommandsRuntime.searchQuery(queryId);
       };
       window.quepidSearch.queryCapabilities.refreshRatedDocs = function(queryId, pageSize) {
-        var query = getLiveQuery(queryId);
-        if (!query) return $q.reject('Query not found: ' + queryId);
-        return liveQueryRuntime.create(query).refreshRatedDocs(pageSize);
+        return liveQueryCommandsRuntime.refreshRatedDocs(queryId, pageSize);
       };
 
       // Stimulus owns query persistence and the collection stores own the
@@ -513,58 +525,8 @@ angular.module('QuepidApp')
         return true;
       };
 
-      function rateDocument(queryId, docId, rating) {
-        var query = getLiveQuery(queryId);
-        if (!query) return false;
-
-        var docs = (query.docs || []).concat(query.ratedDocs || []);
-        var doc = docs.find(function(candidate) {
-          return String(candidate.id) === String(docId);
-        });
-        if (!doc) return false;
-
-        $scope.$evalAsync(function() {
-          var request;
-          if (rating === null || rating === undefined) {
-            request = query.ratingsStore.resetRating(doc.id);
-          } else {
-            request = query.ratingsStore.rateDocument(doc.id, parseInt(rating, 10));
-          }
-          request.then(function() {
-            query.touchModifiedAt();
-          });
-        });
-        return true;
-      }
-      window.quepidSearch.queryCommands.rateDocument = rateDocument;
-
-      function rateAll(queryId, rating) {
-        var query = getLiveQuery(queryId);
-        if (!query) return false;
-
-        var docs = svc.showOnlyRated ? query.ratedDocs : query.docs;
-        if (!docs || docs.length === 0) return true;
-
-        var ids = docs.map(function(doc) { return doc.id; });
-        $scope.$evalAsync(function() {
-          var request;
-          if (rating === null || rating === undefined) {
-            request = query.ratingsStore.resetBulkRatings(ids).then(function() {
-              query.rating = '--';
-            });
-          } else {
-            var parsedRating = parseInt(rating, 10);
-            request = query.ratingsStore.rateBulkDocuments(ids, parsedRating).then(function() {
-              query.rating = parsedRating;
-            });
-          }
-          request.then(function() {
-            query.touchModifiedAt();
-          });
-        });
-        return true;
-      }
-      window.quepidSearch.queryCommands.rateAll = rateAll;
+      window.quepidSearch.queryCommands.rateDocument = liveQueryCommandsRuntime.rateDocument;
+      window.quepidSearch.queryCommands.rateAll = liveQueryCommandsRuntime.rateAll;
 
       window.quepidSearch.targetedSearch = function(queryId) {
         var query = getLiveQuery(queryId);
@@ -620,20 +582,7 @@ angular.module('QuepidApp')
       }
       window.quepidSearch.queryCommands.toggleQuery = toggleQuery;
 
-      function paginateQuery(queryId, ratedOnly) {
-        var query = getLiveQuery(queryId);
-        if (!query) return false;
-
-        $scope.$evalAsync(function() {
-          if (ratedOnly) {
-            liveQueryRuntime.create(query).ratedPaginate();
-          } else {
-            liveQueryRuntime.create(query).paginate();
-          }
-        });
-        return true;
-      }
-      window.quepidSearch.queryCommands.paginateQuery = paginateQuery;
+      window.quepidSearch.queryCommands.paginateQuery = liveQueryCommandsRuntime.paginateQuery;
 
       // Shared "clone settings with the selectedTry overridden" pattern for a one-off preview
       // search - used by both docFinder.js's findDocsByPreviewingQueryParams() (overriding args
@@ -910,102 +859,6 @@ angular.module('QuepidApp')
         publishQueryListState();
       }
 
-      /**
-       * An individual search query that gets executed.
-       *
-       * Per-query state: text, options, result documents, ratings store, search/snapshot runs, scoring,
-       * and notes/options sync with the REST API for this query id.
-       */
-      let Query = function(queryWithRatings) {
-        let self    = this;
-
-        let qt      = 'query_text';
-        self.hasBeenScored  = false;
-        self.docsSet        = false;
-        self.allRated       = true;
-        self.ratingsPromise = null;
-        self.ratingsGeneration = 0;
-        self.ratingsReady   = false;
-
-        self.queryId        = queryWithRatings.queryId;
-        self.caseNo         = caseNo;
-        self.queryText      = queryWithRatings[qt];
-        self.ratings        = {};
-        self.docs           = [];
-        self.ratedDocs      = [];
-        self.ratedDocsFound = 0;
-        self.ratedDocsUnsupported  = false;
-        self.numFound       = 0;
-        self.options        = queryWithRatings.options == null ? {} : queryWithRatings.options;
-        self.notes          = queryWithRatings.notes;
-        self.modifiedAt      = queryWithRatings.modified_at;
-
-        self.informationNeed = queryWithRatings.information_need;
-        self.ratingVariance   = queryWithRatings.rating_variance;
-
-        self.modified = queryWithRatings.updated_at;
-
-
-
-        // Error
-        self.errorText = '';
-
-        self.ratings = queryWithRatings.ratings;
-        if ( self.ratings === undefined ) {
-          self.ratings = {};
-        }
-
-        self.ratingsStore = new window.quepidSearch.ratings.RatingsStore({
-          caseNo: caseNo,
-          queryId: self.queryId,
-          ratingsDict: self.ratings,
-          request: function(options) {
-            return $http(options);
-          },
-          onChanged: function(changedQueryId) {
-            ratingsVersion++;
-
-            if (window.quepidStore && window.quepidStore.scoring) {
-              window.quepidStore.scoring.markRatingChanged(changedQueryId);
-            } else {
-              document.dispatchEvent(new CustomEvent('ratings:changed', {
-                detail: { queryId: changedQueryId }
-              }));
-            }
-          }
-        });
-
-        self.resultsReturned = false;
-
-        // defaultCaseOrder is an index for this query using the default
-        // order from the Quepid server
-        this.defaultCaseOrder = 0;
-        this.lastScore = 0; // the score of this query the last time it was tested
-        this.lastScoreVersion = -5;
-        this.browseUrl = function() {
-          if (svc.showOnlyRated) {
-            return self.ratedUrl;
-          } else {
-            return self.linkUrl;
-          }
-        };
-
-        // The framework-free query model now owns query-local state and scoring.
-        // Search, rated-document lookup, and persistence remain here as an
-        // explicit compatibility boundary until their callers migrate.
-        Object.assign(this, liveQueryModelRuntime.create({
-          query: this,
-          ratingsStore: this.ratingsStore,
-          getQueryState: function() {
-            return window.quepidSearch.queryState.queryLifecycleState({
-              errorText: self.errorText,
-              resultsReturned: self.resultsReturned,
-              docCount: self.docs.length
-            });
-          }
-        }));
-      };
-
       function hasUnscoredQueries() {
         return unscoredQueryCount() > 0;
       }
@@ -1043,7 +896,7 @@ angular.module('QuepidApp')
                 queryWithRatings.deleted === 'true')) {
             let newQueryId = queryWithRatings.query_id;
             queryWithRatings.queryId = queryWithRatings.query_id;
-            let newQuery = new Query(queryWithRatings);
+            let newQuery = liveQueryFactory.create(queryWithRatings);
             that.queries[newQueryId] = newQuery;
             newQueries.push(newQueryId);
             querySnapshots.push(queryWithRatings);
@@ -1170,7 +1023,7 @@ angular.module('QuepidApp')
           'query_text': queryText,
           queryId:      -1
         };
-        let newQuery = new Query(queryJson);
+        let newQuery = liveQueryFactory.create(queryJson);
         liveQueryDiffRuntime.create(newQuery);
         return newQuery;
       };
@@ -1232,10 +1085,6 @@ angular.module('QuepidApp')
           });
         });
       };
-
-      function scoreAllDiffs() {
-        return liveQueryStateRuntime.scoreAllDiffs();
-      }
 
       function updateScores() {
         return liveQueryStateRuntime.updateScores();

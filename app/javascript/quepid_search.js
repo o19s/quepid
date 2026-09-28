@@ -25,6 +25,9 @@ import { buildQueryDocPairsPayload, createBookSyncRuntime, populateBook } from "
 import { buildQueryDocumentsState } from "./utils/query_documents"
 import { createLiveQuerySearchRuntime } from "./utils/live_query_search"
 import { createLiveQueryModelRuntime } from "./utils/live_query_model"
+import { createLiveQueryDocumentsRuntime } from "./utils/live_query_documents"
+import { createLiveQueryFactory } from "./utils/live_query_factory"
+import { createLiveQueryCommandsRuntime } from "./utils/live_query_commands"
 import { createLiveQueryRuntime } from "./utils/live_query_runtime"
 import { createLiveQueryLifecycleRuntime } from "./utils/live_query_lifecycle"
 import { createLiveQueryDiffRuntime } from "./utils/live_query_diff"
@@ -113,6 +116,15 @@ const quepidSearch = {
   },
   queryModel: {
     create: createQueryModel
+  },
+  liveQueryDocuments: {
+    create: createLiveQueryDocumentsRuntime
+  },
+  liveQueryFactory: {
+    create: createLiveQueryFactory
+  },
+  liveQueryCommands: {
+    create: createLiveQueryCommandsRuntime
   },
   queryDocuments: {
     buildState: buildQueryDocumentsState
