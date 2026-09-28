@@ -3,13 +3,13 @@
 describe('Service: ScorerFactory', function () {
 
   beforeEach(module('QuepidTest'));
-  var $rootScope, $q, $timeout, scorerSvc, scorer;
+  var $rootScope, $q, $timeout, ScorerFactory, scorer;
 
-  beforeEach(inject(function(_$rootScope_, _$q_, _$timeout_, _scorerSvc_) {
+  beforeEach(inject(function(_$rootScope_, _$q_, _$timeout_, _ScorerFactory_) {
     $q              = _$q_;
     $rootScope      = _$rootScope_;
     $timeout        = _$timeout_;
-    scorerSvc = _scorerSvc_;
+    ScorerFactory = _ScorerFactory_;
 
     var mockScorer = {
       'scorerId': 1,
@@ -19,7 +19,7 @@ describe('Service: ScorerFactory', function () {
       'owner_id': 1
     };
 
-    scorer = scorerSvc.constructFromData(mockScorer);
+    scorer = new ScorerFactory(mockScorer);
   }));
 
   // mock querydocs

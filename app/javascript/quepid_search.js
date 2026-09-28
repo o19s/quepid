@@ -88,7 +88,7 @@ const quepidSearch = {
   docResolverSvc: null,
   docCache: createDocCache({
     resolver: (...args) => window.quepidSearch.docResolverSvc.createResolver(...args),
-    proxyUrlFor: (searchEndpointId) => window.quepidSearch.caseRuntime?.bootstrap?.caseTryNavSvc?.getQuepidProxyUrl(searchEndpointId)
+    proxyUrlFor: (searchEndpointId) => window.quepidSearch.caseRuntime?.bootstrap?.core?.navigation?.proxyUrlFor(searchEndpointId)
   }),
   caseState: {
     caseNo: null,

@@ -19,14 +19,14 @@ export default class extends Controller {
 
   async bootstrap() {
     try {
-      this.services = await getBootstrapCapabilities()
+      this.capabilities = await getBootstrapCapabilities()
 
-      if (this.services.$rootScope && window.quepidSearch.splainerSearch?.searchSvc) {
-        initializeLiveQueryRuntime(this.services)
+      if (this.capabilities.liveQuery && window.quepidSearch.splainerSearch?.searchSvc) {
+        initializeLiveQueryRuntime(this.capabilities.liveQuery)
       }
 
-      const { configurationSvc, userSvc, caseSvc, settingsSvc, caseTryNavSvc,
-        docCache, scorerSvc } = this.services
+      const { configuration, user, case: caseCapability, settings, navigation, scoring } = this.capabilities.core
+      const { docCache } = this.capabilities
       // The case runtime bundle publishes the shared store on window. The
       // imported store is only a fallback for isolated/unit-test contexts;
       // separate bundles must never reset different diff-store instances.
@@ -34,24 +34,24 @@ export default class extends Controller {
       const caseNo = this.caseNoValue || 0
       let tryNo = Number.isFinite(this.tryNoValue) ? this.tryNoValue : Number.NaN
 
-      configurationSvc.setCommunalScorersOnly(this.communalScorersOnlyValue)
-      configurationSvc.setQueryListSortable(this.queryListSortableValue)
-      configurationSvc.setCaseNo(caseNo)
-      configurationSvc.setTryNo(Number.isNaN(tryNo) ? null : tryNo)
-      await userSvc.getCurrentUser()
-      const initialCaseNo = caseTryNavSvc.getCaseNo()
+      configuration.setCommunalScorersOnly(this.communalScorersOnlyValue)
+      configuration.setQueryListSortable(this.queryListSortableValue)
+      configuration.setCaseNo(caseNo)
+      configuration.setTryNo(Number.isNaN(tryNo) ? null : tryNo)
+      await user.loadCurrent()
+      const initialCaseNo = navigation.currentCaseNo()
 
       const caseChanged = () => initialCaseNo !== caseNo
       const getSearchEngine = selectedTryNo => {
-        const settings = settingsSvc.editableSettings()
-        const aTry = settings?.getTry?.(selectedTryNo)
+        const currentSettings = settings.editable()
+        const aTry = currentSettings?.getTry?.(selectedTryNo)
         return aTry?.searchUrl || null
       }
-      const searchEngineChanged = () => getSearchEngine(caseTryNavSvc.getTryNo()) !== getSearchEngine(tryNo)
+      const searchEngineChanged = () => getSearchEngine(navigation.currentTryNo()) !== getSearchEngine(tryNo)
 
       if (caseChanged()) window.quepidSearch.queryCapabilities.resetQueryState()
 
-      caseTryNavSvc.navigationCompleted({ caseNo, tryNo })
+      navigation.complete({ caseNo, tryNo })
 
       if (caseNo === 0) {
         window.quepidDom?.flash?.show("error", "You don't have any Cases created in Quepid. Click 'Create a Case' from the Relevancy Cases dropdown to get started.")
@@ -59,27 +59,27 @@ export default class extends Controller {
       }
 
       window.quepidSearch.queryCapabilities.resetSearchPromise()
-      await caseSvc.get(caseNo).then(async acase => {
+      await caseCapability.load(caseNo).then(async acase => {
         if (acase === undefined) throw new Error(`Could not retrieve case ${caseNo}. Confirm that the case has been shared with you via a team you are a member of!`)
 
-        caseSvc.selectTheCase(acase)
-        settingsSvc.setCaseTries(acase.tries)
+        caseCapability.select(acase)
+        settings.setCaseTries(acase.tries)
         if (Number.isNaN(tryNo)) tryNo = acase.lastTry
-        settingsSvc.setCurrentTry(tryNo)
+        settings.setCurrentTry(tryNo)
 
-        if (!settingsSvc.isTrySelected()) throw new Error(`try number ${tryNo} not existing`)
-        if (settingsSvc.editableSettings().proxyRequests !== true && caseTryNavSvc.needToRedirectQuepidProtocol(settingsSvc.editableSettings().searchUrl)) {
-          const settings = settingsSvc.editableSettings()
-          const message = `You have specified a search engine url that is on a different protocol ( <code>${caseTryNavSvc.getQuepidProtocol()}</code> ) than Quepid is running on. Please either <a href="${caseTryNavSvc.createSearchEndpointLink(settings.searchEndpointId)}/edit" target="_self">swap to the proxied connection</a>, or make sure search endpoint is on the same HTTP protocol.`
+        if (!settings.isTrySelected()) throw new Error(`try number ${tryNo} not existing`)
+        if (settings.editable().proxyRequests !== true && navigation.needToRedirectQuepidProtocol(settings.editable().searchUrl)) {
+          const currentSettings = settings.editable()
+          const message = `You have specified a search engine url that is on a different protocol ( <code>${navigation.getQuepidProtocol()}</code> ) than Quepid is running on. Please either <a href="${navigation.createSearchEndpointLink(currentSettings.searchEndpointId)}/edit" target="_self">swap to the proxied connection</a>, or make sure search endpoint is on the same HTTP protocol.`
           throw new Error(`Blocked Request: mixed-content. ${message}`)
         }
 
-        const newSettings = settingsSvc.editableSettings()
+        const newSettings = settings.editable()
         if (caseChanged() || searchEngineChanged()) {
           if (caseChanged()) {
             comparisonStore.reset()
             docCache.empty()
-            scorerSvc.bootstrap(caseNo)
+            scoring.bootstrap(caseNo)
           }
           comparisonStore.disable()
           docCache.invalidate()
@@ -89,8 +89,8 @@ export default class extends Controller {
         await window.quepidSearch.queryCapabilities.changeSettings(caseNo, newSettings)
         window.quepidDom?.flash?.hide()
         window.quepidDom?.flash?.hide("search-error")
-        caseSvc.trackLastViewedAt(caseNo)
-        caseSvc.fetchDropdownCases()
+        caseCapability.trackLastViewedAt(caseNo)
+        caseCapability.fetchDropdownCases()
         this.ready({ caseNo, tryNo })
 
         window.quepidSearch.queryCommands.searchAll().then(

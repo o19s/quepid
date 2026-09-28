@@ -1,3 +1,6 @@
+import { createScorerCatalog } from "utils/scorer_catalog"
+import { createUserRuntime } from "utils/user_runtime"
+
 /**
  * Temporary seam for the Angular services that still own live case state.
  *
@@ -11,6 +14,7 @@ export function angularInjector() {
 }
 
 const servicePromises = new Map()
+const userRuntime = createUserRuntime()
 
 export function waitForAngularServices(serviceNames, { intervalMs = 50, maxAttempts = 100 } = {}) {
   return new Promise((resolve, reject) => {
@@ -75,6 +79,7 @@ export async function runInAngular(operation) {
 
 export function resetCoreServiceCache() {
   servicePromises.clear()
+  userRuntime.reset()
 }
 
 const capabilityDefinitions = {
@@ -86,16 +91,15 @@ const capabilityDefinitions = {
       "$q",
       "$log",
       "configurationSvc",
-      "userSvc",
       "caseSvc",
       "settingsSvc",
       "caseTryNavSvc",
-      "scorerSvc"
+      "ScorerFactory"
     ]
   },
   snapshots: {
     controller: "snapshot_bridge_controller",
-    services: ["settingsSvc", "caseTryNavSvc", "fieldSpecSvc", "normalDocsSvc"]
+    services: ["settingsSvc", "caseTryNavSvc"]
   },
   wizard: {
     controller: "wizard_controller",
@@ -104,14 +108,12 @@ const capabilityDefinitions = {
       "caseTryNavSvc",
       "mapperBasedSearchEngineSvc",
       "searchEndpointSvc",
-      "searchSvc",
-      "settingsSvc",
-      "userSvc"
+      "settingsSvc"
     ]
   },
   tuneRelevance: {
     controller: "tune_relevance_controller",
-    services: ["settingsSvc", "searchEndpointSvc", "esUrlSvc", "caseTryNavSvc", "caseSvc"]
+    services: ["settingsSvc", "searchEndpointSvc", "caseTryNavSvc", "caseSvc"]
   }
 }
 
@@ -134,11 +136,219 @@ async function loadCapability(name) {
 
   window.quepidSearch ||= {}
   window.quepidSearch.caseRuntime ||= {}
-  window.quepidSearch.caseRuntime[name] = {
-    ...services,
-    docCache: window.quepidSearch.docCache
-  }
+  const scorerCatalog =
+    name === "bootstrap"
+      ? createScorerCatalog({
+          request: services.$http,
+          constructFromData: (data) => new services.ScorerFactory(data),
+          initialDefault: new services.ScorerFactory(),
+          promiseApi: services.$q
+        })
+      : null
+  window.quepidSearch.caseRuntime[name] =
+    name === "bootstrap"
+      ? {
+          core: createCoreCapabilities(services, scorerCatalog, userRuntime),
+          docCache: window.quepidSearch.docCache,
+          liveQuery: createLiveQueryCapabilities(services, scorerCatalog)
+        }
+      : {
+          ...services,
+          capability: createNamedCapability(name, services, userRuntime),
+          docCache: window.quepidSearch.docCache
+        }
   return window.quepidSearch.caseRuntime[name]
+}
+
+function createNamedCapability(name, services, userRuntime) {
+  if (name === "snapshots") return createSnapshotCapabilities(services)
+  if (name === "wizard") return createWizardCapabilities(services, userRuntime)
+  if (name === "tuneRelevance") return createTuneRelevanceCapabilities(services)
+  return {}
+}
+
+function createSnapshotCapabilities(services) {
+  const { settingsSvc, caseTryNavSvc } = services
+  const splainerSearch = window.quepidSearch?.splainerSearch || {}
+
+  return {
+    settings: {
+      editable: () => settingsSvc.editableSettings(),
+      supportsLookupById: (searchEngine) => settingsSvc.supportLookupById(searchEngine)
+    },
+    navigation: {
+      rootUrl: () => caseTryNavSvc.getQuepidRootUrl(),
+      caseNo: () => caseTryNavSvc.getCaseNo()
+    },
+    fieldSpec: {
+      create: (...args) => splainerSearch.fieldSpecSvc.createFieldSpec(...args)
+    },
+    documents: {
+      explain: (...args) => splainerSearch.normalDocsSvc.explainDoc(...args)
+    }
+  }
+}
+
+function createWizardCapabilities(services, userRuntime) {
+  const { caseSvc, caseTryNavSvc, mapperBasedSearchEngineSvc, searchEndpointSvc, settingsSvc } =
+    services
+  const splainerSearch = window.quepidSearch?.splainerSearch || {}
+
+  return {
+    settings: {
+      editable: () => settingsSvc.editableSettings(),
+      registerMapper: (engine) => settingsSvc.registerMapperBasedSearchEngine(engine),
+      pick: (preset, url) => settingsSvc.pickSettingsToUse(preset, url),
+      proxyUrlFor: (searchEndpointId) => caseTryNavSvc.getQuepidProxyUrl(searchEndpointId),
+      demoChosen: (engine, url) => settingsSvc.demoSettingsChosen(engine, url),
+      defaultSolrQueryParams: () => settingsSvc.defaultSettings.solr.queryParams,
+      applicable: () => settingsSvc.applicableSettings(),
+      update: (value) => settingsSvc.update(value)
+    },
+    case: {
+      selected: () => caseSvc.getSelectedCase(),
+      delete: (value) => caseSvc.deleteCase(value),
+      rename: (value, name) => caseSvc.renameCase(value, name)
+    },
+    endpoints: {
+      list: () => searchEndpointSvc?.list(),
+      all: () => searchEndpointSvc?.searchEndpoints || [],
+      isEsOrOs: (engine) => searchEndpointSvc?.isEsOrOsEngine(engine)
+    },
+    mapper: {
+      list: () => mapperBasedSearchEngineSvc?.list(),
+      all: () => mapperBasedSearchEngineSvc?.engines || []
+    },
+    search: {
+      createValidator: (value) => splainerSearch.searchSvc.createValidator(value)
+    },
+    user: {
+      current: () => userRuntime.current(),
+      shownIntroWizard: () => userRuntime.shownIntroWizard()
+    },
+    navigation: {
+      rootUrl: () => caseTryNavSvc.getQuepidRootUrl(),
+      caseNo: () => caseTryNavSvc.getCaseNo()
+    },
+    documents: {
+      cache: window.quepidSearch.docCache
+    }
+  }
+}
+
+function createTuneRelevanceCapabilities(services) {
+  const { settingsSvc, searchEndpointSvc, caseTryNavSvc, caseSvc } = services
+  const esUrlSvc = window.quepidSearch?.splainerSearch?.esUrlSvc
+
+  return {
+    settings: {
+      editable: () => settingsSvc.editableSettings(),
+      supportsEscapeQuery: (engine) => settingsSvc.supportsEscapeQuery(engine),
+      troubleshootingWikiUrl: (...args) => settingsSvc.troubleshootingWikiUrl(...args),
+      save: (value) => settingsSvc.save(value),
+      duplicateTry: (tryNo) => settingsSvc.duplicateTry(tryNo),
+      renameTry: (tryNo, name) => settingsSvc.renameTry(tryNo, name),
+      deleteTry: (tryNo) => settingsSvc.deleteTry(tryNo),
+      reload: () => settingsSvc.editableSettings()
+    },
+    endpoints: {
+      fetchForCase: (caseNo) => searchEndpointSvc.fetchForCase(caseNo),
+      all: () => searchEndpointSvc.searchEndpoints || [],
+      isEsOrOs: (engine) => searchEndpointSvc.isEsOrOsEngine(engine),
+      usesJsonQueryParams: (engine) => searchEndpointSvc.usesJsonQueryParams(engine)
+    },
+    search: {
+      isTemplateCall: (value) => esUrlSvc?.isTemplateCall(value)
+    },
+    case: {
+      selected: () => caseSvc.getSelectedCase(),
+      updateNightly: (value) => caseSvc.updateNightly(value),
+      runEvaluation: (caseNo, tryNo) => caseSvc.runEvaluation(caseNo, tryNo)
+    },
+    navigation: {
+      currentCaseNo: () => caseTryNavSvc.getCaseNo(),
+      rootUrl: () => caseTryNavSvc.getQuepidRootUrl(),
+      needToRedirectProtocol: (url) => caseTryNavSvc.needToRedirectQuepidProtocol(url),
+      swapUrlTls: () => caseTryNavSvc.swapQuepidUrlTLS(),
+      appendQueryParams: (...args) => caseTryNavSvc.appendQueryParams(...args),
+      goToTry: (tryNo) => caseTryNavSvc.navigateTo({ tryNo })
+    }
+  }
+}
+
+function createCoreCapabilities(services, scorerCatalog, userRuntime) {
+  const { configurationSvc, caseSvc, settingsSvc, caseTryNavSvc } = services
+
+  return {
+    configuration: {
+      setCommunalScorersOnly: (value) => configurationSvc.setCommunalScorersOnly(value),
+      setQueryListSortable: (value) => configurationSvc.setQueryListSortable(value),
+      setCaseNo: (value) => configurationSvc.setCaseNo(value),
+      setTryNo: (value) => configurationSvc.setTryNo(value)
+    },
+    user: {
+      loadCurrent: () => userRuntime.loadCurrent()
+    },
+    case: {
+      load: (caseNo) => caseSvc.get(caseNo),
+      select: (value) => caseSvc.selectTheCase(value),
+      trackLastViewedAt: (caseNo) => caseSvc.trackLastViewedAt(caseNo),
+      fetchDropdownCases: () => caseSvc.fetchDropdownCases()
+    },
+    settings: {
+      editable: () => settingsSvc.editableSettings(),
+      setCaseTries: (tries) => settingsSvc.setCaseTries(tries),
+      setCurrentTry: (tryNo) => settingsSvc.setCurrentTry(tryNo),
+      isTrySelected: () => settingsSvc.isTrySelected()
+    },
+    navigation: {
+      currentCaseNo: () => caseTryNavSvc.getCaseNo(),
+      currentTryNo: () => caseTryNavSvc.getTryNo(),
+      complete: (values) => caseTryNavSvc.navigationCompleted(values),
+      needToRedirectQuepidProtocol: (url) => caseTryNavSvc.needToRedirectQuepidProtocol(url),
+      getQuepidProtocol: () => caseTryNavSvc.getQuepidProtocol(),
+      createSearchEndpointLink: (searchEndpointId) =>
+        caseTryNavSvc.createSearchEndpointLink(searchEndpointId),
+      proxyUrlFor: (searchEndpointId) => caseTryNavSvc.getQuepidProxyUrl(searchEndpointId)
+    },
+    scoring: {
+      bootstrap: (caseNo) => scorerCatalog.bootstrap(caseNo)
+    }
+  }
+}
+
+function createLiveQueryCapabilities(services, scorerCatalog) {
+  const { $rootScope, $http, $q, $log, settingsSvc, caseTryNavSvc } = services
+
+  return {
+    framework: {
+      request: (options) => $http(options),
+      get: (url) => $http.get(url),
+      promiseApi: $q,
+      schedule: (callback) => $rootScope.$evalAsync(callback),
+      applyAsync: (callback) => $rootScope.$applyAsync(callback),
+      logger: $log,
+      reject: (message) => $q.reject(message),
+      resolve: (value) => $q.resolve(value)
+    },
+    domain: {
+      settings: {
+        editable: () => settingsSvc.editableSettings(),
+        applicable: () => settingsSvc.applicableSettings(),
+        isTrySelected: () => settingsSvc.isTrySelected(),
+        previewArgs: (tryNo, queryParams) => settingsSvc.previewArgs(tryNo, queryParams)
+      },
+      scorer: {
+        getDefault: () => scorerCatalog.getDefault(),
+        constructFromData: (scorerData) => scorerCatalog.constructFromData(scorerData),
+        setDefault: (scorer) => scorerCatalog.setDefault(scorer),
+        bootstrap: (caseNo) => scorerCatalog.bootstrap(caseNo)
+      },
+      navigation: {
+        proxyUrlFor: (searchEndpointId) => caseTryNavSvc.getQuepidProxyUrl(searchEndpointId)
+      }
+    }
+  }
 }
 
 // Named capability entry points are the public contract. The Angular service names above are

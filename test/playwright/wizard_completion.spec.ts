@@ -69,7 +69,7 @@ async function deleteCase(page: Page, caseId: number) {
 
 /**
  * Finishing the wizard below permanently flips this account's
- * `completed_case_wizard` to true (wizard_controller#finish -> userSvc's
+ * `completed_case_wizard` to true (wizard_controller#finish -> user runtime's
  * shownIntroWizard(), PUT api/users/:id), which is account state, not case
  * state -- it survives this test and this process, since it's persisted in
  * the shared dev DB. Once set, every later `?showWizard=true` load for this

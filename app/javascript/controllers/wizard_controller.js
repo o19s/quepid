@@ -61,19 +61,20 @@ export default class extends Controller {
       return
     }
 
-    const { settingsSvc, searchEndpointSvc, mapperBasedSearchEngineSvc: mapperSvc, userSvc } = this.adapter
+    this.capability = this.adapter.capability
+    const { settings, endpoints, mapper, user } = this.capability
 
-    this.settings = { ...settingsSvc.editableSettings() }
+    this.settings = { ...settings.editable() }
     this.settings.searchEnginePreset = this.settings.searchEngine || "solr"
     this.settings.newQueries = []
     this.settings.caseName = this.settings.caseName || "Movies Search"
 
     try {
-      await searchEndpointSvc?.list()
-      this.searchEndpoints = searchEndpointSvc?.searchEndpoints || []
-      await mapperSvc?.list()
-      this.mapperEngines = mapperSvc?.engines || []
-      this.mapperEngines.forEach((engine) => settingsSvc.registerMapperBasedSearchEngine(engine))
+      await endpoints.list()
+      this.searchEndpoints = endpoints.all()
+      await mapper.list()
+      this.mapperEngines = mapper.all()
+      this.mapperEngines.forEach((engine) => settings.registerMapper(engine))
     } catch (error) {
       console.error("wizard: could not load endpoint choices", error)
     }
@@ -81,7 +82,7 @@ export default class extends Controller {
     this.renderEndpointChoices()
     this.applySettings(this.settings.searchEnginePreset, this.settings.searchUrl)
 
-    if (userSvc?.getUser()?.completedCaseWizard) this.stepIndex = 1
+    if (user.current()?.completedCaseWizard) this.stepIndex = 1
     this.render()
   }
 
@@ -93,10 +94,10 @@ export default class extends Controller {
   close(event) {
     event?.preventDefault()
     if (!window.confirm("Are you sure you want to abandon this case?")) return
-    const selectedCase = this.adapter.caseSvc?.getSelectedCase()
-    this.adapter.caseSvc?.deleteCase(selectedCase)?.then(() => {
+    const selectedCase = this.capability.case.selected()
+    this.capability.case.delete(selectedCase)?.then(() => {
       getOrCreateBsModal(this.element)?.hide()
-      window.location.assign(this.adapter.caseTryNavSvc.getQuepidRootUrl())
+      window.location.assign(this.capability.navigation.rootUrl())
     })
   }
 
@@ -138,7 +139,7 @@ export default class extends Controller {
     const endpoint = this.searchEndpoints.find((item) => String(item.id) === event.target.value)
     if (!endpoint) return
     const searchEnginePreset = endpoint.mapperBasedSearchEngineId || endpoint.searchEngine
-    const defaults = this.adapter.settingsSvc.pickSettingsToUse(searchEnginePreset, endpoint.endpointUrl)
+    const defaults = this.capability.settings.pick(searchEnginePreset, endpoint.endpointUrl)
     const customHeaders = typeof endpoint.customHeaders === "object" && endpoint.customHeaders !== null
       ? JSON.stringify(endpoint.customHeaders, null, 2)
       : endpoint.customHeaders
@@ -163,9 +164,9 @@ export default class extends Controller {
   }
 
   applySettings(preset, url) {
-    const { settingsSvc } = this.adapter
-    if (!settingsSvc) return
-    const selected = settingsSvc.pickSettingsToUse(preset || this.settings.searchEngine, url)
+    const settings = this.capability?.settings
+    if (!settings) return
+    const selected = settings.pick(preset || this.settings.searchEngine, url)
     this.settings = { ...this.settings, ...selected, searchEnginePreset: preset || selected.searchEngine }
     this.settings.queryParams ||= ""
     if (selected.searchEngine === "solr") {
@@ -190,10 +191,10 @@ export default class extends Controller {
       const queryParams = settings.queryParams || ""
       settings.args = settings.testQuery || queryParams.replace(/#\$query##/g, "test")
     }
-    if (settings.proxyRequests) settings.proxyUrl = this.adapter.caseTryNavSvc.getQuepidProxyUrl(settings.searchEndpointId)
+    if (settings.proxyRequests) settings.proxyUrl = this.capability.settings.proxyUrlFor(settings.searchEndpointId)
 
     try {
-      const validator = this.adapter.searchSvc.createValidator(settings)
+      const validator = this.capability.search.createValidator(settings)
       await validator.validateUrl()
       this.searchFields = validator.fields || []
       this.settings.idField ||= validator.idFields?.[0]
@@ -263,11 +264,11 @@ export default class extends Controller {
     try {
       const importedSnapshots = await importSnapshotsToCase(
         this.staticRows,
-        this.adapter.caseTryNavSvc.getCaseNo(),
+        this.capability.navigation.caseNo(),
         getQuepidRootUrl()
       )
       const snapshotId = importedSnapshots.at(-1)?.id
-      this.settings.searchUrl = `${this.adapter.caseTryNavSvc.getQuepidRootUrl()}/api/cases/${this.adapter.caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`
+      this.settings.searchUrl = `${this.capability.navigation.rootUrl()}/api/cases/${this.capability.navigation.caseNo()}/snapshots/${snapshotId}/search`
       this.newQueries = [...new Set(this.staticRows.map((row) => row["Query Text"]).filter(Boolean))].map((queryString) => ({ queryString }))
       this.staticAlert = "Static data imported successfully."
     } catch {
@@ -282,28 +283,28 @@ export default class extends Controller {
     this.saving = true
     this.render()
     try {
-      const { caseSvc, searchEndpointSvc, settingsSvc, caseTryNavSvc, docCache, userSvc } = this.adapter
-      const selectedCase = caseSvc.getSelectedCase()
-      if (this.settings.caseName) await caseSvc.renameCase(selectedCase, this.settings.caseName)
-      if (!settingsSvc.demoSettingsChosen(this.settings.searchEngine, this.settings.searchUrl)) {
-        if (searchEndpointSvc.isEsOrOsEngine(this.settings.searchEngine) && typeof this.settings.queryParams === "string") {
+      const { case: caseCapability, endpoints, settings, navigation, documents, user } = this.capability
+      const selectedCase = caseCapability.selected()
+      if (this.settings.caseName) await caseCapability.rename(selectedCase, this.settings.caseName)
+      if (!settings.demoChosen(this.settings.searchEngine, this.settings.searchUrl)) {
+        if (endpoints.isEsOrOs(this.settings.searchEngine) && typeof this.settings.queryParams === "string") {
           this.settings.queryParams = this.settings.queryParams.replace("REPLACE_ME", this.settings.titleField || "")
         }
-        if (this.settings.searchEngine === "solr") this.settings.queryParams = settingsSvc.defaultSettings.solr.queryParams
+        if (this.settings.searchEngine === "solr") this.settings.queryParams = settings.defaultSolrQueryParams()
       }
-      this.settings.selectedTry ||= settingsSvc.applicableSettings()
-      await settingsSvc.update({ ...this.settings, newQueries: this.newQueries })
-      const latestSettings = settingsSvc.editableSettings()
-      docCache.invalidate()
-      docCache.update(latestSettings)
-      await window.quepidSearch.queryCapabilities.changeSettings(caseTryNavSvc.getCaseNo(), latestSettings)
+      this.settings.selectedTry ||= settings.applicable()
+      await settings.update({ ...this.settings, newQueries: this.newQueries })
+      const latestSettings = settings.editable()
+      documents.cache.invalidate()
+      documents.cache.update(latestSettings)
+      await window.quepidSearch.queryCapabilities.changeSettings(navigation.caseNo(), latestSettings)
       const texts = this.newQueries.map((query) => query.queryString).filter(Boolean)
       if (texts.length && window.quepidSearch?.queryLifecycle) {
-        const persisted = await window.quepidSearch.queryLifecycle.persistQueries(caseTryNavSvc.getCaseNo(), texts)
+        const persisted = await window.quepidSearch.queryLifecycle.persistQueries(navigation.caseNo(), texts)
         await window.quepidSearch.queryLifecycle.commitPersistedQueries(persisted)
       }
-      const user = userSvc.getUser()
-      const isFirstCaseWizard = !user.completedCaseWizard
+      const currentUser = user.current()
+      const isFirstCaseWizard = !currentUser.completedCaseWizard
       user.shownIntroWizard()
       getOrCreateBsModal(this.element)?.hide()
       if (isFirstCaseWizard && typeof window.setupAndStartTour === "function") window.setTimeout(window.setupAndStartTour, 1500)

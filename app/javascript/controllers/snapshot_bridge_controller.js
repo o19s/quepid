@@ -55,26 +55,27 @@ export default class extends Controller {
   }
 
   async registerSnapshots(payloads) {
-    const { settingsSvc, caseTryNavSvc, fieldSpecSvc, docCache, normalDocsSvc } = await getSnapshotCapabilities()
+    const { capability, docCache } = await getSnapshotCapabilities()
+    const { settings, navigation, fieldSpec, documents } = capability
     const snapshotSearch = window.quepidSearch?.snapshotSearch
     const registry = this.snapshotRegistry()
 
-    if (!settingsSvc || !caseTryNavSvc || !fieldSpecSvc || !docCache || !normalDocsSvc || !snapshotSearch || !registry) {
+    if (!settings || !navigation || !fieldSpec || !documents || !docCache || !snapshotSearch || !registry) {
       throw new Error("Snapshot runtime is not available")
     }
 
-    const settings = settingsSvc.editableSettings()
-    const useSnapshotScopedCache = settings && Object.keys(settings).length > 0 && (
-      settings.searchEngine === "static" || settingsSvc.supportLookupById(settings.searchEngine) === false
+    const currentSettings = settings.editable()
+    const useSnapshotScopedCache = currentSettings && Object.keys(currentSettings).length > 0 && (
+      currentSettings.searchEngine === "static" || settings.supportsLookupById(currentSettings.searchEngine) === false
     )
     const hydration = registerAndHydrateSnapshots({
       snapshots: payloads,
       registry,
-      settings,
-      supportsLookupById: settingsSvc.supportLookupById,
-      createFieldSpec: fieldSpecSvc.createFieldSpec,
-      rootUrl: caseTryNavSvc.getQuepidRootUrl(),
-      caseNo: caseTryNavSvc.getCaseNo(),
+      settings: currentSettings,
+      supportsLookupById: settings.supportsLookupById,
+      createFieldSpec: fieldSpec.create,
+      rootUrl: navigation.rootUrl(),
+      caseNo: navigation.caseNo(),
       addDocIds: ids => docCache.addIds(ids),
       addScopedDocIds: (ids, scope) => docCache.addIds(ids, scope),
       clearScopedDocs: scope => docCache.empty(scope),
@@ -93,7 +94,7 @@ export default class extends Controller {
         })
       },
       getDoc: docCache.getDoc,
-      explainDoc: normalDocsSvc.explainDoc,
+      explainDoc: documents.explain,
       formatDate: time => new Date(time).toLocaleDateString("en-US"),
       log: message => console.debug(message)
     })
@@ -122,7 +123,7 @@ export default class extends Controller {
     const services = await getSnapshotCapabilities()
     const caseNo = Number(detail.caseId)
 
-    if (caseNo !== Number(services.caseTryNavSvc.getCaseNo())) {
+    if (caseNo !== Number(services.capability.navigation.caseNo())) {
       detail.done?.("case mismatch")
       return
     }

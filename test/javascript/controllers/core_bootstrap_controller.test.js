@@ -21,33 +21,36 @@ describe("CoreBootstrapController", () => {
       },
       caseRuntime: {
         bootstrap: {
-          configurationSvc: {
-            setCommunalScorersOnly: vi.fn(),
-            setQueryListSortable: vi.fn(),
-            setCaseNo: vi.fn(),
-            setTryNo: vi.fn()
+          core: {
+            configuration: {
+              setCommunalScorersOnly: vi.fn(),
+              setQueryListSortable: vi.fn(),
+              setCaseNo: vi.fn(),
+              setTryNo: vi.fn()
+            },
+            user: { loadCurrent: vi.fn().mockResolvedValue({ id: 7 }) },
+            case: {
+              load: vi.fn().mockResolvedValue({ tries: [], lastTry: 1 }),
+              select: vi.fn(),
+              trackLastViewedAt: vi.fn(),
+              fetchDropdownCases: vi.fn()
+            },
+            settings: {
+              editable: vi.fn().mockReturnValue({ searchUrl: "http://search" }),
+              setCaseTries: vi.fn(),
+              setCurrentTry: vi.fn(),
+              isTrySelected: vi.fn().mockReturnValue(true)
+            },
+            navigation: {
+              currentCaseNo: vi.fn().mockReturnValue(1),
+              currentTryNo: vi.fn().mockReturnValue(1),
+              complete: vi.fn(),
+              needToRedirectQuepidProtocol: vi.fn().mockReturnValue(false)
+            },
+            scoring: { bootstrap: vi.fn() }
           },
-          userSvc: { getCurrentUser: vi.fn().mockResolvedValue({ id: 7 }) },
-          caseSvc: {
-            get: vi.fn().mockResolvedValue({ tries: [], lastTry: 1 }),
-            selectTheCase: vi.fn(),
-            trackLastViewedAt: vi.fn(),
-            fetchDropdownCases: vi.fn()
-          },
-          settingsSvc: {
-            editableSettings: vi.fn().mockReturnValue({ searchUrl: "http://search" }),
-            setCaseTries: vi.fn(),
-            setCurrentTry: vi.fn(),
-            isTrySelected: vi.fn().mockReturnValue(true)
-          },
-          docCache: { empty: vi.fn(), invalidate: vi.fn(), update: vi.fn().mockResolvedValue(undefined) },
-          caseTryNavSvc: {
-            getCaseNo: vi.fn().mockReturnValue(1),
-            getTryNo: vi.fn().mockReturnValue(1),
-            navigationCompleted: vi.fn(),
-            needToRedirectQuepidProtocol: vi.fn().mockReturnValue(false)
-          },
-          scorerSvc: { bootstrap: vi.fn() }
+          liveQuery: null,
+          docCache: { empty: vi.fn(), invalidate: vi.fn(), update: vi.fn().mockResolvedValue(undefined) }
         }
       }
     }
@@ -70,6 +73,6 @@ describe("CoreBootstrapController", () => {
     expect(window.quepidStore.diff.reset).toHaveBeenCalledOnce()
     expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
     expect(window.quepidSearch.queryCapabilities.resetQueryState).toHaveBeenCalledOnce()
-    expect(window.quepidSearch.caseRuntime.bootstrap.userSvc.getCurrentUser).toHaveBeenCalledOnce()
+    expect(window.quepidSearch.caseRuntime.bootstrap.core.user.loadCurrent).toHaveBeenCalledOnce()
   })
 })

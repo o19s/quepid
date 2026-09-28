@@ -228,7 +228,7 @@ compatibility adapter until live query/search/scoring migration is complete.
 **Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
 1. Shared primitives — `quepidTypeahead` and the remaining CSRF callers. Tooltip/popover/paste utils, dynamic modals, and flash are already Stimulus-owned. Remaining call sites are concentrated in the diff bridge and surviving Angular service seams; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
-2. Services layer — `caseSvc`, `settingsSvc`, `scorerSvc`; the former `queriesSvc`
+2. Services layer — `caseSvc`, `settingsSvc`, and the legacy `ScorerFactory`; the former `queriesSvc`
    registration is now a runtime initializer and is tracked with live query state.
 3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
 4. Query list + results — `search-results`, rating UI
@@ -296,6 +296,10 @@ store; `queriesSvc` reads those stores directly for its remaining Angular compat
 - Case-level score aggregation now runs through the framework-free `createCaseScoringRuntime`; Angular supplies live Query objects and remains only the compatibility adapter for scorer execution and legacy `latestScoreInfo` consumers.
 - Snapshot fetching and hydration now run through the Stimulus/framework-free snapshot registry; Angular still owns the live Query objects and per-query diff scoring behind the document-store bridge.
 - `snapshot_searcher.js` owns the framework-free snapshot searcher contract, including registry lookup; `queriesSvc` supplies the remaining Angular callbacks directly at the boundary.
+- Core case bootstrap now consumes one named `core` capability group rather than raw Angular service names. The adapter still owns the case/settings/navigation/scorer implementations, but modern code no longer destructures or stores those Angular services directly.
+- Snapshot comparison, case wizard, and Tune Relevance now consume named capability groups as well. Their Angular services remain adapter-owned for behavior parity; modern controllers no longer destructure the injector-shaped service object.
+- The named `splainerSearch` capability is now the sole source for field-spec creation, document explanation, search validation, and ES template detection; those four Splainer services are no longer requested from the Angular injector by the snapshot, wizard, or Tune Relevance capability definitions.
+- Scorer catalog/bootstrap ownership now lives in the framework-free `scorer_catalog` runtime; the dead `scorerSvc` service and its API/catalog specs are removed. Angular supplies only the legacy `ScorerFactory` construction/execution callback until custom scorer evaluation is migrated.
 
 **The `window.quepidStore` bridge is temporary.** It exists so `queriesSvc` (still Angular) can push into a store that Stimulus (not yet the page owner) can read, during dual-run. Once the case workspace has its own entry bundle, the global goes away in favor of a module import — don't grow further ad hoc bridges on `window.quepidStore` as if it were the permanent integration point.
 
@@ -421,7 +425,6 @@ Non-Angular libs that **stay**: Bootstrap 5, D3, Vega, ACE, autocompleter, clipb
 
 | Registration | File |
 |--------------|------|
-| `userSvc` | `services/userSvc.js` |
 | `configurationSvc` | `services/configurationSvc.js` |
 
 ---
@@ -434,7 +437,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 
 | Item | Type | Key files |
 |------|------|-----------|
-| Current user | Rails-rendered state | `userSvc` remains for wizard API/user mutations |
+| Current user | Rails-rendered state + framework-free runtime | `app/javascript/utils/user_runtime.js` owns core bootstrap and wizard API mutations |
 | App config flags | service | `configurationSvc` |
 | CSRF on API requests | interceptor | `interceptors/rails-csrf.js` |
 | Case/try URL helpers | service | `caseTryNavSvc` — still the Angular-facing navigation API (`navigateTo`/`navigationCompleted`/`isLoading`/`notFound`/`getCaseNo`/`getTryNo`); called from several still-Angular components (case rename, try switch, wizard). `navigateTo()` is a real `$window.location.assign()` (full reload, not an SPA transition); `notFound()` flashes an error and stays on the page rather than navigating anywhere — its ~6 callers are generic `$http`-failure handlers (case create/rename/etc.), not actual routing 404s, so there's no good page to send the user to. |
@@ -446,7 +449,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | Import ratings | Stimulus controller + Angular refresh bridge | `app/javascript/controllers/import_ratings_core_controller.js`, `app/views/shared/_import_ratings_core_modal.html.erb`; refreshes live query state through `imports:queries-need-reload` |
 | Diff renderer and picker | Stimulus renderer + explicit compatibility bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/snapshot_bridge_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`, `app/javascript/utils/diff_results.js`; Angular still owns snapshot search/scoring |
 
-Backing services: `caseSvc`, `scorerSvc`, `ScorerFactory`; snapshot hydration and
+Backing services: `caseSvc`, `ScorerFactory`; snapshot hydration and
 scoring now cross through `snapshot_bridge_controller.js` without a snapshot
 Angular service.
 
@@ -607,7 +610,7 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (8):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `mapperBasedSearchEngineSvc`, `scorerSvc`, `searchEndpointSvc`, `settingsSvc`, `userSvc`* (* = `UtilitiesModule`). The former `queriesSvc` registration and module runtime initializer are gone; `core_bootstrap_controller.js` invokes the explicit `live_query_runtime_initializer.js` factory instead. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
+**Services (6):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `mapperBasedSearchEngineSvc`, `searchEndpointSvc`, `settingsSvc` (* = `UtilitiesModule`). The former `queriesSvc`, `scorerSvc`, and `userSvc` registrations and module runtime initializer are gone; `core_bootstrap_controller.js` invokes the explicit `live_query_runtime_initializer.js` factory instead. `ScorerFactory` remains as the custom scorer execution boundary. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
 
 `queriesSvc` reads the framework-free snapshot registry directly. Static snapshot
 imports in the new-case wizard use `app/javascript/utils/snapshot_import.js`.

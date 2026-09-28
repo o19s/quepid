@@ -30,24 +30,31 @@ describe("initializeLiveQueryRuntime", () => {
     }
 
     initializeLiveQueryRuntime({
-      $rootScope: { $evalAsync: callback => callback(), $applyAsync: callback => callback() },
-      $http: vi.fn(() => Promise.resolve({ data: {} })),
-      $q: { defer: deferred, reject: Promise.reject, resolve: Promise.resolve },
-      $log: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
-      scorerSvc: {
-        defaultScorer: { getColors: () => [] },
-        constructFromData: vi.fn(),
-        setDefault: vi.fn(),
-        bootstrap: vi.fn()
+      framework: {
+        request: vi.fn(() => Promise.resolve({ data: {} })),
+        get: vi.fn(() => Promise.resolve({ data: {} })),
+        promiseApi: { defer: deferred, reject: Promise.reject, resolve: Promise.resolve },
+        schedule: callback => callback(),
+        applyAsync: callback => callback(),
+        logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+        reject: Promise.reject,
+        resolve: Promise.resolve
       },
-      caseTryNavSvc: { getQuepidProxyUrl: vi.fn() },
-      settingsSvc: {
-        editableSettings: vi.fn(() => ({})),
-        applicableSettings: vi.fn(() => ({})),
-        isTrySelected: vi.fn(() => false),
-        previewArgs: vi.fn()
-      },
-      searchEndpointSvc: { isEsOrOsEngine: vi.fn() }
+      domain: {
+        settings: {
+          editable: vi.fn(() => ({})),
+          applicable: vi.fn(() => ({})),
+          isTrySelected: vi.fn(() => false),
+          previewArgs: vi.fn()
+        },
+        scorer: {
+          getDefault: vi.fn(() => ({ getColors: () => [] })),
+          constructFromData: vi.fn(),
+          setDefault: vi.fn(),
+          bootstrap: vi.fn()
+        },
+        navigation: { proxyUrlFor: vi.fn() }
+      }
     })
 
     expect(window.quepidSearch.queryCapabilities.getCaseNo()).toBe(-1)

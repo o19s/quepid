@@ -59,14 +59,14 @@ export default class extends Controller {
   loadCapabilities() {
     getTuneRelevanceCapabilities()
       .then(services => {
-        Object.assign(this, services)
+        this.capability = services.capability
         this.load()
       })
       .catch(error => this.showError(error.message || "Unable to load Tune Relevance."))
   }
 
   load() {
-    this.settings = this.settingsSvc.editableSettings()
+    this.settings = this.capability.settings.editable()
     if (!this.settings?.selectedTry) {
       this.settingsRetry = window.setTimeout(() => this.load(), 200)
       return
@@ -75,8 +75,8 @@ export default class extends Controller {
     this.searchEndpoints = []
     this.mountEditor()
     this.refresh()
-    this.searchEndpointSvc.fetchForCase(this.caseTryNavSvc.getCaseNo()).then(() => {
-      this.searchEndpoints = this.searchEndpointSvc.searchEndpoints || []
+    this.capability.endpoints.fetchForCase(this.capability.navigation.currentCaseNo()).then(() => {
+      this.searchEndpoints = this.capability.endpoints.all()
       this.populateEndpoints()
       this.refreshEndpointDetails()
     })
@@ -154,8 +154,8 @@ export default class extends Controller {
     if (this.hasFieldSpecTarget) this.fieldSpecTarget.value = this.settings.fieldSpec || ""
     if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.value = this.settings.numberOfRows || ""
     if (this.hasEscapeQueryTarget) this.escapeQueryTarget.checked = Boolean(this.settings.escapeQuery)
-    if (this.hasEscapeSettingTarget) this.escapeSettingTarget.hidden = !this.settingsSvc.supportsEscapeQuery(this.settings.searchEngine)
-    if (this.hasNightlyTarget) this.nightlyTarget.checked = Boolean(this.caseSvc.getSelectedCase()?.nightly)
+    if (this.hasEscapeSettingTarget) this.escapeSettingTarget.hidden = !this.capability.settings.supportsEscapeQuery(this.settings.searchEngine)
+    if (this.hasNightlyTarget) this.nightlyTarget.checked = Boolean(this.capability.case.selected()?.nightly)
     this.refreshEndpointDetails()
   }
 
@@ -207,7 +207,7 @@ export default class extends Controller {
     }
     if (this.hasEndpointArchivedTarget) this.endpointArchivedTarget.hidden = !selected.endpointArchived
     if (this.hasTroubleshootingLinkTarget) {
-      const url = this.settingsSvc.troubleshootingWikiUrl(selected.searchEngine, selected.mapperBasedSearchEngineId)
+      const url = this.capability.settings.troubleshootingWikiUrl(selected.searchEngine, selected.mapperBasedSearchEngineId)
       this.troubleshootingLinkTarget.hidden = !url
       this.troubleshootingLinkTarget.href = url || "#"
     }
@@ -217,8 +217,8 @@ export default class extends Controller {
     if (!this.hasEsTemplateWarningTarget) return
     let templated = false
     const queryParams = this.settings?.selectedTry?.queryParams || ""
-    if (this.esUrlSvc && this.settings?.searchEngine && this.searchEndpointSvc.isEsOrOsEngine(this.settings.searchEngine)) {
-      try { templated = this.esUrlSvc.isTemplateCall(JSON.parse(queryParams)) } catch { templated = false }
+    if (this.settings?.searchEngine && this.capability.endpoints.isEsOrOs(this.settings.searchEngine)) {
+      try { templated = this.capability.search.isTemplateCall(JSON.parse(queryParams)) } catch { templated = false }
     }
     this.esTemplateWarningTarget.hidden = !templated
   }
@@ -226,12 +226,12 @@ export default class extends Controller {
   refreshTls() {
     if (!this.hasTlsWarningTarget) return
     const settings = this.settings || {}
-    const mismatch = settings.proxyRequests !== true && this.caseTryNavSvc.needToRedirectQuepidProtocol(settings.searchUrl)
+    const mismatch = settings.proxyRequests !== true && this.capability.navigation.needToRedirectProtocol(settings.searchUrl)
     this.tlsWarningTarget.hidden = !mismatch
     if (mismatch) {
-      const [url, protocol] = this.caseTryNavSvc.swapQuepidUrlTLS()
+      const [url, protocol] = this.capability.navigation.swapUrlTls()
       const params = new URLSearchParams({ searchEngine: settings.searchEngine || "", searchUrl: settings.searchUrl || "", showWizard: "false", apiMethod: settings.apiMethod || "", fieldSpec: settings.fieldSpec || "" })
-      this.tlsReloadLinkTarget.href = this.caseTryNavSvc.appendQueryParams(url, params.toString())
+      this.tlsReloadLinkTarget.href = this.capability.navigation.appendQueryParams(url, params.toString())
       this.tlsProtocolTarget.textContent = protocol
     }
     const save = this.element.querySelector('[data-tune-action="save"]')
@@ -251,7 +251,7 @@ export default class extends Controller {
       row.querySelector("[data-try-name]").textContent = item.formattedName ? item.formattedName() : item.name
       row.querySelector("[data-try-query]").textContent = (item.queryParams || "").slice(0, 200)
       row.querySelector("[data-try-endpoint]").textContent = `using ${item.endpointName || ""}`
-      row.addEventListener("click", () => this.caseTryNavSvc.navigateTo({ tryNo: item.tryNo }))
+      row.addEventListener("click", () => this.capability.navigation.goToTry(item.tryNo))
       row.querySelector("[data-try-details]").addEventListener("click", event => { event.stopPropagation(); this.showTryDetails(item) })
       return row
     }))
@@ -284,20 +284,20 @@ export default class extends Controller {
     this.settings.escapeQuery = this.escapeQueryTarget.checked
     if (!validateNumberOfRows(this.settings.numberOfRows)) return this.showError("Number of Results to Show must be between 1 and 100.")
     const queryParams = this.settings.selectedTry?.queryParams || ""
-    const needsJson = this.searchEndpointSvc.usesJsonQueryParams(this.settings.searchEngine) || (this.settings.searchEngine === "searchapi" && queryParams.trim().startsWith("{"))
+    const needsJson = this.capability.endpoints.usesJsonQueryParams(this.settings.searchEngine) || (this.settings.searchEngine === "searchapi" && queryParams.trim().startsWith("{"))
     if (needsJson) {
       const formatted = formatJson(queryParams)
       if (!formatted) return this.showError("Please provide a valid formatted JSON object for the query DSL.")
       this.settings.selectedTry.queryParams = formatted
     }
-    this.settingsSvc.save(this.settings)
+    this.capability.settings.save(this.settings)
   }
 
   updateNightly() {
-    const selectedCase = this.caseSvc.getSelectedCase()
+    const selectedCase = this.capability.case.selected()
     if (selectedCase) {
       selectedCase.nightly = this.nightlyTarget.checked
-      this.caseSvc.updateNightly(selectedCase)
+      this.capability.case.updateNightly(selectedCase)
     }
   }
 
@@ -305,9 +305,9 @@ export default class extends Controller {
     if (!this.hasRunEvaluationTarget) return
     this.runEvaluationTarget.disabled = true
     this.runEvaluationTarget.textContent = "Queuing evaluation job..."
-    this.caseSvc.runEvaluation(this.caseTryNavSvc.getCaseNo(), this.settings.selectedTry.tryNo).then(() => {
+    this.capability.case.runEvaluation(this.capability.navigation.currentCaseNo(), this.settings.selectedTry.tryNo).then(() => {
       window.quepidDom?.flash?.show("success", "Evaluation queued successfully.")
-      window.location.assign(this.caseTryNavSvc.getQuepidRootUrl())
+      window.location.assign(this.capability.navigation.rootUrl())
     }).catch(() => {
       window.quepidDom?.flash?.show("error", "Unable to queue evaluation.")
     }).finally(() => {
@@ -345,7 +345,7 @@ export default class extends Controller {
       this.tryRenameActionTarget.textContent = this.tryRenameFormTarget.hidden ? "Rename" : "Cancel Rename"
       if (!this.tryRenameFormTarget.hidden) this.tryNameInputTarget.focus()
     } else if (action === "duplicate") {
-      this.settingsSvc.duplicateTry(this.activeTry.tryNo)?.then(newTry => {
+      this.capability.settings.duplicateTry(this.activeTry.tryNo)?.then(newTry => {
         window.quepidDom?.flash?.show("success", `Try ${this.activeTry.name} duplicated successfully as ${newTry.name}.`)
         this.reloadSettings()
         window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
@@ -358,7 +358,7 @@ export default class extends Controller {
   renameTry() {
     const name = this.tryNameInputTarget.value.trim()
     if (!name || !this.activeTry) return
-    this.settingsSvc.renameTry(this.activeTry.tryNo, name).then(() => {
+    this.capability.settings.renameTry(this.activeTry.tryNo, name).then(() => {
       window.quepidDom?.flash?.show("success", "Try renamed successfully.")
       this.reloadSettings()
       window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
@@ -373,7 +373,7 @@ export default class extends Controller {
     }
     const numberOfTries = (this.settings.tries || []).filter(item => !item.deleted).length
     if (numberOfTries <= 1) return
-    this.settingsSvc.deleteTry(this.activeTry.tryNo).then(() => {
+    this.capability.settings.deleteTry(this.activeTry.tryNo).then(() => {
       window.quepidDom?.flash?.show("success", "Successfully deleted try!")
       this.reloadSettings()
       window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
@@ -381,7 +381,7 @@ export default class extends Controller {
   }
 
   reloadSettings() {
-    this.settings = this.settingsSvc.editableSettings()
+    this.settings = this.capability.settings.reload()
     this.refresh()
   }
 
