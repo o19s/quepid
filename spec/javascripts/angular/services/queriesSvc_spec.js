@@ -243,7 +243,7 @@ describe('Service: queriesSvc', function () {
     var query;
     beforeEach(function() {
       setupQuerySvc();
-      query = queriesSvc.createQuery('test');
+      query = window.quepidSearch.queryCapabilities.createQuery('test');
       query.ratings = {1:1, 2:1, 3:1};
     });
 
@@ -260,7 +260,7 @@ describe('Service: queriesSvc', function () {
     var query;
     beforeEach(function() {
       setupQuerySvc();
-      query = queriesSvc.createQuery('test');
+      query = window.quepidSearch.queryCapabilities.createQuery('test');
       queriesSvc.queries[query.queryId] = query;
     });
 
@@ -279,7 +279,7 @@ describe('Service: queriesSvc', function () {
 
     it('forces rescoring of provided docs', function() {
       var scorer = mockScorerSvc.defaultScorer;
-      query = queriesSvc.createQuery('test');
+      query = window.quepidSearch.queryCapabilities.createQuery('test');
       query.docs = [{hasRating: function() {return true;},
                      getRating: function() {return 10;}}];
       query.score();

@@ -38,6 +38,7 @@ import { createLiveQueryCompatibilityRuntime } from "./utils/live_query_compatib
 import { createLiveQueryAdapters } from "./utils/live_query_adapters"
 import { createLiveQueryDiffRuntime } from "./utils/live_query_diff"
 import { createLiveQueryStateRuntime } from "./utils/live_query_state"
+import { createLiveQueryRegistry } from "./utils/live_query_registry"
 import {
   invalidateRatedDocsCache,
   matchesQueryFilter,
@@ -170,6 +171,9 @@ const quepidSearch = {
   liveQueryState: {
     create: createLiveQueryStateRuntime
   },
+  liveQueryRegistry: {
+    create: createLiveQueryRegistry
+  },
   diffScores: {
     buildCaseDiffScores
   },
@@ -196,6 +200,7 @@ const quepidSearch = {
     isSortingEnabled: null,
     setDisplayOrder: null,
     getQuery: null,
+    createQuery: null,
     getQueries: null,
     getCaseNo: null,
     resetQueryState: null,

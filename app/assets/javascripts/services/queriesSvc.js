@@ -56,12 +56,38 @@ angular.module('QuepidApp')
       let queryCollectionStore = window.quepidStore && window.quepidStore.queries;
       let queryDocumentsStore = window.quepidStore && window.quepidStore.documents;
       let diffStateStore = window.quepidStore && window.quepidStore.diff;
+      let liveQueryRegistry = window.quepidSearch.liveQueryRegistry.create({
+        store: queryCollectionStore
+      });
       this.displayOrder = [];
-      this.queries = {};
+      Object.defineProperty(svc, 'queries', {
+        configurable: true,
+        get: function() {
+          return liveQueryRegistry.raw();
+        },
+        set: function(nextQueries) {
+          liveQueryRegistry.replace(nextQueries);
+        }
+      });
       this.linkUrl = '';
 
       function getAllDiffSettings() {
         return diffStateStore ? diffStateStore.selections() : [];
+      }
+
+      // The collection store owns membership and display order. Keep the
+      // Angular map as the live-object execution index only; every runtime
+      // that needs the collection receives the store-ordered live objects.
+      function getLiveQueries() {
+        return liveQueryRegistry.all();
+      }
+
+      function clearQueryCollection() {
+        liveQueryRegistry.clear({ resetStore: true });
+      }
+
+      function registerQueryInCollection(queryId, query) {
+        liveQueryRegistry.register(queryId, query);
       }
 
       let bookSyncRuntime = window.quepidSearch.bookSync.createRuntime({
@@ -208,13 +234,10 @@ angular.module('QuepidApp')
       });
 
       function reset() {
-        svc.queries = {};
+        liveQueryRegistry.clear({ resetStore: true });
         svc.showOnlyRated = false;
         svc.isBootstrapping = false;
         svc.svcVersion++;
-        if (queryCollectionStore) {
-          queryCollectionStore.reset();
-        }
         if (queryDocumentsStore) {
           queryDocumentsStore.reset();
         }
@@ -234,7 +257,7 @@ angular.module('QuepidApp')
       // objects and the legacy latestScoreInfo shape during dual-run.
       let caseScoringRuntime = window.quepidSearch.queryScoring.createCaseScoringRuntime({
         getScorables: function() {
-          return svc.queries;
+          return getLiveQueries();
         },
         promiseApi: $q,
         logger: console,
@@ -268,10 +291,10 @@ angular.module('QuepidApp')
           });
         },
         clearQueries: function() {
-          svc.queries = {};
+          liveQueryRegistry.clear();
         },
         registerQuery: function(queryId, query) {
-          svc.queries[queryId] = query;
+          liveQueryRegistry.register(queryId, query, { publish: false });
         },
         applyDisplayOrder: function(displayOrder) {
           applyDisplayOrder(displayOrder);
@@ -313,7 +336,7 @@ angular.module('QuepidApp')
       let liveQueryTransportRuntime = window.quepidSearch.queryLifecycle.createTransportRuntime({
         queryRuntime: liveQueryRuntime,
         getQueries: function() {
-          return svc.queries;
+          return getLiveQueries();
         },
         getRequestsPerMinute: function() {
           return currSettings.selectedTry.requestsPerMinute;
@@ -361,7 +384,7 @@ angular.module('QuepidApp')
         getCaseNo: getCaseNo,
         getQuery: getLiveQuery,
         getQueries: function() {
-          return svc.queries;
+          return getLiveQueries();
         },
         invalidateRatedDocs: function(query) {
           window.quepidSearch.queryState.invalidateRatedDocsCache(query);
@@ -409,7 +432,7 @@ angular.module('QuepidApp')
           return searchAll();
         },
         clearQueries: function() {
-          svc.queries = {};
+          clearQueryCollection();
         },
         addQueriesFromResponse: function(data, caseId) {
           liveQueryCollectionRuntime.addQueriesFromResponse(data, caseId);
@@ -422,18 +445,13 @@ angular.module('QuepidApp')
           query.ratingsStore.setQueryId(queryId);
         },
         registerQuery: function(queryId, query) {
-          svc.queries[queryId] = query;
-          if (queryCollectionStore) queryCollectionStore.upsert(query);
+          registerQueryInCollection(queryId, query);
         },
         onVersion: function() {
           svcVersion++;
         },
         removeQuery: function(queryId) {
-          var key = String(queryId);
-          if (!svc.queries[key] && !svc.queries[queryId]) return false;
-          delete svc.queries[key];
-          if (key !== String(queryId)) delete svc.queries[queryId];
-          return true;
+          return liveQueryRegistry.remove(queryId);
         },
         searchAndScore: function(query) {
           return searchAndScore(query);
@@ -446,7 +464,7 @@ angular.module('QuepidApp')
 
       let liveQueryDiffRuntime = window.quepidSearch.liveQueryDiff.create({
         getQueries: function() {
-          return svc.queries;
+          return getLiveQueries();
         },
         getDiffSettings: getAllDiffSettings,
         getSettings: function() {
@@ -464,7 +482,7 @@ angular.module('QuepidApp')
 
       let liveQueryStateRuntime = window.quepidSearch.liveQueryState.create({
         getQueries: function() {
-          return svc.queries;
+          return getLiveQueries();
         },
         scoreAll: function(scorables) {
           return scorables === undefined
@@ -646,12 +664,13 @@ angular.module('QuepidApp')
       // Query objects remain here until search and scoring migrate, but the
       // renderer does not need to discover them through an Angular scope.
       function getLiveQuery(queryId) {
-        return svc.queries[queryId] || svc.queries[String(queryId)] || null;
+        return liveQueryRegistry.get(queryId);
       }
 
       window.quepidSearch.queryCapabilities.getQuery = getLiveQuery;
+      window.quepidSearch.queryCapabilities.createQuery = createQuery;
       window.quepidSearch.queryCapabilities.getQueries = function() {
-        return svc.queries;
+        return getLiveQueries();
       };
       window.quepidSearch.queryCapabilities.getCaseNo = getCaseNo;
       window.quepidSearch.queryCapabilities.resetQuery = function(queryId) {
@@ -931,13 +950,13 @@ angular.module('QuepidApp')
       }
 
       function unscoredQueryCount() {
-        return Object.values(svc.queries).filter( (q) => {
+        return Object.values(getLiveQueries()).filter( (q) => {
           return !q.hasBeenScored;
         }).length;
       }
 
       function scoredQueryCount() {
-        return Object.values(svc.queries).filter ( (q) => {
+        return Object.values(getLiveQueries()).filter ( (q) => {
           return q.hasBeenScored;
         }).length;
       }
@@ -964,7 +983,7 @@ angular.module('QuepidApp')
       }
       window.quepidSearch.queryCommands.searchAll = searchAll;
 
-      this.createQuery = function(queryText) {
+      function createQuery(queryText) {
         let queryJson = {
           'query_text': queryText,
           queryId:      -1

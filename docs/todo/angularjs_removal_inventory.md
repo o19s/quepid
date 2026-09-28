@@ -536,9 +536,15 @@ Angular Query collection and cannot be unregistered yet.
 
 The public service cleanup also removed `pAll`, `reset`, `bootstrapQueries`,
 and `getCaseNo` from the Angular service namespace. Their callers now use the
-framework-free query service or explicit `queryCapabilities`; the compatibility
-Query factory remains until its legacy model contracts have a framework-free
-replacement.
+framework-free query service or explicit `queryCapabilities`.
+
+Collection membership and ordering are now read from the framework-free query
+collection store; Angular's query map remains only as the live-object execution
+index for search, rating, scoring, and diff compatibility.
+
+Persistence cleanup now clears and removes through the collection store at the
+same boundaries as the live-object execution cache; bootstrap remains the sole
+special case because it has its own stale-request lifecycle.
 
 Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 
