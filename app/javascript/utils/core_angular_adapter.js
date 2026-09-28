@@ -25,8 +25,9 @@ let settingsNavigation
 const settingsRuntime = createSettingsRuntime({
   caseNo: () => settingsNavigation?.getCaseNo(),
   tryNo: () => settingsNavigation?.getTryNo(),
-  navigate: values => settingsNavigation?.navigateTo(values),
-  createFieldSpec: value => window.quepidSearch?.splainerSearch?.fieldSpecSvc?.createFieldSpec(value) || {}
+  navigate: (values) => settingsNavigation?.navigateTo(values),
+  createFieldSpec: (value) =>
+    window.quepidSearch?.splainerSearch?.fieldSpecSvc?.createFieldSpec(value) || {}
 })
 const userRuntime = createUserRuntime()
 

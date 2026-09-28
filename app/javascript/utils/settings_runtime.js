@@ -1,16 +1,18 @@
 import { apiFetch } from "api/fetch"
 import { extractCuratorVars } from "utils/curator_vars"
 
-const clone = value => JSON.parse(JSON.stringify(value))
+const clone = (value) => JSON.parse(JSON.stringify(value))
 
 function responseData(response, message) {
   if (!response.ok) throw new Error(`${message} (${response.status})`)
-  return response.json()
+  if (response.status === 204 || typeof response.json !== "function") return null
+  return response.json().catch(() => null)
 }
 
 function createTry(data, { request, caseNo, createFieldSpec }) {
   const source = { ...data }
-  if (source.query_params === null) source.query_params = source.search_engine === "solr" ? "" : "{}"
+  if (source.query_params === null)
+    source.query_params = source.search_engine === "solr" ? "" : "{}"
 
   const currentTry = {
     args: source.args,
@@ -26,10 +28,14 @@ function createTry(data, { request, caseNo, createFieldSpec }) {
     searchEngine: source.search_engine,
     mapperBasedSearchEngineId: source.mapper_based_search_engine_id,
     mapperBasedSearchEngineName: source.mapper_based_search_engine_name,
-    mapperBasedSearchEngineSupportsPagination: source.mapper_based_search_engine_supports_pagination,
-    mapperBasedSearchEnginePaginationHitsParam: source.mapper_based_search_engine_pagination_hits_param,
-    mapperBasedSearchEnginePaginationOffsetParam: source.mapper_based_search_engine_pagination_offset_param,
-    mapperBasedSearchEngineSupportsRatedDocsLookup: source.mapper_based_search_engine_supports_rated_docs_lookup,
+    mapperBasedSearchEngineSupportsPagination:
+      source.mapper_based_search_engine_supports_pagination,
+    mapperBasedSearchEnginePaginationHitsParam:
+      source.mapper_based_search_engine_pagination_hits_param,
+    mapperBasedSearchEnginePaginationOffsetParam:
+      source.mapper_based_search_engine_pagination_offset_param,
+    mapperBasedSearchEngineSupportsRatedDocsLookup:
+      source.mapper_based_search_engine_supports_rated_docs_lookup,
     searchEndpointId: source.search_endpoint_id,
     endpointName: source.endpoint_name,
     searchUrl: source.search_url,
@@ -43,19 +49,22 @@ function createTry(data, { request, caseNo, createFieldSpec }) {
     curatorVars: Object.entries(source.curator_vars || {}).map(([name, value]) => ({ name, value }))
   }
 
-  currentTry.curatorVarsDict = () => Object.fromEntries(
-    currentTry.curatorVars.map(variable => [variable.name, variable.value])
-  )
-  currentTry.hasVar = name => Object.prototype.hasOwnProperty.call(currentTry.curatorVarsDict(), name)
-  currentTry.getVar = name => currentTry.curatorVars.find(variable => variable.name === name) || false
-  currentTry.forEachVar = callback => currentTry.curatorVars.forEach(callback)
+  currentTry.curatorVarsDict = () =>
+    Object.fromEntries(currentTry.curatorVars.map((variable) => [variable.name, variable.value]))
+  currentTry.hasVar = (name) =>
+    Object.prototype.hasOwnProperty.call(currentTry.curatorVarsDict(), name)
+  currentTry.getVar = (name) =>
+    currentTry.curatorVars.find((variable) => variable.name === name) || false
+  currentTry.forEachVar = (callback) => currentTry.curatorVars.forEach(callback)
   currentTry.sortVars = () => currentTry.curatorVars.sort((a, b) => a.name.localeCompare(b.name))
   currentTry.addVar = (name, value) => {
     if (!currentTry.hasVar(name)) currentTry.curatorVars.push({ name, value })
   }
   currentTry.updateVars = () => {
-    currentTry.curatorVars.forEach(variable => { variable.inQueryParams = false })
-    extractCuratorVars(currentTry.queryParams || "").forEach(name => {
+    currentTry.curatorVars.forEach((variable) => {
+      variable.inQueryParams = false
+    })
+    extractCuratorVars(currentTry.queryParams || "").forEach((name) => {
       currentTry.addVar(name, 10)
       const variable = currentTry.getVar(name)
       variable.inQueryParams = true
@@ -63,7 +72,7 @@ function createTry(data, { request, caseNo, createFieldSpec }) {
     currentTry.sortVars()
   }
   currentTry.createFieldSpec = () => createFieldSpec(currentTry.fieldSpec)
-  currentTry.rename = async name => {
+  currentTry.rename = async (name) => {
     const response = await request(`api/cases/${caseNo()}/tries/${currentTry.tryNo}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -81,42 +90,50 @@ export function createSettingsRuntime({
   caseNo = () => null,
   tryNo = () => null,
   navigate = () => {},
-  createFieldSpec = value => value
+  createFieldSpec = (value) => value
 } = {}) {
   let state = null
   let settingsId = 0
 
-  const createState = tries => {
+  const createState = (tries) => {
     const current = {
       tries: [],
       selectedTry: null,
       settingsId: settingsId++
     }
-    const getTry = number => current.tries.find(item => item.tryNo === number) || null
-    const selectTry = number => { current.selectedTry = getTry(number) }
-    const activeTries = () => current.tries.filter(item => !item.deleted)
+    const getTry = (number) => current.tries.find((item) => item.tryNo === number) || null
+    const selectTry = (number) => {
+      current.selectedTry = getTry(number)
+    }
+    const activeTries = () => current.tries.filter((item) => !item.deleted)
 
     current.getTry = getTry
     current.selectTry = selectTry
     current.numTries = () => activeTries().length
     current.lastTry = () => activeTries().at(-1) || null
-    current.addTry = data => {
+    current.addTry = (data) => {
       const item = createTry(data, { request, caseNo, createFieldSpec })
       current.tries.push(item)
       return item
     }
-    current.deleteTry = async number => {
+    current.deleteTry = async (number) => {
       if (current.numTries() <= 1) return
       const item = getTry(number)
       if (!item) return
-      const response = await request(`api/cases/${caseNo()}/tries/${number}`, { method: "DELETE", headers: { Accept: "application/json" } })
+      const response = await request(`api/cases/${caseNo()}/tries/${number}`, {
+        method: "DELETE",
+        headers: { Accept: "application/json" }
+      })
       await responseData(response, "Unable to delete try")
       item.deleted = true
       settingsId++
       if (current.selectedTry?.tryNo === number) navigate({ tryNo: current.lastTry().tryNo })
     }
-    current.duplicateTry = async number => {
-      const response = await request(`api/clone/cases/${caseNo()}/tries/${number}`, { method: "POST", headers: { Accept: "application/json" } })
+    current.duplicateTry = async (number) => {
+      const response = await request(`api/clone/cases/${caseNo()}/tries/${number}`, {
+        method: "POST",
+        headers: { Accept: "application/json" }
+      })
       const data = await responseData(response, "Unable to duplicate try")
       const item = createTry(data, { request, caseNo, createFieldSpec })
       current.tries.unshift(item)
@@ -129,7 +146,7 @@ export function createSettingsRuntime({
       await item.rename(name)
       settingsId++
     }
-    tries.forEach(item => current.addTry(item))
+    tries.forEach((item) => current.addTry(item))
     return current
   }
 
@@ -152,14 +169,18 @@ export function createSettingsRuntime({
       basicAuthCredential: selectedTry.basicAuthCredential,
       mapperCode: selectedTry.mapperCode,
       options: selectedTry.options,
-      headerType: typeof selectedTry.customHeaders === "object" && selectedTry.customHeaders
-        ? (JSON.stringify(selectedTry.customHeaders).includes("ApiKey") ? "API Key" : "Custom")
-        : "None"
+      headerType:
+        typeof selectedTry.customHeaders === "object" && selectedTry.customHeaders
+          ? JSON.stringify(selectedTry.customHeaders).includes("ApiKey")
+            ? "API Key"
+            : "Custom"
+          : "None"
     })
+    settings.createFieldSpec = () => selectedTry.createFieldSpec()
     return settings
   }
 
-  const payloadFor = settings => {
+  const payloadFor = (settings) => {
     settings.selectedTry.updateVars()
     const payload = {
       try: {
@@ -190,26 +211,33 @@ export function createSettingsRuntime({
   }
 
   return {
-    setCaseTries: tries => { state = createState(tries || []) },
-    setCurrentTry: number => state?.selectTry(number),
+    setCaseTries: (tries) => {
+      state = createState(tries || [])
+    },
+    setCurrentTry: (number) => state?.selectTry(number),
     isTrySelected: () => Boolean(state?.selectedTry),
     editable,
     applicable: () => state?.selectedTry || {},
-    settingsId: () => state ? state.settingsId : -1,
-    save: async settings => {
+    settingsId: () => (state ? state.settingsId : -1),
+    save: async (settings) => {
       if (settings.inError) return
       const response = await request(`api/cases/${caseNo()}/tries`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ ...payloadFor(settings), parent_try_number: settings.selectedTry.tryNo })
+        body: JSON.stringify({
+          ...payloadFor(settings),
+          parent_try_number: settings.selectedTry.tryNo
+        })
       })
       const data = await responseData(response, "Unable to save settings")
       const item = state.addTry(data)
       state.selectTry(item.tryNo)
-      document.dispatchEvent(new CustomEvent("case-settings:updated", { detail: { caseNo: caseNo(), lastTry: item } }))
+      document.dispatchEvent(
+        new CustomEvent("case-settings:updated", { detail: { caseNo: caseNo(), lastTry: item } })
+      )
       navigate({ tryNo: item.tryNo })
     },
-    update: async settings => {
+    update: async (settings) => {
       if (settings.inError) return
       settings.selectedTry.updateVars()
       settings.selectedTry.apiMethod = settings.apiMethod
@@ -221,12 +249,16 @@ export function createSettingsRuntime({
         body: JSON.stringify(payload)
       })
       await responseData(response, "Unable to update settings")
-      document.dispatchEvent(new CustomEvent("case-settings:updated", { detail: { caseNo: caseNo(), lastTry: settings.selectedTry } }))
+      document.dispatchEvent(
+        new CustomEvent("case-settings:updated", {
+          detail: { caseNo: caseNo(), lastTry: settings.selectedTry }
+        })
+      )
       navigate({ tryNo: settings.selectedTry.tryNo })
     },
-    duplicateTry: number => state?.duplicateTry(number),
+    duplicateTry: (number) => state?.duplicateTry(number),
     renameTry: (number, name) => state?.renameTry(number, name),
-    deleteTry: number => state?.deleteTry(number),
+    deleteTry: (number) => state?.deleteTry(number),
     previewArgs: async (number, queryParams) => {
       const response = await request(`api/cases/${caseNo()}/tries/${number}/preview_args`, {
         method: "POST",
@@ -236,6 +268,8 @@ export function createSettingsRuntime({
       const data = await responseData(response, "Unable to preview query settings")
       return data.args
     },
-    reset: () => { state = null }
+    reset: () => {
+      state = null
+    }
   }
 }

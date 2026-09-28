@@ -31,13 +31,13 @@ angular.module('QuepidApp')
           sortOrder = $location.search().reverse;
         }
 
-        if (caseTryObj.hasOwnProperty('caseNo')) {
+        if (Object.prototype.hasOwnProperty.call(caseTryObj, 'caseNo')) {
           navCaseNo = parseInt(caseTryObj.caseNo, 10);
         }
-        if (caseTryObj.hasOwnProperty('tryNo')) {
+        if (Object.prototype.hasOwnProperty.call(caseTryObj, 'tryNo')) {
           navTryNo = parseInt(caseTryObj.tryNo, 10);
         }
-        else if (caseTryObj.hasOwnProperty('caseNo')) {
+        else if (Object.prototype.hasOwnProperty.call(caseTryObj, 'caseNo')) {
           navTryNo = 1;
         }
 
@@ -113,13 +113,11 @@ angular.module('QuepidApp')
         
         var quepidUrlStartsWithHttps = absUrl.startsWith('https');
         var quepidUrlToSwitchTo = absUrl.substring(0, n !== -1 ? n : absUrl.length);
-        var protocolToSwitchTo = null;
+        var protocolToSwitchTo = quepidUrlStartsWithHttps ? 'http' : 'https';
         if (quepidUrlStartsWithHttps) {
-          protocolToSwitchTo = 'http';
           quepidUrlToSwitchTo = quepidUrlToSwitchTo.replace('https', 'http');
         }
         else {
-          protocolToSwitchTo = 'https';
           quepidUrlToSwitchTo = quepidUrlToSwitchTo.replace('http', 'https');
         }
         
@@ -136,15 +134,7 @@ angular.module('QuepidApp')
       this.getQuepidProtocol = function () {
         // Grab just the absolute url without any trailing query parameters
         var absUrl = $location.absUrl();
-        var protocolToSwitchTo = null;
-        if (absUrl.startsWith('https')){
-          protocolToSwitchTo = 'http';
-        }
-        else {
-          protocolToSwitchTo = 'https';
-        }
-        
-        return protocolToSwitchTo;
+        return absUrl.startsWith('https') ? 'http' : 'https';
       };
       
       

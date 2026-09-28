@@ -35,6 +35,7 @@ describe("settings runtime", () => {
     expect(settings.selectedTry.curatorVarsDict()).toEqual({ boost: 2 })
     expect(settings.selectedTry.getVar("boost").inQueryParams).toBe(true)
     expect(settings.selectedTry.createFieldSpec()).toEqual({ value: "id:id, title:title" })
+    expect(settings.createFieldSpec()).toEqual({ value: "id:id, title:title" })
   })
 
   it("updates settings through the API and publishes the changed try", async () => {

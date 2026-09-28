@@ -138,7 +138,23 @@ describe("SnapshotBridgeController", () => {
   })
 
   it("uses the snapshot-scoped cache for static engines", async () => {
-    services.settingsSvc.editableSettings.mockReturnValue({ searchEngine: "static" })
+    window.quepidSearch.caseRuntime = {
+      snapshots: {
+        capability: {
+          settings: {
+            editable: () => ({ searchEngine: "static" }),
+            supportsLookupById: () => false
+          },
+          navigation: {
+            rootUrl: () => "/",
+            caseNo: () => 1
+          },
+          fieldSpec: { create: vi.fn() },
+          documents: { explain: vi.fn() }
+        },
+        docCache: services.docCache
+      }
+    }
     const scopedDoc = { id: "scoped" }
     services.docCache.getDoc.mockReturnValue(scopedDoc)
 
@@ -146,7 +162,7 @@ describe("SnapshotBridgeController", () => {
     const hydrationOptions = snapshotHydration.registerAndHydrateSnapshots.mock.calls.at(-1)[0]
     hydrationOptions.createModel({
       params: { id: 7 },
-      getDoc: () => sharedDoc,
+      getDoc: () => scopedDoc,
       explainDoc: vi.fn(),
       log: vi.fn()
     })
