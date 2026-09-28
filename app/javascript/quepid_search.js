@@ -27,6 +27,8 @@ import { createLiveQuerySearchRuntime } from "./utils/live_query_search"
 import { createLiveQueryModelRuntime } from "./utils/live_query_model"
 import { createLiveQueryRuntime } from "./utils/live_query_runtime"
 import { createLiveQueryLifecycleRuntime } from "./utils/live_query_lifecycle"
+import { createLiveQueryDiffRuntime } from "./utils/live_query_diff"
+import { createLiveQueryStateRuntime } from "./utils/live_query_state"
 import {
   invalidateRatedDocsCache,
   matchesQueryFilter,
@@ -134,6 +136,12 @@ const quepidSearch = {
   },
   liveQueryModel: {
     create: createLiveQueryModelRuntime
+  },
+  liveQueryDiff: {
+    create: createLiveQueryDiffRuntime
+  },
+  liveQueryState: {
+    create: createLiveQueryStateRuntime
   },
   diffScores: {
     buildCaseDiffScores

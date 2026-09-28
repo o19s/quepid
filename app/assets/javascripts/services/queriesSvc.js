@@ -232,6 +232,73 @@ angular.module('QuepidApp')
         logger: $log
       });
 
+      let liveQueryDiffRuntime = window.quepidSearch.liveQueryDiff.create({
+        getQueries: function() {
+          return svc.queries;
+        },
+        getDiffSettings: getAllDiffSettings,
+        getSettings: function() {
+          return settingsSvc.editableSettings();
+        },
+        createSearcherFromSnapshot: createSearcherFromSnapshot,
+        publish: publishQueryDocuments,
+        notify: function(detail) {
+          document.dispatchEvent(new CustomEvent('query-diffs:refreshed', {
+            detail: detail
+          }));
+        },
+        promiseApi: $q
+      });
+
+      let liveQueryStateRuntime = window.quepidSearch.liveQueryState.create({
+        getQueries: function() {
+          return svc.queries;
+        },
+        scoreAll: function(scorables) {
+          return scorables === undefined ? svc.scoreAll() : svc.scoreAll(scorables);
+        },
+        applySettings: function(newSettings) {
+          currSettings = newSettings;
+        },
+        setLifecycleCaseId: function(newCaseNo) {
+          window.quepidSearch.queryLifecycle.caseId = newCaseNo;
+        },
+        getCurrentCaseNo: getCaseNo,
+        setCurrentCaseNo: function(newCaseNo) {
+          caseNo = newCaseNo;
+        },
+        bootstrapScorer: function(newCaseNo) {
+          scorerSvc.bootstrap(newCaseNo);
+        },
+        bootstrapQueries: function(newCaseNo) {
+          bootstrapQueries(newCaseNo);
+        },
+        configureBook: function(newCaseNo) {
+          $http.get('api/cases/' + newCaseNo).then(function(response) {
+            bookSyncRuntime.configure({
+              caseId: newCaseNo,
+              bookId: response.data.book_id,
+              autoPopulate: response.data.auto_populate_book_pairs
+            });
+          });
+        },
+        refreshQueryDiff: function(query) {
+          query.diff.fetch();
+        },
+        queryReady: {
+          resolve: function() {
+            querySearchableDeferred.resolve();
+          },
+          promise: function() {
+            return querySearchableDeferred.promise;
+          }
+        },
+        onVersion: function() {
+          svcVersion++;
+        },
+        promiseApi: $q
+      });
+
       window.quepidSearch.queryCapabilities.getListState = function() {
         var selectedTry = settingsSvc.applicableSettings() || {};
         return {
@@ -1102,33 +1169,7 @@ angular.module('QuepidApp')
       };
 
       this.changeSettings = function(newCaseNo, newSettings) {
-        currSettings = newSettings;
-        window.quepidSearch.queryLifecycle.caseId = newCaseNo;
-
-        if (caseNo !== newCaseNo) {
-          scorerSvc.bootstrap(newCaseNo);
-          bootstrapQueries(newCaseNo);
-
-          // Fetch case data to initialize book sync properties
-          $http.get('api/cases/' + newCaseNo).then(function(response) {
-            bookSyncRuntime.configure({
-              caseId: newCaseNo,
-              bookId: response.data.book_id,
-              autoPopulate: response.data.auto_populate_book_pairs
-            });
-          });
-        } else {
-          angular.forEach(this.queries, function(query) {
-            // TODO update settings for diffs
-            if (query.diff !== null) {
-              query.diff.fetch();
-            }
-          });
-          querySearchableDeferred.resolve();
-        }
-
-        caseNo = newCaseNo;
-        return querySearchableDeferred.promise;
+        return liveQueryStateRuntime.changeSettings(newCaseNo, newSettings);
       };
 
       this.pAll = window.quepidSearch.queryService.pAll;
@@ -1180,12 +1221,7 @@ angular.module('QuepidApp')
           queryId:      -1
         };
         let newQuery = new Query(queryJson);
-        window.quepidSearch.diff.createQueryDiff({
-          query: newQuery,
-          diffSettings: getAllDiffSettings(),
-          settings: settingsSvc.editableSettings(),
-          createSearcherFromSnapshot: createSearcherFromSnapshot
-        });
+        liveQueryDiffRuntime.create(newQuery);
         return newQuery;
       };
 
@@ -1231,31 +1267,7 @@ angular.module('QuepidApp')
 
       // Refresh diff objects for all queries after state changes
       this.refreshAllDiffs = function() {
-        var refreshes = [];
-        angular.forEach(this.queries, function(query) {
-          refreshes.push(window.quepidSearch.diff.createQueryDiff({
-            query: query,
-            diffSettings: getAllDiffSettings(),
-            settings: settingsSvc.editableSettings(),
-            createSearcherFromSnapshot: createSearcherFromSnapshot
-          }));
-          // Publish the initialized snapshot documents immediately. Score
-          // values are refreshed asynchronously below, but the Stimulus
-          // renderer should not wait for every query's scoring promise before
-          // it can show the comparison columns.
-          publishQueryDocuments(query);
-        });
-        return $q.all(refreshes).then(function() {
-          angular.forEach(svc.queries, publishQueryDocuments);
-          document.dispatchEvent(new CustomEvent('query-diffs:refreshed', {
-            detail: { success: true }
-          }));
-        }, function(error) {
-          document.dispatchEvent(new CustomEvent('query-diffs:refreshed', {
-            detail: { success: false }
-          }));
-          return $q.reject(error);
-        });
+        return liveQueryDiffRuntime.refreshAll();
       };
 
       // Framework-free controllers use this adapter instead of resolving the
@@ -1273,24 +1285,11 @@ angular.module('QuepidApp')
       };
 
       this.scoreAllDiffs = function() {
-        let diffs = [];
-        angular.forEach(this.queries, function(query) {
-          if (query.diff !== null) {
-            diffs.push(query.diff);
-          }
-        });
-
-        return this.scoreAll(diffs);
+        return liveQueryStateRuntime.scoreAllDiffs();
       };
 
       this.updateScores = function() {
-        angular.forEach(this.queries, function(query) {
-          query.setDirty();
-        });
-
-        svc.scoreAll().then(function() {
-          svcVersion++;
-        });
+        return liveQueryStateRuntime.updateScores();
       };
 
       this.syncToBook = function() {
