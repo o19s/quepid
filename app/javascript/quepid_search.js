@@ -190,6 +190,7 @@ const quepidSearch = {
     setDisplayOrder: null,
     getQuery: null,
     getCaseNo: null,
+    resetQueryState: null,
     resetQuery: null,
     searchQuery: null,
     refreshRatedDocs: null,

@@ -428,6 +428,11 @@ angular.module('QuepidApp')
       window.quepidSearch.queryCapabilities.changeSettings = function(newCaseNo, newSettings) {
         return liveQueryStateRuntime.changeSettings(newCaseNo, newSettings);
       };
+      // Keep case transitions behind an explicit capability. Modern bootstrap
+      // code must not reach into the Angular service or its live collection.
+      window.quepidSearch.queryCapabilities.resetQueryState = function() {
+        svc.reset();
+      };
       window.quepidSearch.queryCapabilities.resetSearchPromise = function() {
         $log.debug('PROMISE reset...');
         querySearchableDeferred = $q.defer();

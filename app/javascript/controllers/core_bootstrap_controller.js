@@ -21,7 +21,7 @@ export default class extends Controller {
       this.services = await getBootstrapCapabilities()
 
       const { configurationSvc, userSvc, caseSvc, settingsSvc, caseTryNavSvc,
-        queriesSvc, docCache, scorerSvc } = this.services
+        docCache, scorerSvc } = this.services
       // The case runtime bundle publishes the shared store on window. The
       // imported store is only a fallback for isolated/unit-test contexts;
       // separate bundles must never reset different diff-store instances.
@@ -44,10 +44,7 @@ export default class extends Controller {
       }
       const searchEngineChanged = () => getSearchEngine(caseTryNavSvc.getTryNo()) !== getSearchEngine(tryNo)
 
-      if (caseChanged()) queriesSvc.reset()
-      Object.values(queriesSvc.queries || {}).forEach(query => {
-        window.quepidSearch.queryCapabilities.resetQuery(query.queryId)
-      })
+      if (caseChanged()) window.quepidSearch.queryCapabilities.resetQueryState()
 
       caseTryNavSvc.navigationCompleted({ caseNo, tryNo })
 

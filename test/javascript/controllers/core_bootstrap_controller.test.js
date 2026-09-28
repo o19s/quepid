@@ -11,6 +11,7 @@ describe("CoreBootstrapController", () => {
     }
     window.quepidSearch = {
       queryCapabilities: {
+        resetQueryState: vi.fn(),
         resetQuery: vi.fn(),
         resetSearchPromise: vi.fn(),
         changeSettings: vi.fn().mockResolvedValue(undefined)
@@ -46,12 +47,6 @@ describe("CoreBootstrapController", () => {
             navigationCompleted: vi.fn(),
             needToRedirectQuepidProtocol: vi.fn().mockReturnValue(false)
           },
-          queriesSvc: {
-            queries: {},
-            reset: vi.fn(),
-            querySearchPromiseReset: vi.fn(),
-            changeSettings: vi.fn().mockResolvedValue(undefined)
-          },
           scorerSvc: { bootstrap: vi.fn() }
         }
       }
@@ -74,6 +69,7 @@ describe("CoreBootstrapController", () => {
 
     expect(window.quepidStore.diff.reset).toHaveBeenCalledOnce()
     expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
+    expect(window.quepidSearch.queryCapabilities.resetQueryState).toHaveBeenCalledOnce()
     expect(window.quepidSearch.caseRuntime.bootstrap.userSvc.getCurrentUser).toHaveBeenCalledOnce()
   })
 })

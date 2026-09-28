@@ -282,7 +282,7 @@ export default class extends Controller {
     this.saving = true
     this.render()
     try {
-      const { caseSvc, searchEndpointSvc, settingsSvc, queriesSvc, caseTryNavSvc, docCache, userSvc } = this.adapter
+      const { caseSvc, searchEndpointSvc, settingsSvc, caseTryNavSvc, docCache, userSvc } = this.adapter
       const selectedCase = caseSvc.getSelectedCase()
       if (this.settings.caseName) await caseSvc.renameCase(selectedCase, this.settings.caseName)
       if (!settingsSvc.demoSettingsChosen(this.settings.searchEngine, this.settings.searchUrl)) {

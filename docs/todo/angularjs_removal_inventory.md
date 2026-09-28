@@ -34,7 +34,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 10 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 6 packages (+ `angular` core from npm) |
 | Karma unit specs (`spec/javascripts/angular`) | 12 |
-| Vitest unit specs (`test/javascript/**/*.test.js`) | 104 |
+| Vitest unit specs (`test/javascript/**/*.test.js`) | 116 |
 | Playwright specs (`test/playwright/*.spec.ts`) | 24 |
 
 ---
@@ -293,15 +293,6 @@ store; `queriesSvc` reads those stores directly for its remaining Angular compat
 
 - `queriesSvc` publishes the collection and document stores after search, rated-document refresh, pagination, errors, and rating changes. Query-list ordering, filtering, sorting, expansion, counts, state, Querqy flags, options, and explain metadata now read from the collection store; only on-demand query-template rendering remains behind a live-query compatibility callback. Search, scoring, diff, finder, and options remain behind their existing live-query boundaries; document rating, bulk rating, toggle, pagination, show-only-rated, and collapse-all cross the explicit `queryCommands` runtime.
 - Case-level score aggregation now runs through the framework-free `createCaseScoringRuntime`; Angular supplies live Query objects and remains only the compatibility adapter for scorer execution and legacy `latestScoreInfo` consumers.
-- Case-wide `scoreAll` and `updateScores` no longer remain public `queriesSvc` members. Angular-internal rating, scorer-selection, lifecycle, and query-removal paths use the explicit `queryCapabilities` scoring boundary; score behavior and full-collection rescoring are unchanged.
-- Diff refresh is likewise no longer exposed as `queriesSvc.refreshAllDiffs` or `queriesSvc.scoreAllDiffs`; Stimulus uses `queryCapabilities.refreshAllDiffs`, which remains an Angular-backed adapter until live Query diff objects migrate.
-- Pagination no longer depends on Angular Query wrapper methods: the explicit `queryCommands.paginateQuery` adapter invokes the framework-free live Query runtime for both normal and rated-only pages.
-- Live search execution no longer depends on Angular Query `search`, `searchFromSnapshot`, or `searchAndScore` wrappers. Search-all and single-query search use the explicit `queryCapabilities.searchQuery` boundary; the existing browser-to-engine and per-query scoring behavior is unchanged.
-- Rated-document refresh now uses `queryCapabilities.refreshRatedDocs`, including the legacy scorer callback and show-only-rated bootstrap. Document and bulk rating commands call the framework-free `RatingsStore` directly; rating events still invalidate rated-doc caches and trigger full-case rescoring.
-- Live Query document lifecycle callbacks no longer expose Query `setDocs`, `onError`, `awaitRatedDocs`, or `resultsReturned()` methods. Runtime callbacks now use service-private lifecycle helpers, while reset is an explicit `queryCapabilities.resetQuery` operation that publishes loading state to both Angular and the document store.
-- Query progress counts, settings changes, search-promise reset, display ordering, version reads, query-array reads, and Book synchronization now cross explicit `queryCapabilities` or service-private runtime helpers; the corresponding public `queriesSvc` methods are removed.
-- Live Query document reset, error publication, document-list construction, result normalization, and document-store publication now run through the tested framework-free `liveQueryDocuments` runtime; Angular supplies only the live object and legacy factories at that seam.
-- Live Query command orchestration for search, rated-document refresh, pagination, single-document rating, and bulk rating now runs through the tested framework-free `liveQueryCommands` runtime; Angular supplies only execution, document, rating, and digest scheduling adapters.
 - Snapshot fetching and hydration now run through the Stimulus/framework-free snapshot registry; Angular still owns the live Query objects and per-query diff scoring behind the document-store bridge.
 - `snapshot_searcher.js` owns the framework-free snapshot searcher contract, including registry lookup; `queriesSvc` supplies the remaining Angular callbacks directly at the boundary.
 
@@ -479,19 +470,6 @@ support checks and stale rating-generation retries. The next extraction can
 move the remaining injected operations without changing the query-local
 contract.
 
-The service's public `QueryFactory`, `toggleShowOnlyRated`, and `searchAll`
-members have been removed. Query construction remains an internal Angular
-detail; the modern query command boundary owns show-rated toggling and
-case-wide search invocation. The live Query objects and their compatibility
-callbacks remain until search/scoring leave Angular.
-
-The case-wide search lifecycle now also runs through the tested
-`createSearchAllRuntime` seam. `queriesSvc` supplies the live Query search and
-score callbacks plus the query-store progress callbacks, but no longer owns the
-queue orchestration policy. Query notes are already owned by the Stimulus
-controller and its API endpoint, so the obsolete Angular `Query#saveNotes` and
-`Query#fetchNotes` methods and their Karma contracts were removed.
-
 Query persistence is now Stimulus/store-owned for create, bulk create, delete,
 move, and reorder. The only remaining mutation bridge for delete/move is
 `queryCapabilities.reconcileQueryRemoval`, which removes the corresponding live
@@ -525,6 +503,13 @@ adapter now lives in the tested framework-free `createTargetedSearchAdapter` run
 `queriesSvc` supplies only the legacy searcher/settings/document dependencies through
 `window.quepidSearch.targetedSearch`. Rated-document refresh and pagination share the same
 framework-free query runtime boundary.
+
+The core lifecycle boundary is now explicit as well: bootstrap calls
+`queryCapabilities.resetQueryState()` rather than resolving `queriesSvc` or
+reading its live collection. The wizard and snapshot capability definitions no
+longer inject `queriesSvc` when they do not consume it. The service remains
+Angular-owned for the live query collection, transport callbacks, and legacy
+case operations until those contracts move behind the framework-free stores.
 
 Filters: `quepidTypeaheadHighlight` (used by typeahead directive)
 
@@ -631,7 +616,7 @@ Vendored libs: `app/javascript/vendor/angular-*`, `ng-*` (6 packages; see [vendo
 ### Tests
 
 - **Karma:** 12 specs in `spec/javascripts/angular/`; loads all three Angular bundles + `angular-mocks`
-- **Vitest (106 specs):** includes the framework-free stores, runtimes, and migrated Stimulus controllers under `test/javascript/`
+- **Vitest (116 specs):** includes the framework-free stores, runtimes, and migrated Stimulus controllers under `test/javascript/`
 - **Playwright (24 specs; Angular core and Stimulus):** `angular_pages*.spec.ts`, `angular_case_helpers.ts`, baselines; also `core_smoke`, `popover_visibility`, `modal_a11y`, `case_header_typography`, `dom_migration_screenshots` (before/after migration shots; local screenshot viewer under `test/playwright/screenshot-viewer*`)
 - **Playwright (Stimulus):** `stimulus_pages.spec.ts` — smoke for cases index (`import-case`, `quepid_root_url`), bulk judge, mapper wizard; `share_case_smoke.spec.ts` — core toolbar share/unshare; `dom_migration_screenshots.spec.ts` — per-surface before/after shots (`share-case/` core, `share-case-rails/` index)
 - **Rails:** `core_controller_test.rb`, `tls_flow_test.rb`, `user_invite_flow_test.rb`, `cases_controller_test.rb` (Stimulus cases index), `application_helper_test.rb` (`quepid_root_url`)

@@ -86,13 +86,12 @@ const capabilityDefinitions = {
       "caseSvc",
       "settingsSvc",
       "caseTryNavSvc",
-      "queriesSvc",
       "scorerSvc"
     ]
   },
   snapshots: {
     controller: "snapshot_bridge_controller",
-    services: ["settingsSvc", "caseTryNavSvc", "fieldSpecSvc", "normalDocsSvc", "queriesSvc"]
+    services: ["settingsSvc", "caseTryNavSvc", "fieldSpecSvc", "normalDocsSvc"]
   },
   wizard: {
     controller: "wizard_controller",
@@ -100,7 +99,6 @@ const capabilityDefinitions = {
       "caseSvc",
       "caseTryNavSvc",
       "mapperBasedSearchEngineSvc",
-      "queriesSvc",
       "searchEndpointSvc",
       "searchSvc",
       "settingsSvc",
