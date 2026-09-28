@@ -312,7 +312,7 @@ describe('Service: queriesSvc', function () {
     });
 
     it('knows when scoring is completed for all queries', function() {
-      queriesSvc.scoreAll().then(function() {
+      window.quepidSearch.queryCapabilities.scoreAll().then(function() {
         expect(queriesSvc.hasUnscoredQueries()).toBe(false);
       });
     });
@@ -501,7 +501,9 @@ describe('Service: queriesSvc', function () {
     expect(testQuery.state()).toBe('noResults');
     expect(testQuery.state()).toBe('noResults');
 
-    testQuery.search();
+    window.quepidSearch.queryCapabilities.searchQuery(testQuery.queryId);
+    expect(testQuery.state()).toBe('loading');
+    expect(window.quepidStore.documents.query(testQuery.queryId).queryState).toBe('loading');
     mockSearchSvc.fulfill(mockResults);
     $rootScope.$apply();
 
@@ -529,7 +531,7 @@ describe('Service: queriesSvc', function () {
 
   it('calculates avg score', function() {
     setupQuerySvc();
-    queriesSvc.scoreAll().then(function(scoreInfo) {
+    window.quepidSearch.queryCapabilities.scoreAll().then(function(scoreInfo) {
       expect(scoreInfo.score).toBeGreaterThan(0);
     });
   });
@@ -556,7 +558,7 @@ describe('Service: queriesSvc', function () {
     // defaulted from this.queries), not an arbitrary explicit subset — see
     // docs/todo/angularjs_removal_inventory.md § Re-render mechanism.
     queriesSvc.queries = { 1: new Scorable(1), 2: new Scorable(2) };
-    queriesSvc.scoreAll();
+    window.quepidSearch.queryCapabilities.scoreAll();
     $rootScope.$apply();
 
     expect(window.quepidStore.scoring.caseScore).toEqual({
@@ -589,7 +591,7 @@ describe('Service: queriesSvc', function () {
     for (var i = 0; i < 10; i++) {
       scoreables.push(new Scorable());
     }
-    queriesSvc.scoreAll(scoreables).then(function(scoreInfo) {
+    window.quepidSearch.queryCapabilities.scoreAll(scoreables).then(function(scoreInfo) {
       expect(scoreInfo.score).toBeGreaterThan(0);
     });
   });
@@ -740,7 +742,7 @@ describe('Service: queriesSvc', function () {
       expect(q.maxDocScore()).toEqual(2.0);
 
       // search and return other results, max score should now be less
-      q.search();
+      window.quepidSearch.queryCapabilities.searchQuery(q.queryId);
       mockSearchSvc.fulfill(mockResults2);
 
       $rootScope.$apply();
@@ -869,7 +871,7 @@ describe('Service: queriesSvc', function () {
       mockScorerSvc.setDefault = jasmine.createSpy('setDefault').and.callFake(function() {
         return $q.when();
       });
-      spyOn(queriesSvc, 'updateScores');
+      spyOn(window.quepidSearch.queryCapabilities, 'updateScores').and.callThrough();
 
       document.dispatchEvent(new CustomEvent('pick-scorer:selected', {
         detail: { caseId: 2, scorer: { scorer_id: 1, code: 'return 1;' } }
@@ -881,17 +883,17 @@ describe('Service: queriesSvc', function () {
       $rootScope.$apply();
 
       expect(mockScorerSvc.setDefault).toHaveBeenCalled();
-      expect(queriesSvc.updateScores).toHaveBeenCalled();
+      expect(window.quepidSearch.queryCapabilities.updateScores).toHaveBeenCalled();
     });
 
     it('reconciles a Stimulus-owned move through the query-state adapter', function() {
       setupQuerySvc(987);
-      spyOn(queriesSvc, 'updateScores');
+      spyOn(window.quepidSearch.queryCapabilities, 'updateScores').and.callThrough();
 
       expect(window.quepidSearch.queryCapabilities.getCaseNo()).toBe(987);
       expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval(0, true)).toBe(true);
 
-      expect(queriesSvc.updateScores).toHaveBeenCalled();
+      expect(window.quepidSearch.queryCapabilities.updateScores).toHaveBeenCalled();
       expect(queriesSvc.queries[0]).toBeUndefined();
     });
 

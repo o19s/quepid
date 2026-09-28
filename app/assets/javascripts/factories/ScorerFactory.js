@@ -480,7 +480,7 @@
         // may not be called
         // NOT in scorer_logic.js
         var refreshRatedDocs = function(k) {
-          return query.refreshRatedDocs(k);
+          return window.quepidSearch.queryCapabilities.refreshRatedDocs(query.queryId, k);
         };
 
 

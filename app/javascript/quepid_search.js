@@ -170,9 +170,13 @@ const quepidSearch = {
     setDisplayOrder: null,
     getQuery: null,
     getCaseNo: null,
+    searchQuery: null,
+    refreshRatedDocs: null,
     reconcileQueryRemoval: null,
     getQueries: null,
-    refreshAllDiffs: null
+    refreshAllDiffs: null,
+    scoreAll: null,
+    updateScores: null
   },
   queryCommands: {
     rateDocument: null,
