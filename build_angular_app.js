@@ -13,7 +13,6 @@ const VENDOR_OUTPUT = 'app/assets/builds/angular_app.js';
 const WATCH_PATHS = [
   'app/assets/javascripts/utilitiesModule.js',
   'app/assets/javascripts/app.js',
-  'app/assets/javascripts/routes.js',
   'app/assets/javascripts/components',
   'app/assets/javascripts/controllers',
   'app/assets/javascripts/directives',
@@ -47,13 +46,6 @@ function buildAngularApp() {
     if (fs.existsSync('app/assets/javascripts/app.js')) {
       output += '// Main App Module\n';
       output += fs.readFileSync('app/assets/javascripts/app.js', 'utf8');
-      output += '\n\n';
-    }
-
-    // Add routes
-    if (fs.existsSync('app/assets/javascripts/routes.js')) {
-      output += '// Routes\n';
-      output += fs.readFileSync('app/assets/javascripts/routes.js', 'utf8');
       output += '\n\n';
     }
 

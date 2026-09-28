@@ -5,11 +5,10 @@ import {
   getTuneRelevanceCapabilities,
   getWizardCapabilities,
   createNativeFramework,
-  resetCoreServiceCache,
-  waitForAngularServices
+  resetCoreServiceCache
 } from "utils/core_angular_adapter"
 
-describe("core Angular adapter", () => {
+describe("core runtime capabilities", () => {
   afterEach(() => {
     delete window.angular
     delete window.quepidSearch
@@ -18,21 +17,9 @@ describe("core Angular adapter", () => {
     vi.restoreAllMocks()
   })
 
-  it("resolves the requested services from the core injector", async () => {
-    document.body.setAttribute("ng-app", "QuepidApp")
-    const services = { $rootScope: { name: "root" }, customService: { name: "custom" } }
-    const injector = { get: vi.fn(name => services[name]) }
-    window.angular = { element: vi.fn(() => ({ injector: () => injector })) }
-
-    await expect(waitForAngularServices(["$rootScope", "customService"])).resolves.toEqual(services)
-    expect(injector.get).toHaveBeenCalledWith("$rootScope")
-    expect(injector.get).toHaveBeenCalledWith("customService")
-  })
-
   it("preserves mounted paths, serialized bodies, and failed-request rejection", async () => {
     document.head.innerHTML = '<base href="/quepid-app/">'
-    const rootScope = { $evalAsync: vi.fn(), $applyAsync: vi.fn() }
-    const framework = createNativeFramework(rootScope)
+    const framework = createNativeFramework()
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(
@@ -57,11 +44,6 @@ describe("core Angular adapter", () => {
     })
   })
 
-  it("rejects when Angular never becomes available", async () => {
-    await expect(waitForAngularServices(["missingService"], { intervalMs: 0, maxAttempts: 1 }))
-      .rejects.toThrow("Unable to load the Angular core services.")
-  })
-
   it("publishes named capabilities without exposing a service lookup to callers", async () => {
     const services = {
       settingsSvc: { editableSettings: vi.fn() },
@@ -75,18 +57,7 @@ describe("core Angular adapter", () => {
   })
 
   it("does not resolve the removed live-query service for controllers", async () => {
-    document.body.setAttribute("ng-app", "QuepidApp")
-    const services = {
-      $rootScope: { $evalAsync: vi.fn(), $applyAsync: vi.fn() },
-      $http: Object.assign(vi.fn(), { get: vi.fn() }),
-      $q: { reject: vi.fn(), resolve: vi.fn() },
-      $log: {},
-      caseSvc: {},
-      settingsSvc: {},
-      caseTryNavSvc: {},
-    }
-    const injector = { get: vi.fn(name => services[name]) }
-    window.angular = { element: vi.fn(() => ({ injector: () => injector })) }
+    window.angular = { element: vi.fn(() => { throw new Error("Angular injector should not be used") }) }
 
     const capabilities = await getBootstrapCapabilities()
 
@@ -107,20 +78,8 @@ describe("core Angular adapter", () => {
       framework: expect.any(Object),
       domain: expect.any(Object)
     })
-    expect(injector.get).not.toHaveBeenCalledWith("queriesSvc")
-    expect(injector.get).not.toHaveBeenCalledWith("configurationSvc")
-    expect(injector.get).not.toHaveBeenCalledWith("caseTryNavSvc")
-    expect(injector.get).not.toHaveBeenCalledWith("$http")
-    expect(injector.get).not.toHaveBeenCalledWith("$q")
-    expect(injector.get).not.toHaveBeenCalledWith("$log")
-    expect(injector.get).not.toHaveBeenCalledWith("ScorerFactory")
+    expect(window.angular.element).not.toHaveBeenCalled()
   })
-
-  it("reports the named controller when a capability cannot initialize", async () => {
-    await expect(getBootstrapCapabilities()).rejects.toThrow(
-      'Unable to load case runtime capability "bootstrap" for core_bootstrap_controller'
-    )
-  }, 10000)
 
   it.each([
     ["bootstrap", getBootstrapCapabilities],
@@ -133,11 +92,6 @@ describe("core Angular adapter", () => {
   })
 
   it("publishes named groups for snapshot, wizard, and tune capabilities", async () => {
-    document.body.setAttribute("ng-app", "QuepidApp")
-    const services = {}
-    const injector = { get: vi.fn(name => services[name]) }
-    window.angular = { element: vi.fn(() => ({ injector: () => injector })) }
-
     const [snapshots, wizard, tuneRelevance] = await Promise.all([
       getSnapshotCapabilities(),
       getWizardCapabilities(),
@@ -167,18 +121,9 @@ describe("core Angular adapter", () => {
       case: expect.any(Object),
       navigation: expect.any(Object)
     }))
-    expect(injector.get).not.toHaveBeenCalledWith("fieldSpecSvc")
-    expect(injector.get).not.toHaveBeenCalledWith("normalDocsSvc")
-    expect(injector.get).not.toHaveBeenCalledWith("searchSvc")
-    expect(injector.get).not.toHaveBeenCalledWith("esUrlSvc")
   })
 
   it("preserves the wizard completion request on the user capability", async () => {
-    document.body.setAttribute("ng-app", "QuepidApp")
-    const services = {}
-    const injector = { get: vi.fn(name => services[name]) }
-    window.angular = { element: vi.fn(() => ({ injector: () => injector })) }
-
     const { capability } = await getWizardCapabilities()
 
     expect(capability.user.shownIntroWizard).toEqual(expect.any(Function))

@@ -24,14 +24,14 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 
 | Category | Count (on disk) |
 |----------|-----------------|
-| Angular JS source files (`app/assets/javascripts`) | 8 files, 5 register with Angular |
+| Angular JS source files (`app/assets/javascripts`) | 7 files, 4 register with Angular |
 | HTML templates (`app/assets/templates`) | 2 |
 | Controllers | 0 |
 | Services | 0 (`.service()` registrations) |
 | Factories | 0 |
 | Filters | 1 under `filters/` |
 | Custom directives / components | 1 directive, no components |
-| `QuepidApp` module dependencies | 3 |
+| `QuepidApp` module dependencies | 2 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 1 package (+ `angular` core from npm) |
 | Karma unit specs (`spec/javascripts/angular`) | 1 |
 | Vitest unit specs (`test/javascript/**/*.test.js`) | 134 |
@@ -225,7 +225,7 @@ When replacing the case SPA (not just toolbar actions), work in dependency order
 The case page is bootstrapped by `core_bootstrap_controller.js`; the surviving Angular services remain behind the temporary
 compatibility adapter until live query/search/scoring migration is complete.
 
-**Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
+**Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
 1. Shared primitives — `quepidTypeahead` and the remaining CSRF callers. Tooltip/popover/paste utils, dynamic modals, and flash are already Stimulus-owned. Remaining call sites are concentrated in the diff bridge and surviving Angular service seams; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
 2. Services layer — the former `caseSvc`, `caseTryNavSvc`, `settingsSvc`, and `queriesSvc`; scorer execution is now framework-free
@@ -373,10 +373,6 @@ Angular still compiles what is left, because custom elements inside `ng-app` are
 
 The query-list shell is Rails-rendered and no longer declares an Angular scope. Deferred live-result controls still receive a short-lived root-scope child for compilation. The score badges remain at the same DOM position for `qscore.css`'s `:last-child`-based badge-spacing rules to apply correctly.
 
-### `app/assets/javascripts/routes.js`
-
-`$locationProvider.html5Mode(true)` + `$httpProvider` cache/header config only — no `$routeProvider`.
-
 ---
 
 ## Root module and dependencies
@@ -387,7 +383,6 @@ The query-list shell is Rails-rendered and no longer declares an Angular scope. 
 |--------|--------|----------|--------------|
 | `ngSanitize` | `angular-sanitize` | `ng-bind-html` | DOMPurify or server sanitize |
 | `splainer-search` | `utils/splainer_search_runtime.js` | Native search HTTP and document services | `splainer-search/wired.js` directly |
-| `ng-rails-csrf` | `interceptors/rails-csrf.js` | CSRF on `$http` | Fetch wrapper with CSRF meta tag |
 | `templates` | `build_templates.js` | `$templateCache` | ERB partials / Stimulus templates |
 
 Non-Angular libs that **stay**: Bootstrap 5, D3, Vega, ACE, autocompleter, clipboard, URI.js, Shepherd, SortableJS.
@@ -404,7 +399,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 |------|------|-----------|
 | Current user | Rails-rendered state + framework-free runtime | `app/javascript/utils/user_runtime.js` owns core bootstrap and wizard API mutations |
 | App config flags | runtime | `configuration_runtime.js` |
-| CSRF on API requests | interceptor | `interceptors/rails-csrf.js` |
+| CSRF on API requests | runtime | Fetch wrapper with CSRF meta tag |
 | Case/try URL helpers | runtime | `app/javascript/utils/navigation_runtime.js` owns navigation state, URL helpers, protocol switching, proxy URLs, and endpoint links. |
 
 ### 3. Case header, scoring, and case actions
@@ -589,7 +584,7 @@ The core case UI at `/case/...` still uses AngularJS `$http`. **Do not copy thes
 | Concern | Pattern |
 |---------|---------|
 | API paths | Relative `api/...` (no leading slash), e.g. `$http.get('api/cases/' + caseNo)` |
-| CSRF | Automatic via `ng-rails-csrf` (`interceptors/rails-csrf.js`) for URLs containing `api/` |
+| CSRF | Fetch wrapper reads the CSRF meta tag and sends it on API requests |
 | Navigation / subpaths | `navigation_runtime.js` (rule: see root `CLAUDE.md`) |
 | Route param | Cases use `:case_id` in `config/routes.rb` |
 

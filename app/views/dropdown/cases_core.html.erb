@@ -6,11 +6,9 @@
      Angular-bootstrapped core page, and Turbo Frames stay navigable even with Drive off (see
      DEVELOPER_GUIDE.md's "Turbo on the Angular case page"), so a "_top" visit would still swap
      the body via AJAX without reloading the script context.
-  2. `target: "_self"`: AngularJS's own `$locationProvider.html5Mode(true)` installs a
-     document-wide click handler that rewrites any same-origin link lacking a `target` attribute
-     into a client-side route change - the same escape hatch every other link in
-     _header_core_app.html.erb already relies on. Without both, Turbo
-     correctly steps aside but Angular then intercepts the click itself.
+  2. `target: "_self"`: ensures the link escapes the containing Turbo Frame and replaces the
+     document rather than only updating the frame. Without both, Turbo can change the URL while
+     leaving the old case page mounted.
 
   Skipping either one leaves the URL changing while the page silently keeps showing the old case.
 

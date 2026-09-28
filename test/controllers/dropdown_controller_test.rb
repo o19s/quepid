@@ -26,8 +26,8 @@ class DropdownControllerTest < ActionController::TestCase
     # which swaps <body> without reloading the script context - Angular kept running against the
     # old case while the URL silently changed underneath it. Both `data-turbo="false"` (escapes
     # Turbo, which otherwise stays frame-navigable even with Drive off) and `target="_self"`
-    # (escapes AngularJS's own $locationProvider.html5Mode link rewriter) are required together;
-    # either alone still leaves the click intercepted. See app/views/dropdown/cases_core.html.erb.
+    # (escapes the containing Turbo Frame) are required together; either alone still leaves the
+    # old case page mounted. See app/views/dropdown/cases_core.html.erb.
     test 'cases_core links force a hard navigation, unlike the Rails-page #cases links' do
       get :cases_core
       assert_response :success

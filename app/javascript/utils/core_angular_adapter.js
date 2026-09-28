@@ -10,19 +10,6 @@ import { createCaseRuntime } from "utils/case_runtime"
 import { createScorer } from "utils/scorer_runtime"
 import { apiFetch } from "api/fetch"
 
-/**
- * Temporary seam for the Angular services that still own live case state.
- *
- * Core Stimulus controllers use this module instead of reaching into the Angular injector
- * themselves. The seam is intentionally small and temporary: it disappears with the live query
- * state migration, while the surrounding page can already be Stimulus-owned.
- */
-export function angularInjector() {
-  const root = document.querySelector("[ng-app]")
-  return window.angular?.element(root)?.injector?.()
-}
-
-const servicePromises = new Map()
 const mapperSearchRuntime = createMapperSearchRuntime()
 const searchEndpointRuntime = createSearchEndpointRuntime()
 const settingsCatalog = createSettingsCatalog()
@@ -55,8 +42,10 @@ function createPromiseApi() {
   }
 }
 
-export function createNativeFramework(rootScope) {
+export function createNativeFramework({ schedule, applyAsync } = {}) {
   const promiseApi = createPromiseApi()
+  const nativeSchedule = schedule || ((callback) => Promise.resolve().then(callback))
+  const nativeApplyAsync = applyAsync || nativeSchedule
   const request = async (options = {}) => {
     const method = options.method || "GET"
     const url = new URL(options.url, document.baseURI || window.location.href)
@@ -87,63 +76,15 @@ export function createNativeFramework(rootScope) {
     request,
     get: (url) => request({ method: "GET", url }),
     promiseApi,
-    schedule: (callback) => rootScope.$evalAsync(callback),
-    applyAsync: (callback) => rootScope.$applyAsync(callback),
+    schedule: nativeSchedule,
+    applyAsync: nativeApplyAsync,
     logger: console,
     reject: promiseApi.reject,
     resolve: promiseApi.resolve
   }
 }
 
-export function waitForAngularServices(serviceNames, { intervalMs = 50, maxAttempts = 100 } = {}) {
-  return new Promise((resolve, reject) => {
-    let attempts = 0
-
-    const cacheKey = serviceNames.slice().sort().join(",")
-    const cached = servicePromises.get(cacheKey)
-    if (cached) {
-      cached.then(resolve, reject)
-      return
-    }
-
-    const promise = new Promise((resolveServices, rejectServices) => {
-      const attempt = () => {
-        attempts += 1
-        const injector = angularInjector()
-
-        if (injector) {
-          try {
-            resolveServices(
-              Object.fromEntries(serviceNames.map((name) => [name, injector.get(name)]))
-            )
-            return
-          } catch (error) {
-            if (attempts >= maxAttempts) {
-              rejectServices(error)
-              return
-            }
-          }
-        } else if (attempts >= maxAttempts) {
-          rejectServices(new Error("Unable to load the Angular core services."))
-          return
-        }
-
-        window.setTimeout(attempt, intervalMs)
-      }
-
-      attempt()
-    })
-
-    servicePromises.set(cacheKey, promise)
-    promise.then(resolve, (error) => {
-      servicePromises.delete(cacheKey)
-      reject(error)
-    })
-  })
-}
-
 export function resetCoreServiceCache() {
-  servicePromises.clear()
   mapperSearchRuntime.reset()
   searchEndpointRuntime.reset()
   settingsCatalog.reset()
@@ -157,7 +98,7 @@ export function resetCoreServiceCache() {
 const capabilityDefinitions = {
   bootstrap: {
     controller: "core_bootstrap_controller",
-    services: ["$rootScope"]
+    services: []
   },
   snapshots: {
     controller: "snapshot_bridge_controller",
@@ -180,21 +121,11 @@ async function loadCapability(name) {
   const runtime = window.quepidSearch?.caseRuntime
   if (runtime?.[name]) return runtime[name]
 
-  let services = {}
-  if (definition.services.length > 0) {
-    try {
-      services = await waitForAngularServices(definition.services)
-    } catch (error) {
-      throw new Error(
-        `Unable to load case runtime capability "${name}" for ${definition.controller}: ${error.message}`,
-        { cause: error }
-      )
-    }
-  }
+  const services = {}
 
   window.quepidSearch ||= {}
   window.quepidSearch.caseRuntime ||= {}
-  const nativeFramework = name === "bootstrap" ? createNativeFramework(services.$rootScope) : null
+  const nativeFramework = name === "bootstrap" ? createNativeFramework() : null
   const scorerCatalog =
     name === "bootstrap"
       ? createScorerCatalog({
@@ -405,7 +336,7 @@ function createCoreCapabilities(services, scorerCatalog, userRuntime) {
 }
 
 function createLiveQueryCapabilities(services, scorerCatalog) {
-  const framework = createNativeFramework(services.$rootScope)
+  const framework = createNativeFramework()
 
   return {
     framework,

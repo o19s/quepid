@@ -8,11 +8,9 @@
  *
  * Turbo is loaded here for Turbo Frames only - the server-rendered case header
  * re-renders its frame on rename. Drive is switched off, as it is for the rest of
- * the app in `application_modern.js`, and that matters more on this page: Angular
- * runs `$locationProvider.html5Mode(true)`, so letting Turbo Drive intercept
- * navigation would put two routers on the same URL. Frames and Streams still work
- * with Drive off, because Turbo treats anything inside a <turbo-frame> as
- * navigatable regardless.
+ * the app in `application_modern.js`. Frames and Streams still work with Drive
+ * off, because Turbo treats anything inside a <turbo-frame> as navigatable
+ * regardless.
  */
 import "@hotwired/turbo-rails"
 import { application } from "controllers/application"
