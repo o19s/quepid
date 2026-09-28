@@ -6,7 +6,6 @@ import {
   getWizardCapabilities,
   createNativeFramework,
   resetCoreServiceCache,
-  runInAngular,
   waitForAngularServices
 } from "utils/core_angular_adapter"
 
@@ -21,13 +20,13 @@ describe("core Angular adapter", () => {
 
   it("resolves the requested services from the core injector", async () => {
     document.body.setAttribute("ng-app", "QuepidApp")
-    const services = { $rootScope: { name: "root" }, ScorerFactory: { name: "scorer" } }
+    const services = { $rootScope: { name: "root" }, customService: { name: "custom" } }
     const injector = { get: vi.fn(name => services[name]) }
     window.angular = { element: vi.fn(() => ({ injector: () => injector })) }
 
-    await expect(waitForAngularServices(["$rootScope", "ScorerFactory"])).resolves.toEqual(services)
+    await expect(waitForAngularServices(["$rootScope", "customService"])).resolves.toEqual(services)
     expect(injector.get).toHaveBeenCalledWith("$rootScope")
-    expect(injector.get).toHaveBeenCalledWith("ScorerFactory")
+    expect(injector.get).toHaveBeenCalledWith("customService")
   })
 
   it("preserves mounted paths, serialized bodies, and failed-request rejection", async () => {
@@ -63,17 +62,6 @@ describe("core Angular adapter", () => {
       .rejects.toThrow("Unable to load the Angular core services.")
   })
 
-  it("runs service work inside an Angular digest", async () => {
-    const evalAsync = vi.fn(callback => callback())
-    const rootScope = { $evalAsync: evalAsync }
-    const injector = { get: vi.fn(() => rootScope) }
-    document.body.setAttribute("ng-app", "QuepidApp")
-    window.angular = { element: vi.fn(() => ({ injector: () => injector })) }
-
-    await expect(runInAngular(() => "done")).resolves.toBe("done")
-    expect(evalAsync).toHaveBeenCalledOnce()
-  })
-
   it("publishes named capabilities without exposing a service lookup to callers", async () => {
     const services = {
       settingsSvc: { editableSettings: vi.fn() },
@@ -96,7 +84,6 @@ describe("core Angular adapter", () => {
       caseSvc: {},
       settingsSvc: {},
       caseTryNavSvc: {},
-      ScorerFactory: vi.fn()
     }
     const injector = { get: vi.fn(name => services[name]) }
     window.angular = { element: vi.fn(() => ({ injector: () => injector })) }
@@ -126,6 +113,7 @@ describe("core Angular adapter", () => {
     expect(injector.get).not.toHaveBeenCalledWith("$http")
     expect(injector.get).not.toHaveBeenCalledWith("$q")
     expect(injector.get).not.toHaveBeenCalledWith("$log")
+    expect(injector.get).not.toHaveBeenCalledWith("ScorerFactory")
   })
 
   it("reports the named controller when a capability cannot initialize", async () => {

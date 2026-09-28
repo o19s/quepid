@@ -47,7 +47,7 @@ describe("scoring", () => {
       // AngularJS's formatNumber() explicitly returns '' for isNaN(number);
       // Number.prototype.toLocaleString has no such guard and would
       // otherwise render the literal string "NaN". Reachable via a custom
-      // scorer whose eval'd code divides by zero (ScorerFactory.js's
+      // scorer whose eval'd code divides by zero (scorer_runtime.js's
       // score() treats NaN as angular.isNumber() === true and returns it
       // uncoerced).
       expect(formatScore(NaN)).toBe("")

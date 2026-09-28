@@ -7,6 +7,7 @@ import { createUserRuntime } from "utils/user_runtime"
 import { createConfigurationRuntime } from "utils/configuration_runtime"
 import { createNavigationRuntime } from "utils/navigation_runtime"
 import { createCaseRuntime } from "utils/case_runtime"
+import { createScorer } from "utils/scorer_runtime"
 import { apiFetch } from "api/fetch"
 
 /**
@@ -141,20 +142,6 @@ export function waitForAngularServices(serviceNames, { intervalMs = 50, maxAttem
   })
 }
 
-export async function runInAngular(operation) {
-  const { $rootScope: rootScope } = await waitForAngularServices(["$rootScope"])
-
-  return new Promise((resolve, reject) => {
-    rootScope.$evalAsync(() => {
-      try {
-        Promise.resolve(operation()).then(resolve, reject)
-      } catch (error) {
-        reject(error)
-      }
-    })
-  })
-}
-
 export function resetCoreServiceCache() {
   servicePromises.clear()
   mapperSearchRuntime.reset()
@@ -170,7 +157,7 @@ export function resetCoreServiceCache() {
 const capabilityDefinitions = {
   bootstrap: {
     controller: "core_bootstrap_controller",
-    services: ["$rootScope", "ScorerFactory"]
+    services: ["$rootScope"]
   },
   snapshots: {
     controller: "snapshot_bridge_controller",
@@ -212,8 +199,14 @@ async function loadCapability(name) {
     name === "bootstrap"
       ? createScorerCatalog({
           request: nativeFramework.request,
-          constructFromData: (data) => new services.ScorerFactory(data),
-          initialDefault: new services.ScorerFactory(),
+          constructFromData: (data) => createScorer(data, {
+            promiseApi: nativeFramework.promiseApi,
+            schedule: (callback) => nativeFramework.schedule(callback)
+          }),
+          initialDefault: createScorer({}, {
+            promiseApi: nativeFramework.promiseApi,
+            schedule: (callback) => nativeFramework.schedule(callback)
+          }),
           promiseApi: nativeFramework.promiseApi
         })
       : null

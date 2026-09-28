@@ -21,7 +21,7 @@ export function isUnratedScore(score) {
  * rounding), which is what the `scoreDisplay` filter delegated to via
  * `$filter('number')(score, 2)`. A sentinel or otherwise non-numeric score
  * ('zsr', '--', null, undefined) passes through unchanged. A NaN score
- * (reachable via a buggy custom scorer — see ScorerFactory.js's score(),
+ * (reachable via a buggy custom scorer — see scorer_runtime.js's score(),
  * which treats NaN as a number and returns it uncoerced) renders as an
  * empty string, matching Angular's own `isNaN(number) return ''` guard in
  * formatNumber() — `Number.prototype.toLocaleString` has no such guard and

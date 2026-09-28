@@ -46,7 +46,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | **P0** | AngularJS 1.8.3 EOL | 28 JavaScript source files and 2 Angular templates remain under the legacy asset/template trees (see [Executive summary](#executive-summary)) — no patches since Dec 2021 |
 | **P0** | `queriesSvc` god object (1,366 lines) | Query state, search, scoring, book sync, positions via `$rootScope.$broadcast` |
 | **P0** | `eval()` scorers | Inside `$timeout()`, no sandbox; Web Worker timeout commented out |
-| **P1** | Scorer dual-execution drift | `ScorerFactory.js` (client) vs `scorer_logic.js` (server) — client API is richer |
+| **P1** | Scorer dual-execution drift | `scorer_runtime.js` (client) vs `scorer_logic.js` (server) — client API is richer |
 | **P1** | `new Function()` mappers | SearchAPI mappers; MiniRacer on server; mapper wizard already Stimulus |
 | **P2** | Digest workarounds | Version counters / sentinels instead of clear data flow |
 | **Defer** | `bootstrap5-compat.css` | Largely done; tuning shims, not a rewrite gate |
@@ -228,7 +228,7 @@ compatibility adapter until live query/search/scoring migration is complete.
 **Turbo is loaded on `core`** (`core_stimulus.js`), for Frames and Streams only. `Turbo.session.drive = false` is set there for the same reason it is set in `application_modern.js`, and it matters more here: Angular runs `$locationProvider.html5Mode(true)`, so letting Drive intercept navigation would put two routers on one URL. Frames still work with Drive off, because Turbo treats anything inside a `<turbo-frame>` as navigatable regardless.
 
 1. Shared primitives — `quepidTypeahead` and the remaining CSRF callers. Tooltip/popover/paste utils, dynamic modals, and flash are already Stimulus-owned. Remaining call sites are concentrated in the diff bridge and surviving Angular service seams; `quepidTypeahead` still supports `searchEndpoint_popup.html`. They fall out as those remaining components migrate — don't plan a standalone PR for this step.
-2. Services layer — the legacy `ScorerFactory`; the former `caseSvc`, `caseTryNavSvc`, `settingsSvc`, and `queriesSvc`
+2. Services layer — the former `caseSvc`, `caseTryNavSvc`, `settingsSvc`, and `queriesSvc`; scorer execution is now framework-free
    registration is now a runtime initializer and is tracked with live query state.
 3. Splainer — drop `$q` shim; use `splainer-search/wired.js` directly
 4. Query list + results — `search-results`, rating UI
@@ -242,7 +242,7 @@ compatibility adapter until live query/search/scoring migration is complete.
 | Name | LOC | Why |
 |------|-----|-----|
 | **live-query runtime initializer** | 1,072 | Compatibility assembly for case state, search, scores, and persistence; now invoked by the Stimulus core bootstrap with explicit Angular service dependencies |
-| **ScorerFactory** | 666 | Scoring model + judgement math |
+| **scorer_runtime** | 286 | Framework-free scoring model + judgement math |
 | **angular core** | — | Remove last |
 
 **Defer on the case workspace** (Solr JSONP, live state, or remaining Angular wrappers): `quepidTypeahead`. Snapshot search/scoring remains behind its explicit Angular bridge. The remaining deferred pieces imply rebuilding the case SPA, not a framework swap.
@@ -274,7 +274,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 **Do not scope `scoreAll()` in the same change.** One rating rescores every query today; the performance lens says carry that forward. An explicit store makes per-query scoping possible later, but taking it here ships an unapproved behaviour change and makes any score discrepancy unattributable.
 
-- `queriesSvc` publishes the collection and document stores after search, rated-document refresh, pagination, errors, and rating changes. Query-list ordering, filtering, sorting, expansion, counts, state, Querqy flags, options, and explain metadata now read from the collection store; only on-demand query-template rendering remains behind a live-query compatibility callback. Search, scoring, diff, finder, and options remain behind their existing live-query boundaries; document rating, bulk rating, toggle, pagination, show-only-rated, and collapse-all cross the explicit `queryCommands` runtime. The live-query capability now translates its Angular-shaped request contract to native `apiFetch` and native Promises; `$rootScope` remains only as a digest scheduling bridge for the legacy Angular surface, while `ScorerFactory` remains the last legacy scoring adapter.
+- `queriesSvc` publishes the collection and document stores after search, rated-document refresh, pagination, errors, and rating changes. Query-list ordering, filtering, sorting, expansion, counts, state, Querqy flags, options, and explain metadata now read from the collection store; only on-demand query-template rendering remains behind a live-query compatibility callback. Search, scoring, diff, finder, and options remain behind their existing live-query boundaries; document rating, bulk rating, toggle, pagination, show-only-rated, and collapse-all cross the explicit `queryCommands` runtime. The live-query capability now translates its Angular-shaped request contract to native `apiFetch` and native Promises; `$rootScope` remains only as a digest scheduling bridge for the legacy surface.
 - Case-level score aggregation now runs through the framework-free `createCaseScoringRuntime`; Angular supplies live Query objects and remains only the compatibility adapter for scorer execution and legacy `latestScoreInfo` consumers.
 - Snapshot fetching and hydration now run through the Stimulus/framework-free snapshot registry; Angular still owns the live Query objects and per-query diff scoring behind the document-store bridge.
 - `snapshot_searcher.js` owns the framework-free snapshot searcher contract, including registry lookup; `queriesSvc` supplies the remaining Angular callbacks directly at the boundary.
@@ -290,7 +290,7 @@ Angular's digest is what repaints `queriesCtrl` / `searchResults` / `qscore-*` w
 
 #### App-level (port seams; don't rebuild)
 
-**Scoring runtime** — Custom JS scorers expose an ~18-function API. `ScorerFactory.js` and `scorer_logic.js` already drift (client has helpers the server lacks). **Direction:** shared npm package with an explicit canonical API and a scorer migration guide — not server-only scoring; every rating triggers client `scoreAll()` today.
+**Scoring runtime** — Custom JS scorers expose an ~18-function API. `scorer_runtime.js` and `scorer_logic.js` still need a canonical shared contract, but client execution is now framework-free and no longer depends on Angular. **Direction:** shared npm package with an explicit canonical API and a scorer migration guide — not server-only scoring; every rating triggers client `scoreAll()` today.
 
 **Search engine coupling** — **Still hard:** Quepid-specific seams — snapshot fake-Solr, proxy/basic auth, TLS protocol switching, SearchAPI mapper code — must port with any case UI work.
 
@@ -414,7 +414,7 @@ Work is grouped by user-visible capability. Each area spans templates, controlle
 | Import ratings | Stimulus controller + Angular refresh bridge | `app/javascript/controllers/import_ratings_core_controller.js`, `app/views/shared/_import_ratings_core_modal.html.erb`; refreshes live query state through `imports:queries-need-reload` |
 | Diff renderer and picker | Stimulus renderer + explicit compatibility bridge | `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/snapshot_bridge_controller.js`, `app/javascript/controllers/search_results_controller.js`, `app/javascript/controllers/diff_score_controller.js`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/stores/query_documents_store.js`, `app/javascript/utils/diff_results.js`; Angular still owns snapshot search/scoring |
 
-Backing compatibility boundary: `ScorerFactory`; snapshot hydration and
+Backing compatibility boundary: the live-query runtime; snapshot hydration and
 scoring now cross through `snapshot_bridge_controller.js` without a snapshot
 Angular service.
 
@@ -496,7 +496,7 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (0):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`, `queriesSvc`, `scorerSvc`, `userSvc`, `settingsSvc`, `mapperBasedSearchEngineSvc`, and `searchEndpointSvc` registrations are gone. Case loading, selection, mutation, metadata, and navigation now live in the tested framework-free `case_runtime.js` and `navigation_runtime.js` modules. Core configuration and settings helpers live in `configuration_runtime.js`, `settings_catalog_runtime.js`, and `settings_runtime.js`. `ScorerFactory` remains as the custom scorer execution boundary. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
+**Services (0):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`, `queriesSvc`, `scorerSvc`, `userSvc`, `settingsSvc`, `mapperBasedSearchEngineSvc`, and `searchEndpointSvc` registrations are gone. Case loading, selection, mutation, metadata, and navigation now live in the tested framework-free `case_runtime.js` and `navigation_runtime.js` modules. Core configuration and settings helpers live in `configuration_runtime.js`, `settings_catalog_runtime.js`, and `settings_runtime.js`. Custom scorer execution now lives in the tested framework-free `scorer_runtime.js`. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
 
 `queriesSvc` reads the framework-free snapshot registry directly. Static snapshot
 imports in the new-case wizard use `app/javascript/utils/snapshot_import.js`.
@@ -507,7 +507,7 @@ snapshot registry, model factory, and registry searcher needed by the remaining
 live Query/scoring island; payload, API, hydration, and unused searcher helpers
 are no longer exported through the Angular bundle.
 
-**Factories (1):** `ScorerFactory`
+**Factories (0):** No Angular factories remain.
 
 The former `caseSvc` and `queriesSvc` consumers now use framework-free runtimes, named native events, or EventTarget stores. See [event bus inventory](./event_bus_inventory.md).
 
@@ -551,9 +551,9 @@ Compiled by `build_templates.js` → `app/assets/builds/angular_templates.js`.
 Curator-variable extraction and try state are now framework-free in `app/javascript/utils/curator_vars.js` and `app/javascript/utils/settings_runtime.js`. Book population similarly keeps its Angular transport in `queriesSvc`, while payload construction lives in `app/javascript/utils/book_sync.js`.
 ### Non-Angular JS in the Angular bundle
 
-`footer.js`, `tour.js`, `ace_config.js`, `scorerEvalTest.js` — relocate when bundle goes away.
+`footer.js`, `tour.js`, `ace_config.js` — relocate when the remaining Angular bundle goes away.
 
-`scorerEvalTest.js` remains because `ScorerFactory` still contains the legacy worker path, even though the worker check is not currently enabled.
+The legacy scorer worker probe was removed with the Angular scorer factory; custom scorer execution remains on the existing client path until the worker/shared-contract work is completed.
 
 ### Stylesheets
 

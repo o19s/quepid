@@ -47,6 +47,7 @@ export default defineConfig({
       { find: "utils/rated_docs", replacement: path.resolve(repoRoot, "app/javascript/utils/rated_docs.js") },
       { find: "utils/scoring", replacement: path.resolve(repoRoot, "app/javascript/utils/scoring.js") },
       { find: "utils/scorer_catalog", replacement: path.resolve(repoRoot, "app/javascript/utils/scorer_catalog.js") },
+      { find: "utils/scorer_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/scorer_runtime.js") },
       { find: "utils/user_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/user_runtime.js") },
       { find: "utils/search_endpoint_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/search_endpoint_runtime.js") },
       { find: "utils/mapper_search_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/mapper_search_runtime.js") },

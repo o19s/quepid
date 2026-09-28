@@ -73,7 +73,7 @@ module JudgementHelper
   end
 
   # Calculate HSL color value matching the Angular app's color scheme
-  # This replicates the same color gradient from the Angular app (ScorerFactory.js)
+  # This replicates the same color gradient from the client scorer runtime.
   # where scores range from red (lowest) to green (highest) on a 0-120 hue scale
   # @param score [Numeric] The rating value
   # @param scale [Array] The full scale array from the book
