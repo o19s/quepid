@@ -3,7 +3,7 @@ import { averageScore, scoreToColor } from "./scoring"
 const LEGACY_UNSCORED_STYLE = { "background-color": "hsl(0, 0%, 0%, 0.5)" }
 
 /**
- * Framework-free scoring operations extracted from queriesSvc.
+ * Framework-free scoring operations extracted from the legacy live-query runtime.
  *
  * Promise scheduling is injected because the compatibility adapter still uses
  * Angular's $q while the eventual case runtime will use native Promises.
@@ -48,7 +48,7 @@ export function scoreQuery({
 
 /**
  * Score a collection and aggregate the same case-level read model that
- * queriesSvc.latestScoreInfo currently exposes.
+ * the legacy runtime's latest score shape currently exposes.
  */
 export function scoreAllQueries({ scorableCollection, promiseApi = Promise, logger = console }) {
   const scores = []

@@ -8,7 +8,7 @@
   function DocListFactory(normalDocsSvc) {
     // altExplainJsonFor is an optional function(doc) -> explain JSON (or undefined), used to
     // feed a mapper-supplied explain breakdown (e.g. Vespa's matchfeatures, see
-    // queriesSvc.js's matchFeaturesExplain) into the same {description, value, details} shape
+    // live-query runtime's matchFeaturesExplain) into the same {description, value, details} shape
     // Solr/ES explains use, when the search engine itself has no explain concept.
     var DocList = function(newDocs, fieldSpec, ratingsStore, altExplainJsonFor) {
       var self = this;

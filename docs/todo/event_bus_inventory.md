@@ -36,7 +36,7 @@ not the parameter name.
 
 | Service | File | Actual scope |
 |---------|------|--------------|
-| `queriesSvc` | `services/queriesSvc.js:12,31` | `$rootScope` |
+| `queriesSvc` | `services/liveQueryRuntimeInitializer.js:12,31` | `$rootScope` |
 
 The remaining Angular listener is now a native document event; no application
 event uses `$rootScope.$emit` / `$rootScope.$on`.
@@ -78,7 +78,7 @@ than replaced with no-op events.
 | `controllers/qscore_case_controller.js` | store | `scoring-complete`, `rating-changed` | yes (`disconnect`) |
 | `controllers/qgraph_controller.js` | store | `scoring-complete` | yes (`disconnect`) |
 | `services/caseSvc.js` | document | `case-header:renamed`, `quepid:case-team-changed`, `judgements:book-settings-saved`, `case-settings:updated` | app lifetime; one listener per event |
-| `services/queriesSvc.js` | document + store | `case-book:associated`, `query-options:saved`, `rating-changed`, `ratings:changed` | app lifetime / store-owned |
+| `services/liveQueryRuntimeInitializer.js` | document + store | `case-book:associated`, `query-options:saved`, `rating-changed`, `ratings:changed` | app lifetime / store-owned |
 
 ## Migration-relevant observations
 

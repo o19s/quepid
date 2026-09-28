@@ -1,9 +1,9 @@
 /**
- * Framework-free helpers extracted from Angular's queriesSvc.
+ * Framework-free helpers extracted from the legacy live-query runtime.
  *
  * These functions deliberately know nothing about Angular, $q, or the case
- * workspace. They are shared through quepidSearch while queriesSvc remains the
- * owner of the live Query objects during the migration.
+ * workspace. They are shared through quepidSearch while the runtime initializer
+ * remains the owner of the live Query objects during the migration.
  */
 
 export function settingsWithTryOverrides(settings, tryOverrides) {
@@ -22,7 +22,7 @@ export function settingsWithTryOverrides(settings, tryOverrides) {
  * This is deliberately independent of Angular services. The caller supplies
  * the small engine predicates and the query's ratings filter, while this
  * helper owns the mutation-prone Solr/ES/Search API argument rules that used
- * to live inside queriesSvc.
+ * to live inside the compatibility initializer.
  */
 export function buildSearcherRequest({
   settings,

@@ -1,7 +1,7 @@
 /**
  * Framework-free per-query state and scoring contract.
  *
- * The Angular queriesSvc still owns search, rated-document lookup, and API
+ * The Angular live-query runtime still owns search, rated-document lookup, and API
  * persistence. This module owns query-local state transitions so those
  * operations can move behind the same contract without changing the live
  * case-page behavior in one large cutover.

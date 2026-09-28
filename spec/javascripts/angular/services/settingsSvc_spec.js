@@ -86,7 +86,6 @@ describe('Service: settingsSvc', function () {
 
   var locationMock = null;
   var windowMock = null;
-  var querySvcMock = null;
 
   beforeEach(function() {
     locationMock = {
@@ -102,13 +101,9 @@ describe('Service: settingsSvc', function () {
     windowMock = {
       location: { assign: jasmine.createSpy(), href: '' }
     };
-    querySvcMock = {
-      changeSettings: jasmine.createSpy()
-    };
     module(function($provide) {
       $provide.value('$location', locationMock);
       $provide.value('$window', windowMock);
-      $provide.value('queriesSvc', querySvcMock);
     });
     /*jshint camelcase:false*/
     inject(function (_settingsSvc_, _caseTryNavSvc_, $injector) {

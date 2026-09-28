@@ -1,7 +1,7 @@
 /**
  * Rated-document lookup rules — which engines can retrieve already-rated docs by
  * id, and the per-engine filter syntax for doing so. Extracted from the Angular
- * `queriesSvc` so the rules are unit-testable and independent of the UI stack.
+ * the live-query runtime so the rules are unit-testable and independent of the UI stack.
  */
 
 const NATIVELY_RATED_DOCS_LOOKUP_ENGINES = new Set(["es", "os", "solr"])

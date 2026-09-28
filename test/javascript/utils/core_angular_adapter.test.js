@@ -57,7 +57,7 @@ describe("core Angular adapter", () => {
     await expect(getSnapshotCapabilities()).resolves.toBe(services)
   })
 
-  it("initializes provider-only compatibility services without exposing them to controllers", async () => {
+  it("does not resolve the removed live-query service for controllers", async () => {
     document.body.setAttribute("ng-app", "QuepidApp")
     const services = {
       configurationSvc: {},
@@ -65,8 +65,7 @@ describe("core Angular adapter", () => {
       caseSvc: {},
       settingsSvc: {},
       caseTryNavSvc: {},
-      scorerSvc: {},
-      queriesSvc: { legacy: true }
+      scorerSvc: {}
     }
     const injector = { get: vi.fn(name => services[name]) }
     window.angular = { element: vi.fn(() => ({ injector: () => injector })) }
@@ -82,7 +81,7 @@ describe("core Angular adapter", () => {
       scorerSvc: services.scorerSvc,
       docCache: undefined
     })
-    expect(injector.get).toHaveBeenCalledWith("queriesSvc")
+    expect(injector.get).not.toHaveBeenCalledWith("queriesSvc")
   })
 
   it("reports the named controller when a capability cannot initialize", async () => {

@@ -3,12 +3,12 @@
 /* jslint latedef:false */
 
 /**
- * Central service for query lifecycle: in-memory `Query` objects, search against the current try
- * (or snapshots), scoring, diffs, ratings, book sync, and bulk operations (`searchAll`, persist, reorder).
- * Most of the interactive case page depends on this service and `settingsSvc`.
+ * Angular runtime initializer for query lifecycle: in-memory `Query` objects, search against the
+ * current try (or snapshots), scoring, diffs, ratings, book sync, and bulk operations (`searchAll`,
+ * persist, reorder). It installs the public capability namespace used by the core case runtime.
  */
 angular.module('QuepidApp')
-  .service('queriesSvc', [
+  .run([
     '$rootScope',
     '$http',
     '$q',
@@ -22,7 +22,7 @@ angular.module('QuepidApp')
     'normalDocsSvc',
     'settingsSvc',
     'searchEndpointSvc',
-    function queriesSvc(
+    function queriesRuntime(
       $scope,
       $http,
       $q,
@@ -38,9 +38,13 @@ angular.module('QuepidApp')
       searchEndpointSvc
     ) {
 
+      var svc = {
+        error: false,
+        displayOrder: [],
+        linkUrl: ''
+      };
       let caseNo = -1;
       let currSettings = {};
-      this.error = false;
       let svcVersion = 0;
       let ratingsVersion = 0;
 
@@ -49,7 +53,6 @@ angular.module('QuepidApp')
       // naturally busts the cache via a different key). See evaluateMapperFunctions() below.
       let mapperFunctionsCache = {};
 
-      let svc = this;
       // Temporary dual-run bridge: the store owns the query collection snapshot
       // and display order while Angular keeps the live Query objects for search,
       // ratings, documents, and scoring.
@@ -59,9 +62,6 @@ angular.module('QuepidApp')
       let liveQueryRegistry = window.quepidSearch.liveQueryRegistry.create({
         store: queryCollectionStore
       });
-      this.displayOrder = [];
-      this.linkUrl = '';
-
       function getAllDiffSettings() {
         return diffStateStore ? diffStateStore.selections() : [];
       }

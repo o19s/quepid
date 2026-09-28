@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Service: queriesSvc', function () {
+describe('Runtime: query capabilities', function () {
   // load the service's module
   beforeEach(module('QuepidTest'));
 
@@ -9,7 +9,6 @@ describe('Service: queriesSvc', function () {
   var $rootScope;
   var $q;
   var fieldSpecSvc = null;
-  var queriesSvc = null;
   var mockFieldSpec = null;
   var mockSettings;
   var mockSearchSvc;
@@ -183,12 +182,11 @@ describe('Service: queriesSvc', function () {
       $provide.value('caseSvc', mockCaseSvc);
     });
 
-    inject(function(_$rootScope_, _$q_, $injector, _queriesSvc_, _fieldSpecSvc_) {
+    inject(function(_$rootScope_, _$q_, $injector, _fieldSpecSvc_) {
       $httpBackend  = $injector.get('$httpBackend');
       $rootScope    = _$rootScope_;
       $q            = _$q_;
       fieldSpecSvc  = _fieldSpecSvc_;
-      queriesSvc    = _queriesSvc_;
 
       mockScorerSvc.setQ($q);
 
@@ -248,11 +246,11 @@ describe('Service: queriesSvc', function () {
     });
 
     it('toggles show only rated state', function() {
-      expect(queriesSvc.showOnlyRated).toEqual(false);
+      expect(window.quepidSearch.queryCapabilities.getListState().showOnlyRated).toEqual(false);
       window.quepidSearch.queryCommands.toggleShowOnlyRated();
-      expect(queriesSvc.showOnlyRated).toEqual(true);
+      expect(window.quepidSearch.queryCapabilities.getListState().showOnlyRated).toEqual(true);
       window.quepidSearch.queryCapabilities.resetQueryState();
-      expect(queriesSvc.showOnlyRated).toEqual(false);
+      expect(window.quepidSearch.queryCapabilities.getListState().showOnlyRated).toEqual(false);
     });
   });
 
@@ -567,15 +565,13 @@ describe('Service: queriesSvc', function () {
     window.quepidSearch.queryCapabilities.scoreAll();
     $rootScope.$apply();
 
-    expect(window.quepidStore.scoring.caseScore).toEqual({
-      score:    queriesSvc.latestScoreInfo.score,
-      allRated: queriesSvc.latestScoreInfo.allRated,
-      // Derived from each scorable's own maxScore (5) — see
-      // docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4.
-      maxScore: 5
-    });
-    expect(window.quepidStore.scoring.queryScore(1)).toEqual(queriesSvc.latestScoreInfo.queries[1]);
-    expect(window.quepidStore.scoring.queryScore(2)).toEqual(queriesSvc.latestScoreInfo.queries[2]);
+    expect(window.quepidStore.scoring.caseScore.score).toBe(5);
+    expect(window.quepidStore.scoring.caseScore.allRated).toBe(true);
+    // Derived from each scorable's own maxScore (5) — see
+    // docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4.
+    expect(window.quepidStore.scoring.caseScore.maxScore).toBe(5);
+    expect(window.quepidStore.scoring.queryScore(1).score).toBe(5);
+    expect(window.quepidStore.scoring.queryScore(2).score).toBe(5);
   });
 
   it('scores scorables', function() {

@@ -3,7 +3,13 @@
  * contracts. The callbacks still point at Angular services during migration,
  * but callers no longer need to know how those services are grouped.
  */
-export function createLiveQueryAdapters({ compatibility = {}, scoring = {}, book = {}, search = {}, ratings = {} }) {
+export function createLiveQueryAdapters({
+  compatibility = {},
+  scoring = {},
+  book = {},
+  search = {},
+  ratings = {}
+}) {
   const factoryOptions = compatibility.factoryOptions || {}
   const executionOptions = compatibility.executionOptions || {}
 
