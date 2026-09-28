@@ -10,6 +10,11 @@ describe("CoreBootstrapController", () => {
       }
     }
     window.quepidSearch = {
+      queryCapabilities: {
+        resetQuery: vi.fn(),
+        resetSearchPromise: vi.fn(),
+        changeSettings: vi.fn().mockResolvedValue(undefined)
+      },
       queryCommands: {
         searchAll: vi.fn().mockResolvedValue(undefined)
       },

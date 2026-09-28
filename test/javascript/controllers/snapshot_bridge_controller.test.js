@@ -66,7 +66,8 @@ describe("SnapshotBridgeController", () => {
         createSnapshotModel: vi.fn()
       },
       queryCapabilities: {
-        refreshAllDiffs: services.queriesSvc.refreshAllDiffs
+        refreshAllDiffs: services.queriesSvc.refreshAllDiffs,
+        getQueryArray: services.queriesSvc.queryArray
       }
     }
     window.quepidStore = {

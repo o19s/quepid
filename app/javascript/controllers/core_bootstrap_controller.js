@@ -45,7 +45,9 @@ export default class extends Controller {
       const searchEngineChanged = () => getSearchEngine(caseTryNavSvc.getTryNo()) !== getSearchEngine(tryNo)
 
       if (caseChanged()) queriesSvc.reset()
-      Object.values(queriesSvc.queries || {}).forEach(query => query.reset())
+      Object.values(queriesSvc.queries || {}).forEach(query => {
+        window.quepidSearch.queryCapabilities.resetQuery(query.queryId)
+      })
 
       caseTryNavSvc.navigationCompleted({ caseNo, tryNo })
 
@@ -54,7 +56,7 @@ export default class extends Controller {
         return this.fail(new Error("No case selected"))
       }
 
-      queriesSvc.querySearchPromiseReset()
+      window.quepidSearch.queryCapabilities.resetSearchPromise()
       await caseSvc.get(caseNo).then(async acase => {
         if (acase === undefined) throw new Error(`Could not retrieve case ${caseNo}. Confirm that the case has been shared with you via a team you are a member of!`)
 
@@ -82,7 +84,7 @@ export default class extends Controller {
         }
 
         await docCache.update(newSettings)
-        await queriesSvc.changeSettings(caseNo, newSettings)
+        await window.quepidSearch.queryCapabilities.changeSettings(caseNo, newSettings)
         window.quepidDom?.flash?.hide()
         window.quepidDom?.flash?.hide("search-error")
         caseSvc.trackLastViewedAt(caseNo)

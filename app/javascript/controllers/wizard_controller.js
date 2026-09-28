@@ -296,7 +296,7 @@ export default class extends Controller {
       const latestSettings = settingsSvc.editableSettings()
       docCache.invalidate()
       docCache.update(latestSettings)
-      queriesSvc.changeSettings(caseTryNavSvc.getCaseNo(), latestSettings)
+      await window.quepidSearch.queryCapabilities.changeSettings(caseTryNavSvc.getCaseNo(), latestSettings)
       const texts = this.newQueries.map((query) => query.queryString).filter(Boolean)
       if (texts.length && window.quepidSearch?.queryLifecycle) {
         const persisted = await window.quepidSearch.queryLifecycle.persistQueries(caseTryNavSvc.getCaseNo(), texts)

@@ -226,7 +226,7 @@ describe('Service: queriesSvc', function () {
     $httpBackend.expectGET(url).respond(200, qResp);
     expect(queriesSvc.queries.length === 0);
 
-    queriesSvc.changeSettings(caseNo, mockSettings);
+    window.quepidSearch.queryCapabilities.changeSettings(caseNo, mockSettings);
     $httpBackend.flush();
 
     // search all queries
@@ -261,6 +261,7 @@ describe('Service: queriesSvc', function () {
     beforeEach(function() {
       setupQuerySvc();
       query = queriesSvc.createQuery('test');
+      queriesSvc.queries[query.queryId] = query;
     });
 
     it('knows if it has not been scored', function() {
@@ -268,7 +269,9 @@ describe('Service: queriesSvc', function () {
     });
 
     it('knows if it has been scored', function() {
-      query.setDocs([]);
+      window.quepidSearch.queryCapabilities.searchQuery(query.queryId);
+      mockSearchSvc.fulfill({response: {docs: []}});
+      $rootScope.$apply();
       query.score().then(function() {
         expect(query.hasBeenScored).toBe(true);
       });
@@ -292,7 +295,9 @@ describe('Service: queriesSvc', function () {
     });
 
     it('knows when docs have been set', function() {
-      query.setDocs([]);
+      window.quepidSearch.queryCapabilities.searchQuery(query.queryId);
+      mockSearchSvc.fulfill({response: {docs: []}});
+      $rootScope.$apply();
       expect(query.docsSet).toBe(true);
     });
 
@@ -308,27 +313,27 @@ describe('Service: queriesSvc', function () {
     });
 
     it('knows if there are unscored queries', function() {
-      expect(queriesSvc.hasUnscoredQueries()).toBe(false);
+      expect(window.quepidSearch.queryCapabilities.getListState().searching).toBe(false);
     });
 
     it('knows when scoring is completed for all queries', function() {
       window.quepidSearch.queryCapabilities.scoreAll().then(function() {
-        expect(queriesSvc.hasUnscoredQueries()).toBe(false);
+        expect(window.quepidSearch.queryCapabilities.getListState().searching).toBe(false);
       });
     });
 
     it('knows if there are unscored queries', function() {
       queriesSvc.queries[0].hasBeenScored = false;
-      expect(queriesSvc.hasUnscoredQueries()).toBe(true);
+      expect(window.quepidSearch.queryCapabilities.getListState().searching).toBe(true);
     });
 
     it('knows how many queries are unscored', function() {
       queriesSvc.queries[0].hasBeenScored = false;
-      expect(queriesSvc.unscoredQueryCount()).toBe(1);
+      expect(window.quepidSearch.queryCapabilities.getListState().batchSize - window.quepidSearch.queryCapabilities.getListState().batchPosition).toBe(1);
     });
 
     it('knows how many queries have been scored', function() {
-      expect(queriesSvc.scoredQueryCount()).toBe(2);
+      expect(window.quepidSearch.queryCapabilities.getListState().batchPosition).toBe(2);
     });
   });
 
@@ -343,7 +348,7 @@ describe('Service: queriesSvc', function () {
     };
 
     beforeEach(function() {
-      versionBeforeSetup = queriesSvc.version();
+      versionBeforeSetup = window.quepidSearch.queryCapabilities.getVersion();
       setupQuerySvc();
       $httpBackend.verifyNoOutstandingExpectation();
     });
@@ -355,20 +360,20 @@ describe('Service: queriesSvc', function () {
     });
 
     it('changes version when changing try', function() {
-      expect(queriesSvc.version()).not.toEqual(versionBeforeSetup);
+      expect(window.quepidSearch.queryCapabilities.getVersion()).not.toEqual(versionBeforeSetup);
     });
 
     it('orders queries by displayOrder', function() {
-      var queriesInOrder = queriesSvc.queryArray();
+      var queriesInOrder = window.quepidSearch.queryCapabilities.getQueryArray();
       expect(queriesInOrder[0].queryText).toBe('prognosis of alzheimers');
       expect(queriesInOrder[1].queryText).toBe('symptoms of heart attack');
       expect(queriesInOrder.length).toEqual(2);
     });
 
     it('updates version if rebootstrap with no queries', function() {
-      var versionBefore = queriesSvc.version();
+      var versionBefore = window.quepidSearch.queryCapabilities.getVersion();
       setupQuerySvc(3, emptyQueryResp);
-      expect(queriesSvc.version()).not.toEqual(versionBefore);
+      expect(window.quepidSearch.queryCapabilities.getVersion()).not.toEqual(versionBefore);
     });
 
     it('rejects the query lifecycle refresh when bootstrap fails', function() {
@@ -404,14 +409,12 @@ describe('Service: queriesSvc', function () {
   });
 
   describe('custom bootstrapping', function() {
-    it('reports bootstrapped through querySearchReady promise', function() {
+    it('reports bootstrapped through the settings capability promise', function() {
       mockSearchSvc.reset();
       var caseNo = 2;
       $httpBackend.expectGET('api/cases/' + caseNo + '/queries?bootstrap=true').respond(200, mockFullQueriesResp);
       var called = 0;
-      queriesSvc.changeSettings(caseNo, mockSettings);
-
-      queriesSvc.querySearchReady()
+      window.quepidSearch.queryCapabilities.changeSettings(caseNo, mockSettings)
       .then(function() {
         called++;
       });
@@ -434,24 +437,24 @@ describe('Service: queriesSvc', function () {
     it('exposes a narrow live-query reconciliation adapter', function() {
       setupQuerySvc();
 
-      var versionBeforeRemoval = queriesSvc.version();
+      var versionBeforeRemoval = window.quepidSearch.queryCapabilities.getVersion();
       expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval(0, false)).toBe(true);
-      expect(queriesSvc.queryArray().length).toEqual(1);
-      expect(queriesSvc.version()).not.toEqual(versionBeforeRemoval);
+      expect(window.quepidSearch.queryCapabilities.getQueryArray().length).toEqual(1);
+      expect(window.quepidSearch.queryCapabilities.getVersion()).not.toEqual(versionBeforeRemoval);
       expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval(0, false)).toBe(false);
     });
   });
 
   it('provides working case no', function() {
     $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
-    queriesSvc.changeSettings(2, mockSettings);
+    window.quepidSearch.queryCapabilities.changeSettings(2, mockSettings);
     $httpBackend.flush();
     expect(queriesSvc.getCaseNo()).toBe(2);
   });
 
   it('loading state reported' , function() {
     $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
-    queriesSvc.changeSettings(2, mockSettings);
+    window.quepidSearch.queryCapabilities.changeSettings(2, mockSettings);
     $httpBackend.flush();
     window.quepidSearch.queryCommands.searchAll();
 
@@ -468,7 +471,7 @@ describe('Service: queriesSvc', function () {
 
   it('no results state reported', function() {
     $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
-    queriesSvc.changeSettings(2, mockSettings);
+    window.quepidSearch.queryCapabilities.changeSettings(2, mockSettings);
     $httpBackend.flush();
     window.quepidSearch.queryCommands.searchAll();
 
@@ -487,7 +490,7 @@ describe('Service: queriesSvc', function () {
 
   it('no results state clears', function() {
     $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
-    queriesSvc.changeSettings(2, mockSettings);
+    window.quepidSearch.queryCapabilities.changeSettings(2, mockSettings);
     $httpBackend.flush();
     window.quepidSearch.queryCommands.searchAll();
     $rootScope.$apply();
@@ -619,14 +622,14 @@ describe('Service: queriesSvc', function () {
       testQuery = queriesSvc.queries['0'];
       testDoc = testQuery.docs[0];
       $httpBackend.expectPUT('api/cases/2/queries/' + testQuery.queryId + '/ratings').respond(200, {doc_id: testDoc.id, rating: 10});
-      versionBeforeRate = queriesSvc.version();
+      versionBeforeRate = window.quepidSearch.queryCapabilities.getVersion();
       testDoc.rate(10);
       $httpBackend.flush();
       $httpBackend.verifyNoOutstandingExpectation();
     });
 
     it('rating docs updates version', function() {
-      expect(versionBeforeRate).not.toBe(queriesSvc.version());
+      expect(versionBeforeRate).not.toBe(window.quepidSearch.queryCapabilities.getVersion());
     });
   });
 
@@ -641,7 +644,7 @@ describe('Service: queriesSvc', function () {
         return mockFieldSpec;
       },
     searchUrl: mockSolrUrl};
-    queriesSvc.changeSettings(3, mockNewSettings);
+    window.quepidSearch.queryCapabilities.changeSettings(3, mockNewSettings);
     $httpBackend.flush();
     window.quepidSearch.queryCommands.searchAll();
     mockSearchSvc.fulfill(mockResults);
@@ -662,7 +665,7 @@ describe('Service: queriesSvc', function () {
 
   it('reports state as error on error response', function() {
     $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
-    queriesSvc.changeSettings(2, mockSettings);
+    window.quepidSearch.queryCapabilities.changeSettings(2, mockSettings);
     $httpBackend.flush();
     window.quepidSearch.queryCommands.searchAll().catch(angular.noop);
 
@@ -718,7 +721,7 @@ describe('Service: queriesSvc', function () {
 
     it('calculates max doc score', function() {
       $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
-      queriesSvc.changeSettings(2, mockSettings);
+      window.quepidSearch.queryCapabilities.changeSettings(2, mockSettings);
       $httpBackend.flush();
     window.quepidSearch.queryCommands.searchAll();
 
@@ -731,7 +734,7 @@ describe('Service: queriesSvc', function () {
 
     it('resets max doc score', function() {
       $httpBackend.expectGET('api/cases/2/queries?bootstrap=true').respond(200, mockFullQueriesResp);
-      queriesSvc.changeSettings(2, mockSettings);
+      window.quepidSearch.queryCapabilities.changeSettings(2, mockSettings);
       $httpBackend.flush();
     window.quepidSearch.queryCommands.searchAll();
       mockSearchSvc.fulfill(mockResults1);

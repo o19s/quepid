@@ -131,7 +131,7 @@ export default class extends Controller {
       const payload = buildSnapshotPayload(
         detail.name,
         detail.recordDocumentFields,
-        services.queriesSvc.queryArray()
+        window.quepidSearch.queryCapabilities.getQueryArray()
       )
       const response = await apiFetch(`api/cases/${caseNo}/snapshots`, {
         method: "POST",
