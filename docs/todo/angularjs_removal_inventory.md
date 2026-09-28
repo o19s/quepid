@@ -29,7 +29,7 @@ AngularJS 1.8 powers the **core case UI** at `/case/:id` and `/case/:id/try/:try
 | Controllers | 0 |
 | Services | 9 (`.service()` registrations; 9 files under `services/`) |
 | Factories | 4 |
-| Filters | 5 under `filters/` |
+| Filters | 1 under `filters/` |
 | Custom directives / components | 1 directive, no components |
 | `QuepidApp` module dependencies (excl. `UtilitiesModule`) | 10 |
 | Vendored Angular libraries (`app/javascript/vendor`) | 6 packages (+ `angular` core from npm) |
@@ -463,8 +463,6 @@ Angular `Query` until search and scoring migrate. The Angular service no longer
 owns duplicate delete/move/reorder HTTP methods or listens directly for the
 Stimulus completion events.
 
-Filters: `queryStateClass`, `scoreDisplay`, `searchEngineName`
-
 ### 6. Search results and rating UI
 
 | Item | Type | Key files |
@@ -473,7 +471,7 @@ Filters: `queryStateClass`, `scoreDisplay`, `searchEngineName`
 | Rating popover | Stimulus controller | `rating_popover_controller.js` — mutation still bridges back to Angular via `rating-popover:rate`/`:reset` events |
 | Rate elements | framework-free runtime + Angular transport callback | `app/javascript/utils/ratings_store.js`, `app/javascript/utils/live_query_runtime_initializer.js` |
 | Query scoring and case aggregation | framework-free runtime + Angular adapter | `app/javascript/utils/query_scoring.js`, `app/javascript/utils/live_query_runtime_initializer.js` |
-| Rating background styling | filter | `ratingBgStyle` |
+| Rating background styling | framework-free utility + Stimulus controller | `app/javascript/utils/scoring.js`, `app/javascript/controllers/rating_popover_controller.js` |
 | Query options modal | Stimulus controller + Angular scoring bridge | `app/javascript/controllers/query_options_core_controller.js`, `app/views/shared/_query_options_core_modal.html.erb`; save dispatches `query-options:saved` so Angular updates the live Query and rescoring continues through `queriesSvc` |
 | Move query modal | Stimulus controller + query API seam | `app/javascript/controllers/move_query_core_controller.js` and `app/javascript/utils/query_lifecycle.js`; Stimulus owns persistence, while `queriesSvc` only reconciles its live object through `query-command:move-completed` |
 | Missing documents search | Stimulus controller + framework-free targeted-search runtime + Angular dependency adapter | `app/javascript/controllers/missing_documents_controller.js`, `app/javascript/utils/query_runtime.js`, and `app/javascript/quepid_search.js`; `queriesSvc` now only injects legacy searcher/settings/document dependencies |
@@ -515,7 +513,7 @@ Heavy: `quepidTypeahead` (299).
 
 ## Services, factories, and filters
 
-**Services (4):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `settingsSvc` (* = `UtilitiesModule`). The former `queriesSvc`, `scorerSvc`, `userSvc`, `mapperBasedSearchEngineSvc`, and `searchEndpointSvc` registrations and module runtime initializer are gone; catalog behavior now lives in the tested framework-free `search_endpoint_runtime.js` and `mapper_search_runtime.js` modules. `core_bootstrap_controller.js` invokes the explicit `live_query_runtime_initializer.js` factory instead. `ScorerFactory` remains as the custom scorer execution boundary. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
+**Services (4):** `caseSvc`, `caseTryNavSvc`, `configurationSvc`*, `settingsSvc` (* = `UtilitiesModule`). The former `queriesSvc`, `scorerSvc`, `userSvc`, `mapperBasedSearchEngineSvc`, and `searchEndpointSvc` registrations and module runtime initializer are gone. The stateless settings catalog—presets, mapper registration, engine policy, demo selection, and troubleshooting links—now lives in the tested framework-free `settings_catalog_runtime.js`; mutable try state and persistence remain behind the explicit settings compatibility boundary. `core_bootstrap_controller.js` invokes the explicit `live_query_runtime_initializer.js` factory instead. `ScorerFactory` remains as the custom scorer execution boundary. `querySnapshotSvc` was removed: `snapshot_bridge_controller.js` now owns shallow bootstrap and create transport, while snapshot hydration and scoring remain behind the explicit compatibility boundary. `docCacheSvc` was also removed; its shared/scoped cache now lives in the tested `app/javascript/utils/doc_cache.js` runtime used by the Angular query/scoring island and Stimulus snapshot/bootstrap/wizard boundaries.
 
 `queriesSvc` reads the framework-free snapshot registry directly. Static snapshot
 imports in the new-case wizard use `app/javascript/utils/snapshot_import.js`.
@@ -539,7 +537,11 @@ the named native `ratings:changed` event; the Angular root event relay is
 removed. The `CaseScoreStore` event remains the normal path until the live
 query/scoring migration is complete.
 
-**Filters (5 under `filters/`):** `quepidTypeaheadHighlight`, `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, `searchEngineName`
+**Filters (1 under `filters/`):** `quepidTypeaheadHighlight`
+
+Removed on 2026-09-28: `queryStateClass`, `ratingBgStyle`, `scoreDisplay`, and
+`searchEngineName`. Their framework-free replacements are covered by Vitest
+and are the consumers used by the Stimulus case workspace.
 
 **Values (1):** `settingsIdValue`
 

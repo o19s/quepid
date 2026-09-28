@@ -11,10 +11,8 @@ import {
 
 /**
  * Unit contract for the score display/aggregation rules extracted from Angular's
- * `scoreDisplay` / `ratingBgStyle` filters and `queriesSvc.scoreAll()`. None of
- * this had Vitest coverage before; `ratingBgStyle_spec.js` (Karma) only asserts
- * a background-color key exists, not which color, so this is the first real
- * coverage of the rating-scale lookup and the sentinel-exclusion averaging.
+ * `scoreDisplay` / `ratingBgStyle` filters and `queriesSvc.scoreAll()`. The
+ * framework-free replacement is covered here instead of through Angular.
  */
 describe("scoring", () => {
   describe("isUnratedScore", () => {

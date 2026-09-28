@@ -15,7 +15,7 @@ const SEARCH_ENGINE_NAMES = {
 
 /**
  * Engines that cannot look a doc up by id — snapshots must store document
- * fields. Matches `settingsSvc.supportLookupById`.
+ * fields. Matches the settings catalog runtime's support policy.
  */
 const NO_LOOKUP_BY_ID = new Set(["vectara", "searchapi"])
 

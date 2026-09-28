@@ -1,6 +1,7 @@
 import { createScorerCatalog } from "utils/scorer_catalog"
 import { createMapperSearchRuntime } from "utils/mapper_search_runtime"
 import { createSearchEndpointRuntime } from "utils/search_endpoint_runtime"
+import { createSettingsCatalog } from "utils/settings_catalog_runtime"
 import { createUserRuntime } from "utils/user_runtime"
 
 /**
@@ -18,6 +19,7 @@ export function angularInjector() {
 const servicePromises = new Map()
 const mapperSearchRuntime = createMapperSearchRuntime()
 const searchEndpointRuntime = createSearchEndpointRuntime()
+const settingsCatalog = createSettingsCatalog()
 const userRuntime = createUserRuntime()
 
 export function waitForAngularServices(serviceNames, { intervalMs = 50, maxAttempts = 100 } = {}) {
@@ -85,6 +87,7 @@ export function resetCoreServiceCache() {
   servicePromises.clear()
   mapperSearchRuntime.reset()
   searchEndpointRuntime.reset()
+  settingsCatalog.reset()
   userRuntime.reset()
 }
 
@@ -194,7 +197,7 @@ function createSnapshotCapabilities(services) {
   return {
     settings: {
       editable: () => settingsSvc.editableSettings(),
-      supportsLookupById: (searchEngine) => settingsSvc.supportLookupById(searchEngine)
+      supportsLookupById: (searchEngine) => settingsCatalog.supportsLookupById(searchEngine)
     },
     navigation: {
       rootUrl: () => caseTryNavSvc.getQuepidRootUrl(),
@@ -221,11 +224,11 @@ function createWizardCapabilities(
   return {
     settings: {
       editable: () => settingsSvc.editableSettings(),
-      registerMapper: (engine) => settingsSvc.registerMapperBasedSearchEngine(engine),
-      pick: (preset, url) => settingsSvc.pickSettingsToUse(preset, url),
+      registerMapper: (engine) => settingsCatalog.registerMapper(engine),
+      pick: (preset, url) => settingsCatalog.pickSettingsToUse(preset, url),
       proxyUrlFor: (searchEndpointId) => caseTryNavSvc.getQuepidProxyUrl(searchEndpointId),
-      demoChosen: (engine, url) => settingsSvc.demoSettingsChosen(engine, url),
-      defaultSolrQueryParams: () => settingsSvc.defaultSettings.solr.queryParams,
+      demoChosen: (engine, url) => settingsCatalog.demoSettingsChosen(engine, url),
+      defaultSolrQueryParams: () => settingsCatalog.defaultSolrQueryParams(),
       applicable: () => settingsSvc.applicableSettings(),
       update: (value) => settingsSvc.update(value)
     },
@@ -267,8 +270,8 @@ function createTuneRelevanceCapabilities(services, searchEndpointRuntime) {
   return {
     settings: {
       editable: () => settingsSvc.editableSettings(),
-      supportsEscapeQuery: (engine) => settingsSvc.supportsEscapeQuery(engine),
-      troubleshootingWikiUrl: (...args) => settingsSvc.troubleshootingWikiUrl(...args),
+      supportsEscapeQuery: (engine) => settingsCatalog.supportsEscapeQuery(engine),
+      troubleshootingWikiUrl: (...args) => settingsCatalog.troubleshootingWikiUrl(...args),
       save: (value) => settingsSvc.save(value),
       duplicateTry: (tryNo) => settingsSvc.duplicateTry(tryNo),
       renameTry: (tryNo, name) => settingsSvc.renameTry(tryNo, name),
