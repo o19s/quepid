@@ -255,7 +255,7 @@ The remaining Angular and compatibility consumers reach into `queriesSvc`; the `
 |---------|---------|---------|
 | **Read / display** | `queryArray`, `latestScoreInfo`, `version`, `hasUnscoredQueries`, `scoredQueryCount`, `queryCount`, `isBootstrapping`, `queries`, `showOnlyRated` | `utils/case_csv.js`; Frog Report reads `queryDocumentsStore` |
 | **Mutation / lifecycle** | `bootstrapQueries`, `changeSettings`, `searchAll`, `createQuery`, `deleteQuery`, `moveQuery`, `updateQueryDisplayPosition`, `reset`, `updateScores`, `scoreAll`, `refreshAllDiffs`, `syncToBook` | `mainCtrl`, `add_query`, `diff`, `caseSvc`; move/delete persistence is Stimulus-owned and only reconciles Angular's live objects |
-| **Search / score engine** (`Query`) | `search`, `searchFromSnapshot`, `paginate`, `ratedPaginate`, `score` / `scoreOthers`, `refreshRatedDocs`, `setDocs`, `filterToRatings`, plus svc-level `createSearcherFromSettings`, `normalizeDocExplains`, `searchApiRatedDocs`, `pAll`, mapper `eval` | `docFinder`; otherwise internal |
+| **Search / score engine** (`Query`) | `search`, `searchFromSnapshot`, `paginate`, `ratedPaginate`, `score` / `scoreOthers`, `refreshRatedDocs`, `setDocs`, `filterToRatings`, plus internal searcher construction, document normalization, `searchApiRatedDocs`, `pAll`, mapper `eval` | `docFinder`; otherwise internal |
 
 
 **`static` is normalized to `solr` by mutation.** `createSearcherFromSettings()` assigns `passedInSettings.searchEngine = 'solr'` for a static engine, and `Query.search()` passes `currSettings` uncopied — so the rewrite persists on the service until the next `changeSettings()`. It is load-bearing: `Query.search()` builds `ratedSearcher` with `filterToRated: true` on every search, and `filterToRatings()` has no `static` branch, so without the rewrite a static case pushes `undefined` into `fq`. The rewrite reaches only the settings-level copy — `selectedTry.searchEngine` stays `static`, which is why `trySupportsRatedDocsLookup()` (read off the try) correctly leaves "Show only rated" disabled for static cases. Extractions must normalize `static` → `solr` at the searcher/filter seam **only**, never in the capability predicates, or the toggle silently turns on. No Karma or Vitest example covers a static engine.
@@ -479,7 +479,7 @@ controller and its API endpoint, so the obsolete Angular `Query#saveNotes` and
 
 Query persistence is now Stimulus/store-owned for create, bulk create, delete,
 move, and reorder. The only remaining mutation bridge for delete/move is
-`queryState.reconcileQueryRemoval`, which removes the corresponding live
+`queryCapabilities.reconcileQueryRemoval`, which removes the corresponding live
 Angular `Query` until search and scoring migrate. The Angular service no longer
 owns duplicate delete/move/reorder HTTP methods or listens directly for the
 Stimulus completion events.

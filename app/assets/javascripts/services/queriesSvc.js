@@ -152,19 +152,19 @@ angular.module('QuepidApp')
           return angular.copy(settings);
         },
         createSearcher: function(query, options) {
-          return svc.createSearcherFromSettings(currSettings, query, options);
+          return createSearcherFromSettings(currSettings, query, options);
         },
         createRatedSearcher: function(settings, query) {
-          return svc.createSearcherFromSettings(settings, query, { filterToRated: true });
+          return createSearcherFromSettings(settings, query, { filterToRated: true });
         },
         searchApiRatedDocs: function(settings, query, ratedIDs) {
-          return svc.searchApiRatedDocs(settings, query, ratedIDs);
+          return searchApiRatedDocs(settings, query, ratedIDs);
         },
         supportsSearchApiRatedDocsLookup: function(aTry) {
-          return svc.trySupportsSearchApiRatedDocsLookup(aTry);
+          return trySupportsSearchApiRatedDocsLookup(aTry);
         },
         createSnapshotSearcher: function(snapshotId, query) {
-          return svc.createSearcherFromSnapshot(snapshotId, query, currSettings);
+          return createSearcherFromSnapshot(snapshotId, query, currSettings);
         },
         normalizeDocuments: function(query, searcher, fieldSpec) {
           return normalizeDocExplains(query, searcher, fieldSpec);
@@ -326,26 +326,7 @@ angular.module('QuepidApp')
         svc.applyDisplayOrder(displayOrder);
       };
 
-      // Method to clear cache for a specific book
-      this.clearSyncCache = function(bookId) {
-        bookSyncRuntime.clearSyncCache(bookId);
-        $log.debug('Cleared sync cache for book ' + bookId);
-      };
-
-      // Method to get cache stats for debugging
-      this.getSyncCacheStats = function(bookId) {
-        return bookSyncRuntime.getSyncCacheStats(bookId);
-      };
-
       this.getCaseNo = getCaseNo;
-      this.createSearcherFromSettings = createSearcherFromSettings;
-      this.createSearcherFromSnapshot = createSearcherFromSnapshot;
-      this.buildSearchApiRatedDocsQueryParams = buildSearchApiRatedDocsQueryParams;
-      this.searchApiRatedDocs = searchApiRatedDocs;
-      this.trySupportsSearchApiRatedDocsLookup = trySupportsSearchApiRatedDocsLookup;
-      this.trySupportsRatedDocsLookup = trySupportsRatedDocsLookup;
-      this.settingsWithTryOverrides = settingsWithTryOverrides;
-      this.normalizeDocExplains = normalizeDocExplains;
       this.toggleShowOnlyRated = toggleShowOnlyRated;
       // Temporary adapter for the Stimulus query-lifecycle controller. The
       // framework-free runtime owns persistence orchestration while this
@@ -445,7 +426,6 @@ angular.module('QuepidApp')
       }
       window.quepidSearch.queryCapabilities.getQuery = getLiveQuery;
       window.quepidSearch.queryCapabilities.getCaseNo = getCaseNo;
-      window.quepidSearch.queryState.getCaseNo = window.quepidSearch.queryCapabilities.getCaseNo;
 
       // Stimulus owns query persistence and the collection stores own the
       // rendered list. Keep only this narrow adapter for the live Angular
@@ -460,7 +440,6 @@ angular.module('QuepidApp')
         if (rescore) svc.updateScores();
         return true;
       };
-      window.quepidSearch.queryState.reconcileQueryRemoval = window.quepidSearch.queryCapabilities.reconcileQueryRemoval;
 
       function rateDocument(queryId, docId, rating) {
         var query = getLiveQuery(queryId);
