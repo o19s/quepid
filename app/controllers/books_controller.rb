@@ -70,7 +70,7 @@ class BooksController < ApplicationController
     @complete_count = @total_pairs - @zero_judgement_count - @partial_count
     @coverage_pct   = @total_pairs.positive? ? ((@complete_count.to_f / @total_pairs) * 100).round : 0
 
-    # ── Per-judge activity: last 7 days sparkline + last judged timestamp ─────
+    # ── Per-judge activity: last 30 days sparkline + last judged timestamp ────
     @judge_activity = @book.judge_activity_rows
 
     respond_with(@book)
@@ -99,8 +99,8 @@ class BooksController < ApplicationController
       SelectionStrategy.unjudged_pairs_count(@book) +
       SelectionStrategy.partially_judged_pairs_not_yet_judged_by_count(@book, current_user)
 
-    # 7-day sparkline: judgements per day for this user in this book
-    @sparkline_data = @book.judge_activity_for([ current_user.id ]).fetch(current_user.id, { sparkline: [] })[:sparkline]
+    # 30-day sparkline: judgements per day for this user in this book
+    @sparkline_data = @book.judge_activity_for([ current_user.id ], days: 30).fetch(current_user.id, { sparkline: [] })[:sparkline]
 
     @user_has_judged_all = SelectionStrategy.user_has_judged_all_available_pairs?(@book, current_user)
     @moar_judgements_needed = SelectionStrategy.moar_judgements_needed?(@book)

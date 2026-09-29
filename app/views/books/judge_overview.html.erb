@@ -114,28 +114,28 @@
   <div class="col-md-6">
     <div class="card h-100">
       <div class="card-body">
-        <h5 class="card-title">Your Activity — Last 7 Days</h5>
+        <h5 class="card-title">Your Activity — Last 30 Days</h5>
         <% if @sparkline_data.sum { |d| d[:count] }.positive? %>
           <%=
             Vega.lite
               .data(@sparkline_data)
-              .width(400)
               .height(140)
               .autosize({ type: "fit", contains: "padding" })
               .mark(type: "line", point: true, color: "#0d6efd")
               .encoding(
-                x: { field: "date", type: "ordinal", axis: { labelAngle: 0, title: nil }, sort: nil },
+                x: { field: "date", type: "ordinal",
+                     axis: { labelAngle: -45, labelOverlap: true, title: nil }, sort: nil },
                 y: { field: "count", type: "quantitative",
                      axis: { title: "Judgements", tickMinStep: 1 } },
                 tooltip: [
-                  { field: "date",  type: "ordinal",      title: "Day" },
+                  { field: "date",  type: "ordinal",      title: "Date" },
                   { field: "count", type: "quantitative", title: "Judgements" }
                 ]
               )
               .config(view: { stroke: nil })
           %>
         <% else %>
-          <p class="text-muted mb-0">No judging activity in the last 7 days yet.</p>
+          <p class="text-muted mb-0">No judging activity in the last 30 days yet.</p>
         <% end %>
       </div>
     </div>

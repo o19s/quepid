@@ -62,5 +62,6 @@
     .data(@prophet_case_data[:vega_data])
     .layer(layers)
     .height(60)
+    .autosize({ type: "fit", contains: "padding" })
     .config(axis: {title: nil, labelFontSize: 9}) %>
 </turbo-frame>

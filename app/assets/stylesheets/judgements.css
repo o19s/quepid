@@ -176,3 +176,22 @@
   display: inline-block;
   animation: icon-pulse 1s ease-in-out 4;
 }
+
+/* Linked Cases: centers the sync-direction icon on the case/book divider line. */
+.case-book-divider-cell {
+  position: relative;
+  min-width: 3rem;
+}
+
+.case-book-divider-cell::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 50%;
+  width: 1px;
+  background-color: var(--bs-border-color);
+}
+
+.case-book-sync-icon {
+  position: relative;
+  background-color: var(--bs-body-bg);
+}

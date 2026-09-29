@@ -6,8 +6,8 @@
       <i class="bi bi-robot <%= row[:actively_judging] ? 'text-primary' : 'text-secondary' %> <%= 'judge-icon-flash' if flash_active %>"
          id="judge-icon-<%= row[:judge].id %>"></i>
     <% else %>
-      <i class="bi bi-person-circle text-secondary <%= 'judge-icon-flash' if flash_active %>"
-         id="judge-icon-<%= row[:judge].id %>"></i>
+      <%= avatar_tag row[:judge], size: 18, classes: (flash_active ? 'judge-icon-flash' : ''),
+                     id: "judge-icon-#{row[:judge].id}" %>
     <% end %>
     <%= row[:judge].fullname %>
     <% if is_ai_judge && row[:auto_run] %>
@@ -56,7 +56,6 @@
       <%=
         Vega.lite
           .data(row[:sparkline])
-          .width(140)
           .height(32)
           .mark(type: "line", point: true, color: is_ai_judge ? "#6610f2" : "#0d6efd")
           .encoding(
@@ -64,7 +63,7 @@
             y: { field: "count", type: "quantitative",
                  axis: nil, scale: { domainMin: 0 } },
             tooltip: [
-              { field: "date",  type: "ordinal",      title: "Day" },
+              { field: "date",  type: "ordinal",      title: "Date" },
               { field: "count", type: "quantitative", title: "Judgements" }
             ]
           )

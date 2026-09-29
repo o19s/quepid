@@ -197,7 +197,8 @@ class Book < ApplicationRecord
     user_ids.index_with do |uid|
       sparkline = (days - 1).downto(0).map do |days_ago|
         date = days_ago.days.ago.to_date
-        { date: date.strftime('%a'), count: daily_counts[[ uid, date ]] || 0 }
+        # Not %a (weekday name) - repeats and collides once the window exceeds 7 days.
+        { date: date.strftime('%b %-d'), count: daily_counts[[ uid, date ]] || 0 }
       end
       { sparkline: sparkline, count: totals[uid] || 0, last_judged_at: last_ats[uid] }
     end
@@ -217,13 +218,13 @@ class Book < ApplicationRecord
   # Shared by the initial page render and the live broadcast (which
   # re-renders the whole table on every change) so a judge's row is never
   # missing just because it didn't exist yet when a viewer's page loaded.
-  def judge_activity_rows
+  def judge_activity_rows days: 30
     judge_ids = (judgements.where.not(user_id: nil).distinct.pluck(:user_id) + ai_judges.pluck(:id)).uniq
     return [] if judge_ids.empty?
 
     actively_judging_ids = RunJudgeJudyJob.actively_judging_user_ids(self).to_set
     judges_by_id = User.where(id: judge_ids).index_by(&:id)
-    activity = judge_activity_for(judge_ids)
+    activity = judge_activity_for(judge_ids, days: days)
     auto_run_ids = books_ai_judges.auto_run.pluck(:user_id).to_set
 
     rows = judge_ids.filter_map do |uid|
