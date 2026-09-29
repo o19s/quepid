@@ -27,13 +27,13 @@ class CoreController < ApplicationController
               current_user.cases_involved_with.not_archived.last
             end
 
-    if @case # don't run if we don't find the case!
-      @try = if params[:try_number].present?
-               @case.tries.where(try_number: params[:try_number]).first
-             else
-               @case.tries.latest
-             end
-    end
+    return redirect_to(case_new_path) unless @case
+
+    @try = if params[:try_number].present?
+             @case.tries.where(try_number: params[:try_number]).first
+           else
+             @case.tries.latest
+           end
   end
 
   def populate_from_params

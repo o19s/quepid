@@ -16,5 +16,55 @@ class CoreControllerTest < ActionController::TestCase
       get :index
       assert_response :success
     end
+
+    test 'creates a case and redirects to its first try when starting a new case' do
+      assert_difference 'Case.count', 1 do
+        get :new
+      end
+
+      created_case = Case.order(:id).last
+      assert_redirected_to case_core_path(created_case, created_case.tries.first.try_number, params: { showWizard: true })
+    end
+
+    test 'loads the requested case and try' do
+      kase = cases(:one)
+      current_try = tries(:one)
+
+      get :index, params: { id: kase.id, try_number: current_try.try_number }
+
+      assert_response :success
+      assert_equal kase, assigns(:case)
+      assert_equal current_try, assigns(:try)
+    end
+
+    test 'renames a case and updates its search endpoint settings' do
+      kase = cases(:one)
+      current_try = tries(:one)
+
+      get :index, params: {
+        id:                  kase.id,
+        try_number:          current_try.try_number,
+        caseName:            'Renamed from core',
+        searchEngine:        'solr',
+        searchUrl:           'https://search.example.test/solr',
+        apiMethod:           'GET',
+        basicAuthCredential: '',
+        fieldSpec:           'id:id title:title',
+      }
+
+      assert_response :success
+      assert_equal 'Renamed from core', kase.reload.case_name
+      assert_equal 'solr', current_try.reload.search_endpoint.search_engine
+      assert_equal 'https://search.example.test/solr', current_try.search_endpoint.endpoint_url
+      assert_equal 'GET', current_try.search_endpoint.api_method
+      assert_equal '', current_try.search_endpoint.basic_auth_credential
+      assert_equal 'id:id title:title', current_try.field_spec
+    end
+
+    test 'does not load an inaccessible case' do
+      get :index, params: { id: cases(:not_shared).id }
+
+      assert_redirected_to case_new_path
+    end
   end
 end
