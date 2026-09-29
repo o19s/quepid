@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import quepidSearch from "quepid_search"
-import { initializeLiveQueryRuntime } from "utils/live_query_runtime_initializer"
+import { createLiveQueryRuntimeOwner } from "utils/live_query_runtime_owner"
 
 const deferred = () => {
   let resolve
@@ -12,7 +12,7 @@ const deferred = () => {
   return { promise, resolve, reject }
 }
 
-describe("initializeLiveQueryRuntime", () => {
+describe("createLiveQueryRuntimeOwner", () => {
   afterEach(() => {
     delete window.quepidStore
     delete quepidSearch.splainerSearch
@@ -29,7 +29,7 @@ describe("initializeLiveQueryRuntime", () => {
       solrExplainExtractorSvc: { docsWithExplainOther: vi.fn() }
     }
 
-    initializeLiveQueryRuntime({
+    createLiveQueryRuntimeOwner({
       search: quepidSearch,
       store: window.quepidStore,
       framework: {

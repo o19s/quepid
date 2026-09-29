@@ -24,7 +24,6 @@ See also: [App structure](../app_structure.md), [Vendor README](../../app/javasc
 | **P0** | Scorer sandboxing | Client scorer code still executes through `new Function()`; evaluate a Web Worker or equivalent browser isolation. V8/MiniRacer remains the batch path. |
 | **P1** | Scorer contract drift | `app/javascript/utils/scorer_runtime.js` and `scorer_logic.js` need a canonical shared API and migration guidance. |
 | **P1** | SearchAPI mapper execution | Browser mapper code uses `new Function()` while the server uses MiniRacer; document and harden the shared contract. |
-| **P2** | Compatibility invalidation | Remove `svcVersion` and ratings-version counters once their remaining consumers are gone. |
 | **P2** | Accessibility | Complete the pass for score and rating controls so state is not conveyed by color alone; add accessible names to icon-only controls. |
 
 ## Remaining compatibility seams
@@ -42,12 +41,10 @@ boundaries whose behavior must be preserved while the core UI evolves:
 - Fractional indexing, try ancestry overflow handling, position-weighted selection,
   and score deduplication remain backend contracts that frontend work must not change.
 - `app/javascript/utils/core_capabilities_runtime.js` now exposes module-owned
-  capabilities for bootstrap, snapshots, the wizard, and Tune Relevance; it no
-  longer accepts a legacy runtime from callers. The remaining store-transition
-  boundary is `app/javascript/utils/live_query_runtime_initializer.js`, which
-  coordinates live-query search, scoring, and live query objects alongside the
-  explicit query stores. Remove the duplicate ownership only after those
-  consumers have been moved and verified.
+  capabilities for bootstrap, snapshots, the wizard, Tune Relevance, and the
+  live-query owner. The live-query graph is wired directly from explicit
+  framework/domain dependencies in `live_query_runtime_owner.js`; there is no
+  compatibility initializer or callback-adapter module left in the core path.
 
 ## Open UX and testing work
 

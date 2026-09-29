@@ -2,7 +2,6 @@ import { Controller } from "@hotwired/stimulus"
 import { getBootstrapCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
-import { initializeLiveQueryRuntime } from "utils/live_query_runtime_initializer"
 import coreFlash from "utils/core_flash"
 
 export default class extends Controller {
@@ -25,12 +24,8 @@ export default class extends Controller {
       const runtime = getCoreCapabilities()
       this.capabilities = await getBootstrapCapabilities()
 
-      if (this.capabilities.liveQuery && runtime.splainerSearch?.searchSvc) {
-        initializeLiveQueryRuntime({
-          ...this.capabilities.liveQuery,
-          search: runtime,
-          store: stores
-        })
+      if (this.capabilities.liveQuery?.create && runtime.splainerSearch?.searchSvc) {
+        this.capabilities.liveQuery.create({ search: runtime, store: stores })
       }
 
       const { configuration, user, case: caseCapability, settings, navigation, scoring } = this.capabilities.core

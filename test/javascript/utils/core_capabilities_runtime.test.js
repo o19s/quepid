@@ -72,6 +72,7 @@ describe("core runtime capabilities", () => {
       scoring: expect.any(Object)
     }))
     expect(capabilities.liveQuery).toEqual({
+      create: expect.any(Function),
       framework: expect.any(Object),
       domain: expect.any(Object)
     })

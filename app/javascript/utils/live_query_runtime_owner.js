@@ -5,7 +5,7 @@
  * The outer bootstrap boundary supplies the search, scoring, settings, and
  * transport services.
  */
-export function initializeLiveQueryRuntime({ framework, domain, search, store }) {
+export function createLiveQueryRuntimeOwner({ framework, domain, search, store }) {
   const splainerSearch = search.splainerSearch || {}
   const searchSvc = splainerSearch.searchSvc
   const normalDocsSvc = splainerSearch.normalDocsSvc
@@ -65,8 +65,6 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
   }
   let caseNo = -1
   let currSettings = {}
-  let svcVersion = 0
-  let ratingsVersion = 0
 
   // Keyed by the mapper_code string itself, so a re-eval is only ever skipped for the
   // exact same code (editing a mapper - or switching to a different mapper-based try -
@@ -105,7 +103,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     logger: framework.logger
   })
 
-  const liveQueryAdapters = search.liveQueryAdapters.create({
+  const liveQueryServices = {
     domain: {
       ...domain,
       search: {
@@ -146,7 +144,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
       factoryOptions: {
         model: {
           getDefaultScorer: function () {
-            return liveQueryAdapters.scoring.getDefault()
+            return liveQueryServices.scoring.getDefault()
           },
           scoreQuery: search.queryScoring.scoreQuery,
           promiseApi: framework.promiseApi,
@@ -156,7 +154,6 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
           buildRatingsFilter: search.ratedDocs.buildFilter,
           ratedDocIds: search.ratedDocs.ids,
           onDirty: function () {
-            svcVersion++
           }
         },
         documents: {
@@ -175,10 +172,10 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
           },
           RatingsStore: search.ratings.RatingsStore,
           request: function (options) {
-            return liveQueryAdapters.ratings.request(options)
+            return liveQueryServices.ratings.request(options)
           },
           onRatingChanged: function (changedQueryId) {
-            liveQueryAdapters.ratings.changed(changedQueryId)
+            liveQueryServices.ratings.changed(changedQueryId)
           },
           getQueryState: function (query) {
             return search.queryState.queryLifecycleState({
@@ -201,10 +198,10 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
         },
         searchers: {
           create: function (query, options) {
-            return liveQueryAdapters.search.create(currSettings, query, options)
+            return liveQueryServices.search.create(currSettings, query, options)
           },
           createRated: function (settings, query) {
-            return liveQueryAdapters.search.create(settings, query, { filterToRated: true })
+            return liveQueryServices.search.create(settings, query, { filterToRated: true })
           },
           searchApiRatedDocs: function (settings, query, ratedIDs) {
             return searchApiRatedDocs(settings, query, ratedIDs)
@@ -213,7 +210,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
             return trySupportsSearchApiRatedDocsLookup(aTry)
           },
           createSnapshot: function (snapshotId, query) {
-            return liveQueryAdapters.search.createSnapshot(snapshotId, query, currSettings)
+            return liveQueryServices.search.createSnapshot(snapshotId, query, currSettings)
           }
         },
         documents: {
@@ -298,8 +295,6 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
         return runtimeFramework.request(options)
       },
       changed: function (changedQueryId) {
-        ratingsVersion++
-
         if (store && store.scoring) {
           store.scoring.markRatingChanged(changedQueryId)
         } else {
@@ -311,15 +306,15 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
         }
       }
     }
-  })
-  const runtimeFramework = liveQueryAdapters.framework
-  const runtimeDomain = liveQueryAdapters.domain
+  }
+  const runtimeFramework = liveQueryServices.framework
+  const runtimeDomain = liveQueryServices.domain
 
   document.addEventListener("case-book:associated", function () {
     // Re-fetch case data to update cached sync properties
     if (caseNo && caseNo !== -1) {
       runtimeFramework.get("api/cases/" + caseNo).then(function (response) {
-        liveQueryAdapters.book.configure(caseNo, response)
+        liveQueryServices.book.configure(caseNo, response)
       })
     }
   })
@@ -328,11 +323,10 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     liveQueryRegistry.clear({ resetStore: true })
     svc.showOnlyRated = false
     svc.isBootstrapping = false
-    svc.svcVersion++
     if (queryDocumentsStore) {
       queryDocumentsStore.reset()
     }
-    liveQueryAdapters.book.reset()
+    liveQueryServices.book.reset()
     publishQueryListState()
   }
 
@@ -404,7 +398,6 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     },
     publishState: publishQueryListState,
     onVersion: function () {
-      svcVersion++
     },
     defer: function () {
       return runtimeFramework.promiseApi.defer()
@@ -417,8 +410,8 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     factory: search.liveQueryFactory,
     documents: search.liveQueryDocuments,
     execution: search.liveQueryExecution,
-    factoryOptions: liveQueryAdapters.runtime.factoryOptions,
-    executionOptions: liveQueryAdapters.runtime.executionOptions
+    factoryOptions: liveQueryServices.runtime.factoryOptions,
+    executionOptions: liveQueryServices.runtime.executionOptions
   })
   const liveQueryDocumentsRuntime = liveQueryRuntimeGraph.documents
   const liveQueryRuntime = liveQueryRuntimeGraph.execution
@@ -437,10 +430,10 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
       liveQueryDocumentsRuntime.publish(query)
     },
     scoreAll: function () {
-      return liveQueryAdapters.scoring.run()
+      return liveQueryServices.scoring.run()
     },
     syncToBook: function () {
-      return liveQueryAdapters.book.sync(queryArray())
+      return liveQueryServices.book.sync(queryArray())
     },
     onSearchStarted: function () {
       return queryCollectionStore ? queryCollectionStore.beginSearch() : null
@@ -483,7 +476,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     },
     publishQuery: publishQueryDocuments,
     scoreAll: function () {
-      return liveQueryAdapters.scoring.run()
+      return liveQueryServices.scoring.run()
     },
     updateScores: function () {
       return search.queryCapabilities.updateScores()
@@ -493,7 +486,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
       query.setDirty()
     },
     setScorer: function (scorerData) {
-      return liveQueryAdapters.scoring.select(scorerData)
+      return liveQueryServices.scoring.select(scorerData)
     },
     reloadQueries: function (caseId) {
       search.queryCapabilities.resetQueryState()
@@ -540,7 +533,6 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
       registerQueryInCollection(queryId, query)
     },
     onVersion: function () {
-      svcVersion++
     },
     removeQuery: function (queryId) {
       return liveQueryRegistry.remove(queryId)
@@ -580,8 +572,8 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     },
     scoreAll: function (scorables) {
       return scorables === undefined
-        ? liveQueryAdapters.scoring.run()
-        : liveQueryAdapters.scoring.run(scorables)
+        ? liveQueryServices.scoring.run()
+        : liveQueryServices.scoring.run(scorables)
     },
     applySettings: function (newSettings) {
       currSettings = newSettings
@@ -594,14 +586,14 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
       caseNo = newCaseNo
     },
     bootstrapScorer: function (newCaseNo) {
-      liveQueryAdapters.scoring.bootstrap(newCaseNo)
+      liveQueryServices.scoring.bootstrap(newCaseNo)
     },
     bootstrapQueries: function (newCaseNo) {
       liveQueryCollectionRuntime.bootstrapQueries(newCaseNo)
     },
     configureBook: function (newCaseNo) {
       runtimeFramework.get("api/cases/" + newCaseNo).then(function (response) {
-        liveQueryAdapters.book.configure(newCaseNo, response)
+        liveQueryServices.book.configure(newCaseNo, response)
       })
     },
     refreshQueryDiff: function (query) {
@@ -616,7 +608,6 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
       }
     },
     onVersion: function () {
-      svcVersion++
     },
     promiseApi: runtimeFramework.promiseApi
   })
@@ -891,7 +882,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
         const searcher = createSearcherFromSettings(tempSettings, query, { forceApiMethod: "POST" })
 
         return searcher.search().then(function () {
-          const normed = liveQueryAdapters.runtime.executionOptions.documents.normalize(
+          const normed = liveQueryServices.runtime.executionOptions.documents.normalize(
             query,
             searcher,
             settings.createFieldSpec()
@@ -1004,7 +995,6 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     if (queryCollectionStore) {
       queryCollectionStore.setDisplayOrder(displayOrder)
     }
-    svcVersion++
   }
 
   /*
@@ -1075,9 +1065,6 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
         liveQueryCollectionRuntime.resetSearchPromise()
       },
       getQueryArray: queryArray,
-      getVersion: function () {
-        return svcVersion + ratingsVersion
-      },
       changeSettings: function (newCaseNo, newSettings) {
         return liveQueryStateRuntime.changeSettings(newCaseNo, newSettings)
       },
@@ -1144,7 +1131,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
         },
         settingsWithTryOverrides: settingsWithTryOverrides,
         createSearcherFromSettings: createSearcherFromSettings,
-        normalizeDocExplains: liveQueryAdapters.runtime.executionOptions.documents.normalize,
+        normalizeDocExplains: liveQueryServices.runtime.executionOptions.documents.normalize,
         searchApiRatedDocs: searchApiRatedDocs,
         supportsRatedDocsLookup: trySupportsRatedDocsLookup,
         promiseApi: runtimeFramework.promiseApi

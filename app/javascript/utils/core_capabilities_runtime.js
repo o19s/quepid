@@ -8,6 +8,7 @@ import { createConfigurationRuntime } from "utils/configuration_runtime"
 import { createNavigationRuntime } from "utils/navigation_runtime"
 import { createCaseRuntime } from "utils/case_runtime"
 import { createScorer } from "utils/scorer_runtime"
+import { createLiveQueryRuntimeOwner } from "utils/live_query_runtime_owner"
 import { apiFetch } from "api/fetch"
 import { getCoreCapabilities } from "utils/core_capability_access"
 
@@ -344,26 +345,29 @@ function createCoreCapabilities(services, scorerCatalog, userRuntime) {
 
 function createLiveQueryCapabilities(services, scorerCatalog) {
   const framework = createNativeFramework()
+  const domain = {
+    settings: {
+      editable: () => settingsRuntime.editable(),
+      applicable: () => settingsRuntime.applicable(),
+      isTrySelected: () => settingsRuntime.isTrySelected(),
+      previewArgs: (tryNo, queryParams) => settingsRuntime.previewArgs(tryNo, queryParams)
+    },
+    scorer: {
+      getDefault: () => scorerCatalog.getDefault(),
+      constructFromData: (scorerData) => scorerCatalog.constructFromData(scorerData),
+      setDefault: (scorer) => scorerCatalog.setDefault(scorer),
+      bootstrap: (caseNo) => scorerCatalog.bootstrap(caseNo)
+    },
+    navigation: {
+      proxyUrlFor: (searchEndpointId) => navigationRuntime.getQuepidProxyUrl(searchEndpointId)
+    }
+  }
 
   return {
+    create: ({ search, store }) =>
+      createLiveQueryRuntimeOwner({ framework, domain, search, store }),
     framework,
-    domain: {
-      settings: {
-        editable: () => settingsRuntime.editable(),
-        applicable: () => settingsRuntime.applicable(),
-        isTrySelected: () => settingsRuntime.isTrySelected(),
-        previewArgs: (tryNo, queryParams) => settingsRuntime.previewArgs(tryNo, queryParams)
-      },
-      scorer: {
-        getDefault: () => scorerCatalog.getDefault(),
-        constructFromData: (scorerData) => scorerCatalog.constructFromData(scorerData),
-        setDefault: (scorer) => scorerCatalog.setDefault(scorer),
-        bootstrap: (caseNo) => scorerCatalog.bootstrap(caseNo)
-      },
-      navigation: {
-        proxyUrlFor: (searchEndpointId) => navigationRuntime.getQuepidProxyUrl(searchEndpointId)
-      }
-    }
+    domain
   }
 }
 
