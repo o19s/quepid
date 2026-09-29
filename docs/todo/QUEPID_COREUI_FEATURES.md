@@ -348,13 +348,12 @@ Scorers run in **two environments** with known behavioral drift:
 | Score return | Via Angular `$q.defer()` promise resolution | Via `getScore()` after `eval()` |
 
 ### Score Capping
-After scorer execution, the client-side score is clamped:
+After scorer execution, the client-side score is adjusted:
 1. If `null` and no docs → `'zsr'` (zero search results)
 2. If `null` and no bestDocs → `'--'` (unrated)
-3. If negative and equals maxScore → `null`
-4. If negative → `0`
-5. If exceeds maxScore → `maxScore`
-6. If maxScore is 0 → `0`
+3. If negative → `0`
+
+There is no upper bound. Scores are not capped at the rating scale max: CG@10, DCG@10, and v1 routinely exceed it. `scorer.maxScore()` always returns `undefined` (as it did in the Angular `ScorerFactory`), so query score colors use a max of 1.
 
 ### Loop Prohibition
 - Regex check: `/(while|for)\s*\(/g`

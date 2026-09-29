@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs"
 import { describe, expect, it, vi } from "vitest"
 import { createScorer } from "utils/scorer_runtime"
 
@@ -39,6 +40,29 @@ describe("scorer runtime", () => {
     const bestDocs = [{ rating: 2 }]
 
     await expect(scorer.score(query, 10, docs, bestDocs)).resolves.toBe(14)
+  })
+
+  it("does not cap scores at the rating scale max", async () => {
+    const code = readFileSync("db/scorers/cg@10.js", "utf8")
+    const scorer = createScorer({ scale: [0, 1, 2, 3], code })
+    const docs = [makeDoc(3), makeDoc(3), makeDoc(2)]
+
+    await expect(scorer.score({ ratedDocs: [] }, 3, docs, [])).resolves.toBe(8)
+  })
+
+  it("clips negative scores to zero", async () => {
+    const scorer = createScorer({ scale: [0, 1, 2, 3], code: "setScore(-5)" })
+
+    await expect(scorer.score({ ratedDocs: [] }, 1, [makeDoc(1)], [])).resolves.toBe(0)
+  })
+
+  it("exposes the scale maximum to scorer code as max", async () => {
+    const code = readFileSync("db/scorers/err@10.js", "utf8")
+    const scorer = createScorer({ scale: [0, 1, 2, 3], code })
+    const docs = [makeDoc(3), makeDoc(0)]
+
+    await expect(scorer.score({ ratedDocs: [] }, 2, docs, [])).resolves.toBe(0.875)
+    expect(scorer.error).toBeFalsy()
   })
 
   it("treats omitted best documents as an empty rating set", async () => {

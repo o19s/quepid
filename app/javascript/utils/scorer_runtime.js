@@ -239,6 +239,7 @@ export function createScorer(
       "bestDocs",
       "mode",
       "options",
+      "max",
       "docAt",
       "docExistsAt",
       "ratedDocAt",
@@ -271,6 +272,7 @@ export function createScorer(
       bestDocs,
       mode,
       options,
+      max,
       docAt,
       docExistsAt,
       ratedDocAt,
@@ -310,13 +312,15 @@ export function createScorer(
     return deferred.promise
   }
 
+  // Always undefined, as in the Angular ScorerFactory. Scores are not bounded
+  // by the rating scale (CG@10 on a 0-3 scale can reach 30), so callers must
+  // not treat this as a score ceiling; query scoring falls back to 1.
   function maxScore() {
     return scorer.scale[-1]
   }
 
   function score(query, total, docs, bestDocs, options) {
     bestDocs = bestDocs || []
-    const max = scorer.maxScore()
     return scorer.runCode(query, total, docs, bestDocs, undefined, options).then(
       (calculated) => {
         if (calculated === null) {
@@ -324,10 +328,7 @@ export function createScorer(
           if (bestDocs.length === 0) return "--"
         }
         if (typeof calculated === "number") {
-          if (calculated < 0 && calculated === max) return null
           if (calculated < 0) return 0
-          if (calculated > max) return max
-          if (max === 0) return 0
           return calculated
         }
         scorer.error = calculated

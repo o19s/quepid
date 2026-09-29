@@ -387,7 +387,7 @@ All scorers (both client-side and server-side) have access to these helper funct
 | Client-side | `eval()` in `$timeout` | `ScorerFactory.runCode()` | `docAt()` returns rich splainer-search doc objects |
 | Server-side | MiniRacer (V8) | `JavascriptScorer.score()` | `docAt()` returns plain JS objects; `lib/scorer_logic.js` provides helpers |
 
-Client-side scoring clips results: negative scores → 0, above max → max. Returns `'zsr'` for zero search results, `'--'` for no ratings. Case score is the average of all non-zsr/non-`--` per-query scores.
+Client-side scoring clips negative scores to 0. There is no upper bound: scores are not capped at the rating scale max (CG@10, DCG@10, and v1 routinely exceed it). Returns `'zsr'` for zero search results, `'--'` for no ratings. Case score is the average of all non-zsr/non-`--` per-query scores.
 
 ### Score Calculation Pipeline
 

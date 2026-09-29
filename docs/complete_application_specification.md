@@ -43,8 +43,7 @@ Quepid is a **search relevance evaluation platform** (cases, queries, ratings, b
 | Whole-app feature inventory | [`todo/QUEPID_FEATURES.md`](./todo/QUEPID_FEATURES.md) |
 | Case workspace (`/case/...`) | [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md) |
 | Core UI implementation quirks | [`todo/core_ui_implementation_reference.md`](./todo/core_ui_implementation_reference.md) |
-| AngularJS removal / migration | [`todo/angularjs_removal_inventory.md`](./todo/angularjs_removal_inventory.md) |
-| Angular event bus | [`todo/event_bus_inventory.md`](./todo/event_bus_inventory.md) |
+| Frontend cleanup after Angular removal | [`todo/todo.md`](./todo/todo.md#frontend-cleanup-after-angular-removal) |
 | Open bugs and hardening | [`todo/todo.md`](./todo/todo.md) |
 | Encryption | [`ENCRYPTION_SETUP.md`](./ENCRYPTION_SETUP.md) |
 | Deployment and ops | [`operating_documentation.md`](./operating_documentation.md) |
@@ -478,7 +477,7 @@ See [`todo/QUEPID_FEATURES.md` §20](./todo/QUEPID_FEATURES.md#20-proxy--http-la
 
 ## 15. Frontend (AngularJS SPA)
 
-See [`todo/angularjs_removal_inventory.md`](./todo/angularjs_removal_inventory.md), [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md), [`todo/event_bus_inventory.md`](./todo/event_bus_inventory.md), and [`todo/core_ui_implementation_reference.md`](./todo/core_ui_implementation_reference.md).
+See [`todo/todo.md`](./todo/todo.md#frontend-cleanup-after-angular-removal), [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md), and [`todo/core_ui_implementation_reference.md`](./todo/core_ui_implementation_reference.md).
 
 ---
 
@@ -514,7 +513,6 @@ See [`todo/QUEPID_FEATURES.md` §25](./todo/QUEPID_FEATURES.md#25-configuration-
 - **Base path:** `/api` (V1 via `ApiConstraint`)
 - **Canonical endpoint list:** OpenAPI at `/api/docs` (`oas_rails`); route source `config/routes.rb` (`namespace :api`)
 - **Client conventions:** [`DEVELOPER_GUIDE.md` § Stimulus HTTP](../DEVELOPER_GUIDE.md#stimulus-http-conventions)
-- **Legacy Angular HTTP:** [`todo/angularjs_removal_inventory.md` § Angular core HTTP](./todo/angularjs_removal_inventory.md#angular-core-http-patterns-legacy)
 - **API surface overview:** [`todo/QUEPID_FEATURES.md` §23](./todo/QUEPID_FEATURES.md#23-api-surface)
 
 ### 20.5 HTML Rails Routes (Non-API)
