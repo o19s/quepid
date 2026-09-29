@@ -73,7 +73,7 @@ class MapperBasedSearchEngineTest < ActiveSupport::TestCase
 
       token   = JSON.parse(qdrant.custom_headers)['api-key']
       payload = token.split('.')[1]
-      payload = JSON.parse(Base64.urlsafe_decode64(payload + ('=' * ((4 - (payload.length % 4)) % 4))))
+      payload = JSON.parse(Base64.decode64(payload.tr('-_', '+/')))
 
       assert_equal [ { 'collection' => 'tmdb', 'access' => 'r' } ], payload['access']
     end
